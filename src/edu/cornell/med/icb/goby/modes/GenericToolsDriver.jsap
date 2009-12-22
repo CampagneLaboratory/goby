@@ -1,0 +1,29 @@
+<!--
+  ~ Copyright (C) 2009 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~ WEILL MEDICAL COLLEGE OF CORNELL UNIVERSITY MAKES NO REPRESENTATIONS
+  ~ ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE. IT IS PROVIDED
+  ~ "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY. THE WEILL MEDICAL COLLEGE
+  ~ OF CORNELL UNIVERSITY SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+  ~ THE USERS OF THIS SOFTWARE.
+  -->
+
+<jsap>
+    <parameters>
+        <flaggedOption>
+            <id>mode</id>
+            <longFlag>mode</longFlag>
+            <shortFlag>m</shortFlag>
+            <required>true</required>
+            <help>Specifies which goby mode to run. Must be one of: 
+            [MODES_LIST] </help>
+        </flaggedOption>
+        <switch>
+            <id>help</id>
+            <shortFlag>h</shortFlag>
+            <longFlag>help</longFlag>
+            <help>Displays usage help information.</help>
+        </switch>
+    </parameters>
+</jsap>

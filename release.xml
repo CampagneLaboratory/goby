@@ -1,0 +1,136 @@
+<?xml version="1.0"?>
+<project name="release" basedir="." default="release">
+    <import file="${basedir}/buildsupport/build.xml"/>
+
+    <property name="label" value="release"/>
+    <property file="${config}/release.properties"/>
+
+    <tstamp>
+        <format property="exportdate" pattern="yyyyMMddHHmmss"/>
+    </tstamp>
+
+	<target name="init" depends="gettag">
+	    <property name="exportdir" value="tmp-${tag}"/>
+		<property name="releasedir" value="release-${tag}"/>
+
+    	<mkdir dir="${releasedir}"/>
+
+	    <property name="srcfile" value="${releasedir}/${tag}-src.zip"/>
+        <property name="depsfile" value="${releasedir}/${tag}-deps.zip"/>
+	    <property name="apidocfile" value="${releasedir}/${tag}-apidoc.zip"/>
+	    <property name="datafile" value="${releasedir}/${tag}-data.zip"/>
+        <property name="tagUrl" value="https://${svnhost}/public/svn/icb/tags/${tag}"/>
+	</target>
+
+	<target name="gettag" unless="tag">
+	    <!-- the default tag uses the current date and time -->
+	    <property name="defaulttag" value="goby_${exportdate}"/>
+
+        <input message="Enter a tag for the build [${defaulttag}]:"
+               addproperty="tag"
+               defaultvalue="${defaulttag}"/>
+        <echo level="debug" message="tag is ${tag}"/>
+    </target>
+
+	<target name="tag" depends="init" unless="nocopy" description="Tag the current trunk release in SVN">
+        <echo level="info" message="Tagging current directory with ${tag}"/>
+    	<svn>
+    		<copy message="${tag}" srcUrl="https://${svnhost}/public/svn/icb/trunk/goby"
+    			  destUrl="${tagUrl}"/>
+    	</svn>
+    </target>
+
+    <target name="export" depends="init" unless="noexport" description="Export a tagged version of the source code">
+        <available property="exportdirexists" file="${exportdir}" type="dir"/>
+        <fail if="exportdirexists" message="${basedir}/${exportdir} already exists."/>
+
+    	<mkdir dir="${exportdir}"/>
+        <echo level="info" message="Exporting using tag: ${tag}"/>
+
+        <!-- get the tagged version from svn -->
+    	<svn>
+    		<export srcUrl="${tagUrl}" destPath="${exportdir}/${tag}"/>
+        </svn>
+    </target>
+
+    <target name="release" description="Tag and release build"
+	    	depends="tag, source, jar, dependencies, javadoc">
+        <!-- make links to the release files to match what the web server expects -->
+	    <symlink link="${releasedir}/goby-src.zip" resource="${tag}-src.zip"/>
+        <symlink link="${releasedir}/goby-deps.zip" resource="${tag}-deps.zip"/>
+	    <symlink link="${releasedir}/goby-apidoc.zip" resource="${tag}-apidoc.zip"/>
+	    <symlink link="${releasedir}/goby-data.zip" resource="${tag}-data.zip"/>
+        <symlink link="${releasedir}/goby.zip" resource="${tag}-goby.zip"/>
+
+        <!-- copy the changes file to the release directory -->
+        <copy todir="${releasedir}" file="${exportdir}/${tag}/CHANGES.txt"/>
+
+        <!-- copy the zip to the web folder -->
+        <!-- todo -->
+        <!-- notify webmaster about new file -->
+        <!-- todo -->
+
+        <!-- delete the temp files to clean up -->
+        <!--<delete dir="${exportdir}"/>-->
+    </target>
+
+	<target name="source" depends="export" description="Assemble a source code release">
+        <!-- copy configuration files so tests run "out of the box" -->
+        <copy file="${exportdir}/${tag}/config/log4j.properties.sample"
+              tofile="${exportdir}/${tag}/config/log4j.properties"
+              overwrite="false" failonerror="true"/>
+        <copy file="${exportdir}/${tag}/config/RConnectionPool.xml.sample"
+              tofile="${exportdir}/${tag}/config/RConnectionPool.xml"
+              overwrite="false" failonerror="true"/>
+
+        <zip destfile="${srcfile}" comment="Goby version: ${tag}">
+            <!-- don't include all the libraries and data -->
+        	<fileset dir="${exportdir}">
+                <exclude name="${tag}/lib/**"/>
+                <exclude name="${tag}/config/*local*"/>
+			</fileset>
+       	</zip>
+
+        <!-- delete the configuration files after the zip file is created -->
+        <delete>
+            <fileset dir="${exportdir}/${tag}/config">
+                <include name="log4j.properties"/>
+                <include name="RConnectionPool.xml"/>
+            </fileset>
+        </delete>
+	</target>
+
+    <target name="dependencies" depends="export" description="Assemble dependency release">
+        <zip destfile="${depsfile}" comment="Goby version: ${tag}">
+        	<fileset dir="${exportdir}">
+        		<include name="${tag}/lib/**"/>
+        	</fileset>
+        </zip>
+    </target>
+
+	<target name="javadoc">
+        <!-- run the java docs -->
+        <ant target="javadoc" dir="${exportdir}/${tag}">
+            <property name="classes" location="${exportdir}/${tag}/classes"/>
+            <property name="config" location="${exportdir}/${tag}/config"/>
+            <property name="javadocs" location="${exportdir}/${tag}/javadocs"/>
+            <property name="lib" location="${exportdir}/${tag}/lib"/>
+            <property name="logs" location="${exportdir}/${tag}/logs"/>
+            <property name="src" location="${exportdir}/${tag}/src"/>
+        </ant>
+
+        <!-- zip the api documentation for the website -->
+        <zip destfile="${apidocfile}" basedir="${exportdir}" includes="${tag}/javadocs/**" comment="Goby version: ${tag}"/>
+	</target>
+
+	<target name="jar" depends="export" description="create and package the jar files">
+        <ant target="jar" dir="${exportdir}/${tag}">
+        	<property name="buildstamp" value="${tag}"/>
+            <property name="classes" location="${exportdir}/${tag}/classes"/>
+            <property name="config" location="${exportdir}/${tag}/config"/>
+            <property name="lib" location="${exportdir}/${tag}/lib"/>
+            <property name="logs" location="${exportdir}/${tag}/logs"/>
+            <property name="src" location="${exportdir}/${tag}/src"/>
+       	</ant>
+	</target>
+</project>
