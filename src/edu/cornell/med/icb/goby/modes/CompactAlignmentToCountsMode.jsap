@@ -1,0 +1,68 @@
+<!--
+  ~ Copyright (C) 2009 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~ WEILL MEDICAL COLLEGE OF CORNELL UNIVERSITY MAKES NO REPRESENTATIONS
+  ~ ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE. IT IS PROVIDED
+  ~ "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY. THE WEILL MEDICAL COLLEGE
+  ~ OF CORNELL UNIVERSITY SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+  ~ THE USERS OF THIS SOFTWARE.
+  -->
+
+<jsap>
+    <parameters>
+
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The compact alignment file(s) to read as input.</help>
+        </unflaggedOption>
+
+
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>false</required>
+            <help>The basename of the output counts.</help>
+        </flaggedOption>
+
+        <flaggedOption>
+            <id>include-reference-names</id>
+            <shortFlag>r</shortFlag>
+            <longFlag>include-reference-names</longFlag>
+            <required>false</required>
+            <help>When provided, only write counts for reference identifiers listed in this comma separated list. To process only counts for chromosome 19 and 1, if sequences are identified by 1 and 19, use: --include-reference-names 1,19 </help>
+        </flaggedOption>
+
+        <flaggedOption>
+            <id>full-genome</id>
+            <longFlag>full-genome</longFlag>
+            <defaults>
+                <string>true</string>
+            </defaults>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <help>Indicates that the query sequences were aligned to a full genome. When this argument is true, counts are calculated along each reference sequence and the full count histogram is output in compressed format (basename ".counts"). When this argument is false, the alignment is assumed to have been done to many short reference sequences, and counts are output in a tab delimited format, one for each reference sequence identifier.  </help>
+        </flaggedOption>
+
+        <switch>
+            <id>start-only</id>
+            <longFlag>start-only</longFlag>
+            <help>When this switch is provided, will only accumulate start positions in the specified strand.  </help>
+        </switch>
+
+        <flaggedOption>
+            <id>strand-choice</id>
+            <shortFlag>s</shortFlag>
+            <longFlag>strand-choice</longFlag>
+            <required>false</required>
+            <defaults>
+                <string>both</string>
+            </defaults>
+            <help>When provided with the --start argument, consider only start positions on the specified strand.  Valid strand choices include {positive/forward, negative/reverse, both/either}.  </help>
+        </flaggedOption>
+    </parameters>
+</jsap>

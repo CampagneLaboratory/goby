@@ -1,0 +1,56 @@
+<!--
+  ~ Copyright (C) 2009 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~ WEILL MEDICAL COLLEGE OF CORNELL UNIVERSITY MAKES NO REPRESENTATIONS
+  ~ ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE. IT IS PROVIDED
+  ~ "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY. THE WEILL MEDICAL COLLEGE
+  ~ OF CORNELL UNIVERSITY SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+  ~ THE USERS OF THIS SOFTWARE.
+  -->
+
+<jsap>
+    <parameters>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <help>The compact alignment file to read as input.</help>
+        </unflaggedOption>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>true</required>
+            <help>The tab delimited output filename.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>annotation</id>
+            <shortFlag>a</shortFlag>
+            <longFlag>annotation</longFlag>
+            <required>true</required>
+            <help>The annoation file as input.</help>
+        </flaggedOption>
+
+        <flaggedOption>
+            <id>include-reference-names</id>
+            <shortFlag>r</shortFlag>
+            <longFlag>include-reference-names</longFlag>
+            <required>false</required>
+            <help>When provided, only write counts for reference identifiers listed in this comma separated list. To
+                process only counts for chromosome 19 and 1, if sequences are identified by 1 and 19, use:
+                --include-reference-names 1,19
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>include-annotation-types</id>
+            <longFlag>include-annotation-types</longFlag>
+            <required>true</required>
+            <defaults><string>gene,intron,exon</string></defaults>
+            <help>Comma delimited list of annotation types. When provided, write annotation counts for the
+                specified annotation type. By default, write annotation counts for gene exon or introns.
+            </help>
+        </flaggedOption>
+
+
+    </parameters>
+</jsap>

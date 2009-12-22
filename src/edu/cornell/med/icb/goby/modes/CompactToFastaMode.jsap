@@ -1,0 +1,97 @@
+<!--
+  ~ Copyright (C) 2009 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~ WEILL MEDICAL COLLEGE OF CORNELL UNIVERSITY MAKES NO REPRESENTATIONS
+  ~ ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE. IT IS PROVIDED
+  ~ "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY. THE WEILL MEDICAL COLLEGE
+  ~ OF CORNELL UNIVERSITY SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+  ~ THE USERS OF THIS SOFTWARE.
+  -->
+
+<jsap>
+    <parameters>
+
+        <switch>
+            <id>index-to-header</id>
+            <longFlag>index-to-header</longFlag>
+            <defaults>false</defaults>
+            <help>When this switch is provided, ignore the sequence description line and write the sequence index as a string in place of the fasta sequence header.  </help>
+        </switch>
+
+        <switch>
+            <id>output-color-space</id>
+            <longFlag>output-color-space</longFlag>
+            <help>When this switch is provided, convert the sequence to color mode. Only makes sense if the compact file encodes a sequence in fasta format.  </help>
+        </switch>
+        <switch>
+            <id>output-fake-nt</id>
+            <longFlag>output-fake-nt</longFlag>
+            <help>When this switch is provided, convert the color space sequence to fake nucleotide representation (e.g. 0123.->ACTGN).  Used by the BWA algorithm.  </help>
+        </switch>
+        <switch>
+            <id>output-fake-quality</id>
+            <longFlag>output-fake-quality</longFlag>
+            <help>When this switch is provided, output fake qualities equal to fixed default constant quality.  </help>
+        </switch>
+        <switch>
+            <id>reference</id>
+            <longFlag>reference</longFlag>
+
+            <help>When this switch is provided with output-color-space, any transition on the N character will result in writting an 'N' base.  </help>
+        </switch>
+        <flaggedOption>
+            <id>trim-adaptor-length</id>
+            <longFlag>trim-adaptor-length</longFlag>
+            <defaults>
+                <string>0</string>
+            </defaults>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>When positive, removes this many bases from the beginning of sequence.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>input</id>
+            <shortFlag>i</shortFlag>
+            <longFlag>input</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>Name of the compact input file.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>Name of the fasta file output.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>alphabet</id>
+            <shortFlag>a</shortFlag>
+            <longFlag>alphabet</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>Alphabet of valid bases/residues. The sequence is filtered to keep only characters in the alphabet.  Other characters are replaced by 'N'.  </help>
+        </flaggedOption>
+
+        <flaggedOption>
+            <id>read-index-filter</id>
+            <shortFlag>f</shortFlag>
+            <longFlag>read-index-filter</longFlag>
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The name of a read index filter. When provided, compact-to-fasta will only write reads to the output if their index is contained in the filter.  </help>
+        </flaggedOption>
+    </parameters>
+</jsap>

@@ -1,0 +1,78 @@
+<!--
+  ~ Copyright (C) 2009 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~ WEILL MEDICAL COLLEGE OF CORNELL UNIVERSITY MAKES NO REPRESENTATIONS
+  ~ ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE. IT IS PROVIDED
+  ~ "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY. THE WEILL MEDICAL COLLEGE
+  ~ OF CORNELL UNIVERSITY SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+  ~ THE USERS OF THIS SOFTWARE.
+  -->
+
+<jsap>
+    <parameters>
+
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The compact alignment file(s) to read as input.</help>
+        </unflaggedOption>
+        <flaggedOption>
+            <id>suffix</id>
+            <shortFlag>s</shortFlag>
+            <longFlag>suffix</longFlag>
+            <required>false</required>
+            <help>The suffix to use to construct the read set filename with the input basename. Together with input basename, will determine where the output is written.  </help>
+        </flaggedOption>
+
+        <switch>
+            <id>matching-reads</id>
+            <longFlag>matching-reads</longFlag>
+            <help>When provided, output reads that matched the reference.  </help>
+        </switch>
+        <switch>
+            <id>non-matching-reads</id>
+            <longFlag>non-matching-reads</longFlag>
+
+            <help>When provided, output reads that did not match the reference.  </help>
+        </switch>
+        <switch>
+            <id>ambiguous-reads</id>
+            <longFlag>ambiguous-reads</longFlag>
+            <help>When provided, output reads that matched more than k locations in the reference.  </help>
+        </switch>
+        <switch>
+            <id>non-ambiguous-reads</id>
+            <longFlag>non-ambiguous-reads</longFlag>
+            <help>When provided, output reads that matched more than k locations in the reference.  </help>
+        </switch>
+        <flaggedOption>
+            <id>ambiguity-threshold</id>
+
+            <longFlag>ambiguity-threshold</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>2</string>
+            </defaults>
+            <help>The parameter k, threshold used to determine if a read should be considered ambiguous. The value of k is the number of locations that a read matches in the reference.  </help>
+
+        </flaggedOption>
+        <flaggedOption>
+            <id>pre-filter</id>
+            <longFlag>pre-filter</longFlag>
+            <shortFlag>f</shortFlag>
+
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>A read set to use as pre-filter. Reads must be in the pre-filter to be in the written to the output read set.  </help>
+        </flaggedOption>
+
+
+    </parameters>
+</jsap>

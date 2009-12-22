@@ -1,0 +1,323 @@
+/*
+ * Copyright (C) 2009 Institute for Computational Biomedicine,
+ *                    Weill Medical College of Cornell University
+ *
+ * WEILL MEDICAL COLLEGE OF CORNELL UNIVERSITY MAKES NO REPRESENTATIONS
+ * ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE. IT IS PROVIDED
+ * "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY. THE WEILL MEDICAL COLLEGE
+ * OF CORNELL UNIVERSITY SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+ * THE USERS OF THIS SOFTWARE.
+ */
+
+package edu.cornell.med.icb.aligners;
+
+import edu.cornell.med.icb.goby.modes.CompactToFastaMode;
+import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.io.File;
+import java.io.IOException;
+
+/**
+ * @author Fabien Campagne
+ *         Date: Jul 10, 2009
+ *         Time: 3:26:45 PM
+ */
+// TODO - Aligner - replace setAmbiguityThreshold and setQualityFilterParameters with setFilterOptions()
+// TODO - AbstractAligner - replace mParameter and qualityFilterParameters with filterParams?
+// TODO - LastagAligner - replace getSeedMaxMultiplicity() with setSeedMaxMultiplicity()
+
+public abstract class AbstractAligner implements Aligner {
+    private static final Log LOG = LogFactory.getLog(AbstractAligner.class);
+
+    protected String pathToExecutables;
+    protected String databaseDirectory = ".";
+    protected String workDirectory = ".";
+    protected String[] extensions;
+    protected String databaseName;
+    protected int numberOfReads;
+    protected int numberOfReferences;
+    protected File readIndexFilter;
+    protected File referenceIndexFilter;
+    protected boolean colorSpace;
+    protected int minReadLength;
+    protected String alignerOptions = "";
+    protected String qualityFilterParameters = "threshold=0.05";
+    protected int mParameter = 2;
+
+    /**
+     * Return the reference file converter used by aligner algorithm
+     */
+    public abstract CompactToFastaMode getReferenceCompactToFastaConverter();
+
+    /**
+     * Return the reads file converter used by aligner algorithm
+     */
+    public abstract CompactToFastaMode getReadsCompactToFastaConverter();
+
+    /**
+     * Return the compact reads converter for the native alignment
+     */
+    public abstract AbstractAlignmentToCompactMode getNativeAlignmentToCompactMode(final String outputBasename);
+
+
+    /**
+     * Parse and validate aligner specific options.
+     * Input options are comma separated, with the syntax key1=value1,key2=value2.
+     * "alignerOptions" format should match aligner's command-line specification e.g. "-key1 value1 -key2 value2"
+     * This method is declared abstract so that aligners have control over the parsing of their arguments.
+     */
+    public abstract void setAlignerOptions(final String alignerOptions);
+
+    public void setDatabaseName(final String databaseName) {
+        this.databaseName = databaseName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setReferenceIndexFilter(final File referenceIndexFilterFile) {
+        referenceIndexFilter = referenceIndexFilterFile;
+    }
+
+    public void setReadIndexFilter(final File readIndexFilterFile) {
+        readIndexFilter = readIndexFilterFile;
+    }
+
+    public void setColorSpace(final boolean colorSpace) {
+        this.colorSpace = colorSpace;
+    }
+
+    public String getAlphabet() {
+        return colorSpace ? "0123" : "ACTG";
+    }
+
+    public void setQualityFilterParameters(final String qualityFilterParameters) {
+        this.qualityFilterParameters = qualityFilterParameters;
+    }
+
+    public void setAmbiguityThreshold(int mParameter) {
+        this.mParameter = mParameter;
+    }
+
+    public void setDatabaseDirectory(final String path) {
+        databaseDirectory = path;
+    }
+
+    public void setPathToExecutables(final String path) {
+        pathToExecutables = path;
+    }
+
+    public void setWorkDirectory(final String path) {
+        workDirectory = path;
+    }
+
+
+    /**
+     * If databasePrefix is a complete basename to a database, this will return databasePrefix.
+     * Otherwise this will assume databasePrefix is actually a database-name
+     * and return databaseDirectory + "/" + databasePrefix.
+     *
+     * @param databaseDirectory the database directory
+     * @param databasePrefix    the database basename or database-name.
+     * @return a database basename
+     */
+    protected String getDatabasePath(final String databaseDirectory, final String databasePrefix) {
+        final String result;
+        if (isDatabaseBasename(databasePrefix)) {
+            result = databasePrefix;
+        } else {
+            if (StringUtils.isBlank(databaseDirectory)) {
+                result = databasePrefix;
+            } else {
+                result = FilenameUtils.concat(databaseDirectory, databasePrefix);
+            }
+        }
+        return result.replaceAll(" ", "\\ ");
+
+    }
+
+    /**
+     * Returns true if the reference is a database basename.
+     * Searches for databasePathPrefix + "." + [extensions] to make sure all those
+     * files exist.
+     *
+     * @param databasePathPrefix path prefix for database files
+     * @return true if databasePathPrefix specifies an existing database
+     */
+    public boolean isDatabaseBasename(final String databasePathPrefix) {
+        assert extensions != null : "aligner must define valid database extensions. ";
+        for (final String ext : extensions) {
+            final String inspectionPath = databasePathPrefix + "." + ext;
+            System.err.println("Looking for database... file exists?:" + inspectionPath);
+            if (!new File(inspectionPath).exists()) {
+                System.err.println("...No");
+                return false;
+            }
+        }
+        System.err.println("...Yes");
+        return true;
+    }
+
+    protected void listFiles(final String desc, final String dir) {
+        /*   assert dir!=null: "dir cannot be null";
+       System.err.println("Listing files for " + desc);
+       final File[] files = new File(dir).listFiles();
+       for (final File file : files) {
+           System.err.println("file:" + file.toString());
+       } */
+    }
+
+    /**
+     * Collect the set of files that make up the alignment output of the aligner.
+     *
+     * @param basename Basename where the alignment was written.
+     * @return an array of files that will contain the output from the aligner
+     */
+    public static File[] buildResults(final String basename) {
+        final ObjectArrayList<File> result = new ObjectArrayList<File>();
+        final String[] extensions = {".stats", ".entries", ".header", ".tmh"};
+
+        for (final String extension : extensions) {
+            final File file = new File(basename + extension);
+            if (file.exists()) {
+                result.add(file);
+            }
+        }
+
+        return result.toArray(new File[result.size()]);
+    }
+
+    protected File[] matchingExtension(final String filenamePrefix, final String... extension) {
+        final ObjectList<File> result = new ObjectArrayList<File>();
+        for (final String ext : extension) {
+            final File potential = new File(filenamePrefix + "." + ext);
+            if (potential.exists()) {
+                result.add(potential);
+            }
+        }
+        return result.toArray(new File[result.size()]);
+    }
+
+    /**
+     * Ensure *parent* directories exist.
+     */
+    public void forceMakeParentDir(final String path) throws IOException {
+        final String parentDir = FilenameUtils.getFullPath(path);
+        forceMakeDir(parentDir);
+    }
+
+    /**
+     * Ensure directories exist.
+     */
+    public void forceMakeDir(final String path) {
+        final File dir = new File(path);
+        if (path.length()==0) {
+            // TODO: add unit test with various working directories, including "./" case
+            // file is perhaps in current directory?
+            return;
+        }
+        try {
+            // once again, forceMkdir will sometimes fail if the directory exists. Do not believe its javadoc.
+            if (!dir.exists()) FileUtils.forceMkdir(dir);
+        } catch (IOException e) {
+            LOG.warn("Error trying to create directory. Trying to recover.", e);
+        }
+        assert dir.exists() : "Abstract Aligner> can not proceed without directory: '" + path + "'";
+    }
+
+    public File prepareReference(final File compactReferenceFile) throws IOException {
+        LOG.info("Preparing reference sequences");
+        forceMakeDir(databaseDirectory);
+
+        final String extension = FilenameUtils.getExtension(compactReferenceFile.getName());
+        if ("fasta".equals(extension)) {
+            final File outputFile = new File(FilenameUtils.concat(databaseDirectory,
+                    FilenameUtils.getName(compactReferenceFile.toString())));
+            if (compactReferenceFile.compareTo(outputFile) != 0) {
+                FileUtils.copyFile(compactReferenceFile, outputFile);
+            }
+            return outputFile;
+        } else if ("fa".equals(extension)) {
+            final File outputFile = new File(FilenameUtils.concat(databaseDirectory,
+                    FilenameUtils.getBaseName(compactReferenceFile.toString()) + ".fasta"));
+            FileUtils.copyFile(compactReferenceFile, outputFile);
+            return outputFile;
+        } else {
+            // assume compact-reads format:
+            // TODO: assert that file is a compact-reads file
+            final String outputFilename = FilenameUtils.concat(databaseDirectory,
+                    FilenameUtils.getBaseName(compactReferenceFile.getCanonicalPath()) + ".fasta");
+            final CompactToFastaMode processor = getReferenceCompactToFastaConverter();
+            processor.setInputFilename(compactReferenceFile.getCanonicalPath());
+            processor.setReadIndexFilterFile(referenceIndexFilter);
+            processor.setOutputFilename(outputFilename);
+            processor.execute();
+            numberOfReferences = processor.getNumberOfSequences();
+            return new File(processor.getOutputFilename());
+        }
+    }
+
+    public File prepareReads(final File compactReadsFile) throws IOException {
+        LOG.info("Preparing reads..");
+        forceMakeDir(workDirectory);
+
+        final String extension = FilenameUtils.getExtension(compactReadsFile.getName());
+        if ("fasta".equals(extension)) {
+            final File outputFile = new File(FilenameUtils.concat(workDirectory,
+                    FilenameUtils.getName(compactReadsFile.toString())));
+            if (compactReadsFile.compareTo(outputFile) != 0) {
+                FileUtils.copyFile(compactReadsFile, outputFile);
+            }
+            return outputFile;
+        } else if ("fa".equals(extension)) {
+            final File outputFile = new File(FilenameUtils.concat(workDirectory,
+                    FilenameUtils.getBaseName(compactReadsFile.toString()) + ".fasta"));
+            FileUtils.copyFile(compactReadsFile, outputFile);
+            return outputFile;
+        } else {
+            // assume compact-reads format:
+            // TODO: assert that file is a compact-reads file
+            final String outputFilename = FilenameUtils.concat(workDirectory,
+                    FilenameUtils.getBaseName(compactReadsFile.getCanonicalPath()) + ".fasta");
+            final CompactToFastaMode processor = getReadsCompactToFastaConverter();
+            processor.setInputFilename(compactReadsFile.getCanonicalPath());
+            processor.setReadIndexFilterFile(readIndexFilter);
+            processor.setOutputFilename(outputFilename);
+            processor.execute();
+            numberOfReads = processor.getNumberOfSequences();
+            minReadLength = processor.getMinSequenceLength();
+            return new File(processor.getOutputFilename());
+        }
+    }
+
+    public File[] processAlignment(File referenceFile, File readsFile, String outputBasename) throws InterruptedException, IOException {
+
+        forceMakeParentDir(outputBasename);
+        final AbstractAlignmentToCompactMode processor = getNativeAlignmentToCompactMode(outputBasename);
+
+        /*
+        // If match quality is BEST_MATCH, then the quality filter is turned off.
+        qualityFilterParameters = (matchQuality == MatchQuality.BEST_MATCH) ? "threshold=0.00" : qualityFilterParameters;
+        */
+        processor.setOutputFile(outputBasename);
+        processor.setPropagateQueryIds(false);
+        processor.setPropagateTargetIds(true);
+        processor.setTargetReferenceIdsFilename(referenceFile.getPath());
+        processor.setQueryReadIdsFilename(readsFile.getPath());
+        processor.setQualityFilterParameters(qualityFilterParameters);
+        processor.setAmbiguityThreshold(mParameter);       
+        processor.execute();
+
+        
+        return buildResults(outputBasename);        
+    }
+
+}

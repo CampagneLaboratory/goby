@@ -1,0 +1,73 @@
+<!--
+  ~ Copyright (C) 2009 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~ WEILL MEDICAL COLLEGE OF CORNELL UNIVERSITY MAKES NO REPRESENTATIONS
+  ~ ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE. IT IS PROVIDED
+  ~ "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY. THE WEILL MEDICAL COLLEGE
+  ~ OF CORNELL UNIVERSITY SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+  ~ THE USERS OF THIS SOFTWARE.
+  -->
+
+<jsap>
+    <parameters>
+
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The counts archive basename to use as input.</help>
+        </unflaggedOption>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>false</required>
+            <help>The filename to output wiggle format counts.</help>
+        </flaggedOption>
+
+        <flaggedOption>
+            <id>include-reference-names</id>
+            <shortFlag>r</shortFlag>
+            <longFlag>include-reference-names</longFlag>
+            <required>false</required>
+            <help>When provided, only write counts for reference identifiers listed in this comma separated list. To
+                process only counts for chromosome 19 and 1, if sequences are identified by 1 and 19, use:
+                --include-reference-names 1,19
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>label</id>
+            <shortFlag>l</shortFlag>
+            <longFlag>label</longFlag>
+            <required>false</required>
+            <help>The label to use as track name. Defaults to the basename of the counts file.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>resolution</id>
+
+            <longFlag>resolution</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>20</string>
+            </defaults>
+            <required>false</required>
+            <help>Size (in bases) of the bins that counts are aggregated over.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>alternative-count-archive</id>
+            <shortFlag>a</shortFlag>
+            <longFlag>alternative-count-archive</longFlag>
+            <required>false</required>
+            <defaults>
+                <string>counts</string>
+            </defaults>
+            <help>Specify an alternative count archive within the basename. The default is to use the count archive that
+                ends in ".counts" (equivalent to -a counts).
+            </help>
+
+        </flaggedOption>
+    </parameters>
+</jsap>

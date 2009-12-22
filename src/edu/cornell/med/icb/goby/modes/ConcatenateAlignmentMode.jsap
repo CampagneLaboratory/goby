@@ -1,0 +1,44 @@
+<!--
+  ~ Copyright (C) 2009 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~ WEILL MEDICAL COLLEGE OF CORNELL UNIVERSITY MAKES NO REPRESENTATIONS
+  ~ ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE. IT IS PROVIDED
+  ~ "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY. THE WEILL MEDICAL COLLEGE
+  ~ OF CORNELL UNIVERSITY SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+  ~ THE USERS OF THIS SOFTWARE.
+  -->
+
+<jsap>
+    <parameters>
+
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>false</required>
+            <help>The basename of the output compact alignments.</help>
+        </flaggedOption>
+
+
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The basenames of the input alignments to concatenate.</help>
+        </unflaggedOption>
+
+
+        <flaggedOption>
+            <id>adjust-query-indices</id>
+            <longFlag>adjust-query-indices</longFlag>
+            <defaults>
+                <string>true</string>
+            </defaults>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <help>Indicates that the query indices should be adjusted to remove clashes among alignment inputs. Use this options to concatenate alignments built from different split of a large read file (such splits can be created with reformat-compact-reads).  </help>
+        </flaggedOption>
+    </parameters>
+</jsap>

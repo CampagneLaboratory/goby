@@ -1,0 +1,153 @@
+package reads;
+
+option java_package = "edu.cornell.med.icb.alignments";
+option optimize_for = SPEED;
+
+message AlignmentCollection {
+
+     repeated AlignmentEntry alignmentEntries =1;
+}
+
+message AlignmentEntry {
+ /* Multiplicity of this entry. The number of times this  alignment entry would be repeated exactly the same if
+  query redundancy had not been removed by read factorization. 
+ */
+ optional uint32 multiplicity=7;
+ 
+ /* An integer that uniquely identifies the query (a short read) in a set of alignment runs. When several
+    alignment runs are made with the same set of query sequences, equality of query index means that the query
+    sequences were the same. (Comparing integers for equality is much faster than comparing strings.)
+  */
+  required uint32 query_index =1;
+  /* An integer that uniquely identifies the target (e.g., a chromosome) in a set of alignment runs. When several
+    alignment runs are made with the same set of target sequences, equality of target index means that the target
+    sequence was the same across the runs. (Comparing integers for equality is much faster than comparing strings.)
+  */
+  required uint32 target_index =2;
+  /*
+    The position on the target of the start of the alignment between the query and the target.
+    In the following example, position is 3 because the first base of the query was aligned with
+    position 3 of the reference. This example shows that the alignment can start at a mismatch if
+    it was so constructed by the aligner.
+
+     0123456789
+     AAAAGTCAAA  target
+        CGTC     query
+   */
+  required uint32 position=3;
+
+  /*
+     True when the query matches the target on the reverse strand
+  */
+  required bool matching_reverse_strand=6;
+
+  /*
+   The position on the query where the alignment starts. This value is different from zero
+   when some bases/residues of the query could not be aligned with the target.
+  */
+  optional uint32 query_position=5;
+
+  /*
+    The score of the alignment, where larger scores indicate better matches between the query and the target.
+    If an aligner outputs only the number of mismatches between query and target, the score is taken to be
+    -(#mismatches(query,target)).
+   */
+  optional float score=4;
+
+  /*
+    Number of bases/residues that differ in the alignment between query and target sequences.
+  */
+  optional uint32 number_of_mismatches=8;
+
+  /*
+    Cumulative number of insertions and/or deletions present in the alignment.
+   */
+  optional uint32 number_of_indels=9;
+
+  /*
+    Number of bases that have been aligned for the query.
+   */
+  optional uint32 query_aligned_length=11;
+
+   /*
+    Number of bases that have been aligned for the target.
+   */
+  optional uint32 target_aligned_length=12;
+
+}
+
+/*
+  This message is written to 'basename'.header
+*/
+
+message AlignmentHeader {
+   /* Mapping from query identifier name to query index (as used in alignment entries).
+    */
+   optional IdentifierMapping query_name_mapping=1;
+   
+   /* Mapping from target identifier name to target index (as used in alignment entries).
+    */
+   optional IdentifierMapping target_name_mapping=2;
+
+   /*
+     The number of query sequences
+    */
+   optional uint32 number_of_queries=5;
+     /*
+     The number of target sequences
+    */
+    optional uint32 number_of_targets=6;
+    /*
+     The number of reads that were aligned to the reference and are represented in this alignment archive.
+    */
+    optional uint32 number_of_aligned_reads=7;
+
+   /* Length of the query sequences. One number per query, in the order or increasing query index.
+    */
+   repeated uint32 query_length=3;
+
+}
+
+message IdentifierMapping {
+   repeated IdentifierInfo mappings=1;
+}
+
+message IdentifierInfo {
+    required string name=1;
+    required uint32 index=2;
+}
+
+/*
+  This message is written to 'basename'.tmh
+*/
+
+message AlignmentTooManyHits {
+     /*
+      The threshold used by the aligner to determine that a query is ambigous and should be dropped.
+      Referred to as parameter k below. 
+      */
+     required uint32 alignerThreshold=2;
+     /*
+       The hits that are assigned to several (>k) reference location.
+      */
+     repeated AmbiguousLocation hits=1;
+
+}
+
+message AmbiguousLocation {
+  /*
+    The index of the query that matched too many times.
+   */
+   required uint32 query_index=1;
+   /*
+     The number of hits that triggered membership in the too many hits list. The query may hit more
+     locations than reported here, since some alignment tools will just drop queries that match above
+     a threshold and stop counting. This number can be >=k.
+    */
+   required uint32 at_least_number_of_hits=2;
+   /** The length of the part of the query sequence that could be matched to the target (also called depth).
+   May be less than the length of the query sequence, in which case the match was not perfect. When merging
+   alignments produced by searching different reference sequences, consider only at_least_number_of_hits
+   from alignments that have exactly the longer depth for the query. */
+   optional uint32 length_of_match=3;
+}
