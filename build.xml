@@ -65,7 +65,7 @@
                 <include name="icb-utils.jar"/>
                 <include name="JSAP-2.1.jar"/>
                 <include name="log4j-1.2.15.jar"/>
-                <include name="xstream-1.3.1.jar"/>
+                <include name="xstream-1.3.1.jar"/>  <!-- Required by JSAP -->
             </zipgroupfileset>
 
             <manifest>
@@ -118,8 +118,11 @@
             <link href="http://java.sun.com/javase/6/docs/api/"/>
             <link href="http://fastutil.dsi.unimi.it/docs/"/>
             <link href="http://dsiutils.dsi.unimi.it/docs/"/>
-            <link href="http://jakarta.apache.org/commons/io/apidocs/"/>
-            <link href="http://jakarta.apache.org/commons/logging/apidocs/"/>
+            <link href="http://commons.apache.org/io/api-release/"/>
+            <link href="http://commons.apache.org/logging/apidocs/"/>
+            <link href="http://commons.apache.org/lang/api-release"/>
+            <link href="http://icbtools.med.cornell.edu/javadocs/icb-utils/"/>
+            <link href="http://martiansoftware.com/jsap/doc/javadoc/"/>
             <classpath>
                 <path refid="compile.classpath"/>
                 <pathelement location="${classes}"/>

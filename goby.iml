@@ -8,6 +8,10 @@
       <sourceFolder url="file://$MODULE_DIR$/config" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test-src" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/cobertura-classes" />
+      <excludeFolder url="file://$MODULE_DIR$/javadocs" />
+      <excludeFolder url="file://$MODULE_DIR$/logs" />
+      <excludeFolder url="file://$MODULE_DIR$/test-results" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
