@@ -1,0 +1,94 @@
+<!--
+  ~ Copyright (C) 2009 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~ WEILL MEDICAL COLLEGE OF CORNELL UNIVERSITY MAKES NO REPRESENTATIONS
+  ~ ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE. IT IS PROVIDED
+  ~ "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY. THE WEILL MEDICAL COLLEGE
+  ~ OF CORNELL UNIVERSITY SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+  ~ THE USERS OF THIS SOFTWARE.
+  -->
+
+<jsap>
+    <parameters>
+        <flaggedOption>
+            <id>input</id>
+            <shortFlag>i</shortFlag>
+            <longFlag>input</longFlag>
+            <required>true</required>
+            <help>The SAM binary file to convert to compact alignment format.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>true</required>
+            <help>The output path and basename to write the compact format to.</help>
+        </flaggedOption>
+
+        <flaggedOption>
+            <id>query-reads-ids</id>
+            <shortFlag>q</shortFlag>
+            <longFlag>query-ids</longFlag>
+            <required>false</required>
+            <help>A compact file describing reads which provides identifiers for each read.  If provided, read identifiers are propagated to the alignment header.  </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>target-reference-ids</id>
+            <shortFlag>t</shortFlag>
+            <longFlag>target-ids</longFlag>
+            <required>false</required>
+            <help>A compact file describing targets which provides identifiers for each target sequence.  If provided, target identifiers are propagated to the alignment header.  </help>
+        </flaggedOption>
+        <switch>
+            <id>propagate-query-ids</id>
+            <longFlag>propagate-query-ids</longFlag>
+            <help>When this switch is provided, propagate query ids if provided in the compact file designated by the query-ids option. The default is false since query ids are generally not useful and can consume a large amount of storage.  </help>
+        </switch>
+        <flaggedOption>
+            <id>propagate-target-ids</id>
+            <longFlag>propagate-target-ids</longFlag>
+            <defaults>
+                <string>true</string>
+            </defaults>
+             <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <help>When this switch is provided, propagate target ids if provided in the compact file designated by the target-ids option. The default is true since target ids are quite useful and not very many.  </help>
+        </flaggedOption>
+
+
+        <flaggedOption>
+            <id>read-index-filter</id>
+            <shortFlag>f</shortFlag>
+            <longFlag>read-index-filter</longFlag>
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The name of a read index set with multiplicy information. When provided, last-to-compact appends exactly m identical entries for a read with index </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>ambiguity-threshold</id>
+            <defaults>
+                <string>2</string>
+            </defaults>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <longFlag>ambiguity-threshold</longFlag>
+            <required>false</required>
+            <help>Maximum number of locations that a read can match to be included in the alignment entries.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>quality-filter-parameters</id>
+            <shortFlag>p</shortFlag>
+            <defaults>
+                <string>threshold=0.05</string>
+            </defaults>
+            <longFlag>quality-filter-parameters</longFlag>
+            <required>false</required>
+            <help>Parameters to configure the quality filter.</help>
+        </flaggedOption>
+    </parameters>
+</jsap>
