@@ -61,7 +61,7 @@
                 <include name="commons-io-1.4.jar"/>
                 <include name="commons-lang-2.4.jar"/>
                 <include name="commons-logging-1.1.1.jar"/>
-                <include name="dsiutils-1.1.0.jar"/>
+                <include name="dsiutils-1.0.10.jar"/>
                 <include name="fastutil-5.1.5.jar"/>
                 <include name="icb-utils.jar"/>
                 <include name="JSAP-2.1.jar"/>
