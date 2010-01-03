@@ -1,0 +1,170 @@
+<!--
+  ~ Copyright (C) 2009 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~ WEILL MEDICAL COLLEGE OF CORNELL UNIVERSITY MAKES NO REPRESENTATIONS
+  ~ ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE. IT IS PROVIDED
+  ~ "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY. THE WEILL MEDICAL COLLEGE
+  ~ OF CORNELL UNIVERSITY SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+  ~ THE USERS OF THIS SOFTWARE.
+  -->
+
+<jsap>
+    <parameters>
+        <flaggedOption>
+            <id>reads</id>
+            <shortFlag>r</shortFlag>
+            <longFlag>reads</longFlag>
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>Name of the compact reads input file. Required to --search.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>reference</id>
+            <shortFlag>d</shortFlag>
+            <longFlag>reference</longFlag>
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>Name of the compact reads reference file, or path to the formatted database previously produced with the --index option.  </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>read-index-filter</id>
+            <shortFlag>f</shortFlag>
+            <longFlag>read-index-filter</longFlag>
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The name of a read index filter. When provided, the aligner will only be provided with the reads that are included in the filter.  </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>reference-index-filter</id>
+            <shortFlag>g</shortFlag>
+            <longFlag>reference-index-filter</longFlag>
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The name of a reference index filter. When provided, the aligner will only search references whose indices are included in the filter.  </help>
+        </flaggedOption>
+        
+        <flaggedOption>
+            <id>work-directory</id>
+            <longFlag>work-directory</longFlag>
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>.</string>
+            </defaults>
+            <required>false</required>
+            <help>The work directory.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>database-directory</id>
+            <longFlag>database-directory</longFlag>
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>.</string>
+            </defaults>
+            <required>false</required>
+            <help>The database directory.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>database-name</id>
+            <longFlag>database-name</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The database name.</help>
+        </flaggedOption>
+
+
+        <switch>
+            <id>search</id>
+            <longFlag>search</longFlag>
+            <help>When this switch is provided, search the reads against the reference.  </help>
+        </switch>
+        <switch>
+            <id>index</id>
+            <longFlag>index</longFlag>
+            <help>When this switch is provided, index the reference. Name the indexed reference according to the output basename. Indexing is done as part of search when it is required by the aligner, but this option is provided to build an aligner index independently from a search.  </help>
+        </switch>
+        <switch>
+            <id>get-default-database-name</id>
+            <longFlag>get-default-database-name</longFlag>
+            <help>When this switch is provided, the default database name for the specified --reference file will be returned on stdout.  </help>
+        </switch>
+
+
+        <flaggedOption>
+            <id>aligner</id>
+            <shortFlag>a</shortFlag>
+            <longFlag>aligner</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>Name of the third-party aligner to align with.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>options</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>options</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>Aligner specific options.  Specifying "--options m=3,k=2" will pass the string "-m 3 -k 2" to the aligner.  Supports any options that are supported by the aligner.</help>
+        </flaggedOption>
+
+
+        <switch>
+            <id>color-space</id>
+            <longFlag>color-space</longFlag>
+            <help>When this switch is provided, convert the sequence to color mode. Only makes sense if the compact file encodes a sequence in fasta format. </help>
+        </switch>
+        <flaggedOption>
+            <id>quality-filter-parameters</id>
+            <shortFlag>p</shortFlag>
+            <longFlag>quality-filter-parameters</longFlag>
+            <defaults>
+                <string>threshold=0.05</string>
+            </defaults>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>Parameters to configure the quality filter. ["quality-filter-parameters" and "ambiguity-threshold" may eventually be condensed into "filterOptions"]</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>ambiguity-threshold</id>
+            <longFlag>ambiguity-threshold</longFlag>
+            <defaults>
+                <string>2</string>
+            </defaults>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>Maximum number of locations that a read can match to be included in the alignment entries. ["quality-filter-parameters" and "ambiguity-threshold" may eventually be condensed into "filterOptions"]</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>basename</id>
+            <shortFlag>b</shortFlag>
+            <longFlag>basename</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>Basename of the alignment to output.</help>
+        </flaggedOption>
+    </parameters>
+</jsap>

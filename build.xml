@@ -130,7 +130,7 @@
                 <pathelement location="${classes}"/>
             </classpath>
             <bottom>
-                <![CDATA[<i>Copyright &#169; ${year} Institute for Computational Biomedicine, All Rights Reserved.</i>]]>
+                <![CDATA[<i>Copyright &#169; 2009-${year} Institute for Computational Biomedicine, All Rights Reserved.</i>]]>
             </bottom>
         </javadoc>
     </target>
