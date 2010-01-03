@@ -11,7 +11,7 @@
 
 package edu.cornell.med.icb.nextgen.datamodel;
 
-import edu.cornell.med.icb.gridgain.GobyCacheManager;
+import edu.cornell.med.icb.goby.cache.GobyCacheManager;
 import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
 import it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;

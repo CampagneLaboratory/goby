@@ -12,7 +12,7 @@
 package edu.cornell.med.icb.nextgen.datamodel;
 
 import com.xerox.amazonws.sqs2.SQSException;
-import edu.cornell.med.icb.gridgain.GobyCacheManager;
+import edu.cornell.med.icb.goby.cache.GobyCacheManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jets3t.service.S3ServiceException;
