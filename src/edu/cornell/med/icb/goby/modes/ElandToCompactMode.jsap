@@ -1,0 +1,55 @@
+<!--
+  ~ Copyright (C) 2009 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~ WEILL MEDICAL COLLEGE OF CORNELL UNIVERSITY MAKES NO REPRESENTATIONS
+  ~ ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE. IT IS PROVIDED
+  ~ "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY. THE WEILL MEDICAL COLLEGE
+  ~ OF CORNELL UNIVERSITY SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+  ~ THE USERS OF THIS SOFTWARE.
+  -->
+
+<jsap>
+    <parameters>
+        <flaggedOption>
+            <id>input</id>
+            <shortFlag>i</shortFlag>
+            <longFlag>input</longFlag>
+            <required>true</required>
+            <help>The Eland file to convert to MAQ Map.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>query-reads-ids</id>
+            <shortFlag>q</shortFlag>
+            <longFlag>query-ids</longFlag>
+            <required>false</required>
+            <help>A compact file describing reads which provides identifiers for each read.  If provided, read identifiers are propagated to the alignment header.  </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>reference-reads-ids</id>
+            <shortFlag>r</shortFlag>
+            <longFlag>target-reads-ids</longFlag>
+            <required>false</required>
+            <help>A compact file describing reference sequences which provides identifiers for each reference.  If provided, reference identifiers are propagated to the alignment header.  </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>true</required>
+            <help>The output file to write the compact format to.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>maq-map-max-read-len</id>
+            <longFlag>maq-map-max-read-len</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>128</string>
+            </defaults>
+            <help>The max-read-length when reading MAQ files.</help>
+        </flaggedOption>
+    </parameters>
+</jsap>

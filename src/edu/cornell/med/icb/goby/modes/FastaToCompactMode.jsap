@@ -1,0 +1,61 @@
+<!--
+  ~ Copyright (C) 2009 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~ WEILL MEDICAL COLLEGE OF CORNELL UNIVERSITY MAKES NO REPRESENTATIONS
+  ~ ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE. IT IS PROVIDED
+  ~ "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY. THE WEILL MEDICAL COLLEGE
+  ~ OF CORNELL UNIVERSITY SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+  ~ THE USERS OF THIS SOFTWARE.
+  -->
+
+<jsap>
+    <parameters>
+        <switch>
+            <id>include-descriptions</id>
+            <longFlag>include-descriptions</longFlag>
+            <shortFlag>d</shortFlag>
+            <defaults>false</defaults>
+            <help>When this switch is provided, include description lines into the compact output. By default, ignore description lines.  </help>
+        </switch>
+        <switch>
+            <id>include-identifiers</id>
+            <longFlag>include-identifiers</longFlag>
+            <shortFlag>x</shortFlag>
+            <defaults>false</defaults>
+            <help>When this switch is provided, include identifiers into the compact output. By default, ignore identifiers. Identifiers are parsed out of description lines as the token before the first space or tab character.  </help>
+        </switch>
+         <switch>
+            <id>exclude-sequences</id>
+            <longFlag>exclude-sequences</longFlag>
+            <defaults>false</defaults>
+            <help>When this switch is provided, exclude sequences. This results in not writting sequences to the compact file. This can be useful to keep only an association between sequence index and identifier.  </help>
+        </switch>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>false</required>
+            <help>If there is only one read file, this will force the output file to this specific filename. If there is more than one input file, the output filename will always be the input filename without the .fasta, .gz, etc.  extensions with an extension of .compact-reads. You should generally use an extension of .compact-reads when writing a compact reads file.  </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>sequence-per-chunk</id>
+            <shortFlag>n</shortFlag>
+            <longFlag>sequence-per-chunk</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>10000</string>
+            </defaults>
+            <help>The number of sequences that will be written in each compressed chunk. Default is suitable for very many short sequences. Reduce to a few sequences per chunk if each sequence is very large.  </help>
+        </flaggedOption>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The input fasta files to convert to compact reads.  The output files will have the same filename but end in .compact-reads.  If the input file ends in .gz it will be decompressed on the fly.  </help>
+        </unflaggedOption>
+    </parameters>
+</jsap>
