@@ -65,7 +65,8 @@
                 <include name="icb-utils.jar"/>
                 <include name="JSAP-2.1.jar"/>
                 <include name="log4j-1.2.15.jar"/>
-                <include name="xstream-1.3.1.jar"/>  <!-- Required by JSAP -->
+                <include name="xstream-1.3.1.jar"/>           <!-- Required by JSAP -->
+                <include name="typica.jar"/>                  <!-- Amazon SQS -->
             </zipgroupfileset>
 
             <manifest>
