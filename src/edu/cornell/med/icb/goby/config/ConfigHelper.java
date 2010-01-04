@@ -11,7 +11,7 @@
 
 package edu.cornell.med.icb.goby.config;
 
-import edu.cornell.med.icb.util.GroovyProperties;
+import edu.cornell.med.icb.goby.util.GroovyProperties;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

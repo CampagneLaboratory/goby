@@ -16,11 +16,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.cornell.med.icb.util;
+package edu.cornell.med.icb.goby.util;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.commons.lang.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

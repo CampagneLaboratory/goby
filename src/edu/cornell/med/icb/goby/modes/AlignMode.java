@@ -17,8 +17,8 @@ import edu.cornell.med.icb.goby.aligners.Aligner;
 import edu.cornell.med.icb.goby.aligners.BWAAligner;
 import edu.cornell.med.icb.goby.aligners.LastagAligner;
 import edu.cornell.med.icb.goby.config.ConfigHelper;
-import edu.cornell.med.icb.util.GobyPropertyKeys;
-import edu.cornell.med.icb.util.GroovyProperties;
+import edu.cornell.med.icb.goby.util.GobyPropertyKeys;
+import edu.cornell.med.icb.goby.util.GroovyProperties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

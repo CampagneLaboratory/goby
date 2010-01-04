@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.util;
+package edu.cornell.med.icb.goby.util;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;

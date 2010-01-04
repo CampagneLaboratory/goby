@@ -1,6 +1,6 @@
 package edu.cornell.med.icb.goby.aligners;
 
-import edu.cornell.med.icb.util.GroovyProperties;
+import edu.cornell.med.icb.goby.util.GroovyProperties;
 
 import java.io.File;
 import java.io.IOException;

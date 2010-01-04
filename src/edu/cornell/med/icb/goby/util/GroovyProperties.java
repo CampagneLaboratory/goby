@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.util;
+package edu.cornell.med.icb.goby.util;
 
 import edu.cornell.med.icb.io.ResourceFinder;
 import groovy.lang.Closure;

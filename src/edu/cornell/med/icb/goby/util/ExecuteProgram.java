@@ -9,8 +9,9 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.util;
+package edu.cornell.med.icb.goby.util;
 
+import edu.cornell.med.icb.util.ICBStringUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Level;

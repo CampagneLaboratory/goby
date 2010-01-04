@@ -1,4 +1,4 @@
-package edu.cornell.med.icb.util;
+package edu.cornell.med.icb.goby.util;
 
 /**
  * Defines property keys for local configuration entries used by Goby. See ConfigHelper to retrieve

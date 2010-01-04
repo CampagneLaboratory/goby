@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.cornell.med.icb.util;
+package edu.cornell.med.icb.goby.util;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -76,7 +76,7 @@ public class LoggingEqualsBuilder {
         }
         return this;
     }
-    
+
     public LoggingEqualsBuilder append(final String fieldName, final Object a, final Object b) {
         if (!base.isEquals()) {
             return this;
@@ -96,7 +96,7 @@ public class LoggingEqualsBuilder {
         }
         return this;
     }
-    
+
     public LoggingEqualsBuilder append(final String fieldName, final long a, final long b) {
         if (!base.isEquals()) {
             return this;
@@ -108,7 +108,7 @@ public class LoggingEqualsBuilder {
         }
         return this;
     }
-    
+
     public LoggingEqualsBuilder append(final String fieldName, final int a, final int b) {
         if (!base.isEquals()) {
             return this;
@@ -120,7 +120,7 @@ public class LoggingEqualsBuilder {
         }
         return this;
     }
-    
+
     public LoggingEqualsBuilder append(final String fieldName, final short a, final short b) {
         if (!base.isEquals()) {
             return this;
@@ -132,7 +132,7 @@ public class LoggingEqualsBuilder {
         }
         return this;
     }
-    
+
     public LoggingEqualsBuilder append(final String fieldName, final char a, final char b) {
         if (!base.isEquals()) {
             return this;
@@ -144,7 +144,7 @@ public class LoggingEqualsBuilder {
         }
         return this;
     }
-    
+
     public LoggingEqualsBuilder append(final String fieldName, final byte a, final byte b) {
         if (!base.isEquals()) {
             return this;
@@ -156,7 +156,7 @@ public class LoggingEqualsBuilder {
         }
         return this;
     }
-    
+
     public LoggingEqualsBuilder append(final String fieldName, final double a, final double b) {
         if (!base.isEquals()) {
             return this;
@@ -168,7 +168,7 @@ public class LoggingEqualsBuilder {
         }
         return this;
     }
-    
+
     public LoggingEqualsBuilder append(final String fieldName, final float a, final float b) {
         if (!base.isEquals()) {
             return this;
@@ -180,7 +180,7 @@ public class LoggingEqualsBuilder {
         }
         return this;
     }
-    
+
     public LoggingEqualsBuilder append(final String fieldName, final boolean a, final boolean b) {
         if (!base.isEquals()) {
             return this;
@@ -192,7 +192,7 @@ public class LoggingEqualsBuilder {
         }
         return this;
     }
-    
+
     public LoggingEqualsBuilder append(final String fieldName, final Object[] a, final Object[] b) {
         if (!base.isEquals()) {
             return this;
@@ -205,7 +205,7 @@ public class LoggingEqualsBuilder {
         }
         return this;
     }
-    
+
     public LoggingEqualsBuilder append(final String fieldName, final long[] a, final long[] b) {
         if (!base.isEquals()) {
             return this;
@@ -218,7 +218,7 @@ public class LoggingEqualsBuilder {
         }
         return this;
     }
-    
+
     public LoggingEqualsBuilder append(final String fieldName, final int[] a, final int[] b) {
         if (!base.isEquals()) {
             return this;
@@ -231,7 +231,7 @@ public class LoggingEqualsBuilder {
         }
         return this;
     }
-    
+
     public LoggingEqualsBuilder append(final String fieldName, final short[] a, final short[] b) {
         if (!base.isEquals()) {
             return this;
@@ -244,7 +244,7 @@ public class LoggingEqualsBuilder {
         }
         return this;
     }
-    
+
     public LoggingEqualsBuilder append(final String fieldName, final char[] a, final char[] b) {
         if (!base.isEquals()) {
             return this;
@@ -257,7 +257,7 @@ public class LoggingEqualsBuilder {
         }
         return this;
     }
-    
+
     public LoggingEqualsBuilder append(final String fieldName, final byte[] a, final byte[] b) {
         if (!base.isEquals()) {
             return this;
@@ -270,7 +270,7 @@ public class LoggingEqualsBuilder {
         }
         return this;
     }
-    
+
     public LoggingEqualsBuilder append(final String fieldName, final double[] a, final double[] b) {
         if (!base.isEquals()) {
             return this;
@@ -283,7 +283,7 @@ public class LoggingEqualsBuilder {
         }
         return this;
     }
-    
+
     public LoggingEqualsBuilder append(final String fieldName, final float[] a, final float[] b) {
         if (!base.isEquals()) {
             return this;
@@ -296,7 +296,7 @@ public class LoggingEqualsBuilder {
         }
         return this;
     }
-    
+
     public LoggingEqualsBuilder append(final String fieldName, final boolean[] a, final boolean[] b) {
         if (!base.isEquals()) {
             return this;
@@ -309,7 +309,7 @@ public class LoggingEqualsBuilder {
         }
         return this;
     }
-    
+
     public boolean isEquals() {
         return base.isEquals();
     }
