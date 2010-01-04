@@ -1,0 +1,155 @@
+/*
+ * Copyright (C) 2009 Institute for Computational Biomedicine,
+ *                    Weill Medical College of Cornell University
+ *
+ * WEILL MEDICAL COLLEGE OF CORNELL UNIVERSITY MAKES NO REPRESENTATIONS
+ * ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE. IT IS PROVIDED
+ * "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY. THE WEILL MEDICAL COLLEGE
+ * OF CORNELL UNIVERSITY SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+ * THE USERS OF THIS SOFTWARE.
+ */
+
+package edu.cornell.med.icb.algorithmic.algorithm;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.IOException;
+
+/**
+ * Created by IntelliJ IDEA.
+ * User: xutao
+ * Date: May 17, 2009
+ * Time: 1:02:50 AM
+ * To change this template use File | Settings | File Templates.
+ */
+public class TestAnnotationCount {
+    private AnnotationCount annotationCount;
+    private static final Log LOG = LogFactory.getLog(TestAnnotationCount.class);
+
+    @Before
+    public void setUp() throws IOException {
+        annotationCount = new AnnotationCount();
+    }
+
+    @Test
+    public void testAnnotCountDepth() {
+        annotationCount.baseCounter.startPopulating();
+        annotationCount.populate(3, 8);
+        annotationCount.populate(9, 10);
+        annotationCount.populate(5, 12);
+        annotationCount.populate(3, 7);
+        annotationCount.populate(8, 12);
+
+        final int[] trueCount = {0, 0, 0, 2, 2, 3, 3, 3, 3, 3, 3, 2, 2, 0, 0, 0};
+        annotationCount.baseCounter.accumulate();
+        annotationCount.baseCounter.baseCount(); // final algorithm for base count without writer
+        System.out.println("count perbase" + annotationCount.baseCounter.countPerBase);
+        System.out.println("count keys " + annotationCount.baseCounter.countKeys);
+        for (int i = 0; i <= 15; i++) {
+            for (int j = 0; j <= 15; j++) {
+                float sum = 0;
+                for (int p = i; p <= j; p++) {
+                    sum += trueCount[p];
+                }
+                final float expDepth = sum == 0 ? 0 : sum / (j - i + 1);
+                assertEquals(expDepth, annotationCount.averageReadsPerPosition(i, j), 0.01);
+            }
+        }
+    }
+
+    @Test
+    public void testAnnotCountOverlapCount() {
+        annotationCount.baseCounter.startPopulating();
+        annotationCount.populate(3, 8);
+        annotationCount.populate(9, 10);
+        annotationCount.populate(5, 12);
+        annotationCount.populate(3, 7);
+        annotationCount.populate(8, 12);
+        annotationCount.populate(15, 18);
+        annotationCount.sortReads();
+        annotationCount.baseCounter.accumulate();
+        annotationCount.baseCounter.baseCount(); // final algorithm for base count without writer
+        for(int i=-1; i<=30; i++) {
+            System.out.println(i + " " + annotationCount.readsOverlapSegmentCount(i, i));
+        }
+        System.out.println("overlapping count 3, 4 " + annotationCount.readsOverlapSegmentCount(3, 4));
+        System.out.println("overlapping count 2, 3 " + annotationCount.readsOverlapSegmentCount(2, 3));
+        System.out.println("overlapping count 3, 8 " + annotationCount.readsOverlapSegmentCount(3, 8));
+        System.out.println("overlapping count 11, 12 " + annotationCount.readsOverlapSegmentCount(11, 12));
+        System.out.println("overlapping count 9, 10 " + annotationCount.readsOverlapSegmentCount(9, 10));
+        System.out.println("overlapping count 8, 9 " + annotationCount.readsOverlapSegmentCount(8, 9));
+        System.out.println("overlapping count 8, 8 " + annotationCount.readsOverlapSegmentCount(8, 8));
+        System.out.println("overlapping count 5, 6 " + annotationCount.readsOverlapSegmentCount(5, 6));
+        System.out.println("overlapping count 3, 3 " + annotationCount.readsOverlapSegmentCount(3, 3));
+        System.out.println("overlapping count 3, 12 " + annotationCount.readsOverlapSegmentCount(3, 12));
+        System.out.println("overlapping count -1, 2 " + annotationCount.readsOverlapSegmentCount(-1, 2));
+        System.out.println("overlapping count 0, 45 " + annotationCount.readsOverlapSegmentCount(0, 45));
+        System.out.println("overlapping count 13, 15 " + annotationCount.readsOverlapSegmentCount(13, 15));
+
+    }
+
+    @Test
+    public void testAnnotCountInsideCount() {
+        annotationCount.baseCounter.startPopulating();
+        annotationCount.populate(3, 8 );
+        annotationCount.populate(9, 10 );
+        annotationCount.populate(5, 12 );
+        annotationCount.populate(3, 7 );
+        annotationCount.populate(8, 12 );
+        annotationCount.populate(15, 18 );
+        annotationCount.sortReads();
+        annotationCount.baseCounter.accumulate();
+        annotationCount.baseCounter.baseCount(); // final algorithm for base count without writer
+        for(int i=-1; i<=30; i++) {
+            System.out.println(i + " " + annotationCount.readsInSegmentCount(i, i));
+        }
+        System.out.println("overlapping count 3, 4 " + annotationCount.readsInSegmentCount(3, 4));
+        System.out.println("overlapping count 15, 17 " + annotationCount.readsInSegmentCount(15, 17));
+        System.out.println("overlapping count 9, 18 " + annotationCount.readsInSegmentCount(9, 18));
+        System.out.println("overlapping count 3, 8 " + annotationCount.readsInSegmentCount(3, 8));
+        System.out.println("overlapping count 11, 12 " + annotationCount.readsInSegmentCount(11, 12));
+        System.out.println("overlapping count 9, 10 " + annotationCount.readsInSegmentCount(9, 10));
+        System.out.println("overlapping count 8, 9 " + annotationCount.readsInSegmentCount(8, 9));
+        System.out.println("overlapping count 8, 8 " + annotationCount.readsInSegmentCount(8, 8));
+        System.out.println("overlapping count 5, 6 " + annotationCount.readsInSegmentCount(5, 6));
+        System.out.println("overlapping count 3, 3 " + annotationCount.readsInSegmentCount(3, 3));
+        System.out.println("overlapping count 3, 12 " + annotationCount.readsInSegmentCount(3, 12));
+        System.out.println("overlapping count -1, 2 " + annotationCount.readsInSegmentCount(-1, 2));
+        System.out.println("overlapping count 0, 45 " + annotationCount.readsInSegmentCount(0, 45));
+        System.out.println("overlapping count 13, 15 " + annotationCount.readsInSegmentCount(13, 15));
+    }
+
+    @Test
+    public void testGeneExpression() {
+        annotationCount.baseCounter.startPopulating();
+        annotationCount.populate(3, 8 );
+        annotationCount.populate(9, 10 );
+        annotationCount.populate(5, 12 );
+        annotationCount.populate(3, 7 );
+        annotationCount.populate(8, 12 );
+        annotationCount.populate(15, 18 );
+        annotationCount.sortReads();
+        annotationCount.baseCounter.accumulate();
+        annotationCount.baseCounter.baseCount(); // final algorithm for base count without writer
+    }
+
+    @Test
+    public void testReadingAnnotation() throws IOException {
+//        CompactAlignmentToAnnotationCountsMode b =new CompactAlignmentToAnnotationCountsMode();
+//        Object2ObjectMap<String, ObjectList<Annotation>> x= b.readAnnotations("C:\\cygwin\\My Dropbox\\icb-hadoop\\data\\human_exon_annotation_biomart_NCBI36.txt");
+//        int sum=0;
+//        for(String chro: x.keySet()){
+//            ObjectList <Annotation> annots= x.get(chro);
+//            System.out.println(chro+"   "+annots.size());
+//            for(Annotation annot: annots){
+//                System.out.println("id  "+annot.id);
+//                sum+=annot.segments.size();
+//            }
+//        }
+//            System.out.println("sum "+sum);
+    }
+}
