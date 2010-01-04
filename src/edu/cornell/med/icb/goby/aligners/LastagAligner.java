@@ -9,15 +9,15 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.aligners;
+package edu.cornell.med.icb.goby.aligners;
 
+import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
 import edu.cornell.med.icb.goby.modes.CompactToFastaMode;
 import edu.cornell.med.icb.goby.modes.LastToCompactMode;
-import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
 import edu.cornell.med.icb.reads.ColorSpaceConverter;
 import edu.cornell.med.icb.util.ExecuteProgram;
-import edu.cornell.med.icb.util.GroovyProperties;
 import edu.cornell.med.icb.util.GobyPropertyKeys;
+import edu.cornell.med.icb.util.GroovyProperties;
 import edu.mssm.crover.cli.CLI;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -26,7 +26,6 @@ import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
-
 
 import java.io.File;
 import java.io.FileWriter;
@@ -57,7 +56,7 @@ import java.io.IOException;
  * <pre>
  * 1) Find initial matches:
  *      keep those with multiplicity <= [M] and depth >= [L].
- * 2) Extend gapless alignments from the initial matches: 
+ * 2) Extend gapless alignments from the initial matches:
  *      keep those with score >= [D]. (lastal recommends D = 3/5 * E)
  * 3) Extend gapped alignments from the gapless alignments:
  *      keep those with score >= [E].
@@ -86,7 +85,7 @@ import java.io.IOException;
  * <h3> Merging identical tag sequences (recommended in tag-seeds.txt) </h3>
  *
  * If there are many identical sequences, we can speed up the mapping by
- * merging them. 
+ * merging them.
  * [see ???]
  *
  * <h3> Discarding sub-optimal mappings (recommended in tag-seeds.txt) </h3>
@@ -98,7 +97,7 @@ import java.io.IOException;
  * <h3> Discarding ambiguous tags (recommended in tag-seeds.txt) </h3>
  *
  * There may be some tags that map to more than one location (with equal
- * scores).  We may wish to discard such multi-mapping tags.  
+ * scores).  We may wish to discard such multi-mapping tags.
  * [see LastToCompactMode]
  *
  * <h3> Score function </h3>
@@ -132,7 +131,7 @@ import java.io.IOException;
  * </pre>
  *
  * <h3> lastdb: usage: lastdb [options] output-name fasta-sequence-file(s) </h3>
- * 
+ *
  * <pre>
  * Main Options (default settings):
  * -p: interpret the sequences as proteins
@@ -183,18 +182,18 @@ import java.io.IOException;
  * -z: write counts using a more compact single line format
  * </pre>
  *
- * <h3> Miscellaneous </h3>  
+ * <h3> Miscellaneous </h3>
  *
  * Depth = the number of matched, non-skipped nucleotides
  * <p/>
  * The Last Manual describes options for using quality scores (manual.txt and
  * tag-seeds.txt), although these options restrict the flexibility one has to
  * select match & mismatch scores
- * 
+ *
  * @author Fabien Campagne
  *         Date: Jul 9, 2009
  *         Time: 11:39:29 AM
- */    
+ */
 public class LastagAligner extends AbstractAligner {
     private static final Log LOG = LogFactory.getLog(LastagAligner.class);
 
@@ -210,7 +209,7 @@ public class LastagAligner extends AbstractAligner {
     private static final String LASTAG_EXEC = SystemUtils.IS_OS_WINDOWS ? "lastag.exe" : "lastag";
 
     // parameters that control Lastdb and/or Lastag indirectly
-    private static final String LASTDB_DEFAULT_MEMORY     = "2G"; // -s: 
+    private static final String LASTDB_DEFAULT_MEMORY     = "2G"; // -s:
     private static final int DEFAULT_MAX_GAPS_ALLOWED     = 0;
     private static final int MIN_READ_LENGTH_APPROX       = 20;
     private static final String DEFAULT_MATCH_QUALITY     = "IDENTITY_95";
@@ -229,7 +228,7 @@ public class LastagAligner extends AbstractAligner {
     private static final int DEFAULT_MATCH_TO_MISMATCH_RATIO_NT = 1;
     private static final int DEFAULT_MATCH_TO_MISMATCH_RATIO_CS = 2;
 
-    // parameters to resolve Lastag command-line options    
+    // parameters to resolve Lastag command-line options
     private int maxGapsAllowed = DEFAULT_MAX_GAPS_ALLOWED;
     private int gapOpeningCost = DEFAULT_GAP_OPENING_COST;
     private int gapExtentionCost = DEFAULT_GAP_EXTENSION_COST;
@@ -281,8 +280,8 @@ public class LastagAligner extends AbstractAligner {
         processor.setIndexToHeader(true);
         processor.setHashOutputFilename(true);
         // Since colorSpace is determined by reads platform, colorspace conversion is never needed for reads
-        processor.setOutputFakeNtMode(false); // lastag uses real colorSpace 
-        processor.setOutputFakeQualityMode(false); // lastag currently does not use (fake) qualities 
+        processor.setOutputFakeNtMode(false); // lastag uses real colorSpace
+        processor.setOutputFakeQualityMode(false); // lastag currently does not use (fake) qualities
         // Filter using the default alphabet for specified output mode
         processor.setAlphabet((colorSpace) ? "0123ACTG" : "ACTG"); // lastag expects colorspace with nt-adaptors, or just nt
         processor.setTrimAdaptorLength((colorSpace) ? 2 : 0); // prevent aligner from finding false matches with adaptor at the start of the sequence
@@ -305,7 +304,7 @@ public class LastagAligner extends AbstractAligner {
     }
 
     /**
-     * Parse and validate aligner specific options. 
+     * Parse and validate aligner specific options.
      * Input options are comma separated, with the syntax key1=value1,key2=value2.
      * "alignerOptions" format should match aligner's command-line specification e.g. "-key1 value1 -key2 value2"
      * This method is declared abstract so that aligners have control over the parsing of their arguments.
@@ -357,10 +356,10 @@ public class LastagAligner extends AbstractAligner {
         alignerOptions += (CLI.isKeywordGiven(opts, "m")) ? " -m " + CLI.getIntOption  (opts, "m", -999) : ""; // getSeedMaxMultiplicity()
         alignerOptions += (CLI.isKeywordGiven(opts, "k")) ? " -k " + CLI.getIntOption  (opts, "k", -999) : "";
         alignerOptions += (CLI.isKeywordGiven(opts, "w")) ? " -w " + CLI.getIntOption  (opts, "w", -999) : "";
-        // BOOLEAN -v 
+        // BOOLEAN -v
         alignerOptions += (CLI.isKeywordGiven(opts, "v")) ? " -v "                                       : "";
         // EXCLUDED -f -u -s -p -i -j -z -d -e
-        // see : DEFAULT_STRAND_DIRECTION, DEFAULT_OUTPUT_TYPE, 
+        // see : DEFAULT_STRAND_DIRECTION, DEFAULT_OUTPUT_TYPE,
         // DEFAULT_QUERY_BATCH_SIZE, DEFAULT_OUTPUT_FORMAT, ...
         assert (!CLI.isKeywordGiven(opts, "f")) : "Currently not supporting  -f  option via alignerOptions";
         assert (!CLI.isKeywordGiven(opts, "u")) : "Currently not supporting  -u  option via alignerOptions";
@@ -371,7 +370,7 @@ public class LastagAligner extends AbstractAligner {
         assert (!CLI.isKeywordGiven(opts, "z")) : "Currently not supporting  -z  option via alignerOptions";
         assert (!CLI.isKeywordGiven(opts, "d")) : "Currently not supporting  -d  option via alignerOptions";
         assert (!CLI.isKeywordGiven(opts, "e")) : "Currently not supporting  -e  option via alignerOptions";
-        // 
+        //
         assert (!alignerOptions.contains("-999")) : "Parsing error.";
         validateScoreOptions();
     }
@@ -424,7 +423,7 @@ public class LastagAligner extends AbstractAligner {
             matchScore = ratio * misMatchCost;
         }
         if (mParameter<1) {
-            mParameter = 1; // must be at least 1 
+            mParameter = 1; // must be at least 1
         }
     }
 
@@ -436,7 +435,7 @@ public class LastagAligner extends AbstractAligner {
     /**
      * Currently disabled so that user can specify
      *  -r <match-score> -q <mismatch-score> on the command line
-     * parsed through setAlignerOptions. See also scoreOptions() 
+     * parsed through setAlignerOptions. See also scoreOptions()
       */
     private String substitutionMatrixOption() {
         // prepare colorSpaceMatrix file, if needed
@@ -486,7 +485,7 @@ public class LastagAligner extends AbstractAligner {
     }
 
     /**
-     * Return minimum score for gapped alignments, derived from number of 
+     * Return minimum score for gapped alignments, derived from number of
      * specified matches & mismatches, and the minimum read length. This
      * parameter is used to filter seeds.  Once the number of matches /
      * mismatches is determined
@@ -614,7 +613,7 @@ public class LastagAligner extends AbstractAligner {
 
     /**
      * Align.
-     * 
+     *
      * @param referenceFile  Compact or native database basename for reference sequences.
      * @param readsFile      Compact or native format (i.e., fasta, fastq) aligner read format.
      * @param outputBasename Basename where to write the compact alignment.

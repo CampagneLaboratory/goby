@@ -13,10 +13,10 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.aligners.Aligner;
-import edu.cornell.med.icb.aligners.BWAAligner;
-import edu.cornell.med.icb.aligners.LastagAligner;
 import edu.cornell.med.icb.config.ConfigHelper;
+import edu.cornell.med.icb.goby.aligners.Aligner;
+import edu.cornell.med.icb.goby.aligners.BWAAligner;
+import edu.cornell.med.icb.goby.aligners.LastagAligner;
 import edu.cornell.med.icb.util.GobyPropertyKeys;
 import edu.cornell.med.icb.util.GroovyProperties;
 import org.apache.commons.logging.Log;

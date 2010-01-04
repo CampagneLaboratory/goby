@@ -9,10 +9,10 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.aligners;
+package edu.cornell.med.icb.goby.aligners;
 
-import edu.cornell.med.icb.goby.modes.CompactToFastaMode;
 import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
+import edu.cornell.med.icb.goby.modes.CompactToFastaMode;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import org.apache.commons.io.FileUtils;
@@ -313,11 +313,11 @@ public abstract class AbstractAligner implements Aligner {
         processor.setTargetReferenceIdsFilename(referenceFile.getPath());
         processor.setQueryReadIdsFilename(readsFile.getPath());
         processor.setQualityFilterParameters(qualityFilterParameters);
-        processor.setAmbiguityThreshold(mParameter);       
+        processor.setAmbiguityThreshold(mParameter);
         processor.execute();
 
-        
-        return buildResults(outputBasename);        
+
+        return buildResults(outputBasename);
     }
 
 }

@@ -1,4 +1,4 @@
-package edu.cornell.med.icb.aligners;
+package edu.cornell.med.icb.goby.aligners;
 
 import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
 import edu.cornell.med.icb.goby.modes.CompactToFastaMode;

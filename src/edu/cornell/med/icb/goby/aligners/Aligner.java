@@ -1,4 +1,4 @@
-package edu.cornell.med.icb.aligners;
+package edu.cornell.med.icb.goby.aligners;
 
 import edu.cornell.med.icb.util.GroovyProperties;
 
@@ -80,7 +80,7 @@ public interface Aligner {
      */
     void setWorkDirectory(String path);
 
-    
+
     /**
      * Set parameters to filter reads for quality when importing from native format into compact format. See LastToCompactMode for
      * details.
@@ -93,12 +93,12 @@ public interface Aligner {
      * Set parameters to filter reads for quality when importing from native format into compact format. See LastToCompactMode for
      * details.
      *
-     * @param mParameter i.e. mParameter=2 to keep reads with at most 2 optimal-scoring matches across target 
+     * @param mParameter i.e. mParameter=2 to keep reads with at most 2 optimal-scoring matches across target
      */
     void setAmbiguityThreshold(int mParameter);
 
-    
-    
+
+
     /**
      * Instruct the aligner to filter reads with the read set encoded in this file.
      *

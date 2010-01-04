@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.aligners;
+package edu.cornell.med.icb.goby.aligners;
 
 import edu.cornell.med.icb.config.ConfigHelper;
 import edu.cornell.med.icb.goby.fastxReaders.FastXEntry;
