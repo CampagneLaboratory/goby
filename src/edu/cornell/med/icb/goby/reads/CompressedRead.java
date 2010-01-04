@@ -1,4 +1,4 @@
-package edu.cornell.med.icb.reads;
+package edu.cornell.med.icb.goby.reads;
 
 import java.util.Arrays;
 import java.util.zip.CRC32;

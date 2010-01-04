@@ -11,8 +11,8 @@
 
 package edu.cornell.med.icb.alignments;
 
+import edu.cornell.med.icb.goby.reads.MessageChunksWriter;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import edu.cornell.med.icb.reads.MessageChunksWriter;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
@@ -65,7 +65,7 @@ public class AlignmentWriter implements Closeable {
         queryIdentifiers = new IndexedIdentifier();
         targetIdentifiers = new IndexedIdentifier();
         stats = new Properties();
-        // we assume stats were written until a client puts stats in this writer. 
+        // we assume stats were written until a client puts stats in this writer.
         statsWritten = true;
 
     }

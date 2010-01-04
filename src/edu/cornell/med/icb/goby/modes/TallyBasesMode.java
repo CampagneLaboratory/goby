@@ -19,7 +19,7 @@ import edu.cornell.med.icb.goby.counts.AnyTransitionCountsIterator;
 import edu.cornell.med.icb.goby.counts.CountsArchiveReader;
 import edu.cornell.med.icb.goby.counts.CountsReader;
 import edu.cornell.med.icb.goby.counts.OffsetCountsReader;
-import edu.cornell.med.icb.reads.RandomAccessSequenceCache;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 import edu.cornell.med.icb.util.RandomAdapter;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;

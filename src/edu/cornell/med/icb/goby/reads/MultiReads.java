@@ -1,4 +1,4 @@
-package edu.cornell.med.icb.reads;
+package edu.cornell.med.icb.goby.reads;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -25,6 +25,6 @@ public class MultiReads {
     public void addByte(byte base) {
         currentByteIndex += 1;
         bytes.add(base);
-        
+
     }
 }

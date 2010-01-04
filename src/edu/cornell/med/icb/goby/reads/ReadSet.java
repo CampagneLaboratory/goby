@@ -1,4 +1,4 @@
-package edu.cornell.med.icb.reads;
+package edu.cornell.med.icb.goby.reads;
 
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;

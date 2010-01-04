@@ -1,4 +1,4 @@
-package edu.cornell.med.icb.reads;
+package edu.cornell.med.icb.goby.reads;
 
 /**
  * @author Fabien Campagne
@@ -6,7 +6,7 @@ package edu.cornell.med.icb.reads;
  *         Time: 10:28:37 AM
  */
 public final class SequenceEncoder {
-   public final void convertToByteBuffer(final byte[] sequence, final int referencePosition, final int readLength, final byte[] byteBuffer) {
+   public void convertToByteBuffer(final byte[] sequence, final int referencePosition, final int readLength, final byte[] byteBuffer) {
         for (int i = 0; i < readLength; ++i) {
             byteBuffer[i] = (byte) sequence[i + referencePosition];
         }

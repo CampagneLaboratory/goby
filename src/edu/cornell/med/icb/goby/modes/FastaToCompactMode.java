@@ -15,7 +15,7 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.fastxReaders.FastXEntry;
 import edu.cornell.med.icb.goby.fastxReaders.FastXReader;
-import edu.cornell.med.icb.reads.ReadsWriter;
+import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -42,7 +42,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
      * The mode name.
      */
     public static final String MODE_NAME = "fasta-to-compact";
-    public static final String MODE_DESCRIPTION = "Converts a FASTA file to the protocol buffer file format described by Reads.proto."; 
+    public static final String MODE_DESCRIPTION = "Converts a FASTA file to the protocol buffer file format described by Reads.proto.";
 
     private int sequencePerChunk = 10000;
     private boolean excludeSequences;

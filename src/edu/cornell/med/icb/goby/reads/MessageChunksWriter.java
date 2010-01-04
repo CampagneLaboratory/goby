@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.reads;
+package edu.cornell.med.icb.goby.reads;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

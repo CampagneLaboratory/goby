@@ -14,7 +14,7 @@ package edu.cornell.med.icb.goby.aligners;
 import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
 import edu.cornell.med.icb.goby.modes.CompactToFastaMode;
 import edu.cornell.med.icb.goby.modes.LastToCompactMode;
-import edu.cornell.med.icb.reads.ColorSpaceConverter;
+import edu.cornell.med.icb.goby.reads.ColorSpaceConverter;
 import edu.cornell.med.icb.util.ExecuteProgram;
 import edu.cornell.med.icb.util.GobyPropertyKeys;
 import edu.cornell.med.icb.util.GroovyProperties;

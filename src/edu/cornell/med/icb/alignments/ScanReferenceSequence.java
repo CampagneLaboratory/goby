@@ -1,10 +1,13 @@
 package edu.cornell.med.icb.alignments;
 
-import it.unimi.dsi.logging.ProgressLogger;
-import it.unimi.dsi.fastutil.objects.ObjectList;
+import edu.cornell.med.icb.goby.reads.ReadSet;
+import edu.cornell.med.icb.goby.reads.ReadsLoader;
+import edu.cornell.med.icb.goby.reads.SequenceDigests;
+import edu.cornell.med.icb.goby.reads.SequenceEncoder;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import edu.cornell.med.icb.reads.*;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.logging.ProgressLogger;
 
 import java.io.IOException;
 

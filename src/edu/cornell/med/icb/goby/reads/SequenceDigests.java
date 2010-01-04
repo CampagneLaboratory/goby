@@ -1,4 +1,4 @@
-package edu.cornell.med.icb.reads;
+package edu.cornell.med.icb.goby.reads;
 
 import com.google.protobuf.ByteString;
 import it.unimi.dsi.fastutil.booleans.BooleanList;

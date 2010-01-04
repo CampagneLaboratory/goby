@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.reads;
+package edu.cornell.med.icb.goby.reads;
 
 import com.google.protobuf.GeneratedMessage;
 import org.apache.commons.io.IOUtils;
@@ -24,7 +24,7 @@ import java.io.InputStream;
 import java.util.zip.GZIPInputStream;
 
 /**
- * Reads from a stream produced with {@link edu.cornell.med.icb.reads.MessageChunksWriter}.
+ * Reads from a stream produced with {@link edu.cornell.med.icb.goby.reads.MessageChunksWriter}.
  *
  * @author Fabien Campagne
  *         Date: Apr 30, 2009

@@ -16,7 +16,7 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.alignments.AlignmentReader;
 import edu.cornell.med.icb.alignments.AlignmentTooManyHitsReader;
 import edu.cornell.med.icb.alignments.Alignments;
-import edu.cornell.med.icb.reads.ReadSet;
+import edu.cornell.med.icb.goby.reads.ReadSet;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;

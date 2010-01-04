@@ -1,6 +1,6 @@
 package reads;
 
-option java_package = "edu.cornell.med.icb.reads";
+option java_package = "edu.cornell.med.icb.goby.reads";
 option optimize_for = SPEED;
 
 message ReadCollection {

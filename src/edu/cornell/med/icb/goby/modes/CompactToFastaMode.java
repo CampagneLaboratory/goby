@@ -13,10 +13,10 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.reads.ColorSpaceConverter;
-import edu.cornell.med.icb.reads.ReadSet;
-import edu.cornell.med.icb.reads.Reads;
-import edu.cornell.med.icb.reads.ReadsReader;
+import edu.cornell.med.icb.goby.reads.ColorSpaceConverter;
+import edu.cornell.med.icb.goby.reads.ReadSet;
+import edu.cornell.med.icb.goby.reads.Reads;
+import edu.cornell.med.icb.goby.reads.ReadsReader;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;

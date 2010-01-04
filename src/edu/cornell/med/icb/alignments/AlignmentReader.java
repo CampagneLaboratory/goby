@@ -12,9 +12,9 @@
 package edu.cornell.med.icb.alignments;
 
 import com.google.protobuf.CodedInputStream;
+import edu.cornell.med.icb.goby.reads.FastBufferedMessageChunksReader;
+import edu.cornell.med.icb.goby.reads.MessageChunksReader;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import edu.cornell.med.icb.reads.FastBufferedMessageChunksReader;
-import edu.cornell.med.icb.reads.MessageChunksReader;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;

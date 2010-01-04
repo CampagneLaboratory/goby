@@ -13,11 +13,11 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.reads.CompressedRead;
-import edu.cornell.med.icb.reads.ReadSet;
-import edu.cornell.med.icb.reads.Reads;
-import edu.cornell.med.icb.reads.ReadsReader;
-import edu.cornell.med.icb.reads.SequenceDigests;
+import edu.cornell.med.icb.goby.reads.CompressedRead;
+import edu.cornell.med.icb.goby.reads.ReadSet;
+import edu.cornell.med.icb.goby.reads.Reads;
+import edu.cornell.med.icb.goby.reads.ReadsReader;
+import edu.cornell.med.icb.goby.reads.SequenceDigests;
 import it.unimi.dsi.bits.BitVector;
 import it.unimi.dsi.bits.LongArrayBitVector;
 import it.unimi.dsi.fastutil.ints.Int2ByteMap;
