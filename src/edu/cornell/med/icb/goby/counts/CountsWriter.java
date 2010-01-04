@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.counts;
+package edu.cornell.med.icb.goby.counts;
 
 import it.unimi.dsi.io.OutputBitStream;
 import org.apache.commons.logging.Log;
@@ -81,7 +81,7 @@ public class CountsWriter implements Closeable {
         position+=lengthConstant;
     }
     private int position=0;
-    
+
     protected static int encodeDeltaCount(final int deltaCount) {
         final int deltaCountEncoded;
         if (deltaCount < 0) {

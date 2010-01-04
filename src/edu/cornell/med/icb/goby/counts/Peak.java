@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.counts;
+package edu.cornell.med.icb.goby.counts;
 
 /**
  * Information about a peak of something (e.g., read counts) along a reference.

@@ -1,6 +1,6 @@
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import edu.cornell.med.icb.counts.CountsWriter;
+import edu.cornell.med.icb.goby.counts.CountsWriter;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;

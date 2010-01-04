@@ -1,6 +1,4 @@
-package edu.cornell.med.icb.counts;
-
-import it.unimi.dsi.fastutil.ints.IntList;
+package edu.cornell.med.icb.goby.counts;
 
 import java.io.IOException;
 
@@ -30,7 +28,7 @@ public class CountWriterHelper {
             lengthConstant+=position-previousPositionNotWritten;
             previousPositionNotWritten=position;
         } else {
-          
+
             delegate.appendCount(previousCount, lengthConstant);
             previousCount = count;
             lengthConstant =0 ;

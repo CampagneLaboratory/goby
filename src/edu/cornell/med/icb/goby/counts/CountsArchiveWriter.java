@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.counts;
+package edu.cornell.med.icb.goby.counts;
 
 import org.apache.commons.io.FileUtils;
 import org.bdval.io.compound.CompoundFileWriter;

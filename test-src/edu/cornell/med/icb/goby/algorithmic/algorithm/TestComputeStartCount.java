@@ -12,8 +12,8 @@
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
 import cern.jet.random.engine.MersenneTwister;
-import edu.cornell.med.icb.counts.CountsReader;
-import edu.cornell.med.icb.counts.CountsWriter;
+import edu.cornell.med.icb.goby.counts.CountsReader;
+import edu.cornell.med.icb.goby.counts.CountsWriter;
 import edu.cornell.med.icb.util.RandomAdapter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;

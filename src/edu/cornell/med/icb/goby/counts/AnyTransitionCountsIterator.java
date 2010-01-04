@@ -1,4 +1,4 @@
-package edu.cornell.med.icb.counts;
+package edu.cornell.med.icb.goby.counts;
 
 import java.io.Closeable;
 import java.io.IOException;

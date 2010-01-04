@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.counts;
+package edu.cornell.med.icb.goby.counts;
 
 import java.io.IOException;
 import java.util.Iterator;
