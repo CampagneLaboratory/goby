@@ -3,7 +3,6 @@ package edu.cornell.med.icb.aligners;
 import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
 import edu.cornell.med.icb.goby.modes.CompactToFastaMode;
 import edu.cornell.med.icb.goby.modes.SAMToCompactMode;
-import edu.cornell.med.icb.nextgen.datamodel.Tagged;
 import edu.cornell.med.icb.util.ExecuteProgram;
 import edu.cornell.med.icb.util.GobyPropertyKeys;
 import edu.cornell.med.icb.util.GroovyProperties;
@@ -11,6 +10,7 @@ import edu.mssm.crover.cli.CLI;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
@@ -36,8 +36,8 @@ import java.io.IOException;
  * with more errors. It performs heuristic  Smith-Waterman-like alignment  to
  * find high-scoring local hits (and thus chimera). On low- error short
  * queries, dBWT-SW is slower and less accurate than the first algorithm, but
- * on long queries, it is better. 
- * <p/> 
+ * on long queries, it is better.
+ * <p/>
  * For  both  algorithms,  the  database  file in the FASTA format must be
  * first indexed with the `index' command, which  typically  takes  a  few
  * hours.  The first algorithm is implemented via the `aln' command, which
@@ -46,7 +46,7 @@ import java.io.IOException;
  * chromosomal coordinate and pairs reads (for `sampe'). The second  algo-
  * rithm is invoked by the `dbtwsw' command. It works for single-end reads
  * only.
- *  <p/> 
+ *  <p/>
  * <h3> Alignment Accuracy </h3>
  * When  seeding is disabled, BWA guarantees to find an alignment contain- ing
  * maximum maxDiff differences including maxGapO gap  opens  which  do not
@@ -54,32 +54,32 @@ import java.io.IOException;
  * be found if maxGapE is positive, but it is not  guaranteed  to find  all
  * hits. When seeding is enabled, BWA further requires that the first seedLen
  * subsequence contains no  more  than  maxSeedDiff  differ- ences.
- *  <p/> 
+ *  <p/>
  * When gapped alignment is disabled, BWA is expected to generate the same
  * alignment as Eland, the Illumina alignment  program.  However,  as  BWA
  * change  `N'  in  the  database  sequence to random nucleotides, hits to
  * these random sequences will also be counted. As a consequence, BWA  may mark
  * a  unique  hit  as a repeat, if the random sequences happen to be identical
  * to the sequences which should be unqiue in the database. This random
- * behaviour will be avoided in future releases.  
- *  <p/> 
+ * behaviour will be avoided in future releases.
+ *  <p/>
  * By default, if the best hit is no so repetitive (controlled by -R), BWA also
  * finds all hits contains one more mismatch;  otherwise,  BWA  finds all
  * equally best hits only. Base quality is NOT considered in evaluat- ing hits.
  * In pairing, BWA searches, among the found hits under the con- straint  of
  * the  maxOcc  option,  for pairs within maxInsSize and with proper
  * orientation.
- * 
+ *
  * <h3> Memory Requirement </h3>
  * With bwtsw algorithm, 2.5GB memory is required for  indexing  the  com-
  * plete  human  genome sequences. For short reads, the `aln' command uses
  * ~2.3GB memory and the `sampe' command uses ~3.5GB.
- *  
+ *
  * <h3> Speed </h3>
  * Indexing the human genome sequences takes 3 hours with bwtsw algorithm.
  * Indexing  smaller  genomes  with IS or divsufsort algorithms is several
  * times faster, but requires more memory.
- * <p/>   
+ * <p/>
  * Speed of alignment is largely determined by the error rate of the query
  * sequences (r). Firstly, BWA runs much faster for near perfect hits than for
  * hits with many differences, and it stops searching for a  hit  with l+2
@@ -90,11 +90,11 @@ import java.io.IOException;
  * the maximum allowed differences, N the size of database and m the length of
  * a query. In practice, we choose k w.r.t. r  and  there- fore  r is the
  * leading factor. I would not recommend to use BWA on data with r>0.02.
- * <p/>   
+ * <p/>
  * Pairing is slower for shorter reads. This  is  mainly  because  shorter
  * reads  have more spurious hits and converting SA coordinates to chromo- somal
  * coordinates are very costly.
- *  <p/>   
+ *  <p/>
  * In a practical experiment, BWA is able to map 2 million 32bp reads to a
  * bacterial  genome  in  several minutes, map the same amount of reads to
  * human X chromosome in 8-15 minutes and to the  human  genome  in  15-25
@@ -102,7 +102,7 @@ import java.io.IOException;
  * size of database and therefore BWA is more efficient when the data- base  is
  * sufficiently large. On smaller genomes, hash based algorithms are usually
  * much faster.
- * 
+ *
  * <pre>
  * index  bwa index [-p prefix] [-a algoType] [-c] <in.db.fasta>
  *
@@ -225,7 +225,7 @@ public class BWAAligner extends AbstractAligner {
     private String samBinaryFilename = "";
 
     private int seedLength = DEFAULT_SEED_LENGTH;
-    
+
     public BWAAligner() {
         super();
         extensions = new String[]{"rsa", "rpac", "rbwt", "pac", "bwt", "ann", "amb", "sa"};
@@ -248,8 +248,8 @@ public class BWAAligner extends AbstractAligner {
         processor.setIndexToHeader(false);
         // Reference conversion (always from nt-space) *MAY* be needed by alignment algorithm to match colorspace reads platforms
         processor.setOutputColorMode(false); // BWA handles the conversion
-        processor.setOutputFakeNtMode(false); // BWA handles the conversion 
-        processor.setOutputFakeQualityMode(false); // BWA handles the conversion 
+        processor.setOutputFakeNtMode(false); // BWA handles the conversion
+        processor.setOutputFakeQualityMode(false); // BWA handles the conversion
         // Filter using the default alphabet for specified output mode
         processor.setAlphabet("ACTG"); // BWA handles the conversion
         return processor;
@@ -356,10 +356,10 @@ public class BWAAligner extends AbstractAligner {
 
     /**
      * Return string option of form "-l <seedLength>".
-     * 
+     *
      * If a positive seedLength has been initialized, use this value. Otherwise,
      * use -l 35 to restrict the seed to the first 35 bp of each read. This
-     * considerably speeds up searches with ~100 bp reads.  
+     * considerably speeds up searches with ~100 bp reads.
      *
      * Only use this option if the seedLength is shorter than the minimum read length,
      * otherwise bwa may fail (despite what the documentation says).
@@ -384,8 +384,8 @@ public class BWAAligner extends AbstractAligner {
                 databaseName = getDefaultDbNameForReferenceFile(referenceFile);
             }
             final File[] indexedReference = indexReference(referenceFile);
-            saiBinaryFilename = FilenameUtils.concat(workDirectory, File.createTempFile(Tagged.createStringTag(10), ".sai").getName());
-            samBinaryFilename = FilenameUtils.concat(workDirectory, File.createTempFile(Tagged.createStringTag(10), ".sam").getName());
+            saiBinaryFilename = FilenameUtils.concat(workDirectory, File.createTempFile(RandomStringUtils.randomAlphabetic(10), ".sai").getName());
+            samBinaryFilename = FilenameUtils.concat(workDirectory, File.createTempFile(RandomStringUtils.randomAlphabetic(10), ".sam").getName());
             forceMakeParentDir(saiBinaryFilename);
             forceMakeParentDir(samBinaryFilename);
             LOG.info("Searching..");

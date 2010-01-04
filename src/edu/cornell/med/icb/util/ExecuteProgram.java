@@ -11,7 +11,7 @@
 
 package edu.cornell.med.icb.util;
 
-import edu.cornell.med.icb.nextgen.datamodel.Tagged;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -78,8 +78,7 @@ public class ExecuteProgram {
                 command = "nice " + command;
             }
 
-
-            final String execTag = Tagged.createStringTag();
+            final String execTag = RandomStringUtils.randomAlphabetic(7);
             if (stdOutOutput instanceof LoggingOutputStream) {
                 ((LoggingOutputStream) stdOutOutput).setOutputTag(execTag);
             }
