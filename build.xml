@@ -61,6 +61,7 @@
                 <include name="commons-io-1.4.jar"/>
                 <include name="commons-lang-2.4.jar"/>
                 <include name="commons-logging-1.1.1.jar"/>
+                <include name="commons-math-2.0.jar"/>
                 <include name="dsiutils-1.0.10.jar"/>
                 <include name="fastutil-5.1.5.jar"/>
                 <include name="icb-utils.jar"/>
@@ -123,8 +124,10 @@
             <link href="http://commons.apache.org/io/api-release/"/>
             <link href="http://commons.apache.org/logging/apidocs/"/>
             <link href="http://commons.apache.org/lang/api-release"/>
+            <link href="http://commons.apache.org/math/api-2.0/"/>
             <link href="http://icbtools.med.cornell.edu/javadocs/icb-utils/"/>
             <link href="http://martiansoftware.com/jsap/doc/javadoc/"/>
+            <link href="http://code.google.com/apis/protocolbuffers/docs/reference/java/"/>
             <classpath>
                 <path refid="compile.classpath"/>
                 <pathelement location="${classes}"/>
