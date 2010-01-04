@@ -9,13 +9,13 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.algorithmic.data;
+package edu.cornell.med.icb.goby.algorithmic.data;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 
-import java.util.Collections;
 import java.io.PrintWriter;
+import java.util.Collections;
 
 public class Annotation {
     public final String id;

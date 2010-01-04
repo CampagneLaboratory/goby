@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.algorithmic.data;
+package edu.cornell.med.icb.goby.algorithmic.data;
 
 public class Segment implements Comparable<Segment> {
     public final int start;

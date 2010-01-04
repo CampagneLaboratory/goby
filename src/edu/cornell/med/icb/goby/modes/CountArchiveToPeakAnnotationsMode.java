@@ -13,8 +13,6 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.algorithmic.data.Annotation;
-import edu.cornell.med.icb.algorithmic.data.Segment;
 import edu.cornell.med.icb.alignments.AlignmentReader;
 import edu.cornell.med.icb.alignments.ConcatAlignmentReader;
 import edu.cornell.med.icb.counts.AnyTransitionCountsIterator;
@@ -22,6 +20,8 @@ import edu.cornell.med.icb.counts.CountsArchiveReader;
 import edu.cornell.med.icb.counts.CountsReaderI;
 import edu.cornell.med.icb.counts.Peak;
 import edu.cornell.med.icb.counts.PeakAggregator;
+import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
+import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;

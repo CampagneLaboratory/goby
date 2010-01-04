@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.algorithmic.data;
+package edu.cornell.med.icb.goby.algorithmic.data;
 
 import java.util.Comparator;
 

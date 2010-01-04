@@ -14,12 +14,12 @@ package edu.cornell.med.icb.goby.modes;
 import cern.colt.Timer;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.algorithmic.algorithm.ComputeCount;
-import edu.cornell.med.icb.algorithmic.algorithm.ComputeStartCount;
 import edu.cornell.med.icb.alignments.AlignmentReader;
 import edu.cornell.med.icb.alignments.Alignments;
 import edu.cornell.med.icb.counts.CountsArchiveWriter;
 import edu.cornell.med.icb.counts.CountsWriter;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeCount;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeStartCount;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -44,7 +44,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
      * The mode name.
      */
     public static final String MODE_NAME = "alignment-to-counts";
-    public static final String MODE_DESCRIPTION = "Converts a compact alignment to a compressed count archive."; 
+    public static final String MODE_DESCRIPTION = "Converts a compact alignment to a compressed count archive.";
 
 
     /**

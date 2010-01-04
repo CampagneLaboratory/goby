@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.algorithmic.algorithm;
+package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
 import cern.jet.random.engine.MersenneTwister;
 import edu.cornell.med.icb.counts.CountsReader;

@@ -9,10 +9,10 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.algorithmic.algorithm;
+package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import edu.cornell.med.icb.algorithmic.data.Annotation;
-import edu.cornell.med.icb.algorithmic.data.Read;
+import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
+import edu.cornell.med.icb.goby.algorithmic.data.Read;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;

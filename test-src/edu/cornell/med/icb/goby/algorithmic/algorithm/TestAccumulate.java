@@ -9,14 +9,14 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.algorithmic.algorithm;
+package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import edu.cornell.med.icb.algorithmic.data.Read;
 import edu.cornell.med.icb.alignments.AlignmentReader;
 import edu.cornell.med.icb.alignments.AlignmentWriter;
 import edu.cornell.med.icb.alignments.Alignments;
 import edu.cornell.med.icb.counts.CountsReader;
 import edu.cornell.med.icb.counts.CountsWriter;
+import edu.cornell.med.icb.goby.algorithmic.data.Read;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import org.apache.commons.io.FileUtils;

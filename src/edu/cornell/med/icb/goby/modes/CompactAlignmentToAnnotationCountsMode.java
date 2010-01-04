@@ -14,11 +14,11 @@ package edu.cornell.med.icb.goby.modes;
 import cern.colt.Timer;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.algorithmic.algorithm.AnnotationCount;
-import edu.cornell.med.icb.algorithmic.data.Annotation;
-import edu.cornell.med.icb.algorithmic.data.Segment;
 import edu.cornell.med.icb.alignments.AlignmentReader;
 import edu.cornell.med.icb.alignments.Alignments;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCount;
+import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
+import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -234,7 +234,6 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     final int numberIntrons = numberExons - 1;
 
                     for (int i = 0; i < numberExons; i++) {
-
                         final Segment segment = annot.segments.get(i);
                         final int exonStart = segment.start;
                         final int exonEnd = segment.end;
