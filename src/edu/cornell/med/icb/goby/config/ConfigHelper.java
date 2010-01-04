@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.config;
+package edu.cornell.med.icb.goby.config;
 
 import edu.cornell.med.icb.util.GroovyProperties;
 import org.apache.commons.io.FilenameUtils;
