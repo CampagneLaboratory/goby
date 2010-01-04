@@ -11,20 +11,25 @@
 
 package edu.cornell.med.icb.util;
 
-import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 import java.io.IOException;
 
 /**
- * Test loading groovy config and java properties files into GroovyProperties objects.
+ * Test loading groovy config and java properties files into
  * @author Kevin Dorff
  */
 public class TestGroovyProperties {
+    /**
+     * Base directory for the test configuration files.
+     */
+    private static final String TEST_DATA_CONFIG_DIR = "test-data/config";
+
     @Test
     public void testLoadProperties() throws IOException {
-        GroovyProperties props = GroovyProperties.load(new String[] {"dubble"}, new String[] {"test-data"}, "TestConfig.groovy", null);
-        System.out.println(props);
+        final GroovyProperties props = GroovyProperties.load(new String[] {"dubble"},
+                new String[] {TEST_DATA_CONFIG_DIR}, "TestConfig.groovy", null);
         props.translateKeys("settings.", "");
         assertEquals("1", props.get("one"));
         assertEquals("8", props.get("four"));
@@ -37,7 +42,9 @@ public class TestGroovyProperties {
 
     @Test
     public void testLoadMultipePropertiesMultipleLocations() throws IOException {
-        GroovyProperties props = GroovyProperties.load(new String[] {"dubble", "quadruple_four"}, new String[] {"test-data"}, "blah", "TestConfig.groovy");
+        final GroovyProperties props = GroovyProperties.load(
+                new String[] {"dubble", "quadruple_four"},
+                new String[] {TEST_DATA_CONFIG_DIR}, "blah", "TestConfig.groovy");
         assertEquals("1", props.get("settings.one"));
         assertEquals("sixteen", props.get("settings.four"));
         assertEquals("4", props.get("settings.two"));
@@ -46,10 +53,15 @@ public class TestGroovyProperties {
         assertEquals("none", props.getWithParameter("settings.anyx", "5", "none"));
     }
 
+    /**
+     * Two valid files are presented, it will use the first one it files which happens to
+     * be a properties file
+     * @throws IOException if the test files cannot be loaded
+     */
     @Test
     public void testNormalProperties() throws IOException {
-        // Two valid files are presented, it will use the first one it files which happens to be a properties file
-        GroovyProperties props = GroovyProperties.load(new String[] {"dubble"}, new String[] {"test-data"}, "TestConfig.groovy", "test.properties");
+        final GroovyProperties props = GroovyProperties.load(new String[] {"dubble"},
+                new String[] {TEST_DATA_CONFIG_DIR}, "TestConfig.groovy", "test.properties");
         props.translateKeys("settings.", ""); // Won't do anything
         assertEquals("1", props.get("one"));
         assertEquals("two", props.get("two"));
@@ -58,5 +70,4 @@ public class TestGroovyProperties {
         assertEquals(null, props.get("five"));
         assertEquals("5", props.get("five", "5"));
     }
-
 }
