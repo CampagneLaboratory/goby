@@ -2,12 +2,12 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.alignments.AlignedSequence;
-import edu.cornell.med.icb.alignments.AlignmentStats;
-import edu.cornell.med.icb.alignments.AlignmentTooManyHitsWriter;
-import edu.cornell.med.icb.alignments.AlignmentWriter;
-import edu.cornell.med.icb.alignments.filters.AlignmentQualityFilter;
-import edu.cornell.med.icb.alignments.filters.PercentMismatchesQualityFilter;
+import edu.cornell.med.icb.goby.alignments.AlignedSequence;
+import edu.cornell.med.icb.goby.alignments.AlignmentStats;
+import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsWriter;
+import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
+import edu.cornell.med.icb.goby.alignments.filters.AlignmentQualityFilter;
+import edu.cornell.med.icb.goby.alignments.filters.PercentMismatchesQualityFilter;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;

@@ -11,10 +11,9 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import edu.cornell.med.icb.alignments.AlignmentReader;
-import edu.cornell.med.icb.alignments.filters.AbstractAlignmentEntryFilter;
-import edu.cornell.med.icb.alignments.filters.BestScoreAmbiguityAlignmentFilter;
-import edu.cornell.med.icb.alignments.filters.TranscriptBestScoreAlignmentFilter;
+import edu.cornell.med.icb.goby.alignments.filters.AbstractAlignmentEntryFilter;
+import edu.cornell.med.icb.goby.alignments.filters.BestScoreAmbiguityAlignmentFilter;
+import edu.cornell.med.icb.goby.alignments.filters.TranscriptBestScoreAlignmentFilter;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -57,7 +56,6 @@ import java.util.List;
  *         Date: May 5, 2009
  */
 public class Merge {
-
     /*
      * TODO: extensive documentation
      * TODO: what data structures are used and how they are updated

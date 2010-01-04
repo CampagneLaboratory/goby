@@ -11,7 +11,6 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import edu.cornell.med.icb.alignments.AlignmentReader;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 

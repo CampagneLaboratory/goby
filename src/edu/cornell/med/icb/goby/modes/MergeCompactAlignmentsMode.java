@@ -13,8 +13,8 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.alignments.AlignmentReader;
-import edu.cornell.med.icb.alignments.Merge;
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.Merge;
 import edu.cornell.med.icb.util.VersionUtils;
 
 import java.io.File;

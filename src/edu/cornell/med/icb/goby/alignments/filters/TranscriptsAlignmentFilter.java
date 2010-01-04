@@ -9,9 +9,9 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.alignments.filters;
+package edu.cornell.med.icb.goby.alignments.filters;
 
-import edu.cornell.med.icb.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.tissueinfo.similarity.GeneTranscriptRelationships;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;

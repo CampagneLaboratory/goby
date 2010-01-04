@@ -13,12 +13,12 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.alignments.AlignedSequence;
-import edu.cornell.med.icb.alignments.AlignmentStats;
-import edu.cornell.med.icb.alignments.AlignmentTooManyHitsWriter;
-import edu.cornell.med.icb.alignments.AlignmentWriter;
-import edu.cornell.med.icb.alignments.Alignments;
-import edu.cornell.med.icb.alignments.LastParser;
+import edu.cornell.med.icb.goby.alignments.AlignedSequence;
+import edu.cornell.med.icb.goby.alignments.AlignmentStats;
+import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsWriter;
+import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
+import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.LastParser;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.iterators.TsvLineIterator;

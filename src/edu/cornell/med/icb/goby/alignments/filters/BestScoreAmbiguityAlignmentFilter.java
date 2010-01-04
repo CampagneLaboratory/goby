@@ -9,10 +9,10 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.alignments.filters;
+package edu.cornell.med.icb.goby.alignments.filters;
 
-import edu.cornell.med.icb.alignments.AlignmentReader;
-import edu.cornell.med.icb.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import org.apache.log4j.Logger;
 

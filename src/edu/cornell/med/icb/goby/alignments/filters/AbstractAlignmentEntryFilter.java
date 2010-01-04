@@ -9,9 +9,9 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.alignments.filters;
+package edu.cornell.med.icb.goby.alignments.filters;
 
-import edu.cornell.med.icb.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 
 /**
@@ -20,7 +20,7 @@ import edu.cornell.med.icb.identifier.IndexedIdentifier;
 
 
 /**
- * Abstract class for MaqMapentryFilter. These assist with merging Maq Map files.
+ * Abstract class for AlignmentEntryFilter. These assist with merging alignment files.
  *
  * @author Kevin Dorff
  */

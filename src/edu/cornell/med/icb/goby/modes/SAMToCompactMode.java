@@ -12,9 +12,9 @@
 package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
-import edu.cornell.med.icb.alignments.AlignmentTooManyHitsWriter;
-import edu.cornell.med.icb.alignments.AlignmentWriter;
-import edu.cornell.med.icb.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsWriter;
+import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
+import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.logging.ProgressLogger;
