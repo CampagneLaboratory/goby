@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.alignments;
+package edu.cornell.med.icb.goby.alignments;
 
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
@@ -279,7 +279,7 @@ public class TestMerge {
      * Originally, the tmhWriter threshold was 10, and the entries numHits were 1 and 2.  Due to an update
      * in the tmhWriter, appendTooManyHits() will *NOT* write these entries to an output file.
      *
-     * It is not possible to set the tmhWriter threshold to 0, for the following reason ... 
+     * It is not possible to set the tmhWriter threshold to 0, for the following reason ...
      *
      * Writer only adds entries if numHits > thresh, so tmhWriter needs a threshold below numHits of entries.
      *

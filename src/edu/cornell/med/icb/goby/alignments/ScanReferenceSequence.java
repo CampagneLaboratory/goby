@@ -1,4 +1,4 @@
-package edu.cornell.med.icb.alignments;
+package edu.cornell.med.icb.goby.alignments;
 
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.goby.reads.ReadsLoader;

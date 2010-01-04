@@ -9,13 +9,14 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.alignments;
+package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.alignments.AlignmentReader;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
-import java.io.IOException;
 import java.io.Closeable;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Properties;
 

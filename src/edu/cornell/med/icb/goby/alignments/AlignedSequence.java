@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.alignments;
+package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.lang.MutableString;
 

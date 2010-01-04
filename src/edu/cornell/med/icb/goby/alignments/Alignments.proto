@@ -1,6 +1,6 @@
 package reads;
 
-option java_package = "edu.cornell.med.icb.alignments";
+option java_package = "edu.cornell.med.icb.goby.alignments";
 option optimize_for = SPEED;
 
 message AlignmentCollection {

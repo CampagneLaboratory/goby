@@ -9,13 +9,15 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.alignments;
+package edu.cornell.med.icb.goby.alignments;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;

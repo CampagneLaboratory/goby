@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.alignments;
+package edu.cornell.med.icb.goby.alignments;
 
 import com.google.protobuf.CodedInputStream;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;

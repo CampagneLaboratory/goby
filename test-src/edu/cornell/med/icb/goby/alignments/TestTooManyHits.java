@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.alignments;
+package edu.cornell.med.icb.goby.alignments;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -56,6 +56,6 @@ public class TestTooManyHits {
         assertTrue("query sequence 12 must be found", tmhReader.isQueryAmbiguous(12));
         assertFalse("query sequence 13 must NOT be found", tmhReader.isQueryAmbiguous(13));
         assertFalse("query sequence 1100239028 must NOT be found", tmhReader.isQueryAmbiguous(1100239028));
-        
+
     }
 }

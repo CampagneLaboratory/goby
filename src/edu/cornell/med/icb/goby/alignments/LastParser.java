@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.alignments;
+package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
@@ -34,28 +34,28 @@ import java.util.NoSuchElementException;
  * formats are suitable for multiple alignments of single proteins or regions
  * of DNA without rearrangements, but would require considerable extension to
  * cope with genomic issues such as forward and reverse strand directions,
- * multiple pieces to the alignment, and so forth.  
+ * multiple pieces to the alignment, and so forth.
  *
- * General Structure 
+ * General Structure
  *
  * The .maf format is line-oriented. Each multiple alignment ends with a blank
  * line. Each sequence in an alignment is on a single line, which can get quite
  * long, but there is no length limit. Words in a line are delimited by any
  * white space. Lines starting with # are considered to be comments. Lines
  * starting with ## can be ignored by most programs, but contain meta-data of
- * one form or another.  
+ * one form or another.
  *
  * The file is divided into paragraphs that terminate in a blank line. Within a
  * paragraph, the first word of a line indicates its type. Each multiple
  * alignment is in a separate paragraph that begins with an "a" line and
  * contains an "s" line for each sequence in the multiple alignment. Some MAF
- * files may contain other optional line types: 
+ * files may contain other optional line types:
  *
  *      an "i" line containing information about what is in the aligned species
- *      DNA before and after the immediately preceding "s" line 
+ *      DNA before and after the immediately preceding "s" line
  *
  *      an "e" line containing information about the size of the gap between
- *      the alignments that span the current block 
+ *      the alignments that span the current block
  *
  *      a "q" line indicating the quality of each aligned base for the species
  *
@@ -105,7 +105,7 @@ public class LastParser implements Closeable {
             if (line.startsWith("#")) {
                 continue;
             }
-            /* TODO (suggestion) // continue reading the alignment block by ignoring these lines 
+            /* TODO (suggestion) // continue reading the alignment block by ignoring these lines
             if (line.startsWith("e") || line.startsWith("i") || line.startsWith("q")) {
                 continue;
             }

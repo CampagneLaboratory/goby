@@ -11,10 +11,10 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import edu.cornell.med.icb.alignments.AlignmentReader;
-import edu.cornell.med.icb.alignments.AlignmentWriter;
-import edu.cornell.med.icb.alignments.Alignments;
 import edu.cornell.med.icb.goby.algorithmic.data.Read;
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
+import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.counts.CountsReader;
 import edu.cornell.med.icb.goby.counts.CountsWriter;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;

@@ -9,9 +9,9 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.alignments;
+package edu.cornell.med.icb.goby.alignments;
 
-import edu.cornell.med.icb.alignments.filters.PercentMismatchesQualityFilter;
+import edu.cornell.med.icb.goby.alignments.filters.PercentMismatchesQualityFilter;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
@@ -64,7 +64,7 @@ public class TestAlignmentFilters {
         assertTrue("entry must be kept", filter.keepEntry(250, entry));
         assertTrue("entry must be kept", filter.keepEntry(251, entry));
     }
-    
+
     private Alignments.AlignmentEntry.Builder buildMinimalEntry() {
         final Alignments.AlignmentEntry.Builder builder;
         builder = Alignments.AlignmentEntry.newBuilder();
