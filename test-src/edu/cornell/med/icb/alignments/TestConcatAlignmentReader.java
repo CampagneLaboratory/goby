@@ -1,0 +1,167 @@
+/*
+ * Copyright (C) 2009 Institute for Computational Biomedicine,
+ *                    Weill Medical College of Cornell University
+ *
+ * WEILL MEDICAL COLLEGE OF CORNELL UNIVERSITY MAKES NO REPRESENTATIONS
+ * ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE. IT IS PROVIDED
+ * "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY. THE WEILL MEDICAL COLLEGE
+ * OF CORNELL UNIVERSITY SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+ * THE USERS OF THIS SOFTWARE.
+ */
+
+package edu.cornell.med.icb.alignments;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.log4j.Logger;
+import org.junit.AfterClass;
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+
+/**
+ * @author Fabien Campagne
+ *         Date: May 20, 2009
+ *         Time: 6:33:41 PM
+ */
+public class TestConcatAlignmentReader {
+    private static final Logger LOG = Logger.getLogger(TestConcatAlignmentReader.class);
+
+    private static final String BASE_TEST_DIR = "test-results/alignments/concat/";
+
+    private int numEntriesIn101;
+    private int numQueries101;
+    private int numEntriesIn102;
+    private int numQueries102;
+    private final int numTargets = 5;
+    private String outputBasename1;
+    private String outputBasename2;
+    private int count102;
+    private int count101;
+
+    @Test
+    public void testLoadTwo() throws IOException {
+        final int count;
+
+        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(outputBasename1, outputBasename2);
+        count = countAlignmentEntries(concatReader);
+        assertEquals(count101 + count102, count);
+        concatReader.readHeader();
+
+        assertEquals(numQueries101 + numQueries102, concatReader.getNumberOfQueries());
+        assertEquals(numTargets, concatReader.getNumberOfTargets());
+
+    }
+
+    @Test
+    public void testQueryIndices() throws IOException {
+        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(outputBasename1, outputBasename2);
+        while (concatReader.hasNextAligmentEntry()) {
+            final Alignments.AlignmentEntry alignmentEntry = concatReader.nextAlignmentEntry();
+
+            if (alignmentEntry.getScore() == 50) {
+                assertTrue(alignmentEntry.getQueryIndex() >= numQueries101);
+            } else if (alignmentEntry.getScore() == 30) {
+                assertTrue(alignmentEntry.getQueryIndex() < numQueries101);
+            } else {
+                fail("only scores possible are 30 and 50.");
+            }
+
+        }
+    }
+
+    @Test
+    public void testQueryIndicesNoAdjustment() throws IOException {
+        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(outputBasename1, outputBasename2);
+        concatReader.setAdjustQueryIndices(false);
+        while (concatReader.hasNextAligmentEntry()) {
+            final Alignments.AlignmentEntry alignmentEntry = concatReader.nextAlignmentEntry();
+
+            if (alignmentEntry.getScore() == 50) {
+                assertTrue(alignmentEntry.getQueryIndex() <= Math.max(numQueries101,numQueries102));
+            } else if (alignmentEntry.getScore() == 30) {
+               assertTrue(alignmentEntry.getQueryIndex() <= Math.max(numQueries101,numQueries102));
+            } else {
+                fail("only scores possible are 30 and 50.");
+            }
+
+        }
+    }
+
+
+    private int countAlignmentEntries(final AbstractAlignmentReader reader) {
+        int count = 0;
+
+        while (reader.hasNextAligmentEntry()) {
+            final Alignments.AlignmentEntry alignmentEntry = reader.nextAlignmentEntry();
+            //   System.out.println("found entry: " + alignmentEntry);
+            assert alignmentEntry.hasPosition();
+            count++;
+        }
+        return count;
+    }
+
+    @BeforeClass
+    public static void initializeTestDirectory() throws IOException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Creating base test directory: " + BASE_TEST_DIR);
+        }
+        FileUtils.forceMkdir(new File(BASE_TEST_DIR));
+    }
+
+    @AfterClass
+    public static void cleanupTestDirectory() throws IOException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Deleting base test directory: " + BASE_TEST_DIR);
+        }
+        FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
+    }
+
+    @Before
+    public void setUp() throws IOException {
+        {
+            outputBasename1 = FilenameUtils.concat(BASE_TEST_DIR, "concat-align-101");
+            final AlignmentWriter writer = new AlignmentWriter(outputBasename1);
+            writer.setNumAlignmentEntriesPerChunk(1000);
+
+            final int numQuery = 10;
+            int position = 1;
+            final int score = 30;
+            for (int targetIndex = 0; targetIndex < numTargets; targetIndex++) {
+                for (int queryIndex = 0; queryIndex < numQuery; queryIndex++) {
+                    writer.setAlignmentEntry(queryIndex, targetIndex, position++, score, false);
+                    writer.appendEntry();
+                    numEntriesIn101++;
+                    count101++;
+                }
+            }
+            numQueries101 = numQuery;
+            writer.close();
+        }
+        {
+            outputBasename2 = FilenameUtils.concat(BASE_TEST_DIR, "concat-align-102");
+            final AlignmentWriter writer = new AlignmentWriter(outputBasename2);
+            writer.setNumAlignmentEntriesPerChunk(1000);
+
+            final int numQuery = 13;
+            int position = 1;
+            final int score = 50;
+            for (int targetIndex = 0; targetIndex < numTargets; targetIndex++) {
+                for (int queryIndex = 0; queryIndex < numQuery; queryIndex++) {
+                    writer.setAlignmentEntry(queryIndex, targetIndex, position++, score, false);
+                    writer.appendEntry();
+                    numEntriesIn102++;
+                    count102++;
+                }
+            }
+            numQueries102 = numQuery;
+            writer.close();
+        }
+
+
+    }
+}
