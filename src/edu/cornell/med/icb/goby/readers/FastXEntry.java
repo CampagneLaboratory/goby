@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.goby.fastxReaders;
+package edu.cornell.med.icb.goby.readers;
 
 import it.unimi.dsi.lang.MutableString;
 

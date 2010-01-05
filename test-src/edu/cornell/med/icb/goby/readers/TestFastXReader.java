@@ -9,7 +9,7 @@
  * THE USERS OF THIS SOFTWARE.
  */
 
-package edu.cornell.med.icb.goby.fastxReaders;
+package edu.cornell.med.icb.goby.readers;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;

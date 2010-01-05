@@ -12,8 +12,8 @@
 package edu.cornell.med.icb.goby.aligners;
 
 import edu.cornell.med.icb.goby.config.ConfigHelper;
-import edu.cornell.med.icb.goby.fastxReaders.FastXEntry;
-import edu.cornell.med.icb.goby.fastxReaders.FastXReader;
+import edu.cornell.med.icb.goby.readers.FastXEntry;
+import edu.cornell.med.icb.goby.readers.FastXReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;

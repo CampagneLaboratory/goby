@@ -13,8 +13,8 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.fastxReaders.FastXEntry;
-import edu.cornell.med.icb.goby.fastxReaders.FastXReader;
+import edu.cornell.med.icb.goby.readers.FastXEntry;
+import edu.cornell.med.icb.goby.readers.FastXReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FilenameUtils;
