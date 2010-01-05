@@ -1,6 +1,4 @@
 <project name="goby" default="test" basedir=".">
-    <property name="checkstyle-config" location="testsupport/checkstyle/config/icb_wmc_checks.xml"/>
-
     <!-- compiler and javadoc settings -->
     <property name="debug" value="on"/>
     <property name="optimize" value="on"/>
@@ -30,6 +28,18 @@
             <include name="*.jar"/>
         </fileset>
     </path>
+
+    <fileset dir="${src}" id="pmd-fileset">
+        <include name="**/*.java"/>
+        <exclude name="edu/cornell/med/icb/goby/alignments/Alignments.java"/>
+        <exclude name="edu/cornell/med/icb/goby/reads/Reads.java"/>
+    </fileset>
+
+    <fileset dir="${src}" id="checkstyle-fileset">
+        <exclude name="**/package-info.java"/>
+        <exclude name="edu/cornell/med/icb/goby/alignments/Alignments.java"/>
+        <exclude name="edu/cornell/med/icb/goby/reads/Reads.java"/>
+ 	</fileset>
 
     <target name="init" depends="buildsupport.init, testsupport.init"/>
 
