@@ -68,6 +68,7 @@
             </fileset>
             <zipgroupfileset dir="${lib}">
                 <include name="colt.jar"/>
+                <include name="bdval-api.jar"/>
                 <include name="commons-io-1.4.jar"/>
                 <include name="commons-lang-2.4.jar"/>
                 <include name="commons-logging-1.1.1.jar"/>
