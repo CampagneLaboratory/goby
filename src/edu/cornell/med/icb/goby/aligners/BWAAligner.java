@@ -1,6 +1,6 @@
 package edu.cornell.med.icb.goby.aligners;
 
-import edu.cornell.med.icb.goby.config.GobyPropertyKeys;
+import edu.cornell.med.icb.goby.config.GobyConfiguration;
 import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
 import edu.cornell.med.icb.goby.modes.CompactToFastaMode;
 import edu.cornell.med.icb.goby.modes.SAMToCompactMode;
@@ -232,7 +232,7 @@ public class BWAAligner extends AbstractAligner {
     }
 
     public void setConfiguration(final Configuration configuration) {
-        pathToExecutables = configuration.getString(GobyPropertyKeys.EXECUTABLE_PATH_BWA, ".");
+        pathToExecutables = configuration.getString(GobyConfiguration.EXECUTABLE_PATH_BWA, ".");
     }
 
     public String getDefaultDbNameForReferenceFile(final File referenceFile) {

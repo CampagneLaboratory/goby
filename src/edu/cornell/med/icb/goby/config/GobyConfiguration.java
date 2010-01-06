@@ -27,16 +27,15 @@ import java.util.Iterator;
 /**
  * Helper class to load project-wide properties.
  *
- * @see GobyPropertyKeys
  * @author Fabien Campagne
  *         Date: Jul 26, 2009
  *         Time: 4:16:33 PM
  */
-public class ConfigHelper {
+public class GobyConfiguration {
     /**
      * Used to log debug and informational messages.
      */
-    private static final Log LOG = LogFactory.getLog(ConfigHelper.class);
+    private static final Log LOG = LogFactory.getLog(GobyConfiguration.class);
 
     /**
      * Configuration properties used by goby.
@@ -55,14 +54,38 @@ public class ConfigHelper {
     /**
      * Singleton instance of this class.
      */
-    private static final ConfigHelper INSTANCE = new ConfigHelper(DEFAULT_CONFIG_FILE_LOCATIONS);
+    private static final GobyConfiguration INSTANCE =
+            new GobyConfiguration(DEFAULT_CONFIG_FILE_LOCATIONS);
+
+    /**
+     * Path to the directory that contains the lastag executable.
+     */
+
+    public static final String EXECUTABLE_PATH_LASTAG = "executables.path.lastag";
+    /**
+     * Path to the directory that contains the BWA executable.
+     */
+
+    public static final String EXECUTABLE_PATH_BWA = "executables.path.bwa";
+
+    /**
+     * Path to the work directory. This should be a large scratch location, where results of
+     * intermediate calculations will be stored.
+     */
+    public static final String WORK_DIRECTORY = "work.directory";
+
+    /**
+     * Path to the database directory. This is the location where the indexed database files may
+     * reside.
+     */
+    public static final String DATABASE_DIRECTORY = "database.directory";
 
     /**
      * Load the Goby configuration.
      * @param defaultConfigFileLocations locations for configurations to check if one
      * was not explicitly defined in a system property.
      */
-    private ConfigHelper(final String... defaultConfigFileLocations) {
+    private GobyConfiguration(final String... defaultConfigFileLocations) {
         super();
         configuration = new CompositeConfiguration();
 
@@ -124,10 +147,10 @@ public class ConfigHelper {
      */
     private Configuration getDefaultConfiguration() {
         final Configuration defaultConfiguration = new BaseConfiguration();
-        defaultConfiguration.addProperty(GobyPropertyKeys.EXECUTABLE_PATH_LASTAG, ".");
-        defaultConfiguration.addProperty(GobyPropertyKeys.EXECUTABLE_PATH_BWA, ".");
-        defaultConfiguration.addProperty(GobyPropertyKeys.DATABASE_DIRECTORY, ".");
-        defaultConfiguration.addProperty(GobyPropertyKeys.WORK_DIRECTORY, ".");
+        defaultConfiguration.addProperty(EXECUTABLE_PATH_LASTAG, ".");
+        defaultConfiguration.addProperty(EXECUTABLE_PATH_BWA, ".");
+        defaultConfiguration.addProperty(DATABASE_DIRECTORY, ".");
+        defaultConfiguration.addProperty(WORK_DIRECTORY, ".");
         return defaultConfiguration;
     }
 

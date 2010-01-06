@@ -11,7 +11,7 @@
 
 package edu.cornell.med.icb.goby.aligners;
 
-import edu.cornell.med.icb.goby.config.GobyPropertyKeys;
+import edu.cornell.med.icb.goby.config.GobyConfiguration;
 import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
 import edu.cornell.med.icb.goby.modes.CompactToFastaMode;
 import edu.cornell.med.icb.goby.modes.LastToCompactMode;
@@ -248,7 +248,7 @@ public class LastagAligner extends AbstractAligner {
     }
 
     public void setConfiguration(final Configuration configuration) {
-        pathToExecutables = configuration.getString(GobyPropertyKeys.EXECUTABLE_PATH_LASTAG, ".");
+        pathToExecutables = configuration.getString(GobyConfiguration.EXECUTABLE_PATH_LASTAG, ".");
     }
 
     public String getDefaultDbNameForReferenceFile(final File referenceFile) {

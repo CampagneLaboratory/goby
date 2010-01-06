@@ -11,7 +11,7 @@
 
 package edu.cornell.med.icb.goby.aligners;
 
-import edu.cornell.med.icb.goby.config.ConfigHelper;
+import edu.cornell.med.icb.goby.config.GobyConfiguration;
 import edu.cornell.med.icb.goby.readers.FastXEntry;
 import edu.cornell.med.icb.goby.readers.FastXReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
@@ -55,7 +55,7 @@ public class TestAligner {
         final LastagAligner aligner = new LastagAligner();
         final String databaseDirectory = FilenameUtils.concat(BASE_TEST_DIR, "db-lastag");
         FileUtils.forceMkdir(new File(databaseDirectory));
-        aligner.setConfiguration(ConfigHelper.getConfiguration());
+        aligner.setConfiguration(GobyConfiguration.getConfiguration());
 
         aligner.setDatabaseDirectory(databaseDirectory);
         aligner.setWorkDirectory(databaseDirectory);
@@ -98,7 +98,7 @@ public class TestAligner {
         final BWAAligner aligner = new BWAAligner();
         final String databaseDirectory = FilenameUtils.concat(BASE_TEST_DIR, "db-bwa");
         FileUtils.forceMkdir(new File(databaseDirectory));
-        aligner.setConfiguration(ConfigHelper.getConfiguration());
+        aligner.setConfiguration(GobyConfiguration.getConfiguration());
 
         aligner.setDatabaseDirectory(databaseDirectory);
         aligner.setWorkDirectory(databaseDirectory);

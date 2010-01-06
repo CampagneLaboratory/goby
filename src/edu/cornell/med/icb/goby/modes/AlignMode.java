@@ -16,8 +16,7 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.aligners.Aligner;
 import edu.cornell.med.icb.goby.aligners.BWAAligner;
 import edu.cornell.med.icb.goby.aligners.LastagAligner;
-import edu.cornell.med.icb.goby.config.ConfigHelper;
-import edu.cornell.med.icb.goby.config.GobyPropertyKeys;
+import edu.cornell.med.icb.goby.config.GobyConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -220,12 +219,12 @@ public class AlignMode extends AbstractGobyMode {
         }
 
         try {
-            final Configuration configuration = ConfigHelper.getConfiguration();
+            final Configuration configuration = GobyConfiguration.getConfiguration();
             aligner.setConfiguration(configuration);
             aligner.setWorkDirectory(workDirectory != null ? workDirectory.getPath() :
-                    configuration.getString(GobyPropertyKeys.WORK_DIRECTORY));
+                    configuration.getString(GobyConfiguration.WORK_DIRECTORY));
             aligner.setDatabaseDirectory(databaseDirectory != null ? databaseDirectory.getPath() :
-                    configuration.getString(GobyPropertyKeys.DATABASE_DIRECTORY));
+                    configuration.getString(GobyConfiguration.DATABASE_DIRECTORY));
             aligner.setDatabaseName(databasePath);
             aligner.setReadIndexFilter(readIndexFilterFile);
             aligner.setReferenceIndexFilter(referenceIndexFilterFile);
