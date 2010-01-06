@@ -356,6 +356,7 @@ public class BWAAligner extends AbstractAligner {
         if (colorSpace) {
             commandLine.addArgument("-c");
         }
+        commandLine.addArgument("-p");
         commandLine.addArgument(databasePrefix);
         commandLine.addArgument(fastaReferenceFile.toString());
         LOG.info("About to execute " + commandLine);
