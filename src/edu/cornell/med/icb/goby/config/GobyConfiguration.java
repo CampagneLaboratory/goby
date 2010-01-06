@@ -60,12 +60,11 @@ public class GobyConfiguration {
     /**
      * Path to the directory that contains the lastag executable.
      */
-
     public static final String EXECUTABLE_PATH_LASTAG = "executables.path.lastag";
+
     /**
      * Path to the directory that contains the BWA executable.
      */
-
     public static final String EXECUTABLE_PATH_BWA = "executables.path.bwa";
 
     /**
