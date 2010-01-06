@@ -17,8 +17,8 @@ import edu.cornell.med.icb.goby.aligners.Aligner;
 import edu.cornell.med.icb.goby.aligners.BWAAligner;
 import edu.cornell.med.icb.goby.aligners.LastagAligner;
 import edu.cornell.med.icb.goby.config.ConfigHelper;
-import edu.cornell.med.icb.goby.util.GobyPropertyKeys;
-import edu.cornell.med.icb.goby.util.GroovyProperties;
+import edu.cornell.med.icb.goby.config.GobyPropertyKeys;
+import org.apache.commons.configuration.Configuration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -98,16 +98,6 @@ public class AlignMode extends AbstractGobyMode {
 
     public void setIndexFlag(final boolean indexFlag) {
         this.indexFlag = indexFlag;
-    }
-
-    /* TODO - this is never used ... */
-    public void setProperties(final GroovyProperties properties) {
-        if (properties.get(GobyPropertyKeys.WORK_DIRECTORY) != null) {
-            setWorkDirectory(new File(properties.get(GobyPropertyKeys.WORK_DIRECTORY)));
-        }
-        if (properties.get(GobyPropertyKeys.DATABASE_DIRECTORY) != null) {
-            setDatabaseDirectory(new File(properties.get(GobyPropertyKeys.DATABASE_DIRECTORY)));
-        }
     }
 
     public void setAlignerOptions(final String alignerOptions) {
@@ -230,13 +220,12 @@ public class AlignMode extends AbstractGobyMode {
         }
 
         try {
-            final GroovyProperties groovyProperties = ConfigHelper.loadConfiguration();
-            final String configDbDirectory = groovyProperties.assertGet(GobyPropertyKeys.DATABASE_DIRECTORY);
-            final String configWorkDirectory = groovyProperties.assertGet(GobyPropertyKeys.WORK_DIRECTORY);
-
-            aligner.setProperties(groovyProperties);
-            aligner.setWorkDirectory(workDirectory != null ? workDirectory.getPath() : configWorkDirectory);
-            aligner.setDatabaseDirectory(databaseDirectory != null ? databaseDirectory.getPath() : configDbDirectory);
+            final Configuration configuration = ConfigHelper.getConfiguration();
+            aligner.setConfiguration(configuration);
+            aligner.setWorkDirectory(workDirectory != null ? workDirectory.getPath() :
+                    configuration.getString(GobyPropertyKeys.WORK_DIRECTORY));
+            aligner.setDatabaseDirectory(databaseDirectory != null ? databaseDirectory.getPath() :
+                    configuration.getString(GobyPropertyKeys.DATABASE_DIRECTORY));
             aligner.setDatabaseName(databasePath);
             aligner.setReadIndexFilter(readIndexFilterFile);
             aligner.setReferenceIndexFilter(referenceIndexFilterFile);

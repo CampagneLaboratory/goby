@@ -11,14 +11,14 @@
 
 package edu.cornell.med.icb.goby.aligners;
 
+import edu.cornell.med.icb.goby.config.GobyPropertyKeys;
 import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
 import edu.cornell.med.icb.goby.modes.CompactToFastaMode;
 import edu.cornell.med.icb.goby.modes.LastToCompactMode;
 import edu.cornell.med.icb.goby.reads.ColorSpaceConverter;
 import edu.cornell.med.icb.goby.util.ExecuteProgram;
-import edu.cornell.med.icb.goby.util.GobyPropertyKeys;
-import edu.cornell.med.icb.goby.util.GroovyProperties;
 import edu.mssm.crover.cli.CLI;
+import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -247,8 +247,8 @@ public class LastagAligner extends AbstractAligner {
         extensions = new String[]{"prj"};
     }
 
-    public void setProperties(final GroovyProperties properties) {
-        pathToExecutables = properties.get(GobyPropertyKeys.EXECUTABLE_PATH_LASTAG, ".");
+    public void setConfiguration(final Configuration configuration) {
+        pathToExecutables = configuration.getString(GobyPropertyKeys.EXECUTABLE_PATH_LASTAG, ".");
     }
 
     public String getDefaultDbNameForReferenceFile(final File referenceFile) {

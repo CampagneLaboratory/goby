@@ -1,6 +1,6 @@
 package edu.cornell.med.icb.goby.aligners;
 
-import edu.cornell.med.icb.goby.util.GroovyProperties;
+import org.apache.commons.configuration.Configuration;
 
 import java.io.File;
 import java.io.IOException;
@@ -122,10 +122,10 @@ public interface Aligner {
     void setReferenceIndexFilter(File referenceIndexFilterFile);
 
     /**
-     * Specify the properties to use.
-     * @param properties
+     * Specify the configuration to use for the aligner.
+     * @param configuration The specific configuration/properties for the aligner
      */
-    void setProperties(final GroovyProperties properties);
+    void setConfiguration(final Configuration configuration);
 
     void setDatabaseName(final String databaseName);
 

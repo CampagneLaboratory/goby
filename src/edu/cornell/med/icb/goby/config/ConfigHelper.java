@@ -11,136 +11,131 @@
 
 package edu.cornell.med.icb.goby.config;
 
-import edu.cornell.med.icb.goby.util.GroovyProperties;
-import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.CompositeConfiguration;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration.SystemConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.LinkedList;
-import java.util.List;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Iterator;
 
 /**
  * Helper class to load project-wide properties.
  *
+ * @see GobyPropertyKeys
  * @author Fabien Campagne
  *         Date: Jul 26, 2009
  *         Time: 4:16:33 PM
  */
 public class ConfigHelper {
+    /**
+     * Used to log debug and informational messages.
+     */
     private static final Log LOG = LogFactory.getLog(ConfigHelper.class);
-    private static GroovyProperties singleton;
 
-    private ConfigHelper() {
+    /**
+     * Configuration properties used by goby.
+     */
+    private final CompositeConfiguration configuration;
+
+    /**
+     * List of files to configure goby with.  Note that the files will by loaded in order
+     * and the first one found will be used.
+     */
+    private static final String[] DEFAULT_CONFIG_FILE_LOCATIONS = {
+            "goby.properties",
+            "config/goby.properties"
+    };
+
+    /**
+     * Singleton instance of this class.
+     */
+    private static final ConfigHelper INSTANCE = new ConfigHelper(DEFAULT_CONFIG_FILE_LOCATIONS);
+
+    /**
+     * Load the Goby configuration.
+     * @param defaultConfigFileLocations locations for configurations to check if one
+     * was not explicitly defined in a system property.
+     */
+    private ConfigHelper(final String... defaultConfigFileLocations) {
         super();
-    }
+        configuration = new CompositeConfiguration();
 
-    public static GroovyProperties loadConfiguration() {
-        return loadConfiguration(
-                new String[] {"config/", "../config/", "../../config/", "./"},
-                "GlobalConfig.groovy",
-                "LocalConfig.groovy");
-    }
+        // by loading the system configuration first, any values set on the java command line
+        // with "-Dproperty.name=property.value" will take precedence
+        configuration.addConfiguration(new SystemConfiguration());
 
-    /**
-     * Load properties or return the JVM-wide singleton if already loaded.
-     * This version gives full control over the config directories and config
-     * filenames for global and local.
-     * @return
-     */
-    public static GroovyProperties loadConfiguration(
-            final String[] configDirs,
-            final String globalConfigFilename,
-            final String localConfigFilename) {
+        // check to see if the user specified a configuration in the style of log4j
+        if (configuration.containsKey("goby.configuration")) {
+            final String configurationURLString = configuration.getString("goby.configuration");
+            try {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Attempting to load " + configurationURLString);
+                }
+                final URL configurationURL = new URL(configurationURLString);
+                configuration.addConfiguration(new PropertiesConfiguration(configurationURL));
+                LOG.info("Goby configured with " + configurationURL);
+            } catch (MalformedURLException e) {
+                LOG.error("Invalid Goby configuration", e);
+            } catch (ConfigurationException e) {
+                LOG.error("Could not configure Goby from " + configurationURLString, e);
+            }
+        } else {
+            // no configuration file location specified so check the default locations
+            for (final String configFile : defaultConfigFileLocations) {
+                try {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Attempting to load " + configFile);
+                    }
+                    configuration.addConfiguration(new PropertiesConfiguration(configFile));
+                } catch (ConfigurationException e) {
+                    continue;
+                }
 
-        if (singleton != null) {
-            return singleton;
-        }
-
-        final GroovyProperties properties = GroovyProperties.load(
-                obtainPlatforms(), configDirs, globalConfigFilename, localConfigFilename);
-        properties.translateKeys("settings.", "");
-        properties.translateKeys("_", ".");
-        singleton = properties;
-
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Loaded Config=" + properties.toString());
-        }
-
-        return properties;
-    }
-
-    /**
-     * Normalize an array of dirnames. Makes the separators unix and makes sure
-     * each directory name ends in "/". dirs is not changed in place, a new array
-     * is made and returned (unles dirs is empty).
-     * @param dirs the directories
-     * @return the directories normalized.
-     */
-    static String[] normalizeDirs(final String[] dirs) {
-        if (dirs == null || dirs.length == 0) {
-            return dirs;
-        }
-        final String[] result = new String[dirs.length];
-        for (int i = 0; i < dirs.length; i++) {
-            final String dir = FilenameUtils.separatorsToUnix(dirs[i]);
-            if (dir.endsWith("/")) {
-                result[i] = dir;
-            } else {
-                result[i] = dir + "/";
+                // if we got here the file was loaded and we don't search any further
+                LOG.info("Goby configured with " + configFile);
+                break;
             }
         }
-        return result;
+
+        // load "default" configurations for any properties not found elsewhere
+        // it's important that this added LAST so the user can override any settings
+        final Configuration defaultConfiguration = getDefaultConfiguration();
+        configuration.addConfiguration(defaultConfiguration);
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Goby configuration: ");
+            final Iterator keys = configuration.getKeys();
+            while (keys.hasNext()) {
+                final String key = (String) keys.next();
+                LOG.debug(key + " = " + configuration.getString(key));
+            }
+        }
     }
 
     /**
-     * Expands file with each of the directory names. If dirs is empty or null
-     * this will return just file.
-     * @param dirs assumed to be a list of dirs with unix separators ending in "/"
-     * (can call normalizeDirs to fix them before calling this).
-     * @param file the file to expand
-     * @return the expanded filenames including the directories
+     * Any default configuration item values if required should defined here.
+     * @return The default configuration to use.
      */
-    static String[] expandDirs(final String[] dirs, final String file) {
-        if (file == null) {
-            return null;
-        }
-        if (dirs == null || dirs.length == 0) {
-            return new String[] {file};
-        }
-        final String[] result = new String[dirs.length];
-        for (int i = 0; i < dirs.length; i++) {
-            result[i] = dirs[i] + file;
-        }
-        return result;
+    private Configuration getDefaultConfiguration() {
+        final Configuration defaultConfiguration = new BaseConfiguration();
+        defaultConfiguration.addProperty(GobyPropertyKeys.EXECUTABLE_PATH_LASTAG, ".");
+        defaultConfiguration.addProperty(GobyPropertyKeys.EXECUTABLE_PATH_BWA, ".");
+        defaultConfiguration.addProperty(GobyPropertyKeys.DATABASE_DIRECTORY, ".");
+        defaultConfiguration.addProperty(GobyPropertyKeys.WORK_DIRECTORY, ".");
+        return defaultConfiguration;
     }
 
     /**
-     * Determine the array of platforms to load (for Config.groovy).
-     * (one or more of amazon, cornell, windows).
-     *
-     * @return the array of platforms
+     * The configuration items for Goby.
+     * @return The configuration needed for goby operations.
      */
-    private static String[] obtainPlatforms() {
-        final List<String> configList = new LinkedList<String>();
-        String addressLastPiece;
-        try {
-            final InetAddress localHost = InetAddress.getLocalHost();
-            final String[] parts = localHost.getCanonicalHostName().split("\\.");
-            addressLastPiece = parts[parts.length - 1];
-        } catch (UnknownHostException e) {
-            LOG.error("Couldn't not obtain InetAddress.getLocalHost(). Assuming .edu address.", e);
-            addressLastPiece = "edu";
-        }
-
-        if ("edu".equals(addressLastPiece)) {
-            configList.add("cornell");
-        } else if ("cluster".equals(addressLastPiece)) {
-            configList.add("PBS");
-        } else {
-            configList.add("amazon");
-        }
-        return configList.toArray(new String[configList.size()]);
+    public static Configuration getConfiguration() {
+        return INSTANCE.configuration;
     }
 }

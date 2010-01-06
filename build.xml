@@ -7,7 +7,8 @@
     <property name="ant.build.javac.target" value="1.6"/>
 
     <!-- jar files created in this project -->
-    <property name="goby-jarfile" location="goby.jar"/>
+    <property name="goby-jarfile-name" value="goby.jar"/>
+    <property name="goby-jarfile" location="${goby-jarfile-name}"/>
     <property name="goby-api-jarfile" location="goby-api.jar"/>
 
     <property name="label" value="development"/>
@@ -69,6 +70,8 @@
             <zipgroupfileset dir="${lib}">
                 <include name="bdval-api.jar"/>
                 <include name="colt.jar"/>
+                <include name="commons-collections-3.2.1.jar"/>
+                <include name="commons-configuration-1.6.jar"/>
                 <include name="commons-io-1.4.jar"/>
                 <include name="commons-lang-2.4.jar"/>
                 <include name="commons-logging-1.1.1.jar"/>
