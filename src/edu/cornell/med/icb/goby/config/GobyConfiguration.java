@@ -20,6 +20,7 @@ import org.apache.commons.configuration.SystemConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
@@ -120,7 +121,7 @@ public class GobyConfiguration {
                 }
 
                 // if we got here the file was loaded and we don't search any further
-                LOG.info("Goby configured with " + configFile);
+                LOG.info("Goby configured with " + new File(configFile).getAbsolutePath());
                 break;
             }
         }
@@ -146,8 +147,8 @@ public class GobyConfiguration {
      */
     private Configuration getDefaultConfiguration() {
         final Configuration defaultConfiguration = new BaseConfiguration();
-        defaultConfiguration.addProperty(EXECUTABLE_PATH_LASTAG, ".");
-        defaultConfiguration.addProperty(EXECUTABLE_PATH_BWA, ".");
+        defaultConfiguration.addProperty(EXECUTABLE_PATH_LASTAG, "");
+        defaultConfiguration.addProperty(EXECUTABLE_PATH_BWA, "");
         defaultConfiguration.addProperty(DATABASE_DIRECTORY, ".");
         defaultConfiguration.addProperty(WORK_DIRECTORY, ".");
         return defaultConfiguration;

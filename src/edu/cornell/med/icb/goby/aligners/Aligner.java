@@ -14,11 +14,14 @@ import java.io.IOException;
  */
 public interface Aligner {
     /**
-     * Convert the compact reads file into the native read input format of the aligner. If the reads are already provided
-     * in native format, no conversion is performed (e.g., Fasta for an aligner that reads Fasta).
+     * Convert the compact reads file into the native read input format of the aligner. If the
+     * reads are already provided in native format, no conversion is performed (e.g., Fasta for
+     * an aligner that reads Fasta).
      *
      * @param compactReadsFile Reads.
-     * @return The file that contains the reads converted to native aligner format (e.g., fasta, fastq or other)
+     * @return The file that contains the reads converted to native aligner format
+     * (e.g., fasta, fastq or other)
+     * @throws IOException
      */
     File prepareReads(File compactReadsFile) throws IOException;
 

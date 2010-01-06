@@ -16,13 +16,17 @@ import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
 import edu.cornell.med.icb.goby.modes.CompactToFastaMode;
 import edu.cornell.med.icb.goby.modes.LastToCompactMode;
 import edu.cornell.med.icb.goby.reads.ColorSpaceConverter;
-import edu.cornell.med.icb.goby.util.ExecuteProgram;
+import edu.cornell.med.icb.goby.util.LoggingOutputStream;
 import edu.mssm.crover.cli.CLI;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
@@ -30,6 +34,7 @@ import org.apache.log4j.Level;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * This aligner uses Lastag.  Lastag is the name we have given our modified
@@ -248,7 +253,7 @@ public class LastagAligner extends AbstractAligner {
     }
 
     public void setConfiguration(final Configuration configuration) {
-        pathToExecutables = configuration.getString(GobyConfiguration.EXECUTABLE_PATH_LASTAG, ".");
+        pathToExecutables = configuration.getString(GobyConfiguration.EXECUTABLE_PATH_LASTAG, "");
     }
 
     public String getDefaultDbNameForReferenceFile(final File referenceFile) {
@@ -258,8 +263,9 @@ public class LastagAligner extends AbstractAligner {
     /**
      * Return the reference file converter used by aligner algorithm
      */
+    @Override
     public CompactToFastaMode getReferenceCompactToFastaConverter() {
-        CompactToFastaMode processor = new CompactToFastaMode();
+        final CompactToFastaMode processor = new CompactToFastaMode();
         processor.setHashOutputFilename(true);
         processor.setIndexToHeader(false);
         // Reference conversion (always from nt-space) *MAY* be needed by alignment algorithm to match colorspace reads platforms
@@ -275,8 +281,9 @@ public class LastagAligner extends AbstractAligner {
     /**
      * Return the reads file converter used by aligner algorithm
      */
+    @Override
     public CompactToFastaMode getReadsCompactToFastaConverter() {
-        CompactToFastaMode processor = new CompactToFastaMode();
+        final CompactToFastaMode processor = new CompactToFastaMode();
         processor.setIndexToHeader(true);
         processor.setHashOutputFilename(true);
         // Since colorSpace is determined by reads platform, colorspace conversion is never needed for reads
@@ -290,8 +297,9 @@ public class LastagAligner extends AbstractAligner {
 
     /**
      * Returns LastToCompact processor, initialized with correct input file
-      */
+     */
     // FROM LastagAligner.align()
+    @Override
     public AbstractAlignmentToCompactMode getNativeAlignmentToCompactMode(final String outputBasename) {
         // import counts & entries
         final LastToCompactMode processor = new LastToCompactMode();
@@ -309,7 +317,8 @@ public class LastagAligner extends AbstractAligner {
      * "alignerOptions" format should match aligner's command-line specification e.g. "-key1 value1 -key2 value2"
      * This method is declared abstract so that aligners have control over the parsing of their arguments.
      */
-    public void setAlignerOptions(String options) {
+    @Override
+    public void setAlignerOptions(final String options) {
         maxGapsAllowed = DEFAULT_MAX_GAPS_ALLOWED;
         gapOpeningCost = DEFAULT_GAP_OPENING_COST;
         matchQuality   = MatchQuality.valueOf(DEFAULT_MATCH_QUALITY);
@@ -436,7 +445,7 @@ public class LastagAligner extends AbstractAligner {
      * Currently disabled so that user can specify
      *  -r <match-score> -q <mismatch-score> on the command line
      * parsed through setAlignerOptions. See also scoreOptions()
-      */
+     */
     private String substitutionMatrixOption() {
         // prepare colorSpaceMatrix file, if needed
         if (colorSpace) {
@@ -529,8 +538,8 @@ public class LastagAligner extends AbstractAligner {
         if (colorSpace) {
             minReadLength = minReadLength - 1;
         }
-        int numMatch;
-        int numMisMatch;
+        final int numMatch;
+        final int numMisMatch;
         switch (matchQuality) {
             case PERFECT_MATCHES_ONLY:
                 numMatch = minReadLength;
@@ -549,7 +558,7 @@ public class LastagAligner extends AbstractAligner {
                 numMatch = minReadLength - numMisMatch;
                 break;
             case BEST_MATCH:
-                numMatch = (int) (minReadLength / 3);
+                numMatch = minReadLength / 3;
                 numMisMatch = 0;
                 // ensures threshold is low enough to search all potential candidates
                 break;
@@ -598,16 +607,33 @@ public class LastagAligner extends AbstractAligner {
         }
         final File fastaReferenceFile = prepareReference(referenceFileOrDbBasename);
         forceMakeParentDir(databasePathPrefix);
-        final ExecuteProgram executor = new ExecuteProgram();
-        final String command = String.format("%s/%s -v -s%s -a %s %s %s ",
-                pathToExecutables,
-                LASTDB_EXEC,
-                LASTDB_DEFAULT_MEMORY, // -s
-                getAlphabet(),
-                databasePathPrefix,
-                fastaReferenceFile.toString().replaceAll(" ", "\\ "));
-        executor.executeToLog(command, LastagAligner.class, Level.INFO, "LastAG[__OUTPUT_TAG__]: ");
-        listFiles("Database files", databaseDirectory);
+
+        // full path to lastdb executable
+        final String command = FilenameUtils.concat(pathToExecutables, LASTDB_EXEC);
+        final CommandLine commandLine = createCommandLine(command);
+        commandLine.addArgument("-v");
+        commandLine.addArgument("-s" + LASTDB_DEFAULT_MEMORY);
+        commandLine.addArgument("-a");
+        commandLine.addArgument(getAlphabet());
+        commandLine.addArgument(databasePathPrefix);
+        commandLine.addArgument(fastaReferenceFile.toString());
+
+        LOG.info("About to execute " + commandLine);
+        final StopWatch timer = new StopWatch();
+        timer.start();
+        final DefaultExecutor executor = new DefaultExecutor();
+        OutputStream logStream = null;
+        try {
+            logStream = new LoggingOutputStream(LastagAligner.class, Level.INFO, "");
+            executor.setStreamHandler(new PumpStreamHandler(logStream));
+
+            final int exitValue = executor.execute(commandLine);
+            LOG.info("Exit value = " + exitValue);
+        } finally {
+            IOUtils.closeQuietly(logStream);
+        }
+        LOG.info("Command executed in: " + timer.toString());
+        listFiles(databaseDirectory);
         return matchingExtension(databasePathPrefix, extensions);
     }
 
@@ -625,53 +651,60 @@ public class LastagAligner extends AbstractAligner {
         assert pathToExecutables != null : "path to executables must be defined.";
         validateScoreOptions();
 
-        try {
-            final File nativeReads = prepareReads(readsFile);
-            if (databaseName == null) {
-                databaseName = getDefaultDbNameForReferenceFile(referenceFile);
-            }
-            final File[] indexedReference = indexReference(referenceFile);
-            LOG.info("Searching..");
-            forceMakeParentDir(outputBasename);
-            // if (colorSpace) { prepareMatrixFile(); }
-
-            final ExecuteProgram executor = new ExecuteProgram();
-
-            final String command = String.format("%s/%s -a%d -b%d -d%d -e%d " +
-                    " -m%d -l%d -s%d -j%d -z -i%s -v -f%d %s %s -o %s %s %s",
-                    pathToExecutables,
-                    LASTAG_EXEC,
-                    gapOpeningCost,                      // -a
-                    gapExtentionCost,                    // -b
-                    dThresholdOption(minReadLength),     // -d
-                    eThresholdOption(minReadLength),     // -e
-                    getSeedMaxMultiplicity(),            // -m
-                    minSeedDepth,                 // -l
-                    DEFAULT_STRAND_DIRECTION,     // -s
-                    DEFAULT_OUTPUT_TYPE,          // -j
-                    DEFAULT_QUERY_BATCH_SIZE,     // -i
-                    DEFAULT_OUTPUT_FORMAT,        // -f
-                    alignerOptions,
-                    scoreOptions(),                      // previously substitutionMatrixOption()
-                    outputBasename,                      // -o
-                    getDatabasePath(databaseDirectory, databaseName),
-                    nativeReads);
-
-            executor.executeToLog(command, LastagAligner.class, Level.INFO,
-                    "LastAG[__OUTPUT_TAG__]: ");
-
-            // convert native alignment into compact reads
-            final File[] buildResults = processAlignment(referenceFile, readsFile, outputBasename);
-            FileUtils.deleteQuietly(new File(outputBasename + ".maf"));
-            FileUtils.deleteQuietly(new File(outputBasename + ".counts"));
-
-            // also delete the colorSpaceMatrix file, if created
-            FileUtils.deleteQuietly(new File(matrixFilename));
-
-            return buildResults;
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        final File nativeReads = prepareReads(readsFile);
+        if (databaseName == null) {
+            databaseName = getDefaultDbNameForReferenceFile(referenceFile);
         }
+        final File[] indexedReference = indexReference(referenceFile);
+        LOG.info("Searching..");
+        forceMakeParentDir(outputBasename);
+        // if (colorSpace) { prepareMatrixFile(); }
+
+        // full path to lastag executable
+        final String command = FilenameUtils.concat(pathToExecutables, LASTAG_EXEC);
+        final CommandLine commandLine = createCommandLine(command);
+        commandLine.addArgument("-a" + gapOpeningCost);
+        commandLine.addArgument("-b" + gapExtentionCost);
+        commandLine.addArgument("-d" + dThresholdOption(minReadLength));
+        commandLine.addArgument("-e" + eThresholdOption(minReadLength));
+        commandLine.addArgument("-m" + getSeedMaxMultiplicity());
+        commandLine.addArgument("-l" + minSeedDepth);
+        commandLine.addArgument("-s" + DEFAULT_STRAND_DIRECTION);
+        commandLine.addArgument("-j" + DEFAULT_OUTPUT_TYPE);
+        commandLine.addArgument("-z");
+        commandLine.addArgument("-i" + DEFAULT_QUERY_BATCH_SIZE);
+        commandLine.addArgument("-v");
+        commandLine.addArgument("-f" + DEFAULT_OUTPUT_FORMAT);
+        commandLine.addArguments(alignerOptions, false);       // don't quote these options
+        commandLine.addArguments(scoreOptions(), false);       // don't quote these options
+        commandLine.addArgument("-o");
+        commandLine.addArgument(outputBasename);
+        commandLine.addArgument(getDatabasePath(databaseDirectory, databaseName));
+        commandLine.addArgument(nativeReads.toString());
+
+        LOG.info("About to execute " + commandLine);
+        final StopWatch timer = new StopWatch();
+        timer.start();
+        final DefaultExecutor executor = new DefaultExecutor();
+        OutputStream logStream = null;
+        try {
+            logStream = new LoggingOutputStream(LastagAligner.class, Level.INFO, "");
+            executor.setStreamHandler(new PumpStreamHandler(logStream));
+
+            final int exitValue = executor.execute(commandLine);
+            LOG.info("Exit value = " + exitValue);
+        } finally {
+            IOUtils.closeQuietly(logStream);
+        }
+        LOG.info("Command executed in: " + timer.toString());
+
+        // convert native alignment into compact reads
+        final File[] buildResults = processAlignment(referenceFile, readsFile, outputBasename);
+        FileUtils.deleteQuietly(new File(outputBasename + ".maf"));
+        FileUtils.deleteQuietly(new File(outputBasename + ".counts"));
+
+        // also delete the colorSpaceMatrix file, if created
+        FileUtils.deleteQuietly(new File(matrixFilename));
+        return buildResults;
     }
 }

@@ -15,14 +15,17 @@ import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
 import edu.cornell.med.icb.goby.modes.CompactToFastaMode;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import org.apache.commons.exec.CommandLine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 
 /**
  * @author Fabien Campagne
@@ -103,7 +106,7 @@ public abstract class AbstractAligner implements Aligner {
         this.qualityFilterParameters = qualityFilterParameters;
     }
 
-    public void setAmbiguityThreshold(int mParameter) {
+    public void setAmbiguityThreshold(final int mParameter) {
         this.mParameter = mParameter;
     }
 
@@ -166,13 +169,15 @@ public abstract class AbstractAligner implements Aligner {
         return true;
     }
 
-    protected void listFiles(final String desc, final String dir) {
-        /*   assert dir!=null: "dir cannot be null";
-       System.err.println("Listing files for " + desc);
-       final File[] files = new File(dir).listFiles();
-       for (final File file : files) {
-           System.err.println("file:" + file.toString());
-       } */
+    protected void listFiles(final String directory) {
+        assert StringUtils.isNotBlank(directory) : "Directory must not be blank or null";
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Files in directory: " + directory);
+            final Collection databaseFiles = FileUtils.listFiles(new File(directory), null, false);
+            for (final Object databaseFile : databaseFiles) {
+                LOG.debug(databaseFile);
+            }
+        }
     }
 
     /**
@@ -209,7 +214,7 @@ public abstract class AbstractAligner implements Aligner {
     /**
      * Ensure *parent* directories exist.
      */
-    public void forceMakeParentDir(final String path) throws IOException {
+    public void forceMakeParentDir(final String path) {
         final String parentDir = FilenameUtils.getFullPath(path);
         forceMakeDir(parentDir);
     }
@@ -226,7 +231,9 @@ public abstract class AbstractAligner implements Aligner {
         }
         try {
             // once again, forceMkdir will sometimes fail if the directory exists. Do not believe its javadoc.
-            if (!dir.exists()) FileUtils.forceMkdir(dir);
+            if (!dir.exists()) {
+                FileUtils.forceMkdir(dir);
+            }
         } catch (IOException e) {
             LOG.warn("Error trying to create directory. Trying to recover.", e);
         }
@@ -298,8 +305,7 @@ public abstract class AbstractAligner implements Aligner {
         }
     }
 
-    public File[] processAlignment(File referenceFile, File readsFile, String outputBasename) throws InterruptedException, IOException {
-
+    public File[] processAlignment(final File referenceFile, final File readsFile, final String outputBasename) throws IOException {
         forceMakeParentDir(outputBasename);
         final AbstractAlignmentToCompactMode processor = getNativeAlignmentToCompactMode(outputBasename);
 
@@ -320,4 +326,20 @@ public abstract class AbstractAligner implements Aligner {
         return buildResults(outputBasename);
     }
 
+    /**
+     * Create a new {@link org.apache.commons.exec.CommandLine} prepending the
+     * command with "nice" if running on a Unix system.
+     * @param command The path to the command to run
+     * @return A command line object potential with "nice" prepended
+     */
+    protected CommandLine createCommandLine(final String command) {
+        final CommandLine commandLine;
+        if (SystemUtils.IS_OS_UNIX) {
+            commandLine = CommandLine.parse("nice");
+            commandLine.addArgument(command);
+        } else {
+            commandLine = CommandLine.parse(command);
+        }
+        return commandLine;
+    }
 }
