@@ -34,7 +34,7 @@ public class Annotation {
         segments = new ObjectArrayList<Segment>();
         this.id = id;
         this.chromosome = chromosome;
-        strand="N/A";
+        strand = "N/A";
     }
 
     public void sortSegments() {
@@ -55,8 +55,8 @@ public class Annotation {
 
     public int getLength() {
         int result = 0;
-        for (final Segment s : segments) {
-            result += s.end - s.start + 1;
+        for (final Segment segment : segments) {
+            result += segment.end - segment.start + 1;
         }
         return result;
     }
@@ -78,7 +78,7 @@ public class Annotation {
     }
 
     public void write(final PrintWriter annotationWriter) {
-        //Chromosome Name Strand  Ensembl Gene ID Ensembl Exon ID Exon Chr Start (bp)     Exon Chr End (bp)
+        // Chromosome Name Strand  Ensembl Gene ID Ensembl Exon ID Exon Chr Start (bp) Exon Chr End (bp)
         for (final Segment segment : segments) {
             annotationWriter.write(chromosome);
             annotationWriter.write('\t');

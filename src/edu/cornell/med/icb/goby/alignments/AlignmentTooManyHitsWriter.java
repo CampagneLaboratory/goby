@@ -69,11 +69,6 @@ public class AlignmentTooManyHitsWriter implements Closeable {
         }
     }
 
-    /**
-     * Obtain the too many hits set that is being prepared. Set values on the set, then call appendTooManyHits()
-     *
-     * @return the current alignment entry.
-     */
     public Alignments.AmbiguousLocation.Builder getNewAmbiguousLocation() {
         return newAmbiguousLocation;
     }
@@ -91,7 +86,6 @@ public class AlignmentTooManyHitsWriter implements Closeable {
 
     /**
      * Append the current too many hits record.
-     * - previously appendTooManyHits()
      */
     public void append() {
         assert (tooManyHits.hasAlignerThreshold()) : "append> writer missing aligner threshold";

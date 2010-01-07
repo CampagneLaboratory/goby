@@ -153,8 +153,8 @@ import java.io.IOException;
  *
  * aln    bwa aln [-n maxDiff] [-o maxGapO] [-e maxGapE] [-d nDelTail] [-i
  *        nIndelEnd] [-k maxSeedDiff] [-l seedLen] [-t nThrds] [-cRN]  [-M
- *        misMsc]  [-O  gapOsc]  [-E gapEsc] <in.db.fasta> <in.query.fq> >
- *        <out.sai>
+ *        misMsc]  [-O  gapOsc]  [-E gapEsc] &lt;in.db.fasta&gt; &lt;in.query.fq&gt; &gt;
+ *        &lt;out.sai&gt;
  *
  *        Find the SA coordinates of the input reads.
  *
@@ -258,7 +258,7 @@ public class BWAAligner extends AbstractAligner {
     }
 
     /**
-     * Return the reference file converter used by aligner algorithm
+     * Return the reference file converter used by aligner algorithm.
      */
     @Override
     public CompactToFastaMode getReferenceCompactToFastaConverter() {
@@ -276,7 +276,7 @@ public class BWAAligner extends AbstractAligner {
 
 
     /**
-     * Return the reads file converter used by aligner algorithm
+     * Return the reads file converter used by aligner algorithm.
      */
     @Override
     public CompactToFastaMode getReadsCompactToFastaConverter() {
@@ -294,12 +294,13 @@ public class BWAAligner extends AbstractAligner {
 
 
     /**
-     * Returns SAMToCompact processor, initialized with correct input file
+     * Returns {@link edu.cornell.med.icb.goby.modes.SAMToCompactMode} processor, initialized
+     * with correct input file.
      */
     @Override
     public AbstractAlignmentToCompactMode getNativeAlignmentToCompactMode(final String outputBasename) {
         // can not initialize, unless correct input file exists
-        assert (samBinaryFilename!=null) : "Can not initialize, unless SAM Binary input file exists";
+        assert (samBinaryFilename != null) : "Can not initialize, unless SAM Binary input file exists";
         assert (new File(samBinaryFilename).exists()) : "Can not initialize, unless correct SAM Binary file exists";
         final SAMToCompactMode processor = new SAMToCompactMode();
         processor.setInputFile(samBinaryFilename);
@@ -387,7 +388,7 @@ public class BWAAligner extends AbstractAligner {
      * otherwise bwa may fail (despite what the documentation says).
      */
     private String getLOption() {
-        return (minReadLength>=seedLength) ? ("-l " + seedLength) : "";
+        return (minReadLength >= seedLength) ? ("-l " + seedLength) : "";
     }
 
 

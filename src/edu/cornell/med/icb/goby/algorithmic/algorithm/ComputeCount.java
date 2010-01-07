@@ -28,7 +28,8 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -37,6 +38,11 @@ import java.util.Collections;
 import java.util.Map;
 
 public class ComputeCount {
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(ComputeCount.class);
+
     /**
      * Number of reads that start ON or BEFORE this position.
      */
@@ -58,7 +64,6 @@ public class ComputeCount {
 
     protected int fixedLength;
     protected boolean isFixedLength;
-    private static final Logger LOG = Logger.getLogger(ComputeCount.class);
     protected boolean startPopulateInitialized;
 
     /**
@@ -74,9 +79,9 @@ public class ComputeCount {
         super();
         startKeys = new IntArrayList();
         endKeys = new IntArrayList();
-        starts = new Int2IntOpenHashMap(); //new Int2IntAVLTreeMap();
-        ends = new Int2IntOpenHashMap(); //Int2IntAVLTreeMap();
-        fixedLength = -1; //not fixed Length
+        starts = new Int2IntOpenHashMap();
+        ends = new Int2IntOpenHashMap();
+        fixedLength = -1;   // not fixed Length
         countPerBase = new Int2IntOpenHashMap();
         countKeys = new IntArrayList();
 
@@ -162,15 +167,14 @@ public class ComputeCount {
     /**
      * Get the number of reads ends before the position.
      *
-     * @param position
-     * @return
+     * @param position The end position to use
+     * @return The number of reads
      */
     protected final int getNumberOfReadsWithEndAt(final int position) {
         return ends.get(position + 1);
     }
 
     public void accumulate() {
-
         LOG.debug("accumulating starts");
         startKeys.addAll(starts.keySet());
         Collections.sort(startKeys);
@@ -196,7 +200,6 @@ public class ComputeCount {
         joints.addAll(starts.keySet());
         joints.addAll(ends.keySet());
         LOG.debug("joints  " + joints);
-//        System.out.println("joints  " + joints);
         final int[] jointsArray = joints.toArray(new int[joints.size()]);
         int prevCount = 0;
         int count;
@@ -213,13 +216,10 @@ public class ComputeCount {
             }
             count = startValue - endValue;
             if (count != prevCount) {
-                //               System.out.println("Key  "+curKey+" Count " + count);
                 countPerBase.put(curKey, count);
                 prevCount = count;
             }
         }
-//        countPerBase.put(joints.last()+2,0);
-//        System.out.println("countPerbase    "+countPerBase);
         countKeys.addAll(countPerBase.keySet());
         Collections.sort(countKeys);
     }
@@ -299,10 +299,9 @@ public class ComputeCount {
     }
 
     /**
-     * Calculate base count by reference for the input. Returns position -> count map.
+     * Calculate base count by reference for the input.
      *
      * @param reads
-     * @return result
      */
     public void baseRun(final ObjectList<Read> reads) {
         populate(reads);
@@ -333,7 +332,6 @@ public class ComputeCount {
      */
 
     public void populate(final int startPosition, final int endPosition, final boolean forwardStrand) {
-
         populate(startPosition, endPosition);
     }
 }

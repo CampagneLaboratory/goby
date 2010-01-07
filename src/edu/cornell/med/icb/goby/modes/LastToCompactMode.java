@@ -76,8 +76,8 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
     /**
      * default behavior is to convert both maf and count files
      */
-    protected boolean onlyMafFile = false;
-    protected boolean onlyCountsFile = false;
+    protected boolean onlyMafFile;
+    protected boolean onlyCountsFile;
 
     @Override
     public String getModeName() {

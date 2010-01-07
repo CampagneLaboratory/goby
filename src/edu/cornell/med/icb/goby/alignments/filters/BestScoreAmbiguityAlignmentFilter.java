@@ -21,7 +21,8 @@ package edu.cornell.med.icb.goby.alignments.filters;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.Arrays;
 
@@ -30,12 +31,13 @@ import java.util.Arrays;
  * @author Fabien Campagne
  */
 public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFilter {
-
-    public static Logger LOG = Logger.getLogger(BestScoreAmbiguityAlignmentFilter.class);
-
+    /**
+     * Used to log debug and informational messages.
+     */
+    public static final Log LOG = LogFactory.getLog(BestScoreAmbiguityAlignmentFilter.class);
 
     /**
-     * A array of of read-name-index to the number of fewest mismatches.
+     * An array of of read-name-index to the number of fewest mismatches.
      */
     private final float[] indexToBestScore;
 
@@ -43,7 +45,6 @@ public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFil
      * A array of read-name-index to the count of reads with the same fewest mismatches.
      */
     private final short[] indexToCountAtBestScore;
-
 
     /**
      * The k value for the filter.
@@ -86,7 +87,6 @@ public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFil
         this.startTime = System.currentTimeMillis();
     }
 
-
     public void setHeader(final AlignmentReader reader) {
         // do nothing
     }
@@ -119,8 +119,6 @@ public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFil
             indexToBestScore[index] = score;
             indexToCountAtBestScore[index] = 1;
         }
-
-
     }
 
     /**
@@ -160,7 +158,6 @@ public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFil
      */
     @Override
     public synchronized void postProcessing() {
-
     }
 
     int willSkip;

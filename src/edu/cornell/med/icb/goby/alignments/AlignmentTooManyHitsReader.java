@@ -22,7 +22,8 @@ import com.google.protobuf.CodedInputStream;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,7 +38,10 @@ import java.io.InputStream;
  *         Time: 6:36:04 PM
  */
 public class AlignmentTooManyHitsReader {
-    private static final Logger LOG = Logger.getLogger(AlignmentTooManyHitsReader.class);
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(AlignmentTooManyHitsReader.class);
 
     private InputStream tooManyHitsStream;
     private Int2IntMap queryIndex2NumHits = new Int2IntOpenHashMap();

@@ -68,6 +68,9 @@ public class Merge {
      * TODO: what data structures are used and how they are updated
      */
 
+    /**
+     * Used to log debug and informational messages.
+     */
     private static final Logger LOG = Logger.getLogger(Merge.class);
     private String geneTranscriptMapFile;
     private boolean verbose;

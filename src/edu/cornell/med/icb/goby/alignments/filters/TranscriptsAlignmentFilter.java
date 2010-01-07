@@ -27,7 +27,8 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.FileNotFoundException;
 
@@ -39,7 +40,10 @@ import java.io.FileNotFoundException;
  * @author Fabien Campagne
  */
 public final class TranscriptsAlignmentFilter extends AbstractAlignmentEntryFilter {
-    private static final Logger LOG = Logger.getLogger(TranscriptsAlignmentFilter.class);
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(TranscriptsAlignmentFilter.class);
 
     /**
      * The helps with relationships between genes and transcripts.

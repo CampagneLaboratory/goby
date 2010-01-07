@@ -268,7 +268,7 @@ public class LastagAligner extends AbstractAligner {
     }
 
     /**
-     * Return the reference file converter used by aligner algorithm
+     * Return the reference file converter used by aligner algorithm.
      */
     @Override
     public CompactToFastaMode getReferenceCompactToFastaConverter() {
@@ -286,7 +286,7 @@ public class LastagAligner extends AbstractAligner {
 
 
     /**
-     * Return the reads file converter used by aligner algorithm
+     * Return the reads file converter used by aligner algorithm.
      */
     @Override
     public CompactToFastaMode getReadsCompactToFastaConverter() {
@@ -303,9 +303,8 @@ public class LastagAligner extends AbstractAligner {
     }
 
     /**
-     * Returns LastToCompact processor, initialized with correct input file
+     * Returns LastToCompact processor, initialized with correct input file.
      */
-    // FROM LastagAligner.align()
     @Override
     public AbstractAlignmentToCompactMode getNativeAlignmentToCompactMode(final String outputBasename) {
         // import counts & entries
@@ -354,11 +353,11 @@ public class LastagAligner extends AbstractAligner {
         // colorspace but command-line values will override these defaults
         if (CLI.isKeywordGiven(opts, "r")) {
             matchScore = CLI.getIntOption(opts, "r", -999);
-            assert (matchScore!=-999) : "Parsing error";
+            assert (matchScore != -999) : "Parsing error";
         }
         if (CLI.isKeywordGiven(opts, "q")) {
             misMatchCost = CLI.getIntOption(opts, "q", -999);
-            assert (misMatchCost!=-999) : "Parsing error";
+            assert (misMatchCost != -999) : "Parsing error";
         }
 
         // options specific to "bwa aln" tool
@@ -366,14 +365,14 @@ public class LastagAligner extends AbstractAligner {
         alignerOptions += (CLI.isKeywordGiven(opts, "t")) ? " -t " + CLI.getFloatOption(opts, "t", -999) : "";
         alignerOptions += (CLI.isKeywordGiven(opts, "g")) ? " -g " + CLI.getFloatOption(opts, "g", -999) : "";
         // INT -c -x -y -a -m -l -k -w
-        alignerOptions += (CLI.isKeywordGiven(opts, "c")) ? " -c " + CLI.getIntOption  (opts, "c", -999) : "";
-        alignerOptions += (CLI.isKeywordGiven(opts, "x")) ? " -x " + CLI.getIntOption  (opts, "x", -999) : "";
-        alignerOptions += (CLI.isKeywordGiven(opts, "y")) ? " -y " + CLI.getIntOption  (opts, "y", -999) : "";
-        alignerOptions += (CLI.isKeywordGiven(opts, "m")) ? " -m " + CLI.getIntOption  (opts, "m", -999) : ""; // getSeedMaxMultiplicity()
-        alignerOptions += (CLI.isKeywordGiven(opts, "k")) ? " -k " + CLI.getIntOption  (opts, "k", -999) : "";
-        alignerOptions += (CLI.isKeywordGiven(opts, "w")) ? " -w " + CLI.getIntOption  (opts, "w", -999) : "";
+        alignerOptions += (CLI.isKeywordGiven(opts, "c")) ? " -c " + CLI.getIntOption(opts, "c", -999) : "";
+        alignerOptions += (CLI.isKeywordGiven(opts, "x")) ? " -x " + CLI.getIntOption(opts, "x", -999) : "";
+        alignerOptions += (CLI.isKeywordGiven(opts, "y")) ? " -y " + CLI.getIntOption(opts, "y", -999) : "";
+        alignerOptions += (CLI.isKeywordGiven(opts, "m")) ? " -m " + CLI.getIntOption(opts, "m", -999) : ""; // getSeedMaxMultiplicity()
+        alignerOptions += (CLI.isKeywordGiven(opts, "k")) ? " -k " + CLI.getIntOption(opts, "k", -999) : "";
+        alignerOptions += (CLI.isKeywordGiven(opts, "w")) ? " -w " + CLI.getIntOption(opts, "w", -999) : "";
         // BOOLEAN -v
-        alignerOptions += (CLI.isKeywordGiven(opts, "v")) ? " -v "                                       : "";
+        alignerOptions += (CLI.isKeywordGiven(opts, "v")) ? " -v " : "";
         // EXCLUDED -f -u -s -p -i -j -z -d -e
         // see : DEFAULT_STRAND_DIRECTION, DEFAULT_OUTPUT_TYPE,
         // DEFAULT_QUERY_BATCH_SIZE, DEFAULT_OUTPUT_FORMAT, ...
@@ -407,7 +406,6 @@ public class LastagAligner extends AbstractAligner {
         this.matchQuality = MatchQuality.valueOf(matchQuality);
     }
 
-
     /**
      * The match/mismatch substitutionMatrix for residue pair scores is defined
      * in ColorSpaceConverter.getColorSpaceSubstitutionMatrix() as 2 for a
@@ -438,7 +436,7 @@ public class LastagAligner extends AbstractAligner {
             final int ratio = (colorSpace) ? DEFAULT_MATCH_TO_MISMATCH_RATIO_CS : DEFAULT_MATCH_TO_MISMATCH_RATIO_NT;
             matchScore = ratio * misMatchCost;
         }
-        if (mParameter<1) {
+        if (mParameter < 1) {
             mParameter = 1; // must be at least 1
         }
     }
@@ -551,11 +549,11 @@ public class LastagAligner extends AbstractAligner {
                 numMisMatch = 0;
                 break;
             case ONE_MISMATCH:
-                numMatch = minReadLength-1;
+                numMatch = minReadLength - 1;
                 numMisMatch = 1;
                 break;
             case TWO_MISMATCHES:
-                numMatch = minReadLength-2;
+                numMatch = minReadLength - 2;
                 numMisMatch = 2;
                 break;
             case IDENTITY_95:

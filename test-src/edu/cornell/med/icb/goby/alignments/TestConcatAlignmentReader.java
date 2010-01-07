@@ -20,7 +20,8 @@ package edu.cornell.med.icb.goby.alignments;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -38,7 +39,10 @@ import java.io.IOException;
  *         Time: 6:33:41 PM
  */
 public class TestConcatAlignmentReader {
-    private static final Logger LOG = Logger.getLogger(TestConcatAlignmentReader.class);
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(TestConcatAlignmentReader.class);
 
     private static final String BASE_TEST_DIR = "test-results/alignments/concat/";
 

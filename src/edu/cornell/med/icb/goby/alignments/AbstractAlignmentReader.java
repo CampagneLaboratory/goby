@@ -84,7 +84,7 @@ public abstract class AbstractAlignmentReader {
 
     public int getNumberOfTargets() {
         assert isHeaderLoaded() : "Header must be loaded to access number of targets";
-        return Math.max(0,numberOfTargets);
+        return Math.max(0, numberOfTargets);
     }
 
     /*

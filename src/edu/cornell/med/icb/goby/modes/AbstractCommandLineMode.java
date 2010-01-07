@@ -200,7 +200,7 @@ public abstract class AbstractCommandLineMode {
      * Parse the JSAP arguments defined for the mode. Different arguments can be defined for
      * each mode.
      * @see #loadJsapFromResource()
-     * @see #loadJsapFromResource(java.util.Map);
+     * @see #loadJsapFromResource(java.util.Map)
      *
      * @param args command line arguments.
      * @param helpValues A map of option names to help strings
@@ -220,7 +220,7 @@ public abstract class AbstractCommandLineMode {
      * Parse the JSAP arguments defined for the mode. Different arguments can be defined for
      * each mode.
      * @see #loadJsapFromResource()
-     * @see #loadJsapFromResource(java.util.Map);
+     * @see #loadJsapFromResource(java.util.Map)
      *
      * @param args command line arguments.
      * @return Parsed arguments.

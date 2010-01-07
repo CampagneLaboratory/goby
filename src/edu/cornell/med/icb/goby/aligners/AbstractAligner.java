@@ -231,7 +231,7 @@ public abstract class AbstractAligner implements Aligner {
      */
     public void forceMakeDir(final String path) {
         final File dir = new File(path);
-        if (path.length()==0) {
+        if (path.length() == 0) {
             // TODO: add unit test with various working directories, including "./" case
             // file is perhaps in current directory?
             return;

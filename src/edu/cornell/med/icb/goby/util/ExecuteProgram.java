@@ -36,7 +36,10 @@ import java.io.OutputStream;
  *         Time: 1:49:35 PM
  */
 public class ExecuteProgram {
-    Logger log = Logger.getLogger(ExecuteProgram.class);
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Logger log = Logger.getLogger(ExecuteProgram.class);
 
     public void execute(final String command) throws InterruptedException, IOException {
         execute(command, System.out);

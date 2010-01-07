@@ -76,7 +76,7 @@ public class AnnotationCount {
      * @param searchKey the position on chromosome to get value
      * @param keyList e.g. startKeys or endKeys
      * @param map e.g. starts or ends
-     * @return, the count on position index on chromosome
+     * @return the count on position index on chromosome
      */
     public final int getValue(final int searchKey, final IntList keyList, final Int2IntMap map) {
         if (map.containsKey(searchKey)) {

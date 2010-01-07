@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2009-2010 Institute for Computational Biomedicine,
- *                         Weill Medical College of Cornell University
+ * Copyright (C) 2010 Institute for Computational Biomedicine,
+ *                    Weill Medical College of Cornell University
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.counts;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
@@ -27,7 +28,7 @@ import java.io.IOException;
  *         Date: Jun 15, 2009
  *         Time: 6:37:21 PM
  */
-public interface CountsReaderI {
+public interface CountsReaderI extends Closeable {
     /**
      * Return the position along the sequence where the count is observed.
      *
@@ -57,11 +58,6 @@ public interface CountsReaderI {
      * @return
      */
     int getCount();
-
-    /**
-     * {@inheritDoc}
-     */
-    void close() throws IOException;
 
     /**
      * Advance up to or past the specified position. The reader is advanced until the position returned by getPosition()
