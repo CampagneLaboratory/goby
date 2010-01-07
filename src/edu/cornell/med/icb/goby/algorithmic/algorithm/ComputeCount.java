@@ -288,7 +288,7 @@ public class ComputeCount {
         return result;
     }
 
-    private int ONE_MEGABYTE = 1000000;
+    private final int ONE_MEGABYTE = 1000000;
 
     private String getHeapSize() {
         final long totalMemory = Runtime.getRuntime().totalMemory();
@@ -304,7 +304,7 @@ public class ComputeCount {
      * @param reads
      * @return result
      */
-    public void baseRun(final ObjectList<Read> reads) throws IOException {
+    public void baseRun(final ObjectList<Read> reads) {
         populate(reads);
         if (LOG.isDebugEnabled()) {
             LOG.debug("populate " + getHeapSize());
@@ -332,7 +332,7 @@ public class ComputeCount {
      * @param forwardStrand  True when the read matches the forward strand, false otherwise.
      */
 
-    public void populate(int startPosition, int endPosition, boolean forwardStrand) {
+    public void populate(final int startPosition, final int endPosition, final boolean forwardStrand) {
 
         populate(startPosition, endPosition);
     }

@@ -33,8 +33,8 @@ import java.io.IOException;
  */
 public class AlignmentTooManyHitsWriter implements Closeable {
     private boolean tooManyHitsWritten;
-    private FileOutputStream tooManyHitsOutput;
-    private Alignments.AlignmentTooManyHits.Builder tooManyHits;
+    private final FileOutputStream tooManyHitsOutput;
+    private final Alignments.AlignmentTooManyHits.Builder tooManyHits;
     private Alignments.AmbiguousLocation.Builder newAmbiguousLocation;
 
 

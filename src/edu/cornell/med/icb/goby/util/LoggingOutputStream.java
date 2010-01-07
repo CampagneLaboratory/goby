@@ -87,6 +87,7 @@ public class LoggingOutputStream extends OutputStream {
      * Write a character to the output stream. At the end of the line this will log the output.
      * @param b the character written to the output stream.
      */
+    @Override
     public void write(int b) {
         if (b == 13) {
             // Trace CR as LF

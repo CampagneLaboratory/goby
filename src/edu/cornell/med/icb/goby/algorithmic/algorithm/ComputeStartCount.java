@@ -41,6 +41,8 @@ public class ComputeStartCount extends ComputeCount {
      * Indicates which strand(s) to collect.
      */
     int focusOnStrand;
+
+    // TODO: Change to enum
     public static int POSITIVE_STRAND_ONLY = 0;
     public static int REVERSE_STRAND_ONLY = 1;
     public static int BOTH_STRAND = 2;
@@ -48,7 +50,7 @@ public class ComputeStartCount extends ComputeCount {
     /**
      * @param focusOnStrand Indicates which strand(s) should be inspected.
      */
-    public ComputeStartCount(int focusOnStrand) {
+    public ComputeStartCount(final int focusOnStrand) {
         super();
         this.focusOnStrand = focusOnStrand;
         starts = new Int2IntOpenHashMap();
@@ -65,7 +67,7 @@ public class ComputeStartCount extends ComputeCount {
     }
 
     @Override
-    public void populate(final int startPosition, final int endPosition, boolean forwardStrand) {
+    public void populate(final int startPosition, final int endPosition, final boolean forwardStrand) {
 
         //    assert forwardStrand && startPosition <= endPosition ||
         //           !forwardStrand && endPosition <= startPosition : "start (resp. end) must occur before end (start) on forward (reverse) strand.";
@@ -79,12 +81,12 @@ public class ComputeStartCount extends ComputeCount {
 
         }
         if (forwardStrand && focusOnStrand == BOTH_STRAND || focusOnStrand == POSITIVE_STRAND_ONLY) {
-            int count = starts.get(beginPosition) + 1;
+            final int count = starts.get(beginPosition) + 1;
             starts.put(beginPosition, count);
 
         } else if (!forwardStrand && (focusOnStrand == BOTH_STRAND || focusOnStrand == REVERSE_STRAND_ONLY)) {
 
-            int count = starts.get(beginPosition) + 1;
+            final int count = starts.get(beginPosition) + 1;
             starts.put(beginPosition, count);
 
         }
@@ -109,14 +111,14 @@ public class ComputeStartCount extends ComputeCount {
         sortedStartPositions.addAll(startPositions);
         Collections.sort(sortedStartPositions);
 
-        int firstPosition = sortedStartPositions.get(0);
+        final int firstPosition = sortedStartPositions.get(0);
         writer.appendCount(0, firstPosition);
         int lengthConstant = 1;
         int count;
         int prevCount = 0;
 
         int currentIndex = 0;
-        int maxPosition = Integer.MAX_VALUE;
+        final int maxPosition = Integer.MAX_VALUE;
         int startPosition;
         for (currentIndex = 0; currentIndex < sortedStartPositions.size(); ++currentIndex) {
 
@@ -125,7 +127,9 @@ public class ComputeStartCount extends ComputeCount {
             //determine the stretch of constant values after this start position:
             lengthConstant = 1;
             for (int i = startPosition + 1; i < maxPosition; ++i) {
-                if (starts.get(i) == count) lengthConstant++;
+                if (starts.get(i) == count) {
+                    lengthConstant++;
+                }
                 else {
                     currentIndex += lengthConstant - 1;
                     break;
@@ -138,8 +142,8 @@ public class ComputeStartCount extends ComputeCount {
             if (starts.get(startPosition + lengthConstant) == 0) {
                 // going back to zero
                 // for how many positions?
-                int nextStart;
-                int length;
+                final int nextStart;
+                final int length;
                 if (currentIndex + lengthConstant >= sortedStartPositions.size()) {
                     // past the end, just append one more zero.
                     length = 1;

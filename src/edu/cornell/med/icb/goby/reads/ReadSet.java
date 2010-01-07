@@ -58,7 +58,7 @@ public class ReadSet {
         multiplicityMap.clear();
     }
 
-    public void add(int readIndex, int multiplicity) {
+    public void add(final int readIndex, final int multiplicity) {
         assert readIndex >= 0 : "read indices must be positive";
         filter.add(readIndex);
         if (multiplicity >= smallestStoredMultiplicity) {
@@ -67,7 +67,7 @@ public class ReadSet {
         }
     }
 
-    public boolean contains(int readIndex) {
+    public boolean contains(final int readIndex) {
         return filter.contains(readIndex);
 
     }
@@ -79,21 +79,21 @@ public class ReadSet {
      * @param suffix
      * @throws IOException
      */
-    public void save(String basename, String suffix) throws IOException {
-        String filename = basename + "-" + suffix + ".filter";
-        FileOutputStream stream = new FileOutputStream(filename);
-        OutputBitStream out = new OutputBitStream(stream);
+    public void save(final String basename, final String suffix) throws IOException {
+        final String filename = basename + "-" + suffix + ".filter";
+        final FileOutputStream stream = new FileOutputStream(filename);
+        final OutputBitStream out = new OutputBitStream(stream);
 
 
         // sort in increasing order:
-        IntList sorted = new IntArrayList();
+        final IntList sorted = new IntArrayList();
         sorted.addAll(filter);
         Collections.sort(sorted);
 
         // append to output:
         out.writeGamma(sorted.size());
         int previous = -1;
-        for (int readIndex : sorted) {
+        for (final int readIndex : sorted) {
             out.writeDelta(readIndex - previous);
             out.writeGamma(multiplicityMap.get(readIndex));
             previous = readIndex;
@@ -109,8 +109,8 @@ public class ReadSet {
      * @param suffix
      * @throws IOException
      */
-    public void load(String basename, String suffix) throws IOException {
-        String filename = basename + "-" + suffix + ".filter";
+    public void load(final String basename, final String suffix) throws IOException {
+        final String filename = basename + "-" + suffix + ".filter";
         load(new File(filename));
 
     }
@@ -120,16 +120,16 @@ public class ReadSet {
      * @param file File to load.
      * @throws IOException If an error occurs reading the read set file.
      */
-    public void load(File file) throws IOException {
-        FileInputStream stream = new FileInputStream(file);
-        InputBitStream in = new InputBitStream(stream);
+    public void load(final File file) throws IOException {
+        final FileInputStream stream = new FileInputStream(file);
+        final InputBitStream in = new InputBitStream(stream);
 
         filter.clear();
-        int numDeltas = in.readGamma();
+        final int numDeltas = in.readGamma();
         int previous = -1;
         for (int i = 0; i < numDeltas; i++) {
-            int delta = in.readDelta();
-            int multiplicity = in.readGamma();
+            final int delta = in.readDelta();
+            final int multiplicity = in.readGamma();
             final int readIndex = previous + delta;
             filter.add(readIndex);
             multiplicityMap.put(readIndex, multiplicity);
@@ -138,7 +138,7 @@ public class ReadSet {
         in.close();
     }
 
-    public void add(int readIndex) {
+    public void add(final int readIndex) {
         add(readIndex, 0);
     }
 
@@ -151,10 +151,12 @@ public class ReadSet {
      * @param readIndex
      * @return
      */
-    public int getMultiplicity(int readIndex) {
+    public int getMultiplicity(final int readIndex) {
         if (filter.contains(readIndex)) {
             return multiplicityMap.get(readIndex);
-        } else return 0;
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -163,8 +165,8 @@ public class ReadSet {
      * @param otherReadIndices Set of read indices to add.
      * @param multiplicity
      */
-    public void addAll(IntSet otherReadIndices, int multiplicity) {
-        for (int readIndex : otherReadIndices) {
+    public void addAll(final IntSet otherReadIndices, final int multiplicity) {
+        for (final int readIndex : otherReadIndices) {
             add(readIndex, multiplicity);
         }
     }
@@ -174,7 +176,7 @@ public class ReadSet {
      *
      * @param value
      */
-    public void smallestStoredMultiplicity(int value) {
+    public void smallestStoredMultiplicity(final int value) {
         multiplicityMap.defaultReturnValue(value);
         smallestStoredMultiplicity = value;
     }

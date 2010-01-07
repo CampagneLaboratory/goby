@@ -197,11 +197,11 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader
      */
     public Properties getStatistics() {
         int index = 1;
-        Properties result = new Properties();
-        for (AlignmentReader reader : this.readers) {
-            Properties localProps = reader.getStatistics();
+        final Properties result = new Properties();
+        for (final AlignmentReader reader : this.readers) {
+            final Properties localProps = reader.getStatistics();
 
-            for (Object key : localProps.keySet()) {
+            for (final Object key : localProps.keySet()) {
                 result.put("part" + index + "." + key.toString(), localProps.get(key));
             }
             index++;
@@ -218,7 +218,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader
      * @throws IOException
      */
     public void close() throws IOException {
-        for (AlignmentReader reader : readers) {
+        for (final AlignmentReader reader : readers) {
             reader.close();
         }
     }

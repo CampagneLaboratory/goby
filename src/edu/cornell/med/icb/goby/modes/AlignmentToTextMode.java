@@ -108,7 +108,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
         final AlignmentReader referenceReader = new AlignmentReader(inputFile);
         referenceReader.readHeader();
 
-        PrintWriter writer = outputFile == null ? new PrintWriter(System.out) :
+        final PrintWriter writer = outputFile == null ? new PrintWriter(System.out) :
                 new PrintWriter(new FileWriter(outputFile));
 
         // read the alignment:
@@ -123,7 +123,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 for (int i = 0; i < alignmentEntry.getMultiplicity(); ++i) {
 //                    System.out.println(startPosition+"   "+ startPosition + alignmentLength+
 //                            alignmentEntry.getMatchingReverseStrand());
-                    int queryIndex = alignmentEntry.getQueryIndex();
+                    final int queryIndex = alignmentEntry.getQueryIndex();
                     writer.write(String.format("%d\t%s\t%d\t%d\t%g\t%d\t%d\t%b%n",
                             queryIndex,
                             referenceName,

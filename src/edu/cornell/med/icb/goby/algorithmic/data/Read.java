@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.algorithmic.data;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 public class Read {
@@ -29,13 +30,17 @@ public class Read {
         this.end = end;
     }
 
-    public static final class ReadSortByStart implements Comparator<Read> {
+    public static final class ReadSortByStart implements Comparator<Read>, Serializable {
+        private static final long serialVersionUID = 7938501857256287597L;
+
         public int compare(final Read o1, final Read o2) {
             return o1.start - o2.start;
         }
     }
 
-    public static final class ReadSortByEnd implements Comparator<Read> {
+    public static final class ReadSortByEnd implements Comparator<Read>, Serializable {
+        private static final long serialVersionUID = 6267512969132795775L;
+
         public int compare(final Read o1, final Read o2) {
             return o1.end - o2.end;
         }

@@ -91,10 +91,12 @@ public class MergeCompactAlignmentsMode extends AbstractGobyMode {
         HELP_VALUES.put("[K_VALUE]", Integer.toString(K_NUM_OF_BEST_QUAL_TO_KEEP));
     }
 
+    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }

@@ -35,25 +35,25 @@ import java.io.IOException;
  *         Time: 10:26:58 AM
  */
 public class ReadsLoader {
-    private ReadSet readIndexFilter;
-    private MutableString sequence;
+    private final ReadSet readIndexFilter;
+    private final MutableString sequence;
 
     SequenceDigests[] digests = null;
-    private ObjectArrayList<byte[]> compressedReads;
+    private final ObjectArrayList<byte[]> compressedReads;
     private int numReads;
-    private File readsFile;
+    private final File readsFile;
     private static final int MAX_PROCESS_READS = Integer.MAX_VALUE;
 
     int readLength;
     private byte[] byteBuffer = null;
-    private int numberOfMismaches = 0;
+    private final int numberOfMismaches = 0;
 
 
     public int getReadLength() {
         return readLength;
     }
 
-    public ReadsLoader(ReadSet readIndexFilter, File readsFile) {
+    public ReadsLoader(final ReadSet readIndexFilter, final File readsFile) {
         this.readIndexFilter = readIndexFilter;
 
         compressedReads = new ObjectArrayList<byte[]>(1000000);
@@ -67,7 +67,7 @@ public class ReadsLoader {
     SequenceEncoder encoder;
 
 
-    public void setColorSpace(boolean colorSpace) {
+    public void setColorSpace(final boolean colorSpace) {
         this.colorSpace = colorSpace;
     }
 
@@ -98,8 +98,8 @@ public class ReadsLoader {
 
                     } else if (numberOfMismaches == 1) {
                         digests = new SequenceDigests[4];
-                        BooleanList mask1 = new BooleanArrayList();
-                        BooleanList mask2 = new BooleanArrayList();
+                        final BooleanList mask1 = new BooleanArrayList();
+                        final BooleanList mask2 = new BooleanArrayList();
                         for (int i = 0; i < readLength; i++) {
 
                             mask1.set(i, i % 2 == 1);
@@ -118,7 +118,7 @@ public class ReadsLoader {
 
                 final int readIndex = readEntry.getReadIndex();
                 final byte[] bytes = readEntry.getSequence().toByteArray();
-                for (SequenceDigests digest : digests) {
+                for (final SequenceDigests digest : digests) {
 
                     digest.digestAndStore(bytes, 0, readIndex);
                 }
@@ -132,7 +132,9 @@ public class ReadsLoader {
 
                 progress.lightUpdate();
 
-                if (numReads > MAX_PROCESS_READS) break;
+                if (numReads > MAX_PROCESS_READS) {
+                    break;
+                }
             }
             numReads++;
         }

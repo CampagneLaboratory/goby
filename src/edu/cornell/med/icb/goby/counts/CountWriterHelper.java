@@ -28,7 +28,7 @@ import java.io.IOException;
 public class CountWriterHelper {
     CountsWriter delegate;
 
-    public CountWriterHelper(CountsWriter delegate) {
+    public CountWriterHelper(final CountsWriter delegate) {
         this.delegate = delegate;
     }
 

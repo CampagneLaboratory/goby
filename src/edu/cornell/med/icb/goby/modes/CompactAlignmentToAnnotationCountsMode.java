@@ -74,10 +74,12 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     private ObjectSet<String> includeReferenceNames;
     private ObjectOpenHashSet<String> includeAnnotationTypes;
 
+    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
@@ -206,7 +208,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
                 for (final Annotation annot : annots) {
                     final String geneID = annot.id;
-                    String basename = inputFile;
+                    final String basename = inputFile;
                     if (includeAnnotationTypes.contains("gene")) {
 
                         final int geneStart = annot.getStart();
@@ -219,7 +221,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                         final int numExons = annot.segments.size();
 
 
-                        double geneRPKM = calculateRPKM(geneOverlapReads, annot.getLength(), numAlignedReadsInSample);
+                        final double geneRPKM = calculateRPKM(geneOverlapReads, annot.getLength(), numAlignedReadsInSample);
                         writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\t%d\t%d\t%n",
                                 basename,
                                 geneID,
@@ -251,7 +253,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                         final float exonDepth = algs[referenceIndex].averageReadsPerPosition(exonStart, exonEnd);
                         final int exonOverlapReads = algs[referenceIndex].readsOverlapSegmentCount(exonStart, exonEnd);
                         final int exonInsideReads = algs[referenceIndex].readsInSegmentCount(exonStart, exonEnd);
-                        double exonRPKM = calculateRPKM(exonOverlapReads, segment.getLength(), numAlignedReadsInSample);
+                        final double exonRPKM = calculateRPKM(exonOverlapReads, segment.getLength(), numAlignedReadsInSample);
                         if (includeAnnotationTypes.contains("exon")) {
                             writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\t\t%n",
                                     basename,
@@ -277,9 +279,9 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                             final float intronDepth = algs[referenceIndex].averageReadsPerPosition(intronStart, intronEnd);
                             final int intronOverlapReads = algs[referenceIndex].readsOverlapSegmentCount(intronStart, intronEnd);
                             final int intronInsideReads = algs[referenceIndex].readsInSegmentCount(intronStart, intronEnd);
-                            double intronRPKM = calculateRPKM(intronOverlapReads, intronSegment.getLength(), numAlignedReadsInSample);
+                            final double intronRPKM = calculateRPKM(intronOverlapReads, intronSegment.getLength(), numAlignedReadsInSample);
                             if (intronLength > 0) {
-                                if (includeAnnotationTypes.contains("intron"))
+                                if (includeAnnotationTypes.contains("intron")) {
                                     writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%e\t%g\t\t%n",
                                             basename,
                                             geneID,
@@ -294,6 +296,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                                             intronOverlapReads,
                                             intronRPKM,
                                             log2(intronRPKM)));
+                                }
                             }
                         }
                     }
@@ -315,15 +318,15 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      * @param x
      * @return log2(x+1)=Math.log1p(x)/Math.log(2)
      */
-    private double log2(double x) {
+    private double log2(final double x) {
 
         return Math.log1p(x) / LOG_2;
     }
 
-    private double calculateRPKM(int readCountInt, int annotLength, int geneOverlapReads) {
-        double readCount = readCountInt;
-        double length = annotLength; // in bases
-        double sampleReadCount = geneOverlapReads; // in read
+    private double calculateRPKM(final int readCountInt, final int annotLength, final int geneOverlapReads) {
+        final double readCount = readCountInt;
+        final double length = annotLength; // in bases
+        final double sampleReadCount = geneOverlapReads; // in read
         return readCount / (length / 1000.0f) / (sampleReadCount / 1E6f);
     }
 

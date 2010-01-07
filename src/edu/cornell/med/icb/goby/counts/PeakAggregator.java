@@ -45,7 +45,7 @@ public class PeakAggregator implements Iterator<Peak>, Iterable<Peak> {
     }
 
 
-    private Peak currentPeak;
+    private final Peak currentPeak;
 
     /**
      * Returns true if another peak is detected above the detection threshold.

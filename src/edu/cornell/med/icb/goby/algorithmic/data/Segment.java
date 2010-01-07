@@ -50,7 +50,7 @@ public class Segment implements Comparable<Segment> {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        final StringBuffer sb = new StringBuffer();
         sb.append(start);
         sb.append("-");
         sb.append(end);

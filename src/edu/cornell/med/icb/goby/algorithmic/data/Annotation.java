@@ -55,7 +55,7 @@ public class Annotation {
 
     public int getLength() {
         int result = 0;
-        for (Segment s : segments) {
+        for (final Segment s : segments) {
             result += s.end - s.start + 1;
         }
         return result;
@@ -63,13 +63,13 @@ public class Annotation {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        final StringBuffer sb = new StringBuffer();
         sb.append("[ ");
         sb.append(chromosome);
         sb.append(' ');
         sb.append(id);
         sb.append(" ");
-        for (Segment segment : segments) {
+        for (final Segment segment : segments) {
             sb.append(segment);
             sb.append(" ");
         }
@@ -77,9 +77,9 @@ public class Annotation {
         return sb.toString();
     }
 
-    public void write(PrintWriter annotationWriter) {
+    public void write(final PrintWriter annotationWriter) {
         //Chromosome Name Strand  Ensembl Gene ID Ensembl Exon ID Exon Chr Start (bp)     Exon Chr End (bp)
-        for (Segment segment : segments) {
+        for (final Segment segment : segments) {
             annotationWriter.write(chromosome);
             annotationWriter.write('\t');
             annotationWriter.write(strand);

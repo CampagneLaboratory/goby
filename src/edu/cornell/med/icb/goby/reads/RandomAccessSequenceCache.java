@@ -255,7 +255,7 @@ public class RandomAccessSequenceCache {
     }
 
 
-    public int getSequenceSize(int referenceIndex) {
+    public int getSequenceSize(final int referenceIndex) {
         return size(referenceIndex);
     }
 }

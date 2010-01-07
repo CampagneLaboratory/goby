@@ -43,23 +43,23 @@ import java.util.Properties;
  *         Time: 5:53:50 PM
  */
 public class AlignmentWriter implements Closeable {
-    private Alignments.AlignmentCollection.Builder collectionBuilder;
-    private MessageChunksWriter entriesChunkWriter;
+    private final Alignments.AlignmentCollection.Builder collectionBuilder;
+    private final MessageChunksWriter entriesChunkWriter;
     private IndexedIdentifier queryIdentifiers;
     private IndexedIdentifier targetIdentifiers;
     private boolean headerWritten;
-    private FileOutputStream headerOutput;
+    private final FileOutputStream headerOutput;
     private int[] queryLengths;
 
     private String[] queryIdentifiersArray;
     private String[] targetIdentifiersArray;
     private int maxTargetIndex = -1;
     private int maxQueryIndex = -1;
-    private Properties stats;
+    private final Properties stats;
     private boolean statsWritten;
-    private FileWriter statsWriter;
-    private String basename;
-    private int numberOfAlignedReads = 0;
+    private final FileWriter statsWriter;
+    private final String basename;
+    private int numberOfAlignedReads;
 
     public AlignmentWriter(final String outputBasename) throws IOException {
         final FileOutputStream alignmentEntries = new FileOutputStream(outputBasename + ".entries");
@@ -297,21 +297,21 @@ public class AlignmentWriter implements Closeable {
         maxTargetIndex = numTargets - 1;
     }
 
-    public void putStatistic(String description, String value) {
+    public void putStatistic(final String description, final String value) {
         statsWritten = false;
         stats.put(description, value);
     }
 
-    public void putStatistic(String description, double value) {
+    public void putStatistic(final String description, final double value) {
         putStatistic(description, String.format("%3.3g", value));
     }
 
-    public void putStatistic(String description, int value) {
+    public void putStatistic(final String description, final int value) {
         putStatistic(description, String.format("%d", value));
     }
 
-    public void setStatistics(Properties statistics) {
-        for (Object key : statistics.keySet()) {
+    public void setStatistics(final Properties statistics) {
+        for (final Object key : statistics.keySet()) {
             putStatistic(key.toString(), statistics.get(key).toString());
         }
     }

@@ -72,10 +72,12 @@ public class CountsArchiveToWiggleMode extends AbstractGobyMode {
     private String alternativeCountArchiveExtension;
     private int resolution;
 
+    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
@@ -113,9 +115,10 @@ public class CountsArchiveToWiggleMode extends AbstractGobyMode {
             }
             filterByReferenceNames = true;
         }
-        if (outputFile == null)
-            outputFile = FilenameUtils.getBaseName(inputBasename) +".wiggle"+(includeReferenceNameComas != null ? ("-"+includeReferenceNameComas) :
-                    "-all") ;
+        if (outputFile == null) {
+            outputFile = FilenameUtils.getBaseName(inputBasename) + ".wiggle" + (includeReferenceNameComas != null ? ("-" + includeReferenceNameComas) :
+                    "-all");
+        }
 
         return this;
     }

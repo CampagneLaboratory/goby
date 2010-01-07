@@ -184,7 +184,7 @@ public class Merge {
         int inputFileIndex = 0;
         // use the merged too many hits info:
         final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(outputFile);
-        IntSet queriesIndicesAligned = new IntOpenHashSet();
+        final IntSet queriesIndicesAligned = new IntOpenHashSet();
 
         for (final File inputFile : inputFiles) {
             final String basename = inputFile.toString();
@@ -198,7 +198,7 @@ public class Merge {
                 //    System.out.println("Processing queryIndex "+entry.getQueryIndex());
                 if (entryFilter.shouldRetainEntry(entry)) {
                     final int queryIndex = entry.getQueryIndex();
-                    int matchLength = specificTmhReader.getLengthOfMatch(queryIndex);
+                    final int matchLength = specificTmhReader.getLengthOfMatch(queryIndex);
 
                     if (!tmhReader.isQueryAmbiguous(queryIndex, k, matchLength)) {
                         //switch in the mergedTargetIndex and append to writer:
@@ -237,18 +237,18 @@ public class Merge {
             writer.printStats(System.out);
         }
 
-        float numQuerySequences = maxNumberOfReads;
-        float percentWritten = ((float) wrote) *100f/ totalNumberOfLogicalEntries;
-        float skippedPercent = ((float) skipped *100f/ totalNumberOfLogicalEntries );
-        float skippedTooManyHitsPercent =
+        final float numQuerySequences = maxNumberOfReads;
+        final float percentWritten = ((float) wrote) *100f/ totalNumberOfLogicalEntries;
+        final float skippedPercent = ((float) skipped *100f/ totalNumberOfLogicalEntries );
+        final float skippedTooManyHitsPercent =
                 ((float) skippedTooManyHits) *100f / totalNumberOfLogicalEntries ;
-        float SkippedNotBestScorePercent =
+        final float SkippedNotBestScorePercent =
                 ((float) skippedNotBestScore *100f/ totalNumberOfLogicalEntries);
         float percentAligned = queriesIndicesAligned.size();
         percentAligned /= numQuerySequences;
         percentAligned *= 100f;
 
-        double percentEntriesRetained = ((double) wrote) / numQuerySequences * 100d;
+        final double percentEntriesRetained = ((double) wrote) / numQuerySequences * 100d;
         writer.putStatistic("entries.written.number", wrote);
         writer.putStatistic("entries.written.percent", percentWritten);
         writer.putStatistic("entries.input.logical.number", totalNumberOfLogicalEntries);
@@ -294,13 +294,13 @@ public class Merge {
      * @param outputFile Destination basename for merged too many hits data structure.
      * @throws IOException
      */
-    public static void prepareMergedTooManyHits(final String outputFile, int numberOfReads, final String... basenames) throws IOException {
+    public static void prepareMergedTooManyHits(final String outputFile, final int numberOfReads, final String... basenames) throws IOException {
         final Int2IntMap tmhMap = new Int2IntOpenHashMap();
         tmhMap.defaultReturnValue(0);
         // accumulate too many hits over all the input alignments:
         int consensusAlignerThreshold = Integer.MAX_VALUE;
         //todo refactor to use array:
-        int[] queryIndex2MaxDepth = new int[numberOfReads];
+        final int[] queryIndex2MaxDepth = new int[numberOfReads];
         Arrays.fill(queryIndex2MaxDepth, -1);
         // calculate maxDepth for each query sequence:
         for (final String basename : basenames) {
@@ -311,7 +311,7 @@ public class Merge {
 
             for (final int queryIndex : tmhReader.getQueryIndices()) {
                 final int currentMatchLength = tmhReader.getLengthOfMatch(queryIndex);
-                int maxDepth = Math.max(currentMatchLength, queryIndex2MaxDepth[queryIndex]);
+                final int maxDepth = Math.max(currentMatchLength, queryIndex2MaxDepth[queryIndex]);
                 if (maxDepth != -1) {
                     queryIndex2MaxDepth[queryIndex] = maxDepth;
                 }
@@ -324,7 +324,7 @@ public class Merge {
 
             final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
             for (final int queryIndex : tmhReader.getQueryIndices()) {
-                int depthForBasename = tmhReader.getLengthOfMatch(queryIndex);
+                final int depthForBasename = tmhReader.getLengthOfMatch(queryIndex);
                 if (depthForBasename == queryIndex2MaxDepth[queryIndex]) {
                     if (depthForBasename != 1) {
                         final int newValue = tmhMap.get(queryIndex) + tmhReader.getNumberOfHits(queryIndex);

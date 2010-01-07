@@ -34,7 +34,7 @@ public class CompressedRead {
     byte[] data;
 
     static final Checksum digester = new CRC32();
-    private int hashCode;
+    private final int hashCode;
     /**
      * Read index is not part of the hashCode and not considerd by the equals method. It is only here to help
      * map back to the position of the read in the inoput file.
@@ -53,7 +53,7 @@ public class CompressedRead {
         if (!(o instanceof CompressedRead)) {
             return false;
         }
-        CompressedRead other = (CompressedRead) o;
+        final CompressedRead other = (CompressedRead) o;
 
         return Arrays.equals(data, other.data);
 
@@ -72,7 +72,7 @@ public class CompressedRead {
         }
     }
 
-    public final static long hashCodeLong(final byte[] data) {
+    public static long hashCodeLong(final byte[] data) {
         synchronized (digester) {
             digester.reset();
 
@@ -82,7 +82,7 @@ public class CompressedRead {
         }
     }
 
-    public final static long hashCodeLongNotSynchronized(final byte[] data) {
+    public static long hashCodeLongNotSynchronized(final byte[] data) {
         digester.reset();
 
         digester.update(data, 0, data.length);

@@ -58,24 +58,24 @@ public class TestLastToCompact {
 
 
         // lookup tables
-        Int2IntOpenHashMap     queryIndex2NumberOfHits            = new Int2IntOpenHashMap    ();
+        final Int2IntOpenHashMap     queryIndex2NumberOfHits            = new Int2IntOpenHashMap    ();
 
-        Int2FloatOpenHashMap   queryIndex2Score                   = new Int2FloatOpenHashMap  ();
-        Int2IntOpenHashMap     queryIndex2Multiplicity            = new Int2IntOpenHashMap    ();
-        Int2IntOpenHashMap     queryIndex2NumberOfIndels          = new Int2IntOpenHashMap    ();
-        Int2IntOpenHashMap     queryIndex2NumberOfMismatches      = new Int2IntOpenHashMap    ();
-        Int2IntOpenHashMap     queryIndex2Position                = new Int2IntOpenHashMap    ();
-        Int2IntOpenHashMap     queryIndex2QueryAlignedLength      = new Int2IntOpenHashMap    ();
-        Int2IntOpenHashMap     queryIndex2QueryPosition           = new Int2IntOpenHashMap    ();
-        Int2IntOpenHashMap     queryIndex2TargetIndex             = new Int2IntOpenHashMap    ();
-        Int2BooleanOpenHashMap queryIndex2MatchingReverseStrand   = new Int2BooleanOpenHashMap();
-        Int2IntOpenHashMap     queryIndex2TargetAlignedLength     = new Int2IntOpenHashMap    ();
+        final Int2FloatOpenHashMap   queryIndex2Score                   = new Int2FloatOpenHashMap  ();
+        final Int2IntOpenHashMap     queryIndex2Multiplicity            = new Int2IntOpenHashMap    ();
+        final Int2IntOpenHashMap     queryIndex2NumberOfIndels          = new Int2IntOpenHashMap    ();
+        final Int2IntOpenHashMap     queryIndex2NumberOfMismatches      = new Int2IntOpenHashMap    ();
+        final Int2IntOpenHashMap     queryIndex2Position                = new Int2IntOpenHashMap    ();
+        final Int2IntOpenHashMap     queryIndex2QueryAlignedLength      = new Int2IntOpenHashMap    ();
+        final Int2IntOpenHashMap     queryIndex2QueryPosition           = new Int2IntOpenHashMap    ();
+        final Int2IntOpenHashMap     queryIndex2TargetIndex             = new Int2IntOpenHashMap    ();
+        final Int2BooleanOpenHashMap queryIndex2MatchingReverseStrand   = new Int2BooleanOpenHashMap();
+        final Int2IntOpenHashMap     queryIndex2TargetAlignedLength     = new Int2IntOpenHashMap    ();
 
         // enter alignment data
         int qii;
         while (reader.hasNext()) {
 
-            Alignments.AlignmentEntry aln = reader.nextAlignmentEntry();
+            final Alignments.AlignmentEntry aln = reader.nextAlignmentEntry();
             qii = aln.getQueryIndex();
 
             final int numHits = queryIndex2NumberOfHits.get ( qii );
@@ -160,24 +160,24 @@ public class TestLastToCompact {
 
 
         // lookup tables
-        Int2IntOpenHashMap     queryIndex2NumberOfHits            = new Int2IntOpenHashMap    ();
+        final Int2IntOpenHashMap     queryIndex2NumberOfHits            = new Int2IntOpenHashMap    ();
 
-        Int2FloatOpenHashMap   queryIndex2Score                   = new Int2FloatOpenHashMap  ();
-        Int2IntOpenHashMap     queryIndex2Multiplicity            = new Int2IntOpenHashMap    ();
-        Int2IntOpenHashMap     queryIndex2NumberOfIndels          = new Int2IntOpenHashMap    ();
-        Int2IntOpenHashMap     queryIndex2NumberOfMismatches      = new Int2IntOpenHashMap    ();
-        Int2IntOpenHashMap     queryIndex2Position                = new Int2IntOpenHashMap    ();
-        Int2IntOpenHashMap     queryIndex2QueryAlignedLength      = new Int2IntOpenHashMap    ();
-        Int2IntOpenHashMap     queryIndex2QueryPosition           = new Int2IntOpenHashMap    ();
-        Int2IntOpenHashMap     queryIndex2TargetIndex             = new Int2IntOpenHashMap    ();
-        Int2BooleanOpenHashMap queryIndex2MatchingReverseStrand   = new Int2BooleanOpenHashMap();
-        Int2IntOpenHashMap     queryIndex2TargetAlignedLength     = new Int2IntOpenHashMap    ();
+        final Int2FloatOpenHashMap   queryIndex2Score                   = new Int2FloatOpenHashMap  ();
+        final Int2IntOpenHashMap     queryIndex2Multiplicity            = new Int2IntOpenHashMap    ();
+        final Int2IntOpenHashMap     queryIndex2NumberOfIndels          = new Int2IntOpenHashMap    ();
+        final Int2IntOpenHashMap     queryIndex2NumberOfMismatches      = new Int2IntOpenHashMap    ();
+        final Int2IntOpenHashMap     queryIndex2Position                = new Int2IntOpenHashMap    ();
+        final Int2IntOpenHashMap     queryIndex2QueryAlignedLength      = new Int2IntOpenHashMap    ();
+        final Int2IntOpenHashMap     queryIndex2QueryPosition           = new Int2IntOpenHashMap    ();
+        final Int2IntOpenHashMap     queryIndex2TargetIndex             = new Int2IntOpenHashMap    ();
+        final Int2BooleanOpenHashMap queryIndex2MatchingReverseStrand   = new Int2BooleanOpenHashMap();
+        final Int2IntOpenHashMap     queryIndex2TargetAlignedLength     = new Int2IntOpenHashMap    ();
 
         // enter alignment data
         int qii;
         while (reader.hasNext()) {
 
-            Alignments.AlignmentEntry aln = reader.nextAlignmentEntry();
+            final Alignments.AlignmentEntry aln = reader.nextAlignmentEntry();
             qii = aln.getQueryIndex();
 
             final int numHits = queryIndex2NumberOfHits.get ( qii );

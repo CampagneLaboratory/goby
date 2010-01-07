@@ -53,7 +53,6 @@ import java.util.Arrays;
  * @author Fabien Campagne
  */
 public class CountArchiveToPeakAnnotationsMode extends AbstractGobyMode {
-
     /**
      * The mode name.
      */
@@ -76,10 +75,12 @@ public class CountArchiveToPeakAnnotationsMode extends AbstractGobyMode {
     private String alternativeCountsName;
     private int detectionThreshold;
 
+    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
@@ -133,9 +134,9 @@ public class CountArchiveToPeakAnnotationsMode extends AbstractGobyMode {
         reader.close();
 
         // read counts archive:
-        CountsArchiveReader countArchiveReaders[] = new CountsArchiveReader[inputFiles.length];
+        final CountsArchiveReader[] countArchiveReaders = new CountsArchiveReader[inputFiles.length];
         int i = 0;
-        for (String inputFile : basenames) {
+        for (final String inputFile : basenames) {
             countArchiveReaders[i++] = new CountsArchiveReader(inputFile, alternativeCountsName);
         }
 
@@ -143,13 +144,13 @@ public class CountArchiveToPeakAnnotationsMode extends AbstractGobyMode {
         // More precisely, we generate an annotation across the widest peak that can be called with the sum of counts
         // across all the input samples.
         final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots = new Object2ObjectOpenHashMap<String, ObjectList<Annotation>>();
-        PrintWriter annotationWriter = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
+        final PrintWriter annotationWriter = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
         for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
-            String referenceId = backwards.getId(referenceIndex).toString();
+            final String referenceId = backwards.getId(referenceIndex).toString();
             System.out.println("Processing reference " + referenceId);
-            CountsReaderI[] readers = new CountsReaderI[countArchiveReaders.length];
+            final CountsReaderI[] readers = new CountsReaderI[countArchiveReaders.length];
             int readerIndex = 0;
-            for (CountsArchiveReader archive : countArchiveReaders) {
+            for (final CountsArchiveReader archive : countArchiveReaders) {
 
                 if (archive.getIdentifier(referenceIndex) != null) {
 
@@ -160,14 +161,14 @@ public class CountArchiveToPeakAnnotationsMode extends AbstractGobyMode {
                     }
                 }
             }
-            AnyTransitionCountsIterator iterator = new AnyTransitionCountsIterator(readers);
+            final AnyTransitionCountsIterator iterator = new AnyTransitionCountsIterator(readers);
 
-            PeakAggregator peakAggregator = new PeakAggregator(iterator);
+            final PeakAggregator peakAggregator = new PeakAggregator(iterator);
             peakAggregator.setPeakDetectionThreshold(detectionThreshold);
             while (peakAggregator.hasNext()) {
-                Peak peak = peakAggregator.next();
+                final Peak peak = peakAggregator.next();
 
-                ObjectList<Annotation> annotationList = allAnnots.get(referenceId);
+                final ObjectList<Annotation> annotationList = allAnnots.get(referenceId);
                 final Annotation annotation = new Annotation(referenceId + "." + peak.start + "." + peak.length, referenceId);
                 annotation.strand = "either";
                 annotation.addSegment(new Segment(peak.start, peak.start + peak.length, "id", "either"));

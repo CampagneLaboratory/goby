@@ -50,7 +50,7 @@ public class OffsetCountsReader implements Cloneable, CountsReaderI {
     /**
      * {@inheritDoc}
      */
-    public void skipTo(int position) throws IOException {
+    public void skipTo(final int position) throws IOException {
         delegate.skipTo(position - offset);
     }
 
@@ -79,7 +79,7 @@ public class OffsetCountsReader implements Cloneable, CountsReaderI {
         delegate.nextTransition();
     }
 
-    public OffsetCountsReader(CountsReader delegate, int offset) {
+    public OffsetCountsReader(final CountsReader delegate, final int offset) {
         this.delegate = delegate;
         this.offset = offset;
     }
@@ -89,7 +89,7 @@ public class OffsetCountsReader implements Cloneable, CountsReaderI {
      *
      * @param offset New value that is being added to count transition positions.
      */
-    public void setOffset(int offset) {
+    public void setOffset(final int offset) {
         this.offset = offset;
     }
 }

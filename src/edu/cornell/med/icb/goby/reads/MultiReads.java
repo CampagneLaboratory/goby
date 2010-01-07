@@ -30,8 +30,8 @@ public class MultiReads {
     int readIndex = -1;
     int currentByteIndex = 0;
     ByteArrayList bytes = new ByteArrayList();
-    private IntArrayList ends = new IntArrayList();
-    private IntArrayList starts = new IntArrayList();
+    private final IntArrayList ends = new IntArrayList();
+    private final IntArrayList starts = new IntArrayList();
 
     public void newRead() {
         // previous read ends at previous index.
@@ -40,7 +40,7 @@ public class MultiReads {
         starts.set(readIndex, currentByteIndex);
     }
 
-    public void addByte(byte base) {
+    public void addByte(final byte base) {
         currentByteIndex += 1;
         bytes.add(base);
 

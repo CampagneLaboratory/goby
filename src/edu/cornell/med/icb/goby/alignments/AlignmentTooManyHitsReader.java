@@ -37,14 +37,14 @@ import java.io.InputStream;
  *         Time: 6:36:04 PM
  */
 public class AlignmentTooManyHitsReader {
-    private Logger LOG = Logger.getLogger(AlignmentTooManyHitsReader.class);
+    private static final Logger LOG = Logger.getLogger(AlignmentTooManyHitsReader.class);
 
     private InputStream tooManyHitsStream;
     private Int2IntMap queryIndex2NumHits = new Int2IntOpenHashMap();
     /**
      * A map from query index to depth/length of match
      */
-    private Int2IntMap queryIndex2Depth = new Int2IntOpenHashMap();
+    private final Int2IntMap queryIndex2Depth = new Int2IntOpenHashMap();
     private int alignerThreshold;
 
     public AlignmentTooManyHitsReader(final String basename) throws IOException {
@@ -171,7 +171,11 @@ public class AlignmentTooManyHitsReader {
      * @return True or false.
      */
     public final boolean isQueryAmbiguous(final int queryIndex, final int k, final int matchLength) {
-        if ( matchLength<getLengthOfMatch(queryIndex)) return true;
-        else return isQueryAmbiguous(queryIndex, k);
+        if ( matchLength<getLengthOfMatch(queryIndex)) {
+            return true;
+        }
+        else {
+            return isQueryAmbiguous(queryIndex, k);
+        }
     }
 }

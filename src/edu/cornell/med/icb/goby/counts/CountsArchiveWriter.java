@@ -59,7 +59,7 @@ public class CountsArchiveWriter implements Closeable {
      * @param countArchiveModifier the extension to write the archive.
      * @throws IOException If an error occurs preparing the packaged counts.
      */
-    public CountsArchiveWriter(String basename, String countArchiveModifier) throws IOException {
+    public CountsArchiveWriter(final String basename, final String countArchiveModifier) throws IOException {
         final String physicalFilename = basename + "."+countArchiveModifier;
         final File tobedeleted = new File(physicalFilename);
         // delete before writing since the compound file writer supports appending.

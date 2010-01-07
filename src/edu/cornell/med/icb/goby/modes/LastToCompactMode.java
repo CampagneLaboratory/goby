@@ -79,10 +79,12 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
     protected boolean onlyMafFile = false;
     protected boolean onlyCountsFile = false;
 
+    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
@@ -90,7 +92,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
     /**
      * If onlyMafFile is set to true, then onlyCountsFile is set to false
      */
-    public void setOnlyMafFile(boolean onlyMafFile) {
+    public void setOnlyMafFile(final boolean onlyMafFile) {
         this.onlyMafFile = onlyMafFile;
         if (onlyMafFile) {
             this.onlyCountsFile = false;
@@ -100,7 +102,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
     /**
      * If onlyCountsFile is set to true, then onlyMafFile is set to false
      */
-    public void setOnlyCountsFile(boolean onlyCountsFile) {
+    public void setOnlyCountsFile(final boolean onlyCountsFile) {
         this.onlyCountsFile = onlyCountsFile;
         if (onlyCountsFile) {
             this.onlyMafFile = false;
@@ -131,8 +133,9 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
         return this;
     }
 
-    protected int scan(ReadSet readIndexFilter, IndexedIdentifier targetIds, AlignmentWriter writer,
-                     AlignmentTooManyHitsWriter tmhWriter) throws IOException {
+    @Override
+    protected int scan(final ReadSet readIndexFilter, final IndexedIdentifier targetIds, final AlignmentWriter writer,
+                     final AlignmentTooManyHitsWriter tmhWriter) throws IOException {
 
         int numAligns = 0;
 
@@ -152,7 +155,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
 
             final ProgressLogger progress = new ProgressLogger(LOG);
             final AlignmentStats stats = new AlignmentStats();
-            int[] readLengths = new int[numberOfReads];
+            final int[] readLengths = new int[numberOfReads];
 
             // first pass: collect minimum score to keep each queryEntry
             // second pass: write to compact alignment file for those entries with score above threshold

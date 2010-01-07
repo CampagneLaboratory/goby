@@ -32,7 +32,7 @@ import java.io.InputStream;
  *         Time: 3:25:30 PM
  */
 public class CountsReader implements Closeable, CountsReaderI {
-    private InputBitStream input;
+    private final InputBitStream input;
     protected static final int END_OF_DATA_MARKER = 277492431;
     private boolean endOfStream;
     private int deltaCount;
@@ -187,11 +187,13 @@ public class CountsReader implements Closeable, CountsReaderI {
      * @param position
      * @throws IOException
      */
-    public void skipTo(int position) throws IOException {
+    public void skipTo(final int position) throws IOException {
         // skip to the specified position
         while (hasNextTransition()) {
             nextTransition();
-            if (getPosition() >= position) break;
+            if (getPosition() >= position) {
+                break;
+            }
         }
     }
 }

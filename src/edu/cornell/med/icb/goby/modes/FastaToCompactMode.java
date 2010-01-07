@@ -54,10 +54,12 @@ public class FastaToCompactMode extends AbstractGobyMode {
     private int sequencePerChunk = 10000;
     private boolean excludeSequences;
 
+    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }

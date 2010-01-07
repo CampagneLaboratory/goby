@@ -83,10 +83,12 @@ public class SplitFastxMode extends AbstractGobyMode {
                 Integer.toString(MAX_READS_PER_FILE_DEFAULT));
     }
 
+    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }

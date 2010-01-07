@@ -69,7 +69,7 @@ public class TallyBasesMode extends AbstractGobyMode {
     private String alternativeCountArhive;
     private String genomeFilename;
     private String genomeCacheFilename;
-    private int windowSize = 10;
+    private final int windowSize = 10;
     private String offsetString;
     private double cutoff;
     /**
@@ -77,10 +77,12 @@ public class TallyBasesMode extends AbstractGobyMode {
      */
     private double sampleRate;
 
+    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
@@ -142,24 +144,24 @@ public class TallyBasesMode extends AbstractGobyMode {
             System.err.println("Exactly two basenames are supported at this time.");
             System.exit(1);
         }
-        CountsArchiveReader archives[] = new CountsArchiveReader[basenames.length];
+        final CountsArchiveReader[] archives = new CountsArchiveReader[basenames.length];
         int i = 0;
-        for (String basename : basenames) {
+        for (final String basename : basenames) {
             archives[i++] = new CountsArchiveReader(basename, alternativeCountArhive);
         }
 
-        CountsArchiveReader archiveA = archives[0];
-        CountsArchiveReader archiveB = archives[1];
+        final CountsArchiveReader archiveA = archives[0];
+        final CountsArchiveReader archiveB = archives[1];
         // keep only common reference sequences between the two input count archives.
-        ObjectSet<String> identifiers = new ObjectOpenHashSet<String>();
+        final ObjectSet<String> identifiers = new ObjectOpenHashSet<String>();
         identifiers.addAll(archiveA.getIdentifiers());
         identifiers.retainAll(archiveB.getIdentifiers());
         // find the optimal offset A vs B:
-        int offset = offsetString.equals("auto") ? optimizeOffset(archiveA, archiveB, identifiers) : Integer.parseInt(offsetString);
+        final int offset = offsetString.equals("auto") ? optimizeOffset(archiveA, archiveB, identifiers) : Integer.parseInt(offsetString);
         System.out.println("offset: "
                 + offset);
 
-        RandomAccessSequenceCache cache = new RandomAccessSequenceCache();
+        final RandomAccessSequenceCache cache = new RandomAccessSequenceCache();
 
         if (cache.canLoad(genomeCacheFilename)) {
             try {
@@ -185,24 +187,24 @@ public class TallyBasesMode extends AbstractGobyMode {
 
         System.out.println("Will use genome cache basename: " + genomeCacheFilename);
         cache.save(genomeCacheFilename);
-        RandomAdapter random = new RandomAdapter(new MersenneTwister(new Date()));
+        final RandomAdapter random = new RandomAdapter(new MersenneTwister(new Date()));
 
-        double delta = cutoff;
+        final double delta = cutoff;
         final int countThreshold = 30;
-        PrintStream output = new PrintStream(outputFilename);
+        final PrintStream output = new PrintStream(outputFilename);
         writeHeader(output, windowSize);
-        for (String referenceSequenceId : identifiers) {
+        for (final String referenceSequenceId : identifiers) {
             if (isReferenceIncluded(referenceSequenceId)) {
 
-                int referenceIndex = cache.getReferenceIndex(referenceSequenceId);
+                final int referenceIndex = cache.getReferenceIndex(referenceSequenceId);
                 if (referenceIndex != -1) {
                     // sequence in cache.
                     System.out.println("Processing sequence " + referenceSequenceId);
-                    double sumA = getSumOfCounts(archiveA.getCountReader(referenceSequenceId));
-                    double sumB = getSumOfCounts(archiveB.getCountReader(referenceSequenceId));
-                    int referenceSize = cache.getSequenceSize(referenceIndex);
+                    final double sumA = getSumOfCounts(archiveA.getCountReader(referenceSequenceId));
+                    final double sumB = getSumOfCounts(archiveB.getCountReader(referenceSequenceId));
+                    final int referenceSize = cache.getSequenceSize(referenceIndex);
                     // process this sequence:
-                    AnyTransitionCountsIterator iterator = new AnyTransitionCountsIterator(
+                    final AnyTransitionCountsIterator iterator = new AnyTransitionCountsIterator(
                             archiveA.getCountReader(referenceSequenceId),
                             new OffsetCountsReader(archiveB.getCountReader(referenceSequenceId), offset));
 
@@ -214,7 +216,7 @@ public class TallyBasesMode extends AbstractGobyMode {
 
                         if (countA + countB >= countThreshold) {
 
-                            double foldChange = Math.log1p(countA) - Math.log1p(countB) - Math.log(sumA) + Math.log(sumB);
+                            final double foldChange = Math.log1p(countA) - Math.log1p(countB) - Math.log(sumA) + Math.log(sumB);
                             if (foldChange >= delta || foldChange <= -delta) {
                                 if (random.nextDouble() < sampleRate) {
                                     tallyPosition(cache, referenceIndex, position, foldChange, windowSize,
@@ -233,19 +235,19 @@ public class TallyBasesMode extends AbstractGobyMode {
         output.close();
     }
 
-    private int optimizeOffset(CountsArchiveReader archiveA, CountsArchiveReader archiveB, ObjectSet<String> identifiers) throws IOException {
+    private int optimizeOffset(final CountsArchiveReader archiveA, final CountsArchiveReader archiveB, final ObjectSet<String> identifiers) throws IOException {
 
         long minDifferenceSeen = Long.MAX_VALUE;
         int optimalOffset = -1;
         for (int offset = -10; offset <= 10; offset++) {
             System.out.println("Trying offset=" + offset);
             long differenceSeen = 0;
-            for (String referenceSequenceId : identifiers) {
+            for (final String referenceSequenceId : identifiers) {
                 if (isReferenceIncluded(referenceSequenceId)) {
 
 
                     // process this sequence:
-                    AnyTransitionCountsIterator iterator = new AnyTransitionCountsIterator(
+                    final AnyTransitionCountsIterator iterator = new AnyTransitionCountsIterator(
                             archiveA.getCountReader(referenceSequenceId),
                             new OffsetCountsReader(archiveB.getCountReader(referenceSequenceId), offset));
                     while (iterator.hasNextTransition()) {
@@ -269,7 +271,7 @@ public class TallyBasesMode extends AbstractGobyMode {
 
     }
 
-    private double getSumOfCounts(CountsReader countReader) throws IOException {
+    private double getSumOfCounts(final CountsReader countReader) throws IOException {
         double sum = 0;
         while (countReader.hasNextTransition()) {
             countReader.nextTransition();
@@ -279,12 +281,12 @@ public class TallyBasesMode extends AbstractGobyMode {
         return sum;
     }
 
-    private boolean isReferenceIncluded(String referenceSequenceId) {
+    private boolean isReferenceIncluded(final String referenceSequenceId) {
         return this.includeReferenceNames.size() == 0 || this.includeReferenceNames.contains(referenceSequenceId);
     }
 
-    private void writeHeader(PrintStream output, int windowSize) {
-        MutableString buffer = new MutableString();
+    private void writeHeader(final PrintStream output, final int windowSize) {
+        final MutableString buffer = new MutableString();
         buffer.append("position");
         buffer.append('\t');
         buffer.append("referenceId");
@@ -309,28 +311,31 @@ public class TallyBasesMode extends AbstractGobyMode {
         output.print(buffer);
     }
 
-    private void tallyPosition(RandomAccessSequenceCache cache,
-                               int referenceIndex, int position, double foldChange, int windowSize,
-                               int referenceSize, String referenceId,
-                               PrintStream out, int countA, int countB, double sumA, double sumB) {
+    private void tallyPosition(final RandomAccessSequenceCache cache,
+                               final int referenceIndex, final int position, final double foldChange, final int windowSize,
+                               final int referenceSize, final String referenceId,
+                               final PrintStream out, final int countA, final int countB, final double sumA, final double sumB) {
         int minPosition = position - windowSize;
         int maxPosition = position + windowSize;
-        if (minPosition < 0) minPosition = 0;
+        if (minPosition < 0) {
+            minPosition = 0;
+        }
         if (maxPosition >= referenceSize) {
             maxPosition = referenceSize - 2;
         }
-        MutableString buffer = new MutableString();
+        final MutableString buffer = new MutableString();
         buffer.append(position);
         buffer.append('\t');
         buffer.append(referenceId);
         buffer.append('\t');
         for (int i = position - windowSize; i < position + windowSize; i++) {
 
-            char base;
+            final char base;
             if (i >= minPosition && i <= maxPosition) {
                 base = cache.get(referenceIndex, i);
-            } else
+            } else {
                 base = '-';
+            }
 
             buffer.append(base);
             buffer.append('\t');

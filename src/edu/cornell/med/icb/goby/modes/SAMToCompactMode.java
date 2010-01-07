@@ -52,7 +52,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode { // Abstra
     }
 
     //
-    public void setSamBinaryFilename(String samBinaryFilename) {
+    public void setSamBinaryFilename(final String samBinaryFilename) {
         this.samBinaryFilename = samBinaryFilename;
     }
 
@@ -66,10 +66,12 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode { // Abstra
     private static final Logger LOG = Logger.getLogger(SAMToCompactMode.class);
 
 
+    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
@@ -91,22 +93,23 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode { // Abstra
         return this;
     }
 
-    protected int scan(ReadSet readIndexFilter, IndexedIdentifier targetIds, AlignmentWriter writer,
-                     AlignmentTooManyHitsWriter tmhWriter) throws IOException {
+    @Override
+    protected int scan(final ReadSet readIndexFilter, final IndexedIdentifier targetIds, final AlignmentWriter writer,
+                     final AlignmentTooManyHitsWriter tmhWriter) throws IOException {
         int numAligns = 0;
         final ProgressLogger progress = new ProgressLogger(LOG);
         final SAMFileReader parser = new SAMFileReader(new File(inputFile));
         parser.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
 
 
-        int[] readLengths = new int[numberOfReads];
+        final int[] readLengths = new int[numberOfReads];
         final CloseableIterator<SAMRecord> recordCloseableIterator = parser.iterator();
 
         progress.start();
 
         while (recordCloseableIterator.hasNext()) {
-            SAMRecord samRecord = recordCloseableIterator.next();
-            int queryIndex = Integer.parseInt(samRecord.getReadName());
+            final SAMRecord samRecord = recordCloseableIterator.next();
+            final int queryIndex = Integer.parseInt(samRecord.getReadName());
 
             final int depth = samRecord.getReadLength();
             // save length
@@ -118,17 +121,17 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode { // Abstra
             }
 
             // SAM mismatch info must be available, o.w. skip record
-            String mismatches = (String) samRecord.getAttribute("MD");
+            final String mismatches = (String) samRecord.getAttribute("MD");
             // System.out.println("mismatches: " + mismatches);
             if (mismatches == null) {
                 continue;
             }
 
-            int targetIndex = Integer.parseInt(samRecord.getReferenceName());
+            final int targetIndex = Integer.parseInt(samRecord.getReferenceName());
             // positions reported by BWA appear to start at 1. We convert to start at zero.
-            int position = samRecord.getAlignmentStart()-1;
-            boolean reverseStrand = samRecord.getReadNegativeStrandFlag();
-            java.util.List<net.sf.samtools.AlignmentBlock> blocks = samRecord.getAlignmentBlocks();
+            final int position = samRecord.getAlignmentStart()-1;
+            final boolean reverseStrand = samRecord.getReadNegativeStrandFlag();
+            final java.util.List<net.sf.samtools.AlignmentBlock> blocks = samRecord.getAlignmentBlocks();
 
             float score = 0;
             int targetAlignedLength = 0;
@@ -138,12 +141,12 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode { // Abstra
             int multiplicity = 1;
 
             // count the number of mismatches:
-            for (char c : mismatches.toCharArray()) {
+            for (final char c : mismatches.toCharArray()) {
                 if (!Character.isDigit(c)) {
                     numMismatches++;
                 }
             }
-            for (CigarElement cigar : samRecord.getCigar().getCigarElements()) {
+            for (final CigarElement cigar : samRecord.getCigar().getCigarElements()) {
                 final int length = cigar.getLength();
                 switch (cigar.getOperator()) {
                     case M:
@@ -168,7 +171,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode { // Abstra
                 }
             }
             score -= numMismatches;
-            for (AlignmentBlock block : blocks) {
+            for (final AlignmentBlock block : blocks) {
                 // System.out.println("block length: " + block.getLength() + " readStart: " + block.getReadStart() + " referenceStart: " + block.getReferenceStart());
                 targetAlignedLength += block.getLength();
                 queryAlignedLength += block.getLength();
@@ -199,7 +202,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode { // Abstra
             currentEntry.setTargetIndex(targetIndex);
             final Alignments.AlignmentEntry alignmentEntry = currentEntry.build();
 
-            int numTotalHits = (Integer) samRecord.getAttribute("X0");
+            final int numTotalHits = (Integer) samRecord.getAttribute("X0");
 
             if (qualityFilter.keepEntry(depth, alignmentEntry)) {
                 // only write the entry if it is not ambiguous. i.e. less than or equal to mParameter

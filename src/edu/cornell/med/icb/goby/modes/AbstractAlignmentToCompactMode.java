@@ -91,7 +91,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
     protected AlignmentQualityFilter qualityFilter;
     protected File readIndexFilterFile;
     protected int mParameter = DEFAULT_M_PARAM;
-    protected int numberOfReads = 0;
+    protected int numberOfReads;
 
 
     /**
@@ -118,7 +118,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
      *                             error parsing
      */
     @Override
-    public AbstractCommandLineMode configure(String[] args) throws IOException, JSAPException {
+    public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         //
         final JSAPResult jsapResult = parseJsapArguments(args);
 
@@ -146,16 +146,18 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
     public void execute() throws IOException {
 
         // read target/query identifier lookup table, and initialize output alignment file with this information
-        TransferIds transferIds = new TransferIds().invoke();
-        ReadSet readIndexFilter = transferIds.getReadIndexFilter();
-        AlignmentWriter writer = transferIds.getWriter();
-        IndexedIdentifier targetIds = transferIds.getTargetIds();
+        final TransferIds transferIds = new TransferIds().invoke();
+        final ReadSet readIndexFilter = transferIds.getReadIndexFilter();
+        final AlignmentWriter writer = transferIds.getWriter();
+        final IndexedIdentifier targetIds = transferIds.getTargetIds();
 
         // initialize too-many-hits output file
-        AlignmentTooManyHitsWriter tmhWriter = new AlignmentTooManyHitsWriter(outputFile, mParameter);
+        final AlignmentTooManyHitsWriter tmhWriter = new AlignmentTooManyHitsWriter(outputFile, mParameter);
 
         // initialize numberOfReads
-        if (transferIds.numberOfReads != 0) numberOfReads = transferIds.numberOfReads;
+        if (transferIds.numberOfReads != 0) {
+            numberOfReads = transferIds.numberOfReads;
+        }
         if (numberOfReads <= 0) {
             System.err.println("Cannot determine number of reads. Must set property or provide reads file with -q");
             return;
@@ -166,7 +168,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         qualityFilter = new PercentMismatchesQualityFilter();
         qualityFilter.setParameters(qualityFilterParameters);
 
-        int numAligns = scan(readIndexFilter, targetIds, writer, tmhWriter);
+        final int numAligns = scan(readIndexFilter, targetIds, writer, tmhWriter);
         System.out.println("Number of alignments written: " + numAligns);
 
         writer.close();
@@ -195,11 +197,11 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
     }
 
 
-    public void setInputFile(String inputFile) {
+    public void setInputFile(final String inputFile) {
         this.inputFile = inputFile;
     }
 
-    public void setOutputFile(String outputFile) {
+    public void setOutputFile(final String outputFile) {
         this.outputFile = outputFile;
     }
 
@@ -207,31 +209,31 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         return outputFile;
     }
 
-    public void setQueryReadIdsFilename(String queryReadIdsFilename) {
+    public void setQueryReadIdsFilename(final String queryReadIdsFilename) {
         this.queryReadIdsFilename = queryReadIdsFilename;
     }
 
-    public void setTargetReferenceIdsFilename(String targetReferenceIdsFilename) {
+    public void setTargetReferenceIdsFilename(final String targetReferenceIdsFilename) {
         this.targetReferenceIdsFilename = targetReferenceIdsFilename;
     }
 
-    public void setPropagateTargetIds(boolean propagateTargetIds) {
+    public void setPropagateTargetIds(final boolean propagateTargetIds) {
         this.propagateTargetIds = propagateTargetIds;
     }
 
-    public void setPropagateQueryIds(boolean propagateQueryIds) {
+    public void setPropagateQueryIds(final boolean propagateQueryIds) {
         this.propagateQueryIds = propagateQueryIds;
     }
 
-    public void setAmbiguityThreshold(int mParameter) {
+    public void setAmbiguityThreshold(final int mParameter) {
         this.mParameter = mParameter;
     }
 
-    public void setQualityFilterParameters(String qualityFilterParameters) {
+    public void setQualityFilterParameters(final String qualityFilterParameters) {
         this.qualityFilterParameters = qualityFilterParameters;
     }
 
-    public void setNumberOfReads(int numberOfReads) {
+    public void setNumberOfReads(final int numberOfReads) {
         this.numberOfReads = numberOfReads;
     }
 

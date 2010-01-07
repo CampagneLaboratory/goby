@@ -55,20 +55,22 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
     private String[] inputFilenames;
     private String outputFile;
 
-    private int sequencePerOutput = Integer.MAX_VALUE;
+    private final int sequencePerOutput = Integer.MAX_VALUE;
 
     // default is true.
     private boolean adjustQueryIndices=true;
 
+    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
 
-    public void setAdjustQueryIndices(boolean adjustQueryIndices) {
+    public void setAdjustQueryIndices(final boolean adjustQueryIndices) {
         this.adjustQueryIndices = adjustQueryIndices;
     }
 
@@ -111,7 +113,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         int entriesInOutputFile = 0;
         long numLogicalEntries  = 0;
         long numEntries         = 0;
-        int numQueries          = alignmentReader.getNumberOfQueries();
+        final int numQueries          = alignmentReader.getNumberOfQueries();
 
         progress.start("concatenating entries");
 
@@ -144,7 +146,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         System.out.printf("Wrote a total of %d alignment entries.%n", entriesInOutputFile);
     }
 
-    private double divide(long a, long b) {
+    private double divide(final long a, final long b) {
         return ((double) a) / ((double) b);
     }
 
@@ -154,11 +156,11 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
     }
 
 
-    public void setInputFileNames(String[] inputFilenames) {
+    public void setInputFileNames(final String[] inputFilenames) {
       this.  inputFilenames=inputFilenames;
     }
 
-    public void setOutputFilename(String output) {
+    public void setOutputFilename(final String output) {
         this.outputFile=output;
     }
 

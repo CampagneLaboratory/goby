@@ -65,10 +65,12 @@ public class CompactAlignmentToReadSetMode extends AbstractGobyMode {
     private File preFilterFile;
     private ReadSet preFilter;
 
+    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
@@ -107,7 +109,7 @@ public class CompactAlignmentToReadSetMode extends AbstractGobyMode {
         }
         this.k = jsapResult.getInt("ambiguity-threshold", 2);
         suffix = jsapResult.getString("suffix");
-        File preFilterFile = jsapResult.getFile("pre-filter");
+        final File preFilterFile = jsapResult.getFile("pre-filter");
         preFilter = new ReadSet();
         if (preFilterFile == null) {
             preFilter = null;
@@ -115,10 +117,18 @@ public class CompactAlignmentToReadSetMode extends AbstractGobyMode {
             preFilter.load(preFilterFile);
         }
 
-        if (matchingReads) System.out.println("Will output matching reads ");
-        if (nonMatchingReads) System.out.println("Will output non matching reads ");
-        if (ambiguousReads) System.out.println("Will output ambiguous reads ");
-        if (nonAmbiguousReads) System.out.println("Will output non ambiguous reads ");
+        if (matchingReads) {
+            System.out.println("Will output matching reads ");
+        }
+        if (nonMatchingReads) {
+            System.out.println("Will output non matching reads ");
+        }
+        if (ambiguousReads) {
+            System.out.println("Will output ambiguous reads ");
+        }
+        if (nonAmbiguousReads) {
+            System.out.println("Will output non ambiguous reads ");
+        }
         System.out.println("With ambiguity threshold k=" + k);
 
         return this;
@@ -147,13 +157,13 @@ public class CompactAlignmentToReadSetMode extends AbstractGobyMode {
     private void alignmentToReadSet(final String basename) throws IOException {
         final AlignmentReader reader = new AlignmentReader(basename);
         reader.readHeader();
-        ReadSet outputSet = new ReadSet();
-        int numQueries = reader.getNumberOfQueries();
-        IntSet matchingIndices = new IntOpenHashSet();
-        for (Alignments.AlignmentEntry entry : reader) {
+        final ReadSet outputSet = new ReadSet();
+        final int numQueries = reader.getNumberOfQueries();
+        final IntSet matchingIndices = new IntOpenHashSet();
+        for (final Alignments.AlignmentEntry entry : reader) {
             final int queryIndex = entry.getQueryIndex();
 
-            int queryId = 1263;
+            final int queryId = 1263;
             if (queryIndex == queryId) {
                 System.out.println("found 1263");
             }
@@ -162,9 +172,9 @@ public class CompactAlignmentToReadSetMode extends AbstractGobyMode {
         }
 
         reader.close();
-        AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
+        final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
         for (int queryIndex = 0; queryIndex < numQueries; ++queryIndex) {
-            int queryId = 1263;
+            final int queryId = 1263;
             if (queryIndex == queryId) {
                 System.out.println("found 1263");
             }
@@ -201,14 +211,18 @@ public class CompactAlignmentToReadSetMode extends AbstractGobyMode {
 
     }
 
-    private boolean passesTmhFilter(AlignmentTooManyHitsReader tmhReader, int queryIndex) {
-        if (ambiguousReads && nonAmbiguousReads) return true;
+    private boolean passesTmhFilter(final AlignmentTooManyHitsReader tmhReader, final int queryIndex) {
+        if (ambiguousReads && nonAmbiguousReads) {
+            return true;
+        }
         else if (ambiguousReads) {
             return tmhReader.isQueryAmbiguous(queryIndex, k);
         }
         if (nonAmbiguousReads) {
             return !tmhReader.isQueryAmbiguous(queryIndex, k);
-        } else return false;
+        } else {
+            return false;
+        }
     }
 
     /**

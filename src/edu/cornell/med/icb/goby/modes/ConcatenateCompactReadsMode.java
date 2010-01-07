@@ -52,14 +52,16 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
     public static final String MODE_DESCRIPTION = "Concatenate compact reads files, count the number of reads, and track the min and max sequence length of all of the reads.";
 
 
-    private long numberOfReads = 0;
+    private long numberOfReads;
     private int minReadLength = Integer.MAX_VALUE;
     private int maxReadLength = Integer.MIN_VALUE;
 
+    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
@@ -107,7 +109,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
         minReadLength = Integer.MAX_VALUE;
         maxReadLength = Integer.MIN_VALUE;
         try {
-            for (String inputFilename : inputFilenames) {
+            for (final String inputFilename : inputFilenames) {
                 readsReader = new ReadsReader(inputFilename);
 
                 for (final Reads.ReadEntry readEntry : readsReader) {

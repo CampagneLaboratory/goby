@@ -75,6 +75,7 @@
   </component>
   <component name="CppTools.Loader" reportImplicitCastToBool="false" version="2" compilerSelect="AUTO" />
   <component name="DependencyValidationManager">
+    <scope name="Goby" pattern="(file[goby]:src//*||file[goby]:test-src//*)&amp;&amp;!file[goby]:src/edu/cornell/med/icb/goby/alignments/Alignments.java&amp;&amp;!file[goby]:src/edu/cornell/med/icb/goby/reads/Reads.java" />
     <option name="SKIP_IMPORT_STATEMENTS" value="false" />
   </component>
   <component name="EclipseCompilerSettings">

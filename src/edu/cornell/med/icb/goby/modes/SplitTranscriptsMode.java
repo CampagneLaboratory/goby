@@ -63,10 +63,12 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
 
     private Map<String, MutableString> transcriptHeader;
 
+    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }

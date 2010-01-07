@@ -69,7 +69,7 @@ public class CountsArchiveReader implements Closeable {
      *                 Which extension to use to open the count archive.
      * @throws IOException if the file cannot be accessed
      */
-    public CountsArchiveReader(String basename, String alternativeCountArchiveExtension) throws IOException {
+    public CountsArchiveReader(final String basename, final String alternativeCountArchiveExtension) throws IOException {
         compoundReader = new CompoundFileReader(basename + "." + alternativeCountArchiveExtension);
         indexToIdentifierMap = new Int2ObjectOpenHashMap<String>();
         identifierToIndexMap = new Object2IntOpenHashMap<String>();
@@ -106,15 +106,15 @@ public class CountsArchiveReader implements Closeable {
         return getCountReader(makeFileIdentifier(countInfoIndex));
     }
 
-    private String makeFileIdentifier(int countInfoIndex) {
+    private String makeFileIdentifier(final int countInfoIndex) {
         return String.valueOf(countInfoIndex) + "," + indexToIdentifierMap.get(countInfoIndex);
     }
 
-    public String getIdentifier(int index) {
+    public String getIdentifier(final int index) {
         return indexToIdentifierMap.get(index);
     }
 
-    private String makeFileIdentifier(String countId) {
+    private String makeFileIdentifier(final String countId) {
         return countId.indexOf(',') == -1 ?
                 String.valueOf(identifierToIndexMap.get(countId)) + "," + countId
                 : countId;
@@ -142,8 +142,10 @@ public class CountsArchiveReader implements Closeable {
         final Collection<CompoundDirectoryEntry> directory = compoundReader.getDirectory();
         for (final CompoundDirectoryEntry entry : directory) {
             final String name = entry.getName();
-            final String tokens[] = name.split(",");
-            if (tokens.length < 2) return null;
+            final String[] tokens = name.split(",");
+            if (tokens.length < 2) {
+                return null;
+            }
             result.add(tokens[1]);
         }
         return result;
@@ -154,7 +156,7 @@ public class CountsArchiveReader implements Closeable {
         final Collection<CompoundDirectoryEntry> directory = compoundReader.getDirectory();
         for (final CompoundDirectoryEntry entry : directory) {
             final String name = entry.getName();
-            final String tokens[] = name.split(",");
+            final String[] tokens = name.split(",");
             assert tokens.length == 2 : "archive count filenames must be of the form int,String";
             final int index = Integer.parseInt(tokens[0]);
             final String id = tokens[1];
@@ -175,8 +177,10 @@ public class CountsArchiveReader implements Closeable {
         final Collection<CompoundDirectoryEntry> directory = compoundReader.getDirectory();
         for (final CompoundDirectoryEntry entry : directory) {
             final String name = entry.getName();
-            final String tokens[] = name.split(",");
-            if (tokens.length < 1) return null;
+            final String[] tokens = name.split(",");
+            if (tokens.length < 1) {
+                return null;
+            }
 
 
             result.add(Integer.parseInt(tokens[0]));

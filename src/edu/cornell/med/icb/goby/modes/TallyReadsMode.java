@@ -69,13 +69,15 @@ public class TallyReadsMode extends AbstractGobyMode {
     public static final String MODE_DESCRIPTION = "Tally the number of times sequences appear in a set of read files. Exact sequence comparison is performed.";
 
     private boolean colorSpace;
-    private int MAX_PROCESS_READS = Integer.MAX_VALUE;
+    private final int MAX_PROCESS_READS = Integer.MAX_VALUE;
     final int reportEveryNReads = 10000000;
 
+    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
@@ -128,7 +130,7 @@ public class TallyReadsMode extends AbstractGobyMode {
                     sd = new SequenceDigests(readLength, true);
                 }
 
-                int hashCode = sd.digest(readEntry.getSequence(), 0, readLength);
+                final int hashCode = sd.digest(readEntry.getSequence(), 0, readLength);
                 byte occ = readRedundant.get(hashCode);
                 if (occ < Byte.MAX_VALUE - 1) {
                     occ += 1;
@@ -137,7 +139,9 @@ public class TallyReadsMode extends AbstractGobyMode {
                 numReads++;
                 progress.lightUpdate();
 
-                if (numReads > MAX_PROCESS_READS) break;
+                if (numReads > MAX_PROCESS_READS) {
+                    break;
+                }
             }
             readsReader.close();
             System.gc();
@@ -146,8 +150,8 @@ public class TallyReadsMode extends AbstractGobyMode {
         assert sd != null : "at least one read must have been processed.";
 
         int redundantHash = 0;
-        IntSet inspectHashcodes = new IntOpenHashSet();
-        for (int key : readRedundant.keySet()) {
+        final IntSet inspectHashcodes = new IntOpenHashSet();
+        for (final int key : readRedundant.keySet()) {
             if (readRedundant.get(key) >= 2) {
                 inspectHashcodes.add(key);
                 redundantHash++;
@@ -159,7 +163,7 @@ public class TallyReadsMode extends AbstractGobyMode {
         readRedundant = null;
         progress.expectedUpdates = numReads;
         progress.start("second pass: actual read redundancy evaluation.");
-        int numberOfReads=numReads;
+        final int numberOfReads=numReads;
         numReads = 0;
         // readRedundant contains a lower bound on the number of times the read has been seen. Since we keyed
         // on hashcode, hashcode collisions make the set of redundant reads somewhat unreliable. This is not too bad because
@@ -168,17 +172,17 @@ public class TallyReadsMode extends AbstractGobyMode {
         {
             byte[] byteBuffer = new byte[readLength];
             // set initial capacity according to first pass:
-            Object2IntMap<CompressedRead> tallies = new Object2IntOpenHashMap<CompressedRead>(redundantHash + 1);
+            final Object2IntMap<CompressedRead> tallies = new Object2IntOpenHashMap<CompressedRead>(redundantHash + 1);
             tallies.defaultReturnValue(0);
             //   IntSet otherReadIndices = new IntOpenHashSet(numReads+1);
-            BitVector otherReadIndices = LongArrayBitVector.ofLength(numberOfReads);
+            final BitVector otherReadIndices = LongArrayBitVector.ofLength(numberOfReads);
 
             final ReadsReader readsReader = new ReadsReader(new FileInputStream(inputFilename));
             for (final Reads.ReadEntry readEntry : readsReader) {
 
                 byteBuffer = toByteBuffer(sequence, byteBuffer, readEntry);
 
-                CompressedRead read = new CompressedRead(byteBuffer.clone());
+                final CompressedRead read = new CompressedRead(byteBuffer.clone());
 
 
                 read.readIndex = readEntry.getReadIndex();
@@ -206,7 +210,9 @@ public class TallyReadsMode extends AbstractGobyMode {
                 //    printStats(tallies, numReads, false, otherReadIndices);
                 //    }
 
-                if (numReads > MAX_PROCESS_READS) break;
+                if (numReads > MAX_PROCESS_READS) {
+                    break;
+                }
             }
             readsReader.close();
             System.gc();
@@ -219,7 +225,7 @@ public class TallyReadsMode extends AbstractGobyMode {
         System.exit(0);
     }
 
-    private byte[] toByteBuffer(MutableString sequence, byte[] byteBuffer, Reads.ReadEntry readEntry) throws IOException {
+    private byte[] toByteBuffer(final MutableString sequence, byte[] byteBuffer, final Reads.ReadEntry readEntry) throws IOException {
         ReadsReader.decodeSequence(readEntry, sequence);
         final int i = sequence.length();
         if ((int) (i / 4) + 1 != byteBuffer.length) {
@@ -229,7 +235,7 @@ public class TallyReadsMode extends AbstractGobyMode {
         }
         final OutputBitStream compressed = new OutputBitStream(byteBuffer);
         int index = 0;
-        for (char c : sequence.array()) {
+        for (final char c : sequence.array()) {
             if (colorSpace) {
 
                 if (index != 0) {
@@ -244,13 +250,15 @@ public class TallyReadsMode extends AbstractGobyMode {
                 encode(c, compressed);
             }
             ++index;
-            if (index >= i) break;
+            if (index >= i) {
+                break;
+            }
         }
         compressed.flush();
         return byteBuffer;
     }
 
-    public final static void toByteBuffer(final CharSequence sequence,
+    public static void toByteBuffer(final CharSequence sequence,
                                           final byte[] byteBuffer,
                                           final boolean colorSpace,
                                           final int maxReadLength) throws IOException {
@@ -274,17 +282,19 @@ public class TallyReadsMode extends AbstractGobyMode {
                 encode(c, compressed);
             }
             ++index;
-            if (index >= maxReadLength) break;
+            if (index >= maxReadLength) {
+                break;
+            }
         }
         compressed.flush();
 
     }
 
-    private void printStats(Object2IntMap<CompressedRead> tallies, int numReads, boolean writeTallies, BitVector otherReadIndices) {
-        IntList counts = new IntArrayList();
+    private void printStats(final Object2IntMap<CompressedRead> tallies, final int numReads, final boolean writeTallies, final BitVector otherReadIndices) {
+        final IntList counts = new IntArrayList();
         int sum = 0;
         int num = 0;
-        for (int count : tallies.values()) {
+        for (final int count : tallies.values()) {
             if (count > 1) {
                 counts.add(count);
                 sum += count;
@@ -295,13 +305,15 @@ public class TallyReadsMode extends AbstractGobyMode {
         Collections.sort(counts);
 
         if (writeTallies) {
-            ReadSet set = new ReadSet();
+            final ReadSet set = new ReadSet();
             set.smallestStoredMultiplicity(1);
             for (int readIndex = 0; readIndex < otherReadIndices.size(); ++readIndex) {
-               if (otherReadIndices.get(readIndex)) set.add(readIndex, 1);
+               if (otherReadIndices.get(readIndex)) {
+                   set.add(readIndex, 1);
+               }
 
             }
-            for (CompressedRead read : tallies.keySet()) {
+            for (final CompressedRead read : tallies.keySet()) {
 
                 final int count = tallies.getInt(read);
                 if (count > 1 && !otherReadIndices.get(read.readIndex)) {

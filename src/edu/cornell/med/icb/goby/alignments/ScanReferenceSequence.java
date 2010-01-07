@@ -45,12 +45,12 @@ public class ScanReferenceSequence {
     private ObjectList<byte[]> compressedReads;
     private long potentialMatches;
     private int[] hitsPerRead;
-    private SequenceEncoder encoder = new SequenceEncoder();
+    private final SequenceEncoder encoder = new SequenceEncoder();
     private int referenceSequenceIndex;
     private AlignmentWriter writer;
     private ReadSet readIndexFilter;
 
-    public void setWriter(AlignmentWriter writer) {
+    public void setWriter(final AlignmentWriter writer) {
         this.writer = writer;
     }
 
@@ -60,22 +60,22 @@ public class ScanReferenceSequence {
 
     public Int2IntMap matchingReferenceIndex;
 
-    public void setAlphabet(String alphabet) {
+    public void setAlphabet(final String alphabet) {
         this.alphabet = alphabet;
     }
 
     private String alphabet;
 
-    public void setReadOccurenceThreshold(int readOccurenceThreshold) {
+    public void setReadOccurenceThreshold(final int readOccurenceThreshold) {
         this.readOccurenceThreshold = readOccurenceThreshold;
     }
 
     private int readOccurenceThreshold;
 
-    public void set(int referenceSequenceIndex,
-                    byte[] sequence,
-                    ReadsLoader loader,
-                    int[] hitsPerRead) {
+    public void set(final int referenceSequenceIndex,
+                    final byte[] sequence,
+                    final ReadsLoader loader,
+                    final int[] hitsPerRead) {
 
         this.sequence = sequence;
         this.byteBuffer = loader.getByteBuffer();
@@ -121,7 +121,7 @@ public class ScanReferenceSequence {
                                     // remove without checking that the digest is not produced by another read.
                                     sd.remove(digest, readIndex);
                                 } else {
-                                    Alignments.AlignmentEntry.Builder entry = writer.getAlignmentEntry();
+                                    final Alignments.AlignmentEntry.Builder entry = writer.getAlignmentEntry();
                                     entry.setQueryIndex(readIndex);
                                     entry.setTargetIndex(referenceSequenceIndex);
                                     entry.setPosition(referencePosition);
@@ -155,7 +155,9 @@ public class ScanReferenceSequence {
                 //     System.out.printf("A read may perfectly match reference %d at position %d %n", referenceEntry.getReadIndex(), referencePosition);
             }
 
-            if ((referencePosition % 1000) == 1) progress.lightUpdate();
+            if ((referencePosition % 1000) == 1) {
+                progress.lightUpdate();
+            }
             //progress.lightUpdate();
 
         }
@@ -163,15 +165,15 @@ public class ScanReferenceSequence {
     }
 
 
-    public void setProgress(ProgressLogger progress) {
+    public void setProgress(final ProgressLogger progress) {
         this.progress = progress;
     }
 
-    public void setReadLength(int readLength) {
+    public void setReadLength(final int readLength) {
         this.readLength = readLength;
     }
 
-    public void setReadIndexFilter(ReadSet readIndexFilter) {
+    public void setReadIndexFilter(final ReadSet readIndexFilter) {
         this.readIndexFilter = readIndexFilter;
     }
 }

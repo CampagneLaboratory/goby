@@ -25,7 +25,6 @@ import it.unimi.dsi.io.LineIterator;
 import it.unimi.dsi.lang.MutableString;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.io.Reader;
 import java.util.NoSuchElementException;
 
@@ -74,8 +73,8 @@ public class LastParser implements Closeable {
     private LineIterator iterator;
     private boolean entryFound;
     private float score;
-    private ObjectArrayList<AlignedSequence> alignedSequences;
-    private ObjectArraySet<AlignedSequence> poolOfAlignedSequences;
+    private final ObjectArrayList<AlignedSequence> alignedSequences;
+    private final ObjectArraySet<AlignedSequence> poolOfAlignedSequences;
 
     public LastParser(final Reader reader) {
         iterator = new LineIterator(new FastBufferedReader(reader));
@@ -168,7 +167,7 @@ public class LastParser implements Closeable {
         return score;
     }
 
-    public void next() throws IOException {
+    public void next() {
         if (!hasNext()) {
             throw new NoSuchElementException("next() cannot be called when hasNext returns false.");
         }

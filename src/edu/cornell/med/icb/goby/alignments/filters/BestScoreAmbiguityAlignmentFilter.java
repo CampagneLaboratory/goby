@@ -67,7 +67,7 @@ public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFil
     /**
      * The start time.
      */
-    private long startTime;
+    private final long startTime;
 
     /**
      * Constructor.

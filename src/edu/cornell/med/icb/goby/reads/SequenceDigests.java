@@ -53,7 +53,7 @@ public class SequenceDigests {
 
     }
 
-    private SequenceDigests(final boolean[] mask, final int readLength, final boolean matchesPositiveStrand, Int2ObjectMap<int[]> readDigests) {
+    private SequenceDigests(final boolean[] mask, final int readLength, final boolean matchesPositiveStrand, final Int2ObjectMap<int[]> readDigests) {
         readDigestsToSequenceIndex = readDigests;
         readDigestsToSequenceIndex.defaultReturnValue(NIL);
         this.mask = mask;
@@ -105,7 +105,7 @@ public class SequenceDigests {
 
     }
 
-    public final int digest(ByteString sequence, int offset, int length) {
+    public final int digest(final ByteString sequence, final int offset, final int length) {
         return mask == null ?
                 (matchesPositiveStrand ?
                         crc32(sequence, offset, length) :
@@ -119,7 +119,7 @@ public class SequenceDigests {
         final int digest = digest(sequence, offset);
         final int[] previous = readDigestsToSequenceIndex.get(digest);
 
-        int[] newArray = new int[previous.length + 1];
+        final int[] newArray = new int[previous.length + 1];
         int i = 0;
         for (; i < previous.length; ++i) {
             if (newArray[i] == sequenceIndex) {
@@ -141,7 +141,7 @@ public class SequenceDigests {
      * ************************************************************************
      */
 
-    final static private int[] table = {
+    private static final int[] table = {
             0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f, 0xe963a535, 0x9e6495a3,
             0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988, 0x09b64c2b, 0x7eb17cbd, 0xe7b82d07, 0x90bf1d91,
             0x1db71064, 0x6ab020f2, 0xf3b97148, 0x84be41de, 0x1adad47d, 0x6ddde4eb, 0xf4d4b551, 0x83d385c7,
@@ -181,7 +181,7 @@ public class SequenceDigests {
         int crc = 0xffffffff;
         final int end = offset + length;
         for (int i = offset; i < end; ++i) {
-            byte b = bytes[i];
+            final byte b = bytes[i];
             crc = (crc >>> 8) ^ table[(crc ^ b) & 0xff];
 
         }
@@ -195,7 +195,7 @@ public class SequenceDigests {
         int crc = 0xffffffff;
         final int end = offset + length;
         for (int i = offset; i < end; ++i) {
-            byte b = sequence.byteAt(i);
+            final byte b = sequence.byteAt(i);
             crc = (crc >>> 8) ^ table[(crc ^ b) & 0xff];
 
         }
@@ -240,7 +240,7 @@ public class SequenceDigests {
         int crc = 0xffffffff;
         final int end = offset + length;
         for (int i = offset; i < end; ++i) {
-            byte b = bytes[i];
+            final byte b = bytes[i];
             if (mask[i]) {
                 crc = (crc >>> 8) ^ table[(crc ^ b) & 0xff];
 
@@ -256,7 +256,7 @@ public class SequenceDigests {
         int crc = 0xffffffff;
         final int end = offset + length;
         for (int i = offset; i < end; ++i) {
-            byte b =sequence.byteAt(i);
+            final byte b =sequence.byteAt(i);
             if (mask[i]) {
                 crc = (crc >>> 8) ^ table[(crc ^ b) & 0xff];
 
@@ -308,7 +308,7 @@ public class SequenceDigests {
      *
      * @param digest
      */
-    public void remove(int digest, int readIndex) {
+    public void remove(final int digest, final int readIndex) {
         final int[] readIndices = readDigestsToSequenceIndex.get(digest);
         int removed = 0;
         for (int i = 0; i < readIndices.length; ++i) {
@@ -332,7 +332,9 @@ public class SequenceDigests {
             final int end = referencePosition + readLength;
             int j = 0;
             for (int i = referencePosition; i < end; ++i) {
-                if (readCompressedSeq[j] != byteBuffer[i]) return false;
+                if (readCompressedSeq[j] != byteBuffer[i]) {
+                    return false;
+                }
                 ++j;
             }
             return true;
@@ -340,7 +342,9 @@ public class SequenceDigests {
             int j = referencePosition;
 
             for (int i = this.readLength - 1; i >= 0; --i) {
-                if (complement(readCompressedSeq[i]) != byteBuffer[j++]) return false;
+                if (complement(readCompressedSeq[i]) != byteBuffer[j++]) {
+                    return false;
+                }
             }
             return true;
         }
@@ -352,7 +356,7 @@ public class SequenceDigests {
      * @param b
      * @return
      */
-    private final byte complement(final byte b) {
+    private byte complement(final byte b) {
         switch (b) {
             case 'A':
                 return 'T';

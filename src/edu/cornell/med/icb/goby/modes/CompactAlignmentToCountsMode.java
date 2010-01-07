@@ -76,10 +76,12 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
 
     private String countArchiveModifier = COUNT_ARCHIVE_MODIFIER_DEFAULT;
 
+    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
@@ -123,7 +125,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
 
         accumulatePeakHistogram = !jsapResult.getBoolean("start-only", false);
         if (!accumulatePeakHistogram) {
-            String strandChoice = jsapResult.getString("strand-choice");
+            final String strandChoice = jsapResult.getString("strand-choice");
             if ("POSITIVE".equalsIgnoreCase(strandChoice) || "FORWARD".equalsIgnoreCase(strandChoice)) {
                 focusOnStrand = ComputeStartCount.POSITIVE_STRAND_ONLY;
                 countArchiveModifier = "forward-strand-starts";

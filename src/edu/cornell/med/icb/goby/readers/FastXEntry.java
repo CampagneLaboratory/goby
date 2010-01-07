@@ -34,7 +34,7 @@ public class FastXEntry {
     private MutableString entry;
 
     /** The entry without the header. */
-    private MutableString entrySansHeader;
+    private final MutableString entrySansHeader;
 
     /** The sequence header line WITH symbol. */
     private MutableString sequenceHeader;

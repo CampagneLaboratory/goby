@@ -34,13 +34,13 @@ import java.util.Arrays;
  */
 public class AnyTransitionCountsIterator implements Closeable, CountsReaderI {
     final CountsReaderI[] readers;
-    final int position[];
-    final int countUpToPosition[];
+    final int[] position;
+    final int[] countUpToPosition;
     private boolean nextTransitionLoaded;
     private final int numReaders;
 
 
-    public AnyTransitionCountsIterator(CountsReaderI... countReader) {
+    public AnyTransitionCountsIterator(final CountsReaderI... countReader) {
 
         readers = countReader;
         numReaders = countReader.length;
@@ -52,13 +52,17 @@ public class AnyTransitionCountsIterator implements Closeable, CountsReaderI {
     }
 
     public boolean hasNextTransition() throws IOException {
-        if (nextTransitionLoaded) return true;
+        if (nextTransitionLoaded) {
+            return true;
+        }
         // advance by at least one position:
         currentPosition++;
         // load count for each reader that transitions at this position:
         int countReadersFinished = 0;
         for (int i = 0; i < numReaders; i++) {
-            if (position[i] >= currentPosition) continue;
+            if (position[i] >= currentPosition) {
+                continue;
+            }
 
             // passed the previous transition, must advance this reader.
             if (!readers[i].hasNextTransition()) {
@@ -132,8 +136,10 @@ public class AnyTransitionCountsIterator implements Closeable, CountsReaderI {
      */
     public int getCount() {
         int count = 0;
-        for (CountsReaderI reader : getReaders()) {
-            if (reader.getPosition() == getPosition()) count += reader.getCount();
+        for (final CountsReaderI reader : getReaders()) {
+            if (reader.getPosition() == getPosition()) {
+                count += reader.getCount();
+            }
         }
         return count;
     }
@@ -142,17 +148,17 @@ public class AnyTransitionCountsIterator implements Closeable, CountsReaderI {
         return readers;
     }
 
-    public final int getCount(int readerIndex) {
+    public final int getCount(final int readerIndex) {
         return countUpToPosition[readerIndex];
     }
 
     public void close() throws IOException {
-        for (CountsReaderI reader : readers) {
+        for (final CountsReaderI reader : readers) {
             reader.close();
         }
     }
 
-    public void skipTo(int position) throws IOException {
+    public void skipTo(final int position) throws IOException {
         throw new UnsupportedOperationException("skipTo is not currently supported by this implementation.");
     }
 

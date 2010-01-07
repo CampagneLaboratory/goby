@@ -469,8 +469,6 @@ public class LastagAligner extends AbstractAligner {
         try {
             writer = new FileWriter(matrixFilename);
             writer.write(ColorSpaceConverter.getColorSpaceSubstitutionMatrix());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         } finally {
             IOUtils.closeQuietly(writer);
         }
