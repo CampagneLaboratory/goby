@@ -19,6 +19,9 @@
 package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
+import edu.cornell.med.icb.util.VersionUtils;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
@@ -28,6 +31,11 @@ import java.io.IOException;
  * Time: 5:18:28 PM
  */
 public class GobyDriver extends GenericToolsDriver {
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Logger LOG = Logger.getLogger(GobyDriver.class);
+
     private static final String DRIVER_JAR_NAME = "goby.jar";
 
     public GobyDriver() {
@@ -35,6 +43,13 @@ public class GobyDriver extends GenericToolsDriver {
     }
 
     public static void main(final String[] args) throws IOException, JSAPException {
+        final String version = VersionUtils.getImplementationVersion(GobyDriver.class);
+        LOG.info(GobyDriver.class.getName() + " Implementation-Version: " + version);
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Running with: " + ArrayUtils.toString(args));
+        }
+
         new GobyDriver().configure(args).execute();
         System.exit(0);
     }

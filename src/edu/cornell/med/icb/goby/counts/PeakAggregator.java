@@ -29,7 +29,6 @@ import java.util.Iterator;
  *
  * @author Fabien Campagne
  *         Date: May 27, 2009
-
  *         Time: 6:41:18 PM
  */
 public class PeakAggregator implements Iterator<Peak>, Iterable<Peak> {

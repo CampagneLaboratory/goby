@@ -33,5 +33,4 @@ public abstract class AbstractGobyMode extends AbstractCommandLineMode {
     protected AbstractGobyMode() {
         super("goby.jar");
     }
-
 }

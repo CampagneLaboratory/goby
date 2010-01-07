@@ -22,7 +22,6 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Merge;
-import edu.cornell.med.icb.util.VersionUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -139,7 +138,6 @@ public class MergeCompactAlignmentsMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        System.out.println("Version: "+ VersionUtils.getImplementationVersion(MergeCompactAlignmentsMode.class));
         final Merge merger = new Merge(geneTranscriptMapFile, k);
         merger.setSilent(false);
         merger.merge(inputFiles, outputFile);
