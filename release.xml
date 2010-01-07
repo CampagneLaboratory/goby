@@ -19,6 +19,7 @@
         <property name="depsfile" value="${releasedir}/${tag}-deps.zip"/>
 	    <property name="apidocfile" value="${releasedir}/${tag}-apidoc.zip"/>
 	    <property name="datafile" value="${releasedir}/${tag}-data.zip"/>
+        <property name="gobyfile" value="${releasedir}/${tag}-goby.zip"/>
         <property name="tagUrl" value="https://${svnhost}/public/svn/icb/tags/${tag}"/>
 	</target>
 
@@ -54,7 +55,7 @@
     </target>
 
     <target name="release" description="Tag and release build"
-	    	depends="tag, source, jar, dependencies, javadoc">
+	    	depends="tag, source, jar, data, dependencies, javadocs, goby">
         <!-- make links to the release files to match what the web server expects -->
 	    <symlink link="${releasedir}/goby-src.zip" resource="${tag}-src.zip"/>
         <symlink link="${releasedir}/goby-deps.zip" resource="${tag}-deps.zip"/>
@@ -75,30 +76,22 @@
     </target>
 
 	<target name="source" depends="export" description="Assemble a source code release">
-        <!-- copy configuration files so tests run "out of the box" -->
-        <copy file="${exportdir}/${tag}/config/log4j.properties.sample"
-              tofile="${exportdir}/${tag}/config/log4j.properties"
-              overwrite="false" failonerror="true"/>
-        <copy file="${exportdir}/${tag}/config/RConnectionPool.xml.sample"
-              tofile="${exportdir}/${tag}/config/RConnectionPool.xml"
-              overwrite="false" failonerror="true"/>
-
         <zip destfile="${srcfile}" comment="Goby version: ${tag}">
             <!-- don't include all the libraries and data -->
         	<fileset dir="${exportdir}">
                 <exclude name="${tag}/lib/**"/>
-                <exclude name="${tag}/config/*local*"/>
+                <exclude name="${tag}/data/**"/>
 			</fileset>
        	</zip>
-
-        <!-- delete the configuration files after the zip file is created -->
-        <delete>
-            <fileset dir="${exportdir}/${tag}/config">
-                <include name="log4j.properties"/>
-                <include name="RConnectionPool.xml"/>
-            </fileset>
-        </delete>
 	</target>
+
+    <target name="data" depends="export" description="Assemble a data release">
+        <zip destfile="${datafile}" comment="Goby version: ${tag}">
+            <fileset dir="${exportdir}">
+                <include name="${tag}/data/**"/>
+            </fileset>
+        </zip>
+    </target>
 
     <target name="dependencies" depends="export" description="Assemble dependency release">
         <zip destfile="${depsfile}" comment="Goby version: ${tag}">
@@ -108,9 +101,9 @@
         </zip>
     </target>
 
-	<target name="javadoc">
+	<target name="javadocs">
         <!-- run the java docs -->
-        <ant target="javadoc" dir="${exportdir}/${tag}">
+        <ant target="javadocs" dir="${exportdir}/${tag}">
             <property name="classes" location="${exportdir}/${tag}/classes"/>
             <property name="config" location="${exportdir}/${tag}/config"/>
             <property name="javadocs" location="${exportdir}/${tag}/javadocs"/>
@@ -133,4 +126,28 @@
             <property name="src" location="${exportdir}/${tag}/src"/>
        	</ant>
 	</target>
+
+    <target name="goby" description="Create the binary distribtion for Goby">
+        <!-- log4j -->
+        <copy file="${exportdir}/${tag}/config/log4j-sample.properties"
+              tofile="${exportdir}/${tag}/config/log4j.properties"
+              overwrite="true" failonerror="false"/>
+
+        <zip destfile="${gobyfile}" comment="Goby version: ${tag}">
+        	<fileset dir="${exportdir}">
+                <include name="${tag}/README-Goby.txt"/>
+                <include name="${tag}/CHANGES.txt"/>
+                <include name="${tag}/data/**"/>
+                <include name="${tag}/goby.jar"/>
+                <include name="${tag}/config/log4j.properties"/>
+            </fileset>
+        </zip>
+
+        <!-- delete the configuration files after the zip file is created -->
+        <delete>
+            <fileset dir="${exportdir}/${tag}/config">
+                <include name="log4j.properties"/>
+            </fileset>
+        </delete>
+    </target>
 </project>
