@@ -1,0 +1,41 @@
+<!--
+  ~ Copyright (C) 2009 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~ WEILL MEDICAL COLLEGE OF CORNELL UNIVERSITY MAKES NO REPRESENTATIONS
+  ~ ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE. IT IS PROVIDED
+  ~ "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY. THE WEILL MEDICAL COLLEGE
+  ~ OF CORNELL UNIVERSITY SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+  ~ THE USERS OF THIS SOFTWARE.
+  -->
+
+<jsap>
+    <parameters>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>false</required>
+            <help>The output filename.</help>
+        </flaggedOption>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The basenames of the input alignments to concatenate.</help>
+        </unflaggedOption>
+        <flaggedOption>
+            <id>sequence-per-chunk</id>
+            <shortFlag>n</shortFlag>
+            <longFlag>sequence-per-chunk</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>10000</string>
+            </defaults>
+            <help>The number of sequences that will be written in each compressed chunk. Default is suitable for very many short sequences. Reduce to a few sequences per chunk if each sequence is very large.  </help>
+        </flaggedOption>
+    </parameters>
+</jsap>
