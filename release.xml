@@ -128,26 +128,14 @@
 	</target>
 
     <target name="goby" description="Create the binary distribtion for Goby">
-        <!-- log4j -->
-        <copy file="${exportdir}/${tag}/config/log4j-sample.properties"
-              tofile="${exportdir}/${tag}/config/log4j.properties"
-              overwrite="true" failonerror="false"/>
-
         <zip destfile="${gobyfile}" comment="Goby version: ${tag}">
         	<fileset dir="${exportdir}">
                 <include name="${tag}/README-Goby.txt"/>
                 <include name="${tag}/CHANGES.txt"/>
                 <include name="${tag}/data/**"/>
                 <include name="${tag}/goby.jar"/>
-                <include name="${tag}/config/log4j.properties"/>
+                <include name="${tag}/config/**"/>
             </fileset>
         </zip>
-
-        <!-- delete the configuration files after the zip file is created -->
-        <delete>
-            <fileset dir="${exportdir}/${tag}/config">
-                <include name="log4j.properties"/>
-            </fileset>
-        </delete>
     </target>
 </project>
