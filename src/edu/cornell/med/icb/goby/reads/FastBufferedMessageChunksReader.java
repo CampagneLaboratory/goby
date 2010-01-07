@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.reads;
 
 import com.google.protobuf.GeneratedMessage;
+import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import org.apache.commons.io.IOUtils;
 
@@ -113,7 +114,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
                         return false;
                     }
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    throw new GobyRuntimeException(e);
                 }
             }
             return in != null && super.hasNext(collection, collectionSize);

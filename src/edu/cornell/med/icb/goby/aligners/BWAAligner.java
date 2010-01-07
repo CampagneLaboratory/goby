@@ -439,9 +439,6 @@ public class BWAAligner extends AbstractAligner {
             FileUtils.deleteQuietly(new File(samBinaryFilename));
 
             return buildResults;
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         } finally {
             IOUtils.closeQuietly(saiOutputStream);
             IOUtils.closeQuietly(samOutputStream);

@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.reads;
 
 import com.google.protobuf.GeneratedMessage;
+import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,8 +61,7 @@ public class MessageChunksReader implements Closeable {
      * @param collectionSize The size of the current collection (can be zero).
      * @return True if the input has more entries, False otherwise.
      */
-    public boolean hasNext(final GeneratedMessage collection,
-                           final int collectionSize) {
+    public boolean hasNext(final GeneratedMessage collection, final int collectionSize) {
         if (collection == null || entryIndex >= collectionSize) {
             if (in == null) {
                 return false;
@@ -92,7 +92,7 @@ public class MessageChunksReader implements Closeable {
                 entryIndex = 0;
                 return true;
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new GobyRuntimeException(e);
             }
         } else {
             uncompressStream = null;

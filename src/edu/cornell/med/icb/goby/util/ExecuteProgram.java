@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.util;
 
+import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import edu.cornell.med.icb.util.ICBStringUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -120,7 +121,7 @@ public class ExecuteProgram {
                 } else {
                     final String message = String.format("Error %d executing command '%s'", error, command);
                     log.error(message);
-                    throw new RuntimeException(message);
+                    throw new GobyRuntimeException(message);
                 }
             }
         } catch (InterruptedException e) {
@@ -216,7 +217,7 @@ public class ExecuteProgram {
                     out.flush();
                 }
             } catch (IOException e) {
-                throw new RuntimeException("exception while dumping process stream", e);
+                throw new GobyRuntimeException("exception while dumping process stream", e);
             }
         }
     }

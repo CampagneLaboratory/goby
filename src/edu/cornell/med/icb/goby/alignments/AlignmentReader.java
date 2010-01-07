@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import com.google.protobuf.CodedInputStream;
+import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import edu.cornell.med.icb.goby.reads.FastBufferedMessageChunksReader;
 import edu.cornell.med.icb.goby.reads.MessageChunksReader;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
@@ -111,7 +112,7 @@ public class AlignmentReader extends AbstractAlignmentReader implements Closeabl
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new GobyRuntimeException(e);
         }
         return hasNext;
 

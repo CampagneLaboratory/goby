@@ -68,7 +68,7 @@ public class Merge {
      * TODO: what data structures are used and how they are updated
      */
 
-    public static Logger LOG = Logger.getLogger(Merge.class);
+    private static final Logger LOG = Logger.getLogger(Merge.class);
     private String geneTranscriptMapFile;
     private boolean verbose;
     int k;
@@ -80,12 +80,10 @@ public class Merge {
     }
 
     public Merge(final int k) {
-
         this.k = k;
     }
 
     public void setK(final int k) {
-
         this.k = k;
     }
 

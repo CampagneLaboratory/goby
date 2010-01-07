@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.reads;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedInputStream;
+import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FileUtils;
@@ -113,7 +114,7 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new GobyRuntimeException(e);
         } finally{
             IOUtils.closeQuietly(uncompressStream);
         }

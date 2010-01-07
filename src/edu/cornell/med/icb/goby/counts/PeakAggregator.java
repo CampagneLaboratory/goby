@@ -18,6 +18,8 @@
 
 package edu.cornell.med.icb.goby.counts;
 
+import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
+
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -114,7 +116,7 @@ public class PeakAggregator implements Iterator<Peak>, Iterable<Peak> {
         try {
             return hasNextPeak();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new GobyRuntimeException(e);
         }
     }
 
