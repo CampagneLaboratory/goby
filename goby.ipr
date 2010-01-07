@@ -62,8 +62,16 @@
       <entry name="?*.ftl" />
     </wildcardResourcePatterns>
   </component>
-  <component name="CopyrightManager" default="">
-    <module2copyright />
+  <component name="CopyrightManager" default="ICB GPL3">
+    <copyright>
+      <option name="notice" value="Copyright (C) &amp;#36;today.year Institute for Computational Biomedicine,&#10;                   Weill Medical College of Cornell University&#10;&#10; This program is free software; you can redistribute it and/or modify&#10; it under the terms of the GNU General Public License as published by&#10; the Free Software Foundation; either version 3 of the License, or&#10; (at your option) any later version.&#10;&#10; This program is distributed in the hope that it will be useful,&#10; but WITHOUT ANY WARRANTY; without even the implied warranty of&#10; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the&#10; GNU General Public License for more details.&#10;&#10; You should have received a copy of the GNU General Public License&#10; along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;." />
+      <option name="keyword" value="Copyright" />
+      <option name="myName" value="ICB GPL3" />
+      <option name="myLocal" value="true" />
+    </copyright>
+    <module2copyright>
+      <element module="All" copyright="ICB GPL3" />
+    </module2copyright>
   </component>
   <component name="CppTools.Loader" reportImplicitCastToBool="false" version="2" compilerSelect="AUTO" />
   <component name="DependencyValidationManager">

@@ -1,16 +1,24 @@
 /*
- * Copyright (C) 2009 Institute for Computational Biomedicine,
- *                    Weill Medical College of Cornell University
+ * Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+ *                         Weill Medical College of Cornell University
  *
- * WEILL MEDICAL COLLEGE OF CORNELL UNIVERSITY MAKES NO REPRESENTATIONS
- * ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE. IT IS PROVIDED
- * "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY. THE WEILL MEDICAL COLLEGE
- * OF CORNELL UNIVERSITY SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
- * THE USERS OF THIS SOFTWARE.
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package edu.cornell.med.icb.goby.counts;
 
+import edu.cornell.med.icb.goby.modes.CompactAlignmentToCountsMode;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
@@ -28,8 +36,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
-
-import edu.cornell.med.icb.goby.modes.CompactAlignmentToCountsMode;
 
 /**
  * Read an archive of count information. Multiple sequences are typically stored in an archive.
