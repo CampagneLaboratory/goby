@@ -37,6 +37,7 @@
     </fileset>
 
     <fileset dir="${src}" id="checkstyle-fileset">
+        <include name="**/*.java"/>
         <exclude name="**/package-info.java"/>
         <exclude name="edu/cornell/med/icb/goby/alignments/Alignments.java"/>
         <exclude name="edu/cornell/med/icb/goby/reads/Reads.java"/>
