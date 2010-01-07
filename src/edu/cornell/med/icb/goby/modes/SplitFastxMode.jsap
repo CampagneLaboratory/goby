@@ -1,0 +1,64 @@
+<!--
+  ~ Copyright (C) 2009 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~ WEILL MEDICAL COLLEGE OF CORNELL UNIVERSITY MAKES NO REPRESENTATIONS
+  ~ ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE. IT IS PROVIDED
+  ~ "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY. THE WEILL MEDICAL COLLEGE
+  ~ OF CORNELL UNIVERSITY SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+  ~ THE USERS OF THIS SOFTWARE.
+  -->
+
+<jsap>
+    <parameters>
+
+        <flaggedOption>
+            <id>input</id>
+            <shortFlag>i</shortFlag>
+            <longFlag>input</longFlag>
+            <required>true</required>
+            <help>The Eland file to convert to MAQ Map.</help>
+        </flaggedOption>
+
+        <flaggedOption>
+            <id>max-reads-per-file</id>
+            <longFlag>max-reads-per-file</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>[MAX_READS_PER_FILE_DEFAULT]</string>
+            </defaults>
+            <help>The maximum number of reads written to a single output file.</help>
+        </flaggedOption>
+
+        <flaggedOption>
+            <id>split-reads-mod</id>
+            <longFlag>split-reads-mod</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>1</string>
+            </defaults>
+            <help>The number of read lengths for a file, if 1 each read length
+                  will get it's own file. If 50, a file will be generated for
+                  read lengths 1-50, another for 51-100, etc.</help>
+        </flaggedOption>
+
+        <flaggedOption>
+            <id>fastx-split-max-length</id>
+            <longFlag>fastx-split-max-length</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>[FASTX_SPLIT_MAX_LENGTH]</string>
+            </defaults>
+            <help>Specify the maximum read length to give its own file</help>
+        </flaggedOption>
+    </parameters>
+</jsap>

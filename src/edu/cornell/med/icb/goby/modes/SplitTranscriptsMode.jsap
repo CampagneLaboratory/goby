@@ -1,0 +1,42 @@
+<!--
+  ~ Copyright (C) 2009 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~ WEILL MEDICAL COLLEGE OF CORNELL UNIVERSITY MAKES NO REPRESENTATIONS
+  ~ ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE. IT IS PROVIDED
+  ~ "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY. THE WEILL MEDICAL COLLEGE
+  ~ OF CORNELL UNIVERSITY SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+  ~ THE USERS OF THIS SOFTWARE.
+  -->
+
+<jsap>
+    <parameters>
+        <flaggedOption>
+            <id>input</id>
+            <shortFlag>i</shortFlag>
+            <longFlag>input</longFlag>
+            <required>true</required>
+            <help>Input transcripts FASTA file.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>true</required>
+            <help>Base output path / filename. Several files will be created using this base including multiple FASTA files and a config file.  </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>max-entries-per-file</id>
+            <shortFlag>n</shortFlag>
+            <longFlag>max-entries-per-file</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>1000</string>
+            </defaults>
+            <help>Maximum number of entries that should be written to any given output file.</help>
+        </flaggedOption>
+    </parameters>
+</jsap>

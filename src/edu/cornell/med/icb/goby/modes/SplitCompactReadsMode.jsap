@@ -1,0 +1,73 @@
+<!--
+  ~ Copyright (C) 2009 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~ WEILL MEDICAL COLLEGE OF CORNELL UNIVERSITY MAKES NO REPRESENTATIONS
+  ~ ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE. IT IS PROVIDED
+  ~ "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY. THE WEILL MEDICAL COLLEGE
+  ~ OF CORNELL UNIVERSITY SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+  ~ THE USERS OF THIS SOFTWARE.
+  -->
+
+<jsap>
+    <parameters>
+
+        <flaggedOption>
+            <id>input</id>
+            <shortFlag>i</shortFlag>
+            <longFlag>input</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>Name of the compact input file.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>Name of the compact output output.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>start-position</id>
+            <shortFlag>s</shortFlag>
+            <longFlag>start-position</longFlag>
+            <stringParser>
+                <classname>LongStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>The start position for the split, which should be number of bytes into the file to
+                start the split. The split will actually start at the first record on or after
+                start-position.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>end-position</id>
+            <shortFlag>e</shortFlag>
+            <longFlag>end-position</longFlag>
+            <stringParser>
+                <classname>LongStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>The end position for the split, which should be number of bytes into the file to
+                end the split. The split will actually end at the end of the record on or after
+                end-position.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>sequence-per-chunk</id>
+            <shortFlag>n</shortFlag>
+            <longFlag>sequence-per-chunk</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>10000</string>
+            </defaults>
+            <help>The number of sequences that will be written in each compressed chunk. Default is suitable for very many short sequences. Reduce to a few sequences per chunk if each sequence is very large.  </help>
+        </flaggedOption>
+    </parameters>
+</jsap>
