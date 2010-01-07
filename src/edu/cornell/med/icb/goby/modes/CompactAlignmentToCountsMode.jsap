@@ -48,6 +48,18 @@
             <help>Indicates that the query sequences were aligned to a full genome. When this argument is true, counts are calculated along each reference sequence and the full count histogram is output in compressed format (basename ".counts"). When this argument is false, the alignment is assumed to have been done to many short reference sequences, and counts are output in a tab delimited format, one for each reference sequence identifier.  </help>
         </flaggedOption>
 
+        <flaggedOption>
+            <id>expressive-file-extensions</id>
+            <longFlag>expressive-file-extensions</longFlag>
+            <defaults>
+                <string>true</string>
+            </defaults>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <help>If the file extension should be expressive (indicate information about mode configuration) or just the simple .counts</help>
+        </flaggedOption>
+
         <switch>
             <id>start-only</id>
             <longFlag>start-only</longFlag>

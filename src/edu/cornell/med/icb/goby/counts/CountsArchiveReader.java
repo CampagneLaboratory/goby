@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 
+import edu.cornell.med.icb.goby.modes.CompactAlignmentToCountsMode;
+
 /**
  * Read an archive of count information. Multiple sequences are typically stored in an archive.
  * This reader provides support to obtain count information for each sequence.
@@ -50,7 +52,7 @@ public class CountsArchiveReader implements Closeable {
      * @throws IOException if the file cannot be accessed
      */
     public CountsArchiveReader(final String basename) throws IOException {
-        this(basename, "counts");
+        this(basename, CompactAlignmentToCountsMode.COUNT_ARCHIVE_MODIFIER_DEFAULT);
     }
 
     /**

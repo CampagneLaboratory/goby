@@ -20,6 +20,8 @@ import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
 
+import edu.cornell.med.icb.goby.modes.CompactAlignmentToCountsMode;
+
 /**
  * Writes archives of counts information  for several sequences. CountsArchiveWriter leverages
  * the {@link org.bdval.io.compound.CompoundFileWriter}.
@@ -42,7 +44,7 @@ public class CountsArchiveWriter implements Closeable {
      * @throws IOException If an error occurs preparing the packaged counts.
      */
     public CountsArchiveWriter(final String basename) throws IOException {
-      this(basename, "counts");
+      this(basename, CompactAlignmentToCountsMode.COUNT_ARCHIVE_MODIFIER_DEFAULT);
     }
     /**
      * Initialize with a basename. Count information will be written to a file basename+"."+countArchiveModifier

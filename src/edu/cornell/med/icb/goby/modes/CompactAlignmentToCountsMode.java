@@ -46,11 +46,10 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
     public static final String MODE_NAME = "alignment-to-counts";
     public static final String MODE_DESCRIPTION = "Converts a compact alignment to a compressed count archive.";
 
-
     /**
-     * The input file.
+     * Default counts archive extension. Always used if expressiveFileExtensions == false.
      */
-    private String inputFile;
+    public static final String COUNT_ARCHIVE_MODIFIER_DEFAULT = "counts";
 
     /**
      * The output file.
@@ -63,8 +62,12 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
     private String[] basenames;
     private String optionalOutputFile;
     private boolean accumulatePeakHistogram;
+    private boolean expressiveFileExtensions;
     private int focusOnStrand;
-    private String countArchiveModifier="counts";
+
+
+
+    private String countArchiveModifier = COUNT_ARCHIVE_MODIFIER_DEFAULT;
 
     public String getModeName() {
         return MODE_NAME;
@@ -98,6 +101,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
 
         optionalOutputFile = jsapResult.getString("output");
         fullGenomeAlignment = jsapResult.getBoolean("full-genome");
+        expressiveFileExtensions = jsapResult.getBoolean("expressive-file-extensions");
 
         final String includeReferenceNameComas = jsapResult.getString("include-reference-names");
         if (includeReferenceNameComas != null) {
@@ -200,7 +204,12 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         reader.close();
         System.out.println(String.format("Alignment contains %d reference sequences", numberOfReferences));
         final ComputeCount[] algs = new ComputeCount[numberOfReferences];
-        final CountsArchiveWriter countArchive = new CountsArchiveWriter(basename, countArchiveModifier);
+        final CountsArchiveWriter countArchive;
+        if (expressiveFileExtensions) {
+            countArchive = new CountsArchiveWriter(basename, countArchiveModifier);
+        } else {
+            countArchive = new CountsArchiveWriter(basename);
+        }
         //  CountsWriter writers[] = new CountsWriter[numberOfReferences];
         final IntSet referencesToProcess = new IntOpenHashSet();
 
@@ -229,8 +238,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
             }
         }
 
-        inputFile = basename;
-        final AlignmentReader referenceReader = new AlignmentReader(inputFile);
+        final AlignmentReader referenceReader = new AlignmentReader(basename);
         referenceReader.readHeader();
 
         // read the alignment:
