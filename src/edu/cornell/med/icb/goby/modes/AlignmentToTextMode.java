@@ -28,7 +28,7 @@ import java.io.PrintWriter;
  *
  * @author Fabien Campagne
  */
-public class Alignment2TextMode extends AbstractGobyMode {
+public class AlignmentToTextMode extends AbstractGobyMode {
     /**
      * The mode name.
      */
@@ -142,6 +142,6 @@ public class Alignment2TextMode extends AbstractGobyMode {
      * @throws java.io.IOException error parsing or executing.
      */
     public static void main(final String[] args) throws JSAPException, IOException {
-        new Alignment2TextMode().configure(args).execute();
+        new AlignmentToTextMode().configure(args).execute();
     }
 }
