@@ -22,14 +22,15 @@
         <unflaggedOption>
             <id>input</id>
             <required>true</required>
-            <help>The compact alignment file to read as input.</help>
+             <greedy>true</greedy>
+            <help>The compact alignment file(s) to read as input.</help>
         </unflaggedOption>
         <flaggedOption>
             <id>output</id>
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
-            <required>true</required>
-            <help>The tab delimited output filename.</help>
+            <required>false</required>
+            <help>The tab delimited output filename, when omitted, constructed from the input filename. Output filenames will have extension .ann-counts.tsv</help>
         </flaggedOption>
         <flaggedOption>
             <id>annotation</id>
