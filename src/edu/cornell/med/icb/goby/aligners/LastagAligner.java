@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+ * Copyright (C) 2009-2011 Institute for Computational Biomedicine,
  *                         Weill Medical College of Cornell University
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -493,7 +493,7 @@ public class LastagAligner extends AbstractAligner {
      */
     private int getSeedMaxMultiplicity() {
         validateScoreOptions();
-        return 2*mParameter;
+        return 2 * mParameter;
     }
 
     /**

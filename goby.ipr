@@ -38,6 +38,18 @@
     <option name="scrTextFileName" value="" />
     <option name="historyRevisionsNumber" value="4" />
   </component>
+  <component name="CheckStyle-IDEA">
+    <option name="configuration">
+      <map>
+        <entry key="active-configuration" value="FILE:C:\Documents and Settings\marko\My Documents\IdeaProjects\goby\testsupport\checkstyle\config\icb_checks.xml:ICB" />
+        <entry key="check-test-classes" value="false" />
+        <entry key="location-0" value="CLASSPATH:/sun_checks.xml:The default CheckStyle rules." />
+        <entry key="location-1" value="FILE:C:\Documents and Settings\marko\My Documents\IdeaProjects\goby\testsupport\checkstyle\config\icb_checks.xml:ICB" />
+        <entry key="property.checkstyle.basedir" value="$PROJECT_DIR$/testsupport\checkstyle" />
+        <entry key="thirdparty-classpath" value="" />
+      </map>
+    </option>
+  </component>
   <component name="CodeStyleSettingsManager">
     <option name="PER_PROJECT_SETTINGS" />
     <option name="USE_PER_PROJECT_SETTINGS" value="false" />

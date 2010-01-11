@@ -124,9 +124,8 @@ public class ReadsLoader {
                 }
                 System.arraycopy(bytes, 0, byteBuffer, 0, maxReadLength);
 
-                if (readIndex > compressedReads.size()-1) {
-
-                    compressedReads.size((readIndex + 1)*3/2);
+                if (readIndex > compressedReads.size() - 1) {
+                    compressedReads.size((readIndex + 1) * 3 / 2);
                 }
                 compressedReads.set(readIndex, byteBuffer);
 
@@ -140,7 +139,7 @@ public class ReadsLoader {
         }
 
         readLength = minReadLength;
-        compressedReads.size(numReads+1);
+        compressedReads.size(numReads + 1);
         readsReader.close();
         progress.stop("Finished parsing reads.");
         return numReads;

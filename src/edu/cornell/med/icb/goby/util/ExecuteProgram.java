@@ -191,7 +191,7 @@ public class ExecuteProgram {
     }
 
     /**
-     * From DetaultGroovyMethods
+     * From DetaultGroovyMethods.
      */
     private static class ByteDumper implements Runnable {
         InputStream in;

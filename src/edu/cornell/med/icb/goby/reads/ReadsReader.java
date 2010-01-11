@@ -115,7 +115,7 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
             }
         } catch (IOException e) {
             throw new GobyRuntimeException(e);
-        } finally{
+        } finally {
             IOUtils.closeQuietly(uncompressStream);
         }
         return hasNext;
@@ -151,7 +151,7 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
         final int length = entry.getReadLength();
         sequence.setLength(length);
         for (int i = 0; i < length; ++i) {
-            sequence.setCharAt(i, (char)seq.byteAt(i) );
+            sequence.setCharAt(i, (char) seq.byteAt(i));
         }
     }
 
