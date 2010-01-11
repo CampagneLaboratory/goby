@@ -154,25 +154,28 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         // initialize too-many-hits output file
         final AlignmentTooManyHitsWriter tmhWriter = new AlignmentTooManyHitsWriter(outputFile, mParameter);
 
-        // initialize numberOfReads
-        if (transferIds.numberOfReads != 0) {
-            numberOfReads = transferIds.numberOfReads;
+        try {
+
+            // initialize numberOfReads
+            if (transferIds.numberOfReads != 0) {
+                numberOfReads = transferIds.numberOfReads;
+            }
+            if (numberOfReads <= 0) {
+                System.err.println("Cannot determine number of reads. Must set property or provide reads file with -q");
+                return;
+            }
+
+
+            // initialize quality filter
+            qualityFilter = new PercentMismatchesQualityFilter();
+            qualityFilter.setParameters(qualityFilterParameters);
+
+            final int numAligns = scan(readIndexFilter, targetIds, writer, tmhWriter);
+            System.out.println("Number of alignments written: " + numAligns);
+        } finally {
+            writer.close();
+            tmhWriter.close();
         }
-        if (numberOfReads <= 0) {
-            System.err.println("Cannot determine number of reads. Must set property or provide reads file with -q");
-            return;
-        }
-
-
-        // initialize quality filter
-        qualityFilter = new PercentMismatchesQualityFilter();
-        qualityFilter.setParameters(qualityFilterParameters);
-
-        final int numAligns = scan(readIndexFilter, targetIds, writer, tmhWriter);
-        System.out.println("Number of alignments written: " + numAligns);
-
-        writer.close();
-        tmhWriter.close();
     }
 
     protected void evaluateStatistics(final AlignedSequence reference, final AlignedSequence query, final AlignmentStats stats) {
