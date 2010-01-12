@@ -45,20 +45,23 @@ import java.io.IOException;
  *         Time: 6:03:56 PM
  */
 public class ConcatenateAlignmentMode extends AbstractGobyMode {
-
     /**
      * The mode name.
      */
-    public static final String MODE_NAME = "concatenate-alignments";
-    public static final String MODE_DESCRIPTION = "Concatenate compact alignment files.  <p/> Reference sequences must match exactly across the input alignments.  Query are assumed to be entirely distinct and will be treated as independent observations (e.g., reads from multiple independent samples). To this effect, alignment entries read from different input basenames, which would otherwise share an identical query index, are renumbered with distinct query indices.";
+    private static final String MODE_NAME = "concatenate-alignments";
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION = "Concatenate compact alignment files."
+            + "Reference sequences must match exactly across the input alignments.  Queries "
+            + "are assumed to be entirely distinct and will be treated as independent observations "
+            + "(e.g., reads from multiple independent samples). To this effect, alignment entries "
+            + "read from different input basenames, which would otherwise share an identical "
+            + "query index, are renumbered with distinct query indices.";
 
     private String[] inputFilenames;
     private String outputFile;
-
-    private final int sequencePerOutput = Integer.MAX_VALUE;
-
-    // default is true.
-    private boolean adjustQueryIndices=true;
+    private boolean adjustQueryIndices = true;
 
     @Override
     public String getModeName() {
@@ -89,7 +92,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         inputFilenames = jsapResult.getStringArray("input");
 
         outputFile = jsapResult.getString("output");
-        adjustQueryIndices = jsapResult.getBoolean("adjust-query-indices",true);
+        adjustQueryIndices = jsapResult.getBoolean("adjust-query-indices", true);
         return this;
     }
 
@@ -100,8 +103,6 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-
-
         final String outputFilename                 = outputFile;
         final AlignmentWriter writer                = new AlignmentWriter(outputFilename);
         final String[] basenames                    = AlignmentReader.getBasenames(inputFilenames);
@@ -118,7 +119,6 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         progress.start("concatenating entries");
 
         for (final Alignments.AlignmentEntry entry : alignmentReader) {
-
             writer.appendEntry(entry);
             numLogicalEntries += entry.getMultiplicity();
             numEntries++;
@@ -139,7 +139,8 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
             writer.setQueryIdentifiers(alignmentReader.getQueryIdentifiers());
         }
         writer.setStatistics(alignmentReader.getStatistics());
-        writer.putStatistic("overall.matched.percent", String.format("%3.3g",divide(numLogicalEntries,numQueries ) * 100d));
+        writer.putStatistic("overall.matched.percent",
+                String.format("%3.3g", divide(numLogicalEntries, numQueries) * 100d));
         writer.close();
 
         writer.printStats(System.out);
@@ -157,11 +158,11 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
 
 
     public void setInputFileNames(final String[] inputFilenames) {
-      this.  inputFilenames=inputFilenames;
+      this.inputFilenames = inputFilenames;
     }
 
     public void setOutputFilename(final String output) {
-        this.outputFile=output;
+        this.outputFile = output;
     }
 
     public File[] getOutputFiles() {

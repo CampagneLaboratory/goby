@@ -56,8 +56,13 @@ public class CountArchiveToPeakAnnotationsMode extends AbstractGobyMode {
     /**
      * The mode name.
      */
-    public static final String MODE_NAME = "count-archive-to-peak-annotations";
-    public static final String MODE_DESCRIPTION = "Write annotations corresponding to consensus peaks found in each sequence of count archives.";
+    private static final String MODE_NAME = "count-archive-to-peak-annotations";
+
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION = "Write annotations corresponding to consensus "
+            + "peaks found in each sequence of count archives.";
 
 
     /**

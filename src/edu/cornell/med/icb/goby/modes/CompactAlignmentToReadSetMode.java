@@ -38,13 +38,16 @@ import java.io.IOException;
  * @author Fabien Campagne
  */
 public class CompactAlignmentToReadSetMode extends AbstractGobyMode {
-
     /**
      * The mode name.
      */
-    public static final String MODE_NAME = "alignment-to-read-set";
-    public static final String MODE_DESCRIPTION = "Converts a compact alignment to a read set file.";
+    private static final String MODE_NAME = "alignment-to-read-set";
 
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION =
+            "Converts a compact alignment to a read set file.";
 
     /**
      * The input file.

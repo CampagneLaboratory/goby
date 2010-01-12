@@ -47,10 +47,13 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
     private int sequencePerChunk = 10000;
 
     /** The mode name. */
-    public static final String MODE_NAME = "concatenate-compact-reads";
+    private static final String MODE_NAME = "concatenate-compact-reads";
 
-    public static final String MODE_DESCRIPTION = "Concatenate compact reads files, count the number of reads, and track the min and max sequence length of all of the reads.";
-
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION = "Concatenate compact reads files, count the "
+            + "number of reads, and track the min and max sequence length of all of the reads.";
 
     private long numberOfReads;
     private int minReadLength = Integer.MAX_VALUE;

@@ -39,8 +39,12 @@ public class AlignmentToTextMode extends AbstractGobyMode {
     /**
      * The mode name.
      */
-    public static final String MODE_NAME = "alignment-to-text";
-    public static final String MODE_DESCRIPTION = "Converts a compact alignment to plain text.";
+    private static final String MODE_NAME = "alignment-to-text";
+
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION = "Converts a compact alignment to plain text.";
 
     /**
      * The input file.

@@ -43,8 +43,11 @@ public class CompactFileStatsMode extends AbstractGobyMode {
     /**
      * The mode name.
      */
-    public static final String MODE_NAME = "compact-file-stats";
-    public static final String MODE_DESCRIPTION =
+    private static final String MODE_NAME = "compact-file-stats";
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION =
             "Display some basic statistics on compact-reads and compact-alignment files.";
 
     /**

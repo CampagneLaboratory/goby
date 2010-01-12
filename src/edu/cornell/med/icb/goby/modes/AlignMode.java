@@ -50,10 +50,16 @@ public class AlignMode extends AbstractGobyMode {
     /**
      * The mode name.
      */
-    public static final String MODE_NAME = "align";
-    public static final String MODE_DESCRIPTION = "Run third party aligners, taking care of data translations.  Data translations include converting compact reads to the aligner input and converting the aligner output to compact alignment format.";
+    private static final String MODE_NAME = "align";
 
-    public static final int DEFAULT_M_PARAMETER = 2;
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION = "Run third party aligners, taking care of data "
+            + "translations.  Data translations include converting compact reads to the aligner "
+            + "input and converting the aligner output to compact alignment format.";
+
+    private static final int DEFAULT_M_PARAMETER = 2;
 
     private File readsFile;
     private File referenceFile;

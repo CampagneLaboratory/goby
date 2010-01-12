@@ -50,8 +50,12 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
     /**
      * The mode name.
      */
-    public static final String MODE_NAME = "alignment-to-counts";
-    public static final String MODE_DESCRIPTION = "Converts a compact alignment to a compressed count archive.";
+    private static final String MODE_NAME = "alignment-to-counts";
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION =
+            "Converts a compact alignment to a compressed count archive.";
 
     /**
      * Default counts archive extension.
@@ -70,8 +74,6 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
     private String optionalOutputFile;
     private boolean accumulatePeakHistogram;
     private int focusOnStrand;
-
-
 
     private String countArchiveModifier = COUNT_ARCHIVE_MODIFIER_DEFAULT;
 

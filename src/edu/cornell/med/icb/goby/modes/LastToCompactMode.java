@@ -58,15 +58,20 @@ import java.util.Map;
  *
  * This tool assumes that the extensions are ".maf" and ".counts".
  *
- *
  * @author Fabien Campagne
  */
 public class LastToCompactMode extends AbstractAlignmentToCompactMode {
     /**
-     * The mode name and description
+     * The mode name.
      */
-    public static final String MODE_NAME = "last-to-compact";
-    public static final String MODE_DESCRIPTION = "Convert a Last MAF file to the alignment compact format.  Also converts the associated Last COUNTS file (one line per query and count) to the alignment too-many-hits format.";
+    private static final String MODE_NAME = "last-to-compact";
+
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION = "Convert a Last MAF file to the alignment "
+            + "compact format.  Also converts the associated Last COUNTS file (one line per "
+            + "query and count) to the alignment too-many-hits format.";
 
     /**
      * Used to log debug and informational messages.
@@ -134,8 +139,9 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
     }
 
     @Override
-    protected int scan(final ReadSet readIndexFilter, final IndexedIdentifier targetIds, final AlignmentWriter writer,
-                     final AlignmentTooManyHitsWriter tmhWriter) throws IOException {
+    protected int scan(final ReadSet readIndexFilter, final IndexedIdentifier targetIds,
+                       final AlignmentWriter writer,
+                       final AlignmentTooManyHitsWriter tmhWriter) throws IOException {
 
         int numAligns = 0;
 

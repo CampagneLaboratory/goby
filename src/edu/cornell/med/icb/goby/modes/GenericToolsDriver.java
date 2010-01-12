@@ -163,7 +163,11 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
                             + "!!\n");
             throw e;
         }
+
         if (modeClass == null || caught != null) {
+            if (modeClass == null) {
+                System.err.println("Unrecognized mode: '" + mode + "'");
+            }
             printUsage(jsap);
             if (caught != null) {
                 System.err.println();

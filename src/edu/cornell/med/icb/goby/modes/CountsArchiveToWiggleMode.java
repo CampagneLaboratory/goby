@@ -48,9 +48,15 @@ public class CountsArchiveToWiggleMode extends AbstractGobyMode {
     /**
      * The mode name.
      */
-    public static final String MODE_NAME = "counts-to-wiggle";
-    public static final String MODE_DESCRIPTION = "Converts a full genome counts archive to the Wiggle format.  The wiggle format can be imported in the UCSC genome browser to visualize counts in the context of genome annotations. (http://genome.ucsc.edu/goldenPath/help/wiggle.html)";
+    private static final String MODE_NAME = "counts-to-wiggle";
 
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION = "Converts a full genome counts archive to "
+            + "the Wiggle format.  The wiggle format can be imported in the UCSC genome browser "
+            + "to visualize counts in the context of genome annotations."
+            + "(See http://genome.ucsc.edu/goldenPath/help/wiggle.html)";
 
     /**
      * The input file.

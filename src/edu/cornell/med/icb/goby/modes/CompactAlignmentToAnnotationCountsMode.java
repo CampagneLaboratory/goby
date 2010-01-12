@@ -47,13 +47,16 @@ import java.util.Arrays;
  * @author Xutao Deng
  */
 public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
-
     /**
      * The mode name.
      */
-    public static final String MODE_NAME = "alignment-to-annotation-counts";
-    public static final String MODE_DESCRIPTION = "Converts alignment to counts for annotations (e.g., gene transcript annotations or exons).";
+    private static final String MODE_NAME = "alignment-to-annotation-counts";
 
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION = "Converts alignment to counts for annotations "
+            + "(e.g., gene transcript annotations or exons).";
 
     /**
      * The input file.

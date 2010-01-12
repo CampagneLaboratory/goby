@@ -10,7 +10,7 @@
       <maximumStackSize value="32" />
       <properties />
       <executeOn event="beforeRun" target="compile" />
-      <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestAligner.testAlignWithLastag" />
+      <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="GobyDriver" />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/release.xml">
       <additionalClassPath />
@@ -45,7 +45,7 @@
         <entry key="check-test-classes" value="false" />
         <entry key="location-0" value="CLASSPATH:/sun_checks.xml:The default CheckStyle rules." />
         <entry key="location-1" value="FILE:C:\Documents and Settings\marko\My Documents\IdeaProjects\goby\testsupport\checkstyle\config\icb_checks.xml:ICB" />
-        <entry key="property.checkstyle.basedir" value="$PROJECT_DIR$/testsupport\checkstyle" />
+        <entry key="property-1.checkstyle.basedir" value="$PROJECT_DIR$/testsupport\checkstyle" />
         <entry key="thirdparty-classpath" value="" />
       </map>
     </option>

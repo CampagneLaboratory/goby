@@ -25,6 +25,7 @@ import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Parameter;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.WordUtils;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -75,13 +76,14 @@ public abstract class AbstractCommandLineMode {
             jsap.unregisterParameter(modeId);
         }
         System.err.println("Usage: ");
-        System.err.println("java -jar " + jarFilename + " --mode " + modeName + " " + jsap.getUsage());
+        System.err.println("java -jar " + jarFilename
+                + " (-m|--mode) " + modeName + " " + jsap.getUsage());
         System.err.println();
         System.err.println("Description: ");
-        System.err.println(modeDescription);
+        System.err.println(WordUtils.wrap(modeDescription, JSAP.DEFAULT_SCREENWIDTH - 1));
         System.err.println();
         System.err.println("Options: ");
-        System.err.println(jsap.getHelp());
+        System.err.println(jsap.getHelp(JSAP.DEFAULT_SCREENWIDTH - 1));
     }
 
     /**

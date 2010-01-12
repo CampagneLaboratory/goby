@@ -38,8 +38,6 @@ import java.io.IOException;
  *         Time: 6:03:56 PM
  */
 public class FastaToCompactMode extends AbstractGobyMode {
-
-
     private String[] inputFilenames;
     private boolean pushDescription;
     private boolean pushIdentifier;
@@ -48,17 +46,35 @@ public class FastaToCompactMode extends AbstractGobyMode {
     /**
      * The mode name.
      */
-    public static final String MODE_NAME = "fasta-to-compact";
-    public static final String MODE_DESCRIPTION = "Converts a FASTA file to the protocol buffer file format described by Reads.proto.";
+    private static final String MODE_NAME = "fasta-to-compact";
 
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION = "Converts a FASTA/FASTQ file to the "
+            + "Goby \"compact-reads\" file format.";
+
+    /**
+     * The number of sequences that will be written in each compressed chunk. Th default is
+     * suitable for very many short sequences but should be reduced to a few sequences per
+     * chunk if each sequence is very large.
+     */
     private int sequencePerChunk = 10000;
     private boolean excludeSequences;
 
+    /**
+     * Returns the mode name defined by subclasses.
+     * @return The name of the mode
+     */
     @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    /**
+     * Returns the mode description defined by subclasses.
+     * @return A description of the mode
+     */
     @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
@@ -69,7 +85,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws IOException   error parsing
+     * @throws IOException error parsing
      * @throws JSAPException error parsing
      */
     @Override
@@ -86,15 +102,13 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
     /**
      * Perform the conversion fasta -> compact-reads on one or more files.
-     *
-     * @throws IOException
+     * @throws IOException if the input/output files cannot be read/written
      */
     @Override
     public void execute() throws IOException {
         final int numToProcess = inputFilenames.length;
         int numProcessed = 0;
         for (final String inputFilename : inputFilenames) {
-
             final String outputFilename;
             if (numToProcess == 1 && StringUtils.isNotBlank(outputFile)) {
                 outputFilename = outputFile;
@@ -115,7 +129,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
                     final String identifier = description.toString().split("[\\s]")[0];
                     writer.setIdentifier(identifier);
                 }
-                if (!excludeSequences){
+                if (!excludeSequences) {
                     writer.setSequence(entry.getSequence());
                 } else {
                     writer.setSequence("");
@@ -133,7 +147,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
      *
      * @param name the full path to the file in question
      * @return the filename without the fastx/gz extensions or the same name of those extensions
-     *         weren't found.
+     * weren't found.
      */
     private static String stripFastxExtensions(final String name) {
         final String filename = FilenameUtils.getName(name);

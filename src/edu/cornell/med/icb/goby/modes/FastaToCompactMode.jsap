@@ -44,7 +44,7 @@
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
             <required>false</required>
-            <help>If there is only one read file, this will force the output file to this specific filename. If there is more than one input file, the output filename will always be the input filename without the .fasta, .gz, etc.  extensions with an extension of .compact-reads. You should generally use an extension of .compact-reads when writing a compact reads file.  </help>
+            <help>If there is only one read file, this will force the output file to this specific filename. If there is more than one input file, the output filename will always be the input filename without the .fasta, .gz, etc.  extensions with an extension of .compact-reads. You should generally use an extension of .compact-reads when writing a compact reads file.</help>
         </flaggedOption>
         <flaggedOption>
             <id>sequence-per-chunk</id>
@@ -57,7 +57,7 @@
             <defaults>
                 <string>10000</string>
             </defaults>
-            <help>The number of sequences that will be written in each compressed chunk. Default is suitable for very many short sequences. Reduce to a few sequences per chunk if each sequence is very large.  </help>
+            <help>The number of sequences that will be written in each compressed chunk. Default is suitable for very many short sequences. Reduce to a few sequences per chunk if each sequence is very large.</help>
         </flaggedOption>
         <unflaggedOption>
             <id>input</id>

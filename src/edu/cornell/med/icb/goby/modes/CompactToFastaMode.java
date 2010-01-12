@@ -59,8 +59,11 @@ public class CompactToFastaMode extends AbstractGobyMode {
     /**
      * The mode name.
      */
-    public static final String MODE_NAME = "compact-to-fasta";
-    public static final String MODE_DESCRIPTION = "Converts a Compact file to Fasta format.";
+    private static final String MODE_NAME = "compact-to-fasta";
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION = "Converts a Compact file to Fasta format.";
 
     private boolean referenceConversion;
     private String alphabet;
@@ -79,7 +82,6 @@ public class CompactToFastaMode extends AbstractGobyMode {
 
     // TODO:  figure out how to generate colorspace results using BWA without using Stu's ouputFakeQualityMode HACK !
     private boolean outputFakeQualityMode;
-
 
     @Override
     public String getModeName() {
