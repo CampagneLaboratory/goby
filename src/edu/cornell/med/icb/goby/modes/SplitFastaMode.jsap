@@ -19,13 +19,12 @@
 
 <jsap>
     <parameters>
-
         <flaggedOption>
             <id>input</id>
             <shortFlag>i</shortFlag>
             <longFlag>input</longFlag>
             <required>true</required>
-            <help>The Eland file to convert to MAQ Map.</help>
+            <help>The file to split.</help>
         </flaggedOption>
 
         <flaggedOption>
@@ -57,14 +56,14 @@
         </flaggedOption>
 
         <flaggedOption>
-            <id>fastx-split-max-length</id>
-            <longFlag>fastx-split-max-length</longFlag>
+            <id>split-max-length</id>
+            <longFlag>split-max-length</longFlag>
             <required>false</required>
             <stringParser>
                 <classname>IntegerStringParser</classname>
             </stringParser>
             <defaults>
-                <string>[FASTX_SPLIT_MAX_LENGTH]</string>
+                <string>[SPLIT_MAX_LENGTH]</string>
             </defaults>
             <help>Specify the maximum read length to give its own file</help>
         </flaggedOption>

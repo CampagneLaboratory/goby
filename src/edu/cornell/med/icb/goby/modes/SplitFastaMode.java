@@ -40,20 +40,26 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Split a FastA/FastQ file into multiple parts. Primarily used for splitting FASTA
+ * Split a FASTA/FASTQ file into multiple parts. Primarily used for splitting FASTA
  * into multiple chunks for Eland with a maximum number of entries per file and
  * one read length per file.
  * @author Kevin Dorff
  */
-public class SplitFastxMode extends AbstractGobyMode {
+public class SplitFastaMode extends AbstractGobyMode {
 
     /** The mode name. */
-    public static final String MODE_NAME = "split-fastx";
-    public static final String MODE_DESCRIPTION = "Split a FastA/FastQ file into multiple parts. Primarily used for splitting FASTA into multiple chunks for Eland with a maximum number of entries per file and one read length per file. ";
+    private static final String MODE_NAME = "split-fasta";
+
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION = "Split a FASTA/FASTQ file into multiple parts. "
+            + "Primarily used for splitting FASTA into multiple chunks for Eland with a maximum "
+            + "number of entries per file and one read length per file.";
 
 
     /** Default value. */
-    private static final int DEFAULT_FASTX_SPLIT_MAX_LENGTH = 32;
+    private static final int DEFAULT_SPLIT_MAX_LENGTH = 32;
 
     /**
      * The number of entries to write to a single file in splitfastx, this is
@@ -64,7 +70,7 @@ public class SplitFastxMode extends AbstractGobyMode {
     /** The input file. */
     private String inputFile;
 
-    /** Max read length for reading / writing MAQ Map files. */
+    /** Max read length for reading / writing files. */
     private int fastxSplitMaxLength;
 
     /** The number of read lengths for a file, if 1 each read length will get it's own file.
@@ -77,8 +83,8 @@ public class SplitFastxMode extends AbstractGobyMode {
     private static final Map<String, String> HELP_VALUES;
     static {
         HELP_VALUES = new HashMap<String, String>();
-        HELP_VALUES.put("[FASTX_SPLIT_MAX_LENGTH]",
-                Integer.toString(DEFAULT_FASTX_SPLIT_MAX_LENGTH));
+        HELP_VALUES.put("[SPLIT_MAX_LENGTH]",
+                Integer.toString(DEFAULT_SPLIT_MAX_LENGTH));
         HELP_VALUES.put("[MAX_READS_PER_FILE_DEFAULT]",
                 Integer.toString(MAX_READS_PER_FILE_DEFAULT));
     }
@@ -94,21 +100,18 @@ public class SplitFastxMode extends AbstractGobyMode {
     }
 
     /**
-     * Create the MaqToolsDriver object, parse argument(s). This intentionaly doesn't check
-     * for errors as we only care for "mode" and we KNOW there will be other command line
-     * parameters. All other arguments are specifed by the specific mode being called
-     * (including things like --help).
+     * Configure the mode arguements.
      * @param args the arguments
      * @return this object for chaining
-     * @throws java.io.IOException error parsing arguments
-     * @throws com.martiansoftware.jsap.JSAPException error parsing arguments
+     * @throws IOException error parsing arguments
+     * @throws JSAPException error parsing arguments
      */
     @Override
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args, HELP_VALUES);
 
         inputFile = new File(jsapResult.getString("input")).getCanonicalPath();
-        fastxSplitMaxLength = jsapResult.getInt("fastx-split-max-length");
+        fastxSplitMaxLength = jsapResult.getInt("split-max-length");
         splitReadsMod = jsapResult.getInt("split-reads-mod");
         maxReadsPerFile = jsapResult.getInt("max-reads-per-file");
         return this;
@@ -117,7 +120,7 @@ public class SplitFastxMode extends AbstractGobyMode {
     /**
      * Split a fasta / fastq file by (a) readlength and (b) the maximum number of
      * entries per file. This will output the files that are written to stdout
-     * @throws java.io.IOException error reading / writing.
+     * @throws IOException error reading / writing files.
      */
     @Override
     public void execute() throws IOException {
@@ -213,6 +216,6 @@ public class SplitFastxMode extends AbstractGobyMode {
      * @throws IOException error parsing or executing.
      */
     public static void main(final String[] args) throws JSAPException, IOException {
-        new SplitFastxMode().configure(args).execute();
+        new SplitFastaMode().configure(args).execute();
     }
 }
