@@ -282,7 +282,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
 
         // convert COUNTS to compact alignment
         if (!onlyMafFile) {
-            assert new File(countsInputFile).exists() : "Missing COUNTS file: "+countsInputFile;
+            assert new File(countsInputFile).exists() : "Missing COUNTS file: " + countsInputFile;
 
             System.out.println("Recording ambiguity-threshold="+mParameter);
             System.out.println("Will import length of match.");

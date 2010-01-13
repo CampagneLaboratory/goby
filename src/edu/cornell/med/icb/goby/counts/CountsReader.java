@@ -20,18 +20,17 @@ package edu.cornell.med.icb.goby.counts;
 
 import it.unimi.dsi.io.InputBitStream;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Reads counts encoded written by CountsWrite.
+ * Reads counts encoded written by {@link CountsWriter}.
  *
  * @author Fabien Campagne
  *         Date: May 6, 2009
  *         Time: 3:25:30 PM
  */
-public class CountsReader implements Closeable, CountsReaderI {
+public class CountsReader implements CountsReaderI {
     private final InputBitStream input;
     protected static final int END_OF_DATA_MARKER = 277492431;
     private boolean endOfStream;

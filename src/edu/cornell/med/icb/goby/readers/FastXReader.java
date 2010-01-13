@@ -64,7 +64,7 @@ public class FastXReader  implements Iterator<FastXEntry>, Iterable<FastXEntry>,
     private final String fileType;
 
     /**
-     * Create the FASTX reader
+     * Create the FASTX reader.
      * @param file the file that contains the FASTA / FASTQ data
      * @throws IOException error reading or the input stream doesn't support "mark"
      */
@@ -75,7 +75,7 @@ public class FastXReader  implements Iterator<FastXEntry>, Iterable<FastXEntry>,
     }
 
     /**
-     * Create the FASTX reader
+     * Create the FASTX reader.
      * @param is the input stream that contains FASTA / FASTQ data.
      * @throws IOException error reading or the input stream doesn't support "mark"
      */

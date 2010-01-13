@@ -68,7 +68,7 @@ public class CountsArchiveToWiggleMode extends AbstractGobyMode {
      */
     private String outputFile;
 
-    boolean filterByReferenceNames;
+    private boolean filterByReferenceNames;
     private ObjectSet<String> includeReferenceNames = new ObjectOpenHashSet<String>();
     private String label;
     /**
@@ -155,38 +155,43 @@ public class CountsArchiveToWiggleMode extends AbstractGobyMode {
                     // patch chromosome name for UCSC genome browser:
                     referenceId = "M";
                 }
-                if (referenceId.startsWith("c")) {
-                    // ignore c22_H2, c5_H2, and other contigs..
+
+                // ignore c22_H2, c5_H2, and other contigs but not things like chr1 (mm9)
+                if (referenceId.startsWith("c") && !referenceId.startsWith("chr")) {
                     processThisSequence = false;
                 }
 
                 if (filterByReferenceNames && !includeReferenceNames.contains(referenceId)) {
                     processThisSequence = false;
                 }
+
                 if (processThisSequence) {
-                    writer.printf("variableStep chrom=chr%s span=%d\n", referenceId, resolution);
+                    // prepend the reference id with "chr" if it doesn't use that already
+                    final String chromosome;
+                    if (referenceId.startsWith("chr")) {
+                        chromosome = referenceId;
+                    } else {
+                        chromosome = "chr" + referenceId;
+                    }
+
+                    writer.printf("variableStep chrom=%s span=%d\n", chromosome, resolution);
                     long sumCount = 0;
                     int numCounts = 0;
                     final CountsReader counts = reader.getCountReader(referenceIndex);
-                    int position = 0;
                     while (counts.hasNextTransition()) {
                         counts.nextTransition();
                         final int length = counts.getLength();
 
                         final int count = counts.getCount();
-                        position = counts.getPosition();
+                        final int position = counts.getPosition();
                         if (count != 0) {
                             for (int i = 0; i < length; i += resolution) {
-
                                 // positions start at 1 for UCSC genome browser:
                                 writer.printf("%d %d\n", position + i + 1, count);
-
-
                             }
                         }
                         sumCount += count;
                         numCounts++;
-                        //    position += length;
                     }
                     final double averageCount = sumCount / (double) numCounts;
                     System.out.println("average count for sequence " + referenceId + " " + averageCount);
@@ -201,9 +206,8 @@ public class CountsArchiveToWiggleMode extends AbstractGobyMode {
      * Main method.
      *
      * @param args command line args.
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
-     * @throws java.io.IOException error parsing or executing.
+     * @throws JSAPException error parsing
+     * @throws IOException error parsing or executing.
      */
 
     public static void main(final String[] args) throws JSAPException, IOException {
