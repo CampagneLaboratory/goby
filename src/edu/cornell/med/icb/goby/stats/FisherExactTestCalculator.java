@@ -28,7 +28,7 @@ import org.apache.commons.math.MathException;
 import gominer.Fisher;
 
 /**
- * Calculates fold change from first group to second group (requires exactly two groups).
+ * Calculates Fisher exact test P-value for an observed count difference between comparison groups (requires exactly two groups).
  *
  * @author Fabien Campagne
  *         Date: Jan 11, 2010
@@ -106,10 +106,18 @@ public class FisherExactTestCalculator extends StatisticCalculator {
         // public double fisher(final int totalChanged, final int changedInNode, final int total, final int inNode) {
         Fisher fisher = new Fisher();
 
-      //TODO check that the values passed in are as intendended for the test. This has not been tested yet.
-        pValue = fisher.fisher(sumCountInA, sumCountInB, totalCountInA - sumCountInA, totalCountInB - sumCountInB);
+        pValue = fisher.fisher(totalCountInA, sumCountInA, totalCountInA + totalCountInB, sumCountInA + sumCountInB);
 
-
+        /* Test : fisher.fisher(40,10,100,30)=
+                 Fisher's Exact Test
+    http://www.langsrud.com/fisher.htm
+    ------------------------------------------
+     TABLE = [ 10 , 20 , 30 , 40 ]
+    Left   : p-value = 0.2533310713617698
+    Right  : p-value = 0.8676419647894328
+    2-Tail : p-value = 0.5044757698516504
+    ------------------------------------------
+    */
         info.statistics.size(results.getNumberOfStatistics());
         info.statistics.set(results.getStatisticIndex(STATISTIC_ID), pValue);
 

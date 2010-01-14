@@ -43,14 +43,10 @@ public class BenjaminiHochbergAdjustment extends FDRAdjustment {
         Collections.sort(list, new StatisticComparator(list, statistic));
 
         final int statisticIndex = list.getStatisticIndex(statistic);
-        double listSize = 0;
-        // exclude NaN p-values from the number of comparisons:
-        for (DifferentialExpressionInfo info : list) {
-            final double pValue = info.statistics.get(statisticIndex);
-            if (pValue == pValue) listSize++;
-        }
+        double listSize = getListSize(list, statisticIndex);
+
         ///int rank = 1;
-        double cummin=1;
+        double cummin = 1;
 
         for (int rank = list.size(); rank >= 1; --rank) {
 
@@ -60,19 +56,19 @@ public class BenjaminiHochbergAdjustment extends FDRAdjustment {
 
             final double adjustment = (double) listSize / (double) rank;
             double adjustedPValue = pValue * adjustment;
-         if (adjustedPValue<cummin) {
-             // keep track of the smallest adjusted P-value seen so far (traversing from large to small P-values):
-             cummin=adjustedPValue;
+            if (adjustedPValue < cummin) {
+                // keep track of the smallest adjusted P-value seen so far (traversing from large to small P-values):
+                cummin = adjustedPValue;
 
-         }   else {
-             // if the current adjustedPvalue would be larger than a previously seen P-value, keep the previous one
-             // so that the null hypothesis is also rejected for the current element, at any significance threshold.
-             // This behaviour mimics the logic implemented in the R p.adjust( "BH") method with the cummin function.
-             adjustedPValue=cummin;
-         }
-            System.out.println(String.format("Adjusting p-value %g by listSize=%g rank=%d factor=%g => %g", pValue,
-                    listSize, rank, adjustment, adjustedPValue ));
-
+            } else {
+                // if the current adjustedPvalue would be larger than a previously seen P-value, keep the previous one
+                // so that the null hypothesis is also rejected for the current element, at any significance threshold.
+                // This behaviour mimics the logic implemented in the R p.adjust( "BH") method with the cummin function.
+                adjustedPValue = cummin;
+            }
+         /*   System.out.println(String.format("Adjusting p-value %g by listSize=%g rank=%d factor=%g => %g", pValue,
+                    listSize, rank, adjustment, adjustedPValue));
+           */
             info.statistics.size(list.getNumberOfStatistics());
             info.statistics.set(adjustedStatisticIndex, adjustedPValue);
 

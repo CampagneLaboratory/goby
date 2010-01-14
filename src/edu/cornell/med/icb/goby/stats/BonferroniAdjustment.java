@@ -24,22 +24,26 @@ import java.util.Collections;
 
 /**
  * Implement the Bonferroni multiple testing correction.
- * @see <a href="http://en.wikipedia.org/wiki/Bonferroni_correction">Wikipedia</a>
+ *
  * @author Fabien Campagne
  *         Date: Jan 13, 2010
  *         Time: 11:18:00 AM
+ * @see <a href="http://en.wikipedia.org/wiki/Bonferroni_correction">Wikipedia</a>
  */
 public class BonferroniAdjustment extends FDRAdjustment {
     public DifferentialExpressionResults adjust(DifferentialExpressionResults list, String statisticId) {
         MutableString statistic = new MutableString(statisticId);
+
         final String adjustedStatisticId = statisticId + "-Bonferroni-adjusted";
         list.declareStatistic(adjustedStatisticId);
         int adjustedStatisticIndex = list.getStatisticIndex(new MutableString(adjustedStatisticId));
         // sort differentially expressed elements by increasing statistic (typically a P-value):
         Collections.sort(list, new StatisticComparator(list, statistic));
 
-        double listSize = list.size();
         final int statisticIndex = list.getStatisticIndex(statistic);
+        double listSize = getListSize(list, statisticIndex);
+
+
         for (DifferentialExpressionInfo info : list) {
 
             final double pValue = info.statistics.get(statisticIndex);
@@ -51,4 +55,6 @@ public class BonferroniAdjustment extends FDRAdjustment {
         return list;
 
     }
+
+
 }

@@ -103,9 +103,10 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
         }
         printWriter.append("\n");
         for (DifferentialExpressionInfo info : this.subList(0, size())) {
-
+            if (info.informative()) {
             info.write(printWriter, delimiter);
             printWriter.append("\n");
+            }
         }
         printWriter.flush();
     }

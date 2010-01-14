@@ -20,7 +20,8 @@ package edu.cornell.med.icb.goby.stats;
 
 /**
  * Abstract class for all implementations of FDR correction methods.
- *  @author Fabien Campagne
+ *
+ * @author Fabien Campagne
  *         Date: Jan 12, 2010
  *         Time: 6:59:01 PM
  */
@@ -31,6 +32,18 @@ public abstract class FDRAdjustment {
             adjust(list, statisticId);
         }
         return list;
+    }
+
+    public double getListSize(DifferentialExpressionResults list, int statisticIndex) {
+        int listSize = 0;
+        // exclude NaN p-values from the number of comparisons:
+        for (DifferentialExpressionInfo info : list) {
+            final double pValue = info.statistics.get(statisticIndex);
+            if (info.informative()) {
+                listSize++;
+            }
+        }
+        return listSize;
     }
 
     abstract public DifferentialExpressionResults adjust(DifferentialExpressionResults list, String statisticId);

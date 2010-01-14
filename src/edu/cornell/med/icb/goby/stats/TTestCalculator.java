@@ -69,25 +69,25 @@ public class TTestCalculator extends StatisticCalculator {
 
         int i = 0;
         for (String sample : samplesA) {
-            valuesA[i++] = differentialExpressionCalculator.getRPKM(sample, info.elementId);
+            valuesA[i++] = Math.log1p(differentialExpressionCalculator.getRPKM(sample, info.elementId));
         }
 
         i = 0;
         for (String sample : samplesB) {
-            valuesB[i++] = differentialExpressionCalculator.getRPKM(sample, info.elementId);
+            valuesB[i++] = Math.log1p(differentialExpressionCalculator.getRPKM(sample, info.elementId));
         }
 
         double pValue = 0;
-        double tStatistic= 0;
+        double tStatistic = 0;
         final MutableString statName = new MutableString("t-statistic");
         if (!results.isStatisticDefined(statName)) {
             results.declareStatistic(statName);
         }
         try {
             pValue = mathCommonsTTest.tTest(valuesA, valuesB);
-            tStatistic=    mathCommonsTTest.t(valuesA, valuesB);
+            tStatistic = mathCommonsTTest.t(valuesA, valuesB);
         } catch (MathException e) {
-            pValue=Double.NaN;
+            pValue = Double.NaN;
         }
         info.statistics.size(results.getNumberOfStatistics());
         info.statistics.set(results.getStatisticIndex(STATISTIC_ID), pValue);
@@ -96,5 +96,17 @@ public class TTestCalculator extends StatisticCalculator {
         return info;
     }
 
+    final double LOG_2 = Math.log(2);
+
+    /**
+     * Calculate the log2 of x +1.
+     *
+     * @param x
+     * @return log2(x+1)=Math.log1p(x)/Math.log(2)
+     */
+    private double log2(final double x) {
+
+        return Math.log1p(x) / LOG_2;
+    }
 
 }

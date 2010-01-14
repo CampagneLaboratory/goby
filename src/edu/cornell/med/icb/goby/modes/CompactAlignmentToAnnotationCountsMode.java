@@ -52,7 +52,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-        public static final String MODE_DESCRIPTION =
+    public static final String MODE_DESCRIPTION =
             "Converts alignment to counts for annotations (e.g., gene transcript annotations or exons).";
     /**
      * The input file.
@@ -136,17 +136,20 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         if (compare == null) {
             doComparison = false;
         }
-        doComparison = true;
-        String[] groupLanguageText = compare.split("/");
-        for (String groupId : groupLanguageText) {
+        else doComparison = true;
 
-            if (!groups.contains(groupId)) {
-                System.err.println("Group " + groupId + " used in --compare must be defined. Please see the --groups option to define groups.");
-                System.exit(1);
+        if (doComparison) {
+            String[] groupLanguageText = compare.split("/");
+            for (String groupId : groupLanguageText) {
+
+                if (!groups.contains(groupId)) {
+                    System.err.println("Group " + groupId + " used in --compare must be defined. Please see the --groups option to define groups.");
+                    System.exit(1);
+                }
+
             }
-
+            groupComparison = groupLanguageText;
         }
-        groupComparison = groupLanguageText;
     }
 
     ObjectSet<String> groups = new ObjectArraySet<String>();
@@ -267,13 +270,12 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 DifferentialExpressionResults results = deCalculator.compare(new FoldChangeCalculator(), groupComparison);
 
                 results = deCalculator.compare(results, new TTestCalculator(), groupComparison);
-            //    results = deCalculator.compare(results, new FisherExactTestCalculator(), groupComparison);
+                results = deCalculator.compare(results, new FisherExactTestCalculator(), groupComparison);
                 results = deCalculator.compare(results, new AverageCalculator(), groupComparison);
-               // TODO enable Fisher exact test after testing that the implementation is correct.
                 BenjaminiHochbergAdjustment BHFDR = new BenjaminiHochbergAdjustment();
                 BonferroniAdjustment BonferroniAdjust = new BonferroniAdjustment();
-                results = BonferroniAdjust.adjust(results, "t-test"/*,"fisher-exact-test"*/);
-                results = BHFDR.adjust(results, "t-test" /*,"fisher-exact-test"*/);
+                results = BonferroniAdjust.adjust(results, "t-test", "fisher-exact-test");
+                results = BHFDR.adjust(results, "t-test", "fisher-exact-test");
                 final PrintWriter statsOutput = new PrintWriter(statsFilename);
                 results.write(statsOutput, '\t');
 
@@ -476,7 +478,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             reader = new BufferedReader(new FileReader(annotFile));
             String line;
             final String header = reader.readLine();
-          
+
             while ((line = reader.readLine()) != null) {
                 if (!line.startsWith("#")) {
                     final String[] linearray = line.trim().split("\t");

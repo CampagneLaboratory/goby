@@ -45,4 +45,19 @@ public class DifferentialExpressionInfo {
             printWriter.append(String.format("%g", value));
         }
     }
+
+    /**
+     * Is the DE informative? 
+     * @return
+     */
+    public boolean informative() {
+        boolean informative = false;
+        for (double value : statistics) {
+            if (value == value || value >0){
+                // require something else than NaN or zero to be have an informative DE.
+                informative = true;
+            }
+        }
+        return informative;
+    }
 }
