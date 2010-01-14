@@ -26,15 +26,11 @@ import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.stats.*;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -50,14 +46,14 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     /**
      * The mode name.
      */
-    private static final String MODE_NAME = "alignment-to-annotation-counts";
+    public static final String MODE_NAME = "alignment-to-annotation-counts";
+
 
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Converts alignment to counts for annotations "
-            + "(e.g., gene transcript annotations or exons).";
-
+        public static final String MODE_DESCRIPTION =
+            "Converts alignment to counts for annotations (e.g., gene transcript annotations or exons).";
     /**
      * The input file.
      */
@@ -74,6 +70,12 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     private ObjectSet<String> includeReferenceNames;
     private ObjectOpenHashSet<String> includeAnnotationTypes;
     private String[] inputFilenames;
+    private boolean doComparison;
+    // The groups that should be compared, order matters.
+    private String[] groupComparison;
+    private final boolean writeAnnotationCounts = true;
+    private String statsFilename;
+
 
     @Override
     public String getModeName() {
@@ -99,10 +101,12 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
         inputFilenames = jsapResult.getStringArray("input");
-
-
         outputFile = jsapResult.getString("output");
-
+        statsFilename = jsapResult.getString("stats");
+        String groupsDefinition = jsapResult.getString("groups");
+        parseGroupsDefinition(groupsDefinition);
+        String compare = jsapResult.getString("compare");
+        parseCompare(compare);
         annotationFile = jsapResult.getString("annotation");
         final String includeReferenceNameComas = jsapResult.getString("include-reference-names");
         includeReferenceNames = new ObjectOpenHashSet<String>();
@@ -128,6 +132,48 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         return this;
     }
 
+    private void parseCompare(String compare) {
+        if (compare == null) {
+            doComparison = false;
+        }
+        doComparison = true;
+        String[] groupLanguageText = compare.split("/");
+        for (String groupId : groupLanguageText) {
+
+            if (!groups.contains(groupId)) {
+                System.err.println("Group " + groupId + " used in --compare must be defined. Please see the --groups option to define groups.");
+                System.exit(1);
+            }
+
+        }
+        groupComparison = groupLanguageText;
+    }
+
+    ObjectSet<String> groups = new ObjectArraySet<String>();
+    DifferentialExpressionCalculator deCalculator = new DifferentialExpressionCalculator();
+
+    private void parseGroupsDefinition(String groupsDefinition) {
+        if (groupsDefinition == null) {
+            // no groups definition to parse.
+            return;
+        }
+
+        String[] groupsTmp = groupsDefinition.split("/");
+        for (String group : groupsTmp) {
+            String[] groupTokens = group.split("=");
+            String groupId = groupTokens[0];
+            String groupBasenames = groupTokens[1];
+            assert groupTokens.length == 2 : "group definition must have only two elements separated by an equal sign.";
+            deCalculator.defineGroup(groupId);
+            groups.add(groupId);
+            for (String basename : groupBasenames.split(",")) {
+                System.out.println("Associating basename: " + basename + " to group: " + groupId);
+                deCalculator.associateSampleToGroup(basename, groupId);
+
+            }
+        }
+    }
+
     /**
      * Run the mode.
      *
@@ -141,6 +187,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         timer.start();
         BufferedWriter writer = null;
         try {
+
+
             if (outputFile != null) {
                 writer = new BufferedWriter(new FileWriter(outputFile));
                 writer.write("basename\tmain-id\tsecondary-id\ttype\tchro\tstrand\tlength\tstart\tend\tin-count\tover-count\tRPKM\tlog2(PRKM+1)\texpression\tnum-exons\n");
@@ -181,7 +229,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 referenceReader.readHeader();
 
                 // read the alignment:
-                System.out.println("Loading alignment "+inputBasename+"..");
+                System.out.println("Loading alignment " + inputBasename + "..");
                 int numAlignedReadsInSample = 0;
                 for (final Alignments.AlignmentEntry alignmentEntry : referenceReader) {
                     final int referenceIndex = alignmentEntry.getTargetIndex();
@@ -213,7 +261,27 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     IOUtils.closeQuietly(writer);
                 }
             }
+
+            if (doComparison) {
+                // evaluate differences between groups:
+                DifferentialExpressionResults results = deCalculator.compare(new FoldChangeCalculator(), groupComparison);
+
+                results = deCalculator.compare(results, new TTestCalculator(), groupComparison);
+            //    results = deCalculator.compare(results, new FisherExactTestCalculator(), groupComparison);
+                results = deCalculator.compare(results, new AverageCalculator(), groupComparison);
+               // TODO enable Fisher exact test after testing that the implementation is correct.
+                BenjaminiHochbergAdjustment BHFDR = new BenjaminiHochbergAdjustment();
+                BonferroniAdjustment BonferroniAdjust = new BonferroniAdjustment();
+                results = BonferroniAdjust.adjust(results, "t-test"/*,"fisher-exact-test"*/);
+                results = BHFDR.adjust(results, "t-test" /*,"fisher-exact-test"*/);
+                final PrintWriter statsOutput = new PrintWriter(statsFilename);
+                results.write(statsOutput, '\t');
+
+                IOUtils.closeQuietly(statsOutput);
+            }
         } finally {
+
+
             IOUtils.closeQuietly(writer);
         }
         timer.stop();
@@ -222,6 +290,28 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
 
     private void writeAnnotationCounts(Object2ObjectMap<String, ObjectList<Annotation>> allAnnots, BufferedWriter writer, String inputBasename, DoubleIndexedIdentifier referenceIds, AnnotationCount[] algs, IntSet referencesToProcess, int numAlignedReadsInSample) throws IOException {
+
+        // collect all element ids:
+        if (doComparison) {
+            int numberOfElements = 0;
+            for (final int referenceIndex : referencesToProcess) {
+                final String chromosomeName = referenceIds.getId(referenceIndex).toString();
+
+                if (!allAnnots.containsKey(chromosomeName)) {
+                    continue;
+                }
+                final ObjectList<Annotation> annots = allAnnots.get(chromosomeName);
+
+                for (final Annotation annot : annots) {
+                    final String geneID = annot.id;
+                    deCalculator.defineElement(geneID);
+                    numberOfElements++;
+                }
+            }
+
+            deCalculator.reserve(numberOfElements, inputFilenames.length);
+        }
+
         for (final int referenceIndex : referencesToProcess) {
 
             final String chromosomeName = referenceIds.getId(referenceIndex).toString();
@@ -235,10 +325,16 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             algs[referenceIndex].sortReads();
             algs[referenceIndex].baseCounter.accumulate();
             algs[referenceIndex].baseCounter.baseCount();
+            if (doComparison) {
+                for (final Annotation annot : annots) {
+                    final String geneID = annot.id;
+                    deCalculator.defineElement(geneID);
+                }
+            }
 
             for (final Annotation annot : annots) {
                 final String geneID = annot.id;
-                final String basename = inputBasename;
+                final String basename = FilenameUtils.getBaseName(inputBasename);
                 if (includeAnnotationTypes.contains("gene")) {
 
                     final int geneStart = annot.getStart();
@@ -252,22 +348,27 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
 
                     final double geneRPKM = calculateRPKM(geneOverlapReads, annot.getLength(), numAlignedReadsInSample);
-                    writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\t%d\t%d\t%n",
-                            basename,
-                            geneID,
-                            "",
-                            "gene",
-                            annot.chromosome,
-                            annot.strand,
-                            geneLength,
-                            geneStart,
-                            geneEnd,
-                            geneInsideReads,
-                            geneOverlapReads,
-                            geneRPKM,
-                            log2(geneRPKM),
-                            geneExpression,
-                            numExons));
+                    if (writeAnnotationCounts) {
+                        writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\t%d\t%d\t%n",
+                                basename,
+                                geneID,
+                                "",
+                                "gene",
+                                annot.chromosome,
+                                annot.strand,
+                                geneLength,
+                                geneStart,
+                                geneEnd,
+                                geneInsideReads,
+                                geneOverlapReads,
+                                geneRPKM,
+                                log2(geneRPKM),
+                                geneExpression,
+                                numExons));
+                    }
+                    if (doComparison) {
+                        deCalculator.observe(basename, geneID, geneOverlapReads, geneRPKM);
+                    }
                 }
                 final int numberExons = annot.segments.size();
                 final int numberIntrons = numberExons - 1;
@@ -285,20 +386,22 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     final int exonInsideReads = algs[referenceIndex].readsInSegmentCount(exonStart, exonEnd);
                     final double exonRPKM = calculateRPKM(exonOverlapReads, segment.getLength(), numAlignedReadsInSample);
                     if (includeAnnotationTypes.contains("exon")) {
-                        writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\t\t%n",
-                                basename,
-                                geneID,
-                                exonID,
-                                "exon",
-                                annot.chromosome,
-                                exonStrand,
-                                exonLength,
-                                exonStart,
-                                exonEnd,
-                                exonInsideReads,
-                                exonOverlapReads,
-                                exonRPKM,
-                                log2(exonRPKM)));
+                        if (writeAnnotationCounts) {
+                            writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\t\t%n",
+                                    basename,
+                                    geneID,
+                                    exonID,
+                                    "exon",
+                                    annot.chromosome,
+                                    exonStrand,
+                                    exonLength,
+                                    exonStart,
+                                    exonEnd,
+                                    exonInsideReads,
+                                    exonOverlapReads,
+                                    exonRPKM,
+                                    log2(exonRPKM)));
+                        }
                     }
                     if (i < numberIntrons) {
                         final int intronStart = segment.end + 1;
@@ -312,20 +415,22 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                         final double intronRPKM = calculateRPKM(intronOverlapReads, intronSegment.getLength(), numAlignedReadsInSample);
                         if (intronLength > 0) {
                             if (includeAnnotationTypes.contains("intron")) {
-                                writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%e\t%g\t\t%n",
-                                        basename,
-                                        geneID,
-                                        intronID,
-                                        "intron",
-                                        annot.chromosome,
-                                        exonStrand,
-                                        exonLength,
-                                        exonStart,
-                                        exonEnd,
-                                        intronInsideReads,
-                                        intronOverlapReads,
-                                        intronRPKM,
-                                        log2(intronRPKM)));
+                                if (writeAnnotationCounts) {
+                                    writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%e\t%g\t\t%n",
+                                            basename,
+                                            geneID,
+                                            intronID,
+                                            "intron",
+                                            annot.chromosome,
+                                            exonStrand,
+                                            exonLength,
+                                            exonStart,
+                                            exonEnd,
+                                            intronInsideReads,
+                                            intronOverlapReads,
+                                            intronRPKM,
+                                            log2(intronRPKM)));
+                                }
                             }
                         }
                     }
@@ -371,7 +476,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             reader = new BufferedReader(new FileReader(annotFile));
             String line;
             final String header = reader.readLine();
-            System.out.println(header);
+          
             while ((line = reader.readLine()) != null) {
                 if (!line.startsWith("#")) {
                     final String[] linearray = line.trim().split("\t");
