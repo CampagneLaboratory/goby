@@ -143,6 +143,8 @@ public class TestStatistics {
             public int getOverlapCount(String sample, MutableString elementId) {
                 return (int) (getRPKM(sample, elementId) * 100);
             }
+
+
         };
 
         deCalc.defineElement("id-1");
@@ -183,6 +185,54 @@ public class TestStatistics {
         assertEquals("fold-change must be two fold", 2d, results.getStatistic(info, foldChange.STATISTIC_ID), .1);
         assertTrue("T-test must be significant", results.getStatistic(info, tTest.STATISTIC_ID) < 0.01);
         assertTrue("fisher test must not be significant", results.getStatistic(info, fisher.STATISTIC_ID) > 0.05);
+    }
+
+    @Test
+    public void testFisher() {
+
+        DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator();
+        int numReplicates = 2;
+        deCalc.defineElement("id-1");
+        deCalc.defineElement("id-2");
+        deCalc.defineGroup("A");
+        deCalc.defineGroup("B");
+        deCalc.reserve(2, numReplicates * 2);
+
+        for (int i = 1; i <= numReplicates; i++) {
+            deCalc.associateSampleToGroup("A-" + i, "A");
+            deCalc.associateSampleToGroup("B-" + i, "B");
+        }
+
+        /**
+         * Encode the following table in two genes:
+         Fisher's Exact Test
+         http://www.langsrud.com/fisher.htm
+         ------------------------------------------
+         TABLE = [ 10 , 20 , 30 , 40 ]
+         Left   : p-value = 0.2533310713617698
+         Right  : p-value = 0.8676419647894328
+         2-Tail : p-value = 0.5044757698516504
+         ------------------------------------------
+         */
+        deCalc.observe("A-1", "id-1", 7, 0);
+        deCalc.observe("A-2", "id-1", 3, 0);         // 7+3 = 10
+        deCalc.observe("B-1", "id-1", 15, 0);
+        deCalc.observe("B-2", "id-1", 5, 0);         // 15+5 =20
+
+        deCalc.observe("A-1", "id-2", 15, 0);
+        deCalc.observe("A-2", "id-2", 15, 0);        // 15+15=30
+        deCalc.observe("B-1", "id-2", 20, 0);
+        deCalc.observe("B-2", "id-2", 20, 0);        // 20+20=40
+
+
+       
+   
+        DifferentialExpressionInfo info = new DifferentialExpressionInfo();
+        DifferentialExpressionResults results = new DifferentialExpressionResults();
+        FisherExactTestCalculator fisher = new FisherExactTestCalculator(results);
+        info.elementId = new MutableString("id-1");
+        fisher.evaluate(deCalc, results, info, "A", "B");
+        assertEquals("fisher test equal expected result", 0.5044757698516504, results.getStatistic(info, fisher.STATISTIC_ID), 0.001);
     }
 
     @Test
@@ -231,7 +281,7 @@ public class TestStatistics {
                 , 6.835770e-01, 7.188450e-01, 7.414352e-01, 7.414352e-01, 7.626063e-01
                 , 7.626063e-01, 7.626063e-01, 7.626063e-01, 7.824868e-01, 7.988737e-01
                 , 8.802645e-01, 8.802645e-01, 9.304775e-01, 9.304775e-01, 9.437890e-01};
-        
+
         double[] adjusted_R_nocummin = {
                 1.177027e-05, 5.253976e-04, 4.294736e-04, 1.226848e-03, 1.052610e-03
                 , 1.034567e-03, 9.471343e-04, 9.803146e-04, 1.252532e-03, 1.897690e-03
@@ -278,7 +328,7 @@ public class TestStatistics {
             final int elementIndex = Integer.parseInt(infoAdjusted.elementId.toString());
             assertEquals("adjusted p-values must match for i=" + infoAdjusted.elementId, adjusted_R[elementIndex],
                     infoAdjusted.statistics.get(index), 0.01);
-        
+
         }
 
     }
