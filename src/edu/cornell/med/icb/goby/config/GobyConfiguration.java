@@ -24,6 +24,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.SystemConfiguration;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -157,7 +158,7 @@ public class GobyConfiguration {
         defaultConfiguration.addProperty(EXECUTABLE_PATH_LASTAG, "");
         defaultConfiguration.addProperty(EXECUTABLE_PATH_BWA, "");
         defaultConfiguration.addProperty(DATABASE_DIRECTORY, ".");
-        defaultConfiguration.addProperty(WORK_DIRECTORY, ".");
+        defaultConfiguration.addProperty(WORK_DIRECTORY, SystemUtils.getJavaIoTmpDir());
         return defaultConfiguration;
     }
 
