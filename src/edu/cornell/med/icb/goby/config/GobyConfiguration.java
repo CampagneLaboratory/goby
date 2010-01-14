@@ -158,7 +158,7 @@ public class GobyConfiguration {
         defaultConfiguration.addProperty(EXECUTABLE_PATH_LASTAG, "");
         defaultConfiguration.addProperty(EXECUTABLE_PATH_BWA, "");
         defaultConfiguration.addProperty(DATABASE_DIRECTORY, ".");
-        defaultConfiguration.addProperty(WORK_DIRECTORY, SystemUtils.getJavaIoTmpDir());
+        defaultConfiguration.addProperty(WORK_DIRECTORY, SystemUtils.getJavaIoTmpDir().toString());
         return defaultConfiguration;
     }
 
