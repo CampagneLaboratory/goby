@@ -22,14 +22,18 @@ import edu.cornell.med.icb.goby.config.GobyConfiguration;
 import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
 import edu.cornell.med.icb.goby.modes.CompactToFastaMode;
 import edu.cornell.med.icb.goby.modes.SAMToCompactMode;
-import edu.cornell.med.icb.goby.util.ExecuteProgram;
+import edu.cornell.med.icb.goby.util.LoggingOutputStream;
 import edu.mssm.crover.cli.CLI;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
@@ -38,10 +42,11 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
+import java.io.OutputStream;
 
 /**
- * Facade to the BWA aligner. For details about BWA, see http://maq.sourceforge.net/bwa-man.shtml
+ * Facade to the Burrows-Wheeler Aligner (BWA) aligner. For details about BWA,
+ * see <a href="http://bio-bwa.sourceforge.net/">http://bio-bwa.sourceforge.net/</a>
  *
  * <h3> Description </h3>
  * BWA  is  a  fast  light-weighted  tool  that  aligns  relatively  short
@@ -235,9 +240,9 @@ public class BWAAligner extends AbstractAligner {
     private static final Log LOG = LogFactory.getLog(BWAAligner.class);
 
     private static final String BWA_EXEC = SystemUtils.IS_OS_WINDOWS ? "bwa.exe" : "bwa";
-    private static final String BWA_INDEX_EXEC = BWA_EXEC + " index";
-    private static final String BWA_ALIGN_EXEC = BWA_EXEC + " aln";
-    private static final String BWA_SAMSE_EXEC = BWA_EXEC + " samse";
+    private static final String BWA_INDEX_ARG = "index";
+    private static final String BWA_ALIGN_ARG = "aln";
+    private static final String BWA_SAMSE_ARG = "samse";
     private static final int DEFAULT_SEED_LENGTH = 35;
 
     private String databasePrefix;
@@ -361,14 +366,35 @@ public class BWAAligner extends AbstractAligner {
         final File fastaReferenceFile = prepareReference(referenceFileOrDbBasename);
 
         forceMakeParentDir(databasePrefix);
-        final ExecuteProgram executor = new ExecuteProgram();
-        final String command = String.format("%s/%s  -a %s %s -p %s %s ",
-                pathToExecutables, BWA_INDEX_EXEC,
-                databaseIndexingStyle(fastaReferenceFile),
-                colorSpace ? "-c" : "",
-                databasePrefix,
-                fastaReferenceFile.toString().replaceAll(" ", "\\ "));
-        executor.executeToLog(command, BWAAligner.class, Level.INFO, "BWA[__OUTPUT_TAG__]: ");
+
+        final String command = FilenameUtils.concat(pathToExecutables, BWA_EXEC);
+        final CommandLine commandLine = createCommandLine(command);
+        commandLine.addArgument(BWA_INDEX_ARG);
+        commandLine.addArgument("-a");
+        commandLine.addArgument(databaseIndexingStyle(fastaReferenceFile));
+        if (colorSpace) {
+            commandLine.addArgument("-c");
+        }
+        commandLine.addArgument("-p");
+        commandLine.addArgument(databasePrefix);
+        commandLine.addArgument(fastaReferenceFile.toString());
+
+        LOG.info("About to execute " + commandLine);
+        final StopWatch timer = new StopWatch();
+        timer.start();
+        final DefaultExecutor executor = new DefaultExecutor();
+        OutputStream logStream = null;
+        try {
+            logStream = new LoggingOutputStream(BWAAligner.class, Level.INFO, "");
+            executor.setStreamHandler(new PumpStreamHandler(logStream));
+
+            final int exitValue = executor.execute(commandLine);
+            LOG.info("Exit value = " + exitValue);
+        } finally {
+            IOUtils.closeQuietly(logStream);
+        }
+        LOG.info("Command executed in: " + timer.toString());
+
         listFiles(databaseDirectory);
         return matchingExtension(databasePrefix, extensions);
     }
@@ -388,63 +414,99 @@ public class BWAAligner extends AbstractAligner {
      *
      * Only use this option if the seedLength is shorter than the minimum read length,
      * otherwise bwa may fail (despite what the documentation says).
+     *
+     * @return A string of the form "-l <seedLength>" or an empty string.
      */
     private String getLOption() {
         return (minReadLength >= seedLength) ? ("-l " + seedLength) : "";
     }
 
-
     public File[] align(final File referenceFile, final File readsFile, final String outputBasename) throws InterruptedException, IOException {
         assert pathToExecutables != null : "path to executables must be defined.";
 
-        BufferedOutputStream saiOutputStream = null;
-        BufferedOutputStream samOutputStream = null;
-        try {
-            final File nativeReads = prepareReads(readsFile);
-            if (nativeReads.toString().contains(" ")) {
-            throw new IllegalArgumentException("BWA does not support spaces in filename: " + nativeReads);
-
-            }
-            if (databaseName == null) {
-                databaseName = getDefaultDbNameForReferenceFile(referenceFile);
-            }
-            final File[] indexedReference = indexReference(referenceFile);
-            saiBinaryFilename = FilenameUtils.concat(workDirectory, File.createTempFile(RandomStringUtils.randomAlphabetic(10), ".sai").getName());
-            samBinaryFilename = FilenameUtils.concat(workDirectory, File.createTempFile(RandomStringUtils.randomAlphabetic(10), ".sam").getName());
-            forceMakeParentDir(saiBinaryFilename);
-            forceMakeParentDir(samBinaryFilename);
-            LOG.info("Searching..");
-            final ExecuteProgram executor = new ExecuteProgram();
-
-            String command = String.format("%s/%s %s %s %s %s %s",
-                    pathToExecutables, BWA_ALIGN_EXEC,
-                    colorSpace ? "-c" : "",
-                    getLOption(),
-                    alignerOptions,
-                    databasePrefix, nativeReads);
-            saiOutputStream =  new BufferedOutputStream(new FileOutputStream(saiBinaryFilename));
-            executor.executeStderrToLog(command, saiOutputStream, BWAAligner.class, Level.INFO,
-                    "BWA[__OUTPUT_TAG__]: ");
-            saiOutputStream.close();
-
-            // convert sai to SAM format:
-            command = String.format("%s/%s %s %s  %s",
-                    pathToExecutables, BWA_SAMSE_EXEC,
-                    databasePrefix, saiBinaryFilename, nativeReads);
-            samOutputStream = new BufferedOutputStream(new FileOutputStream(samBinaryFilename));
-            executor.executeStderrToLog(command, samOutputStream, BWAAligner.class, Level.INFO,
-                    "BWA[__OUTPUT_TAG__]: ");
-            samOutputStream.close();
-
-            // convert native alignment into compact reads
-            final File[] buildResults = processAlignment(referenceFile, readsFile, outputBasename);
-            FileUtils.deleteQuietly(new File(saiBinaryFilename));
-            FileUtils.deleteQuietly(new File(samBinaryFilename));
-
-            return buildResults;
-        } finally {
-            IOUtils.closeQuietly(saiOutputStream);
-            IOUtils.closeQuietly(samOutputStream);
+        final File nativeReads = prepareReads(readsFile);
+        if (nativeReads.toString().contains(" ")) {
+            throw new IllegalArgumentException("BWA does not support spaces in filename: "
+                    + nativeReads);
         }
+        if (databaseName == null) {
+            databaseName = getDefaultDbNameForReferenceFile(referenceFile);
+        }
+        final File[] indexedReference = indexReference(referenceFile);
+        saiBinaryFilename = FilenameUtils.concat(workDirectory,
+                File.createTempFile(RandomStringUtils.randomAlphabetic(10), ".sai").getName());
+        samBinaryFilename = FilenameUtils.concat(workDirectory,
+                File.createTempFile(RandomStringUtils.randomAlphabetic(10), ".sam").getName());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("sai file: " + saiBinaryFilename);
+            LOG.debug("sam file: " + samBinaryFilename);
+        }
+        forceMakeParentDir(saiBinaryFilename);
+        forceMakeParentDir(samBinaryFilename);
+        LOG.info("Searching.");
+
+        final String alignCommand = FilenameUtils.concat(pathToExecutables, BWA_EXEC);
+        final CommandLine alignCommandLine = createCommandLine(alignCommand);
+        alignCommandLine.addArgument(BWA_ALIGN_ARG);
+        if (colorSpace) {
+            alignCommandLine.addArgument("-c");
+        }
+        alignCommandLine.addArguments(getLOption());
+        alignCommandLine.addArguments(alignerOptions);
+        alignCommandLine.addArgument(databasePrefix);
+        alignCommandLine.addArgument(nativeReads.toString());
+
+        LOG.info("About to execute " + alignCommandLine);
+        final StopWatch timer = new StopWatch();
+        timer.start();
+        final DefaultExecutor alignExecutor = new DefaultExecutor();
+        OutputStream saiOutputStream = null;
+        OutputStream alignLogStream = null;
+        try {
+            saiOutputStream = new BufferedOutputStream(new FileOutputStream(saiBinaryFilename));
+            alignLogStream = new LoggingOutputStream(BWAAligner.class, Level.INFO, "");
+            alignExecutor.setStreamHandler(new PumpStreamHandler(saiOutputStream, alignLogStream));
+
+            final int exitValue = alignExecutor.execute(alignCommandLine);
+            LOG.info("Exit value = " + exitValue);
+        } finally {
+            IOUtils.closeQuietly(alignLogStream);
+            IOUtils.closeQuietly(saiOutputStream);
+        }
+        LOG.info("Command executed in: " + timer.toString());
+
+        // convert sai to SAM format
+        final String samseCommand = FilenameUtils.concat(pathToExecutables, BWA_EXEC);
+        final CommandLine samseCommandLine = createCommandLine(samseCommand);
+        samseCommandLine.addArgument(BWA_SAMSE_ARG);
+        samseCommandLine.addArgument(databasePrefix);
+        samseCommandLine.addArgument(saiBinaryFilename);
+        samseCommandLine.addArgument(nativeReads.toString());
+
+        LOG.info("About to execute " + alignCommandLine);
+        timer.reset();
+        timer.start();
+        final DefaultExecutor samseExecutor = new DefaultExecutor();
+        OutputStream samseOutputStream = null;
+        OutputStream samseLogStream = null;
+        try {
+            samseOutputStream = new BufferedOutputStream(new FileOutputStream(samBinaryFilename));
+            samseLogStream = new LoggingOutputStream(BWAAligner.class, Level.INFO, "");
+            samseExecutor.setStreamHandler(new PumpStreamHandler(samseOutputStream, samseLogStream));
+
+            final int exitValue = samseExecutor.execute(samseCommandLine);
+            LOG.info("Exit value = " + exitValue);
+        } finally {
+            IOUtils.closeQuietly(samseLogStream);
+            IOUtils.closeQuietly(samseOutputStream);
+        }
+        LOG.info("Command executed in: " + timer.toString());
+
+        // convert native alignment into compact reads
+        final File[] buildResults = processAlignment(referenceFile, readsFile, outputBasename);
+        FileUtils.deleteQuietly(new File(saiBinaryFilename));
+        FileUtils.deleteQuietly(new File(samBinaryFilename));
+
+        return buildResults;
     }
 }

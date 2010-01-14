@@ -144,7 +144,7 @@ public class GobyConfiguration {
             final Iterator keys = configuration.getKeys();
             while (keys.hasNext()) {
                 final String key = (String) keys.next();
-                LOG.debug(key + " = " + configuration.getString(key));
+                LOG.debug(key + " = " + configuration.getProperty(key));
             }
         }
     }
