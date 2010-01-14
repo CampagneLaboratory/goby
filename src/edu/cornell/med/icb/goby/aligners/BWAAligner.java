@@ -29,6 +29,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
@@ -233,9 +234,10 @@ import java.io.IOException;
 public class BWAAligner extends AbstractAligner {
     private static final Log LOG = LogFactory.getLog(BWAAligner.class);
 
-    private static final String BWA_INDEX_EXEC = "bwa index";
-    private static final String BWA_ALIGN_EXEC = "bwa aln";
-    private static final String BWA_SAMSE_EXEC = "bwa samse";
+    private static final String BWA_EXEC = SystemUtils.IS_OS_WINDOWS ? "bwa.exe" : "bwa";
+    private static final String BWA_INDEX_EXEC = BWA_EXEC + " index";
+    private static final String BWA_ALIGN_EXEC = BWA_EXEC + " aln";
+    private static final String BWA_SAMSE_EXEC = BWA_EXEC + " samse";
     private static final int DEFAULT_SEED_LENGTH = 35;
 
     private String databasePrefix;
