@@ -1,18 +1,17 @@
+1.1
+
+- Added compact-alignment-to-annotation-counts mode
+  - Make it possible to process multiple alignment files in one run of the mode.
+  - Added support for group comparisons. Group statistics are now computed
+    and written to a summary file (see --comparison --stats and --groups
+    options). The following statistics have been implemented: T-Test and
+    fold-change across RPKMs in the comparison groups, Benjamini-Hochberg
+    FDR adjustment for t-test P-value and Bonferroni correction for t-test
+    P-value. Average RPKM in each group.
+
+- Fix a bug where data matching chromosome "chr1" was excluded from wiggle
+  tracks created from Goby count data.  (Mantis issue #1349)
+
 1.0
 
 - First release.
-
-1.1
-
-compact-alignment-to-annotation-counts mode:
-
-- make it possible to process multiple alignment files
-  in one run of the mode.
-- Added support for group comparisons. Group statistics are now computed and written to
-  a summary file (see --comparison --stats and --groups options). The following statistics
-  have been implemented: T-Test and fold-change across RPKMs in the comparison groups,
-  Benjamini-Hochberg FDR adjustment for t-test P-value and Bonferroni correction for t-test
-  P-value. Average RPKM in each group.
-
-
-
