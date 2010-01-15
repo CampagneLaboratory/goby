@@ -23,19 +23,14 @@
             <id>input</id>
             <required>true</required>
             <greedy>true</greedy>
-            <help>The compact alignment file(s) to read as input. Basenames are derived from these
-                input files by removing the conventional Goby alignment extensions (e.g., .entries, .tmh, .stat,
-                .header).
-            </help>
+            <help>The compact alignment file(s) to read as input. Basenames are derived from these input files by removing the conventional Goby alignment extensions (e.g., .entries, .tmh, .stat, .header).</help>
         </unflaggedOption>
         <flaggedOption>
             <id>output</id>
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
             <required>false</required>
-            <help>The tab delimited output filename, when omitted, constructed from the input filename. Output filenames
-                will have extension .ann-counts.tsv
-            </help>
+            <help>The tab delimited output filename, when omitted, constructed from the input filename. Output filenames will have extension .ann-counts.tsv</help>
         </flaggedOption>
         <flaggedOption>
             <id>stats</id>
@@ -45,8 +40,7 @@
             <defaults>
                 <string>comparison-stats.tsv</string>
             </defaults>
-            <help>The filename where statistics will be written (for group comparisons). These files are tab delimited.
-            </help>
+            <help>The filename where statistics will be written (for group comparisons). These files are tab delimited.</help>
         </flaggedOption>
         <flaggedOption>
             <id>annotation</id>
@@ -61,22 +55,14 @@
             <shortFlag>r</shortFlag>
             <longFlag>include-reference-names</longFlag>
             <required>false</required>
-            <help>When provided, only write counts for reference identifiers listed in this comma separated list. To
-                process only counts for chromosome 19 and 1, if sequences are identified by 1 and 19, use:
-                --include-reference-names 1,19
-            </help>
+            <help>When provided, only write counts for reference identifiers listed in this comma separated list. To process only counts for chromosome 19 and 1, if sequences are identified by 1 and 19, use: --include-reference-names 1,19</help>
         </flaggedOption>
         <flaggedOption>
             <id>groups</id>
             <shortFlag>g</shortFlag>
             <longFlag>groups</longFlag>
             <required>false</required>
-            <help>Define groups for multi-group comparisons. The syntax of the groups arguments is
-                id-1=basename1,basename2/id-2=basename4,basename5
-                Where id-1 is the id of the first group, defined to consist of samples basename1 and basename2.
-                basename1 must refer to a basename provided as input on the command line (see input).
-                Multiple groups are separated by forward slashes (/).
-            </help>
+            <help>Define groups for multi-group comparisons. The syntax of the groups arguments is id-1=basename1,basename2/id-2=basename4,basename5 Where id-1 is the id of the first group, defined to consist of samples basename1 and basename2. basename1 must refer to a basename provided as input on the command line (see input). Multiple groups are separated by forward slashes (/).</help>
         </flaggedOption>
         <flaggedOption>
             <id>include-annotation-types</id>
@@ -85,33 +71,18 @@
             <defaults>
                 <string>gene,intron,exon</string>
             </defaults>
-            <help>Comma delimited list of annotation types. When provided, write annotation counts for the
-                specified annotation type. By default, write annotation counts for gene exon or introns.
-            </help>
+            <help>Comma delimited list of annotation types. When provided, write annotation counts for the specified annotation type. By default, write annotation counts for gene exon or introns.</help>
         </flaggedOption>
         <flaggedOption>
             <id>compare</id>
             <longFlag>compare</longFlag>
             <required>false</required>
-
-            <help>Compare annotation counts between groups of samples. The compare flag must be followed
-                by group ids separated by slashes. For instance, if groups group-A and group-B have
-                been defined (see --groups option), --compare group-A/group-B will evaluate statistical
-                tests of different count representation between samples in groups A and B.
-            </help>
+            <help>Compare annotation counts between groups of samples. The compare flag must be followed by group ids separated by slashes. For instance, if groups group-A and group-B have been defined (see --groups option), --compare group-A/group-B will evaluate statistical tests of different count representation between samples in groups A and B.</help>
         </flaggedOption>
         <switch>
             <id>parallel</id>
             <longFlag>parallel</longFlag>
-
-            <help>Process basenames in parallel. Use when you have many basenames to process, need the
-                parallel speedup, and have a lot of memory to load multiple basenames in memory. You can
-                tune the number of processors used by setting the property pj.nt. For instance, -Dpj.nt=5
-                will use 5 parallel threads. When --parallel is specified, one thread per processing core
-                of the machine will be used unless specified otherwise (with pj.nt).
-            </help>
+            <help>Process basenames in parallel. Use when you have many basenames to process, need the parallel speedup, and have a lot of memory to load multiple basenames in memory. You can tune the number of processors used by setting the property pj.nt. For instance, -Dpj.nt=5 will use 5 parallel threads. When --parallel is specified, one thread per processing core of the machine will be used unless specified otherwise (with pj.nt).</help>
         </switch>
-
-
     </parameters>
 </jsap>
