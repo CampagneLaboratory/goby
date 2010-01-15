@@ -125,6 +125,10 @@
             <property name="logs" location="${exportdir}/${tag}/logs"/>
             <property name="src" location="${exportdir}/${tag}/src"/>
        	</ant>
+
+         <!-- note: the copy is important, the bdval target will look for it -->
+        <copy file="${exportdir}/${tag}/goby.jar" todir="${releasedir}"/> 
+        <move file="${exportdir}/${tag}/goby-api.jar" todir="${releasedir}"/> >
 	</target>
 
     <target name="goby" description="Create the binary distribtion for Goby">
