@@ -1,6 +1,11 @@
+1.2
+ compact-alignment-to-annotation-counts mode:
+  - Added chi square test statistic and associated FDR adjusted stat. Chi-square statistics support multi-group comparisons.
+  - Added the --parallel option to speed up computations on multiple core machines.
+  
 1.1
 
-- Added compact-alignment-to-annotation-counts mode
+ compact-alignment-to-annotation-counts mode:
   - Make it possible to process multiple alignment files in one run of the mode.
   - Added support for group comparisons. Group statistics are now computed
     and written to a summary file (see --comparison --stats and --groups

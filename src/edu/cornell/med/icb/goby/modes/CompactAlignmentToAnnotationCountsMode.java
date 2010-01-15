@@ -28,19 +28,27 @@ import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.stats.*;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
+import edu.rit.pj.ParallelRegion;
+import edu.rit.pj.IntegerForLoop;
+import edu.rit.pj.ParallelTeam;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.logging.impl.NoOpLog;
 
 import java.io.*;
 import java.util.Arrays;
 
+import org.apache.log4j.Logger;
+
 /**
- * Receive reads file and annotation files and output counts for gene or exons.
+ * Reads a compact alignment and genome annotations and output read counts that overlap with the annotation segments.
+ * Can be used to develop
  *
  * @author Xutao Deng
+ * @author Fabien Campagne
  */
 public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     /**
@@ -48,22 +56,20 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      */
     public static final String MODE_NAME = "alignment-to-annotation-counts";
 
-
     /**
      * The mode description help text.
      */
     public static final String MODE_DESCRIPTION =
             "Converts alignment to counts for annotations (e.g., gene transcript annotations or exons).";
-    /**
-     * The input file.
-     */
-    private String inputFile;
+
 
     /**
      * The output file.
      */
     private String outputFile;
-
+    /**
+     * The annotation file.
+     */
     private String annotationFile;
 
     boolean filterByReferenceNames;
@@ -75,6 +81,9 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     private String[] groupComparison;
     private final boolean writeAnnotationCounts = true;
     private String statsFilename;
+    private ParallelTeam team;
+    private static final Logger LOG = Logger.getLogger(CompactAlignmentToAnnotationCountsMode.class);
+    private boolean parallel;
 
 
     @Override
@@ -100,6 +109,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
+        parallel = jsapResult.getBoolean("parallel",false);
         inputFilenames = jsapResult.getStringArray("input");
         outputFile = jsapResult.getString("output");
         statsFilename = jsapResult.getString("stats");
@@ -176,6 +186,60 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         }
     }
 
+    class BasenameParallelRegion extends ParallelRegion {
+        private Object2ObjectMap<String, ObjectList<Annotation>> allAnnots;
+
+
+        private final String[] inputFiles;
+        private BufferedWriter writer;
+
+        BasenameParallelRegion(Object2ObjectMap<String, ObjectList<Annotation>> allAnnots, String[] inputFiles, BufferedWriter writer) {
+            this.allAnnots = allAnnots;
+            this.inputFiles = inputFiles;
+            this.writer = writer;
+        }
+
+        public void run() throws Exception {
+            execute(0, inputFiles.length - 1 /* end index must be inclusive. This is counter-intuitive */, new IntegerForLoop() {
+
+                @Override
+                public void run(final int startIndex, final int endIndex) {
+                    //   System.out.println(String.format("executing start= %d end=%d ",startIndex, endIndex));
+                    for (int i = startIndex; i <= endIndex; ++i) {
+                        if (i >= 0 && i < inputFilenames.length) {
+                            String inputBasename = AlignmentReader.getBasename(inputFiles[i]);
+                            try {
+                                processOneBasename(allAnnots, writer, inputFiles[i], inputBasename);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            } finally {
+
+                                IOUtils.closeQuietly(writer);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    protected synchronized ParallelTeam getParallelTeam() {
+
+        if (team == null) {
+            if (!parallel) {
+                // 1 thread only is sequential
+                team = new ParallelTeam(1);
+            } else {
+                // as many threads as configured with -Dpj.nt or default.
+                team = new ParallelTeam();
+            }
+
+        }
+        LOG.info("Executing on " + team.getThreadCount() + " threads.");
+        return team;
+    }
+
+
     /**
      * Run the mode.
      *
@@ -195,74 +259,17 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 writer = new BufferedWriter(new FileWriter(outputFile));
                 writer.write("basename\tmain-id\tsecondary-id\ttype\tchro\tstrand\tlength\tstart\tend\tin-count\tover-count\tRPKM\tlog2(PRKM+1)\texpression\tnum-exons\n");
             }
-            for (String inputFile : inputFilenames) {
-                String inputBasename = AlignmentReader.getBasename(inputFile);
-                final AlignmentReader reader = new AlignmentReader(inputBasename);
-                reader.readHeader();
-                final int numberOfReferences = reader.getNumberOfTargets();
-
-                final DoubleIndexedIdentifier referenceIds = new DoubleIndexedIdentifier(reader.getTargetIdentifiers());
-                reader.close();
-                System.out.println(String.format("Alignment contains %d reference sequences", numberOfReferences));
-                final AnnotationCount[] algs = new AnnotationCount[numberOfReferences];
-                final IntSet referencesToProcess = new IntOpenHashSet();
-
-                // create count writers, one for each reference sequence in the alignment:
-                for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
-                    final String referenceName = referenceIds.getId(referenceIndex).toString();
-                    if (filterByReferenceNames) {
-                        if (includeReferenceNames.contains(referenceName)) {
-                            // subset of reference names selected by the command line:
-                            referencesToProcess.add(referenceIndex);
-                        }
-
-                    } else {
-                        // process each sequence:
-                        referencesToProcess.add(referenceIndex);
-                    }
-                    if (referencesToProcess.contains(referenceIndex)) {
-                        algs[referenceIndex] = new AnnotationCount();
-                        algs[referenceIndex].baseCounter.startPopulating();
-                    }
-                }
-
-
-                final AlignmentReader referenceReader = new AlignmentReader(inputBasename);
-                referenceReader.readHeader();
-
-                // read the alignment:
-                System.out.println("Loading alignment " + inputBasename + "..");
-                int numAlignedReadsInSample = 0;
-                for (final Alignments.AlignmentEntry alignmentEntry : referenceReader) {
-                    final int referenceIndex = alignmentEntry.getTargetIndex();
-                    if (referencesToProcess.contains(referenceIndex)) {
-                        final int startPosition = alignmentEntry.getPosition();
-
-                        final int alignmentLength = alignmentEntry.getQueryAlignedLength();
-                        //shifted the ends populating by 1
-                        for (int i = 0; i < alignmentEntry.getMultiplicity(); ++i) {
-                            algs[referenceIndex].populate(startPosition, startPosition + alignmentLength);
-                            ++numAlignedReadsInSample;
-                        }
-                    }
-                }
-
-                reader.close();
-
-                if (outputFile == null) {
-                    // output filename was not provided on the command line. We make one output per input basename
-                    String outputFileTmp = FilenameUtils.removeExtension(inputFile) + ".ann-counts.tsv";
-                    writer = new BufferedWriter(new FileWriter(outputFileTmp));
-                    writer.write("basename\tmain-id\tsecondary-id\ttype\tchro\tstrand\tlength\tstart\tend\tin-count\tover-count\tRPKM\tlog2(PRKM+1)\texpression\tnum-exons\n");
-
-                }
-                //       System.out.println("id\ttype\tchro\tstart\tend\tin_count\tover_count\tdepth\texpression");
-                writeAnnotationCounts(allAnnots, writer, inputBasename, referenceIds, algs, referencesToProcess, numAlignedReadsInSample);
-                if (outputFile == null) {
-                    // output filename was not provided on the command line. We close each basename output.
-                    IOUtils.closeQuietly(writer);
-                }
+            BasenameParallelRegion region = new BasenameParallelRegion(allAnnots, inputFilenames, writer);
+            try {
+                getParallelTeam().execute(region);
+            } catch (Exception e) {
+                LOG.error("An exception occurred.", e);
             }
+
+            //  for (String inputFile : inputFilenames) {
+            //    String inputBasename = AlignmentReader.getBasename(inputFile);
+            //  processOneBasename(allAnnots, writer, inputFile, inputBasename);
+            //}
 
             if (doComparison) {
                 // evaluate differences between groups:
@@ -281,6 +288,9 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
                 IOUtils.closeQuietly(statsOutput);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
         } finally {
 
 
@@ -288,6 +298,76 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         }
         timer.stop();
         System.out.println("time spent  " + timer.toString());
+    }
+
+    private void processOneBasename(Object2ObjectMap<String, ObjectList<Annotation>> allAnnots,
+                                    BufferedWriter writer, String inputFile, String inputBasename) throws IOException {
+        final AlignmentReader reader = new AlignmentReader(inputBasename);
+        reader.readHeader();
+        final int numberOfReferences = reader.getNumberOfTargets();
+
+        final DoubleIndexedIdentifier referenceIds = new DoubleIndexedIdentifier(reader.getTargetIdentifiers());
+        reader.close();
+        System.out.println(String.format("Alignment contains %d reference sequences", numberOfReferences));
+        final AnnotationCount[] algs = new AnnotationCount[numberOfReferences];
+        final IntSet referencesToProcess = new IntOpenHashSet();
+
+        // create count writers, one for each reference sequence in the alignment:
+        for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
+            final String referenceName = referenceIds.getId(referenceIndex).toString();
+            if (filterByReferenceNames) {
+                if (includeReferenceNames.contains(referenceName)) {
+                    // subset of reference names selected by the command line:
+                    referencesToProcess.add(referenceIndex);
+                }
+
+            } else {
+                // process each sequence:
+                referencesToProcess.add(referenceIndex);
+            }
+            if (referencesToProcess.contains(referenceIndex)) {
+                algs[referenceIndex] = new AnnotationCount();
+                algs[referenceIndex].baseCounter.startPopulating();
+            }
+        }
+
+
+        final AlignmentReader referenceReader = new AlignmentReader(inputBasename);
+        referenceReader.readHeader();
+
+        // read the alignment:
+        System.out.println("Loading alignment " + inputBasename + "..");
+        int numAlignedReadsInSample = 0;
+        for (final Alignments.AlignmentEntry alignmentEntry : referenceReader) {
+            final int referenceIndex = alignmentEntry.getTargetIndex();
+            if (referencesToProcess.contains(referenceIndex)) {
+                final int startPosition = alignmentEntry.getPosition();
+
+                final int alignmentLength = alignmentEntry.getQueryAlignedLength();
+                //shifted the ends populating by 1
+                for (int i = 0; i < alignmentEntry.getMultiplicity(); ++i) {
+                    algs[referenceIndex].populate(startPosition, startPosition + alignmentLength);
+                    ++numAlignedReadsInSample;
+                }
+            }
+        }
+
+        reader.close();
+
+        if (outputFile == null) {
+            // output filename was not provided on the command line. We make one output per input basename
+            String outputFileTmp = FilenameUtils.removeExtension(inputFile) + ".ann-counts.tsv";
+            writer = new BufferedWriter(new FileWriter(outputFileTmp));
+            writer.write("basename\tmain-id\tsecondary-id\ttype\tchro\tstrand\tlength\tstart\tend\tin-count\tover-count\tRPKM\tlog2(PRKM+1)\texpression\tnum-exons\n");
+
+        }
+        //       System.out.println("id\ttype\tchro\tstart\tend\tin_count\tover_count\tdepth\texpression");
+        writeAnnotationCounts(allAnnots, writer, inputBasename, referenceIds, algs, referencesToProcess, numAlignedReadsInSample);
+        if (outputFile == null) {
+            // output filename was not provided on the command line. We close each basename output.
+            IOUtils.closeQuietly(writer);
+        }
+
     }
 
 
