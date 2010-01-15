@@ -51,15 +51,16 @@ public class ChiSquareTestCalculator extends StatisticCalculator {
     }
 
 
-    boolean canDo(String[] group) {
+   public  boolean canDo(String[] group) {
         return group.length >= 2;
     }
 
 
-    DifferentialExpressionInfo evaluate(DifferentialExpressionCalculator differentialExpressionCalculator,
+    public DifferentialExpressionInfo evaluate(DifferentialExpressionCalculator differentialExpressionCalculator,
                                         DifferentialExpressionResults results,
                                         DifferentialExpressionInfo info,
                                         String... group) {
+
         //    totalCountInA, totalCountInB,...
         double[] expectedCounts = new double[group.length];
 
@@ -78,20 +79,23 @@ public class ChiSquareTestCalculator extends StatisticCalculator {
             for (String sample : samplesI) {
                 expectedCounts[i] += differentialExpressionCalculator.getSumOverlapCounts(sample);
             }
+            ++i;
 
         }
+        double pValue;
 
-        ChiSquareTest chisquare = new ChiSquareTestImpl();
+            ChiSquareTest chisquare = new ChiSquareTestImpl();
 
-        try {
-            double pValue = chisquare.chiSquareTest(expectedCounts, observedCounts);
+            try {
+                pValue = chisquare.chiSquareTest(expectedCounts, observedCounts);
+            } catch (MathException e) {
+                pValue = Double.NaN;
+            }
+       
+        info.statistics.size(results.getNumberOfStatistics());
+        info.statistics.set(results.getStatisticIndex(STATISTIC_ID), pValue);
 
-            info.statistics.size(results.getNumberOfStatistics());
-            info.statistics.set(results.getStatisticIndex(STATISTIC_ID), pValue);
 
-        } catch (MathException e) {
-            throw new RuntimeException(e);
-        }
         return info;
     }
 

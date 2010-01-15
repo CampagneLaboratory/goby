@@ -261,6 +261,54 @@ public class TestStatistics {
     }
 
     @Test
+    public void testChiSquare() throws MathException {
+
+        DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator();
+        int numReplicates = 2;
+        deCalc.defineElement("id-1");
+        deCalc.defineElement("id-2");
+        deCalc.defineGroup("A");
+        deCalc.defineGroup("B");
+        deCalc.reserve(2, numReplicates * 2);
+
+        for (int i = 1; i <= numReplicates; i++) {
+            deCalc.associateSampleToGroup("A-" + i, "A");
+            deCalc.associateSampleToGroup("B-" + i, "B");
+        }
+
+        deCalc.observe("A-1", "id-1", 0, 0);
+        deCalc.observe("A-2", "id-1", 0, 0);         // 7+3 = 10
+        deCalc.observe("B-1", "id-1", 15, 0);
+        deCalc.observe("B-2", "id-1", 5, 0);         // 15+5 =20
+
+        deCalc.observe("A-1", "id-2", 15, 0);
+        deCalc.observe("A-2", "id-2", 15, 0);        // 15+15=30
+        deCalc.observe("B-1", "id-2", 20, 0);
+        deCalc.observe("B-2", "id-2", 20, 0);        // 20+20=40
+
+
+        DifferentialExpressionInfo info = new DifferentialExpressionInfo();
+        DifferentialExpressionResults results = new DifferentialExpressionResults();
+        info.elementId = new MutableString("id-1");
+
+        ChiSquareTestCalculator calc = new ChiSquareTestCalculator(results);
+        calc.evaluate(deCalc, results, info, "A", "B");
+        assertEquals("fisher test equal expected result", 0.00156540225800339, results.getStatistic(info, calc.STATISTIC_ID), 0.001);
+
+        ChiSquareTest chisquare = new ChiSquareTestImpl();
+        double[] expected = {30, 12};
+        long[] observed = {0, 100};
+        double chiPValue = 0;
+
+        chiPValue = chisquare.chiSquareTest(expected, observed);
+
+        assertTrue("pValue: " + chiPValue, chiPValue < 0.001);
+// The Fisher implementation we are using return 1 for the above. This is wrong. Compare to the chi-square result
+// (results should be comparable since the counts in each cell are large)
+//         assertTrue("pValue: " + pValue, pValue < 0.001);
+    }
+
+    @Test
     public void testFDR() {
         final Random randomEngine = new Random();
 
