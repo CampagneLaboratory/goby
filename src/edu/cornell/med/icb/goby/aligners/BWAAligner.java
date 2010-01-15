@@ -257,7 +257,7 @@ public class BWAAligner extends AbstractAligner {
     }
 
     public void setConfiguration(final Configuration configuration) {
-        pathToExecutables = configuration.getString(GobyConfiguration.EXECUTABLE_PATH_BWA, ".");
+        pathToExecutables = configuration.getString(GobyConfiguration.EXECUTABLE_PATH_BWA, "");
     }
 
     public String getDefaultDbNameForReferenceFile(final File referenceFile) {
@@ -402,7 +402,6 @@ public class BWAAligner extends AbstractAligner {
     private String databaseIndexingStyle(final File fastaReferenceFile) {
         // use bwtsw for genome fasta files larger than 5M, if otherwise.
         return fastaReferenceFile.length() < 5 * 1024 * 1024 ? "is" : "bwtsw";
-
     }
 
     /**
