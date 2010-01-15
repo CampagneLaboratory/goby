@@ -27,7 +27,9 @@ import org.apache.commons.math.stat.inference.TTestImpl;
 import org.apache.commons.math.MathException;
 
 /**
- * Calculates fold change from first group to second group (requires exactly two groups).
+ * Calculates T-Test P-values (two-tailed, equal variance). The T-test assess how likely the mean of ln1p of the RPKMs in the first group
+ * differ from the same mean estimated in the second group (requires exactly two groups). T-Test is applied to the ln1p, that is
+ * the natural log of the RPKM plus one.
  *
  * @author Fabien Campagne
  *         Date: Jan 11, 2010
@@ -84,7 +86,7 @@ public class TTestCalculator extends StatisticCalculator {
             results.declareStatistic(statName);
         }
         try {
-            pValue = mathCommonsTTest.tTest(valuesA, valuesB);
+            pValue = mathCommonsTTest.homoscedasticTTest(valuesA, valuesB);
             tStatistic = mathCommonsTTest.t(valuesA, valuesB);
         } catch (MathException e) {
             pValue = Double.NaN;
