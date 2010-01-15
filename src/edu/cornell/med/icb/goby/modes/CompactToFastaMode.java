@@ -40,7 +40,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 /**
- * Converts a Compact file to Fasta format.
+ * Converts a Compact file to <a href="http://en.wikipedia.org/wiki/FASTA_format">FASTA</a> format.
  *
  * @author Fabien Campagne
  *         Date: May 4 2009
@@ -49,8 +49,8 @@ import java.io.Writer;
 public class CompactToFastaMode extends AbstractGobyMode {
     private static final int FASTA_LINE_LENGTH = 60;
 
-    // TODO:  figure out how to generate colorspace results using BWA without using Stu's ouputFakeQualityMode HACK !
-    public static final char FAKE_QUALITY_CHARACTER = '~';
+    // TODO: generate colorspace results using BWA without using Stu's ouputFakeQualityMode HACK !
+    private static final char FAKE_QUALITY_CHARACTER = '~';
 
     private String inputFilename;
     private String outputFilename;
@@ -80,7 +80,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
     private boolean outputFakeNtMode;
     private int trimAdaptorLength;
 
-    // TODO:  figure out how to generate colorspace results using BWA without using Stu's ouputFakeQualityMode HACK !
+    // TODO: generate colorspace results using BWA without using Stu's ouputFakeQualityMode HACK !
     private boolean outputFakeQualityMode;
 
     @Override
@@ -110,9 +110,8 @@ public class CompactToFastaMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws java.io.IOException error parsing
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
+     * @throws IOException error parsing
+     * @throws JSAPException error parsing
      */
     @Override
     public AbstractCommandLineMode configure(final String[] args)
@@ -176,7 +175,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
     public void execute() throws IOException {
         if (outputFilename == null) {
             outputFilename = FilenameUtils.removeExtension(inputFilename)
-                    + (hashOutputFilename ? hash() : "" ) + ".fasta";
+                    + (hashOutputFilename ? hash() : "") + ".fasta";
         } else if (hashOutputFilename) {
             outputFilename = FilenameUtils.removeExtension(outputFilename)
                     + (hashOutputFilename ? hash() : "") + ".fasta";
@@ -279,7 +278,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
     }
 
     /**
-     * Write the sequence at 60 chars per line
+     * Write the sequence at 60 chars per line.
      *
      * @param writer   the writer
      * @param sequence the sequence

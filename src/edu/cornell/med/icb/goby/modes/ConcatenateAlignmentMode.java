@@ -157,12 +157,12 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
     }
 
 
-    public void setInputFileNames(final String[] inputFilenames) {
-      this.inputFilenames = inputFilenames;
+    public void setInputFileNames(final String[] inputFileNames) {
+        this.inputFilenames = inputFileNames;
     }
 
-    public void setOutputFilename(final String output) {
-        this.outputFile = output;
+    public void setOutputFilename(final String outputFilename) {
+        this.outputFile = outputFilename;
     }
 
     public File[] getOutputFiles() {
