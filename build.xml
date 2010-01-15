@@ -138,7 +138,7 @@
         <javadoc packagenames="*"
                  sourcepath="${src}" destdir="${javadocs}" encoding="UTF-8"
                  author="true" version="true" windowtitle="Goby API ${label} (${buildstamp})"
-                 header="Goby API ${label} (${buildstamp})">
+                 header="Goby API ${label} (${buildstamp})" overview="overview.html">
             <link href="http://java.sun.com/javase/6/docs/api/"/>
             <link href="http://fastutil.dsi.unimi.it/docs/"/>
             <link href="http://dsiutils.dsi.unimi.it/docs/"/>
