@@ -25,6 +25,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import org.apache.commons.math.stat.inference.ChiSquareTest;
+import org.apache.commons.math.stat.inference.ChiSquareTestImpl;
+import org.apache.commons.math.MathException;
 
 
 import java.io.IOException;
@@ -33,6 +36,7 @@ import java.io.FileNotFoundException;
 import java.util.Random;
 
 import it.unimi.dsi.lang.MutableString;
+import gominer.Fisher;
 
 /**
  * @author Fabien Campagne
@@ -188,7 +192,7 @@ public class TestStatistics {
     }
 
     @Test
-    public void testFisher() {
+    public void testFisher() throws MathException {
 
         DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator();
         int numReplicates = 2;
@@ -225,14 +229,35 @@ public class TestStatistics {
         deCalc.observe("B-2", "id-2", 20, 0);        // 20+20=40
 
 
-       
-   
         DifferentialExpressionInfo info = new DifferentialExpressionInfo();
         DifferentialExpressionResults results = new DifferentialExpressionResults();
         FisherExactTestCalculator fisher = new FisherExactTestCalculator(results);
         info.elementId = new MutableString("id-1");
         fisher.evaluate(deCalc, results, info, "A", "B");
         assertEquals("fisher test equal expected result", 0.5044757698516504, results.getStatistic(info, fisher.STATISTIC_ID), 0.001);
+
+        Fisher fisherTest = new Fisher();
+        int totalCountInA = 15000000;
+
+        int totalCountInB = 17000000;
+        int sumCountInA = 910;
+        int sumCountInB = 473;
+
+        fisherTest.fisher(totalCountInA, sumCountInA, totalCountInA + totalCountInB, sumCountInA + sumCountInB);
+
+        double pValue = fisherTest.getTwotail();
+
+        ChiSquareTest chisquare = new ChiSquareTestImpl();
+        double[] expected = {totalCountInA, totalCountInB};
+        long[] observed = {sumCountInA, sumCountInB};
+        double chiPValue = 0;
+
+        chiPValue = chisquare.chiSquareTest(expected, observed);
+
+        assertTrue("pValue: " + chiPValue, chiPValue < 0.001);
+// The Fisher implementation we are using return 1 for the above. This is wrong. Compare to the chi-square result
+// (results should be comparable since the counts in each cell are large)
+//         assertTrue("pValue: " + pValue, pValue < 0.001);
     }
 
     @Test

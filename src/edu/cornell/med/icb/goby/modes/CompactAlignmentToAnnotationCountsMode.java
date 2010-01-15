@@ -135,8 +135,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     private void parseCompare(String compare) {
         if (compare == null) {
             doComparison = false;
-        }
-        else doComparison = true;
+        } else doComparison = true;
 
         if (doComparison) {
             String[] groupLanguageText = compare.split("/");
@@ -271,11 +270,12 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
                 results = deCalculator.compare(results, new TTestCalculator(), groupComparison);
                 results = deCalculator.compare(results, new FisherExactTestCalculator(), groupComparison);
+                results = deCalculator.compare(results, new ChiSquareTestCalculator(), groupComparison);
                 results = deCalculator.compare(results, new AverageCalculator(), groupComparison);
                 BenjaminiHochbergAdjustment BHFDR = new BenjaminiHochbergAdjustment();
                 BonferroniAdjustment BonferroniAdjust = new BonferroniAdjustment();
-                results = BonferroniAdjust.adjust(results, "t-test", "fisher-exact-test");
-                results = BHFDR.adjust(results, "t-test", "fisher-exact-test");
+                results = BonferroniAdjust.adjust(results, "t-test", "fisher-exact-test", "chi-square-test");
+                results = BHFDR.adjust(results, "t-test", "fisher-exact-test", "chi-square-test");
                 final PrintWriter statsOutput = new PrintWriter(statsFilename);
                 results.write(statsOutput, '\t');
 

@@ -24,6 +24,8 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.math.stat.inference.TTest;
 import org.apache.commons.math.stat.inference.TTestImpl;
+import org.apache.commons.math.stat.inference.ChiSquareTest;
+import org.apache.commons.math.stat.inference.ChiSquareTestImpl;
 import org.apache.commons.math.MathException;
 import gominer.Fisher;
 
@@ -108,16 +110,17 @@ public class FisherExactTestCalculator extends StatisticCalculator {
 
         pValue = fisher.fisher(totalCountInA, sumCountInA, totalCountInA + totalCountInB, sumCountInA + sumCountInB);
 
+       
         /* Test : fisher.fisher(40,10,100,30)=
-                 Fisher's Exact Test
-    http://www.langsrud.com/fisher.htm
-    ------------------------------------------
-     TABLE = [ 10 , 20 , 30 , 40 ]
-    Left   : p-value = 0.2533310713617698
-    Right  : p-value = 0.8676419647894328
-    2-Tail : p-value = 0.5044757698516504
-    ------------------------------------------
-    */
+                     Fisher's Exact Test
+        http://www.langsrud.com/fisher.htm
+        ------------------------------------------
+         TABLE = [ 10 , 20 , 30 , 40 ]
+        Left   : p-value = 0.2533310713617698
+        Right  : p-value = 0.8676419647894328
+        2-Tail : p-value = 0.5044757698516504
+        ------------------------------------------
+        */
         info.statistics.size(results.getNumberOfStatistics());
         info.statistics.set(results.getStatisticIndex(STATISTIC_ID), pValue);
 
