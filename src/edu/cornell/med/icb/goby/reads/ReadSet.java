@@ -28,15 +28,14 @@ import it.unimi.dsi.io.InputBitStream;
 import it.unimi.dsi.io.OutputBitStream;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collections;
 
 /**
- * A set  of read/query indices and associated multiplicity. Multiplicity is an int associated with each read. It can
- * represent anything, but is often used to stored the number of times a read is repeated in a sample file or dataset.
- * The read indices are stored with delta coding, and multiplicity values with gamma coding, keeping the file representation
+ * A set of read/query indices and associated multiplicity. Multiplicity is an int associated
+ * with each read. It can represent anything, but is often used to stored the number of times
+ * a read is repeated in a sample file or dataset.  The read indices are stored with delta
+ * coding, and multiplicity values with gamma coding, keeping the file representation
  * of the set small even when there are million of reads.
  *
  * @author Fabien Campagne
@@ -44,14 +43,14 @@ import java.util.Collections;
  *         Time: 3:22:49 PM
  */
 public class ReadSet {
-    final IntSet filter = new IntOpenHashSet();
-    final Int2IntMap multiplicityMap;
+    private final IntSet filter = new IntOpenHashSet();
+    private final Int2IntMap multiplicityMap;
     private int smallestStoredMultiplicity;
 
     public ReadSet() {
+        super();
         multiplicityMap = new Int2IntOpenHashMap();
     }
-
 
     public void clear() {
         filter.clear();
@@ -69,21 +68,19 @@ public class ReadSet {
 
     public boolean contains(final int readIndex) {
         return filter.contains(readIndex);
-
     }
 
     /**
-     * Save the filter to disk.
+     * Save the filter to disk.  The name of the actual file writen will be of the form
+     * "${basename}-${suffix}.filter"
      *
-     * @param basename
-     * @param suffix
-     * @throws IOException
+     * @param basename basename of the filter file to load
+     * @param suffix suffix of the filter file to load
+     * @throws IOException if the file cannot be found or parsed.
      */
     public void save(final String basename, final String suffix) throws IOException {
         final String filename = basename + "-" + suffix + ".filter";
-        final FileOutputStream stream = new FileOutputStream(filename);
-        final OutputBitStream out = new OutputBitStream(stream);
-
+        final OutputBitStream out = new OutputBitStream(filename);
 
         // sort in increasing order:
         final IntList sorted = new IntArrayList();
@@ -103,16 +100,16 @@ public class ReadSet {
     }
 
     /**
-     * Load the filter from disk.
+     * Load the filter from disk.  The name of the actual file loaded will be of the form
+     * "${basename}-${suffix}.filter"
      *
-     * @param basename
-     * @param suffix
-     * @throws IOException
+     * @param basename basename of the filter file to load
+     * @param suffix suffix of the filter file to load
+     * @throws IOException if the file cannot be found or parsed.
      */
     public void load(final String basename, final String suffix) throws IOException {
         final String filename = basename + "-" + suffix + ".filter";
         load(new File(filename));
-
     }
 
     /**
@@ -121,21 +118,25 @@ public class ReadSet {
      * @throws IOException If an error occurs reading the read set file.
      */
     public void load(final File file) throws IOException {
-        final FileInputStream stream = new FileInputStream(file);
-        final InputBitStream in = new InputBitStream(stream);
-
-        filter.clear();
-        final int numDeltas = in.readGamma();
-        int previous = -1;
-        for (int i = 0; i < numDeltas; i++) {
-            final int delta = in.readDelta();
-            final int multiplicity = in.readGamma();
-            final int readIndex = previous + delta;
-            filter.add(readIndex);
-            multiplicityMap.put(readIndex, multiplicity);
-            previous = readIndex;
+        InputBitStream in = null;
+        try {
+            in = new InputBitStream(file);
+            filter.clear();
+            final int numDeltas = in.readGamma();
+            int previous = -1;
+            for (int i = 0; i < numDeltas; i++) {
+                final int delta = in.readDelta();
+                final int multiplicity = in.readGamma();
+                final int readIndex = previous + delta;
+                filter.add(readIndex);
+                multiplicityMap.put(readIndex, multiplicity);
+                previous = readIndex;
+            }
+        } finally {
+            if (in != null) {
+                in.close();
+            }
         }
-        in.close();
     }
 
     public void add(final int readIndex) {
@@ -172,7 +173,7 @@ public class ReadSet {
     }
 
     /**
-     * Set the default multiplicity value
+     * Set the default multiplicity value.
      *
      * @param value
      */

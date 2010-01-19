@@ -19,8 +19,6 @@
 
 <jsap>
     <parameters>
-
-
         <flaggedOption>
             <id>input</id>
             <shortFlag>i</shortFlag>
@@ -39,12 +37,11 @@
                 <classname>StringStringParser</classname>
             </stringParser>
             <required>true</required>
-            <help>Name of the filter file output.</help>
+            <help>Base name of the filter file output (the resulting file will be the output basename given plus "-keep.filter").</help>
         </flaggedOption>
         <switch>
             <id>color-space</id>
             <longFlag>color-space</longFlag>
-
             <help>When this switch is provided, the sequence are expected in color-space.  </help>
         </switch>
     </parameters>

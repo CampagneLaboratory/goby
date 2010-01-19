@@ -33,7 +33,6 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.io.OutputBitStream;
@@ -41,36 +40,35 @@ import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collections;
 
 /**
- * Tally the number of times sequences appear in a set of read files. Exact sequence comparison is performed.
+ * Tally the number of times sequences appear in a set of read files. Exact sequence comparison
+ * is performed.
  *
  * @author Fabien Campagne
  *         Date: May 4 2009
  *         Time: 12:28 PM
  */
 public class TallyReadsMode extends AbstractGobyMode {
-
-
     private String inputFilename;
-    private String outputFilename;
-
+    private String outputBasename;
 
     /**
      * The mode name.
      */
-    public static final String MODE_NAME = "tally-reads";
-    public static final String MODE_DESCRIPTION = "Tally the number of times sequences appear in a set of read files. Exact sequence comparison is performed.";
+    private static final String MODE_NAME = "tally-reads";
+
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION = "Tally the number of times sequences appear "
+            + "in a set of read files. Exact sequence comparison is performed.";
 
     private boolean colorSpace;
     private final int MAX_PROCESS_READS = Integer.MAX_VALUE;
-    final int reportEveryNReads = 10000000;
 
     @Override
     public String getModeName() {
@@ -87,9 +85,8 @@ public class TallyReadsMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws java.io.IOException error parsing
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
+     * @throws IOException error parsing
+     * @throws JSAPException error parsing
      */
     @Override
     public AbstractCommandLineMode configure(final String[] args)
@@ -97,7 +94,7 @@ public class TallyReadsMode extends AbstractGobyMode {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
         inputFilename = jsapResult.getString("input");
-        outputFilename = jsapResult.getString("output");
+        outputBasename = jsapResult.getString("output");
         colorSpace = jsapResult.getBoolean("color-space");
         return this;
     }
@@ -105,9 +102,6 @@ public class TallyReadsMode extends AbstractGobyMode {
 
     @Override
     public void execute() throws IOException {
-
-        final Writer writer = new OutputStreamWriter(new FastBufferedOutputStream(
-                (new FileOutputStream(outputFilename))));
         final MutableString sequence = new MutableString();
 
         final ProgressLogger progress = new ProgressLogger();
@@ -163,7 +157,7 @@ public class TallyReadsMode extends AbstractGobyMode {
         readRedundant = null;
         progress.expectedUpdates = numReads;
         progress.start("second pass: actual read redundancy evaluation.");
-        final int numberOfReads=numReads;
+        final int numberOfReads = numReads;
         numReads = 0;
         // readRedundant contains a lower bound on the number of times the read has been seen. Since we keyed
         // on hashcode, hashcode collisions make the set of redundant reads somewhat unreliable. This is not too bad because
@@ -220,7 +214,6 @@ public class TallyReadsMode extends AbstractGobyMode {
 
         }
 
-        writer.close();
         progress.stop("second pass");
         System.exit(0);
     }
@@ -324,7 +317,7 @@ public class TallyReadsMode extends AbstractGobyMode {
 
 
             try {
-                set.save(outputFilename, "keep");
+                set.save(outputBasename, "keep");
                 System.out.printf("Saved filter with %d elements %n", set.size());
             } catch (IOException e) {
                 System.out.println("Error saving read set: " + e);
