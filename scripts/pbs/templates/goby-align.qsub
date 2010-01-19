@@ -1,0 +1,86 @@
+#!/bin/sh -x
+
+# Determines the queue a job is submitted to
+#PBS -q %PBS_QUEUE%
+
+# Name of the job
+#PBS -N %PBS_JOB_NAME%-aln
+
+# Combine PBS error and output files.
+#PBS -j oe
+
+# Memory resource requirements
+#PBS -l mem=%PBS_MEMORY%
+
+# Mail job status at completion
+#PBS -m ae
+%PBS_MAILTO_DIRECTIVE%
+
+%PBS_ARRAY_DIRECTIVE%
+
+#
+# Output some useful PBS job information
+#
+echo ------------------------------------------------------
+echo Job is running on the following nodes:
+cat ${PBS_NODEFILE}
+echo ------------------------------------------------------
+echo PBS: qsub is running on ${PBS_O_HOST}
+echo PBS: originating queue is ${PBS_O_QUEUE}
+echo PBS: executing queue is ${PBS_QUEUE}
+echo PBS: working directory is ${PBS_O_WORKDIR}
+echo PBS: execution mode is ${PBS_ENVIRONMENT}
+echo PBS: job identifier is ${PBS_JOBID}
+echo PBS: job name is ${PBS_JOBNAME}
+echo PBS: task number is ${PBS_TASKNUM}
+echo PBS: node number is ${PBS_NODENUM}
+echo PBS: node file is ${PBS_NODEFILE}
+echo PBS: array index is ${PBS_ARRAY_INDEX}
+echo PBS: current home directory is ${PBS_O_HOME}
+echo PBS: scratch directory is ${TMPDIR}
+echo PBS: PATH = ${PBS_O_PATH}
+echo ------------------------------------------------------
+
+# The reference file to align with
+REFERENCE=%REFERENCE%
+REFERENCE_FILE=${REFERENCE##*/}
+REFERENCE_INDEX_NAME=${REFERENCE_FILE%.*}.fasta
+REFERENCE_INDEX_DIRECTORY=%REFERENCE_INDEX_DIRECTORY%
+
+# The reads file to process
+READS=%READS%
+READS_FILE=${READS##*/}
+
+# Copy the goby and support tools to the local node
+# TODO: copy bwa and log4j, etc.
+/bin/cp ${PBS_O_WORKDIR}/goby.jar ${TMPDIR}
+
+# Extract the reads if a split is needed
+if [ ! -z ${PBS_ARRAY_INDEX} ]; then
+    CHUNK_SIZE=%CHUNK_SIZE%
+    START_POSITION=$(($PBS_ARRAY_INDEX * $CHUNK_SIZE))
+    END_POSITION=$(($START_POSITION + $CHUNK_SIZE - 1))
+    cd ${TMPDIR}
+    java %PBS_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.properties \
+        -jar goby.jar --mode reformat-compact-reads --output ${READS_FILE} \
+        --start-position ${START_POSITION} --end-position ${END_POSITION} ${READS}
+else
+    /bin/cp ${READS} ${TMPDIR}
+fi
+
+# Run the alignment
+cd ${TMPDIR}
+java %PBS_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.properties -jar goby.jar \
+    --mode align %COLORSPACE% --reference ${REFERENCE} --aligner %ALIGNER% --search \
+    --database-name ${REFERENCE_INDEX_NAME} --database-directory ${REFERENCE_INDEX_DIRECTORY} \
+    --reads ${READS_FILE} --basename %BASENAME%
+
+# Copy the results back
+if [ -z ${PBS_ARRAY_INDEX} ]; then
+    RESULT_DIR=${PBS_O_WORKDIR}/results/%BASENAME%
+else
+    RESULT_DIR=${PBS_O_WORKDIR}/split-results/%BASENAME%-${PBS_ARRAY_INDEX}
+fi
+
+/bin/mkdir -p ${RESULT_DIR}
+/bin/cp *.entries *.header *.stats *.tmh ${RESULT_DIR}
