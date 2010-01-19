@@ -28,6 +28,9 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.File;
+import java.util.List;
+import java.util.LinkedList;
 
 /**
  * Concatenate compact reads files, count the number of reads, and
@@ -38,7 +41,7 @@ import java.io.IOException;
 public class ConcatenateCompactReadsMode extends AbstractGobyMode {
 
     /** The input filename. */
-    private String[] inputFilenames;
+    private List<File> inputFiles;
 
     /** The output filename. */
     private String outputFilename;
@@ -83,7 +86,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
             throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
-        inputFilenames = jsapResult.getStringArray("input");
+        setInputFilenames(jsapResult.getStringArray("input"));
         outputFilename = jsapResult.getString("output");
         sequencePerChunk = jsapResult.getInt("sequence-per-chunk");
         return this;
@@ -96,7 +99,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        if (inputFilenames == null || inputFilenames.length == 0) {
+        if (inputFiles == null || inputFiles.size() == 0) {
             throw new IOException("--input not specified");
         }
         if (StringUtils.isBlank(outputFilename)) {
@@ -112,8 +115,8 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
         minReadLength = Integer.MAX_VALUE;
         maxReadLength = Integer.MIN_VALUE;
         try {
-            for (final String inputFilename : inputFilenames) {
-                readsReader = new ReadsReader(inputFilename);
+            for (final File inputFile : inputFiles) {
+                readsReader = new ReadsReader(inputFile);
 
                 for (final Reads.ReadEntry readEntry : readsReader) {
                     numberOfReads++;
@@ -154,13 +157,35 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
         }
     }
 
+    /**
+     * Add an input file.
+     * @param inputFile the input file to add.
+     */
+    public synchronized void addInputFile(final File inputFile) {
+        if (inputFiles == null) {
+            inputFiles = new LinkedList<File>();
+        }
+        this.inputFiles.add(inputFile);
+    }
+
+    /**
+     * Clear the input files list.
+     */
+    public synchronized void clearInputFiles() {
+        if (inputFiles != null) {
+            inputFiles.clear();
+        }
+    }
 
     /**
      * Set the input filenames.
      * @param inputFilenames the input filename
      */
-    public void setInputFilenames(final String[] inputFilenames) {
-        this.inputFilenames = inputFilenames;
+    public synchronized void setInputFilenames(final String[] inputFilenames) {
+        clearInputFiles();
+        for (String inputFilname : inputFilenames) {
+            addInputFile(new File(inputFilname));
+        }
     }
 
     /**
@@ -168,7 +193,15 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
      * @return the input filenames
      */
     public String[] getInputFilenames() {
-        return this.inputFilenames;
+        if (inputFiles == null) {
+            return new String[0];
+        }
+        String[] array = new String[inputFiles.size()];
+        int i = 0;
+        for (File inputFile : inputFiles) {
+            array[i++] = inputFile.toString();
+        }
+        return array;
     }
 
     /**

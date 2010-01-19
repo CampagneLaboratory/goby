@@ -58,6 +58,16 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
 
     /**
      * Initialize the reader.
+     *
+     * @param file The input file
+     * @throws IOException If an error occurs reading the input
+     */
+    public ReadsReader(final File file) throws IOException {
+        this(FileUtils.openInputStream(file));
+    }
+
+    /**
+     * Initialize the reader.
      * @param stream Stream over the input
      */
     public ReadsReader(final InputStream stream) {
