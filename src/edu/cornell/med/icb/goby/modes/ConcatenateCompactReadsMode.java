@@ -26,11 +26,11 @@ import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.File;
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Concatenate compact reads files, count the number of reads, and
@@ -40,7 +40,7 @@ import java.util.LinkedList;
  */
 public class ConcatenateCompactReadsMode extends AbstractGobyMode {
 
-    /** The input filename. */
+    /** The input files. */
     private List<File> inputFiles;
 
     /** The output filename. */
@@ -77,9 +77,8 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws java.io.IOException error parsing
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
+     * @throws IOException error parsing
+     * @throws JSAPException error parsing
      */
     @Override
     public AbstractCommandLineMode configure(final String[] args)

@@ -24,30 +24,21 @@
             <list>true</list>
             <required>true</required>
             <greedy>true</greedy>
-            <help>The basenames of the count archives to read as input. If multiple count archives are provided,
-                consensus peaks are called
-                across the union of the input samples. The mode then outputs counts for these consensus peaks. This
-                results in
-                the same peak definitions being used across all the input samples.
-            </help>
+            <help>The basenames of the count archives to read as input. If multiple count archives are provided, consensus peaks are called across the union of the input samples. The mode then outputs counts for these consensus peaks. This results in the same peak definitions being used across all the input samples.</help>
         </unflaggedOption>
         <flaggedOption>
             <id>output</id>
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
             <required>true</required>
-            <help>The tab delimited output filename. The output will contain called peaks and peak count information.
-            </help>
+            <help>The tab delimited output filename. The output will contain called peaks and peak count information.</help>
         </flaggedOption>
         <flaggedOption>
             <id>include-reference-names</id>
             <shortFlag>r</shortFlag>
             <longFlag>include-reference-names</longFlag>
             <required>false</required>
-            <help>When provided, only write counts for reference identifiers listed in this comma separated list. To
-                process only counts for chromosome 19 and 1, if sequences are identified by 1 and 19, use:
-                --include-reference-names 1,19
-            </help>
+            <help>When provided, only write counts for reference identifiers listed in this comma separated list. To process only counts for chromosome 19 and 1, if sequences are identified by 1 and 19, use: --include-reference-names 1,19</help>
         </flaggedOption>
         <flaggedOption>
             <id>alternative-count-archive</id>
@@ -57,9 +48,7 @@
             <defaults>
                 <string>counts</string>
             </defaults>
-            <help>Specify an alternative count archive within the basename. The default is to use the count archive that
-                ends in ".counts" (equivalent to -a counts).
-            </help>
+            <help>Specify an alternative count archive within the basename. The default is to use the count archive that ends in ".counts" (equivalent to -a counts).</help>
         </flaggedOption>
         <flaggedOption>
             <id>threshold</id>
@@ -71,11 +60,7 @@
             <defaults>
                 <string>1</string>
             </defaults>
-            <help>The peak detection threshold. A peak boundary is called whenever the count at a specific base crosses
-                the threshold. The defaulf value of one (1) indicates that a peak is called for any contguous segment of
-                a reference sequence where the count is non-zero.
-            </help>
+            <help>The peak detection threshold. A peak boundary is called whenever the count at a specific base crosses the threshold. The default value of one (1) indicates that a peak is called for any contiguous segment of a reference sequence where the count is non-zero.</help>
         </flaggedOption>
-
     </parameters>
 </jsap>
