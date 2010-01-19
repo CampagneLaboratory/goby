@@ -36,7 +36,6 @@ import java.util.Collections;
 
 /**
  * Report differences between two alignment files.
- * <p/>
  *
  * @author Fabien Campagne
  *         Date: Apr 28, 2009
@@ -47,7 +46,12 @@ public class DiffAlignmentMode extends AbstractGobyMode {
      * The mode name.
      */
     private static final String MODE_NAME = "diff-alignments";
-    private static final String MODE_DESCRIPTION = "Report differences between two alignment files.";
+
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION =
+            "Report differences between two alignment files.";
 
     private String[] inputFilenames;
 
@@ -164,34 +168,34 @@ public class DiffAlignmentMode extends AbstractGobyMode {
             final int firstMultiplicity = queryMultiplicity[0].getInt(commonQueryIndex);
             final int secondMultiplicity = queryMultiplicity[1].getInt(commonQueryIndex);
             if (firstMultiplicity != secondMultiplicity) {
-                System.out.printf("Entry queryIndex=%d has different multiplicity between " +
-                        "the two alignments (first=%d, second=%d).  ", commonQueryIndex,
+                System.out.printf("Entry queryIndex=%d has different multiplicity between "
+                        + "the two alignments (first=%d, second=%d).  ", commonQueryIndex,
                         firstMultiplicity, secondMultiplicity);
             }
             final int firstTargetIndex = targetIndices[0].getInt(commonQueryIndex);
             final int secondTargetIndex = targetIndices[1].getInt(commonQueryIndex);
             if (firstTargetIndex != secondTargetIndex) {
-                System.out.printf("Entry queryIndex=%d has different targetIndex between " +
-                        "the two alignments (first=%d, second=%d).  ", commonQueryIndex,
+                System.out.printf("Entry queryIndex=%d has different targetIndex between "
+                        + "the two alignments (first=%d, second=%d).  ", commonQueryIndex,
                         firstTargetIndex, secondTargetIndex);
             }
 
             final float firstScore = scores[0].getFloat(commonQueryIndex);
             final float secondScore = scores[1].getFloat(commonQueryIndex);
             if (firstScore != secondScore) {
-                System.out.printf("Entry queryIndex=%d has different score between " +
-                        "the two alignments (first=%g, second=%g).  ", commonQueryIndex,
+                System.out.printf("Entry queryIndex=%d has different score between "
+                        + "the two alignments (first=%g, second=%g).  ", commonQueryIndex,
                         firstScore, secondScore);
             }
         }
 
         if (commonQueryIndices.size() != Math.max(queryIndices[0].size(), queryIndices[1].size())) {
-            final IntSet A = queryIndices[0];
-            final IntList uniqueToFirst = uniqueTo(commonQueryIndices, A, "first");
+            final IntSet setA = queryIndices[0];
+            final IntList uniqueToFirst = uniqueTo(commonQueryIndices, setA, "first");
             printEntries(uniqueToFirst, targetIndices[0], queryMultiplicity[0], scores[0],
                     positions[0], strands[0]);
-            final IntSet B = queryIndices[1];
-            final IntList uniqueToSecond = uniqueTo(commonQueryIndices, B, "second");
+            final IntSet setB = queryIndices[1];
+            final IntList uniqueToSecond = uniqueTo(commonQueryIndices, setB, "second");
             printEntries(uniqueToSecond, targetIndices[1], queryMultiplicity[1], scores[1],
                     positions[1], strands[1]);
 

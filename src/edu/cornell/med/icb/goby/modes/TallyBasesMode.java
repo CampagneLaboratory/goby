@@ -43,16 +43,18 @@ import java.util.Date;
 import java.util.zip.GZIPInputStream;
 
 /**
-
+ *
  */
 public class TallyBasesMode extends AbstractGobyMode {
-
     /**
      * The mode name.
      */
     public static final String MODE_NAME = "tally-bases";
-    public static final String MODE_DESCRIPTION = "";
 
+    /**
+     * The mode description help text.
+     */
+    public static final String MODE_DESCRIPTION = "";
 
     /**
      * The input file.
@@ -63,7 +65,7 @@ public class TallyBasesMode extends AbstractGobyMode {
      * The output file.
      */
     private String outputFilename;
-    boolean filterByReferenceNames;
+    private boolean filterByReferenceNames;
     private ObjectSet<String> includeReferenceNames = new ObjectOpenHashSet<String>();
     private String[] basenames;
     private String alternativeCountArhive;
@@ -72,6 +74,7 @@ public class TallyBasesMode extends AbstractGobyMode {
     private final int windowSize = 10;
     private String offsetString;
     private double cutoff;
+
     /**
      * From 0 to 1.
      */
@@ -92,9 +95,8 @@ public class TallyBasesMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws java.io.IOException error parsing
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
+     * @throws IOException error parsing
+     * @throws JSAPException error parsing
      */
     @Override
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
@@ -173,12 +175,9 @@ public class TallyBasesMode extends AbstractGobyMode {
             }
         } else {
             if (genomeFilename.endsWith(".fa") || genomeFilename.endsWith(".fasta")) {
-
                 cache.loadFasta(new FileReader(genomeFilename));
-
             } else if (genomeFilename.endsWith(".fa.gz") || genomeFilename.endsWith(".fasta.gz")) {
                 cache.loadFasta(new InputStreamReader(new GZIPInputStream(new FileInputStream(genomeFilename))));
-
             } else {
                 System.err.println("The format of the input file is not supported at this time.");
                 System.exit(1);

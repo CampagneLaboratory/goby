@@ -34,36 +34,42 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Converts binary BWA alignments in the SAM format to the compact alignment format.
  *
  * @author Fabien Campagne
  */
-public class SAMToCompactMode extends AbstractAlignmentToCompactMode { // AbstractGobyMode { //LastToCompactMode {
+public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Logger LOG = Logger.getLogger(SAMToCompactMode.class);
+
     /**
      * The mode name.
      */
-    public static final String MODE_NAME = "sam-to-compact";
-    public static final String MODE_DESCRIPTION = "Converts binary BWA alignments in the SAM format to the compact alignment format.";
+    private static final String MODE_NAME = "sam-to-compact";
+
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION = "Converts binary BWA alignments in the SAM "
+            + "format to the compact alignment format.";
+
+    /**
+     * Native reads output from aligner.
+     */
+    protected String samBinaryFilename;
 
     public String getSamBinaryFilename() {
         return samBinaryFilename;
     }
 
-    //
     public void setSamBinaryFilename(final String samBinaryFilename) {
         this.samBinaryFilename = samBinaryFilename;
     }
-
-
-    // Native reads output from aligner
-    protected String samBinaryFilename;
-
-    /**
-     * Used to log debug and informational messages.
-     */
-    private static final Logger LOG = Logger.getLogger(SAMToCompactMode.class);
 
 
     @Override
@@ -81,15 +87,13 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode { // Abstra
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws java.io.IOException error parsing
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
+     * @throws IOException error parsing
+     * @throws JSAPException error parsing
      */
     @Override
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         // configure baseclass
         super.configure(args);
-        //
         return this;
     }
 
@@ -129,9 +133,9 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode { // Abstra
 
             final int targetIndex = Integer.parseInt(samRecord.getReferenceName());
             // positions reported by BWA appear to start at 1. We convert to start at zero.
-            final int position = samRecord.getAlignmentStart()-1;
+            final int position = samRecord.getAlignmentStart() - 1;
             final boolean reverseStrand = samRecord.getReadNegativeStrandFlag();
-            final java.util.List<net.sf.samtools.AlignmentBlock> blocks = samRecord.getAlignmentBlocks();
+            final List<AlignmentBlock> blocks = samRecord.getAlignmentBlocks();
 
             float score = 0;
             int targetAlignedLength = 0;
@@ -172,7 +176,6 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode { // Abstra
             }
             score -= numMismatches;
             for (final AlignmentBlock block : blocks) {
-                // System.out.println("block length: " + block.getLength() + " readStart: " + block.getReadStart() + " referenceStart: " + block.getReferenceStart());
                 targetAlignedLength += block.getLength();
                 queryAlignedLength += block.getLength();
             }
@@ -236,13 +239,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode { // Abstra
      * Main method.
      *
      * @param args command line args.
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
-     * @throws java.io.IOException error parsing or executing.
+     * @throws JSAPException error parsing
+     * @throws IOException error parsing or executing.
      */
     public static void main(final String[] args) throws JSAPException, IOException {
         new SAMToCompactMode().configure(args).execute();
     }
-
-
 }

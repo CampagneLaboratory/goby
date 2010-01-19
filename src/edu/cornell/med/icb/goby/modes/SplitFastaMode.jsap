@@ -26,7 +26,6 @@
             <required>true</required>
             <help>The file to split.</help>
         </flaggedOption>
-
         <flaggedOption>
             <id>max-reads-per-file</id>
             <longFlag>max-reads-per-file</longFlag>
@@ -50,9 +49,7 @@
             <defaults>
                 <string>1</string>
             </defaults>
-            <help>The number of read lengths for a file, if 1 each read length
-                  will get it's own file. If 50, a file will be generated for
-                  read lengths 1-50, another for 51-100, etc.</help>
+            <help>The number of read lengths for a file, if 1 each read length will get it's own file. If 50, a file will be generated for read lengths 1-50, another for 51-100, etc.</help>
         </flaggedOption>
 
         <flaggedOption>

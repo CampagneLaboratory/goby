@@ -113,7 +113,6 @@ public class RandomAccessSequenceCache {
     }
 
     public void load(final String basename) throws IOException, ClassNotFoundException {
-
         sizes = (IntList) BinIO.loadObject(basename + ".sizes");
         compressedData = (ObjectArrayList<byte[]>) BinIO.loadObject(basename + ".bases");
         referenceIgnoreLists = (ObjectArrayList<LongArrayBitVector>) BinIO.loadObject(basename + ".ignore");
@@ -166,7 +165,6 @@ public class RandomAccessSequenceCache {
     }
 
     private char decode(final byte[] bytes, final int position, final int maxSize) {
-
         assert position < maxSize : "position must be less than size of the reference sequence (" + maxSize + ")";
 
         final int offset = position * 2;

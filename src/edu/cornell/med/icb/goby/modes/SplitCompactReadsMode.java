@@ -30,7 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
- * Converts a Compact file to Fasta format.
+ * Splits a file in compact reads format into one or more files.
  *
  * @author Fabien Campagne
  *         Date: May 4 2009
@@ -42,23 +42,41 @@ public class SplitCompactReadsMode extends AbstractGobyMode {
      */
     private static final long UNSET_POSITION = -1;
 
-    /** The input filename. */
+    /**
+     * The input filename.
+     */
     private String inputFilename;
 
-    /** The output filename. */
+    /**
+     * The output filename.
+     */
     private String outputFilename;
 
-    /** The start position. */
+    /**
+     * The start position.
+     */
     private long startPosition = UNSET_POSITION;
-    /** The end position. */
+
+    /**
+     * The end position.
+     */
     private long endPosition = UNSET_POSITION;
 
-    /** sequences per chunk in the written file. */
+    /**
+     * Sequences per chunk in the written file.
+     */
     private int sequencePerChunk = 10000;
 
-    /** The mode name. */
-    public static final String MODE_NAME = "split-compact-reads";
-    public static final String MODE_DESCRIPTION = "Converts a Compact file to Fasta format.";
+    /**
+     * The mode name.
+     */
+    private static final String MODE_NAME = "split-compact-reads";
+
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION =
+            "Splits a file in compact reads format into one or more files.";
 
     @Override
     public String getModeName() {

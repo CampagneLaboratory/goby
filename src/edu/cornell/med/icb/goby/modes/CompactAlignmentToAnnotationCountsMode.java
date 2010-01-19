@@ -26,22 +26,40 @@ import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.stats.*;
+import edu.cornell.med.icb.goby.stats.AverageCalculator;
+import edu.cornell.med.icb.goby.stats.BenjaminiHochbergAdjustment;
+import edu.cornell.med.icb.goby.stats.BonferroniAdjustment;
+import edu.cornell.med.icb.goby.stats.ChiSquareTestCalculator;
+import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
+import edu.cornell.med.icb.goby.stats.DifferentialExpressionResults;
+import edu.cornell.med.icb.goby.stats.FisherExactTestCalculator;
+import edu.cornell.med.icb.goby.stats.FoldChangeCalculator;
+import edu.cornell.med.icb.goby.stats.TTestCalculator;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
-import edu.rit.pj.ParallelRegion;
 import edu.rit.pj.IntegerForLoop;
+import edu.rit.pj.ParallelRegion;
 import edu.rit.pj.ParallelTeam;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.objects.*;
-import org.apache.commons.io.IOUtils;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.logging.impl.NoOpLog;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
-
-import org.apache.log4j.Logger;
 
 /**
  * Reads a compact alignment and genome annotations and output read counts that overlap with the annotation segments.
@@ -52,16 +70,20 @@ import org.apache.log4j.Logger;
  */
 public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     /**
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(CompactAlignmentToAnnotationCountsMode.class);
+
+    /**
      * The mode name.
      */
-    public static final String MODE_NAME = "alignment-to-annotation-counts";
+    private static final String MODE_NAME = "alignment-to-annotation-counts";
 
     /**
      * The mode description help text.
      */
-    public static final String MODE_DESCRIPTION =
-            "Converts alignment to counts for annotations (e.g., gene transcript annotations or exons).";
-
+    private static final String MODE_DESCRIPTION = "Converts alignment to counts for "
+            + "annotations (e.g., gene transcript annotations or exons).";
 
     /**
      * The output file.
@@ -82,7 +104,6 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     private final boolean writeAnnotationCounts = true;
     private String statsFilename;
     private ParallelTeam team;
-    private static final Logger LOG = Logger.getLogger(CompactAlignmentToAnnotationCountsMode.class);
     private boolean parallel;
 
 
@@ -531,7 +552,6 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      * @return log2(x+1)=Math.log1p(x)/Math.log(2)
      */
     private double log2(final double x) {
-
         return Math.log1p(x) / LOG_2;
     }
 

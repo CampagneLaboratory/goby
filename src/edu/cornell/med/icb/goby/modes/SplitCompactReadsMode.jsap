@@ -19,7 +19,6 @@
 
 <jsap>
     <parameters>
-
         <flaggedOption>
             <id>input</id>
             <shortFlag>i</shortFlag>
@@ -48,9 +47,7 @@
                 <classname>LongStringParser</classname>
             </stringParser>
             <required>true</required>
-            <help>The start position for the split, which should be number of bytes into the file to
-                start the split. The split will actually start at the first record on or after
-                start-position.</help>
+            <help>The start position for the split, which should be number of bytes into the file to start the split. The split will actually start at the first record on or after start-position.</help>
         </flaggedOption>
         <flaggedOption>
             <id>end-position</id>
@@ -60,9 +57,7 @@
                 <classname>LongStringParser</classname>
             </stringParser>
             <required>true</required>
-            <help>The end position for the split, which should be number of bytes into the file to
-                end the split. The split will actually end at the end of the record on or after
-                end-position.</help>
+            <help>The end position for the split, which should be number of bytes into the file to end the split. The split will actually end at the end of the record on or after end-position.</help>
         </flaggedOption>
         <flaggedOption>
             <id>sequence-per-chunk</id>

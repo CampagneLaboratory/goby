@@ -33,7 +33,6 @@
             <required>true</required>
             <help>The output path and basename to write the compact format to.</help>
         </flaggedOption>
-
         <flaggedOption>
             <id>query-reads-ids</id>
             <shortFlag>q</shortFlag>
@@ -64,8 +63,6 @@
             </stringParser>
             <help>When this switch is provided, propagate target ids if provided in the compact file designated by the target-ids option. The default is true since target ids are quite useful and not very many.  </help>
         </flaggedOption>
-
-
         <flaggedOption>
             <id>read-index-filter</id>
             <shortFlag>f</shortFlag>
@@ -74,7 +71,7 @@
                 <classname>FileStringParser</classname>
             </stringParser>
             <required>false</required>
-            <help>The name of a read index set with multiplicy information. When provided, last-to-compact appends exactly m identical entries for a read with index </help>
+            <help>The name of a read index set with multiplicity information. When provided, last-to-compact appends exactly m identical entries for a read with index </help>
         </flaggedOption>
         <flaggedOption>
             <id>ambiguity-threshold</id>

@@ -50,11 +50,6 @@ public class CompactAlignmentToReadSetMode extends AbstractGobyMode {
             "Converts a compact alignment to a read set file.";
 
     /**
-     * The input file.
-     */
-    private String inputFile;
-
-    /**
      * The output read set suffix.
      */
     private String suffix;
@@ -65,7 +60,6 @@ public class CompactAlignmentToReadSetMode extends AbstractGobyMode {
     private boolean ambiguousReads;
     private boolean nonAmbiguousReads;
     private int k;
-    private File preFilterFile;
     private ReadSet preFilter;
 
     @Override
@@ -146,8 +140,9 @@ public class CompactAlignmentToReadSetMode extends AbstractGobyMode {
     public void execute() throws IOException {
         for (final String basename : basenames) {
             if (suffix == null) {
-                suffix = (matchingReads ? "matching" : nonMatchingReads ? "nonmatching" : "") + (ambiguousReads ? "-ambiguous" : "-nonambigious") +
-                        ("-k=" + Integer.toString(k));
+                suffix = (matchingReads ? "matching" : nonMatchingReads ? "nonmatching" : "")
+                        + (ambiguousReads ? "-ambiguous" : "-nonambigious")
+                        + ("-k=" + Integer.toString(k));
             }
             if (preFilter != null) {
                 System.out.println("Pre-filtering alignment is activated (--pre-filter option).");
@@ -217,10 +212,10 @@ public class CompactAlignmentToReadSetMode extends AbstractGobyMode {
     private boolean passesTmhFilter(final AlignmentTooManyHitsReader tmhReader, final int queryIndex) {
         if (ambiguousReads && nonAmbiguousReads) {
             return true;
-        }
-        else if (ambiguousReads) {
+        } else if (ambiguousReads) {
             return tmhReader.isQueryAmbiguous(queryIndex, k);
         }
+
         if (nonAmbiguousReads) {
             return !tmhReader.isQueryAmbiguous(queryIndex, k);
         } else {

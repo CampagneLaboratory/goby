@@ -61,10 +61,15 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
     private boolean mutateSequences;
     private int numberOfMismatches;
     private CharSet bases;
+
     /**
      * The mode name.
      */
     private static final String MODE_NAME = "reformat-compact-reads";
+
+    /**
+     * The mode description help text.
+     */
     private static final String MODE_DESCRIPTION = "Reformat a compact file, possibly dropping "
             + "identifiers, or descriptions, or splitting the file.  When a compact-reads file "
             + "is split, reads in each split are renumbered (their readIndex is changed), "

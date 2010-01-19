@@ -53,8 +53,11 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
      * The mode name.
      */
     public static final String MODE_NAME = "split-transcripts";
-    public static final String MODE_DESCRIPTION = "Class to split transcripts FASTA into multiple files.";
 
+    /**
+     * The mode description help text.
+     */
+    public static final String MODE_DESCRIPTION = "Split transcripts FASTA into multiple files.";
 
     /**
      * The configuration.

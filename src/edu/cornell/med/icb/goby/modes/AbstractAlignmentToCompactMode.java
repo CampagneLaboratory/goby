@@ -61,20 +61,24 @@ import java.io.IOException;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
-
-    /**
-     * default ambiguity threshold.
-     */
-    public static final int DEFAULT_M_PARAM = 2;
-
     /**
      * Used to log debug and informational messages.
      */
     private static final Log LOG = LogFactory.getLog(AbstractAlignmentToCompactMode.class);
+
     /**
-     * Input / output files.
+     * default ambiguity threshold.
+     */
+    protected static final int DEFAULT_M_PARAM = 2;
+
+    /**
+     * Input file.
      */
     protected String inputFile;
+
+    /**
+     * Output file.
+     */
     protected String outputFile;
 
     /**
@@ -93,7 +97,6 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
     protected File readIndexFilterFile;
     protected int mParameter = DEFAULT_M_PARAM;
     protected int numberOfReads;
-
 
     /**
      * Scan.
@@ -262,7 +265,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         }
 
         /**
-         * Postcondition: output Ids.size() == maximumSequenceIndex + 1
+         * Postcondition: output Ids.size() == maximumSequenceIndex + 1.
          */
         private ObjectArrayList<String> processIds(final String idsFilename) throws FileNotFoundException {
             final ObjectArrayList<String> ids = new ObjectArrayList<String>(500000);

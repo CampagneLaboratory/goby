@@ -19,15 +19,12 @@
 
 <jsap>
     <parameters>
-
         <unflaggedOption>
             <id>input</id>
             <required>true</required>
             <greedy>true</greedy>
             <help>The count basename to use as input.</help>
         </unflaggedOption>
-
-
         <flaggedOption>
             <id>output</id>
             <shortFlag>o</shortFlag>
@@ -35,7 +32,6 @@
             <required>true</required>
             <help>The file where base tallies will be written.</help>
         </flaggedOption>
-
         <flaggedOption>
             <id>include-reference-names</id>
             <shortFlag>r</shortFlag>
@@ -58,7 +54,6 @@
             <shortFlag>g</shortFlag>
             <longFlag>genome</longFlag>
             <required>true</required>
-
             <help>Genome in fasta format (extension .fa or .fa.gz) or compact format (extension .compact-reads).</help>
         </flaggedOption>
         <flaggedOption>
@@ -71,10 +66,8 @@
             </defaults>
             <help>Filename where a random access binary cache of the genome will be written. The default cache filename is derived from the genome command line argument.  </help>
         </flaggedOption>
-
         <flaggedOption>
             <id>offset</id>
-
             <longFlag>offset</longFlag>
             <required>false</required>
             <stringParser>
@@ -87,7 +80,6 @@
         </flaggedOption>
         <flaggedOption>
             <id>cutoff</id>
-
             <longFlag>cutoff</longFlag>
             <required>false</required>
             <stringParser>
@@ -100,7 +92,6 @@
         </flaggedOption>
          <flaggedOption>
             <id>sample-rate</id>
-
             <longFlag>sample-rate</longFlag>
             <required>false</required>
             <stringParser>

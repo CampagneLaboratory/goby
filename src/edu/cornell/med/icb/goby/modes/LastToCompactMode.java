@@ -79,7 +79,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
     private static final Logger LOG = Logger.getLogger(LastToCompactMode.class);
 
     /**
-     * default behavior is to convert both maf and count files
+     * Default behavior is to convert both maf and count files.
      */
     protected boolean onlyMafFile;
     protected boolean onlyCountsFile;
@@ -95,7 +95,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
     }
 
     /**
-     * If onlyMafFile is set to true, then onlyCountsFile is set to false
+     * If {@link #onlyMafFile} is set to true, then {@link #onlyCountsFile} is set to false.
      */
     public void setOnlyMafFile(final boolean onlyMafFile) {
         this.onlyMafFile = onlyMafFile;
@@ -105,7 +105,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
     }
 
     /**
-     * If onlyCountsFile is set to true, then onlyMafFile is set to false
+     * If {@link #onlyCountsFile} is set to true, then {@link #onlyMafFile} is set to false.
      */
     public void setOnlyCountsFile(final boolean onlyCountsFile) {
         this.onlyCountsFile = onlyCountsFile;
@@ -167,7 +167,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
             // second pass: write to compact alignment file for those entries with score above threshold
             for (final boolean writeAlignment : new boolean[]{false, true}) {
                 //
-                assert new File(mafInputFile).exists() : "Missing MAF file: "+mafInputFile;
+                assert new File(mafInputFile).exists() : "Missing MAF file: " + mafInputFile;
                 final LastParser parser = new LastParser(new FileReader(mafInputFile));
 
                 //
@@ -175,7 +175,6 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                 numAligns = 0;
 
                 while (parser.hasNext()) {
-
                     // parse maf alignment entry
                     parser.next();
                     final float score = parser.getScore();
@@ -284,7 +283,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
         if (!onlyMafFile) {
             assert new File(countsInputFile).exists() : "Missing COUNTS file: " + countsInputFile;
 
-            System.out.println("Recording ambiguity-threshold="+mParameter);
+            System.out.println("Recording ambiguity-threshold=" + mParameter);
             System.out.println("Will import length of match.");
 
             for (final Map<String, String> line : new TsvLineIterator(countsInputFile)) {
@@ -310,5 +309,4 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
     public static void main(final String[] args) throws JSAPException, IOException {
         new LastToCompactMode().configure(args).execute();
     }
-
 }
