@@ -63,7 +63,7 @@ import java.io.IOException;
 public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
 
     /**
-     * default ambiguity threshold
+     * default ambiguity threshold.
      */
     public static final int DEFAULT_M_PARAM = 2;
 
@@ -76,8 +76,9 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
      */
     protected String inputFile;
     protected String outputFile;
+
     /**
-     * Query / target identifiers
+     * Query / target identifiers.
      */
     protected String queryReadIdsFilename;
     protected String targetReferenceIdsFilename;
@@ -85,7 +86,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
     protected boolean propagateTargetIds;
 
     /**
-     * Conversion parameters
+     * Conversion parameters.
      */
     protected String qualityFilterParameters = "";
     protected AlignmentQualityFilter qualityFilter;

@@ -21,20 +21,30 @@ package edu.cornell.med.icb.goby.modes;
 import java.io.File;
 
 /**
- * Some basic stats on MAQ Map, FASTA, and FASTQ files.
+ * This class contains values and utilities related to file types used by Goby.
  *
  * @author Kevin Dorff
  */
 public final class FileExtensionHelper {
+    /**
+     * Probable file extensions for FASTA/FASTQ files.
+     */
     static final String[] FASTX_FILE_EXTS = {
             ".fa.gz", ".fna.gz", ".fasta.gz", ".fq.gz", ".fnq.gz", ".fastq.gz",
             ".csfasta", ".csfasta.gz", ".csfastq", ".csfastq.gz",
             ".csfa", ".csfa.gz", ".csfq", ".csfq.gz",
             ".fa", ".fna", ".fasta", ".fq", ".fnq", ".fastq",
-            ".txt", ".txt.gz"};
+            ".txt", ".txt.gz"
+    };
 
+    /**
+     * File extenstion for sequence data in "compact reads" format.
+     */
     static final String[] COMPACT_READS_FILE_EXTS = {".compact-reads"};
 
+    /**
+     * File extenstion for alignment data in "compact reads" format.
+     */
     static final String[] COMPACT_ALIGNMENT_FILE_EXTS = {
             ".entries", ".header", ".tmh", ".stats"
     };
@@ -43,8 +53,11 @@ public final class FileExtensionHelper {
      * Possible types for compact files.
      */
     public enum CompactFileType {
+        /** The file contains alignment data. */
         alignment,
+        /** The file contains reads or possibly reference data. */
         reads,
+        /** The file contents cannot be determined or is not a supported type. */
         unknown
     }
 
@@ -80,6 +93,9 @@ public final class FileExtensionHelper {
         return CompactFileType.unknown;
     }
 
+    /**
+     * Private constructor for utility class.
+     */
     private FileExtensionHelper() {
         super();
     }

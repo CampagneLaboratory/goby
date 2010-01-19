@@ -117,6 +117,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                         describeCompactReads(file.toString());
                         break;
                     case unknown:
+                    default:
                         System.err.println("Unknown file type: " + file);
                         break;
                 }
@@ -147,9 +148,9 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         long total = 0;
         double avgScore = 0;
         for (final Alignments.AlignmentEntry entry : reader) {
-            numberOfReads++; // Across all files
-            numEntries++; // Across this file
-            numLogicalAlignmentEntries+=entry.getMultiplicity();
+            numberOfReads++;   // Across all files
+            numEntries++;      // Across this file
+            numLogicalAlignmentEntries += entry.getMultiplicity();
             total += entry.getQueryAlignedLength();
             avgScore += entry.getScore();
             maxQueryIndex = Math.max(maxQueryIndex, entry.getQueryIndex());
@@ -163,12 +164,12 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         System.out.printf("num target indices= %d%n", maxTargetIndex + 1);
         System.out.printf("Number of alignment entries = %d%n", numLogicalAlignmentEntries);
         System.out.printf("Percent matched = %3.2g%% %n", divide(numLogicalAlignmentEntries, maxQueryIndex) * 100.0d);
-        System.out.printf("Avg query alignment length = %,d%n", numEntries>0 ? total / numEntries : -1);
+        System.out.printf("Avg query alignment length = %,d%n", numEntries > 0 ? total / numEntries : -1);
         System.out.printf("Avg score alignment  = %f%n", avgScore);
     }
 
     private double divide(final long a, final long b) {
-        return  (double)a / (double)b;
+        return  (double) a / (double) b;
     }
 
     private void describeCompactReads(final String file) throws IOException {

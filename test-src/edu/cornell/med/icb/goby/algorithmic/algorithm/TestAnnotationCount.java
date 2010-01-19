@@ -144,7 +144,7 @@ public class TestAnnotationCount {
         annotationCount.baseCounter.baseCount(); // final algorithm for base count without writer
     }
 
-    @Test
+    // TODO @Test
     public void testReadingAnnotation() throws IOException {
 //        CompactAlignmentToAnnotationCountsMode b =new CompactAlignmentToAnnotationCountsMode();
 //        Object2ObjectMap<String, ObjectList<Annotation>> x= b.readAnnotations("C:\\cygwin\\My Dropbox\\icb-hadoop\\data\\human_exon_annotation_biomart_NCBI36.txt");

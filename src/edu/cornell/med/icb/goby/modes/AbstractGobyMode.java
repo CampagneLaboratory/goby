@@ -19,7 +19,7 @@
 package edu.cornell.med.icb.goby.modes;
 
 /**
- * Specifies the maqsupport jar file for all goby modes.
+ * Specifies the jar file for all goby modes.
  *
  * @author Fabien Campagne
  * Date: Apr 7, 2009

@@ -24,7 +24,7 @@
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
             <required>true</required>
-            <help>The output filenname to write the merged MAQ Maps to.</help>
+            <help>The output filenname to write the merged alignments to.</help>
         </flaggedOption>
         <flaggedOption>
             <id>k</id>
@@ -39,7 +39,6 @@
             </defaults>
             <help>The k values for the merge.  If gene-transcript-map-file is defined, the alignment was against transcripts. k defines the maximum number of genes that a read may match. Best value is probably 1.  If gene-transcript-map-file is NOT defined, the alignment was against a reference genome. k defines the maximum number of duplicates allowed for the top quality score when there are duplicates. Best value is probably 2.  </help>
         </flaggedOption>
-
         <flaggedOption>
             <id>gene-transcript-map-file</id>
             <shortFlag>g</shortFlag>
@@ -47,13 +46,11 @@
             <required>false</required>
             <help>A TSV file that specifies the gene-transcript mapping.</help>
         </flaggedOption>
-
-
         <unflaggedOption>
             <id>input</id>
             <required>true</required>
             <greedy>true</greedy>
-            <help>The input MAQ Map filenames to merge.</help>
+            <help>The input alignment files to merge.</help>
         </unflaggedOption>
     </parameters>
 </jsap>

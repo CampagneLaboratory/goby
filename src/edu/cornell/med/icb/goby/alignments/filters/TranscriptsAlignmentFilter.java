@@ -33,8 +33,9 @@ import org.apache.commons.logging.LogFactory;
 import java.io.FileNotFoundException;
 
 /**
- * This class assists with filtering MaqMapEntry values when merging transcript-based
- * alignments.
+ * This class assists with filtering
+ * {@link edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry} values when merging
+ * transcript-based alignments.
  *
  * @author Kevin Dorff
  * @author Fabien Campagne
@@ -87,7 +88,6 @@ public final class TranscriptsAlignmentFilter extends AbstractAlignmentEntryFilt
         numInspected = 0;
 
     }
-
 
     /**
      * Set the new / updated header that is being used when filtering these entries.
