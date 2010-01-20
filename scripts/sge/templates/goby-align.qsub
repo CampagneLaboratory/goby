@@ -54,7 +54,7 @@ READS_FILE=${READS##*/}
 /bin/cp ${SGE_O_WORKDIR}/goby.jar ${TMPDIR}
 
 # Extract the reads if a split is needed
-if [ ! -z ${SGE_TASK_ID} ] && [ "${SGE_TASK_ID}" -ne "unknown" ]; then
+if [ ! -z ${SGE_TASK_ID} ] && [ "${SGE_TASK_ID}" != "unknown" ]; then
     CHUNK_SIZE=%CHUNK_SIZE%
     START_POSITION=$(($((SGE_TASK_ID - 1)) * $CHUNK_SIZE))
     END_POSITION=$(($START_POSITION + $CHUNK_SIZE - 1))
