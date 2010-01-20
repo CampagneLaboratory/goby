@@ -1,0 +1,56 @@
+#!/bin/sh
+
+# Name of the job
+#$ -N %SGE_JOB_NAME%-index
+
+# Execute the script from the current directory
+#$ -cwd
+
+# Combine SGE error and output files.
+#$ -j y
+
+# Memory resource requirements
+#$ -l mem_total=%SGE_MEMORY%
+
+# Mail job begin status
+#$ -m b
+
+# Mail job completion status
+#$ -m e
+
+%SGE_MAILTO_DIRECTIVE%
+
+#
+# Output some useful SGE job information
+#
+echo ------------------------------------------------------
+echo SGE: qsub is running on ${SGE_O_HOST}
+echo SGE: originating queue is ${QUEUE}
+echo SGE: executing cell is ${SGE_CELL}
+echo SGE: working directory is ${SGE_O_WORKDIR}
+echo SGE: execution mode is ${ENVIRONMENT}
+echo SGE: job identifier is ${JOB_ID}
+echo SGE: job name is ${JOB_NAME}
+echo SGE: task number is ${SGE_TASK_ID}
+echo SGE: current home directory is ${SGE_O_HOME}
+echo SGE: scratch directory is ${TMPDIR}
+echo SGE: PATH = ${SGE_O_PATH}
+echo ------------------------------------------------------
+
+# The reference file to align with
+REFERENCE=%REFERENCE%
+REFERENCE_FILE=${REFERENCE##*/}
+REFERENCE_INDEX_NAME=${REFERENCE_FILE%.*}.fasta
+REFERENCE_INDEX_DIRECTORY=%REFERENCE_INDEX_DIRECTORY%
+
+# Copy the goby and support tools to the local node
+# TODO: copy bwa and log4j, etc.
+/bin/cp ${SGE_O_WORKDIR}/goby.jar ${TMPDIR}
+
+cd ${TMPDIR}
+java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.properties -jar goby.jar \
+    --mode align %COLORSPACE% --reference ${REFERENCE} --aligner %ALIGNER% --index \
+    --database-name ${REFERENCE_INDEX_NAME}
+
+/bin/mkdir -p ${REFERENCE_INDEX_DIRECTORY}
+/bin/cp ${REFERENCE_INDEX_NAME}.* ${REFERENCE_INDEX_DIRECTORY}
