@@ -54,8 +54,7 @@ if [ -z ${CHUNK_SIZE} ] || [ ${CHUNK_SIZE} -le 0 ] || [ ${CHUNK_SIZE} -ge ${READ
     echo "Alignment will not be split"
 else
     NUMBER_OF_JOBS=$((${READS_SIZE} / ${CHUNK_SIZE} + 1))
-    SGE_ARRAY_END_INDEX=$((${NUMBER_OF_JOBS} - 1))
-    SGE_ARRAY_DIRECTIVE="#$ -t0-${SGE_ARRAY_END_INDEX}"
+    SGE_ARRAY_DIRECTIVE="#$ -t 1-${NUMBER_OF_JOBS}"
     echo "Alignment will run as ${NUMBER_OF_JOBS} jobs"
 fi
 

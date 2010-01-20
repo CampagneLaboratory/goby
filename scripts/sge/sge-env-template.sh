@@ -10,7 +10,7 @@ SGE_STATUS_MAILTO=
 #
 # Memory size for SGE
 #
-SGE_MEMORY=3gb
+SGE_MEMORY=3g
 
 #
 # JVM flags (memory should match SGE_MEMORY)

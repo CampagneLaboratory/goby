@@ -56,7 +56,7 @@ READS_FILE=${READS##*/}
 # Extract the reads if a split is needed
 if [ ! -z ${SGE_TASK_ID} ] && [ "${SGE_TASK_ID}" -ne "unknown" ]; then
     CHUNK_SIZE=%CHUNK_SIZE%
-    START_POSITION=$(($SGE_TASK_ID * $CHUNK_SIZE))
+    START_POSITION=$(($((SGE_TASK_ID - 1)) * $CHUNK_SIZE))
     END_POSITION=$(($START_POSITION + $CHUNK_SIZE - 1))
     cd ${TMPDIR}
     java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.properties \
