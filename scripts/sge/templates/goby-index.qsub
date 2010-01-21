@@ -44,8 +44,8 @@ REFERENCE_INDEX_NAME=${REFERENCE_FILE%.*}.fasta
 REFERENCE_INDEX_DIRECTORY=%REFERENCE_INDEX_DIRECTORY%
 
 # Copy the goby and support tools to the local node
-# TODO: copy bwa and log4j, etc.
-/bin/cp ${SGE_O_WORKDIR}/goby.jar ${TMPDIR}
+# TODO: copy bwa etc.
+/bin/cp ${SGE_O_WORKDIR}/goby.jar ${SGE_O_WORKDIR}/config/log4j.properties ${TMPDIR}
 
 cd ${TMPDIR}
 java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.properties \

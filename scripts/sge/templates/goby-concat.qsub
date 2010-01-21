@@ -38,8 +38,8 @@ echo SGE: PATH = ${SGE_O_PATH}
 echo ------------------------------------------------------
 
 # Copy the goby and support tools to the local node
-# TODO: copy bwa and log4j, etc.
-/bin/cp ${SGE_O_WORKDIR}/goby.jar ${TMPDIR}
+# TODO: copy bwa etc.
+/bin/cp ${SGE_O_WORKDIR}/goby.jar ${SGE_O_WORKDIR}/config/log4j.properties ${TMPDIR}
 
 INTERIM_RESULT_DIR=${SGE_O_WORKDIR}/split-results/%BASENAME%
 RESULT_DIR=${SGE_O_WORKDIR}/results/%BASENAME%
