@@ -29,6 +29,7 @@ echo SGE: originating queue is ${QUEUE}
 echo SGE: executing cell is ${SGE_CELL}
 echo SGE: working directory is ${SGE_O_WORKDIR}
 echo SGE: execution mode is ${ENVIRONMENT}
+echo SGE: execution host is ${HOSTNAME}
 echo SGE: job identifier is ${JOB_ID}
 echo SGE: job name is ${JOB_NAME}
 echo SGE: task number is ${SGE_TASK_ID}
