@@ -71,11 +71,11 @@ SGE_JOB_NAME=${JOB_TAG}
 
 # Copy goby and submission scripts to the run directory
 /bin/mkdir -p ${JOB_DIR}
-/bin/cp ${GOBY_DIR}/goby.jar ${SCRIPT_DIR}/align.sh \
-    ${SCRIPT_DIR}/index.sh ${SCRIPT_DIR}/align-concat.sh \
-    ${SCRIPT_DIR}/index-align.sh ${SCRIPT_DIR}/concat.sh \
-    ${SCRIPT_DIR}/index-align-concat.sh ${SCRIPT_DIR}/sge-env.sh \
-    ${JOB_DIR}
+/bin/cp ${GOBY_DIR}/goby.jar ${GOBY_DIR}/config/log4j.properties \
+    ${SCRIPT_DIR}/align.sh ${SCRIPT_DIR}/index.sh \
+    ${SCRIPT_DIR}/align-concat.sh ${SCRIPT_DIR}/index-align.sh \
+    ${SCRIPT_DIR}/concat.sh  ${SCRIPT_DIR}/index-align-concat.sh \
+    ${SCRIPT_DIR}/sge-env.sh ${JOB_DIR}
 
 # Create job specific scripts from the template files
 for FILE in goby-index.qsub goby-align.qsub goby-concat.qsub; do
@@ -88,6 +88,8 @@ for FILE in goby-index.qsub goby-align.qsub goby-concat.qsub; do
         -e "s|%REFERENCE_INDEX_DIRECTORY%|${REFERENCE_INDEX_DIRECTORY}|" \
         -e "s|%ALIGNER%|${ALIGNER}|" -e "s|%COLORSPACE%|${COLORSPACE}|" \
         -e "s|%CHUNK_SIZE%|${CHUNK_SIZE}|" -e "s|%BASENAME%|${BASENAME}|" \
+        -e "s|%BWA_ALIGNER_PATH%|${BWA_ALIGNER_PATH}|" \
+        -e "s|%LASTAG_ALIGNER_PATH%|${LASTAG_ALIGNER_PATH}|" \
         -e "s|%SGE_JOB_NAME%|${SGE_JOB_NAME}|" \
         ${SCRIPT_DIR}/templates/${FILE} > ${JOB_DIR}/${FILE}
 done

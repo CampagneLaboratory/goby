@@ -23,10 +23,10 @@ JVM_FLAGS=-Xmx3g
 ALIGNER=bwa
 
 #
-# Full path to native aligner executable
+# Full path to native aligner executable directory
 #
-BWA_ALIGNER_EXEC=
-LASTAG_ALIGNER_EXEC=
+BWA_ALIGNER_PATH=
+LASTAG_ALIGNER_PATH=
 
 #
 # Colorspace option (comment out or leave blank if not using colorspace)
