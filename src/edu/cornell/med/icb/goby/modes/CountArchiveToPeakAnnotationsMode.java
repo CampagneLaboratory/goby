@@ -31,8 +31,6 @@ import edu.cornell.med.icb.goby.counts.Peak;
 import edu.cornell.med.icb.goby.counts.PeakAggregator;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -127,8 +125,6 @@ public class CountArchiveToPeakAnnotationsMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        final IntSet referencesToProcess = new IntOpenHashSet();
-
         final String[] basenames = AlignmentReader.getBasenames(inputFiles);
         final ConcatAlignmentReader reader = new ConcatAlignmentReader(basenames);
         reader.readHeader();
@@ -151,35 +147,43 @@ public class CountArchiveToPeakAnnotationsMode extends AbstractGobyMode {
         final PrintWriter annotationWriter = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
         for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
             final String referenceId = backwards.getId(referenceIndex).toString();
-            System.out.println("Processing reference " + referenceId);
-            final CountsReaderI[] readers = new CountsReaderI[countArchiveReaders.length];
-            int readerIndex = 0;
-            for (final CountsArchiveReader archive : countArchiveReaders) {
+            boolean processThisSequence = true;
+            
+            if (filterByReferenceNames && !includeReferenceNames.contains(referenceId)) {
+                processThisSequence = false;
+            }
 
-                if (archive.getIdentifier(referenceIndex) != null) {
+            if (processThisSequence) {
+                System.out.println("Processing reference " + referenceId);
+                final CountsReaderI[] readers = new CountsReaderI[countArchiveReaders.length];
+                int readerIndex = 0;
+                for (final CountsArchiveReader archive : countArchiveReaders) {
 
-                    readers[readerIndex++] = archive.getCountReader(referenceIndex);
+                    if (archive.getIdentifier(referenceIndex) != null) {
 
-                    if (allAnnots.get(referenceId) == null) {
-                        allAnnots.put(referenceId, new ObjectArrayList<Annotation>());
+                        readers[readerIndex++] = archive.getCountReader(referenceIndex);
+    
+                        if (allAnnots.get(referenceId) == null) {
+                            allAnnots.put(referenceId, new ObjectArrayList<Annotation>());
+                        }
                     }
                 }
-            }
-            final AnyTransitionCountsIterator iterator = new AnyTransitionCountsIterator(readers);
+                final AnyTransitionCountsIterator iterator = new AnyTransitionCountsIterator(readers);
+    
+                final PeakAggregator peakAggregator = new PeakAggregator(iterator);
+                peakAggregator.setPeakDetectionThreshold(detectionThreshold);
+                while (peakAggregator.hasNext()) {
+                    final Peak peak = peakAggregator.next();
 
-            final PeakAggregator peakAggregator = new PeakAggregator(iterator);
-            peakAggregator.setPeakDetectionThreshold(detectionThreshold);
-            while (peakAggregator.hasNext()) {
-                final Peak peak = peakAggregator.next();
-
-                final ObjectList<Annotation> annotationList = allAnnots.get(referenceId);
-                final Annotation annotation = new Annotation(referenceId + "." + peak.start + "." + peak.length, referenceId);
-                annotation.strand = "either";
-                annotation.addSegment(new Segment(peak.start, peak.start + peak.length, "id", "either"));
-                annotationList.add(annotation);
-                annotation.write(annotationWriter);
+                    final ObjectList<Annotation> annotationList = allAnnots.get(referenceId);
+                    final Annotation annotation = new Annotation(referenceId + "." + peak.start + "." + peak.length, referenceId);
+                    annotation.strand = "either";
+                    annotation.addSegment(new Segment(peak.start, peak.start + peak.length, "id", "either"));
+                    annotationList.add(annotation);
+                    annotation.write(annotationWriter);
 
 
+                }
             }
         }
         annotationWriter.close();
