@@ -10,12 +10,12 @@ SGE_STATUS_MAILTO=
 #
 # Memory size for SGE
 #
-SGE_MEMORY=3g
+SGE_MEMORY=4g
 
 #
 # JVM flags (memory should match SGE_MEMORY)
 #
-JVM_FLAGS=-Xmx3g
+SGE_JVM_FLAGS=-Xmx4g
 
 #
 # Aligner
