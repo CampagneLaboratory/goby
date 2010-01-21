@@ -51,7 +51,7 @@ READS_FILE=${READS##*/}
 
 # Copy the goby and support tools to the local node
 # TODO: copy bwa etc.
-/bin/cp ${SGE_O_WORKDIR}/goby.jar ${SGE_O_WORKDIR}/config/log4j.properties ${TMPDIR}
+/bin/cp ${SGE_O_WORKDIR}/goby.jar ${SGE_O_WORKDIR}/log4j.properties ${TMPDIR}
 
 # Extract the reads if a split is needed
 if [ ! -z ${SGE_TASK_ID} ] && [ "${SGE_TASK_ID}" != "unknown" ]; then
