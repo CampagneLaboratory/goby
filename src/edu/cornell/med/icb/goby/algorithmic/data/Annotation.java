@@ -24,7 +24,7 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import java.io.PrintWriter;
 import java.util.Collections;
 
-public class Annotation {
+public class Annotation implements Comparable<Annotation> {
     public final String id;
     public final String chromosome;
     public final ObjectList<Segment> segments;
@@ -43,6 +43,14 @@ public class Annotation {
 
     public void addSegment(final Segment segment) {
         segments.add(segment);
+    }
+
+    public int compareTo(final Annotation annot) {
+        return this.getStart() - annot.getStart();
+    }
+
+    public boolean equals(final Annotation annot) {
+        return ((this.getStart() == annot.getStart()) && (this.getEnd() == annot.getEnd()));
     }
 
     public int getStart() {
@@ -78,20 +86,55 @@ public class Annotation {
     }
 
     public void write(final PrintWriter annotationWriter) {
+        char delimiter = '\t';
+        write(annotationWriter, delimiter);
+    }
+
+    public void write(final PrintWriter annotationWriter, final char delimiter) {
         // Chromosome Name Strand  Ensembl Gene ID Ensembl Exon ID Exon Chr Start (bp) Exon Chr End (bp)
         for (final Segment segment : segments) {
             annotationWriter.write(chromosome);
-            annotationWriter.write('\t');
+            annotationWriter.write(delimiter);
             annotationWriter.write(strand);
-            annotationWriter.write('\t');
+            annotationWriter.write(delimiter);
             annotationWriter.write(id);
-            annotationWriter.write('\t');
+            annotationWriter.write(delimiter);
             annotationWriter.write(segment.id);
-            annotationWriter.write('\t');
+            annotationWriter.write(delimiter);
             annotationWriter.write(Integer.toString(segment.start));
-            annotationWriter.write('\t');
+            annotationWriter.write(delimiter);
             annotationWriter.write(Integer.toString(segment.end));
             annotationWriter.write('\n');
         }
+    }
+
+    public boolean overlap(Annotation annotation2) {
+        boolean overlap = false;
+        //4-cases to consider
+
+        //1st: annotation2's start is between this annotation start and end AND annotation2's end is after this end
+        if ((this.getStart() <= annotation2.getStart() && annotation2.getStart() <= this.getStart()) &&
+                (annotation2.getEnd() >= this.getEnd())) {
+            overlap = true;
+        }
+        //2nd: this start is between annotation2 start and end AND this end is after annotation2 end
+        else if ((annotation2.getStart() <= this.getStart() && this.getStart() <= annotation2.getEnd()) &&
+                (this.getEnd() >= annotation2.getEnd())) {
+            overlap = true;
+
+        }
+        //3rd: this is contained within annotation2
+        else if ((annotation2.getStart() <= this.getStart() && this.getStart() <= annotation2.getEnd()) &&
+                (annotation2.getStart() <= this.getEnd() && this.getEnd() <= annotation2.getEnd())) {
+            overlap = true;
+
+        }
+        //4th: annotation2 is contained within this
+        else if ((this.getStart() <= annotation2.getStart() && annotation2.getStart() <= this.getEnd()) &&
+                (this.getStart() <= annotation2.getEnd() && annotation2.getEnd() <= this.getEnd())) {
+            overlap = true;
+        }
+
+        return overlap;
     }
 }
