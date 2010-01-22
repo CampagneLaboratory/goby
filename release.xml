@@ -91,6 +91,7 @@
         	<fileset dir="${exportdir}">
                 <exclude name="${tag}/lib/**"/>
                 <exclude name="${tag}/data/**"/>
+                <exclude name="${tag}/scripts/**"/>
 			</fileset>
        	</zip>
 	</target>
