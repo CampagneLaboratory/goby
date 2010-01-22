@@ -48,8 +48,8 @@ public class AnnotationPenaltyMode extends AbstractGobyMode {
       * These penalty scores are designed to be small enough for whole genome sequences (mouse)
       * They may need to be further shrunk to reduce overflow error for larger genomes.
      */
-    public static final double NON_OVERLAP_COST = 0.02;
-    public static final double OVERLAP_COST = 0.01;
+    private static final double NON_OVERLAP_COST = 0.02;
+    private static final double OVERLAP_COST = 0.01;
 
 
     /**
@@ -94,7 +94,6 @@ public class AnnotationPenaltyMode extends AbstractGobyMode {
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
-        outputFile = jsapResult.getString("output");
         geneAnnotFile = jsapResult.getString("gene-annotation");
         proposalAnnotFile = jsapResult.getString("proposal-annotation");
 
@@ -145,7 +144,6 @@ public class AnnotationPenaltyMode extends AbstractGobyMode {
                 if ((geneAnnot != null) && (propAnnot != null)) {
                     //check to see if they overlap
                     if (!geneAnnot.overlap(propAnnot)) {
-                        //System.out.println("\tDon't overlap: geneAnnot = " + geneAnnot.getStart() + "-" + geneAnnot.getEnd() + ", propAnnot = " + propAnnot.getStart() + "-" + propAnnot.getEnd());
                         //determine which iterator to increment
                         if (geneAnnot.getStart() > propAnnot.getStart()) {
                             addPenalty(propAnnot);
@@ -157,7 +155,6 @@ public class AnnotationPenaltyMode extends AbstractGobyMode {
                     } else {
                         //They do overlap
                         //Need to determine which annotation is the shorter sequence and advance it's iterator
-                        //System.out.println("\t\tDO overlap: geneAnnot = " + geneAnnot.getStart() + "-" + geneAnnot.getEnd() + ", propAnnot = " + propAnnot.getStart() + "-" + propAnnot.getEnd());
                         addPenalty(geneAnnot, propAnnot);
                         if (geneAnnot.getEnd() < propAnnot.getEnd()) {
                             geneAnnot = getNextAnnotation(geneAnnotIt);
@@ -166,12 +163,10 @@ public class AnnotationPenaltyMode extends AbstractGobyMode {
                         }
                     }
                 } else if (geneAnnot == null) {
-                    //System.out.println("No more geneAnnot remaining");
-                    //simply add the cost of all remaining propAnnot
+                     //simply add the cost of all remaining propAnnot
                     addPenalty(propAnnot);
                     propAnnot = getNextAnnotation(propAnnotIt);
                 } else if (propAnnot == null) {
-                    //System.out.println("No more propAnnot remaining");
                     //simply add the cost of all remaining geneAnnot
                     addPenalty(geneAnnot);
                     geneAnnot = getNextAnnotation(geneAnnotIt);
@@ -228,7 +223,6 @@ public class AnnotationPenaltyMode extends AbstractGobyMode {
                 if ((geneSeg != null) && (propSeg != null)) {
                     //check to see if they overlap
                     if (!geneSeg.overlap(propSeg)) {
-                        //System.out.println("\t\t\tDon't overlap: geneSeg = " + geneSeg.start + "-" + geneSeg.end + ", propSeg = " + propSeg.start + "-" + propSeg.end);
                         //determine which iterator to increment
                         if (geneSeg.start > propSeg.start) {
                             addPenalty(propSeg);
@@ -240,7 +234,6 @@ public class AnnotationPenaltyMode extends AbstractGobyMode {
                     } else {
                         //They do overlap
                         //Need to determine which annotation is the shorter sequence and advance it's iterator
-                        //System.out.println("\t\t\t\tDO overlap: geneSeg = " + geneSeg.start + "-" + geneSeg.end + ", propSeg = " + propSeg.start + "-" + propSeg.end);
                         addPenalty(geneSeg, propSeg);
                         if (geneSeg.end < propSeg.end) {
                             geneSeg = getNextSegment(geneSegIt);
@@ -249,12 +242,10 @@ public class AnnotationPenaltyMode extends AbstractGobyMode {
                         }
                     }
                 } else if (geneSeg == null) {
-                    //System.out.println("\t\t\tNo more geneSeg remaining");
                     //simply add the cost of all remaining propSeg
                     addPenalty(propSeg);
                     propSeg = getNextSegment(propSegIt);
                 } else if (propSeg == null) {
-                    //System.out.println("\t\t\tNo more propSeg remaining");
                     //simply add the cost of all remaining geneSeg
                     addPenalty(geneSeg);
                     geneSeg = getNextSegment(geneSegIt);

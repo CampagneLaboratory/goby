@@ -20,9 +20,15 @@ package edu.cornell.med.icb.goby.algorithmic.data;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 
 import java.io.PrintWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 import java.util.Collections;
+
+import org.apache.commons.io.IOUtils;
 
 public class Annotation implements Comparable<Annotation> {
     public final String id;
@@ -69,45 +75,6 @@ public class Annotation implements Comparable<Annotation> {
         return result;
     }
 
-    @Override
-    public String toString() {
-        final StringBuffer sb = new StringBuffer();
-        sb.append("[ ");
-        sb.append(chromosome);
-        sb.append(' ');
-        sb.append(id);
-        sb.append(" ");
-        for (final Segment segment : segments) {
-            sb.append(segment);
-            sb.append(" ");
-        }
-        sb.append(" ]");
-        return sb.toString();
-    }
-
-    public void write(final PrintWriter annotationWriter) {
-        char delimiter = '\t';
-        write(annotationWriter, delimiter);
-    }
-
-    public void write(final PrintWriter annotationWriter, final char delimiter) {
-        // Chromosome Name Strand  Ensembl Gene ID Ensembl Exon ID Exon Chr Start (bp) Exon Chr End (bp)
-        for (final Segment segment : segments) {
-            annotationWriter.write(chromosome);
-            annotationWriter.write(delimiter);
-            annotationWriter.write(strand);
-            annotationWriter.write(delimiter);
-            annotationWriter.write(id);
-            annotationWriter.write(delimiter);
-            annotationWriter.write(segment.id);
-            annotationWriter.write(delimiter);
-            annotationWriter.write(Integer.toString(segment.start));
-            annotationWriter.write(delimiter);
-            annotationWriter.write(Integer.toString(segment.end));
-            annotationWriter.write('\n');
-        }
-    }
-
     public boolean overlap(Annotation annotation2) {
         boolean overlap = false;
         //4-cases to consider
@@ -136,5 +103,44 @@ public class Annotation implements Comparable<Annotation> {
         }
 
         return overlap;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer();
+        sb.append("[ ");
+        sb.append(chromosome);
+        sb.append(' ');
+        sb.append(id);
+        sb.append(" ");
+        for (final Segment segment : segments) {
+            sb.append(segment);
+            sb.append(" ");
+        }
+        sb.append(" ]");
+        return sb.toString();
+    }
+
+    public void write(final PrintWriter annotationWriter) {
+        char delimiter = '\t';
+        write(annotationWriter, delimiter);
+    }
+    
+    public void write(final PrintWriter annotationWriter, final char delimiter) {
+        // Chromosome Name Strand  Ensembl Gene ID Ensembl Exon ID Exon Chr Start (bp) Exon Chr End (bp)
+        for (final Segment segment : segments) {
+            annotationWriter.write(chromosome);
+            annotationWriter.write(delimiter);
+            annotationWriter.write(strand);
+            annotationWriter.write(delimiter);
+            annotationWriter.write(id);
+            annotationWriter.write(delimiter);
+            annotationWriter.write(segment.id);
+            annotationWriter.write(delimiter);
+            annotationWriter.write(Integer.toString(segment.start));
+            annotationWriter.write(delimiter);
+            annotationWriter.write(Integer.toString(segment.end));
+            annotationWriter.write('\n');
+        }
     }
 }

@@ -22,30 +22,18 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.ConcatAlignmentReader;
-import edu.cornell.med.icb.goby.counts.AnyTransitionCountsIterator;
-import edu.cornell.med.icb.goby.counts.CountsArchiveReader;
-import edu.cornell.med.icb.goby.counts.CountsReaderI;
-import edu.cornell.med.icb.goby.counts.Peak;
-import edu.cornell.med.icb.goby.counts.PeakAggregator;
-import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
-import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.*;
 
 import java.io.*;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.Collections;
-import java.util.Iterator;
 
 import org.apache.commons.io.IOUtils;
+import cern.colt.Timer;
 
 
 /**
- * Write annotations corresponding to consensus peaks found in each sequence of count archives.
+ * Aggregates peaks according to their interpeak distance given a threshold.
  *
  * @author Jaaved Mohammed
  */
@@ -54,7 +42,7 @@ public class AggregatePeaksByPeakDistanceMode extends AbstractGobyMode {
      * The mode name.
      */
     public static final String MODE_NAME = "aggregate-by-peak-distance";
-    public static final String MODE_DESCRIPTION = "Write annotations corresponding to consensus peaks found in each sequence of count archives.";
+    public static final String MODE_DESCRIPTION = "Aggregates peaks according to their interpeak distance given a threshold.";
 
 
     /**
@@ -109,8 +97,12 @@ public class AggregatePeaksByPeakDistanceMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        System.out.println("Reading official proposal annotations from " + inputFile);
+        final Timer timer = new Timer();
+        timer.start();
+
+        System.out.println("Reading union of peaks from: " + inputFile);
         final Object2ObjectMap<String, ObjectList<Annotation>> unionAnnots = readAnnotations(inputFile);
+
 
         //In the union file, all peaks should be non-overlapping 
         System.out.println("Aggregating peaks by distance.");
@@ -157,6 +149,8 @@ public class AggregatePeaksByPeakDistanceMode extends AbstractGobyMode {
             System.out.println(String.format("Reference %s: Finished with %d annotations.", chromsome, annotationList.size()));
             writeAnnotations(outputFile, annotationList, true /* append */);
         }
+        //DONE
+        System.out.println("time spent  " + timer.toString());
     }
 
     public static void writeAnnotations(String outputFileName, ObjectList<Annotation> annotationList, boolean append) {
@@ -188,11 +182,8 @@ public class AggregatePeaksByPeakDistanceMode extends AbstractGobyMode {
             System.exit(1);
         }
         finally {
-            if (writer != null) {
-                writer.close();
-            }
+            IOUtils.closeQuietly(writer);
         }
-
     }
 
     /**

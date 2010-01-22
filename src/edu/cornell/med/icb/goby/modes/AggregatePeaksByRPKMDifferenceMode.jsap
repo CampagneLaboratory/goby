@@ -1,0 +1,72 @@
+<!--
+  - Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+  -                         Weill Medical College of Cornell University
+  -
+  -  This program is free software; you can redistribute it and/or modify
+  -  it under the terms of the GNU General Public License as published by
+  -  the Free Software Foundation; either version 3 of the License, or
+  -  (at your option) any later version.
+  -
+  -  This program is distributed in the hope that it will be useful,
+  -  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  -  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  -  GNU General Public License for more details.
+  -
+  -  You should have received a copy of the GNU General Public License
+  -  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -
+  -->
+
+<jsap>
+    <parameters>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The compact alignment file(s) for all samples as input. These are needed to compute the RPKM metric.
+            </help>
+        </unflaggedOption>
+        <flaggedOption>
+            <id>peak-union</id>
+            <shortFlag>p</shortFlag>
+            <longFlag>peak-union</longFlag>
+            <required>true</required>
+            <help>File (.tsv or .txt) containing the union of peaks over all sample counts file as produced as output
+                from the "count-archive-to-peak-union-annotations" mode. Even though this input file appears as an
+                annotation files, it actually contains the intervals of consolidate peaks over all sample sequences.
+            </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>true</required>
+            <help>The tab delimited output filename. The output will contain aggregated peaks written in the form
+                of an annotation file.
+            </help>
+        </flaggedOption>
+                <flaggedOption>
+            <id>rpkm-file</id>
+            <longFlag>rpkm-file</longFlag>
+            <required>false</required>
+            <help>The tab delimited output filename. The output will contain aggregated peaks written in the form
+                of an annotation file.
+            </help>
+        </flaggedOption>
+               <flaggedOption>
+            <id>threshold</id>
+            <shortFlag>t</shortFlag>
+            <longFlag>threshold</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <defaults>
+                <string>10</string>
+            </defaults>
+            <help>The peak distance threshold for aggregation. Two neighboring peaks are aggregated if they are less
+                than or equal to threshold RPKM away. Input should be in RPKM. Default is 10 RPKM.
+            </help>
+        </flaggedOption>
+    </parameters>
+</jsap>

@@ -19,13 +19,6 @@
 <jsap>
     <parameters>
         <flaggedOption>
-            <id>output</id>
-            <shortFlag>o</shortFlag>
-            <longFlag>output</longFlag>
-            <required>true</required>
-            <help>The tab delimited output filename, when omitted, constructed from the input filename. Output filenames will have extension .ann-counts.tsv</help>
-        </flaggedOption>
-        <flaggedOption>
             <id>gene-annotation</id>
             <shortFlag>g</shortFlag>
             <longFlag>gene-annotation</longFlag>
