@@ -278,7 +278,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
             if (outputFile != null) {
                 writer = new BufferedWriter(new FileWriter(outputFile));
-                writer.write("basename\tmain-id\tsecondary-id\ttype\tchro\tstrand\tlength\tstart\tend\tin-count\tover-count\tRPKM\tlog2(PRKM+1)\texpression\tnum-exons\n");
+                writer.write("basename\tmain-id\tsecondary-id\ttype\tchro\tstrand\tlength\tstart\tend\tin-count\tover-count\tRPKM\tlog2(RPKM+1)\texpression\tnum-exons\n");
             }
             BasenameParallelRegion region = new BasenameParallelRegion(allAnnots, inputFilenames, writer);
             try {
@@ -379,7 +379,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             // output filename was not provided on the command line. We make one output per input basename
             String outputFileTmp = FilenameUtils.removeExtension(inputFile) + ".ann-counts.tsv";
             writer = new BufferedWriter(new FileWriter(outputFileTmp));
-            writer.write("basename\tmain-id\tsecondary-id\ttype\tchro\tstrand\tlength\tstart\tend\tin-count\tover-count\tRPKM\tlog2(PRKM+1)\texpression\tnum-exons\n");
+            writer.write("basename\tmain-id\tsecondary-id\ttype\tchro\tstrand\tlength\tstart\tend\tin-count\tover-count\tRPKM\tlog2(RPKM+1)\texpression\tnum-exons\n");
 
         }
         //       System.out.println("id\ttype\tchro\tstart\tend\tin_count\tover_count\tdepth\texpression");
