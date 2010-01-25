@@ -137,12 +137,12 @@ public class TestAccumulate {
         try {
             alignmentReader = new AlignmentReader(basename);
             computeCount.startPopulating();
-            while (alignmentReader.hasNextAligmentEntry()) {
-                final Alignments.AlignmentEntry alignmentEntry = alignmentReader.nextAlignmentEntry();
+            while (alignmentReader.hasNext()) {
+                final Alignments.AlignmentEntry alignmentEntry = alignmentReader.next();
                 final int startPosition = alignmentEntry.getPosition();
                 final int alignmentLength = alignmentEntry.getQueryAlignedLength();
-                System.out.println("start " + startPosition + " length " + alignmentLength);
-                //shifted the ends populating by 1
+                LOG.debug("start " + startPosition + " length " + alignmentLength);
+                // shifted the ends populating by 1
                 computeCount.populate(startPosition, startPosition + alignmentLength);
             }
         } finally {

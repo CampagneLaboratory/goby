@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.cornell.med.icb.goby.modes;
+package edu.cornell.med.icb.goby.util;
 
 import java.io.File;
 
@@ -29,7 +29,7 @@ public final class FileExtensionHelper {
     /**
      * Probable file extensions for FASTA/FASTQ files.
      */
-    static final String[] FASTX_FILE_EXTS = {
+    public static final String[] FASTX_FILE_EXTS = {
             ".fa.gz", ".fna.gz", ".fasta.gz", ".fq.gz", ".fnq.gz", ".fastq.gz",
             ".csfasta", ".csfasta.gz", ".csfastq", ".csfastq.gz",
             ".csfa", ".csfa.gz", ".csfq", ".csfq.gz",
@@ -40,13 +40,15 @@ public final class FileExtensionHelper {
     /**
      * File extenstion for sequence data in "compact reads" format.
      */
-    static final String[] COMPACT_READS_FILE_EXTS = {".compact-reads"};
+    public static final String[] COMPACT_READS_FILE_EXTS = {
+            ".compact-reads"
+    };
 
     /**
      * File extenstion for alignment data in "compact reads" format.
      */
-    static final String[] COMPACT_ALIGNMENT_FILE_EXTS = {
-            ".entries", ".header", ".tmh", ".stats"
+    public static final String[] COMPACT_ALIGNMENT_FILE_EXTS = {
+            ".entries", ".header", ".tmh", ".stats", ".counts"
     };
 
     /**

@@ -75,7 +75,7 @@ public class TestLastToCompact {
         int qii;
         while (reader.hasNext()) {
 
-            final Alignments.AlignmentEntry aln = reader.nextAlignmentEntry();
+            final Alignments.AlignmentEntry aln = reader.next();
             qii = aln.getQueryIndex();
 
             final int numHits = queryIndex2NumberOfHits.get ( qii );
@@ -116,7 +116,7 @@ public class TestLastToCompact {
         assertEquals(      queryIndex2TargetAlignedLength   .get ( qii  ),     35       );
 
         // there are 5 entries with the score = 35 (the maximum score for this ID)
-        // filtered due to ambigity
+        // filtered due to ambiguity
         qii = 577287;
         assertEquals(      queryIndex2NumberOfHits          .get ( qii  ),      0       );
         assertEquals((int) queryIndex2Score                 .get ( qii  ),      0       );
@@ -176,8 +176,7 @@ public class TestLastToCompact {
         // enter alignment data
         int qii;
         while (reader.hasNext()) {
-
-            final Alignments.AlignmentEntry aln = reader.nextAlignmentEntry();
+            final Alignments.AlignmentEntry aln = reader.next();
             qii = aln.getQueryIndex();
 
             final int numHits = queryIndex2NumberOfHits.get ( qii );
@@ -218,7 +217,7 @@ public class TestLastToCompact {
         assertEquals(      queryIndex2TargetAlignedLength   .get ( qii  ),     35       );
 
         // there are 5 entries with the score = 35 (the maximum score for this ID)
-        // filtered due to ambigity
+        // filtered due to ambiguity
         qii = 577287;
         assertEquals(      queryIndex2NumberOfHits          .get ( qii  ),      0       );
         assertEquals((int) queryIndex2Score                 .get ( qii  ),      0       );

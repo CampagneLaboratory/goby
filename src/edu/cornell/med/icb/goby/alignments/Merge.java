@@ -74,15 +74,17 @@ public class Merge {
     private static final Logger LOG = Logger.getLogger(Merge.class);
     private String geneTranscriptMapFile;
     private boolean verbose;
-    int k;
-    ObjectList<int[]> referenceIndexPermutation;
+    private int k;
+    private ObjectList<int[]> referenceIndexPermutation;
 
     public Merge(final String geneTranscriptMapFile, final int k) {
+        super();
         this.geneTranscriptMapFile = geneTranscriptMapFile;
         this.k = k;
     }
 
     public Merge(final int k) {
+        super();
         this.k = k;
     }
 
@@ -147,9 +149,8 @@ public class Merge {
         for (final File inputFile : inputFiles) {
             message("Scanning " + inputFile.getName());
             final AlignmentReader reader = new AlignmentReader(inputFile.toString());
-            Alignments.AlignmentEntry entry;
-            while (reader.hasNextAligmentEntry()) {
-                entry = reader.nextAlignmentEntry();
+            while (reader.hasNext()) {
+                final Alignments.AlignmentEntry entry = reader.next();
                 entryFilter.inspectEntry(entry);
                 ++totalNumberOfEntries;
                 totalNumberOfLogicalEntries += entry.getMultiplicity();
@@ -191,10 +192,9 @@ public class Merge {
             final String basename = inputFile.toString();
             final AlignmentReader reader = new AlignmentReader(basename);
 
-            Alignments.AlignmentEntry entry;
             final AlignmentTooManyHitsReader specificTmhReader = new AlignmentTooManyHitsReader(basename);
-            while (reader.hasNextAligmentEntry()) {
-                entry = reader.nextAlignmentEntry();
+            while (reader.hasNext()) {
+                final Alignments.AlignmentEntry entry = reader.next();
                 progress.lightUpdate();
                 //    System.out.println("Processing queryIndex "+entry.getQueryIndex());
                 if (entryFilter.shouldRetainEntry(entry)) {
@@ -239,12 +239,12 @@ public class Merge {
         }
 
         final float numQuerySequences = maxNumberOfReads;
-        final float percentWritten = ((float) wrote) *100f/ totalNumberOfLogicalEntries;
-        final float skippedPercent = ((float) skipped *100f/ totalNumberOfLogicalEntries );
+        final float percentWritten = ((float) wrote) * 100f / totalNumberOfLogicalEntries;
+        final float skippedPercent = ((float) skipped * 100f / totalNumberOfLogicalEntries);
         final float skippedTooManyHitsPercent =
-                ((float) skippedTooManyHits) *100f / totalNumberOfLogicalEntries ;
-        final float SkippedNotBestScorePercent =
-                ((float) skippedNotBestScore *100f/ totalNumberOfLogicalEntries);
+                ((float) skippedTooManyHits) * 100f / totalNumberOfLogicalEntries;
+        final float skippedNotBestScorePercent =
+                ((float) skippedNotBestScore * 100f / totalNumberOfLogicalEntries);
         float percentAligned = queriesIndicesAligned.size();
         percentAligned /= numQuerySequences;
         percentAligned *= 100f;
@@ -257,7 +257,7 @@ public class Merge {
         writer.putStatistic("skipped.Total.percent", skippedPercent);
         writer.putStatistic("skipped.TooManyHits.percent", skippedTooManyHitsPercent);
         writer.putStatistic("skipped.TooManyHits.number", skippedTooManyHits);
-        writer.putStatistic("skipped.NotBestScore.percent", SkippedNotBestScorePercent);
+        writer.putStatistic("skipped.NotBestScore.percent", skippedNotBestScorePercent);
         writer.putStatistic("skipped.NotBestScore.number", skippedNotBestScore);
         writer.putStatistic("entries.retained.percent", percentEntriesRetained);
         writer.putStatistic("number.Query", maxNumberOfReads);
@@ -272,8 +272,7 @@ public class Merge {
     private void printStatus(final int totalNumberOfLogicalEntries, final int wrote, final int skipped, final int skippedTooManyHits, final int skippedNotBestScore) {
 
         message(String.format("Wrote %,d  skipped: %,d %f%% too many hits %f%% notBestScore: %f%%",
-                wrote,
-                skipped,
+                wrote, skipped,
                 ((float) skipped / ((float) totalNumberOfLogicalEntries) * 100f),
                 (float) skippedTooManyHits / ((float) totalNumberOfLogicalEntries) * 100f,
                 ((float) skippedNotBestScore / ((float) totalNumberOfLogicalEntries) * 100f)));
@@ -295,7 +294,8 @@ public class Merge {
      * @param outputFile Destination basename for merged too many hits data structure.
      * @throws IOException
      */
-    public static void prepareMergedTooManyHits(final String outputFile, final int numberOfReads, final String... basenames) throws IOException {
+    public static void prepareMergedTooManyHits(final String outputFile, final int numberOfReads,
+                                                final String... basenames) throws IOException {
         final Int2IntMap tmhMap = new Int2IntOpenHashMap();
         tmhMap.defaultReturnValue(0);
         // accumulate too many hits over all the input alignments:
@@ -320,7 +320,7 @@ public class Merge {
             }
         }
         boolean foundDepth = false;
-        // TODO: sum only the number of occurences corresponding to the longest aligned length
+        // TODO: sum only the number of occurrences corresponding to the longest aligned length
         for (final String basename : basenames) {
 
             final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
@@ -355,7 +355,6 @@ public class Merge {
         final DoubleIndexedIdentifier backward = new DoubleIndexedIdentifier(targetIdentifers);
 
         for (int i = 0; i < reader.getNumberOfTargets(); i++) {
-
             final int newIndex = mergedReferenceIndex++;
             tempPermutation.put(i, newIndex);
 

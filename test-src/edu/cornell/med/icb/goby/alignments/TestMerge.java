@@ -129,8 +129,8 @@ public class TestMerge {
         final int maxTargetIndex = -1;
         final IntSet queryIndices = new IntArraySet();
         final IntSet targetIndices = new IntArraySet();
-        while (reader.hasNextAligmentEntry()) {
-            final Alignments.AlignmentEntry alignmentEntry = reader.nextAlignmentEntry();
+        while (reader.hasNext()) {
+            final Alignments.AlignmentEntry alignmentEntry = reader.next();
             queryIndices.add(alignmentEntry.getQueryIndex());
             targetIndices.add(alignmentEntry.getQueryIndex());
         }
@@ -159,8 +159,8 @@ public class TestMerge {
 
         final AlignmentReader reader = new AlignmentReader(outputFile);
         int maxTargetIndex = -1;
-        while (reader.hasNextAligmentEntry()) {
-            final Alignments.AlignmentEntry alignmentEntry = reader.nextAlignmentEntry();
+        while (reader.hasNext()) {
+            final Alignments.AlignmentEntry alignmentEntry = reader.next();
             maxTargetIndex = Math.max(maxTargetIndex, alignmentEntry.getTargetIndex());
         }
         assertEquals(3, maxTargetIndex);
@@ -335,8 +335,8 @@ public class TestMerge {
     private int countAlignmentEntries(final String basename) throws FileNotFoundException {
         int count = 0;
         final AlignmentReader reader = new AlignmentReader(basename);
-        while (reader.hasNextAligmentEntry()) {
-            final Alignments.AlignmentEntry alignmentEntry = reader.nextAlignmentEntry();
+        while (reader.hasNext()) {
+            final Alignments.AlignmentEntry alignmentEntry = reader.next();
             System.out.println("found entry: " + alignmentEntry);
             assert alignmentEntry.hasPosition();
             count++;

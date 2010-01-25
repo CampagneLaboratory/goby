@@ -46,7 +46,7 @@ public class AlignmentTooManyHitsReader {
     private InputStream tooManyHitsStream;
     private Int2IntMap queryIndex2NumHits = new Int2IntOpenHashMap();
     /**
-     * A map from query index to depth/length of match
+     * A map from query index to depth/length of match.
      */
     private final Int2IntMap queryIndex2Depth = new Int2IntOpenHashMap();
     private int alignerThreshold;
@@ -80,11 +80,9 @@ public class AlignmentTooManyHitsReader {
                     + basename + ".tmh does not exist)."
                     + " Assuming no queries have too many hits.");
         }
-
     }
 
     public AlignmentTooManyHitsReader(final InputStream entriesStream) {
-
         tooManyHitsStream = entriesStream;
     }
 
@@ -98,12 +96,14 @@ public class AlignmentTooManyHitsReader {
     }
 
     /**
-     * Returns the number 'at least number of hits' reported by the alignment tool against the reference.
+     * Returns the number 'at least number of hits' reported by the alignment tool against
+     * the reference.
      *
      * @param queryIndex The index of the query sequence.
      * @return The number of hits that triggered membership in the too many hits list.
-     *         The query may hit more locations than reported here, since some alignment tools will just drop queries that match above
-     *         a threshold and stop counting. This number can be >=k.
+     * The query may hit more locations than reported here, since some alignment
+     * tools will just drop queries that match above a threshold and stop counting.
+     * This number can be >=k.
      */
     public final int getNumberOfHits(final int queryIndex) {
         return (queryIndex2NumHits.get(queryIndex));
@@ -152,6 +152,7 @@ public class AlignmentTooManyHitsReader {
         if (atLeastNumberOfHits == -1) {
             return false;
         }
+
         if (k >= alignerThreshold) {
             // since k is larger than the aligner threshold, we have to assume the query is
             // ambiguous at k, this is the safe choice.
@@ -159,26 +160,24 @@ public class AlignmentTooManyHitsReader {
         } else {
             return (atLeastNumberOfHits >= k);
         }
-
-
     }
 
     /**
-     * Returns true if the query matched at least k number of locations in the reference, at the specified match length or less.
+     * Returns true if the query matched at least k number of locations in the reference, at the
+     * specified match length or less.
      *
      * TODO : discuss removal of 2nd argument from this method as result does not depend on its value
      * TODO : see comments at isQueryAmbiguous above
      *
      * @param queryIndex The index of the query sequence.
-     * @param k          The parameter k.
-     * @param matchLength    The match length.
+     * @param k The parameter k.
+     * @param matchLength The match length.
      * @return True or false.
      */
     public final boolean isQueryAmbiguous(final int queryIndex, final int k, final int matchLength) {
-        if ( matchLength<getLengthOfMatch(queryIndex)) {
+        if (matchLength < getLengthOfMatch(queryIndex)) {
             return true;
-        }
-        else {
+        } else {
             return isQueryAmbiguous(queryIndex, k);
         }
     }

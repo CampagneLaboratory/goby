@@ -82,8 +82,8 @@ public class TestReadWriteAlignments  {
         final AlignmentReader reader = new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, "align-101"));
         int maxQueryIndex = -1;
         int maxTargetIndex = -1;
-        while (reader.hasNextAligmentEntry()) {
-            final Alignments.AlignmentEntry alignmentEntry = reader.nextAlignmentEntry();
+        while (reader.hasNext()) {
+            final Alignments.AlignmentEntry alignmentEntry = reader.next();
             assert alignmentEntry.hasPosition();
             maxQueryIndex = Math.max(maxQueryIndex, alignmentEntry.getQueryIndex());
             maxTargetIndex = Math.max(maxTargetIndex, alignmentEntry.getTargetIndex());

@@ -22,23 +22,27 @@ import com.google.protobuf.CodedInputStream;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import edu.cornell.med.icb.goby.reads.FastBufferedMessageChunksReader;
 import edu.cornell.med.icb.goby.reads.MessageChunksReader;
+import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.zip.GZIPInputStream;
 
@@ -49,8 +53,7 @@ import java.util.zip.GZIPInputStream;
  *         Date: Apr 30, 2009
  *         Time: 6:36:04 PM
  */
-public class AlignmentReader extends AbstractAlignmentReader implements Closeable,
-        Iterator<Alignments.AlignmentEntry>, Iterable<Alignments.AlignmentEntry> {
+public class AlignmentReader extends AbstractAlignmentReader {
     private FileInputStream headerStream;
     private static final Log LOG = LogFactory.getLog(AlignmentReader.class);
     private int numberOfAlignedReads;
@@ -59,46 +62,55 @@ public class AlignmentReader extends AbstractAlignmentReader implements Closeabl
     private Properties stats;
 
     public AlignmentReader(final String basename) throws FileNotFoundException {
+        super();
         final FileInputStream stream = new FileInputStream(basename + ".entries");
         alignmentEntryReader = new MessageChunksReader(stream);
         headerStream = new FileInputStream(basename + ".header");
         stats = new Properties();
-        try {
-            final String filename = basename + ".stats";
-            final File statsFile = new File(filename);
-            if (statsFile.exists()) {
-                stats.load(new FileReader(statsFile));
+        final File statsFile = new File(basename + ".stats");
+        if (statsFile.exists()) {
+            Reader statsFileReader = null;
+            try {
+                statsFileReader = new FileReader(statsFile);
+                stats.load(statsFileReader);
+            } catch (IOException e) {
+                LOG.warn("cannot load properties for basename: " + basename, e);
+            } finally {
+                IOUtils.closeQuietly(statsFileReader);
             }
-        } catch (IOException e) {
-            LOG.warn("cannot load properties for basename: " + basename);
         }
     }
 
     public AlignmentReader(final InputStream entriesStream) {
+        super();
         alignmentEntryReader = new MessageChunksReader(entriesStream);
     }
 
     /**
-     * Initialize the reader to read a segment of the input. Sequences represented by a collection which
-     * starts between the input position start and end will be returned upon subsequent calls to hasNext(), next().
+     * Initialize the reader to read a segment of the input. Sequences represented by a collection
+     * which starts between the input position start and end will be returned upon subsequent
+     * calls to {@link #hasNext()}, {@link #next()}.
      *
-     * @param start  Start offset in the input file.
-     * @param end    End offset in the input file.
+     * @param start Start offset in the input file.
+     * @param end  End offset in the input file.
      * @param stream Stream over the input file
      * @throws IOException If an error occurs reading the input.
      */
-    public AlignmentReader(final long start, final long end, final FastBufferedInputStream stream) throws IOException {
+    public AlignmentReader(final long start, final long end, final FastBufferedInputStream stream)
+            throws IOException {
+        super();
         alignmentEntryReader = new FastBufferedMessageChunksReader(start, end, stream);
+    }
 
+    private int numberOfEntries() {
+        return collection != null ? collection.getAlignmentEntriesCount() : 0;
     }
 
     /**
-     * Returns true if the input has more sequences.
-     *
-     * @return true if the input has more sequences, false otherwise.
+     * Returns true if the input has more entries.
+     * @return true if the input has more entries, false otherwise.
      */
-    @Override
-    public boolean hasNextAligmentEntry() {
+    public boolean hasNext() {
         final boolean hasNext = alignmentEntryReader.hasNext(collection, numberOfEntries());
         if (!hasNext) {
             collection = null;
@@ -115,33 +127,17 @@ public class AlignmentReader extends AbstractAlignmentReader implements Closeabl
             throw new GobyRuntimeException(e);
         }
         return hasNext;
-
-    }
-
-    private int numberOfEntries() {
-        return collection != null ? collection.getAlignmentEntriesCount() : 0;
     }
 
     /**
-     * Returns the next read entry from the input stream.
-     *
-     * @return the next read entry from the input stream.
+     * Returns the next alignment entry from the input stream.
+     * @return the alignment read entry from the input stream.
      */
-    @Override
-    public final Alignments.AlignmentEntry nextAlignmentEntry() {
-
+    public Alignments.AlignmentEntry next() {
         if (!alignmentEntryReader.hasNext(collection, numberOfEntries())) {
-            throw new IllegalStateException();
+            throw new NoSuchElementException();
         }
         return collection.getAlignmentEntries(alignmentEntryReader.incrementEntryIndex());
-    }
-
-    public boolean hasNext() {
-        return hasNextAligmentEntry();
-    }
-
-    public Alignments.AlignmentEntry next() {
-        return nextAlignmentEntry();
     }
 
     /**
@@ -172,7 +168,7 @@ public class AlignmentReader extends AbstractAlignmentReader implements Closeabl
         numberOfQueries = header.getNumberOfQueries();
         numberOfTargets = header.getNumberOfTargets();
         setHeaderLoaded(true);
-        numberOfAlignedReads=header.getNumberOfAlignedReads();
+        numberOfAlignedReads = header.getNumberOfAlignedReads();
     }
 
     private IndexedIdentifier parseIdentifiers(final Alignments.IdentifierMapping nameMapping) {
@@ -192,27 +188,36 @@ public class AlignmentReader extends AbstractAlignmentReader implements Closeabl
     }
 
     /**
-     * Return the basename corresponding to the input filename.
+     * Return the basename corresponding to the input alignment filename.  Note
+     * that if the filename does have the extension known to be a compact alignemt
+     * the returned value is the original filename
+     * @param filename The name of the file to get the basname for
+     * @return basename for the alignment file
      */
-    public static String getBasename(final String inputFile) {
-        for (final String ext : new String[]{".entries", ".tmh", ".header", ".counts", ".stats"}) {
-            if (inputFile.endsWith(ext)) {
-                return inputFile.replace(ext, "");
+    public static String getBasename(final String filename) {
+        for (final String ext : FileExtensionHelper.COMPACT_ALIGNMENT_FILE_EXTS) {
+            if (StringUtils.endsWith(filename, ext)) {
+                return StringUtils.removeEnd(filename, ext);
             }
         }
-        // perhaps the input was a basename alread..
-        return inputFile;
+
+        // perhaps the input was a basename already.
+        return filename;
     }
 
     /**
-     * Return the basenames corresponding to the input filenames. Less basename than filenames may be returned (if
-     * several filenames reduce to the same baseline after removing the extension).
+     * Return the basenames corresponding to the input filenames. Less basename than filenames
+     * may be returned (if several filenames reduce to the same baseline after removing
+     * the extension).
+     * @param filenames The names of the files to get the basnames for
+     * @return An array of basenames
      */
-    public static String[] getBasenames(final String... inputFiles) {
+    public static String[] getBasenames(final String... filenames) {
         final ObjectSet<String> result = new ObjectArraySet<String>();
-
-        for (final String filename : inputFiles) {
-            result.add(getBasename(filename));
+        if (filenames != null) {
+            for (final String filename : filenames) {
+                result.add(getBasename(filename));
+            }
         }
         return result.toArray(new String[result.size()]);
     }

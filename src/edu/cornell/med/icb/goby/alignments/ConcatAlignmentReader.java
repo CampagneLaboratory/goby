@@ -21,9 +21,9 @@ package edu.cornell.med.icb.goby.alignments;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 
 /**
@@ -38,13 +38,11 @@ import java.util.Properties;
  *         Date: May 20, 2009
  *         Time: 5:06:01 PM
  */
-public class ConcatAlignmentReader extends AbstractAlignmentReader
-        implements Iterator<Alignments.AlignmentEntry>, Iterable<Alignments.AlignmentEntry>, Closeable {
-
-    AlignmentReader[] readers;
-    IntSet readersWithMoreEntries;
-    int[] numQueriesPerReader;
-    int[] queryIndexOffset;
+public class ConcatAlignmentReader extends AbstractAlignmentReader {
+    private final AlignmentReader[] readers;
+    private final IntSet readersWithMoreEntries;
+    private final int[] numQueriesPerReader;
+    private final int[] queryIndexOffset;
 
     private int activeIndex;
     private boolean adjustQueryIndices = true;
@@ -112,11 +110,9 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader
                 final int offset = numQueriesPerReader[i - 1] + queryIndexOffset[i - 1];
                 queryIndexOffset[i] = offset;
                 final int[] localQueryLenth = readers[i].getQueryLength();
-                final int j = 0;
                 if (localQueryLenth != null) {
                     for (final int length : localQueryLenth) {
-
-                        queryLengths[j + offset] = length;
+                        queryLengths[offset] = length;
                     }
                 }
             }
@@ -125,28 +121,22 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader
         }
     }
 
-    @Override
-    public final Alignments.AlignmentEntry nextAlignmentEntry() {
-        if (!hasNext()) {
-            throw new IllegalStateException("next() cannot be called when hasNext() would have returned false.");
-        } else {
-            final Alignments.AlignmentEntry alignmentEntry = readers[activeIndex].next();
-            final int newQueryIndex = mergedQueryIndex(alignmentEntry.getQueryIndex());
-            if (adjustQueryIndices) {
-                return alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry).setQueryIndex(newQueryIndex).build();
-            } else {
-                return alignmentEntry;
-            }
-        }
-    }
-
     private int mergedQueryIndex(final int queryIndex) {
         return queryIndexOffset[activeIndex] + queryIndex;
     }
 
-    @Override
-    public final boolean hasNextAligmentEntry() {
+    /**
+     * Iterator over alignment entries.
+     */
+    public final Iterator<Alignments.AlignmentEntry> iterator() {
+        return this;
+    }
 
+    /**
+      * Returns true if the input has more entries.
+      * @return true if the input has more entries, false otherwise.
+      */
+    public final boolean hasNext() {
         while (!readersWithMoreEntries.isEmpty()) {
             activeIndex = readersWithMoreEntries.iterator().nextInt();
             final AlignmentReader reader = readers[activeIndex];
@@ -162,19 +152,21 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader
     }
 
     /**
-     * Iterator over alignment entries.
+     * Returns the next alignment entry from the input stream.
+     * @return the alignment read entry from the input stream.
      */
-    public final Iterator<Alignments.AlignmentEntry> iterator() {
-        return this;
-    }
-
-    public final boolean hasNext() {
-        return hasNextAligmentEntry();
-    }
-
-
     public final Alignments.AlignmentEntry next() {
-        return nextAlignmentEntry();
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        } else {
+            final Alignments.AlignmentEntry alignmentEntry = readers[activeIndex].next();
+            final int newQueryIndex = mergedQueryIndex(alignmentEntry.getQueryIndex());
+            if (adjustQueryIndices) {
+                return alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry).setQueryIndex(newQueryIndex).build();
+            } else {
+                return alignmentEntry;
+            }
+        }
     }
 
 
@@ -215,7 +207,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader
 
     /**
      * Close the underlying readers.
-     * @throws IOException
+     * @throws IOException if an I/O error occurs
      */
     public void close() throws IOException {
         for (final AlignmentReader reader : readers) {

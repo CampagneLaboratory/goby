@@ -20,27 +20,28 @@ package edu.cornell.med.icb.goby.alignments;
 
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 
+import java.io.Closeable;
 import java.io.IOException;
+import java.util.Iterator;
 
 /**
  * @author Fabien Campagne
  *         Date: May 20, 2009
  *         Time: 6:23:26 PM
  */
-public abstract class AbstractAlignmentReader {
+public abstract class AbstractAlignmentReader implements Closeable,
+        Iterator<Alignments.AlignmentEntry>, Iterable<Alignments.AlignmentEntry> {
     protected int numberOfQueries;
     protected IndexedIdentifier queryIdentifiers;
     protected IndexedIdentifier targetIdentifiers;
     protected int numberOfTargets;
     protected int[] queryLengths;
+    private boolean headerLoaded;
 
     public int getNumberOfQueries() {
         assert isHeaderLoaded() : "Header must be loaded to access number of queries";
-        return Math.max(numberOfQueries,0);
+        return Math.max(numberOfQueries, 0);
     }
-
-
-    private boolean headerLoaded;
 
     protected boolean isHeaderLoaded() {
         return this.headerLoaded;
@@ -49,7 +50,6 @@ public abstract class AbstractAlignmentReader {
     protected void setHeaderLoaded(final boolean headerLoaded) {
         this.headerLoaded = headerLoaded;
     }
-
 
     /**
      * Read the header of this alignment.
@@ -66,7 +66,6 @@ public abstract class AbstractAlignmentReader {
      */
     public final IndexedIdentifier getQueryIdentifiers() {
         assert isHeaderLoaded() : "Header must be loaded to access query identifiers";
-
         return queryIdentifiers;
     }
 
@@ -78,7 +77,6 @@ public abstract class AbstractAlignmentReader {
      */
     public final IndexedIdentifier getTargetIdentifiers() {
         assert isHeaderLoaded() : "Header must be loaded to access target identifiers";
-
         return targetIdentifiers;
     }
 
@@ -87,27 +85,12 @@ public abstract class AbstractAlignmentReader {
         return Math.max(0, numberOfTargets);
     }
 
-    /*
-   Returns query lengths. An array of size the number of query sequences, where each element
-   indicates the length of the query sequence.
-    */
+    /**
+     * Returns query lengths. An array of size the number of query sequences, where each element
+     * indicates the length of the query sequence.
+     */
     public final int[] getQueryLength() {
         assert isHeaderLoaded() : "Header must be loaded to access query lengths";
-
         return queryLengths;
     }
-
-    /**
-     * Returns true if the input has more sequences.
-     *
-     * @return true if the input has more sequences, false otherwise.
-     */
-    public abstract boolean hasNextAligmentEntry();
-
-    /**
-     * Returns the next read entry from the input stream.
-     *
-     * @return the next read entry from the input stream.
-     */
-    public abstract Alignments.AlignmentEntry nextAlignmentEntry();
 }

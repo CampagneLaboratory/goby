@@ -73,8 +73,8 @@ public class TestConcatAlignmentReader {
     @Test
     public void testQueryIndices() throws IOException {
         final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(outputBasename1, outputBasename2);
-        while (concatReader.hasNextAligmentEntry()) {
-            final Alignments.AlignmentEntry alignmentEntry = concatReader.nextAlignmentEntry();
+        while (concatReader.hasNext()) {
+            final Alignments.AlignmentEntry alignmentEntry = concatReader.next();
 
             if (alignmentEntry.getScore() == 50) {
                 assertTrue(alignmentEntry.getQueryIndex() >= numQueries101);
@@ -91,8 +91,8 @@ public class TestConcatAlignmentReader {
     public void testQueryIndicesNoAdjustment() throws IOException {
         final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(outputBasename1, outputBasename2);
         concatReader.setAdjustQueryIndices(false);
-        while (concatReader.hasNextAligmentEntry()) {
-            final Alignments.AlignmentEntry alignmentEntry = concatReader.nextAlignmentEntry();
+        while (concatReader.hasNext()) {
+            final Alignments.AlignmentEntry alignmentEntry = concatReader.next();
 
             if (alignmentEntry.getScore() == 50) {
                 assertTrue(alignmentEntry.getQueryIndex() <= Math.max(numQueries101,numQueries102));
@@ -109,8 +109,8 @@ public class TestConcatAlignmentReader {
     private int countAlignmentEntries(final AbstractAlignmentReader reader) {
         int count = 0;
 
-        while (reader.hasNextAligmentEntry()) {
-            final Alignments.AlignmentEntry alignmentEntry = reader.nextAlignmentEntry();
+        while (reader.hasNext()) {
+            final Alignments.AlignmentEntry alignmentEntry = reader.next();
             //   System.out.println("found entry: " + alignmentEntry);
             assert alignmentEntry.hasPosition();
             count++;
