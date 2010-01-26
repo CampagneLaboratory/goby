@@ -10,7 +10,6 @@
       <maximumStackSize value="32" />
       <properties />
       <executeOn event="beforeRun" target="compile" />
-      <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="CompactFileStatsMode" />
       <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestAligner.testAlignWithBWA" />
       <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestStatistics" />
     </buildFile>
@@ -22,6 +21,11 @@
       <maximumStackSize value="32" />
       <properties />
     </buildFile>
+  </component>
+  <component name="BSFConsole">
+    <option name="searchOptions">
+      <BSFConsoleSearchOptions />
+    </option>
   </component>
   <component name="BuildJarProjectSettings">
     <option name="BUILD_JARS_ON_MAKE" value="false" />

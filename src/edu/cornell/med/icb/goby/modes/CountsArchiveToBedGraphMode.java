@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2009-2010 Institute for Computational Biomedicine,
- *                         Weill Medical College of Cornell University
+ * Copyright (C) 2010 Institute for Computational Biomedicine,
+ *                    Weill Medical College of Cornell University
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.counts.CountsArchiveReader;
 import edu.cornell.med.icb.goby.counts.CountsReader;
-import edu.cornell.med.icb.goby.counts.WiggleWindow;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
@@ -39,17 +38,19 @@ import java.util.Arrays;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * Converts a full genome counts archive to the Wiggle format.
- * The  <a href="http://genome.ucsc.edu/goldenPath/help/wiggle.html">wiggle format</a> can
+ * Converts a full genome counts archive to the BedGraph format.
+ * The  <a href="http://genome.ucsc.edu/goldenPath/help/bedgraph.html">BedGraph Track Format</a> can
  * be imported in the UCSC genome browser to visualize counts in the context of genome annotations.
+ * This format is less lossly than Wiggle (unless you do resolution = 1 for Wiggle) but makes
+ * considerably larger files.
  *
  * @author Fabien Campagne
  */
-public class CountsArchiveToWiggleMode extends AbstractGobyMode {
+public class CountsArchiveToBedGraphMode extends AbstractGobyMode {
     /**
      * The mode name.
      */
-    private static final String MODE_NAME = "counts-to-wiggle";
+    private static final String MODE_NAME = "counts-to-bedgraph";
 
     /**
      * The mode description help text.
@@ -76,7 +77,6 @@ public class CountsArchiveToWiggleMode extends AbstractGobyMode {
      * Use to switch from the default "counts" archive to another count archive within the same basename.
      */
     private String alternativeCountArchiveExtension;
-    private int resolution;
 
     @Override
     public String getModeName() {
@@ -104,7 +104,6 @@ public class CountsArchiveToWiggleMode extends AbstractGobyMode {
 
         inputBasename = AlignmentReader.getBasename(jsapResult.getString("input"));
         outputFile = jsapResult.getString("output");
-        resolution = jsapResult.getInt("resolution");
         alternativeCountArchiveExtension = jsapResult.getString("alternative-count-archive");
         label = jsapResult.getString("label");
         if (label == null) {
@@ -122,7 +121,7 @@ public class CountsArchiveToWiggleMode extends AbstractGobyMode {
             filterByReferenceNames = true;
         }
         if (outputFile == null) {
-            outputFile = inputBasename + ".wiggle" +
+            outputFile = inputBasename + ".bedgraph" +
                     (includeReferenceNameComas != null ? ("-" + includeReferenceNameComas) : "-all");
         }
 
@@ -139,16 +138,13 @@ public class CountsArchiveToWiggleMode extends AbstractGobyMode {
         PrintWriter writer = null;
         try {
             writer = new PrintWriter(new GZIPOutputStream(new FastBufferedOutputStream(new FileOutputStream(outputFile + ".gz"))));
-            writer.write("track type=wiggle_0 name=" + label + " visibility=full viewLimits=1:200\n");
+            writer.write("track type=bedGraph name=" + label + " visibility=full viewLimits=1:200\n");
             final AlignmentReader alignment = new AlignmentReader(inputBasename);
             alignment.readHeader();
             alignment.close();
             final IndexedIdentifier referenceIds = alignment.getTargetIdentifiers();
             final DoubleIndexedIdentifier backwards = new DoubleIndexedIdentifier(referenceIds);
             final CountsArchiveReader reader = new CountsArchiveReader(inputBasename, alternativeCountArchiveExtension);
-            final int resolution = this.resolution;
-
-            WiggleWindow wiggleWindow = new WiggleWindow(writer, resolution, 0);
 
             for (int referenceIndex = 0; referenceIndex < reader.getNumberOfIndices(); referenceIndex++) {
                 String referenceId = backwards.getId(referenceIndex).toString();
@@ -185,34 +181,21 @@ public class CountsArchiveToWiggleMode extends AbstractGobyMode {
                     long sumCount = 0;
                     int numCounts = 0;
 
-                    CountsReader counts = reader.getCountReader(referenceIndex);
-                    int lastLength = 0;
-                    int lastPosition = 0;
-                    while (counts.hasNextTransition()) {
-                        counts.nextTransition();
-                        lastPosition = counts.getPosition();
-                        lastLength = counts.getLength();
-                    }
-                    int maxWritePosition = (lastPosition + lastLength - 1);
-                    wiggleWindow.reset();
-                    wiggleWindow.setMaxDataSize(maxWritePosition);
-
-                    writer.printf("variableStep chrom=%s span=%d\n", chromosome, resolution);
-                    counts = reader.getCountReader(referenceIndex);
-                    int writePosition = 0;
+                    final CountsReader counts = reader.getCountReader(referenceIndex);
+                    int writePosition;
                     while (counts.hasNextTransition()) {
                         counts.nextTransition();
                         final int length = counts.getLength();
 
                         final int count = counts.getCount();
                         final int position = counts.getPosition();
-
-                        wiggleWindow.addData(position, length, count);
-
+                        writePosition = position + 1;
+                        if (count != 0) {
+                            writer.printf("%s %d %d %d\n", chromosome, writePosition, writePosition + length, count);
+                        }
                         sumCount += count;
                         numCounts++;
                     }
-                    wiggleWindow.finish();
                     final double averageCount = sumCount / (double) numCounts;
                     System.out.println("average count for sequence " + referenceId + " " + averageCount);
                 }
@@ -226,11 +209,11 @@ public class CountsArchiveToWiggleMode extends AbstractGobyMode {
      * Main method.
      *
      * @param args command line args.
-     * @throws JSAPException error parsing
-     * @throws IOException error parsing or executing.
+     * @throws com.martiansoftware.jsap.JSAPException error parsing
+     * @throws java.io.IOException error parsing or executing.
      */
 
     public static void main(final String[] args) throws JSAPException, IOException {
-        new CountsArchiveToWiggleMode().configure(args).execute();
+        new CountsArchiveToBedGraphMode().configure(args).execute();
     }
 }
