@@ -19,39 +19,15 @@
 package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
-import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.reads.CompressedRead;
-import edu.cornell.med.icb.goby.reads.ReadSet;
-import edu.cornell.med.icb.goby.reads.Reads;
-import edu.cornell.med.icb.goby.reads.ReadsReader;
-import edu.cornell.med.icb.goby.reads.SequenceDigests;
 import edu.cornell.med.icb.util.VersionUtils;
-import it.unimi.dsi.bits.BitVector;
-import it.unimi.dsi.bits.LongArrayBitVector;
-import it.unimi.dsi.fastutil.ints.Int2ByteMap;
-import it.unimi.dsi.fastutil.ints.Int2ByteOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import it.unimi.dsi.io.OutputBitStream;
-import it.unimi.dsi.lang.MutableString;
-import it.unimi.dsi.logging.ProgressLogger;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
 
 /**
- * Tally the number of times sequences appear in a set of read files. Exact sequence comparison
- * is performed.
+ * Output the goby.jar version number to stdout.
  *
- * @author Fabien Campagne
- *         Date: May 4 2009
- *         Time: 12:28 PM
+ * @author Kevin Dorff
+ *         Date: Jan 27 2010
  */
 public class VersionMode extends AbstractGobyMode {
 
