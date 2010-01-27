@@ -153,9 +153,7 @@ public class WiggleWindow {
                 writer.printf("%d %d%n", startPosition + 1, windowAverage);
             }
         } else {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("Not writing %d %d", startPosition + 1, windowAverage));
-            }
+            LOG.warn(String.format("Not writing %d %d", startPosition + 1, windowAverage));
         }
         curWindowPosition = 0;
         windowTotal = 0;
