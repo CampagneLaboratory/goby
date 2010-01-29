@@ -130,7 +130,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
-        parallel = jsapResult.getBoolean("parallel",false);
+        parallel = jsapResult.getBoolean("parallel", false);
         inputFilenames = jsapResult.getStringArray("input");
         outputFile = jsapResult.getString("output");
         statsFilename = jsapResult.getString("stats");
@@ -155,13 +155,22 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         if (includeAnnotationTypeComas != null) {
 
             includeAnnotationTypes.addAll(Arrays.asList(includeAnnotationTypeComas.split("[,]")));
-            System.out.println("Will write counts for the following annotation types:");
             for (final String name : includeAnnotationTypes) {
+                if (name.equals("gene") | name.equals("intron") | name.equals("exon")) {
+                    continue;
+                } else {
+                    System.out.println("Please enter a valid annotation type. " +
+                            "Valid annotation types include gene, intron and or exon. ");
+                    System.exit(1);
+                }
+                System.out.println("Will write counts for the following annotation types:");
                 System.out.println(name);
             }
         }
+
         return this;
     }
+
 
     private void parseCompare(String compare) {
         if (compare == null) {
