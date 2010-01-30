@@ -318,7 +318,7 @@ public class TestStatistics {
         final String statId = "t-test-P-value";
         list.declareStatistic(statId);
         int statIndex = list.getStatisticIndex(statId);
-        int numObservations = 1000000;
+        int numObservations = 100000;
         double proportionOfNaN = .1;
         for (int i = 0; i < numObservations; i++) {
             final DifferentialExpressionInfo info = new DifferentialExpressionInfo();
