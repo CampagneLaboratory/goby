@@ -53,22 +53,30 @@ public class BenjaminiHochbergAdjustment extends FDRAdjustment {
             //   for (DifferentialExpressionInfo info : list) {
             DifferentialExpressionInfo info = list.get(rank - 1);
             final double pValue = info.statistics.get(statisticIndex);
+            double adjustedPValue = 1;
+            if (pValue == pValue) {
 
-            final double adjustment = (double) listSize / (double) rank;
-            double adjustedPValue = pValue * adjustment;
-            if (adjustedPValue < cummin) {
-                // keep track of the smallest adjusted P-value seen so far (traversing from large to small P-values):
-                cummin = adjustedPValue;
+                // pValue is a number.
+                final double adjustment = (double) listSize / (double) rank;
+                adjustedPValue = pValue * adjustment;
+                if (adjustedPValue < cummin) {
+                    // keep track of the smallest adjusted P-value seen so far (traversing from large to small P-values):
+                    cummin = adjustedPValue;
 
+                } else {
+                    // if the current adjustedPvalue would be larger than a previously seen P-value, keep the previous one
+                    // so that the null hypothesis is also rejected for the current element, at any significance threshold.
+                    // This behaviour mimics the logic implemented in the R p.adjust( "BH") method with the cummin function.
+                    adjustedPValue = cummin;
+                }
             } else {
-                // if the current adjustedPvalue would be larger than a previously seen P-value, keep the previous one
-                // so that the null hypothesis is also rejected for the current element, at any significance threshold.
-                // This behaviour mimics the logic implemented in the R p.adjust( "BH") method with the cummin function.
-                adjustedPValue = cummin;
+                // we just encountered a NaN p-value, reset cummin..
+                cummin=1;
             }
-         /*   System.out.println(String.format("Adjusting p-value %g by listSize=%g rank=%d factor=%g => %g", pValue,
-                    listSize, rank, adjustment, adjustedPValue));
-           */
+
+            /*   System.out.println(String.format("Adjusting p-value %g by listSize=%g rank=%d factor=%g => %g", pValue,
+                     listSize, rank, adjustment, adjustedPValue));
+            */
             info.statistics.size(list.getNumberOfStatistics());
             info.statistics.set(adjustedStatisticIndex, adjustedPValue);
 

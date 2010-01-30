@@ -311,24 +311,59 @@ public class TestStatistics {
     @Test
     public void testFDR() {
         final Random randomEngine = new Random();
-
+        randomEngine.setSeed(1013);
+        BonferroniAdjustment bonferroni = new BonferroniAdjustment();
         BenjaminiHochbergAdjustment fdr = new BenjaminiHochbergAdjustment();
         DifferentialExpressionResults list = new DifferentialExpressionResults();
         final String statId = "t-test-P-value";
         list.declareStatistic(statId);
-        int numObservations = 100;
+        int statIndex = list.getStatisticIndex(statId);
+        int numObservations = 1000000;
+        double proportionOfNaN = .1;
         for (int i = 0; i < numObservations; i++) {
             final DifferentialExpressionInfo info = new DifferentialExpressionInfo();
-            info.statistics.add(randomEngine.nextDouble());
+            info.statistics.size(list.getNumberOfStatistics());
+            final double random1 = randomEngine.nextDouble();
+            final double random2 = randomEngine.nextDouble();
+
+            info.statistics.set(statIndex, random1 < proportionOfNaN ? Double.NaN : random2);
             info.elementId = new MutableString("element-" + i);
             list.add(info);
         }
-        fdr.adjust(list, statId);
+        final String secondPValueId = "another-p-value";
+        list.declareStatistic(secondPValueId);
+        int statIndex2 = list.getStatisticIndex(secondPValueId);
         for (DifferentialExpressionInfo info : list) {
-            int index = list.getStatisticIndex("t-test-P-value-BH-FDR-q-value");
-//            assertTrue("No q-value should be significant after FDR adjustment", info.statistics.getDouble(index) > 0.05);
+            info.statistics.size(list.getNumberOfStatistics());
+            info.statistics.set(statIndex2, randomEngine.nextDouble());
         }
-        System.out.println("list.adjusted: " + list);
+        bonferroni.adjust(list, statId, secondPValueId);
+        fdr.adjust(list, statId, secondPValueId);
+        int index1 = list.getStatisticIndex("t-test-P-value-BH-FDR-q-value");
+        int index2 = list.getStatisticIndex(secondPValueId + "-BH-FDR-q-value");
+
+        double significanceThreshold = 0.05;
+        int numRejectedHypothesesTest1 = 0;
+        int numRejectedHypothesesTest2 = 0;
+        for (DifferentialExpressionInfo info : list) {
+
+            final boolean test1 = info.statistics.getDouble(index1) > significanceThreshold;
+            if (!test1) {
+                System.out.println("info:" + info);
+                numRejectedHypothesesTest1++;
+            }
+            final boolean test2 = info.statistics.getDouble(index2) > significanceThreshold;
+            if (!test2) {
+                System.out.println("info:" + info);
+                numRejectedHypothesesTest2++;
+            }
+
+
+        }
+        assertTrue("No q-value should be significant after FDR adjustment", numRejectedHypothesesTest1 < significanceThreshold * numObservations);
+        assertTrue("No q-value should be significant after FDR adjustment", numRejectedHypothesesTest2 < significanceThreshold * numObservations);
+
+        //      System.out.println("list.adjusted: " + list);
 
 
         double[] p = {

@@ -64,7 +64,7 @@
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../../../../java/commons-io-1.4-src.zip!/commons-io-1.4-src/src/java" />
+          <root url="jar:///../java/commons-io-1.4-src.zip!/commons-io-1.4-src/src/java" />
         </SOURCES>
       </library>
     </orderEntry>
@@ -75,7 +75,7 @@
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../../../../java/commons-lang-2.4-src.zip!/commons-lang-2.4-src/src/java" />
+          <root url="jar:///../java/commons-lang-2.4-src.zip!/commons-lang-2.4-src/src/java" />
         </SOURCES>
       </library>
     </orderEntry>
@@ -97,7 +97,7 @@
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="file://$MODULE_DIR$/../../../../../java/dsiutils-1.0.10/src" />
+          <root url="file:///../java/dsiutils-1.0.10/src" />
         </SOURCES>
       </library>
     </orderEntry>
@@ -108,7 +108,7 @@
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../../../../java/JSAP-2.1-src.zip!/JSAP-2.1/src/java" />
+          <root url="jar:///../java/JSAP-2.1-src.zip!/JSAP-2.1/src/java" />
         </SOURCES>
       </library>
     </orderEntry>
@@ -124,22 +124,11 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/commons-math-2.0.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../../../../java/commons-math-2.0-src.zip!/commons-math-2.0-src/src/main/java" />
-        </SOURCES>
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/colt.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../../../../java/colt-1.2.0.zip!/colt/src" />
+          <root url="jar:///../java/colt-1.2.0.zip!/colt/src" />
         </SOURCES>
       </library>
     </orderEntry>
@@ -215,7 +204,7 @@
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../../../../java/commons-configuration-1.6-src.zip!/commons-configuration-1.6-src/src/java" />
+          <root url="jar:///../java/commons-configuration-1.6-src.zip!/commons-configuration-1.6-src/src/java" />
         </SOURCES>
       </library>
     </orderEntry>
@@ -226,7 +215,7 @@
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../../../../java/commons-collections-3.2.1-src.zip!/commons-collections-3.2.1-src/src/java" />
+          <root url="jar:///../java/commons-collections-3.2.1-src.zip!/commons-collections-3.2.1-src/src/java" />
         </SOURCES>
       </library>
     </orderEntry>
@@ -237,7 +226,7 @@
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../../../../java/commons-exec-1.0.1-src.zip!/commons-exec-1.0.1-src/src/main/java" />
+          <root url="jar:///../java/commons-exec-1.0.1-src.zip!/commons-exec-1.0.1-src/src/main/java" />
         </SOURCES>
       </library>
     </orderEntry>
@@ -245,6 +234,15 @@
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/pj20091226.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/commons-math-2.1-SNAPSHOT.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

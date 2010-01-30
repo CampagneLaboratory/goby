@@ -24,26 +24,23 @@ import java.util.Comparator;
 
 /**
  * Compare two DE info elements by the specified statistic.
+ *
  * @author Fabien Campagne
  *         Date: Jan 12, 2010
  *         Time: 6:43:53 PM
  */
 public class StatisticComparator implements Comparator<DifferentialExpressionInfo> {
-   private final  int statisticIndex;
+    private final int statisticIndex;
 
     public StatisticComparator(DifferentialExpressionResults list, MutableString statisticId) {
         this.statisticIndex = list.getStatisticIndex(statisticId);
     }
 
     public int compare(DifferentialExpressionInfo info1, DifferentialExpressionInfo info2) {
-        final double statisticValue1 = info1.statistics.get(statisticIndex);
-        final double statisticValue2 = info2.statistics.get(statisticIndex);
-        if (statisticValue1<statisticValue2) return -1;
-        if (statisticValue1>statisticValue2) return 1;
-        else return 0;
 
-        //final double test = statisticValue1 - statisticValue2;
-        //return (int) test;
+        final Double statisticValue1 = info1.statistics.getDouble(statisticIndex);
+        final Double statisticValue2 = info2.statistics.getDouble(statisticIndex);
+        return statisticValue1.compareTo(statisticValue2);
 
     }
 }
