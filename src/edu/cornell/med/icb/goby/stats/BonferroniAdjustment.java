@@ -37,8 +37,6 @@ public class BonferroniAdjustment extends FDRAdjustment {
         final String adjustedStatisticId = statisticId + "-Bonferroni-adjusted";
         list.declareStatistic(adjustedStatisticId);
         int adjustedStatisticIndex = list.getStatisticIndex(new MutableString(adjustedStatisticId));
-        // sort differentially expressed elements by increasing statistic (typically a P-value):
-        Collections.sort(list, new StatisticComparator(list, statistic));
 
         final int statisticIndex = list.getStatisticIndex(statistic);
         double listSize = getListSize(list, statisticIndex);
@@ -47,9 +45,11 @@ public class BonferroniAdjustment extends FDRAdjustment {
         for (DifferentialExpressionInfo info : list) {
 
             final double pValue = info.statistics.get(statisticIndex);
-            final double adjustedPValue = pValue * listSize;
+            double adjustedPValue = pValue * listSize;
+
+            if (adjustedPValue > 1) adjustedPValue = 1;
             info.statistics.size(list.getNumberOfStatistics());
-            info.statistics.set(adjustedStatisticIndex, adjustedPValue);
+            info.statistics.set(adjustedStatisticIndex, adjustedPValue > 1 ? 1 : adjustedPValue);
 
         }
         return list;
