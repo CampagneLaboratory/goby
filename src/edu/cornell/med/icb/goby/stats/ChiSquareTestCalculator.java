@@ -18,16 +18,14 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
-import org.apache.commons.math.stat.inference.ChiSquareTest;
-import org.apache.commons.math.stat.inference.ChiSquareTestImpl;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.MaxIterationsExceededException;
+import org.apache.commons.math.stat.inference.ChiSquareTest;
+import org.apache.commons.math.stat.inference.ChiSquareTestImpl;
 import org.apache.log4j.Logger;
-import com.sun.tools.example.debug.gui.Environment;
 
 /**
  * Calculates the two-tailed chi square test P-value for an observed count difference between comparison groups
@@ -62,7 +60,7 @@ public class ChiSquareTestCalculator extends StatisticCalculator {
                                                DifferentialExpressionInfo info,
                                                String... group) {
 
-        // expected counts in each group, assuming the counts for the DE are spread  among the groups according to sample 
+        // expected counts in each group, assuming the counts for the DE are spread  among the groups according to sample
         // global count proportions
         double[] expectedCounts = new double[group.length];
 
