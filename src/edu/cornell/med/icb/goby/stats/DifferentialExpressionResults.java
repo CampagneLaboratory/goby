@@ -79,7 +79,11 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
             buffer.append(" ");
         }
         buffer.append("\n");
-        buffer.append(super.toString());
+       for (DifferentialExpressionInfo info: this) {
+            buffer.append(info.toString());
+            buffer.append('\n'); 
+       }
+
         return buffer.toString();
     }
 
