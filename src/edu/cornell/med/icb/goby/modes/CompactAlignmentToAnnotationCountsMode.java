@@ -26,15 +26,7 @@ import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.stats.AverageCalculator;
-import edu.cornell.med.icb.goby.stats.BenjaminiHochbergAdjustment;
-import edu.cornell.med.icb.goby.stats.BonferroniAdjustment;
-import edu.cornell.med.icb.goby.stats.ChiSquareTestCalculator;
-import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
-import edu.cornell.med.icb.goby.stats.DifferentialExpressionResults;
-import edu.cornell.med.icb.goby.stats.FisherExactTestCalculator;
-import edu.cornell.med.icb.goby.stats.FoldChangeCalculator;
-import edu.cornell.med.icb.goby.stats.TTestCalculator;
+import edu.cornell.med.icb.goby.stats.*;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.rit.pj.IntegerForLoop;
 import edu.rit.pj.ParallelRegion;
@@ -305,10 +297,11 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 // evaluate differences between groups:
                 DifferentialExpressionResults results = deCalculator.compare(new FoldChangeCalculator(), groupComparison);
 
+                results = deCalculator.compare(results, new FoldChangeMagnitudeCalculator(), groupComparison);
+                results = deCalculator.compare(results, new AverageCalculator(), groupComparison);
                 results = deCalculator.compare(results, new TTestCalculator(), groupComparison);
                 results = deCalculator.compare(results, new FisherExactTestCalculator(), groupComparison);
                 results = deCalculator.compare(results, new ChiSquareTestCalculator(), groupComparison);
-                results = deCalculator.compare(results, new AverageCalculator(), groupComparison);
                 BenjaminiHochbergAdjustment BHFDR = new BenjaminiHochbergAdjustment();
                 BonferroniAdjustment BonferroniAdjust = new BonferroniAdjustment();
                 results = BonferroniAdjust.adjust(results, "t-test", "fisher-exact-test", "chi-square-test");
