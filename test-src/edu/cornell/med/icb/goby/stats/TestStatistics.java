@@ -236,28 +236,39 @@ public class TestStatistics {
         fisher.evaluate(deCalc, results, info, "A", "B");
         assertEquals("fisher test equal expected result", 0.5044757698516504, results.getStatistic(info, fisher.STATISTIC_ID), 0.001);
 
-        Fisher fisherTest = new Fisher();
-        int totalCountInA = 15000000;
 
-        int totalCountInB = 17000000;
-        int sumCountInA = 910;
-        int sumCountInB = 473;
+        Fisher fisherTest = new Fisher();
+        int totalCountInA = 1700;
+        int totalCountInB = 170; // equal total in each group
+        int sumCountInA = 90;
+        int sumCountInB = 45; // half the counts in sample B
 
         fisherTest.fisher(totalCountInA, sumCountInA, totalCountInA + totalCountInB, sumCountInA + sumCountInB);
 
         double pValue = fisherTest.getTwotail();
-
+        double proportionTotalA = divide(totalCountInA, (totalCountInA + totalCountInB));
+        double proportionTotalB = divide(totalCountInB, (totalCountInA + totalCountInB));
         ChiSquareTest chisquare = new ChiSquareTestImpl();
-        double[] expected = {totalCountInA, totalCountInB};
+        double nGroups = 2;
+        double[] expected = {divide(sumCountInA + sumCountInB, nGroups) * proportionTotalA * nGroups,
+                divide(sumCountInA + sumCountInB, nGroups) * proportionTotalB * nGroups};
         long[] observed = {sumCountInA, sumCountInB};
         double chiPValue = 0;
 
-        chiPValue = chisquare.chiSquareTest(expected, observed);
+        chiPValue = Math.abs(chisquare.chiSquareTest(expected, observed));
 
         assertTrue("pValue: " + chiPValue, chiPValue < 0.001);
 // The Fisher implementation we are using return 1 for the above. This is wrong. Compare to the chi-square result
 // (results should be comparable since the counts in each cell are large)
 //         assertTrue("pValue: " + pValue, pValue < 0.001);
+    }
+
+    private double divide(int a, int b) {
+        return ((double) a) / ((double) b);
+    }
+
+    private double divide(int a, double b) {
+        return ((double) a) / b;
     }
 
     @Test
@@ -276,8 +287,8 @@ public class TestStatistics {
             deCalc.associateSampleToGroup("B-" + i, "B");
         }
 
-        deCalc.observe("A-1", "id-1", 0, 0);
-        deCalc.observe("A-2", "id-1", 0, 0);         // 7+3 = 10
+        deCalc.observe("A-1", "id-1", 7, 0);
+        deCalc.observe("A-2", "id-1", 3, 0);         // 7+3 = 10
         deCalc.observe("B-1", "id-1", 15, 0);
         deCalc.observe("B-2", "id-1", 5, 0);         // 15+5 =20
 
@@ -293,7 +304,7 @@ public class TestStatistics {
 
         ChiSquareTestCalculator calc = new ChiSquareTestCalculator(results);
         calc.evaluate(deCalc, results, info, "A", "B");
-        assertEquals("fisher test equal expected result", 0.00156540225800339, results.getStatistic(info, calc.STATISTIC_ID), 0.001);
+        assertEquals("chi square test equal expected result", 0.456056540250256, results.getStatistic(info, calc.STATISTIC_ID), 0.001);
 
         ChiSquareTest chisquare = new ChiSquareTestImpl();
         double[] expected = {30, 12};
@@ -307,6 +318,45 @@ public class TestStatistics {
 // (results should be comparable since the counts in each cell are large)
 //         assertTrue("pValue: " + pValue, pValue < 0.001);
     }
+
+    @Test
+
+    public void testChiSquareZeroCount() throws MathException {
+
+        DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator();
+        int numReplicates = 2;
+        deCalc.defineElement("id-1");
+        deCalc.defineElement("id-2");
+        deCalc.defineGroup("A");
+        deCalc.defineGroup("B");
+        deCalc.reserve(2, numReplicates * 2);
+
+        for (int i = 1; i <= numReplicates; i++) {
+            deCalc.associateSampleToGroup("A-" + i, "A");
+            deCalc.associateSampleToGroup("B-" + i, "B");
+        }
+
+        deCalc.observe("A-1", "id-1", 0, 0);                   // ZERO counts should yield NaN p-value
+        deCalc.observe("A-2", "id-1", 0, 0);         // 0+0 = 0
+        deCalc.observe("B-1", "id-1", 15, 0);
+        deCalc.observe("B-2", "id-1", 5, 0);         // 15+5 =20
+
+        deCalc.observe("A-1", "id-2", 15, 0);
+        deCalc.observe("A-2", "id-2", 15, 0);        // 15+15=30
+        deCalc.observe("B-1", "id-2", 20, 0);
+        deCalc.observe("B-2", "id-2", 20, 0);        // 20+20=40
+
+
+        DifferentialExpressionInfo info = new DifferentialExpressionInfo();
+        DifferentialExpressionResults results = new DifferentialExpressionResults();
+        info.elementId = new MutableString("id-1");
+
+        ChiSquareTestCalculator calc = new ChiSquareTestCalculator(results);
+        calc.evaluate(deCalc, results, info, "A", "B");
+        assertTrue("chi square test result must be NaN (zero count)",Double.isNaN(results.getStatistic(info, calc.STATISTIC_ID)));
+
+    }
+
 
     @Test
     public void testFDR() {

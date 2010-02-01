@@ -74,6 +74,7 @@ public class BenjaminiHochbergAdjustment extends FDRAdjustment {
                 cummin=1;
             }
 
+            if (adjustedPValue > 1) adjustedPValue = 1;
             /*   System.out.println(String.format("Adjusting p-value %g by listSize=%g rank=%d factor=%g => %g", pValue,
                      listSize, rank, adjustment, adjustedPValue));
             */

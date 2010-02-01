@@ -18,16 +18,16 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
-import it.unimi.dsi.lang.MutableString;
-import org.apache.commons.math.stat.inference.TTest;
-import org.apache.commons.math.stat.inference.TTestImpl;
+import it.unimi.dsi.fastutil.doubles.DoubleList;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import org.apache.commons.math.stat.inference.ChiSquareTest;
 import org.apache.commons.math.stat.inference.ChiSquareTestImpl;
 import org.apache.commons.math.MathException;
-import gominer.Fisher;
+import org.apache.commons.math.MaxIterationsExceededException;
+import org.apache.log4j.Logger;
+import com.sun.tools.example.debug.gui.Environment;
 
 /**
  * Calculates the two-tailed chi square test P-value for an observed count difference between comparison groups
@@ -38,6 +38,7 @@ import gominer.Fisher;
  *         Time: 7:06:31 PM
  */
 public class ChiSquareTestCalculator extends StatisticCalculator {
+    private static final Logger LOG = Logger.getLogger(ChiSquareTestCalculator.class);
 
     public ChiSquareTestCalculator(DifferentialExpressionResults results) {
         this();
@@ -51,47 +52,85 @@ public class ChiSquareTestCalculator extends StatisticCalculator {
     }
 
 
-   public  boolean canDo(String[] group) {
+    public boolean canDo(String[] group) {
         return group.length >= 2;
     }
 
 
     public DifferentialExpressionInfo evaluate(DifferentialExpressionCalculator differentialExpressionCalculator,
-                                        DifferentialExpressionResults results,
-                                        DifferentialExpressionInfo info,
-                                        String... group) {
+                                               DifferentialExpressionResults results,
+                                               DifferentialExpressionInfo info,
+                                               String... group) {
 
-        //    totalCountInA, totalCountInB,...
+        // expected counts in each group, assuming the counts for the DE are spread  among the groups according to sample 
+        // global count proportions
         double[] expectedCounts = new double[group.length];
 
-
-        //  sumCountInA, sumCountInB ,...
+        //  counts observed in each group:
         long[] observedCounts = new long[group.length];
+        double[] groupProportions = new double[group.length];
 
         int i = 0;
-        for (String groupI : group) {
-            ObjectArraySet<String> samplesI = differentialExpressionCalculator.getSamples(groupI);
 
-            for (String sample : samplesI) {
-                observedCounts[i] += differentialExpressionCalculator.getOverlapCount(sample, info.elementId);
+        double pValue = 1;
+        // estimate the sumOfCountsForDE of counts over all the samples included in any group compared.
+        long sumOfCountsForDE = 0;
+        int numSamples = 0;
+        double sumObservedCounts = 0;
+
+        for (String oneGroupId : group) {
+            ObjectArraySet<String> samplesForGroup = differentialExpressionCalculator.getSamples(oneGroupId);
+
+            for (String sample : samplesForGroup) {
+
+                final long observedCount = differentialExpressionCalculator.getOverlapCount(sample, info.elementId);
+                final double sampleProportion = differentialExpressionCalculator.getSampleProportion(sample);
+                observedCounts[i] += observedCount;
+                groupProportions[i] += sampleProportion;
+                sumObservedCounts += observedCount;
+                numSamples++;
             }
-
-            for (String sample : samplesI) {
-                expectedCounts[i] += differentialExpressionCalculator.getSumOverlapCounts(sample);
+            if (observedCounts[i] == 0) {
+                // Chi Square is not defined if any observed counts are zero.
+                info.statistics.size(results.getNumberOfStatistics());
+                info.statistics.set(results.getStatisticIndex(STATISTIC_ID), Double.NaN);
+                return info;
             }
             ++i;
+        }
+
+        i = 0;
+        double nGroups = group.length;
+        for (int groupIndex = 0; groupIndex < nGroups; groupIndex++) {
+            expectedCounts[groupIndex] += groupProportions[groupIndex] * sumObservedCounts;
+        }
+
+
+        ChiSquareTest chisquare = new ChiSquareTestImpl();
+
+        try
+
+        {
+            final double pValueRaw = chisquare.chiSquareTest(expectedCounts, observedCounts);
+            // math commons can return negative p-values?
+            pValue = Math.abs(pValueRaw);
+        }
+
+        catch (MaxIterationsExceededException e)
+
+        {
+            LOG.error("elementId:" + info.elementId);
+            LOG.error("expected:" + DoubleArrayList.wrap(expectedCounts).toString());
+            LOG.error("observed:" + LongArrayList.wrap(observedCounts).toString());
+            LOG.error(e);
+            pValue = 1;
+        }
+
+        catch (MathException e) {
+            e.printStackTrace();
 
         }
-        double pValue;
 
-            ChiSquareTest chisquare = new ChiSquareTestImpl();
-
-            try {
-                pValue = chisquare.chiSquareTest(expectedCounts, observedCounts);
-            } catch (MathException e) {
-                pValue = Double.NaN;
-            }
-       
         info.statistics.size(results.getNumberOfStatistics());
         info.statistics.set(results.getStatisticIndex(STATISTIC_ID), pValue);
 

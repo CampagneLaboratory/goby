@@ -172,4 +172,35 @@ public class DifferentialExpressionCalculator {
         final ObjectSet<String> sampleSet = sampleToGroupMap.keySet();
         return sampleSet.toArray(new String[sampleSet.size()]);
     }
+
+    Object2DoubleMap<String> sampleProportions;
+
+    /**
+     * Returns the proportion of counts that originate from a certain sample. The number of counts in the sample
+     * is divided by the sum of counts over all the samples in the experiment.
+     * @param sample
+     * @return
+     */
+    public double getSampleProportion(String sample) {
+        if (sampleProportions == null) {
+            sampleProportions = new Object2DoubleArrayMap<String>();
+            sampleProportions.defaultReturnValue(-1);
+        }
+        double proportion ;
+ 
+        if ( !sampleProportions.containsKey(sample) ) {
+            int sumOverSamples = 0;
+            for (String s : samples()) {
+                sumOverSamples += getSumOverlapCounts(s);
+            }
+            for (String s : samples()) {
+                final double sampleProportion = ((double)getSumOverlapCounts(s)) /
+                        (double) sumOverSamples;
+                this.sampleProportions.put(s, sampleProportion);
+            }
+        }
+        proportion = sampleProportions.get(sample);
+        assert proportion != -1 : " Proportion must be defined for sample " + sample;
+        return proportion;
+    }
 }
