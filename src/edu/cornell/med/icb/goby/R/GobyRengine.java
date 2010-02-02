@@ -18,17 +18,27 @@
 
 package edu.cornell.med.icb.goby.R;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.rosuda.JRI.Rengine;
 
 /**
- * Main interface to R.
+ * Main interface to R. This requires native R libraries and rJava to be installed. From the R
+ * console enter:
+ * <p>&nbsp;&nbsp;<em>install.packages('rJava')</em></p>
+ * <p>When running the Java code, you need to add the R and rJava libraries to the library path.
+ * For example on windows, add
+ * <em>-Djava.library.path="C:\Program Files (x86)\R\R-2.10.1\library\rJava\jri"</em>.  On
+ * Unix, add the R and JRI paths to the <em>LD_LIBRARY_PATH</em> environment variable.
+ * <p>
+ * See <a href="http://www.r-project.org/">The R Project for Statistical Computing</a> and
+ * <a href="http://www.rforge.net/rJava/">rJava</a> for reference.
  */
 public final class GobyRengine {
     /**
      * Used to log debug and informational messages.
      */
-    private static final Logger LOG = Logger.getLogger(GobyRengine.class);
+    private static final Log LOG = LogFactory.getLog(GobyRengine.class);
 
     /**
      * Thread that runs the R engine.
@@ -50,7 +60,8 @@ public final class GobyRengine {
             // tell REngine not to shutdown the jvm if the native R library cannot be loaded
             System.setProperty("jri.ignore.ule", "yes");
 
-            if (LOG.isDebugEnabled()) {
+            // Tell R to be verbose if we are debugging
+            if (LOG.isDebugEnabled() || LOG.isTraceEnabled()) {
                 Rengine.DEBUG = 42;
             }
 
@@ -65,8 +76,9 @@ public final class GobyRengine {
             if (rengine == null) {
                 // NOTE: Do not use the default Rengine constructor
                 rengine = new Rengine(null, false, new RConsoleMainLoopCallback());
-                if (!rengine.waitForR()) {
+                if (!rengine.waitForR()) {       // will return false if R is dead
                     LOG.warn("Cannot load R");
+                    rengine = null;
                 }
             }
         } catch (UnsatisfiedLinkError e) {
@@ -102,6 +114,10 @@ public final class GobyRengine {
         return Rengine.getMainEngine();
     }
 
+    /**
+     * Get the singleton instance of the Rengine for Goby.
+     * @return The instance.
+     */
     public static GobyRengine getInstance() {
         return INSTANCE;
     }
