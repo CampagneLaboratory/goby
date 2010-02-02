@@ -62,6 +62,15 @@
     	<svn>
     		<export srcUrl="${tagUrl}" destPath="${exportdir}/${tag}"/>
         </svn>
+
+        <!-- Remove any files that should not be included in the formal release -->
+        <!-- NOTE: These files should probably be on a branch or something -->
+        <delete dir="${exportdir}/${tag}">
+            <include name="src/edu/cornell/med/icb/goby/algorithmic/data/AnnotationRPKM.java"/>
+            <include name="src/edu/cornell/med/icb/goby/modes/AggregatePeaks*"/>
+            <include name="src/edu/cornell/med/icb/goby/modes/AnnotationPenaltyMode*"/>
+            <include name="src/edu/cornell/med/icb/goby/modes/CountsArchiveToUnionPeaksAnnotationMode*"/>
+        </delete>
     </target>
 
     <target name="release" description="Tag and release build"
