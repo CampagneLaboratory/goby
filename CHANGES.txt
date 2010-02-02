@@ -3,14 +3,18 @@ development
 
  - New "counts-to-bedgraph" mode which is similar to "counts-to-wiggle" but writes the
    data in "bedgraph" format, which is another format the Genome Browser accepts.
- - Changes to "counts-to-wiggle" mode to
+ - New mode "version" to write the jar's version number to stdout
+
+ counts-to-wiggle mode:
   - Write at most one entry per resolution-sized window of data (averaging the data in that window)
   - Not write data past the end of the size of the chromosome (which is possible with resolution > 1)
- - New mode "version" to write the jar's version number to stdout
+   
+ compact-alignment-to-annotation-counts mode:
  - Fixed problem with BH FDR adjustment caused by NaN p-values.
  - ChiSquare test p-values are now correctly reported.
  - Adjusted P-values (Bonferroni and BH) are set to 1.0 if they would be larger than 1.
- 
+ - Added magnitude of fold change to group comparison tsv output.
+
 1.2
  compact-alignment-to-annotation-counts mode:
   - Added chi square test statistic and associated FDR adjusted stat. Chi-square statistics support multi-group comparisons.
