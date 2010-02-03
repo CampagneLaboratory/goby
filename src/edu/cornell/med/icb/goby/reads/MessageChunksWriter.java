@@ -125,7 +125,7 @@ public class MessageChunksWriter {
         for (int i = 0; i < DELIMITER_LENGTH; i++) {
             out.writeByte(DELIMITER_CONTENT);
         }
-        final com.google.protobuf.Message readCollection = collectionBuilder.build();
+        final com.google.protobuf.Message readCollection = collectionBuilder.clone().build();
 
         // compress the read collection:
         final ByteArrayOutputStream compressedStream = new ByteArrayOutputStream();
