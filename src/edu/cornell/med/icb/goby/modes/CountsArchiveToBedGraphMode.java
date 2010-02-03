@@ -56,9 +56,9 @@ public class CountsArchiveToBedGraphMode extends AbstractGobyMode {
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION = "Converts a full genome counts archive to "
-            + "the Wiggle format.  The wiggle format can be imported in the UCSC genome browser "
+            + "the bedgraph format.  The bedgraph format can be imported in the UCSC genome browser "
             + "to visualize counts in the context of genome annotations."
-            + "(See http://genome.ucsc.edu/goldenPath/help/wiggle.html)";
+            + "(See http://genome.ucsc.edu/goldenPath/help/bedgraph.html)";
 
     /**
      * The input file.
