@@ -23,6 +23,7 @@ import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.rosuda.JRI.Rengine;
 
@@ -89,6 +90,16 @@ public class TestFisherExact {
                 ArrayUtils.isEmpty(result.getConfidenceInterval()));
         assertTrue("Estimate should be NaN", Double.isNaN(result.getEstimate()));
         assertTrue("Odds ratio should be NaN", Double.isNaN(result.getOddsRatio()));
+    }
+
+    /**
+     * If R libraries are not set up properly these tests cannot be run.
+     */
+    @BeforeClass
+    public static void assertRAvailable() {
+        final Rengine rengine = GobyRengine.getInstance().getRengine();
+        assertNotNull("R engine is not available", rengine);
+        assertTrue("R is not null but is not alive either", rengine.isAlive());
     }
 
     /**
