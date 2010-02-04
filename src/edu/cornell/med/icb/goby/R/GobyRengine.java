@@ -61,7 +61,7 @@ public final class GobyRengine {
             System.setProperty("jri.ignore.ule", "yes");
 
             // Tell R to be verbose if we are debugging
-            if (LOG.isDebugEnabled() || LOG.isTraceEnabled()) {
+            if (LOG.isDebugEnabled()) {
                 Rengine.DEBUG = 42;
             }
 
