@@ -75,7 +75,8 @@ public final class GobyRengine {
             rengine = Rengine.getMainEngine();
             if (rengine == null) {
                 // NOTE: Do not use the default Rengine constructor
-                rengine = new Rengine(null, false, new RConsoleMainLoopCallback());
+                rengine = new Rengine(new String[] {"--no-save"},
+                        false, new RConsoleMainLoopCallback());
                 if (!rengine.waitForR()) {       // will return false if R is dead
                     LOG.warn("Cannot load R");
                     rengine = null;
