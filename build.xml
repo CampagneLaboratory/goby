@@ -14,6 +14,14 @@
     <property name="label" value="development"/>
 
     <import file="buildsupport/build.xml"/>
+
+    <if>
+        <os family="windows"/>
+        <then>
+            <property name="test.java.library.path" location="${env.R_HOME}/library/rJava/jri"/>
+        </then>
+    </if>
+
     <import file="testsupport/build.xml"/>
 
     <path id="compile.classpath">

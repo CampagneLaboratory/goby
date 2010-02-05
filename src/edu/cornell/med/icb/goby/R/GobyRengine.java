@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.R;
 
+import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.rosuda.JRI.Rengine;
@@ -63,6 +64,7 @@ public final class GobyRengine {
             // Tell R to be verbose if we are debugging
             if (LOG.isDebugEnabled()) {
                 Rengine.DEBUG = 42;
+                LOG.debug("java.library.path: " + SystemUtils.JAVA_LIBRARY_PATH);
             }
 
             // just making sure we have the right version of everything
@@ -76,7 +78,7 @@ public final class GobyRengine {
             if (rengine == null) {
                 // NOTE: Do not use the default Rengine constructor
                 rengine = new Rengine(new String[] {"--no-save"},
-                        false, new RConsoleMainLoopCallback());
+                        false, new RLoggerMainLoopCallback());
                 if (!rengine.waitForR()) {       // will return false if R is dead
                     LOG.warn("Cannot load R");
                     rengine = null;
