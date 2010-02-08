@@ -1,8 +1,10 @@
 development
  - Update to protobuf 2.3.0
+ - Default extension for files written in Wiggle Track Format is now ".wig" for easier
+   integration with the Integrative Genomics Viewer (http://www.broadinstitute.org/igv/).
+   Similarly, the default extension for BedGraph Track Format files is now ".bed".
 
 1.3
-
  - New "counts-to-bedgraph" mode which is similar to "counts-to-wiggle" but writes the
    data in "bedgraph" format, which is another format the Genome Browser accepts.
  - New mode "version" to write the jar's version number to stdout
@@ -24,7 +26,6 @@ development
   - Added the --parallel option to speed up computations on multiple core machines.
 
 1.1
-
  compact-alignment-to-annotation-counts mode:
   - Make it possible to process multiple alignment files in one run of the mode.
   - Added support for group comparisons. Group statistics are now computed
@@ -38,5 +39,4 @@ development
   tracks created from Goby count data.  (Mantis issue #1349)
 
 1.0
-
 - First release.

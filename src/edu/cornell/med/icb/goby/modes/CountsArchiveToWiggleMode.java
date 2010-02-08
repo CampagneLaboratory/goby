@@ -55,8 +55,8 @@ public class CountsArchiveToWiggleMode extends AbstractGobyMode {
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION = "Converts a full genome counts archive to "
-            + "the Wiggle format.  The wiggle format can be imported in the UCSC genome browser "
-            + "to visualize counts in the context of genome annotations."
+            + "the Wiggle format.  The wiggle format can be imported in the UCSC genome "
+            + "browser to visualize counts in the context of genome annotations."
             + "(See http://genome.ucsc.edu/goldenPath/help/wiggle.html)";
 
     /**
@@ -69,13 +69,31 @@ public class CountsArchiveToWiggleMode extends AbstractGobyMode {
      */
     private String outputFile;
 
-    private boolean filterByReferenceNames;
-    private ObjectSet<String> includeReferenceNames = new ObjectOpenHashSet<String>();
-    private String label;
     /**
-     * Use to switch from the default "counts" archive to another count archive within the same basename.
+     * If true only a subset of references will be processed defined by the set
+     * {@link #includeReferenceNames}.
+     */
+    private boolean filterByReferenceNames;
+
+    /**
+     * The set of reference names to process if the user chose to filter.
+     */
+    private ObjectSet<String> includeReferenceNames = new ObjectOpenHashSet<String>();
+
+    /**
+     * The name to embed in the wiggle file.
+     */
+    private String label;
+
+    /**
+     * Use to switch from the default "counts" archive to another count archive within the
+     * same basename.
      */
     private String alternativeCountArchiveExtension;
+
+    /**
+     * Used to set the span for the wiggle.
+     */
     private int resolution;
 
     @Override
@@ -87,7 +105,6 @@ public class CountsArchiveToWiggleMode extends AbstractGobyMode {
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
-
 
     /**
      * Configure.
@@ -111,19 +128,23 @@ public class CountsArchiveToWiggleMode extends AbstractGobyMode {
             label = new File(inputBasename + "-" + alternativeCountArchiveExtension).getName();
             System.out.println("Setting label from basename: " + label);
         }
-        final String includeReferenceNameComas = jsapResult.getString("include-reference-names");
-        if (includeReferenceNameComas != null) {
+
+        final String includeReferenceNameCommas = jsapResult.getString("include-reference-names");
+        if (includeReferenceNameCommas != null) {
             includeReferenceNames = new ObjectOpenHashSet<String>();
-            includeReferenceNames.addAll(Arrays.asList(includeReferenceNameComas.split("[,]")));
+            includeReferenceNames.addAll(Arrays.asList(includeReferenceNameCommas.split("[,]")));
             System.out.println("Will write wiggles for the following sequences:");
             for (final String name : includeReferenceNames) {
                 System.out.println(name);
             }
             filterByReferenceNames = true;
         }
+
+        // default output file has extension ".wig" for compatibility with the
+        // http://www.broadinstitute.org/igv/
         if (outputFile == null) {
-            outputFile = inputBasename + ".wiggle" +
-                    (includeReferenceNameComas != null ? ("-" + includeReferenceNameComas) : "-all");
+            outputFile = inputBasename + (includeReferenceNameCommas != null
+                    ? ("-" + includeReferenceNameCommas) : "-all") + ".wig";
         }
 
         return this;
@@ -146,9 +167,7 @@ public class CountsArchiveToWiggleMode extends AbstractGobyMode {
             final IndexedIdentifier referenceIds = alignment.getTargetIdentifiers();
             final DoubleIndexedIdentifier backwards = new DoubleIndexedIdentifier(referenceIds);
             final CountsArchiveReader reader = new CountsArchiveReader(inputBasename, alternativeCountArchiveExtension);
-            final int resolution = this.resolution;
-
-            WiggleWindow wiggleWindow = new WiggleWindow(writer, resolution, 0);
+            final WiggleWindow wiggleWindow = new WiggleWindow(writer, resolution, 0);
 
             for (int referenceIndex = 0; referenceIndex < reader.getNumberOfIndices(); referenceIndex++) {
                 String referenceId = backwards.getId(referenceIndex).toString();
@@ -193,13 +212,13 @@ public class CountsArchiveToWiggleMode extends AbstractGobyMode {
                         lastPosition = counts.getPosition();
                         lastLength = counts.getLength();
                     }
-                    int maxWritePosition = (lastPosition + lastLength - 1);
+                    final int maxWritePosition = (lastPosition + lastLength - 1);
                     wiggleWindow.reset();
                     wiggleWindow.setMaxDataSize(maxWritePosition);
 
                     writer.printf("variableStep chrom=%s span=%d\n", chromosome, resolution);
                     counts = reader.getCountReader(referenceIndex);
-                    int writePosition = 0;
+
                     while (counts.hasNextTransition()) {
                         counts.nextTransition();
                         final int length = counts.getLength();

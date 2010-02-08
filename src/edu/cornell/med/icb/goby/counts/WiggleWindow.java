@@ -30,14 +30,14 @@ import java.io.PrintWriter;
  * @author Kevin Dorff
  */
 public class WiggleWindow {
-
+    /** Used to log debug and informational messages. */
     private static final Log LOG = LogFactory.getLog(WiggleWindow.class);
 
     /** The start position for the current window. */
     private int startPosition = -1;
 
     /** The position in the current window. */
-    private int curWindowPosition = 0;
+    private int curWindowPosition;
 
     /** The writer to output wiggle data to. */
     private final PrintWriter writer;
@@ -49,7 +49,7 @@ public class WiggleWindow {
     private int maxDataSize;
 
     /** The running total for the current window. */
-    private int windowTotal = 0;
+    private int windowTotal;
 
     public WiggleWindow(final PrintWriter writer, final int windowSize, final int maxDataSize) {
         this.writer = writer;
@@ -86,7 +86,7 @@ public class WiggleWindow {
      * @param length the length of the data with the given value
      * @param value the value of the data
      */
-    private void writeDataToWindow(int length, int value) {
+    private void writeDataToWindow(final int length, final int value) {
         for (int i = 0; i < length; i++) {
             windowTotal += value;
             if (LOG.isDebugEnabled()) {
@@ -132,7 +132,7 @@ public class WiggleWindow {
      * Set the max data size.
      * @param maxDataSize the max data size
      */
-    public void setMaxDataSize(int maxDataSize) {
+    public void setMaxDataSize(final int maxDataSize) {
         this.maxDataSize = maxDataSize;
     }
 
@@ -143,9 +143,10 @@ public class WiggleWindow {
         if (curWindowPosition == 0) {
             return;
         }
-        int windowAverage = Math.round((float) windowTotal / (float) curWindowPosition);
+        final int windowAverage = Math.round((float) windowTotal / (float) curWindowPosition);
         if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("... average=%d (%d/%d)", windowAverage, windowTotal, curWindowPosition));
+            LOG.debug(String.format("... average=%d (%d/%d)",
+                    windowAverage, windowTotal, curWindowPosition));
         }
         if ((startPosition + windowSize) <= maxDataSize) {
             // positions start at 1 for UCSC genome browser

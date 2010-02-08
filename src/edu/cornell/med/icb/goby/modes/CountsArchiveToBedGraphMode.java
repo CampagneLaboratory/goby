@@ -56,8 +56,8 @@ public class CountsArchiveToBedGraphMode extends AbstractGobyMode {
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION = "Converts a full genome counts archive to "
-            + "the bedgraph format.  The bedgraph format can be imported in the UCSC genome browser "
-            + "to visualize counts in the context of genome annotations."
+            + "the bedgraph format.  The bedgraph format can be imported in the UCSC genome "
+            + "browser to visualize counts in the context of genome annotations."
             + "(See http://genome.ucsc.edu/goldenPath/help/bedgraph.html)";
 
     /**
@@ -70,11 +70,25 @@ public class CountsArchiveToBedGraphMode extends AbstractGobyMode {
      */
     private String outputFile;
 
-    private boolean filterByReferenceNames;
-    private ObjectSet<String> includeReferenceNames = new ObjectOpenHashSet<String>();
-    private String label;
     /**
-     * Use to switch from the default "counts" archive to another count archive within the same basename.
+     * If true only a subset of references will be processed defined by the set
+     * {@link #includeReferenceNames}.
+     */
+    private boolean filterByReferenceNames;
+
+    /**
+     * The set of reference names to process if the user chose to filter.
+     */
+    private ObjectSet<String> includeReferenceNames = new ObjectOpenHashSet<String>();
+
+    /**
+     * The name to embed in the wiggle file.
+     */
+    private String label;
+
+    /**
+     * Use to switch from the default "counts" archive to another count archive within the
+     * same basename.
      */
     private String alternativeCountArchiveExtension;
 
@@ -87,7 +101,6 @@ public class CountsArchiveToBedGraphMode extends AbstractGobyMode {
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
-
 
     /**
      * Configure.
@@ -110,19 +123,21 @@ public class CountsArchiveToBedGraphMode extends AbstractGobyMode {
             label = new File(inputBasename + "-" + alternativeCountArchiveExtension).getName();
             System.out.println("Setting label from basename: " + label);
         }
-        final String includeReferenceNameComas = jsapResult.getString("include-reference-names");
-        if (includeReferenceNameComas != null) {
+        final String includeReferenceNameCommas = jsapResult.getString("include-reference-names");
+        if (includeReferenceNameCommas != null) {
             includeReferenceNames = new ObjectOpenHashSet<String>();
-            includeReferenceNames.addAll(Arrays.asList(includeReferenceNameComas.split("[,]")));
+            includeReferenceNames.addAll(Arrays.asList(includeReferenceNameCommas.split("[,]")));
             System.out.println("Will write wiggles for the following sequences:");
             for (final String name : includeReferenceNames) {
                 System.out.println(name);
             }
             filterByReferenceNames = true;
         }
+
+        // default output file has extension ".bed"
         if (outputFile == null) {
-            outputFile = inputBasename + ".bedgraph" +
-                    (includeReferenceNameComas != null ? ("-" + includeReferenceNameComas) : "-all");
+            outputFile = inputBasename + (includeReferenceNameCommas != null
+                    ? ("-" + includeReferenceNameCommas) : "-all") + ".bed";
         }
 
         return this;
