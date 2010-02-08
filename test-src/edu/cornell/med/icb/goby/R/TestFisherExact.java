@@ -45,7 +45,7 @@ public class TestFisherExact {
     public void chiSquaredUConn() {
         final FisherExact fisherExact = new FisherExact();
         final FisherExact.Result result =
-                fisherExact.fexact(new int[] { 12, 17, 4, 25, 15, 4 }, 3, 2 );
+                fisherExact.fexact(new int[] { 12, 4, 15, 17, 25, 4 }, 3, 2 );
         assertEquals("pValue does not match", 2.9565806126420623e-05, result.getPValue(), EPSILON);
     }
 
@@ -70,15 +70,19 @@ public class TestFisherExact {
                 , result1.getOddsRatio(), result2.getOddsRatio(), EPSILON);
     }
 
+    /**
+     * An an example of an R x C table from Agresti (2002, p. 57) Job Satisfaction.
+     */
     @Test
     public void agrestiJobSatisfaction() {
         final FisherExact fisherExact = new FisherExact();
         final int[] inputTable = {
-        /* income      VeryD  LittleD  ModerateS VeryS */
-        /*  < 15k */    1,       3,        10,     6,
-        /* 15-25k */    2,       3,        10,     7,
-        /* 25-40k */    1,       6,        14,    12,
-        /*  > 40k */    0,       1,         9,    11
+                /*                           income
+                /* satisfaction    <15k    15-25k    25-40k   >40k */
+                /*  VeryD */        1,       2,        1,      0,
+                /*  LittleD */      3,       3,        6,      1,
+                /*  ModerateS */    10,      10,       14,     9,
+                /*  VeryS */        6,       7,        12,     11
         };
 
         final FisherExact.Result result = fisherExact.fexact(inputTable, 4, 4);
@@ -90,6 +94,41 @@ public class TestFisherExact {
                 ArrayUtils.isEmpty(result.getConfidenceInterval()));
         assertTrue("Estimate should be NaN", Double.isNaN(result.getEstimate()));
         assertTrue("Odds ratio should be NaN", Double.isNaN(result.getOddsRatio()));
+        assertEquals("Wrong Hypothesis for result", FisherExact.AlternativeHypothesis.twosided,
+                result.getAlternativeHypothesis());
+
+    }
+
+    /**
+     * Fisher Tea Tasting example.  A British woman claimed to be able to distinguish
+     * whether milk or tea was added to the cup first.  To test, she was given 8 cups of
+     * tea, in four of which milk was added first.  The null hypothesis is that there is
+     * no association between the true order of pouring and the women's guess, the
+     * alternative that there is a positive association (that the odds ratio
+     * is greater than 1).
+     */
+    @Test
+    public void agrestiTeaTasting() {
+        final FisherExact fisherExact = new FisherExact();
+        final int[] inputTable = {
+                /*          Truth */
+                /* Guess    Milk  Tea */
+                /* Milk */    3,   1,
+                /*  Tea */    1,   3
+        };
+
+        final FisherExact.Result result =
+                fisherExact.fexact(inputTable, 2, 2, FisherExact.AlternativeHypothesis.greater);
+        assertEquals("pValue does not match", 0.24285714285714288, result.getPValue(), EPSILON);
+        assertEquals("Lower confidence interval does not match", 0.313569264110218,
+                result.getConfidenceInterval()[0], EPSILON);
+        assertTrue("Upper confidence interval should be infinite",
+                Double.isInfinite(result.getConfidenceInterval()[1]));
+        assertEquals("Estimate does not match", 6.408308867005793,  result.getEstimate(), EPSILON);
+        assertEquals("Odds ratio does not match", 1.0, result.getOddsRatio(), EPSILON);
+        assertEquals("Wrong Hypothesis for result", FisherExact.AlternativeHypothesis.greater,
+                result.getAlternativeHypothesis());
+
     }
 
     /**

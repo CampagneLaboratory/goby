@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.R;
 import gominer.Fisher;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -68,23 +69,25 @@ public class FisherExact {
      * Performs Fisher's exact test for testing the null of independence of rows and columns
      * in a contingency table with fixed marginals.
      * <p>
-     * The order of the values in the table are "by row" so that if the array contains
-     * (1,2,3,11,12,13) and nrows = 2, ncols = 3, the following matrix is created:<br/>
+     * The order of the values in the table are "by column" so that if the array contains
+     * (1,2,3,11,12,13) and nrows = 3, ncols = 2, the following matrix is created:<br/>
      * <pre>
-     *      C1  C2  C3
-     *  R1   1   2   3
-     *  R2  11  12  13
+     *      C1  C2
+     *  R1   1  11
+     *  R2   2  12
+     *  R3   3  13
      * </pre>
      *
      * @param vector An array of integer values used to populate the matrtix to be evaluated.
      * @param nrows The number of rows in the resulting martrix
      * @param ncols The number of columns in the resulting matrix
-     * @param hybrid Wheter exact probabilities are computed (false) or a hybrid approximation
-     * (true) is made
-     * @return The pValue result from the fisher test
+     * @param alternativeHypothesis The alternative hypothesis to use for the calculation
+     * @param hybrid Whether exact probabilities are computed (false) or a hybrid approximation
+     * (true) is made (only used if the data is larger than a 2 by 2 table)
+     * @return The result from the fisher test (should never be null)
      */
     public Result fexact(final int[] vector, final int nrows, final int ncols,
-                         final boolean hybrid) {
+                         final AlternativeHypothesis alternativeHypothesis, final boolean hybrid) {
         assert vector != null : "Input vector cannot be null";
         assert vector.length > 0 : "Input vector cannot be empty";
         assert nrows >= 2 && ncols >= 2 : "Must have at least 2 rows and columns";
@@ -103,10 +106,12 @@ public class FisherExact {
             fisherExpression.append(nrows);
             fisherExpression.append(',');
             fisherExpression.append(ncols);
-            fisherExpression.append(",byrow=TRUE), hybrid=");
+            fisherExpression.append("), hybrid=");
             fisherExpression.append(
                     BooleanUtils.toStringTrueFalse(hybrid).toUpperCase(Locale.getDefault()));
-            fisherExpression.append(")");
+            fisherExpression.append(", alternative=\"");
+            fisherExpression.append(alternativeHypothesis);
+            fisherExpression.append("\")");
             final boolean is2x2 = nrows == 2 && ncols == 2;
             result = evaluteFisherExpression(rengine, fisherExpression.toString(), is2x2);
         } else {
@@ -116,14 +121,41 @@ public class FisherExact {
         return result;
     }
 
+        /**
+         * Performs Fisher's exact test for testing the null of independence of rows and columns
+         * in a contingency table with fixed marginals.
+         * <p>
+         * The order of the values in the table are "by column" so that if the array contains
+         * (1,2,3,11,12,13) and nrows = 3, ncols = 2, the following matrix is created:<br/>
+         * <pre>
+         *      C1  C2
+         *  R1   1  11
+         *  R2   2  12
+         *  R3   3  13
+         * </pre>
+         *
+         * @param vector An array of integer values used to populate the matrtix to be evaluated.
+         * @param nrows The number of rows in the resulting martrix
+         * @param ncols The number of columns in the resulting matrix
+         * @param alternativeHypothesis The alternative hypothesis to use for the calculation
+         * @return The result from the fisher test (should never be null)
+         */
+        public Result fexact(final int[] vector, final int nrows, final int ncols,
+                             final AlternativeHypothesis alternativeHypothesis) {
+            return fexact(vector, nrows, ncols, alternativeHypothesis, false);
+        }
+
     /**
      * Performs Fisher's exact test using two input vectors.
      * @param factor1
      * @param factor2
-     * @param hybrid
-     * @return
+     * @param alternativeHypothesis The alternative hypothesis to use for the calculation
+     * @param hybrid Wheter exact probabilities are computed (false) or a hybrid approximation
+     * (true) is made
+     * @return The result from the fisher test (should never be null)
      */
-    public Result fexact(final int[] factor1, final int[] factor2, final boolean hybrid) {
+    public Result fexact(final int[] factor1, final int[] factor2,
+                         final AlternativeHypothesis alternativeHypothesis, final boolean hybrid) {
         assert factor1 != null && factor2 != null : "Input vector cannot be null";
         assert factor1.length == factor2.length : "Length of the two input vectors must be equal";
 
@@ -147,12 +179,15 @@ public class FisherExact {
             final StringBuilder fisherExpression = new StringBuilder("fisher.test(x, y, hybrid=");
             fisherExpression.append(
                     BooleanUtils.toStringTrueFalse(hybrid).toUpperCase(Locale.getDefault()));
-            fisherExpression.append(')');
+            fisherExpression.append(", alternative=\"");
+            fisherExpression.append(alternativeHypothesis);
+            fisherExpression.append("\")");
+
             final boolean is2x2 = factor1.length == 2 && factor2.length == 2;
             result = evaluteFisherExpression(rengine, fisherExpression.toString(), is2x2);
         } else {
             LOG.warn(R_NOT_AVAILABLE);
-            result = new Result();
+            result = new Result();  // return an empty/default result object
         }
         return result;
     }
@@ -161,23 +196,24 @@ public class FisherExact {
      * Pass the fisher expression to R for computation.
      * @param rengine The R engine to use to calcuate the results.
      * @param fisherExpression The string representing the expression to evaluate.
-     * @param is2x2 Whether or not the data being evaluated represents a 2x2 matrix
+     * @param is2x2matrix Whether or not the data being evaluated represents a 2x2 matrix
      * @return The results of the evaluation (should never be null)
      */
     private Result evaluteFisherExpression(final Rengine rengine,
                                            final String fisherExpression,
-                                           final boolean is2x2) {
-        final Result result;
-
+                                           final boolean is2x2matrix) {
+        // evaluate the R expression
         if (LOG.isDebugEnabled()) {
             LOG.debug("About to evaluate: " + fisherExpression);
         }
         final REXP fisherResultExpression = rengine.eval(fisherExpression);
         LOG.debug(fisherResultExpression);
 
+        // the result from R is a vector/map of values
         final RVector fisherResultVector = fisherResultExpression.asVector();
         LOG.debug(fisherResultVector);
 
+        // extract the p-value
         final REXP pValueExpression = fisherResultVector.at("p.value");
         final double pValue;
         if (pValueExpression != null) {
@@ -186,14 +222,21 @@ public class FisherExact {
             pValue = Double.NaN;
         }
 
+        // extract the alternative hypothesis
         final REXP alternativeExpression = fisherResultVector.at("alternative");
         final String alternative = alternativeExpression.asString();
         LOG.debug("alternative: " + alternative);
+        final AlternativeHypothesis alternativeHypothesis =
+                AlternativeHypothesis.valueOf(StringUtils.remove(alternative, '.'));
 
-        if (is2x2) {
+        // some values are only returned when the input was a 2x2 matrix
+        final double estimate;
+        final double[] confidenceInterval;
+        final double oddsRatio;
+
+        if (is2x2matrix) {
             final REXP estimateExpression = fisherResultVector.at("estimate");
             LOG.debug(estimateExpression);
-            final double estimate;
             if (estimateExpression != null) {
                 estimate = estimateExpression.asDouble();
             } else {
@@ -203,7 +246,6 @@ public class FisherExact {
 
             final REXP confidenceIntervalExpression = fisherResultVector.at("conf.int");
             LOG.debug(confidenceIntervalExpression);
-            final double[] confidenceInterval;
             if (confidenceIntervalExpression != null) {
                 confidenceInterval = confidenceIntervalExpression.asDoubleArray();
             } else {
@@ -213,20 +255,20 @@ public class FisherExact {
 
             final REXP oddsRatioExpression = fisherResultVector.at("null.value");
             LOG.debug(oddsRatioExpression);
-            final double oddsRatio;
             if (oddsRatioExpression != null) {
                 oddsRatio = oddsRatioExpression.asDouble();
             } else {
                 oddsRatio = Double.NaN;
             }
             LOG.debug("oddsRatio: " + ArrayUtils.toString(oddsRatio));
-
-            result = new Result(pValue, confidenceInterval, estimate,
-                    oddsRatio, AlternativeHypothesis.twosided);
         } else {
-            result = new Result(pValue);
+            // these values are not present in the 2x2 case
+            estimate = Double.NaN;
+            confidenceInterval = ArrayUtils.EMPTY_DOUBLE_ARRAY;
+            oddsRatio = Double.NaN;
         }
-        return result;
+
+        return new Result(pValue, confidenceInterval, estimate, oddsRatio, alternativeHypothesis);
     }
 
     /**
@@ -244,10 +286,10 @@ public class FisherExact {
      * @param vector An array of integer values used to populate the matrtix to be evaluated.
      * @param nrows The number of rows in the resulting martrix
      * @param ncols The number of columns in the resulting matrix
-     * @return The pValue result from the fisher test
+     * @return The result from the fisher test (should never be null)
      */
     public Result fexact(final int[] vector, final int nrows, final int ncols) {
-        return fexact(vector, nrows, ncols, false);
+        return fexact(vector, nrows, ncols, AlternativeHypothesis.twosided, false);
     }
 
     /**
@@ -262,17 +304,17 @@ public class FisherExact {
      * </pre>
      *
      * @param r1c1 Value for row1/column1 of the contingency matrix
-     * @param r1c2 Value for row1/column2 of the contingency matrix
      * @param r2c1 Value for row1/column1 of the contingency matrix
+     * @param r1c2 Value for row1/column2 of the contingency matrix
      * @param r2c2 Value for row2/column2 of the contingency matrix
-     * @return The pValue result from the fisher test
+     * @return The result from the fisher test (should never be null)
      */
-    public Result fexact(final int r1c1, final int r1c2, final int r2c1, final int r2c2) {
-        return fexact(new int[] {r1c1, r1c2, r2c1, r2c2}, 2, 2);
+    public Result fexact(final int r1c1, final int r2c1, final int r1c2, final int r2c2) {
+        return fexact(new int[] {r1c1, r2c1, r1c2, r2c2}, 2, 2);
     }
 
     /**
-     *
+     * Indicates the alternative hypothesis used in the 2x2 case.
      */
     public enum AlternativeHypothesis {
         /**
@@ -280,8 +322,37 @@ public class FisherExact {
          * all tables with probabilities less than or equal to that of the observed table, the
          * p-value being the sum of such probabilities.
          */
-        twosided,
+        twosided {
+            /**
+             * The value that R uses has a "." in the string which is not valid for Java enum.
+             * @return The string value that R uses for "two sided"
+             */
+            @Override
+            public String toString() {
+                return "two.sided";
+            }
+        },
+
+        /**
+         * For 2 by 2 tables, the null of conditional independence is equivalent to the
+         * hypothesis that the odds ratio equals one. ‘Exact’ inference can be based on
+         * observing that in general, given all marginal totals fixed, the first element
+         * of the contingency table has a non-central hypergeometric distribution with
+         * non-centrality parameter given by the odds ratio (Fisher, 1935). The alternative
+         * for a one-sided test is based on the odds ratio, so alternative = "greater"
+         * is a test of the odds ratio being bigger than the odds ratio.
+         */
         greater,
+
+        /**
+         * For 2 by 2 tables, the null of conditional independence is equivalent to the
+         * hypothesis that the odds ratio equals one. ‘Exact’ inference can be based on
+         * observing that in general, given all marginal totals fixed, the first element
+         * of the contingency table has a non-central hypergeometric distribution with
+         * non-centrality parameter given by the odds ratio (Fisher, 1935). The alternative
+         * for a one-sided test is based on the odds ratio, so alternative = "less"
+         * is a test of the odds ratio being smaller than the odds ratio.
+         */
         less
     }
 
@@ -437,7 +508,7 @@ public class FisherExact {
         final FisherExact fisherExact = new FisherExact();
 
         Result result;
-        result = fisherExact.fexact(new int[] { 12, 17, 4, 25, 15, 4 }, 3, 2, true);
+        result = fisherExact.fexact(new int[] { 12, 17, 4, 25, 15, 4 }, 3, 2, AlternativeHypothesis.twosided, true);
         System.out.println("pValue: " + result);
 
         result = fisherExact.fexact(new int[] { 1, 2, 3, 11, 12, 13}, 2, 3);
