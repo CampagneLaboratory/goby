@@ -32,8 +32,7 @@ import java.util.Locale;
 
 /**
  * Java/R implementation of ACM Transactions on Mathematical Software Algorithm 643
- * FEXACT.  See <a href="http://portal.acm.org/citation.cfm?id=214326">
- * http://portal.acm.org/citation.cfm?id=214326</a>.
+ * FEXACT.
  * <p>
  * This requires native R libraries and rJava to be installed. From the R
  * console enter:
@@ -42,9 +41,11 @@ import java.util.Locale;
  * For example on windows, add
  * <em>-Djava.library.path="C:\Program Files (x86)\R\R-2.10.1\library\rJava\jri"</em>.  On
  * Unix, add the R and JRI paths to the <em>LD_LIBRARY_PATH</em> environment variable.
- * <p>
- * See <a href="http://www.r-project.org/">The R Project for Statistical Computing</a> and
- * <a href="http://www.rforge.net/rJava/">rJava</a> for reference.
+ *
+ * @see <a href="http://portal.acm.org/citation.cfm?id=214326">
+ * http://portal.acm.org/citation.cfm?id=214326</a>
+ * @see <a href="http://www.r-project.org/">The R Project for Statistical Computing</a>
+ * @see <a href="http://www.rforge.net/rJava/">rJava</a>
  */
 public class FisherExact {
     /**
@@ -334,7 +335,7 @@ public class FisherExact {
 
         /**
          * For 2 by 2 tables, the null of conditional independence is equivalent to the
-         * hypothesis that the odds ratio equals one. ‘Exact’ inference can be based on
+         * hypothesis that the odds ratio equals one.  "Exact" inference can be based on
          * observing that in general, given all marginal totals fixed, the first element
          * of the contingency table has a non-central hypergeometric distribution with
          * non-centrality parameter given by the odds ratio (Fisher, 1935). The alternative
@@ -345,7 +346,7 @@ public class FisherExact {
 
         /**
          * For 2 by 2 tables, the null of conditional independence is equivalent to the
-         * hypothesis that the odds ratio equals one. ‘Exact’ inference can be based on
+         * hypothesis that the odds ratio equals one. "Exact" inference can be based on
          * observing that in general, given all marginal totals fixed, the first element
          * of the contingency table has a non-central hypergeometric distribution with
          * non-centrality parameter given by the odds ratio (Fisher, 1935). The alternative
