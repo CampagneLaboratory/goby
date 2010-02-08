@@ -18,7 +18,6 @@
 
 package edu.cornell.med.icb.goby.R;
 
-import gominer.Fisher;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -500,42 +499,6 @@ public class FisherExact {
                     .append("alternativeHypothesis", alternativeHypothesis)
                     .append("valid", valid)
                     .toString();
-        }
-    }
-
-    public static void main(final String[] args) {
-        // TODO - convert to unit tests
-        final FisherExact fisherExact = new FisherExact();
-
-        Result result;
-        result = fisherExact.fexact(new int[] { 12, 17, 4, 25, 15, 4 }, 3, 2, AlternativeHypothesis.twosided, true);
-        System.out.println("pValue: " + result);
-
-        result = fisherExact.fexact(new int[] { 1, 2, 3, 11, 12, 13}, 2, 3);
-        System.out.println("pValue: " + result);
-
-
-        result = fisherExact.fexact(new int[] { 22, 13, 5,  4,  5,  3,  2,  1, 7,  1,  4,  3,  1,  2,  3,  4 }, 8, 2);
-        System.out.println("pValue: " + result);
-
-        result = fisherExact.fexact(new int[] { 5, 1, 1, 3 }, 2, 2);
-        System.out.println("pValue: " + result);
-
-        result = fisherExact.fexact(625, 256, 81, 16);
-        System.out.println("pValue: " + result);
-
-        System.out.println(" ========= gominer ========");
-
-        final Fisher fisher = new Fisher();
-        final double pValue = fisher.calculateFisherFromMatrix(625, 256, 81, 16);
-        System.out.println("pValue: " + pValue);
-        System.out.println("  left: " + fisher.getLeft());
-        System.out.println(" right: " + fisher.getRight());
-        System.out.println("2-tail: " + fisher.getTwotail());
-
-        final Rengine rengine = GobyRengine.getInstance().getRengine();
-        if (rengine != null) {
-            rengine.end();
         }
     }
 }

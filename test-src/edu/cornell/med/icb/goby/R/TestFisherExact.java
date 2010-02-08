@@ -128,7 +128,31 @@ public class TestFisherExact {
         assertEquals("Odds ratio does not match", 1.0, result.getOddsRatio(), EPSILON);
         assertEquals("Wrong Hypothesis for result", FisherExact.AlternativeHypothesis.greater,
                 result.getAlternativeHypothesis());
+    }
 
+    /**
+     * Fisher (1962, 1970), Criminal convictions of like-sex twins.
+     */
+    @Test
+    public void twinConvictions() {
+        final FisherExact fisherExact = new FisherExact();
+        final int[] inputTable = {
+                /*                   Dizygotic   Monozygotic */
+                /* Convicted */         2,           10,
+                /* Not Convicted */     15,          3
+        };
+
+        final FisherExact.Result result =
+                fisherExact.fexact(inputTable, 2, 2, FisherExact.AlternativeHypothesis.less);
+        assertEquals("pValue does not match", 0.00046518094336290525, result.getPValue(), EPSILON);
+        assertEquals("Lower confidence interval does not match", 0.0,
+                result.getConfidenceInterval()[0], EPSILON);
+        assertEquals("Upper confidence interval does not match", 0.2849601379355694,
+                result.getConfidenceInterval()[1], EPSILON);
+        assertEquals("Estimate does not match", 0.04693660882769885, result.getEstimate(), EPSILON);
+        assertEquals("Odds ratio does not match", 1.0, result.getOddsRatio(), EPSILON);
+        assertEquals("Wrong Hypothesis for result", FisherExact.AlternativeHypothesis.less,
+                result.getAlternativeHypothesis());
     }
 
     /**
