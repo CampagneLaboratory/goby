@@ -20,27 +20,33 @@ package edu.cornell.med.icb.goby.stats;
 
 import it.unimi.dsi.lang.MutableString;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 /**
- * Compare two DE info elements by the specified statistic.
+ * Compare two {@link edu.cornell.med.icb.goby.stats.DifferentialExpressionInfo} elements
+ * by the specified statistic.
  *
  * @author Fabien Campagne
  *         Date: Jan 12, 2010
  *         Time: 6:43:53 PM
  */
-public class StatisticComparator implements Comparator<DifferentialExpressionInfo> {
+public class StatisticComparator implements Comparator<DifferentialExpressionInfo>, Serializable {
+    /**
+     * Used for serialization.
+     */
+    private static final long serialVersionUID = 1402700497385045251L;
     private final int statisticIndex;
 
-    public StatisticComparator(DifferentialExpressionResults list, MutableString statisticId) {
+    public StatisticComparator(final DifferentialExpressionResults list,
+                               final MutableString statisticId) {
         this.statisticIndex = list.getStatisticIndex(statisticId);
     }
 
-    public int compare(DifferentialExpressionInfo info1, DifferentialExpressionInfo info2) {
-
+    public int compare(final DifferentialExpressionInfo info1,
+                       final DifferentialExpressionInfo info2) {
         final Double statisticValue1 = info1.statistics.getDouble(statisticIndex);
         final Double statisticValue2 = info2.statistics.getDouble(statisticIndex);
-        return statisticValue1.compareTo(statisticValue2);
-
+        return Double.compare(statisticValue1, statisticValue2);
     }
 }

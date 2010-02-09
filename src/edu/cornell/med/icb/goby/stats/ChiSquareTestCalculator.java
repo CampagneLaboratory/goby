@@ -38,11 +38,9 @@ import org.apache.log4j.Logger;
 public class ChiSquareTestCalculator extends StatisticCalculator {
     private static final Logger LOG = Logger.getLogger(ChiSquareTestCalculator.class);
 
-    public ChiSquareTestCalculator(DifferentialExpressionResults results) {
+    public ChiSquareTestCalculator(final DifferentialExpressionResults results) {
         this();
         setResults(results);
-
-
     }
 
     public ChiSquareTestCalculator() {
@@ -50,36 +48,38 @@ public class ChiSquareTestCalculator extends StatisticCalculator {
     }
 
 
-    public boolean canDo(String[] group) {
+    @Override
+    public boolean canDo(final String[] group) {
         return group.length >= 2;
     }
 
 
-    public DifferentialExpressionInfo evaluate(DifferentialExpressionCalculator differentialExpressionCalculator,
-                                               DifferentialExpressionResults results,
-                                               DifferentialExpressionInfo info,
-                                               String... group) {
+    @Override
+    public DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
+                                               final DifferentialExpressionResults results,
+                                               final DifferentialExpressionInfo info,
+                                               final String... group) {
 
         // expected counts in each group, assuming the counts for the DE are spread  among the groups according to sample
         // global count proportions
-        double[] expectedCounts = new double[group.length];
+        final double[] expectedCounts = new double[group.length];
 
         //  counts observed in each group:
-        long[] observedCounts = new long[group.length];
-        double[] groupProportions = new double[group.length];
+        final long[] observedCounts = new long[group.length];
+        final double[] groupProportions = new double[group.length];
 
         int i = 0;
 
         double pValue = 1;
         // estimate the sumOfCountsForDE of counts over all the samples included in any group compared.
-        long sumOfCountsForDE = 0;
+        final long sumOfCountsForDE = 0;
         int numSamples = 0;
         double sumObservedCounts = 0;
 
-        for (String oneGroupId : group) {
-            ObjectArraySet<String> samplesForGroup = differentialExpressionCalculator.getSamples(oneGroupId);
+        for (final String oneGroupId : group) {
+            final ObjectArraySet<String> samplesForGroup = differentialExpressionCalculator.getSamples(oneGroupId);
 
-            for (String sample : samplesForGroup) {
+            for (final String sample : samplesForGroup) {
 
                 final long observedCount = differentialExpressionCalculator.getOverlapCount(sample, info.elementId);
                 final double sampleProportion = differentialExpressionCalculator.getSampleProportion(sample);
@@ -91,50 +91,37 @@ public class ChiSquareTestCalculator extends StatisticCalculator {
             if (observedCounts[i] == 0) {
                 // Chi Square is not defined if any observed counts are zero.
                 info.statistics.size(results.getNumberOfStatistics());
-                info.statistics.set(results.getStatisticIndex(STATISTIC_ID), Double.NaN);
+                info.statistics.set(results.getStatisticIndex(statisticId), Double.NaN);
                 return info;
             }
             ++i;
         }
 
         i = 0;
-        double nGroups = group.length;
+        final double nGroups = group.length;
         for (int groupIndex = 0; groupIndex < nGroups; groupIndex++) {
             expectedCounts[groupIndex] += groupProportions[groupIndex] * sumObservedCounts;
         }
 
 
-        ChiSquareTest chisquare = new ChiSquareTestImpl();
+        final ChiSquareTest chisquare = new ChiSquareTestImpl();
 
-        try
-
-        {
+        try {
             final double pValueRaw = chisquare.chiSquareTest(expectedCounts, observedCounts);
             // math commons can return negative p-values?
             pValue = Math.abs(pValueRaw);
-        }
-
-        catch (MaxIterationsExceededException e)
-
-        {
+        } catch (MaxIterationsExceededException e) {
             LOG.error("elementId:" + info.elementId);
             LOG.error("expected:" + DoubleArrayList.wrap(expectedCounts).toString());
             LOG.error("observed:" + LongArrayList.wrap(observedCounts).toString());
             LOG.error(e);
             pValue = 1;
-        }
-
-        catch (MathException e) {
+        } catch (MathException e) {
             e.printStackTrace();
-
         }
 
         info.statistics.size(results.getNumberOfStatistics());
-        info.statistics.set(results.getStatisticIndex(STATISTIC_ID), pValue);
-
-
+        info.statistics.set(results.getStatisticIndex(statisticId), pValue);
         return info;
     }
-
-
 }

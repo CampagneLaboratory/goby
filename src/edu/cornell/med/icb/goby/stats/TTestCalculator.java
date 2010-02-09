@@ -18,17 +18,16 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
+import org.apache.commons.math.MathException;
 import org.apache.commons.math.stat.inference.TTest;
 import org.apache.commons.math.stat.inference.TTestImpl;
-import org.apache.commons.math.MathException;
 
 /**
- * Calculates T-Test P-values (two-tailed, equal variance). The T-test assess how likely the mean of ln1p of the RPKMs in the first group
- * differ from the same mean estimated in the second group (requires exactly two groups). T-Test is applied to the ln1p, that is
+ * Calculates T-Test P-values (two-tailed, equal variance). The T-test assess how likely the
+ * mean of ln1p of the RPKMs in the first group differ from the same mean estimated in the
+ * second group (requires exactly two groups). T-Test is applied to the ln1p, that is
  * the natural log of the RPKM plus one.
  *
  * @author Fabien Campagne
@@ -36,46 +35,44 @@ import org.apache.commons.math.MathException;
  *         Time: 7:06:31 PM
  */
 public class TTestCalculator extends StatisticCalculator {
+    private final TTest mathCommonsTTest = new TTestImpl();
 
-    public TTestCalculator(DifferentialExpressionResults results) {
+    public TTestCalculator(final DifferentialExpressionResults results) {
         this();
         setResults(results);
-
-
     }
 
     public TTestCalculator() {
         super("t-test");
     }
 
-
-    boolean canDo(String[] group) {
+    @Override
+    boolean canDo(final String[] group) {
         return group.length == 2;
     }
 
-    private TTest mathCommonsTTest = new TTestImpl();
+    @Override
+    DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
+                                        final DifferentialExpressionResults results,
+                                        final DifferentialExpressionInfo info,
+                                        final String... group) {
+        final String groupA = group[0];
+        final String groupB = group[1];
 
-    DifferentialExpressionInfo evaluate(DifferentialExpressionCalculator differentialExpressionCalculator,
-                                        DifferentialExpressionResults results,
-                                        DifferentialExpressionInfo info,
-                                        String... group) {
-        String groupA = group[0];
-        String groupB = group[1];
+        final ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
+        final ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);
 
-        ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
-        ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);
-
-        double[] valuesA = new double[samplesA.size()];
-        double[] valuesB = new double[samplesB.size()];
+        final double[] valuesA = new double[samplesA.size()];
+        final double[] valuesB = new double[samplesB.size()];
 
 
         int i = 0;
-        for (String sample : samplesA) {
+        for (final String sample : samplesA) {
             valuesA[i++] = Math.log1p(differentialExpressionCalculator.getRPKM(sample, info.elementId));
         }
 
         i = 0;
-        for (String sample : samplesB) {
+        for (final String sample : samplesB) {
             valuesB[i++] = Math.log1p(differentialExpressionCalculator.getRPKM(sample, info.elementId));
         }
 
@@ -92,23 +89,9 @@ public class TTestCalculator extends StatisticCalculator {
             pValue = Double.NaN;
         }
         info.statistics.size(results.getNumberOfStatistics());
-        info.statistics.set(results.getStatisticIndex(STATISTIC_ID), pValue);
+        info.statistics.set(results.getStatisticIndex(statisticId), pValue);
         info.statistics.set(results.getStatisticIndex(statName), tStatistic);
 
         return info;
     }
-
-    final double LOG_2 = Math.log(2);
-
-    /**
-     * Calculate the log2 of x +1.
-     *
-     * @param x
-     * @return log2(x+1)=Math.log1p(x)/Math.log(2)
-     */
-    private double log2(final double x) {
-
-        return Math.log1p(x) / LOG_2;
-    }
-
 }

@@ -18,13 +18,16 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import it.unimi.dsi.fastutil.objects.*;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntCollection;
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.lang.MutableString;
-import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.lang.MutableString;
 
 /**
  * @author Fabien Campagne
@@ -32,40 +35,37 @@ import edu.cornell.med.icb.identifier.IndexedIdentifier;
  *         Time: 3:35:24 PM
  */
 public class DifferentialExpressionCalculator {
-
-    ObjectSet<String> groups;
-    Object2ObjectMap<String, String> sampleToGroupMap;
-    IndexedIdentifier elementLabels;
+    private final ObjectSet<String> groups;
+    private final Object2ObjectMap<String, String> sampleToGroupMap;
+    private final IndexedIdentifier elementLabels;
     private int elementsPerSample;
     private int numberOfSamples;
-    private Object2ObjectMap<String, IntArrayList> sampleToCounts = new Object2ObjectOpenHashMap<String, IntArrayList>();
-    private Object2ObjectMap<String, DoubleArrayList> sampleToRPKMs = new Object2ObjectOpenHashMap<String, DoubleArrayList>();
-
-
-    @Override
-    public String toString() {
-        return super.toString();
-    }
+    private final Object2ObjectMap<String, IntArrayList> sampleToCounts =
+            new Object2ObjectOpenHashMap<String, IntArrayList>();
+    private final Object2ObjectMap<String, DoubleArrayList> sampleToRPKMs =
+            new Object2ObjectOpenHashMap<String, DoubleArrayList>();
+    private Object2DoubleMap<String> sampleProportions;
 
     public DifferentialExpressionCalculator() {
+        super();
         groups = new ObjectArraySet<String>();
         elementLabels = new IndexedIdentifier();
         sampleToGroupMap = new Object2ObjectOpenHashMap<String, String>();
     }
 
-    public void defineGroup(String label) {
+    public void defineGroup(final String label) {
         groups.add(label);
     }
 
-    public int defineElement(String label) {
+    public int defineElement(final String label) {
         return elementLabels.registerIdentifier(new MutableString(label));
     }
 
-    public void associateSampleToGroup(String sample, String group) {
+    public void associateSampleToGroup(final String sample, final String group) {
         sampleToGroupMap.put(sample, group);
     }
 
-    public void observe(String sample, String elementId, int count, double RPKM) {
+    public void observe(final String sample, final String elementId, final int count, final double RPKM) {
         IntArrayList counts = sampleToCounts.get(sample);
         DoubleArrayList rpkms = sampleToRPKMs.get(sample);
 
@@ -85,17 +85,16 @@ public class DifferentialExpressionCalculator {
         rpkms.add(elementIndex, RPKM);
     }
 
-    public DifferentialExpressionResults compare(DifferentialExpressionResults results, StatisticCalculator tester, String... group) {
-
-
+    public DifferentialExpressionResults compare(final DifferentialExpressionResults results,
+                                                 final StatisticCalculator tester,
+                                                 final String... group) {
         assert !tester.canDo(group) : "The number of groups to compare is not supported by the specified calculator.";
         tester.setResults(results);
         return tester.evaluate(this, results, group);
     }
 
-    public DifferentialExpressionResults compare(StatisticCalculator tester, String... group) {
-
-        DifferentialExpressionResults results = new DifferentialExpressionResults();
+    public DifferentialExpressionResults compare(final StatisticCalculator tester, final String... group) {
+        final DifferentialExpressionResults results = new DifferentialExpressionResults();
 
         assert !tester.canDo(group) : "The number of groups to compare is not supported by the specified calculator.";
         tester.setResults(results);
@@ -108,15 +107,17 @@ public class DifferentialExpressionCalculator {
      * @param elementsPerSample
      * @param numberOfSamples
      */
-    public void reserve(int elementsPerSample, int numberOfSamples) {
+    public void reserve(final int elementsPerSample, final int numberOfSamples) {
         this.elementsPerSample = elementsPerSample;
         this.numberOfSamples = numberOfSamples;
     }
 
-    public ObjectArraySet<String> getSamples(String groupA) {
-        ObjectArraySet<String> samples = new ObjectArraySet<String>();
-        for (String sampleId : sampleToGroupMap.keySet()) {
-            if (sampleToGroupMap.get(sampleId).equals(groupA)) samples.add(sampleId);
+    public ObjectArraySet<String> getSamples(final String groupA) {
+        final ObjectArraySet<String> samples = new ObjectArraySet<String>();
+        for (final String sampleId : sampleToGroupMap.keySet()) {
+            if (sampleToGroupMap.get(sampleId).equals(groupA)) {
+                samples.add(sampleId);
+            }
         }
         return samples;
     }
@@ -132,9 +133,11 @@ public class DifferentialExpressionCalculator {
      * @param elementId
      * @return
      */
-    public double getRPKM(String sample, MutableString elementId) {
-        DoubleArrayList rpkms = sampleToRPKMs.get(sample);
-        if (rpkms == null) return 0;
+    public double getRPKM(final String sample, final MutableString elementId) {
+        final DoubleArrayList rpkms = sampleToRPKMs.get(sample);
+        if (rpkms == null) {
+            return 0;
+        }
         final int elementIndex = elementLabels.get(new MutableString(elementId));
 
         return rpkms.get(elementIndex);
@@ -147,9 +150,11 @@ public class DifferentialExpressionCalculator {
      * @param elementId
      * @return
      */
-    public int getOverlapCount(String sample, MutableString elementId) {
-        IntArrayList counts = sampleToCounts.get(sample);
-        if (counts == null) return 0;
+    public int getOverlapCount(final String sample, final MutableString elementId) {
+        final IntArrayList counts = sampleToCounts.get(sample);
+        if (counts == null) {
+            return 0;
+        }
         final int elementIndex = elementLabels.get(new MutableString(elementId));
 
         return counts.get(elementIndex);
@@ -158,11 +163,13 @@ public class DifferentialExpressionCalculator {
     /**
      * Returns the sum of counts in a given sample.
      */
-    public int getSumOverlapCounts(String sample) {
+    public int getSumOverlapCounts(final String sample) {
         int sumCounts = 0;
-        IntArrayList counts = sampleToCounts.get(sample);
-        if (counts == null) return 0;
-        for (int count : counts) {
+        final IntArrayList counts = sampleToCounts.get(sample);
+        if (counts == null) {
+            return 0;
+        }
+        for (final int count : counts) {
             sumCounts += count;
         }
         return sumCounts;
@@ -173,29 +180,27 @@ public class DifferentialExpressionCalculator {
         return sampleSet.toArray(new String[sampleSet.size()]);
     }
 
-    Object2DoubleMap<String> sampleProportions;
-
     /**
      * Returns the proportion of counts that originate from a certain sample. The number of counts in the sample
      * is divided by the sum of counts over all the samples in the experiment.
      * @param sample
      * @return
      */
-    public double getSampleProportion(String sample) {
+    public double getSampleProportion(final String sample) {
         if (sampleProportions == null) {
             sampleProportions = new Object2DoubleArrayMap<String>();
             sampleProportions.defaultReturnValue(-1);
         }
-        double proportion ;
- 
-        if ( !sampleProportions.containsKey(sample) ) {
+        final double proportion;
+
+        if (!sampleProportions.containsKey(sample)) {
             int sumOverSamples = 0;
-            for (String s : samples()) {
+            for (final String s : samples()) {
                 sumOverSamples += getSumOverlapCounts(s);
             }
-            for (String s : samples()) {
-                final double sampleProportion = ((double)getSumOverlapCounts(s)) /
-                        (double) sumOverSamples;
+            for (final String s : samples()) {
+                final double sampleProportion =
+                        ((double) getSumOverlapCounts(s)) / (double) sumOverSamples;
                 this.sampleProportions.put(s, sampleProportion);
             }
         }

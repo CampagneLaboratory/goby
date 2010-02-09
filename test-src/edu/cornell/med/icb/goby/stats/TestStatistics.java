@@ -18,25 +18,20 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import junit.framework.TestCase;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import edu.cornell.med.icb.goby.R.FisherExact;
+import gominer.Fisher;
+import it.unimi.dsi.lang.MutableString;
+import org.apache.commons.math.MathException;
 import org.apache.commons.math.stat.inference.ChiSquareTest;
 import org.apache.commons.math.stat.inference.ChiSquareTestImpl;
-import org.apache.commons.math.MathException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.junit.Test;
 
-
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.Random;
-
-import it.unimi.dsi.lang.MutableString;
-import gominer.Fisher;
 
 /**
  * @author Fabien Campagne
@@ -44,17 +39,18 @@ import gominer.Fisher;
  *         Time: 1:14:57 PM
  */
 public class TestStatistics {
-
     @Test
     public void testFoldChange() {
         final Random randomEngine = new Random();
-
-        DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator() {
+        final DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator() {
 
             @Override
-            public double getRPKM(String sample, MutableString elementId) {
-                if (sample.startsWith("A")) return 2 * Math.abs(randomEngine.nextDouble());
-                else return Math.abs(randomEngine.nextDouble());
+            public double getRPKM(final String sample, final MutableString elementId) {
+                if (sample.startsWith("A")) {
+                    return 2 * Math.abs(randomEngine.nextDouble());
+                } else {
+                    return Math.abs(randomEngine.nextDouble());
+                }
 
                 // fold change A/B = 2
             }
@@ -64,7 +60,7 @@ public class TestStatistics {
         deCalc.defineElement("id-2");
         deCalc.defineGroup("A");
         deCalc.defineGroup("B");
-        int numReplicates = 20000;
+        final int numReplicates = 20000;
         deCalc.reserve(2, numReplicates * 2);
 
         for (int i = 0; i < numReplicates; i++) {
@@ -75,24 +71,25 @@ public class TestStatistics {
         //deCalc.associateSampleToGroup("B-1", "B");
 
 
-        DifferentialExpressionInfo info = new DifferentialExpressionInfo();
-        DifferentialExpressionResults results = new DifferentialExpressionResults();
-        FoldChangeCalculator foldChange = new FoldChangeCalculator(results);
-        info.elementId = new MutableString("id-1");
+        final DifferentialExpressionInfo info = new DifferentialExpressionInfo("id-1");
+        final DifferentialExpressionResults results = new DifferentialExpressionResults();
+        final FoldChangeCalculator foldChange = new FoldChangeCalculator(results);
         foldChange.evaluate(deCalc, results, info, "A", "B");
-        assertEquals("fold-change must be two fold", 2d, results.getStatistic(info, foldChange.STATISTIC_ID), .1);
+        assertEquals("fold-change must be two fold", 2d, results.getStatistic(info, foldChange.statisticId), .1);
     }
 
     @Test
     public void testAverage() {
         final Random randomEngine = new Random();
-
-        DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator() {
+        final DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator() {
 
             @Override
-            public double getRPKM(String sample, MutableString elementId) {
-                if (sample.startsWith("A")) return 2 * Math.abs(randomEngine.nextDouble());
-                else return Math.abs(randomEngine.nextDouble());
+            public double getRPKM(final String sample, final MutableString elementId) {
+                if (sample.startsWith("A")) {
+                    return 2 * Math.abs(randomEngine.nextDouble());
+                } else {
+                    return Math.abs(randomEngine.nextDouble());
+                }
 
                 // fold change A/B = 2
             }
@@ -102,7 +99,7 @@ public class TestStatistics {
         deCalc.defineElement("id-2");
         deCalc.defineGroup("A");
         deCalc.defineGroup("B");
-        int numReplicates = 20000;
+        final int numReplicates = 20000;
         deCalc.reserve(2, numReplicates * 2);
 
         for (int i = 0; i < numReplicates; i++) {
@@ -112,11 +109,9 @@ public class TestStatistics {
         //deCalc.associateSampleToGroup("A-", "A");
         //deCalc.associateSampleToGroup("B-1", "B");
 
-
-        DifferentialExpressionInfo info = new DifferentialExpressionInfo();
-        DifferentialExpressionResults results = new DifferentialExpressionResults();
-        AverageCalculator averageCalculator = new AverageCalculator(results);
-        info.elementId = new MutableString("id-1");
+        final DifferentialExpressionInfo info = new DifferentialExpressionInfo("id-1");
+        final DifferentialExpressionResults results = new DifferentialExpressionResults();
+        final AverageCalculator averageCalculator = new AverageCalculator(results);
         results.add(info);
         averageCalculator.evaluate(deCalc, results, info, "A", "B");
         assertEquals("average A must be around 2", 1d, results.getStatistic(info, averageCalculator.getStatisticId("A", "RPKM")), .1);
@@ -132,30 +127,30 @@ public class TestStatistics {
     @Test
     public void testTwoStats() {
         final Random randomEngine = new Random();
-
-        DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator() {
+        final DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator() {
 
             @Override
-            public double getRPKM(String sample, MutableString elementId) {
-                if (sample.startsWith("A")) return 2 * Math.abs(randomEngine.nextGaussian());
-                else return Math.abs(randomEngine.nextGaussian());
+            public double getRPKM(final String sample, final MutableString elementId) {
+                if (sample.startsWith("A")) {
+                    return 2 * Math.abs(randomEngine.nextGaussian());
+                } else {
+                    return Math.abs(randomEngine.nextGaussian());
+                }
 
                 // fold change A/B = 2
             }
 
             @Override
-            public int getOverlapCount(String sample, MutableString elementId) {
+            public int getOverlapCount(final String sample, final MutableString elementId) {
                 return (int) (getRPKM(sample, elementId) * 100);
             }
-
-
         };
 
         deCalc.defineElement("id-1");
         deCalc.defineElement("id-2");
         deCalc.defineGroup("A");
         deCalc.defineGroup("B");
-        int numReplicates = 2000;
+        final int numReplicates = 2000;
         deCalc.reserve(2, numReplicates * 2);
 
         for (int i = 0; i < numReplicates; i++) {
@@ -164,7 +159,7 @@ public class TestStatistics {
         }
 
         // observe the counts to populate internal data structures:
-        for (String sampleId : deCalc.samples()) {
+        for (final String sampleId : deCalc.samples()) {
             final MutableString id1 = new MutableString("id-1");
             final MutableString id2 = new MutableString("id-2");
             deCalc.observe(sampleId, "id-1",
@@ -177,25 +172,23 @@ public class TestStatistics {
         //deCalc.associateSampleToGroup("A-", "A");
         //deCalc.associateSampleToGroup("B-1", "B");
 
-        DifferentialExpressionInfo info = new DifferentialExpressionInfo();
-        DifferentialExpressionResults results = new DifferentialExpressionResults();
-        FoldChangeCalculator foldChange = new FoldChangeCalculator(results);
-        TTestCalculator tTest = new TTestCalculator(results);
-        FisherExactTestCalculator fisher = new FisherExactTestCalculator(results);
-        info.elementId = new MutableString("id-1");
+        final DifferentialExpressionInfo info = new DifferentialExpressionInfo("id-1");
+        final DifferentialExpressionResults results = new DifferentialExpressionResults();
+        final FoldChangeCalculator foldChange = new FoldChangeCalculator(results);
+        final TTestCalculator tTest = new TTestCalculator(results);
+        final FisherExactTestCalculator fisher = new FisherExactTestCalculator(results);
         foldChange.evaluate(deCalc, results, info, "A", "B");
         tTest.evaluate(deCalc, results, info, "A", "B");
         fisher.evaluate(deCalc, results, info, "A", "B");
-        assertEquals("fold-change must be two fold", 2d, results.getStatistic(info, foldChange.STATISTIC_ID), .1);
-        assertTrue("T-test must be significant", results.getStatistic(info, tTest.STATISTIC_ID) < 0.01);
-        assertTrue("fisher test must not be significant", results.getStatistic(info, fisher.STATISTIC_ID) > 0.05);
+        assertEquals("fold-change must be two fold", 2d, results.getStatistic(info, foldChange.statisticId), .1);
+        assertTrue("T-test must be significant", results.getStatistic(info, tTest.statisticId) < 0.01);
+        assertTrue("fisher test must not be significant", results.getStatistic(info, fisher.statisticId) > 0.05);
     }
 
     @Test
     public void testFisher() throws MathException {
-
-        DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator();
-        int numReplicates = 2;
+        final DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator();
+        final int numReplicates = 2;
         deCalc.defineElement("id-1");
         deCalc.defineElement("id-2");
         deCalc.defineGroup("A");
@@ -228,31 +221,29 @@ public class TestStatistics {
         deCalc.observe("B-1", "id-2", 20, 0);
         deCalc.observe("B-2", "id-2", 20, 0);        // 20+20=40
 
-
-        DifferentialExpressionInfo info = new DifferentialExpressionInfo();
-        DifferentialExpressionResults results = new DifferentialExpressionResults();
-        FisherExactTestCalculator fisher = new FisherExactTestCalculator(results);
-        info.elementId = new MutableString("id-1");
+        final DifferentialExpressionInfo info = new DifferentialExpressionInfo("id-1");
+        final DifferentialExpressionResults results = new DifferentialExpressionResults();
+        final FisherExactTestCalculator fisher = new FisherExactTestCalculator(results);
         fisher.evaluate(deCalc, results, info, "A", "B");
-        assertEquals("fisher test equal expected result", 0.5044757698516504, results.getStatistic(info, fisher.STATISTIC_ID), 0.001);
+        assertEquals("fisher test equal expected result", 0.5044757698516504, results.getStatistic(info, fisher.statisticId), 0.001);
 
 
-        Fisher fisherTest = new Fisher();
-        int totalCountInA = 1700;
-        int totalCountInB = 170; // equal total in each group
-        int sumCountInA = 90;
-        int sumCountInB = 45; // half the counts in sample B
+        final Fisher fisherTest = new Fisher();
+        final int totalCountInA = 1700;
+        final int totalCountInB = 170; // equal total in each group
+        final int sumCountInA = 90;
+        final int sumCountInB = 45; // half the counts in sample B
 
         fisherTest.fisher(totalCountInA, sumCountInA, totalCountInA + totalCountInB, sumCountInA + sumCountInB);
 
-        double pValue = fisherTest.getTwotail();
-        double proportionTotalA = divide(totalCountInA, (totalCountInA + totalCountInB));
-        double proportionTotalB = divide(totalCountInB, (totalCountInA + totalCountInB));
-        ChiSquareTest chisquare = new ChiSquareTestImpl();
-        double nGroups = 2;
-        double[] expected = {divide(sumCountInA + sumCountInB, nGroups) * proportionTotalA * nGroups,
+        final double pValue = fisherTest.getTwotail();
+        final double proportionTotalA = divide(totalCountInA, (totalCountInA + totalCountInB));
+        final double proportionTotalB = divide(totalCountInB, (totalCountInA + totalCountInB));
+        final ChiSquareTest chisquare = new ChiSquareTestImpl();
+        final double nGroups = 2;
+        final double[] expected = {divide(sumCountInA + sumCountInB, nGroups) * proportionTotalA * nGroups,
                 divide(sumCountInA + sumCountInB, nGroups) * proportionTotalB * nGroups};
-        long[] observed = {sumCountInA, sumCountInB};
+        final long[] observed = {sumCountInA, sumCountInB};
         double chiPValue = 0;
 
         chiPValue = Math.abs(chisquare.chiSquareTest(expected, observed));
@@ -263,19 +254,92 @@ public class TestStatistics {
 //         assertTrue("pValue: " + pValue, pValue < 0.001);
     }
 
-    private double divide(int a, int b) {
+    @Test
+    public void testFisherExact() throws MathException {
+        final DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator();
+        final int numReplicates = 2;
+        deCalc.defineElement("id-1");
+        deCalc.defineElement("id-2");
+        deCalc.defineGroup("A");
+        deCalc.defineGroup("B");
+        deCalc.reserve(2, numReplicates * 2);
+
+        for (int i = 1; i <= numReplicates; i++) {
+            deCalc.associateSampleToGroup("A-" + i, "A");
+            deCalc.associateSampleToGroup("B-" + i, "B");
+        }
+
+        /**
+         * Encode the following table in two genes:
+         Fisher's Exact Test
+         http://www.langsrud.com/fisher.htm
+         ------------------------------------------
+         TABLE = [ 10 , 20 , 30 , 40 ]
+         Left   : p-value = 0.2533310713617698
+         Right  : p-value = 0.8676419647894328
+         2-Tail : p-value = 0.5044757698516504
+         ------------------------------------------
+         */
+        deCalc.observe("A-1", "id-1", 7, 0);
+        deCalc.observe("A-2", "id-1", 3, 0);         // 7+3 = 10
+        deCalc.observe("B-1", "id-1", 15, 0);
+        deCalc.observe("B-2", "id-1", 5, 0);         // 15+5 =20
+
+        deCalc.observe("A-1", "id-2", 15, 0);
+        deCalc.observe("A-2", "id-2", 15, 0);        // 15+15=30
+        deCalc.observe("B-1", "id-2", 20, 0);
+        deCalc.observe("B-2", "id-2", 20, 0);        // 20+20=40
+
+        final DifferentialExpressionInfo info = new DifferentialExpressionInfo("id-1");
+        final DifferentialExpressionResults results = new DifferentialExpressionResults();
+        final FisherExactRCalculator fisher = new FisherExactRCalculator(results);
+        fisher.evaluate(deCalc, results, info, "A", "B");
+        assertEquals("fisher test equal expected result", 0.5044757698516504, results.getStatistic(info, fisher.statisticId), 0.001);
+
+        final FisherExact fisherTest = new FisherExact();
+        final int totalCountInA = 1700;
+        final int totalCountInB = 170; // equal total in each group
+        final int sumCountInA = 90;
+        final int sumCountInB = 45; // half the counts in sample B
+
+        final int sumCountNotInA = totalCountInA - sumCountInA;
+        final int sumCountNotInB = totalCountInB - sumCountInB;
+
+        final FisherExact.Result result =
+                fisherTest.fexact(sumCountInA, sumCountNotInA, sumCountInB, sumCountNotInB);
+        final double pValue = result.getPValue();
+
+        final double proportionTotalA = divide(totalCountInA, (totalCountInA + totalCountInB));
+        final double proportionTotalB = divide(totalCountInB, (totalCountInA + totalCountInB));
+        final ChiSquareTest chisquare = new ChiSquareTestImpl();
+        final double nGroups = 2;
+        final double[] expected = {divide(sumCountInA + sumCountInB, nGroups) * proportionTotalA * nGroups,
+                divide(sumCountInA + sumCountInB, nGroups) * proportionTotalB * nGroups};
+        final long[] observed = {sumCountInA, sumCountInB};
+        double chiPValue = 0;
+
+        chiPValue = Math.abs(chisquare.chiSquareTest(expected, observed));
+
+        assertTrue("pValue: " + chiPValue, chiPValue < 0.001);
+// The Fisher implementation we are using return 1 for the above. This is wrong. Compare to
+// the chi-square result
+// (results should be comparable since the counts in each cell are large)
+         assertTrue("pValue: " + pValue, pValue < 0.001);
+    }
+
+    private double divide(final int a, final int b) {
         return ((double) a) / ((double) b);
     }
 
-    private double divide(int a, double b) {
+    private double divide(final int a, final double b) {
         return ((double) a) / b;
     }
 
     @Test
     public void testChiSquare() throws MathException {
 
-        DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator();
-        int numReplicates = 2;
+        final DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator();
+        final int numReplicates = 2;
         deCalc.defineElement("id-1");
         deCalc.defineElement("id-2");
         deCalc.defineGroup("A");
@@ -298,17 +362,16 @@ public class TestStatistics {
         deCalc.observe("B-2", "id-2", 20, 0);        // 20+20=40
 
 
-        DifferentialExpressionInfo info = new DifferentialExpressionInfo();
-        DifferentialExpressionResults results = new DifferentialExpressionResults();
-        info.elementId = new MutableString("id-1");
+        final DifferentialExpressionInfo info = new DifferentialExpressionInfo("id-1");
+        final DifferentialExpressionResults results = new DifferentialExpressionResults();
 
-        ChiSquareTestCalculator calc = new ChiSquareTestCalculator(results);
+        final ChiSquareTestCalculator calc = new ChiSquareTestCalculator(results);
         calc.evaluate(deCalc, results, info, "A", "B");
-        assertEquals("chi square test equal expected result", 0.456056540250256, results.getStatistic(info, calc.STATISTIC_ID), 0.001);
+        assertEquals("chi square test equal expected result", 0.456056540250256, results.getStatistic(info, calc.statisticId), 0.001);
 
-        ChiSquareTest chisquare = new ChiSquareTestImpl();
-        double[] expected = {30, 12};
-        long[] observed = {0, 100};
+        final ChiSquareTest chisquare = new ChiSquareTestImpl();
+        final double[] expected = {30, 12};
+        final long[] observed = {0, 100};
         double chiPValue = 0;
 
         chiPValue = chisquare.chiSquareTest(expected, observed);
@@ -323,8 +386,8 @@ public class TestStatistics {
 
     public void testChiSquareZeroCount() throws MathException {
 
-        DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator();
-        int numReplicates = 2;
+        final DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator();
+        final int numReplicates = 2;
         deCalc.defineElement("id-1");
         deCalc.defineElement("id-2");
         deCalc.defineGroup("A");
@@ -347,13 +410,12 @@ public class TestStatistics {
         deCalc.observe("B-2", "id-2", 20, 0);        // 20+20=40
 
 
-        DifferentialExpressionInfo info = new DifferentialExpressionInfo();
-        DifferentialExpressionResults results = new DifferentialExpressionResults();
-        info.elementId = new MutableString("id-1");
+        final DifferentialExpressionInfo info = new DifferentialExpressionInfo("id-1");
+        final DifferentialExpressionResults results = new DifferentialExpressionResults();
 
-        ChiSquareTestCalculator calc = new ChiSquareTestCalculator(results);
+        final ChiSquareTestCalculator calc = new ChiSquareTestCalculator(results);
         calc.evaluate(deCalc, results, info, "A", "B");
-        assertTrue("chi square test result must be NaN (zero count)",Double.isNaN(results.getStatistic(info, calc.STATISTIC_ID)));
+        assertTrue("chi square test result must be NaN (zero count)",Double.isNaN(results.getStatistic(info, calc.statisticId)));
 
     }
 
@@ -362,40 +424,39 @@ public class TestStatistics {
     public void testFDR() {
         final Random randomEngine = new Random();
         randomEngine.setSeed(1013);
-        BonferroniAdjustment bonferroni = new BonferroniAdjustment();
-        BenjaminiHochbergAdjustment fdr = new BenjaminiHochbergAdjustment();
-        DifferentialExpressionResults list = new DifferentialExpressionResults();
+        final BonferroniAdjustment bonferroni = new BonferroniAdjustment();
+        final BenjaminiHochbergAdjustment fdr = new BenjaminiHochbergAdjustment();
+        final DifferentialExpressionResults list = new DifferentialExpressionResults();
         final String statId = "t-test-P-value";
         list.declareStatistic(statId);
-        int statIndex = list.getStatisticIndex(statId);
-        int numObservations = 100000;
-        double proportionOfNaN = .1;
+        final int statIndex = list.getStatisticIndex(statId);
+        final int numObservations = 100000;
+        final double proportionOfNaN = .1;
         for (int i = 0; i < numObservations; i++) {
-            final DifferentialExpressionInfo info = new DifferentialExpressionInfo();
+            final DifferentialExpressionInfo info = new DifferentialExpressionInfo("element-" + i);
             info.statistics.size(list.getNumberOfStatistics());
             final double random1 = randomEngine.nextDouble();
             final double random2 = randomEngine.nextDouble();
 
             info.statistics.set(statIndex, random1 < proportionOfNaN ? Double.NaN : random2);
-            info.elementId = new MutableString("element-" + i);
             list.add(info);
         }
         final String secondPValueId = "another-p-value";
         list.declareStatistic(secondPValueId);
-        int statIndex2 = list.getStatisticIndex(secondPValueId);
-        for (DifferentialExpressionInfo info : list) {
+        final int statIndex2 = list.getStatisticIndex(secondPValueId);
+        for (final DifferentialExpressionInfo info : list) {
             info.statistics.size(list.getNumberOfStatistics());
             info.statistics.set(statIndex2, randomEngine.nextDouble());
         }
         bonferroni.adjust(list, statId, secondPValueId);
         fdr.adjust(list, statId, secondPValueId);
-        int index1 = list.getStatisticIndex("t-test-P-value-BH-FDR-q-value");
-        int index2 = list.getStatisticIndex(secondPValueId + "-BH-FDR-q-value");
+        final int index1 = list.getStatisticIndex("t-test-P-value-BH-FDR-q-value");
+        final int index2 = list.getStatisticIndex(secondPValueId + "-BH-FDR-q-value");
 
-        double significanceThreshold = 0.05;
+        final double significanceThreshold = 0.05;
         int numRejectedHypothesesTest1 = 0;
         int numRejectedHypothesesTest2 = 0;
-        for (DifferentialExpressionInfo info : list) {
+        for (final DifferentialExpressionInfo info : list) {
 
             final boolean test1 = info.statistics.getDouble(index1) > significanceThreshold;
             if (!test1) {
@@ -416,7 +477,7 @@ public class TestStatistics {
         //      System.out.println("list.adjusted: " + list);
 
 
-        double[] p = {
+        final double[] p = {
                 2.354054e-07, 2.101590e-05, 2.576842e-05, 9.814783e-05, 1.052610e-04
                 , 1.241481e-04, 1.325988e-04, 1.568503e-04, 2.254557e-04, 3.795380e-04
                 , 6.114943e-04, 1.613954e-03, 3.302430e-03, 3.538342e-03, 5.236997e-03
@@ -428,7 +489,7 @@ public class TestStatistics {
                 , 6.363620e-01, 6.448587e-01, 6.558414e-01, 6.885884e-01, 7.189864e-01
                 , 8.179539e-01, 8.274487e-01, 8.971300e-01, 9.118680e-01, 9.437890e-01};
 
-        double[] adjusted_R = {
+        final double[] adjusted_R = {
                 1.177027e-05, 4.294736e-04, 4.294736e-04, 9.471343e-04, 9.471343e-04
                 , 9.471343e-04, 9.471343e-04, 9.803146e-04, 1.252532e-03, 1.897690e-03
                 , 2.779520e-03, 6.724807e-03, 1.263693e-02, 1.263693e-02, 1.745666e-02
@@ -440,7 +501,7 @@ public class TestStatistics {
                 , 7.626063e-01, 7.626063e-01, 7.626063e-01, 7.824868e-01, 7.988737e-01
                 , 8.802645e-01, 8.802645e-01, 9.304775e-01, 9.304775e-01, 9.437890e-01};
 
-        double[] adjusted_R_nocummin = {
+        final double[] adjusted_R_nocummin = {
                 1.177027e-05, 5.253976e-04, 4.294736e-04, 1.226848e-03, 1.052610e-03
                 , 1.034567e-03, 9.471343e-04, 9.803146e-04, 1.252532e-03, 1.897690e-03
                 , 2.779520e-03, 6.724807e-03, 1.270165e-02, 1.263693e-02, 1.745666e-02
@@ -454,40 +515,30 @@ public class TestStatistics {
         };
 
 
-        int n = p.length;
+        final int n = p.length;
         for (int rank = p.length; rank >= 1; rank--)
 
         {
-            int index = rank - 1;
+            final int index = rank - 1;
             assertEquals("rank: " + rank, adjusted_R_nocummin[index], p[index] * (((double) n) / (double) rank), 0.01);
         }
 
-        DifferentialExpressionResults list2 = new DifferentialExpressionResults();
+        final DifferentialExpressionResults list2 = new DifferentialExpressionResults();
         list2.declareStatistic("p-value");
         int i = 0;
-        for (double pValue : p)
-
-        {
-            DifferentialExpressionInfo info = new DifferentialExpressionInfo();
-            info.elementId = new MutableString("" + i++);
+        for (final double pValue : p) {
+            final DifferentialExpressionInfo info = new DifferentialExpressionInfo(String.valueOf(i++));
             info.statistics.add(pValue);
             list2.add(info);
         }
 
-        DifferentialExpressionResults list3 = fdr.adjust(list2, "p-value");
+        final DifferentialExpressionResults list3 = fdr.adjust(list2, "p-value");
         System.out.println("list3:" + list3);
-        i = 0;
-        int index = list3.getStatisticIndex("p-value-BH-FDR-q-value");
-        for (
-                DifferentialExpressionInfo infoAdjusted
-                : list3)
-
-        {
+        final int index = list3.getStatisticIndex("p-value-BH-FDR-q-value");
+        for (final DifferentialExpressionInfo infoAdjusted : list3) {
             final int elementIndex = Integer.parseInt(infoAdjusted.elementId.toString());
-            assertEquals("adjusted p-values must match for i=" + infoAdjusted.elementId, adjusted_R[elementIndex],
-                    infoAdjusted.statistics.get(index), 0.01);
-
+            assertEquals("adjusted p-values must match for i=" + infoAdjusted.elementId,
+                    adjusted_R[elementIndex], infoAdjusted.statistics.get(index), 0.01);
         }
-
     }
 }

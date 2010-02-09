@@ -18,12 +18,12 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
 
 /**
- * Calculate differential expression statistics for lists of elements under study (e.g., genes, exons).
+ * Calculate differential expression statistics for lists of elements under study
+ * (e.g., genes, exons).
  *
  * @author Fabien Campagne
  *         Date: Jan 11, 2010
@@ -31,27 +31,34 @@ import it.unimi.dsi.lang.MutableString;
  */
 public abstract class StatisticCalculator {
     protected DifferentialExpressionResults results;
+
     /**
      * The name of the statistic implemented by this calculator.
      * May be null if the statistic name depends on the group name
      */
-    public final MutableString STATISTIC_ID;
+    protected final MutableString statisticId;
 
-    public StatisticCalculator(String statisticId) {
+    /**
+     * Create a new StatisticCalculator with the given name.
+     * @param statisticId
+     */
+    protected StatisticCalculator(final String statisticId) {
         if (statisticId != null) {
-            STATISTIC_ID = new MutableString(statisticId);
+            this.statisticId = new MutableString(statisticId);
         } else {
-            STATISTIC_ID = null;
+            this.statisticId = null;
         }
     }
 
-    public void setResults(DifferentialExpressionResults results) {
+    public void setResults(final DifferentialExpressionResults results) {
         this.results = results;
-        if (STATISTIC_ID != null) results.declareStatistic(STATISTIC_ID);
+        if (statisticId != null) {
+            results.declareStatistic(statisticId);
+        }
     }
 
     /**
-     * Override this method to support a certain number of groups
+     * Override this method to support a certain number of groups.
      *
      * @param group
      * @return
@@ -66,31 +73,26 @@ public abstract class StatisticCalculator {
     /**
      * Evaluate a statistic on all the elements described in a differentialExpressionCalculator.
      *
-     * @param differentialExpressionCalculator
-     *              The deCalculator that keeps the data needed to evaluate the statistic
+     * @param differentialExpressionCalculator The deCalculator that keeps the data
+     * needed to evaluate the statistic
      * @param group The set of groups for which the comparison is sought.
      * @return list of DifferentialExpressionInfo, one per element processed.
      */
-    DifferentialExpressionResults evaluate(DifferentialExpressionCalculator differentialExpressionCalculator,
-                                           DifferentialExpressionResults inputList,
-                                           String... group) {
+    DifferentialExpressionResults evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
+                                           final DifferentialExpressionResults inputList,
+                                           final String... group) {
         if (inputList.size() == 0) {
             // define an info elements for each element ids defined by the calculator:
-            ObjectSet<MutableString> elementIds = differentialExpressionCalculator.getElementIds();
-            for (MutableString elementId : elementIds) {
-                DifferentialExpressionInfo info = new DifferentialExpressionInfo();
-                info.elementId = elementId;
+            final ObjectSet<MutableString> elementIds = differentialExpressionCalculator.getElementIds();
+            for (final MutableString elementId : elementIds) {
+                final DifferentialExpressionInfo info = new DifferentialExpressionInfo(elementId);
                 results.add(info);
             }
         }
-        for (DifferentialExpressionInfo info : inputList) {
 
+        for (final DifferentialExpressionInfo info : inputList) {
             evaluate(differentialExpressionCalculator, results, info, group);
-
         }
         return inputList;
-
     }
-
-
 }

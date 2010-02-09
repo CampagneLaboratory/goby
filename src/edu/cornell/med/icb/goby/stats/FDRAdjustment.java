@@ -27,17 +27,17 @@ package edu.cornell.med.icb.goby.stats;
  */
 public abstract class FDRAdjustment {
 
-    public DifferentialExpressionResults adjust(DifferentialExpressionResults list, String... statisticIds) {
-        for (String statisticId : statisticIds) {
+    public DifferentialExpressionResults adjust(final DifferentialExpressionResults list, final String... statisticIds) {
+        for (final String statisticId : statisticIds) {
             adjust(list, statisticId);
         }
         return list;
     }
 
-    public double getListSize(DifferentialExpressionResults list, int statisticIndex) {
+    public double getListSize(final DifferentialExpressionResults list, final int statisticIndex) {
         int listSize = 0;
         // exclude NaN p-values from the number of comparisons:
-        for (DifferentialExpressionInfo info : list) {
+        for (final DifferentialExpressionInfo info : list) {
             final double pValue = info.statistics.get(statisticIndex);
             if (info.informative()) {
                 listSize++;
@@ -46,5 +46,5 @@ public abstract class FDRAdjustment {
         return listSize;
     }
 
-    abstract public DifferentialExpressionResults adjust(DifferentialExpressionResults list, String statisticId);
+    public abstract DifferentialExpressionResults adjust(DifferentialExpressionResults list, String statisticId);
 }

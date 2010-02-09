@@ -94,7 +94,7 @@ public class FisherExact {
 
         final Result result;
         final Rengine rengine = GobyRengine.getInstance().getRengine();
-        if (rengine != null) {
+        if (rengine != null && rengine.isAlive()) {
             final boolean vectorAssignResult = rengine.assign("vector", vector);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Vector assigned: " +  vectorAssignResult);
@@ -121,29 +121,29 @@ public class FisherExact {
         return result;
     }
 
-        /**
-         * Performs Fisher's exact test for testing the null of independence of rows and columns
-         * in a contingency table with fixed marginals.
-         * <p>
-         * The order of the values in the table are "by column" so that if the array contains
-         * (1,2,3,11,12,13) and nrows = 3, ncols = 2, the following matrix is created:<br/>
-         * <pre>
-         *      C1  C2
-         *  R1   1  11
-         *  R2   2  12
-         *  R3   3  13
-         * </pre>
-         *
-         * @param vector An array of integer values used to populate the matrtix to be evaluated.
-         * @param nrows The number of rows in the resulting martrix
-         * @param ncols The number of columns in the resulting matrix
-         * @param alternativeHypothesis The alternative hypothesis to use for the calculation
-         * @return The result from the fisher test (should never be null)
-         */
-        public Result fexact(final int[] vector, final int nrows, final int ncols,
-                             final AlternativeHypothesis alternativeHypothesis) {
-            return fexact(vector, nrows, ncols, alternativeHypothesis, false);
-        }
+    /**
+     * Performs Fisher's exact test for testing the null of independence of rows and columns
+     * in a contingency table with fixed marginals.
+     * <p>
+     * The order of the values in the table are "by column" so that if the array contains
+     * (1,2,3,11,12,13) and nrows = 3, ncols = 2, the following matrix is created:<br/>
+     * <pre>
+     *      C1  C2
+     *  R1   1  11
+     *  R2   2  12
+     *  R3   3  13
+     * </pre>
+     *
+     * @param vector An array of integer values used to populate the matrtix to be evaluated.
+     * @param nrows The number of rows in the resulting martrix
+     * @param ncols The number of columns in the resulting matrix
+     * @param alternativeHypothesis The alternative hypothesis to use for the calculation
+     * @return The result from the fisher test (should never be null)
+     */
+    public Result fexact(final int[] vector, final int nrows, final int ncols,
+                         final AlternativeHypothesis alternativeHypothesis) {
+        return fexact(vector, nrows, ncols, alternativeHypothesis, false);
+    }
 
     /**
      * Performs Fisher's exact test using two input vectors.
@@ -161,7 +161,7 @@ public class FisherExact {
 
         final Result result;
         final Rengine rengine = GobyRengine.getInstance().getRengine();
-        if (rengine != null) {
+        if (rengine != null && rengine.isAlive()) {
             final boolean xAssignResult = rengine.assign("x", factor1);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("X assigned: " +  xAssignResult);
@@ -311,6 +311,28 @@ public class FisherExact {
      */
     public Result fexact(final int r1c1, final int r2c1, final int r1c2, final int r2c2) {
         return fexact(new int[] {r1c1, r2c1, r1c2, r2c2}, 2, 2);
+    }
+
+    /**
+     * Calculates the 2-tailed p-value, using the the same input data parameters as
+     * {@link gominer.Fisher#fisher(int, int, int, int)}.
+     *
+     * @param totalChanged The number of genes changed in the experiment N1
+     * @param changedInNode The number of genes changed in a particular node x
+     * @param total The total number of genes in the experiment (changed and unchanged) N1+N2
+     * @param inNode The number of genes in the node (changed and unchanged) x+y
+     * @return The computed 2-tailed p-value
+     */
+    public double twoTailed(final int totalChanged, final int changedInNode,
+                            final int total, final int inNode) {
+        final int[] vector = new int[4];
+        vector[0] = changedInNode;
+        vector[1] = totalChanged - changedInNode;
+        vector[2] = inNode - changedInNode;
+        vector[3] = (total - inNode) - (totalChanged - changedInNode);
+        final Result result = fexact(vector, 2, 2);
+        LOG.debug(result);
+        return result.getPValue();
     }
 
     /**

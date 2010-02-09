@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.R;
 
+import gominer.Fisher;
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -153,6 +154,20 @@ public class TestFisherExact {
         assertEquals("Odds ratio does not match", 1.0, result.getOddsRatio(), EPSILON);
         assertEquals("Wrong Hypothesis for result", FisherExact.AlternativeHypothesis.less,
                 result.getAlternativeHypothesis());
+    }
+
+    /**
+     * Validates that the R implementation returns the same p-value for a simple
+     * example set.
+     */
+    @Test
+    public void twoTailed() {
+        final Fisher gominer = new Fisher();
+        final double gominerPValue = gominer.fisher(40, 10, 100, 30);
+
+        final FisherExact fisherExact = new FisherExact();
+        final double fisherExactPValue = fisherExact.twoTailed(40, 10, 100, 30);
+        assertEquals("R result does not match gominer", gominerPValue, fisherExactPValue, EPSILON);
     }
 
     /**

@@ -20,8 +20,6 @@ package edu.cornell.med.icb.goby.stats;
 
 import it.unimi.dsi.lang.MutableString;
 
-import java.util.Collections;
-
 /**
  * Implement the Bonferroni multiple testing correction.
  *
@@ -31,23 +29,26 @@ import java.util.Collections;
  * @see <a href="http://en.wikipedia.org/wiki/Bonferroni_correction">Wikipedia</a>
  */
 public class BonferroniAdjustment extends FDRAdjustment {
-    public DifferentialExpressionResults adjust(DifferentialExpressionResults list, String statisticId) {
-        MutableString statistic = new MutableString(statisticId);
+    @Override
+    public DifferentialExpressionResults adjust(final DifferentialExpressionResults list, final String statisticId) {
+        final MutableString statistic = new MutableString(statisticId);
 
         final String adjustedStatisticId = statisticId + "-Bonferroni-adjusted";
         list.declareStatistic(adjustedStatisticId);
-        int adjustedStatisticIndex = list.getStatisticIndex(new MutableString(adjustedStatisticId));
+        final int adjustedStatisticIndex = list.getStatisticIndex(new MutableString(adjustedStatisticId));
 
         final int statisticIndex = list.getStatisticIndex(statistic);
-        double listSize = getListSize(list, statisticIndex);
+        final double listSize = getListSize(list, statisticIndex);
 
 
-        for (DifferentialExpressionInfo info : list) {
+        for (final DifferentialExpressionInfo info : list) {
 
             final double pValue = info.statistics.get(statisticIndex);
             double adjustedPValue = pValue * listSize;
 
-            if (adjustedPValue > 1) adjustedPValue = 1;
+            if (adjustedPValue > 1) {
+                adjustedPValue = 1;
+            }
             info.statistics.size(list.getNumberOfStatistics());
             info.statistics.set(adjustedStatisticIndex, adjustedPValue > 1 ? 1 : adjustedPValue);
 

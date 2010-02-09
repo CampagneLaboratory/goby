@@ -20,11 +20,10 @@ package edu.cornell.med.icb.goby.stats;
 
 import it.unimi.dsi.lang.MutableString;
 
-import java.util.Collection;
 import java.util.Collections;
 
 /**
- * Compute Benjamini Hochberg adjusted q-values
+ * Compute Benjamini Hochberg adjusted q-values.
  *
  * @author Fabien Campagne
  *         Date: Jan 12, 2010
@@ -33,17 +32,18 @@ import java.util.Collections;
  */
 public class BenjaminiHochbergAdjustment extends FDRAdjustment {
 
-    public DifferentialExpressionResults adjust(DifferentialExpressionResults list, String statisticId) {
-        MutableString statistic = new MutableString(statisticId);
+    @Override
+    public DifferentialExpressionResults adjust(final DifferentialExpressionResults list, final String statisticId) {
+        final MutableString statistic = new MutableString(statisticId);
         final String adjustedStatisticId = statisticId + "-BH-FDR-q-value";
         list.declareStatistic(adjustedStatisticId);
-        int adjustedStatisticIndex = list.getStatisticIndex(new MutableString(adjustedStatisticId));
+        final int adjustedStatisticIndex = list.getStatisticIndex(new MutableString(adjustedStatisticId));
         // sort differentially expressed elements by increasing statistic (typically a P-value):
 
         Collections.sort(list, new StatisticComparator(list, statistic));
 
         final int statisticIndex = list.getStatisticIndex(statistic);
-        double listSize = getListSize(list, statisticIndex);
+        final double listSize = getListSize(list, statisticIndex);
 
         ///int rank = 1;
         double cummin = 1;
@@ -51,13 +51,13 @@ public class BenjaminiHochbergAdjustment extends FDRAdjustment {
         for (int rank = list.size(); rank >= 1; --rank) {
 
             //   for (DifferentialExpressionInfo info : list) {
-            DifferentialExpressionInfo info = list.get(rank - 1);
+            final DifferentialExpressionInfo info = list.get(rank - 1);
             final double pValue = info.statistics.get(statisticIndex);
             double adjustedPValue = 1;
             if (pValue == pValue) {
 
                 // pValue is a number.
-                final double adjustment = (double) listSize / (double) rank;
+                final double adjustment = listSize / (double) rank;
                 adjustedPValue = pValue * adjustment;
                 if (adjustedPValue < cummin) {
                     // keep track of the smallest adjusted P-value seen so far (traversing from large to small P-values):
@@ -71,10 +71,12 @@ public class BenjaminiHochbergAdjustment extends FDRAdjustment {
                 }
             } else {
                 // we just encountered a NaN p-value, reset cummin..
-                cummin=1;
+                cummin = 1;
             }
 
-            if (adjustedPValue > 1) adjustedPValue = 1;
+            if (adjustedPValue > 1) {
+                adjustedPValue = 1;
+            }
             /*   System.out.println(String.format("Adjusting p-value %g by listSize=%g rank=%d factor=%g => %g", pValue,
                      listSize, rank, adjustment, adjustedPValue));
             */

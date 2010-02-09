@@ -18,8 +18,8 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.lang.MutableString;
 
 /**
  * @author Fabien Campagne
@@ -27,47 +27,45 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
  *         Time: 11:35:23 AM
  */
 public class AverageCalculator extends StatisticCalculator {
-    public AverageCalculator(DifferentialExpressionResults results) {
+    public AverageCalculator(final DifferentialExpressionResults results) {
         this();
         setResults(results);
-
-
     }
 
     public AverageCalculator() {
         super(null);
     }
 
-    // Can do as long as there is at least one group.
-    boolean canDo(String[] group) {
+    /**
+     * Can do as long as there is at least one group.
+      */
+    @Override
+    boolean canDo(final String[] group) {
         return group.length > 0;
     }
 
-    DifferentialExpressionInfo evaluate(DifferentialExpressionCalculator differentialExpressionCalculator,
-                                        DifferentialExpressionResults results,
-                                        DifferentialExpressionInfo info,
-                                        String... group) {
-        for (String groupId : group) {
+    @Override
+    DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
+                                        final DifferentialExpressionResults results,
+                                        final DifferentialExpressionInfo info,
+                                        final String... group) {
+        for (final String groupId : group) {
             final MutableString rpkmStatId = getStatisticId(groupId, "RPKM");
             if (!results.isStatisticDefined(rpkmStatId)) {
-
                 results.declareStatistic(rpkmStatId);
-
             }
             final MutableString countStatisticId = getStatisticId(groupId, "count");
             if (!results.isStatisticDefined(countStatisticId)) {
-
                 results.declareStatistic(countStatisticId);
-
             }
-            //calculate the average over the group:
-            ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupId);
+
+            // calculate the average over the group:
+            final ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupId);
 
             double averageRPKM = 0;
             double averageCount = 0;
 
-
-            for (String sample : samplesA) {
+            for (final String sample : samplesA) {
                 averageRPKM += differentialExpressionCalculator.getRPKM(sample, info.elementId);
                 averageCount += differentialExpressionCalculator.getOverlapCount(sample, info.elementId);
             }
@@ -77,14 +75,12 @@ public class AverageCalculator extends StatisticCalculator {
             info.statistics.size(results.getNumberOfStatistics());
             info.statistics.set(results.getStatisticIndex(rpkmStatId), averageRPKM);
             info.statistics.set(results.getStatisticIndex(countStatisticId), averageCount);
-
         }
-
 
         return info;
     }
 
-    public MutableString getStatisticId(String groupId, String modifier) {
+    public MutableString getStatisticId(final String groupId, final String modifier) {
         return new MutableString("average " + modifier + " group " + groupId);
     }
 }

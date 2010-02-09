@@ -18,30 +18,29 @@
 
 package edu.cornell.med.icb.goby.stats;
 
+import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
-import edu.cornell.med.icb.identifier.IndexedIdentifier;
 
 import java.io.PrintWriter;
 
 /**
  * Store a list of results from differential expression statistics.
- * 
+ *
  * @author Fabien Campagne
  *         Date: Jan 12, 2010
  *         Time: 5:34:36 PM
  */
 public class DifferentialExpressionResults extends ObjectArrayList<DifferentialExpressionInfo> {
-
-    private IndexedIdentifier statisticIds = new IndexedIdentifier();
-    private ObjectArrayList<MutableString> sortedStatisticIds = new ObjectArrayList<MutableString>();
+    private final IndexedIdentifier statisticIds = new IndexedIdentifier();
+    private final ObjectArrayList<MutableString> sortedStatisticIds = new ObjectArrayList<MutableString>();
 
     /**
      * Declare a new statistic.
      *
      * @param statisticId
      */
-    public void declareStatistic(String statisticId) {
+    public void declareStatistic(final String statisticId) {
         final MutableString mutableString = new MutableString(statisticId);
         statisticIds.registerIdentifier(mutableString);
         sortedStatisticIds.add(mutableString);
@@ -52,16 +51,16 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
      *
      * @param statisticId
      */
-    public void declareStatistic(MutableString statisticId) {
+    public void declareStatistic(final MutableString statisticId) {
         statisticIds.registerIdentifier(statisticId);
         sortedStatisticIds.add(statisticId);
     }
 
-    public double getStatistic(DifferentialExpressionInfo info, MutableString statisticId) {
+    public double getStatistic(final DifferentialExpressionInfo info, final MutableString statisticId) {
         return info.statistics.get(statisticIds.get(statisticId));
     }
 
-    public int getStatisticIndex(MutableString statisticId) {
+    public int getStatisticIndex(final MutableString statisticId) {
         return statisticIds.getInt(statisticId);
     }
 
@@ -71,23 +70,22 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
 
     @Override
     public String toString() {
-
-        MutableString buffer = new MutableString();
+        final MutableString buffer = new MutableString();
         buffer.append("element-id ");
-        for (MutableString statId : sortedStatisticIds) {
+        for (final MutableString statId : sortedStatisticIds) {
             buffer.append(statId);
             buffer.append(" ");
         }
         buffer.append("\n");
-       for (DifferentialExpressionInfo info: this) {
+       for (final DifferentialExpressionInfo info : this) {
             buffer.append(info.toString());
-            buffer.append('\n'); 
+            buffer.append('\n');
        }
 
         return buffer.toString();
     }
 
-    public boolean isStatisticDefined(MutableString groupId) {
+    public boolean isStatisticDefined(final MutableString groupId) {
         return statisticIds.containsKey(groupId);
     }
 
@@ -97,16 +95,15 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
      * @param printWriter
      * @param delimiter
      */
-    public void write(PrintWriter printWriter, char delimiter) {
-
+    public void write(final PrintWriter printWriter, final char delimiter) {
         printWriter.append("element-id ");
-        for (MutableString statId : sortedStatisticIds) {
+        for (final MutableString statId : sortedStatisticIds) {
             printWriter.append(delimiter);
             printWriter.append(statId);
 
         }
         printWriter.append("\n");
-        for (DifferentialExpressionInfo info : this.subList(0, size())) {
+        for (final DifferentialExpressionInfo info : this.subList(0, size())) {
             if (info.informative()) {
             info.write(printWriter, delimiter);
             printWriter.append("\n");
@@ -115,7 +112,7 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
         printWriter.flush();
     }
 
-    public int getStatisticIndex(String statisticId) {
+    public int getStatisticIndex(final String statisticId) {
         return getStatisticIndex(new MutableString(statisticId));
     }
 }

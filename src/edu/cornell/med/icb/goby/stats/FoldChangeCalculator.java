@@ -18,10 +18,7 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
-import it.unimi.dsi.lang.MutableString;
 
 /**
  * Calculates fold change from first group to second group (requires exactly two groups).
@@ -32,7 +29,7 @@ import it.unimi.dsi.lang.MutableString;
  */
 public class FoldChangeCalculator extends StatisticCalculator {
 
-    public FoldChangeCalculator(DifferentialExpressionResults results) {
+    public FoldChangeCalculator(final DifferentialExpressionResults results) {
         this();
         setResults(results);
 
@@ -44,33 +41,35 @@ public class FoldChangeCalculator extends StatisticCalculator {
     }
 
 
-    boolean canDo(String[] group) {
+    @Override
+    boolean canDo(final String[] group) {
         return group.length == 2;
     }
 
-    DifferentialExpressionInfo evaluate(DifferentialExpressionCalculator differentialExpressionCalculator,
-                                        DifferentialExpressionResults results,
-                                        DifferentialExpressionInfo info,
-                                        String... group) {
-        String groupA = group[0];
-        String groupB = group[1];
+    @Override
+    DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
+                                        final DifferentialExpressionResults results,
+                                        final DifferentialExpressionInfo info,
+                                        final String... group) {
+        final String groupA = group[0];
+        final String groupB = group[1];
 
-        ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
-        ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);
+        final ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
+        final ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);
         double averageA = 0;
         double averageB = 0;
 
 
-        for (String sample : samplesA) {
+        for (final String sample : samplesA) {
             averageA += differentialExpressionCalculator.getRPKM(sample, info.elementId);
         }
-        for (String sample : samplesB) {
+        for (final String sample : samplesB) {
             averageB += differentialExpressionCalculator.getRPKM(sample, info.elementId);
         }
 
-        double foldChangeStatistic = averageA / averageB;
+        final double foldChangeStatistic = averageA / averageB;
         info.statistics.size(results.getNumberOfStatistics());
-        info.statistics.set(results.getStatisticIndex(STATISTIC_ID), foldChangeStatistic);
+        info.statistics.set(results.getStatisticIndex(statisticId), foldChangeStatistic);
 
         return info;
     }

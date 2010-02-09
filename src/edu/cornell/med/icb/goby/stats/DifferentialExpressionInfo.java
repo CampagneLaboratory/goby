@@ -18,9 +18,8 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import it.unimi.dsi.lang.MutableString;
-import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.lang.MutableString;
 
 import java.io.PrintWriter;
 
@@ -30,30 +29,40 @@ import java.io.PrintWriter;
  *         Time: 6:57:49 PM
  */
 public class DifferentialExpressionInfo {
-    MutableString elementId;
-    DoubleArrayList statistics = new DoubleArrayList();
+    final MutableString elementId;
+    final DoubleArrayList statistics = new DoubleArrayList();
+
+    public DifferentialExpressionInfo(final String elementId) {
+        super();
+        this.elementId = new MutableString(elementId);
+    }
+
+    public DifferentialExpressionInfo(final MutableString elementId) {
+        super();
+        this.elementId = elementId;
+    }
 
     @Override
     public String toString() {
         return String.format("[ %s %s ]", elementId, statistics.toString());
     }
 
-    public void write(PrintWriter printWriter, char delimiter) {
+    public void write(final PrintWriter printWriter, final char delimiter) {
         printWriter.append(elementId);
-        for (double value : statistics) {
+        for (final double value : statistics) {
             printWriter.append(delimiter);
             printWriter.append(String.format("%g", value));
         }
     }
 
     /**
-     * Is the DE informative? 
+     * Is the DE informative?
      * @return
      */
     public boolean informative() {
         boolean informative = false;
-        for (double value : statistics) {
-            if (value == value || value >0){
+        for (final double value : statistics) {
+            if (value == value || value > 0) {
                 // require something else than NaN or zero to be have an informative DE.
                 informative = true;
             }

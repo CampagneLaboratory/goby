@@ -21,12 +21,23 @@ package edu.cornell.med.icb.goby.modes;
 import cern.colt.Timer;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCount;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.stats.*;
+import edu.cornell.med.icb.goby.stats.AverageCalculator;
+import edu.cornell.med.icb.goby.stats.BenjaminiHochbergAdjustment;
+import edu.cornell.med.icb.goby.stats.BonferroniAdjustment;
+import edu.cornell.med.icb.goby.stats.ChiSquareTestCalculator;
+import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
+import edu.cornell.med.icb.goby.stats.DifferentialExpressionResults;
+import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
+import edu.cornell.med.icb.goby.stats.FisherExactTestCalculator;
+import edu.cornell.med.icb.goby.stats.FoldChangeCalculator;
+import edu.cornell.med.icb.goby.stats.FoldChangeMagnitudeCalculator;
+import edu.cornell.med.icb.goby.stats.TTestCalculator;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.rit.pj.IntegerForLoop;
 import edu.rit.pj.ParallelRegion;
@@ -44,6 +55,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.rosuda.JRI.Rengine;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -54,8 +66,8 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 
 /**
- * Reads a compact alignment and genome annotations and output read counts that overlap with the annotation segments.
- * Can be used to develop
+ * Reads a compact alignment and genome annotations and output read counts that overlap with
+ * the annotation segments.
  *
  * @author Xutao Deng
  * @author Fabien Campagne
@@ -86,18 +98,21 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      */
     private String annotationFile;
 
-    boolean filterByReferenceNames;
+    private boolean filterByReferenceNames;
     private ObjectSet<String> includeReferenceNames;
     private ObjectOpenHashSet<String> includeAnnotationTypes;
     private String[] inputFilenames;
     private boolean doComparison;
-    // The groups that should be compared, order matters.
+
+    /** The groups that should be compared, order matters. */
     private String[] groupComparison;
     private final boolean writeAnnotationCounts = true;
     private String statsFilename;
     private ParallelTeam team;
     private boolean parallel;
 
+    private final ObjectSet<String> groups = new ObjectArraySet<String>();
+    private final DifferentialExpressionCalculator deCalculator = new DifferentialExpressionCalculator();
 
     @Override
     public String getModeName() {
@@ -114,9 +129,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws java.io.IOException error parsing
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
+     * @throws IOException error parsing
+     * @throws JSAPException error parsing
      */
     @Override
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
@@ -126,15 +140,14 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         inputFilenames = jsapResult.getStringArray("input");
         outputFile = jsapResult.getString("output");
         statsFilename = jsapResult.getString("stats");
-        String groupsDefinition = jsapResult.getString("groups");
+        final String groupsDefinition = jsapResult.getString("groups");
         parseGroupsDefinition(groupsDefinition);
-        String compare = jsapResult.getString("compare");
+        final String compare = jsapResult.getString("compare");
         parseCompare(compare);
         annotationFile = jsapResult.getString("annotation");
         final String includeReferenceNameComas = jsapResult.getString("include-reference-names");
         includeReferenceNames = new ObjectOpenHashSet<String>();
         if (includeReferenceNameComas != null) {
-
             includeReferenceNames.addAll(Arrays.asList(includeReferenceNameComas.split("[,]")));
             System.out.println("Will write counts for the following sequences:");
             for (final String name : includeReferenceNames) {
@@ -142,17 +155,17 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             }
             filterByReferenceNames = true;
         }
+
         final String includeAnnotationTypeComas = jsapResult.getString("include-annotation-types");
         includeAnnotationTypes = new ObjectOpenHashSet<String>();
         if (includeAnnotationTypeComas != null) {
-
             includeAnnotationTypes.addAll(Arrays.asList(includeAnnotationTypeComas.split("[,]")));
             for (final String name : includeAnnotationTypes) {
                 if (name.equals("gene") | name.equals("intron") | name.equals("exon")) {
                     continue;
                 } else {
-                    System.out.println("Please enter a valid annotation type. " +
-                            "Valid annotation types include gene, intron and or exon. ");
+                    System.out.println("Please enter a valid annotation type. "
+                            + "Valid annotation types include gene, intron and or exon.");
                     System.exit(1);
                 }
                 System.out.println("Will write counts for the following annotation types:");
@@ -163,64 +176,61 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         return this;
     }
 
-
-    private void parseCompare(String compare) {
+    private void parseCompare(final String compare) {
         if (compare == null) {
             doComparison = false;
-        } else doComparison = true;
+        } else {
+            doComparison = true;
+        }
 
         if (doComparison) {
-            String[] groupLanguageText = compare.split("/");
-            for (String groupId : groupLanguageText) {
+            final String[] groupLanguageText = compare.split("/");
+            for (final String groupId : groupLanguageText) {
 
                 if (!groups.contains(groupId)) {
-                    System.err.println("Group " + groupId + " used in --compare must be defined. Please see the --groups option to define groups.");
+                    System.err.println("Group " + groupId + " used in --compare must be defined. "
+                            + "Please see the --groups option to define groups.");
                     System.exit(1);
                 }
-
             }
             groupComparison = groupLanguageText;
         }
     }
 
-    ObjectSet<String> groups = new ObjectArraySet<String>();
-    DifferentialExpressionCalculator deCalculator = new DifferentialExpressionCalculator();
-
-    private void parseGroupsDefinition(String groupsDefinition) {
+    private void parseGroupsDefinition(final String groupsDefinition) {
         if (groupsDefinition == null) {
             // no groups definition to parse.
             return;
         }
 
-        String[] groupsTmp = groupsDefinition.split("/");
-        for (String group : groupsTmp) {
-            String[] groupTokens = group.split("=");
-            String groupId = groupTokens[0];
-            String groupBasenames = groupTokens[1];
+        final String[] groupsTmp = groupsDefinition.split("/");
+        for (final String group : groupsTmp) {
+            final String[] groupTokens = group.split("=");
+            final String groupId = groupTokens[0];
+            final String groupBasenames = groupTokens[1];
             assert groupTokens.length == 2 : "group definition must have only two elements separated by an equal sign.";
             deCalculator.defineGroup(groupId);
             groups.add(groupId);
-            for (String basename : groupBasenames.split(",")) {
+            for (final String basename : groupBasenames.split(",")) {
                 System.out.println("Associating basename: " + basename + " to group: " + groupId);
                 deCalculator.associateSampleToGroup(basename, groupId);
-
             }
         }
     }
 
     class BasenameParallelRegion extends ParallelRegion {
-        private Object2ObjectMap<String, ObjectList<Annotation>> allAnnots;
-
-
+        private final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots;
         private final String[] inputFiles;
-        private BufferedWriter writer;
+        private final BufferedWriter writer;
 
-        BasenameParallelRegion(Object2ObjectMap<String, ObjectList<Annotation>> allAnnots, String[] inputFiles, BufferedWriter writer) {
+        BasenameParallelRegion(final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots,
+                               final String[] inputFiles, final BufferedWriter writer) {
             this.allAnnots = allAnnots;
             this.inputFiles = inputFiles;
             this.writer = writer;
         }
 
+        @Override
         public void run() throws Exception {
             execute(0, inputFiles.length - 1 /* end index must be inclusive. This is counter-intuitive */, new IntegerForLoop() {
 
@@ -229,7 +239,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     //   System.out.println(String.format("executing start= %d end=%d ",startIndex, endIndex));
                     for (int i = startIndex; i <= endIndex; ++i) {
                         if (i >= 0 && i < inputFilenames.length) {
-                            String inputBasename = AlignmentReader.getBasename(inputFiles[i]);
+                            final String inputBasename = AlignmentReader.getBasename(inputFiles[i]);
                             try {
                                 processOneBasename(allAnnots, writer, inputFiles[i], inputBasename);
                             } catch (IOException e) {
@@ -246,7 +256,6 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     }
 
     protected synchronized ParallelTeam getParallelTeam() {
-
         if (team == null) {
             if (!parallel) {
                 // 1 thread only is sequential
@@ -255,7 +264,6 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 // as many threads as configured with -Dpj.nt or default.
                 team = new ParallelTeam();
             }
-
         }
         LOG.info("Executing on " + team.getThreadCount() + " threads.");
         return team;
@@ -275,13 +283,11 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         timer.start();
         BufferedWriter writer = null;
         try {
-
-
             if (outputFile != null) {
                 writer = new BufferedWriter(new FileWriter(outputFile));
                 writer.write("basename\tmain-id\tsecondary-id\ttype\tchro\tstrand\tlength\tstart\tend\tin-count\tover-count\tRPKM\tlog2(RPKM+1)\texpression\tnum-exons\n");
             }
-            BasenameParallelRegion region = new BasenameParallelRegion(allAnnots, inputFilenames, writer);
+            final BasenameParallelRegion region = new BasenameParallelRegion(allAnnots, inputFilenames, writer);
             try {
                 getParallelTeam().execute(region);
             } catch (Exception e) {
@@ -301,11 +307,18 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 results = deCalculator.compare(results, new AverageCalculator(), groupComparison);
                 results = deCalculator.compare(results, new TTestCalculator(), groupComparison);
                 results = deCalculator.compare(results, new FisherExactTestCalculator(), groupComparison);
+
+                // TODO: refactor so that the "canDo" method can be used rather than checking for R
+                final Rengine rengine = GobyRengine.getInstance().getRengine();
+                if (rengine != null && rengine.isAlive()) {
+                    results = deCalculator.compare(results, new FisherExactRCalculator(), groupComparison);
+                }
                 results = deCalculator.compare(results, new ChiSquareTestCalculator(), groupComparison);
-                BenjaminiHochbergAdjustment BHFDR = new BenjaminiHochbergAdjustment();
-                BonferroniAdjustment BonferroniAdjust = new BonferroniAdjustment();
-                results = BonferroniAdjust.adjust(results, "t-test", "fisher-exact-test", "chi-square-test");
-                results = BHFDR.adjust(results, "t-test", "fisher-exact-test", "chi-square-test");
+
+                final BenjaminiHochbergAdjustment benjaminiHochbergAdjustment = new BenjaminiHochbergAdjustment();
+                final BonferroniAdjustment bonferroniAdjustment = new BonferroniAdjustment();
+                results = bonferroniAdjustment.adjust(results, "t-test", "fisher-exact-test", "chi-square-test");
+                results = benjaminiHochbergAdjustment.adjust(results, "t-test", "fisher-exact-test", "chi-square-test");
                 final PrintWriter statsOutput = new PrintWriter(statsFilename);
                 results.write(statsOutput, '\t');
 
@@ -315,16 +328,14 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             e.printStackTrace();
             System.exit(1);
         } finally {
-
-
             IOUtils.closeQuietly(writer);
         }
         timer.stop();
         System.out.println("time spent  " + timer.toString());
     }
 
-    private void processOneBasename(Object2ObjectMap<String, ObjectList<Annotation>> allAnnots,
-                                    BufferedWriter writer, String inputFile, String inputBasename) throws IOException {
+    private void processOneBasename(final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots,
+                                    BufferedWriter writer, final String inputFile, final String inputBasename) throws IOException {
         final AlignmentReader reader = new AlignmentReader(inputBasename);
         reader.readHeader();
         final int numberOfReferences = reader.getNumberOfTargets();
@@ -379,7 +390,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
         if (outputFile == null) {
             // output filename was not provided on the command line. We make one output per input basename
-            String outputFileTmp = FilenameUtils.removeExtension(inputFile) + ".ann-counts.tsv";
+            final String outputFileTmp = FilenameUtils.removeExtension(inputFile) + ".ann-counts.tsv";
             writer = new BufferedWriter(new FileWriter(outputFileTmp));
             writer.write("basename\tmain-id\tsecondary-id\ttype\tchro\tstrand\tlength\tstart\tend\tin-count\tover-count\tRPKM\tlog2(RPKM+1)\texpression\tnum-exons\n");
 
@@ -390,11 +401,10 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             // output filename was not provided on the command line. We close each basename output.
             IOUtils.closeQuietly(writer);
         }
-
     }
 
 
-    private void writeAnnotationCounts(Object2ObjectMap<String, ObjectList<Annotation>> allAnnots, BufferedWriter writer, String inputBasename, DoubleIndexedIdentifier referenceIds, AnnotationCount[] algs, IntSet referencesToProcess, int numAlignedReadsInSample) throws IOException {
+    private void writeAnnotationCounts(final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots, final BufferedWriter writer, final String inputBasename, final DoubleIndexedIdentifier referenceIds, final AnnotationCount[] algs, final IntSet referencesToProcess, final int numAlignedReadsInSample) throws IOException {
 
         // collect all element ids:
         if (doComparison) {
@@ -418,9 +428,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         }
 
         for (final int referenceIndex : referencesToProcess) {
-
             final String chromosomeName = referenceIds.getId(referenceIndex).toString();
-
             System.out.println("Writing annotation counts for reference " + chromosomeName);
 
             if (!allAnnots.containsKey(chromosomeName)) {

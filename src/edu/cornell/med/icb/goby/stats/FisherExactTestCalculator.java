@@ -18,78 +18,65 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
-import it.unimi.dsi.lang.MutableString;
-import org.apache.commons.math.stat.inference.TTest;
-import org.apache.commons.math.stat.inference.TTestImpl;
-import org.apache.commons.math.stat.inference.ChiSquareTest;
-import org.apache.commons.math.stat.inference.ChiSquareTestImpl;
-import org.apache.commons.math.MathException;
 import gominer.Fisher;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 
 /**
- * Calculates Fisher exact test P-value for an observed count difference between comparison groups (requires exactly two groups).
+ * Calculates Fisher exact test P-value for an observed count difference between comparison
+ * groups (requires exactly two groups).
  *
  * @author Fabien Campagne
  *         Date: Jan 11, 2010
  *         Time: 7:06:31 PM
  */
 public class FisherExactTestCalculator extends StatisticCalculator {
-
-    public FisherExactTestCalculator(DifferentialExpressionResults results) {
+    public FisherExactTestCalculator(final DifferentialExpressionResults results) {
         this();
         setResults(results);
-
-
     }
 
     public FisherExactTestCalculator() {
         super("fisher-exact-test");
     }
 
-
-    boolean canDo(String[] group) {
+    @Override
+    boolean canDo(final String[] group) {
         return group.length == 2;
     }
 
 
-    DifferentialExpressionInfo evaluate(DifferentialExpressionCalculator differentialExpressionCalculator,
-                                        DifferentialExpressionResults results,
-                                        DifferentialExpressionInfo info,
-                                        String... group) {
-        String groupA = group[0];
-        String groupB = group[1];
+    @Override
+    DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
+                                        final DifferentialExpressionResults results,
+                                        final DifferentialExpressionInfo info,
+                                        final String... group) {
+        final String groupA = group[0];
+        final String groupB = group[1];
 
-        ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
-        ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);
+        final ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
+        final ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);
 
-        int sumCountInA = 0;// = new double[samplesA.size()];
-        int sumCountInB = 0;// = new double[samplesB.size()];
+        int sumCountInA = 0; // = new double[samplesA.size()];
+        int sumCountInB = 0; // = new double[samplesB.size()];
 
-
-        for (String sample : samplesA) {
+        for (final String sample : samplesA) {
             sumCountInA += differentialExpressionCalculator.getOverlapCount(sample, info.elementId);
         }
 
-
-        for (String sample : samplesB) {
+        for (final String sample : samplesB) {
             sumCountInB += differentialExpressionCalculator.getOverlapCount(sample, info.elementId);
         }
+
         int totalCountInA = 0;
         int totalCountInB = 0;
 
-
-        for (String sample : samplesA) {
+        for (final String sample : samplesA) {
             totalCountInA += differentialExpressionCalculator.getSumOverlapCounts(sample);
         }
-        for (String sample : samplesB) {
+        for (final String sample : samplesB) {
             totalCountInB += differentialExpressionCalculator.getSumOverlapCounts(sample);
         }
 
-
-        double pValue = 1;
 
         /**
          * Calculates the 2-tailed gominer.Fisher p value, using the counts that are
@@ -106,11 +93,10 @@ public class FisherExactTestCalculator extends StatisticCalculator {
          * @return 2-tailed gominer.Fisher p value
          */
         // public double fisher(final int totalChanged, final int changedInNode, final int total, final int inNode) {
-        Fisher fisher = new Fisher();
+        final Fisher fisher = new Fisher();
+        final double pValue = fisher.fisher(totalCountInA, sumCountInA, totalCountInA + totalCountInB, sumCountInA + sumCountInB);
 
-        pValue = fisher.fisher(totalCountInA, sumCountInA, totalCountInA + totalCountInB, sumCountInA + sumCountInB);
 
-       
         /* Test : fisher.fisher(40,10,100,30)=
                      Fisher's Exact Test
         http://www.langsrud.com/fisher.htm
@@ -122,8 +108,7 @@ public class FisherExactTestCalculator extends StatisticCalculator {
         ------------------------------------------
         */
         info.statistics.size(results.getNumberOfStatistics());
-        info.statistics.set(results.getStatisticIndex(STATISTIC_ID), pValue);
-
+        info.statistics.set(results.getStatisticIndex(statisticId), pValue);
 
         return info;
     }
