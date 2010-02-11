@@ -317,8 +317,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
                 final BenjaminiHochbergAdjustment benjaminiHochbergAdjustment = new BenjaminiHochbergAdjustment();
                 final BonferroniAdjustment bonferroniAdjustment = new BonferroniAdjustment();
-                results = bonferroniAdjustment.adjust(results, "t-test", "fisher-exact-test", "chi-square-test");
-                results = benjaminiHochbergAdjustment.adjust(results, "t-test", "fisher-exact-test", "chi-square-test");
+                results = bonferroniAdjustment.adjust(results, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+                results = benjaminiHochbergAdjustment.adjust(results, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
                 final PrintWriter statsOutput = new PrintWriter(statsFilename);
                 results.write(statsOutput, '\t');
 
