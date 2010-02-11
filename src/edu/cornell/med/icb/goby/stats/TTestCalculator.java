@@ -27,8 +27,8 @@ import org.apache.commons.math.stat.inference.TTestImpl;
 /**
  * Calculates T-Test P-values (two-tailed, equal variance). The T-test assess how likely the
  * mean of ln1p of the RPKMs in the first group differ from the same mean estimated in the
- * second group (requires exactly two groups). T-Test is applied to the ln1p, that is
- * the natural log of the RPKM plus one.
+ * second group (requires exactly two groups with at least 2 samples in each group).
+ * T-Test is applied to the ln1p, that is the natural log of the RPKM plus one.
  *
  * @author Fabien Campagne
  *         Date: Jan 11, 2010
@@ -61,6 +61,11 @@ public class TTestCalculator extends StatisticCalculator {
 
         final ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
         final ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);
+
+        if(samplesA.size() < 2 | samplesB.size()<2){
+            System.out.println("Insufficient data for t statistics. needs at least 2 samples per group.");
+            return info;
+        }
 
         final double[] valuesA = new double[samplesA.size()];
         final double[] valuesB = new double[samplesB.size()];
