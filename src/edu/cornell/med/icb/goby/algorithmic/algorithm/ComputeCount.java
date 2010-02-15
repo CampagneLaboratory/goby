@@ -27,16 +27,15 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Map;
 
+/**
+ * Data structure and algorithm to compute base-level read coverage histogram over a reference sequence.
+ */
 public class ComputeCount {
     /**
      * Used to log debug and informational messages.
@@ -66,14 +65,6 @@ public class ComputeCount {
     protected boolean isFixedLength;
     protected boolean startPopulateInitialized;
 
-    /**
-     * Positive strand starts position.
-     */
-    public Int2IntMap posStarts;
-    /**
-     * Positive strand starts position.
-     */
-    public Int2IntMap negStarts;
 
     public ComputeCount() {
         super();
@@ -85,35 +76,13 @@ public class ComputeCount {
         countPerBase = new Int2IntOpenHashMap();
         countKeys = new IntArrayList();
 
-        posStarts = new Int2IntOpenHashMap();
-        negStarts = new Int2IntOpenHashMap();
-        posStarts.defaultReturnValue(0);
-        negStarts.defaultReturnValue(0);
+
     }
 
-    public void printPosStarts(final String filename, final String chroName) throws IOException {
-        BufferedWriter writer = null;
-        try {
-            writer = new BufferedWriter(new FileWriter(filename, true));
-            writer.write(">" + chroName + "\n");
-            for (final Map.Entry<Integer, Integer> entry : posStarts.entrySet()) {
-                writer.write(entry.getKey() + "\t" + entry.getValue() + "\n");
-            }
-        } finally {
-            IOUtils.closeQuietly(writer);
-        }
-    }
 
-    public void populatePos(final int startIndex) {
-        int sval = posStarts.get(startIndex);
-        posStarts.put(startIndex, ++sval);
-    }
-
-    public void populateNeg(final int startIndex) {
-        int sval = negStarts.get(startIndex);
-        negStarts.put(startIndex, ++sval);
-    }
-
+    /**
+     * This method must be called before calling the populate method. It initializes data structures.
+     */
     public void startPopulating() {
         starts.defaultReturnValue(0);
         ends.defaultReturnValue(0);
@@ -124,6 +93,12 @@ public class ComputeCount {
         startPopulateInitialized = true;
     }
 
+    /**
+     * Convenience method to populate with a set of reads. This method does not scale, use only for testing
+     * with small sets of reads.
+     *
+     * @param reads
+     */
     public final void populate(final ObjectList<Read> reads) {
         startPopulating();
 
@@ -131,7 +106,7 @@ public class ComputeCount {
         for (final Read read : reads) {
             final int startIndex = read.start;
             final int endIndex = read.end;
-            final int readLength = populate(startIndex, endIndex);
+            populate(startIndex, endIndex);
         }
     }
 
@@ -155,25 +130,34 @@ public class ComputeCount {
     }
 
     /**
-     * Eeturns the number of reads starts ON or BEFORE the position.
+     * Returns the cumulative start count at position. The number of reads that starts at or before the specified position.
      *
-     * @param position
-     * @return
+     * @param position position along the reference sequence.
+     * @return Cumulative start count.
      */
     protected final int getNumberOfReadsWithStartAt(final int position) {
         return starts.get(position);
     }
 
     /**
-     * Get the number of reads ends before the position.
+     * Returns the cumulative end count at position. The number of reads that end immediately before
+     * the specified position (the cumulative end count).
      *
-     * @param position The end position to use
-     * @return The number of reads
+     * @param position position along the reference sequence.
+     * @return The cumulative end count.
      */
     protected final int getNumberOfReadsWithEndAt(final int position) {
         return ends.get(position + 1);
     }
 
+    /**
+     * accumulate start and end counts to produce cumulative start and end count.
+     * Pre-condition: the data structures starts and ends must have been populated (see method populate).
+     * Post-condition: the data structures starts and end now contain the cumulative start and end counts.
+     * It is bad design to reuse the same data structure to store different information, but is there a
+     * significant performance advantage in this case?
+     * // TODO evaluate and if no performance advantage, refactor to separate cumulative starts, ends and clear the input data structures.
+     */
     public void accumulate() {
         LOG.debug("accumulating starts");
         startKeys.addAll(starts.keySet());
@@ -185,6 +169,13 @@ public class ComputeCount {
         accumulateOneMap(ends, endKeys);
     }
 
+    /**
+     * Calculate the cumulative start or end counts. This method is either called with starts and startKeys,
+     * or with ends and endKeys. It will calculate the cumulative counts.
+     *
+     * @param map
+     * @param mapKeys
+     */
     public final void accumulateOneMap(final Int2IntMap map, final IntList mapKeys) {
         int prevValue = 0;
         for (final int key : mapKeys) {
@@ -195,6 +186,9 @@ public class ComputeCount {
         }
     }
 
+    /**
+     * Calculate base counts. Stores the result in the countPerBase and countKey maps.
+     */
     public void baseCount() {
         final IntSortedSet joints = new IntAVLTreeSet();
         joints.addAll(starts.keySet());
@@ -224,6 +218,9 @@ public class ComputeCount {
         Collections.sort(countKeys);
     }
 
+    /**
+     * Calculate base counts and write the result to the specified CountsWriter.
+     */
     public void baseCount(final CountsWriter writer) throws IOException {
         final IntSortedSet joints = new IntAVLTreeSet();
         joints.addAll(starts.keySet());
@@ -262,7 +259,6 @@ public class ComputeCount {
     }
 
 
-
     /**
      * Returns the total number of counts on the reference sequence.
      *
@@ -272,63 +268,12 @@ public class ComputeCount {
         return starts.get(startKeys.getInt(startKeys.size() - 1));
     }
 
-
-    /**
-     * Calculate base count by reference for the input. Returns position -> count map.
-     *
-     * @param reads
-     * @return result
-     */
-    public Int2IntMap baseRunByReference(final ObjectList<Read> reads) {
-        final Int2IntMap result = new Int2IntOpenHashMap();
-        populate(reads);
-        accumulate();
-
-        result.put(0, totalCountOnReference());
-        return result;
-    }
-
-    private final int ONE_MEGABYTE = 1000000;
-
-    private String getHeapSize() {
-        final long totalMemory = Runtime.getRuntime().totalMemory();
-        final long freeMemory = Runtime.getRuntime().freeMemory();
-        final long memoryUseMB = (totalMemory - freeMemory) / ONE_MEGABYTE;
-        final long memoryAvailMB = totalMemory / ONE_MEGABYTE;
-        return String.format("%,d / %,d MB", memoryUseMB, memoryAvailMB);
-    }
-
-    /**
-     * Calculate base count by reference for the input.
-     *
-     * @param reads
-     */
-    public void baseRun(final ObjectList<Read> reads) {
-        populate(reads);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("populate " + getHeapSize());
-        }
-        accumulate();
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("accumulate " + getHeapSize());
-        }
-        baseCount();
-    }
-
-    public IntList getReadStartList(final ObjectList<Read> reads) {
-        final IntList readStart = new IntArrayList();
-        for (int i = 0; i < reads.size(); i++) {
-            readStart.add(reads.get(i).start);
-        }
-        return readStart;
-    }
-
     /**
      * This implementation ignores strand, but some sub-classes need this information.
      *
      * @param startPosition Start position of a read.
      * @param endPosition   End position of a read.
-     * @param forwardStrand  True when the read matches the forward strand, false otherwise.
+     * @param forwardStrand True when the read matches the forward strand, false otherwise.
      */
 
     public void populate(final int startPosition, final int endPosition, final boolean forwardStrand) {
