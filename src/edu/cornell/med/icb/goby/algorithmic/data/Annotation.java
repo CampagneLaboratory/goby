@@ -30,6 +30,10 @@ import java.util.Collections;
 
 import org.apache.commons.io.IOUtils;
 
+/**
+ * Represent annotations along reference sequences. Each annotation can contain several intervals along the reference
+ * (called annotation segments).
+ */
 public class Annotation implements Comparable<Annotation> {
     public final String id;
     public final String chromosome;

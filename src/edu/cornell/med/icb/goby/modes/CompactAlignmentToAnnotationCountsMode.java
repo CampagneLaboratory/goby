@@ -404,7 +404,10 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     }
 
 
-    private void writeAnnotationCounts(final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots, final BufferedWriter writer, final String inputBasename, final DoubleIndexedIdentifier referenceIds, final AnnotationCount[] algs, final IntSet referencesToProcess, final int numAlignedReadsInSample) throws IOException {
+    private void writeAnnotationCounts(final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots,
+                                       final BufferedWriter writer, final String inputBasename,
+                                       final DoubleIndexedIdentifier referenceIds, final AnnotationCount[] algs,
+                                       final IntSet referencesToProcess, final int numAlignedReadsInSample) throws IOException {
 
         // collect all element ids:
         if (doComparison) {
@@ -454,8 +457,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     final int geneEnd = annot.getEnd();
                     final int geneLength = geneEnd - geneStart + 1;
                     final float geneDepth = algs[referenceIndex].averageReadsPerPosition(geneStart, geneEnd);
-                    final int geneOverlapReads = algs[referenceIndex].readsOverlapSegmentCount(geneStart, geneEnd);
-                    final int geneInsideReads = algs[referenceIndex].readsInSegmentCount(geneStart, geneEnd);
+                    final int geneOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(geneStart, geneEnd);
+                    final int geneInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(geneStart, geneEnd);
                     final int geneExpression = algs[referenceIndex].geneExpressionCount(annot);
                     final int numExons = annot.segments.size();
 
@@ -495,8 +498,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     final int exonLength = segment.getLength();
                     final String exonID = segment.id;
                     final float exonDepth = algs[referenceIndex].averageReadsPerPosition(exonStart, exonEnd);
-                    final int exonOverlapReads = algs[referenceIndex].readsOverlapSegmentCount(exonStart, exonEnd);
-                    final int exonInsideReads = algs[referenceIndex].readsInSegmentCount(exonStart, exonEnd);
+                    final int exonOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(exonStart, exonEnd);
+                    final int exonInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(exonStart, exonEnd);
                     final double exonRPKM = calculateRPKM(exonOverlapReads, segment.getLength(), numAlignedReadsInSample);
                     if (includeAnnotationTypes.contains("exon")) {
                         if (writeAnnotationCounts) {
@@ -523,8 +526,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                         final int intronLength = intronEnd - intronStart + 1;
                         final String intronID = segment.id + "-" + intronSegment.id;
                         final float intronDepth = algs[referenceIndex].averageReadsPerPosition(intronStart, intronEnd);
-                        final int intronOverlapReads = algs[referenceIndex].readsOverlapSegmentCount(intronStart, intronEnd);
-                        final int intronInsideReads = algs[referenceIndex].readsInSegmentCount(intronStart, intronEnd);
+                        final int intronOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(intronStart, intronEnd);
+                        final int intronInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(intronStart, intronEnd);
                         final double intronRPKM = calculateRPKM(intronOverlapReads, intronSegment.getLength(), numAlignedReadsInSample);
                         if (intronLength > 0) {
                             if (includeAnnotationTypes.contains("intron")) {
