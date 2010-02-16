@@ -353,8 +353,7 @@ public class BWAAligner extends AbstractAligner {
     }
 
 
-    public File[] indexReference(final File referenceFileOrDbBasename)
-            throws IOException, InterruptedException {
+    public File[] indexReference(final File referenceFileOrDbBasename) throws IOException {
         databasePrefix = referenceFileOrDbBasename.toString();
         if (isDatabaseBasename(databasePrefix)) {
             return matchingExtension(referenceFileOrDbBasename.toString(), extensions);

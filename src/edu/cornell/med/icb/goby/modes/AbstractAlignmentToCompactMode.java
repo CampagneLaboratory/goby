@@ -157,7 +157,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
 
         // initialize too-many-hits output file
         final AlignmentTooManyHitsWriter tmhWriter = new AlignmentTooManyHitsWriter(outputFile, mParameter);
-
+    
         try {
 
             // initialize numberOfReads

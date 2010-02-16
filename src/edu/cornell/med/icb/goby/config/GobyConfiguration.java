@@ -67,9 +67,14 @@ public class GobyConfiguration {
             new GobyConfiguration(DEFAULT_CONFIG_FILE_LOCATIONS);
 
     /**
-     * Path to the directory that contains the lastag executable.
+     * Path to the directory that contains the lastag executables (lastdb, lastag).
      */
     public static final String EXECUTABLE_PATH_LASTAG = "executables.path.lastag";
+
+    /**
+     * Path to the directory that contains the last executables (lastdb, lastal).
+     */
+    public static final String EXECUTABLE_PATH_LAST = "executables.path.last";
 
     /**
      * Path to the directory that contains the BWA executable.
@@ -156,6 +161,7 @@ public class GobyConfiguration {
     private Configuration getDefaultConfiguration() {
         final Configuration defaultConfiguration = new BaseConfiguration();
         defaultConfiguration.addProperty(EXECUTABLE_PATH_LASTAG, "");
+        defaultConfiguration.addProperty(EXECUTABLE_PATH_LAST, "");
         defaultConfiguration.addProperty(EXECUTABLE_PATH_BWA, "");
         defaultConfiguration.addProperty(DATABASE_DIRECTORY, ".");
         defaultConfiguration.addProperty(WORK_DIRECTORY, SystemUtils.getJavaIoTmpDir().toString());

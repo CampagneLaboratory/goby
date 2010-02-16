@@ -30,6 +30,7 @@ import java.io.IOException;
  *         Date: Jul 9, 2009
  *         Time: 11:38:59 AM
  */
+// TODO - replace setAmbiguityThreshold and setQualityFilterParameters with setFilterOptions()
 public interface Aligner {
     /**
      * Convert the compact reads file into the native read input format of the aligner. If the

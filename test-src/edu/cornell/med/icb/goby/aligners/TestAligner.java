@@ -58,6 +58,49 @@ public class TestAligner {
     };
 
     @Test
+    public void testAlignWithLast() throws IOException, InterruptedException {
+        final LastAligner aligner = new LastAligner();
+        final String databaseDirectory = FilenameUtils.concat(BASE_TEST_DIR, "db-last");
+        FileUtils.forceMkdir(new File(databaseDirectory));
+        aligner.setConfiguration(GobyConfiguration.getConfiguration());
+
+        aligner.setDatabaseDirectory(databaseDirectory);
+        aligner.setWorkDirectory(databaseDirectory);
+
+        final File compactReads =
+                new File(FilenameUtils.concat(BASE_TEST_DIR, "last-input-reads.compact-reads"));
+        final File compactReference =
+                new File(FilenameUtils.concat(BASE_TEST_DIR, "last-input-reference.compact-reads"));
+
+        writeCompact(compactReads, reads);
+        writeCompact(compactReference, reads); // SAME AS READS!
+
+        final File fastaFile = aligner.prepareReads(compactReads);
+        assertNotNull("Reads fasta file should not be null", fastaFile);
+        assertTrue("Reads fasta file should exist", fastaFile.exists());
+
+        int readCount = 0;
+        FastXReader fastaReader = null;
+        try {
+            fastaReader = new FastXReader(fastaFile.getAbsolutePath());
+            assertEquals("File should be in fasta format", "fa", fastaReader.getFileType());
+            for (final FastXEntry entry : fastaReader) {
+                assertEquals("Mismatch for entry " + readCount,
+                        reads[readCount], entry.getSequence().toString());
+                readCount++;
+            }
+        } finally {
+            if (fastaReader != null) {
+                fastaReader.close();
+            }
+        }
+        assertEquals("Number of sequences in fasta file do not match", reads.length, readCount);
+
+        aligner.setDatabaseName(aligner.getDefaultDbNameForReferenceFile(compactReference));
+        aligner.align(compactReference, compactReads, FilenameUtils.concat(BASE_TEST_DIR, "last-output"));
+    }
+
+    @Test
     public void testAlignWithLastag() throws IOException, InterruptedException {
         final LastagAligner aligner = new LastagAligner();
         final String databaseDirectory = FilenameUtils.concat(BASE_TEST_DIR, "db-lastag");

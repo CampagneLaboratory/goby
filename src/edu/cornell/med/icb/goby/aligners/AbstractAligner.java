@@ -39,10 +39,7 @@ import java.util.Collection;
  *         Date: Jul 10, 2009
  *         Time: 3:26:45 PM
  */
-// TODO - Aligner - replace setAmbiguityThreshold and setQualityFilterParameters with setFilterOptions()
-// TODO - AbstractAligner - replace mParameter and qualityFilterParameters with filterParams?
-// TODO - LastagAligner - replace getSeedMaxMultiplicity() with setSeedMaxMultiplicity()
-
+// TODO - replace mParameter and qualityFilterParameters with filterParams?
 public abstract class AbstractAligner implements Aligner {
     private static final Log LOG = LogFactory.getLog(AbstractAligner.class);
 
@@ -328,7 +325,6 @@ public abstract class AbstractAligner implements Aligner {
         processor.setQualityFilterParameters(qualityFilterParameters);
         processor.setAmbiguityThreshold(mParameter);
         processor.execute();
-
 
         return buildResults(outputBasename);
     }

@@ -22,6 +22,7 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.aligners.Aligner;
 import edu.cornell.med.icb.goby.aligners.BWAAligner;
+import edu.cornell.med.icb.goby.aligners.LastAligner;
 import edu.cornell.med.icb.goby.aligners.LastagAligner;
 import edu.cornell.med.icb.goby.config.GobyConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -44,7 +45,7 @@ public class AlignMode extends AbstractGobyMode {
     private static final Log LOG = LogFactory.getLog(AlignMode.class);
 
     public enum AlignerTypes {
-        lastag, bwa
+        bwa, last, lastag
     }
 
     /**
@@ -218,16 +219,22 @@ public class AlignMode extends AbstractGobyMode {
     public void execute() throws IOException {
         Aligner aligner = null;
         switch (alignerType) {
+            case last:
+                aligner = new LastAligner();
+                break;
             case lastag:
                 aligner = new LastagAligner();
                 break;
             case bwa:
                 aligner = new BWAAligner();
                 break;
+            default:
+                System.err.println("Unsupported aligner: " + alignerType);
+                System.exit(2);
         }
 
         if (aligner == null) {
-            System.out.println("Could not initialize aligner.");
+            System.err.println("Could not initialize aligner.");
             System.exit(1);
         }
 
@@ -253,7 +260,6 @@ public class AlignMode extends AbstractGobyMode {
                 alignmentFiles = aligner.align(referenceFile, readsFile, outputBasename);
             } else if (getDefaultDatabaseNameFlag) {
                 System.out.println(aligner.getDefaultDbNameForReferenceFile(referenceFile));
-
             }
         } catch (InterruptedException e) {
             LOG.error(e);
