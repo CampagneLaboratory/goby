@@ -329,7 +329,7 @@ public class LastAligner extends AbstractAligner {
         alignerOptions += (CLI.isKeywordGiven(opts, "c")) ? " -c " + CLI.getIntOption(opts, "c", -999) : "";
         alignerOptions += (CLI.isKeywordGiven(opts, "x")) ? " -x " + CLI.getIntOption(opts, "x", -999) : "";
         alignerOptions += (CLI.isKeywordGiven(opts, "y")) ? " -y " + CLI.getIntOption(opts, "y", -999) : "";
-        alignerOptions += (CLI.isKeywordGiven(opts, "m")) ? " -m " + CLI.getIntOption(opts, "m", -999) : ""; // getSeedMaxMultiplicity()
+        // alignerOptions += (CLI.isKeywordGiven(opts, "m")) ? " -m " + CLI.getIntOption(opts, "m", -999) : ""; // setAmbiguityThreshold()
         alignerOptions += (CLI.isKeywordGiven(opts, "k")) ? " -k " + CLI.getIntOption(opts, "k", -999) : "";
         alignerOptions += (CLI.isKeywordGiven(opts, "w")) ? " -w " + CLI.getIntOption(opts, "w", -999) : "";
         // BOOLEAN -v
