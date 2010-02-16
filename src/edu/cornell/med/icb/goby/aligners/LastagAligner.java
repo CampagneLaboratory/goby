@@ -24,6 +24,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -281,13 +282,12 @@ public class LastagAligner extends LastAligner {
 
         // convert native alignment into compact reads
         final File[] buildResults = processAlignment(referenceFile, readsFile, outputBasename);
-/*
+
         FileUtils.deleteQuietly(new File(outputBasename + ".maf"));
         FileUtils.deleteQuietly(new File(outputBasename + ".counts"));
 
         // also delete the colorSpaceMatrix file, if created
         FileUtils.deleteQuietly(new File(matrixFilename));
-*/
         return buildResults;
     }
 }
