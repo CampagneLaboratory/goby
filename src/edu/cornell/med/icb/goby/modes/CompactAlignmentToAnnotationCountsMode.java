@@ -518,6 +518,9 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                                     exonRPKM,
                                     log2(exonRPKM)));
                         }
+                        if (doComparison) {
+                        deCalculator.observe(basename, exonID, exonOverlapReads, exonRPKM);
+                    }
                     }
                     if (i < numberIntrons) {
                         final int intronStart = segment.end + 1;
