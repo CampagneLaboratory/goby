@@ -40,7 +40,7 @@ import java.util.Iterator;
  *         Date: Jul 26, 2009
  *         Time: 4:16:33 PM
  */
-public class GobyConfiguration {
+public final class GobyConfiguration {
     /**
      * Used to log debug and informational messages.
      */
@@ -68,16 +68,21 @@ public class GobyConfiguration {
 
     /**
      * Path to the directory that contains the lastag executables (lastdb, lastag).
+     * @see edu.cornell.med.icb.goby.aligners.LastagAligner
      */
     public static final String EXECUTABLE_PATH_LASTAG = "executables.path.lastag";
 
     /**
      * Path to the directory that contains the last executables (lastdb, lastal).
+     * @see edu.cornell.med.icb.goby.aligners.LastAligner
+     * @see <a href="http://last.cbrc.jp/">http://last.cbrc.jp/</a>
      */
     public static final String EXECUTABLE_PATH_LAST = "executables.path.last";
 
     /**
      * Path to the directory that contains the BWA executable.
+     * @see edu.cornell.med.icb.goby.aligners.BWAAligner
+     * @see <a href="http://bio-bwa.sourceforge.net/">http://bio-bwa.sourceforge.net/</a>
      */
     public static final String EXECUTABLE_PATH_BWA = "executables.path.bwa";
 
