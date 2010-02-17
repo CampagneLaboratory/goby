@@ -20,8 +20,8 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
+import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.ConcatAlignmentReader;
 import edu.cornell.med.icb.goby.counts.AnyTransitionCountsIterator;
@@ -31,14 +31,22 @@ import edu.cornell.med.icb.goby.counts.Peak;
 import edu.cornell.med.icb.goby.counts.PeakAggregator;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.objects.*;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectListIterator;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
-import java.util.Set;
 import java.util.Collections;
+import java.util.Set;
 
 
 /**
@@ -165,7 +173,7 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
                 //Reads in all the files and defines one iterator over all input files
                 final AnyTransitionCountsIterator iterator = new AnyTransitionCountsIterator(readers);
                 //Given all input files and one iterator over them, start collecting (possibly overlapping)
-                // peaks accross all input files
+                // peaks across all input files
                 final PeakAggregator peakAggregator = new PeakAggregator(iterator);
                 peakAggregator.setPeakDetectionThreshold(detectionThreshold);
                 while (peakAggregator.hasNext()) {
@@ -177,7 +185,7 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
             }
         }
 
-        //Consolidate all overlapping peaks accross all input files by taking the union of overlapping peaks
+        //Consolidate all overlapping peaks across all input files by taking the union of overlapping peaks
         System.out.println("Consolidating overlapping peaks over all counts files.");
         Set<String> chromsomes = allSegments.keySet();
         ObjectList<Segment> consensusList = null;

@@ -23,20 +23,14 @@
             <list>true</list>
             <required>true</required>
             <greedy>true</greedy>
-            <help>The union of peaks over all sample counts file as produced as output from the
-                "count-archive-to-peak-union-annotations" mode. Even though this input file appears
-                as an annotation files, it actually contains the intervals of consolidate peaks over all sample
-                sequences.
-            </help>
+            <help>The union of peaks over all sample counts file as produced as output from the "count-archive-to-peak-union-annotations" mode. Even though this input file appears as an annotation file, it actually contains the intervals of consolidate peaks over all sample sequences.</help>
         </unflaggedOption>
         <flaggedOption>
             <id>output</id>
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
             <required>true</required>
-            <help>The tab delimited output filename. The output will contain called aggregated peaks written in the form
-                of an annotation file.
-            </help>
+            <help>The tab delimited output filename. The output will contain called aggregated peaks written in the form of an annotation file.</help>
         </flaggedOption>
         <flaggedOption>
             <id>threshold</id>
@@ -49,10 +43,7 @@
             <defaults>
                 <string>1000</string>
             </defaults>
-            <help>The peak distance threshold for aggregation. Two neighboring peaks are aggregating if they are less
-                than or equal to threshold base pairs away. Input should be in nucleotide base pairs (bp).
-                Default is 1000 for 1 Kb.
-            </help>
+            <help>The peak distance threshold for aggregation. Two neighboring peaks are aggregating if they are less than or equal to threshold base pairs away. Input should be in nucleotide base pairs (bp).</help>
         </flaggedOption>
     </parameters>
 </jsap>

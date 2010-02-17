@@ -212,7 +212,7 @@ public class Merge {
                         skipped += entry.getMultiplicity();
                         skippedTooManyHits += entry.getMultiplicity();
                         //     System.out.println("too many hits for queryIndex "+entry.getQueryIndex());
-                        // sincer query hits too many locations in the reference sequences..
+                        // since query hits too many locations in the reference sequences..
                     }
                 } else {
 

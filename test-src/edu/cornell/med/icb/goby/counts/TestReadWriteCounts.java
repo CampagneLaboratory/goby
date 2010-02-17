@@ -164,7 +164,7 @@ public class TestReadWriteCounts {
         final Random random = new Random();
         for (int i = 0; i < 30; i++) {
             // increased the count to 50,000 to reduce the chance that two successive random values will be equal (which
-            // correctly and intentionnally will trigger an assertion)
+            // correctly and intentionally will trigger an assertion)
             final int count = random.nextInt(50000);
             final int length = random.nextInt(10) + 1;
             System.out.println("Appending count: " + count + " length: " + length);

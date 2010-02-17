@@ -97,15 +97,15 @@ public class LastParser implements Closeable {
         }
     }
 
-    /* Reads MAF file input lines until ALL aligned sequences have been parsed, one per line.
-     *
+    /**
+     * Reads MAF file input lines until ALL aligned sequences have been parsed, one per line.
      * Currently only reading lines beginning with "s".
      *
      * According to the MAF format, "e", "i" and "q" lines may also populate the multiple-
      * alignment block.
      */
     private void readMatches() {
-        // N.B. MAF entries can have more thatn 2 lines ... stop reading at blank line
+        // N.B. MAF entries can have more than 2 lines ... stop reading at blank line
         while (iterator.hasNext()) {
             final MutableString line = iterator.next();
             if (line.startsWith("#")) {

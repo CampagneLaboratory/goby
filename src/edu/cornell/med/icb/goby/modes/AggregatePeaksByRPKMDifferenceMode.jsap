@@ -23,37 +23,29 @@
             <id>input</id>
             <required>true</required>
             <greedy>true</greedy>
-            <help>The compact alignment file(s) for all samples as input. These are needed to compute the RPKM metric.
-            </help>
+            <help>The compact alignment file(s) for all samples as input. These are needed to compute the RPKM metric.</help>
         </unflaggedOption>
         <flaggedOption>
             <id>peak-union</id>
             <shortFlag>p</shortFlag>
             <longFlag>peak-union</longFlag>
             <required>true</required>
-            <help>File (.tsv or .txt) containing the union of peaks over all sample counts file as produced as output
-                from the "count-archive-to-peak-union-annotations" mode. Even though this input file appears as an
-                annotation files, it actually contains the intervals of consolidate peaks over all sample sequences.
-            </help>
+            <help>File (.tsv or .txt) containing the union of peaks over all sample counts file as produced as output from the "count-archive-to-peak-union-annotations" mode. Even though this input file appears as an annotation file, it actually contains the intervals of consolidate peaks over all sample sequences.</help>
         </flaggedOption>
         <flaggedOption>
             <id>output</id>
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
             <required>true</required>
-            <help>The tab delimited output filename. The output will contain aggregated peaks written in the form
-                of an annotation file.
-            </help>
+            <help>The tab delimited output filename. The output will contain aggregated peaks written in the form of an annotation file.</help>
         </flaggedOption>
-                <flaggedOption>
+        <flaggedOption>
             <id>rpkm-file</id>
             <longFlag>rpkm-file</longFlag>
             <required>false</required>
-            <help>The tab delimited output filename. The output will contain aggregated peaks written in the form
-                of an annotation file.
-            </help>
+            <help>The tab delimited output filename. The output will contain aggregated peaks written in the form of an annotation file.</help>
         </flaggedOption>
-               <flaggedOption>
+        <flaggedOption>
             <id>threshold</id>
             <shortFlag>t</shortFlag>
             <longFlag>threshold</longFlag>
@@ -64,9 +56,7 @@
             <defaults>
                 <string>10</string>
             </defaults>
-            <help>The peak distance threshold for aggregation. Two neighboring peaks are aggregated if they are less
-                than or equal to threshold RPKM away. Input should be in RPKM. Default is 10 RPKM.
-            </help>
+            <help>The peak distance threshold for aggregation. Two neighboring peaks are aggregated if they are less than or equal to threshold RPKM away. Input should be in RPKM.</help>
         </flaggedOption>
     </parameters>
 </jsap>

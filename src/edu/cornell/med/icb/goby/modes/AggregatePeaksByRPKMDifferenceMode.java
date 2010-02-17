@@ -124,7 +124,7 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
         final Timer timer = new Timer();
         timer.start();
 
-        //For all input files, and given the union peaks, compute the average RPKM for each peak accross all input samples
+        //For all input files, and given the union peaks, compute the average RPKM for each peak across all input samples
         for (String inputFile : inputFilenames) {
             System.out.println("Reading alignment file: " + inputFile);
             String inputBasename = AlignmentReader.getBasename(inputFile);
@@ -173,7 +173,7 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
             computeAnnotationRPKM(allAnnots, referenceIds, algs, referencesToProcess, numAlignedReadsInSample);
         }
 
-        //Now that we've finished processing all samples, compute the average of the RPKMs accross all samples
+        //Now that we've finished processing all samples, compute the average of the RPKMs across all samples
         //Also if a rpkm file is specified, write the averaged RPKM values to this file.
         int numSamples = inputFilenames.length;
         Set<String> references = allAnnots.keySet();

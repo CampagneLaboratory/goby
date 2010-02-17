@@ -10,10 +10,10 @@ message AlignmentCollection {
 
 message AlignmentEntry {
  /* Multiplicity of this entry. The number of times this  alignment entry would be repeated exactly the same if
-  query redundancy had not been removed by read factorization. 
+  query redundancy had not been removed by read factorization.
  */
  optional uint32 multiplicity=7;
- 
+
  /* An integer that uniquely identifies the query (a short read) in a set of alignment runs. When several
     alignment runs are made with the same set of query sequences, equality of query index means that the query
     sequences were the same. (Comparing integers for equality is much faster than comparing strings.)
@@ -84,7 +84,7 @@ message AlignmentHeader {
    /* Mapping from query identifier name to query index (as used in alignment entries).
     */
    optional IdentifierMapping query_name_mapping=1;
-   
+
    /* Mapping from target identifier name to target index (as used in alignment entries).
     */
    optional IdentifierMapping target_name_mapping=2;
@@ -123,8 +123,8 @@ message IdentifierInfo {
 
 message AlignmentTooManyHits {
      /*
-      The threshold used by the aligner to determine that a query is ambigous and should be dropped.
-      Referred to as parameter k below. 
+      The threshold used by the aligner to determine that a query is ambiguous and should be dropped.
+      Referred to as parameter k below.
       */
      required uint32 alignerThreshold=2;
      /*
