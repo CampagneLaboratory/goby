@@ -384,7 +384,7 @@ public class BWAAligner extends AbstractAligner {
         final DefaultExecutor executor = new DefaultExecutor();
         OutputStream logStream = null;
         try {
-            logStream = new LoggingOutputStream(BWAAligner.class, Level.INFO, "");
+            logStream = new LoggingOutputStream(getClass(), Level.INFO, "");
             executor.setStreamHandler(new PumpStreamHandler(logStream));
 
             final int exitValue = executor.execute(commandLine);
@@ -462,7 +462,7 @@ public class BWAAligner extends AbstractAligner {
         OutputStream alignLogStream = null;
         try {
             saiOutputStream = new BufferedOutputStream(new FileOutputStream(saiBinaryFilename));
-            alignLogStream = new LoggingOutputStream(BWAAligner.class, Level.INFO, "");
+            alignLogStream = new LoggingOutputStream(getClass(), Level.INFO, "");
             alignExecutor.setStreamHandler(new PumpStreamHandler(saiOutputStream, alignLogStream));
 
             final int exitValue = alignExecutor.execute(alignCommandLine);
@@ -489,7 +489,7 @@ public class BWAAligner extends AbstractAligner {
         OutputStream samseLogStream = null;
         try {
             samseOutputStream = new BufferedOutputStream(new FileOutputStream(samBinaryFilename));
-            samseLogStream = new LoggingOutputStream(BWAAligner.class, Level.INFO, "");
+            samseLogStream = new LoggingOutputStream(getClass(), Level.INFO, "");
             samseExecutor.setStreamHandler(new PumpStreamHandler(samseOutputStream, samseLogStream));
 
             final int exitValue = samseExecutor.execute(samseCommandLine);

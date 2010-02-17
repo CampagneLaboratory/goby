@@ -587,7 +587,7 @@ public class LastAligner extends AbstractAligner {
         final DefaultExecutor executor = new DefaultExecutor();
         OutputStream logStream = null;
         try {
-            logStream = new LoggingOutputStream(LastagAligner.class, Level.INFO, "");
+            logStream = new LoggingOutputStream(getClass(), Level.INFO, "");
             executor.setStreamHandler(new PumpStreamHandler(logStream));
 
             final int exitValue = executor.execute(commandLine);
@@ -664,7 +664,7 @@ public class LastAligner extends AbstractAligner {
         final DefaultExecutor executor = new DefaultExecutor();
         OutputStream logStream = null;
         try {
-            logStream = new LoggingOutputStream(LastagAligner.class, Level.INFO, "");
+            logStream = new LoggingOutputStream(getClass(), Level.INFO, "");
             executor.setStreamHandler(new PumpStreamHandler(logStream));
 
             final int exitValue = executor.execute(commandLine);
@@ -704,7 +704,7 @@ public class LastAligner extends AbstractAligner {
         final DefaultExecutor executor = new DefaultExecutor();
         OutputStream logStream = null;
         try {
-            logStream = new LoggingOutputStream(LastagAligner.class, Level.INFO, "");
+            logStream = new LoggingOutputStream(getClass(), Level.INFO, "");
             executor.setStreamHandler(new PumpStreamHandler(logStream));
 
             final int exitValue = executor.execute(commandLine);
