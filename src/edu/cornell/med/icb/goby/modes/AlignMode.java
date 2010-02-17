@@ -26,11 +26,14 @@ import edu.cornell.med.icb.goby.aligners.LastAligner;
 import edu.cornell.med.icb.goby.aligners.LastagAligner;
 import edu.cornell.med.icb.goby.config.GobyConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Run third party aligners, taking care of data translations.  Data translations include
@@ -42,10 +45,34 @@ import java.io.IOException;
  *         Time: 12:28 PM
  */
 public class AlignMode extends AbstractGobyMode {
+    /**
+     * Used to log debug and informational messages.
+     */
     private static final Log LOG = LogFactory.getLog(AlignMode.class);
 
+    /**
+     * Supported native aligner types.
+     */
     public enum AlignerTypes {
-        bwa, last, lastag
+        /**
+         * Burrows-Wheeler Aligner (BWA).
+         * @see edu.cornell.med.icb.goby.aligners.BWAAligner
+         * @see <a href="http://bio-bwa.sourceforge.net/">http://bio-bwa.sourceforge.net/</a>
+         */
+        bwa,
+
+        /**
+         * Last.
+         * @see edu.cornell.med.icb.goby.aligners.LastAligner
+         * @see <a href="http://last.cbrc.jp/">http://last.cbrc.jp/</a>
+         */
+        last,
+
+        /**
+         * Enhanced version of the last aligner.
+         * @see edu.cornell.med.icb.goby.aligners.LastagAligner
+         */
+        lastag
     }
 
     /**
@@ -163,14 +190,15 @@ public class AlignMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws java.io.IOException error parsing
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
+     * @throws IOException error parsing
+     * @throws JSAPException error parsing
      */
     @Override
     public AbstractCommandLineMode configure(final String[] args)
             throws IOException, JSAPException {
-        final JSAPResult jsapResult = parseJsapArguments(args);
+        final Map<String, String> alignerTypesHelp = new HashMap<String, String>(1);
+        alignerTypesHelp.put("[ALIGNERTYPES]", ArrayUtils.toString(AlignerTypes.values()));
+        final JSAPResult jsapResult = parseJsapArguments(args, alignerTypesHelp);
 
         readsFile                  = jsapResult.getFile    ( "reads"                     ) ;
         referenceFile              = jsapResult.getFile    ( "reference"                 ) ;

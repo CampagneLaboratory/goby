@@ -120,7 +120,7 @@
                 <classname>StringStringParser</classname>
             </stringParser>
             <required>true</required>
-            <help>Name of the third-party aligner to align with.</help>
+            <help>Name of the third-party aligner to align with.  Must one of [ALIGNERTYPES].</help>
         </flaggedOption>
         <flaggedOption>
             <id>options</id>
