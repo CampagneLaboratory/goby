@@ -1,5 +1,8 @@
-development
- - Update to protobuf 2.3.0
+1.4
+ - Last aligner (http://last.cbrc.jp/) is now supported "out of the box".  Tested against
+   version last-96.  Support for the enhanced version "lastag" still exists.
+ - Alignment-to-annotation-counts mode now computes a p-value using R (if available on the host)
+ - Update to protobuf 2.3.0 (http://code.google.com/p/protobuf/)
  - Default extension for files written in Wiggle Track Format is now ".wig" for easier
    integration with the Integrative Genomics Viewer (http://www.broadinstitute.org/igv/).
    Similarly, the default extension for BedGraph Track Format files is now ".bed".
