@@ -104,7 +104,9 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     private String[] inputFilenames;
     private boolean doComparison;
 
-    /** The groups that should be compared, order matters. */
+    /**
+     * The groups that should be compared, order matters.
+     */
     private String[] groupComparison;
     private final boolean writeAnnotationCounts = true;
     private String statsFilename;
@@ -129,7 +131,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws IOException error parsing
+     * @throws IOException   error parsing
      * @throws JSAPException error parsing
      */
     @Override
@@ -423,7 +425,16 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 for (final Annotation annot : annots) {
                     final String geneID = annot.id;
                     deCalculator.defineElement(geneID);
-                    numberOfElements++;
+
+
+                    int numExons = annot.segments.size();
+                    for (int i = 0; i < numExons; i++) {
+                        Segment exonSegment = annot.segments.get(i);
+                        final String exonID = exonSegment.id;
+                        deCalculator.defineElement(exonID);
+                        numberOfElements++;
+
+                    }
                 }
             }
 
@@ -445,6 +456,13 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 for (final Annotation annot : annots) {
                     final String geneID = annot.id;
                     deCalculator.defineElement(geneID);
+                    int numExons = annot.segments.size();
+                    for (int i = 0; i < numExons; i++) {
+                        Segment exonSegment = annot.segments.get(i);
+                        final String exonID = exonSegment.id;
+                        deCalculator.defineElement(exonID);
+                    }
+
                 }
             }
 
@@ -503,7 +521,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     final double exonRPKM = calculateRPKM(exonOverlapReads, segment.getLength(), numAlignedReadsInSample);
                     if (includeAnnotationTypes.contains("exon")) {
                         if (writeAnnotationCounts) {
-                            writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\t\t%n",
+                            writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\\t%n",
                                     basename,
                                     geneID,
                                     exonID,
@@ -519,8 +537,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                                     log2(exonRPKM)));
                         }
                         if (doComparison) {
-                        deCalculator.observe(basename, exonID, exonOverlapReads, exonRPKM);
-                    }
+                            deCalculator.observe(basename, exonID, exonOverlapReads, exonRPKM);
+                        }
                     }
                     if (i < numberIntrons) {
                         final int intronStart = segment.end + 1;
@@ -535,7 +553,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                         if (intronLength > 0) {
                             if (includeAnnotationTypes.contains("intron")) {
                                 if (writeAnnotationCounts) {
-                                    writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%e\t%g\t\t%n",
+                                    writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%e\t%g\t%n",
                                             basename,
                                             geneID,
                                             intronID,
