@@ -521,7 +521,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     final double exonRPKM = calculateRPKM(exonOverlapReads, segment.getLength(), numAlignedReadsInSample);
                     if (includeAnnotationTypes.contains("exon")) {
                         if (writeAnnotationCounts) {
-                            writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\\t%n",
+                            writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\t%n",
                                     basename,
                                     geneID,
                                     exonID,
