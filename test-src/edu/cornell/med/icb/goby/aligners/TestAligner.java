@@ -83,7 +83,7 @@ public class TestAligner {
         FastXReader fastaReader = null;
         try {
             fastaReader = new FastXReader(fastaFile.getAbsolutePath());
-            assertEquals("File should be in fasta format", "fa", fastaReader.getFileType());
+            assertEquals("File should be in fastq format", "fq", fastaReader.getFileType());
             for (final FastXEntry entry : fastaReader) {
                 assertEquals("Mismatch for entry " + readCount,
                         reads[readCount], entry.getSequence().toString());

@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.aligners;
 
 import edu.cornell.med.icb.goby.config.GobyConfiguration;
 import edu.cornell.med.icb.goby.util.LoggingOutputStream;
+import edu.cornell.med.icb.goby.modes.CompactToFastaMode;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
@@ -56,9 +57,9 @@ import java.io.OutputStream;
  * from these matches.  In this case, the "initial matches" are: all exact
  * matches of any part of a tag to the genome, of depth >= [L], where the match
  * occurs at most [M] times in the genome.
- *
+ * <p/>
  * <h3> Steps in lastal </h3>
- *
+ * <p/>
  * <pre>
  * 1) Find initial matches:
  *      keep those with multiplicity <= [M] and depth >= [L].
@@ -71,41 +72,41 @@ import java.io.OutputStream;
  * 5) Calculate probabilities (OFF by default).
  * 6) Redo the gapped extensions using centroid alignment (OFF by default).
  * </pre>
- *
+ * <p/>
  * <h3> Options for controlling Lastag </h3>
- *
+ * <p/>
  * <pre>
  * maxGapsAllowed - place limit on occurance of gaps in alignments
  * gapOpeningCost - specify cost to open a gap
  * m              - place limit on number of matches at highest score
  * matchQuality   - used to select [D] and [E] thresholds for efficiency
- *
+ * <p/>
  * XXX            - most flags that are defined for the Lastag command
- *
+ * <p/>
  * defaults are provided for many parameters but command-line values will override
  * </pre>
- *
- *
+ * <p/>
+ * <p/>
  * <h3> Merging identical tag sequences (recommended in tag-seeds.txt) </h3>
- *
+ * <p/>
  * If there are many identical sequences, we can speed up the mapping by
  * merging them.
  * [see ???]
- *
+ * <p/>
  * <h3> Discarding sub-optimal mappings (recommended in tag-seeds.txt) </h3>
- *
+ * <p/>
  * LAST will often align a tag to more than one genome location.  We may wish
  * to keep only the highest-scoring alignment(s) for each tag.
  * [see LastToCompactMode]
- *
+ * <p/>
  * <h3> Discarding ambiguous tags (recommended in tag-seeds.txt) </h3>
- *
+ * <p/>
  * There may be some tags that map to more than one location (with equal
  * scores).  We may wish to discard such multi-mapping tags.
  * [see LastToCompactMode]
- *
+ * <p/>
  * <h3> Score function </h3>
- *
+ * <p/>
  * An alignment is scored as follows:
  * <pre>
  *  score = R*num_matches + Q*num_mismatches + SUM_i gap_score_i
@@ -118,9 +119,9 @@ import java.io.OutputStream;
  *  A = gap existence cost
  *  B = gap extension cost
  * </pre>
- *
+ * <p/>
  * <h3> Score function for colorspace </h3>
- *
+ * <p/>
  * An alignment is scored as follows:
  * <pre>
  *  score = R*num_matches + Q*num_mismatches + SUM_i gap_score_i
@@ -133,15 +134,15 @@ import java.io.OutputStream;
  *  A = gap existence cost
  *  B = gap extension cost
  * </pre>
- *
+ * <p/>
  * <h3> lastdb: usage: lastdb [options] output-name fasta-sequence-file(s) </h3>
- *
+ * <p/>
  * <pre>
  * Main Options (default settings):
  * -p: interpret the sequences as proteins
  * -c: read the sequences case-sensitively
  * -m: periodic spaced-seed pattern (1)
- *
+ * <p/>
  * Advanced Options (default settings):
  * -w: index step (1)
  * -s: volume size (1342177280)
@@ -149,9 +150,9 @@ import java.io.OutputStream;
  * -b: bucket depth
  * -v: be verbose: write messages about what lastdb is doing
  * </pre>
- *
+ * <p/>
  * <h3> lastag: usage: lastal [options] lastdb-name fasta-sequence-file(s) </h3>
- *
+ * <p/>
  * <pre>
  * Main options (default settings):
  * -h: show all options and their default settings
@@ -159,7 +160,7 @@ import java.io.OutputStream;
  * -u: mask lowercase letters: 0=off, 1=softer, 2=soft, 3=hard (0)
  * -s: strand: 0=reverse, 1=forward, 2=both (2 for DNA, 1 for protein)
  * -f: output format: 0=tabular, 1=maf (1)
- *
+ * <p/>
  * Score parameters (default settings):
  * -r: match score   (1 for DNA, blosum62 for protein)
  * -q: mismatch cost (1 for DNA, blosum62 for protein)
@@ -171,7 +172,7 @@ import java.io.OutputStream;
  * -y: maximum score dropoff for gapless extensions (max-match-score * 10)
  * -d: minimum score for gapless alignments (e*3/5)
  * -e: minimum score for gapped alignments (40 for DNA, 100 for protein)
- *
+ * <p/>
  * Miscellaneous options (default settings):
  * -m: maximum multiplicity for initial matches (10)
  * -l: minimum depth for initial matches (1)
@@ -185,9 +186,9 @@ import java.io.OutputStream;
  *                  4=probabilities, 5=centroid (3)
  * -z: write counts using a more compact single line format
  * </pre>
- *
+ * <p/>
  * <h3> Miscellaneous </h3>
- *
+ * <p/>
  * Depth = the number of matched, non-skipped nucleotides
  * <p/>
  * The Last Manual describes options for using quality scores (manual.txt and
@@ -215,11 +216,19 @@ public class LastagAligner extends LastAligner {
         pathToExecutables = configuration.getString(GobyConfiguration.EXECUTABLE_PATH_LASTAG, "");
     }
 
+    @Override
+    public CompactToFastaMode getReadsCompactToFastaConverter() {
+        final CompactToFastaMode toFastaConverter = super.getReadsCompactToFastaConverter();
+        // for lastag, force fasta format:
+        toFastaConverter.setOutputFormat(CompactToFastaMode.OutputFormat.FASTA);
+        return (toFastaConverter);
+    }
+
     /**
      * Align.
      *
-     * @param referenceFile Compact or native database basename for reference sequences.
-     * @param readsFile Compact or native format (i.e., fasta, fastq) aligner read format.
+     * @param referenceFile  Compact or native database basename for reference sequences.
+     * @param readsFile      Compact or native format (i.e., fasta, fastq) aligner read format.
      * @param outputBasename Basename where to write the compact alignment.
      * @return
      * @throws IOException

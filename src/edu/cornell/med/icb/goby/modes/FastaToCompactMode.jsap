@@ -39,6 +39,18 @@
             <defaults>false</defaults>
             <help>When this switch is provided, exclude sequences. This results in not writing sequences to the compact file. This can be useful to keep only an association between sequence index and identifier.  </help>
         </switch>
+         <switch>
+            <id>exclude-quality</id>
+            <longFlag>exclude-quality</longFlag>
+            <defaults>false</defaults>
+            <help>When this switch is provided, exclude quality scores. This results in not writing quality scores to the compact file. </help>
+        </switch>
+        <switch>
+            <id>verbose-quality-scores</id>
+            <longFlag>verbose-quality-scores</longFlag>
+            <defaults>false</defaults>
+            <help>Print quality scores to the console as they are read and converted to Phred score. Useful for testing with a small number of reads.</help>
+        </switch>
         <flaggedOption>
             <id>output</id>
             <shortFlag>o</shortFlag>
@@ -46,6 +58,16 @@
             <required>false</required>
             <help>If there is only one read file, this will force the output file to this specific filename. If there is more than one input file, the output filename will always be the input filename without the .fasta, .gz, etc.  extensions with an extension of .compact-reads. You should generally use an extension of .compact-reads when writing a compact reads file.</help>
         </flaggedOption>
+         <flaggedOption>
+            <id>quality-encoding</id>
+
+            <longFlag>quality-encoding</longFlag>
+            <required>false</required>
+              <defaults>
+                <string>Illumina</string>
+            </defaults>
+            <help>The encoding for quality scores. The default quality encoding is that used by the Illumina pipeline 1.3+</help>
+         </flaggedOption>
         <flaggedOption>
             <id>sequence-per-chunk</id>
             <shortFlag>n</shortFlag>

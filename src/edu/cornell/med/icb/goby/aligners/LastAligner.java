@@ -22,6 +22,7 @@ import edu.cornell.med.icb.goby.config.GobyConfiguration;
 import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
 import edu.cornell.med.icb.goby.modes.CompactToFastaMode;
 import edu.cornell.med.icb.goby.modes.LastToCompactMode;
+import edu.cornell.med.icb.goby.modes.FastaToCompactMode;
 import edu.cornell.med.icb.goby.reads.ColorSpaceConverter;
 import edu.cornell.med.icb.goby.util.LoggingOutputStream;
 import edu.mssm.crover.cli.CLI;
@@ -262,6 +263,8 @@ public class LastAligner extends AbstractAligner {
         // Filter using the default alphabet for specified output mode
         processor.setAlphabet((colorSpace) ? "0123ACTG" : "ACTG"); // lastal expects colorspace with nt-adaptors, or just nt
         processor.setTrimAdaptorLength((colorSpace) ? 2 : 0); // prevent aligner from finding false matches with adaptor at the start of the sequence
+        processor.setOutputFormat(CompactToFastaMode.OutputFormat.FASTQ);   // We use Fastq format with lastal.
+        processor.setQualityEncoding(FastaToCompactMode.QualityEncoding.SANGER);   // We use Fastq format with Sanger encoding for LASTAL.
         return processor;
     }
 
@@ -289,7 +292,7 @@ public class LastAligner extends AbstractAligner {
         maxGapsAllowed = DEFAULT_MAX_GAPS_ALLOWED;
         gapOpeningCost = DEFAULT_GAP_OPENING_COST;
         matchQuality   = MatchQuality.valueOf(DEFAULT_MATCH_QUALITY);
-        alignerOptions = "";
+        alignerOptions = "-Q 1 ";   // indicate FASTQ input in SANGER format.
         if (options == null) {
             return;
         }

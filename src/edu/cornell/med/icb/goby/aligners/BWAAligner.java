@@ -47,7 +47,7 @@ import java.io.OutputStream;
 /**
  * Facade to the Burrows-Wheeler Aligner (BWA) aligner. For details about BWA,
  * see <a href="http://bio-bwa.sourceforge.net/">http://bio-bwa.sourceforge.net/</a>
- *
+ * <p/>
  * <h3> Description </h3>
  * BWA  is  a  fast  light-weighted  tool  that  aligns  relatively  short
  * sequences  (queries)  to a sequence database (targe), such as the human
@@ -70,7 +70,7 @@ import java.io.OutputStream;
  * chromosomal coordinate and pairs reads (for `sampe'). The second  algo-
  * rithm is invoked by the `dbtwsw' command. It works for single-end reads
  * only.
- *  <p/>
+ * <p/>
  * <h3> Alignment Accuracy </h3>
  * When  seeding is disabled, BWA guarantees to find an alignment contain- ing
  * maximum maxDiff differences including maxGapO gap  opens  which  do not
@@ -78,7 +78,7 @@ import java.io.OutputStream;
  * be found if maxGapE is positive, but it is not  guaranteed  to find  all
  * hits. When seeding is enabled, BWA further requires that the first seedLen
  * subsequence contains no  more  than  maxSeedDiff  differ- ences.
- *  <p/>
+ * <p/>
  * When gapped alignment is disabled, BWA is expected to generate the same
  * alignment as Eland, the Illumina alignment  program.  However,  as  BWA
  * change  `N'  in  the  database  sequence to random nucleotides, hits to
@@ -86,19 +86,19 @@ import java.io.OutputStream;
  * a  unique  hit  as a repeat, if the random sequences happen to be identical
  * to the sequences which should be unqiue in the database. This random
  * behaviour will be avoided in future releases.
- *  <p/>
+ * <p/>
  * By default, if the best hit is no so repetitive (controlled by -R), BWA also
  * finds all hits contains one more mismatch;  otherwise,  BWA  finds all
  * equally best hits only. Base quality is NOT considered in evaluat- ing hits.
  * In pairing, BWA searches, among the found hits under the con- straint  of
  * the  maxOcc  option,  for pairs within maxInsSize and with proper
  * orientation.
- *
+ * <p/>
  * <h3> Memory Requirement </h3>
  * With bwtsw algorithm, 2.5GB memory is required for  indexing  the  com-
  * plete  human  genome sequences. For short reads, the `aln' command uses
  * ~2.3GB memory and the `sampe' command uses ~3.5GB.
- *
+ * <p/>
  * <h3> Speed </h3>
  * Indexing the human genome sequences takes 3 hours with bwtsw algorithm.
  * Indexing  smaller  genomes  with IS or divsufsort algorithms is several
@@ -118,7 +118,7 @@ import java.io.OutputStream;
  * Pairing is slower for shorter reads. This  is  mainly  because  shorter
  * reads  have more spurious hits and converting SA coordinates to chromo- somal
  * coordinates are very costly.
- *  <p/>
+ * <p/>
  * In a practical experiment, BWA is able to map 2 million 32bp reads to a
  * bacterial  genome  in  several minutes, map the same amount of reads to
  * human X chromosome in 8-15 minutes and to the  human  genome  in  15-25
@@ -126,22 +126,22 @@ import java.io.OutputStream;
  * size of database and therefore BWA is more efficient when the data- base  is
  * sufficiently large. On smaller genomes, hash based algorithms are usually
  * much faster.
- *
+ * <p/>
  * <pre>
  * index  bwa index [-p prefix] [-a algoType] [-c] <in.db.fasta>
- *
+ * <p/>
  *        Index database sequences in the FASTA format.
- *
+ * <p/>
  *        OPTIONS:
- *
+ * <p/>
  *        -c        Build color-space index. The input fast should  be  in
  *                  nucleotide space.
- *
+ * <p/>
  *        -p STR    Prefix of the output database [same as db filename]
- *
+ * <p/>
  *        -a STR    Algorithm   for   constructing  BWT  index.  Available
  *                  options are:
- *
+ * <p/>
  *                  is     IS linear-time algorithm for constructing  suf-
  *                         fix  array. It requires 5.37N memory where N is
  *                         the size of  the  database.  IS  is  moderately
@@ -149,33 +149,33 @@ import java.io.OutputStream;
  *                         than 2GB. IS is the default  algorithm  due  to
  *                         its  simplicity. The current codes for IS algo-
  *                         rithm are reimplemented by Yuta Mori.
- *
+ * <p/>
  *                  bwtsw  Algorithm implemented in  BWT-SW.  This  method
  *                         works  with the whole human genome, but it does
  *                         not work with database smaller than 10MB and it
  *                         is usually slower than IS.
- *
- *
- *
+ * <p/>
+ * <p/>
+ * <p/>
  * aln    bwa aln [-n maxDiff] [-o maxGapO] [-e maxGapE] [-d nDelTail] [-i
  *        nIndelEnd] [-k maxSeedDiff] [-l seedLen] [-t nThrds] [-cRN]  [-M
  *        misMsc]  [-O  gapOsc]  [-E gapEsc] &lt;in.db.fasta&gt; &lt;in.query.fq&gt; &gt;
  *        &lt;out.sai&gt;
- *
+ * <p/>
  *        Find the SA coordinates of the input reads.
- *
+ * <p/>
  *        Maximum  maxSeedDiff differences  are  allowed  in  the first seedLen
  *        subsequence and maximum maxDiff differences are allowed in the whole
  *        sequence.
- *
+ * <p/>
  *        OPTIONS:
- *
+ * <p/>
  *        -n NUM    Maximum edit distance if the  value  is  INT,  or  the
  *                  fraction  of  missing alignments given 2% uniform base
  *                  error rate if FLOAT. In the latter case,  the  maximum
  *                  edit  distance  is  automatically chosen for different
  *                  read lengths. [0.04]
- *
+ * <p/>
  *                  int bwa_cal_maxdiff(int length, double nt_err_rate, double fn_rate)
  *                  {
  *                      double elambda = exp(-length * nt_err_rate);
@@ -189,48 +189,47 @@ import java.io.OutputStream;
  *                      }
  *                      return 2;
  *                  }
- *
- *
+ * <p/>
+ * <p/>
  *        -o INT    Maximum number of gap opens [1]
- *
+ * <p/>
  *        -e INT    Maximum number of gap extensions, -1 for  k-difference
  *                  mode (disallowing long gaps) [-1]
- *
+ * <p/>
  *        -d INT    Disallow  a  long  deletion  within INT bp towards the
  *                  3'-end [16]
- *
+ * <p/>
  *        -i INT    Disallow an indel within INT bp towards the ends [5]
- *
+ * <p/>
  *        -l INT    Take the first INT subsequence  as  seed.  If  INT  is
  *                  larger  than  the query sequence, seeding will be dis-
  *                  abled. For long reads, this option is typically ranged
  *                  from 25 to 35 for `-k 2'. [inf]
- *
+ * <p/>
  *        -k INT    Maximum edit distance in the seed [2]
- *
+ * <p/>
  *        -t INT    Number of threads (multi-threading mode) [1]
- *
+ * <p/>
  *        -M INT    Mismatch  penalty.  BWA will not search for suboptimal
  *                  hits with a score lower than (bestScore-misMsc). [3]
- *
+ * <p/>
  *        -O INT    Gap open penalty [11]
- *
+ * <p/>
  *        -E INT    Gap extension penalty [4]
- *
+ * <p/>
  *        -R INT    Proceed with suboptimal alignments  if  there  are  no
  *                  more  than  INT  equally  best  hits. This option only
  *                  affects paired-end mapping. Increasing this  threshold
  *                  helps  to  improve the pairing accuracy at the cost of
  *                  speed, especially for short reads (~32bp).
- *
+ * <p/>
  *        -c        Reverse query but not complement it, which is required
  *                  for alignment in the color space.
- *
+ * <p/>
  *        -N        Disable  iterative  search. All hits with no more than
  *                  maxDiff differences will be found. This mode  is  much
  *                  slower than the default.
  * </pre>
- *
  *
  * @author Fabien Campagne
  *         Date: Jul 9, 2009
@@ -278,6 +277,7 @@ public class BWAAligner extends AbstractAligner {
         processor.setOutputFakeQualityMode(false); // BWA handles the conversion
         // Filter using the default alphabet for specified output mode
         processor.setAlphabet("ACTG"); // BWA handles the conversion
+        processor.setOutputFormat(CompactToFastaMode.OutputFormat.FASTA);
         return processor;
     }
 
@@ -293,9 +293,12 @@ public class BWAAligner extends AbstractAligner {
         // Since colorSpace is determined by reads platform, colorspace conversion is never needed for reads
         processor.setOutputFakeNtMode(colorSpace); // BWA uses fakeNt to represent colorSpace data
         processor.setOutputFakeQualityMode(colorSpace); // BWA uses fakeNt to represent colorSpace data
+        // BWA reads FASTQ format:
+        processor.setOutputFormat(CompactToFastaMode.OutputFormat.FASTQ);
         // Filter using the default alphabet for specified output mode
         processor.setAlphabet("ACTG"); // BWA expects fake-nt or nt, either way, "ACTG" is the alphabet
         processor.setTrimAdaptorLength((colorSpace) ? 2 : 0); // BWA's solid2fastq remove 2 bases - prevent aligner from finding false matches with adaptor at the start of the sequence
+
         return processor;
     }
 
@@ -346,8 +349,8 @@ public class BWAAligner extends AbstractAligner {
         alignerOptions += (CLI.isKeywordGiven(opts, "M")) ? " -M " + CLI.getIntOption(opts, "M", -999) : "";
         alignerOptions += (CLI.isKeywordGiven(opts, "O")) ? " -O " + CLI.getIntOption(opts, "O", -999) : "";
         alignerOptions += (CLI.isKeywordGiven(opts, "E")) ? " -E " + CLI.getIntOption(opts, "E", -999) : "";
-        alignerOptions += (CLI.isKeywordGiven(opts, "c")) ? " -c "                                     : "";
-        alignerOptions += (CLI.isKeywordGiven(opts, "N")) ? " -N "                                     : "";
+        alignerOptions += (CLI.isKeywordGiven(opts, "c")) ? " -c " : "";
+        alignerOptions += (CLI.isKeywordGiven(opts, "N")) ? " -N " : "";
         //alignerOptions += (CLI.isKeywordGiven(opts, "R")) ? " -R " : ""; // R param is only applicable for paired-end read alignment
         assert (!alignerOptions.contains("-999")) : "Parsing error.";
     }
@@ -405,11 +408,11 @@ public class BWAAligner extends AbstractAligner {
 
     /**
      * Return string option of form "-l <seedLength>".
-     *
+     * <p/>
      * If a positive seedLength has been initialized, use this value. Otherwise,
      * use -l 35 to restrict the seed to the first 35 bp of each read. This
      * considerably speeds up searches with ~100 bp reads.
-     *
+     * <p/>
      * Only use this option if the seedLength is shorter than the minimum read length,
      * otherwise bwa may fail (despite what the documentation says).
      *

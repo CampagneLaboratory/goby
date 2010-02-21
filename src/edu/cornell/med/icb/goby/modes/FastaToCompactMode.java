@@ -62,9 +62,37 @@ public class FastaToCompactMode extends AbstractGobyMode {
      */
     private int sequencePerChunk = 10000;
     private boolean excludeSequences;
+    private boolean excludeQuality;
+    private boolean verboseQualityScores;
+
+    // see http://en.wikipedia.org/wiki/FASTQ_format for a description of these various encodings
+    /*
+
+    Sanger format can encode a Phred quality score from 0 to 93 using ASCII 33 to 126 (although in raw read data the Phred quality score rarely exceeds 60, higher scores are possible in assemblies or read maps).
+    Illumina 1.3+ format can encode a Phred quality score from 0 to 62 using ASCII 64 to 126 (although in raw read data Phred scores from 0 to 40 only are expected).
+    Solexa/Illumina 1.0 format can encode a Solexa/Illumina quality score from -5 to 62 using ASCII 59 to 126 (although in raw read data Solexa scores from -5 to 40 only are expected)
+  <PRE>
+  SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS.....................................................
+  ...............................IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII......................
+  ..........................XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+  |                         |    |        |                              |                     |
+ 33                        59   64       73                            104                   126
+       </PRE>
+ S - Sanger       Phred+33,  41 values  (0, 40)
+ I - Illumina 1.3 Phred+64,  41 values  (0, 40)
+ X - Solexa       Solexa+64, 68 values (-5, 62)
+     */
+    public enum QualityEncoding {
+        SANGER, ILLUMINA, SOLEXA
+    }
+
+
+    private QualityEncoding qualityEncoding;
 
     /**
      * Returns the mode name defined by subclasses.
+     *
      * @return The name of the mode
      */
     @Override
@@ -74,6 +102,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
     /**
      * Returns the mode description defined by subclasses.
+     *
      * @return A description of the mode
      */
     @Override
@@ -86,7 +115,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws IOException error parsing
+     * @throws IOException   error parsing
      * @throws JSAPException error parsing
      */
     @Override
@@ -96,6 +125,9 @@ public class FastaToCompactMode extends AbstractGobyMode {
         pushDescription = jsapResult.getBoolean("include-descriptions");
         pushIdentifier = jsapResult.getBoolean("include-identifiers");
         excludeSequences = jsapResult.getBoolean("exclude-sequences");
+        excludeQuality = jsapResult.getBoolean("exclude-quality");
+        verboseQualityScores = jsapResult.getBoolean("verbose-quality-scores");
+        qualityEncoding = QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
         outputFile = jsapResult.getString("output");
         sequencePerChunk = jsapResult.getInt("sequence-per-chunk");
         return this;
@@ -103,6 +135,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
     /**
      * Perform the conversion fasta -> compact-reads on one or more files.
+     *
      * @throws IOException if the input/output files cannot be read/written
      */
     @Override
@@ -135,6 +168,9 @@ public class FastaToCompactMode extends AbstractGobyMode {
                 } else {
                     writer.setSequence("");
                 }
+                if (!excludeQuality) {
+                    writer.setQualityScores(convertQualityScores(entry.getQuality()));
+                }
                 writer.appendEntry();
             }
 
@@ -143,12 +179,71 @@ public class FastaToCompactMode extends AbstractGobyMode {
         }
     }
 
+    byte[] qualityScoreBuffer = null;
+
+
+    private byte[] convertQualityScores(MutableString quality) {
+        final int size = quality.length();
+        if (qualityScoreBuffer == null || size != qualityScoreBuffer.length) {
+            qualityScoreBuffer = new byte[size];
+        }
+        if (verboseQualityScores) {
+            System.out.println(quality);
+        }
+        switch (qualityEncoding) {
+            case SANGER:
+                for (int position = 0; position < size; position++) {
+                    qualityScoreBuffer[position] = (byte) (quality.charAt(position) - 33);
+                    checkRange(qualityScoreBuffer[position]);
+                    if (verboseQualityScores) {
+                        System.out.print(qualityScoreBuffer[position]);
+                        System.out.print(" ");
+                    }
+                }
+                if (verboseQualityScores) {
+                    System.out.println("");
+                }
+                break;
+            case ILLUMINA:
+                for (int position = 0; position < size; position++) {
+                    qualityScoreBuffer[position] = (byte) (quality.charAt(position) - 64);
+                    checkRange(qualityScoreBuffer[position]);
+
+                    if (verboseQualityScores) {
+                        System.out.print(qualityScoreBuffer[position]);
+                        System.out.print(" ");
+                    }
+                }
+                if (verboseQualityScores) {
+                    System.out.println("");
+                }
+                break;
+            case SOLEXA:
+                throw new UnsupportedOperationException("SOLEXA encoding is not supported at this time for lack of clear documentation.");
+                /* for (int position = 0; position < size; position++) {
+                   final int code = quality.charAt(position) - 64;
+                   double phred=Math.log(1+Math.pow(10,code/10))/Math.log(10);
+                   qualityScoreBuffer[position] = (byte) phred;
+               break;
+               } */
+
+        }
+        return qualityScoreBuffer;
+    }
+
+    private void checkRange(final byte qualityDecoded) {
+        if (!(qualityDecoded >= 0 && qualityDecoded <= 40)) {
+            System.err.println(" Phred quality scores must be within 0 and 40. The value decoded was " + qualityDecoded + " You may have selected an incorrect encoding.");
+            System.exit(10);
+        }
+    }
+
     /**
      * Get the filename including path WITHOUT fastx extensions (including .gz if it is there).
      *
      * @param name the full path to the file in question
      * @return the filename without the fastx/gz extensions or the same name of those extensions
-     * weren't found.
+     *         weren't found.
      */
     private static String stripFastxExtensions(final String name) {
         final String filename = FilenameUtils.getName(name);
