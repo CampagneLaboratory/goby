@@ -115,6 +115,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
     private final ObjectSet<String> groups = new ObjectArraySet<String>();
     private final DifferentialExpressionCalculator deCalculator = new DifferentialExpressionCalculator();
+    private Object2ObjectMap<String, Integer> groupSizes = new Object2ObjectOpenHashMap<String, Integer>();
 
     @Override
     public String getModeName() {
@@ -217,6 +218,9 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 System.out.println("Associating basename: " + basename + " to group: " + groupId);
                 deCalculator.associateSampleToGroup(basename, groupId);
             }
+
+            int groupSize = (groupBasenames.split(",")).length;
+            groupSizes.put(groupId, groupSize);
         }
     }
 
@@ -307,7 +311,19 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
                 results = deCalculator.compare(results, new FoldChangeMagnitudeCalculator(), groupComparison);
                 results = deCalculator.compare(results, new AverageCalculator(), groupComparison);
-                results = deCalculator.compare(results, new TTestCalculator(), groupComparison);
+
+                boolean ttestflag = true;
+
+                for (int size : groupSizes.values()) {
+                    if (size < 2) {
+                        ttestflag = false;
+                        System.out.println("Insufficient data for t-test: need at least 2 samples per group.");
+                    }
+                }
+
+                    results = deCalculator.compare(results, new TTestCalculator(), groupComparison);
+               
+
                 results = deCalculator.compare(results, new FisherExactTestCalculator(), groupComparison);
 
                 // TODO: refactor so that the "canDo" method can be used rather than checking for R
@@ -319,8 +335,15 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
                 final BenjaminiHochbergAdjustment benjaminiHochbergAdjustment = new BenjaminiHochbergAdjustment();
                 final BonferroniAdjustment bonferroniAdjustment = new BonferroniAdjustment();
-                results = bonferroniAdjustment.adjust(results, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
-                results = benjaminiHochbergAdjustment.adjust(results, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+
+                if (ttestflag) {
+                    results = bonferroniAdjustment.adjust(results, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+                    results = benjaminiHochbergAdjustment.adjust(results, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+                } else {
+                    results = bonferroniAdjustment.adjust(results, "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+                    results = benjaminiHochbergAdjustment.adjust(results, "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+
+                }
                 final PrintWriter statsOutput = new PrintWriter(statsFilename);
                 results.write(statsOutput, '\t');
 
