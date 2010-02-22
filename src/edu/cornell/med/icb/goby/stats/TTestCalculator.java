@@ -63,8 +63,7 @@ public class TTestCalculator extends StatisticCalculator {
         final ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);
 
         if(samplesA.size() < 2 | samplesB.size()<2){
-            System.out.println("Insufficient data for t statistics. needs at least 2 samples per group.");
-            return info;
+           return info;
         }
 
         final double[] valuesA = new double[samplesA.size()];
