@@ -425,7 +425,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 for (final Annotation annot : annots) {
                     final String geneID = annot.id;
                     deCalculator.defineElement(geneID);
-
+                    numberOfElements++;
 
                     int numExons = annot.segments.size();
                     for (int i = 0; i < numExons; i++) {
@@ -456,13 +456,6 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 for (final Annotation annot : annots) {
                     final String geneID = annot.id;
                     deCalculator.defineElement(geneID);
-                    int numExons = annot.segments.size();
-                    for (int i = 0; i < numExons; i++) {
-                        Segment exonSegment = annot.segments.get(i);
-                        final String exonID = exonSegment.id;
-                        deCalculator.defineElement(exonID);
-                    }
-
                 }
             }
 
