@@ -21,8 +21,8 @@ package edu.cornell.med.icb.goby.aligners;
 import edu.cornell.med.icb.goby.config.GobyConfiguration;
 import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
 import edu.cornell.med.icb.goby.modes.CompactToFastaMode;
-import edu.cornell.med.icb.goby.modes.LastToCompactMode;
 import edu.cornell.med.icb.goby.modes.FastaToCompactMode;
+import edu.cornell.med.icb.goby.modes.LastToCompactMode;
 import edu.cornell.med.icb.goby.reads.ColorSpaceConverter;
 import edu.cornell.med.icb.goby.util.LoggingOutputStream;
 import edu.mssm.crover.cli.CLI;
@@ -292,7 +292,6 @@ public class LastAligner extends AbstractAligner {
         maxGapsAllowed = DEFAULT_MAX_GAPS_ALLOWED;
         gapOpeningCost = DEFAULT_GAP_OPENING_COST;
         matchQuality   = MatchQuality.valueOf(DEFAULT_MATCH_QUALITY);
-        alignerOptions = "-Q 1 ";   // indicate FASTQ input in SANGER format.
         if (options == null) {
             return;
         }
@@ -654,6 +653,7 @@ public class LastAligner extends AbstractAligner {
         commandLine.addArgument("-i" + DEFAULT_QUERY_BATCH_SIZE);
         commandLine.addArgument("-v");
         commandLine.addArgument("-f" + DEFAULT_OUTPUT_FORMAT);
+        commandLine.addArgument("-Q1");  // indicate FASTQ input in SANGER format.
         commandLine.addArguments(alignerOptions, false);       // don't quote these options
         commandLine.addArguments(scoreOptions(), false);       // don't quote these options
         commandLine.addArgument("-o");
@@ -693,6 +693,7 @@ public class LastAligner extends AbstractAligner {
         commandLine.addArgument("-i" + DEFAULT_QUERY_BATCH_SIZE);
         commandLine.addArgument("-v");
         commandLine.addArgument("-f" + DEFAULT_OUTPUT_FORMAT);
+        commandLine.addArgument("-Q1");  // indicate FASTQ input in SANGER format
         commandLine.addArguments(alignerOptions, false);       // don't quote these options
         commandLine.addArguments(scoreOptions(), false);       // don't quote these options
         commandLine.addArgument("-o");

@@ -37,6 +37,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 
 /**
  * @author Fabien Campagne
@@ -72,8 +73,8 @@ public class TestAligner {
         final File compactReference =
                 new File(FilenameUtils.concat(BASE_TEST_DIR, "last-input-reference.compact-reads"));
 
-        writeCompact(compactReads, reads);
-        writeCompact(compactReference, reads); // SAME AS READS!
+        writeCompact(compactReads, reads, true);
+        writeCompact(compactReference, reads, true); // SAME AS READS!
 
         final File fastaFile = aligner.prepareReads(compactReads);
         assertNotNull("Reads fasta file should not be null", fastaFile);
@@ -115,8 +116,8 @@ public class TestAligner {
         final File compactReference =
                 new File(FilenameUtils.concat(BASE_TEST_DIR, "lastag-input-reference.compact-reads"));
 
-        writeCompact(compactReads, reads);
-        writeCompact(compactReference, reads); // SAME AS READS!
+        writeCompact(compactReads, reads, false);
+        writeCompact(compactReference, reads, false); // SAME AS READS!
 
         final File fastaFile = aligner.prepareReads(compactReads);
         assertNotNull("Reads fasta file should not be null", fastaFile);
@@ -158,14 +159,15 @@ public class TestAligner {
         final File compactReference =
                 new File(FilenameUtils.concat(BASE_TEST_DIR, "bwa-input-reference.compact-reads"));
 
-        writeCompact(compactReads, reads);
-        writeCompact(compactReference, references);  // Different from reads
+        writeCompact(compactReads, reads, false);
+        writeCompact(compactReference, references, false);  // Different from reads
 
         aligner.setDatabaseName(aligner.getDefaultDbNameForReferenceFile(compactReference));
         aligner.align(compactReference, compactReads, FilenameUtils.concat(BASE_TEST_DIR, "bwa-output"));
     }
 
-    private void writeCompact(final File compactFile, final String[] sequences) throws IOException {
+    private void writeCompact(final File compactFile, final String[] sequences,
+                              final boolean writeQuality) throws IOException {
         int index = 1;
 
         ReadsWriter writer = null;
@@ -178,6 +180,12 @@ public class TestAligner {
             for (final String sequence : sequences) {
                 writer.setSequence(sequence);
                 writer.setIdentifier(Integer.toString(index++));
+                if (writeQuality) {
+                    // write fake quality scores
+                    final byte[] qualityScores = new byte[sequence.length()];
+                    Arrays.fill(qualityScores, "~".getBytes()[0]);
+                    writer.setQualityScores(qualityScores);
+                }
                 writer.appendEntry();
             }
         } finally {
