@@ -182,9 +182,9 @@ public class TestAligner {
                 writer.setIdentifier(Integer.toString(index++));
                 if (writeQuality) {
                     // write fake quality scores
-                    final byte[] qualityScores = new byte[sequence.length()];
-                    Arrays.fill(qualityScores, "~".getBytes()[0]);
-                    writer.setQualityScores(qualityScores);
+                    final byte[] qualityScore = new byte[sequence.length()];
+                    Arrays.fill(qualityScore, (byte) (0x62 - 33));  // 'b' - sanger offset
+                    writer.setQualityScores(qualityScore);
                 }
                 writer.appendEntry();
             }
