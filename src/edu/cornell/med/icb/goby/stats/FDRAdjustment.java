@@ -18,6 +18,9 @@
 
 package edu.cornell.med.icb.goby.stats;
 
+import it.unimi.dsi.lang.MutableString;
+import org.apache.log4j.Logger;
+
 /**
  * Abstract class for all implementations of FDR correction methods.
  *
@@ -26,10 +29,15 @@ package edu.cornell.med.icb.goby.stats;
  *         Time: 6:59:01 PM
  */
 public abstract class FDRAdjustment {
+    Logger LOG = Logger.getLogger(FDRAdjustment.class);
 
     public DifferentialExpressionResults adjust(final DifferentialExpressionResults list, final String... statisticIds) {
         for (final String statisticId : statisticIds) {
-            adjust(list, statisticId);
+            if (list.isStatisticDefined(new MutableString(statisticId))) {
+                adjust(list, statisticId);
+            } else {
+                LOG.warn("statistic " + statisticId + " is not found, it will be ignored by FDR adjustment.");
+            }
         }
         return list;
     }
