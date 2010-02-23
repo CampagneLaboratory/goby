@@ -38,6 +38,5 @@
                 <classname>IntegerStringParser</classname>
             </stringParser>
         </flaggedOption>
-
     </parameters>
 </jsap>

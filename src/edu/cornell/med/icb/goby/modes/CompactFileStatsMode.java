@@ -26,10 +26,10 @@ import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.math.stat.descriptive.rank.Percentile;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -56,12 +56,16 @@ public class CompactFileStatsMode extends AbstractGobyMode {
      */
     private final List<File> inputFiles = new LinkedList<File>();
 
-    /** The min read length. */
+    /** The minimum read length across all files. */
     private int minReadLength = Integer.MAX_VALUE;
 
-    /** The max read length. */
+    /** The maximum read length across all files. */
     private int maxReadLength = Integer.MIN_VALUE;
 
+    /** The cumulative read length across all files. */
+    private long cumulativeReadLength;
+
+    /** Number of quantiles used to characterize read length distribution. */
     private int numberOfQuantiles = 1;
 
     /** The number of reads. */
@@ -95,11 +99,15 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         return this;
     }
 
+    /**
+     * Reset the input file lists and cumulative statistics to default values.
+     */
     public void reset() {
         inputFiles.clear();
         minReadLength = Integer.MAX_VALUE;
         maxReadLength = Integer.MIN_VALUE;
         numberOfReads = 0;
+        cumulativeReadLength = 0;
     }
 
     /**
@@ -108,14 +116,17 @@ public class CompactFileStatsMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
+        int numberOfFilesProcessed = 0;
         for (final File file : inputFiles) {
             if (file.exists() && file.canRead()) {
                 switch (FileExtensionHelper.determineCompactFileType(file)) {
                     case alignment:
-                        describeCompactAlignment(file.toString());
+                        describeCompactAlignment(file);
+                        numberOfFilesProcessed++;
                         break;
                     case reads:
-                        describeCompactReads(file.toString());
+                        describeCompactReads(file);
+                        numberOfFilesProcessed++;
                         break;
                     case unknown:
                     default:
@@ -126,10 +137,18 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 System.err.println("Cannot read file: " + file);
             }
         }
+
+        System.out.println();
+        System.out.printf("Total number of files processed = %d\n", numberOfFilesProcessed);
+        System.out.printf("Total number of reads = %d%n", numberOfReads);
+        System.out.printf("Min read length = %,d%n", numberOfReads > 0 ? minReadLength : 0);
+        System.out.printf("Max read length = %,d%n", numberOfReads > 0 ? maxReadLength : 0);
+        System.out.printf("Avg read length = %,d%n", numberOfReads > 0 ? cumulativeReadLength / numberOfReads : 0);
+        System.out.println();
     }
 
-    private void describeCompactAlignment(final String file) throws IOException {
-        final String basename = AlignmentReader.getBasename(file);
+    private void describeCompactAlignment(final File file) throws IOException {
+        final String basename = AlignmentReader.getBasename(file.toString());
         System.out.printf("Compact Alignment basename = %s%n", basename);
 
         final AlignmentReader reader = new AlignmentReader(basename);
@@ -156,6 +175,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             avgScore += entry.getScore();
             maxQueryIndex = Math.max(maxQueryIndex, entry.getQueryIndex());
             maxTargetIndex = Math.max(maxTargetIndex, entry.getTargetIndex());
+            cumulativeReadLength += entry.getQueryAlignedLength();
             minReadLength = Math.min(minReadLength, entry.getQueryAlignedLength());
             maxReadLength = Math.max(maxReadLength, entry.getQueryAlignedLength());
         }
@@ -164,7 +184,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         System.out.printf("num query indices= %d%n", maxQueryIndex + 1);
         System.out.printf("num target indices= %d%n", maxTargetIndex + 1);
         System.out.printf("Number of alignment entries = %d%n", numLogicalAlignmentEntries);
-        System.out.printf("Percent matched = %3.2g%% %n", divide(numLogicalAlignmentEntries, maxQueryIndex) * 100.0d);
+        System.out.printf("Percent matched = %3.2g%% %n",
+                divide(numLogicalAlignmentEntries, maxQueryIndex) * 100.0d);
         System.out.printf("Avg query alignment length = %,d%n", numEntries > 0 ? total / numEntries : -1);
         System.out.printf("Avg score alignment  = %f%n", avgScore);
     }
@@ -173,9 +194,12 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         return  (double) a / (double) b;
     }
 
-    private void describeCompactReads(final String file) throws IOException {
+    private void describeCompactReads(final File file) throws IOException {
         final DoubleArrayList readLengths = new DoubleArrayList();
         System.out.printf("Compact reads filename = %s%n", file);
+
+        int minLength = Integer.MAX_VALUE;
+        int maxLength = Integer.MIN_VALUE;
 
         int numberOfIdentifiers = 0;
         int numberOfDescriptions = 0;
@@ -185,12 +209,19 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         long totalReadLength = 0;
         ReadsReader reader = null;
         try {
-            reader = new ReadsReader(new FileInputStream(file));
+            reader = new ReadsReader(FileUtils.openInputStream(file));
             for (final Reads.ReadEntry entry : reader) {
-                numberOfReads++;  // across all files
-                numReadEntries++; // across this file
-                totalReadLength += entry.getReadLength();
+                final int readLength = entry.getReadLength();
+
+                // across this file
+                numReadEntries++;
+                totalReadLength += readLength;
+
+                // across all files
+                numberOfReads++;
                 numberOfDescriptions += entry.hasDescription() ? 1 : 0;
+                cumulativeReadLength += readLength;
+
                 if (entry.hasDescription()) {
                     System.out.println("Description found: " + entry.getDescription());
                 }
@@ -199,8 +230,12 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                     System.out.println("Identifier found: " + entry.getReadIdentifier());
                 }
                 numberOfSequences += entry.hasSequence() && !entry.getSequence().isEmpty() ? 1 : 0;
-                final int readLength = entry.getReadLength();
+
                 readLengths.add(readLength);
+                minLength = Math.min(minLength, readLength);
+                maxLength = Math.max(maxLength, readLength);
+
+                // adjust the min/max length of across all files
                 minReadLength = Math.min(minReadLength, readLength);
                 maxReadLength = Math.max(maxReadLength, readLength);
             }
@@ -215,8 +250,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         System.out.printf("has sequences    = %s (%d) %n", numberOfSequences > 0, numberOfSequences);
 
         System.out.printf("Number of entries = %d%n", numReadEntries);
-        System.out.printf("Min read length = %,d%n", numReadEntries > 0 ? minReadLength : 0);
-        System.out.printf("Max read length = %,d%n", numReadEntries > 0 ? maxReadLength : 0);
+        System.out.printf("Min read length = %,d%n", numReadEntries > 0 ? minLength : 0);
+        System.out.printf("Max read length = %,d%n", numReadEntries > 0 ? maxLength : 0);
         System.out.printf("Avg read length = %,d%n", numReadEntries > 0 ? totalReadLength / numReadEntries : 0);
 
         // compute quantiles
@@ -230,22 +265,50 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         System.out.printf("]%n");
     }
 
+    /**
+     * Get the maximum read length across all files processed so far.
+     * @return The the maximum read length
+     */
     public int getMaxReadLength() {
         return maxReadLength;
     }
 
+    /**
+     * Get the minimum read length across all files processed so far.
+     * @return The the minimum read length
+     */
     public int getMinReadLength() {
         return minReadLength;
     }
 
+    /**
+     * Get the cumulative length of the reads processed so far.
+     * @return The total number of reads.
+     */
+    public long getCumulativeReadLength() {
+        return cumulativeReadLength;
+    }
+
+    /**
+     * Get the number of reads processed so far.
+     * @return The total number of reads.
+     */
     public long getNumberOfReads() {
         return numberOfReads;
     }
 
+    /**
+     * Get the list of files (reads/alignments) to process.
+     * @return The list of files.
+     */
     public List<File> getInputFiles() {
         return inputFiles;
     }
 
+    /**
+     * Add the specified file to the list of files to process.
+     * @param inputFile The file to process
+     */
     public void addInputFile(final File inputFile) {
         inputFiles.add(inputFile);
     }
