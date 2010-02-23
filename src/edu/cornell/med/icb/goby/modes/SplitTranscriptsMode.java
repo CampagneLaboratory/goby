@@ -33,6 +33,8 @@ import it.unimi.dsi.fastutil.ints.IntCollection;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -50,6 +52,10 @@ import java.util.zip.GZIPOutputStream;
  */
 public class SplitTranscriptsMode extends AbstractGobyMode {
     /**
+     * Used to log debugging and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(SplitTranscriptsMode.class);
+    /**
      * The mode name.
      */
     public static final String MODE_NAME = "split-transcripts";
@@ -64,6 +70,9 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
      */
     private SplitTranscriptsConfig config;
 
+    /**
+     * Transcript and gene id from header.
+     */
     private Map<String, MutableString> transcriptHeader;
 
     @Override
@@ -125,15 +134,7 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
             lineNo++;
             parseHeader(entry.getEntryHeader());
             final MutableString transcriptId = transcriptHeader.get("transcriptId");
-            if (!transcriptId.startsWith("ENST")) {
-                System.out.printf("[%d - no ENST]%s%n", lineNo, entry.getEntryHeader());
-                System.exit(1);
-            }
             final MutableString geneId = transcriptHeader.get("geneId");
-            if (!geneId.startsWith("ENSG")) {
-                System.out.printf("[%d - no ENSG]%s%n", lineNo, entry.getEntryHeader());
-                System.exit(1);
-            }
 
             final int transcriptIndex = transcriptIdents.registerIdentifier(transcriptId);
             gtr.addRelationship(geneId, transcriptIndex);
@@ -141,7 +142,7 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
             transcriptIndexToIdMap.put(transcriptIndex, transcriptId);
         }
 
-        System.out.println("Loading of map of genes-transcripts complete.");
+        LOG.info("Loading map of genes-transcripts complete.");
 
         //
         // Scan through the transcript-gene relationships to determine which
@@ -167,9 +168,8 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
                 int adjustedFileIndex = 0;
                 for (final int transcriptIndex : transcriptIndices) {
                     if (transcriptIndex2FileIndex.get(transcriptIndex) != -1) {
-                        System.out.println("transcriptIndex " + transcriptIndex + " repeated!");
-                        System.exit(1);
-                        //TODO skip redundant entry instead of quitting.
+                        LOG.warn("Skipping repeated transcriptIndex: " + transcriptIndex);
+                        continue;
                     }
                     final int maxEntriesPerFile = config.getMaxEntriesPerFile();
                     final int numberOfEntriesInOriginalBucket = fileIndex2NumberOfEntries.get(fileNum);
@@ -188,8 +188,8 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
         }
 
         final int numFiles = getFileIndices(transcriptIndex2FileIndex).size();
-        System.out.println("Num FASTA entries " + lineNo);
-        System.out.println("Will split into " + numFiles + " files (max " + config.getMaxEntriesPerFile() + " per file)");
+        LOG.info("Number of input entries " + lineNo);
+        LOG.info("Will split into " + numFiles + " files (max " + config.getMaxEntriesPerFile() + " per file)");
         final NumberFormat nf = getNumberFormatter(numFiles - 1);
         final Int2ObjectMap<PrintStream> outputs = new Int2ObjectOpenHashMap<PrintStream>();
         for (final int fileIndex : getFileIndices(transcriptIndex2FileIndex)) {
@@ -197,6 +197,7 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
             outputs.put(fileIndex,
                     new PrintStream(new GZIPOutputStream(new FileOutputStream(outputFilename))));
         }
+
         //
         // Read through the file to actually perform the split
         //
@@ -207,12 +208,12 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
             final MutableString geneId = transcriptHeader.get("geneId");
             final int transcriptIndex = transcriptIdents.getInt(transcriptId);
             if (transcriptIndex == -1) {
-                System.out.println("Could not get transcriptIndex for " + transcriptId);
+                LOG.fatal("Could not get transcriptIndex for " + transcriptId);
                 System.exit(1);
             }
             final int fileIndex = transcriptIndex2FileIndex.get(transcriptIndex);
             if (fileIndex == -1) {
-                System.out.println("No fileIndex defined for " + transcriptId);
+                LOG.fatal("No fileIndex defined for " + transcriptId);
                 System.exit(1);
             }
             final PrintStream output = outputs.get(fileIndex);
@@ -222,13 +223,13 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
             output.println(geneId);
             output.println(entry.getEntrySansHeader());
             if (++lineNo % 10000 == 0) {
-                System.out.printf("Have written %d entries%n", lineNo);
+                LOG.info("Have written " + lineNo +  "entries");
             }
         }
         for (final int fileIndex : getFileIndices(transcriptIndex2FileIndex)) {
             IOUtils.closeQuietly(outputs.get(fileIndex));
         }
-        System.out.println("Done.");
+        LOG.info("Done.");
     }
 
     private IntCollection getFileIndices(final Int2IntMap transcriptIndex2FileIndex) {
@@ -238,7 +239,6 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
     }
 
     private int getNumberOfFiles(final GeneTranscriptRelationships gtr, final Int2IntMap transcriptIndex2FileIndex) {
-        //
         int numFiles = 0;
         for (int geneIndex = 0; geneIndex < gtr.getNumberOfGenes(); geneIndex++) {
             final MutableString geneId = gtr.getGeneId(geneIndex);
@@ -246,9 +246,8 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
             int fileNum = 0;
             for (final int transcriptIndex : transcriptIndices) {
                 if (transcriptIndex2FileIndex.get(transcriptIndex) != -1) {
-                    System.out.println("transcriptIndex " + transcriptIndex + " repeated!");
-                    System.exit(1);
-                    //TODO skip redundant entry instead of quitting.
+                    LOG.warn("Skipping repeated transcriptIndex: " + transcriptIndex);
+                    continue;
                 }
 
                 numFiles = Math.max(fileNum, numFiles);
@@ -258,6 +257,11 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
         return ++numFiles;
     }
 
+    /**
+     * Extract the transcript and gene ids from the given string.
+     * @param header The string to extract the information from.  Generally speaking
+     * this is the comment line from a FASTA entry (without the ">" character)
+     */
     private void parseHeader(final MutableString header) {
         final int endOfTranscriptId = header.indexOf(' ');
         transcriptHeader.put("transcriptId", header.substring(0, endOfTranscriptId));
@@ -267,27 +271,23 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
     }
 
     /**
-     * Get a number formatter to print leading zeros up to maxNum.
+     * Get a number formatter to print leading zeros up to n.
      *
-     * @param maxNum The largest number that will be formatted
-     * @return the NumberFormat for maxNum
+     * @param n The largest number that will be formatted
+     * @return the NumberFormat for n
      */
-    public NumberFormat getNumberFormatter(final int maxNum) {
-        final int digits;
-        if (maxNum >= 10000) {
-            digits = 5;
-        } else if (maxNum >= 1000) {
-            digits = 4;
-        } else if (maxNum >= 100) {
-            digits = 3;
-        } else if (maxNum >= 10) {
-            digits = 2;
+    public NumberFormat getNumberFormatter(final int n) {
+        assert n >= 0 : "n must be non-negative";
+        final int numDigits;
+        if (n == 0) {
+            numDigits = 1;
         } else {
-            digits = 1;
+            numDigits = 1 + (int) (Math.log10(n));
         }
-        final NumberFormat nf = NumberFormat.getInstance();
-        nf.setMinimumIntegerDigits(digits);
-        return nf;
+
+        final NumberFormat numberFormat = NumberFormat.getInstance();
+        numberFormat.setMinimumIntegerDigits(numDigits);
+        return numberFormat;
     }
 
 
@@ -352,7 +352,7 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
         public boolean validate() {
             boolean validates = true;
             if (!(new File(inputFile)).exists()) {
-                System.err.println("input file " + inputFile + " does not exist.");
+                LOG.error("input file " + inputFile + " does not exist.");
                 validates = false;
             }
             return validates;
