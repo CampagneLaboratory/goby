@@ -321,8 +321,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     }
                 }
 
-                    results = deCalculator.compare(results, new TTestCalculator(), groupComparison);
-               
+                results = deCalculator.compare(results, new TTestCalculator(), groupComparison);
+
 
                 results = deCalculator.compare(results, new FisherExactTestCalculator(), groupComparison);
 
@@ -449,14 +449,14 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     final String geneID = annot.id;
                     deCalculator.defineElement(geneID);
                     numberOfElements++;
-
-                    int numExons = annot.segments.size();
-                    for (int i = 0; i < numExons; i++) {
-                        Segment exonSegment = annot.segments.get(i);
-                        final String exonID = exonSegment.id;
-                        deCalculator.defineElement(exonID);
-                        numberOfElements++;
-
+                    if (includeAnnotationTypes.contains("exon")) {
+                        int numExons = annot.segments.size();
+                        for (int i = 0; i < numExons; i++) {
+                            Segment exonSegment = annot.segments.get(i);
+                            final String exonID = exonSegment.id;
+                            deCalculator.defineElement(exonID);
+                            numberOfElements++;
+                        }
                     }
                 }
             }
@@ -517,7 +517,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                                 numExons));
                     }
                     if (doComparison) {
-                        deCalculator.observe(basename, geneID, geneOverlapReads, geneRPKM);
+                        deCalculator.observe(basename, geneID, geneExpression, geneRPKM);
                     }
                 }
                 final int numberExons = annot.segments.size();
