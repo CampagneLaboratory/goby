@@ -32,6 +32,7 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntCollection;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.lang.MutableString;
+import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -133,9 +134,9 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
         //
         // Pass through the file once to collect the transcript - gene relationships
         //
-        int lineNo = 0;
+        int entries = 0;
         for (final FastXEntry entry : new FastXReader(config.getInputFile())) {
-            lineNo++;
+            entries++;
             parseHeader(entry.getEntryHeader());
             final MutableString transcriptId = transcriptHeader.get("transcriptId");
             final MutableString geneId = transcriptHeader.get("geneId");
@@ -199,53 +200,58 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
 
         final int numFiles = getFileIndices(transcriptIndex2FileIndex).size();
         if (LOG.isInfoEnabled()) {
-            LOG.info("Number of input entries " + lineNo);
-            LOG.info("Will be written to " + numFiles + " files");
+            LOG.info(NumberFormat.getInstance().format(entries)
+                    + " entries will be written to " + numFiles + " files");
             final int maxEntriesPerFile = config.getMaxEntriesPerFile();
             if (maxEntriesPerFile < Integer.MAX_VALUE) {
                 LOG.info("Each file will contain at most " + maxEntriesPerFile + " entries");
             }
         }
-        final NumberFormat nf = getNumberFormatter(numFiles - 1);
-        final Int2ObjectMap<PrintStream> outputs = new Int2ObjectOpenHashMap<PrintStream>();
+
+        // formatter for uniquely numbering files each with the same number of digits
+        final NumberFormat fileNumberFormatter = getNumberFormatter(numFiles - 1);
+
+        final ProgressLogger progressLogger = new ProgressLogger();
+        progressLogger.expectedUpdates = entries;
+        progressLogger.itemsName = "entries";
+        progressLogger.start();
+
+        // Write each file one at a time rather than in the order they appear in the input file
+        // to avoid the issue of having too many streams open at the same or continually opening
+        // and closing streams which is quite costly.  We could store the gene/transcripts in
+        // memory and then just write the files at the end but that could be worse.
         for (final int fileIndex : getFileIndices(transcriptIndex2FileIndex)) {
-            final String outputFilename = config.getOutputBase() + "." + nf.format(fileIndex) + ".fa.gz";
-            outputs.put(fileIndex,
-                    new PrintStream(new GZIPOutputStream(new FileOutputStream(outputFilename))));
+            final String filename =
+                    config.getOutputBase() + "." + fileNumberFormatter.format(fileIndex) + ".fa.gz";
+            PrintStream printStream = null;
+            try {
+                // each file is compressed
+                printStream = new PrintStream(new GZIPOutputStream(new FileOutputStream(filename)));
+
+                //
+                // Read through the input file get the actual sequence information
+                //
+                for (final FastXEntry entry : new FastXReader(config.getInputFile())) {
+                    parseHeader(entry.getEntryHeader());
+                    final MutableString transcriptId = transcriptHeader.get("transcriptId");
+                    final MutableString geneId = transcriptHeader.get("geneId");
+                    final int transcriptIndex = transcriptIdents.getInt(transcriptId);
+                    final int transcriptFileIndex = transcriptIndex2FileIndex.get(transcriptIndex);
+                    if (transcriptFileIndex == fileIndex) {
+                        printStream.print(entry.getHeaderSymbol());
+                        printStream.print(transcriptId);
+                        printStream.print(" gene:");
+                        printStream.println(geneId);
+                        printStream.println(entry.getEntrySansHeader());
+                        progressLogger.lightUpdate();
+                    }
+                }
+            } finally {
+                IOUtils.closeQuietly(printStream);
+            }
         }
 
-        //
-        // Read through the file to actually perform the split
-        //
-        lineNo = 0;
-        for (final FastXEntry entry : new FastXReader(config.getInputFile())) {
-            parseHeader(entry.getEntryHeader());
-            final MutableString transcriptId = transcriptHeader.get("transcriptId");
-            final MutableString geneId = transcriptHeader.get("geneId");
-            final int transcriptIndex = transcriptIdents.getInt(transcriptId);
-            if (transcriptIndex == -1) {
-                LOG.fatal("Could not get transcriptIndex for " + transcriptId);
-                System.exit(1);
-            }
-            final int fileIndex = transcriptIndex2FileIndex.get(transcriptIndex);
-            if (fileIndex == -1) {
-                LOG.fatal("No fileIndex defined for " + transcriptId);
-                System.exit(1);
-            }
-            final PrintStream output = outputs.get(fileIndex);
-            output.print(entry.getHeaderSymbol());
-            output.print(transcriptId);
-            output.print(" gene:");
-            output.println(geneId);
-            output.println(entry.getEntrySansHeader());
-            if (++lineNo % 10000 == 0) {
-                LOG.info("Have written " + lineNo + " entries");
-            }
-        }
-        for (final int fileIndex : getFileIndices(transcriptIndex2FileIndex)) {
-            IOUtils.closeQuietly(outputs.get(fileIndex));
-        }
-        LOG.info("Done.");
+        progressLogger.done();
     }
 
     private IntCollection getFileIndices(final Int2IntMap transcriptIndex2FileIndex) {
@@ -254,10 +260,16 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
         return result;
     }
 
-    private int getNumberOfFiles(final GeneTranscriptRelationships gtr, final Int2IntMap transcriptIndex2FileIndex) {
+    /**
+     * Calcuate the number of files the gene to transcript relationships should be split to.
+     * @param gtr The gene to transcript relationships
+     * @param transcriptIndex2FileIndex A map of transcript identifiers to file indices
+     * @return The number of files to write
+     */
+    private int getNumberOfFiles(final GeneTranscriptRelationships gtr,
+                                 final Int2IntMap transcriptIndex2FileIndex) {
         int numFiles = 0;
         for (int geneIndex = 0; geneIndex < gtr.getNumberOfGenes(); geneIndex++) {
-            final MutableString geneId = gtr.getGeneId(geneIndex);
             final IntSet transcriptIndices = gtr.getTranscriptSet(geneIndex);
             int fileNum = 0;
             for (final int transcriptIndex : transcriptIndices) {
@@ -329,11 +341,7 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
         private final String inputFile;
         /** The outputBase. */
         private final String outputBase;
-
-        public int getMaxEntriesPerFile() {
-            return maxEntriesPerFile;
-        }
-
+        /** Maximum number of entries that should be written to any given output file. */
         private final int maxEntriesPerFile;
 
         /**
@@ -347,19 +355,27 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
         }
 
         /**
-         * inputFile getter.
-         * @return the inputFile
+         * Get the input file to process.
+         * @return the input filename
          */
         public String getInputFile() {
             return inputFile;
         }
 
         /**
-         * outputBase getter.
-         * @return the outputBase
+         * Get the basename/directory for the output file(s).
+         * @return the basename
          */
         public String getOutputBase() {
             return outputBase;
+        }
+
+        /**
+         * Get the maximum number of entries that should be written to any given output file.
+         * @return the maximum number of entries to write
+         */
+        public int getMaxEntriesPerFile() {
+            return maxEntriesPerFile;
         }
 
         /**

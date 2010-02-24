@@ -44,7 +44,7 @@ import java.util.zip.GZIPInputStream;
  *
  * @author Kevin Dorff
  */
-public class FastXReader  implements Iterator<FastXEntry>, Iterable<FastXEntry>, Closeable {
+public class FastXReader implements Iterator<FastXEntry>, Iterable<FastXEntry>, Closeable {
     /** The start of line character the designates a new FASTA record. */
     private static final char FASTA_RECORD_START = '>';
 
@@ -79,7 +79,7 @@ public class FastXReader  implements Iterator<FastXEntry>, Iterable<FastXEntry>,
      * @param is the input stream that contains FASTA / FASTQ data.
      * @throws IOException error reading or the input stream doesn't support "mark"
      */
-    public FastXReader(final InputStream is ) throws IOException {
+    public FastXReader(final InputStream is) throws IOException {
         reader = new BufferedReader(new FastBufferedReader(new InputStreamReader(new FastBufferedInputStream(is))));
         nextEntry = null;
         mutableEntry = new FastXEntry();
