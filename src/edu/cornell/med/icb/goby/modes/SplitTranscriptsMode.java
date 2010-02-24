@@ -32,12 +32,12 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntCollection;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.lang.MutableString;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -198,8 +198,14 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
         }
 
         final int numFiles = getFileIndices(transcriptIndex2FileIndex).size();
-        LOG.info("Number of input entries " + lineNo);
-        LOG.info("Will split into " + numFiles + " files (max " + config.getMaxEntriesPerFile() + " per file)");
+        if (LOG.isInfoEnabled()) {
+            LOG.info("Number of input entries " + lineNo);
+            LOG.info("Will be written to " + numFiles + " files");
+            final int maxEntriesPerFile = config.getMaxEntriesPerFile();
+            if (maxEntriesPerFile < Integer.MAX_VALUE) {
+                LOG.info("Each file will contain at most " + maxEntriesPerFile + " entries");
+            }
+        }
         final NumberFormat nf = getNumberFormatter(numFiles - 1);
         final Int2ObjectMap<PrintStream> outputs = new Int2ObjectOpenHashMap<PrintStream>();
         for (final int fileIndex : getFileIndices(transcriptIndex2FileIndex)) {

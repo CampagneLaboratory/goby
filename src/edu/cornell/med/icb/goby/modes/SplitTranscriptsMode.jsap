@@ -31,7 +31,7 @@
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
             <required>true</required>
-            <help>Base output path / filename. Several files will be created using this base including multiple FASTA files and a config file.  </help>
+            <help>Base output path / filename. Several files will be created using this base including multiple FASTA files and a config file.</help>
         </flaggedOption>
         <flaggedOption>
             <id>max-entries-per-file</id>
@@ -42,7 +42,7 @@
                 <classname>IntegerStringParser</classname>
             </stringParser>
             <defaults>
-                <string>1000</string>
+                <string>2147483647</string>
             </defaults>
             <help>Maximum number of entries that should be written to any given output file.</help>
         </flaggedOption>
