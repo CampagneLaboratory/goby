@@ -302,6 +302,7 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
         }
 
         final NumberFormat numberFormat = NumberFormat.getInstance();
+        numberFormat.setGroupingUsed(false);
         numberFormat.setMinimumIntegerDigits(numDigits);
         return numberFormat;
     }
