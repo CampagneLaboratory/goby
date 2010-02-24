@@ -33,13 +33,17 @@ import it.unimi.dsi.fastutil.ints.IntCollection;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -149,10 +153,16 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
         // transcript id goes into which file
         //
         final Int2IntMap transcriptIndex2FileIndex = new Int2IntOpenHashMap();
-        PrintStream configOutput = null;
+        final String configOutputFilename = config.getOutputBase() + ".config";
+        final String configOutputPath = FilenameUtils.getPath(configOutputFilename);
+        if (StringUtils.isNotBlank(configOutputPath)) {
+            LOG.info("Creating output directory: " + configOutputPath);
+            FileUtils.forceMkdir(new File(configOutputPath));
+        }
+
+        PrintWriter configOutput = null;
         try {
-            final String configOutputFilename = config.getOutputBase() + ".config";
-            configOutput = new PrintStream(new FileOutputStream(configOutputFilename));
+            configOutput = new PrintWriter(configOutputFilename);
             configOutput.println("Ensembl Gene ID\tEnsembl Transcript ID");
 
             final Int2IntMap fileIndex2NumberOfEntries = new Int2IntOpenHashMap();
@@ -165,7 +175,7 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
                 final MutableString geneId = gtr.getGeneId(geneIndex);
                 final IntSet transcriptIndices = gtr.getTranscriptSet(geneIndex);
                 int fileNum = 0;
-                int adjustedFileIndex = 0;
+
                 for (final int transcriptIndex : transcriptIndices) {
                     if (transcriptIndex2FileIndex.get(transcriptIndex) != -1) {
                         LOG.warn("Skipping repeated transcriptIndex: " + transcriptIndex);
@@ -173,7 +183,7 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
                     }
                     final int maxEntriesPerFile = config.getMaxEntriesPerFile();
                     final int numberOfEntriesInOriginalBucket = fileIndex2NumberOfEntries.get(fileNum);
-                    adjustedFileIndex = fileNum + initialNumberOfFiles * (numberOfEntriesInOriginalBucket / maxEntriesPerFile);
+                    final int adjustedFileIndex = fileNum + initialNumberOfFiles * (numberOfEntriesInOriginalBucket / maxEntriesPerFile);
 
                     transcriptIndex2FileIndex.put(transcriptIndex, adjustedFileIndex);
                     fileIndex2NumberOfEntries.put(fileNum, fileIndex2NumberOfEntries.get(fileNum) + 1);
@@ -223,7 +233,7 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
             output.println(geneId);
             output.println(entry.getEntrySansHeader());
             if (++lineNo % 10000 == 0) {
-                LOG.info("Have written " + lineNo +  "entries");
+                LOG.info("Have written " + lineNo + " entries");
             }
         }
         for (final int fileIndex : getFileIndices(transcriptIndex2FileIndex)) {
