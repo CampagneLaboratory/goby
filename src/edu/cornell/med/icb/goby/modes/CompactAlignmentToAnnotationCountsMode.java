@@ -449,15 +449,13 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     final String geneID = annot.id;
                     deCalculator.defineElement(geneID);
                     numberOfElements++;
-                    if (includeAnnotationTypes.contains("exon")) {
-                        int numExons = annot.segments.size();
+                    int numExons = annot.segments.size();
                         for (int i = 0; i < numExons; i++) {
                             Segment exonSegment = annot.segments.get(i);
                             final String exonID = exonSegment.id;
                             deCalculator.defineElement(exonID);
                             numberOfElements++;
                         }
-                    }
                 }
             }
 
