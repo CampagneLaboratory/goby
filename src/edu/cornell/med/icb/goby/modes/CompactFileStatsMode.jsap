@@ -23,7 +23,7 @@
             <id>input</id>
             <required>true</required>
             <greedy>true</greedy>
-            <help>The input filenames to to get stats for. Cpompact file formats are recognized (reads or alignments)</help>
+            <help>The input filenames to to get statistics for. Compact file formats are recognized (reads or alignments)</help>
             <stringParser>
                 <classname>FileStringParser</classname>
             </stringParser>
@@ -38,5 +38,11 @@
                 <classname>IntegerStringParser</classname>
             </stringParser>
         </flaggedOption>
+        <switch>
+            <id>verbose</id>
+            <shortFlag>v</shortFlag>
+            <longFlag>verbose</longFlag>
+            <help>Display detailed statistics.</help>
+        </switch>
     </parameters>
 </jsap>

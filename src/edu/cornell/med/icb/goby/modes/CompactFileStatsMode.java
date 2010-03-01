@@ -71,6 +71,9 @@ public class CompactFileStatsMode extends AbstractGobyMode {
     /** The number of reads. */
     private long numberOfReads;
 
+    /** Display verbose output. */
+    private boolean verbose;
+
     @Override
     public String getModeName() {
         return MODE_NAME;
@@ -96,6 +99,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         final File[] inputFilesArray = jsapResult.getFileArray("input");
         inputFiles.addAll(Arrays.asList(inputFilesArray));
         numberOfQuantiles = jsapResult.getInt("number-of-quantiles", 1);
+        verbose = jsapResult.getBoolean("verbose");
         return this;
     }
 
@@ -222,11 +226,11 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 numberOfDescriptions += entry.hasDescription() ? 1 : 0;
                 cumulativeReadLength += readLength;
 
-                if (entry.hasDescription()) {
+                if (verbose && entry.hasDescription()) {
                     System.out.println("Description found: " + entry.getDescription());
                 }
                 numberOfIdentifiers += entry.hasReadIdentifier() ? 1 : 0;
-                if (entry.hasReadIdentifier()) {
+                if (verbose && entry.hasReadIdentifier()) {
                     System.out.println("Identifier found: " + entry.getReadIdentifier());
                 }
                 numberOfSequences += entry.hasSequence() && !entry.getSequence().isEmpty() ? 1 : 0;
