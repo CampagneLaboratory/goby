@@ -19,29 +19,21 @@
 
 <jsap>
     <parameters>
-
         <switch>
             <id>index-to-header</id>
             <longFlag>index-to-header</longFlag>
             <defaults>false</defaults>
-            <help>When this switch is provided, ignore the sequence description line and write the sequence index as a
-                string in place of the fasta sequence header.
-            </help>
+            <help>When this switch is provided, ignore the sequence description line and write the sequence index as a string in place of the fasta sequence header.</help>
         </switch>
-
         <switch>
             <id>output-color-space</id>
             <longFlag>output-color-space</longFlag>
-            <help>When this switch is provided, convert the sequence to color mode. Only makes sense if the compact file
-                encodes a sequence in fasta format.
-            </help>
+            <help>When this switch is provided, convert the sequence to color mode. Only makes sense if the compact file encodes a sequence in fasta format.</help>
         </switch>
         <switch>
             <id>output-fake-nt</id>
             <longFlag>output-fake-nt</longFlag>
-            <help>When this switch is provided, convert the color space sequence to fake nucleotide representation (e.g.
-                0123.->ACTGN). Used by the BWA algorithm.
-            </help>
+            <help>When this switch is provided, convert the color space sequence to fake nucleotide representation (e.g. 0123.->ACTGN). Used by the BWA algorithm.</help>
         </switch>
         <switch>
             <id>output-fake-quality</id>
@@ -51,10 +43,7 @@
         <switch>
             <id>reference</id>
             <longFlag>reference</longFlag>
-
-            <help>When this switch is provided with output-color-space, any transition on the N character will result in
-                writting an 'N' base.
-            </help>
+            <help>When this switch is provided with output-color-space, any transition on the N character will result in writting an 'N' base.</help>
         </switch>
         <flaggedOption>
             <id>trim-adaptor-length</id>
@@ -109,11 +98,8 @@
                 <classname>StringStringParser</classname>
             </stringParser>
             <required>false</required>
-            <help>Alphabet of valid bases/residues. The sequence is filtered to keep only characters in the alphabet.
-                Other characters are replaced by 'N'.
-            </help>
+            <help>Alphabet of valid bases/residues. The sequence is filtered to keep only characters in the alphabet. Other characters are replaced by 'N'.</help>
         </flaggedOption>
-
         <flaggedOption>
             <id>read-index-filter</id>
             <shortFlag>f</shortFlag>
@@ -122,9 +108,7 @@
                 <classname>FileStringParser</classname>
             </stringParser>
             <required>false</required>
-            <help>The name of a read index filter. When provided, compact-to-fasta will only write reads to the output
-                if their index is contained in the filter.
-            </help>
+            <help>The name of a read index filter. When provided, compact-to-fasta will only write reads to the output if their index is contained in the filter.</help>
         </flaggedOption>
         <flaggedOption>
             <id>quality-encoding</id>
@@ -133,9 +117,7 @@
             <defaults>
                 <string>Illumina</string>
             </defaults>
-            <help>The encoding for quality scores. The default quality encoding is that used by the Illumina pipeline
-                1.3+
-            </help>
+            <help>The encoding for quality scores. The default quality encoding is that used by the Illumina pipeline 1.3+</help>
         </flaggedOption>
     </parameters>
 </jsap>
