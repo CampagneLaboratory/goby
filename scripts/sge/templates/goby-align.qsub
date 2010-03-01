@@ -10,7 +10,7 @@
 #$ -j y
 
 # Memory resource requirements
-#$ -l mem_total=%SGE_MEMORY%
+#$ -l virtual_free=%SGE_MEMORY%
 
 # Mail job begin status
 #$ -m b
