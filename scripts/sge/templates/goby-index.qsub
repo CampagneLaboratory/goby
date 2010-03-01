@@ -50,7 +50,8 @@ REFERENCE_INDEX_DIRECTORY=%REFERENCE_INDEX_DIRECTORY%
 
 cd ${TMPDIR}
 java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.properties \
-    -Dexecutables.path.bwa=%BWA_ALIGNER_PATH% -Dexecutables.path.lastag=%LASTAG_ALIGNER_PATH% \
+    -Dexecutables.path.bwa=%BWA_ALIGNER_PATH% -Dexecutables.path.last=%LAST_ALIGNER_PATH% \
+    -Dexecutables.path.lastag=%LASTAG_ALIGNER_PATH% \
     -jar goby.jar --mode align %COLORSPACE% --reference ${REFERENCE} --aligner %ALIGNER% \
     --index --database-name ${REFERENCE_INDEX_NAME}
 

@@ -89,6 +89,7 @@ for FILE in goby-index.qsub goby-align.qsub goby-concat.qsub; do
         -e "s|%ALIGNER%|${ALIGNER}|" -e "s|%COLORSPACE%|${COLORSPACE}|" \
         -e "s|%CHUNK_SIZE%|${CHUNK_SIZE}|" -e "s|%BASENAME%|${BASENAME}|" \
         -e "s|%BWA_ALIGNER_PATH%|${BWA_ALIGNER_PATH}|" \
+        -e "s|%LAST_ALIGNER_PATH%|${LAST_ALIGNER_PATH}|" \
         -e "s|%LASTAG_ALIGNER_PATH%|${LASTAG_ALIGNER_PATH}|" \
         -e "s|%SGE_JOB_NAME%|${SGE_JOB_NAME}|" \
         ${SCRIPT_DIR}/templates/${FILE} > ${JOB_DIR}/${FILE}

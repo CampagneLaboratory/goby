@@ -26,6 +26,7 @@ ALIGNER=bwa
 # Full path to native aligner executable directory
 #
 BWA_ALIGNER_PATH=
+LAST_ALIGNER_PATH=
 LASTAG_ALIGNER_PATH=
 
 #

@@ -61,7 +61,8 @@ if [ ! -z ${SGE_TASK_ID} ] && [ "${SGE_TASK_ID}" != "unknown" ]; then
     END_POSITION=$(($START_POSITION + $CHUNK_SIZE - 1))
     cd ${TMPDIR}
     java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.properties \
-        -Dexecutables.path.bwa=%BWA_ALIGNER_PATH% -Dexecutables.path.lastag=%LASTAG_ALIGNER_PATH% \
+        -Dexecutables.path.bwa=%BWA_ALIGNER_PATH% -Dexecutables.path.last=%LAST_ALIGNER_PATH% \
+        -Dexecutables.path.lastag=%LASTAG_ALIGNER_PATH% \
         -jar goby.jar --mode reformat-compact-reads --output ${READS_FILE} \
         --start-position ${START_POSITION} --end-position ${END_POSITION} ${READS}
 else
@@ -71,7 +72,8 @@ fi
 # Run the alignment
 cd ${TMPDIR}
 java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.properties \
-    -Dexecutables.path.bwa=%BWA_ALIGNER_PATH% -Dexecutables.path.lastag=%LASTAG_ALIGNER_PATH% \
+    -Dexecutables.path.bwa=%BWA_ALIGNER_PATH% -Dexecutables.path.last=%LAST_ALIGNER_PATH% \
+    -Dexecutables.path.lastag=%LASTAG_ALIGNER_PATH% \
     -jar goby.jar --mode align %COLORSPACE% --reference ${REFERENCE} --aligner %ALIGNER% --search \
     --database-name ${REFERENCE_INDEX_NAME} --database-directory ${REFERENCE_INDEX_DIRECTORY} \
     --reads ${READS_FILE} --basename %BASENAME%

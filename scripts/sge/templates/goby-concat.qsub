@@ -49,7 +49,8 @@ RESULT_DIR=${SGE_O_WORKDIR}/results/%BASENAME%
 cd ${TMPDIR}
 
 java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.properties \
-    -Dexecutables.path.bwa=%BWA_ALIGNER_PATH% -Dexecutables.path.lastag=%LASTAG_ALIGNER_PATH% \
+    -Dexecutables.path.bwa=%BWA_ALIGNER_PATH% -Dexecutables.path.last=%LAST_ALIGNER_PATH% \
+    -Dexecutables.path.lastag=%LASTAG_ALIGNER_PATH% \
     -jar goby.jar --mode concatenate-alignments --output %BASENAME% \
     ${INTERIM_RESULT_DIR}*/*.entries
 
