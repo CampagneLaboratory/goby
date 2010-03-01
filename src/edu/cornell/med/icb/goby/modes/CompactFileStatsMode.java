@@ -65,6 +65,9 @@ public class CompactFileStatsMode extends AbstractGobyMode {
     /** The cumulative read length across all files. */
     private long cumulativeReadLength;
 
+    /** Whether or not to compute quantile information. */
+    private boolean computeQuantiles;
+
     /** Number of quantiles used to characterize read length distribution. */
     private int numberOfQuantiles = 1;
 
@@ -98,6 +101,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         reset();
         final File[] inputFilesArray = jsapResult.getFileArray("input");
         inputFiles.addAll(Arrays.asList(inputFilesArray));
+        computeQuantiles = jsapResult.userSpecified("number-of-quantiles");
         numberOfQuantiles = jsapResult.getInt("number-of-quantiles", 1);
         verbose = jsapResult.getBoolean("verbose");
         return this;
@@ -143,8 +147,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         }
 
         System.out.println();
-        System.out.printf("Total number of files processed = %d\n", numberOfFilesProcessed);
-        System.out.printf("Total number of reads = %d%n", numberOfReads);
+        System.out.printf("Total number of files processed = %,d\n", numberOfFilesProcessed);
+        System.out.printf("Total number of reads = %,d%n", numberOfReads);
         System.out.printf("Min read length = %,d%n", numberOfReads > 0 ? minReadLength : 0);
         System.out.printf("Max read length = %,d%n", numberOfReads > 0 ? maxReadLength : 0);
         System.out.printf("Avg read length = %,d%n", numberOfReads > 0 ? cumulativeReadLength / numberOfReads : 0);
@@ -158,8 +162,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         final AlignmentReader reader = new AlignmentReader(basename);
         reader.readHeader();
         System.out.println("Info from header:");
-        System.out.printf("Number of query sequences = %d%n", reader.getNumberOfQueries());
-        System.out.printf("Number of target sequences = %d%n", reader.getNumberOfTargets());
+        System.out.printf("Number of query sequences = %,d%n", reader.getNumberOfQueries());
+        System.out.printf("Number of target sequences = %,d%n", reader.getNumberOfTargets());
         System.out.printf("has query identifiers = %s%n",
                 reader.getQueryIdentifiers() != null && !reader.getTargetIdentifiers().isEmpty());
         System.out.printf("has target identifiers = %s%n",
@@ -185,9 +189,9 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         }
         avgScore /= (double) numLogicalAlignmentEntries;
 
-        System.out.printf("num query indices= %d%n", maxQueryIndex + 1);
-        System.out.printf("num target indices= %d%n", maxTargetIndex + 1);
-        System.out.printf("Number of alignment entries = %d%n", numLogicalAlignmentEntries);
+        System.out.printf("num query indices= %,d%n", maxQueryIndex + 1);
+        System.out.printf("num target indices= %,d%n", maxTargetIndex + 1);
+        System.out.printf("Number of alignment entries = %,d%n", numLogicalAlignmentEntries);
         System.out.printf("Percent matched = %3.2g%% %n",
                 divide(numLogicalAlignmentEntries, maxQueryIndex) * 100.0d);
         System.out.printf("Avg query alignment length = %,d%n", numEntries > 0 ? total / numEntries : -1);
@@ -199,8 +203,10 @@ public class CompactFileStatsMode extends AbstractGobyMode {
     }
 
     private void describeCompactReads(final File file) throws IOException {
-        final DoubleArrayList readLengths = new DoubleArrayList();
         System.out.printf("Compact reads filename = %s%n", file);
+
+        // keep the read lengths for computing quantiles
+        final DoubleArrayList readLengths = new DoubleArrayList();
 
         int minLength = Integer.MAX_VALUE;
         int maxLength = Integer.MIN_VALUE;
@@ -235,7 +241,10 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 }
                 numberOfSequences += entry.hasSequence() && !entry.getSequence().isEmpty() ? 1 : 0;
 
-                readLengths.add(readLength);
+                // we only need to keep all the read lengths if quantiles are being computed
+                if (computeQuantiles) {
+                    readLengths.add(readLength);
+                }
                 minLength = Math.min(minLength, readLength);
                 maxLength = Math.max(maxLength, readLength);
 
@@ -249,24 +258,26 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             }
         }
 
-        System.out.printf("has identifiers  = %s (%d) %n", numberOfIdentifiers > 0, numberOfIdentifiers);
-        System.out.printf("has descriptions = %s (%d) %n", numberOfDescriptions > 0, numberOfDescriptions);
-        System.out.printf("has sequences    = %s (%d) %n", numberOfSequences > 0, numberOfSequences);
+        System.out.printf("has identifiers  = %s (%,d) %n", numberOfIdentifiers > 0, numberOfIdentifiers);
+        System.out.printf("has descriptions = %s (%,d) %n", numberOfDescriptions > 0, numberOfDescriptions);
+        System.out.printf("has sequences    = %s (%,d) %n", numberOfSequences > 0, numberOfSequences);
 
-        System.out.printf("Number of entries = %d%n", numReadEntries);
+        System.out.printf("Number of entries = %,d%n", numReadEntries);
         System.out.printf("Min read length = %,d%n", numReadEntries > 0 ? minLength : 0);
         System.out.printf("Max read length = %,d%n", numReadEntries > 0 ? maxLength : 0);
         System.out.printf("Avg read length = %,d%n", numReadEntries > 0 ? totalReadLength / numReadEntries : 0);
 
         // compute quantiles
-        final Percentile percentile = new Percentile();
-        final double[] increasingReadLengths = readLengths.toDoubleArray();
-        Arrays.sort(increasingReadLengths);
-        System.out.printf("Read length quantiles = [ ");
-        for (int quantile = 1; quantile < numberOfQuantiles + 1; quantile++) {
-            System.out.printf("%,f ", percentile.evaluate(increasingReadLengths, quantile));
+        if (computeQuantiles) {
+            final Percentile percentile = new Percentile();
+            final double[] increasingReadLengths = readLengths.toDoubleArray();
+            Arrays.sort(increasingReadLengths);
+            System.out.printf("Read length quantiles = [ ");
+            for (int quantile = 1; quantile < numberOfQuantiles + 1; quantile++) {
+                System.out.printf("%,f ", percentile.evaluate(increasingReadLengths, quantile));
+            }
+            System.out.printf("]%n");
         }
-        System.out.printf("]%n");
     }
 
     /**
