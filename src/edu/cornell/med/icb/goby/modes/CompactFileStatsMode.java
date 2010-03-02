@@ -65,14 +65,14 @@ public class CompactFileStatsMode extends AbstractGobyMode {
     /** The cumulative read length across all files. */
     private long cumulativeReadLength;
 
+    /** The number of reads across all files. */
+    private long numberOfReads;
+
     /** Whether or not to compute quantile information. */
     private boolean computeQuantiles;
 
     /** Number of quantiles used to characterize read length distribution. */
     private int numberOfQuantiles = 1;
-
-    /** The number of reads. */
-    private long numberOfReads;
 
     /** Display verbose output. */
     private boolean verbose;
@@ -96,7 +96,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
      * @throws JSAPException error parsing
      */
     @Override
-    public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
+    public AbstractCommandLineMode configure(final String[] args)
+            throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
         reset();
         final File[] inputFilesArray = jsapResult.getFileArray("input");
@@ -155,6 +156,11 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         System.out.println();
     }
 
+    /**
+     * Print statistics about an alignment file in the Goby compact form.
+     * @param file The file to display statistics about
+     * @throws IOException if the file cannot be read
+     */
     private void describeCompactAlignment(final File file) throws IOException {
         final String basename = AlignmentReader.getBasename(file.toString());
         System.out.printf("Compact Alignment basename = %s%n", basename);
@@ -164,9 +170,9 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         System.out.println("Info from header:");
         System.out.printf("Number of query sequences = %,d%n", reader.getNumberOfQueries());
         System.out.printf("Number of target sequences = %,d%n", reader.getNumberOfTargets());
-        System.out.printf("has query identifiers = %s%n",
+        System.out.printf("Has query identifiers = %s%n",
                 reader.getQueryIdentifiers() != null && !reader.getTargetIdentifiers().isEmpty());
-        System.out.printf("has target identifiers = %s%n",
+        System.out.printf("Has target identifiers = %s%n",
                 reader.getTargetIdentifiers() != null && !reader.getTargetIdentifiers().isEmpty());
 
         int maxQueryIndex = -1;
@@ -193,15 +199,16 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         System.out.printf("num target indices= %,d%n", maxTargetIndex + 1);
         System.out.printf("Number of alignment entries = %,d%n", numLogicalAlignmentEntries);
         System.out.printf("Percent matched = %3.2g%% %n",
-                divide(numLogicalAlignmentEntries, maxQueryIndex) * 100.0d);
+                (double) numLogicalAlignmentEntries / (double) (long) maxQueryIndex * 100.0d);
         System.out.printf("Avg query alignment length = %,d%n", numEntries > 0 ? total / numEntries : -1);
         System.out.printf("Avg score alignment  = %f%n", avgScore);
     }
 
-    private double divide(final long a, final long b) {
-        return  (double) a / (double) b;
-    }
-
+    /**
+     * Print statistics about a reads file in the Goby compact form.
+     * @param file The file to display statistics about
+     * @throws IOException if the file cannot be read
+     */
     private void describeCompactReads(final File file) throws IOException {
         System.out.printf("Compact reads filename = %s%n", file);
 
@@ -214,6 +221,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         int numberOfIdentifiers = 0;
         int numberOfDescriptions = 0;
         int numberOfSequences = 0;
+        int numberOfQualityScores = 0;
 
         long numReadEntries = 0;
         long totalReadLength = 0;
@@ -240,6 +248,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                     System.out.println("Identifier found: " + entry.getReadIdentifier());
                 }
                 numberOfSequences += entry.hasSequence() && !entry.getSequence().isEmpty() ? 1 : 0;
+                numberOfQualityScores +=
+                        entry.hasQualityScores() && !entry.getQualityScores().isEmpty() ? 1 : 0;
 
                 // we only need to keep all the read lengths if quantiles are being computed
                 if (computeQuantiles) {
@@ -258,9 +268,10 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             }
         }
 
-        System.out.printf("has identifiers  = %s (%,d) %n", numberOfIdentifiers > 0, numberOfIdentifiers);
-        System.out.printf("has descriptions = %s (%,d) %n", numberOfDescriptions > 0, numberOfDescriptions);
-        System.out.printf("has sequences    = %s (%,d) %n", numberOfSequences > 0, numberOfSequences);
+        System.out.printf("Has identifiers    = %s (%,d) %n", numberOfIdentifiers > 0, numberOfIdentifiers);
+        System.out.printf("Has descriptions   = %s (%,d) %n", numberOfDescriptions > 0, numberOfDescriptions);
+        System.out.printf("Has sequences      = %s (%,d) %n", numberOfSequences > 0, numberOfSequences);
+        System.out.printf("Has quality scores = %s (%,d) %n", numberOfQualityScores > 0, numberOfQualityScores);
 
         System.out.printf("Number of entries = %,d%n", numReadEntries);
         System.out.printf("Min read length = %,d%n", numReadEntries > 0 ? minLength : 0);
