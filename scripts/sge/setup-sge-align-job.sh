@@ -79,15 +79,19 @@ SGE_JOB_NAME=${JOB_TAG}
 
 # Create job specific scripts from the template files
 for FILE in goby-index.qsub goby-align.qsub goby-concat.qsub; do
-    sed -e "s|%REFERENCE%|${REFERENCE}|" -e "s|%READS%|${READS}|" \
-        -e "s|%SGE_QUEUE%|${SGE_QUEUE}|" -e "s|%SGE_MEMORY%|${SGE_MEMORY}|" \
+    sed -e "s|%REFERENCE%|${REFERENCE}|" \
+        -e "s|%READS%|${READS}|" \
+        -e "s|%SGE_QUEUE%|${SGE_QUEUE}|" \
+        -e "s|%SGE_MEMORY%|${SGE_MEMORY}|" \
         -e "s|%SGE_JVM_FLAGS%|${SGE_JVM_FLAGS}|" \
         -e "s|%SGE_ARRAY_DIRECTIVE%|${SGE_ARRAY_DIRECTIVE}|" \
         -e "s|%SGE_MAILTO_DIRECTIVE%|${SGE_MAILTO_DIRECTIVE}|" \
         -e "s|%REFERENCE_INDEX_NAME%|${REFERENCE_INDEX_NAME}|" \
         -e "s|%REFERENCE_INDEX_DIRECTORY%|${REFERENCE_INDEX_DIRECTORY}|" \
-        -e "s|%ALIGNER%|${ALIGNER}|" -e "s|%COLORSPACE%|${COLORSPACE}|" \
-        -e "s|%CHUNK_SIZE%|${CHUNK_SIZE}|" -e "s|%BASENAME%|${BASENAME}|" \
+        -e "s|%ALIGNER%|${ALIGNER}|" \
+        -e "s|%COLORSPACE%|${COLORSPACE}|" \
+        -e "s|%CHUNK_SIZE%|${CHUNK_SIZE}|" \
+        -e "s|%BASENAME%|${BASENAME}|" \
         -e "s|%BWA_ALIGNER_PATH%|${BWA_ALIGNER_PATH}|" \
         -e "s|%LAST_ALIGNER_PATH%|${LAST_ALIGNER_PATH}|" \
         -e "s|%LASTAG_ALIGNER_PATH%|${LASTAG_ALIGNER_PATH}|" \
