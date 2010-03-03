@@ -1,0 +1,89 @@
+#!/bin/sh
+
+# Name of the job
+#$ -N %SGE_JOB_NAME%-index
+
+# Execute the script from the current directory
+#$ -cwd
+
+# Combine SGE error and output files.
+#$ -j y
+
+# Memory resource requirements
+#$ -l virtual_free=%SGE_MEMORY%
+
+# Mail job begin status
+#$ -m b
+
+# Mail job completion status
+#$ -m e
+
+%SGE_MAILTO_DIRECTIVE%
+
+%SGE_ARRAY_DIRECTIVE%
+
+#
+# Output some useful SGE job information
+#
+echo ------------------------------------------------------
+echo SGE: qsub is running on ${SGE_O_HOST}
+echo SGE: originating queue is ${QUEUE}
+echo SGE: executing cell is ${SGE_CELL}
+echo SGE: working directory is ${SGE_O_WORKDIR}
+echo SGE: execution mode is ${ENVIRONMENT}
+echo SGE: execution host is ${HOSTNAME}
+echo SGE: job identifier is ${JOB_ID}
+echo SGE: job name is ${JOB_NAME}
+echo SGE: task number is ${SGE_TASK_ID}
+echo SGE: current home directory is ${SGE_O_HOME}
+echo SGE: scratch directory is ${TMPDIR}
+echo SGE: PATH = ${SGE_O_PATH}
+echo ------------------------------------------------------
+
+# The reference file to align with
+REFERENCE=%REFERENCE%
+REFERENCE_FILE=${REFERENCE##*/}
+REFERENCE_INDEX_NAME=${REFERENCE_FILE%.*}.fasta
+REFERENCE_INDEX_DIRECTORY=%REFERENCE_INDEX_DIRECTORY%
+
+# The reads file to process
+READS=%READS%
+READS_FILE=${READS##*/}
+
+# Copy the goby and support tools to the local node
+# TODO: copy bwa etc.
+/bin/cp ${SGE_O_WORKDIR}/goby.jar ${SGE_O_WORKDIR}/log4j.properties ${TMPDIR}
+
+# Extract the reads if a split is needed
+if [ ! -z ${SGE_TASK_ID} ] && [ "${SGE_TASK_ID}" != "unknown" ]; then
+    CHUNK_SIZE=%CHUNK_SIZE%
+    START_POSITION=$(($((SGE_TASK_ID - 1)) * $CHUNK_SIZE))
+    END_POSITION=$(($START_POSITION + $CHUNK_SIZE - 1))
+    cd ${TMPDIR}
+    java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.properties \
+        -Dexecutables.path.bwa=%BWA_ALIGNER_PATH% -Dexecutables.path.last=%LAST_ALIGNER_PATH% \
+        -Dexecutables.path.lastag=%LASTAG_ALIGNER_PATH% \
+        -jar goby.jar --mode reformat-compact-reads --output ${READS_FILE} \
+        --start-position ${START_POSITION} --end-position ${END_POSITION} ${READS}
+else
+    /bin/cp ${READS} ${TMPDIR}
+fi
+
+# Run the alignment
+cd ${TMPDIR}
+java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.properties \
+    -Dexecutables.path.bwa=%BWA_ALIGNER_PATH% -Dexecutables.path.last=%LAST_ALIGNER_PATH% \
+    -Dexecutables.path.lastag=%LASTAG_ALIGNER_PATH% \
+    -jar goby.jar --mode align %COLORSPACE% --reference ${REFERENCE} --aligner %ALIGNER% --search \
+    --database-name ${REFERENCE_INDEX_NAME} --database-directory ${REFERENCE_INDEX_DIRECTORY} \
+    --reads ${READS_FILE} --basename %BASENAME%
+
+# Copy the results back
+if [ -z ${SGE_TASK_ID} ] || [ "${SGE_TASK_ID}" != "unknown" ]; then
+    RESULT_DIR=${SGE_O_WORKDIR}/results/%BASENAME%
+else
+    RESULT_DIR=${SGE_O_WORKDIR}/split-results/%BASENAME%-${SGE_TASK_ID}
+fi
+
+/bin/mkdir -p ${RESULT_DIR}
+/bin/cp *.entries *.header *.stats *.tmh ${RESULT_DIR}

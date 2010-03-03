@@ -9,8 +9,8 @@
 SCRIPT=$(readlink -f $0)
 # Absolute path this script is in.
 SCRIPT_DIR=$(dirname $SCRIPT)
-# Absolute path to the SGE align scripts
-ALIGN_SCRIPT_DIR=${SCRIPT_DIR}/align
+# Absolute path to the SGE transcript scripts
+TRANSCRIPT_SCRIPT_DIR=${SCRIPT_DIR}/transcript
 
 if [ -z $1 ]; then
     echo "Job name is required"
@@ -74,9 +74,9 @@ SGE_JOB_NAME=${JOB_TAG}
 # Copy goby and submission scripts to the run directory
 /bin/mkdir -p ${JOB_DIR}
 /bin/cp ${GOBY_DIR}/goby.jar ${GOBY_DIR}/config/log4j.properties \
-    ${ALIGN_SCRIPT_DIR}/align.sh ${ALIGN_SCRIPT_DIR}/index.sh \
-    ${ALIGN_SCRIPT_DIR}/align-concat.sh ${ALIGN_SCRIPT_DIR}/index-align.sh \
-    ${ALIGN_SCRIPT_DIR}/concat.sh  ${ALIGN_SCRIPT_DIR}/index-align-concat.sh \
+    ${TRANSCRIPT_SCRIPT_DIR}/align.sh ${TRANSCRIPT_SCRIPT_DIR}/index.sh \
+    ${TRANSCRIPT_SCRIPT_DIR}/align-concat.sh ${TRANSCRIPT_SCRIPT_DIR}/index-align.sh \
+    ${TRANSCRIPT_SCRIPT_DIR}/concat.sh  ${TRANSCRIPT_SCRIPT_DIR}/index-align-concat.sh \
     ${SCRIPT_DIR}/sge-env.sh ${JOB_DIR}
 
 # Create job specific scripts from the template files
@@ -98,7 +98,7 @@ for FILE in goby-index.qsub goby-align.qsub goby-concat.qsub; do
         -e "s|%LAST_ALIGNER_PATH%|${LAST_ALIGNER_PATH}|" \
         -e "s|%LASTAG_ALIGNER_PATH%|${LASTAG_ALIGNER_PATH}|" \
         -e "s|%SGE_JOB_NAME%|${SGE_JOB_NAME}|" \
-        ${ALIGN_SCRIPT_DIR}/templates/${FILE} > ${JOB_DIR}/${FILE}
+        ${TRANSCRIPT_SCRIPT_DIR}/templates/${FILE} > ${JOB_DIR}/${FILE}
 done
 
 echo "Scripts were written to ${JOB_DIR}"

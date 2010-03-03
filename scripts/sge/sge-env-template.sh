@@ -51,6 +51,16 @@ REFERENCE_INDEX_DIRECTORY=
 READS=
 
 #
+# Full path to directory containing one or more transcripts in compact format
+#
+TRANSCRIPT_DIRECTORY=
+
+#
+# Full path to the index directory (i.e., reference cache) for transcripts
+#
+TRANSCRIPT_INDEX_DIRECTORY=
+
+#
 # Number of bytes to read per chunk
 # If this is not set then the entire read is processed in a single job
 #
