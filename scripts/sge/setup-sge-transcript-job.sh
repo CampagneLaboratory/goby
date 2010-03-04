@@ -107,4 +107,6 @@ for FILE in goby-index.qsub goby-align.qsub goby-concat.qsub align.sh; do
         ${TRANSCRIPT_SCRIPT_DIR}/templates/${FILE} > ${JOB_DIR}/${FILE}
 done
 
+chmod +x ${JOB_DIR}/align.sh
+
 echo "Scripts were written to ${JOB_DIR}"
