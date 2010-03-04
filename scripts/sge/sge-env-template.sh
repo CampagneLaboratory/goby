@@ -61,6 +61,11 @@ TRANSCRIPT_DIRECTORY=
 TRANSCRIPT_INDEX_DIRECTORY=
 
 #
+# Full path to gene to transcript mapping file
+#
+GENE_TRANSCRIPT_MAP_FILE=
+
+#
 # Number of bytes to read per chunk
 # If this is not set then the entire read is processed in a single job
 #
