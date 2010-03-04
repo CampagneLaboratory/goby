@@ -1,0 +1,55 @@
+#!/bin/sh -x
+
+# Name of the job
+#$ -N %SGE_JOB_NAME%-concat
+
+# Execute the script from the current directory
+#$ -cwd
+
+# Combine SGE error and output files.
+#$ -j y
+
+# Memory resource requirements
+#$ -l virtual_free=%SGE_MEMORY%
+
+# Mail job begin status
+#$ -m b
+
+# Mail job completion status
+#$ -m e
+
+%SGE_MAILTO_DIRECTIVE%
+
+#
+# Output some useful SGE job information
+#
+echo ------------------------------------------------------
+echo SGE: qsub is running on ${SGE_O_HOST}
+echo SGE: originating queue is ${QUEUE}
+echo SGE: executing cell is ${SGE_CELL}
+echo SGE: working directory is ${SGE_O_WORKDIR}
+echo SGE: execution mode is ${ENVIRONMENT}
+echo SGE: execution host is ${HOSTNAME}
+echo SGE: job identifier is ${JOB_ID}
+echo SGE: job name is ${JOB_NAME}
+echo SGE: task number is ${SGE_TASK_ID}
+echo SGE: current home directory is ${SGE_O_HOME}
+echo SGE: scratch directory is ${TMPDIR}
+echo SGE: PATH = ${SGE_O_PATH}
+echo ------------------------------------------------------
+
+# Copy the goby and support tools to the local node
+# TODO: copy bwa etc.
+/bin/cp ${SGE_O_WORKDIR}/goby.jar ${SGE_O_WORKDIR}/log4j.properties ${TMPDIR}
+
+INTERIM_RESULT_DIR=${SGE_O_WORKDIR}/results
+RESULT_DIR=${SGE_O_WORKDIR}/merged-results
+
+# Run the concatenate
+cd ${TMPDIR}
+
+/bin/mkdir -p ${RESULT_DIR}
+java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.properties \
+    -jar goby.jar --mode  merge-compact-alignments \
+    --gene-transcript-map-file %GENE_TRANSCRIPT_MAP_FILE% \
+    --output ${RESULT_DIR}/%BASENAME% ${INTERIM_RESULT_DIR}/%BASENAME%*/*.entries
