@@ -10,7 +10,7 @@ SCRIPT=$(readlink -f $0)
 # Absolute path this script is in.
 SCRIPT_DIR=$(dirname $SCRIPT)
 # Absolute path to the SGE transcript scripts
-TRANSCRIPT_SCRIPT_DIR=${SCRIPT_DIR}/transcript
+TRANSCRIPT_SCRIPT_DIR=${SCRIPT_DIR}/transcript/templates
 
 if [ -z $1 ]; then
     echo "Job name is required"
@@ -86,7 +86,7 @@ SGE_JOB_NAME=${JOB_TAG}
     ${SCRIPT_DIR}/sge-env.sh ${JOB_DIR}
 
 # Create job specific scripts from the template files
-for FILE in templates/*; do
+for FILE in ${TRANSCRIPT_SCRIPT_DIR}/*; do
     FILENAME=$(basename ${FILE})
     sed -e "s|%TRANSCRIPT_DIRECTORY%|${TRANSCRIPT_DIRECTORY}|" \
         -e "s|%NUMBER_OF_TRANSCRIPTS%|${NUMBER_OF_TRANSCRIPTS}|" \
@@ -105,7 +105,7 @@ for FILE in templates/*; do
         -e "s|%LAST_ALIGNER_PATH%|${LAST_ALIGNER_PATH}|" \
         -e "s|%LASTAG_ALIGNER_PATH%|${LASTAG_ALIGNER_PATH}|" \
         -e "s|%SGE_JOB_NAME%|${SGE_JOB_NAME}|" \
-        ${TRANSCRIPT_SCRIPT_DIR}/${FILE} > ${JOB_DIR}/${FILENAME}
+        ${FILE} > ${JOB_DIR}/${FILENAME}
 done
 
 chmod +x ${JOB_DIR}/*.sh
