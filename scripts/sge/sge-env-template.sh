@@ -36,16 +36,6 @@ LASTAG_ALIGNER_PATH=
 COLORSPACE=
 
 #
-# Full path to reference file in compact format
-#
-REFERENCE=
-
-#
-# Full path to the index directory (i.e., reference cache)
-#
-REFERENCE_INDEX_DIRECTORY=
-
-#
 # Full path to the reads file
 #
 READS=
@@ -64,9 +54,3 @@ TRANSCRIPT_INDEX_DIRECTORY=
 # Full path to gene to transcript mapping file
 #
 GENE_TRANSCRIPT_MAP_FILE=
-
-#
-# Number of bytes to read per chunk
-# If this is not set then the entire read is processed in a single job
-#
-CHUNK_SIZE=10000000

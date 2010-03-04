@@ -86,7 +86,8 @@ SGE_JOB_NAME=${JOB_TAG}
     ${SCRIPT_DIR}/sge-env.sh ${JOB_DIR}
 
 # Create job specific scripts from the template files
-for FILE in goby-index.qsub goby-align.qsub goby-concat.qsub align.sh; do
+for FILE in templates/*; do
+    FILENAME=$(basename ${FILE})
     sed -e "s|%TRANSCRIPT_DIRECTORY%|${TRANSCRIPT_DIRECTORY}|" \
         -e "s|%NUMBER_OF_TRANSCRIPTS%|${NUMBER_OF_TRANSCRIPTS}|" \
         -e "s|%TRANSCRIPT_INDEX_DIRECTORY%|${TRANSCRIPT_INDEX_DIRECTORY}|" \
@@ -104,9 +105,9 @@ for FILE in goby-index.qsub goby-align.qsub goby-concat.qsub align.sh; do
         -e "s|%LAST_ALIGNER_PATH%|${LAST_ALIGNER_PATH}|" \
         -e "s|%LASTAG_ALIGNER_PATH%|${LASTAG_ALIGNER_PATH}|" \
         -e "s|%SGE_JOB_NAME%|${SGE_JOB_NAME}|" \
-        ${TRANSCRIPT_SCRIPT_DIR}/templates/${FILE} > ${JOB_DIR}/${FILE}
+        ${TRANSCRIPT_SCRIPT_DIR}/${FILE} > ${JOB_DIR}/${FILENAME}
 done
 
-chmod +x ${JOB_DIR}/align.sh
+chmod +x ${JOB_DIR}/*.sh
 
 echo "Scripts were written to ${JOB_DIR}"
