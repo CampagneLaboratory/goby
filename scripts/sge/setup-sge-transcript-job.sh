@@ -86,7 +86,7 @@ SGE_JOB_NAME=${JOB_TAG}
     ${SCRIPT_DIR}/sge-env.sh ${JOB_DIR}
 
 # Create job specific scripts from the template files
-for FILE in goby-index.qsub goby-align.qsub goby-concat.qsub; do
+for FILE in goby-index.qsub goby-align.qsub goby-concat.qsub align.sh; do
     sed -e "s|%TRANSCRIPT_DIRECTORY%|${TRANSCRIPT_DIRECTORY}|" \
         -e "s|%NUMBER_OF_TRANSCRIPTS%|${NUMBER_OF_TRANSCRIPTS}|" \
         -e "s|%TRANSCRIPT_INDEX_DIRECTORY%|${TRANSCRIPT_INDEX_DIRECTORY}|" \
