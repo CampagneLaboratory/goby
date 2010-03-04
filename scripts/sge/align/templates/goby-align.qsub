@@ -79,7 +79,7 @@ java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.propert
     --reads ${READS_FILE} --basename %BASENAME%
 
 # Copy the results back
-if [ -z ${SGE_TASK_ID} ] || [ "${SGE_TASK_ID}" != "undefined" ]; then
+if [ -z ${SGE_TASK_ID} ] || [ "${SGE_TASK_ID}" == "undefined" ]; then
     RESULT_DIR=${SGE_O_WORKDIR}/results/%BASENAME%
 else
     RESULT_DIR=${SGE_O_WORKDIR}/split-results/%BASENAME%-${SGE_TASK_ID}
