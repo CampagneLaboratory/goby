@@ -155,7 +155,7 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
         //
         final Int2IntMap transcriptIndex2FileIndex = new Int2IntOpenHashMap();
         final String configOutputFilename = config.getOutputBase() + ".config";
-        final String configOutputPath = FilenameUtils.getPath(configOutputFilename);
+        final String configOutputPath = FilenameUtils.getFullPath(configOutputFilename);
         if (StringUtils.isNotBlank(configOutputPath)) {
             LOG.info("Creating output directory: " + configOutputPath);
             FileUtils.forceMkdir(new File(configOutputPath));
