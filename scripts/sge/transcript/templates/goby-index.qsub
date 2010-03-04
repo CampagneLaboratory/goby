@@ -19,7 +19,7 @@
 #$ -m e
 
 # Run as an array job
-#$ -t 1-${NUMBER_OF_TRANSCRIPTS}
+#$ -t 1-%NUMBER_OF_TRANSCRIPTS%
 
 %SGE_MAILTO_DIRECTIVE%
 
