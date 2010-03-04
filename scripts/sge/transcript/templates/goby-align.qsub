@@ -1,8 +1,5 @@
 #!/bin/sh
 
-# Name of the job
-#$ -N %SGE_JOB_NAME%-index
-
 # Execute the script from the current directory
 #$ -cwd
 
@@ -40,11 +37,13 @@ echo SGE: scratch directory is ${TMPDIR}
 echo SGE: PATH = ${SGE_O_PATH}
 echo ------------------------------------------------------
 
-# The reference file to align with
-REFERENCE=%REFERENCE%
-REFERENCE_FILE=${REFERENCE##*/}
-REFERENCE_INDEX_NAME=${REFERENCE_FILE%.*}.fasta
-REFERENCE_INDEX_DIRECTORY=%REFERENCE_INDEX_DIRECTORY%
+TRANSCRIPT_DIRECTORY=%TRANSCRIPT_DIRECTORY%
+# The full path to the transcript file to align with
+# TRANSCRIPT_FILE_NAME is defined elsewhere
+TRANSCRIPT_FILE=${TRANSCRIPT_DIRECTORY}/${TRANSCRIPT_FILE_NAME}
+
+TRANSCRIPT_INDEX_NAME=${TRANSCRIPT_FILE_NAME%.*}.fasta
+TRANSCRIPT_INDEX_DIRECTORY=%TRANSCRIPT_INDEX_DIRECTORY%
 
 # The reads file to process
 READS=%READS%
@@ -74,8 +73,9 @@ cd ${TMPDIR}
 java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.properties \
     -Dexecutables.path.bwa=%BWA_ALIGNER_PATH% -Dexecutables.path.last=%LAST_ALIGNER_PATH% \
     -Dexecutables.path.lastag=%LASTAG_ALIGNER_PATH% \
-    -jar goby.jar --mode align %COLORSPACE% --reference ${REFERENCE} --aligner %ALIGNER% --search \
-    --database-name ${REFERENCE_INDEX_NAME} --database-directory ${REFERENCE_INDEX_DIRECTORY} \
+    -jar goby.jar --mode align %COLORSPACE% --reference ${TRANSCRIPT_FILE} \
+    --aligner %ALIGNER% --search --database-name ${TRANSCRIPT_INDEX_NAME} \
+    --database-directory ${TRANSCRIPT_INDEX_DIRECTORY} \
     --reads ${READS_FILE} --basename %BASENAME%
 
 # Copy the results back

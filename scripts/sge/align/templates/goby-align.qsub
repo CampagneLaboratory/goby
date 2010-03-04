@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Name of the job
-#$ -N %SGE_JOB_NAME%-index
+#$ -N %SGE_JOB_NAME%-align
 
 # Execute the script from the current directory
 #$ -cwd
