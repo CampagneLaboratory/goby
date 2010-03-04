@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 
 #
 # Script to bundle goby and required data into a
@@ -42,8 +42,11 @@ if [ ! -r ${TRANSCRIPT_DIRECTORY} ]; then
     exit 4
 fi
 
+/bin/mkdir -p ${JOB_DIR}
+
 ls -1 ${TRANSCRIPT_DIRECTORY} > ${JOB_DIR}/transcript-list.txt
-NUMBER_OF_TRANSCRIPTS=`wc -l ${JOB_DIR}/transcript-list.txt`
+NUMBER_OF_TRANSCRIPTS=`wc -l < ${JOB_DIR}/transcript-list.txt`
+echo "Found ${NUMBER_OF_TRANSCRIPTS} transcript files"
 
 # Get the number of bytes in the reads file
 if [ ! -r ${READS} ]; then
@@ -76,7 +79,6 @@ BASENAME=$(basename $READS .compact-reads)
 SGE_JOB_NAME=${JOB_TAG}
 
 # Copy goby and submission scripts to the run directory
-/bin/mkdir -p ${JOB_DIR}
 /bin/cp ${GOBY_DIR}/goby.jar ${GOBY_DIR}/config/log4j.properties \
     ${TRANSCRIPT_SCRIPT_DIR}/align.sh ${TRANSCRIPT_SCRIPT_DIR}/index.sh \
     ${TRANSCRIPT_SCRIPT_DIR}/align-concat.sh ${TRANSCRIPT_SCRIPT_DIR}/index-align.sh \
@@ -86,7 +88,7 @@ SGE_JOB_NAME=${JOB_TAG}
 # Create job specific scripts from the template files
 for FILE in goby-index.qsub goby-align.qsub goby-concat.qsub; do
     sed -e "s|%TRANSCRIPT_DIRECTORY%|${TRANSCRIPT_DIRECTORY}|" \
-        -e "s|%NUMBER_OF_TRANSCRIPTS%|${NUMBER_OF_TRANSCRIPTS}|" \    
+        -e "s|%NUMBER_OF_TRANSCRIPTS%|${NUMBER_OF_TRANSCRIPTS}|" \
         -e "s|%TRANSCRIPT_INDEX_DIRECTORY%|${TRANSCRIPT_INDEX_DIRECTORY}|" \
         -e "s|%READS%|${READS}|" \
         -e "s|%SGE_QUEUE%|${SGE_QUEUE}|" \
