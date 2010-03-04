@@ -18,6 +18,9 @@
 # Mail job completion status
 #$ -m e
 
+# Run as an array job
+#$ -t 1-${NUMBER_OF_TRANSCRIPTS}
+
 %SGE_MAILTO_DIRECTIVE%
 
 #
@@ -38,11 +41,13 @@ echo SGE: scratch directory is ${TMPDIR}
 echo SGE: PATH = ${SGE_O_PATH}
 echo ------------------------------------------------------
 
-# The reference file to align with
-REFERENCE=%REFERENCE%
-REFERENCE_FILE=${REFERENCE##*/}
-REFERENCE_INDEX_NAME=${REFERENCE_FILE%.*}.fasta
-REFERENCE_INDEX_DIRECTORY=%REFERENCE_INDEX_DIRECTORY%
+# Use a transcript file as the reference file to align with
+TRANSCRIPT_DIRECTORY=%TRANSCRIPT_DIRECTORY%
+TRANSCRIPT_FILE_NAME=`sed -n "${SGE_TASK_ID}p" transcript-list.txt`
+TRANSCRIPT_FILE=${TRANSCRIPT_DIRECTORY}/${TRANSCRIPT_FILE_NAME}
+
+TRANSCRIPT_INDEX_NAME=${TRANSCRIPT_FILE_NAME%.*}.fasta
+TRANSCRIPT_INDEX_DIRECTORY=%TRANSCRIPT_INDEX_DIRECTORY%
 
 # Copy the goby and support tools to the local node
 # TODO: copy bwa etc.
@@ -52,8 +57,8 @@ cd ${TMPDIR}
 java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.properties \
     -Dexecutables.path.bwa=%BWA_ALIGNER_PATH% -Dexecutables.path.last=%LAST_ALIGNER_PATH% \
     -Dexecutables.path.lastag=%LASTAG_ALIGNER_PATH% \
-    -jar goby.jar --mode align %COLORSPACE% --reference ${REFERENCE} --aligner %ALIGNER% \
-    --index --database-name ${REFERENCE_INDEX_NAME}
+    -jar goby.jar --mode align %COLORSPACE% --reference ${TRANSCRIPT_FILE} --aligner %ALIGNER% \
+    --index --database-name ${TRANSCRIPT_INDEX_NAME}
 
-/bin/mkdir -p ${REFERENCE_INDEX_DIRECTORY}
-/bin/cp ${REFERENCE_INDEX_NAME}.* ${REFERENCE_INDEX_DIRECTORY}
+/bin/mkdir -p ${TRANSCRIPT_INDEX_DIRECTORY}
+/bin/cp ${TRANSCRIPT_INDEX_NAME}.* ${TRANSCRIPT_INDEX_DIRECTORY}

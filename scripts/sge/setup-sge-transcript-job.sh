@@ -37,9 +37,13 @@ if [ -e ${JOB_DIR} ]; then
     exit 3
 fi
 
-if [ ! -r ${REFERENCE} ]; then
-    echo "WARNING: Reference ${REFERENCE} cannot be read"
+if [ ! -r ${TRANSCRIPT_DIRECTORY} ]; then
+    echo "ERROR: Transcript directory ${TRANSCRIPT_DIRECTORY} cannot be read"
+    exit 4
 fi
+
+ls -1 ${TRANSCRIPT_DIRECTORY} > ${JOB_DIR}/transcript-list.txt
+NUMBER_OF_TRANSCRIPTS=`wc -l ${JOB_DIR}/transcript-list.txt`
 
 # Get the number of bytes in the reads file
 if [ ! -r ${READS} ]; then
@@ -81,15 +85,15 @@ SGE_JOB_NAME=${JOB_TAG}
 
 # Create job specific scripts from the template files
 for FILE in goby-index.qsub goby-align.qsub goby-concat.qsub; do
-    sed -e "s|%REFERENCE%|${REFERENCE}|" \
+    sed -e "s|%TRANSCRIPT_DIRECTORY%|${TRANSCRIPT_DIRECTORY}|" \
+        -e "s|%NUMBER_OF_TRANSCRIPTS%|${NUMBER_OF_TRANSCRIPTS}|" \    
+        -e "s|%TRANSCRIPT_INDEX_DIRECTORY%|${TRANSCRIPT_INDEX_DIRECTORY}|" \
         -e "s|%READS%|${READS}|" \
         -e "s|%SGE_QUEUE%|${SGE_QUEUE}|" \
         -e "s|%SGE_MEMORY%|${SGE_MEMORY}|" \
         -e "s|%SGE_JVM_FLAGS%|${SGE_JVM_FLAGS}|" \
         -e "s|%SGE_ARRAY_DIRECTIVE%|${SGE_ARRAY_DIRECTIVE}|" \
         -e "s|%SGE_MAILTO_DIRECTIVE%|${SGE_MAILTO_DIRECTIVE}|" \
-        -e "s|%REFERENCE_INDEX_NAME%|${REFERENCE_INDEX_NAME}|" \
-        -e "s|%REFERENCE_INDEX_DIRECTORY%|${REFERENCE_INDEX_DIRECTORY}|" \
         -e "s|%ALIGNER%|${ALIGNER}|" \
         -e "s|%COLORSPACE%|${COLORSPACE}|" \
         -e "s|%CHUNK_SIZE%|${CHUNK_SIZE}|" \
