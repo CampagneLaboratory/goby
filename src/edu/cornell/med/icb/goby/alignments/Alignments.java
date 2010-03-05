@@ -1094,6 +1094,18 @@ public final class Alignments {
       return queryLength_.get(index);
     }
     
+    // repeated uint32 target_length = 8;
+    public static final int TARGET_LENGTH_FIELD_NUMBER = 8;
+    private java.util.List<java.lang.Integer> targetLength_ =
+      java.util.Collections.emptyList();
+    public java.util.List<java.lang.Integer> getTargetLengthList() {
+      return targetLength_;
+    }
+    public int getTargetLengthCount() { return targetLength_.size(); }
+    public int getTargetLength(int index) {
+      return targetLength_.get(index);
+    }
+    
     private void initFields() {
       queryNameMapping_ = edu.cornell.med.icb.goby.alignments.Alignments.IdentifierMapping.getDefaultInstance();
       targetNameMapping_ = edu.cornell.med.icb.goby.alignments.Alignments.IdentifierMapping.getDefaultInstance();
@@ -1128,6 +1140,9 @@ public final class Alignments {
       }
       if (hasNumberOfAlignedReads()) {
         output.writeUInt32(7, getNumberOfAlignedReads());
+      }
+      for (int element : getTargetLengthList()) {
+        output.writeUInt32(8, element);
       }
       getUnknownFields().writeTo(output);
     }
@@ -1166,6 +1181,15 @@ public final class Alignments {
       if (hasNumberOfAlignedReads()) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(7, getNumberOfAlignedReads());
+      }
+      {
+        int dataSize = 0;
+        for (int element : getTargetLengthList()) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeUInt32SizeNoTag(element);
+        }
+        size += dataSize;
+        size += 1 * getTargetLengthList().size();
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1313,6 +1337,10 @@ public final class Alignments {
           result.queryLength_ =
             java.util.Collections.unmodifiableList(result.queryLength_);
         }
+        if (result.targetLength_ != java.util.Collections.EMPTY_LIST) {
+          result.targetLength_ =
+            java.util.Collections.unmodifiableList(result.targetLength_);
+        }
         edu.cornell.med.icb.goby.alignments.Alignments.AlignmentHeader returnMe = result;
         result = null;
         return returnMe;
@@ -1349,6 +1377,12 @@ public final class Alignments {
             result.queryLength_ = new java.util.ArrayList<java.lang.Integer>();
           }
           result.queryLength_.addAll(other.queryLength_);
+        }
+        if (!other.targetLength_.isEmpty()) {
+          if (result.targetLength_.isEmpty()) {
+            result.targetLength_ = new java.util.ArrayList<java.lang.Integer>();
+          }
+          result.targetLength_.addAll(other.targetLength_);
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -1416,6 +1450,19 @@ public final class Alignments {
             }
             case 56: {
               setNumberOfAlignedReads(input.readUInt32());
+              break;
+            }
+            case 64: {
+              addTargetLength(input.readUInt32());
+              break;
+            }
+            case 66: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              while (input.getBytesUntilLimit() > 0) {
+                addTargetLength(input.readUInt32());
+              }
+              input.popLimit(limit);
               break;
             }
           }
@@ -1582,6 +1629,40 @@ public final class Alignments {
       }
       public Builder clearQueryLength() {
         result.queryLength_ = java.util.Collections.emptyList();
+        return this;
+      }
+      
+      // repeated uint32 target_length = 8;
+      public java.util.List<java.lang.Integer> getTargetLengthList() {
+        return java.util.Collections.unmodifiableList(result.targetLength_);
+      }
+      public int getTargetLengthCount() {
+        return result.getTargetLengthCount();
+      }
+      public int getTargetLength(int index) {
+        return result.getTargetLength(index);
+      }
+      public Builder setTargetLength(int index, int value) {
+        result.targetLength_.set(index, value);
+        return this;
+      }
+      public Builder addTargetLength(int value) {
+        if (result.targetLength_.isEmpty()) {
+          result.targetLength_ = new java.util.ArrayList<java.lang.Integer>();
+        }
+        result.targetLength_.add(value);
+        return this;
+      }
+      public Builder addAllTargetLength(
+          java.lang.Iterable<? extends java.lang.Integer> values) {
+        if (result.targetLength_.isEmpty()) {
+          result.targetLength_ = new java.util.ArrayList<java.lang.Integer>();
+        }
+        super.addAll(values, result.targetLength_);
+        return this;
+      }
+      public Builder clearTargetLength() {
+        result.targetLength_ = java.util.Collections.emptyList();
         return this;
       }
       
@@ -3051,22 +3132,22 @@ public final class Alignments {
       "y_position\030\005 \001(\r\022\r\n\005score\030\004 \001(\002\022\034\n\024numbe" +
       "r_of_mismatches\030\010 \001(\r\022\030\n\020number_of_indel" +
       "s\030\t \001(\r\022\034\n\024query_aligned_length\030\013 \001(\r\022\035\n",
-      "\025target_aligned_length\030\014 \001(\r\"\353\001\n\017Alignme" +
+      "\025target_aligned_length\030\014 \001(\r\"\202\002\n\017Alignme" +
       "ntHeader\0224\n\022query_name_mapping\030\001 \001(\0132\030.r" +
       "eads.IdentifierMapping\0225\n\023target_name_ma" +
       "pping\030\002 \001(\0132\030.reads.IdentifierMapping\022\031\n" +
       "\021number_of_queries\030\005 \001(\r\022\031\n\021number_of_ta" +
       "rgets\030\006 \001(\r\022\037\n\027number_of_aligned_reads\030\007" +
-      " \001(\r\022\024\n\014query_length\030\003 \003(\r\"<\n\021Identifier" +
-      "Mapping\022\'\n\010mappings\030\001 \003(\0132\025.reads.Identi" +
-      "fierInfo\"-\n\016IdentifierInfo\022\014\n\004name\030\001 \002(\t" +
-      "\022\r\n\005index\030\002 \002(\r\"X\n\024AlignmentTooManyHits\022",
-      "\030\n\020alignerThreshold\030\002 \002(\r\022&\n\004hits\030\001 \003(\0132" +
-      "\030.reads.AmbiguousLocation\"b\n\021AmbiguousLo" +
-      "cation\022\023\n\013query_index\030\001 \002(\r\022\037\n\027at_least_" +
-      "number_of_hits\030\002 \002(\r\022\027\n\017length_of_match\030" +
-      "\003 \001(\rB\'\n#edu.cornell.med.icb.goby.alignm" +
-      "entsH\001"
+      " \001(\r\022\024\n\014query_length\030\003 \003(\r\022\025\n\rtarget_len" +
+      "gth\030\010 \003(\r\"<\n\021IdentifierMapping\022\'\n\010mappin" +
+      "gs\030\001 \003(\0132\025.reads.IdentifierInfo\"-\n\016Ident" +
+      "ifierInfo\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"X",
+      "\n\024AlignmentTooManyHits\022\030\n\020alignerThresho" +
+      "ld\030\002 \002(\r\022&\n\004hits\030\001 \003(\0132\030.reads.Ambiguous" +
+      "Location\"b\n\021AmbiguousLocation\022\023\n\013query_i" +
+      "ndex\030\001 \002(\r\022\037\n\027at_least_number_of_hits\030\002 " +
+      "\002(\r\022\027\n\017length_of_match\030\003 \001(\rB\'\n#edu.corn" +
+      "ell.med.icb.goby.alignmentsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -3094,7 +3175,7 @@ public final class Alignments {
           internal_static_reads_AlignmentHeader_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_reads_AlignmentHeader_descriptor,
-              new java.lang.String[] { "QueryNameMapping", "TargetNameMapping", "NumberOfQueries", "NumberOfTargets", "NumberOfAlignedReads", "QueryLength", },
+              new java.lang.String[] { "QueryNameMapping", "TargetNameMapping", "NumberOfQueries", "NumberOfTargets", "NumberOfAlignedReads", "QueryLength", "TargetLength", },
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentHeader.class,
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentHeader.Builder.class);
           internal_static_reads_IdentifierMapping_descriptor =
