@@ -41,16 +41,18 @@ COLORSPACE=
 READS=
 
 #
-# Full path to directory containing one or more transcripts in compact format
+# Full path to reference file in compact format
 #
-TRANSCRIPT_DIRECTORY=
+REFERENCE=
 
 #
-# Full path to the index directory (i.e., reference cache) for transcripts
+# Full path to the index directory (i.e., reference cache)
 #
-TRANSCRIPT_INDEX_DIRECTORY=
+REFERENCE_INDEX_DIRECTORY=
+
 
 #
-# Full path to gene to transcript mapping file
+# Number of bytes to read per chunk
+# If this is not set then the entire read is processed in a single job
 #
-GENE_TRANSCRIPT_MAP_FILE=
+CHUNK_SIZE=10000000
