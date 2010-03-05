@@ -73,9 +73,53 @@ message AlignmentEntry {
     Number of bases that have been aligned for the target.
    */
   optional uint32 target_aligned_length=12;
-
+  repeated SequenceVariation sequence_variations=13;
 }
+/*
+   Represents sequence variations between the query and the reference sequences. Many variations can be represented.
+   For instance, an insertion at position 5 in the reference would be represented as from="A", to="" position=5.
+   A mutation T->G at position 6 would be rendered as from="T", to="G" position=6. Padded alignments (see SAM description)
+   can be described by a combination of pair-wise alignments, where the gap character '-' is used to indicate that no
+   base exists in the sequence considered for the aligment position, for instance:
 
+   - Padding example:
+
+    012 (<-positions)
+ref A-C
+    A-T [from="-" to=""  position=1] [from="C" to="T"  position=2]
+    ACT [from=""  to="C" position=1] [from="C" to="T"  position=2]
+    A-T [from="-" to=""  position=1] [from="C" to="T"  position=2]
+
+   - Mutation example:
+    012 (<-positions)
+ref ATT
+    ACT [from="T"  to="C" position=1]
+
+    -- Example of deletion in a read:
+    012 (<-positions)
+ref ATT
+    A-T [from="T"  to="-" position=1]
+
+    -- Example of insertion of two base pairs in a read:
+    012 (<-positions)
+ref A--TT
+    ACCTT [from=""  to="CC" position=1]
+
+  */
+message SequenceVariation {
+  /* The reference bases. Can include one or more gap characters '-', to indicate that the reference sequence has
+     no base at this alignment position.
+    */
+  required string from=2;
+  /* The read bases that differ from the reference sequence.  Can include one or more gap characters '-', to indicate
+     that the query sequence has no base at this alignment position.
+    */
+  required string to=1;
+  /*
+  The position of the variation, starting from the beginning of the read (position 1).
+    */
+  required uint32 position=3;
+}
 /*
   This message is written to 'basename'.header
 */
