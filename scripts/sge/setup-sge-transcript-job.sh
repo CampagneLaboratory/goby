@@ -49,7 +49,7 @@ NUMBER_OF_TRANSCRIPTS=`wc -l < ${JOB_DIR}/transcript-list.txt`
 echo "Found ${NUMBER_OF_TRANSCRIPTS} transcript files"
 
 # Get the number of bytes in the reads file
-if [ ! -r ${READS} ]; then
+if [ -z ${READS} ] || [ ! -r ${READS} ]; then
     echo "WARNING: Reads ${READS} file cannot be read"
     READS_SIZE=0
 else
@@ -80,10 +80,7 @@ SGE_JOB_NAME=${JOB_TAG}
 
 # Copy goby and submission scripts to the run directory
 /bin/cp ${GOBY_DIR}/goby.jar ${GOBY_DIR}/config/log4j.properties \
-    ${TRANSCRIPT_SCRIPT_DIR}/align.sh ${TRANSCRIPT_SCRIPT_DIR}/index.sh \
-    ${TRANSCRIPT_SCRIPT_DIR}/align-concat.sh ${TRANSCRIPT_SCRIPT_DIR}/index-align.sh \
-    ${TRANSCRIPT_SCRIPT_DIR}/concat.sh  ${TRANSCRIPT_SCRIPT_DIR}/index-align-concat.sh \
-    ${SCRIPT_DIR}/sge-env.sh ${JOB_DIR}
+        ${SCRIPT_DIR}/sge-env.sh ${JOB_DIR}
 
 # Create job specific scripts from the template files
 for FILE in ${TRANSCRIPT_SCRIPT_DIR}/*; do
