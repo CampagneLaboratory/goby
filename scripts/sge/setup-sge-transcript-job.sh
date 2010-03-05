@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 #
 # Script to bundle goby and required data into a
