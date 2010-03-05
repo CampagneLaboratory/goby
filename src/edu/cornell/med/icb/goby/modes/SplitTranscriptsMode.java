@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import edu.cornell.med.icb.goby.readers.FastXEntry;
 import edu.cornell.med.icb.goby.readers.FastXReader;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
@@ -47,6 +48,9 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.text.NumberFormat;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
@@ -131,20 +135,28 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
         final IndexedIdentifier transcriptIdents = new IndexedIdentifier();
         final Int2ObjectMap<MutableString> transcriptIndexToIdMap
                 = new Int2ObjectOpenHashMap<MutableString>();
+        final List<FastXEntry> fastxEntries = new LinkedList<FastXEntry>();
         //
         // Pass through the file once to collect the transcript - gene relationships
         //
-        int entries = 0;
-        for (final FastXEntry entry : new FastXReader(config.getInputFile())) {
-            entries++;
-            parseHeader(entry.getEntryHeader());
-            final MutableString transcriptId = transcriptHeader.get("transcriptId");
-            final MutableString geneId = transcriptHeader.get("geneId");
+        int entryCount = 0;
+        try {
+            for (final FastXEntry entry : new FastXReader(config.getInputFile())) {
+                entryCount++;
+                parseHeader(entry.getEntryHeader());
+                final MutableString transcriptId = transcriptHeader.get("transcriptId");
+                final MutableString geneId = transcriptHeader.get("geneId");
 
-            final int transcriptIndex = transcriptIdents.registerIdentifier(transcriptId);
-            gtr.addRelationship(geneId, transcriptIndex);
+                final int transcriptIndex = transcriptIdents.registerIdentifier(transcriptId);
+                gtr.addRelationship(geneId, transcriptIndex);
 
-            transcriptIndexToIdMap.put(transcriptIndex, transcriptId);
+                transcriptIndexToIdMap.put(transcriptIndex, transcriptId);
+
+                fastxEntries.add(entry.clone());
+            }
+        } catch (CloneNotSupportedException e) {
+            LOG.error("Couldn't clone for some reason", e);
+            throw new GobyRuntimeException("Couldn't clone for some reason", e);
         }
 
         LOG.info("Loading map of genes-transcripts complete.");
@@ -200,7 +212,7 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
 
         final int numFiles = getFileIndices(transcriptIndex2FileIndex).size();
         if (LOG.isInfoEnabled()) {
-            LOG.info(NumberFormat.getInstance().format(entries)
+            LOG.info(NumberFormat.getInstance().format(entryCount)
                     + " entries will be written to " + numFiles + " files");
             final int maxEntriesPerFile = config.getMaxEntriesPerFile();
             if (maxEntriesPerFile < Integer.MAX_VALUE) {
@@ -212,7 +224,7 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
         final NumberFormat fileNumberFormatter = getNumberFormatter(numFiles - 1);
 
         final ProgressLogger progressLogger = new ProgressLogger();
-        progressLogger.expectedUpdates = entries;
+        progressLogger.expectedUpdates = entryCount;
         progressLogger.itemsName = "entries";
         progressLogger.start();
 
@@ -231,7 +243,9 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
                 //
                 // Read through the input file get the actual sequence information
                 //
-                for (final FastXEntry entry : new FastXReader(config.getInputFile())) {
+                final Iterator<FastXEntry> entries = fastxEntries.iterator();
+                while (entries.hasNext()) {
+                    final FastXEntry entry = entries.next();
                     parseHeader(entry.getEntryHeader());
                     final MutableString transcriptId = transcriptHeader.get("transcriptId");
                     final MutableString geneId = transcriptHeader.get("geneId");
@@ -243,6 +257,7 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
                         printStream.print(" gene:");
                         printStream.println(geneId);
                         printStream.println(entry.getEntrySansHeader());
+                        entries.remove();
                         progressLogger.lightUpdate();
                     }
                 }
@@ -251,6 +266,7 @@ public class SplitTranscriptsMode extends AbstractGobyMode {
             }
         }
 
+        assert progressLogger.count == entryCount : "Some entries were not processed!";
         progressLogger.done();
     }
 
