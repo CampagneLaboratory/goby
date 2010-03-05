@@ -26,7 +26,7 @@ import it.unimi.dsi.lang.MutableString;
  * TODO: character until the size matches the sequence size.
  * @author Kevin Dorff
  */
-public class FastXEntry {
+public class FastXEntry implements Cloneable {
     /** The header symbol. */
     private char headerSymbol;
 
@@ -34,7 +34,7 @@ public class FastXEntry {
     private MutableString entry;
 
     /** The entry without the header. */
-    private final MutableString entrySansHeader;
+    private MutableString entrySansHeader;
 
     /** The sequence header line WITH symbol. */
     private MutableString sequenceHeader;
@@ -187,6 +187,10 @@ public class FastXEntry {
         return sequence.length();
     }
 
+    /**
+     * Is the entry is complete?
+     * @return true if the entry is complete
+     */
     public boolean isEntryComplete() {
         return entryComplete;
     }
@@ -195,17 +199,20 @@ public class FastXEntry {
      * Copy the current object to a new one - you can use this if you need to store
      * this object in a list, etc.
      * @return this object copied to a new object.
+     * @throws CloneNotSupportedException if the object cannot be cloned
      */
-    public FastXEntry copy() {
-        final FastXEntry copy = new FastXEntry();
+    @Override
+    public FastXEntry clone() throws CloneNotSupportedException {
+        final FastXEntry clone = (FastXEntry) super.clone();
         /** The entry. */
-        copy.headerSymbol = headerSymbol;
-        copy.entry = new MutableString(entry);
-        copy.sequenceHeader = new MutableString(sequenceHeader);
-        copy.sequence = new MutableString(sequence);
-        copy.qualityHeader = new MutableString(qualityHeader);
-        copy.quality = new MutableString(quality);
-        copy.entryComplete = entryComplete;
-        return copy;
+        clone.headerSymbol = headerSymbol;
+        clone.entry = new MutableString(entry);
+        clone.entrySansHeader = new MutableString(entrySansHeader);
+        clone.sequenceHeader = new MutableString(sequenceHeader);
+        clone.sequence = new MutableString(sequence);
+        clone.qualityHeader = new MutableString(qualityHeader);
+        clone.quality = new MutableString(quality);
+        clone.entryComplete = entryComplete;
+        return clone;
     }
 }
