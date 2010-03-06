@@ -16,6 +16,9 @@ http://en.wikipedia.org/wiki/FASTQ_format
 http://maq.sourceforge.net/fastq.shtml
 http://last.cbrc.jp/last/doc/last-manual.txt (look for FASTQ-SANGER)
 
+Added support for sequence variations:
+ - changed the compact alignment format to support recording sequence variations.
+ 
 1.4
  - Last aligner (http://last.cbrc.jp/) is now supported "out of the box".  Tested against
    version last-96.  Support for the enhanced version "lastag" still exists.

@@ -33,6 +33,7 @@ import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.logging.ProgressLogger;
+import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
@@ -43,19 +44,19 @@ import java.util.Map;
 
 /**
  * Convert a Last MAF file to the alignment compact format.
- *
+ * <p/>
  * Can also convert the associated Last COUNTS file (one line per query and count).
- *
+ * <p/>
  * Default behavior is to convert both maf and count files.  The configure() method
  * resets to the default behavior before parsing command-line options.
- *
+ * <p/>
  * The input file name can be the full name of the COUNTS file, the full name
  * of the MAF file, or the shared basename of these two files.
- *
+ * <p/>
  * If MAF and COUNTS files have different basenames, then this tool must be used
  * twice, first converting the maf file using the onlyMaf setting, and second
  * converting the counts file using onlyCounts.
- *
+ * <p/>
  * This tool assumes that the extensions are ".maf" and ".counts".
  *
  * @author Fabien Campagne
@@ -113,7 +114,6 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
             this.onlyMafFile = false;
         }
     }
-
 
 
     @Override
@@ -227,7 +227,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     currentEntry.setScore(score);
                     currentEntry.setTargetAlignedLength(reference.alignedLength);
                     currentEntry.setTargetIndex(targetIndex);
-
+                    parseSequenceVariations(currentEntry, reference, query);
                     final Alignments.AlignmentEntry alignmentEntry = currentEntry.build();
 
                     if (qualityFilter.keepEntry(depth, alignmentEntry)) {
@@ -287,7 +287,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
             System.out.println("Will import length of match.");
 
             for (final Map<String, String> line : new TsvLineIterator(countsInputFile)) {
-                final int queryNameToIndex= Integer.parseInt(line.get("query-name"));
+                final int queryNameToIndex = Integer.parseInt(line.get("query-name"));
                 final int depth = Integer.parseInt(line.get("depth"));
                 final int count = Integer.parseInt(line.get("number-of-matches"));
                 // TMH writer adds the alignment entry only if hits > thresh
@@ -296,6 +296,45 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
         }
 
         return numAligns;
+    }
+
+    private void parseSequenceVariations(final Alignments.AlignmentEntry.Builder currentEntry,
+                                         AlignedSequence reference,
+                                         AlignedSequence query) {
+        final int alignmentLength = reference.alignment.length();
+        final MutableString referenceSequence = reference.alignment;
+        final MutableString querySequence = query.alignment;
+        final MutableString from = new MutableString();
+        final MutableString to = new MutableString();
+        int variationPosition = Integer.MAX_VALUE;
+        for (int position = 0; position < alignmentLength; ++position) {
+
+            final char referenceBase = referenceSequence.charAt(position);
+            final char queryBase = querySequence.charAt(position);
+            if (referenceBase != queryBase) {
+                from.append(referenceBase);
+                to.append(queryBase);
+                variationPosition = Math.min(variationPosition, position);
+            } else {
+                appendNewSequenceVariation(currentEntry, from, to, variationPosition);
+                variationPosition=Integer.MAX_VALUE;
+                from.setLength(0);
+                to.setLength(0);
+            }
+        }
+        appendNewSequenceVariation(currentEntry, from, to, variationPosition);
+    }
+
+    private void appendNewSequenceVariation(Alignments.AlignmentEntry.Builder currentEntry, MutableString from, MutableString to, int variationPosition) {
+        if (variationPosition != Integer.MAX_VALUE) {
+            Alignments.SequenceVariation.Builder sequenceVariation =
+                    Alignments.SequenceVariation.newBuilder();
+            sequenceVariation.setFrom(from.toString());
+            sequenceVariation.setTo(to.toString());
+            sequenceVariation.setPosition(variationPosition);
+
+            currentEntry.addSequenceVariations(sequenceVariation);
+        }
     }
 
     /**

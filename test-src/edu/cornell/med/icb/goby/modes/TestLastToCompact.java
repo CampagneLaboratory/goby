@@ -58,18 +58,18 @@ public class TestLastToCompact {
 
 
         // lookup tables
-        final Int2IntOpenHashMap     queryIndex2NumberOfHits            = new Int2IntOpenHashMap    ();
+        final Int2IntOpenHashMap queryIndex2NumberOfHits = new Int2IntOpenHashMap();
 
-        final Int2FloatOpenHashMap   queryIndex2Score                   = new Int2FloatOpenHashMap  ();
-        final Int2IntOpenHashMap     queryIndex2Multiplicity            = new Int2IntOpenHashMap    ();
-        final Int2IntOpenHashMap     queryIndex2NumberOfIndels          = new Int2IntOpenHashMap    ();
-        final Int2IntOpenHashMap     queryIndex2NumberOfMismatches      = new Int2IntOpenHashMap    ();
-        final Int2IntOpenHashMap     queryIndex2Position                = new Int2IntOpenHashMap    ();
-        final Int2IntOpenHashMap     queryIndex2QueryAlignedLength      = new Int2IntOpenHashMap    ();
-        final Int2IntOpenHashMap     queryIndex2QueryPosition           = new Int2IntOpenHashMap    ();
-        final Int2IntOpenHashMap     queryIndex2TargetIndex             = new Int2IntOpenHashMap    ();
-        final Int2BooleanOpenHashMap queryIndex2MatchingReverseStrand   = new Int2BooleanOpenHashMap();
-        final Int2IntOpenHashMap     queryIndex2TargetAlignedLength     = new Int2IntOpenHashMap    ();
+        final Int2FloatOpenHashMap queryIndex2Score = new Int2FloatOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2Multiplicity = new Int2IntOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2NumberOfIndels = new Int2IntOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2NumberOfMismatches = new Int2IntOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2Position = new Int2IntOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2QueryAlignedLength = new Int2IntOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2QueryPosition = new Int2IntOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2TargetIndex = new Int2IntOpenHashMap();
+        final Int2BooleanOpenHashMap queryIndex2MatchingReverseStrand = new Int2BooleanOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2TargetAlignedLength = new Int2IntOpenHashMap();
 
         // enter alignment data
         int qii;
@@ -78,20 +78,20 @@ public class TestLastToCompact {
             final Alignments.AlignmentEntry aln = reader.next();
             qii = aln.getQueryIndex();
 
-            final int numHits = queryIndex2NumberOfHits.get ( qii );
+            final int numHits = queryIndex2NumberOfHits.get(qii);
 
-            queryIndex2NumberOfHits          .put (   qii,    numHits + 1                     );
+            queryIndex2NumberOfHits.put(qii, numHits + 1);
 
-            queryIndex2Score                 .put (   qii,    aln.getScore                 () );
-            queryIndex2Multiplicity          .put (   qii,    aln.getMultiplicity          () );
-            queryIndex2NumberOfIndels        .put (   qii,    aln.getNumberOfIndels        () );
-            queryIndex2NumberOfMismatches    .put (   qii,    aln.getNumberOfMismatches    () );
-            queryIndex2Position              .put (   qii,    aln.getPosition              () );
-            queryIndex2QueryAlignedLength    .put (   qii,    aln.getQueryAlignedLength    () );
-            queryIndex2QueryPosition         .put (   qii,    aln.getQueryPosition         () );
-            queryIndex2TargetIndex           .put (   qii,    aln.getTargetIndex           () );
-            queryIndex2MatchingReverseStrand .put (   qii,    aln.getMatchingReverseStrand () );
-            queryIndex2TargetAlignedLength   .put (   qii,    aln.getTargetAlignedLength   () );
+            queryIndex2Score.put(qii, aln.getScore());
+            queryIndex2Multiplicity.put(qii, aln.getMultiplicity());
+            queryIndex2NumberOfIndels.put(qii, aln.getNumberOfIndels());
+            queryIndex2NumberOfMismatches.put(qii, aln.getNumberOfMismatches());
+            queryIndex2Position.put(qii, aln.getPosition());
+            queryIndex2QueryAlignedLength.put(qii, aln.getQueryAlignedLength());
+            queryIndex2QueryPosition.put(qii, aln.getQueryPosition());
+            queryIndex2TargetIndex.put(qii, aln.getTargetIndex());
+            queryIndex2MatchingReverseStrand.put(qii, aln.getMatchingReverseStrand());
+            queryIndex2TargetAlignedLength.put(qii, aln.getTargetAlignedLength());
 
         }
 
@@ -103,32 +103,32 @@ public class TestLastToCompact {
         // 2 entries have score = 35 (the maximum score for this ID)
         // 3 entries are filtered b/c their scores are below 35
         qii = 2857818;
-        assertEquals(      queryIndex2NumberOfHits          .get ( qii  ),      2       );
-        assertEquals((int) queryIndex2Score                 .get ( qii  ),     35       );
-        assertEquals(      queryIndex2Multiplicity          .get ( qii  ),      1       );
-        assertEquals(      queryIndex2NumberOfIndels        .get ( qii  ),      0       );
-        assertEquals(      queryIndex2NumberOfMismatches    .get ( qii  ),      0       );
-        assertEquals(      queryIndex2Position              .get ( qii  ),   1614       ); // last entry added
-        assertEquals(      queryIndex2QueryAlignedLength    .get ( qii  ),     35       );
-        assertEquals(      queryIndex2QueryPosition         .get ( qii  ),      0       );
-        assertEquals(      queryIndex2TargetIndex           .get ( qii  ),      0       );
-        assertEquals(      queryIndex2MatchingReverseStrand .get ( qii  ),  false       );
-        assertEquals(      queryIndex2TargetAlignedLength   .get ( qii  ),     35       );
+        assertEquals(queryIndex2NumberOfHits.get(qii), 2);
+        assertEquals((int) queryIndex2Score.get(qii), 35);
+        assertEquals(queryIndex2Multiplicity.get(qii), 1);
+        assertEquals(queryIndex2NumberOfIndels.get(qii), 0);
+        assertEquals(queryIndex2NumberOfMismatches.get(qii), 0);
+        assertEquals(queryIndex2Position.get(qii), 1614); // last entry added
+        assertEquals(queryIndex2QueryAlignedLength.get(qii), 35);
+        assertEquals(queryIndex2QueryPosition.get(qii), 0);
+        assertEquals(queryIndex2TargetIndex.get(qii), 0);
+        assertEquals(queryIndex2MatchingReverseStrand.get(qii), false);
+        assertEquals(queryIndex2TargetAlignedLength.get(qii), 35);
 
         // there are 5 entries with the score = 35 (the maximum score for this ID)
         // filtered due to ambiguity
         qii = 577287;
-        assertEquals(      queryIndex2NumberOfHits          .get ( qii  ),      0       );
-        assertEquals((int) queryIndex2Score                 .get ( qii  ),      0       );
-        assertEquals(      queryIndex2Multiplicity          .get ( qii  ),      0       );
-        assertEquals(      queryIndex2NumberOfIndels        .get ( qii  ),      0       );
-        assertEquals(      queryIndex2NumberOfMismatches    .get ( qii  ),      0       );
-        assertEquals(      queryIndex2Position              .get ( qii  ),      0       );
-        assertEquals(      queryIndex2QueryAlignedLength    .get ( qii  ),      0       );
-        assertEquals(      queryIndex2QueryPosition         .get ( qii  ),      0       );
-        assertEquals(      queryIndex2TargetIndex           .get ( qii  ),      0       );
-        assertEquals(      queryIndex2MatchingReverseStrand .get ( qii  ),  false       );
-        assertEquals(      queryIndex2TargetAlignedLength   .get ( qii  ),      0       );
+        assertEquals(queryIndex2NumberOfHits.get(qii), 0);
+        assertEquals((int) queryIndex2Score.get(qii), 0);
+        assertEquals(queryIndex2Multiplicity.get(qii), 0);
+        assertEquals(queryIndex2NumberOfIndels.get(qii), 0);
+        assertEquals(queryIndex2NumberOfMismatches.get(qii), 0);
+        assertEquals(queryIndex2Position.get(qii), 0);
+        assertEquals(queryIndex2QueryAlignedLength.get(qii), 0);
+        assertEquals(queryIndex2QueryPosition.get(qii), 0);
+        assertEquals(queryIndex2TargetIndex.get(qii), 0);
+        assertEquals(queryIndex2MatchingReverseStrand.get(qii), false);
+        assertEquals(queryIndex2TargetAlignedLength.get(qii), 0);
 
         //
         reader.close();
@@ -160,18 +160,18 @@ public class TestLastToCompact {
 
 
         // lookup tables
-        final Int2IntOpenHashMap     queryIndex2NumberOfHits            = new Int2IntOpenHashMap    ();
+        final Int2IntOpenHashMap queryIndex2NumberOfHits = new Int2IntOpenHashMap();
 
-        final Int2FloatOpenHashMap   queryIndex2Score                   = new Int2FloatOpenHashMap  ();
-        final Int2IntOpenHashMap     queryIndex2Multiplicity            = new Int2IntOpenHashMap    ();
-        final Int2IntOpenHashMap     queryIndex2NumberOfIndels          = new Int2IntOpenHashMap    ();
-        final Int2IntOpenHashMap     queryIndex2NumberOfMismatches      = new Int2IntOpenHashMap    ();
-        final Int2IntOpenHashMap     queryIndex2Position                = new Int2IntOpenHashMap    ();
-        final Int2IntOpenHashMap     queryIndex2QueryAlignedLength      = new Int2IntOpenHashMap    ();
-        final Int2IntOpenHashMap     queryIndex2QueryPosition           = new Int2IntOpenHashMap    ();
-        final Int2IntOpenHashMap     queryIndex2TargetIndex             = new Int2IntOpenHashMap    ();
-        final Int2BooleanOpenHashMap queryIndex2MatchingReverseStrand   = new Int2BooleanOpenHashMap();
-        final Int2IntOpenHashMap     queryIndex2TargetAlignedLength     = new Int2IntOpenHashMap    ();
+        final Int2FloatOpenHashMap queryIndex2Score = new Int2FloatOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2Multiplicity = new Int2IntOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2NumberOfIndels = new Int2IntOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2NumberOfMismatches = new Int2IntOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2Position = new Int2IntOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2QueryAlignedLength = new Int2IntOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2QueryPosition = new Int2IntOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2TargetIndex = new Int2IntOpenHashMap();
+        final Int2BooleanOpenHashMap queryIndex2MatchingReverseStrand = new Int2BooleanOpenHashMap();
+        final Int2IntOpenHashMap queryIndex2TargetAlignedLength = new Int2IntOpenHashMap();
 
         // enter alignment data
         int qii;
@@ -179,20 +179,20 @@ public class TestLastToCompact {
             final Alignments.AlignmentEntry aln = reader.next();
             qii = aln.getQueryIndex();
 
-            final int numHits = queryIndex2NumberOfHits.get ( qii );
+            final int numHits = queryIndex2NumberOfHits.get(qii);
 
-            queryIndex2NumberOfHits          .put (   qii,    numHits + 1                     );
+            queryIndex2NumberOfHits.put(qii, numHits + 1);
 
-            queryIndex2Score                 .put (   qii,    aln.getScore                 () );
-            queryIndex2Multiplicity          .put (   qii,    aln.getMultiplicity          () );
-            queryIndex2NumberOfIndels        .put (   qii,    aln.getNumberOfIndels        () );
-            queryIndex2NumberOfMismatches    .put (   qii,    aln.getNumberOfMismatches    () );
-            queryIndex2Position              .put (   qii,    aln.getPosition              () );
-            queryIndex2QueryAlignedLength    .put (   qii,    aln.getQueryAlignedLength    () );
-            queryIndex2QueryPosition         .put (   qii,    aln.getQueryPosition         () );
-            queryIndex2TargetIndex           .put (   qii,    aln.getTargetIndex           () );
-            queryIndex2MatchingReverseStrand .put (   qii,    aln.getMatchingReverseStrand () );
-            queryIndex2TargetAlignedLength   .put (   qii,    aln.getTargetAlignedLength   () );
+            queryIndex2Score.put(qii, aln.getScore());
+            queryIndex2Multiplicity.put(qii, aln.getMultiplicity());
+            queryIndex2NumberOfIndels.put(qii, aln.getNumberOfIndels());
+            queryIndex2NumberOfMismatches.put(qii, aln.getNumberOfMismatches());
+            queryIndex2Position.put(qii, aln.getPosition());
+            queryIndex2QueryAlignedLength.put(qii, aln.getQueryAlignedLength());
+            queryIndex2QueryPosition.put(qii, aln.getQueryPosition());
+            queryIndex2TargetIndex.put(qii, aln.getTargetIndex());
+            queryIndex2MatchingReverseStrand.put(qii, aln.getMatchingReverseStrand());
+            queryIndex2TargetAlignedLength.put(qii, aln.getTargetAlignedLength());
 
         }
 
@@ -204,62 +204,61 @@ public class TestLastToCompact {
         // 2 entries have score = 35 (the maximum score for this ID)
         // 3 entries are filtered b/c their scores are below 35
         qii = 2857818;
-        assertEquals(      queryIndex2NumberOfHits          .get ( qii  ),      2       );
-        assertEquals((int) queryIndex2Score                 .get ( qii  ),     35       );
-        assertEquals(      queryIndex2Multiplicity          .get ( qii  ),      1       );
-        assertEquals(      queryIndex2NumberOfIndels        .get ( qii  ),      0       );
-        assertEquals(      queryIndex2NumberOfMismatches    .get ( qii  ),      0       );
-        assertEquals(      queryIndex2Position              .get ( qii  ),   1614       );  // last entry added
-        assertEquals(      queryIndex2QueryAlignedLength    .get ( qii  ),     35       );
-        assertEquals(      queryIndex2QueryPosition         .get ( qii  ),      0       );
-        assertEquals(      queryIndex2TargetIndex           .get ( qii  ),      0       );
-        assertEquals(      queryIndex2MatchingReverseStrand .get ( qii  ),  false       );
-        assertEquals(      queryIndex2TargetAlignedLength   .get ( qii  ),     35       );
+        assertEquals(queryIndex2NumberOfHits.get(qii), 2);
+        assertEquals((int) queryIndex2Score.get(qii), 35);
+        assertEquals(queryIndex2Multiplicity.get(qii), 1);
+        assertEquals(queryIndex2NumberOfIndels.get(qii), 0);
+        assertEquals(queryIndex2NumberOfMismatches.get(qii), 0);
+        assertEquals(queryIndex2Position.get(qii), 1614);  // last entry added
+        assertEquals(queryIndex2QueryAlignedLength.get(qii), 35);
+        assertEquals(queryIndex2QueryPosition.get(qii), 0);
+        assertEquals(queryIndex2TargetIndex.get(qii), 0);
+        assertEquals(queryIndex2MatchingReverseStrand.get(qii), false);
+        assertEquals(queryIndex2TargetAlignedLength.get(qii), 35);
 
         // there are 5 entries with the score = 35 (the maximum score for this ID)
         // filtered due to ambiguity
         qii = 577287;
-        assertEquals(      queryIndex2NumberOfHits          .get ( qii  ),      0       );
-        assertEquals((int) queryIndex2Score                 .get ( qii  ),      0       );
-        assertEquals(      queryIndex2Multiplicity          .get ( qii  ),      0       );
-        assertEquals(      queryIndex2NumberOfIndels        .get ( qii  ),      0       );
-        assertEquals(      queryIndex2NumberOfMismatches    .get ( qii  ),      0       );
-        assertEquals(      queryIndex2Position              .get ( qii  ),      0       );
-        assertEquals(      queryIndex2QueryAlignedLength    .get ( qii  ),      0       );
-        assertEquals(      queryIndex2QueryPosition         .get ( qii  ),      0       );
-        assertEquals(      queryIndex2TargetIndex           .get ( qii  ),      0       );
-        assertEquals(      queryIndex2MatchingReverseStrand .get ( qii  ),  false       );
-        assertEquals(      queryIndex2TargetAlignedLength   .get ( qii  ),      0       );
-
+        assertEquals(queryIndex2NumberOfHits.get(qii), 0);
+        assertEquals((int) queryIndex2Score.get(qii), 0);
+        assertEquals(queryIndex2Multiplicity.get(qii), 0);
+        assertEquals(queryIndex2NumberOfIndels.get(qii), 0);
+        assertEquals(queryIndex2NumberOfMismatches.get(qii), 0);
+        assertEquals(queryIndex2Position.get(qii), 0);
+        assertEquals(queryIndex2QueryAlignedLength.get(qii), 0);
+        assertEquals(queryIndex2QueryPosition.get(qii), 0);
+        assertEquals(queryIndex2TargetIndex.get(qii), 0);
+        assertEquals(queryIndex2MatchingReverseStrand.get(qii), false);
+        assertEquals(queryIndex2TargetAlignedLength.get(qii), 0);
 
 
         // check more values ...
 
         qii = 1431626;
-        assertEquals(      queryIndex2NumberOfHits          .get ( qii  ),      1       );
-        assertEquals((int) queryIndex2Score                 .get ( qii  ),     35       );
-        assertEquals(      queryIndex2Multiplicity          .get ( qii  ),      1       );
-        assertEquals(      queryIndex2NumberOfIndels        .get ( qii  ),      0       );
-        assertEquals(      queryIndex2NumberOfMismatches    .get ( qii  ),      0       );
-        assertEquals(      queryIndex2Position              .get ( qii  ),   1916       );
-        assertEquals(      queryIndex2QueryAlignedLength    .get ( qii  ),     35       );
-        assertEquals(      queryIndex2QueryPosition         .get ( qii  ),      0       );
-        assertEquals(      queryIndex2TargetIndex           .get ( qii  ),      0       );
-        assertEquals(      queryIndex2MatchingReverseStrand .get ( qii  ),  false       );
-        assertEquals(      queryIndex2TargetAlignedLength   .get ( qii  ),     35       );
+        assertEquals(queryIndex2NumberOfHits.get(qii), 1);
+        assertEquals((int) queryIndex2Score.get(qii), 35);
+        assertEquals(queryIndex2Multiplicity.get(qii), 1);
+        assertEquals(queryIndex2NumberOfIndels.get(qii), 0);
+        assertEquals(queryIndex2NumberOfMismatches.get(qii), 0);
+        assertEquals(queryIndex2Position.get(qii), 1916);
+        assertEquals(queryIndex2QueryAlignedLength.get(qii), 35);
+        assertEquals(queryIndex2QueryPosition.get(qii), 0);
+        assertEquals(queryIndex2TargetIndex.get(qii), 0);
+        assertEquals(queryIndex2MatchingReverseStrand.get(qii), false);
+        assertEquals(queryIndex2TargetAlignedLength.get(qii), 35);
 
         qii = 1135141;
-        assertEquals(      queryIndex2NumberOfHits          .get ( qii  ),      1       );
-        assertEquals((int) queryIndex2Score                 .get ( qii  ),     35       );
-        assertEquals(      queryIndex2Multiplicity          .get ( qii  ),      1       );
-        assertEquals(      queryIndex2NumberOfIndels        .get ( qii  ),      0       );
-        assertEquals(      queryIndex2NumberOfMismatches    .get ( qii  ),      0       );
-        assertEquals(      queryIndex2Position              .get ( qii  ),   1995       );
-        assertEquals(      queryIndex2QueryAlignedLength    .get ( qii  ),     35       );
-        assertEquals(      queryIndex2QueryPosition         .get ( qii  ),      0       );
-        assertEquals(      queryIndex2TargetIndex           .get ( qii  ),      0       );
-        assertEquals(      queryIndex2MatchingReverseStrand .get ( qii  ),  false       );
-        assertEquals(      queryIndex2TargetAlignedLength   .get ( qii  ),     35       );
+        assertEquals(queryIndex2NumberOfHits.get(qii), 1);
+        assertEquals((int) queryIndex2Score.get(qii), 35);
+        assertEquals(queryIndex2Multiplicity.get(qii), 1);
+        assertEquals(queryIndex2NumberOfIndels.get(qii), 0);
+        assertEquals(queryIndex2NumberOfMismatches.get(qii), 0);
+        assertEquals(queryIndex2Position.get(qii), 1995);
+        assertEquals(queryIndex2QueryAlignedLength.get(qii), 35);
+        assertEquals(queryIndex2QueryPosition.get(qii), 0);
+        assertEquals(queryIndex2TargetIndex.get(qii), 0);
+        assertEquals(queryIndex2MatchingReverseStrand.get(qii), false);
+        assertEquals(queryIndex2TargetAlignedLength.get(qii), 35);
 
         /*
         qii = 2527313;
@@ -410,6 +409,7 @@ public class TestLastToCompact {
         reader.close();
     }
 
+
     @Before
     public void setUp() throws IOException {
         final File dir = new File("test-results/alignments/last-to-compact/");
@@ -422,6 +422,10 @@ public class TestLastToCompact {
         final FileWriter writer2 = new FileWriter("test-results/alignments/last-to-compact/last-102.maf");
         writer2.write(getMafInput2());
         writer2.close();
+
+        final FileWriter writer3 = new FileWriter("test-results/alignments/last-to-compact/last-103-variations.maf");
+        writer3.write(getMafInput3Variations());
+        writer3.close();
 
     }
 
@@ -596,6 +600,144 @@ public class TestLastToCompact {
                 "a score=35\n" +
                 "s 0      4295 35 + 247249719 GCCGTTTTCTCTGGAAGCCTCTTAAGAACACAGTG\n" +
                 "s 751638    0 35 +        35 GCCGTTTTCTCTGGAAGCCTCTTAAGAACACAGTG\n" +
+                "";
+    }
+
+
+    /**
+     * Test the parsing of sequence variations from Last MAF file.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testLastToCompactVariations() throws IOException {
+
+        // test LastToCompact convert+filtering
+
+        // read fake data and convert+filter
+        final LastToCompactMode processor = new LastToCompactMode();
+        final int LAST_TO_COMPACT_M_PARAM = 2;
+        processor.setAmbiguityThreshold(LAST_TO_COMPACT_M_PARAM);
+        processor.setInputFile("test-results/alignments/last-to-compact/last-103-variations.maf");
+        processor.setOutputFile("test-results/alignments/last-to-compact/last-103-variations.entries");
+        processor.setOnlyMafFile(true);
+        processor.setNumberOfReads(2857822);
+        processor.setPropagateQueryIds(false);
+        processor.setPropagateTargetIds(true);
+        processor.setQualityFilterParameters("threshold=1"); // allow everything to pass through, important to detect all variations in this test.
+        processor.execute();
+
+
+        // read compact alignment results
+        final AlignmentReader reader = new AlignmentReader(processor.getOutputFile());
+        reader.readHeader();
+        assertEquals(2857822, reader.getNumberOfQueries());
+        assertEquals(1, reader.getNumberOfTargets());
+        int entryIndex = 0;
+        while (reader.hasNext()) {
+            Alignments.AlignmentEntry alignmentEntry = reader.next();
+
+            System.out.println(entryIndex + " entry : " + alignmentEntry);
+            switch (entryIndex) {
+                case 0:
+                    assertEquals(2, alignmentEntry.getSequenceVariationsCount());
+                    Alignments.SequenceVariation var1 = alignmentEntry.getSequenceVariations(0);
+                    assertEquals("C", var1.getTo());
+                    assertEquals("G", var1.getFrom());
+                    assertEquals(0, var1.getPosition());
+
+                    Alignments.SequenceVariation var2 = alignmentEntry.getSequenceVariations(1);
+                    assertEquals("C", var2.getTo());
+                    assertEquals("A", var2.getFrom());
+                    assertEquals(10, var2.getPosition());
+                    break;
+
+                case 1:
+                    assertEquals(1, alignmentEntry.getSequenceVariationsCount());
+                    Alignments.SequenceVariation var1_0 = alignmentEntry.getSequenceVariations(0);
+                    assertEquals("---", var1_0.getTo());
+                    assertEquals("TTT", var1_0.getFrom());
+                    assertEquals(2, var1_0.getPosition());
+                    break;
+
+                case 2:
+                    assertEquals(2, alignmentEntry.getSequenceVariationsCount());
+                    Alignments.SequenceVariation var2_1 = alignmentEntry.getSequenceVariations(0);
+                    assertEquals("A", var2_1.getTo());
+                    assertEquals("G", var2_1.getFrom());
+                    assertEquals(1, var2_1.getPosition());
+
+                    Alignments.SequenceVariation var2_2 = alignmentEntry.getSequenceVariations(1);
+                    assertEquals("A", var2_2.getTo());
+                    assertEquals("-", var2_2.getFrom());
+                    assertEquals(28, var2_2.getPosition());
+                    break;
+                default:
+                    break;
+            }
+            entryIndex++;
+        }
+        assertEquals(4, entryIndex);
+    }
+
+    private String getMafInput3Variations() {
+        return "# LAST version 18959\n" +
+                "#\n" +
+                "# a=2 b=1 c=100000 e=31 d=18 x=22 y=10\n" +
+                "# u=0 s=2 m=10 l=1 k=1 i=134217728 w=1000 t=-1 g=1 j=3 z=0\n" +
+                "# /scratchLocal/hadoop/hadoop-hadoop/mapred/local/taskTracker/jobcache/job_200905080202_0031/attempt_200905080202_0031_m_000001_0/work/tmp/Homo_sapiens.NCBI3\n" +
+                "6.52.dna.chromosome.1.db\n" +
+                "#\n" +
+                "#    A  C  G  T\n" +
+                "# A  1 -1 -1 -1\n" +
+                "# C -1  1 -1 -1\n" +
+                "# G -1 -1  1 -1\n" +
+                "# T -1 -1 -1  1\n" +
+                "#\n" +
+                "# Coordinates are 0-based.  For - strand matches, coordinates\n" +
+                "# in the reverse complement of the 2nd sequence are used.\n" +
+                "#\n" +
+                "# name start alnSize strand seqSize alignment\n" +
+                "#\n" +
+                "a score=35\n" +
+                "s 0       1514 35 + 247249719 GATTTTTGCCAGTCTAACAGGTGAAGCCCTGGAGA\n" +
+                "s 2857818    0 35 +        35 CATTTTTGCCCGTCTAACAGGTGAAGCCCTGGAGA\n" +
+                "\n" +
+                "a score=36\n" +
+                "s 0       1614 35 + 247249719 GATTTTTGCCAGTCTAACAGGTGAAGCCCTGGAGA\n" +
+                "s 2857819    0 35 +        35 GA---TTGCCAGTCTAACAGGTGAAGCCCTGGAGA\n" +
+                "\n" +
+                "a score=34\n" +
+                "s 0       1714 35 + 247249719 GGTTTTTGCCAGTCTAACAGGTGAAGCC-CTGGAGA\n" +
+                "s 2857820    0 35 +        35 GATTTTTGCCAGTCTAACAGGTGAAGCCACTGGAGA\n" +
+                "\n" +
+                "a score=34\n" +
+                "s 0       1814 35 + 247249719 GGTTTTTGCCAGTCTAACAGGTGAAGCCCTGGAGA\n" +
+                "s 2857821    0 35 +        35 GATTTTTGCCAGTCTAACAGGTGAAGCCCTGGAGA\n" +
+                "\n" +
+                "a score=34\n" +
+                "s 0       1914 35 + 247249719 GGTTTTTGCCAGTCTAACAGGTGAAGCCCTGGAGA\n" +
+                "s 2857818    0 35 +        35 GATTTTTGCCAGTCTAACAGGTGAAGCCCTGGAGA\n" +
+                "\n" +
+                "a score=35\n" +
+                "s 0      1598 35 + 247249719 TTTCCACTGATGATTTTGCTGCATGGCCGGTGTTG\n" +
+                "s 577287    0 35 +        35 TTTCCACTGATGATTTTGCTGCATGGCCGGTGTTG\n" +
+                "\n" +
+                "a score=35\n" +
+                "s 0      1698 35 + 247249719 TTTCCACTGATGATTTTGCTGCATGGCCGGTGTTG\n" +
+                "s 577287    0 35 +        35 TTTCCACTGATGATTTTGCTGCATGGCCGGTGTTG\n" +
+                "\n" +
+                "a score=35\n" +
+                "s 0      1798 35 + 247249719 TTTCCACTGATGATTTTGCTGCATGGCCGGTGTTG\n" +
+                "s 577287    0 35 +        35 TTTCCACTGATGATTTTGCTGCATGGCCGGTGTTG\n" +
+                "\n" +
+                "a score=35\n" +
+                "s 0      1898 35 + 247249719 TTTCCACTGATGATTTTGCTGCATGGCCGGTGTTG\n" +
+                "s 577287    0 35 +        35 TTTCCACTGATGATTTTGCTGCATGGCCGGTGTTG\n" +
+                "\n" +
+                "a score=35\n" +
+                "s 0      1998 35 + 247249719 TTTCCACTGATGATTTTGCTGCATGGCCGGTGTTG\n" +
+                "s 577287    0 35 +        35 TTTCCACTGATGATTTTGCTGCATGGCCGGTGTTG\n" +
                 "";
     }
 }
