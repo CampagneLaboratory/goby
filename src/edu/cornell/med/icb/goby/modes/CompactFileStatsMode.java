@@ -181,6 +181,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         long numLogicalAlignmentEntries = 0;
         long total = 0;
         double avgScore = 0;
+       int sumNumVariations=0;
         for (final Alignments.AlignmentEntry entry : reader) {
             numberOfReads++;   // Across all files
             numEntries++;      // Across this file
@@ -192,16 +193,23 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             cumulativeReadLength += entry.getQueryAlignedLength();
             minReadLength = Math.min(minReadLength, entry.getQueryAlignedLength());
             maxReadLength = Math.max(maxReadLength, entry.getQueryAlignedLength());
+            sumNumVariations +=entry.getSequenceVariationsCount();
+
         }
         avgScore /= (double) numLogicalAlignmentEntries;
 
-        System.out.printf("num query indices= %,d%n", maxQueryIndex + 1);
-        System.out.printf("num target indices= %,d%n", maxTargetIndex + 1);
+        final int numQuerySequences = maxQueryIndex + 1;
+        System.out.printf("num query indices= %,d%n", numQuerySequences);
+        final int numTargetSequences = maxTargetIndex + 1;
+        double avgNumVariationsPerQuery=((double)sumNumVariations)/(double)numQuerySequences;
+        System.out.printf("num target indices= %,d%n", numTargetSequences);
         System.out.printf("Number of alignment entries = %,d%n", numLogicalAlignmentEntries);
-        System.out.printf("Percent matched = %3.2g%% %n",
-                (double) numLogicalAlignmentEntries / (double) (long) maxQueryIndex * 100.0d);
+        System.out.printf("Percent matched = %4.1f%% %n",
+                (double) numLogicalAlignmentEntries / (double) (long) numQuerySequences * 100.0d);
         System.out.printf("Avg query alignment length = %,d%n", numEntries > 0 ? total / numEntries : -1);
         System.out.printf("Avg score alignment  = %f%n", avgScore);
+        System.out.printf("Avg number of variations per query sequence = %3.2f %n",
+                avgNumVariationsPerQuery);
     }
 
     /**

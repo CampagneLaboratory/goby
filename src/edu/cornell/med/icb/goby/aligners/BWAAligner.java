@@ -250,6 +250,9 @@ public class BWAAligner extends AbstractAligner {
 
     private int seedLength = DEFAULT_SEED_LENGTH;
 
+
+
+
     public BWAAligner() {
         super();
         extensions = new String[]{"rsa", "rpac", "rbwt", "pac", "bwt", "ann", "amb", "sa"};
@@ -505,9 +508,10 @@ public class BWAAligner extends AbstractAligner {
 
         // convert native alignment into compact reads
         final File[] buildResults = processAlignment(referenceFile, readsFile, outputBasename);
-        FileUtils.deleteQuietly(new File(saiBinaryFilename));
-        FileUtils.deleteQuietly(new File(samBinaryFilename));
-
+        if (!keepTemporaryFiles) {
+            FileUtils.deleteQuietly(new File(saiBinaryFilename));
+            FileUtils.deleteQuietly(new File(samBinaryFilename));
+        }
         return buildResults;
     }
 }

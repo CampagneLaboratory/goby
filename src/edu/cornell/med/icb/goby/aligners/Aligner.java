@@ -158,4 +158,6 @@ public interface Aligner {
     boolean isDatabaseBasename(final String databasePathPrefix);
 
     String getAlphabet();
+
+    void setKeepTemporaryFiles(boolean keepTemporaryFiles);
 }

@@ -291,10 +291,11 @@ public class LastagAligner extends LastAligner {
 
         // convert native alignment into compact reads
         final File[] buildResults = processAlignment(referenceFile, readsFile, outputBasename);
+        if (!keepTemporaryFiles) {
+            FileUtils.deleteQuietly(new File(outputBasename + ".maf"));
+            FileUtils.deleteQuietly(new File(outputBasename + ".counts"));
 
-        FileUtils.deleteQuietly(new File(outputBasename + ".maf"));
-        FileUtils.deleteQuietly(new File(outputBasename + ".counts"));
-
+        }
         // also delete the colorSpaceMatrix file, if created
         FileUtils.deleteQuietly(new File(matrixFilename));
         return buildResults;

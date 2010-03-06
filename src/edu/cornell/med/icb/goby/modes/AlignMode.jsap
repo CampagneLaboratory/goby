@@ -105,6 +105,11 @@
             <longFlag>index</longFlag>
             <help>When this switch is provided, index the reference. Name the indexed reference according to the output basename. Indexing is done as part of search when it is required by the aligner, but this option is provided to build an aligner index independently from a search.  </help>
         </switch>
+         <switch>
+            <id>keep-temporary-files</id>
+            <longFlag>keep-temporary-files</longFlag>
+            <help>When this switch is provided, keep temporary files created during the alignment. These files typically hold the result of the alignment in the native aligner format. </help>
+        </switch>
         <switch>
             <id>get-default-database-name</id>
             <longFlag>get-default-database-name</longFlag>

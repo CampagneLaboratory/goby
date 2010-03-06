@@ -49,6 +49,7 @@ public class AlignMode extends AbstractGobyMode {
      * Used to log debug and informational messages.
      */
     private static final Log LOG = LogFactory.getLog(AlignMode.class);
+    private boolean keepTemporaryFiles;
 
     /**
      * Supported native aligner types.
@@ -56,6 +57,7 @@ public class AlignMode extends AbstractGobyMode {
     public enum AlignerTypes {
         /**
          * Burrows-Wheeler Aligner (BWA).
+         *
          * @see edu.cornell.med.icb.goby.aligners.BWAAligner
          * @see <a href="http://bio-bwa.sourceforge.net/">http://bio-bwa.sourceforge.net/</a>
          */
@@ -63,6 +65,7 @@ public class AlignMode extends AbstractGobyMode {
 
         /**
          * Last.
+         *
          * @see edu.cornell.med.icb.goby.aligners.LastAligner
          * @see <a href="http://last.cbrc.jp/">http://last.cbrc.jp/</a>
          */
@@ -70,6 +73,7 @@ public class AlignMode extends AbstractGobyMode {
 
         /**
          * Enhanced version of the last aligner.
+         *
          * @see edu.cornell.med.icb.goby.aligners.LastagAligner
          */
         lastag
@@ -190,7 +194,7 @@ public class AlignMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws IOException error parsing
+     * @throws IOException   error parsing
      * @throws JSAPException error parsing
      */
     @Override
@@ -200,27 +204,28 @@ public class AlignMode extends AbstractGobyMode {
         alignerTypesHelp.put("[ALIGNERTYPES]", ArrayUtils.toString(AlignerTypes.values()));
         final JSAPResult jsapResult = parseJsapArguments(args, alignerTypesHelp);
 
-        readsFile                  = jsapResult.getFile    ( "reads"                     ) ;
-        referenceFile              = jsapResult.getFile    ( "reference"                 ) ;
-        readIndexFilterFile        = jsapResult.getFile    ( "read-index-filter"         ) ;
-        referenceIndexFilterFile   = jsapResult.getFile    ( "reference-index-filter"    ) ;
+        readsFile = jsapResult.getFile("reads");
+        referenceFile = jsapResult.getFile("reference");
+        readIndexFilterFile = jsapResult.getFile("read-index-filter");
+        referenceIndexFilterFile = jsapResult.getFile("reference-index-filter");
 
-        workDirectory              = jsapResult.getFile    ( "work-directory"            ) ;
-        databaseDirectory          = jsapResult.getFile    ( "database-directory"        ) ;
-        databasePath               = jsapResult.getString  ( "database-name"             ) ;
+        workDirectory = jsapResult.getFile("work-directory");
+        databaseDirectory = jsapResult.getFile("database-directory");
+        databasePath = jsapResult.getString("database-name");
 
-        indexFlag                  = jsapResult.getBoolean ( "index"                     ) ;
-        searchFlag                 = jsapResult.getBoolean ( "search"                    ) ;
-        getDefaultDatabaseNameFlag = jsapResult.getBoolean ( "get-default-database-name" ) ;
+        indexFlag = jsapResult.getBoolean("index");
+        searchFlag = jsapResult.getBoolean("search");
+        getDefaultDatabaseNameFlag = jsapResult.getBoolean("get-default-database-name");
 
-        alignerName                = jsapResult.getString  ( "aligner"                   ) ;
-        alignerOptions             = jsapResult.getString  ( "options"                   ) ;
+        alignerName = jsapResult.getString("aligner");
+        alignerOptions = jsapResult.getString("options");
 
-        colorSpace                 = jsapResult.getBoolean ( "color-space"               ) ;
+        colorSpace = jsapResult.getBoolean("color-space");
+        keepTemporaryFiles = jsapResult.getBoolean("keep-temporary-files");
         // TODO 090909 replace with setFilterOptions()
-        qualityFilterParameters    = jsapResult.getString  ( "quality-filter-parameters" ) ;
-        mParameter                 = jsapResult.getInt     ( "ambiguity-threshold"       ) ;
-        outputBasename             = jsapResult.getString  ( "basename"                  ) ;
+        qualityFilterParameters = jsapResult.getString("quality-filter-parameters");
+        mParameter = jsapResult.getInt("ambiguity-threshold");
+        outputBasename = jsapResult.getString("basename");
 
         try {
             alignerType = AlignerTypes.valueOf(alignerName.toLowerCase());
@@ -281,6 +286,7 @@ public class AlignMode extends AbstractGobyMode {
             // TODO 090909 replace with setFilterOptions()
             aligner.setQualityFilterParameters(qualityFilterParameters);
             aligner.setAmbiguityThreshold(mParameter);
+            aligner.setKeepTemporaryFiles(keepTemporaryFiles);
 
             if (indexFlag) {
                 aligner.indexReference(referenceFile);

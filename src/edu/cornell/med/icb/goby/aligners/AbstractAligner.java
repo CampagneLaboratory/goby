@@ -57,6 +57,16 @@ public abstract class AbstractAligner implements Aligner {
     protected String alignerOptions = "";
     protected String qualityFilterParameters = "threshold=0.05";
     protected int mParameter = 2;
+    protected boolean keepTemporaryFiles = false;
+
+    /**
+     * When true, will not delete the native aligner files generated during alignment. These files are deleted by default.
+     *
+     * @param keepTemporaryFiles
+     */
+    public void setKeepTemporaryFiles(boolean keepTemporaryFiles) {
+        this.keepTemporaryFiles = keepTemporaryFiles;
+    }
 
     /**
      * Return the reference file converter used by aligner algorithm
@@ -332,6 +342,7 @@ public abstract class AbstractAligner implements Aligner {
     /**
      * Create a new {@link org.apache.commons.exec.CommandLine} prepending the
      * command with "nice" if running on a Unix system.
+     *
      * @param command The path to the command to run
      * @return A command line object potential with "nice" prepended
      */

@@ -58,9 +58,9 @@ import java.util.List;
  * from these matches.  In this case, the "initial matches" are: all exact
  * matches of any part of a tag to the genome, of depth >= [L], where the match
  * occurs at most [M] times in the genome.
- *
+ * <p/>
  * <h3> Steps in lastal </h3>
- *
+ * <p/>
  * <pre>
  * 1) Find initial matches:
  *      keep those with multiplicity <= [M] and depth >= [L].
@@ -73,9 +73,9 @@ import java.util.List;
  * 5) Calculate probabilities (OFF by default).
  * 6) Redo the gapped extensions using centroid alignment (OFF by default).
  * </pre>
- *
+ * <p/>
  * <h3> Score function </h3>
- *
+ * <p/>
  * An alignment is scored as follows:
  * <pre>
  *  score = R*num_matches + Q*num_mismatches + SUM_i gap_score_i
@@ -88,9 +88,9 @@ import java.util.List;
  *  A = gap existence cost
  *  B = gap extension cost
  * </pre>
- *
+ * <p/>
  * <h3> Score function for colorspace </h3>
- *
+ * <p/>
  * An alignment is scored as follows:
  * <pre>
  *  score = R*num_matches + Q*num_mismatches + SUM_i gap_score_i
@@ -103,15 +103,15 @@ import java.util.List;
  *  A = gap existence cost
  *  B = gap extension cost
  * </pre>
- *
+ * <p/>
  * <h3> lastdb: usage: lastdb [options] output-name fasta-sequence-file(s) </h3>
- *
+ * <p/>
  * <pre>
  * Main Options (default settings):
  * -p: interpret the sequences as proteins
  * -c: read the sequences case-sensitively
  * -m: periodic spaced-seed pattern (1)
- *
+ * <p/>
  * Advanced Options (default settings):
  * -w: index step (1)
  * -s: volume size (1342177280)
@@ -119,9 +119,9 @@ import java.util.List;
  * -b: bucket depth
  * -v: be verbose: write messages about what lastdb is doing
  * </pre>
- *
+ * <p/>
  * <h3> lastag: usage: lastal [options] lastdb-name fasta-sequence-file(s) </h3>
- *
+ * <p/>
  * <pre>
  * Main options (default settings):
  * -h: show all options and their default settings
@@ -129,7 +129,7 @@ import java.util.List;
  * -u: mask lowercase letters: 0=off, 1=softer, 2=soft, 3=hard (0)
  * -s: strand: 0=reverse, 1=forward, 2=both (2 for DNA, 1 for protein)
  * -f: output format: 0=tabular, 1=maf (1)
- *
+ * <p/>
  * Score parameters (default settings):
  * -r: match score   (1 for DNA, blosum62 for protein)
  * -q: mismatch cost (1 for DNA, blosum62 for protein)
@@ -141,7 +141,7 @@ import java.util.List;
  * -y: maximum score dropoff for gapless extensions (max-match-score * 10)
  * -d: minimum score for gapless alignments (e*3/5)
  * -e: minimum score for gapped alignments (40 for DNA, 100 for protein)
- *
+ * <p/>
  * Miscellaneous options (default settings):
  * -m: maximum multiplicity for initial matches (10)
  * -l: minimum depth for initial matches (1)
@@ -154,9 +154,9 @@ import java.util.List;
  * -j: output type: 0=match counts, 1=gapless, 2=redundant gapped, 3=gapped,
  *                  4=probabilities, 5=centroid (3)
  * </pre>
- *
+ * <p/>
  * <h3> Miscellaneous </h3>
- *
+ * <p/>
  * Depth = the number of matched, non-skipped nucleotides
  * <p/>
  * The Last Manual describes options for using quality scores (manual.txt and
@@ -186,22 +186,22 @@ public class LastAligner extends AbstractAligner {
     private static final String LASTAL_EXEC = SystemUtils.IS_OS_WINDOWS ? "lastal.exe" : "lastal";
 
     // parameters that control Lastdb and/or Lastal indirectly
-    protected static final String LASTDB_DEFAULT_MEMORY     = "2G"; // -s:
-    protected static final int DEFAULT_MAX_GAPS_ALLOWED     = 0;
-    protected static final int MIN_READ_LENGTH_APPROX       = 20;
-    protected static final String DEFAULT_MATCH_QUALITY     = "IDENTITY_95";
+    protected static final String LASTDB_DEFAULT_MEMORY = "2G"; // -s:
+    protected static final int DEFAULT_MAX_GAPS_ALLOWED = 0;
+    protected static final int MIN_READ_LENGTH_APPROX = 20;
+    protected static final String DEFAULT_MATCH_QUALITY = "IDENTITY_95";
 
     // fixed values for Lastag command line - setAlignerOptions does not change these
-    protected static final int DEFAULT_STRAND_DIRECTION     = 2; // -s: strand: 0 = reverse, 1 = forward, 2 = both (2 for DNA, 1 for protein)
-    protected static final int DEFAULT_OUTPUT_TYPE          = 3; // -j: output type: 0 = match counts, 1 = gapless, 2 = redundant gapped, 3 = gapped, 4 = probabilities, 5 = centroid
-    protected static final int DEFAULT_OUTPUT_FORMAT        = 1; // -f: output format: 0 = tabular, 1 = maf
-    protected static final String DEFAULT_QUERY_BATCH_SIZE  = "1G"; // -i: query batch size
+    protected static final int DEFAULT_STRAND_DIRECTION = 2; // -s: strand: 0 = reverse, 1 = forward, 2 = both (2 for DNA, 1 for protein)
+    protected static final int DEFAULT_OUTPUT_TYPE = 3; // -j: output type: 0 = match counts, 1 = gapless, 2 = redundant gapped, 3 = gapped, 4 = probabilities, 5 = centroid
+    protected static final int DEFAULT_OUTPUT_FORMAT = 1; // -f: output format: 0 = tabular, 1 = maf
+    protected static final String DEFAULT_QUERY_BATCH_SIZE = "1G"; // -i: query batch size
 
     // suggested defaults for Lastal command line - setAlignerOptions may change these
-    protected static final int DEFAULT_GAP_OPENING_COST     = 2; // -a
-    protected static final int DEFAULT_GAP_EXTENSION_COST   = 1; // -b
-    protected static final int DEFAULT_MIN_SEED_DEPTH       = 15; // -l
-    protected static final int DEFAULT_MISMATCH_COST        = 1;
+    protected static final int DEFAULT_GAP_OPENING_COST = 2; // -a
+    protected static final int DEFAULT_GAP_EXTENSION_COST = 1; // -b
+    protected static final int DEFAULT_MIN_SEED_DEPTH = 15; // -l
+    protected static final int DEFAULT_MISMATCH_COST = 1;
     protected static final int DEFAULT_MATCH_TO_MISMATCH_RATIO_NT = 1;
     protected static final int DEFAULT_MATCH_TO_MISMATCH_RATIO_CS = 2;
 
@@ -291,7 +291,7 @@ public class LastAligner extends AbstractAligner {
     public void setAlignerOptions(final String options) {
         maxGapsAllowed = DEFAULT_MAX_GAPS_ALLOWED;
         gapOpeningCost = DEFAULT_GAP_OPENING_COST;
-        matchQuality   = MatchQuality.valueOf(DEFAULT_MATCH_QUALITY);
+        matchQuality = MatchQuality.valueOf(DEFAULT_MATCH_QUALITY);
         if (options == null) {
             return;
         }
@@ -303,7 +303,7 @@ public class LastAligner extends AbstractAligner {
         gapExtentionCost = CLI.getIntOption(opts, "b", DEFAULT_GAP_EXTENSION_COST);
         minSeedDepth = CLI.getIntOption(opts, "l", DEFAULT_MIN_SEED_DEPTH);
 
-
+ //       System.out.println("Setting matchQuality to: "+matchQuality);
         // always favor --gapOpeningCost over redundant option -a
         if (CLI.isKeywordGiven(opts, "a")) {
             gapOpeningCost = CLI.getIntOption(opts, "a", DEFAULT_GAP_OPENING_COST);
@@ -410,7 +410,7 @@ public class LastAligner extends AbstractAligner {
 
     /**
      * Currently disabled so that user can specify
-     *  -r <match-score> -q <mismatch-score> on the command line
+     * -r <match-score> -q <mismatch-score> on the command line
      * parsed through setAlignerOptions. See also scoreOptions()
      */
     private String substitutionMatrixOption() {
@@ -465,16 +465,16 @@ public class LastAligner extends AbstractAligner {
      * specified matches & mismatches, and the minimum read length. This
      * parameter is used to filter seeds.  Once the number of matches /
      * mismatches is determined
-     *
+     * <p/>
      * The matchQuality parameter is used to select allowable mismatches.
      * The minimumReadLength - numMisMatch is used as a lower bound on the
      * number of matches.
-     *
+     * <p/>
      * The threshold is the minimum of the score function, computed under the
      * assumption that
      * 1) all mismatches occur in snps
      * 2) all mismatches occur in maxGapsAllowed gaps
-     *
+     * <p/>
      * This assumes that the reads will have roughly the same length. If this
      * is not the case (i.e. for Helicos data, which has a triangular
      * distribution over read lengths), the resulting thresholds will be very
@@ -494,6 +494,7 @@ public class LastAligner extends AbstractAligner {
      *  A = gap existence cost
      *  B = gap extension cost
      * </pre>
+     *
      * @param minReadLength
      * @return
      */
@@ -557,7 +558,7 @@ public class LastAligner extends AbstractAligner {
      * If referenceFileOrDbBasename is a db basename, it must already exist.
      *
      * @param referenceFileOrDbBasename The compact file with the reference sequence to index OR
-     * the database basename (prefix)
+     *                                  the database basename (prefix)
      * @return
      * @throws IOException
      */
@@ -628,10 +629,10 @@ public class LastAligner extends AbstractAligner {
 
         // convert native alignment into compact reads
         final File[] buildResults = processAlignment(referenceFile, readsFile, outputBasename);
-
-        FileUtils.deleteQuietly(new File(outputBasename + ".maf"));
-        FileUtils.deleteQuietly(new File(outputBasename + ".counts"));
-
+        if (!keepTemporaryFiles) {
+            FileUtils.deleteQuietly(new File(outputBasename + ".maf"));
+            FileUtils.deleteQuietly(new File(outputBasename + ".counts"));
+        }
         // also delete the colorSpaceMatrix file, if created
         FileUtils.deleteQuietly(new File(matrixFilename));
 
