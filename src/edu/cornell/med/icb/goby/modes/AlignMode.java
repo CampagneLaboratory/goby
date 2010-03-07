@@ -49,6 +49,11 @@ public class AlignMode extends AbstractGobyMode {
      * Used to log debug and informational messages.
      */
     private static final Log LOG = LogFactory.getLog(AlignMode.class);
+
+    public void setKeepTemporaryFiles(boolean keepTemporaryFiles) {
+        this.keepTemporaryFiles = keepTemporaryFiles;
+    }
+
     private boolean keepTemporaryFiles;
 
     /**

@@ -244,6 +244,7 @@ public class LastagAligner extends LastAligner {
         }
         final File[] indexedReference = indexReference(referenceFile);
         LOG.info("Searching..");
+        assert outputBasename != null : "basename must not be null";
         forceMakeParentDir(outputBasename);
         // if (colorSpace) { prepareMatrixFile(); }
 

@@ -87,7 +87,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws IOException error parsing
+     * @throws IOException   error parsing
      * @throws JSAPException error parsing
      */
     @Override
@@ -99,7 +99,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
     @Override
     protected int scan(final ReadSet readIndexFilter, final IndexedIdentifier targetIds, final AlignmentWriter writer,
-                     final AlignmentTooManyHitsWriter tmhWriter) throws IOException {
+                       final AlignmentTooManyHitsWriter tmhWriter) throws IOException {
         int numAligns = 0;
         final ProgressLogger progress = new ProgressLogger(LOG);
         final SAMFileReader parser = new SAMFileReader(new File(inputFile));
@@ -150,6 +150,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     numMismatches++;
                 }
             }
+
             for (final CigarElement cigar : samRecord.getCigar().getCigarElements()) {
                 final int length = cigar.getLength();
                 switch (cigar.getOperator()) {
@@ -203,6 +204,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             currentEntry.setScore(score);
             currentEntry.setTargetAlignedLength(targetAlignedLength);
             currentEntry.setTargetIndex(targetIndex);
+
+            String attributeXA = (String) samRecord.getAttribute("XA");
+            String sequence = samRecord.getReadString();
+            extractSequenceVariations(attributeXA, sequence, currentEntry);
             final Alignments.AlignmentEntry alignmentEntry = currentEntry.build();
 
             final int numTotalHits = (Integer) samRecord.getAttribute("X0");
@@ -234,13 +239,17 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         return numAligns;
     }
 
+    private void extractSequenceVariations(String attributeXA, String sequence, Alignments.AlignmentEntry.Builder currentEntry) {
+      //  System.out.println("Found: " + attributeXA + " " + sequence);
+    }
+
 
     /**
      * Main method.
      *
      * @param args command line args.
      * @throws JSAPException error parsing
-     * @throws IOException error parsing or executing.
+     * @throws IOException   error parsing or executing.
      */
     public static void main(final String[] args) throws JSAPException, IOException {
         new SAMToCompactMode().configure(args).execute();
