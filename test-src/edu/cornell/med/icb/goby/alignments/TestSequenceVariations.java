@@ -105,10 +105,11 @@ public class TestSequenceVariations {
         ReadsWriter referenceWriter = new ReadsWriter(new FileOutputStream(referenceFilename));
         ReadsWriter queryWriter = new ReadsWriter(new FileOutputStream(readsFilename));
         for (alignment entry : alignments) {
+            referenceWriter.setDescription("reference:" + entry.description);
             referenceWriter.setIdentifier("reference:" + entry.description);
             referenceWriter.setSequence(entry.reference.replaceAll("-", ""));
             referenceWriter.appendEntry();
-            queryWriter.setIdentifier("read:" + entry.description);
+            queryWriter.setDescription("read:" + entry.description);
             queryWriter.setSequence(entry.read.replaceAll("-", ""));
             queryWriter.appendEntry();
 
@@ -156,27 +157,27 @@ public class TestSequenceVariations {
     }
 
     alignment[] alignments = new alignment[]{
-            new alignment("0 insertion",
+            new alignment("0_insertion",
                     //1234567891111111111222
                     //         0123456789012
                     "TAAAA--TAAAAAAAAAAAAAAACCCC",
                     "TAAAACCTAAAAAAAAAAAAAAACCCC"),
-            new alignment("1 deletion",
+            new alignment("1_deletion",
                     //01234567891111111111222
                     //          0123456789012
                     "CCAAAAAAAAAAATCCAAAAAAAAAACCCAAAAAAAAAA",
                     "CCAAAAAAAAAAA---AAAAAAAAAACCCAAAAAAAAAA"),
-            new alignment("2 mutations",
+            new alignment("2_mutations",
                     //01234567891111111111222
                     //          0123456789012
                     "TTTCCCAAACACATCACTACTACTACGGATACAGAACGGGG",
                     "TTTCCCACATACATCACCACTACTACGGATACAGAACGGGG"),
-            new alignment("3 insertion",
+            new alignment("3_insertion",
                     //1234567891111111111222
                     //         0123456789012
                     "TAAAA-TAAAAAAAAAAAAAAACCCC",
                     "TAAAACTAAAAAAAAAAAAAAACCCC"),
-            new alignment("4 deletion",
+            new alignment("4_deletion",
                     //01234567891111111111222
                     //          0123456789012
                     "CCAAAAAAAAAAACAAAAAAAAAACCCAAAAAAAAAA",

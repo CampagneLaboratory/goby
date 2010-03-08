@@ -186,17 +186,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
 
                     final int queryIndex = Integer.parseInt(query.sequenceIdentifier.toString());
                     int targetIndex = -1;
-                    try {
-                        targetIndex = Integer.parseInt(reference.sequenceIdentifier.toString());
-                    } catch (NumberFormatException e) {
-                        if (targetIds != null) {
-                            // BUG?! next line was missing "targetIndex = "
-                            targetIndex = targetIds.get(reference.sequenceIdentifier);
-                        } else {
-                            System.out.println("Cannot convert reference identifier to index. " + reference.sequenceIdentifier);
-                            System.exit(1);
-                        }
-                    }
+                    targetIndex = getTargetIndex(targetIds, reference.sequenceIdentifier);
                     final boolean reverseStrand = !(query.strand == reference.strand);
                     final int depth = query.sequenceLength;
                     final int targetPosition = reference.alignedStart;
@@ -298,9 +288,30 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
         return numAligns;
     }
 
-    private void parseSequenceVariations(final Alignments.AlignmentEntry.Builder currentEntry,
-                                         AlignedSequence reference,
-                                         AlignedSequence query) {
+    public final static int getTargetIndex(IndexedIdentifier targetIds, MutableString targetIdentifier) {
+        int targetIndex = -1;
+        try {
+            targetIndex = Integer.parseInt(targetIdentifier.toString());
+        } catch (NumberFormatException e) {
+            if (targetIds != null) {
+
+                targetIndex = targetIds.get(targetIdentifier);
+                if (targetIndex == -1) {
+                    System.out.println("Cannot convert reference identifier to index. " + targetIdentifier);
+                    System.exit(1);
+                }
+
+
+            }
+        }
+        return targetIndex;
+    }
+
+    private void parseSequenceVariations
+            (
+                    final Alignments.AlignmentEntry.Builder currentEntry,
+                    AlignedSequence reference,
+                    AlignedSequence query) {
         final int alignmentLength = reference.alignment.length();
         final MutableString referenceSequence = reference.alignment;
         final MutableString querySequence = query.alignment;
@@ -317,7 +328,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                 variationPosition = Math.min(variationPosition, position);
             } else {
                 appendNewSequenceVariation(currentEntry, from, to, variationPosition);
-                variationPosition=Integer.MAX_VALUE;
+                variationPosition = Integer.MAX_VALUE;
                 from.setLength(0);
                 to.setLength(0);
             }
@@ -325,7 +336,11 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
         appendNewSequenceVariation(currentEntry, from, to, variationPosition);
     }
 
-    private void appendNewSequenceVariation(Alignments.AlignmentEntry.Builder currentEntry, MutableString from, MutableString to, int variationPosition) {
+    private void appendNewSequenceVariation
+            (Alignments.AlignmentEntry.Builder
+                    currentEntry, MutableString
+                    from, MutableString
+                    to, int variationPosition) {
         if (variationPosition != Integer.MAX_VALUE) {
             Alignments.SequenceVariation.Builder sequenceVariation =
                     Alignments.SequenceVariation.newBuilder();
@@ -345,7 +360,9 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
      *                             error parsing
      * @throws java.io.IOException error parsing or executing.
      */
-    public static void main(final String[] args) throws JSAPException, IOException {
+    public static void main
+            (
+                    final String[] args) throws JSAPException, IOException {
         new LastToCompactMode().configure(args).execute();
     }
 }

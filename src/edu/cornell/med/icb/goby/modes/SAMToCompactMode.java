@@ -25,6 +25,7 @@ import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.logging.ProgressLogger;
+import it.unimi.dsi.lang.MutableString;
 import net.sf.samtools.AlignmentBlock;
 import net.sf.samtools.CigarElement;
 import net.sf.samtools.SAMFileReader;
@@ -130,8 +131,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             if (mismatches == null) {
                 continue;
             }
+            int targetIndex=LastToCompactMode.getTargetIndex(targetIds,new MutableString(samRecord.getReferenceName()));
 
-            final int targetIndex = Integer.parseInt(samRecord.getReferenceName());
             // positions reported by BWA appear to start at 1. We convert to start at zero.
             final int position = samRecord.getAlignmentStart() - 1;
             final boolean reverseStrand = samRecord.getReadNegativeStrandFlag();
@@ -240,7 +241,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     }
 
     private void extractSequenceVariations(String attributeXA, String sequence, Alignments.AlignmentEntry.Builder currentEntry) {
-      //  System.out.println("Found: " + attributeXA + " " + sequence);
+        //  System.out.println("Found: " + attributeXA + " " + sequence);
     }
 
 
