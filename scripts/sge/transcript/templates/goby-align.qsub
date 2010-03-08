@@ -48,7 +48,6 @@ TRANSCRIPT_INDEX_DIRECTORY=%TRANSCRIPT_INDEX_DIRECTORY%
 
 # The reads file to process
 READS=%READS%
-READS_FILE=${READS##*/}
 
 # basename includes the transcript name
 BASENAME=%BASENAME%-${TRANSCRIPT_NAME}
@@ -59,6 +58,7 @@ BASENAME=%BASENAME%-${TRANSCRIPT_NAME}
 
 # Extract the reads if a split is needed
 if [ ! -z ${SGE_TASK_ID} ] && [ "${SGE_TASK_ID}" != "undefined" ]; then
+    READS_FILE=${READS##*/}
     CHUNK_SIZE=%CHUNK_SIZE%
     START_POSITION=$(($((SGE_TASK_ID - 1)) * $CHUNK_SIZE))
     END_POSITION=$(($START_POSITION + $CHUNK_SIZE - 1))
@@ -69,7 +69,7 @@ if [ ! -z ${SGE_TASK_ID} ] && [ "${SGE_TASK_ID}" != "undefined" ]; then
         -jar goby.jar --mode reformat-compact-reads --output ${READS_FILE} \
         --start-position ${START_POSITION} --end-position ${END_POSITION} ${READS}
 else
-    /bin/cp ${READS} ${TMPDIR}
+    READS_FILE=${READS}
 fi
 
 # Run the alignment
