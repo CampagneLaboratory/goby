@@ -34,7 +34,7 @@ public final class FileExtensionHelper {
             ".csfasta", ".csfasta.gz", ".csfastq", ".csfastq.gz",
             ".csfa", ".csfa.gz", ".csfq", ".csfq.gz",
             ".fa", ".fna", ".fasta", ".fq", ".fnq", ".fastq",
-            ".txt", ".txt.gz"
+            ".txt", ".txt.gz", ".gz"
     };
 
     /**
