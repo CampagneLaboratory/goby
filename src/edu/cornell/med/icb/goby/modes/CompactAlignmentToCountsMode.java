@@ -55,7 +55,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION =
-            "Converts a compact alignment to a compressed count archive.";
+            "Converts a compact alignment to counts.";
 
     /**
      * Default counts archive extension.
@@ -67,7 +67,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
      */
     private String outputFile;
 
-    boolean filterByReferenceNames;
+    private boolean filterByReferenceNames;
     private ObjectSet<String> includeReferenceNames = new ObjectOpenHashSet<String>();
     private boolean fullGenomeAlignment;
     private String[] basenames;
@@ -112,10 +112,10 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         optionalOutputFile = jsapResult.getString("output");
         fullGenomeAlignment = jsapResult.getBoolean("full-genome");
 
-        final String includeReferenceNameComas = jsapResult.getString("include-reference-names");
-        if (includeReferenceNameComas != null) {
+        final String includeReferenceNameCommas = jsapResult.getString("include-reference-names");
+        if (includeReferenceNameCommas != null) {
             includeReferenceNames = new ObjectOpenHashSet<String>();
-            includeReferenceNames.addAll(Arrays.asList(includeReferenceNameComas.split("[,]")));
+            includeReferenceNames.addAll(Arrays.asList(includeReferenceNameCommas.split("[,]")));
             System.out.println("Will write counts for the following sequences:");
             for (final String name : includeReferenceNames) {
                 System.out.println(name);
