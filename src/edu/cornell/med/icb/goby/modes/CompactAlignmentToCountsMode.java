@@ -178,7 +178,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
             final int[] numberOfReadsPerReference = new int[numberOfReferences];
             final int[] cumulativeBasesPerReference = new int[numberOfReferences];
 
-            System.out.printf("Scanning alignment %s..%n", basename);
+            System.out.printf("Scanning alignment %s%n", basename);
             for (final Alignments.AlignmentEntry alignmentEntry : reader) {
                 ++numberOfReadsPerReference[alignmentEntry.getTargetIndex()];
 
