@@ -43,7 +43,7 @@ import java.io.FileOutputStream;
  */
 public class TestSequenceVariations {
     private static final Log LOG = LogFactory.getLog(TestSequenceVariations.class);
-    private static final String BASE_TEST_DIR = "test-results/alignments";
+    private static final String BASE_TEST_DIR = "test-results/sequence-variations";
     final String referenceFilename = FilenameUtils.concat(BASE_TEST_DIR, "reference-sequence-vars.compact-reads");
     final String readsFilename = FilenameUtils.concat(BASE_TEST_DIR, "query-sequence-vars.compact-reads");
     private String lastagAlignmentFilename;
@@ -62,7 +62,7 @@ public class TestSequenceVariations {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Deleting base test directory: " + BASE_TEST_DIR);
         }
-        //       FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
+        FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
     }
 
     @Test
@@ -175,12 +175,12 @@ public class TestSequenceVariations {
             new alignment("3_insertion",
                     //1234567891111111111222
                     //         0123456789012
-                    "TAAAA-TAAAAAAAAAAAAAAACCCC",
+                    "NNNNNNNNNNNNNNNNNNNNNNNNNN", // use Ns when the query already matches another reference.
                     "TAAAACTAAAAAAAAAAAAAAACCCC"),
             new alignment("4_deletion",
                     //01234567891111111111222
                     //          0123456789012
-                    "CCAAAAAAAAAAACAAAAAAAAAACCCAAAAAAAAAA",
+                    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN", // use Ns when the query already matches another reference.
                     "CCAAAAAAAAAAA-AAAAAAAAAACCCAAAAAAAAAA"),
     };
 
