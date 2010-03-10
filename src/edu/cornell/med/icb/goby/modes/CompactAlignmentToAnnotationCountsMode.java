@@ -215,6 +215,13 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             deCalculator.defineGroup(groupId);
             groups.add(groupId);
             for (final String basename : groupBasenames.split(",")) {
+                // check that basename does not have any extensions appended to it
+                final String [] basenameTokens= basename.split("[\\.}]");
+                if (basenameTokens.length > 1){
+                    System.err.println("Basename "+ basename + " may have unneccessay extensions appended to it. "+
+                        "Please double-check your command.");
+                    System.exit(1);
+                }
                 System.out.println("Associating basename: " + basename + " to group: " + groupId);
                 deCalculator.associateSampleToGroup(basename, groupId);
             }
