@@ -300,28 +300,42 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     System.out.println("Cannot convert reference identifier to index. " + targetIdentifier);
                     System.exit(1);
                 }
-
-
             }
         }
         return targetIndex;
     }
 
-    private void parseSequenceVariations
-            (
-                    final Alignments.AlignmentEntry.Builder currentEntry,
-                    AlignedSequence reference,
-                    AlignedSequence query) {
+    private void parseSequenceVariations(final Alignments.AlignmentEntry.Builder currentEntry,
+                                         AlignedSequence reference,
+                                         AlignedSequence query) {
         final int alignmentLength = reference.alignment.length();
         final MutableString referenceSequence = reference.alignment;
         final MutableString querySequence = query.alignment;
+
+        extractSequenceVariations(currentEntry, alignmentLength, referenceSequence, querySequence);
+    }
+
+    /**
+     * Compare read and reference sequences to determine sequence variations. The variations found
+     * are appended to the alignment entry builder.
+     *
+     * @param currentEntry      alignment entry where variations will be stored.
+     * @param alignmentLength   length of the sequence alignment (common length of reference and read sequences)
+     * @param referenceSequence The reference sequence
+     * @param readSequence      The read sequence
+     */
+    public static void extractSequenceVariations(Alignments.AlignmentEntry.Builder currentEntry, int alignmentLength,
+                                                 MutableString referenceSequence,
+                                                 MutableString readSequence) {
+        System.out.printf("Extracting variations from %n%s%n%s%n",
+                referenceSequence, readSequence);
         final MutableString from = new MutableString();
         final MutableString to = new MutableString();
         int variationPosition = Integer.MAX_VALUE;
         for (int position = 0; position < alignmentLength; ++position) {
 
             final char referenceBase = referenceSequence.charAt(position);
-            final char queryBase = querySequence.charAt(position);
+            final char queryBase = readSequence.charAt(position);
             if (referenceBase != queryBase) {
                 from.append(referenceBase);
                 to.append(queryBase);
@@ -336,19 +350,22 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
         appendNewSequenceVariation(currentEntry, from, to, variationPosition);
     }
 
-    private void appendNewSequenceVariation
-            (Alignments.AlignmentEntry.Builder
-                    currentEntry, MutableString
-                    from, MutableString
-                    to, int variationPosition) {
+    protected static void appendNewSequenceVariation
+            (Alignments.AlignmentEntry.Builder currentEntry,
+             MutableString from,
+             MutableString to,
+             int variationPosition) {
         if (variationPosition != Integer.MAX_VALUE) {
             Alignments.SequenceVariation.Builder sequenceVariation =
                     Alignments.SequenceVariation.newBuilder();
             sequenceVariation.setFrom(from.toString());
             sequenceVariation.setTo(to.toString());
             sequenceVariation.setPosition(variationPosition);
-
+            System.out.printf("Appending variation: %d %s/%s ", variationPosition, from, to);
             currentEntry.addSequenceVariations(sequenceVariation);
+            // reset since they are used:
+            from.setLength(0);
+            to.setLength(0);
         }
     }
 

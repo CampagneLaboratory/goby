@@ -116,7 +116,7 @@ message SequenceVariation {
     */
   required string to=1;
   /*
-  The position of the variation, starting from the beginning of the aligned read (position 0).
+  The position of the variation, starting from the beginning of the aligned read (position 1).
     */
   required uint32 position=3;
 }

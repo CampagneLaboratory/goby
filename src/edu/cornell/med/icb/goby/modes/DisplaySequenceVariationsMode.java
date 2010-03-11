@@ -146,10 +146,11 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
             boolean variations = false;
             for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
                 variations = true;
-
+                // convert variation position to position on the reference:
+                final int positionOnReference = var.getPosition() + alignmentEntry.getPosition();
                 outputWriter.print(String.format("%d:%s/%s,",
 
-                        var.getPosition(),
+                        positionOnReference,
                         var.getFrom(),
                         var.getTo()));
             }

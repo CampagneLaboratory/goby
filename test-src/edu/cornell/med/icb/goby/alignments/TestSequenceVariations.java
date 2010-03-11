@@ -35,6 +35,8 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileOutputStream;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 /**
  * @author Fabien Campagne
@@ -62,7 +64,7 @@ public class TestSequenceVariations {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Deleting base test directory: " + BASE_TEST_DIR);
         }
-       // FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
+        // FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
     }
 
     @Test
@@ -89,7 +91,7 @@ public class TestSequenceVariations {
         while (reader.hasNext()) {
             Alignments.AlignmentEntry alignmentEntry = reader.next();
             // TODO enable when BWA variation parsing has been implemented.
-            //  assertTrue("alignment must have variation", alignmentEntry.getSequenceVariationsCount()>0);
+            assertTrue("alignment must have variation", alignmentEntry.getSequenceVariationsCount() > 0);
             for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
                 System.out.println(String.format("bwa entry score=%f referenceIndex=%d  queryIndex=%d variation: %s",
                         alignmentEntry.getScore(),
@@ -138,6 +140,7 @@ public class TestSequenceVariations {
 
         aligner.setOutputBasename(alignmentFilename);
         aligner.setAlignerOptions("matchQuality=BEST_MATCH");
+        aligner.setQualityFilterParameters("threshold=1");
         aligner.setKeepTemporaryFiles(true);
         aligner.setDatabaseDirectory(new File(BASE_TEST_DIR));
         aligner.execute();
@@ -160,28 +163,35 @@ public class TestSequenceVariations {
             new alignment("0_insertion",
                     //1234567891111111111222
                     //         0123456789012
-                    "TAAAA--TAAAAAAAAAAAAAAACCCC",
-                    "TAAAACCTAAAAAAAAAAAAAAACCCC"),
+                    "TTTAAAA--TAAAAAAAAAAAAAAACCCC",
+                    "TTTAAAACCTAAAAAAAAAAAAAAACCCC"),
             new alignment("1_deletion",
-                    //01234567891111111111222
-                    //          0123456789012
+                    //1234567891111111111222
+                    //         0123456789012
                     "CCAAAAAAAAAAATCCAAAAAAAAAACCCAAAAAAAAAA",
                     "CCAAAAAAAAAAA---AAAAAAAAAACCCAAAAAAAAAA"),
             new alignment("2_mutations",
-                    //01234567891111111111222
-                    //          0123456789012
-                    "TTTCCCAAACACATCACTACTACTACGGATACAGAACGGGG",
-                    "TTTCCCACATACATCACCACTACTACGGATACAGAACGGGG"),
+                    //1234567891111111111222
+                    //         0123456789012
+                    "TTTCCCAAATTTCACATCACTACTACTACGGATACAGAACGGGG",
+                    "TTTCCCACATTTCCCATCACCACTACTACGGATACAGAACGGGG"),
+            //.......M.....M......M.......................
             new alignment("3_insertion",
                     //1234567891111111111222
                     //         0123456789012
-                    "NNNNNNNNNNNNNNNNNNNNNNNNNN", // use Ns when the query already matches another reference.
-                    "TAAAACTAAAAAAAAAAAAAAACCCC"),
+                    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNN", // use Ns when the query already matches another reference.
+                    "TTTTAAAACTAAAAAAAAAAAAAAACCCC"),
             new alignment("4_deletion",
-                    //01234567891111111111222
-                    //          0123456789012
-                    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN", // use Ns when the query already matches another reference.
-                    "CCAAAAAAAAAAA-AAAAAAAAAACCCAAAAAAAAAA"),
+                    //1234567891111111111222
+                    //         0123456789012
+                    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN", // use Ns when the query already matches another reference.
+                    "CCAAAAAAAAAAA---AAAAAAAAAACCCAAAAAAAAAA"),
+            new alignment("5_deletion",
+                    //1234567891111111111222
+                    //         0123456789012
+                    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN", // use Ns when the query already matches another reference.
+                    "TTTCCCAAATTTCACATCACTAC-ACTACGGATACAGAACGGGG"),     // The reference has a T instead of the gap character.
+
     };
 
 
