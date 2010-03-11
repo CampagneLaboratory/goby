@@ -24,8 +24,8 @@ import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import it.unimi.dsi.logging.ProgressLogger;
 import it.unimi.dsi.lang.MutableString;
+import it.unimi.dsi.logging.ProgressLogger;
 import net.sf.samtools.AlignmentBlock;
 import net.sf.samtools.CigarElement;
 import net.sf.samtools.SAMFileReader;
@@ -36,8 +36,8 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Converts binary BWA alignments in the SAM format to the compact alignment format.
@@ -263,7 +263,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
          MD Z String for mismatching positions in the format of [0-9]+(([ACGTN]|\^[ACGTN]+)[0-9]+)* 2,3
 
        The MD field aims to achieve SNP/indel calling without looking at the reference. SOAP and Eland SNP callers prefer
-   such information. For example, a string Ò10A5^AC6Ó means from the leftmost reference base in the alignment, there
+   such information. For example, a string "10A5^AC6" means from the leftmost reference base in the alignment, there
    are 10 matches followed by an A on the reference which is different from the aligned read base; the next 5 reference
    bases are matches followed by a 2bp deletion from the reference; the deleted sequence is AC; the last 6 bases are
    matches. The MD field should match the CIGAR string, although an SAM parser may not check this optional field.
