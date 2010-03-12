@@ -116,9 +116,17 @@ message SequenceVariation {
     */
   required string to=1;
   /*
-  The position of the variation, starting from the beginning of the aligned read (position 1).
+    The position of the variation, starting from the beginning of the aligned read (position 1).
     */
   required uint32 position=3;
+
+  /**
+    The read base quality scores for those bases that are given in the to field. This field
+    is populated when the reads used to perform the search include quality scores, and when
+    the alignment parser can extract the information from the aligner's output.
+    (this option is currently not implemented in Goby.)
+  */
+  optional bytes to_quality=4;
 }
 /*
   This message is written to 'basename'.header
