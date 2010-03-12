@@ -60,9 +60,11 @@ public class AlignmentReader extends AbstractAlignmentReader {
     private final MessageChunksReader alignmentEntryReader;
     private Alignments.AlignmentCollection collection;
     private Properties stats;
+    private String basename;
 
     public AlignmentReader(final String basename) throws FileNotFoundException {
         super();
+        this.basename = basename;
         final FileInputStream stream = new FileInputStream(basename + ".entries");
         alignmentEntryReader = new MessageChunksReader(stream);
         headerStream = new FileInputStream(basename + ".header");
@@ -81,6 +83,15 @@ public class AlignmentReader extends AbstractAlignmentReader {
         }
     }
 
+    /**
+     * Returns the basename for the alignment being read, or null if the basename is unknown.
+     * If a path was part of basename provided to the constructor, it is returned.
+     * @return basename for the alignment being read
+     */
+    public String basename() {
+        return basename;
+    }
+
     public AlignmentReader(final InputStream entriesStream) {
         super();
         alignmentEntryReader = new MessageChunksReader(entriesStream);
@@ -91,8 +102,8 @@ public class AlignmentReader extends AbstractAlignmentReader {
      * which starts between the input position start and end will be returned upon subsequent
      * calls to {@link #hasNext()}, {@link #next()}.
      *
-     * @param start Start offset in the input file.
-     * @param end  End offset in the input file.
+     * @param start  Start offset in the input file.
+     * @param end    End offset in the input file.
      * @param stream Stream over the input file
      * @throws IOException If an error occurs reading the input.
      */
@@ -108,6 +119,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
 
     /**
      * Returns true if the input has more entries.
+     *
      * @return true if the input has more entries, false otherwise.
      */
     public boolean hasNext() {
@@ -131,6 +143,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
 
     /**
      * Returns the next alignment entry from the input stream.
+     *
      * @return the alignment read entry from the input stream.
      */
     public Alignments.AlignmentEntry next() {
@@ -191,6 +204,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
      * Return the basename corresponding to the input alignment filename.  Note
      * that if the filename does have the extension known to be a compact alignemt
      * the returned value is the original filename
+     *
      * @param filename The name of the file to get the basname for
      * @return basename for the alignment file
      */
@@ -209,6 +223,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
      * Return the basenames corresponding to the input filenames. Less basename than filenames
      * may be returned (if several filenames reduce to the same baseline after removing
      * the extension).
+     *
      * @param filenames The names of the files to get the basnames for
      * @return An array of basenames
      */

@@ -95,15 +95,15 @@ public abstract class IterateAlignments {
                 }
             }
 
-            final AlignmentReader referenceReader = new AlignmentReader(basename);
-            referenceReader.readHeader();
+            final AlignmentReader alignmentReader = new AlignmentReader(basename);
+            alignmentReader.readHeader();
 
             // read the alignment:
             System.out.println("Loading the alignment " + basename);
-            for (final Alignments.AlignmentEntry alignmentEntry : referenceReader) {
+            for (final Alignments.AlignmentEntry alignmentEntry : alignmentReader) {
                 final int referenceIndex = alignmentEntry.getTargetIndex();
                 if (referencesToProcess.contains(referenceIndex)) {
-                    processAlignmentEntry(alignmentEntry);
+                    processAlignmentEntry(alignmentReader, alignmentEntry);
                 }
             }
             reader.close();
@@ -112,7 +112,7 @@ public abstract class IterateAlignments {
         }
     }
 
-    public abstract void processAlignmentEntry(Alignments.AlignmentEntry alignmentEntry);
+    public abstract void processAlignmentEntry(AlignmentReader alignmentReader, Alignments.AlignmentEntry alignmentEntry);
 
     public void prepareDataStructuresForReference(int referenceIndex) {
 

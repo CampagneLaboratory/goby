@@ -191,6 +191,11 @@ public class TestSequenceVariations {
                     //         0123456789012
                     "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN", // use Ns when the query already matches another reference.
                     "TTTCCCAAATTTCACATCACTAC-ACTACGGATACAGAACGGGG"),     // The reference has a T instead of the gap character.
+             new alignment("2_mutations-reversed",
+                    //1234567891111111111222
+                    //         0123456789012
+                    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+                    "CCCCGTTCTGTATCCGTAGTAGTGGTGATGGGAAATGTGGGAAA"),    // reverse complement of sequence 2_mutations, used to check positions for reverse strand matches
 
     };
 

@@ -23,13 +23,12 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.IterateAlignments;
-import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+
+import org.apache.commons.io.FilenameUtils;
 
 /**
  * Display the sequence variations found in alignments.
@@ -67,6 +66,14 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
         return MODE_NAME;
     }
 
+    enum OutputFormat {
+        CONSISE,
+        TSV,
+        TAB_DELIMITED,
+    }
+
+    private OutputFormat outputFormat;
+
     @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
@@ -88,6 +95,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
         inputFilenames = jsapResult.getStringArray("input");
         basenames = AlignmentReader.getBasenames(inputFilenames);
         outputFilename = jsapResult.getString("output");
+        outputFormat = OutputFormat.valueOf(jsapResult.getString("format").toUpperCase());
 
         alignmentIterator = new MyIterateAlignments();
         alignmentIterator.parseIncludeReferenceArgument(jsapResult);
@@ -103,9 +111,18 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
     public void execute() throws IOException {
         final PrintWriter writer = outputFilename == null ? new PrintWriter(System.out) :
                 new PrintWriter(new FileWriter(outputFilename));
-        writer.println("# query-index target-id [position-on-reference:var-from/var-to,]+");
+        switch (outputFormat) {
+            case CONSISE:
+
+                break;
+            case TAB_DELIMITED:
+                case TSV:
+                    writer.println("basename target-id query-index position-on-reference var-from var-to"); 
+                    break;
+        }
+
         try {
-            alignmentIterator.setOutputWriter(writer);
+            alignmentIterator.setOutputWriter(writer, outputFormat);
 
             // Iterate through each alignment and write sequence variations to output file:
             alignmentIterator.iterate(basenames);
@@ -133,31 +150,68 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
 
     private static class MyIterateAlignments extends IterateAlignments {
         PrintWriter outputWriter;
+        private OutputFormat outputFormat;
 
-        public void setOutputWriter(PrintWriter outputWriter) {
+        public void setOutputWriter(PrintWriter outputWriter, OutputFormat outputFormat) {
             this.outputWriter = outputWriter;
+            this.outputFormat = outputFormat;
         }
 
-        public void processAlignmentEntry(Alignments.AlignmentEntry alignmentEntry) {
-            outputWriter.print(String.format("%d %s ",
+        public void processAlignmentEntry(AlignmentReader alignmentReader, Alignments.AlignmentEntry alignmentEntry) {
+            String basename = alignmentReader.basename();
+            // remove the path:
+            basename=FilenameUtils.getBaseName(basename);
+            switch (outputFormat) {
 
-                    alignmentEntry.getQueryIndex(),
-                    getReferenceId(alignmentEntry.getTargetIndex())));
-            boolean variations = false;
-            for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
-                variations = true;
-                // convert variation position to position on the reference:
-                final int positionOnReference = var.getPosition() + alignmentEntry.getPosition();
-                outputWriter.print(String.format("%d:%s/%s,",
+                case CONSISE: {
+                    outputWriter.print(String.format("%d %s ",
 
-                        positionOnReference,
-                        var.getFrom(),
-                        var.getTo()));
+                            alignmentEntry.getQueryIndex(),
+                            getReferenceId(alignmentEntry.getTargetIndex())));
+                    boolean variations = false;
+                    for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
+                        variations = true;
+                        // convert variation position to position on the reference:
+                        final int positionOnReference = alignmentEntry.getPosition() + var.getPosition();
+
+                        outputWriter.print(String.format("%d:%s/%s,",
+
+                                positionOnReference,
+                                var.getFrom(),
+                                var.getTo()));
+                    }
+                    if (variations) {
+                        outputWriter.println();
+
+                    }
+                }
+                break;
+                case TSV:
+                case TAB_DELIMITED: {
+                    boolean variations = false;
+
+                    for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
+                        variations = true;
+                        // convert variation position to position on the reference:
+                        final int positionOnReference = alignmentEntry.getPosition() + var.getPosition();
+                        outputWriter.println(String.format("%s\t%s\t%d\t%d\t%s\t%s",
+                                basename,
+                                getReferenceId(alignmentEntry.getTargetIndex()),
+                                alignmentEntry.getQueryIndex(),
+                                positionOnReference,
+                                var.getFrom(),
+                                var.getTo()));
+                    }
+
+                    if (variations) {
+                        outputWriter.println();
+
+                    }
+                }
+                break;
             }
-            if (variations) {
-                outputWriter.println();
 
-            }
+
         }
     }
 }
