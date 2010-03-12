@@ -1,26 +1,26 @@
 development
 
-Added support for sequence variations:
+ Added support for sequence variations:
  - changed the compact alignment format to support recording sequence variations.
  - the new mode display-sequence-variations provides text output of sequence variations in several formats.
 
-Added support for quality scores:
+ Added support for quality scores:
 
  - Changed fasta-to-compact and compact-to-fasta to read and write with the Sanger or Illumina quality encoding.
  - Modified aligners to indicate which format they require (bwa needs fastq format, lastag fasta format, lastal fastq format). This will need extensive testing as some of these changes can affect gobyweb.
    We use the FASTQ-SANGER encoding to communicate with lastal.
  We don't yet support the Solexa quality score encoding (it is a bit obsolete anyway).
 
-Please note that the output format in compact-to-fasta now defaults to Fasta format.
-This format has no quality scores, and consequently, we now never write quality scores
-when Fasta is requested. The aligners that need quality scores must request FastaQ format
-explicitely.
-See also: 
-http://en.wikipedia.org/wiki/FASTQ_format
-http://maq.sourceforge.net/fastq.shtml
-http://last.cbrc.jp/last/doc/last-manual.txt (look for FASTQ-SANGER)
+ Please note that the output format in compact-to-fasta now defaults to Fasta format.
+ This format has no quality scores, and consequently, we now never write quality scores
+ when Fasta is requested. The aligners that need quality scores must request FastaQ format
+ explicitely.
+ See also:
+  http://en.wikipedia.org/wiki/FASTQ_format
+  http://maq.sourceforge.net/fastq.shtml
+  http://last.cbrc.jp/last/doc/last-manual.txt (look for FASTQ-SANGER)
  
-Changes to the Compact format:
+ Changes to the Compact format:
  - Store target/reference sequence lengths in the alignment header. This information is helpful when calculating
    statistics such as RPKMs (transcript-level searches).
 
