@@ -67,7 +67,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
     }
 
     enum OutputFormat {
-        CONSISE,
+        CONCISE,
         TSV,
         TAB_DELIMITED,
     }
@@ -112,7 +112,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
         final PrintWriter writer = outputFilename == null ? new PrintWriter(System.out) :
                 new PrintWriter(new FileWriter(outputFilename));
         switch (outputFormat) {
-            case CONSISE:
+            case CONCISE:
 
                 break;
             case TAB_DELIMITED:
@@ -163,7 +163,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
             basename=FilenameUtils.getBaseName(basename);
             switch (outputFormat) {
 
-                case CONSISE: {
+                case CONCISE: {
                     outputWriter.print(String.format("%d %s ",
 
                             alignmentEntry.getQueryIndex(),

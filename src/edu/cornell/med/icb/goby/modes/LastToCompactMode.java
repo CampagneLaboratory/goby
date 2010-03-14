@@ -327,13 +327,17 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
     public static void extractSequenceVariations(Alignments.AlignmentEntry.Builder currentEntry, int alignmentLength,
                                                  MutableString referenceSequence,
                                                  MutableString readSequence) {
-        System.out.printf("Extracting variations from %n%s%n%s%n",
-                referenceSequence, readSequence);
+        //     System.out.printf("Extracting variations from %n%s%n%s%n",
+        //             referenceSequence, readSequence);
+     
         final MutableString from = new MutableString();
         final MutableString to = new MutableString();
         int variationPosition = Integer.MAX_VALUE;
-        for (int position = 0; position < alignmentLength; ++position) {
+        int minLength=Math.min(referenceSequence.length(), readSequence.length());
+        minLength=Math.min(alignmentLength, minLength);
 
+        for (int position = 0; position < minLength; ++position) {
+          
             final char referenceBase = referenceSequence.charAt(position);
             final char queryBase = readSequence.charAt(position);
             if (referenceBase != queryBase) {
@@ -361,7 +365,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
             sequenceVariation.setFrom(from.toString());
             sequenceVariation.setTo(to.toString());
             sequenceVariation.setPosition(variationPosition);
-            System.out.printf("Appending variation: %d %s/%s ", variationPosition, from, to);
+            //        System.out.printf("Appending variation: %d %s/%s ", variationPosition, from, to);
             currentEntry.addSequenceVariations(sequenceVariation);
             // reset since they are used:
             from.setLength(0);
