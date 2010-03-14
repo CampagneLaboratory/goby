@@ -35,6 +35,12 @@ import org.apache.commons.io.FilenameUtils;
  *
  * @author Fabien Campagne
  */
+// TODO report the position of the variant relative to the start of the read. This is useful to
+// software that need to assess the signigicance of a variation, because sequencing errors occur
+// with different probabilities as sequencing progresses through a read.
+// We will need to store this position in the SequenceVariations data structure or calculate it
+// here, using read length if this is possible. Need to assess how the calculation should be done,
+// it can be tricky when considering combinations of insertions, deletions and mutations.
 public class DisplaySequenceVariationsMode extends AbstractGobyMode {
     /**
      * The mode name.
