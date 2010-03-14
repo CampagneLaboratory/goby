@@ -116,9 +116,9 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
 
                 break;
             case TAB_DELIMITED:
-                case TSV:
-                    writer.println("basename target-id query-index position-on-reference var-from var-to"); 
-                    break;
+            case TSV:
+                writer.println("basename target-id query-index position-on-reference var-from var-to");
+                break;
         }
 
         try {
@@ -160,29 +160,31 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
         public void processAlignmentEntry(AlignmentReader alignmentReader, Alignments.AlignmentEntry alignmentEntry) {
             String basename = alignmentReader.basename();
             // remove the path:
-            basename=FilenameUtils.getBaseName(basename);
+            basename = FilenameUtils.getBaseName(basename);
             switch (outputFormat) {
 
                 case CONCISE: {
-                    outputWriter.print(String.format("%d %s ",
+                    if (alignmentEntry.getSequenceVariationsCount() > 0) {
+                        outputWriter.print(String.format("%d %s ",
 
-                            alignmentEntry.getQueryIndex(),
-                            getReferenceId(alignmentEntry.getTargetIndex())));
-                    boolean variations = false;
-                    for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
-                        variations = true;
-                        // convert variation position to position on the reference:
-                        final int positionOnReference = alignmentEntry.getPosition() + var.getPosition();
+                                alignmentEntry.getQueryIndex(),
+                                getReferenceId(alignmentEntry.getTargetIndex())));
+                        boolean variations = false;
+                        for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
+                            variations = true;
+                            // convert variation position to position on the reference:
+                            final int positionOnReference = alignmentEntry.getPosition() + var.getPosition();
 
-                        outputWriter.print(String.format("%d:%s/%s,",
+                            outputWriter.print(String.format("%d:%s/%s,",
 
-                                positionOnReference,
-                                var.getFrom(),
-                                var.getTo()));
-                    }
-                    if (variations) {
-                        outputWriter.println();
+                                    positionOnReference,
+                                    var.getFrom(),
+                                    var.getTo()));
+                        }
+                        if (variations) {
+                            outputWriter.println();
 
+                        }
                     }
                 }
                 break;
