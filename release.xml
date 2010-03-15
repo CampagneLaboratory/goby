@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="release" basedir="." default="release">
+<project name="goby-release" basedir="." default="release">
     <import file="${basedir}/buildsupport/build.xml"/>
 
     <property name="label" value="release"/>
