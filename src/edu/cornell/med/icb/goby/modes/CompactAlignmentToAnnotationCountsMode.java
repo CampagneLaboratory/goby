@@ -108,7 +108,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      * The groups that should be compared, order matters.
      */
     private String[] groupComparison;
-    private final boolean writeAnnotationCounts = true;
+    private boolean writeAnnotationCounts = true;
     private String statsFilename;
     private ParallelTeam team;
     private boolean parallel;
@@ -140,6 +140,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
         parallel = jsapResult.getBoolean("parallel", false);
+        writeAnnotationCounts = jsapResult.getBoolean("write-annotation-counts");
         inputFilenames = jsapResult.getStringArray("input");
         outputFile = jsapResult.getString("output");
         statsFilename = jsapResult.getString("stats");
@@ -422,10 +423,11 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
         if (outputFile == null) {
             // output filename was not provided on the command line. We make one output per input basename
-            final String outputFileTmp = FilenameUtils.removeExtension(inputFile) + ".ann-counts.tsv";
-            writer = new BufferedWriter(new FileWriter(outputFileTmp));
-            writer.write("basename\tmain-id\tsecondary-id\ttype\tchro\tstrand\tlength\tstart\tend\tin-count\tover-count\tRPKM\tlog2(RPKM+1)\texpression\tnum-exons\n");
-
+            if (writeAnnotationCounts) {
+                final String outputFileTmp = FilenameUtils.removeExtension(inputFile) + ".ann-counts.tsv";
+                writer = new BufferedWriter(new FileWriter(outputFileTmp));
+                writer.write("basename\tmain-id\tsecondary-id\ttype\tchro\tstrand\tlength\tstart\tend\tin-count\tover-count\tRPKM\tlog2(RPKM+1)\texpression\tnum-exons\n");
+            }
         }
         //       System.out.println("id\ttype\tchro\tstart\tend\tin_count\tover_count\tdepth\texpression");
         writeAnnotationCounts(allAnnots, writer, inputBasename, referenceIds, algs, referencesToProcess, numAlignedReadsInSample);

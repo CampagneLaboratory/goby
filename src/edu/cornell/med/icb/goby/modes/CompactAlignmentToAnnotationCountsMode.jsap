@@ -84,5 +84,17 @@
             <longFlag>parallel</longFlag>
             <help>Process basenames in parallel. Use when you have many basenames to process, need the parallel speedup, and have a lot of memory to load multiple basenames in memory. You can tune the number of processors used by setting the property pj.nt. For instance, -Dpj.nt=5 will use 5 parallel threads. When --parallel is specified, one thread per processing core of the machine will be used unless specified otherwise (with pj.nt).</help>
         </switch>
+        <flaggedOption>
+            <id>write-annotation-counts</id>
+            <longFlag>write-annotation-counts</longFlag>
+            <required>false</required>
+            <help>If true, the annotation counts files will be written.</help>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>true</string>
+            </defaults>
+        </flaggedOption>
     </parameters>
 </jsap>
