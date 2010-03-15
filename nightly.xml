@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<project name="goby-nightly" basedir="." default="nightly">
+    <import file="${basedir}/build.xml"/>
+
+    <makeurl file="${config}/log4j.properties" property="log4j.config.url" validate="false"/>
+
+    <macrodef name="fasta-to-compact" description="Convert a FASTA/FASTQ file to compact format">
+        <attribute name="input" description="The file to convert"/>
+        <attribute name="output" default="" description="The file to write to"/>
+        <sequential>
+            <java jar="${goby-jarfile}" fork="true" failonerror="true"
+                  maxmemory="3g" timeout="600000">
+                <assertions enablesystemassertions="true"/>
+                <sysproperty key="log4j.debug" value="${log4j.debug}"/>
+                <sysproperty key="log4j.configuration" value="${log4j.config.url}"/>
+                <arg value="--mode"/>
+                <arg value="fasta-to-compact"/>
+                <arg value="--include-identifiers"/>
+                <arg value="@{input}"/>
+            </java>
+        </sequential>
+    </macrodef>
+
+    <target name="nightly" depends="clean, jar">
+        <fasta-to-compact input="data/reads/goby-mouse-reads-sample.fasta.gz"/>
+        <fasta-to-compact input="data/reference/mm9/chr1.fa.gz"/>
+
+        <java jar="${goby-jarfile}" fork="true" failonerror="true"
+              maxmemory="3g" timeout="600000">
+            <assertions enablesystemassertions="true"/>
+            <sysproperty key="log4j.debug" value="${log4j.debug}"/>
+            <sysproperty key="log4j.configuration" value="${log4j.config.url}"/>
+            <arg value="--mode"/>
+            <arg value="align"/>
+            <arg value="--aligner"/>
+            <arg value="bwa"/>
+            <arg value="--index"/>
+            <arg value="--database-name"/>
+            <arg value="chr1-index"/>
+            <arg value="--reference"/>
+            <arg value="data/reference/mm9/chr1.compact-reads"/>
+            <arg value="--database-directory"/>
+            <arg value="data/reference-index/mm9"/>
+        </java>
+
+        <java jar="${goby-jarfile}" fork="true" failonerror="true"
+              maxmemory="3g" timeout="600000">
+            <assertions enablesystemassertions="true"/>
+            <sysproperty key="log4j.debug" value="${log4j.debug}"/>
+            <sysproperty key="log4j.configuration" value="${log4j.config.url}"/>
+            <arg value="--mode"/>
+            <arg value="align"/>
+            <arg value="--aligner"/>
+            <arg value="bwa"/>
+            <arg value="--search"/>
+            <arg value="--database-name"/>
+            <arg value="chr1-index"/>
+            <arg value="--reference"/>
+            <arg value="data/reference/mm9/chr1.compact-reads"/>
+            <arg value="--database-directory"/>
+            <arg value="data/reference-index/mm9"/>
+            <arg value="--reads"/>
+            <arg value="data/reads/goby-mouse-reads-sample.compact-reads"/>
+            <arg value="--basename"/>
+            <arg value="goby-sample"/>
+        </java>
+
+        <java jar="${goby-jarfile}" fork="true" failonerror="true"
+              maxmemory="3g" timeout="600000">
+            <assertions enablesystemassertions="true"/>
+            <sysproperty key="log4j.debug" value="${log4j.debug}"/>
+            <sysproperty key="log4j.configuration" value="${log4j.config.url}"/>
+            <arg value="--mode"/>
+            <arg value="alignment-to-counts"/>
+            <arg value="goby-sample"/>
+        </java>
+
+        <java jar="${goby-jarfile}" fork="true" failonerror="true"
+              maxmemory="3g" timeout="600000">
+            <assertions enablesystemassertions="true"/>
+            <sysproperty key="log4j.debug" value="${log4j.debug}"/>
+            <sysproperty key="log4j.configuration" value="${log4j.config.url}"/>
+            <arg value="--mode"/>
+            <arg value="counts-to-wiggle"/>
+            <arg value="goby-sample"/>
+        </java>
+    </target>
+</project>
