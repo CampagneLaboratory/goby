@@ -29,15 +29,14 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.io.OutputBitStream;
 import it.unimi.dsi.lang.MutableString;
+import it.unimi.dsi.logging.ProgressLogger;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.util.Random;
 import java.util.zip.GZIPInputStream;
+
+import org.apache.log4j.Logger;
+import com.google.protobuf.ByteString;
 
 /**
  * Load a genome into memory and provide random access to individual bases. Supports DNA (ACTG) and
@@ -52,6 +51,7 @@ public class RandomAccessSequenceCache {
     private Object2IntMap<String> referenceNameMap;
     private ObjectArrayList<byte[]> compressedData;
     private IntList sizes;
+    private static final Logger LOG = Logger.getLogger(RandomAccessSequenceCache.class);
 
     public RandomAccessSequenceCache() {
         super();
@@ -71,7 +71,6 @@ public class RandomAccessSequenceCache {
     public void loadFasta(final Reader reader) throws IOException {
         final ReaderFastaParser parser = new ReaderFastaParser(reader);
         final MutableString description = new MutableString();
-
         int refIndex = 0;
         while (parser.hasNextSequence()) {
             int position = 0;
@@ -99,9 +98,55 @@ public class RandomAccessSequenceCache {
             refIndex++;
 
             final byte[] bytes = byteArrayOutputStream.toByteArray();
-            System.out.println("size of last sequence " + description + ", in bytes: " + bytes.length);
+            LOG.debug("size of last sequence " + description + ", in bytes: " + bytes.length);
+
             compressedData.add(bytes);
             sizes.add(position + 1);
+        }
+    }
+
+    /**
+     * Load a fasta file into this cache.
+     *
+     * @param compactInput inputstream for a compact reads file.
+     * @throws IOException
+     */
+    public void loadCompact(final InputStream compactInput) throws IOException {
+        final ReadsReader parser = new ReadsReader(compactInput);
+        final MutableString description = new MutableString();
+        int refIndex = 0;
+        Reads.ReadEntry entry;
+
+        while (parser.hasNext()) {
+
+            entry = parser.next();
+
+            final String referenceName = entry.getReadIdentifier();
+            final int initialCapacity = 40000000;
+            final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(initialCapacity);
+            final OutputBitStream compressed = new OutputBitStream(byteArrayOutputStream);
+
+            final LongArrayBitVector referenceIgnoreList = LongArrayBitVector.ofLength(0);
+            final ByteString seq = entry.getSequence();
+            for (int position = 0; position < seq.size(); ++position) {
+                char c = (char) seq.byteAt(position);
+                encode(c, compressed, referenceIgnoreList);
+
+            }
+
+
+            compressed.flush();
+            compressed.close();
+            referenceIgnoreLists.add(referenceIgnoreList);
+            referenceNameMap.put(referenceName, refIndex);
+
+            refIndex++;
+
+            final byte[] bytes = byteArrayOutputStream.toByteArray();
+            LOG.debug("size of last sequence " + description + ", in bytes: " + bytes.length);
+
+            compressedData.add(bytes);
+            sizes.add(seq.size() + 1);
         }
     }
 

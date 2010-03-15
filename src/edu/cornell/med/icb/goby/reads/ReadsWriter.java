@@ -120,17 +120,21 @@ public class ReadsWriter implements Closeable {
     }
 
     private synchronized ByteString encodeSequence(final CharSequence sequence) {
-        final int length = sequence.length();
+       // if (sequence instanceof String) {
+            return ByteString.copyFromUtf8( sequence.toString());
+       // }
+        /*final int length = sequence.length();
         if (length > byteBuffer.length) {
             byteBuffer = new byte[length];
         }
+
         final byte[] bytes = byteBuffer;
         for (int i = 0; i < length; i++) {
             bytes[i] = (byte) sequence.charAt(i);
             ++sequenceBasesWritten;
         }
         previousReadLength = length;
-        return ByteString.copyFrom(bytes, 0, length);
+        return ByteString.copyFrom(bytes, 0, length);*/
     }
 
     public void setNumEntriesPerChunk(final int numEntriesPerChunk) {
