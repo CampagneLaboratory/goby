@@ -175,6 +175,10 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
 
             final int numAligns = scan(readIndexFilter, targetIds, writer, tmhWriter);
             System.out.println("Number of alignments written: " + numAligns);
+            if (queryIds.size() > 0 && propagateQueryIds) {
+                // we collected query ids, let's write them to the header:
+                writer.setQueryIdentifiers(queryIds);
+            }
         } finally {
             writer.close();
             tmhWriter.close();
@@ -335,7 +339,10 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
                 }
 
                 for (int index = 0; index < ids.size(); index++) {
-                    targetIds.put(new MutableString(ids.get(index)), index);
+                    final String id = ids.get(index);
+                    if (id != null) {
+                        targetIds.put(new MutableString(id), index);
+                    }
                 }
             }
             // write query/read ids to compact header, if provided as well:
