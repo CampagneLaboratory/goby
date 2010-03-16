@@ -52,6 +52,11 @@
             <longFlag>propagate-query-ids</longFlag>
             <help>When this switch is provided, propagate query ids if provided in the compact file designated by the query-ids option. The default is false since query ids are generally not useful and can consume a large amount of storage.  </help>
         </switch>
+         <switch>
+            <id>allow-missing-md-attribute</id>
+            <longFlag>allow-missing-md-attribute</longFlag>
+            <help>When this switch is provided, import SAM records even if they do not provide an MD attribute. MD attributes are required to determine how much mismatch exist between a read and the reference. This switch forces the import of all records, irrespective of quality. If provided, XO attributes will also be ignored, thereby faking exactly one match per record across the reference. This flag is useful to convert SAM files produced by TopHat.</help>
+        </switch>
         <flaggedOption>
             <id>propagate-target-ids</id>
             <longFlag>propagate-target-ids</longFlag>

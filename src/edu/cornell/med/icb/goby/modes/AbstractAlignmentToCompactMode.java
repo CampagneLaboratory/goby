@@ -41,9 +41,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
- *
  * JSAP files must include baseclass options
- *
+ * <p/>
  * "input"
  * "output"
  * "query-reads-ids"
@@ -53,8 +52,8 @@ import java.io.IOException;
  * "read-index-filter"
  * "ambiguity-threshold"
  * "quality-filter-parameters"
- *
- *
+ * <p/>
+ * <p/>
  * User: stu
  * Date: Sep 11, 2009
  * Time: 9:30:16 PM
@@ -109,7 +108,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
      * @throws java.io.IOException error parsing
      */
     protected abstract int scan(ReadSet readIndexFilter, IndexedIdentifier targetIds, AlignmentWriter writer,
-                     AlignmentTooManyHitsWriter tmhWriter) throws IOException;
+                                AlignmentTooManyHitsWriter tmhWriter) throws IOException;
 
 
     /**
@@ -126,17 +125,17 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         //
         final JSAPResult jsapResult = parseJsapArguments(args);
 
-        inputFile                  = jsapResult.getString  ( "input"                     ) ;
-        outputFile                 = jsapResult.getString  ( "output"                    ) ;
+        inputFile = jsapResult.getString("input");
+        outputFile = jsapResult.getString("output");
 
-        queryReadIdsFilename       = jsapResult.getString  ( "query-reads-ids"           ) ;
-        targetReferenceIdsFilename = jsapResult.getString  ( "target-reference-ids"      ) ;
-        propagateQueryIds          = jsapResult.getBoolean ( "propagate-query-ids"       ) ;
-        propagateTargetIds         = jsapResult.getBoolean ( "propagate-target-ids"      ) ;
+        queryReadIdsFilename = jsapResult.getString("query-reads-ids");
+        targetReferenceIdsFilename = jsapResult.getString("target-reference-ids");
+        propagateQueryIds = jsapResult.getBoolean("propagate-query-ids");
+        propagateTargetIds = jsapResult.getBoolean("propagate-target-ids");
 
-        readIndexFilterFile        = jsapResult.getFile    ( "read-index-filter"         ) ;
-        mParameter                 = jsapResult.getInt     ( "ambiguity-threshold"       ) ;
-        qualityFilterParameters    = jsapResult.getString  ( "quality-filter-parameters" ) ;
+        readIndexFilterFile = jsapResult.getFile("read-index-filter");
+        mParameter = jsapResult.getInt("ambiguity-threshold");
+        qualityFilterParameters = jsapResult.getString("quality-filter-parameters");
 
         return this;
     }
@@ -157,7 +156,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
 
         // initialize too-many-hits output file
         final AlignmentTooManyHitsWriter tmhWriter = new AlignmentTooManyHitsWriter(outputFile, mParameter);
-    
+
         try {
 
             // initialize numberOfReads
@@ -346,6 +345,13 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
                 final ObjectArrayList<String> ids = processIds(queryReadIdsFilename);
                 this.numberOfReads = ids.size();
                 System.out.println("Query file had " + this.numberOfReads + " entries.");
+                for (int queryIndex = 0; queryIndex < ids.size(); ++queryIndex) {
+                    final String id = ids.get(queryIndex);
+                    if (id != null) {
+
+                        queryIds.registerIdentifier(new MutableString(id));
+                    }
+                }
                 // write ids to header
                 writer.setNumQueries(this.numberOfReads);
                 if (this.numberOfReads > 0 && propagateQueryIds) {
@@ -358,4 +364,6 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
             return this;
         }
     }
+
+    final IndexedIdentifier queryIds = new IndexedIdentifier();
 }

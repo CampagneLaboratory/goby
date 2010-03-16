@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
+import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsWriter;
 import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
 import edu.cornell.med.icb.goby.alignments.Alignments;
@@ -66,6 +67,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
      */
     protected String samBinaryFilename;
     private MutableString bufferReferenceSequence = new MutableString();
+    private boolean skipMissingMdAttribute = true;
 
     public String getSamBinaryFilename() {
         return samBinaryFilename;
@@ -98,6 +100,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         // configure baseclass
         super.configure(args);
+        final JSAPResult jsapResult = parseJsapArguments(args);
+
+        skipMissingMdAttribute = jsapResult.getBoolean("allow-missing-md-attribute");
+
         return this;
     }
 
@@ -119,7 +125,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
         while (recordCloseableIterator.hasNext()) {
             final SAMRecord samRecord = recordCloseableIterator.next();
-            final int queryIndex = Integer.parseInt(samRecord.getReadName());
+            final int queryIndex = getQueryIndex(samRecord);
 
             final int depth = samRecord.getReadLength();
             // save length
@@ -133,7 +139,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             // SAM mismatch info must be available, o.w. skip record
             final String mismatches = (String) samRecord.getAttribute("MD");
             // System.out.println("mismatches: " + mismatches);
-            if (mismatches == null) {
+            if (mismatches == null && !skipMissingMdAttribute) {
+
                 continue;
             }
             int targetIndex = LastToCompactMode.getTargetIndex(targetIds, new MutableString(samRecord.getReferenceName()));
@@ -149,14 +156,14 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             int numIndels = 0;
             int queryAlignedLength = 0;
             int multiplicity = 1;
-
-            // count the number of mismatches:
-            for (final char c : mismatches.toCharArray()) {
-                if (!Character.isDigit(c)) {
-                    numMismatches++;
+            if (!skipMissingMdAttribute) {
+                // count the number of mismatches:
+                for (final char c : mismatches.toCharArray()) {
+                    if (!Character.isDigit(c)) {
+                        numMismatches++;
+                    }
                 }
             }
-
             for (final CigarElement cigar : samRecord.getCigar().getCigarElements()) {
                 final int length = cigar.getLength();
                 switch (cigar.getOperator()) {
@@ -220,7 +227,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     referenceSequence, currentEntry);
             final Alignments.AlignmentEntry alignmentEntry = currentEntry.build();
 
-            final int numTotalHits = (Integer) samRecord.getAttribute("X0");
+            final Object xoString = samRecord.getAttribute("X0");
+           
+            final int numTotalHits = skipMissingMdAttribute && xoString==null?
+                    1: (Integer) xoString;
 
             if (qualityFilter.keepEntry(depth, alignmentEntry)) {
                 // only write the entry if it is not ambiguous. i.e. less than or equal to mParameter
@@ -249,6 +259,19 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         return numAligns;
     }
 
+
+    private int getQueryIndex(final SAMRecord samRecord) {
+        final String readName = samRecord.getReadName();
+        try {
+
+            return Integer.parseInt(readName);
+        } catch (NumberFormatException e) {
+
+            // read name is not the integer Goby relies on, make an int from the id:
+            return queryIds.registerIdentifier(new MutableString(readName));
+        }
+    }
+
     static Pattern attributeMD_pattern;
     static Pattern attributeCIGAR_insertions_pattern;
 
@@ -268,7 +291,12 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
    bases are matches followed by a 2bp deletion from the reference; the deleted sequence is AC; the last 6 bases are
    matches. The MD field should match the CIGAR string, although an SAM parser may not check this optional field.
         */
+        if (attributeMD == null && skipMissingMdAttribute) {
+            return;
+        }
+
         produceReferenceSequence(cigar, attributeMD, readSequence, referenceSequence);
+
         int alignmentLength = readSequence.length();
         LastToCompactMode.extractSequenceVariations(currentEntry,
                 alignmentLength,
@@ -317,13 +345,13 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             if (matchChars != null) {
                 int matchLength = Integer.parseInt(matchChars);
 
-      /*          System.out.println(String.format("subsequence(%d,%d),",
-                        positionInReadSequence,
-                        positionInReadSequence + matchLength));
-        */
+                /*          System.out.println(String.format("subsequence(%d,%d),",
+                                positionInReadSequence,
+                                positionInReadSequence + matchLength));
+                */
                 final CharSequence matchingSequence = readSequence.subSequence(positionInReadSequence,
                         positionInReadSequence + matchLength);
-      //          System.out.println("match " + matchChars + " appending " + matchingSequence);
+                //          System.out.println("match " + matchChars + " appending " + matchingSequence);
                 referenceSequence.append(matchingSequence);
                 positionInReadSequence += matchLength;
             }
@@ -334,7 +362,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     int mutationLength = variationChars.length() - 1;   // -1 is for the indicator character '^'
                     final String toAppend = variationChars.substring(1);
                     referenceSequence.append(toAppend);
-                //    System.out.println("var " + variationChars + " appending " + toAppend);
+                    //    System.out.println("var " + variationChars + " appending " + toAppend);
                     //    positionInReadSequence += mutationLength;
                     for (int i = 0; i < mutationLength; ++i) readSequence.insert(positionInReadSequence, '-');
                     positionInReadSequence += mutationLength;
@@ -343,7 +371,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     int mutationLength = variationChars.length();
 
                     referenceSequence.append(variationChars);
-                 //   System.out.println("var " + variationChars + " appending " + variationChars);
+                    //   System.out.println("var " + variationChars + " appending " + variationChars);
                     //   referenceSequence.setLength(referenceSequence.length() -
                     //           mutationLength);
                     positionInReadSequence += mutationLength;

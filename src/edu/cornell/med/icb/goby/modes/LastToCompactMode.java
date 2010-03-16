@@ -294,8 +294,15 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
             targetIndex = Integer.parseInt(targetIdentifier.toString());
         } catch (NumberFormatException e) {
             if (targetIds != null) {
+                Integer object = targetIds.get(targetIdentifier);
+                if (object == null) {
 
-                targetIndex = targetIds.get(targetIdentifier);
+                    LOG.warn("Input file contains a target id that is not defined in the target compact reads: " + targetIdentifier);
+                    targetIndex=targetIds.registerIdentifier(targetIdentifier);
+                }
+                else {
+                    targetIndex = object;
+                }
                 if (targetIndex == -1) {
                     System.out.println("Cannot convert reference identifier to index. " + targetIdentifier);
                     System.exit(1);
@@ -329,15 +336,15 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                                                  MutableString readSequence) {
         //     System.out.printf("Extracting variations from %n%s%n%s%n",
         //             referenceSequence, readSequence);
-     
+
         final MutableString from = new MutableString();
         final MutableString to = new MutableString();
         int variationPosition = Integer.MAX_VALUE;
-        int minLength=Math.min(referenceSequence.length(), readSequence.length());
-        minLength=Math.min(alignmentLength, minLength);
+        int minLength = Math.min(referenceSequence.length(), readSequence.length());
+        minLength = Math.min(alignmentLength, minLength);
 
         for (int position = 0; position < minLength; ++position) {
-          
+
             final char referenceBase = referenceSequence.charAt(position);
             final char queryBase = readSequence.charAt(position);
             if (referenceBase != queryBase) {
