@@ -20,9 +20,11 @@ package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.lang.MutableString;
 
 import java.io.PrintWriter;
+import java.util.List;
 
 /**
  * Store a list of results from differential expression statistics.
@@ -33,17 +35,17 @@ import java.io.PrintWriter;
  */
 public class DifferentialExpressionResults extends ObjectArrayList<DifferentialExpressionInfo> {
     private final IndexedIdentifier statisticIds = new IndexedIdentifier();
-    private final ObjectArrayList<MutableString> sortedStatisticIds = new ObjectArrayList<MutableString>();
+    private final List<MutableString> sortedStatisticIds = new ObjectArrayList<MutableString>();
+    private IntArrayList averageCountPerGroupIndexes = new IntArrayList();
+    private boolean omitNonInformativeColumns = false;
 
     /**
      * Declare a new statistic.
      *
      * @param statisticId
      */
-    public void declareStatistic(final String statisticId) {
-        final MutableString mutableString = new MutableString(statisticId);
-        statisticIds.registerIdentifier(mutableString);
-        sortedStatisticIds.add(mutableString);
+    public synchronized void declareStatistic(final String statisticId) {
+        declareStatistic(new MutableString(statisticId));
     }
 
     /**
@@ -53,7 +55,18 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
      */
     public void declareStatistic(final MutableString statisticId) {
         statisticIds.registerIdentifier(statisticId);
+        if (statisticId.startsWith("average count group ")) {
+            averageCountPerGroupIndexes.add(sortedStatisticIds.size());
+        }
         sortedStatisticIds.add(statisticId);
+    }
+
+    public boolean isOmitNonInformativeColumns() {
+        return omitNonInformativeColumns;
+    }
+
+    public void setOmitNonInformativeColumns(boolean omitNonInformativeColumns) {
+        this.omitNonInformativeColumns = omitNonInformativeColumns;
     }
 
     public double getStatistic(final DifferentialExpressionInfo info, final MutableString statisticId) {
@@ -89,6 +102,10 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
         return statisticIds.containsKey(groupId);
     }
 
+    public synchronized IntArrayList getAverageCountPerGroupIndexes() {
+        return averageCountPerGroupIndexes;
+    }
+
     /**
      * Write results with delimiter.
      *
@@ -96,17 +113,27 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
      * @param delimiter
      */
     public void write(final PrintWriter printWriter, final char delimiter) {
-        printWriter.append("element-id ");
-        for (final MutableString statId : sortedStatisticIds) {
-            printWriter.append(delimiter);
-            printWriter.append(statId);
+        InformativeColumns informativeColumns = null;
+        if (omitNonInformativeColumns) {
+            informativeColumns = new InformativeColumns(sortedStatisticIds.size());
+            for (final DifferentialExpressionInfo info : this.subList(0, size())) {
+                info.checkInformativeColumns(informativeColumns);
+            }
+        }
 
+        printWriter.append("element-id");
+        for (int i = 0; i < sortedStatisticIds.size(); i++) {
+            if (informativeColumns == null || informativeColumns.isColumnInformative(i)) {
+                printWriter.append(delimiter);
+                printWriter.append(sortedStatisticIds.get(i));
+            }
         }
         printWriter.append("\n");
+
         for (final DifferentialExpressionInfo info : this.subList(0, size())) {
-            if (info.informative()) {
-            info.write(printWriter, delimiter);
-            printWriter.append("\n");
+            if (info.informative(getAverageCountPerGroupIndexes())) {
+                info.write(printWriter, delimiter, informativeColumns);
+                printWriter.append("\n");
             }
         }
         printWriter.flush();

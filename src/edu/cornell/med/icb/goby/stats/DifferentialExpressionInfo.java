@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.stats;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.lang.MutableString;
 
 import java.io.PrintWriter;
@@ -47,22 +48,46 @@ public class DifferentialExpressionInfo {
         return String.format("[ %s %s ]", elementId, statistics.toString());
     }
 
-    public void write(final PrintWriter printWriter, final char delimiter) {
+    public void write(final PrintWriter printWriter, final char delimiter, final InformativeColumns informativeColumns) {
         printWriter.append(elementId);
-        for (final double value : statistics) {
-            printWriter.append(delimiter);
-            printWriter.append(String.format("%g", value));
+        for (int i = 0; i < statistics.size(); i++) {
+            if (informativeColumns == null || informativeColumns.isColumnInformative(i)) {
+                final double value = statistics.get(i);
+                printWriter.append(delimiter);
+                printWriter.append(String.format("%g", value));
+            }
+        }
+    }
+
+    public void checkInformativeColumns(final InformativeColumns informativeColumns) {
+        for (double value : statistics) {
+            informativeColumns.checkInformative(value);
         }
     }
 
     /**
      * Is the DE informative?
-     * @return
+     * @param averageCountPerGroupIndexes list of average counts for group. If this isn't null,
+     * the value for at least one of these indexes must be informative (!NaN and > 0).
+     * @return if this line of data is informative
      */
-    public boolean informative() {
+    public boolean informative(final IntArrayList averageCountPerGroupIndexes) {
+        if (averageCountPerGroupIndexes != null) {
+            boolean atLeastOneGroupAverageNotZero = false;
+            for (int informativeRequiredIndex : averageCountPerGroupIndexes) {
+                double value = statistics.get(informativeRequiredIndex);
+                if (!Double.isNaN(value) && value > 0) {
+                    atLeastOneGroupAverageNotZero = true;
+                }
+            }
+            if (!atLeastOneGroupAverageNotZero) {
+                return false;
+            }
+        }
+
         boolean informative = false;
         for (final double value : statistics) {
-            if (value == value || value > 0) {
+            if (!Double.isNaN(value) && value > 0) {
                 // require something else than NaN or zero to be have an informative DE.
                 informative = true;
             }

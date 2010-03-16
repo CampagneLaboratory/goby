@@ -96,5 +96,17 @@
                 <string>true</string>
             </defaults>
         </flaggedOption>
+        <flaggedOption>
+            <id>omit-non-informative-columns</id>
+            <longFlag>omit-non-informative-columns</longFlag>
+            <required>false</required>
+            <help>If true, columns which are entirely non-informative will be omitted.</help>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>false</string>
+            </defaults>
+        </flaggedOption>
     </parameters>
 </jsap>

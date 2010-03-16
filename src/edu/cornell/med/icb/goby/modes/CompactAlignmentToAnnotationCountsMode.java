@@ -109,6 +109,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      */
     private String[] groupComparison;
     private boolean writeAnnotationCounts = true;
+    private boolean omitNonInformativeColumns = false;
     private String statsFilename;
     private ParallelTeam team;
     private boolean parallel;
@@ -141,6 +142,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
         parallel = jsapResult.getBoolean("parallel", false);
         writeAnnotationCounts = jsapResult.getBoolean("write-annotation-counts");
+        omitNonInformativeColumns = jsapResult.getBoolean("omit-non-informative-columns");
         inputFilenames = jsapResult.getStringArray("input");
         outputFile = jsapResult.getString("output");
         statsFilename = jsapResult.getString("stats");
@@ -316,6 +318,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             if (doComparison) {
                 // evaluate differences between groups:
                 DifferentialExpressionResults results = deCalculator.compare(new FoldChangeCalculator(), groupComparison);
+                results.setOmitNonInformativeColumns(omitNonInformativeColumns);
 
                 results = deCalculator.compare(results, new FoldChangeMagnitudeCalculator(), groupComparison);
                 results = deCalculator.compare(results, new AverageCalculator(), groupComparison);

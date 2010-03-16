@@ -1,5 +1,14 @@
 development
 
+ Changes to CompactAlignmentToAnnotationCountsMode
+ - added new option --write-annotation-counts boolean, defaults to true. If set to
+   false the annotation counts intermediate files will not be written.
+ - Lines where "average count group *" values are ALL NaN or <= 0 will not be written
+   This makes it so lines that don't add anything to the output are just omitted.
+ - added new option --omit-non-informative-columns, defaults to false. If set to
+   true, columns in which all of the data is non-informative (values are ALL NaN or <= 0)
+   will be omitted.
+
  Added support for sequence variations:
  - changed the compact alignment format to support recording sequence variations.
  - the new mode display-sequence-variations provides text output of sequence variations in several formats.

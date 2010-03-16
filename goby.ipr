@@ -11,8 +11,6 @@
       <properties />
       <executeOn event="beforeRun" target="compile-tests" />
       <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestAligner.testAlignWithBWA" />
-      <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestStatistics.testChiSquareZeroCount" />
-      <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestStatistics.testFisher" />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/release.xml">
       <additionalClassPath />
