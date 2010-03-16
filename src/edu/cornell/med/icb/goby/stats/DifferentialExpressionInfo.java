@@ -60,6 +60,9 @@ public class DifferentialExpressionInfo {
     }
 
     public void checkInformativeColumns(final InformativeColumns informativeColumns) {
+        if (informativeColumns.isAllColumnsInformative()) {
+            return;
+        }
         for (double value : statistics) {
             informativeColumns.checkInformative(value);
         }
