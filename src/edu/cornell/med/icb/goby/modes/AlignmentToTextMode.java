@@ -117,10 +117,13 @@ public class AlignmentToTextMode extends AbstractGobyMode {
 
         // read the alignment:
         System.out.println("Converting the alignment..");
+        boolean hasReadIds = referenceReader.getQueryIdentifiers().size() > 0;
+        DoubleIndexedIdentifier readIds = new DoubleIndexedIdentifier(referenceReader.getQueryIdentifiers());
+
         for (final Alignments.AlignmentEntry alignmentEntry : referenceReader) {
             final int referenceIndex = alignmentEntry.getTargetIndex();
             final String referenceName = referenceIds.getId(referenceIndex).toString();
-            //           System.out.println(referenceName);
+
             if (referencesToProcess.contains(referenceIndex)) {
                 final int startPosition = alignmentEntry.getPosition();
                 final int alignmentLength = alignmentEntry.getQueryAlignedLength();
@@ -128,8 +131,9 @@ public class AlignmentToTextMode extends AbstractGobyMode {
 //                    System.out.println(startPosition+"   "+ startPosition + alignmentLength+
 //                            alignmentEntry.getMatchingReverseStrand());
                     final int queryIndex = alignmentEntry.getQueryIndex();
-                    writer.write(String.format("%d\t%s\t%d\t%d\t%g\t%d\t%d\t%b%n",
-                            queryIndex,
+
+                    writer.write(String.format("%s\t%s\t%d\t%d\t%g\t%d\t%d\t%b%n",
+                            hasReadIds ? readIds.getId(queryIndex) : Integer.toString(queryIndex),
                             referenceName,
                             alignmentEntry.getNumberOfIndels(),
                             alignmentEntry.getNumberOfMismatches(),
