@@ -54,7 +54,7 @@ import java.util.zip.GZIPInputStream;
  *         Time: 6:36:04 PM
  */
 public class AlignmentReader extends AbstractAlignmentReader {
-    private FileInputStream headerStream;
+    private InputStream headerStream;
     private static final Log LOG = LogFactory.getLog(AlignmentReader.class);
     private int numberOfAlignedReads;
     private final MessageChunksReader alignmentEntryReader;
@@ -67,7 +67,15 @@ public class AlignmentReader extends AbstractAlignmentReader {
         this.basename = basename;
         final FileInputStream stream = new FileInputStream(basename + ".entries");
         alignmentEntryReader = new MessageChunksReader(stream);
-        headerStream = new FileInputStream(basename + ".header");
+        try {
+            headerStream = new GZIPInputStream(new FileInputStream(basename + ".header"));
+        } catch (IOException e) {
+
+            // try not compressed for compatibility with 1.4-:
+            LOG.trace("falling back to legacy 1.4- uncompressed header.");
+           
+            headerStream = new FileInputStream(basename + ".header");
+        }
         stats = new Properties();
         final File statsFile = new File(basename + ".stats");
         if (statsFile.exists()) {
@@ -86,6 +94,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
     /**
      * Returns the basename for the alignment being read, or null if the basename is unknown.
      * If a path was part of basename provided to the constructor, it is returned.
+     *
      * @return basename for the alignment being read
      */
     public String basename() {

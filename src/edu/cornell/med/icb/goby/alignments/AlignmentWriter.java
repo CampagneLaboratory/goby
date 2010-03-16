@@ -33,6 +33,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Properties;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * This class write alignments in a Protocol Buffer, compressed, binary and splitable format.
@@ -48,7 +49,7 @@ public class AlignmentWriter implements Closeable {
     private IndexedIdentifier queryIdentifiers;
     private IndexedIdentifier targetIdentifiers;
     private boolean headerWritten;
-    private final FileOutputStream headerOutput;
+    private final GZIPOutputStream headerOutput;
     private int[] queryLengths;
 
     private String[] queryIdentifiersArray;
@@ -63,7 +64,7 @@ public class AlignmentWriter implements Closeable {
 
     public AlignmentWriter(final String outputBasename) throws IOException {
         final FileOutputStream alignmentEntries = new FileOutputStream(outputBasename + ".entries");
-        headerOutput = new FileOutputStream(outputBasename + ".header");
+        headerOutput = new GZIPOutputStream(new FileOutputStream(outputBasename + ".header"));
         statsWriter = new FileWriter(outputBasename + ".stats");
         this.basename = outputBasename;
         collectionBuilder = Alignments.AlignmentCollection.newBuilder();
