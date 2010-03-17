@@ -115,9 +115,11 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
     public void write(final PrintWriter printWriter, final char delimiter) {
         InformativeColumns informativeColumns = null;
         if (omitNonInformativeColumns) {
-            informativeColumns = new InformativeColumns(sortedStatisticIds.size());
+            informativeColumns = new InformativeColumns(sortedStatisticIds.size(), new InformativeNonZeroNonNaN());
             for (final DifferentialExpressionInfo info : this.subList(0, size())) {
-                info.checkInformativeColumns(informativeColumns);
+                if (info.checkInformativeColumns(informativeColumns)) {
+                    break;
+                }
             }
         }
 

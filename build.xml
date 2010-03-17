@@ -22,6 +22,8 @@
         </then>
     </if>
 
+    <!-- Increase timeout for TestStatistics. -->
+    <property name="test.timeout" value="900000"/>
     <import file="testsupport/build.xml"/>
 
     <path id="compile.classpath">

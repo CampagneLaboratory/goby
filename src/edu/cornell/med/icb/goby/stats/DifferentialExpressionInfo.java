@@ -32,6 +32,7 @@ import java.io.PrintWriter;
 public class DifferentialExpressionInfo {
     final MutableString elementId;
     final DoubleArrayList statistics = new DoubleArrayList();
+    final InformativeDouble informativeDouble = new InformativeNonZeroNonNaN();
 
     public DifferentialExpressionInfo(final String elementId) {
         super();
@@ -59,13 +60,16 @@ public class DifferentialExpressionInfo {
         }
     }
 
-    public void checkInformativeColumns(final InformativeColumns informativeColumns) {
-        if (informativeColumns.isAllColumnsInformative()) {
-            return;
-        }
+    /**
+     * Check the data in the current row to see which colums are informative
+     * @param informativeColumns the object that helps track which columns are informative
+     * @return true if all columns have been determined to be informative
+     */
+    public boolean checkInformativeColumns(final InformativeColumns informativeColumns) {
         for (double value : statistics) {
             informativeColumns.checkInformative(value);
         }
+        return informativeColumns.isAllColumnsInformative();
     }
 
     /**
@@ -79,7 +83,7 @@ public class DifferentialExpressionInfo {
             boolean atLeastOneGroupAverageNotZero = false;
             for (int informativeRequiredIndex : averageCountPerGroupIndexes) {
                 double value = statistics.get(informativeRequiredIndex);
-                if (!Double.isNaN(value) && value > 0) {
+                if (informativeDouble.isInformative(value)) {
                     atLeastOneGroupAverageNotZero = true;
                 }
             }
@@ -90,7 +94,7 @@ public class DifferentialExpressionInfo {
 
         boolean informative = false;
         for (final double value : statistics) {
-            if (!Double.isNaN(value) && value > 0) {
+            if (informativeDouble.isInformative(value)) {
                 // require something else than NaN or zero to be have an informative DE.
                 informative = true;
             }

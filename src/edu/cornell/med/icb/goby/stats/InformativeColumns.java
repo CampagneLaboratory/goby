@@ -52,11 +52,18 @@ public class InformativeColumns {
     boolean[] data;
 
     /**
+     * The object that defines what is informative.
+     */
+    public InformativeDouble informativeDouble;
+
+    /**
      * Create an InformativeColumns object for numberOfColumns.
      * @param numberOfColumns the fixed number of columns in the dataset for any number of rows.
+     * @param informativeDouble the object that defines what is informative.
      */
-    public InformativeColumns(final int numberOfColumns) {
+    public InformativeColumns(final int numberOfColumns, final InformativeDouble informativeDouble) {
         assert numberOfColumns > 0;
+        this.informativeDouble = informativeDouble;
         this.numberOfColumns = numberOfColumns;
         allColumnsInformative = false;
         positionInCurrentRow = 0;
@@ -96,7 +103,7 @@ public class InformativeColumns {
             return;
         }
         if (!data[positionInCurrentRow]) {
-            if (!Double.isNaN(value) && value > 0) {
+            if (informativeDouble.isInformative(value)) {
                 data[positionInCurrentRow] = true;
             }
         }
