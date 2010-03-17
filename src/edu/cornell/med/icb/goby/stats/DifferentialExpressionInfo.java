@@ -74,12 +74,20 @@ public class DifferentialExpressionInfo {
 
     /**
      * Is the DE informative?
+     * @return if this line of data is informative
+     */
+    public boolean informative() {
+        return informative(null);
+    }
+
+    /**
+     * Is the DE informative?
      * @param averageCountPerGroupIndexes list of average counts for group. If this isn't null,
      * the value for at least one of these indexes must be informative (!NaN and > 0).
      * @return if this line of data is informative
      */
     public boolean informative(final IntArrayList averageCountPerGroupIndexes) {
-        if (averageCountPerGroupIndexes != null) {
+        if (averageCountPerGroupIndexes != null && averageCountPerGroupIndexes.size() > 0) {
             boolean atLeastOneGroupAverageNotZero = false;
             for (int informativeRequiredIndex : averageCountPerGroupIndexes) {
                 double value = statistics.get(informativeRequiredIndex);

@@ -47,7 +47,7 @@ public abstract class FDRAdjustment {
         // exclude NaN p-values from the number of comparisons:
         for (final DifferentialExpressionInfo info : list) {
             final double pValue = info.statistics.get(statisticIndex);
-            if (info.informative(list.getAverageCountPerGroupIndexes())) {
+            if (info.informative()) {
                 listSize++;
             }
         }
