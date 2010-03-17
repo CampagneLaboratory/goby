@@ -28,58 +28,81 @@ import java.util.regex.Matcher;
 import edu.cornell.med.icb.goby.modes.SAMToCompactMode;
 
 /**
+ * Test the import of sequence variations from SAM bwa format.
+ *
  * @author Fabien Campagne
  *         Date: Mar 10, 2010
  *         Time: 1:59:53 PM
  */
 public class TestSAMVariationParsing {
     @Test
+    // point mutations only
     public void testMDStringParsing1() {
 
         MutableString referenceSequence = new MutableString();
 
-        String stringReadSequence =                                 "TTTCCCACATTTCCCATCACCACTACTACGGATACAGAACGGGG";
+        String stringReadSequence = "TTTCCCACATTTCCCATCACCACTACTACGGATACAGAACGGGG";
         MutableString expectedReferenceSequence = new MutableString("TTTCCCAAATTTCACATCACTACTACTACGGATACAGAACGGGG");
-        testMdAttribute("44M","7A5A6T23", stringReadSequence, referenceSequence);
-        System.out.println(String.format("expected   =%s\nrecons. ref=%s", expectedReferenceSequence, referenceSequence));
-
+        testMdAttribute("44M", "7A5A6T23", stringReadSequence, referenceSequence);
+        display(referenceSequence, stringReadSequence, expectedReferenceSequence);
         assertEquals("the reconstructed reference sequence should match expected.", expectedReferenceSequence, referenceSequence);
 
 
     }
 
     @Test
+    //deletion in the read
     public void testMDStringParsing2() {
 
         MutableString referenceSequence = new MutableString();
 
         String stringReadSequence =                                 "TTTCCCAAATTTCACATCACTACTACACGGATACAGAACGGGG";
         MutableString expectedReferenceSequence = new MutableString("TTTCCCAAATTTCACATCACTACTACTACGGATACAGAACGGGG");
-        testMdAttribute("26M1D17M","26^T17", stringReadSequence, referenceSequence);
-        System.out.println(String.format("expected   =%s\nrecons. ref=%s", expectedReferenceSequence, referenceSequence));
+        testMdAttribute("26M1D17M", "26^T17", stringReadSequence, referenceSequence);
+        display(referenceSequence, stringReadSequence, expectedReferenceSequence);
+        assertEquals("the reconstructed reference sequence should match expected.", expectedReferenceSequence, referenceSequence);
+
+    }
+
+    private void display(MutableString referenceSequence, String stringReadSequence, MutableString expectedReferenceSequence) {
+        System.out.println(String.format("read       =%s\nexpected   =%s\nrecons. ref=%s", stringReadSequence,
+                expectedReferenceSequence, referenceSequence));
         System.out.flush();
+    }
+
+    @Test
+    // insertions in the read only
+    public void testMDStringParsing3() {
+
+        MutableString referenceSequence = new MutableString();
+
+        String stringReadSequence = "TAAAACCTAAAAAAAAAAAAAAACCCC";
+        MutableString expectedReferenceSequence = new MutableString("TAAAA--TAAAAAAAAAAAAAAACCCC");
+        testMdAttribute("5M2I20M", "25", stringReadSequence, referenceSequence);
+        display(referenceSequence, stringReadSequence, expectedReferenceSequence);
         assertEquals("the reconstructed reference sequence should match expected.", expectedReferenceSequence, referenceSequence);
 
     }
 
     @Test
-    public void testMDStringParsing3() {
+    // insertions with mutations
+    public void testMDStringParsing4() {
 
         MutableString referenceSequence = new MutableString();
 
-        String stringReadSequence =                                 "TAAAACCTAAAAAAAAAAAAAAACCCC";
-        MutableString expectedReferenceSequence = new MutableString("TAAAA--TAAAAAAAAAAAAAAACCCC");
-        testMdAttribute("5M2I20M","25", stringReadSequence, referenceSequence);
-        System.out.println(String.format("expected   =%s\nrecons. ref=%s", expectedReferenceSequence, referenceSequence));
-        System.out.flush();
+        String stringReadSequence = "TTTTGATGAAGTCTCTGTGTCCTGGGGCATCAATGATGGTCACA";
+        MutableString expectedReferenceSequence = new MutableString("TTTTGACGAAGTCTCTATGTCCT-GGGCATCAATGATGGTCACA");
+        testMdAttribute("23M1I20M", "6C9A26", stringReadSequence, referenceSequence);
+        display(referenceSequence, stringReadSequence, expectedReferenceSequence);
         assertEquals("the reconstructed reference sequence should match expected.", expectedReferenceSequence, referenceSequence);
 
     }
 
     private void testMdAttribute(String CIGAR, String mdAttribute, String stringReadSequence, MutableString referenceSequence) {
         MutableString readSequence = new MutableString(stringReadSequence);
+        MutableString readPostInsertions = new MutableString(stringReadSequence);
 
-        SAMToCompactMode.produceReferenceSequence(CIGAR, mdAttribute, readSequence, referenceSequence);
+        SAMToCompactMode.produceReferenceSequence(CIGAR, mdAttribute, readSequence, readPostInsertions, referenceSequence);
 
 
     }

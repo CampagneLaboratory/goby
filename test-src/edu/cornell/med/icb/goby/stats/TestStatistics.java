@@ -460,12 +460,12 @@ public class TestStatistics {
 
             final boolean test1 = info.statistics.getDouble(index1) > significanceThreshold;
             if (!test1) {
-                System.out.println("info:" + info);
+             //   System.out.println("info:" + info);
                 numRejectedHypothesesTest1++;
             }
             final boolean test2 = info.statistics.getDouble(index2) > significanceThreshold;
             if (!test2) {
-                System.out.println("info:" + info);
+               // System.out.println("info:" + info);
                 numRejectedHypothesesTest2++;
             }
 

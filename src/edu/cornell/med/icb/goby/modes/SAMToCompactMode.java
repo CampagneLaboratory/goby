@@ -121,7 +121,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
         progress.start();
         MutableString readSequence = new MutableString();
+        // shared buffer for extract sequence variation work. We allocate here to avoid repetitive memory allocations.
         MutableString referenceSequence = new MutableString();
+        // shared buffer for extract sequence variation work. We allocate here to avoid repetitive memory allocations.
+        MutableString readPostInsertions = new MutableString();
 
         while (recordCloseableIterator.hasNext()) {
             final SAMRecord samRecord = recordCloseableIterator.next();
@@ -223,14 +226,15 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             String sequence = samRecord.getReadString();
             readSequence.setLength(0);
             readSequence.append(sequence);
-            extractSequenceVariations(cigar, attributeMD, readSequence,
+
+            extractSequenceVariations(cigar, attributeMD, readSequence, readPostInsertions,
                     referenceSequence, currentEntry);
             final Alignments.AlignmentEntry alignmentEntry = currentEntry.build();
 
             final Object xoString = samRecord.getAttribute("X0");
-           
-            final int numTotalHits = skipMissingMdAttribute && xoString==null?
-                    1: (Integer) xoString;
+
+            final int numTotalHits = skipMissingMdAttribute && xoString == null ?
+                    1 : (Integer) xoString;
 
             if (qualityFilter.keepEntry(depth, alignmentEntry)) {
                 // only write the entry if it is not ambiguous. i.e. less than or equal to mParameter
@@ -281,6 +285,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     }
 
     private void extractSequenceVariations(String cigar, String attributeMD, MutableString readSequence,
+                                           MutableString readPostInsertions,
                                            MutableString referenceSequence, Alignments.AlignmentEntry.Builder currentEntry) {
         /* From the SAM specification document, see http://samtools.sourceforge.net/SAM1.pdf
          MD Z String for mismatching positions in the format of [0-9]+(([ACGTN]|\^[ACGTN]+)[0-9]+)* 2,3
@@ -295,7 +300,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             return;
         }
 
-        produceReferenceSequence(cigar, attributeMD, readSequence, referenceSequence);
+        produceReferenceSequence(cigar, attributeMD, readSequence, readPostInsertions,
+                referenceSequence);
 
         int alignmentLength = readSequence.length();
         LastToCompactMode.extractSequenceVariations(currentEntry,
@@ -312,32 +318,20 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
      * @param readSequence      The sequence of the read.
      * @param referenceSequence The sequence of the reference that will be reconstructed.
      */
-    public static void produceReferenceSequence(String CIGAR, String mdAttribute, MutableString readSequence, MutableString referenceSequence) {
+    public static void produceReferenceSequence(String CIGAR, String mdAttribute, MutableString readSequence, MutableString readPostInsertions,
+                                                MutableString referenceSequence) {
         Pattern matchPattern = attributeMD_pattern;
         referenceSequence.setLength(0);
-        Matcher matchMatcher = matchPattern.matcher(mdAttribute);
+        readPostInsertions.setLength(0);
         int end = 0;
         int positionInReadSequence = 0;
+        int[] positionAdjustment = new int[readSequence.length()];
 
-        if (CIGAR.indexOf('I') != -1) {
-            // read has an insertion compared to the reference.
-            int matchNumber = -1;
-            try {
-                matchNumber = Integer.parseInt(mdAttribute);
-            } catch (NumberFormatException e) {
-                // Not clear how often this case could occur. It is not supported at the moment. Consider implementing if
-                // we can figure out how to merge CIGAR and mdAttribute in this case.
-                LOG.warn(
-                        String.format("When a CIGAR string contains an insertion (i.e., %s), the mdAttribute (%s) must " +
-                                "indicate only matches for the rest of the sequence. " +
-                                "Other cases are not supported at this time. " +
-                                "These side cases will be ignored in the input.", CIGAR, mdAttribute));
-                return;
-            }
-            processInsertionsOnly(CIGAR, mdAttribute, readSequence, referenceSequence);
-            return;
-        }
-        int readLength = readSequence.length();
+        processInsertionsOnly(CIGAR, mdAttribute, readSequence, readPostInsertions, positionAdjustment);
+
+        Matcher matchMatcher = matchPattern.matcher(mdAttribute);
+
+        int currentAdjustment = 0;
         while (matchMatcher.find(end)) {
 
             String matchChars = matchMatcher.group(1);
@@ -345,13 +339,19 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             if (matchChars != null) {
                 int matchLength = Integer.parseInt(matchChars);
 
-                /*          System.out.println(String.format("subsequence(%d,%d),",
-                                positionInReadSequence,
-                                positionInReadSequence + matchLength));
+                /*    System.out.println(String.format("subsequence(%d,%d),",
+                          positionInReadSequence,
+                          positionInReadSequence + matchLength));
                 */
-                final CharSequence matchingSequence = readSequence.subSequence(positionInReadSequence,
-                        positionInReadSequence + matchLength);
-                //          System.out.println("match " + matchChars + " appending " + matchingSequence);
+                // calculate by the read index position adjustment, given the number of insertions seen so far. 
+                int regionAdjustment = currentAdjustment;
+                for (int i = positionInReadSequence; i < matchLength; i++) {
+                    regionAdjustment += positionAdjustment[i];
+                }
+                final CharSequence matchingSequence = readPostInsertions.subSequence(positionInReadSequence,
+                        positionInReadSequence + matchLength + regionAdjustment);
+
+                //  System.out.println("match " + matchChars + " appending " + matchingSequence);
                 referenceSequence.append(matchingSequence);
                 positionInReadSequence += matchLength;
             }
@@ -364,7 +364,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     referenceSequence.append(toAppend);
                     //    System.out.println("var " + variationChars + " appending " + toAppend);
                     //    positionInReadSequence += mutationLength;
-                    for (int i = 0; i < mutationLength; ++i) readSequence.insert(positionInReadSequence, '-');
+                    for (int i = 0; i < mutationLength; ++i) readPostInsertions.insert(positionInReadSequence, '-');
                     positionInReadSequence += mutationLength;
                 } else {
                     // base mutations:
@@ -388,7 +388,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         }
     }
 
-    private static void processInsertionsOnly(String cigar, String mdAttribute, MutableString readSequence, MutableString referenceSequence) {
+    private static void processInsertionsOnly(String cigar, String mdAttribute, MutableString readSequence, MutableString transformedSequence, int[] positionAdjustment) {
         Pattern matchPattern = attributeCIGAR_insertions_pattern;
         Matcher matchMatcher = matchPattern.matcher(cigar);
         int end = 0;
@@ -407,28 +407,30 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     final CharSequence matchingSequence = readSequence.subSequence(positionInReadSequence,
                             positionInReadSequence + matchLength);
                     //     System.out.println("match appending " + matchingSequence);
-                    referenceSequence.append(matchingSequence);
+                    transformedSequence.append(matchingSequence);
+
                     positionInReadSequence += matchLength;
                     break;
 
                 case 'I':
                     // The read has an insertion relative to the reference. Delete these bases when reconstituting the reference:
+                    for (int i = 0; i < matchLength; i++) {
+                        positionAdjustment[positionInReadSequence + i] = +1;
+                    }
                     positionInReadSequence += matchLength;
-                    for (int i = 0; i < matchLength; ++i) referenceSequence.append('-');
+                    for (int i = 0; i < matchLength; ++i) transformedSequence.append('-');
                     break;
                 case 'D':
-                    // the reference had extra bases. We don't have access to these bases in this case, unless we parse
-                    // the mdAttribute string and can migle CIGAR with it.
-                    LOG.error("Deletion are not support in CIGAR string together with insertions");
-                    referenceSequence.setLength(0);
-                    referenceSequence.append(readSequence);
-                    // return the read sequence, no variations will be recorded.
-                    return;
+                    // the reference had extra bases. 
+                    for (int i = 0; i < matchLength; i++) {
+                        positionAdjustment[positionInReadSequence + i] = -1;
+                    }
+                    break;
                 case 'P':
                     // TODO implement this case.
                     throw new UnsupportedOperationException("Padding characters are currently not supported in CIGAR strings with insertions. TODO: implement.");
             }
-            //       System.out.println("current ref: " + referenceSequence);
+            //       System.out.println("current ref: " + transformedSequence);
             end = matchMatcher.end();
 
         }
