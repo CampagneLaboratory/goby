@@ -13,7 +13,49 @@
     <macrodef name="fasta-to-compact" description="Convert a FASTA/FASTQ file to compact format">
         <attribute name="input" description="The file to convert"/>
         <attribute name="output" default="" description="The file to write to"/>
+        <attribute name="include-descriptions" default="false"/>
+        <attribute name="include-identifiers" default="false"/>
+        <attribute name="exclude-sequences" default="false"/>
+        <attribute name="sequence-per-chunk" default="10000"/>
+        <!-- TODO: Quality options -->
+
         <sequential>
+            <if>
+                <istrue value="@{include-descriptions}"/>
+                <then>
+                    <var name="include-descriptions-arg" value="--include-descriptions"/>
+                </then>
+                <else>
+                    <var name="include-descriptions-arg" value=""/>
+                </else>
+            </if>
+            <if>
+                <istrue value="@{include-identifiers}"/>
+                <then>
+                    <var name="include-identifiers-arg" value="--include-identifiers"/>
+                </then>
+                <else>
+                    <var name="include-identifiers-arg" value=""/>
+                </else>
+            </if>
+            <if>
+                <istrue value="@{exclude-sequences}"/>
+                <then>
+                    <var name="exclude-sequences-arg" value="--exclude-sequences"/>
+                </then>
+                <else>
+                    <var name="exclude-sequences-arg" value=""/>
+                </else>
+            </if>
+            <if>
+                <length string="@{output}" length="0" when="greater"/>
+                <then>
+                    <var name="output-arg" value="--output"/>
+                </then>
+                <else>
+                    <var name="output-arg" value=""/>
+                </else>
+            </if>
             <java jar="${goby-jarfile}" fork="true" failonerror="true"
                   maxmemory="${max.memory}" timeout="${timeout}">
                 <assertions enablesystemassertions="true"/>
@@ -21,7 +63,13 @@
                 <sysproperty key="log4j.configuration" value="${log4j.config.url}"/>
                 <arg value="--mode"/>
                 <arg value="fasta-to-compact"/>
-                <arg value="--include-identifiers"/>
+                <arg value="${include-descriptions-arg}"/>
+                <arg value="${include-identifiers-arg}"/>
+                <arg value="${exclude-sequences-arg}"/>
+                <arg value="--sequence-per-chunk"/>
+                <arg value="@{sequence-per-chunk}"/>
+                <arg value="${output-arg}"/>
+                <arg value="@{output}"/>
                 <arg value="@{input}"/>
             </java>
         </sequential>
@@ -29,7 +77,7 @@
 
     <target name="nightly" depends="clean, jar">
         <fasta-to-compact input="data/reads/goby-mouse-reads-sample.fasta.gz"/>
-        <fasta-to-compact input="data/reference/mm9/chr1.fa.gz"/>
+        <fasta-to-compact input="data/reference/mm9/chr1.fa.gz" include-identifiers="true"/>
 
         <java jar="${goby-jarfile}" fork="true" failonerror="true"
               maxmemory="${max.memory}" timeout="${timeout}">

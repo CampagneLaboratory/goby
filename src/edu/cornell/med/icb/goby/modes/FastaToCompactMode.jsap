@@ -60,7 +60,6 @@
         </flaggedOption>
          <flaggedOption>
             <id>quality-encoding</id>
-
             <longFlag>quality-encoding</longFlag>
             <required>false</required>
               <defaults>

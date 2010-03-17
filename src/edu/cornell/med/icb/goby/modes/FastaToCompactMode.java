@@ -25,9 +25,11 @@ import edu.cornell.med.icb.goby.readers.FastXReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import it.unimi.dsi.lang.MutableString;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -39,11 +41,6 @@ import java.io.IOException;
  *         Time: 6:03:56 PM
  */
 public class FastaToCompactMode extends AbstractGobyMode {
-    private String[] inputFilenames;
-    private boolean pushDescription;
-    private boolean pushIdentifier;
-    private String outputFile;
-
     /**
      * The mode name.
      */
@@ -56,14 +53,43 @@ public class FastaToCompactMode extends AbstractGobyMode {
             + "Goby \"compact-reads\" file format.";
 
     /**
+     * The files to convert to compact reads.
+     */
+    private String[] inputFilenames;
+
+    /**
+     * The output file or basename of the output files if there is more than one input file.
+     */
+    private String outputFile;
+
+    /**
+     * Include descriptions in the compact output.
+     */
+    private boolean includeDescriptions;
+
+    /**
+     * Include identifiers in the compact output.
+     */
+    private boolean includeIdentifiers;
+
+    /**
      * The number of sequences that will be written in each compressed chunk. Th default is
      * suitable for very many short sequences but should be reduced to a few sequences per
      * chunk if each sequence is very large.
      */
     private int sequencePerChunk = 10000;
+
+    /**
+     * Exclude sequence data from the compact output.
+     */
     private boolean excludeSequences;
+
+    /**
+     * Exclude quality scores from the compact output.
+     */
     private boolean excludeQuality;
     private boolean verboseQualityScores;
+    private byte[] qualityScoreBuffer;
 
     // see http://en.wikipedia.org/wiki/FASTQ_format for a description of these various encodings
     /*
@@ -86,7 +112,6 @@ public class FastaToCompactMode extends AbstractGobyMode {
     public enum QualityEncoding {
         SANGER, ILLUMINA, SOLEXA
     }
-
 
     private QualityEncoding qualityEncoding;
 
@@ -122,8 +147,8 @@ public class FastaToCompactMode extends AbstractGobyMode {
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
         inputFilenames = jsapResult.getStringArray("input");
-        pushDescription = jsapResult.getBoolean("include-descriptions");
-        pushIdentifier = jsapResult.getBoolean("include-identifiers");
+        includeDescriptions = jsapResult.getBoolean("include-descriptions");
+        includeIdentifiers = jsapResult.getBoolean("include-identifiers");
         excludeSequences = jsapResult.getBoolean("exclude-sequences");
         excludeQuality = jsapResult.getBoolean("exclude-quality");
         verboseQualityScores = jsapResult.getBoolean("verbose-quality-scores");
@@ -149,16 +174,23 @@ public class FastaToCompactMode extends AbstractGobyMode {
             } else {
                 outputFilename = stripFastxExtensions(inputFilename) + ".compact-reads";
             }
+
             System.out.printf("Converting [%d/%d] %s to %s%n",
                     ++numProcessed, numToProcess, inputFilename, outputFilename);
+
+            // Create directory for output file if it doesn't already exist
+            final String outputPath = FilenameUtils.getFullPath(outputFilename);
+            if (StringUtils.isNotBlank(outputPath)) {
+                FileUtils.forceMkdir(new File(outputPath));
+            }
 
             final ReadsWriter writer = new ReadsWriter(new FileOutputStream(outputFilename));
             writer.setNumEntriesPerChunk(sequencePerChunk);
             for (final FastXEntry entry : new FastXReader(inputFilename)) {
-                if (pushDescription) {
+                if (includeDescriptions) {
                     writer.setDescription(entry.getEntryHeader());
                 }
-                if (pushIdentifier) {
+                if (includeIdentifiers) {
                     final MutableString description = entry.getEntryHeader();
                     final String identifier = description.toString().split("[\\s]")[0];
                     writer.setIdentifier(identifier);
@@ -179,10 +211,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
         }
     }
 
-    byte[] qualityScoreBuffer = null;
-
-
-    private byte[] convertQualityScores(MutableString quality) {
+    private byte[] convertQualityScores(final MutableString quality) {
         final int size = quality.length();
         if (qualityScoreBuffer == null || size != qualityScoreBuffer.length) {
             qualityScoreBuffer = new byte[size];
@@ -190,6 +219,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
         if (verboseQualityScores) {
             System.out.println(quality);
         }
+
         switch (qualityEncoding) {
             case SANGER:
                 for (int position = 0; position < size; position++) {
@@ -227,13 +257,17 @@ public class FastaToCompactMode extends AbstractGobyMode {
                break;
                } */
 
+            default:
+               throw new UnsupportedOperationException("Unknown encoding: " + qualityEncoding);
         }
+
         return qualityScoreBuffer;
     }
 
     private void checkRange(final byte qualityDecoded) {
         if (!(qualityDecoded >= 0 && qualityDecoded <= 40)) {
-            System.err.println(" Phred quality scores must be within 0 and 40. The value decoded was " + qualityDecoded + " You may have selected an incorrect encoding.");
+            System.err.println("Phred quality scores must be within 0 and 40. The value decoded "
+                    + "was " + qualityDecoded + " You may have selected an incorrect encoding.");
             System.exit(10);
         }
     }
@@ -242,8 +276,9 @@ public class FastaToCompactMode extends AbstractGobyMode {
      * Get the filename including path WITHOUT fastx extensions (including .gz if it is there).
      *
      * @param name the full path to the file in question
-     * @return the filename without the fastx/gz extensions or the same name of those extensions
-     *         weren't found.
+     * @return the full path to file without the fastx/gz extensions or the same name if
+     * those extensions weren't found.
+     * @see edu.cornell.med.icb.goby.util.FileExtensionHelper#FASTX_FILE_EXTS
      */
     private static String stripFastxExtensions(final String name) {
         final String filename = FilenameUtils.getName(name);
