@@ -68,7 +68,7 @@ public class AlignMode extends AbstractGobyMode {
     /**
      * Supported native aligner types.
      */
-    public enum AlignerTypes {
+    public enum AlignerTypes {  // TODO - move to aligner package and make factory class
         /**
          * Burrows-Wheeler Aligner (BWA).
          *
