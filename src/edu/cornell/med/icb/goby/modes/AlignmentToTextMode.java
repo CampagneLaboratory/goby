@@ -25,8 +25,8 @@ import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import org.apache.commons.io.IOUtils;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -47,14 +47,13 @@ public class AlignmentToTextMode extends AbstractGobyMode {
     private static final String MODE_DESCRIPTION = "Converts a compact alignment to plain text.";
 
     /**
-     * The input file.
-     */
-    private String inputFile;
-
-    /**
      * The output file.
      */
     private String outputFile;
+
+    /**
+     * The basename of the compact alignment.
+     */
     private String basename;
 
     @Override
@@ -72,15 +71,15 @@ public class AlignmentToTextMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws java.io.IOException error parsing
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
+     * @throws IOException error parsing
+     * @throws JSAPException error parsing
      */
     @Override
-    public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
+    public AbstractCommandLineMode configure(final String[] args)
+            throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
-        inputFile = jsapResult.getString("input");
+        final String inputFile = jsapResult.getString("input");
         basename = AlignmentReader.getBasename(inputFile);
         outputFile = jsapResult.getString("output");
         return this;
@@ -93,68 +92,69 @@ public class AlignmentToTextMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        final AlignmentReader reader = new AlignmentReader(basename);
-        reader.readHeader();
-        final int numberOfReferences = reader.getNumberOfTargets();
+        AlignmentReader reader = null;
+        PrintWriter writer = null;
+        try {
+            reader = new AlignmentReader(basename);
+            reader.readHeader();
+            final int numberOfReferences = reader.getNumberOfTargets();
+            final DoubleIndexedIdentifier referenceIds =
+                    new DoubleIndexedIdentifier(reader.getTargetIdentifiers());
+            final int[] referenceLengths = reader.getTargetLength();
+            System.out.println("Alignment contains " + numberOfReferences + " reference sequences");
 
-        final DoubleIndexedIdentifier referenceIds = new DoubleIndexedIdentifier(reader.getTargetIdentifiers());
-        reader.close();
-        System.out.println(String.format("Alignment contains %d reference sequences", numberOfReferences));
+            // create count writers, one for each reference sequence in the alignment:
+            final IntSet referencesToProcess = new IntOpenHashSet();
+            for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
+                referencesToProcess.add(referenceIndex);
+            }
 
-        //  CountsWriter writers[] = new CountsWriter[numberOfReferences];
-        final IntSet referencesToProcess = new IntOpenHashSet();
+            // read the alignment:
+            System.out.println("Converting the alignment..");
 
-        // create count writers, one for each reference sequence in the alignment:
-        for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
-            referencesToProcess.add(referenceIndex);
-        }
+            writer = outputFile == null ? new PrintWriter(System.out) : new PrintWriter(outputFile);
 
-        final AlignmentReader referenceReader = new AlignmentReader(inputFile);
-        referenceReader.readHeader();
+            final boolean hasReadIds = reader.getQueryIdentifiers().size() > 0;
+            final DoubleIndexedIdentifier readIds =
+                    new DoubleIndexedIdentifier(reader.getQueryIdentifiers());
 
-        final PrintWriter writer = outputFile == null ? new PrintWriter(System.out) :
-                new PrintWriter(new FileWriter(outputFile));
+            for (final Alignments.AlignmentEntry alignmentEntry : reader) {
+                final int referenceIndex = alignmentEntry.getTargetIndex();
+                final String referenceName = referenceIds.getId(referenceIndex).toString();
 
-        // read the alignment:
-        System.out.println("Converting the alignment..");
-        boolean hasReadIds = referenceReader.getQueryIdentifiers().size() > 0;
-        DoubleIndexedIdentifier readIds = new DoubleIndexedIdentifier(referenceReader.getQueryIdentifiers());
+                if (referencesToProcess.contains(referenceIndex)) {
+                    final int startPosition = alignmentEntry.getPosition();
+                    final int alignmentLength = alignmentEntry.getQueryAlignedLength();
+                    for (int i = 0; i < alignmentEntry.getMultiplicity(); ++i) {
+                        final int queryIndex = alignmentEntry.getQueryIndex();
 
-        for (final Alignments.AlignmentEntry alignmentEntry : referenceReader) {
-            final int referenceIndex = alignmentEntry.getTargetIndex();
-            final String referenceName = referenceIds.getId(referenceIndex).toString();
-
-            if (referencesToProcess.contains(referenceIndex)) {
-                final int startPosition = alignmentEntry.getPosition();
-                final int alignmentLength = alignmentEntry.getQueryAlignedLength();
-                for (int i = 0; i < alignmentEntry.getMultiplicity(); ++i) {
-//                    System.out.println(startPosition+"   "+ startPosition + alignmentLength+
-//                            alignmentEntry.getMatchingReverseStrand());
-                    final int queryIndex = alignmentEntry.getQueryIndex();
-
-                    writer.write(String.format("%s\t%s\t%d\t%d\t%g\t%d\t%d\t%b%n",
-                            hasReadIds ? readIds.getId(queryIndex) : Integer.toString(queryIndex),
-                            referenceName,
-                            alignmentEntry.getNumberOfIndels(),
-                            alignmentEntry.getNumberOfMismatches(),
-                            alignmentEntry.getScore(),
-                            startPosition,
-                            alignmentLength,
-                            alignmentEntry.getMatchingReverseStrand()));
+                        // TODO - reference length?
+                        writer.write(String.format("%s\t%s\t%d\t%d\t%g\t%d\t%d\t%b%n",
+                                hasReadIds ? readIds.getId(queryIndex) : queryIndex,
+                                referenceName,
+                                alignmentEntry.getNumberOfIndels(),
+                                alignmentEntry.getNumberOfMismatches(),
+                                alignmentEntry.getScore(),
+                                startPosition,
+                                alignmentLength,
+                                alignmentEntry.getMatchingReverseStrand()));
+                    }
                 }
             }
+        } finally {
+            IOUtils.closeQuietly(writer);
+            if (reader != null) {
+                reader.close();
+            }
         }
-        writer.close();
-        reader.close();
     }
 
     /**
      * Main method.
      *
      * @param args command line args.
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
-     * @throws java.io.IOException error parsing or executing.
+     * @throws JSAPException error parsing
+     * @throws IOException error parsing or executing.
      */
     public static void main(final String[] args) throws JSAPException, IOException {
         new AlignmentToTextMode().configure(args).execute();
