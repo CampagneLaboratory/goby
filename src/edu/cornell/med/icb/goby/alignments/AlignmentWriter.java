@@ -50,7 +50,15 @@ public class AlignmentWriter implements Closeable {
     private IndexedIdentifier targetIdentifiers;
     private boolean headerWritten;
     private final GZIPOutputStream headerOutput;
+
+    /**
+     * Length of each query sequence.
+     */
     private int[] queryLengths;
+    /**
+     * Length of each target sequence.
+     */
+    private int[] targetLengths;
 
     private String[] queryIdentifiersArray;
     private String[] targetIdentifiersArray;
@@ -184,6 +192,9 @@ public class AlignmentWriter implements Closeable {
             if (queryLengths != null) {
                 headerBuilder.addAllQueryLength(IntArrayList.wrap(queryLengths));
             }
+            if (targetLengths != null) {
+                headerBuilder.addAllTargetLength(IntArrayList.wrap(targetLengths));
+            }
 
             headerBuilder.build().writeTo(headerOutput);
             headerWritten = true;
@@ -202,9 +213,10 @@ public class AlignmentWriter implements Closeable {
     }
 
     /**
-     * Provide query identifiers as an array of string, where queryIndex is the index of the element in the array.
+     * Provide query identifiers as an array of strings, where queryIndex is the index of the
+     * element in the array.
      *
-     * @param queryIdentifiersArray
+     * @param queryIdentifiersArray Array of query identfiers
      */
     public void setQueryIdentifiersArray(final String[] queryIdentifiersArray) {
         this.queryIdentifiersArray = queryIdentifiersArray;
@@ -212,15 +224,18 @@ public class AlignmentWriter implements Closeable {
     }
 
     /**
-     * Provide target identifiers as an array of string, where targetIndex is the index of the element in the array.
+     * Provide target identifiers as an array of string, where targetIndex is the index of the
+     * element in the array.
      *
-     * @param targetIdentifiersArray
+     * @param targetIdentifiersArray Array of target identfiers
      */
     public void setTargetIdentifiersArray(final String[] targetIdentifiersArray) {
         this.targetIdentifiersArray = targetIdentifiersArray;
+        maxTargetIndex = targetIdentifiersArray.length - 1;
     }
 
-    private Alignments.IdentifierMapping getMapping(final IndexedIdentifier identifiers, final String[] targetIdentifiersArray) {
+    private Alignments.IdentifierMapping getMapping(final IndexedIdentifier identifiers,
+                                                    final String[] targetIdentifiersArray) {
         final Alignments.IdentifierMapping.Builder result = Alignments.IdentifierMapping.newBuilder();
 
         final ObjectList<Alignments.IdentifierInfo> mappings =
@@ -264,20 +279,25 @@ public class AlignmentWriter implements Closeable {
         for (final int index : queryIdentifiers.values()) {
             maxQueryIndex = Math.max(maxQueryIndex, index);
         }
-
     }
 
     public void setTargetIdentifiers(final IndexedIdentifier targetIdentifiers) {
         this.targetIdentifiers = targetIdentifiers;
-
-
+        for (final int index : targetIdentifiers.values()) {
+            maxTargetIndex = Math.max(maxTargetIndex, index);
+        }
     }
 
     public void setQueryLengths(final int[] queryLengths) {
         assert queryLengths.length > maxQueryIndex :
                 "The number of elements of queryLength is too small to accomodate queryIndex=" + maxQueryIndex;
         this.queryLengths = queryLengths;
+    }
 
+    public void setTargetLengths(final int[] targetLengths) {
+        assert targetLengths.length > maxTargetIndex :
+                "The number of elements of targetLength is too small to accomodate targetIndex=" + maxTargetIndex;
+        this.targetLengths = targetLengths;
     }
 
     /**
