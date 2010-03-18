@@ -10,6 +10,8 @@
       <maximumStackSize value="32" />
       <properties />
       <executeOn event="beforeRun" target="compile" />
+      <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="AlignMode" />
+      <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="AlignmentToTextMode" />
       <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="CompactFileStatsMode" />
       <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="CompactToFastaMode" />
       <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="FastaToCompactMode" />
@@ -18,6 +20,7 @@
       <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="SplitTranscriptsMode" />
       <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestAligner.testAlignWithLast" />
       <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestFisherExact" />
+      <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestReadWriteAlignments.readWriteHeader103" />
       <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestReadsWriter" />
       <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestReadsWriter.testReadWriteSequences" />
       <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestStatistics" />
@@ -66,7 +69,7 @@
     <option name="configuration">
       <map>
         <entry key="active-configuration" value="FILE:C:\Documents and Settings\marko\My Documents\IdeaProjects\goby\testsupport\checkstyle\config\icb_checks.xml:ICB" />
-        <entry key="check-test-classes" value="false" />
+        <entry key="check-test-classes" value="true" />
         <entry key="location-0" value="CLASSPATH:/sun_checks.xml:The default CheckStyle rules." />
         <entry key="location-1" value="FILE:C:\Documents and Settings\marko\My Documents\IdeaProjects\goby\testsupport\checkstyle\config\icb_checks.xml:ICB" />
         <entry key="property-1.checkstyle.basedir" value="$PROJECT_DIR$/testsupport\checkstyle" />
@@ -738,6 +741,66 @@
         <option name="Make" value="false" />
       </method>
     </configuration>
+    <configuration default="false" name="AlignMode" type="Application" factoryName="Application" enabled="false" merge="false" sample_coverage="true" runner="emma">
+      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.AlignMode" />
+      <option name="VM_PARAMETERS" value="-Xmx4g -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties" />
+      <option name="PROGRAM_PARAMETERS" value="--mode align --aligner bwa --search --database-name chr1-index --reference data/reference/mm9/chr1.compact-reads --database-directory data/reference-index/mm9 --reads data/reads/goby-mouse-reads-sample.compact-reads --basename goby-sample " />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="goby" />
+      <envs />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="52450" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="JProfiler">
+        <option name="WINDOW" value="false" />
+        <option name="JVMPI" value="false" />
+        <option name="INTERPRETED" value="false" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method>
+        <option name="Run Ant target" value="true" />
+        <option name="Make" value="false" />
+      </method>
+    </configuration>
+    <configuration default="false" name="AlignmentToTextMode" type="Application" factoryName="Application" enabled="false" merge="false" sample_coverage="true" runner="emma">
+      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.AlignmentToTextMode" />
+      <option name="VM_PARAMETERS" value="-Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties" />
+      <option name="PROGRAM_PARAMETERS" value="--mode alignment-to-text q:/transcripts/alignments/Brain/GRCh37.57/Illumina/SEQC_Inhouse_ILM_Brain_PlusCounts_26JAN2009/illumina_s1/merged-results/s_1_sequence.entries" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="goby" />
+      <envs />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="3869" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="JProfiler">
+        <option name="WINDOW" value="false" />
+        <option name="JVMPI" value="false" />
+        <option name="INTERPRETED" value="false" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method>
+        <option name="Run Ant target" value="true" />
+        <option name="Make" value="false" />
+      </method>
+    </configuration>
     <configuration default="false" name="TestStatistics" type="JUnit" factoryName="JUnit" enabled="false" merge="false" sample_coverage="true" runner="emma">
       <pattern>
         <option name="PATTERN" value="edu.cornell.med.icb.goby.stats.*" />
@@ -931,6 +994,46 @@
         <option name="INTERPRETED" value="false" />
       </RunnerSettings>
       <ConfigurationWrapper RunnerId="Debug" />
+      <method>
+        <option name="Run Ant target" value="true" />
+        <option name="Make" value="false" />
+      </method>
+    </configuration>
+    <configuration default="false" name="TestReadWriteAlignments.readWriteHeader103" type="JUnit" factoryName="JUnit" enabled="false" merge="false" sample_coverage="true" runner="emma">
+      <pattern>
+        <option name="PATTERN" value="edu.cornell.med.icb.goby.alignments.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+      <module name="goby" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="PACKAGE_NAME" value="edu.cornell.med.icb.goby.alignments" />
+      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.alignments.TestReadWriteAlignments" />
+      <option name="METHOD_NAME" value="readWriteHeader103" />
+      <option name="TEST_OBJECT" value="method" />
+      <option name="VM_PARAMETERS" value="-ea" />
+      <option name="PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="ADDITIONAL_CLASS_PATH" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="moduleWithDependencies" />
+      </option>
+      <envs />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="57224" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="JProfiler">
+        <option name="WINDOW" value="false" />
+        <option name="JVMPI" value="false" />
+        <option name="INTERPRETED" value="false" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
       <method>
         <option name="Run Ant target" value="true" />
         <option name="Make" value="false" />

@@ -267,7 +267,9 @@
           <root url="jar://$MODULE_DIR$/lib/sam-1.16.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../../java/picard-src-1.16/src/java" />
+        </SOURCES>
       </library>
     </orderEntry>
   </component>

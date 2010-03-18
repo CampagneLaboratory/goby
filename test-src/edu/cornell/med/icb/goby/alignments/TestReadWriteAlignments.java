@@ -25,9 +25,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -40,6 +41,9 @@ import java.io.IOException;
  *         Time: 6:15:52 PM
  */
 public class TestReadWriteAlignments  {
+    /**
+     * Used to log debug and informational messages.
+     */
     private static final Log LOG = LogFactory.getLog(TestReadWriteAlignments.class);
     private static final String BASE_TEST_DIR = "test-results/alignments";
 
@@ -60,8 +64,9 @@ public class TestReadWriteAlignments  {
     }
 
     @Test
-    public void testReadWriteEntries() throws IOException {
-        final AlignmentWriter writer = new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-101"));
+    public void readWriteEntries101() throws IOException {
+        final AlignmentWriter writer =
+                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-101"));
         writer.setNumAlignmentEntriesPerChunk(1000);
         final int numReads = 2000;
         final int numTargets = 10;
@@ -79,7 +84,8 @@ public class TestReadWriteAlignments  {
         writer.printStats(System.out);
 
         int count = 0;
-        final AlignmentReader reader = new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, "align-101"));
+        final AlignmentReader reader =
+                new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, "align-101"));
         int maxQueryIndex = -1;
         int maxTargetIndex = -1;
         while (reader.hasNext()) {
@@ -95,62 +101,84 @@ public class TestReadWriteAlignments  {
     }
 
     @Test
-    public void testReadWriteHeader() throws IOException {
-        AlignmentWriter writer = new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-102"));
+    public void writeEmptyIds() throws IOException {
+        final AlignmentWriter writer =
+                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-emptyids"));
         final IndexedIdentifier queryIds = new IndexedIdentifier();
         assertNotNull(queryIds.keySet());
         writer.setQueryIdentifiers(queryIds);
         writer.setTargetIdentifiers(queryIds);
         writer.close();
 
-        writer = new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-102"));
-        final IndexedIdentifier queryIds2 = new IndexedIdentifier();
-        final IndexedIdentifier targetIds2 = new IndexedIdentifier();
+        // TODO: assert something here
+    }
 
-        queryIds2.put(new MutableString("query:1"), 1);
-        queryIds2.put(new MutableString("query:2"), 2);
+    @Test
+    public void readWriteHeader102() throws IOException {
+        final IndexedIdentifier queryIds = new IndexedIdentifier();
+        queryIds.put(new MutableString("query:1"), 1);
+        queryIds.put(new MutableString("query:2"), 2);
 
-        targetIds2.put(new MutableString("target:1"), 1);
+        final IndexedIdentifier targetIds = new IndexedIdentifier();
+        targetIds.put(new MutableString("target:1"), 1);
+
+        final AlignmentWriter writer =
+                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-102"));
 
         assertNotNull(queryIds.keySet());
-        writer.setQueryIdentifiers(queryIds2);
-        writer.setTargetIdentifiers(targetIds2);
+        writer.setQueryIdentifiers(queryIds);
+        writer.setTargetIdentifiers(targetIds);
         writer.close();
 
-
-        AlignmentReader reader = new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, "align-102"));
+        final AlignmentReader reader =
+                new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, "align-102"));
         reader.readHeader();
         assertEquals(1, reader.getQueryIdentifiers().getInt(new MutableString("query:1")));
         assertEquals(-1, reader.getTargetIdentifiers().getInt(new MutableString("query:1")));
         assertEquals(1, reader.getTargetIdentifiers().getInt(new MutableString("target:1")));
         assertEquals(-1, reader.getTargetIdentifiers().getInt(new MutableString("target:2")));
+    }
 
-        writer = new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-103"));
+    @Test
+    public void readWriteHeader103() throws IOException {
+        final IndexedIdentifier queryIds = new IndexedIdentifier();
+        // NOTE: there is no id for entry 0, this is ok
+        queryIds.put(new MutableString("query:1"), 1);
+        queryIds.put(new MutableString("query:2"), 2);
 
-        assertNotNull(queryIds.keySet());
-        writer.setQueryIdentifiers(queryIds2);
-        writer.setTargetIdentifiers(targetIds2);
-        writer.setQueryLengths(new int[]{0, 34, 84});
+        final IndexedIdentifier targetIds = new IndexedIdentifier();
+        targetIds.put(new MutableString("target:0"), 0);
+        targetIds.put(new MutableString("target:1"), 1);
+
+        final AlignmentWriter writer =
+                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-103"));
+
+        assertNotNull("Query ids should not be null", queryIds.keySet());
+        writer.setQueryIdentifiers(queryIds);
+        final int[] queryLengths = {0, 34, 84};
+        writer.setQueryLengths(queryLengths);
+
+        assertNotNull("Target ids should not be null", targetIds.keySet());
+        writer.setTargetIdentifiers(targetIds);
+        final int[] targetLengths = {0, 42};
+        writer.setTargetLengths(targetLengths);
         writer.close();
-        reader = new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, "align-103"));
+
+        final AlignmentReader reader =
+                new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, "align-103"));
         reader.readHeader();
-        final int[] lengths = reader.getQueryLength();
-        assertEquals("at least three lengths must be available, since we entered a queryIndex=2",
-                3, lengths.length);
-        assertEquals(34, lengths[1]);
-        assertEquals(84, lengths[2]);
+        assertArrayEquals("Query lengths do not match", queryLengths, reader.getQueryLength());
+        assertEquals("Number of queries do not match", 3, reader.getNumberOfQueries());
 
-        writer = new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-103"));
+        assertArrayEquals("Target lengths do not match", targetLengths, reader.getTargetLength());
+        assertEquals("Number of targets do not match", 2, reader.getNumberOfTargets());
 
-        assertNotNull(queryIds.keySet());
-        writer.setQueryIdentifiers(queryIds2);
-        writer.setTargetIdentifiers(targetIds2);
         try {
             writer.setQueryLengths(new int[]{34, 84});
         } catch (AssertionError e) {  // TODO - change to a real exception -
             // success, not enough elements in length array to account for queryIndex=2
             return;
         }
-        assertFalse("the length array is too short. This case must be detected.", true);
+        fail("the length array is too short. This case must be detected.");
     }
 }
