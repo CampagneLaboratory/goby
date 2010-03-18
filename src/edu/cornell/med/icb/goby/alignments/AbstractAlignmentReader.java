@@ -25,17 +25,50 @@ import java.io.IOException;
 import java.util.Iterator;
 
 /**
+ * Abstract class for reading Goby compact alignments.
  * @author Fabien Campagne
  *         Date: May 20, 2009
  *         Time: 6:23:26 PM
  */
 public abstract class AbstractAlignmentReader implements Closeable,
         Iterator<Alignments.AlignmentEntry>, Iterable<Alignments.AlignmentEntry> {
-    protected int numberOfQueries;
+    /**
+     * Mapping from query indicies to query identifier strings.  Note that it is
+     * not necessary for every query to have an associated identifer.
+     * @see #numberOfQueries
+     */
     protected IndexedIdentifier queryIdentifiers;
-    protected IndexedIdentifier targetIdentifiers;
-    protected int numberOfTargets;
+
+    /**
+     * The number of query sequences represented in this alignment.
+     */
+    protected int numberOfQueries;
+
+    /**
+     * Length of each query sequence.
+     */
     protected int[] queryLengths;
+
+    /**
+     * Mapping from target indicies to target identifier strings.  Note that it is
+     * not necessary for every target to have an associated identifer.
+     * @see #numberOfTargets
+     */
+    protected IndexedIdentifier targetIdentifiers;
+
+    /**
+     * The number of target sequences represented in this alignment.
+     */
+    protected int numberOfTargets;
+
+    /**
+     * Length of each target sequence.
+     */
+    protected int[] targetLengths;
+
+    /**
+     * Indicates that the alignment header has been processed.
+     */
     private boolean headerLoaded;
 
     public int getNumberOfQueries() {
@@ -92,5 +125,14 @@ public abstract class AbstractAlignmentReader implements Closeable,
     public final int[] getQueryLength() {
         assert isHeaderLoaded() : "Header must be loaded to access query lengths";
         return queryLengths;
+    }
+
+    /**
+     * Returns target lengths. An array of size the number of query sequences, where each element
+     * indicates the length of the query sequence.
+     */
+    public final int[] getTargetLength() {
+        assert isHeaderLoaded() : "Header must be loaded to access target lengths";
+        return targetLengths;
     }
 }

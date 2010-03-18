@@ -54,8 +54,12 @@ import java.util.zip.GZIPInputStream;
  *         Time: 6:36:04 PM
  */
 public class AlignmentReader extends AbstractAlignmentReader {
-    private InputStream headerStream;
+    /**
+     * Used to log debug and informational messages.
+     */
     private static final Log LOG = LogFactory.getLog(AlignmentReader.class);
+
+    private InputStream headerStream;
     private int numberOfAlignedReads;
     private final MessageChunksReader alignmentEntryReader;
     private Alignments.AlignmentCollection collection;
@@ -70,10 +74,9 @@ public class AlignmentReader extends AbstractAlignmentReader {
         try {
             headerStream = new GZIPInputStream(new FileInputStream(basename + ".header"));
         } catch (IOException e) {
-
             // try not compressed for compatibility with 1.4-:
             LOG.trace("falling back to legacy 1.4- uncompressed header.");
-           
+
             headerStream = new FileInputStream(basename + ".header");
         }
         stats = new Properties();
@@ -187,6 +190,9 @@ public class AlignmentReader extends AbstractAlignmentReader {
         if (header.getQueryLengthCount() > 0) {
             queryLengths = new IntArrayList(header.getQueryLengthList()).toIntArray();
         }
+        if (header.getTargetLengthCount() > 0) {
+            targetLengths = new IntArrayList(header.getTargetLengthList()).toIntArray();
+        }
         numberOfQueries = header.getNumberOfQueries();
         numberOfTargets = header.getNumberOfTargets();
         setHeaderLoaded(true);
@@ -214,7 +220,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
      * that if the filename does have the extension known to be a compact alignemt
      * the returned value is the original filename
      *
-     * @param filename The name of the file to get the basname for
+     * @param filename The name of the file to get the basename for
      * @return basename for the alignment file
      */
     public static String getBasename(final String filename) {
