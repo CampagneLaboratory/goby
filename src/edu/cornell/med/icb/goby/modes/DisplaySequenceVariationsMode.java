@@ -35,12 +35,6 @@ import org.apache.commons.io.FilenameUtils;
  *
  * @author Fabien Campagne
  */
-// TODO report the position of the variant relative to the start of the read. This is useful to
-// software that need to assess the signigicance of a variation, because sequencing errors occur
-// with different probabilities as sequencing progresses through a read.
-// We will need to store this position in the SequenceVariations data structure or calculate it
-// here, using read length if this is possible. Need to assess how the calculation should be done,
-// it can be tricky when considering combinations of insertions, deletions and mutations.
 public class DisplaySequenceVariationsMode extends AbstractGobyMode {
     /**
      * The mode name.
@@ -123,7 +117,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                 break;
             case TAB_DELIMITED:
             case TSV:
-                writer.println("basename target-id query-index position-on-reference var-from var-to");
+                writer.println("basename query-index target-id position-on-reference read-index var-from var-to");
                 break;
         }
 
@@ -181,9 +175,10 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                             // convert variation position to position on the reference:
                             final int positionOnReference = alignmentEntry.getPosition() + var.getPosition();
 
-                            outputWriter.print(String.format("%d:%s/%s,",
+                            outputWriter.print(String.format("%d:%d:%s/%s,",
 
                                     positionOnReference,
+                                    var.getReadIndex(),
                                     var.getFrom(),
                                     var.getTo()));
                         }
@@ -202,11 +197,13 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                         variations = true;
                         // convert variation position to position on the reference:
                         final int positionOnReference = alignmentEntry.getPosition() + var.getPosition();
-                        outputWriter.println(String.format("%s\t%s\t%d\t%d\t%s\t%s",
+                        final int readIndex=var.getReadIndex();
+                        outputWriter.println(String.format("%s\t%d\t%s\t%d\t%d\t%s\t%s",
                                 basename,
-                                getReferenceId(alignmentEntry.getTargetIndex()),
                                 alignmentEntry.getQueryIndex(),
+                                getReferenceId(alignmentEntry.getTargetIndex()),
                                 positionOnReference,
+                                readIndex,
                                 var.getFrom(),
                                 var.getTo()));
                     }

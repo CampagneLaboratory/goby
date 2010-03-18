@@ -217,7 +217,9 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     currentEntry.setScore(score);
                     currentEntry.setTargetAlignedLength(reference.alignedLength);
                     currentEntry.setTargetIndex(targetIndex);
-                    parseSequenceVariations(currentEntry, reference, query);
+                    int readStartPosition = query.alignedStart;
+                    int queryLength = query.sequenceLength;
+                    parseSequenceVariations(currentEntry, reference, query, readStartPosition, queryLength, reverseStrand);
                     final Alignments.AlignmentEntry alignmentEntry = currentEntry.build();
 
                     if (qualityFilter.keepEntry(depth, alignmentEntry)) {
@@ -298,9 +300,8 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                 if (object == null) {
 
                     LOG.warn("Input file contains a target id that is not defined in the target compact reads: " + targetIdentifier);
-                    targetIndex=targetIds.registerIdentifier(targetIdentifier);
-                }
-                else {
+                    targetIndex = targetIds.registerIdentifier(targetIdentifier);
+                } else {
                     targetIndex = object;
                 }
                 if (targetIndex == -1) {
@@ -314,12 +315,12 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
 
     private void parseSequenceVariations(final Alignments.AlignmentEntry.Builder currentEntry,
                                          AlignedSequence reference,
-                                         AlignedSequence query) {
+                                         AlignedSequence query, int readStartPosition, int queryLength, boolean reverseStrand) {
         final int alignmentLength = reference.alignment.length();
         final MutableString referenceSequence = reference.alignment;
         final MutableString querySequence = query.alignment;
 
-        extractSequenceVariations(currentEntry, alignmentLength, referenceSequence, querySequence);
+        extractSequenceVariations(currentEntry, alignmentLength, referenceSequence, querySequence, readStartPosition, queryLength, reverseStrand);
     }
 
     /**
@@ -330,10 +331,13 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
      * @param alignmentLength   length of the sequence alignment (common length of reference and read sequences)
      * @param referenceSequence The reference sequence
      * @param readSequence      The read sequence
+     * @param queryLength
      */
     public static void extractSequenceVariations(Alignments.AlignmentEntry.Builder currentEntry, int alignmentLength,
                                                  MutableString referenceSequence,
-                                                 MutableString readSequence) {
+                                                 MutableString readSequence,
+                                                 int readStartPosition,
+                                                 int queryLength, boolean reverseStrand) {
         //     System.out.printf("Extracting variations from %n%s%n%s%n",
         //             referenceSequence, readSequence);
 
@@ -342,7 +346,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
         int variationPosition = Integer.MAX_VALUE;
         int minLength = Math.min(referenceSequence.length(), readSequence.length());
         minLength = Math.min(alignmentLength, minLength);
-
+        
         for (int position = 0; position < minLength; ++position) {
 
             final char referenceBase = referenceSequence.charAt(position);
@@ -351,27 +355,32 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                 from.append(referenceBase);
                 to.append(queryBase);
                 variationPosition = Math.min(variationPosition, position);
+
             } else {
-                appendNewSequenceVariation(currentEntry, from, to, variationPosition);
+                appendNewSequenceVariation(currentEntry, from, to, variationPosition, readStartPosition, queryLength, reverseStrand);
                 variationPosition = Integer.MAX_VALUE;
                 from.setLength(0);
                 to.setLength(0);
             }
         }
-        appendNewSequenceVariation(currentEntry, from, to, variationPosition);
+        appendNewSequenceVariation(currentEntry, from, to, variationPosition, readStartPosition, queryLength, reverseStrand);
     }
 
     protected static void appendNewSequenceVariation
             (Alignments.AlignmentEntry.Builder currentEntry,
              MutableString from,
              MutableString to,
-             int variationPosition) {
+             int variationPosition,
+             int readStartPosition, int queryLength, boolean reverseStrand) {
         if (variationPosition != Integer.MAX_VALUE) {
             Alignments.SequenceVariation.Builder sequenceVariation =
                     Alignments.SequenceVariation.newBuilder();
             sequenceVariation.setFrom(from.toString());
             sequenceVariation.setTo(to.toString());
-            sequenceVariation.setPosition(variationPosition);
+            sequenceVariation.setPosition(variationPosition+1); // positions start at 1
+            // calculate the readIndex, taking strand and query length into consideration:
+            final int readIndex = (reverseStrand ? (queryLength - variationPosition) : variationPosition) + readStartPosition;
+            sequenceVariation.setReadIndex(readIndex+1);    // positions start at 1
             //        System.out.printf("Appending variation: %d %s/%s ", variationPosition, from, to);
             currentEntry.addSequenceVariations(sequenceVariation);
             // reset since they are used:

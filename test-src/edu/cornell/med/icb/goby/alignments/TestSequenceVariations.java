@@ -80,6 +80,50 @@ public class TestSequenceVariations {
                         alignmentEntry.getQueryIndex(),
                         alignmentEntry.getTargetIndex(),
                         var.toString()));
+                switch (alignmentEntry.getQueryIndex()) {
+                    case 7:
+                        //last finds this alignment. We test the case when the read does not match the reference at the beginning:
+                        assertEquals(19, var.getPosition());
+                        assertEquals(21, var.getReadIndex());
+                        assertEquals("A", var.getFrom());
+                        assertEquals("T", var.getTo());
+
+                        break;
+                    case 5:
+                        //last finds this alignment. We test the case when the read does not match the reference at the beginning:
+                        assertEquals(24, var.getPosition());
+                        assertEquals(24, var.getReadIndex());
+                        assertEquals("T", var.getFrom());
+                        assertEquals("-", var.getTo());
+
+                        break;
+
+                    case 1:
+                    case 4:
+                        //last finds this alignment. We test deletion of TCC from the reference.
+                        assertEquals(14, var.getPosition());
+                        assertEquals(14, var.getReadIndex());
+                        assertEquals("TCC", var.getFrom());
+                        assertEquals("---", var.getTo());
+                        break;
+                    case 3:
+                        //last finds this alignment. We test deletion of TCC from the reference.
+                        assertEquals(8, var.getPosition());
+                        assertEquals(9, var.getReadIndex());
+                        assertEquals("-", var.getFrom());
+                        assertEquals("C", var.getTo());
+
+                        break;
+                    case 0:
+                        //last finds this alignment. We test deletion of TCC from the reference.
+                        assertEquals(8, var.getPosition());
+                        assertEquals(8, var.getReadIndex());
+                        assertEquals("--", var.getFrom());
+                        assertEquals("CC", var.getTo());
+
+                        break;
+                }
+
             }
         }
     }
@@ -90,7 +134,7 @@ public class TestSequenceVariations {
         AlignmentReader reader = new AlignmentReader(bwaAlignmentFilename);
         while (reader.hasNext()) {
             Alignments.AlignmentEntry alignmentEntry = reader.next();
-            // TODO enable when BWA variation parsing has been implemented.
+
             assertTrue("alignment must have variation", alignmentEntry.getSequenceVariationsCount() > 0);
             for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
                 System.out.println(String.format("bwa entry score=%f referenceIndex=%d  queryIndex=%d variation: %s",
@@ -98,6 +142,42 @@ public class TestSequenceVariations {
                         alignmentEntry.getQueryIndex(),
                         alignmentEntry.getTargetIndex(),
                         var.toString()));
+                 switch (alignmentEntry.getQueryIndex()) {
+                
+                    case 5:
+                        //last finds this alignment. We test the case when the read does not match the reference at the beginning:
+                        assertEquals(24, var.getPosition());
+                        assertEquals(24, var.getReadIndex());
+                        assertEquals("T", var.getFrom());
+                        assertEquals("-", var.getTo());
+
+                        break;
+
+                    case 1:
+                    case 4:
+                        //last finds this alignment. We test deletion of TCC from the reference.
+                        assertEquals(14, var.getPosition());
+                        assertEquals(14, var.getReadIndex());
+                        assertEquals("TCC", var.getFrom());
+                        assertEquals("---", var.getTo());
+                        break;
+                    case 3:
+                        //last finds this alignment. We test deletion of TCC from the reference.
+                        assertEquals(8, var.getPosition());
+                        assertEquals(9, var.getReadIndex());
+                        assertEquals("-", var.getFrom());
+                        assertEquals("C", var.getTo());
+
+                        break;
+                    case 0:
+                        //last finds this alignment. We test deletion of TCC from the reference.
+                        assertEquals(8, var.getPosition());
+                        assertEquals(8, var.getReadIndex());
+                        assertEquals("--", var.getFrom());
+                        assertEquals("CC", var.getTo());
+
+                        break;
+                }
             }
         }
     }
@@ -160,11 +240,13 @@ public class TestSequenceVariations {
     }
 
     alignment[] alignments = new alignment[]{
+            
             new alignment("0_insertion",
                     //1234567891111111111222
                     //         0123456789012
                     "TTTAAAA--TAAAAAAAAAAAAAAACCCC",
                     "TTTAAAACCTAAAAAAAAAAAAAAACCCC"),
+            //  "TTTTAAAACTAAAAAAAAAAAAAAACCCC")
             new alignment("1_deletion",
                     //1234567891111111111222
                     //         0123456789012
@@ -180,23 +262,27 @@ public class TestSequenceVariations {
                     //1234567891111111111222
                     //         0123456789012
                     "NNNNNNNNNNNNNNNNNNNNNNNNNNNNN", // use Ns when the query already matches another reference.
-                    "TTTTAAAACTAAAAAAAAAAAAAAACCCC"),
+                    "TTTTAAAACTAAAAAAAAAAAAAAACCCC"),  // has a C inserted (compare to 0_insertion), at position 8 in the reference, and 9 in the read.
             new alignment("4_deletion",
                     //1234567891111111111222
                     //         0123456789012
                     "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN", // use Ns when the query already matches another reference.
                     "CCAAAAAAAAAAA---AAAAAAAAAACCCAAAAAAAAAA"),
             new alignment("5_deletion",
-                    //1234567891111111111222
-                    //         0123456789012
+                    //1234567891111111111222222
+                    //         0123456789012345
                     "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN", // use Ns when the query already matches another reference.
-                    "TTTCCCAAATTTCACATCACTAC-ACTACGGATACAGAACGGGG"),     // The reference has a T instead of the gap character.
-             new alignment("2_mutations-reversed",
+                    "TTTCCCAAATTTCACATCACTAC-ACTACGGATACAGAACGGGG"),     // The reference has a T instead of the gap character at position 24.
+            new alignment("2_mutations-reversed",
                     //1234567891111111111222
                     //         0123456789012
                     "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
                     "CCCCGTTCTGTATCCGTAGTAGTGGTGATGGGAAATGTGGGAAA"),    // reverse complement of sequence 2_mutations, used to check positions for reverse strand matches
-
+            new alignment("7_mutations_padding",
+                    //1234567891111111111222
+                    //         0123456789012
+                    "--CCTTCCTTCCTTCCTTCCACTATCATTTTAACTACTCATACTATCCCATATA",
+                    "AACCTTCCTTCCTTCCTTCCTCTATCATTTTAACTACTCATACTATCCCATATA"),
     };
 
 

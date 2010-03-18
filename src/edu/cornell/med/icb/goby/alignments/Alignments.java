@@ -1157,12 +1157,27 @@ public final class Alignments {
     public boolean hasPosition() { return hasPosition; }
     public int getPosition() { return position_; }
     
+    // required uint32 readIndex = 5;
+    public static final int READINDEX_FIELD_NUMBER = 5;
+    private boolean hasReadIndex;
+    private int readIndex_ = 0;
+    public boolean hasReadIndex() { return hasReadIndex; }
+    public int getReadIndex() { return readIndex_; }
+    
+    // optional bytes to_quality = 4;
+    public static final int TO_QUALITY_FIELD_NUMBER = 4;
+    private boolean hasToQuality;
+    private com.google.protobuf.ByteString toQuality_ = com.google.protobuf.ByteString.EMPTY;
+    public boolean hasToQuality() { return hasToQuality; }
+    public com.google.protobuf.ByteString getToQuality() { return toQuality_; }
+    
     private void initFields() {
     }
     public final boolean isInitialized() {
       if (!hasFrom) return false;
       if (!hasTo) return false;
       if (!hasPosition) return false;
+      if (!hasReadIndex) return false;
       return true;
     }
     
@@ -1177,6 +1192,12 @@ public final class Alignments {
       }
       if (hasPosition()) {
         output.writeUInt32(3, getPosition());
+      }
+      if (hasToQuality()) {
+        output.writeBytes(4, getToQuality());
+      }
+      if (hasReadIndex()) {
+        output.writeUInt32(5, getReadIndex());
       }
       getUnknownFields().writeTo(output);
     }
@@ -1198,6 +1219,14 @@ public final class Alignments {
       if (hasPosition()) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(3, getPosition());
+      }
+      if (hasToQuality()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(4, getToQuality());
+      }
+      if (hasReadIndex()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(5, getReadIndex());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1366,6 +1395,12 @@ public final class Alignments {
         if (other.hasPosition()) {
           setPosition(other.getPosition());
         }
+        if (other.hasReadIndex()) {
+          setReadIndex(other.getReadIndex());
+        }
+        if (other.hasToQuality()) {
+          setToQuality(other.getToQuality());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -1401,6 +1436,14 @@ public final class Alignments {
             }
             case 24: {
               setPosition(input.readUInt32());
+              break;
+            }
+            case 34: {
+              setToQuality(input.readBytes());
+              break;
+            }
+            case 40: {
+              setReadIndex(input.readUInt32());
               break;
             }
           }
@@ -1465,6 +1508,45 @@ public final class Alignments {
       public Builder clearPosition() {
         result.hasPosition = false;
         result.position_ = 0;
+        return this;
+      }
+      
+      // required uint32 readIndex = 5;
+      public boolean hasReadIndex() {
+        return result.hasReadIndex();
+      }
+      public int getReadIndex() {
+        return result.getReadIndex();
+      }
+      public Builder setReadIndex(int value) {
+        result.hasReadIndex = true;
+        result.readIndex_ = value;
+        return this;
+      }
+      public Builder clearReadIndex() {
+        result.hasReadIndex = false;
+        result.readIndex_ = 0;
+        return this;
+      }
+      
+      // optional bytes to_quality = 4;
+      public boolean hasToQuality() {
+        return result.hasToQuality();
+      }
+      public com.google.protobuf.ByteString getToQuality() {
+        return result.getToQuality();
+      }
+      public Builder setToQuality(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasToQuality = true;
+        result.toQuality_ = value;
+        return this;
+      }
+      public Builder clearToQuality() {
+        result.hasToQuality = false;
+        result.toQuality_ = getDefaultInstance().getToQuality();
         return this;
       }
       
@@ -3599,23 +3681,24 @@ public final class Alignments {
       "s\030\t \001(\r\022\034\n\024query_aligned_length\030\013 \001(\r\022\035\n",
       "\025target_aligned_length\030\014 \001(\r\0225\n\023sequence" +
       "_variations\030\r \003(\0132\030.reads.SequenceVariat" +
-      "ion\"?\n\021SequenceVariation\022\014\n\004from\030\002 \002(\t\022\n" +
-      "\n\002to\030\001 \002(\t\022\020\n\010position\030\003 \002(\r\"\202\002\n\017Alignme" +
-      "ntHeader\0224\n\022query_name_mapping\030\001 \001(\0132\030.r" +
-      "eads.IdentifierMapping\0225\n\023target_name_ma" +
-      "pping\030\002 \001(\0132\030.reads.IdentifierMapping\022\031\n" +
-      "\021number_of_queries\030\005 \001(\r\022\031\n\021number_of_ta" +
-      "rgets\030\006 \001(\r\022\037\n\027number_of_aligned_reads\030\007" +
-      " \001(\r\022\024\n\014query_length\030\003 \003(\r\022\025\n\rtarget_len",
-      "gth\030\010 \003(\r\"<\n\021IdentifierMapping\022\'\n\010mappin" +
-      "gs\030\001 \003(\0132\025.reads.IdentifierInfo\"-\n\016Ident" +
-      "ifierInfo\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"X" +
-      "\n\024AlignmentTooManyHits\022\030\n\020alignerThresho" +
-      "ld\030\002 \002(\r\022&\n\004hits\030\001 \003(\0132\030.reads.Ambiguous" +
-      "Location\"b\n\021AmbiguousLocation\022\023\n\013query_i" +
-      "ndex\030\001 \002(\r\022\037\n\027at_least_number_of_hits\030\002 " +
-      "\002(\r\022\027\n\017length_of_match\030\003 \001(\rB\'\n#edu.corn" +
-      "ell.med.icb.goby.alignmentsH\001"
+      "ion\"f\n\021SequenceVariation\022\014\n\004from\030\002 \002(\t\022\n" +
+      "\n\002to\030\001 \002(\t\022\020\n\010position\030\003 \002(\r\022\021\n\treadInde" +
+      "x\030\005 \002(\r\022\022\n\nto_quality\030\004 \001(\014\"\202\002\n\017Alignmen" +
+      "tHeader\0224\n\022query_name_mapping\030\001 \001(\0132\030.re" +
+      "ads.IdentifierMapping\0225\n\023target_name_map" +
+      "ping\030\002 \001(\0132\030.reads.IdentifierMapping\022\031\n\021" +
+      "number_of_queries\030\005 \001(\r\022\031\n\021number_of_tar" +
+      "gets\030\006 \001(\r\022\037\n\027number_of_aligned_reads\030\007 ",
+      "\001(\r\022\024\n\014query_length\030\003 \003(\r\022\025\n\rtarget_leng" +
+      "th\030\010 \003(\r\"<\n\021IdentifierMapping\022\'\n\010mapping" +
+      "s\030\001 \003(\0132\025.reads.IdentifierInfo\"-\n\016Identi" +
+      "fierInfo\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"X\n" +
+      "\024AlignmentTooManyHits\022\030\n\020alignerThreshol" +
+      "d\030\002 \002(\r\022&\n\004hits\030\001 \003(\0132\030.reads.AmbiguousL" +
+      "ocation\"b\n\021AmbiguousLocation\022\023\n\013query_in" +
+      "dex\030\001 \002(\r\022\037\n\027at_least_number_of_hits\030\002 \002" +
+      "(\r\022\027\n\017length_of_match\030\003 \001(\rB\'\n#edu.corne" +
+      "ll.med.icb.goby.alignmentsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -3643,7 +3726,7 @@ public final class Alignments {
           internal_static_reads_SequenceVariation_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_reads_SequenceVariation_descriptor,
-              new java.lang.String[] { "From", "To", "Position", },
+              new java.lang.String[] { "From", "To", "Position", "ReadIndex", "ToQuality", },
               edu.cornell.med.icb.goby.alignments.Alignments.SequenceVariation.class,
               edu.cornell.med.icb.goby.alignments.Alignments.SequenceVariation.Builder.class);
           internal_static_reads_AlignmentHeader_descriptor =

@@ -227,8 +227,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             readSequence.setLength(0);
             readSequence.append(sequence);
 
+            int queryLength = samRecord.getReadLength();
+
             extractSequenceVariations(cigar, attributeMD, readSequence, readPostInsertions,
-                    referenceSequence, currentEntry);
+                    referenceSequence, currentEntry, queryLength, reverseStrand);
             final Alignments.AlignmentEntry alignmentEntry = currentEntry.build();
 
             final Object xoString = samRecord.getAttribute("X0");
@@ -286,7 +288,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
     private void extractSequenceVariations(String cigar, String attributeMD, MutableString readSequence,
                                            MutableString readPostInsertions,
-                                           MutableString referenceSequence, Alignments.AlignmentEntry.Builder currentEntry) {
+                                           MutableString referenceSequence,
+                                           Alignments.AlignmentEntry.Builder currentEntry,
+                                           int queryLength,
+                                           boolean reverseStrand) {
         /* From the SAM specification document, see http://samtools.sourceforge.net/SAM1.pdf
          MD Z String for mismatching positions in the format of [0-9]+(([ACGTN]|\^[ACGTN]+)[0-9]+)* 2,3
 
@@ -300,13 +305,14 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             return;
         }
 
-        produceReferenceSequence(cigar, attributeMD, readSequence, readPostInsertions,
+        int readStartPosition = produceReferenceSequence(cigar, attributeMD, readSequence, readPostInsertions,
                 referenceSequence);
 
         int alignmentLength = readSequence.length();
         LastToCompactMode.extractSequenceVariations(currentEntry,
                 alignmentLength,
-                referenceSequence, readSequence);
+                referenceSequence,  readSequence, readStartPosition, queryLength, reverseStrand);
+
     }
 
     /**
@@ -317,9 +323,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
      * @param mdAttribute       The SAM MD attribute
      * @param readSequence      The sequence of the read.
      * @param referenceSequence The sequence of the reference that will be reconstructed.
+     * @return alignedReadStartPosition The position on the read that starts to align.
      */
-    public static void produceReferenceSequence(String CIGAR, String mdAttribute, MutableString readSequence, MutableString readPostInsertions,
-                                                MutableString referenceSequence) {
+    public static int produceReferenceSequence(String CIGAR, String mdAttribute, MutableString readSequence, MutableString readPostInsertions,
+                                               MutableString referenceSequence) {
         Pattern matchPattern = attributeMD_pattern;
         referenceSequence.setLength(0);
         readPostInsertions.setLength(0);
@@ -327,7 +334,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         int positionInReadSequence = 0;
         int[] positionAdjustment = new int[readSequence.length()];
 
-        processInsertionsOnly(CIGAR, mdAttribute, readSequence, readPostInsertions, positionAdjustment);
+        int readStartAlignedPosition = processInsertionsOnly(CIGAR, mdAttribute, readSequence, readPostInsertions, positionAdjustment);
 
         Matcher matchMatcher = matchPattern.matcher(mdAttribute);
 
@@ -362,9 +369,14 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     int mutationLength = variationChars.length() - 1;   // -1 is for the indicator character '^'
                     final String toAppend = variationChars.substring(1);
                     referenceSequence.append(toAppend);
-                    //    System.out.println("var " + variationChars + " appending " + toAppend);
-                    //    positionInReadSequence += mutationLength;
-                    for (int i = 0; i < mutationLength; ++i) readPostInsertions.insert(positionInReadSequence, '-');
+
+                        System.out.println("var " + variationChars + " appending " + toAppend);
+
+                      //  positionInReadSequence += mutationLength;
+                    for (int i = 0; i < mutationLength; ++i) {
+                        readSequence.insert(positionInReadSequence, '-');
+                        readPostInsertions.insert(positionInReadSequence, '-');
+                    }
                     positionInReadSequence += mutationLength;
                 } else {
                     // base mutations:
@@ -386,13 +398,16 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             //matchMatcher.reset(mdAttribute);
 
         }
+        return readStartAlignedPosition;
     }
 
-    private static void processInsertionsOnly(String cigar, String mdAttribute, MutableString readSequence, MutableString transformedSequence, int[] positionAdjustment) {
+    private static int processInsertionsOnly(String cigar, String mdAttribute, MutableString readSequence,
+                                             MutableString transformedSequence, int[] positionAdjustment) {
         Pattern matchPattern = attributeCIGAR_insertions_pattern;
         Matcher matchMatcher = matchPattern.matcher(cigar);
         int end = 0;
         int positionInReadSequence = 0;
+        int readStartAlignedPosition = 0;
         while (matchMatcher.find(end)) {
             String matchLenthAsString = matchMatcher.group(1);
             String variationType = matchMatcher.group(2);
@@ -427,13 +442,13 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     }
                     break;
                 case 'P':
-                    // TODO implement this case.
-                    throw new UnsupportedOperationException("Padding characters are currently not supported in CIGAR strings with insertions. TODO: implement.");
+                    readStartAlignedPosition += matchLength;
             }
             //       System.out.println("current ref: " + transformedSequence);
             end = matchMatcher.end();
 
         }
+        return readStartAlignedPosition;
     }
 
     /**

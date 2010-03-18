@@ -116,9 +116,14 @@ message SequenceVariation {
     */
   required string to=1;
   /*
-    The position of the variation, starting from the beginning of the aligned read (position 1).
+    The position of the variation on the read, as if the read always matched on the forward strand.
+
     */
   required uint32 position=3;
+    /*
+    The position of the variation, starting from the beginning of the aligned read (position 1).
+    */
+  required uint32 readIndex=5;
 
   /**
     The read base quality scores for those bases that are given in the to field. This field

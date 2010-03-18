@@ -98,6 +98,20 @@ public class TestSAMVariationParsing {
 
     }
 
+    @Test
+       // insertions with mutations
+       public void testMDStringParsing5() {
+
+           MutableString referenceSequence = new MutableString();
+
+           String stringReadSequence = "TTTCCCAAATTTCACATCACTACACTACGGATACAGAACGGGG";
+           MutableString expectedReferenceSequence = new MutableString( "TTTCCCAAATTTCACATCACTACTACTACGGATACAGAACGGGG");
+           testMdAttribute("23M1D20M", "23^T20", stringReadSequence, referenceSequence);
+           display(referenceSequence, stringReadSequence, expectedReferenceSequence);
+           assertEquals("the reconstructed reference sequence should match expected.", expectedReferenceSequence, referenceSequence);
+
+       }
+
     private void testMdAttribute(String CIGAR, String mdAttribute, String stringReadSequence, MutableString referenceSequence) {
         MutableString readSequence = new MutableString(stringReadSequence);
         MutableString readPostInsertions = new MutableString(stringReadSequence);
