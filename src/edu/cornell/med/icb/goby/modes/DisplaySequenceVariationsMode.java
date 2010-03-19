@@ -61,6 +61,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
     private String[] basenames;
     private MyIterateAlignments alignmentIterator;
 
+
     @Override
     public String getModeName() {
         return MODE_NAME;
@@ -70,6 +71,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
         CONCISE,
         TSV,
         TAB_DELIMITED,
+        TAB_SINGLE_BASE,
     }
 
     private OutputFormat outputFormat;
@@ -116,8 +118,9 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
 
                 break;
             case TAB_DELIMITED:
+            case TAB_SINGLE_BASE:
             case TSV:
-                writer.println("basename query-index target-id position-on-reference read-index var-from var-to");
+                writer.println("basename query-index target-id position-on-reference read-index var-from var-to type");
                 break;
         }
 
@@ -151,6 +154,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
     private static class MyIterateAlignments extends IterateAlignments {
         PrintWriter outputWriter;
         private OutputFormat outputFormat;
+
 
         public void setOutputWriter(PrintWriter outputWriter, OutputFormat outputFormat) {
             this.outputWriter = outputWriter;
@@ -197,15 +201,38 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                         variations = true;
                         // convert variation position to position on the reference:
                         final int positionOnReference = alignmentEntry.getPosition() + var.getPosition();
-                        final int readIndex=var.getReadIndex();
-                        outputWriter.println(String.format("%s\t%d\t%s\t%d\t%d\t%s\t%s",
-                                basename,
-                                alignmentEntry.getQueryIndex(),
-                                getReferenceId(alignmentEntry.getTargetIndex()),
-                                positionOnReference,
-                                readIndex,
-                                var.getFrom(),
-                                var.getTo()));
+                        final int readIndex = var.getReadIndex();
+                        printTab(alignmentEntry, basename, positionOnReference, readIndex, var.getFrom(), var.getTo());
+                    }
+
+                    if (variations) {
+                        outputWriter.println();
+
+                    }
+                }
+                break;
+                case TAB_SINGLE_BASE: {
+                    boolean variations = false;
+
+                    for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
+                        variations = true;
+                        // convert variation position to position on the reference:
+                        final int positionOnReference = alignmentEntry.getPosition() + var.getPosition();
+                        final int readIndex = var.getReadIndex();
+                        final String from = var.getFrom();
+                        final String to = var.getTo();
+                        int fromLength = from.length();
+                        int toLength = to.length();
+
+                        int maxLength = Math.max(fromLength, toLength);
+                        for (int i = 0; i < maxLength; i++) {
+                            int offset = +i * (alignmentEntry.getMatchingReverseStrand() ? -1 : 1);
+                            printTab(alignmentEntry, basename,
+                                    positionOnReference + offset,
+                                    readIndex + offset,
+                                    i < fromLength ? from.substring(i, i + 1) : "",
+                                    i < toLength ? to.substring(i, i + 1) : "");
+                        }
                     }
 
                     if (variations) {
@@ -217,6 +244,29 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
             }
 
 
+        }
+
+        private void printTab(Alignments.AlignmentEntry alignmentEntry, String basename, int positionOnReference, int readIndex, String from, String to) {
+            String type;
+            if (from.contains("-") || from.length() == 0) {
+                // insertion in read sequence.
+                type = "READ_INSERTION";
+            } else if (to.contains("-") || to.length() == 0) {
+                // deletion in read sequence.
+                type = "READ_DELETION";
+            } else {
+                // one or more bases are mutated. no insertions or deletions.
+                type = "MUTATION";
+            }
+            outputWriter.println(String.format("%s\t%d\t%s\t%d\t%d\t%s\t%s\t%s",
+                    basename,
+                    alignmentEntry.getQueryIndex(),
+                    getReferenceId(alignmentEntry.getTargetIndex()),
+                    positionOnReference,
+                    readIndex,
+                    from,
+                    to,
+                    type));
         }
     }
 }
