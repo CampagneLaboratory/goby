@@ -198,11 +198,17 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                     boolean variations = false;
 
                     for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
-                        variations = true;
+
                         // convert variation position to position on the reference:
                         final int positionOnReference = alignmentEntry.getPosition() + var.getPosition();
                         final int readIndex = var.getReadIndex();
-                        printTab(alignmentEntry, basename, positionOnReference, readIndex, var.getFrom(), var.getTo());
+                        final String from = var.getFrom();
+                        final String to = var.getTo();
+                        if (!isAllNs(to)) {
+                            variations = true;
+
+                            printTab(alignmentEntry, basename, positionOnReference, readIndex, from, to);
+                        }
                     }
 
                     if (variations) {
@@ -215,7 +221,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                     boolean variations = false;
 
                     for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
-                        variations = true;
+
                         // convert variation position to position on the reference:
                         final int positionOnReference = alignmentEntry.getPosition() + var.getPosition();
                         final int readIndex = var.getReadIndex();
@@ -223,15 +229,17 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                         final String to = var.getTo();
                         int fromLength = from.length();
                         int toLength = to.length();
-
-                        int maxLength = Math.max(fromLength, toLength);
-                        for (int i = 0; i < maxLength; i++) {
-                            int offset = +i * (alignmentEntry.getMatchingReverseStrand() ? -1 : 1);
-                            printTab(alignmentEntry, basename,
-                                    positionOnReference + offset,
-                                    readIndex + offset,
-                                    i < fromLength ? from.substring(i, i + 1) : "",
-                                    i < toLength ? to.substring(i, i + 1) : "");
+                        if (!isAllNs(to)) {
+                            variations = true;
+                            int maxLength = Math.max(fromLength, toLength);
+                            for (int i = 0; i < maxLength; i++) {
+                                int offset = +i * (alignmentEntry.getMatchingReverseStrand() ? -1 : 1);
+                                printTab(alignmentEntry, basename,
+                                        positionOnReference + offset,
+                                        readIndex + offset,
+                                        i < fromLength ? from.substring(i, i + 1) : "",
+                                        i < toLength ? to.substring(i, i + 1) : "");
+                            }
                         }
                     }
 
@@ -244,6 +252,15 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
             }
 
 
+        }
+
+        private boolean isAllNs(final String to) {
+
+            for (int i = 0; i < to.length(); ++i) {
+                if (to.charAt(i) != 'N') return false;
+
+            }
+            return true;
         }
 
         private void printTab(Alignments.AlignmentEntry alignmentEntry, String basename, int positionOnReference, int readIndex, String from, String to) {

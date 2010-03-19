@@ -34,7 +34,7 @@
             <defaults>
                 <string>concise</string>
             </defaults>
-            <help>Format of the output file (consise, tsv/tab_delimited).</help>
+            <help>Format of the output file (consise, tsv/tab_delimited, tab_single_base).</help>
         </flaggedOption>
         <unflaggedOption>
             <id>input</id>
