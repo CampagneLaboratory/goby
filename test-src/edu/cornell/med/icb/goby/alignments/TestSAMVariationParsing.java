@@ -56,7 +56,7 @@ public class TestSAMVariationParsing {
 
         MutableString referenceSequence = new MutableString();
 
-        String stringReadSequence =                                 "TTTCCCAAATTTCACATCACTACTACACGGATACAGAACGGGG";
+        String stringReadSequence = "TTTCCCAAATTTCACATCACTACTACACGGATACAGAACGGGG";
         MutableString expectedReferenceSequence = new MutableString("TTTCCCAAATTTCACATCACTACTACTACGGATACAGAACGGGG");
         testMdAttribute("26M1D17M", "26^T17", stringReadSequence, referenceSequence);
         display(referenceSequence, stringReadSequence, expectedReferenceSequence);
@@ -99,18 +99,32 @@ public class TestSAMVariationParsing {
     }
 
     @Test
-       // insertions with mutations
-       public void testMDStringParsing5() {
+    // insertions with mutations
+    public void testMDStringParsing5() {
 
-           MutableString referenceSequence = new MutableString();
+        MutableString referenceSequence = new MutableString();
 
-           String stringReadSequence = "TTTCCCAAATTTCACATCACTACACTACGGATACAGAACGGGG";
-           MutableString expectedReferenceSequence = new MutableString( "TTTCCCAAATTTCACATCACTACTACTACGGATACAGAACGGGG");
-           testMdAttribute("23M1D20M", "23^T20", stringReadSequence, referenceSequence);
-           display(referenceSequence, stringReadSequence, expectedReferenceSequence);
-           assertEquals("the reconstructed reference sequence should match expected.", expectedReferenceSequence, referenceSequence);
+        String stringReadSequence = "TTTCCCAAATTTCACATCACTACACTACGGATACAGAACGGGG";
+        MutableString expectedReferenceSequence = new MutableString("TTTCCCAAATTTCACATCACTACTACTACGGATACAGAACGGGG");
+        testMdAttribute("23M1D20M", "23^T20", stringReadSequence, referenceSequence);
+        display(referenceSequence, stringReadSequence, expectedReferenceSequence);
+        assertEquals("the reconstructed reference sequence should match expected.", expectedReferenceSequence, referenceSequence);
 
-       }
+    }
+
+    @Test
+    //cigar: 38M1I4M2D1M mdAttribute: 42^AA1
+    public void testMDStringParsing6() {
+
+        MutableString referenceSequence = new MutableString();
+
+        String stringReadSequence =                                 "CCATGACCAACATAACTGTGGTGTCATGCATTTGGTATCTTTTT";
+        MutableString expectedReferenceSequence = new MutableString("CCATGACCAACATAACTGTGGTGTCATGCATTTGGTAT-TTTTAAT");
+        testMdAttribute("38M1I4M2D1M", "42^AA1", stringReadSequence, referenceSequence);
+        display(referenceSequence, stringReadSequence, expectedReferenceSequence);
+        assertEquals("the reconstructed reference sequence should match expected.", expectedReferenceSequence, referenceSequence);
+
+    }
 
     private void testMdAttribute(String CIGAR, String mdAttribute, String stringReadSequence, MutableString referenceSequence) {
         MutableString readSequence = new MutableString(stringReadSequence);

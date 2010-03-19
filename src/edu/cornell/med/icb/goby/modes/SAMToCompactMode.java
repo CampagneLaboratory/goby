@@ -27,14 +27,8 @@ import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
-import net.sf.samtools.AlignmentBlock;
-import net.sf.samtools.CigarElement;
-import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMSequenceDictionary;
-import net.sf.samtools.SAMSequenceRecord;
-import net.sf.samtools.util.CloseableIterator;
+import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -42,6 +36,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import net.sf.samtools.*;
+import net.sf.samtools.util.CloseableIterator;
 
 /**
  * Converts binary BWA alignments in the SAM format to the compact alignment format.
@@ -355,7 +352,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         readPostInsertions.setLength(0);
         int end = 0;
         int positionInReadSequence = 0;
-        int[] positionAdjustment = new int[readSequence.length()];
+        IntList positionAdjustment = new IntArrayList();
+        positionAdjustment.size(readSequence.length());
 
         int readStartAlignedPosition = processInsertionsOnly(CIGAR, mdAttribute, readSequence, readPostInsertions, positionAdjustment);
 
@@ -376,7 +374,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 // calculate by the read index position adjustment, given the number of insertions seen so far.
                 int regionAdjustment = currentAdjustment;
                 for (int i = positionInReadSequence; i < matchLength; i++) {
-                    regionAdjustment += positionAdjustment[i];
+                    regionAdjustment += positionAdjustment.getInt(i);
                 }
                 final CharSequence matchingSequence = readPostInsertions.subSequence(positionInReadSequence,
                         positionInReadSequence + matchLength + regionAdjustment);
@@ -393,7 +391,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     final String toAppend = variationChars.substring(1);
                     referenceSequence.append(toAppend);
 
-                        System.out.println("var " + variationChars + " appending " + toAppend);
+                //        System.out.println("var " + variationChars + " appending " + toAppend);
 
                       //  positionInReadSequence += mutationLength;
                     for (int i = 0; i < mutationLength; ++i) {
@@ -425,12 +423,14 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     }
 
     private static int processInsertionsOnly(String cigar, String mdAttribute, MutableString readSequence,
-                                             MutableString transformedSequence, int[] positionAdjustment) {
+                                             MutableString transformedSequence, IntList positionAdjustment) {
         Pattern matchPattern = attributeCIGAR_insertions_pattern;
         Matcher matchMatcher = matchPattern.matcher(cigar);
         int end = 0;
         int positionInReadSequence = 0;
         int readStartAlignedPosition = 0;
+     //   System.out.println("cigar: "+cigar +" mdAttribute: "+mdAttribute);
+     
         while (matchMatcher.find(end)) {
             String matchLenthAsString = matchMatcher.group(1);
             String variationType = matchMatcher.group(2);
@@ -453,7 +453,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 case 'I':
                     // The read has an insertion relative to the reference. Delete these bases when reconstituting the reference:
                     for (int i = 0; i < matchLength; i++) {
-                        positionAdjustment[positionInReadSequence + i] = +1;
+                        positionAdjustment.set(positionInReadSequence + i, +1);
                     }
                     positionInReadSequence += matchLength;
                     for (int i = 0; i < matchLength; ++i) transformedSequence.append('-');
@@ -461,7 +461,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 case 'D':
                     // the reference had extra bases.
                     for (int i = 0; i < matchLength; i++) {
-                        positionAdjustment[positionInReadSequence + i] = -1;
+                        positionAdjustment.size(Math.max(positionInReadSequence + i+1, positionAdjustment.size()));
+                        positionAdjustment.set(positionInReadSequence + i, -1);
                     }
                     break;
                 case 'P':
