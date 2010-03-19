@@ -26,6 +26,7 @@ import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ArrayUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -101,6 +102,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
             final DoubleIndexedIdentifier referenceIds =
                     new DoubleIndexedIdentifier(reader.getTargetIdentifiers());
             final int[] referenceLengths = reader.getTargetLength();
+
             System.out.println("Alignment contains " + numberOfReferences + " reference sequences");
 
             // create count writers, one for each reference sequence in the alignment:
@@ -121,17 +123,23 @@ public class AlignmentToTextMode extends AbstractGobyMode {
             for (final Alignments.AlignmentEntry alignmentEntry : reader) {
                 final int referenceIndex = alignmentEntry.getTargetIndex();
                 final String referenceName = referenceIds.getId(referenceIndex).toString();
-
                 if (referencesToProcess.contains(referenceIndex)) {
                     final int startPosition = alignmentEntry.getPosition();
                     final int alignmentLength = alignmentEntry.getQueryAlignedLength();
                     for (int i = 0; i < alignmentEntry.getMultiplicity(); ++i) {
                         final int queryIndex = alignmentEntry.getQueryIndex();
 
-                        // TODO - reference length?
-                        writer.write(String.format("%s\t%s\t%d\t%d\t%g\t%d\t%d\t%b%n",
+                        // Get the length of the reference (if available)
+                        final int referenceLength;
+                        if (ArrayUtils.getLength(referenceLengths) >= referenceIndex) {
+                            referenceLength = referenceLengths[referenceIndex];
+                        } else {
+                            referenceLength = -1;
+                        }
+                        writer.write(String.format("%s\t%s\t%d\t%d\t%d\t%g\t%d\t%d\t%b%n",
                                 hasReadIds ? readIds.getId(queryIndex) : queryIndex,
                                 referenceName,
+                                referenceLength,
                                 alignmentEntry.getNumberOfIndels(),
                                 alignmentEntry.getNumberOfMismatches(),
                                 alignmentEntry.getScore(),
