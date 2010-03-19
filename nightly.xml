@@ -63,13 +63,13 @@
                 <sysproperty key="log4j.configuration" value="${log4j.config.url}"/>
                 <arg value="--mode"/>
                 <arg value="fasta-to-compact"/>
-                <arg value="${include-descriptions-arg}"/>
-                <arg value="${include-identifiers-arg}"/>
-                <arg value="${exclude-sequences-arg}"/>
+                <arg line="${include-descriptions-arg}"/>
+                <arg line="${include-identifiers-arg}"/>
+                <arg line="${exclude-sequences-arg}"/>
                 <arg value="--sequence-per-chunk"/>
                 <arg value="@{sequence-per-chunk}"/>
-                <arg value="${output-arg}"/>
-                <arg value="@{output}"/>
+                <arg line="${output-arg}"/>
+                <arg line="@{output}"/>
                 <arg value="@{input}"/>
             </java>
         </sequential>
