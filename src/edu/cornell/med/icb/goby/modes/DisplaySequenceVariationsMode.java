@@ -120,7 +120,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
             case TAB_DELIMITED:
             case TAB_SINGLE_BASE:
             case TSV:
-                writer.println("basename query-index target-id position-on-reference read-index var-from var-to type");
+                writer.println("basename\tquery-index\ttarget-id\tposition-on-reference\tread-index\tvar-from\tvar-to\ttype");
                 break;
         }
 
@@ -211,10 +211,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                         }
                     }
 
-                    if (variations) {
-                        outputWriter.println();
-
-                    }
+                   
                 }
                 break;
                 case TAB_SINGLE_BASE: {
@@ -238,15 +235,12 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                                         positionOnReference + offset,
                                         readIndex + offset,
                                         i < fromLength ? from.substring(i, i + 1) : "",
-                                        i < toLength ? to.substring(i, i + 1) : "");
+                                        i < toLength ? to.substring(i, i + 1) : "");                                 
                             }
                         }
                     }
 
-                    if (variations) {
-                        outputWriter.println();
-
-                    }
+                    
                 }
                 break;
             }
