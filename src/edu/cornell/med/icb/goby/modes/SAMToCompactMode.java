@@ -29,8 +29,11 @@ import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import net.sf.samtools.AlignmentBlock;
 import net.sf.samtools.CigarElement;
+import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
+import net.sf.samtools.SAMSequenceDictionary;
+import net.sf.samtools.SAMSequenceRecord;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 
@@ -66,7 +69,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
      * Native reads output from aligner.
      */
     protected String samBinaryFilename;
-    private MutableString bufferReferenceSequence = new MutableString();
+
     private boolean skipMissingMdAttribute = true;
 
     public String getSamBinaryFilename() {
@@ -108,18 +111,20 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     }
 
     @Override
-    protected int scan(final ReadSet readIndexFilter, final IndexedIdentifier targetIds, final AlignmentWriter writer,
-                       final AlignmentTooManyHitsWriter tmhWriter) throws IOException {
+    protected int scan(final ReadSet readIndexFilter, final IndexedIdentifier targetIds,
+                       final AlignmentWriter writer, final AlignmentTooManyHitsWriter tmhWriter)
+            throws IOException {
         int numAligns = 0;
+        final int[] readLengths = new int[numberOfReads];
+
         final ProgressLogger progress = new ProgressLogger(LOG);
         final SAMFileReader parser = new SAMFileReader(new File(inputFile));
         parser.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
 
+        progress.start();
 
-        final int[] readLengths = new int[numberOfReads];
         final CloseableIterator<SAMRecord> recordCloseableIterator = parser.iterator();
 
-        progress.start();
         MutableString readSequence = new MutableString();
         // shared buffer for extract sequence variation work. We allocate here to avoid repetitive memory allocations.
         MutableString referenceSequence = new MutableString();
@@ -261,6 +266,25 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         writer.putStatistic("number-of-entries-written", numAligns);
         writer.printStats(System.out);
         writer.setQueryLengths(readLengths);
+
+        // write information from SAM file header
+        final SAMFileHeader samHeader = parser.getFileHeader();
+        final SAMSequenceDictionary samSequenceDictionary = samHeader.getSequenceDictionary();
+        final List<SAMSequenceRecord> samSequenceRecords = samSequenceDictionary.getSequences();
+        if (targetIds.size() != samSequenceRecords.size()) {
+            LOG.warn("targets: " + targetIds.size() + ", records: " + samSequenceRecords.size());
+        }
+
+        final int[] targetLengths = new int[targetIds.size()];
+        for (final SAMSequenceRecord samSequenceRecord : samSequenceRecords) {
+            final int index = samSequenceRecord.getSequenceIndex();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Sam record: " + samSequenceRecord.getSequenceName() + " at " + index);
+            }
+            targetLengths[index] = samSequenceRecord.getSequenceLength();
+        }
+
+        writer.setTargetLengths(targetLengths);
         progress.stop();
         return numAligns;
     }
@@ -269,7 +293,6 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     private int getQueryIndex(final SAMRecord samRecord) {
         final String readName = samRecord.getReadName();
         try {
-
             return Integer.parseInt(readName);
         } catch (NumberFormatException e) {
 
@@ -350,7 +373,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                           positionInReadSequence,
                           positionInReadSequence + matchLength));
                 */
-                // calculate by the read index position adjustment, given the number of insertions seen so far. 
+                // calculate by the read index position adjustment, given the number of insertions seen so far.
                 int regionAdjustment = currentAdjustment;
                 for (int i = positionInReadSequence; i < matchLength; i++) {
                     regionAdjustment += positionAdjustment[i];
@@ -436,7 +459,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     for (int i = 0; i < matchLength; ++i) transformedSequence.append('-');
                     break;
                 case 'D':
-                    // the reference had extra bases. 
+                    // the reference had extra bases.
                     for (int i = 0; i < matchLength; i++) {
                         positionAdjustment[positionInReadSequence + i] = -1;
                     }

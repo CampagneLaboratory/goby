@@ -27,6 +27,7 @@ import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.math.stat.descriptive.rank.Percentile;
 
 import java.io.File;
@@ -170,6 +171,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         System.out.println("Info from header:");
         System.out.printf("Number of query sequences = %,d%n", reader.getNumberOfQueries());
         System.out.printf("Number of target sequences = %,d%n", reader.getNumberOfTargets());
+        System.out.printf("Number of target length entries = %,d%n",
+                ArrayUtils.getLength(reader.getTargetLength()));
         System.out.printf("Has query identifiers = %s%n",
                 reader.getQueryIdentifiers() != null && !reader.getTargetIdentifiers().isEmpty());
         System.out.printf("Has target identifiers = %s%n",
@@ -181,7 +184,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         long numLogicalAlignmentEntries = 0;
         long total = 0;
         double avgScore = 0;
-       int sumNumVariations=0;
+        int sumNumVariations = 0;
         for (final Alignments.AlignmentEntry entry : reader) {
             numberOfReads++;   // Across all files
             numEntries++;      // Across this file
@@ -193,7 +196,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             cumulativeReadLength += entry.getQueryAlignedLength();
             minReadLength = Math.min(minReadLength, entry.getQueryAlignedLength());
             maxReadLength = Math.max(maxReadLength, entry.getQueryAlignedLength());
-            sumNumVariations +=entry.getSequenceVariationsCount();
+            sumNumVariations += entry.getSequenceVariationsCount();
 
         }
         avgScore /= (double) numLogicalAlignmentEntries;
@@ -201,7 +204,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         final int numQuerySequences = maxQueryIndex + 1;
         System.out.printf("num query indices= %,d%n", numQuerySequences);
         final int numTargetSequences = maxTargetIndex + 1;
-        double avgNumVariationsPerQuery=((double)sumNumVariations)/(double)numQuerySequences;
+        final double avgNumVariationsPerQuery =
+                ((double) sumNumVariations) / (double) numQuerySequences;
         System.out.printf("num target indices= %,d%n", numTargetSequences);
         System.out.printf("Number of alignment entries = %,d%n", numLogicalAlignmentEntries);
         System.out.printf("Percent matched = %4.1f%% %n",

@@ -98,6 +98,15 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
     protected int numberOfReads;
 
     /**
+     * Identifiers for the query sequences in this alignment.
+     */
+    protected final IndexedIdentifier queryIds = new IndexedIdentifier();
+    /**
+     * Identifiers for the target sequences in this alignment.
+     */
+    protected IndexedIdentifier targetIds = new IndexedIdentifier();
+
+    /**
      * Scan.
      *
      * @param readIndexFilter
@@ -105,9 +114,10 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
      * @param targetIds
      * @param tmhWriter
      * @return number of alignment entries written
-     * @throws java.io.IOException error parsing
+     * @throws IOException error parsing
      */
-    protected abstract int scan(ReadSet readIndexFilter, IndexedIdentifier targetIds, AlignmentWriter writer,
+    protected abstract int scan(ReadSet readIndexFilter, IndexedIdentifier targetIds,
+                                AlignmentWriter writer,
                                 AlignmentTooManyHitsWriter tmhWriter) throws IOException;
 
 
@@ -152,7 +162,10 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         final TransferIds transferIds = new TransferIds().invoke();
         final ReadSet readIndexFilter = transferIds.getReadIndexFilter();
         final AlignmentWriter writer = transferIds.getWriter();
-        final IndexedIdentifier targetIds = transferIds.getTargetIds();
+
+        // This is ugly...
+        targetIds.clear();
+        targetIds.putAll(transferIds.getTargetIds());
 
         // initialize too-many-hits output file
         final AlignmentTooManyHitsWriter tmhWriter = new AlignmentTooManyHitsWriter(outputFile, mParameter);
@@ -175,10 +188,15 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
 
             final int numAligns = scan(readIndexFilter, targetIds, writer, tmhWriter);
             System.out.println("Number of alignments written: " + numAligns);
-            if (queryIds.size() > 0 && propagateQueryIds) {
+            if (propagateQueryIds && !queryIds.isEmpty()) {
                 // we collected query ids, let's write them to the header:
                 writer.setQueryIdentifiers(queryIds);
             }
+            if (propagateTargetIds && !targetIds.isEmpty()) {
+                // we collected target ids, let's write them to the header:
+                writer.setTargetIdentifiers(targetIds);
+            }
+
         } finally {
             writer.close();
             tmhWriter.close();
@@ -371,6 +389,4 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
             return this;
         }
     }
-
-    final IndexedIdentifier queryIds = new IndexedIdentifier();
 }
