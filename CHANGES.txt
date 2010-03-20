@@ -12,7 +12,8 @@ development
  Added support for sequence variations:
  - changed the compact alignment format to support recording sequence variations.
  - the new mode display-sequence-variations provides text output of sequence variations in several formats.
-
+ - the new mode sequence-variation-stats will print statistics about sequence variations found in a set of alignments.
+ 
  Added support for quality scores:
 
  - Changed fasta-to-compact and compact-to-fasta to read and write with the Sanger or Illumina quality encoding.
