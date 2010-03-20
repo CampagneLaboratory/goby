@@ -117,11 +117,14 @@ message SequenceVariation {
   required string to=1;
   /*
     The position of the variation on the read, as if the read always matched on the forward strand.
-
+    Adding position to the index where the reference starts aligning the read yields the position of the variation
+    in reference/target sequence space. Since position starts at one the resulting position will also be one based.
     */
   required uint32 position=3;
     /*
-    The position of the variation, starting from the beginning of the aligned read (position 1).
+    The position of the variation, starting from the beginning of the aligned read (position 1), and up to the length
+    of the read (inclusive). Use this index if you need to know  how far the variation is observed from the beginning
+    of the sequenced read.
     */
   required uint32 readIndex=5;
 
@@ -166,6 +169,11 @@ message AlignmentHeader {
    /* Length of the target sequences. One number per target, in the order or increasing target index.
     */
    repeated uint32 target_length=8;
+   /**
+     When this attribute is true, sequence variations are provided in the color space alphabet and need to
+     be decoded to base space. This operation requires a reference sequence.
+    */
+   require bool variations_in_color_space=10;
 }
 
 message IdentifierMapping {

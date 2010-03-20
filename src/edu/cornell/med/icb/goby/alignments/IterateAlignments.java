@@ -22,6 +22,7 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.lang.MutableString;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -77,7 +78,9 @@ public abstract class IterateAlignments {
             for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
 
 
-                final String referenceName = referenceIds.getId(referenceIndex).toString();
+                final MutableString referenceId = referenceIds.getId(referenceIndex);
+                assert referenceId!=null: "reference id cannot be null for reference index="+referenceIndex;
+                final String referenceName = referenceId.toString();
                 if (filterByReferenceNames) {
                     if (includeReferenceNames.contains(referenceName)) {
                         // subset of reference names selected by the command line:

@@ -346,41 +346,63 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
         int variationPosition = Integer.MAX_VALUE;
         int minLength = Math.min(referenceSequence.length(), readSequence.length());
         minLength = Math.min(alignmentLength, minLength);
-        
+        // will record the number of gaps in the read, up to the variation position. We need to substract this number
+        // from the position to obtain the read index.
+        int readIndexAdjustment = 0;
+        int newAdjustment = 0;
         for (int position = 0; position < minLength; ++position) {
 
             final char referenceBase = referenceSequence.charAt(position);
             final char queryBase = readSequence.charAt(position);
+
             if (referenceBase != queryBase) {
                 from.append(referenceBase);
                 to.append(queryBase);
                 variationPosition = Math.min(variationPosition, position);
+                if (queryBase == '-') {
+
+                    ++newAdjustment;
+                }
 
             } else {
-                appendNewSequenceVariation(currentEntry, from, to, variationPosition, readStartPosition, queryLength, reverseStrand);
+                appendNewSequenceVariation(currentEntry, from, to, variationPosition, readStartPosition, queryLength,
+                        reverseStrand, readIndexAdjustment);
                 variationPosition = Integer.MAX_VALUE;
                 from.setLength(0);
                 to.setLength(0);
+                readIndexAdjustment = newAdjustment;
             }
+
         }
-        appendNewSequenceVariation(currentEntry, from, to, variationPosition, readStartPosition, queryLength, reverseStrand);
+        appendNewSequenceVariation(currentEntry, from, to, variationPosition, readStartPosition, queryLength, reverseStrand, readIndexAdjustment);
     }
 
-    protected static void appendNewSequenceVariation
-            (Alignments.AlignmentEntry.Builder currentEntry,
-             MutableString from,
-             MutableString to,
-             int variationPosition,
-             int readStartPosition, int queryLength, boolean reverseStrand) {
+    protected static void appendNewSequenceVariation(Alignments.AlignmentEntry.Builder currentEntry,
+                                                     MutableString from,
+                                                     MutableString to,
+                                                     int variationPosition,
+                                                     int readStartPosition, int queryLength, boolean reverseStrand, int readIndexAdjustment) {
         if (variationPosition != Integer.MAX_VALUE) {
             Alignments.SequenceVariation.Builder sequenceVariation =
                     Alignments.SequenceVariation.newBuilder();
+
             sequenceVariation.setFrom(from.toString());
             sequenceVariation.setTo(to.toString());
-            sequenceVariation.setPosition(variationPosition+1); // positions start at 1
+            sequenceVariation.setPosition(variationPosition + 1); // positions start at 1
             // calculate the readIndex, taking strand and query length into consideration:
-            final int readIndex = (reverseStrand ? (queryLength - variationPosition) : variationPosition) + readStartPosition;
-            sequenceVariation.setReadIndex(readIndex+1);    // positions start at 1
+            final int readIndex = (reverseStrand ? (queryLength - (variationPosition - readIndexAdjustment) - readStartPosition) :
+                    variationPosition - readIndexAdjustment + readStartPosition);
+            if (readIndex > queryLength) {
+               assert readIndex <= queryLength: String.format( " readIndex %d must be smaller than read length %d .",
+                       readIndex,
+                        queryLength);
+                System.err.printf(
+                        " readIndex %d must be smaller than read length %d. query index=%d reference index=%d", readIndex,
+                        queryLength, currentEntry.getQueryIndex(),
+                        currentEntry.getTargetIndex());
+                System.exit(1);
+            }
+            sequenceVariation.setReadIndex(readIndex + 1);    // positions start at 1
             //        System.out.printf("Appending variation: %d %s/%s ", variationPosition, from, to);
             currentEntry.addSequenceVariations(sequenceVariation);
             // reset since they are used:

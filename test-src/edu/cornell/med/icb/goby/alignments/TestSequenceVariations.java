@@ -56,6 +56,7 @@ public class TestSequenceVariations {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Creating base test directory: " + BASE_TEST_DIR);
         }
+       
         FileUtils.forceMkdir(new File(BASE_TEST_DIR));
     }
 
@@ -74,12 +75,16 @@ public class TestSequenceVariations {
             Alignments.AlignmentEntry alignmentEntry = reader.next();
 
             assertTrue("alignment must have variation", alignmentEntry.getSequenceVariationsCount() > 0);
+            int variationIndex = 0;
             for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
+                variationIndex++;
                 System.out.println(String.format("last entry score=%f referenceIndex=%d  queryIndex=%d variation: %s",
                         alignmentEntry.getScore(),
                         alignmentEntry.getQueryIndex(),
                         alignmentEntry.getTargetIndex(),
                         var.toString()));
+                assertLength(alignmentEntry, var);
+
                 switch (alignmentEntry.getQueryIndex()) {
                     case 7:
                         //last finds this alignment. We test the case when the read does not match the reference at the beginning:
@@ -120,12 +125,30 @@ public class TestSequenceVariations {
                         assertEquals(8, var.getReadIndex());
                         assertEquals("--", var.getFrom());
                         assertEquals("CC", var.getTo());
+                        break;
+                    case 8:
+                        switch (variationIndex) {
+                            case 1:
 
+                                assertEquals(36, var.getPosition());
+                                assertEquals(36, var.getReadIndex());
+                                assertEquals("A", var.getFrom());
+                                assertEquals("G", var.getTo());
+                                break;
+                            
+                        }
                         break;
                 }
 
             }
         }
+    }
+
+    private void assertLength(Alignments.AlignmentEntry alignmentEntry, Alignments.SequenceVariation var) {
+        final String readRaw = alignments[alignmentEntry.getQueryIndex()].read;
+        final String readProcessed = readRaw.replaceAll("-", "");
+        assertTrue(String.format("read index %d must be less than read length %d.", var.getReadIndex(), readProcessed.length()),
+                var.getReadIndex() < readProcessed.length());
     }
 
 
@@ -136,14 +159,16 @@ public class TestSequenceVariations {
             Alignments.AlignmentEntry alignmentEntry = reader.next();
 
             assertTrue("alignment must have variation", alignmentEntry.getSequenceVariationsCount() > 0);
+
             for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
                 System.out.println(String.format("bwa entry score=%f referenceIndex=%d  queryIndex=%d variation: %s",
                         alignmentEntry.getScore(),
                         alignmentEntry.getQueryIndex(),
                         alignmentEntry.getTargetIndex(),
                         var.toString()));
-                 switch (alignmentEntry.getQueryIndex()) {
-                
+                assertLength(alignmentEntry, var);
+                switch (alignmentEntry.getQueryIndex()) {
+
                     case 5:
                         //last finds this alignment. We test the case when the read does not match the reference at the beginning:
                         assertEquals(24, var.getPosition());
@@ -177,6 +202,7 @@ public class TestSequenceVariations {
                         assertEquals("CC", var.getTo());
 
                         break;
+
                 }
             }
         }
@@ -240,7 +266,7 @@ public class TestSequenceVariations {
     }
 
     alignment[] alignments = new alignment[]{
-            
+
             new alignment("0_insertion",
                     //1234567891111111111222
                     //         0123456789012
@@ -273,7 +299,7 @@ public class TestSequenceVariations {
                     //         0123456789012345
                     "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN", // use Ns when the query already matches another reference.
                     "TTTCCCAAATTTCACATCACTAC-ACTACGGATACAGAACGGGG"),     // The reference has a T instead of the gap character at position 24.
-            new alignment("2_mutations-reversed",
+            new alignment("6_mutations-reversed",
                     //1234567891111111111222
                     //         0123456789012
                     "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
@@ -283,6 +309,11 @@ public class TestSequenceVariations {
                     //         0123456789012
                     "--CCTTCCTTCCTTCCTTCCACTATCATTTTAACTACTCATACTATCCCATATA",
                     "AACCTTCCTTCCTTCCTTCCTCTATCATTTTAACTACTCATACTATCCCATATA"),
+             new alignment("8_read_padding",
+                    //1234567891111111111222
+                    //         0123456789012
+                    "NNNN",
+                   "TTCCACTATCATTTTAACTACTCATACTATCCCATGTA"),    //   A->G  readIndex=36, position=
     };
 
 

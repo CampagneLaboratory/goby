@@ -644,12 +644,12 @@ public class TestLastToCompact {
                     Alignments.SequenceVariation var1 = alignmentEntry.getSequenceVariations(0);
                     assertEquals("C", var1.getTo());
                     assertEquals("G", var1.getFrom());
-                    assertEquals(0, var1.getPosition());
+                    assertEquals(1, var1.getPosition());
 
                     Alignments.SequenceVariation var2 = alignmentEntry.getSequenceVariations(1);
                     assertEquals("C", var2.getTo());
                     assertEquals("A", var2.getFrom());
-                    assertEquals(10, var2.getPosition());
+                    assertEquals(11, var2.getPosition());
                     break;
 
                 case 1:
@@ -657,7 +657,7 @@ public class TestLastToCompact {
                     Alignments.SequenceVariation var1_0 = alignmentEntry.getSequenceVariations(0);
                     assertEquals("---", var1_0.getTo());
                     assertEquals("TTT", var1_0.getFrom());
-                    assertEquals(2, var1_0.getPosition());
+                    assertEquals(3, var1_0.getPosition());
                     break;
 
                 case 2:
@@ -665,12 +665,12 @@ public class TestLastToCompact {
                     Alignments.SequenceVariation var2_1 = alignmentEntry.getSequenceVariations(0);
                     assertEquals("A", var2_1.getTo());
                     assertEquals("G", var2_1.getFrom());
-                    assertEquals(1, var2_1.getPosition());
+                    assertEquals(2, var2_1.getPosition());
 
                     Alignments.SequenceVariation var2_2 = alignmentEntry.getSequenceVariations(1);
                     assertEquals("A", var2_2.getTo());
                     assertEquals("-", var2_2.getFrom());
-                    assertEquals(28, var2_2.getPosition());
+                    assertEquals(29, var2_2.getPosition());
                     break;
                 default:
                     break;
