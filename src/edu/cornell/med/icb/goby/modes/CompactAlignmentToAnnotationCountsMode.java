@@ -212,26 +212,42 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         final String[] groupsTmp = groupsDefinition.split("/");
         for (final String group : groupsTmp) {
             final String[] groupTokens = group.split("=");
+            if (groupTokens.length<2) {
+                System.err.println("The --group argument must have the syntax groupId=basename");
+                System.exit(1);
+            }
             final String groupId = groupTokens[0];
             final String groupBasenames = groupTokens[1];
             assert groupTokens.length == 2 : "group definition must have only two elements separated by an equal sign.";
             deCalculator.defineGroup(groupId);
             groups.add(groupId);
-            for (final String basename : groupBasenames.split(",")) {
-                // check that basename does not have any extensions appended to it
-                final String [] basenameTokens= basename.split("[\\.}]");
-                if (basenameTokens.length > 1){
-                    System.err.println("Basename "+ basename + " may have unneccessay extensions appended to it. "+
-                        "Please double-check your command.");
+            for (final String groupString : groupBasenames.split(",")) {
+                
+                String groupBasename= FilenameUtils.getBaseName(AlignmentReader.getBasename(groupString));
+                if (!isInputBasename(groupBasename)) {
+                    System.err.printf("The group basename %s is not a valid input basename.%n",groupBasename);
                     System.exit(1);
                 }
-                System.out.println("Associating basename: " + basename + " to group: " + groupId);
-                deCalculator.associateSampleToGroup(basename, groupId);
+
+                System.out.println("Associating basename: " + groupBasename + " to group: " + groupId);
+                deCalculator.associateSampleToGroup(groupBasename, groupId);
             }
 
             int groupSize = (groupBasenames.split(",")).length;
             groupSizes.put(groupId, groupSize);
         }
+    }
+
+    /**
+     * Return true if the basename is on the command line as an input basename.
+     * @param basename
+     * @return
+     */
+    private boolean isInputBasename(String basename) {
+        for (String inputFilename :inputFilenames) {
+            if (FilenameUtils.getBaseName(AlignmentReader.getBasename(inputFilename)).equals(basename)) return true;
+        }
+        return false;
     }
 
     class BasenameParallelRegion extends ParallelRegion {
