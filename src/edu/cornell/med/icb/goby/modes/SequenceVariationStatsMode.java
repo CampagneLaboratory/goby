@@ -137,7 +137,7 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
                 double frequency = ((double) count) / numberMutations;
                 double alignFrequency = ((double) count) / numberOfAlignmentEntries;
 
-                writer.printf("%d %d %f %f%n", readIndex,
+                writer.printf("%d\t%d\t%f\t%f%n", readIndex,
                         count, frequency, alignFrequency);
             }
         }

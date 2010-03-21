@@ -49,5 +49,18 @@
             <required>false</required>
             <help>When provided, only process the reference identifiers listed in this comma separated list. To process only chromosome 19 and 1, if sequences are identified by "1" and "19", use: --include-reference-names 1,19 </help>
         </flaggedOption>
+         <flaggedOption>
+            <id>minimum-read-indices</id>
+           
+            <longFlag>minimum-read-indices</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>0</string>
+            </defaults>
+            <help>The minimum number of read indices at a given reference position for variations to be listed in the output. Larger values of this parameter are likely to help eliminate sequencing errors from the output by focusing on variations seen at different position during sequencing. Any value larger than zero requires scanning the input twice.</help>
+        </flaggedOption>
     </parameters>
 </jsap>

@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import org.apache.commons.io.FilenameUtils;
+import it.unimi.dsi.fastutil.ints.*;
 
 /**
  * Display the sequence variations found in alignments.
@@ -60,6 +61,9 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
      */
     private String[] basenames;
     private MyIterateAlignments alignmentIterator;
+    private FirstPassIterateAlignments firstPassIterator;
+    private boolean thresholds;
+    private int minimumUniqueReadIndices = 1;
 
 
     @Override
@@ -98,9 +102,16 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
         basenames = AlignmentReader.getBasenames(inputFilenames);
         outputFilename = jsapResult.getString("output");
         outputFormat = OutputFormat.valueOf(jsapResult.getString("format").toUpperCase());
+        minimumUniqueReadIndices = jsapResult.getInt("minimum-read-indices");
 
         alignmentIterator = new MyIterateAlignments();
         alignmentIterator.parseIncludeReferenceArgument(jsapResult);
+
+        thresholds = minimumUniqueReadIndices > 0;
+        if (thresholds) {
+            firstPassIterator = new FirstPassIterateAlignments();
+            firstPassIterator.parseIncludeReferenceArgument(jsapResult);
+        }
         return this;
     }
 
@@ -125,8 +136,10 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
         }
 
         try {
-            alignmentIterator.setOutputWriter(writer, outputFormat);
+            if (thresholds) firstPassIterator.iterate(basenames);
 
+            alignmentIterator.setOutputWriter(writer, outputFormat);
+            if (thresholds) alignmentIterator.setFirstPass(firstPassIterator);
             // Iterate through each alignment and write sequence variations to output file:
             alignmentIterator.iterate(basenames);
         }
@@ -151,7 +164,46 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
         new DisplaySequenceVariationsMode().configure(args).execute();
     }
 
-    private static class MyIterateAlignments extends IterateAlignments {
+    /**
+     * Collect the list of read indices where each variation is observed, for a given reference position.
+     */
+    private class FirstPassIterateAlignments extends IterateAlignments {
+        // reference index -> reference Position -> readIndex list
+        Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArraySet>> readIndicesForReferencePositions =
+                new Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArraySet>>();
+
+        public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArraySet>> getReadIndicesForReferencePositions() {
+            return readIndicesForReferencePositions;
+        }
+
+        private FirstPassIterateAlignments() {
+            readIndicesForReferencePositions.defaultReturnValue(new Int2ObjectOpenHashMap<IntArraySet>());
+        }
+
+        public IntArraySet getReadIndices(int referenceIndex, int referencePosition) {
+            final Int2ObjectOpenHashMap<IntArraySet> referencePositionsMap = readIndicesForReferencePositions.get(referenceIndex);
+            final IntArraySet readIndexList = referencePositionsMap.get(referencePosition);
+            return readIndexList;
+        }
+
+        public void processAlignmentEntry(AlignmentReader alignmentReader, Alignments.AlignmentEntry alignmentEntry) {
+            final int referenceIndex = alignmentEntry.getTargetIndex();
+            final int alignmentPositionOnReference = alignmentEntry.getPosition();
+            final Int2ObjectOpenHashMap<IntArraySet> referencePositionsMap = readIndicesForReferencePositions.get(referenceIndex);
+            for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
+                int referencePosition = var.getPosition() + alignmentPositionOnReference;
+                IntArraySet readIndexList = referencePositionsMap.get(referencePosition);
+                if (readIndexList == null) {
+                    readIndexList = new IntArraySet();
+                }
+                readIndexList.add(var.getReadIndex());
+                referencePositionsMap.put(referencePosition, readIndexList);
+            }
+
+        }
+    }
+
+    private class MyIterateAlignments extends IterateAlignments {
         PrintWriter outputWriter;
         private OutputFormat outputFormat;
 
@@ -178,13 +230,18 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                             variations = true;
                             // convert variation position to position on the reference:
                             final int positionOnReference = alignmentEntry.getPosition() + var.getPosition();
+                            int referenceIndex = alignmentEntry.getTargetIndex();
+                            boolean keepVar = true;
+                            keepVar = determineKeepVariation(positionOnReference, referenceIndex, keepVar);
+                            if (keepVar) {
+                                outputWriter.print(String.format("%d:%d:%s/%s,",
 
-                            outputWriter.print(String.format("%d:%d:%s/%s,",
 
-                                    positionOnReference,
-                                    var.getReadIndex(),
-                                    var.getFrom(),
-                                    var.getTo()));
+                                        positionOnReference,
+                                        var.getReadIndex(),
+                                        var.getFrom(),
+                                        var.getTo()));
+                            }
                         }
                         if (variations) {
                             outputWriter.println();
@@ -204,14 +261,17 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                         final int readIndex = var.getReadIndex();
                         final String from = var.getFrom();
                         final String to = var.getTo();
-                        if (!isAllNs(to)) {
-                            variations = true;
+                        int referenceIndex = alignmentEntry.getTargetIndex();
+                        boolean keepVar = true;
+                        keepVar = determineKeepVariation(positionOnReference, referenceIndex, keepVar);
+                        if (keepVar && !isAllNs(to)) {
+
 
                             printTab(alignmentEntry, basename, positionOnReference, readIndex, from, to);
                         }
                     }
 
-                   
+
                 }
                 break;
                 case TAB_SINGLE_BASE: {
@@ -226,7 +286,10 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                         final String to = var.getTo();
                         int fromLength = from.length();
                         int toLength = to.length();
-                        if (!isAllNs(to)) {
+                        int referenceIndex = alignmentEntry.getTargetIndex();
+                        boolean keepVar = true;
+                        keepVar = determineKeepVariation(positionOnReference, referenceIndex, keepVar);
+                        if (keepVar && !isAllNs(to)) {
                             variations = true;
                             int maxLength = Math.max(fromLength, toLength);
                             for (int i = 0; i < maxLength; i++) {
@@ -235,17 +298,25 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                                         positionOnReference + offset,
                                         readIndex + offset,
                                         i < fromLength ? from.substring(i, i + 1) : "",
-                                        i < toLength ? to.substring(i, i + 1) : "");                                 
+                                        i < toLength ? to.substring(i, i + 1) : "");
                             }
                         }
                     }
 
-                    
+
                 }
                 break;
             }
 
 
+        }
+
+        private boolean determineKeepVariation(int positionOnReference, int referenceIndex, boolean keepVar) {
+            if (thresholds) {
+                final IntArraySet indices = firstPassIterator.getReadIndices(referenceIndex, positionOnReference);
+                if (indices != null && indices.size() < minimumUniqueReadIndices) keepVar = false;
+            }
+            return keepVar;
         }
 
         private boolean isAllNs(final String to) {
@@ -278,6 +349,12 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                     from,
                     to,
                     type));
+        }
+
+        FirstPassIterateAlignments firstPassIterator;
+
+        public void setFirstPass(FirstPassIterateAlignments firstPassIterator) {
+            this.firstPassIterator = firstPassIterator;
         }
     }
 }
