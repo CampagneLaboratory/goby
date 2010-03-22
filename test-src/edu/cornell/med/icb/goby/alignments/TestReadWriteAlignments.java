@@ -167,7 +167,7 @@ public class TestReadWriteAlignments  {
         final AlignmentReader reader =
                 new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, "align-103"));
         reader.readHeader();
-        assertArrayEquals("Query lengths do not match", queryLengths, reader.getQueryLength());
+        assertArrayEquals("Query lengths do not match", queryLengths, reader.getQueryLengths());
         assertEquals("Number of queries do not match", 3, reader.getNumberOfQueries());
 
         assertArrayEquals("Target lengths do not match", targetLengths, reader.getTargetLength());

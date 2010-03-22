@@ -33,7 +33,28 @@
             <required>true</required>
             <help>The compact alignment file to read as input.</help>
         </unflaggedOption>
-
-
+       <flaggedOption>
+            <id>format</id>
+            <shortFlag>f</shortFlag>
+            <longFlag>format</longFlag>
+            <required>false</required>
+            <defaults>
+                <string>plain</string>
+            </defaults>
+            <help>Format of the output file (plain, SAM).</help>
+        </flaggedOption>
+         <flaggedOption>
+            <id>constant-read-length</id>
+             <shortFlag>l</shortFlag>
+            <longFlag>constant-read-length</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>0</string>
+            </defaults>
+            <help>Use this number as read length for every read when the query length is not included in the alignment header.</help>
+        </flaggedOption>
     </parameters>
 </jsap>

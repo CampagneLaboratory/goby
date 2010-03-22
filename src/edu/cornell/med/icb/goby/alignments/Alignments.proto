@@ -162,11 +162,11 @@ message AlignmentHeader {
    */
    optional uint32 number_of_aligned_reads=7;
 
-   /* Length of the query sequences. One number per query, in the order or increasing query index.
+   /* Length of the query sequences. One number per query, in the order of increasing query index.
     */
    repeated uint32 query_length=3;
 
-   /* Length of the target sequences. One number per target, in the order or increasing target index.
+   /* Length of the target sequences. One number per target, in the order of increasing target index.
     */
    repeated uint32 target_length=8;
    /**

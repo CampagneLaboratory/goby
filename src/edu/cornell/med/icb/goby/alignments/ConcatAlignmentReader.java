@@ -109,7 +109,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
             for (int i = 1; i < queryIndexOffset.length; i++) {
                 final int offset = numQueriesPerReader[i - 1] + queryIndexOffset[i - 1];
                 queryIndexOffset[i] = offset;
-                final int[] localQueryLenth = readers[i].getQueryLength();
+                final int[] localQueryLenth = readers[i].getQueryLengths();
                 if (localQueryLenth != null) {
                     for (final int length : localQueryLenth) {
                         queryLengths[offset] = length;

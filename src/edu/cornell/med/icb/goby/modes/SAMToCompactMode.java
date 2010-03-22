@@ -132,9 +132,9 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             final SAMRecord samRecord = recordCloseableIterator.next();
             final int queryIndex = getQueryIndex(samRecord);
 
-            final int depth = samRecord.getReadLength();
+            final int readLength = samRecord.getReadLength();
             // save length
-            readLengths[queryIndex] = depth;
+            readLengths[queryIndex] = readLength;
 
             // if SAM reports read is unmapped (we don't know how or why), skip record
             if (samRecord.getReadUnmappedFlag()) {
@@ -240,14 +240,14 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             final int numTotalHits = skipMissingMdAttribute && xoString == null ?
                     1 : (Integer) xoString;
 
-            if (qualityFilter.keepEntry(depth, alignmentEntry)) {
+            if (qualityFilter.keepEntry(readLength, alignmentEntry)) {
                 // only write the entry if it is not ambiguous. i.e. less than or equal to mParameter
                 if (numTotalHits <= mParameter) {
                     writer.appendEntry(alignmentEntry);
                     numAligns += multiplicity;
                 }
                 // TMH writer adds the alignment entry only if hits > thresh
-                tmhWriter.append(queryIndex, numTotalHits, depth);
+                tmhWriter.append(queryIndex, numTotalHits, readLength);
             }
 
             progress.lightUpdate();

@@ -260,11 +260,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     }
                     writer.putStatistic("number-of-entries-written", numAligns);
                     writer.printStats(System.out);
-                    /*
-                      TODO discuss whether this is needed ...
-                      ... it is a lot of additional memory if files are large or indices have not been compacted
-                     */
-                    // writer.setQueryLengths(readLengths);
+                    writer.setQueryLengths(readLengths);
                 }
                 progress.stop();
             }
@@ -393,8 +389,8 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
             final int readIndex = (reverseStrand ? (queryLength - (variationPosition - readIndexAdjustment) - readStartPosition) :
                     variationPosition - readIndexAdjustment + readStartPosition);
             if (readIndex > queryLength) {
-               assert readIndex <= queryLength: String.format( " readIndex %d must be smaller than read length %d .",
-                       readIndex,
+                assert readIndex <= queryLength : String.format(" readIndex %d must be smaller than read length %d .",
+                        readIndex,
                         queryLength);
                 System.err.printf(
                         " readIndex %d must be smaller than read length %d. query index=%d reference index=%d", readIndex,

@@ -24,8 +24,11 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.Iterator;
 
+import com.sun.istack.internal.Nullable;
+
 /**
  * Abstract class for reading Goby compact alignments.
+ *
  * @author Fabien Campagne
  *         Date: May 20, 2009
  *         Time: 6:23:26 PM
@@ -35,6 +38,7 @@ public abstract class AbstractAlignmentReader implements Closeable,
     /**
      * Mapping from query indicies to query identifier strings.  Note that it is
      * not necessary for every query to have an associated identifer.
+     *
      * @see #numberOfQueries
      */
     protected IndexedIdentifier queryIdentifiers;
@@ -45,13 +49,15 @@ public abstract class AbstractAlignmentReader implements Closeable,
     protected int numberOfQueries;
 
     /**
-     * Length of each query sequence.
+     * Length of each query sequence, or null when constantQueryLengths is true.
      */
+    @Nullable
     protected int[] queryLengths;
 
     /**
      * Mapping from target indicies to target identifier strings.  Note that it is
      * not necessary for every target to have an associated identifer.
+     *
      * @see #numberOfTargets
      */
     protected IndexedIdentifier targetIdentifiers;
@@ -62,7 +68,7 @@ public abstract class AbstractAlignmentReader implements Closeable,
     protected int numberOfTargets;
 
     /**
-     * Length of each target sequence.
+     * Length of each target sequence, or null when constantQueryLengths==true.
      */
     protected int[] targetLengths;
 
@@ -70,6 +76,14 @@ public abstract class AbstractAlignmentReader implements Closeable,
      * Indicates that the alignment header has been processed.
      */
     private boolean headerLoaded;
+    /**
+     * True if all the query sequences have the same lengths.
+     */
+    protected boolean constantQueryLengths;
+    /**
+     * The length of all the query sequences. Only valid if constantQueryLengths==true.
+     */
+    protected int constantLength;
 
     public int getNumberOfQueries() {
         assert isHeaderLoaded() : "Header must be loaded to access number of queries";
@@ -122,9 +136,31 @@ public abstract class AbstractAlignmentReader implements Closeable,
      * Returns query lengths. An array of size the number of query sequences, where each element
      * indicates the length of the query sequence.
      */
-    public final int[] getQueryLength() {
+    public final int[] getQueryLengths() {
         assert isHeaderLoaded() : "Header must be loaded to access query lengths";
-        return queryLengths;
+        if (constantQueryLengths) {
+            int[] localQueryLengths = new int[numberOfQueries];
+            for (int i = 0; i < localQueryLengths.length; ++i) {
+                localQueryLengths[i] = constantLength;
+
+            }
+            return localQueryLengths;
+        } else {
+            return queryLengths;
+        }
+    }
+
+    /**
+     * Returns the length of a query.
+     */
+    public final int getQueryLength(final int queryIndex) {
+        assert isHeaderLoaded() : "Header must be loaded to access query lengths";
+        if (constantQueryLengths) {
+            return constantLength;
+        } else {
+            assert queryLengths != null : "Query lengths must exist in the header.";
+            return queryLengths[queryIndex];
+        }
     }
 
     /**

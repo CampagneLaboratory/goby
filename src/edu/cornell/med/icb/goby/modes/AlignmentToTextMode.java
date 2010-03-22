@@ -22,14 +22,16 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.IterateAlignments;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import org.apache.commons.io.IOUtils;
+import edu.cornell.med.icb.identifier.IndexedIdentifier;
+import edu.cornell.med.icb.util.VersionUtils;
+import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.lang.ArrayUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.FileWriter;
 
 /**
  * Converts a compact alignment to plain text.
@@ -45,17 +47,20 @@ public class AlignmentToTextMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Converts a compact alignment to plain text.";
+    private static final String MODE_DESCRIPTION = "Converts a compact alignment to text formats.";
 
     /**
      * The output file.
      */
-    private String outputFile;
+    private String outputFilename;
 
     /**
      * The basename of the compact alignment.
      */
-    private String basename;
+    private String[] basenames;
+    private MyIterateAlignments alignmentIterator;
+    private int defaultReadLength;
+
 
     @Override
     public String getModeName() {
@@ -67,12 +72,19 @@ public class AlignmentToTextMode extends AbstractGobyMode {
         return MODE_DESCRIPTION;
     }
 
+    enum OutputFormat {
+        PLAIN,
+        SAM
+    }
+
+    private OutputFormat outputFormat;
+
     /**
      * Configure.
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws IOException error parsing
+     * @throws IOException   error parsing
      * @throws JSAPException error parsing
      */
     @Override
@@ -80,65 +92,63 @@ public class AlignmentToTextMode extends AbstractGobyMode {
             throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
-        final String inputFile = jsapResult.getString("input");
-        basename = AlignmentReader.getBasename(inputFile);
-        outputFile = jsapResult.getString("output");
+        final String[] inputFiles = jsapResult.getStringArray("input");
+        basenames = AlignmentReader.getBasenames(inputFiles);
+        outputFilename = jsapResult.getString("output");
+        outputFormat = OutputFormat.valueOf(jsapResult.getString("format").toUpperCase());
+        defaultReadLength = jsapResult.getInt("constant-read-length");
+        alignmentIterator = new MyIterateAlignments();
+        alignmentIterator.parseIncludeReferenceArgument(jsapResult);
+
         return this;
     }
 
-    /**
-     * Run the map2text mode.
-     *
-     * @throws java.io.IOException error reading / writing
-     */
-    @Override
-    public void execute() throws IOException {
-        AlignmentReader reader = null;
-        PrintWriter writer = null;
-        try {
-            reader = new AlignmentReader(basename);
-            reader.readHeader();
-            final int numberOfReferences = reader.getNumberOfTargets();
-            final DoubleIndexedIdentifier referenceIds =
-                    new DoubleIndexedIdentifier(reader.getTargetIdentifiers());
-            final int[] referenceLengths = reader.getTargetLength();
+    private class MyIterateAlignments extends IterateAlignments {
+        PrintWriter outputWriter;
+        private OutputFormat outputFormat;
 
-            System.out.println("Alignment contains " + numberOfReferences + " reference sequences");
 
-            // create count writers, one for each reference sequence in the alignment:
-            final IntSet referencesToProcess = new IntOpenHashSet();
-            for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
-                referencesToProcess.add(referenceIndex);
+        public void setOutputWriter(PrintWriter outputWriter, OutputFormat outputFormat) {
+            this.outputWriter = outputWriter;
+            this.outputFormat = outputFormat;
+        }
+
+        AlignmentReader cachedReader;
+        boolean hasReadIds;
+        DoubleIndexedIdentifier readIds;
+        int[] referenceLengths;
+
+
+        public void processAlignmentEntry(AlignmentReader alignmentReader, Alignments.AlignmentEntry alignmentEntry) {
+            final int referenceIndex = alignmentEntry.getTargetIndex();
+
+            if (cachedReader != alignmentReader) {
+
+                hasReadIds = alignmentReader.getQueryIdentifiers().size() > 0;
+                DoubleIndexedIdentifier readIds =
+                        new DoubleIndexedIdentifier(alignmentReader.getQueryIdentifiers());
+                referenceLengths = alignmentReader.getTargetLength();
+
             }
 
-            // read the alignment:
-            System.out.println("Converting the alignment..");
 
-            writer = outputFile == null ? new PrintWriter(System.out) : new PrintWriter(outputFile);
+            final int startPosition = alignmentEntry.getPosition();
+            final int alignmentLength = alignmentEntry.getQueryAlignedLength();
+            for (int i = 0; i < alignmentEntry.getMultiplicity(); ++i) {
+                final int queryIndex = alignmentEntry.getQueryIndex();
 
-            final boolean hasReadIds = reader.getQueryIdentifiers().size() > 0;
-            final DoubleIndexedIdentifier readIds =
-                    new DoubleIndexedIdentifier(reader.getQueryIdentifiers());
-
-            for (final Alignments.AlignmentEntry alignmentEntry : reader) {
-                final int referenceIndex = alignmentEntry.getTargetIndex();
-                final String referenceName = referenceIds.getId(referenceIndex).toString();
-                if (referencesToProcess.contains(referenceIndex)) {
-                    final int startPosition = alignmentEntry.getPosition();
-                    final int alignmentLength = alignmentEntry.getQueryAlignedLength();
-                    for (int i = 0; i < alignmentEntry.getMultiplicity(); ++i) {
-                        final int queryIndex = alignmentEntry.getQueryIndex();
-
-                        // Get the length of the reference (if available)
-                        final int referenceLength;
-                        if (ArrayUtils.getLength(referenceLengths) >= referenceIndex) {
-                            referenceLength = referenceLengths[referenceIndex];
-                        } else {
-                            referenceLength = -1;
-                        }
-                        writer.write(String.format("%s\t%s\t%d\t%d\t%d\t%g\t%d\t%d\t%b%n",
+                // Get the length of the reference (if available)
+                final int referenceLength;
+                if (ArrayUtils.getLength(referenceLengths) >= referenceIndex) {
+                    referenceLength = referenceLengths[referenceIndex];
+                } else {
+                    referenceLength = -1;
+                }
+                switch (outputFormat) {
+                    case PLAIN:
+                        outputWriter.write(String.format("%s\t%s\t%d\t%d\t%d\t%g\t%d\t%d\t%b%n",
                                 hasReadIds ? readIds.getId(queryIndex) : queryIndex,
-                                referenceName,
+                                getReferenceId(alignmentEntry.getTargetIndex()),
                                 referenceLength,
                                 alignmentEntry.getNumberOfIndels(),
                                 alignmentEntry.getNumberOfMismatches(),
@@ -146,24 +156,175 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                                 startPosition,
                                 alignmentLength,
                                 alignmentEntry.getMatchingReverseStrand()));
-                    }
+                        break;
+                    case SAM:
+                        int flag = (alignmentEntry.getMatchingReverseStrand() ? 1 : 0) << 4;   // strand is encoded in 0x10, shift left by 4 bits.
+                        int mappingQuality = 255;
+                        String cigar = calculateCigar(alignmentEntry);
+                        String MRNM = "=";
+                        int inferredInsertSize = 0;
+                        int readLength = defaultReadLength;
+                        if (alignmentReader.hasQueryLengths()) {
+                            readLength = alignmentReader.getQueryLength(alignmentEntry.getQueryIndex());
+                        }
+
+                        MutableString readSequence = getReadSequence(alignmentEntry, readLength);
+
+                        String readQualities = "........";
+                        outputWriter.write(String.format("%s\t%d\t%s\t%d\t%d\t%s\t%s\t%d\t%d\t%s\t%s\t%s%n",
+                                hasReadIds ? readIds.getId(queryIndex) : queryIndex,
+                                flag,
+                                getReferenceId(alignmentEntry.getTargetIndex()),
+                                startPosition,
+                                mappingQuality,
+                                cigar,
+                                MRNM,
+                                startPosition,
+                                inferredInsertSize,
+                                readSequence,
+                                readQualities,
+                                getTags(alignmentEntry, readLength)
+                        ));
+                        break;
                 }
-            }
-        } finally {
-            IOUtils.closeQuietly(writer);
-            if (reader != null) {
-                reader.close();
             }
         }
     }
+
+    private MutableString getReadSequence(Alignments.AlignmentEntry alignmentEntry, int readLength) {
+        MutableString sequence = new MutableString();
+        for (int i = 0; i < readLength; ++i) {
+            sequence.append('.');
+        }
+        for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
+
+            final String to = var.getTo();
+            if (var.getFrom().length() == to.length()) {
+                for (int i = 0; i < to.length(); i++) {
+                    sequence.setCharAt(var.getReadIndex() - 1, to.charAt(i));
+                }
+            }
+        }
+        return sequence;
+    }
+
+    private String getTags(Alignments.AlignmentEntry alignmentEntry, int readLenth) {
+        return String.format("NM:i:%d",
+                alignmentEntry.getNumberOfMismatches());
+              //  getMdAttribute(alignmentEntry, readLenth));
+    }
+
+    private String getMdAttribute(Alignments.AlignmentEntry alignmentEntry, int readLenth) {
+        return "";
+    }
+
+    /* private String getMdAttribute(Alignments.AlignmentEntry alignmentEntry, int readLength) {
+       MutableString mdAttribute = new MutableString();
+       int previousReadIndex = 0;
+       int readIndex = 0;
+       int alreadyMatched = 0;
+      boolean reverseStrand=alignmentEntry.getMatchingReverseStrand();
+       for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
+
+           final String to = var.getTo();
+           final String from = var.getFrom();
+           readIndex = var.getReadIndex() - 1;
+           alreadyMatched += to.length();
+           if (from.length() > to.length()) {
+
+               if (readIndex != previousReadIndex) {
+                   mdAttribute.append(Integer.toString(readIndex - previousReadIndex));
+                   previousReadIndex = readIndex;
+               }
+               mdAttribute.append("^" + from);
+
+
+           } else if (from.length() < to.length()) {
+
+               if (readIndex != previousReadIndex) {
+                   mdAttribute.append(Integer.toString(readIndex - previousReadIndex));
+                   previousReadIndex = readIndex;
+               }
+               mdAttribute.append(to);
+
+
+           } else {
+               // point mutation:
+               mdAttribute.append(Integer.toString(to.length()));
+               mdAttribute.append(to);
+               previousReadIndex = readIndex;
+           }
+
+       }
+
+       mdAttribute.append(Integer.toString(readLength - alreadyMatched));
+
+
+       return mdAttribute.toString();
+   }
+    */
+    private String calculateCigar(Alignments.AlignmentEntry alignmentEntry) {
+        return (alignmentEntry.getQueryAlignedLength() - alignmentEntry.getNumberOfIndels()) + "M";
+    }
+
+    /**
+     * Display the alignments as text files.
+     *
+     * @throws java.io.IOException error reading / writing
+     */
+    @Override
+    public void execute() throws IOException {
+        final PrintWriter writer = outputFilename == null ? new PrintWriter(System.out) :
+                new PrintWriter(new FileWriter(outputFilename));
+        switch (outputFormat) {
+            case PLAIN:
+                writer.printf("queryId\treferenceId\treferenceLength\tnumberOfIndels\tnumberOfMismatches\tscore\tstartPosition\talignmentLength\tmatchesReverseStrand%n");
+            case SAM:
+                writer.printf("@HD\tVN:1.0%n" +
+                        "@PG\tGoby\tVN:" + VersionUtils.getImplementationVersion(GobyDriver.class) + "%n");
+
+                for (String basename : basenames) {
+                    final AlignmentReader reader = new AlignmentReader(basename);
+                    reader.readHeader();
+                    final IndexedIdentifier identifiers = reader.getTargetIdentifiers();
+                    for (MutableString targetId : identifiers.keySet()) {
+                        if (targetId != null) {
+                            final int[] targetLengths = reader.getTargetLength();
+                            if (targetLengths != null) {
+                                writer.printf("@SQ\tSN:%s\tLN:%d%n", targetId, targetLengths[identifiers.getInt(targetId)]);
+                            } else {
+                                writer.printf("@SQ\tSN:%s%n", targetId);
+                            }
+                        }
+                    }
+                }
+                break;
+        }
+
+        try {
+
+            alignmentIterator.setOutputWriter(writer, outputFormat);
+            // Iterate through each alignment and write sequence variations to output file:
+            alignmentIterator.iterate(basenames);
+        }
+
+
+        finally {
+
+            writer.close();
+        }
+
+    }
+
 
     /**
      * Main method.
      *
      * @param args command line args.
      * @throws JSAPException error parsing
-     * @throws IOException error parsing or executing.
+     * @throws IOException   error parsing or executing.
      */
+
     public static void main(final String[] args) throws JSAPException, IOException {
         new AlignmentToTextMode().configure(args).execute();
     }
