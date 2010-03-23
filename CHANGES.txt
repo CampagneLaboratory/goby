@@ -1,5 +1,8 @@
 development
 
+ Added a mode to write a read set to text format. The output format will show the multiplicity of each query index.
+ ReadSets can be created with tally-reads as before.
+
  Changes to CompactAlignmentToAnnotationCountsMode
  - added new option --write-annotation-counts boolean, defaults to true. If set to
    false the annotation counts intermediate files will not be written.

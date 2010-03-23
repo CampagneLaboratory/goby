@@ -18,12 +18,7 @@
 
 package edu.cornell.med.icb.goby.reads;
 
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.io.InputBitStream;
 import it.unimi.dsi.io.OutputBitStream;
 
@@ -60,6 +55,7 @@ public class ReadSet {
     public void add(final int readIndex, final int multiplicity) {
         assert readIndex >= 0 : "read indices must be positive";
         filter.add(readIndex);
+     //   System.out.println("adding " + readIndex + " " + multiplicity);
         if (multiplicity >= smallestStoredMultiplicity) {
 
             multiplicityMap.put(readIndex, multiplicity);
@@ -75,7 +71,7 @@ public class ReadSet {
      * "${basename}-${suffix}.filter"
      *
      * @param basename basename of the filter file to load
-     * @param suffix suffix of the filter file to load
+     * @param suffix   suffix of the filter file to load
      * @throws IOException if the file cannot be found or parsed.
      */
     public void save(final String basename, final String suffix) throws IOException {
@@ -87,12 +83,17 @@ public class ReadSet {
         sorted.addAll(filter);
         Collections.sort(sorted);
 
+        // append smallest stored multiplicity
+        out.writeGamma(smallestStoredMultiplicity);
+
         // append to output:
         out.writeGamma(sorted.size());
         int previous = -1;
         for (final int readIndex : sorted) {
             out.writeDelta(readIndex - previous);
-            out.writeGamma(multiplicityMap.get(readIndex));
+            final int multiplicity = multiplicityMap.get(readIndex);
+      //      System.out.println(readIndex + " " + multiplicity);
+            out.writeGamma(multiplicity);
             previous = readIndex;
 
         }
@@ -104,7 +105,7 @@ public class ReadSet {
      * "${basename}-${suffix}.filter"
      *
      * @param basename basename of the filter file to load
-     * @param suffix suffix of the filter file to load
+     * @param suffix   suffix of the filter file to load
      * @throws IOException if the file cannot be found or parsed.
      */
     public void load(final String basename, final String suffix) throws IOException {
@@ -114,6 +115,7 @@ public class ReadSet {
 
     /**
      * Load a read set from disk.
+     *
      * @param file File to load.
      * @throws IOException If an error occurs reading the read set file.
      */
@@ -122,6 +124,8 @@ public class ReadSet {
         try {
             in = new InputBitStream(file);
             filter.clear();
+            smallestStoredMultiplicity = in.readGamma();
+
             final int numDeltas = in.readGamma();
             int previous = -1;
             for (int i = 0; i < numDeltas; i++) {
@@ -149,6 +153,7 @@ public class ReadSet {
 
     /**
      * Returns the multiplicity of the read, or zero is the read is not in this read set.
+     *
      * @param readIndex
      * @return
      */
@@ -173,6 +178,21 @@ public class ReadSet {
     }
 
     /**
+     * Returns the maximum query index stored in this filter.
+     * @return
+     */
+    public int getMaxReadIndex() {
+        int maxQueryIndex = -1;
+        final IntIterator intIterator = filter.iterator();
+        while (intIterator.hasNext()) {
+            int queryIndex = intIterator.next();
+            maxQueryIndex = Math.max(maxQueryIndex, queryIndex);
+
+        }
+        return maxQueryIndex;
+    }
+
+    /**
      * Set the default multiplicity value.
      *
      * @param value
@@ -181,4 +201,6 @@ public class ReadSet {
         multiplicityMap.defaultReturnValue(value);
         smallestStoredMultiplicity = value;
     }
+
+
 }

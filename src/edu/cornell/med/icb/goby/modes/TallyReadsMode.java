@@ -301,7 +301,7 @@ public class TallyReadsMode extends AbstractGobyMode {
             final ReadSet set = new ReadSet();
             set.smallestStoredMultiplicity(1);
             for (int readIndex = 0; readIndex < otherReadIndices.size(); ++readIndex) {
-               if (otherReadIndices.get(readIndex)) {
+               if (otherReadIndices.getBoolean(readIndex)) {
                    set.add(readIndex, 1);
                }
 
@@ -309,7 +309,7 @@ public class TallyReadsMode extends AbstractGobyMode {
             for (final CompressedRead read : tallies.keySet()) {
 
                 final int count = tallies.getInt(read);
-                if (count > 1 && !otherReadIndices.get(read.readIndex)) {
+                if (count > 1 && otherReadIndices.get(read.readIndex)) {
                     set.add(read.readIndex, count);
 
                 }
