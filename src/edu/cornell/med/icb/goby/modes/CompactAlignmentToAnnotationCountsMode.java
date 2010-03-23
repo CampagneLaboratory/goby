@@ -59,11 +59,11 @@ import org.rosuda.JRI.Rengine;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.FileNotFoundException;
 import java.util.Arrays;
 
 /**
@@ -107,22 +107,22 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     private boolean filterByReferenceNames;
     private ObjectSet<String> includeReferenceNames;
     private ObjectOpenHashSet<String> includeAnnotationTypes;
-    private static String[] inputFilenames;
-    private static boolean doComparison;
+    private String[] inputFilenames;
+    private boolean doComparison;
 
     /**
      * The groups that should be compared, order matters.
      */
-    private static String[] groupComparison;
+    private String[] groupComparison;
     private boolean writeAnnotationCounts = true;
-    private static boolean omitNonInformativeColumns = false;
+    private boolean omitNonInformativeColumns = false;
     private String statsFilename;
     private ParallelTeam team;
     private boolean parallel;
 
-    private static final ObjectSet<String> groups = new ObjectArraySet<String>();
-    private static final DifferentialExpressionCalculator deCalculator = new DifferentialExpressionCalculator();
-    private static Object2ObjectMap<String, Integer> groupSizes = new Object2ObjectOpenHashMap<String, Integer>();
+    private final ObjectSet<String> groups = new ObjectArraySet<String>();
+    private final DifferentialExpressionCalculator deCalculator = new DifferentialExpressionCalculator();
+    private Object2ObjectMap<String, Integer> groupSizes = new Object2ObjectOpenHashMap<String, Integer>();
 
     @Override
     public String getModeName() {
@@ -249,7 +249,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      * @param basename
      * @return
      */
-    public boolean isInputBasename(String basename) {
+    private boolean isInputBasename(String basename) {
         for (String inputFilename :inputFilenames) {
             if (FilenameUtils.getBaseName(AlignmentReader.getBasename(inputFilename)).equals(basename)) return true;
         }
@@ -348,7 +348,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         System.out.println("time spent  " + timer.toString());
     }
 
-    public static void evaluateSummaryStatistics(DifferentialExpressionCalculator deCalculator,
+    public void evaluateSummaryStatistics(DifferentialExpressionCalculator deCalculator,
                                                   String statsFilename,
                                                   String[] groupComparison, boolean doComparison ) throws FileNotFoundException {
         if (doComparison) {
@@ -500,7 +500,6 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                             deCalculator.defineElement(exonID);
                             numberOfElements++;
                         }
-
                     }
                 }
             }
@@ -676,7 +675,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      * @return
      * @throws IOException
      */
-    public static Object2ObjectMap<String, ObjectList<Annotation>> readAnnotations(final String annotFile) throws IOException {
+    public Object2ObjectMap<String, ObjectList<Annotation>> readAnnotations(final String annotFile) throws IOException {
 
         BufferedReader reader = null;
         final Object2ObjectMap<String, Annotation> annots = new Object2ObjectOpenHashMap<String, Annotation>();
