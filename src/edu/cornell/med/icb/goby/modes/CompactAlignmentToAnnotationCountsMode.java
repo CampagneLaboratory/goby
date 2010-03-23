@@ -90,6 +90,11 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             + "annotations (e.g., gene transcript annotations or exons).";
 
     /**
+     * The natural log of the number two.
+     */
+    private static final double LOG_2 = Math.log(2);
+
+    /**
      * The output file.
      */
     private String outputFile;
@@ -222,7 +227,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             deCalculator.defineGroup(groupId);
             groups.add(groupId);
             for (final String groupString : groupBasenames.split(",")) {
-                
+
                 String groupBasename= FilenameUtils.getBaseName(AlignmentReader.getBasename(groupString));
                 if (!isInputBasename(groupBasename)) {
                     System.err.printf("The group basename %s is not a valid input basename.%n",groupBasename);
@@ -448,7 +453,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 writer.write("basename\tmain-id\tsecondary-id\ttype\tchro\tstrand\tlength\tstart\tend\tin-count\tover-count\tRPKM\tlog2(RPKM+1)\texpression\tnum-exons\n");
             }
         }
-        //       System.out.println("id\ttype\tchro\tstart\tend\tin_count\tover_count\tdepth\texpression");
+
         writeAnnotationCounts(allAnnots, writer, inputBasename, referenceIds, algs, referencesToProcess, numAlignedReadsInSample);
         if (outputFile == null) {
             // output filename was not provided on the command line. We close each basename output.
@@ -492,6 +497,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             deCalculator.reserve(numberOfElements, inputFilenames.length);
         }
 
+        int numberOfAnottationCountsWritten = 0;
         for (final int referenceIndex : referencesToProcess) {
             final String chromosomeName = referenceIds.getId(referenceIndex).toString();
             System.out.println("Writing annotation counts for reference " + chromosomeName);
@@ -499,6 +505,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             if (!allAnnots.containsKey(chromosomeName)) {
                 continue;
             }
+
             final ObjectList<Annotation> annots = allAnnots.get(chromosomeName);
             algs[referenceIndex].sortReads();
             algs[referenceIndex].baseCounter.accumulate();
@@ -514,7 +521,6 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 final String geneID = annot.id;
                 final String basename = FilenameUtils.getBaseName(inputBasename);
                 if (includeAnnotationTypes.contains("gene")) {
-
                     final int geneStart = annot.getStart();
                     final int geneEnd = annot.getEnd();
                     final int geneLength = geneEnd - geneStart + 1;
@@ -543,6 +549,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                                 log2(geneRPKM),
                                 geneExpression,
                                 numExons));
+                        numberOfAnottationCountsWritten++;
                     }
                     if (doComparison) {
                         deCalculator.observe(basename, geneID, geneExpression, geneRPKM);
@@ -579,6 +586,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                                     exonOverlapReads,
                                     exonRPKM,
                                     log2(exonRPKM)));
+                            numberOfAnottationCountsWritten++;
                         }
                         if (doComparison) {
                             deCalculator.observe(basename, exonID, exonOverlapReads, exonRPKM);
@@ -611,6 +619,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                                             intronOverlapReads,
                                             intronRPKM,
                                             log2(intronRPKM)));
+                                    numberOfAnottationCountsWritten++;
                                 }
                             }
                         }
@@ -619,12 +628,20 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             }
             algs[referenceIndex] = null;
         }
+
+        LOG.info("Wrote " + numberOfAnottationCountsWritten + " entries");
+        if (numberOfAnottationCountsWritten == 0) {
+            LOG.warn("No entries were written.  This may be due to the fact that names "
+                    + "in the reference dataset used do not match those in the annotation file.  "
+                    + "For example, ENSEMBL names chromosomes \"1\",\"2\",\"3\" whereas UCSC "
+                    + "names the same chromosomes \"chr1\",\"chr2\",\"chr3\". In these "
+                    + "cases you will need to adjust the names in the annotation file being used "
+                    + "so they match the names used in the reference dataset.");
+        }
     }
 
-    final double LOG_2 = Math.log(2);
-
     /**
-     * Calculate the log2 of x +1.
+     * Calculate the log2 of x+1.
      *
      * @param x
      * @return log2(x+1)=Math.log1p(x)/Math.log(2)
