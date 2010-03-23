@@ -20,6 +20,7 @@
 	    <property name="apidocfile" value="${releasedir}/${tag}-apidoc.zip"/>
 	    <property name="datafile" value="${releasedir}/${tag}-data.zip"/>
         <property name="gobyfile" value="${releasedir}/${tag}-goby.zip"/>
+        <property name="srcUrl" value="https://${svnhost}/public/svn/icb/trunk/goby"/>
         <property name="tagUrl" value="https://${svnhost}/public/svn/icb/tags/${tag}"/>
 	</target>
 
@@ -46,7 +47,7 @@
 	<target name="tag" depends="init" unless="nocopy" description="Tag the current trunk release in SVN">
         <echo level="info" message="Tagging current directory with ${tag}"/>
     	<svn>
-    		<copy message="${tag}" srcUrl="https://${svnhost}/public/svn/icb/trunk/goby"
+    		<copy message="${tag}" srcUrl="${srcUrl}"
     			  destUrl="${tagUrl}" revision="${revision}"/>
     	</svn>
     </target>
