@@ -22,6 +22,7 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsReader;
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
@@ -57,25 +58,39 @@ public class CompactFileStatsMode extends AbstractGobyMode {
      */
     private final List<File> inputFiles = new LinkedList<File>();
 
-    /** The minimum read length across all files. */
+    /**
+     * The minimum read length across all files.
+     */
     private int minReadLength = Integer.MAX_VALUE;
 
-    /** The maximum read length across all files. */
+    /**
+     * The maximum read length across all files.
+     */
     private int maxReadLength = Integer.MIN_VALUE;
 
-    /** The cumulative read length across all files. */
+    /**
+     * The cumulative read length across all files.
+     */
     private long cumulativeReadLength;
 
-    /** The number of reads across all files. */
+    /**
+     * The number of reads across all files.
+     */
     private long numberOfReads;
 
-    /** Whether or not to compute quantile information. */
+    /**
+     * Whether or not to compute quantile information.
+     */
     private boolean computeQuantiles;
 
-    /** Number of quantiles used to characterize read length distribution. */
+    /**
+     * Number of quantiles used to characterize read length distribution.
+     */
     private int numberOfQuantiles = 1;
 
-    /** Display verbose output. */
+    /**
+     * Display verbose output.
+     */
     private boolean verbose;
 
     @Override
@@ -93,7 +108,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws IOException error parsing
+     * @throws IOException   error parsing
      * @throws JSAPException error parsing
      */
     @Override
@@ -122,6 +137,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
 
     /**
      * Run the FileStats mode.
+     *
      * @throws IOException error reading / writing
      */
     @Override
@@ -159,6 +175,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
 
     /**
      * Print statistics about an alignment file in the Goby compact form.
+     *
      * @param file The file to display statistics about
      * @throws IOException if the file cannot be read
      */
@@ -177,6 +194,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 reader.getQueryIdentifiers() != null && !reader.getTargetIdentifiers().isEmpty());
         System.out.printf("Has target identifiers = %s%n",
                 reader.getTargetIdentifiers() != null && !reader.getTargetIdentifiers().isEmpty());
+        describeAmbigousReads(basename, reader.getNumberOfQueries());
 
         int maxQueryIndex = -1;
         int maxTargetIndex = -1;
@@ -216,8 +234,21 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 avgNumVariationsPerQuery);
     }
 
+    private void describeAmbigousReads(String basename, double numReads) {
+        try {
+            final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
+            System.out.printf("TMH: aligner threshold= %d%n", tmhReader.getAlignerThreshold());
+            System.out.printf("TMH: number of ambiguous matches= %d%n", tmhReader.getQueryIndices().size());
+            System.out.printf("TMH: %%ambiguous matches= %f %%%n", (tmhReader.getQueryIndices().size()*100f)/numReads);
+        } catch (IOException e) {
+            System.out.println("Cannot read TMH file for basename "+basename);
+
+        }
+    }
+
     /**
      * Print statistics about a reads file in the Goby compact form.
+     *
      * @param file The file to display statistics about
      * @throws IOException if the file cannot be read
      */
@@ -305,6 +336,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
 
     /**
      * Get the maximum read length across all files processed so far.
+     *
      * @return The the maximum read length
      */
     public int getMaxReadLength() {
@@ -313,6 +345,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
 
     /**
      * Get the minimum read length across all files processed so far.
+     *
      * @return The the minimum read length
      */
     public int getMinReadLength() {
@@ -321,6 +354,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
 
     /**
      * Get the cumulative length of the reads processed so far.
+     *
      * @return The total number of reads.
      */
     public long getCumulativeReadLength() {
@@ -329,6 +363,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
 
     /**
      * Get the number of reads processed so far.
+     *
      * @return The total number of reads.
      */
     public long getNumberOfReads() {
@@ -337,6 +372,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
 
     /**
      * Get the list of files (reads/alignments) to process.
+     *
      * @return The list of files.
      */
     public List<File> getInputFiles() {
@@ -345,6 +381,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
 
     /**
      * Add the specified file to the list of files to process.
+     *
      * @param inputFile The file to process
      */
     public void addInputFile(final File inputFile) {
@@ -355,7 +392,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
      * Main method.
      *
      * @param args command line args.
-     * @throws JSAPException error parsing
+     * @throws JSAPException       error parsing
      * @throws java.io.IOException error parsing or executing.
      */
     public static void main(final String[] args) throws JSAPException, IOException {
