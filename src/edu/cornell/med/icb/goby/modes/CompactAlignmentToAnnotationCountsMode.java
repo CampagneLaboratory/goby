@@ -63,6 +63,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 
 /**
@@ -106,22 +107,22 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     private boolean filterByReferenceNames;
     private ObjectSet<String> includeReferenceNames;
     private ObjectOpenHashSet<String> includeAnnotationTypes;
-    private String[] inputFilenames;
-    private boolean doComparison;
+    private static String[] inputFilenames;
+    private static boolean doComparison;
 
     /**
      * The groups that should be compared, order matters.
      */
-    private String[] groupComparison;
+    private static String[] groupComparison;
     private boolean writeAnnotationCounts = true;
-    private boolean omitNonInformativeColumns = false;
+    private static boolean omitNonInformativeColumns = false;
     private String statsFilename;
     private ParallelTeam team;
     private boolean parallel;
 
-    private final ObjectSet<String> groups = new ObjectArraySet<String>();
-    private final DifferentialExpressionCalculator deCalculator = new DifferentialExpressionCalculator();
-    private Object2ObjectMap<String, Integer> groupSizes = new Object2ObjectOpenHashMap<String, Integer>();
+    private static final ObjectSet<String> groups = new ObjectArraySet<String>();
+    private static final DifferentialExpressionCalculator deCalculator = new DifferentialExpressionCalculator();
+    private static Object2ObjectMap<String, Integer> groupSizes = new Object2ObjectOpenHashMap<String, Integer>();
 
     @Override
     public String getModeName() {
@@ -248,7 +249,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      * @param basename
      * @return
      */
-    private boolean isInputBasename(String basename) {
+    public boolean isInputBasename(String basename) {
         for (String inputFilename :inputFilenames) {
             if (FilenameUtils.getBaseName(AlignmentReader.getBasename(inputFilename)).equals(basename)) return true;
         }
@@ -336,51 +337,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             //  processOneBasename(allAnnots, writer, inputFile, inputBasename);
             //}
 
-            if (doComparison) {
-                // evaluate differences between groups:
-                DifferentialExpressionResults results = deCalculator.compare(new FoldChangeCalculator(), groupComparison);
-                results.setOmitNonInformativeColumns(omitNonInformativeColumns);
-
-                results = deCalculator.compare(results, new FoldChangeMagnitudeCalculator(), groupComparison);
-                results = deCalculator.compare(results, new AverageCalculator(), groupComparison);
-
-                boolean ttestflag = true;
-
-                for (int size : groupSizes.values()) {
-                    if (size < 2) {
-                        ttestflag = false;
-                        System.out.println("Insufficient data for t-test: need at least 2 samples per group.");
-                    }
-                }
-
-                results = deCalculator.compare(results, new TTestCalculator(), groupComparison);
-
-
-                results = deCalculator.compare(results, new FisherExactTestCalculator(), groupComparison);
-
-                // TODO: refactor so that the "canDo" method can be used rather than checking for R
-                final Rengine rengine = GobyRengine.getInstance().getRengine();
-                if (rengine != null && rengine.isAlive()) {
-                    results = deCalculator.compare(results, new FisherExactRCalculator(), groupComparison);
-                }
-                results = deCalculator.compare(results, new ChiSquareTestCalculator(), groupComparison);
-
-                final BenjaminiHochbergAdjustment benjaminiHochbergAdjustment = new BenjaminiHochbergAdjustment();
-                final BonferroniAdjustment bonferroniAdjustment = new BonferroniAdjustment();
-
-                if (ttestflag) {
-                    results = bonferroniAdjustment.adjust(results, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
-                    results = benjaminiHochbergAdjustment.adjust(results, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
-                } else {
-                    results = bonferroniAdjustment.adjust(results, "fisher-exact-test", "fisher-exact-R", "chi-square-test");
-                    results = benjaminiHochbergAdjustment.adjust(results, "fisher-exact-test", "fisher-exact-R", "chi-square-test");
-
-                }
-                final PrintWriter statsOutput = new PrintWriter(statsFilename);
-                results.write(statsOutput, '\t');
-
-                IOUtils.closeQuietly(statsOutput);
-            }
+            evaluateSummaryStatistics(deCalculator, statsFilename, groupComparison, doComparison);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -389,6 +346,56 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         }
         timer.stop();
         System.out.println("time spent  " + timer.toString());
+    }
+
+    public static void evaluateSummaryStatistics(DifferentialExpressionCalculator deCalculator,
+                                                  String statsFilename,
+                                                  String[] groupComparison, boolean doComparison ) throws FileNotFoundException {
+        if (doComparison) {
+            // evaluate differences between groups:
+            DifferentialExpressionResults results = deCalculator.compare(new FoldChangeCalculator(), groupComparison);
+            //results.setOmitNonInformativeColumns(omitNonInformativeColumns);
+
+            results = deCalculator.compare(results, new FoldChangeMagnitudeCalculator(), groupComparison);
+            results = deCalculator.compare(results, new AverageCalculator(), groupComparison);
+
+            boolean ttestflag = true;
+
+            for (int size : groupSizes.values()) {
+                if (size < 2) {
+                    ttestflag = false;
+                    System.out.println("Insufficient data for t-test: need at least 2 samples per group.");
+                }
+            }
+
+            results = deCalculator.compare(results, new TTestCalculator(), groupComparison);
+
+
+            results = deCalculator.compare(results, new FisherExactTestCalculator(), groupComparison);
+
+            // TODO: refactor so that the "canDo" method can be used rather than checking for R
+            final Rengine rengine = GobyRengine.getInstance().getRengine();
+            if (rengine != null && rengine.isAlive()) {
+                results = deCalculator.compare(results, new FisherExactRCalculator(), groupComparison);
+            }
+            results = deCalculator.compare(results, new ChiSquareTestCalculator(), groupComparison);
+
+            final BenjaminiHochbergAdjustment benjaminiHochbergAdjustment = new BenjaminiHochbergAdjustment();
+            final BonferroniAdjustment bonferroniAdjustment = new BonferroniAdjustment();
+
+            if (ttestflag) {
+                results = bonferroniAdjustment.adjust(results, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+                results = benjaminiHochbergAdjustment.adjust(results, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+            } else {
+                results = bonferroniAdjustment.adjust(results, "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+                results = benjaminiHochbergAdjustment.adjust(results, "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+
+            }
+            final PrintWriter statsOutput = new PrintWriter(statsFilename);
+            results.write(statsOutput, '\t');
+
+            IOUtils.closeQuietly(statsOutput);
+        }
     }
 
     private void processOneBasename(final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots,
@@ -479,9 +486,12 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 final ObjectList<Annotation> annots = allAnnots.get(chromosomeName);
 
                 for (final Annotation annot : annots) {
-                    final String geneID = annot.id;
-                    deCalculator.defineElement(geneID);
-                    numberOfElements++;
+                    if(includeAnnotationTypes.contains("gene")){
+                        final String geneID = annot.id;
+                        deCalculator.defineElement(geneID);
+                        numberOfElements++;
+                    }
+
                     if (includeAnnotationTypes.contains("exon")) {
                         int numExons = annot.segments.size();
                         for (int i = 0; i < numExons; i++) {
@@ -490,6 +500,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                             deCalculator.defineElement(exonID);
                             numberOfElements++;
                         }
+
                     }
                 }
             }
@@ -665,7 +676,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      * @return
      * @throws IOException
      */
-    public Object2ObjectMap<String, ObjectList<Annotation>> readAnnotations(final String annotFile) throws IOException {
+    public static Object2ObjectMap<String, ObjectList<Annotation>> readAnnotations(final String annotFile) throws IOException {
 
         BufferedReader reader = null;
         final Object2ObjectMap<String, Annotation> annots = new Object2ObjectOpenHashMap<String, Annotation>();

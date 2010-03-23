@@ -23,16 +23,24 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeCount;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeStartCount;
+import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
+import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.counts.CountsArchiveWriter;
 import edu.cornell.med.icb.goby.counts.CountsWriter;
+import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.io.FileWriter;
@@ -74,6 +82,18 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
     private String optionalOutputFile;
     private boolean accumulatePeakHistogram;
     private int focusOnStrand;
+    private final DifferentialExpressionCalculator deCalculator = new DifferentialExpressionCalculator();
+    private String[] groupComparison;
+    private String[] inputFiles;
+    private boolean doComparison = true;
+    private static final ObjectSet<String> groups = new ObjectArraySet<String>();
+    private static Object2ObjectMap<String, Integer> groupSizes = new Object2ObjectOpenHashMap<String, Integer>();
+    /**
+     * The annotation file.
+     */
+    private String annotationFile;
+    private ObjectOpenHashSet<String> includeAnnotationTypes;
+
 
     private String countArchiveModifier = COUNT_ARCHIVE_MODIFIER_DEFAULT;
 
@@ -100,7 +120,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
-        final String[] inputFiles = jsapResult.getStringArray("input");
+        inputFiles = jsapResult.getStringArray("input");
         final ObjectSet<String> basenameSet = new ObjectOpenHashSet<String>();
 
         for (final String inputFile : inputFiles) {
@@ -139,8 +159,100 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
                 System.err.println("strand choice must be one of {forward, positive, reverse, negative, both, either}.");
                 System.exit(2);
             }
+
+        }
+        final String groupsDefinition = jsapResult.getString("groups");
+        parseGroupsDefinition(groupsDefinition);
+        final String compare = jsapResult.getString("compare");
+        parseCompare(compare);
+        annotationFile = jsapResult.getString("annotation");
+
+        final String includeAnnotationTypeComas = jsapResult.getString("include-annotation-types");
+        includeAnnotationTypes = new ObjectOpenHashSet<String>();
+        if (includeAnnotationTypeComas != null) {
+            includeAnnotationTypes.addAll(Arrays.asList(includeAnnotationTypeComas.split("[,]")));
+            for (final String name : includeAnnotationTypes) {
+                if (name.equals("gene") | name.equals("transcript")) {
+                    continue;
+                } else {
+                    System.out.println("Please enter a valid annotation type. "
+                            + "Valid annotation types are either gene or transcript.");
+                    System.exit(1);
+                }
+                System.out.println("Will write counts for the following annotation types:");
+                System.out.println(name);
+            }
         }
         return this;
+    }
+
+    /**
+     * Return true if the basename is on the command line as an input basename.
+     *
+     * @param basename
+     * @return
+     */
+    public boolean isInputBasename(String basename) {
+        for (String inputFilename : inputFiles) {
+            if (FilenameUtils.getBaseName(AlignmentReader.getBasename(inputFilename)).equals(basename)) return true;
+        }
+        return false;
+    }
+
+    private void parseCompare(final String compare) {
+        if (compare == null) {
+            doComparison = false;
+        } else {
+            doComparison = true;
+        }
+
+        if (doComparison) {
+            final String[] groupLanguageText = compare.split("/");
+            for (final String groupId : groupLanguageText) {
+
+                if (!groups.contains(groupId)) {
+                    System.err.println("Group " + groupId + " used in --compare must be defined. "
+                            + "Please see the --groups option to define groups.");
+                    System.exit(1);
+                }
+            }
+            groupComparison = groupLanguageText;
+        }
+    }
+
+    public void parseGroupsDefinition(final String groupsDefinition) {
+        if (groupsDefinition == null) {
+            // no groups definition to parse.
+            return;
+        }
+
+        final String[] groupsTmp = groupsDefinition.split("/");
+        for (final String group : groupsTmp) {
+            final String[] groupTokens = group.split("=");
+            if (groupTokens.length < 2) {
+                System.err.println("The --group argument must have the syntax groupId=basename");
+                System.exit(1);
+            }
+            final String groupId = groupTokens[0];
+            final String groupBasenames = groupTokens[1];
+            assert groupTokens.length == 2 : "group definition must have only two elements separated by an equal sign.";
+            deCalculator.defineGroup(groupId);
+            groups.add(groupId);
+            for (final String groupString : groupBasenames.split(",")) {
+
+                String groupBasename = FilenameUtils.getBaseName(AlignmentReader.getBasename(groupString));
+                if (!isInputBasename(groupBasename)) {
+                    System.err.printf("The group basename %s is not a valid input basename.%n", groupBasename);
+                    System.exit(1);
+                }
+
+                System.out.println("Associating basename: " + groupBasename + " to group: " + groupId);
+                deCalculator.associateSampleToGroup(groupBasename, groupId);
+            }
+
+            int groupSize = (groupBasenames.split(",")).length;
+            groupSizes.put(groupId, groupSize);
+        }
     }
 
     /**
@@ -161,7 +273,10 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
                 outputFile += "-transcript-counts.txt";
                 processTranscriptAlignment(basename);
             }
+
         }
+
+
     }
 
     private void processTranscriptAlignment(final String basename) throws IOException {
@@ -204,7 +319,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         }
     }
 
-    private void processFullGenomeAlignment(final String basename) throws IOException {
+    public void processFullGenomeAlignment(final String basename) throws IOException {
         final AlignmentReader reader = new AlignmentReader(basename);
         reader.readHeader();
         final int numberOfReferences = reader.getNumberOfTargets();
@@ -247,7 +362,10 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         referenceReader.readHeader();
 
         // read the alignment:
-        System.out.println("Loading the alignment..");
+        System.out.println("Loading the alignment " + basename + "........");
+
+        int numAlignedReadsInSample = 0;
+
         for (final Alignments.AlignmentEntry alignmentEntry : referenceReader) {
             final int referenceIndex = alignmentEntry.getTargetIndex();
             if (referencesToProcess.contains(referenceIndex)) {
@@ -258,13 +376,16 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
 
                     algs[referenceIndex].populate(startPosition, startPosition + alignmentLength,
                             !alignmentEntry.getMatchingReverseStrand());
+                    ++numAlignedReadsInSample;
                 }
             }
         }
-
         reader.close();
+
+
         final Timer timer = new Timer();
         timer.start();
+
         for (final int referenceIndex : referencesToProcess) {
             final String chromosomeName = referenceIds.getId(referenceIndex).toString();
 
@@ -278,11 +399,55 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
             // Runtime.getRuntime().gc();
 
         }
-        countArchive.close();
-        timer.stop();
-        System.out.println(String.format("time spent  %d ms %g secs %g mins",
-                timer.millis(), timer.seconds(),
-                timer.minutes()));
+
+
+        final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots;
+        System.out.println("Reading annotations from " + annotationFile);
+        allAnnots = CompactAlignmentToAnnotationCountsMode.readAnnotations(annotationFile);
+        if (doComparison) {
+            int numberOfElements = 0;
+            for (final int referenceIndex : referencesToProcess) {
+                final String chromosomeName = referenceIds.getId(referenceIndex).toString();
+
+                if (!allAnnots.containsKey(chromosomeName)) {
+                    continue;
+                }
+                final ObjectList<Annotation> annots = allAnnots.get(chromosomeName);
+
+                for (final Annotation annot : annots) {
+                    if (includeAnnotationTypes.contains("gene")) {
+                        final String geneID = annot.id;
+                        deCalculator.defineElement(geneID);
+                        numberOfElements++;
+                    }
+
+                    if (includeAnnotationTypes.contains("transcript")) {
+                        int numTranscripts = annot.segments.size();
+                        for (int i = 0; i < numTranscripts; i++) {
+                            Segment transcriptSegment = annot.segments.get(i);
+                            final String transcriptId = transcriptSegment.id;
+                            deCalculator.defineElement(transcriptId);
+                            numberOfElements++;
+                        }
+
+                    }
+                }
+
+            }
+            deCalculator.reserve(numberOfElements, inputFiles.length);
+
+
+            System.out.println(outputFile);
+            CompactAlignmentToAnnotationCountsMode.evaluateSummaryStatistics(deCalculator, outputFile,
+                    groupComparison, doComparison);
+
+            countArchive.close();
+            timer.stop();
+
+            System.out.println(String.format("time spent  %d ms %g secs %g mins",
+                    timer.millis(), timer.seconds(),
+                    timer.minutes()));
+        }
     }
 
     /**
@@ -295,5 +460,6 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
      */
     public static void main(final String[] args) throws JSAPException, IOException {
         new CompactAlignmentToCountsMode().configure(args).execute();
+
     }
 }

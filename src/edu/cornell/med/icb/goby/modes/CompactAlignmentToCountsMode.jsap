@@ -72,5 +72,42 @@
             </defaults>
             <help>When provided with the --start argument, consider only start positions on the specified strand.  Valid strand choices include {positive/forward, negative/reverse, both/either}.  </help>
         </flaggedOption>
+        <flaggedOption>
+            <id>groups</id>
+            <shortFlag>g</shortFlag>
+            <longFlag>groups</longFlag>
+            <required>false</required>
+            <help>Define groups for multi-group comparisons. The syntax of the groups arguments is id-1=basename1,basename2/id-2=basename4,basename5 Where id-1 is the id of the first group, defined to consist of samples basename1 and basename2. basename1 must refer to a basename provided as input on the command line (see input). Multiple groups are separated by forward slashes (/).</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>include-annotation-types</id>
+            <longFlag>include-annotation-types</longFlag>
+            <required>false</required>
+            <defaults>
+                <string>gene,intron,exon</string>
+            </defaults>
+            <help>Comma delimited list of annotation types. When provided, write annotation counts for the specified annotation type. By default, write annotation counts for gene exon or introns.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>compare</id>
+            <longFlag>compare</longFlag>
+            <required>false</required>
+            <help>Compare annotation counts between groups of samples. The compare flag must be followed by group ids separated by slashes. For instance, if groups group-A and group-B have been defined (see --groups option), --compare group-A/group-B will evaluate statistical tests of different count representation between samples in groups A and B.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>annotation</id>
+            <shortFlag>a</shortFlag>
+            <longFlag>annotation</longFlag>
+            <required>true</required>
+            <help>The annoation file as input.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>include-annotation-types</id>
+            <longFlag>include-annotation-types</longFlag>
+            <required>false</required>
+            <defaults>
+                <string>gene,transcript</string>
+            </defaults>
+
     </parameters>
 </jsap>
