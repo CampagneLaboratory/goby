@@ -24,7 +24,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.Iterator;
 
-import com.sun.istack.internal.Nullable;
 
 /**
  * Abstract class for reading Goby compact alignments.
@@ -51,7 +50,6 @@ public abstract class AbstractAlignmentReader implements Closeable,
     /**
      * Length of each query sequence, or null when constantQueryLengths is true.
      */
-    @Nullable
     protected int[] queryLengths;
 
     /**
