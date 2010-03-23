@@ -1,8 +1,5 @@
 development
 
- Added a mode to write a read set to text format (set-to-text). The output will show the multiplicity of each query index.
- ReadSets can be efficiently created with tally-reads as before.
-
  Changes to CompactAlignmentToAnnotationCountsMode
  - added new option --write-annotation-counts boolean, defaults to true. If set to
    false the annotation counts intermediate files will not be written.
@@ -36,6 +33,11 @@ development
  Changes to the Compact format:
  - Store target/reference sequence lengths in the alignment header. This information is helpful when calculating
    statistics such as RPKMs (transcript-level searches).
+
+1.4.1
+ - Added a mode to write a read set to text format (set-to-text). The output will show the
+   multiplicity of each query index.  ReadSets can be efficiently created with tally-reads
+   as before.
 
 1.4
  - Last aligner (http://last.cbrc.jp/) is now supported "out of the box".  Tested against
