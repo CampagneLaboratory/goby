@@ -70,6 +70,9 @@ import java.util.NoSuchElementException;
  * ----------------------------------------------------------------------------
  */
 public class LastParser implements Closeable {
+    /**
+     * Iterator over lines in the MAF file.
+     */
     private LineIterator iterator;
     private boolean entryFound;
     private float score;
@@ -139,9 +142,8 @@ public class LastParser implements Closeable {
     }
 
     private void readScore() {
-        MutableString line;
         while (iterator.hasNext()) {
-            line = iterator.next();
+            final MutableString line = iterator.next();
             if (line.startsWith("#")) {
                 continue;
             }
@@ -149,7 +151,7 @@ public class LastParser implements Closeable {
                 final String[] tokens = line.toString().split("[\\ ]+");
 
                 this.score = Float.parseFloat(tokens[1].substring(6));
-                //return alignedSequences to the pool so that we can reuse them for the next parsed entry:
+                // return alignedSequences to the pool so that we can reuse them for the next parsed entry:
                 poolOfAlignedSequences.addAll(alignedSequences);
                 alignedSequences.clear();
                 entryFound = true;

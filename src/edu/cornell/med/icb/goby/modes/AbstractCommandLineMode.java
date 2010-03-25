@@ -18,16 +18,23 @@
 
 package edu.cornell.med.icb.goby.modes;
 
+import com.martiansoftware.jsap.Flagged;
 import com.martiansoftware.jsap.IDMap;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import com.martiansoftware.jsap.Option;
 import com.martiansoftware.jsap.Parameter;
+import com.martiansoftware.jsap.Switch;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -64,7 +71,16 @@ public abstract class AbstractCommandLineMode {
     public abstract String getModeDescription();
 
     /**
-     * Print Usage for all of the Cascading Mode (except CascadingDriver).
+     * Returns true when the id represents a help option.
+     * @param id The id to check
+     * @return true if the id is a known help option.
+     */
+    private boolean isJSAPHelpId(final String id) {
+        return "help".equals(id) || "wikihelp".equals(id) || "htmlhelp".equals(id);
+    }
+
+    /**
+     * Print usage for the mode.
      *
      * @param jsap the configured JSAP object
      */
@@ -84,6 +100,153 @@ public abstract class AbstractCommandLineMode {
         System.err.println();
         System.err.println("Options: ");
         System.err.println(jsap.getHelp(JSAP.DEFAULT_SCREENWIDTH - 1));
+    }
+
+    /**
+     * Print the usage for a mode in the format appropriate for a
+     * <a href="http://www.wikimedia.org/">Wikimedia</a> table.
+     * @param jsap The parameters for the mode
+     */
+    public void printUsageAsWikiTable(final JSAP jsap) {
+        PrintWriter writer = null;
+        try {
+            writer = new PrintWriter(System.out);
+
+            // Table definition/header
+            writer.println("{| class=\"wikitable\" style=\"margin: 1em auto 1em auto; background:#efefef;\" valign=\"top\" align=\"center\" border=\"1\" cellpadding=\"5\" width=\"80%\"");
+            writer.println("|- valign=\"bottom\" align=\"left\" style=\"background:#ffdead;\"");
+            writer.println("!width=\"15%\"| Flag");
+            writer.println("!width=\"10%\" | Arguments");
+            writer.println("!width=\"5%\"| Required");
+            writer.println("! Description");
+            writer.println();
+
+            // iterate through help entries for the mode
+            final IDMap idMap = jsap.getIDMap();
+            final Iterator iterator = idMap.idIterator();
+            while (iterator.hasNext()) {
+                final String id = (String) iterator.next();
+                if (!"mode".equals(id) && !isJSAPHelpId(id)) { // skip the mode and help ids
+                    final Parameter parameter = jsap.getByID(id);
+                    writer.println("|- valign=\"top\" align=\"left\"");
+                    writer.print("| <nowiki>");
+                    if (parameter instanceof Flagged) {
+                        final Flagged flagged = (Flagged) parameter;
+                        final Character characterFlag = flagged.getShortFlagCharacter();
+                        final String longFlag = flagged.getLongFlag();
+                        if (characterFlag != null && StringUtils.isNotBlank(longFlag)) {
+                            writer.print("(-" + characterFlag + "|--" + longFlag + ")");
+                        } else if (characterFlag != null) {
+                            writer.print("-" + characterFlag);
+                        } else if (StringUtils.isNotBlank(longFlag)) {
+                            writer.print("--" + longFlag);
+                        }
+                    } else {
+                        writer.print("n/a");
+                    }
+                    writer.println("</nowiki>");
+                    writer.print("| ");
+                    if (parameter instanceof Switch) {
+                        writer.println("n/a");
+                    } else {
+                        writer.println(id);
+                    }
+
+                    final boolean required;
+                    if (parameter instanceof Option) {
+                        final Option option = (Option) parameter;
+                        required = option.required();
+                    } else {
+                        required = !(parameter instanceof Switch);
+                    }
+                    writer.println("| " + BooleanUtils.toStringYesNo(required));
+                    writer.println("| " + parameter.getHelp());
+                    writer.println();
+                }
+            }
+
+            // table close
+            writer.println("|}");
+        } finally {
+            IOUtils.closeQuietly(writer);
+        }
+    }
+
+    /**
+     * Print the usage for a mode in the format appropriate for a table in HTML.
+     * @param jsap The parameters for the mode
+     */
+    public void printUsageAsHtmlTable(final JSAP jsap) {
+        PrintWriter writer = null;
+        try {
+            writer = new PrintWriter(System.out);
+
+            // Table definition/header
+            writer.println("<table style=\"background: #efefef;\" border=\"1\" cellpadding=\"5\">");
+            writer.println("<tbody>");
+            writer.println("<tr style=\"background: #ffdead;\" align=\"left\" valign=\"bottom\">");
+            writer.println("<th style=\"width: 15%\">Flag</th>");
+            writer.println("<th style=\"width: 10%\">Arguments</th>");
+            writer.println("<th style=\"width: 5%\">Required</th>");
+            writer.println("<th>Description</th>");
+            writer.println("</tr>");
+
+            // iterate through help entries for the mode
+            final IDMap idMap = jsap.getIDMap();
+            final Iterator iterator = idMap.idIterator();
+            while (iterator.hasNext()) {
+                final String id = (String) iterator.next();
+                if (!"mode".equals(id) && !isJSAPHelpId(id)) { // skip the mode and help ids
+                    final Parameter parameter = jsap.getByID(id);
+                    writer.println("<tr align=\"left\" valign=\"top\">");
+                    writer.print("<td><code>");
+                    if (parameter instanceof Flagged) {
+                        final Flagged flagged = (Flagged) parameter;
+                        final Character characterFlag = flagged.getShortFlagCharacter();
+                        final String longFlag = flagged.getLongFlag();
+                        if (characterFlag != null && StringUtils.isNotBlank(longFlag)) {
+                            writer.print("(-" + characterFlag + "|--" + longFlag + ")");
+                        } else if (characterFlag != null) {
+                            writer.print("-" + characterFlag);
+                        } else if (StringUtils.isNotBlank(longFlag)) {
+                            writer.print("--" + longFlag);
+                        }
+                    } else {
+                        writer.print("n/a");
+                    }
+                    writer.println("</code></td>");
+                    writer.print("<td>");
+                    if (parameter instanceof Switch) {
+                        writer.print("n/a");
+                    } else {
+                        writer.print(id);
+                    }
+                    writer.println("</td>");
+                    final boolean required;
+                    if (parameter instanceof Option) {
+                        final Option option = (Option) parameter;
+                        required = option.required();
+                    } else {
+                        required = !(parameter instanceof Switch);
+                    }
+                    writer.println("<td>" + BooleanUtils.toStringYesNo(required) + "</td>");
+                    writer.print("<td>");
+
+                    // convert any strange characters to html codes
+                    final String htmlHelpString = StringEscapeUtils.escapeHtml(parameter.getHelp());
+                    // and also convert "-" to the hyphen character code
+                    writer.print(StringUtils.replace(htmlHelpString, "-", "&#45;"));
+                    writer.println("</td>");
+                    writer.println("</tr>");
+                }
+            }
+
+            // table close
+            writer.println("</tbody>");
+            writer.println("</table>");
+        } finally {
+            IOUtils.closeQuietly(writer);
+        }
     }
 
     /**
@@ -124,8 +287,9 @@ public abstract class AbstractCommandLineMode {
         final Iterator<String> idsIt = jsapSource.getIDMap().idIterator();
         while (idsIt.hasNext()) {
             final String id = idsIt.next();
-            //remove parameters if they already exist in the destination.
-            // This makes sure we use the source parameters, such as mode, help, which contain variables to be replaced.
+            // remove parameters if they already exist in the destination.
+            // This makes sure we use the source parameters, such as mode, help,
+            // which contain variables to be replaced.
             if (jsap.getByID(id) != null) {
                 jsap.unregisterParameter(jsap.getByID(id));
             }
@@ -163,7 +327,7 @@ public abstract class AbstractCommandLineMode {
     }
 
     /**
-     * Parse the JSAP to JSAPResult. Handle if "--help" was requested.
+     * Parse the JSAP to JSAPResult. Handle if "help" was requested.
      *
      * @param jsap the parser to use when parsing arguments
      * @param args the arguments to parse
@@ -175,6 +339,12 @@ public abstract class AbstractCommandLineMode {
             if (jsap.getByID("help") != null && jsapResult.getBoolean("help")) {
                 printUsage(jsap);
                 System.exit(1);
+            } else if (jsap.getByID("htmlhelp") != null && jsapResult.getBoolean("htmlhelp")) {
+                printUsageAsHtmlTable(jsap);
+                System.exit(2);
+            } else if (jsap.getByID("wikihelp") != null && jsapResult.getBoolean("wikihelp")) {
+                printUsageAsWikiTable(jsap);
+                System.exit(3);
             }
         }
         return jsapResult;

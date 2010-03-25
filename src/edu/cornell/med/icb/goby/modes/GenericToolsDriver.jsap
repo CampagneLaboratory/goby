@@ -33,5 +33,15 @@
             <longFlag>help</longFlag>
             <help>Displays usage help information.</help>
         </switch>
+        <switch>
+            <id>htmlhelp</id>
+            <longFlag>htmlhelp</longFlag>
+            <help>Displays mode usage information in html table format.</help>
+        </switch>
+        <switch>
+            <id>wikihelp</id>
+            <longFlag>wikihelp</longFlag>
+            <help>Displays mode usage information in wikimedia table format.</help>
+        </switch>
     </parameters>
 </jsap>

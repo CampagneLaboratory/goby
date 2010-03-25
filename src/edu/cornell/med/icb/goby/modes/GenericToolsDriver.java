@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import com.martiansoftware.jsap.Parameter;
 import edu.cornell.med.icb.io.ResourceFinder;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.logging.Log;
@@ -129,10 +130,28 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
         final JSAPResult jsapResult = parseJsap(jsap, args);
         mode = jsapResult.getString("mode");
         if (mode == null) {
+            unregisterFormattedHelp(jsap);
             printUsage(jsap);
             System.exit(1);
         }
         return this;
+    }
+
+    /**
+     * Removes any "special" options from being displayed.  In this case,
+     * these are help strings that are only useful with modes.
+     * @param jsapVal the JSAP as configured
+     */
+    private void unregisterFormattedHelp(final JSAP jsapVal) {
+        // unregister help parameters for modes
+        final Parameter htmlHelpId = jsapVal.getByID("htmlhelp");
+        if (htmlHelpId != null) {
+            jsapVal.unregisterParameter(htmlHelpId);
+        }
+        final Parameter wikiHelpId = jsapVal.getByID("wikihelp");
+        if (wikiHelpId != null) {
+            jsapVal.unregisterParameter(wikiHelpId);
+        }
     }
 
     /**
@@ -168,6 +187,7 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
         if (modeClass == null || caught != null) {
             if (modeClass == null) {
                 System.err.println("Unrecognized mode: '" + mode + "'");
+                unregisterFormattedHelp(jsap);
             }
             printUsage(jsap);
             if (caught != null) {
