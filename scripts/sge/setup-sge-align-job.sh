@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 
 #
 # Script to bundle goby and required data into a
@@ -12,7 +12,7 @@ SCRIPT_DIR=$(dirname $SCRIPT)
 # Absolute path to the SGE align scripts
 ALIGN_SCRIPT_DIR=${SCRIPT_DIR}/align
 
-if [ -z $1 ]; then
+if [ -z "$1" ]; then
     echo "Job name is required"
     exit 1
 fi
@@ -42,7 +42,7 @@ if [ ! -r ${REFERENCE} ]; then
 fi
 
 # Get the number of bytes in the reads file
-if [ ! -r ${READS} ]; then
+if [ -z "${READS}" ] || [ ! -r ${READS} ]; then
     echo "WARNING: Reads ${READS} file cannot be read"
     READS_SIZE=0
 else
@@ -52,7 +52,7 @@ fi
 echo "Bundling job submission files"
 
 # see if the job needs to split into a job array
-if [ -z ${CHUNK_SIZE} ] || [ ${CHUNK_SIZE} -le 0 ] || [ ${CHUNK_SIZE} -ge ${READS_SIZE} ]; then
+if [ -z "${CHUNK_SIZE}" ] || [ ${CHUNK_SIZE} -le 0 ] || [ ${CHUNK_SIZE} -ge ${READS_SIZE} ]; then
     echo "Alignment will not be split"
 else
     NUMBER_OF_JOBS=$((${READS_SIZE} / ${CHUNK_SIZE} + 1))
@@ -60,7 +60,7 @@ else
     echo "Alignment will run as ${NUMBER_OF_JOBS} jobs"
 fi
 
-if [ ! -z ${SGE_STATUS_MAILTO} ]; then
+if [ ! -z "${SGE_STATUS_MAILTO}" ]; then
     SGE_MAILTO_DIRECTIVE="#$ -M ${SGE_STATUS_MAILTO}"
 fi
 
