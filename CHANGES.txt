@@ -1,4 +1,10 @@
-development
+development  ->1.5
+
+ Changes to fasta-to-compact mode:
+ - Add parallel processing in fasta-to-compact mode. Use the --parallel flag to activate. Will now only regenerate compact-reads that do not exist, or are older than the input file.
+ 
+ Added a mode to write a read set to text format (set-to-text). The output will show the multiplicity of each query index.
+ ReadSets can be efficiently created with tally-reads as before.
 
  Changes to CompactAlignmentToAnnotationCountsMode
  - added new option --write-annotation-counts boolean, defaults to true. If set to

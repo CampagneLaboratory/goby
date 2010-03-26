@@ -65,7 +65,7 @@
               <defaults>
                 <string>Illumina</string>
             </defaults>
-            <help>The encoding for quality scores. The default quality encoding is that used by the Illumina pipeline 1.3+</help>
+            <help>The encoding for quality scores. The default quality encoding is that used by the Illumina pipeline 1.3+. Valid encodings include Illumina, Sanger and Solexa.</help>
          </flaggedOption>
         <flaggedOption>
             <id>sequence-per-chunk</id>
@@ -86,5 +86,10 @@
             <greedy>true</greedy>
             <help>The input fasta files to convert to compact reads.  The output files will have the same filename but end in .compact-reads.  If the input file ends in .gz it will be decompressed on the fly.  </help>
         </unflaggedOption>
+        <switch>
+            <id>parallel</id>
+            <longFlag>parallel</longFlag>
+            <help>Process input files in parallel. Use when you have many input files to proces. You can tune the number of processors used by setting the property pj.nt. For instance, -Dpj.nt=5 will use 5 parallel threads. When --parallel is specified, one thread per processing core of the machine will be used unless specified otherwise (with pj.nt).</help>
+        </switch>
     </parameters>
 </jsap>

@@ -24,6 +24,7 @@ import edu.cornell.med.icb.goby.readers.FastXEntry;
 import edu.cornell.med.icb.goby.readers.FastXReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
+import edu.cornell.med.icb.goby.util.DoInParallel;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -90,6 +91,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
     private boolean excludeQuality;
     private boolean verboseQualityScores;
     private byte[] qualityScoreBuffer;
+    private boolean parallel = true;
 
     // see http://en.wikipedia.org/wiki/FASTQ_format for a description of these various encodings
     /*
@@ -146,6 +148,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
     @Override
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
+        parallel = jsapResult.getBoolean("parallel", false);
         inputFilenames = jsapResult.getStringArray("input");
         includeDescriptions = jsapResult.getBoolean("include-descriptions");
         includeIdentifiers = jsapResult.getBoolean("include-identifiers");
@@ -165,26 +168,60 @@ public class FastaToCompactMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        final int numToProcess = inputFilenames.length;
-        int numProcessed = 0;
-        for (final String inputFilename : inputFilenames) {
-            final String outputFilename;
-            if (numToProcess == 1 && StringUtils.isNotBlank(outputFile)) {
-                outputFilename = outputFile;
-            } else {
-                outputFilename = stripFastxExtensions(inputFilename) + ".compact-reads";
-            }
+        //    final int numToProcess = inputFilenames.length;
+        //  int numProcessed = 0;
+        //   for (final String inputFilename : inputFilenames) {
+        //       numProcessed = processOneFile(numToProcess, numProcessed, inputFilename);
+        //  }
 
-            System.out.printf("Converting [%d/%d] %s to %s%n",
-                    ++numProcessed, numToProcess, inputFilename, outputFilename);
+        try {
+            DoInParallel loop = new DoInParallel() {
+                @Override
+                public void action(DoInParallel forDataAccess, String inputBasename, int loopIndex) {
 
-            // Create directory for output file if it doesn't already exist
-            final String outputPath = FilenameUtils.getFullPath(outputFilename);
-            if (StringUtils.isNotBlank(outputPath)) {
-                FileUtils.forceMkdir(new File(outputPath));
-            }
+                    try {
 
-            final ReadsWriter writer = new ReadsWriter(new FileOutputStream(outputFilename));
+                        processOneFile(loopIndex, inputFilenames.length,  inputBasename);
+                    } catch (IOException e) {
+                        LOG.error(e);
+                    }
+                }
+            };
+
+            loop.execute(parallel, inputFilenames);
+        } catch (Exception e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+
+    private void processOneFile(int loopIndex, int length, String inputFilename) throws IOException {
+        final String outputFilename;
+        if (loopIndex == 1 && StringUtils.isNotBlank(outputFile)) {
+            outputFilename = outputFile;
+        } else {
+            outputFilename = stripFastxExtensions(inputFilename) + ".compact-reads";
+        }
+        final File output = new File(outputFilename);
+        final File readsFile = new File(inputFilename);
+        if (!output.exists() || FileUtils.isFileNewer(readsFile, output) || output.length()==0) {
+             convert(loopIndex, length, inputFilename, outputFilename);
+        }
+
+    }
+
+    private void convert(int loopIndex, int length, String inputFilename, String outputFilename) throws IOException {
+        System.out.printf("Converting [%d/%d] %s to %s%n",
+                loopIndex, length,inputFilename, outputFilename);
+
+        // Create directory for output file if it doesn't already exist
+        final String outputPath = FilenameUtils.getFullPath(outputFilename);
+        if (StringUtils.isNotBlank(outputPath)) {
+            FileUtils.forceMkdir(new File(outputPath));
+        }
+        final ReadsWriter writer = new ReadsWriter(new FileOutputStream(outputFilename));
+        try {
+
             writer.setNumEntriesPerChunk(sequencePerChunk);
             for (final FastXEntry entry : new FastXReader(inputFilename)) {
                 if (includeDescriptions) {
@@ -205,10 +242,12 @@ public class FastaToCompactMode extends AbstractGobyMode {
                 }
                 writer.appendEntry();
             }
+        } finally {
 
             writer.close();
             writer.printStats(System.out);
         }
+
     }
 
     private byte[] convertQualityScores(final MutableString quality) {
@@ -258,7 +297,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
                } */
 
             default:
-               throw new UnsupportedOperationException("Unknown encoding: " + qualityEncoding);
+                throw new UnsupportedOperationException("Unknown encoding: " + qualityEncoding);
         }
 
         return qualityScoreBuffer;
@@ -277,7 +316,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
      *
      * @param name the full path to the file in question
      * @return the full path to file without the fastx/gz extensions or the same name if
-     * those extensions weren't found.
+     *         those extensions weren't found.
      * @see edu.cornell.med.icb.goby.util.FileExtensionHelper#FASTX_FILE_EXTS
      */
     private static String stripFastxExtensions(final String name) {
