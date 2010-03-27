@@ -32,6 +32,7 @@ public abstract class DoInParallel {
     private ParallelTeam team;
     private boolean parallel;
     protected static final Logger LOG = Logger.getLogger(DoInParallel.class);
+    private int currentlyActive = 0;
 
     public DoInParallel() {
     }
@@ -50,14 +51,57 @@ public abstract class DoInParallel {
         return team;
     }
 
-   public abstract void action(DoInParallel forDataAccess, String inputBasename, int loopIndex);
+    public abstract void action(DoInParallel forDataAccess, String inputBasename, int loopIndex);
+
+    protected void debugEnd(String inputBasename) {
+        synchronized (this) {
+            currentlyActive--;
+            LOG.debug("                                               Stopped " + inputBasename);
+        }
+    }
+
+    protected void debugStart(String inputBasename) {
+        LOG.debug("                                               Starting " + inputBasename);
+        synchronized (this) {
+            currentlyActive++;
+            LOG.debug("== Currently active: " + currentlyActive);
+            System.out.flush();
+        }
+    }
 
     public void execute(boolean parallel, String[] inputFilenames) throws Exception {
 
-        final BasenameParallelRegion region = new BasenameParallelRegion(this,inputFilenames);
-        this.parallel=parallel;
+        final BasenameParallelRegion region = new BasenameParallelRegion(this, inputFilenames);
+        this.parallel = parallel;
         getParallelTeam().execute(region);
 
 
+    }
+
+    public static void main(String args[]) throws Exception {
+        DoInParallel loop = new DoInParallel() {
+
+            @Override
+            public void action(DoInParallel forDataAccess, String inputBasename, int loopIndex) {
+                try {
+                    debugStart(inputBasename);
+
+                    Thread.sleep(10000);
+                    debugEnd(inputBasename);
+
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
+        };
+        String[] inputs = new String[100];
+        for (int i = 0; i < inputs.length; i++) {
+
+            inputs[i] = Integer.toString(i + 1);
+        }
+        loop.execute(true, inputs);
     }
 }

@@ -180,14 +180,15 @@ public class FastaToCompactMode extends AbstractGobyMode {
                 public void action(DoInParallel forDataAccess, String inputBasename, int loopIndex) {
 
                     try {
-
+                        debugStart(inputBasename);
                         processOneFile(loopIndex, inputFilenames.length,  inputBasename);
+                        debugEnd(inputBasename);
                     } catch (IOException e) {
                         LOG.error(e);
                     }
                 }
             };
-
+            System.out.println("parallel: "+parallel);
             loop.execute(parallel, inputFilenames);
         } catch (Exception e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
