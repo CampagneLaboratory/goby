@@ -21,10 +21,14 @@ package edu.cornell.med.icb.goby.reads;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedInputStream;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
+import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.Closeable;
 import java.io.File;
@@ -68,6 +72,7 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
 
     /**
      * Initialize the reader.
+     *
      * @param stream Stream over the input
      */
     public ReadsReader(final InputStream stream) {
@@ -81,8 +86,8 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
      * upon subsequent calls to {@link #hasNext()} and {@link #next()}.
      *
      * @param start Start offset in the input file
-     * @param end End offset in the input file
-     * @param path Path to the input file
+     * @param end   End offset in the input file
+     * @param path  Path to the input file
      * @throws IOException If an error occurs reading the input
      */
     public ReadsReader(final long start, final long end, final String path) throws IOException {
@@ -94,8 +99,8 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
      * collection which starts between the input position start and end will be returned
      * upon subsequent calls to {@link #hasNext()} and {@link #next()}.
      *
-     * @param start Start offset in the input file
-     * @param end End offset in the input file
+     * @param start  Start offset in the input file
+     * @param end    End offset in the input file
      * @param stream Stream over the input file
      * @throws IOException If an error occurs reading the input.
      */
@@ -134,6 +139,7 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
     /**
      * Returns the next read entry from the input stream.
      * TODO: The current implementation will throw an exception if this is called before hasNext
+     *
      * @return the next read entry from the input stream.
      */
     public final Reads.ReadEntry next() {
@@ -168,7 +174,7 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
     /**
      * Decode the quality scores in this entry to qualityScores MutableString.
      *
-     * @param entry    The entry which provides the sequence in encoded format.
+     * @param entry The entry which provides the sequence in encoded format.
      * @return the quality scores byte array (or an empty byte array if no scores)
      */
     public static byte[] decodeQualityScores(final Reads.ReadEntry entry) {
@@ -200,4 +206,43 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
     public void close() throws IOException {
         reader.close();
     }
+
+    /**
+     * Return the basename corresponding to the input reads filename.  Note
+     * that if the filename does have the extension known to be a compact read
+     * the returned value is the original filename
+     *
+     * @param filename The name of the file to get the basename for
+     * @return basename for the alignment file
+     */
+    public static String getBasename(final String filename) {
+        for (final String ext : FileExtensionHelper.COMPACT_READS_FILE_EXTS) {
+            if (StringUtils.endsWith(filename, ext)) {
+                return StringUtils.removeEnd(filename, ext);
+            }
+        }
+
+        // perhaps the input was a basename already.
+        return filename;
+    }
+
+    /**
+     * Return the basenames corresponding to the input filenames. Less basename than filenames
+     * may be returned (if several filenames reduce to the same baseline after removing
+     * the extension).
+     *
+     * @param filenames The names of the files to get the basnames for
+     * @return An array of basenames
+     */
+    public static String[] getBasenames(final String... filenames) {
+        final ObjectSet<String> result = new ObjectArraySet<String>();
+        if (filenames != null) {
+            for (final String filename : filenames) {
+                result.add(getBasename(filename));
+            }
+        }
+        return result.toArray(new String[result.size()]);
+    }
+
+
 }
