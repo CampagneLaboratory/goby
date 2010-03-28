@@ -33,51 +33,54 @@ public class AverageCalculator extends StatisticCalculator {
     }
 
     public AverageCalculator() {
-        super(null);
+        super();
     }
 
     /**
      * Can do as long as there is at least one group.
-      */
+     */
     @Override
-    boolean canDo(final String[] group) {
+  public  boolean canDo(final String[] group) {
         return group.length > 0;
     }
 
     @Override
-    DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
+    public DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
+                                        final NormalizationMethod method,
                                         final DifferentialExpressionResults results,
                                         final DifferentialExpressionInfo info,
                                         final String... group) {
         for (final String groupId : group) {
-            final MutableString rpkmStatId = getStatisticId(groupId, "RPKM");
-            if (!results.isStatisticDefined(rpkmStatId)) {
-                results.declareStatistic(rpkmStatId);
-            }
+            final MutableString rpkmStatId = getStatisticId(groupId, "RPKM", method);
+            final int rpkmStatIndex = defineStatisticId(results, rpkmStatId);
+
             final MutableString countStatisticId = getStatisticId(groupId, "count");
-            if (!results.isStatisticDefined(countStatisticId)) {
-                results.declareStatistic(countStatisticId);
-            }
+            final int countStatIndex = defineStatisticId(results, countStatisticId);
 
             // calculate the average over the group:
             final ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupId);
 
-            double averageRPKM = 0;
+            double averageNormalizedExpressionValue = 0;
             double averageCount = 0;
 
             for (final String sample : samplesA) {
-                averageRPKM += differentialExpressionCalculator.getRPKM(sample, info.elementId);
+                averageNormalizedExpressionValue += differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.elementId);
                 averageCount += differentialExpressionCalculator.getOverlapCount(sample, info.elementId);
             }
-            averageRPKM /= (double) samplesA.size();
+            averageNormalizedExpressionValue /= (double) samplesA.size();
             averageCount /= (double) samplesA.size();
 
             info.statistics.size(results.getNumberOfStatistics());
-            info.statistics.set(results.getStatisticIndex(rpkmStatId), averageRPKM);
-            info.statistics.set(results.getStatisticIndex(countStatisticId), averageCount);
+            info.statistics.set(rpkmStatIndex, averageNormalizedExpressionValue);
+            info.statistics.set(countStatIndex, averageCount);
         }
 
         return info;
+    }
+
+
+    public MutableString getStatisticId(final String groupId, final String modifier, NormalizationMethod normalizationMethod) {
+        return new MutableString("average " + modifier + " group " + groupId + "(" + normalizationMethod.getAbbreviation() + ")");
     }
 
     public MutableString getStatisticId(final String groupId, final String modifier) {

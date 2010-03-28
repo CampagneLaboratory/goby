@@ -14,6 +14,16 @@ development  ->1.5
  - added new option --omit-non-informative-columns, defaults to false. If set to
    true, columns in which all of the data is non-informative (values are ALL NaN or <= 0)
    will be omitted.
+ - support for alternative global normalization methods. We currently provide an implementation of the
+   upper quartile normalization method by Bullard et al (BUQ) and the normalization method
+   provided in Goby 1.4 (CAC, normalize by the number of alignment record in a sample)
+   See the --normalization-methods argument. New normalization methods can be used with Goby by
+   creating an implementation of the edu.cornell.med.icb.goby.stats.NormalizationMethod interface,
+   and adding a jar on the classpath that defines a ServiceProvider (see build.xml goby-jar target
+   for an example of how this is done). When several normalization methods are given as an argument
+   to --normalization-methods Goby will produce derived statistics for each normalization method and
+   append them as new columns in the summary stats output. This makes it easy to compare alternative
+   normalization methods on the same dataset.
 
  Added support for sequence variations:
  - changed the compact alignment format to support recording sequence variations.

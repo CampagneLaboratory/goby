@@ -19,14 +19,8 @@
 package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.*;
 import it.unimi.dsi.lang.MutableString;
 
 /**
@@ -42,9 +36,19 @@ public class DifferentialExpressionCalculator {
     private int numberOfSamples;
     private final Object2ObjectMap<String, IntArrayList> sampleToCounts =
             new Object2ObjectOpenHashMap<String, IntArrayList>();
-    private final Object2ObjectMap<String, DoubleArrayList> sampleToRPKMs =
-            new Object2ObjectOpenHashMap<String, DoubleArrayList>();
     private Object2DoubleMap<String> sampleProportions;
+    private IntArrayList lengths = new IntArrayList();
+    /**
+     * The number of alignment entries observed in each sample.
+     */
+    private Object2IntMap<String> numAlignedInSample = new Object2IntOpenHashMap<String>();
+
+    public double calculateNormalized(final int readCountInt, final int annotLength, final double normalizationFactor) {
+        final double readCount = readCountInt;
+        final double length = annotLength; // in bases
+        final double sampleReadCount = normalizationFactor; // in reads
+        return readCount / (length / 1000.0d) / (normalizationFactor / 1E6d);
+    }
 
     public DifferentialExpressionCalculator() {
         super();
@@ -61,44 +65,100 @@ public class DifferentialExpressionCalculator {
         return elementLabels.registerIdentifier(new MutableString(label));
     }
 
+    /**
+     * Define the number of sequence bases that this element spans. The bases do not need to be contiguous (i.e., multiple
+     * exons of a transcript).
+     *
+     * @param elementIndex index of the element associated with length.
+     * @param length       length of the element.
+     */
+    public void defineElementLength(final int elementIndex, final int length) {
+        if (lengths.size() <= elementIndex) lengths.size(elementIndex + 1);
+        lengths.set(elementIndex, length);
+    }
+
     public void associateSampleToGroup(final String sample, final String group) {
         sampleToGroupMap.put(sample, group);
     }
 
-    public void observe(final String sample, final String elementId, final int count, final double RPKM) {
+    /**
+     * Return the length of an element.
+     *
+     * @param elementId
+     * @return
+     */
+    public int getElementLength(MutableString elementId) {
+        int elementIndex = elementLabels.getInt(elementId);
+        return lengths.get(elementIndex);
+    }
+
+    /**
+     * Observe counts and RPKM for a sample.
+     *
+     * @param sample    sample id.
+     * @param elementId element id.
+     * @param count     Number of reads that can be assigned to the element.
+     */
+    public void observe(final String sample, final String elementId, final int count) {
+
+
         IntArrayList counts = sampleToCounts.get(sample);
-        DoubleArrayList rpkms = sampleToRPKMs.get(sample);
 
         if (counts == null) {
             counts = new IntArrayList(elementsPerSample);
             counts.size(elementsPerSample);
             sampleToCounts.put(sample, counts);
         }
-        if (rpkms == null) {
-            rpkms = new DoubleArrayList(elementsPerSample);
-            rpkms.size(elementsPerSample);
-            sampleToRPKMs.put(sample, rpkms);
-        }
+
 
         final int elementIndex = elementLabels.get(new MutableString(elementId));
         counts.set(elementIndex, count);
-        rpkms.add(elementIndex, RPKM);
     }
 
-    public DifferentialExpressionResults compare(final DifferentialExpressionResults results,
+    /**
+     * Define the number of alignment entries found in each sample.
+     *
+     * @param sampleId            The sample
+     * @param numAlignedInSamples The number of alignment entries observed in the sample.
+     */
+    public void setNumAlignedInSample(String sampleId, int numAlignedInSamples) {
+        numAlignedInSample.put(sampleId, numAlignedInSamples);
+    }
+
+    /**
+     * Return the number of alignment entries found in the sample.
+     *
+     * @param sampleId Identifier of the sample.
+     * @return the number of alignment entries found in the sample.
+     */
+    public int getNumAlignedInSample(String sampleId) {
+        return numAlignedInSample.get(sampleId);
+    }
+
+
+    public DifferentialExpressionResults compare(DifferentialExpressionResults results,
+                                                 final NormalizationMethod method,
                                                  final StatisticCalculator tester,
                                                  final String... group) {
-        assert !tester.canDo(group) : "The number of groups to compare is not supported by the specified calculator.";
-        tester.setResults(results);
-        return tester.evaluate(this, results, group);
+        if (results == null) {
+            results = new DifferentialExpressionResults();
+        }
+        if (tester.installed()) {
+            assert !tester.canDo(group) : "The number of groups to compare is not supported by the specified calculator.";
+            tester.setResults(results);
+            return tester.evaluate(this, method, results, group);
+        } else return results;
     }
 
-    public DifferentialExpressionResults compare(final StatisticCalculator tester, final String... group) {
+    public DifferentialExpressionResults compare(final StatisticCalculator tester,
+                                                 final NormalizationMethod method,
+                                                 final String... group) {
         final DifferentialExpressionResults results = new DifferentialExpressionResults();
-
-        assert !tester.canDo(group) : "The number of groups to compare is not supported by the specified calculator.";
-        tester.setResults(results);
-        return tester.evaluate(this, results, group);
+        if (tester.installed()) {
+            assert !tester.canDo(group) : "The number of groups to compare is not supported by the specified calculator.";
+            tester.setResults(results);
+            return tester.evaluate(this, method, results, group);
+        } else return results;
     }
 
     /**
@@ -127,20 +187,17 @@ public class DifferentialExpressionCalculator {
     }
 
     /**
-     * Get the stored RPKM for an element in a given sample.
+     * Get the normalized expression value an element in a given sample.  Equivalent to calling the normalizationMethod
+     * getNormalizedExpressionValue method.
      *
-     * @param sample
-     * @param elementId
-     * @return
+     * @param sampleId            sample identifier
+     * @param normalizationMethod Normalization method (adjusts the denominator of the RPKM value).
+     * @param elementId           the element for which a normalized expression value is sought.
+     * @return normalized expression value scaled by length and global normalization method.
      */
-    public double getRPKM(final String sample, final MutableString elementId) {
-        final DoubleArrayList rpkms = sampleToRPKMs.get(sample);
-        if (rpkms == null) {
-            return 0;
-        }
-        final int elementIndex = elementLabels.get(new MutableString(elementId));
+    public double getNormalizedExpressionValue(final String sampleId, NormalizationMethod normalizationMethod, final MutableString elementId) {
+        return normalizationMethod.getNormalizedExpressionValue(this, sampleId, elementId);
 
-        return rpkms.get(elementIndex);
     }
 
     /**
@@ -155,7 +212,7 @@ public class DifferentialExpressionCalculator {
         if (counts == null) {
             return 0;
         }
-        final int elementIndex = elementLabels.get(new MutableString(elementId));
+        final int elementIndex = elementLabels.get(elementId);
 
         return counts.get(elementIndex);
     }
@@ -183,6 +240,7 @@ public class DifferentialExpressionCalculator {
     /**
      * Returns the proportion of counts that originate from a certain sample. The number of counts in the sample
      * is divided by the sum of counts over all the samples in the experiment.
+     *
      * @param sample
      * @return
      */
@@ -208,4 +266,6 @@ public class DifferentialExpressionCalculator {
         assert proportion != -1 : " Proportion must be defined for sample " + sample;
         return proportion;
     }
+
+
 }

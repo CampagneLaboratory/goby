@@ -31,12 +31,19 @@ import org.apache.log4j.Logger;
 public abstract class FDRAdjustment {
     Logger LOG = Logger.getLogger(FDRAdjustment.class);
 
-    public DifferentialExpressionResults adjust(final DifferentialExpressionResults list, final String... statisticIds) {
-        for (final String statisticId : statisticIds) {
+    public DifferentialExpressionResults adjust(final DifferentialExpressionResults list, NormalizationMethod method, final String... statisticIds) {
+        for (String statisticId : statisticIds) {
             if (list.isStatisticDefined(new MutableString(statisticId))) {
                 adjust(list, statisticId);
+                LOG.debug("statistic " + statisticId + " is not found, it will be ignored by FDR adjustment.");
             } else {
-                LOG.warn("statistic " + statisticId + " is not found, it will be ignored by FDR adjustment.");
+
+                statisticId = statisticId + "(" + method.getAbbreviation() + ")";
+                if (list.isStatisticDefined(new MutableString(statisticId))) {
+                    adjust(list, statisticId);
+                } else {
+                    LOG.warn("statistic " + statisticId + " is not found, it will be ignored by FDR adjustment.");
+                }
             }
         }
         return list;

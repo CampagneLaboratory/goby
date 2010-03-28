@@ -60,13 +60,13 @@ public class TestAlignmentReader {
 
     /**
      * Validate that the method
-     * {@link edu.cornell.med.icb.goby.alignments.AlignmentReader#getBasenames(String[])}
+     * {@link edu.cornell.med.icb.goby.alignments.AlignmentReader#getBasenames(String...)}
      * produces the proper results.
      */
     @Test
     public void basenames() {
         assertTrue("Basename array should be empty",
-                ArrayUtils.isEmpty(AlignmentReader.getBasenames(null)));
+                ArrayUtils.isEmpty(AlignmentReader.getBasenames()));
 
         final String[] nullArray = { null };
         assertArrayEquals("Basename array should contain a single null element",

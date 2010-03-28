@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.stats;
 
 import gominer.Fisher;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.lang.MutableString;
 
 /**
  * Calculates Fisher exact test P-value for an observed count difference between comparison
@@ -36,22 +37,31 @@ public class FisherExactTestCalculator extends StatisticCalculator {
     }
 
     public FisherExactTestCalculator() {
-        super("fisher-exact-test");
+        super();
     }
 
     @Override
-    boolean canDo(final String[] group) {
+    public boolean canDo(final String[] group) {
         return group.length == 2;
     }
 
 
+    public MutableString getStatisticId(final String groupId, final NormalizationMethod normalizationMethod) {
+        return new MutableString("fisher-exact-test " + groupId + "(" + normalizationMethod.getAbbreviation() + ")");
+    }
+
     @Override
-    DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
-                                        final DifferentialExpressionResults results,
+   public DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
+                                        NormalizationMethod method, final DifferentialExpressionResults results,
                                         final DifferentialExpressionInfo info,
                                         final String... group) {
+
         final String groupA = group[0];
         final String groupB = group[1];
+
+        final MutableString fisherPValueStatisticId = getStatisticId(groupA + "/" + groupB, method);
+        final int fisherPValuesStatIndex = defineStatisticId(results, fisherPValueStatisticId);
+
 
         final ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
         final ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);
@@ -108,7 +118,7 @@ public class FisherExactTestCalculator extends StatisticCalculator {
         ------------------------------------------
         */
         info.statistics.size(results.getNumberOfStatistics());
-        info.statistics.set(results.getStatisticIndex(statisticId), pValue);
+        info.statistics.set(fisherPValuesStatIndex, pValue);
 
         return info;
     }

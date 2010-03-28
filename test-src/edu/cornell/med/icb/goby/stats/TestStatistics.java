@@ -24,9 +24,11 @@ import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.stat.inference.ChiSquareTest;
 import org.apache.commons.math.stat.inference.ChiSquareTestImpl;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
@@ -45,7 +47,7 @@ public class TestStatistics {
         final DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator() {
 
             @Override
-            public double getRPKM(final String sample, final MutableString elementId) {
+            public double getNormalizedExpressionValue(final String sample, NormalizationMethod method, final MutableString elementId) {
                 if (sample.startsWith("A")) {
                     return 2 * Math.abs(randomEngine.nextDouble());
                 } else {
@@ -74,8 +76,9 @@ public class TestStatistics {
         final DifferentialExpressionInfo info = new DifferentialExpressionInfo("id-1");
         final DifferentialExpressionResults results = new DifferentialExpressionResults();
         final FoldChangeCalculator foldChange = new FoldChangeCalculator(results);
-        foldChange.evaluate(deCalc, results, info, "A", "B");
-        assertEquals("fold-change must be two fold", 2d, results.getStatistic(info, foldChange.statisticId), .1);
+        NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+        foldChange.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
+        assertEquals("fold-change must be two fold", 2d, results.getStatistic(info, foldChange.statisticIds.get(0)), .1);
     }
 
     @Test
@@ -84,7 +87,7 @@ public class TestStatistics {
         final DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator() {
 
             @Override
-            public double getRPKM(final String sample, final MutableString elementId) {
+            public double getNormalizedExpressionValue(final String sample, NormalizationMethod method, final MutableString elementId) {
                 if (sample.startsWith("A")) {
                     return 2 * Math.abs(randomEngine.nextDouble());
                 } else {
@@ -113,9 +116,10 @@ public class TestStatistics {
         final DifferentialExpressionResults results = new DifferentialExpressionResults();
         final AverageCalculator averageCalculator = new AverageCalculator(results);
         results.add(info);
-        averageCalculator.evaluate(deCalc, results, info, "A", "B");
-        assertEquals("average A must be around 2", 1d, results.getStatistic(info, averageCalculator.getStatisticId("A", "RPKM")), .1);
-        assertEquals("average B must be around 1", 0.5d, results.getStatistic(info, averageCalculator.getStatisticId("B", "RPKM")), .1);
+        NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+        averageCalculator.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
+        assertEquals("average A must be around 2", 1d, results.getStatistic(info, averageCalculator.getStatisticId("A", "RPKM", normalizationMethod)), .1);
+        assertEquals("average B must be around 1", 0.5d, results.getStatistic(info, averageCalculator.getStatisticId("B", "RPKM", normalizationMethod)), .1);
         System.out.println(results);
         try {
             results.write(new PrintWriter("test-results/out-stats.tsv"), '\t');
@@ -130,7 +134,7 @@ public class TestStatistics {
         final DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator() {
 
             @Override
-            public double getRPKM(final String sample, final MutableString elementId) {
+            public double getNormalizedExpressionValue(final String sample, NormalizationMethod method, final MutableString elementId) {
                 if (sample.startsWith("A")) {
                     return 2 * Math.abs(randomEngine.nextGaussian());
                 } else {
@@ -142,7 +146,8 @@ public class TestStatistics {
 
             @Override
             public int getOverlapCount(final String sample, final MutableString elementId) {
-                return (int) (getRPKM(sample, elementId) * 100);
+                NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+                return (int) (getNormalizedExpressionValue(sample, normalizationMethod, elementId) * 100);
             }
         };
 
@@ -163,11 +168,11 @@ public class TestStatistics {
             final MutableString id1 = new MutableString("id-1");
             final MutableString id2 = new MutableString("id-2");
             deCalc.observe(sampleId, "id-1",
-                    deCalc.getOverlapCount(sampleId, id1),
-                    deCalc.getRPKM(sampleId, id1));
+                    deCalc.getOverlapCount(sampleId, id1)
+            );
             deCalc.observe(sampleId, "id-2",
-                    deCalc.getOverlapCount(sampleId, id2),
-                    deCalc.getRPKM(sampleId, id2));
+                    deCalc.getOverlapCount(sampleId, id2)
+            );
         }
         //deCalc.associateSampleToGroup("A-", "A");
         //deCalc.associateSampleToGroup("B-1", "B");
@@ -177,12 +182,13 @@ public class TestStatistics {
         final FoldChangeCalculator foldChange = new FoldChangeCalculator(results);
         final TTestCalculator tTest = new TTestCalculator(results);
         final FisherExactTestCalculator fisher = new FisherExactTestCalculator(results);
-        foldChange.evaluate(deCalc, results, info, "A", "B");
-        tTest.evaluate(deCalc, results, info, "A", "B");
-        fisher.evaluate(deCalc, results, info, "A", "B");
-        assertEquals("fold-change must be two fold", 2d, results.getStatistic(info, foldChange.statisticId), .1);
-        assertTrue("T-test must be significant", results.getStatistic(info, tTest.statisticId) < 0.01);
-        assertTrue("fisher test must not be significant", results.getStatistic(info, fisher.statisticId) > 0.05);
+        NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+        foldChange.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
+        tTest.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
+        fisher.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
+        assertEquals("fold-change must be two fold", 2d, results.getStatistic(info, foldChange.statisticIds.get(0)), .1);
+        assertTrue("T-test must be significant", results.getStatistic(info, tTest.statisticIds.get(0)) < 0.01);
+        assertTrue("fisher test must not be significant", results.getStatistic(info, fisher.statisticIds.get(0)) > 0.05);
     }
 
     @Test
@@ -211,21 +217,22 @@ public class TestStatistics {
          2-Tail : p-value = 0.5044757698516504
          ------------------------------------------
          */
-        deCalc.observe("A-1", "id-1", 7, 0);
-        deCalc.observe("A-2", "id-1", 3, 0);         // 7+3 = 10
-        deCalc.observe("B-1", "id-1", 15, 0);
-        deCalc.observe("B-2", "id-1", 5, 0);         // 15+5 =20
+        deCalc.observe("A-1", "id-1", 7);
+        deCalc.observe("A-2", "id-1", 3);         // 7+3 = 10
+        deCalc.observe("B-1", "id-1", 15);
+        deCalc.observe("B-2", "id-1", 5);         // 15+5 =20
 
-        deCalc.observe("A-1", "id-2", 15, 0);
-        deCalc.observe("A-2", "id-2", 15, 0);        // 15+15=30
-        deCalc.observe("B-1", "id-2", 20, 0);
-        deCalc.observe("B-2", "id-2", 20, 0);        // 20+20=40
+        deCalc.observe("A-1", "id-2", 15);
+        deCalc.observe("A-2", "id-2", 15);        // 15+15=30
+        deCalc.observe("B-1", "id-2", 20);
+        deCalc.observe("B-2", "id-2", 20);        // 20+20=40
 
         final DifferentialExpressionInfo info = new DifferentialExpressionInfo("id-1");
         final DifferentialExpressionResults results = new DifferentialExpressionResults();
         final FisherExactTestCalculator fisher = new FisherExactTestCalculator(results);
-        fisher.evaluate(deCalc, results, info, "A", "B");
-        assertEquals("fisher test equal expected result", 0.5044757698516504, results.getStatistic(info, fisher.statisticId), 0.001);
+        NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+        fisher.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
+        assertEquals("fisher test equal expected result", 0.5044757698516504, results.getStatistic(info, fisher.statisticIds.get(0)), 0.001);
 
 
         final Fisher fisherTest = new Fisher();
@@ -280,51 +287,55 @@ public class TestStatistics {
          2-Tail : p-value = 0.5044757698516504
          ------------------------------------------
          */
-        deCalc.observe("A-1", "id-1", 7, 0);
-        deCalc.observe("A-2", "id-1", 3, 0);         // 7+3 = 10
-        deCalc.observe("B-1", "id-1", 15, 0);
-        deCalc.observe("B-2", "id-1", 5, 0);         // 15+5 =20
+        deCalc.observe("A-1", "id-1", 7);
+        deCalc.observe("A-2", "id-1", 3);         // 7+3 = 10
+        deCalc.observe("B-1", "id-1", 15);
+        deCalc.observe("B-2", "id-1", 5);         // 15+5 =20
 
-        deCalc.observe("A-1", "id-2", 15, 0);
-        deCalc.observe("A-2", "id-2", 15, 0);        // 15+15=30
-        deCalc.observe("B-1", "id-2", 20, 0);
-        deCalc.observe("B-2", "id-2", 20, 0);        // 20+20=40
+        deCalc.observe("A-1", "id-2", 15);
+        deCalc.observe("A-2", "id-2", 15);        // 15+15=30
+        deCalc.observe("B-1", "id-2", 20);
+        deCalc.observe("B-2", "id-2", 20);        // 20+20=40
 
         final DifferentialExpressionInfo info = new DifferentialExpressionInfo("id-1");
         final DifferentialExpressionResults results = new DifferentialExpressionResults();
+
         final FisherExactRCalculator fisher = new FisherExactRCalculator(results);
-        fisher.evaluate(deCalc, results, info, "A", "B");
-        assertEquals("fisher test equal expected result", 0.5044757698516504, results.getStatistic(info, fisher.statisticId), 0.001);
+        if (fisher.installed()) {
+            NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+            fisher.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
+            assertEquals("fisher test equal expected result", 0.5044757698516504, results.getStatistic(info, fisher.statisticIds.get(0)), 0.001);
 
-        final FisherExact fisherTest = new FisherExact();
-        final int totalCountInA = 1700;
-        final int totalCountInB = 170; // equal total in each group
-        final int sumCountInA = 90;
-        final int sumCountInB = 45; // half the counts in sample B
+            final FisherExact fisherTest = new FisherExact();
+            final int totalCountInA = 1700;
+            final int totalCountInB = 170; // equal total in each group
+            final int sumCountInA = 90;
+            final int sumCountInB = 45; // half the counts in sample B
 
-        final int sumCountNotInA = totalCountInA - sumCountInA;
-        final int sumCountNotInB = totalCountInB - sumCountInB;
+            final int sumCountNotInA = totalCountInA - sumCountInA;
+            final int sumCountNotInB = totalCountInB - sumCountInB;
 
-        final FisherExact.Result result =
-                fisherTest.fexact(sumCountInA, sumCountNotInA, sumCountInB, sumCountNotInB);
-        final double pValue = result.getPValue();
+            final FisherExact.Result result =
+                    fisherTest.fexact(sumCountInA, sumCountNotInA, sumCountInB, sumCountNotInB);
+            final double pValue = result.getPValue();
 
-        final double proportionTotalA = divide(totalCountInA, (totalCountInA + totalCountInB));
-        final double proportionTotalB = divide(totalCountInB, (totalCountInA + totalCountInB));
-        final ChiSquareTest chisquare = new ChiSquareTestImpl();
-        final double nGroups = 2;
-        final double[] expected = {divide(sumCountInA + sumCountInB, nGroups) * proportionTotalA * nGroups,
-                divide(sumCountInA + sumCountInB, nGroups) * proportionTotalB * nGroups};
-        final long[] observed = {sumCountInA, sumCountInB};
-        double chiPValue = 0;
+            final double proportionTotalA = divide(totalCountInA, (totalCountInA + totalCountInB));
+            final double proportionTotalB = divide(totalCountInB, (totalCountInA + totalCountInB));
+            final ChiSquareTest chisquare = new ChiSquareTestImpl();
+            final double nGroups = 2;
+            final double[] expected = {divide(sumCountInA + sumCountInB, nGroups) * proportionTotalA * nGroups,
+                    divide(sumCountInA + sumCountInB, nGroups) * proportionTotalB * nGroups};
+            final long[] observed = {sumCountInA, sumCountInB};
+            double chiPValue = 0;
 
-        chiPValue = Math.abs(chisquare.chiSquareTest(expected, observed));
+            chiPValue = Math.abs(chisquare.chiSquareTest(expected, observed));
 
-        assertTrue("pValue: " + chiPValue, chiPValue < 0.001);
+            assertTrue("pValue: " + chiPValue, chiPValue < 0.001);
 // The Fisher implementation we are using return 1 for the above. This is wrong. Compare to
 // the chi-square result
 // (results should be comparable since the counts in each cell are large)
-         assertTrue("pValue: " + pValue, pValue < 0.001);
+            assertTrue("pValue: " + pValue, pValue < 0.001);
+        }
     }
 
     private double divide(final int a, final int b) {
@@ -351,23 +362,24 @@ public class TestStatistics {
             deCalc.associateSampleToGroup("B-" + i, "B");
         }
 
-        deCalc.observe("A-1", "id-1", 7, 0);
-        deCalc.observe("A-2", "id-1", 3, 0);         // 7+3 = 10
-        deCalc.observe("B-1", "id-1", 15, 0);
-        deCalc.observe("B-2", "id-1", 5, 0);         // 15+5 =20
+        deCalc.observe("A-1", "id-1", 7);
+        deCalc.observe("A-2", "id-1", 3);         // 7+3 = 10
+        deCalc.observe("B-1", "id-1", 15);
+        deCalc.observe("B-2", "id-1", 5);         // 15+5 =20
 
-        deCalc.observe("A-1", "id-2", 15, 0);
-        deCalc.observe("A-2", "id-2", 15, 0);        // 15+15=30
-        deCalc.observe("B-1", "id-2", 20, 0);
-        deCalc.observe("B-2", "id-2", 20, 0);        // 20+20=40
+        deCalc.observe("A-1", "id-2", 15);
+        deCalc.observe("A-2", "id-2", 15);        // 15+15=30
+        deCalc.observe("B-1", "id-2", 20);
+        deCalc.observe("B-2", "id-2", 20);        // 20+20=40
 
 
         final DifferentialExpressionInfo info = new DifferentialExpressionInfo("id-1");
         final DifferentialExpressionResults results = new DifferentialExpressionResults();
 
         final ChiSquareTestCalculator calc = new ChiSquareTestCalculator(results);
-        calc.evaluate(deCalc, results, info, "A", "B");
-        assertEquals("chi square test equal expected result", 0.456056540250256, results.getStatistic(info, calc.statisticId), 0.001);
+        NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+        calc.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
+        assertEquals("chi square test equal expected result", 0.456056540250256, results.getStatistic(info, calc.statisticIds.get(0)), 0.001);
 
         final ChiSquareTest chisquare = new ChiSquareTestImpl();
         final double[] expected = {30, 12};
@@ -399,23 +411,24 @@ public class TestStatistics {
             deCalc.associateSampleToGroup("B-" + i, "B");
         }
 
-        deCalc.observe("A-1", "id-1", 0, 0);                   // ZERO counts should yield NaN p-value
-        deCalc.observe("A-2", "id-1", 0, 0);         // 0+0 = 0
-        deCalc.observe("B-1", "id-1", 15, 0);
-        deCalc.observe("B-2", "id-1", 5, 0);         // 15+5 =20
+        deCalc.observe("A-1", "id-1", 0);                   // ZERO counts should yield NaN p-value
+        deCalc.observe("A-2", "id-1", 0);         // 0+0 = 0
+        deCalc.observe("B-1", "id-1", 15);
+        deCalc.observe("B-2", "id-1", 5);         // 15+5 =20
 
-        deCalc.observe("A-1", "id-2", 15, 0);
-        deCalc.observe("A-2", "id-2", 15, 0);        // 15+15=30
-        deCalc.observe("B-1", "id-2", 20, 0);
-        deCalc.observe("B-2", "id-2", 20, 0);        // 20+20=40
+        deCalc.observe("A-1", "id-2", 15);
+        deCalc.observe("A-2", "id-2", 15);        // 15+15=30
+        deCalc.observe("B-1", "id-2", 20);
+        deCalc.observe("B-2", "id-2", 20);        // 20+20=40
 
 
         final DifferentialExpressionInfo info = new DifferentialExpressionInfo("id-1");
         final DifferentialExpressionResults results = new DifferentialExpressionResults();
 
         final ChiSquareTestCalculator calc = new ChiSquareTestCalculator(results);
-        calc.evaluate(deCalc, results, info, "A", "B");
-        assertTrue("chi square test result must be NaN (zero count)",Double.isNaN(results.getStatistic(info, calc.statisticId)));
+        NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+        calc.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
+        assertTrue("chi square test result must be NaN (zero count)", Double.isNaN(results.getStatistic(info, calc.statisticIds.get(0))));
 
     }
 
@@ -448,8 +461,9 @@ public class TestStatistics {
             info.statistics.size(list.getNumberOfStatistics());
             info.statistics.set(statIndex2, randomEngine.nextDouble());
         }
-        bonferroni.adjust(list, statId, secondPValueId);
-        fdr.adjust(list, statId, secondPValueId);
+        NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+        bonferroni.adjust(list, normalizationMethod, statId, secondPValueId);
+        fdr.adjust(list, normalizationMethod, statId, secondPValueId);
         final int index1 = list.getStatisticIndex("t-test-P-value-BH-FDR-q-value");
         final int index2 = list.getStatisticIndex(secondPValueId + "-BH-FDR-q-value");
 
@@ -460,12 +474,12 @@ public class TestStatistics {
 
             final boolean test1 = info.statistics.getDouble(index1) > significanceThreshold;
             if (!test1) {
-             //   System.out.println("info:" + info);
+                //   System.out.println("info:" + info);
                 numRejectedHypothesesTest1++;
             }
             final boolean test2 = info.statistics.getDouble(index2) > significanceThreshold;
             if (!test2) {
-               // System.out.println("info:" + info);
+                // System.out.println("info:" + info);
                 numRejectedHypothesesTest2++;
             }
 

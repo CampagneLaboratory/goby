@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.stats;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.MaxIterationsExceededException;
 import org.apache.commons.math.stat.inference.ChiSquareTest;
@@ -44,7 +45,7 @@ public class ChiSquareTestCalculator extends StatisticCalculator {
     }
 
     public ChiSquareTestCalculator() {
-        super("chi-square-test");
+        super();
     }
 
 
@@ -53,10 +54,13 @@ public class ChiSquareTestCalculator extends StatisticCalculator {
         return group.length >= 2;
     }
 
+    public MutableString getStatisticId(final String groupId, final NormalizationMethod normalizationMethod) {
+        return new MutableString("chi-square-test " + groupId + "(" + normalizationMethod.getAbbreviation() + ")");
+    }
 
     @Override
     public DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
-                                               final DifferentialExpressionResults results,
+                                               NormalizationMethod method, final DifferentialExpressionResults results,
                                                final DifferentialExpressionInfo info,
                                                final String... group) {
 
@@ -67,6 +71,19 @@ public class ChiSquareTestCalculator extends StatisticCalculator {
         //  counts observed in each group:
         final long[] observedCounts = new long[group.length];
         final double[] groupProportions = new double[group.length];
+        final MutableString groups = new MutableString();
+        {
+            int i = 0;
+            for (final String g : group) {
+                groups.append(g);
+                if (i != group.length) {
+                    groups.append("/");
+                }
+                ++i;
+            }
+        }
+        final MutableString chiSquarePValueStatisticId = getStatisticId(groups.toString(), method);
+        final int chiSquarePValuesStatIndex = defineStatisticId(results, chiSquarePValueStatisticId);
 
         int i = 0;
 
@@ -91,7 +108,7 @@ public class ChiSquareTestCalculator extends StatisticCalculator {
             if (observedCounts[i] == 0) {
                 // Chi Square is not defined if any observed counts are zero.
                 info.statistics.size(results.getNumberOfStatistics());
-                info.statistics.set(results.getStatisticIndex(statisticId), Double.NaN);
+                info.statistics.set(chiSquarePValuesStatIndex, Double.NaN);
                 return info;
             }
             ++i;
@@ -121,7 +138,7 @@ public class ChiSquareTestCalculator extends StatisticCalculator {
         }
 
         info.statistics.size(results.getNumberOfStatistics());
-        info.statistics.set(results.getStatisticIndex(statisticId), pValue);
+        info.statistics.set(chiSquarePValuesStatIndex, pValue);
         return info;
     }
 }

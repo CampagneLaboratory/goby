@@ -35,43 +35,52 @@ import org.rosuda.JRI.Rengine;
  */
 public class FisherExactRCalculator extends StatisticCalculator {
     private static final Log LOG = LogFactory.getLog(FisherExactRCalculator.class);
+
     public FisherExactRCalculator(final DifferentialExpressionResults results) {
         this();
         setResults(results);
     }
 
     public FisherExactRCalculator() {
-        super("fisher-exact-R");
+        super();
     }
 
     @Override
-    boolean canDo(final String[] group) {
-        // TODO: should check for R - unfortunately other code will assert that this returns true
-        // final Rengine rengine = GobyRengine.getInstance().getRengine();
-        return group.length == 2 /*&& rengine != null && rengine.isAlive()*/;
+    public boolean canDo(final String[] group) {
+
+        return group.length == 2;
     }
 
     @Override
-    DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
-                                        final DifferentialExpressionResults results,
-                                        final DifferentialExpressionInfo info,
-                                        final String... group) {
+    public boolean installed() {
+        final Rengine rEngine = GobyRengine.getInstance().getRengine();
+        return rEngine != null && rEngine.isAlive();
+
+    }
+
+    @Override
+    public DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
+                                               NormalizationMethod method, final DifferentialExpressionResults results,
+                                               final DifferentialExpressionInfo info,
+                                               final String... group) {
         // we can only perform the evaluation if R is running and alive.
         final Rengine rengine = GobyRengine.getInstance().getRengine();
         if (rengine != null && rengine.isAlive()) {
             final String groupA = group[0];
             final String groupB = group[1];
+            // TODO correct sumCountIn? with normalization method.
+            int statIndex = defineStatisticId(results, "fisher-exact-R");
 
             final ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
             final ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);
 
             int sumCountInA = 0;
             int sumCountInB = 0;
-
+            // TODO correct sumCountIn? with normalization method.
             for (final String sample : samplesA) {
                 sumCountInA += differentialExpressionCalculator.getOverlapCount(sample, info.elementId);
             }
-
+            // TODO correct sumCountIn? with normalization method.
             for (final String sample : samplesB) {
                 sumCountInB += differentialExpressionCalculator.getOverlapCount(sample, info.elementId);
             }
@@ -98,7 +107,7 @@ public class FisherExactRCalculator extends StatisticCalculator {
             LOG.debug(result);
             final double pValue = result.getPValue();
             info.statistics.size(results.getNumberOfStatistics());
-            info.statistics.set(results.getStatisticIndex(statisticId), pValue);
+            info.statistics.set(statIndex, pValue);
         }
         return info;
     }

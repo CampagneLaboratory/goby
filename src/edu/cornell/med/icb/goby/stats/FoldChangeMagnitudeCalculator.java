@@ -38,23 +38,23 @@ public class FoldChangeMagnitudeCalculator extends StatisticCalculator {
     }
 
     public FoldChangeMagnitudeCalculator() {
-        super("fold-change-magnitude");
+        super();
     }
 
 
     @Override
-    boolean canDo(final String[] group) {
+    public boolean canDo(final String[] group) {
         return group.length == 2;
     }
 
     @Override
-    DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
-                                        final DifferentialExpressionResults results,
-                                        final DifferentialExpressionInfo info,
-                                        final String... group) {
+    public DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
+                                               NormalizationMethod method, final DifferentialExpressionResults results,
+                                               final DifferentialExpressionInfo info,
+                                               final String... group) {
         final String groupA = group[0];
         final String groupB = group[1];
-
+        final int statIndex = defineStatisticId(results, "fold-change-magnitude", method);
         final ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
         final ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);
         double averageA = 0;
@@ -62,17 +62,17 @@ public class FoldChangeMagnitudeCalculator extends StatisticCalculator {
 
 
         for (final String sample : samplesA) {
-            averageA += differentialExpressionCalculator.getRPKM(sample, info.elementId);
+            averageA += differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.elementId);
         }
         for (final String sample : samplesB) {
-            averageB += differentialExpressionCalculator.getRPKM(sample, info.elementId);
+            averageB += differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.elementId);
         }
 
         final double foldChange = averageA / averageB;
         final double foldChangeMagnitudeStatistic = Math.max(foldChange, 1d / foldChange);
 
         info.statistics.size(results.getNumberOfStatistics());
-        info.statistics.set(results.getStatisticIndex(statisticId), foldChangeMagnitudeStatistic);
+        info.statistics.set(statIndex, foldChangeMagnitudeStatistic);
 
         return info;
     }

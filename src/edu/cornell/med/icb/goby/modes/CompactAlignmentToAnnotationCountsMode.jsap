@@ -79,6 +79,15 @@
             <required>false</required>
             <help>Compare annotation counts between groups of samples. The compare flag must be followed by group ids separated by slashes. For instance, if groups group-A and group-B have been defined (see --groups option), --compare group-A/group-B will evaluate statistical tests of different count representation between samples in groups A and B.</help>
         </flaggedOption>
+         <flaggedOption>
+            <id>normalization-methods</id>
+            <longFlag>normalization-methods</longFlag>
+            <required>false</required>
+              <defaults>
+                <string>campagne-aligned-count,bullard-upper-quartile</string>
+            </defaults>
+            <help>comma separated list of the normalization methods to apply</help>
+         </flaggedOption>
         <switch>
             <id>parallel</id>
             <longFlag>parallel</longFlag>

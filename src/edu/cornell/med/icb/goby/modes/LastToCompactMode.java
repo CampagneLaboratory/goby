@@ -27,8 +27,6 @@ import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.LastParser;
 import edu.cornell.med.icb.goby.reads.ReadSet;
-import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
-import edu.cornell.med.icb.goby.reads.ColorSpaceConverter;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.iterators.TsvLineIterator;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
@@ -86,7 +84,6 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
      */
     protected boolean onlyMafFile;
     protected boolean onlyCountsFile;
-    private String genomeCacheBasename;
 
     @Override
     public String getModeName() {
@@ -137,7 +134,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
             System.err.println("Only one of --only-maf or --only-counts can be specified.");
             System.exit(1);
         }
-        genomeCacheBasename = jsapResult.getString("genome-cache");
+
         return this;
     }
 
@@ -145,17 +142,6 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
     protected int scan(final ReadSet readIndexFilter, final IndexedIdentifier targetIds,
                        final AlignmentWriter writer,
                        final AlignmentTooManyHitsWriter tmhWriter) throws IOException {
-
-        RandomAccessSequenceCache genomeCache = new RandomAccessSequenceCache();
-        if (genomeCacheBasename != null) {
-            System.out.println("Loading genome cache from " + genomeCacheBasename);
-            try {
-                genomeCache.load(genomeCacheBasename);
-            } catch (ClassNotFoundException e) {
-                LOG.error("Cannot load genome cache from basename: " + genomeCacheBasename);
-                System.exit(1);
-            }
-        }
 
         int numAligns = 0;
 
@@ -233,8 +219,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     currentEntry.setTargetIndex(targetIndex);
                     int readStartPosition = query.alignedStart;
                     int queryLength = query.sequenceLength;
-                    parseSequenceVariations(genomeCache, targetIndex,
-                            currentEntry, reference, query, readStartPosition, queryLength, reverseStrand);
+                    parseSequenceVariations(currentEntry, reference, query, readStartPosition, queryLength, reverseStrand);
                     final Alignments.AlignmentEntry alignmentEntry = currentEntry.build();
 
                     if (qualityFilter.keepEntry(depth, alignmentEntry)) {
@@ -324,47 +309,14 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
         return targetIndex;
     }
 
-    private void parseSequenceVariations(RandomAccessSequenceCache genomeCache, int targetIndex, final Alignments.AlignmentEntry.Builder currentEntry,
+    private void parseSequenceVariations(final Alignments.AlignmentEntry.Builder currentEntry,
                                          AlignedSequence reference,
                                          AlignedSequence query, int readStartPosition, int queryLength, boolean reverseStrand) {
         final int alignmentLength = reference.alignment.length();
         final MutableString referenceSequence = reference.alignment;
         final MutableString querySequence = query.alignment;
 
-        if (!referenceSequence.equals(querySequence)) {
-            translate(genomeCache, targetIndex,
-                    reference.alignedStart, reference.alignedStart + reference.alignedLength,
-                    referenceSequence, querySequence);
-
-            extractSequenceVariations(
-                    currentEntry, alignmentLength, referenceSequence, querySequence, readStartPosition, queryLength, reverseStrand);
-        }
-
-    }
-
-    private void translate(RandomAccessSequenceCache genomeCache, int targetIndex, int referenceAlignedStart, int referenceAlignedEnd,
-                           MutableString referenceSequence, MutableString querySequence) {
-        char previousReferenceBase = genomeCache.get(targetIndex, referenceAlignedStart);
-        char previousReadBase = 0;
-        int referenceAlignmentPosition = 0;
-        int alignmentPosition = 0;
-        for (int i = referenceAlignedStart + 1; i < referenceAlignedEnd; i++) {
-            char referenceColorCode = referenceSequence.charAt(alignmentPosition);
-            char queryColorCode = querySequence.charAt(alignmentPosition);
-
-            char decodedRef = ColorSpaceConverter.decodeColor(previousReferenceBase, referenceSequence.charAt(referenceAlignmentPosition));
-
-            if (referenceColorCode != '-') {
-                referenceSequence.charAt(alignmentPosition, decodedRef);
-                previousReferenceBase=decodedRef;
-            }
-            if (queryColorCode != '-') {
-                char decodedQuery = ColorSpaceConverter.decodeColor(previousReadBase, querySequence.charAt(referenceAlignmentPosition));
-                querySequence.charAt(alignmentPosition, decodedQuery);
-                previousReadBase=decodedQuery;
-            }
-        }
-
+        extractSequenceVariations(currentEntry, alignmentLength, referenceSequence, querySequence, readStartPosition, queryLength, reverseStrand);
     }
 
     /**

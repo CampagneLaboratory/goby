@@ -27,17 +27,7 @@ import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.stats.AverageCalculator;
-import edu.cornell.med.icb.goby.stats.BenjaminiHochbergAdjustment;
-import edu.cornell.med.icb.goby.stats.BonferroniAdjustment;
-import edu.cornell.med.icb.goby.stats.ChiSquareTestCalculator;
-import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
-import edu.cornell.med.icb.goby.stats.DifferentialExpressionResults;
-import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
-import edu.cornell.med.icb.goby.stats.FisherExactTestCalculator;
-import edu.cornell.med.icb.goby.stats.FoldChangeCalculator;
-import edu.cornell.med.icb.goby.stats.FoldChangeMagnitudeCalculator;
-import edu.cornell.med.icb.goby.stats.TTestCalculator;
+import edu.cornell.med.icb.goby.stats.*;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.rit.pj.IntegerForLoop;
 import edu.rit.pj.ParallelRegion;
@@ -51,6 +41,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -65,6 +56,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.ServiceLoader;
+import java.util.Iterator;
 
 /**
  * Reads a compact alignment and genome annotations and output read counts that overlap with
@@ -123,6 +116,11 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     private final ObjectSet<String> groups = new ObjectArraySet<String>();
     private final DifferentialExpressionCalculator deCalculator = new DifferentialExpressionCalculator();
     private Object2ObjectMap<String, Integer> groupSizes = new Object2ObjectOpenHashMap<String, Integer>();
+    /**
+     * The set of normalization methods to use for the comparison.
+     */
+
+    private ObjectArraySet<NormalizationMethod> normalizationMethods;
 
     @Override
     public String getModeName() {
@@ -133,6 +131,9 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
+
+    private static ServiceLoader<NormalizationMethod> normalizationMethodLoader
+            = ServiceLoader.load(NormalizationMethod.class);
 
     /**
      * Configure.
@@ -184,7 +185,20 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 System.out.println(name);
             }
         }
+        String normalizationMethodNames = jsapResult.getString("normalization-methods");
+        String[] methodIds = normalizationMethodNames.split(",");
+        this.normalizationMethods = new ObjectArraySet<NormalizationMethod>();
+        for (String methodId : methodIds) {
 
+            for (NormalizationMethod aMethod : normalizationMethodLoader) {
+                if (aMethod.getIdentifier().equals(methodId))
+                    this.normalizationMethods.add(aMethod);
+            }
+        }
+        if (this.normalizationMethods.size() == 0) {
+            System.err.println("Could not locate any normalization method with the names provided: " + normalizationMethodNames);
+            System.exit(1);
+        }
         return this;
     }
 
@@ -218,7 +232,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         final String[] groupsTmp = groupsDefinition.split("/");
         for (final String group : groupsTmp) {
             final String[] groupTokens = group.split("=");
-            if (groupTokens.length<2) {
+            if (groupTokens.length < 2) {
                 System.err.println("The --group argument must have the syntax groupId=basename");
                 System.exit(1);
             }
@@ -229,9 +243,9 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             groups.add(groupId);
             for (final String groupString : groupBasenames.split(",")) {
 
-                String groupBasename= FilenameUtils.getBaseName(AlignmentReader.getBasename(groupString));
+                String groupBasename = FilenameUtils.getBaseName(AlignmentReader.getBasename(groupString));
                 if (!isInputBasename(groupBasename)) {
-                    System.err.printf("The group basename %s is not a valid input basename.%n",groupBasename);
+                    System.err.printf("The group basename %s is not a valid input basename.%n", groupBasename);
                     System.exit(1);
                 }
 
@@ -246,11 +260,12 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
     /**
      * Return true if the basename is on the command line as an input basename.
+     *
      * @param basename
      * @return
      */
     private boolean isInputBasename(String basename) {
-        for (String inputFilename :inputFilenames) {
+        for (String inputFilename : inputFilenames) {
             if (FilenameUtils.getBaseName(AlignmentReader.getBasename(inputFilename)).equals(basename)) return true;
         }
         return false;
@@ -349,46 +364,44 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     }
 
     public void evaluateSummaryStatistics(DifferentialExpressionCalculator deCalculator,
-                                                  String statsFilename,
-                                                  String[] groupComparison, boolean doComparison ) throws FileNotFoundException {
+                                          String statsFilename,
+                                          String[] groupComparison, boolean doComparison) throws FileNotFoundException {
         if (doComparison) {
-            // evaluate differences between groups:
-            DifferentialExpressionResults results = deCalculator.compare(new FoldChangeCalculator(), groupComparison);
-            //results.setOmitNonInformativeColumns(omitNonInformativeColumns);
+            DifferentialExpressionResults results = null;
 
-            results = deCalculator.compare(results, new FoldChangeMagnitudeCalculator(), groupComparison);
-            results = deCalculator.compare(results, new AverageCalculator(), groupComparison);
+            for (NormalizationMethod method : normalizationMethods) {
 
-            boolean ttestflag = true;
+                method.normalize(deCalculator, groupComparison);
 
-            for (int size : groupSizes.values()) {
-                if (size < 2) {
-                    ttestflag = false;
-                    System.out.println("Insufficient data for t-test: need at least 2 samples per group.");
+                // evaluate differences between groups:
+                results = deCalculator.compare(results, method, new FoldChangeCalculator(), groupComparison);
+                //results.setOmitNonInformativeColumns(omitNonInformativeColumns);
+
+                results = deCalculator.compare(results, method, new FoldChangeMagnitudeCalculator(), groupComparison);
+                results = deCalculator.compare(results, method, new AverageCalculator(), groupComparison);
+
+                boolean ttestflag = true;
+
+                for (int size : groupSizes.values()) {
+                    if (size < 2) {
+                        ttestflag = false;
+                        System.out.println("Insufficient data for t-test: need at least 2 samples per group.");
+                    }
                 }
-            }
+                if (ttestflag) {
+                results = deCalculator.compare(results, method, new TTestCalculator(), groupComparison);
+                }
+                results = deCalculator.compare(results, method, new FisherExactTestCalculator(), groupComparison);
+                results = deCalculator.compare(results, method, new FisherExactRCalculator(), groupComparison);               
+                results = deCalculator.compare(results, method, new ChiSquareTestCalculator(), groupComparison);
 
-            results = deCalculator.compare(results, new TTestCalculator(), groupComparison);
+                final BenjaminiHochbergAdjustment benjaminiHochbergAdjustment = new BenjaminiHochbergAdjustment();
+                final BonferroniAdjustment bonferroniAdjustment = new BonferroniAdjustment();
 
 
-            results = deCalculator.compare(results, new FisherExactTestCalculator(), groupComparison);
+                results = bonferroniAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+                results = benjaminiHochbergAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
 
-            // TODO: refactor so that the "canDo" method can be used rather than checking for R
-            final Rengine rengine = GobyRengine.getInstance().getRengine();
-            if (rengine != null && rengine.isAlive()) {
-                results = deCalculator.compare(results, new FisherExactRCalculator(), groupComparison);
-            }
-            results = deCalculator.compare(results, new ChiSquareTestCalculator(), groupComparison);
-
-            final BenjaminiHochbergAdjustment benjaminiHochbergAdjustment = new BenjaminiHochbergAdjustment();
-            final BonferroniAdjustment bonferroniAdjustment = new BonferroniAdjustment();
-
-            if (ttestflag) {
-                results = bonferroniAdjustment.adjust(results, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
-                results = benjaminiHochbergAdjustment.adjust(results, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
-            } else {
-                results = bonferroniAdjustment.adjust(results, "fisher-exact-test", "fisher-exact-R", "chi-square-test");
-                results = benjaminiHochbergAdjustment.adjust(results, "fisher-exact-test", "fisher-exact-R", "chi-square-test");
 
             }
             final PrintWriter statsOutput = new PrintWriter(statsFilename);
@@ -451,6 +464,9 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         }
 
         reader.close();
+        String sampleId = FilenameUtils.getBaseName(inputBasename);
+
+        deCalculator.setNumAlignedInSample(sampleId, numAlignedReadsInSample);
 
         if (outputFile == null) {
             // output filename was not provided on the command line. We make one output per input basename
@@ -461,7 +477,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             }
         }
 
-        writeAnnotationCounts(allAnnots, writer, inputBasename, referenceIds, algs, referencesToProcess, numAlignedReadsInSample);
+        writeAnnotationCounts(allAnnots, writer, inputBasename, referenceIds, algs, referencesToProcess);
         if (outputFile == null) {
             // output filename was not provided on the command line. We close each basename output.
             IOUtils.closeQuietly(writer);
@@ -472,7 +488,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     private void writeAnnotationCounts(final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots,
                                        final BufferedWriter writer, final String inputBasename,
                                        final DoubleIndexedIdentifier referenceIds, final AnnotationCount[] algs,
-                                       final IntSet referencesToProcess, final int numAlignedReadsInSample) throws IOException {
+                                       final IntSet referencesToProcess) throws IOException {
 
         // collect all element ids:
         if (doComparison) {
@@ -486,9 +502,10 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 final ObjectList<Annotation> annots = allAnnots.get(chromosomeName);
 
                 for (final Annotation annot : annots) {
-                    if(includeAnnotationTypes.contains("gene")){
+                    if (includeAnnotationTypes.contains("gene")) {
                         final String geneID = annot.id;
-                        deCalculator.defineElement(geneID);
+                        int index = deCalculator.defineElement(geneID);
+                        deCalculator.defineElementLength(index, annot.getLength());
                         numberOfElements++;
                     }
 
@@ -497,7 +514,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                         for (int i = 0; i < numExons; i++) {
                             Segment exonSegment = annot.segments.get(i);
                             final String exonID = exonSegment.id;
-                            deCalculator.defineElement(exonID);
+                            int index = deCalculator.defineElement(exonID);
+                            deCalculator.defineElementLength(index, annot.getLength());
                             numberOfElements++;
                         }
                     }
@@ -526,10 +544,11 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     deCalculator.defineElement(geneID);
                 }
             }
-
+            final String basename = FilenameUtils.getBaseName(inputBasename);
+            String sampleId = basename;
             for (final Annotation annot : annots) {
                 final String geneID = annot.id;
-                final String basename = FilenameUtils.getBaseName(inputBasename);
+
                 if (includeAnnotationTypes.contains("gene")) {
                     final int geneStart = annot.getStart();
                     final int geneEnd = annot.getEnd();
@@ -541,7 +560,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     final int numExons = annot.segments.size();
 
 
-                    final double geneRPKM = calculateRPKM(geneOverlapReads, annot.getLength(), numAlignedReadsInSample);
+                    final double geneRPKM = deCalculator.calculateNormalized(geneOverlapReads, annot.getLength(), deCalculator.getNumAlignedInSample(sampleId));
                     if (writeAnnotationCounts) {
                         writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\t%d\t%d\t%n",
                                 basename,
@@ -559,76 +578,81 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                                 log2(geneRPKM),
                                 geneExpression,
                                 numExons));
-                        numberOfAnottationCountsWritten++;
+
                     }
+                    numberOfAnottationCountsWritten++;
                     if (doComparison) {
-                        deCalculator.observe(basename, geneID, geneExpression, geneRPKM);
+                        deCalculator.observe(basename, geneID, geneExpression);
                     }
                 }
                 final int numberExons = annot.segments.size();
                 final int numberIntrons = numberExons - 1;
+                // skip unnecessary computation if we don't need exon or intron info:
+                if (includeAnnotationTypes.contains("exon") || includeAnnotationTypes.contains("intron")) {
+                    for (int i = 0; i < numberExons; i++) {
+                        final Segment segment = annot.segments.get(i);
+                        final int exonStart = segment.start;
+                        final int exonEnd = segment.end;
 
-                for (int i = 0; i < numberExons; i++) {
-                    final Segment segment = annot.segments.get(i);
-                    final int exonStart = segment.start;
-                    final int exonEnd = segment.end;
+                        final String exonStrand = segment.strand;
+                        final int exonLength = segment.getLength();
+                        final String exonID = segment.id;
+                        final float exonDepth = algs[referenceIndex].averageReadsPerPosition(exonStart, exonEnd);
+                        final int exonOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(exonStart, exonEnd);
+                        final int exonInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(exonStart, exonEnd);
+                        final double exonRPKM = deCalculator.calculateNormalized(exonOverlapReads, segment.getLength(), deCalculator.getNumAlignedInSample(sampleId));
+                        if (includeAnnotationTypes.contains("exon")) {
+                            if (writeAnnotationCounts) {
+                                writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\t%n",
+                                        basename,
+                                        geneID,
+                                        exonID,
+                                        "exon",
+                                        annot.chromosome,
+                                        exonStrand,
+                                        exonLength,
+                                        exonStart,
+                                        exonEnd,
+                                        exonInsideReads,
+                                        exonOverlapReads,
+                                        exonRPKM,
+                                        log2(exonRPKM)));
 
-                    final String exonStrand = segment.strand;
-                    final int exonLength = segment.getLength();
-                    final String exonID = segment.id;
-                    final float exonDepth = algs[referenceIndex].averageReadsPerPosition(exonStart, exonEnd);
-                    final int exonOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(exonStart, exonEnd);
-                    final int exonInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(exonStart, exonEnd);
-                    final double exonRPKM = calculateRPKM(exonOverlapReads, segment.getLength(), numAlignedReadsInSample);
-                    if (includeAnnotationTypes.contains("exon")) {
-                        if (writeAnnotationCounts) {
-                            writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\t%n",
-                                    basename,
-                                    geneID,
-                                    exonID,
-                                    "exon",
-                                    annot.chromosome,
-                                    exonStrand,
-                                    exonLength,
-                                    exonStart,
-                                    exonEnd,
-                                    exonInsideReads,
-                                    exonOverlapReads,
-                                    exonRPKM,
-                                    log2(exonRPKM)));
+                            }
                             numberOfAnottationCountsWritten++;
+                            if (doComparison) {
+                                deCalculator.observe(basename, exonID, exonOverlapReads);
+                            }
                         }
-                        if (doComparison) {
-                            deCalculator.observe(basename, exonID, exonOverlapReads, exonRPKM);
-                        }
-                    }
-                    if (i < numberIntrons) {
-                        final int intronStart = segment.end + 1;
-                        final Segment intronSegment = annot.segments.get(i + 1);
-                        final int intronEnd = intronSegment.start - 1;
-                        final int intronLength = intronEnd - intronStart + 1;
-                        final String intronID = segment.id + "-" + intronSegment.id;
-                        final float intronDepth = algs[referenceIndex].averageReadsPerPosition(intronStart, intronEnd);
-                        final int intronOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(intronStart, intronEnd);
-                        final int intronInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(intronStart, intronEnd);
-                        final double intronRPKM = calculateRPKM(intronOverlapReads, intronSegment.getLength(), numAlignedReadsInSample);
-                        if (intronLength > 0) {
-                            if (includeAnnotationTypes.contains("intron")) {
-                                if (writeAnnotationCounts) {
-                                    writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%e\t%g\t%n",
-                                            basename,
-                                            geneID,
-                                            intronID,
-                                            "intron",
-                                            annot.chromosome,
-                                            exonStrand,
-                                            exonLength,
-                                            exonStart,
-                                            exonEnd,
-                                            intronInsideReads,
-                                            intronOverlapReads,
-                                            intronRPKM,
-                                            log2(intronRPKM)));
+                        if (i < numberIntrons) {
+                            final int intronStart = segment.end + 1;
+                            final Segment intronSegment = annot.segments.get(i + 1);
+                            final int intronEnd = intronSegment.start - 1;
+                            final int intronLength = intronEnd - intronStart + 1;
+                            final String intronID = segment.id + "-" + intronSegment.id;
+                            final float intronDepth = algs[referenceIndex].averageReadsPerPosition(intronStart, intronEnd);
+                            final int intronOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(intronStart, intronEnd);
+                            final int intronInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(intronStart, intronEnd);
+                            final double intronRPKM = deCalculator.calculateNormalized(intronOverlapReads, intronSegment.getLength(), deCalculator.getNumAlignedInSample(sampleId));
+                            if (intronLength > 0) {
+                                if (includeAnnotationTypes.contains("intron")) {
+                                    if (writeAnnotationCounts) {
+                                        writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%e\t%g\t%n",
+                                                basename,
+                                                geneID,
+                                                intronID,
+                                                "intron",
+                                                annot.chromosome,
+                                                exonStrand,
+                                                exonLength,
+                                                exonStart,
+                                                exonEnd,
+                                                intronInsideReads,
+                                                intronOverlapReads,
+                                                intronRPKM,
+                                                log2(intronRPKM)));
+
+                                    }
                                     numberOfAnottationCountsWritten++;
                                 }
                             }

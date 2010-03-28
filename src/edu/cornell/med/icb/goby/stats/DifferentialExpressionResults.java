@@ -19,8 +19,8 @@
 package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 
 import java.io.PrintWriter;
@@ -51,14 +51,17 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
     /**
      * Declare a new statistic.
      *
-     * @param statisticId
+     * @param statisticId Identifier for the new statistic.
+     * @return the index of the statistic.
      */
-    public void declareStatistic(final MutableString statisticId) {
-        statisticIds.registerIdentifier(statisticId);
+    public int declareStatistic(final MutableString statisticId) {
+       int index= statisticIds.registerIdentifier(statisticId);
+       // TODO There is no reason for this class to know anything about the name of columns it may contain. Remove this code.
         if (statisticId.startsWith("average count group ")) {
             averageCountPerGroupIndexes.add(sortedStatisticIds.size());
         }
         sortedStatisticIds.add(statisticId);
+        return index;
     }
 
     public boolean isOmitNonInformativeColumns() {
@@ -90,10 +93,10 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
             buffer.append(" ");
         }
         buffer.append("\n");
-       for (final DifferentialExpressionInfo info : this) {
+        for (final DifferentialExpressionInfo info : this) {
             buffer.append(info.toString());
             buffer.append('\n');
-       }
+        }
 
         return buffer.toString();
     }

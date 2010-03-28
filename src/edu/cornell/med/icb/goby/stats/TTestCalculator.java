@@ -19,7 +19,6 @@
 package edu.cornell.med.icb.goby.stats;
 
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.stat.inference.TTest;
 import org.apache.commons.math.stat.inference.TTestImpl;
@@ -43,28 +42,31 @@ public class TTestCalculator extends StatisticCalculator {
     }
 
     public TTestCalculator() {
-        super("t-test");
+        super();
     }
 
     @Override
-    boolean canDo(final String[] group) {
+   public boolean canDo(final String[] group) {
         return group.length == 2;
     }
 
     @Override
-    DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
-                                        final DifferentialExpressionResults results,
+  public  DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
+                                        final NormalizationMethod method, final DifferentialExpressionResults results,
                                         final DifferentialExpressionInfo info,
                                         final String... group) {
         final String groupA = group[0];
         final String groupB = group[1];
-
         final ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
         final ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);
-
-        if(samplesA.size() < 2 | samplesB.size()<2){
-           return info;
+        if (samplesA.size() < 2 || samplesB.size() < 2) {
+            return info;
         }
+
+
+        final int tTestStatIndex = defineStatisticId(results, "t-test", method);
+        final int tStatisticStatIndex = defineStatisticId(results, "t-statistic", method);
+
 
         final double[] valuesA = new double[samplesA.size()];
         final double[] valuesB = new double[samplesB.size()];
@@ -72,29 +74,27 @@ public class TTestCalculator extends StatisticCalculator {
 
         int i = 0;
         for (final String sample : samplesA) {
-            valuesA[i++] = Math.log1p(differentialExpressionCalculator.getRPKM(sample, info.elementId));
+            valuesA[i++] = StrictMath.log1p(differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.elementId));
         }
 
         i = 0;
         for (final String sample : samplesB) {
-            valuesB[i++] = Math.log1p(differentialExpressionCalculator.getRPKM(sample, info.elementId));
+            valuesB[i++] = StrictMath.log1p(differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.elementId));
         }
 
         double pValue = 0;
         double tStatistic = 0;
-        final MutableString statName = new MutableString("t-statistic");
-        if (!results.isStatisticDefined(statName)) {
-            results.declareStatistic(statName);
-        }
+
         try {
             pValue = mathCommonsTTest.homoscedasticTTest(valuesA, valuesB);
             tStatistic = mathCommonsTTest.t(valuesA, valuesB);
         } catch (MathException e) {
             pValue = Double.NaN;
         }
+
         info.statistics.size(results.getNumberOfStatistics());
-        info.statistics.set(results.getStatisticIndex(statisticId), pValue);
-        info.statistics.set(results.getStatisticIndex(statName), tStatistic);
+        info.statistics.set(tTestStatIndex, pValue);
+        info.statistics.set(tStatisticStatIndex, tStatistic);
 
         return info;
     }
