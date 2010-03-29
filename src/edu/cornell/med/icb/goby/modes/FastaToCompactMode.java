@@ -20,15 +20,18 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import com.sun.tools.example.debug.gui.Environment;
 import edu.cornell.med.icb.goby.readers.FastXEntry;
 import edu.cornell.med.icb.goby.readers.FastXReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import edu.cornell.med.icb.goby.util.DoInParallel;
 import it.unimi.dsi.lang.MutableString;
+import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,6 +45,8 @@ import java.io.IOException;
  *         Time: 6:03:56 PM
  */
 public class FastaToCompactMode extends AbstractGobyMode {
+    private static final Logger LOG = Logger.getLogger(FastaToCompactMode.class);
+
     /**
      * The mode name.
      */
@@ -90,7 +95,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
      */
     private boolean excludeQuality;
     private boolean verboseQualityScores;
-    private byte[] qualityScoreBuffer;
+
     private boolean parallel = true;
 
     // see http://en.wikipedia.org/wiki/FASTQ_format for a description of these various encodings
@@ -181,17 +186,17 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
                     try {
                         debugStart(inputBasename);
-                        processOneFile(loopIndex, inputFilenames.length,  inputBasename);
+                        processOneFile(loopIndex, inputFilenames.length, inputBasename);
                         debugEnd(inputBasename);
                     } catch (IOException e) {
                         LOG.error(e);
                     }
                 }
             };
-            System.out.println("parallel: "+parallel);
+            System.out.println("parallel: " + parallel);
             loop.execute(parallel, inputFilenames);
         } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            LOG.error(e);
         }
     }
 
@@ -205,22 +210,22 @@ public class FastaToCompactMode extends AbstractGobyMode {
         }
         final File output = new File(outputFilename);
         final File readsFile = new File(inputFilename);
-        if (!output.exists() || FileUtils.isFileNewer(readsFile, output) || output.length()==0) {
-             convert(loopIndex, length, inputFilename, outputFilename);
+        if (!output.exists() || FileUtils.isFileNewer(readsFile, output) || output.length() == 0) {
+            convert(loopIndex, length, inputFilename, outputFilename);
         }
 
     }
 
     private void convert(int loopIndex, int length, String inputFilename, String outputFilename) throws IOException {
         System.out.printf("Converting [%d/%d] %s to %s%n",
-                loopIndex, length,inputFilename, outputFilename);
+                loopIndex, length, inputFilename, outputFilename);
 
         // Create directory for output file if it doesn't already exist
         final String outputPath = FilenameUtils.getFullPath(outputFilename);
         if (StringUtils.isNotBlank(outputPath)) {
             FileUtils.forceMkdir(new File(outputPath));
         }
-        final ReadsWriter writer = new ReadsWriter(new FileOutputStream(outputFilename));
+        final ReadsWriter writer = new ReadsWriter(new FastBufferedOutputStream(new FileOutputStream(outputFilename)));
         try {
 
             writer.setNumEntriesPerChunk(sequencePerChunk);
@@ -253,9 +258,8 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
     private byte[] convertQualityScores(final MutableString quality) {
         final int size = quality.length();
-        if (qualityScoreBuffer == null || size != qualityScoreBuffer.length) {
-            qualityScoreBuffer = new byte[size];
-        }
+        final byte[] qualityScoreBuffer = new byte[size];
+
         if (verboseQualityScores) {
             System.out.println(quality);
         }
