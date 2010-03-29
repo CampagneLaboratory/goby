@@ -20,18 +20,18 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import com.sun.tools.example.debug.gui.Environment;
 import edu.cornell.med.icb.goby.readers.FastXEntry;
 import edu.cornell.med.icb.goby.readers.FastXReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
-import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import edu.cornell.med.icb.goby.util.DoInParallel;
-import it.unimi.dsi.lang.MutableString;
+import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
+import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,7 +45,10 @@ import java.io.IOException;
  *         Time: 6:03:56 PM
  */
 public class FastaToCompactMode extends AbstractGobyMode {
-    private static final Logger LOG = Logger.getLogger(FastaToCompactMode.class);
+    /**
+     * Used to log informational and debug messages.
+     */
+    private static final Log LOG = LogFactory.getLog(FastaToCompactMode.class);
 
     /**
      * The mode name.
