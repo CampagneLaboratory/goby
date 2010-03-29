@@ -28,10 +28,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import org.apache.commons.io.FilenameUtils;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntCollection;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  * Evaluate statistics for sequence variations found in alignments.
@@ -63,7 +63,7 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
      */
     private String[] basenames;
     private MyIterateAlignments alignmentIterator;
-   
+
 
     @Override
     public String getModeName() {
@@ -121,24 +121,29 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
             case TAB_DELIMITED:
 
             case TSV:
-                writer.println("query-index\tcount\tcount/total_variations\tcount/total_alignments");
+                writer.println("basename\tquery-index\tcount\tcount/total_variations\tcount/total_alignments");
                 break;
         }
-
-
-        // Iterate through each alignment and write sequence variations to output file:
-        alignmentIterator.iterate(basenames);
         try {
-            Int2IntMap readIndexTallies = alignmentIterator.getReadIndexTally();
-            double numberMutations = sum(readIndexTallies.values());
-            double numberOfAlignmentEntries = alignmentIterator.getNumAlignmentEntries();
-            for (int readIndex : readIndexTallies.keySet()) {
-                int count = readIndexTallies.get(readIndex);
-                double frequency = ((double) count) / numberMutations;
-                double alignFrequency = ((double) count) / numberOfAlignmentEntries;
+            for (String basename : basenames) {
+                alignmentIterator.resetTallies();
+                String[] singleBasename = new String[]{basename};
+                // Iterate through each alignment and write sequence variations to output file:
+                alignmentIterator.iterate(singleBasename);
 
-                writer.printf("%d\t%d\t%f\t%f%n", readIndex,
-                        count, frequency, alignFrequency);
+                Int2IntMap readIndexTallies = alignmentIterator.getReadIndexTally();
+                double numberMutations = sum(readIndexTallies.values());
+                double numberOfAlignmentEntries = alignmentIterator.getNumAlignmentEntries();
+                for (int readIndex : readIndexTallies.keySet()) {
+                    int count = readIndexTallies.get(readIndex);
+                    double frequency = ((double) count) / numberMutations;
+                    double alignFrequency = ((double) count) / numberOfAlignmentEntries;
+
+                    writer.printf("%s\t%d\t%d\t%f\t%f%n",
+                            FilenameUtils.getBaseName(basename),
+                            readIndex,
+                            count, frequency, alignFrequency);
+                }
             }
         }
 
@@ -196,5 +201,9 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
         }
 
 
+        public void resetTallies() {
+            readIndexTally = new Int2IntOpenHashMap();
+            numAlignmentEntries = 0;
+        }
     }
 }
