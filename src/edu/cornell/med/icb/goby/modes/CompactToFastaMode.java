@@ -291,7 +291,8 @@ public class CompactToFastaMode extends AbstractGobyMode {
                     }
                     writeSequence(writer, transformedSequence, outputFakeQualityMode);
                     if (outputFormat == OutputFormat.FASTQ) {
-                        writeQualityScores(writer, readEntry.hasQualityScores(), readEntry.getQualityScores().toByteArray(), outputFakeQualityMode);
+                        int readLength=transformedSequence.length();
+                        writeQualityScores(writer, readEntry.hasQualityScores(), readEntry.getQualityScores().toByteArray(), outputFakeQualityMode, readLength);
                     }
                     ++numberOfFilteredSequences;
 
@@ -362,14 +363,15 @@ public class CompactToFastaMode extends AbstractGobyMode {
     /**
      * Write quality scores if the input has them, or fake some anyway if the outputFakeQualityMode is active.
      *
-     * @param writer
-     * @param hasScores
-     * @param qualityScores
-     * @param outputFakeQualityMode
-     * @throws IOException
+     * @param writer   Where to write quality scores.
+     * @param hasScores If the compact-reads file has quality scores.
+     * @param qualityScores The quality scores (Phred unit)
+     * @param outputFakeQualityMode  Whether quality scores should be faked.
+     * @param readLength The read lenth, used when faking.
+     * @throws IOException                                If an error occured.
      */
-    private void writeQualityScores(Writer writer, boolean hasScores, byte[] qualityScores, boolean outputFakeQualityMode) throws IOException {
-        final int length = qualityScores.length;
+    private void writeQualityScores(Writer writer, boolean hasScores, byte[] qualityScores, boolean outputFakeQualityMode, int readLength) throws IOException {
+        final int length = Math.max(qualityScores.length, readLength);
         if (hasScores || outputFakeQualityMode) {
             writer.write('+');
             writer.write('\n');
