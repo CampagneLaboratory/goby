@@ -232,6 +232,13 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         System.out.printf("Avg score alignment  = %f%n", avgScore);
         System.out.printf("Avg number of variations per query sequence = %3.2f %n",
                 avgNumVariationsPerQuery);
+        long size = file.length();
+        System.out.printf("Average bytes per entry: %f%n", divide(size, numLogicalAlignmentEntries));
+    }
+
+    private double divide(long a, long b) {
+
+        return ((double) a) / (double) b;
     }
 
     private void describeAmbigousReads(String basename, double numReads) {
@@ -239,9 +246,9 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
             System.out.printf("TMH: aligner threshold= %d%n", tmhReader.getAlignerThreshold());
             System.out.printf("TMH: number of ambiguous matches= %d%n", tmhReader.getQueryIndices().size());
-            System.out.printf("TMH: %%ambiguous matches= %f %%%n", (tmhReader.getQueryIndices().size()*100f)/numReads);
+            System.out.printf("TMH: %%ambiguous matches= %f %%%n", (tmhReader.getQueryIndices().size() * 100f) / numReads);
         } catch (IOException e) {
-            System.out.println("Cannot read TMH file for basename "+basename);
+            System.out.println("Cannot read TMH file for basename " + basename);
 
         }
     }
@@ -270,6 +277,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         long totalReadLength = 0;
         ReadsReader reader = null;
         try {
+            long size = file.length();
             reader = new ReadsReader(FileUtils.openInputStream(file));
             for (final Reads.ReadEntry entry : reader) {
                 final int readLength = entry.getReadLength();
@@ -305,6 +313,9 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 minReadLength = Math.min(minReadLength, readLength);
                 maxReadLength = Math.max(maxReadLength, readLength);
             }
+
+            System.out.printf("Average bytes per entry: %f%n", divide(size, numReadEntries));
+            System.out.printf("Average bytes per base: %f%n", divide(size, cumulativeReadLength));
         } finally {
             if (reader != null) {
                 reader.close();

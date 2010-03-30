@@ -100,5 +100,17 @@
             <required>false</required>
             <help>Parameters to configure the quality filter.</help>
         </flaggedOption>
+         <flaggedOption>
+            <id>number-of-reads</id>
+            <defaults>
+                <string>-1</string>
+            </defaults>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <longFlag>number-of-reads</longFlag>
+            <required>false</required>
+            <help>The number of reads in the input file. The number is determined from the argument to the -q option when provided. Use this option when importing an alignment not generated with Goby (see samtools flagstat to get the number of reads in a SAM/BAM file).</help>
+        </flaggedOption>
     </parameters>
 </jsap>

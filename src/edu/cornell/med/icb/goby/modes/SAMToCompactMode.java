@@ -68,6 +68,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     protected String samBinaryFilename;
 
     private boolean skipMissingMdAttribute = true;
+    private int dummyQueryIndex = 0;
+
 
     public String getSamBinaryFilename() {
         return samBinaryFilename;
@@ -103,7 +105,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
         skipMissingMdAttribute = jsapResult.getBoolean("allow-missing-md-attribute");
-
+        numberOfReadsFromCommandLine = jsapResult.getInt("number-of-reads");
         return this;
     }
 
@@ -268,11 +270,14 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         final SAMFileHeader samHeader = parser.getFileHeader();
         final SAMSequenceDictionary samSequenceDictionary = samHeader.getSequenceDictionary();
         final List<SAMSequenceRecord> samSequenceRecords = samSequenceDictionary.getSequences();
-        if (targetIds.size() != samSequenceRecords.size()) {
-            LOG.warn("targets: " + targetIds.size() + ", records: " + samSequenceRecords.size());
-        }
+        int targetCount = targetIds.size();
+        if (targetIds.size() != 0 && (targetIds.size() != samSequenceRecords.size())) {
 
-        final int[] targetLengths = new int[targetIds.size()];
+            LOG.warn("targets: " + targetIds.size() + ", records: " + samSequenceRecords.size());
+
+        }
+        targetCount = Math.max(samSequenceRecords.size(), targetCount);
+        final int[] targetLengths = new int[targetCount];
         for (final SAMSequenceRecord samSequenceRecord : samSequenceRecords) {
             final int index = samSequenceRecord.getSequenceIndex();
             if (LOG.isDebugEnabled()) {
@@ -293,8 +298,13 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             return Integer.parseInt(readName);
         } catch (NumberFormatException e) {
 
-            // read name is not the integer Goby relies on, make an int from the id:
-            return queryIds.registerIdentifier(new MutableString(readName));
+            if (!propagateQueryIds) {
+                return dummyQueryIndex++;
+            } else {  // read name is not the integer Goby relies on, make an int from the id:
+                return queryIds.registerIdentifier(new MutableString(readName));
+
+            }
+
         }
     }
 
@@ -331,7 +341,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         int alignmentLength = readSequence.length();
         LastToCompactMode.extractSequenceVariations(currentEntry,
                 alignmentLength,
-                referenceSequence,  readSequence, readStartPosition, queryLength, reverseStrand);
+                referenceSequence, readSequence, readStartPosition, queryLength, reverseStrand);
 
     }
 
@@ -391,9 +401,9 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     final String toAppend = variationChars.substring(1);
                     referenceSequence.append(toAppend);
 
-                //        System.out.println("var " + variationChars + " appending " + toAppend);
+                    //        System.out.println("var " + variationChars + " appending " + toAppend);
 
-                      //  positionInReadSequence += mutationLength;
+                    //  positionInReadSequence += mutationLength;
                     for (int i = 0; i < mutationLength; ++i) {
                         readSequence.insert(positionInReadSequence, '-');
                         readPostInsertions.insert(positionInReadSequence, '-');
@@ -429,8 +439,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         int end = 0;
         int positionInReadSequence = 0;
         int readStartAlignedPosition = 0;
-     //   System.out.println("cigar: "+cigar +" mdAttribute: "+mdAttribute);
-     
+        //   System.out.println("cigar: "+cigar +" mdAttribute: "+mdAttribute);
+
         while (matchMatcher.find(end)) {
             String matchLenthAsString = matchMatcher.group(1);
             String variationType = matchMatcher.group(2);
@@ -461,7 +471,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 case 'D':
                     // the reference had extra bases.
                     for (int i = 0; i < matchLength; i++) {
-                        positionAdjustment.size(Math.max(positionInReadSequence + i+1, positionAdjustment.size()));
+                        positionAdjustment.size(Math.max(positionInReadSequence + i + 1, positionAdjustment.size()));
                         positionAdjustment.set(positionInReadSequence + i, -1);
                     }
                     break;
