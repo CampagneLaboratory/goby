@@ -40,6 +40,9 @@ echo SGE: scratch directory is ${TMPDIR}
 echo SGE: PATH = ${SGE_O_PATH}
 echo ------------------------------------------------------
 
+# Pull in softlib commands
+. /etc/profile
+
 # The reference file to align with
 REFERENCE=%REFERENCE%
 REFERENCE_FILE=${REFERENCE##*/}

@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 # Name of the job
 #$ -N %SGE_JOB_NAME%-concat
@@ -37,6 +37,9 @@ echo SGE: current home directory is ${SGE_O_HOME}
 echo SGE: scratch directory is ${TMPDIR}
 echo SGE: PATH = ${SGE_O_PATH}
 echo ------------------------------------------------------
+
+# Pull in softlib commands
+. /etc/profile
 
 # Copy the goby and support tools to the local node
 # TODO: copy bwa etc.
