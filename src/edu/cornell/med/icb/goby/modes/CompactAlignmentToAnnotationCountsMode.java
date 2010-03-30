@@ -21,13 +21,15 @@ package edu.cornell.med.icb.goby.modes;
 import cern.colt.Timer;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCount;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.stats.*;
+import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
+import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
+import edu.cornell.med.icb.goby.stats.DifferentialExpressionResults;
+import edu.cornell.med.icb.goby.stats.NormalizationMethod;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.rit.pj.IntegerForLoop;
 import edu.rit.pj.ParallelRegion;
@@ -41,23 +43,19 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.rosuda.JRI.Rengine;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.ServiceLoader;
-import java.util.Iterator;
 
 /**
  * Reads a compact alignment and genome annotations and output read counts that overlap with
@@ -81,7 +79,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION = "Converts alignment to counts for "
-            + "annotations (e.g., gene transcript annotations or exons).";
+            + "annotations (e.g., gene annotations or exons).";
 
     /**
      * The natural log of the number two.
@@ -101,26 +99,21 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     private ObjectSet<String> includeReferenceNames;
     private ObjectOpenHashSet<String> includeAnnotationTypes;
     private String[] inputFilenames;
-    private boolean doComparison;
 
-    /**
-     * The groups that should be compared, order matters.
-     */
-    private String[] groupComparison;
     private boolean writeAnnotationCounts = true;
     private boolean omitNonInformativeColumns = false;
     private String statsFilename;
     private ParallelTeam team;
     private boolean parallel;
-
-    private final ObjectSet<String> groups = new ObjectArraySet<String>();
+    private boolean doComparison;
     private final DifferentialExpressionCalculator deCalculator = new DifferentialExpressionCalculator();
-    private Object2ObjectMap<String, Integer> groupSizes = new Object2ObjectOpenHashMap<String, Integer>();
+    private final DifferentialExpressionAnalysis deAnalyzer = new DifferentialExpressionAnalysis();
     /**
      * The set of normalization methods to use for the comparison.
      */
 
     private ObjectArraySet<NormalizationMethod> normalizationMethods;
+
 
     @Override
     public String getModeName() {
@@ -154,10 +147,16 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         outputFile = jsapResult.getString("output");
         statsFilename = jsapResult.getString("stats");
         final String groupsDefinition = jsapResult.getString("groups");
-        parseGroupsDefinition(groupsDefinition);
+        deAnalyzer.parseGroupsDefinition(groupsDefinition, deCalculator, inputFilenames);
         final String compare = jsapResult.getString("compare");
-        parseCompare(compare);
-        annotationFile = jsapResult.getString("annotation");
+        if (compare == null) {
+            doComparison = false;
+        } else {
+            doComparison = true;
+        }
+        if (doComparison) {
+            deAnalyzer.parseCompare(compare);
+        }
         final String includeReferenceNameComas = jsapResult.getString("include-reference-names");
         includeReferenceNames = new ObjectOpenHashSet<String>();
         if (includeReferenceNameComas != null) {
@@ -168,7 +167,13 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             }
             filterByReferenceNames = true;
         }
+        parseAnnotations(jsapResult);
+        parseNormalization(jsapResult);
+        return this;
+    }
 
+    private void parseAnnotations(JSAPResult jsapResult) {
+        annotationFile = jsapResult.getString("annotation");
         final String includeAnnotationTypeComas = jsapResult.getString("include-annotation-types");
         includeAnnotationTypes = new ObjectOpenHashSet<String>();
         if (includeAnnotationTypeComas != null) {
@@ -185,6 +190,9 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 System.out.println(name);
             }
         }
+    }
+
+    private void parseNormalization(JSAPResult jsapResult) {
         String normalizationMethodNames = jsapResult.getString("normalization-methods");
         String[] methodIds = normalizationMethodNames.split(",");
         this.normalizationMethods = new ObjectArraySet<NormalizationMethod>();
@@ -199,77 +207,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             System.err.println("Could not locate any normalization method with the names provided: " + normalizationMethodNames);
             System.exit(1);
         }
-        return this;
     }
 
-    private void parseCompare(final String compare) {
-        if (compare == null) {
-            doComparison = false;
-        } else {
-            doComparison = true;
-        }
-
-        if (doComparison) {
-            final String[] groupLanguageText = compare.split("/");
-            for (final String groupId : groupLanguageText) {
-
-                if (!groups.contains(groupId)) {
-                    System.err.println("Group " + groupId + " used in --compare must be defined. "
-                            + "Please see the --groups option to define groups.");
-                    System.exit(1);
-                }
-            }
-            groupComparison = groupLanguageText;
-        }
-    }
-
-    private void parseGroupsDefinition(final String groupsDefinition) {
-        if (groupsDefinition == null) {
-            // no groups definition to parse.
-            return;
-        }
-
-        final String[] groupsTmp = groupsDefinition.split("/");
-        for (final String group : groupsTmp) {
-            final String[] groupTokens = group.split("=");
-            if (groupTokens.length < 2) {
-                System.err.println("The --group argument must have the syntax groupId=basename");
-                System.exit(1);
-            }
-            final String groupId = groupTokens[0];
-            final String groupBasenames = groupTokens[1];
-            assert groupTokens.length == 2 : "group definition must have only two elements separated by an equal sign.";
-            deCalculator.defineGroup(groupId);
-            groups.add(groupId);
-            for (final String groupString : groupBasenames.split(",")) {
-
-                String groupBasename = FilenameUtils.getBaseName(AlignmentReader.getBasename(groupString));
-                if (!isInputBasename(groupBasename)) {
-                    System.err.printf("The group basename %s is not a valid input basename.%n", groupBasename);
-                    System.exit(1);
-                }
-
-                System.out.println("Associating basename: " + groupBasename + " to group: " + groupId);
-                deCalculator.associateSampleToGroup(groupBasename, groupId);
-            }
-
-            int groupSize = (groupBasenames.split(",")).length;
-            groupSizes.put(groupId, groupSize);
-        }
-    }
-
-    /**
-     * Return true if the basename is on the command line as an input basename.
-     *
-     * @param basename
-     * @return
-     */
-    private boolean isInputBasename(String basename) {
-        for (String inputFilename : inputFilenames) {
-            if (FilenameUtils.getBaseName(AlignmentReader.getBasename(inputFilename)).equals(basename)) return true;
-        }
-        return false;
-    }
 
     class BasenameParallelRegion extends ParallelRegion {
         private final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots;
@@ -347,12 +286,14 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 LOG.error("An exception occurred.", e);
             }
 
-            //  for (String inputFile : inputFilenames) {
-            //    String inputBasename = AlignmentReader.getBasename(inputFile);
-            //  processOneBasename(allAnnots, writer, inputFile, inputBasename);
-            //}
+            if (doComparison) {
+                DifferentialExpressionResults results = null;
+                results = deAnalyzer.evaluateDifferentialExpressionStatistics(deCalculator, doComparison, normalizationMethods);
+                final PrintWriter statsOutput = new PrintWriter(statsFilename);
+                results.write(statsOutput, '\t');
 
-            evaluateSummaryStatistics(deCalculator, statsFilename, groupComparison, doComparison);
+                IOUtils.closeQuietly(statsOutput);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -361,54 +302,6 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         }
         timer.stop();
         System.out.println("time spent  " + timer.toString());
-    }
-
-    public void evaluateSummaryStatistics(DifferentialExpressionCalculator deCalculator,
-                                          String statsFilename,
-                                          String[] groupComparison, boolean doComparison) throws FileNotFoundException {
-        if (doComparison) {
-            DifferentialExpressionResults results = null;
-
-            for (NormalizationMethod method : normalizationMethods) {
-
-                method.normalize(deCalculator, groupComparison);
-
-                // evaluate differences between groups:
-                results = deCalculator.compare(results, method, new FoldChangeCalculator(), groupComparison);
-                //results.setOmitNonInformativeColumns(omitNonInformativeColumns);
-
-                results = deCalculator.compare(results, method, new FoldChangeMagnitudeCalculator(), groupComparison);
-                results = deCalculator.compare(results, method, new AverageCalculator(), groupComparison);
-
-                boolean ttestflag = true;
-
-                for (int size : groupSizes.values()) {
-                    if (size < 2) {
-                        ttestflag = false;
-                        System.out.println("Insufficient data for t-test: need at least 2 samples per group.");
-                    }
-                }
-                if (ttestflag) {
-                results = deCalculator.compare(results, method, new TTestCalculator(), groupComparison);
-                }
-                results = deCalculator.compare(results, method, new FisherExactTestCalculator(), groupComparison);
-                results = deCalculator.compare(results, method, new FisherExactRCalculator(), groupComparison);               
-                results = deCalculator.compare(results, method, new ChiSquareTestCalculator(), groupComparison);
-
-                final BenjaminiHochbergAdjustment benjaminiHochbergAdjustment = new BenjaminiHochbergAdjustment();
-                final BonferroniAdjustment bonferroniAdjustment = new BonferroniAdjustment();
-
-
-                results = bonferroniAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
-                results = benjaminiHochbergAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
-
-
-            }
-            final PrintWriter statsOutput = new PrintWriter(statsFilename);
-            results.write(statsOutput, '\t');
-
-            IOUtils.closeQuietly(statsOutput);
-        }
     }
 
     private void processOneBasename(final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots,
