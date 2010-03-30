@@ -38,6 +38,9 @@ echo SGE: scratch directory is ${TMPDIR}
 echo SGE: PATH = ${SGE_O_PATH}
 echo ------------------------------------------------------
 
+# Pull in softlib commands
+. /etc/profile
+
 # Copy the goby and support tools to the local node
 # TODO: copy bwa etc.
 /bin/cp ${SGE_O_WORKDIR}/goby.jar ${SGE_O_WORKDIR}/log4j.properties ${TMPDIR}

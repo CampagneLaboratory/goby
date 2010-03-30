@@ -41,6 +41,9 @@ echo SGE: scratch directory is ${TMPDIR}
 echo SGE: PATH = ${SGE_O_PATH}
 echo ------------------------------------------------------
 
+# Pull in softlib commands
+. /etc/profile
+
 # Use a transcript file as the reference file to align with
 TRANSCRIPT_DIRECTORY=%TRANSCRIPT_DIRECTORY%
 TRANSCRIPT_FILE_NAME=`sed -n "${SGE_TASK_ID}p" transcript-list.txt`

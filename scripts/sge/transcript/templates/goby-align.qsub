@@ -37,6 +37,9 @@ echo SGE: scratch directory is ${TMPDIR}
 echo SGE: PATH = ${SGE_O_PATH}
 echo ------------------------------------------------------
 
+# Pull in softlib commands
+. /etc/profile
+
 TRANSCRIPT_DIRECTORY=%TRANSCRIPT_DIRECTORY%
 # The full path to the transcript file to align with
 # TRANSCRIPT_FILE_NAME is defined elsewhere
