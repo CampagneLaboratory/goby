@@ -49,6 +49,8 @@ development  ->1.5
  Changes to the Compact format:
  - Store target/reference sequence lengths in the alignment header. This information is helpful when calculating
    statistics such as RPKMs (transcript-level searches).
+ - Store constant query lengths as one integer. Goby 1.4.1- stored one length for each read. This can become very
+   memory consuming when the number of reads is very large. This change saves memory and storage.
 
 1.4.1
  - Added a mode to write a read set to text format (set-to-text). The output will show the

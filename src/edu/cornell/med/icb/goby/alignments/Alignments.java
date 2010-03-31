@@ -1636,6 +1636,13 @@ public final class Alignments {
       return queryLength_.get(index);
     }
     
+    // optional uint32 constantQueryLength = 10;
+    public static final int CONSTANTQUERYLENGTH_FIELD_NUMBER = 10;
+    private boolean hasConstantQueryLength;
+    private int constantQueryLength_ = 0;
+    public boolean hasConstantQueryLength() { return hasConstantQueryLength; }
+    public int getConstantQueryLength() { return constantQueryLength_; }
+    
     // repeated uint32 target_length = 8;
     public static final int TARGET_LENGTH_FIELD_NUMBER = 8;
     private java.util.List<java.lang.Integer> targetLength_ =
@@ -1686,6 +1693,9 @@ public final class Alignments {
       for (int element : getTargetLengthList()) {
         output.writeUInt32(8, element);
       }
+      if (hasConstantQueryLength()) {
+        output.writeUInt32(10, getConstantQueryLength());
+      }
       getUnknownFields().writeTo(output);
     }
     
@@ -1732,6 +1742,10 @@ public final class Alignments {
         }
         size += dataSize;
         size += 1 * getTargetLengthList().size();
+      }
+      if (hasConstantQueryLength()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(10, getConstantQueryLength());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1920,6 +1934,9 @@ public final class Alignments {
           }
           result.queryLength_.addAll(other.queryLength_);
         }
+        if (other.hasConstantQueryLength()) {
+          setConstantQueryLength(other.getConstantQueryLength());
+        }
         if (!other.targetLength_.isEmpty()) {
           if (result.targetLength_.isEmpty()) {
             result.targetLength_ = new java.util.ArrayList<java.lang.Integer>();
@@ -2005,6 +2022,10 @@ public final class Alignments {
                 addTargetLength(input.readUInt32());
               }
               input.popLimit(limit);
+              break;
+            }
+            case 80: {
+              setConstantQueryLength(input.readUInt32());
               break;
             }
           }
@@ -2171,6 +2192,24 @@ public final class Alignments {
       }
       public Builder clearQueryLength() {
         result.queryLength_ = java.util.Collections.emptyList();
+        return this;
+      }
+      
+      // optional uint32 constantQueryLength = 10;
+      public boolean hasConstantQueryLength() {
+        return result.hasConstantQueryLength();
+      }
+      public int getConstantQueryLength() {
+        return result.getConstantQueryLength();
+      }
+      public Builder setConstantQueryLength(int value) {
+        result.hasConstantQueryLength = true;
+        result.constantQueryLength_ = value;
+        return this;
+      }
+      public Builder clearConstantQueryLength() {
+        result.hasConstantQueryLength = false;
+        result.constantQueryLength_ = 0;
         return this;
       }
       
@@ -3683,22 +3722,23 @@ public final class Alignments {
       "_variations\030\r \003(\0132\030.reads.SequenceVariat" +
       "ion\"f\n\021SequenceVariation\022\014\n\004from\030\002 \002(\t\022\n" +
       "\n\002to\030\001 \002(\t\022\020\n\010position\030\003 \002(\r\022\021\n\treadInde" +
-      "x\030\005 \002(\r\022\022\n\nto_quality\030\004 \001(\014\"\202\002\n\017Alignmen" +
+      "x\030\005 \002(\r\022\022\n\nto_quality\030\004 \001(\014\"\237\002\n\017Alignmen" +
       "tHeader\0224\n\022query_name_mapping\030\001 \001(\0132\030.re" +
       "ads.IdentifierMapping\0225\n\023target_name_map" +
       "ping\030\002 \001(\0132\030.reads.IdentifierMapping\022\031\n\021" +
       "number_of_queries\030\005 \001(\r\022\031\n\021number_of_tar" +
       "gets\030\006 \001(\r\022\037\n\027number_of_aligned_reads\030\007 ",
-      "\001(\r\022\024\n\014query_length\030\003 \003(\r\022\025\n\rtarget_leng" +
-      "th\030\010 \003(\r\"<\n\021IdentifierMapping\022\'\n\010mapping" +
-      "s\030\001 \003(\0132\025.reads.IdentifierInfo\"-\n\016Identi" +
-      "fierInfo\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"X\n" +
-      "\024AlignmentTooManyHits\022\030\n\020alignerThreshol" +
-      "d\030\002 \002(\r\022&\n\004hits\030\001 \003(\0132\030.reads.AmbiguousL" +
-      "ocation\"b\n\021AmbiguousLocation\022\023\n\013query_in" +
-      "dex\030\001 \002(\r\022\037\n\027at_least_number_of_hits\030\002 \002" +
-      "(\r\022\027\n\017length_of_match\030\003 \001(\rB\'\n#edu.corne" +
-      "ll.med.icb.goby.alignmentsH\001"
+      "\001(\r\022\024\n\014query_length\030\003 \003(\r\022\033\n\023constantQue" +
+      "ryLength\030\n \001(\r\022\025\n\rtarget_length\030\010 \003(\r\"<\n" +
+      "\021IdentifierMapping\022\'\n\010mappings\030\001 \003(\0132\025.r" +
+      "eads.IdentifierInfo\"-\n\016IdentifierInfo\022\014\n" +
+      "\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"X\n\024AlignmentT" +
+      "ooManyHits\022\030\n\020alignerThreshold\030\002 \002(\r\022&\n\004" +
+      "hits\030\001 \003(\0132\030.reads.AmbiguousLocation\"b\n\021" +
+      "AmbiguousLocation\022\023\n\013query_index\030\001 \002(\r\022\037" +
+      "\n\027at_least_number_of_hits\030\002 \002(\r\022\027\n\017lengt" +
+      "h_of_match\030\003 \001(\rB\'\n#edu.cornell.med.icb.",
+      "goby.alignmentsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -3734,7 +3774,7 @@ public final class Alignments {
           internal_static_reads_AlignmentHeader_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_reads_AlignmentHeader_descriptor,
-              new java.lang.String[] { "QueryNameMapping", "TargetNameMapping", "NumberOfQueries", "NumberOfTargets", "NumberOfAlignedReads", "QueryLength", "TargetLength", },
+              new java.lang.String[] { "QueryNameMapping", "TargetNameMapping", "NumberOfQueries", "NumberOfTargets", "NumberOfAlignedReads", "QueryLength", "ConstantQueryLength", "TargetLength", },
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentHeader.class,
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentHeader.Builder.class);
           internal_static_reads_IdentifierMapping_descriptor =

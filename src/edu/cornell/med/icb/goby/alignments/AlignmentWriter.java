@@ -21,6 +21,8 @@ package edu.cornell.med.icb.goby.alignments;
 import edu.cornell.med.icb.goby.reads.MessageChunksWriter;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.lang.MutableString;
@@ -69,6 +71,8 @@ public class AlignmentWriter implements Closeable {
     private final FileWriter statsWriter;
     private final String basename;
     private int numberOfAlignedReads;
+    private int constantQueryLength;
+    private boolean isConstantQueryLength;
 
     public AlignmentWriter(final String outputBasename) throws IOException {
         final FileOutputStream alignmentEntries = new FileOutputStream(outputBasename + ".entries");
@@ -191,6 +195,9 @@ public class AlignmentWriter implements Closeable {
             headerBuilder.setNumberOfAlignedReads(numberOfAlignedReads);
             if (queryLengths != null) {
                 headerBuilder.addAllQueryLength(IntArrayList.wrap(queryLengths));
+            }                      else
+            if (isConstantQueryLength) {
+                headerBuilder.setConstantQueryLength(constantQueryLength);
             }
             if (targetLengths != null) {
                 headerBuilder.addAllTargetLength(IntArrayList.wrap(targetLengths));
@@ -291,7 +298,17 @@ public class AlignmentWriter implements Closeable {
     public void setQueryLengths(final int[] queryLengths) {
         assert queryLengths.length > maxQueryIndex :
                 "The number of elements of queryLength is too small to accomodate queryIndex=" + maxQueryIndex;
-        this.queryLengths = queryLengths;
+        IntSet uniqueLengths = new IntOpenHashSet();
+        for (int length : queryLengths) {
+            uniqueLengths.add(length);
+        }
+        if (uniqueLengths.size() == 0) {
+            // detected constant read length.
+            constantQueryLength = uniqueLengths.iterator().nextInt();
+            isConstantQueryLength = true;
+        } else {
+            this.queryLengths = queryLengths;
+        }
     }
 
     public void setTargetLengths(final int[] targetLengths) {

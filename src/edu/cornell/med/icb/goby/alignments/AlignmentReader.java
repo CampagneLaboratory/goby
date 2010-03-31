@@ -202,6 +202,12 @@ public class AlignmentReader extends AbstractAlignmentReader {
                 //release the space:
                 queryLengths = null;
             }
+        } else {
+            if (header.hasConstantQueryLength()) {
+                this.constantQueryLengths = true;
+                this.constantLength = header.getConstantQueryLength();
+                queryLengths = null;
+            }
         }
 
         if (header.getTargetLengthCount() > 0) {
@@ -280,10 +286,11 @@ public class AlignmentReader extends AbstractAlignmentReader {
 
     /**
      * Returns whether this read has query lentgh information.
+     *
      * @return True or false.
      */
     public boolean hasQueryLengths() {
         if (constantQueryLengths) return true;
-        else return queryLengths!=null;
+        else return queryLengths != null;
     }
 }
