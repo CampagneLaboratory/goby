@@ -189,23 +189,21 @@ public class AlignmentReader extends AbstractAlignmentReader {
 
         queryIdentifiers = parseIdentifiers(header.getQueryNameMapping());
         targetIdentifiers = parseIdentifiers(header.getTargetNameMapping());
-        if (header.getQueryLengthCount() > 0) {
+        if (header.hasConstantQueryLength()) {
+            this.constantQueryLengths = true;
+            this.constantLength = header.getConstantQueryLength();
+            queryLengths = null;
+        } else if (header.getQueryLengthCount() > 0) {
             queryLengths = new IntArrayList(header.getQueryLengthList()).toIntArray();
             IntSet distinctQueryLength = new IntOpenHashSet();
 
             for (int length : queryLengths) {
-                distinctQueryLength.add(length);
+                if (length != 0) distinctQueryLength.add(length);
             }
             if (distinctQueryLength.size() == 1) {
                 this.constantQueryLengths = true;
                 this.constantLength = distinctQueryLength.iterator().nextInt();
                 //release the space:
-                queryLengths = null;
-            }
-        } else {
-            if (header.hasConstantQueryLength()) {
-                this.constantQueryLengths = true;
-                this.constantLength = header.getConstantQueryLength();
                 queryLengths = null;
             }
         }

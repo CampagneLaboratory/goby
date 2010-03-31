@@ -193,12 +193,16 @@ public class AlignmentWriter implements Closeable {
             headerBuilder.setQueryNameMapping(getMapping(queryIdentifiers, queryIdentifiersArray));
             headerBuilder.setTargetNameMapping(getMapping(targetIdentifiers, targetIdentifiersArray));
             headerBuilder.setNumberOfAlignedReads(numberOfAlignedReads);
+
+            // store query lengths:
             compactQueryLengths(queryLengths);
             if (isConstantQueryLength) {
                 headerBuilder.setConstantQueryLength(constantQueryLength);
             } else if (queryLengths != null) {
                 headerBuilder.addAllQueryLength(IntArrayList.wrap(queryLengths));
-            } else if (targetLengths != null) {
+            }
+            //store target lengths:
+            if (targetLengths != null) {
                 headerBuilder.addAllTargetLength(IntArrayList.wrap(targetLengths));
             }
 
@@ -304,11 +308,15 @@ public class AlignmentWriter implements Closeable {
     }
 
     private void compactQueryLengths(int[] queryLengths) {
+        if (queryLengths == null) return;
         IntSet uniqueLengths = new IntOpenHashSet();
         for (int length : queryLengths) {
-            uniqueLengths.add(length);
+            if (length != 0) {
+                uniqueLengths.add(length);
+
+            }
         }
-        if (uniqueLengths.size() == 0) {
+        if (uniqueLengths.size() == 1) {
             // detected constant read length.
             constantQueryLength = uniqueLengths.iterator().nextInt();
             isConstantQueryLength = true;

@@ -25,12 +25,9 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +37,7 @@ import java.io.IOException;
  *         Date: Apr 30, 2009
  *         Time: 6:15:52 PM
  */
-public class TestReadWriteAlignments  {
+public class TestReadWriteAlignments {
     /**
      * Used to log debug and informational messages.
      */
@@ -181,4 +178,40 @@ public class TestReadWriteAlignments  {
         }
         fail("the length array is too short. This case must be detected.");
     }
+
+    @Test
+    public void testConstantLength() throws IOException {
+        final IndexedIdentifier queryIds = new IndexedIdentifier();
+        // NOTE: there is no id for entry 0, this is ok
+        queryIds.put(new MutableString("query:1"), 1);
+        queryIds.put(new MutableString("query:2"), 2);
+
+        final IndexedIdentifier targetIds = new IndexedIdentifier();
+        targetIds.put(new MutableString("target:0"), 0);
+        targetIds.put(new MutableString("target:1"), 1);
+
+        final AlignmentWriter writer =
+                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-104"));
+
+        assertNotNull("Query ids should not be null", queryIds.keySet());
+        writer.setQueryIdentifiers(queryIds);
+        final int[] queryLengths = {11, 11, 11};
+        writer.setQueryLengths(queryLengths);
+
+        assertNotNull("Target ids should not be null", targetIds.keySet());
+        writer.setTargetIdentifiers(targetIds);
+        final int[] targetLengths = {42, 42};
+        writer.setTargetLengths(targetLengths);
+        writer.close();
+
+        final AlignmentReader reader =
+                new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, "align-104"));
+        reader.readHeader();
+
+        assertTrue("query length must be constant", reader.isConstantQueryLengths());
+        assertArrayEquals("Query lengths do not match", queryLengths, reader.getQueryLengths());
+        assertEquals("Number of queries do not match", 3, reader.getNumberOfQueries());
+
+
+          }
 }
