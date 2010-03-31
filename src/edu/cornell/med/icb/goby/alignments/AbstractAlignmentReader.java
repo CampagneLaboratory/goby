@@ -169,4 +169,12 @@ public abstract class AbstractAlignmentReader implements Closeable,
         assert isHeaderLoaded() : "Header must be loaded to access target lengths";
         return targetLengths;
     }
+
+    /**
+     *
+     * @return True if the alignment stores a constant query length.
+     */
+    public boolean isConstantQueryLengths() {
+        return constantQueryLengths;
+    }
 }

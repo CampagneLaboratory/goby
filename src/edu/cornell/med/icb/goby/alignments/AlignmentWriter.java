@@ -193,13 +193,12 @@ public class AlignmentWriter implements Closeable {
             headerBuilder.setQueryNameMapping(getMapping(queryIdentifiers, queryIdentifiersArray));
             headerBuilder.setTargetNameMapping(getMapping(targetIdentifiers, targetIdentifiersArray));
             headerBuilder.setNumberOfAlignedReads(numberOfAlignedReads);
-            if (queryLengths != null) {
-                headerBuilder.addAllQueryLength(IntArrayList.wrap(queryLengths));
-            }                      else
+            compactQueryLengths(queryLengths);
             if (isConstantQueryLength) {
                 headerBuilder.setConstantQueryLength(constantQueryLength);
-            }
-            if (targetLengths != null) {
+            } else if (queryLengths != null) {
+                headerBuilder.addAllQueryLength(IntArrayList.wrap(queryLengths));
+            } else if (targetLengths != null) {
                 headerBuilder.addAllTargetLength(IntArrayList.wrap(targetLengths));
             }
 
@@ -298,6 +297,13 @@ public class AlignmentWriter implements Closeable {
     public void setQueryLengths(final int[] queryLengths) {
         assert queryLengths.length > maxQueryIndex :
                 "The number of elements of queryLength is too small to accomodate queryIndex=" + maxQueryIndex;
+        compactQueryLengths(queryLengths);
+        if (!isConstantQueryLength) {
+            this.queryLengths = queryLengths;
+        }
+    }
+
+    private void compactQueryLengths(int[] queryLengths) {
         IntSet uniqueLengths = new IntOpenHashSet();
         for (int length : queryLengths) {
             uniqueLengths.add(length);
@@ -306,8 +312,6 @@ public class AlignmentWriter implements Closeable {
             // detected constant read length.
             constantQueryLength = uniqueLengths.iterator().nextInt();
             isConstantQueryLength = true;
-        } else {
-            this.queryLengths = queryLengths;
         }
     }
 
