@@ -278,6 +278,8 @@ public class LastAligner extends AbstractAligner {
         processor.setInputFile(outputBasename + ".maf");
         processor.setOnlyMafFile(false);
         processor.setOnlyCountsFile(false);
+        processor.setThirdPartyInput(false);
+
         return processor;
     }
 
@@ -303,7 +305,7 @@ public class LastAligner extends AbstractAligner {
         gapExtentionCost = CLI.getIntOption(opts, "b", DEFAULT_GAP_EXTENSION_COST);
         minSeedDepth = CLI.getIntOption(opts, "l", DEFAULT_MIN_SEED_DEPTH);
 
- //       System.out.println("Setting matchQuality to: "+matchQuality);
+        //       System.out.println("Setting matchQuality to: "+matchQuality);
         // always favor --gapOpeningCost over redundant option -a
         if (CLI.isKeywordGiven(opts, "a")) {
             gapOpeningCost = CLI.getIntOption(opts, "a", DEFAULT_GAP_OPENING_COST);

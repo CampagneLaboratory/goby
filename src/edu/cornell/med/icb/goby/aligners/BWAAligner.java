@@ -318,6 +318,7 @@ public class BWAAligner extends AbstractAligner {
         final SAMToCompactMode processor = new SAMToCompactMode();
         processor.setInputFile(samBinaryFilename);
         processor.setNumberOfReads(numberOfReads);
+        processor.setThirdPartyInput(false);
         return processor;
     }
 

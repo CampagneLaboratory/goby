@@ -106,6 +106,17 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
      */
     protected IndexedIdentifier targetIds = new IndexedIdentifier();
     protected int numberOfReadsFromCommandLine;
+    /**
+     * Indicate that the file being imported is from a third party. This means that :
+     * 1. queryNames are not integers, but are strings that need to be converted to indices.
+     * 2. targetNames should be treated as strings and defined from the input.
+     * 3. targetLength information should be read from the input, not from a supplied target file in compact format.
+     *
+     * false by default when constructed, overidden by configure with default configuration=true when run as a mode
+     * on the command line, set to false explictly each time another Goby mode needs to import internally the result
+     * of a Goby search. 
+     */
+    protected boolean thirdPartyInput=true;
 
     /**
      * Scan.
@@ -147,6 +158,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         readIndexFilterFile = jsapResult.getFile("read-index-filter");
         mParameter = jsapResult.getInt("ambiguity-threshold");
         qualityFilterParameters = jsapResult.getString("quality-filter-parameters");
+        thirdPartyInput= jsapResult.getBoolean("third-party-input");
 
         return this;
     }
@@ -267,6 +279,10 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
 
     public void setNumberOfReads(final int numberOfReads) {
         this.numberOfReads = numberOfReads;
+    }
+
+    public void setThirdPartyInput(boolean thirdPartyInput) {
+        this.thirdPartyInput = thirdPartyInput;
     }
 
 

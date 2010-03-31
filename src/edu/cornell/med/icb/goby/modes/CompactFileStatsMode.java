@@ -190,6 +190,9 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         System.out.printf("Number of target sequences = %,d%n", reader.getNumberOfTargets());
         System.out.printf("Number of target length entries = %,d%n",
                 ArrayUtils.getLength(reader.getTargetLength()));
+        System.out.printf("Number of query length entries = %,d%n",
+                ArrayUtils.getLength(reader.getQueryLengths()));
+        System.out.println("Constant query lengths = " + reader.isConstantQueryLengths());
         System.out.printf("Has query identifiers = %s%n",
                 reader.getQueryIdentifiers() != null && !reader.getTargetIdentifiers().isEmpty());
         System.out.printf("Has target identifiers = %s%n",

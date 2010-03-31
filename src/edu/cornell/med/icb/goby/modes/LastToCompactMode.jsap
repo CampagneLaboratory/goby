@@ -33,7 +33,13 @@
             <required>true</required>
             <help>The output path and basename to write the compact format to.</help>
         </flaggedOption>
-
+        <flaggedOption>
+            <id>genome-cache</id>
+            <shortFlag>g</shortFlag>
+            <longFlag>genome-cache</longFlag>
+            <required>false</required>
+            <help>The genome cache basename. This argument is required when aligning color space with last, in order to translate color-space variations to base space variations.</help>
+        </flaggedOption>
 
         <flaggedOption>
             <id>query-reads-ids</id>
@@ -110,6 +116,16 @@
             <longFlag>only-counts</longFlag>
             <help>When this switch is provided, only convert the COUNTS file. </help>
         </switch>
-
+         <flaggedOption>
+            <id>third-party-input</id>
+            <longFlag>third-party-input</longFlag>
+            <defaults>
+                <string>true</string>
+            </defaults>
+             <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <help>Use to import files not produced by Goby.</help>
+        </flaggedOption>
     </parameters>
 </jsap>

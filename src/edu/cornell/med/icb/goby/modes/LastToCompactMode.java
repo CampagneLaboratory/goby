@@ -186,7 +186,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
 
                     final int queryIndex = Integer.parseInt(query.sequenceIdentifier.toString());
                     int targetIndex = -1;
-                    targetIndex = getTargetIndex(targetIds, reference.sequenceIdentifier);
+                    targetIndex = getTargetIndex(targetIds, reference.sequenceIdentifier, thirdPartyInput);
                     final boolean reverseStrand = !(query.strand == reference.strand);
                     final int depth = query.sequenceLength;
                     final int targetPosition = reference.alignedStart;
@@ -286,17 +286,21 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
         return numAligns;
     }
 
-    public final static int getTargetIndex(IndexedIdentifier targetIds, MutableString targetIdentifier) {
+    public final static int getTargetIndex(IndexedIdentifier targetIds, CharSequence targetIdentifier, boolean thirdPartyInput) {
         int targetIndex = -1;
         try {
-            targetIndex = Integer.parseInt(targetIdentifier.toString());
+            if (thirdPartyInput) {
+                targetIndex = targetIds.registerIdentifier(new MutableString(targetIdentifier));
+            } else {
+                targetIndex = Integer.parseInt(targetIdentifier.toString());
+            }
         } catch (NumberFormatException e) {
             if (targetIds != null) {
                 Integer object = targetIds.get(targetIdentifier);
                 if (object == null) {
 
                     LOG.warn("Input file contains a target id that is not defined in the target compact reads: " + targetIdentifier);
-                    targetIndex = targetIds.registerIdentifier(targetIdentifier);
+                    targetIndex = targetIds.registerIdentifier(new MutableString(targetIdentifier));
                 } else {
                     targetIndex = object;
                 }
@@ -392,11 +396,12 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                 assert readIndex <= queryLength : String.format(" readIndex %d must be smaller than read length %d .",
                         readIndex,
                         queryLength);
-                System.err.printf(
-                        " readIndex %d must be smaller than read length %d. query index=%d reference index=%d", readIndex,
+                LOG.warn(String.format(
+                        "Ignoring sequence variations for a read since readIndex %d must be smaller than read length %d. query index=%d reference index=%d%n", readIndex,
                         queryLength, currentEntry.getQueryIndex(),
-                        currentEntry.getTargetIndex());
-                System.exit(1);
+                        currentEntry.getTargetIndex()));
+                //System.exit(1);
+                return;
             }
             sequenceVariation.setReadIndex(readIndex + 1);    // positions start at 1
             //        System.out.printf("Appending variation: %d %s/%s ", variationPosition, from, to);

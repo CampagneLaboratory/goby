@@ -104,7 +104,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         super.configure(args);
         final JSAPResult jsapResult = parseJsapArguments(args);
 
-        skipMissingMdAttribute = jsapResult.getBoolean("allow-missing-md-attribute");
+        skipMissingMdAttribute = jsapResult.getBoolean("allow-missing-attributes");
         numberOfReadsFromCommandLine = jsapResult.getInt("number-of-reads");
         return this;
     }
@@ -130,10 +130,13 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         // shared buffer for extract sequence variation work. We allocate here to avoid repetitive memory allocations.
         MutableString readPostInsertions = new MutableString();
 
+       // int stopEarly = 0;
         while (recordCloseableIterator.hasNext()) {
             final SAMRecord samRecord = recordCloseableIterator.next();
             final int queryIndex = getQueryIndex(samRecord);
 
+        //    stopEarly++;
+         //   if (stopEarly > 10000) break;
             final int readLength = samRecord.getReadLength();
             // save length
             readLengths[queryIndex] = readLength;
@@ -150,7 +153,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
                 continue;
             }
-            int targetIndex = LastToCompactMode.getTargetIndex(targetIds, new MutableString(samRecord.getReferenceName()));
+            int targetIndex = LastToCompactMode.getTargetIndex(
+                    targetIds, samRecord.getReferenceName(), thirdPartyInput);
 
             // positions reported by BWA appear to start at 1. We convert to start at zero.
             final int position = samRecord.getAlignmentStart() - 1;
@@ -238,7 +242,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             final Alignments.AlignmentEntry alignmentEntry = currentEntry.build();
 
             final Object xoString = samRecord.getAttribute("X0");
-
+            if (xoString == null && !skipMissingMdAttribute) {
+                System.err.println("The XO attribute is required. Use --allow-missing-attributes to ignore.");
+                System.exit(1);
+            }
             final int numTotalHits = skipMissingMdAttribute && xoString == null ?
                     1 : (Integer) xoString;
 
