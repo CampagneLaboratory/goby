@@ -34,6 +34,9 @@ import org.rosuda.JRI.Rengine;
  *         Time: 7:06:31 PM
  */
 public class FisherExactRCalculator extends StatisticCalculator {
+    /**
+     * Used to log debug and informational messages.
+     */
     private static final Log LOG = LogFactory.getLog(FisherExactRCalculator.class);
 
     public FisherExactRCalculator(final DifferentialExpressionResults results) {
@@ -47,7 +50,6 @@ public class FisherExactRCalculator extends StatisticCalculator {
 
     @Override
     public boolean canDo(final String[] group) {
-
         return group.length == 2;
     }
 
@@ -60,7 +62,7 @@ public class FisherExactRCalculator extends StatisticCalculator {
 
     @Override
     public DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
-                                               NormalizationMethod method, final DifferentialExpressionResults results,
+                                               final NormalizationMethod method, final DifferentialExpressionResults results,
                                                final DifferentialExpressionInfo info,
                                                final String... group) {
         // we can only perform the evaluation if R is running and alive.
@@ -69,7 +71,7 @@ public class FisherExactRCalculator extends StatisticCalculator {
             final String groupA = group[0];
             final String groupB = group[1];
             // TODO correct sumCountIn? with normalization method.
-            int statIndex = defineStatisticId(results, "fisher-exact-R");
+            final int statIndex = defineStatisticId(results, "fisher-exact-R");
 
             final ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
             final ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);
@@ -102,9 +104,11 @@ public class FisherExactRCalculator extends StatisticCalculator {
             //                  groupA            groupB
             // hasCounts    sumCountInA        sumCountInB
             // noCounts     sumCountNotInA     sumCountNotInB
-            final FisherExact fisher = new FisherExact();
-            final FisherExact.Result result = fisher.fexact(sumCountInA, sumCountNotInA, sumCountInB, sumCountNotInB);
-            LOG.debug(result);
+            final FisherExact.Result result =
+                    FisherExact.fexact(sumCountInA, sumCountNotInA, sumCountInB, sumCountNotInB);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(result);
+            }
             final double pValue = result.getPValue();
             info.statistics.size(results.getNumberOfStatistics());
             info.statistics.set(statIndex, pValue);

@@ -24,11 +24,9 @@ import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.stat.inference.ChiSquareTest;
 import org.apache.commons.math.stat.inference.ChiSquareTestImpl;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
@@ -306,7 +304,7 @@ public class TestStatistics {
             fisher.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
             assertEquals("fisher test equal expected result", 0.5044757698516504, results.getStatistic(info, fisher.statisticIds.get(0)), 0.001);
 
-            final FisherExact fisherTest = new FisherExact();
+
             final int totalCountInA = 1700;
             final int totalCountInB = 170; // equal total in each group
             final int sumCountInA = 90;
@@ -316,7 +314,7 @@ public class TestStatistics {
             final int sumCountNotInB = totalCountInB - sumCountInB;
 
             final FisherExact.Result result =
-                    fisherTest.fexact(sumCountInA, sumCountNotInA, sumCountInB, sumCountNotInB);
+                    FisherExact.fexact(sumCountInA, sumCountNotInA, sumCountInB, sumCountNotInB);
             final double pValue = result.getPValue();
 
             final double proportionTotalA = divide(totalCountInA, (totalCountInA + totalCountInB));

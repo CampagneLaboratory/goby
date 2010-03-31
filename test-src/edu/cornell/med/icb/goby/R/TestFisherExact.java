@@ -40,13 +40,12 @@ public class TestFisherExact {
     /**
      * Example data from
      * <href="http://darwin.eeb.uconn.edu/eeb348/supplements-2006/chi-squared/chi-squared.html">
-     * http://darwin.eeb.uconn.edu/eeb348/supplements-2006/chi-squared/chi-squared.html</a>
+     * http://darwin.eeb.uconn.edu/eeb348/supplements-2006/chi-squared/chi-squared.html</a>.
      */
     @Test
     public void chiSquaredUConn() {
-        final FisherExact fisherExact = new FisherExact();
         final FisherExact.Result result =
-                fisherExact.fexact(new int[] { 12, 4, 15, 17, 25, 4 }, 3, 2 );
+                FisherExact.fexact(new int[] { 12, 4, 15, 17, 25, 4 }, 3, 2 );
         assertEquals("pValue does not match", 2.9565806126420623e-05, result.getPValue(), EPSILON);
     }
 
@@ -55,9 +54,8 @@ public class TestFisherExact {
      */
     @Test
     public void twoByTwoEquivalent() {
-        final FisherExact fisherExact = new FisherExact();
-        final FisherExact.Result result1 = fisherExact.fexact(new int[] {10, 20, 30, 40}, 2, 2);
-        final FisherExact.Result result2 = fisherExact.fexact(10, 20, 30, 40);
+        final FisherExact.Result result1 = FisherExact.fexact(new int[] {10, 20, 30, 40}, 2, 2);
+        final FisherExact.Result result2 = FisherExact.fexact(10, 20, 30, 40);
 
         assertEquals("pValue does not match",
                 result1.getPValue(), result2.getPValue(), EPSILON);
@@ -76,7 +74,6 @@ public class TestFisherExact {
      */
     @Test
     public void agrestiJobSatisfaction() {
-        final FisherExact fisherExact = new FisherExact();
         final int[] inputTable = {
                 /*                           income
                 /* satisfaction    <15k    15-25k    25-40k   >40k */
@@ -86,7 +83,7 @@ public class TestFisherExact {
                 /*  VeryS */        6,       7,        12,     11
         };
 
-        final FisherExact.Result result = fisherExact.fexact(inputTable, 4, 4);
+        final FisherExact.Result result = FisherExact.fexact(inputTable, 4, 4);
         assertEquals("pValue does not match", 0.7826849389656096, result.getPValue(), EPSILON);
 
         // everything else should be invalid since the input was not a 2x2 matrix
@@ -110,7 +107,6 @@ public class TestFisherExact {
      */
     @Test
     public void agrestiTeaTasting() {
-        final FisherExact fisherExact = new FisherExact();
         final int[] inputTable = {
                 /*          Truth */
                 /* Guess    Milk  Tea */
@@ -119,7 +115,7 @@ public class TestFisherExact {
         };
 
         final FisherExact.Result result =
-                fisherExact.fexact(inputTable, 2, 2, FisherExact.AlternativeHypothesis.greater);
+                FisherExact.fexact(inputTable, 2, 2, FisherExact.AlternativeHypothesis.greater);
         assertEquals("pValue does not match", 0.24285714285714288, result.getPValue(), EPSILON);
         assertEquals("Lower confidence interval does not match", 0.313569264110218,
                 result.getConfidenceInterval()[0], EPSILON);
@@ -136,7 +132,6 @@ public class TestFisherExact {
      */
     @Test
     public void twinConvictions() {
-        final FisherExact fisherExact = new FisherExact();
         final int[] inputTable = {
                 /*                   Dizygotic   Monozygotic */
                 /* Convicted */         2,           10,
@@ -144,7 +139,7 @@ public class TestFisherExact {
         };
 
         final FisherExact.Result result =
-                fisherExact.fexact(inputTable, 2, 2, FisherExact.AlternativeHypothesis.less);
+                FisherExact.fexact(inputTable, 2, 2, FisherExact.AlternativeHypothesis.less);
         assertEquals("pValue does not match", 0.00046518094336290525, result.getPValue(), EPSILON);
         assertEquals("Lower confidence interval does not match", 0.0,
                 result.getConfidenceInterval()[0], EPSILON);
@@ -165,8 +160,7 @@ public class TestFisherExact {
         final Fisher gominer = new Fisher();
         final double gominerPValue = gominer.fisher(40, 10, 100, 30);
 
-        final FisherExact fisherExact = new FisherExact();
-        final double fisherExactPValue = fisherExact.twoTailed(40, 10, 100, 30);
+        final double fisherExactPValue = FisherExact.twoTailed(40, 10, 100, 30);
         assertEquals("R result does not match gominer", gominerPValue, fisherExactPValue, EPSILON);
     }
 

@@ -47,7 +47,7 @@ import java.util.Locale;
  * @see <a href="http://www.r-project.org/">The R Project for Statistical Computing</a>
  * @see <a href="http://www.rforge.net/rJava/">rJava</a>
  */
-public class FisherExact {
+public final class FisherExact {
     /**
      * Used to log debug and informational messages.
      */
@@ -61,7 +61,7 @@ public class FisherExact {
     /**
      * Create a new fisher exact test object.
      */
-    public FisherExact() {
+    private FisherExact() {
         super();
     }
 
@@ -86,8 +86,9 @@ public class FisherExact {
      * (true) is made (only used if the data is larger than a 2 by 2 table)
      * @return The result from the fisher test (should never be null)
      */
-    public Result fexact(final int[] vector, final int nrows, final int ncols,
-                         final AlternativeHypothesis alternativeHypothesis, final boolean hybrid) {
+    public static Result fexact(final int[] vector, final int nrows, final int ncols,
+                                final AlternativeHypothesis alternativeHypothesis,
+                                final boolean hybrid) {
         assert vector != null : "Input vector cannot be null";
         assert vector.length > 0 : "Input vector cannot be empty";
         assert nrows >= 2 && ncols >= 2 : "Must have at least 2 rows and columns";
@@ -102,7 +103,8 @@ public class FisherExact {
                 LOG.debug("Vector: " + vectorExpression);
             }
 
-            final StringBuilder fisherExpression = new StringBuilder("fisher.test(matrix(vector,");
+            final StringBuilder fisherExpression = new StringBuilder(128);
+            fisherExpression.append("fisher.test(matrix(vector,");
             fisherExpression.append(nrows);
             fisherExpression.append(',');
             fisherExpression.append(ncols);
@@ -140,8 +142,8 @@ public class FisherExact {
      * @param alternativeHypothesis The alternative hypothesis to use for the calculation
      * @return The result from the fisher test (should never be null)
      */
-    public Result fexact(final int[] vector, final int nrows, final int ncols,
-                         final AlternativeHypothesis alternativeHypothesis) {
+    public static Result fexact(final int[] vector, final int nrows, final int ncols,
+                                final AlternativeHypothesis alternativeHypothesis) {
         return fexact(vector, nrows, ncols, alternativeHypothesis, false);
     }
 
@@ -154,8 +156,9 @@ public class FisherExact {
      * (true) is made
      * @return The result from the fisher test (should never be null)
      */
-    public Result fexact(final int[] factor1, final int[] factor2,
-                         final AlternativeHypothesis alternativeHypothesis, final boolean hybrid) {
+    public static Result fexact(final int[] factor1, final int[] factor2,
+                                final AlternativeHypothesis alternativeHypothesis,
+                                final boolean hybrid) {
         assert factor1 != null && factor2 != null : "Input vector cannot be null";
         assert factor1.length == factor2.length : "Length of the two input vectors must be equal";
 
@@ -176,7 +179,8 @@ public class FisherExact {
                 LOG.debug("Y: " + yExpression);
             }
 
-            final StringBuilder fisherExpression = new StringBuilder("fisher.test(x, y, hybrid=");
+            final StringBuilder fisherExpression = new StringBuilder(128);
+            fisherExpression.append("fisher.test(x, y, hybrid=");
             fisherExpression.append(
                     BooleanUtils.toStringTrueFalse(hybrid).toUpperCase(Locale.getDefault()));
             fisherExpression.append(", alternative=\"");
@@ -199,19 +203,23 @@ public class FisherExact {
      * @param is2x2matrix Whether or not the data being evaluated represents a 2x2 matrix
      * @return The results of the evaluation (should never be null)
      */
-    private Result evaluteFisherExpression(final Rengine rengine,
-                                           final String fisherExpression,
-                                           final boolean is2x2matrix) {
+    private static Result evaluteFisherExpression(final Rengine rengine,
+                                                  final String fisherExpression,
+                                                  final boolean is2x2matrix) {
         // evaluate the R expression
         if (LOG.isDebugEnabled()) {
             LOG.debug("About to evaluate: " + fisherExpression);
         }
         final REXP fisherResultExpression = rengine.eval(fisherExpression);
-        LOG.debug(fisherResultExpression);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(fisherResultExpression);
+        }
 
         // the result from R is a vector/map of values
         final RVector fisherResultVector = fisherResultExpression.asVector();
-        LOG.debug(fisherResultVector);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(fisherResultVector);
+        }
 
         // extract the p-value
         final REXP pValueExpression = fisherResultVector.at("p.value");
@@ -225,7 +233,9 @@ public class FisherExact {
         // extract the alternative hypothesis
         final REXP alternativeExpression = fisherResultVector.at("alternative");
         final String alternative = alternativeExpression.asString();
-        LOG.debug("alternative: " + alternative);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("alternative: " + alternative);
+        }
         final AlternativeHypothesis alternativeHypothesis =
                 AlternativeHypothesis.valueOf(StringUtils.remove(alternative, '.'));
 
@@ -236,31 +246,37 @@ public class FisherExact {
 
         if (is2x2matrix) {
             final REXP estimateExpression = fisherResultVector.at("estimate");
-            LOG.debug(estimateExpression);
             if (estimateExpression != null) {
                 estimate = estimateExpression.asDouble();
             } else {
                 estimate = Double.NaN;
             }
-            LOG.debug("estimate: " + estimate);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(estimateExpression);
+                LOG.debug("estimate: " + estimate);
+            }
 
             final REXP confidenceIntervalExpression = fisherResultVector.at("conf.int");
-            LOG.debug(confidenceIntervalExpression);
             if (confidenceIntervalExpression != null) {
                 confidenceInterval = confidenceIntervalExpression.asDoubleArray();
             } else {
                 confidenceInterval = ArrayUtils.EMPTY_DOUBLE_ARRAY;
             }
-            LOG.debug("confidenceInterval: " + ArrayUtils.toString(confidenceInterval));
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(confidenceIntervalExpression);
+                LOG.debug("confidenceInterval: " + ArrayUtils.toString(confidenceInterval));
+            }
 
             final REXP oddsRatioExpression = fisherResultVector.at("null.value");
-            LOG.debug(oddsRatioExpression);
             if (oddsRatioExpression != null) {
                 oddsRatio = oddsRatioExpression.asDouble();
             } else {
                 oddsRatio = Double.NaN;
             }
-            LOG.debug("oddsRatio: " + ArrayUtils.toString(oddsRatio));
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(oddsRatioExpression);
+                LOG.debug("oddsRatio: " + ArrayUtils.toString(oddsRatio));
+            }
         } else {
             // these values are not present in the 2x2 case
             estimate = Double.NaN;
@@ -288,7 +304,7 @@ public class FisherExact {
      * @param ncols The number of columns in the resulting matrix
      * @return The result from the fisher test (should never be null)
      */
-    public Result fexact(final int[] vector, final int nrows, final int ncols) {
+    public static Result fexact(final int[] vector, final int nrows, final int ncols) {
         return fexact(vector, nrows, ncols, AlternativeHypothesis.twosided, false);
     }
 
@@ -309,7 +325,7 @@ public class FisherExact {
      * @param r2c2 Value for row2/column2 of the contingency matrix
      * @return The result from the fisher test (should never be null)
      */
-    public Result fexact(final int r1c1, final int r2c1, final int r1c2, final int r2c2) {
+    public static Result fexact(final int r1c1, final int r2c1, final int r1c2, final int r2c2) {
         return fexact(new int[] {r1c1, r2c1, r1c2, r2c2}, 2, 2);
     }
 
@@ -323,15 +339,17 @@ public class FisherExact {
      * @param inNode The number of genes in the node (changed and unchanged) x+y
      * @return The computed 2-tailed p-value
      */
-    public double twoTailed(final int totalChanged, final int changedInNode,
-                            final int total, final int inNode) {
+    public static double twoTailed(final int totalChanged, final int changedInNode,
+                                   final int total, final int inNode) {
         final int[] vector = new int[4];
         vector[0] = changedInNode;
         vector[1] = totalChanged - changedInNode;
         vector[2] = inNode - changedInNode;
         vector[3] = (total - inNode) - (totalChanged - changedInNode);
         final Result result = fexact(vector, 2, 2);
-        LOG.debug(result);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(result);
+        }
         return result.getPValue();
     }
 
@@ -382,7 +400,7 @@ public class FisherExact {
      * Result from the fisher exact test.  Note that some fields may only considered
      * valid when the input was a 2 by 2 contingency matrix.
      */
-    public class Result {
+    public static class Result {
         /**
          * Indicates that R did in fact return the results contained in this object.
          */
