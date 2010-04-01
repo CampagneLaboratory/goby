@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.readers;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -50,6 +51,8 @@ public class TestFastXReader {
                 assertEquals(">second entry\nTAGACCA", entry.getEntry().toString());
                 assertEquals('>', entry.getHeaderSymbol());
             }
+
+            // TODO: assertTrue("Entry " + entryNum + " is not complete", entry.isEntryComplete());
             entryNum++;
         }
         assertEquals(2, entryNum);
@@ -76,6 +79,7 @@ public class TestFastXReader {
                 assertEquals("TAGACCA\nTAGG", entry.getEntrySansHeader().toString());
                 assertEquals('>', entry.getHeaderSymbol());
             }
+            // TODO: assertTrue("Entry " + entryNum + " is not complete", entry.isEntryComplete());
             entryNum++;
         }
         assertEquals(2, entryNum);
@@ -110,6 +114,7 @@ public class TestFastXReader {
                         entry.getEntrySansHeader().toString());
                 assertEquals('@', entry.getHeaderSymbol());
             }
+            assertTrue("Entry " + entryNum + " is not complete", entry.isEntryComplete());
             entryNum++;
         }
         assertEquals(2, entryNum);
@@ -145,6 +150,7 @@ public class TestFastXReader {
                         entry.getEntrySansHeader().toString());
                 assertEquals('@', entry.getHeaderSymbol());
             }
+            assertTrue("Entry " + entryNum + " is not complete", entry.isEntryComplete());
             entryNum++;
         }
         assertEquals(2, entryNum);
