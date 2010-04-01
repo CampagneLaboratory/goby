@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.reads.ColorSpaceConverter;
+import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
@@ -31,7 +32,6 @@ import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.math.optimization.general.ConjugateGradientFormula;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,17 +41,24 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 /**
- * Converts a Compact file to <a href="http://en.wikipedia.org/wiki/FASTA_format">FASTA</a> format.
+ * Converts a Compact file to <a href="http://en.wikipedia.org/wiki/FASTA_format">FASTA</a>
+ * or <a href="http://en.wikipedia.org/wiki/FASTQ_format">FASTQ</a> format.
  *
  * @author Fabien Campagne
  *         Date: May 4 2009
  *         Time: 12:28 PM
  */
 public class CompactToFastaMode extends AbstractGobyMode {
+    /**
+     * Maximimum length of a line when writting a FASTA/FASTQ file.
+     */
     private static final int FASTA_LINE_LENGTH = 60;
 
-    // TODO: generate colorspace results using BWA without using Stu's ouputFakeQualityMode HACK !
-    private static final char FAKE_QUALITY_CHARACTER = '~';
+    /**
+     * Constatnt quality score to use when writing a FASTQ file from a source file that
+     * contains no quality score values.
+     */
+    private static final byte FAKE_QUALITY_SCORE = 40;
 
     private String inputFilename;
     private String outputFilename;
@@ -83,20 +90,29 @@ public class CompactToFastaMode extends AbstractGobyMode {
 
     // TODO: generate colorspace results using BWA without using Stu's ouputFakeQualityMode HACK !
     private boolean outputFakeQualityMode;
-    private FastaToCompactMode.QualityEncoding qualityEncoding = FastaToCompactMode.QualityEncoding.ILLUMINA;
-    private int qualityToAsciiOffset;
+    private QualityEncoding qualityEncoding = QualityEncoding.ILLUMINA;
 
     /**
      * Select the desired output format.
      *
      * @param format
      */
-    public void setOutputFormat(OutputFormat format) {
+    public void setOutputFormat(final OutputFormat format) {
         outputFormat = format;
     }
 
+    /**
+     * Output formats supported by Goby.
+     */
     public enum OutputFormat {
-        FASTA, FASTQ
+        /**
+         * <a href="http://en.wikipedia.org/wiki/FASTA_format">FASTA</a>.
+         */
+        FASTA,
+        /**
+         * <a href="http://en.wikipedia.org/wiki/FASTQ_format">FASTQ</a>.
+         */
+        FASTQ
     }
 
     /**
@@ -104,7 +120,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
      *
      * @param qualityEncoding
      */
-    public void setQualityEncoding(FastaToCompactMode.QualityEncoding qualityEncoding) {
+    public void setQualityEncoding(final QualityEncoding qualityEncoding) {
         this.qualityEncoding = qualityEncoding;
     }
 
@@ -156,7 +172,8 @@ public class CompactToFastaMode extends AbstractGobyMode {
         outputFakeQualityMode = jsapResult.getBoolean("output-fake-quality");
         referenceConversion = jsapResult.getBoolean("reference");
         readIndexFilterFile = jsapResult.getFile("read-index-filter");
-        qualityEncoding = FastaToCompactMode.QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
+        qualityEncoding =
+                QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
 
         return this;
     }
@@ -203,13 +220,16 @@ public class CompactToFastaMode extends AbstractGobyMode {
 
     @Override
     public void execute() throws IOException {
+        // output file extension is based on the output format type
+        final String outputExtension = "." + outputFormat.name().toLowerCase();
         if (outputFilename == null) {
             outputFilename = FilenameUtils.removeExtension(inputFilename)
-                    + (hashOutputFilename ? hash() : "") + ".fasta";
+                    + (hashOutputFilename ? hash() : "") + outputExtension;
         } else if (hashOutputFilename) {
             outputFilename = FilenameUtils.removeExtension(outputFilename)
-                    + (hashOutputFilename ? hash() : "") + ".fasta";
+                    + (hashOutputFilename ? hash() : "") + outputExtension;
         }
+
         ReadSet readIndexFilter = new ReadSet();
         if (readIndexFilterFile == null) {
             readIndexFilter = null;
@@ -221,28 +241,27 @@ public class CompactToFastaMode extends AbstractGobyMode {
         progress.start();
         progress.displayFreeMemory = true;
 
-        // set the offset used to convert Phred scores to ASCII representation according to the encoding required:
-        switch (qualityEncoding) {
-            case SANGER:
-                qualityToAsciiOffset = 33;
-                break;
-            case ILLUMINA:
-                qualityToAsciiOffset = 64;
-                break;
-
+        // Only sanger and illumina encoding are supported at this time
+        if (qualityEncoding == QualityEncoding.SOLEXA) {
+            throw new UnsupportedOperationException("SOLEXA encoding is not supported "
+                    + "at this time for lack of clear documentation.");
+        } else if (qualityEncoding != QualityEncoding.SANGER
+                && qualityEncoding != QualityEncoding.ILLUMINA) {
+            throw new UnsupportedOperationException("Unknown encoding: " + qualityEncoding);
         }
 
         ReadsReader reader = null;
         Writer writer = null;
 
-        final int NEW_ENTRY_CHARACTER;
+        final int newEntryCharacter;
         switch (outputFormat) {
-            default:
-            case FASTA:
-                NEW_ENTRY_CHARACTER = '>';
-                break;
             case FASTQ:
-                NEW_ENTRY_CHARACTER = '@';
+                newEntryCharacter = '@';
+                break;
+            case FASTA:
+            default:
+                newEntryCharacter = '>';
+                break;
         }
         try {
             writer = new OutputStreamWriter(new FastBufferedOutputStream(new FileOutputStream(outputFilename)));
@@ -260,7 +279,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
                         description = readEntry.getDescription();
                     }
 
-                    writer.write(NEW_ENTRY_CHARACTER);
+                    writer.write(newEntryCharacter);
                     writer.write(description);
                     writer.write('\n');
                     ReadsReader.decodeSequence(readEntry, sequence);
@@ -289,9 +308,9 @@ public class CompactToFastaMode extends AbstractGobyMode {
                             }
                         }
                     }
-                    writeSequence(writer, transformedSequence, outputFakeQualityMode);
+                    writeSequence(writer, transformedSequence);
                     if (outputFormat == OutputFormat.FASTQ) {
-                        int readLength=transformedSequence.length();
+                        final int readLength = transformedSequence.length();
                         writeQualityScores(writer, readEntry.hasQualityScores(), readEntry.getQualityScores().toByteArray(), outputFakeQualityMode, readLength);
                     }
                     ++numberOfFilteredSequences;
@@ -338,17 +357,12 @@ public class CompactToFastaMode extends AbstractGobyMode {
     /**
      * Write the sequence at 60 chars per line.
      *
-     * @param writer   the writer
+     * @param writer the writer
      * @param sequence the sequence
      * @throws IOException error reading
      */
     public static void writeSequence(final Writer writer, final MutableString sequence)
             throws IOException {
-        writeSequence(writer, sequence, false);
-    }
-
-    public static void writeSequence(final Writer writer, final MutableString sequence,
-                                     final boolean outputFakeQualityMode) throws IOException {
         final int length = sequence.length();
         for (int i = 0; i < length; i++) {
             if (i != 0 && (i % FASTA_LINE_LENGTH == 0)) {
@@ -361,38 +375,34 @@ public class CompactToFastaMode extends AbstractGobyMode {
     }
 
     /**
-     * Write quality scores if the input has them, or fake some anyway if the outputFakeQualityMode is active.
+     * Write quality scores, or fake some anyway if the input does not have any or
+     * fakeQualityScores is true.
      *
-     * @param writer   Where to write quality scores.
+     * @param writer  Where to write quality scores.
      * @param hasScores If the compact-reads file has quality scores.
      * @param qualityScores The quality scores (Phred unit)
-     * @param outputFakeQualityMode  Whether quality scores should be faked.
+     * @param fakeQualityScores  Whether quality scores should be faked.
      * @param readLength The read lenth, used when faking.
-     * @throws IOException                                If an error occured.
+     * @throws IOException If an error occured.
      */
-    private void writeQualityScores(Writer writer, boolean hasScores, byte[] qualityScores, boolean outputFakeQualityMode, int readLength) throws IOException {
+    private void writeQualityScores(final Writer writer, final boolean hasScores,
+                                    final byte[] qualityScores, final boolean fakeQualityScores,
+                                    final int readLength) throws IOException {
         final int length = Math.max(qualityScores.length, readLength);
-        if (hasScores || outputFakeQualityMode) {
-            writer.write('+');
-            writer.write('\n');
-            for (int i = 0; i < length; i++) {
-                if (i != 0 && (i % FASTA_LINE_LENGTH == 0)) {
-                    writer.write('\n');
-                }
-                if (hasScores) {
-                    writer.write(qualityScoreToAscii(qualityScores[i]));
-                } else {
-                    writer.write(FAKE_QUALITY_CHARACTER);
-                }
+        writer.write('+');
+        writer.write('\n');
+        for (int i = 0; i < length; i++) {
+            if (i != 0 && (i % FASTA_LINE_LENGTH == 0)) {
+                writer.write('\n');
             }
-            writer.write('\n');
+
+            if (!fakeQualityScores && hasScores) {
+                writer.write(qualityEncoding.qualityScoreToAsciiEncoding(qualityScores[i]));
+            } else {
+                writer.write(qualityEncoding.qualityScoreToAsciiEncoding(FAKE_QUALITY_SCORE));
+            }
         }
-    }
-
-    private char qualityScoreToAscii(final byte qualityScore) {
-
-
-        return (char) (qualityScore + qualityToAsciiOffset);
+        writer.write('\n');
     }
 
     public static void main(final String[] args) throws IOException, JSAPException {

@@ -21,9 +21,9 @@ package edu.cornell.med.icb.goby.aligners;
 import edu.cornell.med.icb.goby.config.GobyConfiguration;
 import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
 import edu.cornell.med.icb.goby.modes.CompactToFastaMode;
-import edu.cornell.med.icb.goby.modes.FastaToCompactMode;
 import edu.cornell.med.icb.goby.modes.LastToCompactMode;
 import edu.cornell.med.icb.goby.reads.ColorSpaceConverter;
+import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.goby.util.LoggingOutputStream;
 import edu.mssm.crover.cli.CLI;
 import org.apache.commons.configuration.Configuration;
@@ -264,7 +264,7 @@ public class LastAligner extends AbstractAligner {
         processor.setAlphabet((colorSpace) ? "0123ACTG" : "ACTG"); // lastal expects colorspace with nt-adaptors, or just nt
         processor.setTrimAdaptorLength((colorSpace) ? 2 : 0); // prevent aligner from finding false matches with adaptor at the start of the sequence
         processor.setOutputFormat(CompactToFastaMode.OutputFormat.FASTQ);   // We use Fastq format with lastal.
-        processor.setQualityEncoding(FastaToCompactMode.QualityEncoding.SANGER);   // We use Fastq format with Sanger encoding for LASTAL.
+        processor.setQualityEncoding(QualityEncoding.SANGER);   // We use Fastq format with Sanger encoding for LASTAL.
         return processor;
     }
 

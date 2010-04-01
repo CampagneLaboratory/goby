@@ -149,7 +149,9 @@
           <root url="jar://$MODULE_DIR$/lib/log4j-1.2.15.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="jar://$MODULE_DIR$/../../java/apache-log4j-1.2.15.zip!/apache-log4j-1.2.15/src/main/java" />
+        </SOURCES>
       </library>
     </orderEntry>
     <orderEntry type="module-library">

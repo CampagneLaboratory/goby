@@ -22,6 +22,7 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.readers.FastXEntry;
 import edu.cornell.med.icb.goby.readers.FastXReader;
+import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.util.DoInParallel;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
@@ -38,7 +39,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
- * Converts a FASTA file to the protocol buffer file format described by Reads.proto.
+ * Converts a <a href="http://en.wikipedia.org/wiki/FASTA_format">FASTA</a>
+ * or <a href="http://en.wikipedia.org/wiki/FASTQ_format">FASTQ</a> file to the
+ * protocol buffer file format described by Reads.proto.
  *
  * @author Fabien Campagne
  *         Date: Apr 28, 2009
@@ -101,28 +104,6 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
     private boolean parallel = true;
 
-    // see http://en.wikipedia.org/wiki/FASTQ_format for a description of these various encodings
-    /*
-
-    Sanger format can encode a Phred quality score from 0 to 93 using ASCII 33 to 126 (although in raw read data the Phred quality score rarely exceeds 60, higher scores are possible in assemblies or read maps).
-    Illumina 1.3+ format can encode a Phred quality score from 0 to 62 using ASCII 64 to 126 (although in raw read data Phred scores from 0 to 40 only are expected).
-    Solexa/Illumina 1.0 format can encode a Solexa/Illumina quality score from -5 to 62 using ASCII 59 to 126 (although in raw read data Solexa scores from -5 to 40 only are expected)
-  <PRE>
-  SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS.....................................................
-  ...............................IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII......................
-  ..........................XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
-  |                         |    |        |                              |                     |
- 33                        59   64       73                            104                   126
-       </PRE>
- S - Sanger       Phred+33,  41 values  (0, 40)
- I - Illumina 1.3 Phred+64,  41 values  (0, 40)
- X - Solexa       Solexa+64, 68 values (-5, 62)
-     */
-    public enum QualityEncoding {
-        SANGER, ILLUMINA, SOLEXA
-    }
-
     private QualityEncoding qualityEncoding;
 
     /**
@@ -183,9 +164,9 @@ public class FastaToCompactMode extends AbstractGobyMode {
         //  }
 
         try {
-            DoInParallel loop = new DoInParallel() {
+            final DoInParallel loop = new DoInParallel() {
                 @Override
-                public void action(DoInParallel forDataAccess, String inputBasename, int loopIndex) {
+                public void action(final DoInParallel forDataAccess, final String inputBasename, final int loopIndex) {
 
                     try {
                         debugStart(inputBasename);
@@ -204,7 +185,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
     }
 
 
-    private void processOneFile(int loopIndex, int length, String inputFilename) throws IOException {
+    private void processOneFile(final int loopIndex, final int length, final String inputFilename) throws IOException {
         final String outputFilename;
         if (loopIndex == 1 && StringUtils.isNotBlank(outputFile)) {
             outputFilename = outputFile;
@@ -219,7 +200,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
     }
 
-    private void convert(int loopIndex, int length, String inputFilename, String outputFilename) throws IOException {
+    private void convert(final int loopIndex, final int length, final String inputFilename, final String outputFilename) throws IOException {
         System.out.printf("Converting [%d/%d] %s to %s%n",
                 loopIndex, length, inputFilename, outputFilename);
 
@@ -260,6 +241,15 @@ public class FastaToCompactMode extends AbstractGobyMode {
     }
 
     private byte[] convertQualityScores(final MutableString quality) {
+        // Only sanger and illumina encoding are supported at this time
+        if (qualityEncoding == QualityEncoding.SOLEXA) {
+            throw new UnsupportedOperationException("SOLEXA encoding is not supported "
+                    + "at this time for lack of clear documentation.");
+        } else if (qualityEncoding != QualityEncoding.SANGER
+                && qualityEncoding != QualityEncoding.ILLUMINA) {
+            throw new UnsupportedOperationException("Unknown encoding: " + qualityEncoding);
+        }
+
         final int size = quality.length();
         final byte[] qualityScoreBuffer = new byte[size];
 
@@ -267,45 +257,17 @@ public class FastaToCompactMode extends AbstractGobyMode {
             System.out.println(quality);
         }
 
-        switch (qualityEncoding) {
-            case SANGER:
-                for (int position = 0; position < size; position++) {
-                    qualityScoreBuffer[position] = (byte) (quality.charAt(position) - 33);
-                    checkRange(qualityScoreBuffer[position]);
-                    if (verboseQualityScores) {
-                        System.out.print(qualityScoreBuffer[position]);
-                        System.out.print(" ");
-                    }
-                }
-                if (verboseQualityScores) {
-                    System.out.println("");
-                }
-                break;
-            case ILLUMINA:
-                for (int position = 0; position < size; position++) {
-                    qualityScoreBuffer[position] = (byte) (quality.charAt(position) - 64);
-                    checkRange(qualityScoreBuffer[position]);
-
-                    if (verboseQualityScores) {
-                        System.out.print(qualityScoreBuffer[position]);
-                        System.out.print(" ");
-                    }
-                }
-                if (verboseQualityScores) {
-                    System.out.println("");
-                }
-                break;
-            case SOLEXA:
-                throw new UnsupportedOperationException("SOLEXA encoding is not supported at this time for lack of clear documentation.");
-                /* for (int position = 0; position < size; position++) {
-                   final int code = quality.charAt(position) - 64;
-                   double phred=Math.log(1+Math.pow(10,code/10))/Math.log(10);
-                   qualityScoreBuffer[position] = (byte) phred;
-               break;
-               } */
-
-            default:
-                throw new UnsupportedOperationException("Unknown encoding: " + qualityEncoding);
+        for (int position = 0; position < size; position++) {
+            qualityScoreBuffer[position] =
+                    qualityEncoding.asciiEncodingToQualityScore(quality.charAt(position));
+            checkRange(qualityScoreBuffer[position]);
+            if (verboseQualityScores) {
+                System.out.print(qualityScoreBuffer[position]);
+                System.out.print(" ");
+            }
+        }
+        if (verboseQualityScores) {
+            System.out.println();
         }
 
         return qualityScoreBuffer;
@@ -324,7 +286,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
      *
      * @param name the full path to the file in question
      * @return the full path to file without the fastx/gz extensions or the same name if
-     *         those extensions weren't found.
+     * those extensions weren't found.
      * @see edu.cornell.med.icb.goby.util.FileExtensionHelper#FASTX_FILE_EXTS
      */
     private static String stripFastxExtensions(final String name) {
