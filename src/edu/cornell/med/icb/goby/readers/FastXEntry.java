@@ -52,7 +52,7 @@ public class FastXEntry implements Cloneable {
     private boolean entryComplete;
 
     /** Constructor. */
-    public FastXEntry() {
+    FastXEntry() {
         entry = new MutableString();
         entrySansHeader = new MutableString();
         sequenceHeader = new MutableString();
@@ -65,7 +65,7 @@ public class FastXEntry implements Cloneable {
     /**
      * Reset this FASTA entry so it can be reused.
      */
-    public void reset() {
+    void reset() {
         entry.length(0);
         entrySansHeader.length(0);
         sequenceHeader.length(0);
@@ -82,7 +82,7 @@ public class FastXEntry implements Cloneable {
      * @return if true is returned, the line was added file. If false is returned
      * the line is into the next record and was not used
      */
-    public boolean addLine(final String line) {
+    boolean addLine(final String line) {
         if (line.length() == 0) {
             return true;
         }
