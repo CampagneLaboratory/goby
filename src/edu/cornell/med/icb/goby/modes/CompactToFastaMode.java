@@ -39,6 +39,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Locale;
 
 /**
  * Converts a Compact file to <a href="http://en.wikipedia.org/wiki/FASTA_format">FASTA</a>
@@ -50,6 +51,15 @@ import java.io.Writer;
  */
 public class CompactToFastaMode extends AbstractGobyMode {
     /**
+     * The mode name.
+     */
+    private static final String MODE_NAME = "compact-to-fasta";
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION = "Converts a Compact file to Fasta format.";
+
+    /**
      * Maximimum length of a line when writting a FASTA/FASTQ file.
      */
     private static final int FASTA_LINE_LENGTH = 60;
@@ -60,19 +70,23 @@ public class CompactToFastaMode extends AbstractGobyMode {
      */
     private static final byte FAKE_QUALITY_SCORE = 40;
 
+    /**
+     * Output formats supported by Goby.
+     */
+    public enum OutputFormat {
+        /**
+         * <a href="http://en.wikipedia.org/wiki/FASTA_format">FASTA</a>.
+         */
+        FASTA,
+        /**
+         * <a href="http://en.wikipedia.org/wiki/FASTQ_format">FASTQ</a>.
+         */
+        FASTQ
+    }
+
     private String inputFilename;
     private String outputFilename;
     private boolean indexToHeader;
-
-    /**
-     * The mode name.
-     */
-    private static final String MODE_NAME = "compact-to-fasta";
-    /**
-     * The mode description help text.
-     */
-    private static final String MODE_DESCRIPTION = "Converts a Compact file to Fasta format.";
-
     private boolean referenceConversion;
     private String alphabet;
     private File readIndexFilterFile;
@@ -90,47 +104,58 @@ public class CompactToFastaMode extends AbstractGobyMode {
 
     // TODO: generate colorspace results using BWA without using Stu's ouputFakeQualityMode HACK !
     private boolean outputFakeQualityMode;
+
+    /**
+     * Output format for converted file.
+     */
+    private OutputFormat outputFormat = OutputFormat.FASTA;
+
+    /**
+     * Quality encoding for FASTQ output only.
+     */
     private QualityEncoding qualityEncoding = QualityEncoding.ILLUMINA;
 
     /**
      * Select the desired output format.
-     *
-     * @param format
+     * @param format The output format to convert to
      */
     public void setOutputFormat(final OutputFormat format) {
         outputFormat = format;
     }
 
     /**
-     * Output formats supported by Goby.
-     */
-    public enum OutputFormat {
-        /**
-         * <a href="http://en.wikipedia.org/wiki/FASTA_format">FASTA</a>.
-         */
-        FASTA,
-        /**
-         * <a href="http://en.wikipedia.org/wiki/FASTQ_format">FASTQ</a>.
-         */
-        FASTQ
-    }
-
-    /**
-     * Set the type of encoding to write quality scores.
-     *
-     * @param qualityEncoding
+     * Set the type of encoding to write quality scores.  Applies to
+     * {@link OutputFormat#FASTQ} only.
+     * @param qualityEncoding The encoding format to use.
      */
     public void setQualityEncoding(final QualityEncoding qualityEncoding) {
         this.qualityEncoding = qualityEncoding;
     }
 
-    private OutputFormat outputFormat = OutputFormat.FASTA;
+    /**
+     * Fet the type of encoding used to write quality scores.  Applies to
+     * {@link OutputFormat#FASTQ} only.
+     * @return The encoding format in use.
+     */
+    public QualityEncoding getQualityEncoding() {
+        return qualityEncoding;
+    }
 
+    public OutputFormat getOutputFormat() {
+        return outputFormat;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
@@ -163,7 +188,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
 
         inputFilename = jsapResult.getString("input");
         outputFilename = jsapResult.getString("output");
-        outputFormat = OutputFormat.valueOf(jsapResult.getString("output-format").toUpperCase());
+        outputFormat = OutputFormat.valueOf(jsapResult.getString("output-format").toUpperCase(Locale.getDefault()));
         alphabet = jsapResult.getString("alphabet");
         indexToHeader = jsapResult.getBoolean("index-to-header");
         outputColorMode = jsapResult.getBoolean("output-color-space");
@@ -173,7 +198,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
         referenceConversion = jsapResult.getBoolean("reference");
         readIndexFilterFile = jsapResult.getFile("read-index-filter");
         qualityEncoding =
-                QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
+                QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase(Locale.getDefault()));
 
         return this;
     }
@@ -221,7 +246,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
     @Override
     public void execute() throws IOException {
         // output file extension is based on the output format type
-        final String outputExtension = "." + outputFormat.name().toLowerCase();
+        final String outputExtension = "." + outputFormat.name().toLowerCase(Locale.getDefault());
         if (outputFilename == null) {
             outputFilename = FilenameUtils.removeExtension(inputFilename)
                     + (hashOutputFilename ? hash() : "") + outputExtension;
@@ -405,10 +430,6 @@ public class CompactToFastaMode extends AbstractGobyMode {
         writer.write('\n');
     }
 
-    public static void main(final String[] args) throws IOException, JSAPException {
-        new CompactToFastaMode().configure(args).execute();
-    }
-
     public String getOutputFilename() {
         return outputFilename;
     }
@@ -419,5 +440,9 @@ public class CompactToFastaMode extends AbstractGobyMode {
 
     public void setHashOutputFilename(final boolean hash) {
         hashOutputFilename = hash;
+    }
+
+    public static void main(final String[] args) throws IOException, JSAPException {
+        new CompactToFastaMode().configure(args).execute();
     }
 }

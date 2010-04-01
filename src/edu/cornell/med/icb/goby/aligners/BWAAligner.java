@@ -236,6 +236,9 @@ import java.io.OutputStream;
  *         Time: 5:21:08 PM
  */
 public class BWAAligner extends AbstractAligner {
+    /**
+     * Used to log debug and informational messages.
+     */
     private static final Log LOG = LogFactory.getLog(BWAAligner.class);
 
     private static final String BWA_EXEC = SystemUtils.IS_OS_WINDOWS ? "bwa.exe" : "bwa";

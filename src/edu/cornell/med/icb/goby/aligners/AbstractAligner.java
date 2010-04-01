@@ -33,6 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Locale;
 
 /**
  * @author Fabien Campagne
@@ -41,6 +42,9 @@ import java.util.Collection;
  */
 // TODO - replace mParameter and qualityFilterParameters with filterParams?
 public abstract class AbstractAligner implements Aligner {
+    /**
+     * Used to log debug and informational messages.
+     */
     private static final Log LOG = LogFactory.getLog(AbstractAligner.class);
 
     protected String pathToExecutables;
@@ -57,29 +61,29 @@ public abstract class AbstractAligner implements Aligner {
     protected String alignerOptions = "";
     protected String qualityFilterParameters = "threshold=0.05";
     protected int mParameter = 2;
-    protected boolean keepTemporaryFiles = false;
+    protected boolean keepTemporaryFiles;
 
     /**
      * When true, will not delete the native aligner files generated during alignment. These files are deleted by default.
      *
      * @param keepTemporaryFiles
      */
-    public void setKeepTemporaryFiles(boolean keepTemporaryFiles) {
+    public void setKeepTemporaryFiles(final boolean keepTemporaryFiles) {
         this.keepTemporaryFiles = keepTemporaryFiles;
     }
 
     /**
-     * Return the reference file converter used by aligner algorithm
+     * Return the reference file converter used by aligner algorithm.
      */
     public abstract CompactToFastaMode getReferenceCompactToFastaConverter();
 
     /**
-     * Return the reads file converter used by aligner algorithm
+     * Return the reads file converter used by aligner algorithm.
      */
     public abstract CompactToFastaMode getReadsCompactToFastaConverter();
 
     /**
-     * Return the compact reads converter for the native alignment
+     * Return the compact reads converter for the native alignment.
      */
     public abstract AbstractAlignmentToCompactMode getNativeAlignmentToCompactMode(final String outputBasename);
 
@@ -135,7 +139,6 @@ public abstract class AbstractAligner implements Aligner {
     public void setWorkDirectory(final String path) {
         workDirectory = path;
     }
-
 
     /**
      * If databasePrefix is a complete basename to a database, this will return databasePrefix.
@@ -228,7 +231,7 @@ public abstract class AbstractAligner implements Aligner {
     /**
      * Ensure *parent* directories exist.
      */
-    public void forceMakeParentDir(final String path) {
+    protected void forceMakeParentDir(final String path) {
         final String parentDir = FilenameUtils.getFullPath(path);
         forceMakeDir(parentDir);
     }
@@ -236,7 +239,7 @@ public abstract class AbstractAligner implements Aligner {
     /**
      * Ensure directories exist.
      */
-    public void forceMakeDir(final String path) {
+    private void forceMakeDir(final String path) {
         final File dir = new File(path);
         if (path.length() == 0) {
             // TODO: add unit test with various working directories, including "./" case
@@ -306,11 +309,16 @@ public abstract class AbstractAligner implements Aligner {
         } else {
             // assume compact-reads format:
             // TODO: assert that file is a compact-reads file
-            final String outputFilename = FilenameUtils.concat(workDirectory,
-                    FilenameUtils.getBaseName(compactReadsFile.getCanonicalPath()) + ".fasta");
             final CompactToFastaMode processor = getReadsCompactToFastaConverter();
             processor.setInputFilename(compactReadsFile.getCanonicalPath());
             processor.setReadIndexFilterFile(readIndexFilter);
+
+            // output file name is based on the input file and type
+            final String outputExtension = "."
+                   +  processor.getOutputFormat().toString().toLowerCase(Locale.getDefault());
+            final String outputFilename = FilenameUtils.concat(workDirectory,
+                    FilenameUtils.getBaseName(compactReadsFile.getCanonicalPath())
+                            + outputExtension);
             processor.setOutputFilename(outputFilename);
             processor.execute();
             numberOfReads = processor.getNumberOfSequences();
