@@ -196,6 +196,14 @@ public class FastXEntry implements Cloneable {
     }
 
     /**
+     * Set if the entry is complete.
+     * @param entryComplete if the entry is complete
+     */
+    void setEntryComplete(final boolean entryComplete) {
+        this.entryComplete = entryComplete;
+    }
+
+    /**
      * Copy the current object to a new one - you can use this if you need to store
      * this object in a list, etc.
      * @return this object copied to a new object.

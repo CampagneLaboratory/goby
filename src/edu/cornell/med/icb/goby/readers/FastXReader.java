@@ -177,6 +177,9 @@ public class FastXReader implements Iterator<FastXEntry>, Iterable<FastXEntry>, 
                 // No more lines to read
                 if (nextEntry.getEntry().length() == 0) {
                     nextEntry = null;
+                } else {
+                    // End of file, it IS complete.
+                    nextEntry.setEntryComplete(true);
                 }
                 return;
             }

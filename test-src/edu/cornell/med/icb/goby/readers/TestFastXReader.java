@@ -52,7 +52,7 @@ public class TestFastXReader {
                 assertEquals('>', entry.getHeaderSymbol());
             }
 
-            // TODO: assertTrue("Entry " + entryNum + " is not complete", entry.isEntryComplete());
+            assertTrue("Entry " + entryNum + " is not complete", entry.isEntryComplete());
             entryNum++;
         }
         assertEquals(2, entryNum);
@@ -79,7 +79,7 @@ public class TestFastXReader {
                 assertEquals("TAGACCA\nTAGG", entry.getEntrySansHeader().toString());
                 assertEquals('>', entry.getHeaderSymbol());
             }
-            // TODO: assertTrue("Entry " + entryNum + " is not complete", entry.isEntryComplete());
+            assertTrue("Entry " + entryNum + " is not complete", entry.isEntryComplete());
             entryNum++;
         }
         assertEquals(2, entryNum);
