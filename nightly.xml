@@ -79,6 +79,9 @@
         <delete dir="data/bwa-reference-index"/>
         <delete dir="data/last-reference-index"/>
         <delete dir="data/lastag-reference-index"/>
+        <delete dir=".">
+            <include name="goby-*sample*"/>
+        </delete>
     </target>
 
     <target name="prepare-reads" depends="jar">
