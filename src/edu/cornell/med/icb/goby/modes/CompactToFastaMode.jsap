@@ -86,7 +86,7 @@
             </stringParser>
             <required>false</required>
             <defaults>
-                <string>Fasta</string>
+                <string>fasta</string>
             </defaults>
             <help>Type of output to generate. Can be Fasta or Fastq. The fastq format encodes quality scores.</help>
         </flaggedOption>
