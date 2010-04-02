@@ -89,7 +89,7 @@
         <fasta-to-compact input="data/reference/mm9/chr1.fa.gz" include-identifiers="true"/>
     </target>
 
-    <target name="nightly" depends="clean, nightly-bwa, nightly-last"/>
+    <target name="nightly" depends="clean, nightly-bwa, nightly-last, nightly-lastag"/>
 
     <target name="nightly-bwa" depends="prepare-reference, prepare-reads">
         <java jar="${goby-jarfile}" fork="true" failonerror="true"
