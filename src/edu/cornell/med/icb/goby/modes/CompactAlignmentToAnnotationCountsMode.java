@@ -196,15 +196,18 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         String normalizationMethodNames = jsapResult.getString("normalization-methods");
         String[] methodIds = normalizationMethodNames.split(",");
         this.normalizationMethods = new ObjectArraySet<NormalizationMethod>();
+        LOG.info("Looking up services");
         for (String methodId : methodIds) {
 
             for (NormalizationMethod aMethod : normalizationMethodLoader) {
-                if (aMethod.getIdentifier().equals(methodId))
+                if (aMethod.getIdentifier().equals(methodId)) {
+                    LOG.info("Adding " + aMethod.getIdentifier());
                     this.normalizationMethods.add(aMethod);
+                }
             }
         }
         if (this.normalizationMethods.size() == 0) {
-            System.err.println("Could not locate any normalization method with the names provided: " + normalizationMethodNames);
+            LOG.error("Could not locate any normalization method with the names provided: " + normalizationMethodNames);
             System.exit(1);
         }
     }
