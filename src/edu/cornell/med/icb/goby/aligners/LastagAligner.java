@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Institute for Computational Biomedicine,
+ * Copyright (C) 2009-2010 Institute for Computational Biomedicine,
  *                         Weill Medical College of Cornell University
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -19,8 +19,8 @@
 package edu.cornell.med.icb.goby.aligners;
 
 import edu.cornell.med.icb.goby.config.GobyConfiguration;
-import edu.cornell.med.icb.goby.util.LoggingOutputStream;
 import edu.cornell.med.icb.goby.modes.CompactToFastaMode;
+import edu.cornell.med.icb.goby.util.LoggingOutputStream;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
