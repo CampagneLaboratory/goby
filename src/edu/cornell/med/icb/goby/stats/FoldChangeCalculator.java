@@ -53,7 +53,7 @@ public class FoldChangeCalculator extends StatisticCalculator {
                                         final String... group) {
         final String groupA = group[0];
         final String groupB = group[1];
-        defineStatisticId(results, "fold-change", method);
+        final int foldChangeStatIndex = defineStatisticId(results, "fold-change", method);
 
         final ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
         final ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);
@@ -70,7 +70,7 @@ public class FoldChangeCalculator extends StatisticCalculator {
 
         final double foldChangeStatistic = averageA / averageB;
         info.statistics.size(results.getNumberOfStatistics());
-        info.statistics.set(results.getStatisticIndex(getMatchingStatId("fold-change")), foldChangeStatistic);
+        info.statistics.set(foldChangeStatIndex, foldChangeStatistic);
 
         return info;
     }

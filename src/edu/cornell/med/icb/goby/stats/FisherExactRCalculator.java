@@ -70,8 +70,9 @@ public class FisherExactRCalculator extends StatisticCalculator {
         if (rengine != null && rengine.isAlive()) {
             final String groupA = group[0];
             final String groupB = group[1];
+
             // TODO correct sumCountIn? with normalization method.
-            final int statIndex = defineStatisticId(results, "fisher-exact-R");
+            final int statIndex = defineStatisticId(results, "fisher-exact-R", method, group);
 
             final ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
             final ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);

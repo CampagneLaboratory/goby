@@ -20,7 +20,6 @@ package edu.cornell.med.icb.goby.stats;
 
 import gominer.Fisher;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.lang.MutableString;
 
 /**
  * Calculates Fisher exact test P-value for an observed count difference between comparison
@@ -45,11 +44,6 @@ public class FisherExactTestCalculator extends StatisticCalculator {
         return group.length == 2;
     }
 
-
-    public MutableString getStatisticId(final String groupId, final NormalizationMethod normalizationMethod) {
-        return new MutableString("fisher-exact-test " + groupId + "(" + normalizationMethod.getAbbreviation() + ")");
-    }
-
     @Override
    public DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
                                         NormalizationMethod method, final DifferentialExpressionResults results,
@@ -59,9 +53,7 @@ public class FisherExactTestCalculator extends StatisticCalculator {
         final String groupA = group[0];
         final String groupB = group[1];
 
-        final MutableString fisherPValueStatisticId = getStatisticId(groupA + "/" + groupB, method);
-        final int fisherPValuesStatIndex = defineStatisticId(results, fisherPValueStatisticId);
-
+        final int fisherPValuesStatIndex = defineStatisticId(results, "fisher-exact-test", method, groupA, groupB);
 
         final ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
         final ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);

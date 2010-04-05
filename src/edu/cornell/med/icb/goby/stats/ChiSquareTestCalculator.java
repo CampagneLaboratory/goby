@@ -71,19 +71,8 @@ public class ChiSquareTestCalculator extends StatisticCalculator {
         //  counts observed in each group:
         final long[] observedCounts = new long[group.length];
         final double[] groupProportions = new double[group.length];
-        final MutableString groups = new MutableString();
-        {
-            int i = 0;
-            for (final String g : group) {
-                groups.append(g);
-                if (i != group.length) {
-                    groups.append("/");
-                }
-                ++i;
-            }
-        }
-        final MutableString chiSquarePValueStatisticId = getStatisticId(groups.toString(), method);
-        final int chiSquarePValuesStatIndex = defineStatisticId(results, chiSquarePValueStatisticId);
+
+        final int chiSquarePValuesStatIndex = defineStatisticId(results, "chi-square-test", method, group);
 
         int i = 0;
 

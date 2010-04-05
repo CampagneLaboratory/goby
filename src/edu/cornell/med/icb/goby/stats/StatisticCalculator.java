@@ -57,6 +57,30 @@ public abstract class StatisticCalculator {
      * @param results             DifferentialExpressionResults instance
      * @param statisticId         name of the statistic
      * @param normalizationMethod Normalization method
+     * @param group the groups in question
+     * @return The index of the defined statistic.
+     */
+    public int defineStatisticId(final DifferentialExpressionResults results, final String statisticId,
+                                 final NormalizationMethod normalizationMethod, final String... group) {
+        final MutableString groups = new MutableString();
+        groups.append(statisticId).append(' ');
+        for (int i = 0; i < group.length; i++) {
+            if (i != 0) {
+                groups.append('/');
+            }
+            groups.append(group[i]);
+        }
+        groups.append('(').append(normalizationMethod.getAbbreviation()).append(')');
+        return defineStatisticId(results, groups);
+    }
+
+    /**
+     * Define the name of a statistic if the name was not previously defined. Use the abbreviation of the normalization method
+     * to indicate which method was used during the calculation of this statistic.
+     *
+     * @param results             DifferentialExpressionResults instance
+     * @param statisticId         name of the statistic
+     * @param normalizationMethod Normalization method
      * @return The index of the defined statistic.
      */
     public int defineStatisticId(final DifferentialExpressionResults results, final String statisticId,
@@ -118,7 +142,7 @@ public abstract class StatisticCalculator {
     /**
      * Override this method to support a certain number of groups.
      *
-     * @param group
+     * @param group the groups in question
      * @return
      */
     public abstract boolean canDo(String[] group);
@@ -142,7 +166,7 @@ public abstract class StatisticCalculator {
      * @param differentialExpressionCalculator
      *               The deCalculator that keeps the data
      *               needed to evaluate the statistic
-     * @param method
+     * @param method the normalization method
      * @param group  The set of groups for which the comparison is sought.  @return list of DifferentialExpressionInfo, one per element processed.
      */
     public DifferentialExpressionResults evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
