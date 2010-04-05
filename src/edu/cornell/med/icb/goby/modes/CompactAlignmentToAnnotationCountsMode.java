@@ -388,6 +388,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         // collect all element ids:
         if (doComparison) {
             int numberOfElements = 0;
+            int numberOfGenes = 0;
+            int numberOfExons = 0;
             for (final int referenceIndex : referencesToProcess) {
                 final String chromosomeName = referenceIds.getId(referenceIndex).toString();
 
@@ -401,6 +403,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                         final String geneID = annot.id;
                         final int index = deCalculator.defineElement(geneID);
                         deCalculator.defineElementLength(index, annot.getLength());
+                        numberOfGenes++;
                         numberOfElements++;
                     }
 
@@ -411,12 +414,13 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                             final String exonID = exonSegment.id;
                             final int index = deCalculator.defineElement(exonID);
                             deCalculator.defineElementLength(index, annot.getLength());
+                            numberOfExons++;
                             numberOfElements++;
                         }
                     }
                 }
             }
-
+      //      LOG.info(String.format("%d Genes %d exons total %d ", numberOfGenes, numberOfExons, numberOfElements));
             deCalculator.reserve(numberOfElements, inputFilenames.length);
         }
 
@@ -515,7 +519,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
                             }
                             numberOfAnottationCountsWritten++;
-                            if (doComparison) {
+                            if (doComparison && includeAnnotationTypes.contains("exon")) {
                                 deCalculator.observe(basename, exonID, exonOverlapReads);
                             }
                         }

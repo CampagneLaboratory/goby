@@ -57,11 +57,11 @@ public class DifferentialExpressionCalculator {
         sampleToGroupMap = new Object2ObjectOpenHashMap<String, String>();
     }
 
-    public void defineGroup(final String label) {
+    public synchronized void defineGroup(final String label) {
         groups.add(label);
     }
 
-    public int defineElement(final String label) {
+    public synchronized int defineElement(final String label) {
         return elementLabels.registerIdentifier(new MutableString(label));
     }
 
@@ -72,12 +72,12 @@ public class DifferentialExpressionCalculator {
      * @param elementIndex index of the element associated with length.
      * @param length       length of the element.
      */
-    public void defineElementLength(final int elementIndex, final int length) {
+    public synchronized void defineElementLength(final int elementIndex, final int length) {
         if (lengths.size() <= elementIndex) lengths.size(elementIndex + 1);
         lengths.set(elementIndex, length);
     }
 
-    public void associateSampleToGroup(final String sample, final String group) {
+    public synchronized void associateSampleToGroup(final String sample, final String group) {
         sampleToGroupMap.put(sample, group);
     }
 
@@ -103,11 +103,18 @@ public class DifferentialExpressionCalculator {
 
 
         IntArrayList counts = sampleToCounts.get(sample);
-
+        // the following looks a bit complicated. We are trying to avoid synchronizing every time observe is called.
+        // This would slow the whole process too much. Instead, we synchronize only when we need to create a counts
+        // datastructure for a new sample, which should not happen too often.
         if (counts == null) {
-            counts = new IntArrayList(elementsPerSample);
-            counts.size(elementsPerSample);
-            sampleToCounts.put(sample, counts);
+            synchronized (this) {
+                counts = sampleToCounts.get(sample);
+                if (counts == null) {
+                    counts = new IntArrayList(elementsPerSample);
+                    counts.size(elementsPerSample);
+                    sampleToCounts.put(sample, counts);
+                }
+            }
         }
 
 
@@ -121,7 +128,7 @@ public class DifferentialExpressionCalculator {
      * @param sampleId            The sample
      * @param numAlignedInSamples The number of alignment entries observed in the sample.
      */
-    public void setNumAlignedInSample(String sampleId, int numAlignedInSamples) {
+    public synchronized void setNumAlignedInSample(String sampleId, int numAlignedInSamples) {
         numAlignedInSample.put(sampleId, numAlignedInSamples);
     }
 
@@ -170,6 +177,7 @@ public class DifferentialExpressionCalculator {
     public void reserve(final int elementsPerSample, final int numberOfSamples) {
         this.elementsPerSample = elementsPerSample;
         this.numberOfSamples = numberOfSamples;
+        lengths.size(elementsPerSample);
     }
 
     public ObjectArraySet<String> getSamples(final String groupA) {

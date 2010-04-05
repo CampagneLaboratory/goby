@@ -71,7 +71,7 @@ public class AlignedCountNormalization extends RpkmLikeNormalizationMethod {
      */
     @Override
     public double getDenominator(final DifferentialExpressionCalculator differentialExpressionCalculator,
-                                 final String sampleId) {
+                                 final String sampleId) {                     
         return (double) differentialExpressionCalculator.getNumAlignedInSample(sampleId);
     }
 }
