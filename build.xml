@@ -10,6 +10,7 @@
     <property name="goby-jarfile-name" value="goby.jar"/>
     <property name="goby-jarfile" location="${goby-jarfile-name}"/>
     <property name="goby-api-jarfile" location="goby-api.jar"/>
+    <property name="goby-spi-jarfile" location="goby-spi.jar"/>
 
     <property name="label" value="development"/>
 
@@ -138,6 +139,26 @@
                            value="Institute for Computational Biomedicine (ICB), Weill Medical College of Cornell University"/>
                 <attribute name="Built-By" value="${user.name}"/>
             </manifest>
+        </jar>
+    </target>
+
+    <target name="jar-goby-spi" depends="compile" description="Creates a manifest only jar file">
+        <jar jarfile="${goby-spi-jarfile}">
+            <manifest>
+                <attribute name="Specification-Title" value="Goby"/>
+                <attribute name="Specification-Vendor"
+                           value="Institute for Computational Biomedicine (ICB), Weill Medical College of Cornell University"/>
+                <attribute name="Implementation-Version" value="${label} (${buildstamp})"/>
+                <attribute name="Implementation-Vendor"
+                           value="Institute for Computational Biomedicine (ICB), Weill Medical College of Cornell University"/>
+                <attribute name="Main-Class" value="edu.cornell.med.icb.goby.modes.GobyDriver"/>
+                <attribute name="Built-By" value="${user.name}"/>
+            </manifest>
+            <!-- define the implementation of NormalizationMethods as Java ServiceProviders: -->
+            <service type="edu.cornell.med.icb.goby.stats.NormalizationMethod">
+                <provider classname="edu.cornell.med.icb.goby.stats.BullardUpperQuartileNormalization"/>
+                <provider classname="edu.cornell.med.icb.goby.stats.AlignedCountNormalization"/>
+            </service>
         </jar>
     </target>
 

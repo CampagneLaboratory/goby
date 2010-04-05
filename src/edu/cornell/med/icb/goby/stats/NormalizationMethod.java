@@ -33,18 +33,18 @@ public interface NormalizationMethod {
      *
      * @return a string that uniquely identifies this method.
      */
-    public String getIdentifier();
+    String getIdentifier();
 
     /**
-     * Return an abbreviation to be used as prefix to statistics normalized with this method. All upper-case three letters
-     * abbreviations are strongly suggested to make the output look consistent.
+     * Return an abbreviation to be used as prefix to statistics normalized with this method.
+     * All upper-case three letters abbreviations are strongly suggested to make the
+     * output look consistent.
      *
      * @return
      */
-    public String getAbbreviation();
+    String getAbbreviation();
 
     void normalize(DifferentialExpressionCalculator calculator, String... groups);
-
 
     double getNormalizedExpressionValue(final DifferentialExpressionCalculator deCalculator,
                                         final String sampleId,

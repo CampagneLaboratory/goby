@@ -101,7 +101,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     private String[] inputFilenames;
 
     private boolean writeAnnotationCounts = true;
-    private boolean omitNonInformativeColumns = false;
+    private boolean omitNonInformativeColumns;
     private String statsFilename;
     private ParallelTeam team;
     private boolean parallel;
@@ -125,7 +125,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         return MODE_DESCRIPTION;
     }
 
-    private static ServiceLoader<NormalizationMethod> normalizationMethodLoader
+    private static final ServiceLoader<NormalizationMethod> normalizationMethodLoader
             = ServiceLoader.load(NormalizationMethod.class);
 
     /**
@@ -172,7 +172,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         return this;
     }
 
-    private void parseAnnotations(JSAPResult jsapResult) {
+    private void parseAnnotations(final JSAPResult jsapResult) {
         annotationFile = jsapResult.getString("annotation");
         final String includeAnnotationTypeComas = jsapResult.getString("include-annotation-types");
         includeAnnotationTypes = new ObjectOpenHashSet<String>();
@@ -192,14 +192,13 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         }
     }
 
-    private void parseNormalization(JSAPResult jsapResult) {
-        String normalizationMethodNames = jsapResult.getString("normalization-methods");
-        String[] methodIds = normalizationMethodNames.split(",");
+    private void parseNormalization(final JSAPResult jsapResult) {
+        final String normalizationMethodNames = jsapResult.getString("normalization-methods");
+        final String[] methodIds = normalizationMethodNames.split(",");
         this.normalizationMethods = new ObjectArraySet<NormalizationMethod>();
         LOG.info("Looking up services");
-        for (String methodId : methodIds) {
-
-            for (NormalizationMethod aMethod : normalizationMethodLoader) {
+        for (final String methodId : methodIds) {
+            for (final NormalizationMethod aMethod : normalizationMethodLoader) {
                 if (aMethod.getIdentifier().equals(methodId)) {
                     LOG.info("Adding " + aMethod.getIdentifier());
                     this.normalizationMethods.add(aMethod);
@@ -360,7 +359,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         }
 
         reader.close();
-        String sampleId = FilenameUtils.getBaseName(inputBasename);
+        final String sampleId = FilenameUtils.getBaseName(inputBasename);
 
         deCalculator.setNumAlignedInSample(sampleId, numAlignedReadsInSample);
 
@@ -400,17 +399,17 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 for (final Annotation annot : annots) {
                     if (includeAnnotationTypes.contains("gene")) {
                         final String geneID = annot.id;
-                        int index = deCalculator.defineElement(geneID);
+                        final int index = deCalculator.defineElement(geneID);
                         deCalculator.defineElementLength(index, annot.getLength());
                         numberOfElements++;
                     }
 
                     if (includeAnnotationTypes.contains("exon")) {
-                        int numExons = annot.segments.size();
+                        final int numExons = annot.segments.size();
                         for (int i = 0; i < numExons; i++) {
-                            Segment exonSegment = annot.segments.get(i);
+                            final Segment exonSegment = annot.segments.get(i);
                             final String exonID = exonSegment.id;
-                            int index = deCalculator.defineElement(exonID);
+                            final int index = deCalculator.defineElement(exonID);
                             deCalculator.defineElementLength(index, annot.getLength());
                             numberOfElements++;
                         }
@@ -441,7 +440,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 }
             }
             final String basename = FilenameUtils.getBaseName(inputBasename);
-            String sampleId = basename;
+            final String sampleId = basename;
             for (final Annotation annot : annots) {
                 final String geneID = annot.id;
 

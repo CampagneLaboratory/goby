@@ -24,37 +24,52 @@ import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.Collections;
 
 /**
- * Implements the upper quartile normalization method described by Bullard et al in BMC Bioinformatics 2010, 11:94 doi:10.1186/1471-2105-11-94.
- * This method multiples counts in each sample i by a factor d_i. d_i is taken to be the 1/q_i with q_i the 75% quantile, or count value
- * larger than 75% of counts in sample i. Elements that have zero counts in all samples are not considered to estimate
- * the 75% quartile.
+ * Implements the upper quartile normalization method described by Bullard et al in BMC
+ * Bioinformatics 2010, 11:94 doi:10.1186/1471-2105-11-94.  This method multiples counts
+ * in each sample i by a factor d_i. d_i is taken to be the 1/q_i with q_i the 75% quantile,
+ * or count value larger than 75% of counts in sample i. Elements that have zero counts in
+ * all samples are not considered to estimate the 75% quartile.
  *
  * @author Fabien Campagne
  *         Date: Mar 27, 2010
  *         Time: 3:03:54 PM
  */
 public class BullardUpperQuartileNormalization extends RpkmLikeNormalizationMethod {
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(BullardUpperQuartileNormalization.class);
 
-    double percentile = .75d;
-    Object2DoubleMap<String> normalizationFactors = new Object2DoubleOpenHashMap<String>();
-    private static final Logger LOG = Logger.getLogger(BullardUpperQuartileNormalization.class);
+    private final double percentile = .75d;
+    private final Object2DoubleMap<String> normalizationFactors =
+            new Object2DoubleOpenHashMap<String>();
 
+    /**
+     * {@inheritDoc}
+     */
     public String getIdentifier() {
         return "bullard-upper-quartile";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public String getAbbreviation() {
         return "BUQ";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void normalize(final DifferentialExpressionCalculator calculator, final String... groups) {
         final ObjectSet<String> samplesToNormalize = new ObjectOpenHashSet<String>();
-        for (String group : groups) {
+        for (final String group : groups) {
             samplesToNormalize.addAll(calculator.getSamples(group));
         }
         // determine set of elements with reads in at least one sample (lane): elementIdsToKeep
@@ -93,7 +108,6 @@ public class BullardUpperQuartileNormalization extends RpkmLikeNormalizationMeth
         // to equal the sum of counts over all samples (sumOverSamples)
         final double adjustmentRatio = ((double) sumOverSamples) / sumFactors;
         for (final String sampleId : samplesToNormalize) {
-
             double adjustedFactor = normalizationFactors.get(sampleId);
             adjustedFactor *= adjustmentRatio;
             normalizationFactors.put(sampleId, adjustedFactor);
@@ -102,6 +116,9 @@ public class BullardUpperQuartileNormalization extends RpkmLikeNormalizationMeth
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final double getDenominator(final DifferentialExpressionCalculator differentialExpressionCalculator,
                                        final String sampleId) {

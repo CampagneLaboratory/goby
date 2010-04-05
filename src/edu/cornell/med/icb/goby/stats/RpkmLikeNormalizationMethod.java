@@ -30,6 +30,9 @@ public abstract class RpkmLikeNormalizationMethod implements NormalizationMethod
 
     abstract double getDenominator(DifferentialExpressionCalculator differentialExpressionCalculator, String sampleId);
 
+    /**
+     * {@inheritDoc}
+     */
     public double getNormalizedExpressionValue(final DifferentialExpressionCalculator deCalc,
                                                final String sampleId,
                                                final MutableString elementId) {
