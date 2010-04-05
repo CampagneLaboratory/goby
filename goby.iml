@@ -242,19 +242,6 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/commons-math-2.1-SNAPSHOT.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="file://$MODULE_DIR$/../../../../../cygwin/home/marko/commons-math/src/main/java" />
-          <root url="file://$MODULE_DIR$/../../../../../cygwin/home/marko/commons-math/src/mantissa/src" />
-          <root url="file://$MODULE_DIR$/../../../../../cygwin/home/marko/commons-math/src/experimental" />
-        </SOURCES>
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/protobuf-java-2.3.0.jar!/" />
         </CLASSES>
         <JAVADOC />
@@ -271,6 +258,17 @@
         <JAVADOC />
         <SOURCES>
           <root url="file://$MODULE_DIR$/../../java/picard-src-1.16/src/java" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/commons-math-2.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$MODULE_DIR$/../../java/commons-math-2.1-src.zip!/commons-math-2.1-src/src/main/java" />
         </SOURCES>
       </library>
     </orderEntry>
