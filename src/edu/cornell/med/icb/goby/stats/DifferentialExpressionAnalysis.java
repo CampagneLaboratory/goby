@@ -18,14 +18,19 @@
 
 package edu.cornell.med.icb.goby.stats;
 
+import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.modes.CompactAlignmentToAnnotationCountsMode;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.FileNotFoundException;
+import java.util.ServiceLoader;
 
 /**
  * Created by IntelliJ IDEA.
@@ -39,6 +44,10 @@ public class DifferentialExpressionAnalysis {
     public DifferentialExpressionAnalysis() {
     }
 
+    /* Used to log debug and informational messages.
+         */
+    private static final Log LOG = LogFactory.getLog(CompactAlignmentToAnnotationCountsMode.class);
+
     /**
      * The groups that should be compared, order matters.
      */
@@ -51,6 +60,15 @@ public class DifferentialExpressionAnalysis {
      * @return
      */
     private boolean ttestflag;
+    /**
+     * The set of normalization methods to use for the comparison.
+     */
+
+    private ObjectArraySet<NormalizationMethod> normalizationMethods;
+
+
+    private static final ServiceLoader<NormalizationMethod> normalizationMethodLoader
+            = ServiceLoader.load(NormalizationMethod.class);
 
     public void parseGroupsDefinition(final String groupsDefinition, DifferentialExpressionCalculator deCalculator,
                                       String[] inputFilenames) {
@@ -109,6 +127,26 @@ public class DifferentialExpressionAnalysis {
             }
         }
         groupComparison = groupLanguageText;
+    }
+
+    public ObjectArraySet<NormalizationMethod> parseNormalization(final JSAPResult jsapResult) {
+        final String normalizationMethodNames = jsapResult.getString("normalization-methods");
+        final String[] methodIds = normalizationMethodNames.split(",");
+        this.normalizationMethods = new ObjectArraySet<NormalizationMethod>();
+        LOG.info("Looking up services");
+        for (final String methodId : methodIds) {
+            for (final NormalizationMethod aMethod : normalizationMethodLoader) {
+                if (aMethod.getIdentifier().equals(methodId)) {
+                    LOG.info("Adding " + aMethod.getIdentifier());
+                    this.normalizationMethods.add(aMethod);
+                }
+            }
+        }
+        if (this.normalizationMethods.size() == 0) {
+            LOG.error("Could not locate any normalization method with the names provided: " + normalizationMethodNames);
+            System.exit(1);
+        }
+        return normalizationMethods;
     }
 
     public boolean checkTtest() {

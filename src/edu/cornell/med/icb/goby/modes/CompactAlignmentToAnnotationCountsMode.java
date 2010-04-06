@@ -55,7 +55,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
-import java.util.ServiceLoader;
 
 /**
  * Reads a compact alignment and genome annotations and output read counts that overlap with
@@ -125,8 +124,6 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         return MODE_DESCRIPTION;
     }
 
-    private static final ServiceLoader<NormalizationMethod> normalizationMethodLoader
-            = ServiceLoader.load(NormalizationMethod.class);
 
     /**
      * Configure.
@@ -168,7 +165,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             filterByReferenceNames = true;
         }
         parseAnnotations(jsapResult);
-        parseNormalization(jsapResult);
+        normalizationMethods= deAnalyzer.parseNormalization(jsapResult);
         return this;
     }
 
@@ -192,24 +189,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         }
     }
 
-    private void parseNormalization(final JSAPResult jsapResult) {
-        final String normalizationMethodNames = jsapResult.getString("normalization-methods");
-        final String[] methodIds = normalizationMethodNames.split(",");
-        this.normalizationMethods = new ObjectArraySet<NormalizationMethod>();
-        LOG.info("Looking up services");
-        for (final String methodId : methodIds) {
-            for (final NormalizationMethod aMethod : normalizationMethodLoader) {
-                if (aMethod.getIdentifier().equals(methodId)) {
-                    LOG.info("Adding " + aMethod.getIdentifier());
-                    this.normalizationMethods.add(aMethod);
-                }
-            }
-        }
-        if (this.normalizationMethods.size() == 0) {
-            LOG.error("Could not locate any normalization method with the names provided: " + normalizationMethodNames);
-            System.exit(1);
-        }
-    }
+
 
 
     class BasenameParallelRegion extends ParallelRegion {

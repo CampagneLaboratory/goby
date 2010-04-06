@@ -28,16 +28,12 @@ import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.counts.CountsArchiveWriter;
 import edu.cornell.med.icb.goby.counts.CountsWriter;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
-import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import org.apache.commons.io.IOUtils;
 
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Arrays;
 
 /**
@@ -110,7 +106,6 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         basenames = basenameSet.toArray(new String[basenameSet.size()]);
 
         optionalOutputFile = jsapResult.getString("output");
-        fullGenomeAlignment = jsapResult.getBoolean("full-genome");
 
         final String includeReferenceNameCommas = jsapResult.getString("include-reference-names");
         if (includeReferenceNameCommas != null) {
@@ -155,54 +150,11 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
                 outputFile = basename;
             }
 
-            if (fullGenomeAlignment) {
                 processFullGenomeAlignment(basename);
-            } else {
-                outputFile += "-transcript-counts.txt";
-                processTranscriptAlignment(basename);
-            }
+
         }
     }
 
-    private void processTranscriptAlignment(final String basename) throws IOException {
-        final AlignmentReader reader = new AlignmentReader(basename);
-        PrintWriter outputWriter = null;
-        try {
-            outputWriter = new PrintWriter(new FileWriter(outputFile));
-            // outputWriter.write("# One line per reference id. Count indicates the number of times a query \n" +
-            //         "# partially overlaps a target, given the various quality filters used to create the alignment.\n");
-            outputWriter.write("sampleId\treferenceId\tcount\tlog10(count+1)\tcumulativeBasesAligned\n");
-            reader.readHeader();
-
-            final int numberOfReferences = reader.getNumberOfTargets();
-            final int[] numberOfReadsPerReference = new int[numberOfReferences];
-            final int[] cumulativeBasesPerReference = new int[numberOfReferences];
-
-            System.out.printf("Scanning alignment %s%n", basename);
-            for (final Alignments.AlignmentEntry alignmentEntry : reader) {
-                ++numberOfReadsPerReference[alignmentEntry.getTargetIndex()];
-
-                cumulativeBasesPerReference[alignmentEntry.getTargetIndex()] +=
-                        Math.min(alignmentEntry.getQueryAlignedLength(),
-                                alignmentEntry.getTargetAlignedLength());
-            }
-            final IndexedIdentifier targetIds = reader.getTargetIdentifiers();
-            final DoubleIndexedIdentifier targetIdBackward = new DoubleIndexedIdentifier(targetIds);
-
-            for (int referenceIndex = 0; referenceIndex < numberOfReferences; ++referenceIndex) {
-                outputWriter.printf("%s\t%s\t%d\t%g\t%d%n", basename,
-                        targetIdBackward.getId(referenceIndex),
-                        numberOfReadsPerReference[referenceIndex],
-                        Math.log10(numberOfReadsPerReference[referenceIndex] + 1),
-                        cumulativeBasesPerReference[referenceIndex]);
-                referenceIndex++;
-            }
-            outputWriter.flush();
-        } finally {
-            IOUtils.closeQuietly(outputWriter);
-            reader.close();
-        }
-    }
 
     private void processFullGenomeAlignment(final String basename) throws IOException {
         final AlignmentReader reader = new AlignmentReader(basename);
