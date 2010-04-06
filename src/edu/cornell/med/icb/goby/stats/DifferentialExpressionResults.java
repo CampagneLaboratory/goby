@@ -20,11 +20,14 @@ package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Store a list of results from differential expression statistics.
@@ -103,6 +106,31 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
 
     public boolean isStatisticDefined(final MutableString groupId) {
         return statisticIds.containsKey(groupId);
+    }
+
+    public MutableString getStatisticIdForIndex(final int statisticIndex) {
+        return sortedStatisticIds.get(statisticIndex);
+    }
+
+    public IntList statisticsIndexesFor(final String statPrefix, final NormalizationMethod method) {
+        final IntList results = new IntArrayList();
+        String methodAbbr = "(" + method.getAbbreviation() + ")";
+        Set<Map.Entry<MutableString ,Integer>> entrySet = statisticIds.entrySet();
+        for (final Map.Entry<MutableString, Integer> entry : entrySet) {
+            // First try with the method abbreviation
+            if (entry.getKey().startsWith(statPrefix) && entry.getKey().endsWith(methodAbbr)) {
+                results.add(entry.getValue());
+            }
+        }
+        if (results.size() == 0) {
+            // With method abbreviation matched nothing. Try without the method abbreviation.
+            for (final Map.Entry<MutableString, Integer> entry : entrySet) {
+                if (entry.getKey().startsWith(statPrefix)) {
+                    results.add(entry.getValue());
+                }
+            }
+        }
+        return results;
     }
 
     public synchronized IntArrayList getAverageCountPerGroupIndexes() {

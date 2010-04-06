@@ -53,7 +53,7 @@ public class FisherExactTestCalculator extends StatisticCalculator {
         final String groupA = group[0];
         final String groupB = group[1];
 
-        final int fisherPValuesStatIndex = defineStatisticId(results, "fisher-exact-test", method, groupA, groupB);
+        final int fisherPValuesStatIndex = defineStatisticId(results, "fisher-exact-test", method, group);
 
         final ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
         final ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);

@@ -18,7 +18,7 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import it.unimi.dsi.lang.MutableString;
+import it.unimi.dsi.fastutil.ints.IntList;
 import org.apache.log4j.Logger;
 
 /**
@@ -33,17 +33,17 @@ public abstract class FDRAdjustment {
 
     public DifferentialExpressionResults adjust(final DifferentialExpressionResults list, NormalizationMethod method, final String... statisticIds) {
         for (String statisticId : statisticIds) {
-            if (list.isStatisticDefined(new MutableString(statisticId))) {
-                adjust(list, statisticId);
-                LOG.debug("statistic " + statisticId + " is not found, it will be ignored by FDR adjustment.");
-            } else {
-
-                statisticId = statisticId + "(" + method.getAbbreviation() + ")";
-                if (list.isStatisticDefined(new MutableString(statisticId))) {
-                    adjust(list, statisticId);
-                } else {
-                    LOG.warn("statistic " + statisticId + " is not found, it will be ignored by FDR adjustment.");
-                }
+            LOG.info("Trying to perform FDR adjustment for statistic " + statisticId);
+            boolean adjusted = false;
+            final IntList statisticIndexes = list.statisticsIndexesFor(statisticId, method);
+            for (final int statisticIndex : statisticIndexes) {
+                final String currentStatisticId = list.getStatisticIdForIndex(statisticIndex).toString();
+                adjust(list, currentStatisticId);
+                LOG.info("... statistic " + currentStatisticId + " was found, FDR adjustment executed.");
+                adjusted = true;
+            }
+            if (!adjusted) {
+                LOG.warn("... statistic for " + statisticId + " was not found, it will be ignored by FDR adjustment.");
             }
         }
         return list;

@@ -54,14 +54,14 @@ public abstract class StatisticCalculator {
      * Define the name of a statistic if the name was not previously defined. Use the abbreviation of the normalization method
      * to indicate which method was used during the calculation of this statistic.
      *
-     * @param results             DifferentialExpressionResults instance
-     * @param statisticId         name of the statistic
-     * @param normalizationMethod Normalization method
+     * @param results DifferentialExpressionResults instance
+     * @param statisticId name of the statistic
+     * @param method Normalization method
      * @param group the groups in question
      * @return The index of the defined statistic.
      */
     public int defineStatisticId(final DifferentialExpressionResults results, final String statisticId,
-                                 final NormalizationMethod normalizationMethod, final String... group) {
+                                 final NormalizationMethod method, final String... group) {
         final MutableString groups = new MutableString();
         groups.append(statisticId).append(' ');
         for (int i = 0; i < group.length; i++) {
@@ -70,7 +70,7 @@ public abstract class StatisticCalculator {
             }
             groups.append(group[i]);
         }
-        groups.append('(').append(normalizationMethod.getAbbreviation()).append(')');
+        groups.append('(').append(method.getAbbreviation()).append(')');
         return defineStatisticId(results, groups);
     }
 
