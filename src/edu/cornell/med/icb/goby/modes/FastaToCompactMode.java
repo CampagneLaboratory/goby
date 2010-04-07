@@ -187,11 +187,12 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
     private void processOneFile(final int loopIndex, final int length, final String inputFilename) throws IOException {
         final String outputFilename;
-        if (loopIndex == 1 && StringUtils.isNotBlank(outputFile)) {
+        if (loopIndex == 0 && StringUtils.isNotBlank(outputFile)) {
             outputFilename = outputFile;
         } else {
             outputFilename = stripFastxExtensions(inputFilename) + ".compact-reads";
         }
+        System.out.println("Creating file " + outputFilename);
         final File output = new File(outputFilename);
         final File readsFile = new File(inputFilename);
         if (!output.exists() || FileUtils.isFileNewer(readsFile, output) || output.length() == 0) {
