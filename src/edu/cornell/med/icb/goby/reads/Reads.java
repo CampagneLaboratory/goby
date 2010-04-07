@@ -27,15 +27,15 @@ public final class Reads {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return edu.cornell.med.icb.goby.reads.Reads.internal_static_reads_ReadCollection_descriptor;
+      return edu.cornell.med.icb.goby.reads.Reads.internal_static_goby_ReadCollection_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return edu.cornell.med.icb.goby.reads.Reads.internal_static_reads_ReadCollection_fieldAccessorTable;
+      return edu.cornell.med.icb.goby.reads.Reads.internal_static_goby_ReadCollection_fieldAccessorTable;
     }
     
-    // repeated .reads.ReadEntry reads = 1;
+    // repeated .goby.ReadEntry reads = 1;
     public static final int READS_FIELD_NUMBER = 1;
     private java.util.List<edu.cornell.med.icb.goby.reads.Reads.ReadEntry> reads_ =
       java.util.Collections.emptyList();
@@ -279,7 +279,7 @@ public final class Reads {
       }
       
       
-      // repeated .reads.ReadEntry reads = 1;
+      // repeated .goby.ReadEntry reads = 1;
       public java.util.List<edu.cornell.med.icb.goby.reads.Reads.ReadEntry> getReadsList() {
         return java.util.Collections.unmodifiableList(result.reads_);
       }
@@ -330,7 +330,7 @@ public final class Reads {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:reads.ReadCollection)
+      // @@protoc_insertion_point(builder_scope:goby.ReadCollection)
     }
     
     static {
@@ -339,7 +339,7 @@ public final class Reads {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:reads.ReadCollection)
+    // @@protoc_insertion_point(class_scope:goby.ReadCollection)
   }
   
   public static final class ReadEntry extends
@@ -361,12 +361,12 @@ public final class Reads {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return edu.cornell.med.icb.goby.reads.Reads.internal_static_reads_ReadEntry_descriptor;
+      return edu.cornell.med.icb.goby.reads.Reads.internal_static_goby_ReadEntry_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return edu.cornell.med.icb.goby.reads.Reads.internal_static_reads_ReadEntry_fieldAccessorTable;
+      return edu.cornell.med.icb.goby.reads.Reads.internal_static_goby_ReadEntry_fieldAccessorTable;
     }
     
     // required uint32 readIndex = 1;
@@ -823,7 +823,7 @@ public final class Reads {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:reads.ReadEntry)
+      // @@protoc_insertion_point(builder_scope:goby.ReadEntry)
     }
     
     static {
@@ -832,19 +832,19 @@ public final class Reads {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:reads.ReadEntry)
+    // @@protoc_insertion_point(class_scope:goby.ReadEntry)
   }
   
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_reads_ReadCollection_descriptor;
+    internal_static_goby_ReadCollection_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_reads_ReadCollection_fieldAccessorTable;
+      internal_static_goby_ReadCollection_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_reads_ReadEntry_descriptor;
+    internal_static_goby_ReadEntry_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_reads_ReadEntry_fieldAccessorTable;
+      internal_static_goby_ReadEntry_fieldAccessorTable;
   
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -855,32 +855,31 @@ public final class Reads {
   static {
     java.lang.String[] descriptorData = {
       "\n.src/edu/cornell/med/icb/goby/reads/Rea" +
-      "ds.proto\022\005reads\"1\n\016ReadCollection\022\037\n\005rea" +
-      "ds\030\001 \003(\0132\020.reads.ReadEntry\"\210\001\n\tReadEntry" +
-      "\022\021\n\treadIndex\030\001 \002(\r\022\026\n\016readIdentifier\030\027 " +
-      "\001(\t\022\023\n\013description\030\026 \001(\t\022\022\n\nreadLength\030\002" +
-      " \002(\r\022\020\n\010sequence\030\003 \001(\014\022\025\n\rqualityScores\030" +
-      "\004 \001(\014B\"\n\036edu.cornell.med.icb.goby.readsH" +
-      "\001"
+      "ds.proto\022\004goby\"0\n\016ReadCollection\022\036\n\005read" +
+      "s\030\001 \003(\0132\017.goby.ReadEntry\"\210\001\n\tReadEntry\022\021" +
+      "\n\treadIndex\030\001 \002(\r\022\026\n\016readIdentifier\030\027 \001(" +
+      "\t\022\023\n\013description\030\026 \001(\t\022\022\n\nreadLength\030\002 \002" +
+      "(\r\022\020\n\010sequence\030\003 \001(\014\022\025\n\rqualityScores\030\004 " +
+      "\001(\014B\"\n\036edu.cornell.med.icb.goby.readsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
             com.google.protobuf.Descriptors.FileDescriptor root) {
           descriptor = root;
-          internal_static_reads_ReadCollection_descriptor =
+          internal_static_goby_ReadCollection_descriptor =
             getDescriptor().getMessageTypes().get(0);
-          internal_static_reads_ReadCollection_fieldAccessorTable = new
+          internal_static_goby_ReadCollection_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_reads_ReadCollection_descriptor,
+              internal_static_goby_ReadCollection_descriptor,
               new java.lang.String[] { "Reads", },
               edu.cornell.med.icb.goby.reads.Reads.ReadCollection.class,
               edu.cornell.med.icb.goby.reads.Reads.ReadCollection.Builder.class);
-          internal_static_reads_ReadEntry_descriptor =
+          internal_static_goby_ReadEntry_descriptor =
             getDescriptor().getMessageTypes().get(1);
-          internal_static_reads_ReadEntry_fieldAccessorTable = new
+          internal_static_goby_ReadEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_reads_ReadEntry_descriptor,
+              internal_static_goby_ReadEntry_descriptor,
               new java.lang.String[] { "ReadIndex", "ReadIdentifier", "Description", "ReadLength", "Sequence", "QualityScores", },
               edu.cornell.med.icb.goby.reads.Reads.ReadEntry.class,
               edu.cornell.med.icb.goby.reads.Reads.ReadEntry.Builder.class);

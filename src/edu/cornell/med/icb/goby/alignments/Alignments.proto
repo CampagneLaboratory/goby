@@ -1,4 +1,4 @@
-package reads;
+package goby;
 
 option java_package = "edu.cornell.med.icb.goby.alignments";
 option optimize_for = SPEED;
@@ -175,7 +175,7 @@ message AlignmentHeader {
    /* Length of the target sequences. One number per target, in the order of increasing target index.
     */
    repeated uint32 target_length=8;
-  
+
 }
 
 message IdentifierMapping {

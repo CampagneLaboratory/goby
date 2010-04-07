@@ -27,15 +27,15 @@ public final class Alignments {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_reads_AlignmentCollection_descriptor;
+      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_AlignmentCollection_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_reads_AlignmentCollection_fieldAccessorTable;
+      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_AlignmentCollection_fieldAccessorTable;
     }
     
-    // repeated .reads.AlignmentEntry alignmentEntries = 1;
+    // repeated .goby.AlignmentEntry alignmentEntries = 1;
     public static final int ALIGNMENTENTRIES_FIELD_NUMBER = 1;
     private java.util.List<edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry> alignmentEntries_ =
       java.util.Collections.emptyList();
@@ -279,7 +279,7 @@ public final class Alignments {
       }
       
       
-      // repeated .reads.AlignmentEntry alignmentEntries = 1;
+      // repeated .goby.AlignmentEntry alignmentEntries = 1;
       public java.util.List<edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry> getAlignmentEntriesList() {
         return java.util.Collections.unmodifiableList(result.alignmentEntries_);
       }
@@ -330,7 +330,7 @@ public final class Alignments {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:reads.AlignmentCollection)
+      // @@protoc_insertion_point(builder_scope:goby.AlignmentCollection)
     }
     
     static {
@@ -339,7 +339,7 @@ public final class Alignments {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:reads.AlignmentCollection)
+    // @@protoc_insertion_point(class_scope:goby.AlignmentCollection)
   }
   
   public static final class AlignmentEntry extends
@@ -361,12 +361,12 @@ public final class Alignments {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_reads_AlignmentEntry_descriptor;
+      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_AlignmentEntry_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_reads_AlignmentEntry_fieldAccessorTable;
+      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_AlignmentEntry_fieldAccessorTable;
     }
     
     // optional uint32 multiplicity = 7;
@@ -446,7 +446,7 @@ public final class Alignments {
     public boolean hasTargetAlignedLength() { return hasTargetAlignedLength; }
     public int getTargetAlignedLength() { return targetAlignedLength_; }
     
-    // repeated .reads.SequenceVariation sequence_variations = 13;
+    // repeated .goby.SequenceVariation sequence_variations = 13;
     public static final int SEQUENCE_VARIATIONS_FIELD_NUMBER = 13;
     private java.util.List<edu.cornell.med.icb.goby.alignments.Alignments.SequenceVariation> sequenceVariations_ =
       java.util.Collections.emptyList();
@@ -1046,7 +1046,7 @@ public final class Alignments {
         return this;
       }
       
-      // repeated .reads.SequenceVariation sequence_variations = 13;
+      // repeated .goby.SequenceVariation sequence_variations = 13;
       public java.util.List<edu.cornell.med.icb.goby.alignments.Alignments.SequenceVariation> getSequenceVariationsList() {
         return java.util.Collections.unmodifiableList(result.sequenceVariations_);
       }
@@ -1097,7 +1097,7 @@ public final class Alignments {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:reads.AlignmentEntry)
+      // @@protoc_insertion_point(builder_scope:goby.AlignmentEntry)
     }
     
     static {
@@ -1106,7 +1106,7 @@ public final class Alignments {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:reads.AlignmentEntry)
+    // @@protoc_insertion_point(class_scope:goby.AlignmentEntry)
   }
   
   public static final class SequenceVariation extends
@@ -1128,12 +1128,12 @@ public final class Alignments {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_reads_SequenceVariation_descriptor;
+      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_SequenceVariation_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_reads_SequenceVariation_fieldAccessorTable;
+      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_SequenceVariation_fieldAccessorTable;
     }
     
     // required string from = 2;
@@ -1550,7 +1550,7 @@ public final class Alignments {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:reads.SequenceVariation)
+      // @@protoc_insertion_point(builder_scope:goby.SequenceVariation)
     }
     
     static {
@@ -1559,7 +1559,7 @@ public final class Alignments {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:reads.SequenceVariation)
+    // @@protoc_insertion_point(class_scope:goby.SequenceVariation)
   }
   
   public static final class AlignmentHeader extends
@@ -1581,22 +1581,22 @@ public final class Alignments {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_reads_AlignmentHeader_descriptor;
+      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_AlignmentHeader_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_reads_AlignmentHeader_fieldAccessorTable;
+      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_AlignmentHeader_fieldAccessorTable;
     }
     
-    // optional .reads.IdentifierMapping query_name_mapping = 1;
+    // optional .goby.IdentifierMapping query_name_mapping = 1;
     public static final int QUERY_NAME_MAPPING_FIELD_NUMBER = 1;
     private boolean hasQueryNameMapping;
     private edu.cornell.med.icb.goby.alignments.Alignments.IdentifierMapping queryNameMapping_;
     public boolean hasQueryNameMapping() { return hasQueryNameMapping; }
     public edu.cornell.med.icb.goby.alignments.Alignments.IdentifierMapping getQueryNameMapping() { return queryNameMapping_; }
     
-    // optional .reads.IdentifierMapping target_name_mapping = 2;
+    // optional .goby.IdentifierMapping target_name_mapping = 2;
     public static final int TARGET_NAME_MAPPING_FIELD_NUMBER = 2;
     private boolean hasTargetNameMapping;
     private edu.cornell.med.icb.goby.alignments.Alignments.IdentifierMapping targetNameMapping_;
@@ -2033,7 +2033,7 @@ public final class Alignments {
       }
       
       
-      // optional .reads.IdentifierMapping query_name_mapping = 1;
+      // optional .goby.IdentifierMapping query_name_mapping = 1;
       public boolean hasQueryNameMapping() {
         return result.hasQueryNameMapping();
       }
@@ -2070,7 +2070,7 @@ public final class Alignments {
         return this;
       }
       
-      // optional .reads.IdentifierMapping target_name_mapping = 2;
+      // optional .goby.IdentifierMapping target_name_mapping = 2;
       public boolean hasTargetNameMapping() {
         return result.hasTargetNameMapping();
       }
@@ -2247,7 +2247,7 @@ public final class Alignments {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:reads.AlignmentHeader)
+      // @@protoc_insertion_point(builder_scope:goby.AlignmentHeader)
     }
     
     static {
@@ -2256,7 +2256,7 @@ public final class Alignments {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:reads.AlignmentHeader)
+    // @@protoc_insertion_point(class_scope:goby.AlignmentHeader)
   }
   
   public static final class IdentifierMapping extends
@@ -2278,15 +2278,15 @@ public final class Alignments {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_reads_IdentifierMapping_descriptor;
+      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_IdentifierMapping_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_reads_IdentifierMapping_fieldAccessorTable;
+      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_IdentifierMapping_fieldAccessorTable;
     }
     
-    // repeated .reads.IdentifierInfo mappings = 1;
+    // repeated .goby.IdentifierInfo mappings = 1;
     public static final int MAPPINGS_FIELD_NUMBER = 1;
     private java.util.List<edu.cornell.med.icb.goby.alignments.Alignments.IdentifierInfo> mappings_ =
       java.util.Collections.emptyList();
@@ -2530,7 +2530,7 @@ public final class Alignments {
       }
       
       
-      // repeated .reads.IdentifierInfo mappings = 1;
+      // repeated .goby.IdentifierInfo mappings = 1;
       public java.util.List<edu.cornell.med.icb.goby.alignments.Alignments.IdentifierInfo> getMappingsList() {
         return java.util.Collections.unmodifiableList(result.mappings_);
       }
@@ -2581,7 +2581,7 @@ public final class Alignments {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:reads.IdentifierMapping)
+      // @@protoc_insertion_point(builder_scope:goby.IdentifierMapping)
     }
     
     static {
@@ -2590,7 +2590,7 @@ public final class Alignments {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:reads.IdentifierMapping)
+    // @@protoc_insertion_point(class_scope:goby.IdentifierMapping)
   }
   
   public static final class IdentifierInfo extends
@@ -2612,12 +2612,12 @@ public final class Alignments {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_reads_IdentifierInfo_descriptor;
+      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_IdentifierInfo_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_reads_IdentifierInfo_fieldAccessorTable;
+      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_IdentifierInfo_fieldAccessorTable;
     }
     
     // required string name = 1;
@@ -2909,7 +2909,7 @@ public final class Alignments {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:reads.IdentifierInfo)
+      // @@protoc_insertion_point(builder_scope:goby.IdentifierInfo)
     }
     
     static {
@@ -2918,7 +2918,7 @@ public final class Alignments {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:reads.IdentifierInfo)
+    // @@protoc_insertion_point(class_scope:goby.IdentifierInfo)
   }
   
   public static final class AlignmentTooManyHits extends
@@ -2940,12 +2940,12 @@ public final class Alignments {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_reads_AlignmentTooManyHits_descriptor;
+      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_AlignmentTooManyHits_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_reads_AlignmentTooManyHits_fieldAccessorTable;
+      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_AlignmentTooManyHits_fieldAccessorTable;
     }
     
     // required uint32 alignerThreshold = 2;
@@ -2955,7 +2955,7 @@ public final class Alignments {
     public boolean hasAlignerThreshold() { return hasAlignerThreshold; }
     public int getAlignerThreshold() { return alignerThreshold_; }
     
-    // repeated .reads.AmbiguousLocation hits = 1;
+    // repeated .goby.AmbiguousLocation hits = 1;
     public static final int HITS_FIELD_NUMBER = 1;
     private java.util.List<edu.cornell.med.icb.goby.alignments.Alignments.AmbiguousLocation> hits_ =
       java.util.Collections.emptyList();
@@ -3232,7 +3232,7 @@ public final class Alignments {
         return this;
       }
       
-      // repeated .reads.AmbiguousLocation hits = 1;
+      // repeated .goby.AmbiguousLocation hits = 1;
       public java.util.List<edu.cornell.med.icb.goby.alignments.Alignments.AmbiguousLocation> getHitsList() {
         return java.util.Collections.unmodifiableList(result.hits_);
       }
@@ -3283,7 +3283,7 @@ public final class Alignments {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:reads.AlignmentTooManyHits)
+      // @@protoc_insertion_point(builder_scope:goby.AlignmentTooManyHits)
     }
     
     static {
@@ -3292,7 +3292,7 @@ public final class Alignments {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:reads.AlignmentTooManyHits)
+    // @@protoc_insertion_point(class_scope:goby.AlignmentTooManyHits)
   }
   
   public static final class AmbiguousLocation extends
@@ -3314,12 +3314,12 @@ public final class Alignments {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_reads_AmbiguousLocation_descriptor;
+      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_AmbiguousLocation_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_reads_AmbiguousLocation_fieldAccessorTable;
+      return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_AmbiguousLocation_fieldAccessorTable;
     }
     
     // required uint32 query_index = 1;
@@ -3647,7 +3647,7 @@ public final class Alignments {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:reads.AmbiguousLocation)
+      // @@protoc_insertion_point(builder_scope:goby.AmbiguousLocation)
     }
     
     static {
@@ -3656,49 +3656,49 @@ public final class Alignments {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:reads.AmbiguousLocation)
+    // @@protoc_insertion_point(class_scope:goby.AmbiguousLocation)
   }
   
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_reads_AlignmentCollection_descriptor;
+    internal_static_goby_AlignmentCollection_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_reads_AlignmentCollection_fieldAccessorTable;
+      internal_static_goby_AlignmentCollection_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_reads_AlignmentEntry_descriptor;
+    internal_static_goby_AlignmentEntry_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_reads_AlignmentEntry_fieldAccessorTable;
+      internal_static_goby_AlignmentEntry_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_reads_SequenceVariation_descriptor;
+    internal_static_goby_SequenceVariation_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_reads_SequenceVariation_fieldAccessorTable;
+      internal_static_goby_SequenceVariation_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_reads_AlignmentHeader_descriptor;
+    internal_static_goby_AlignmentHeader_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_reads_AlignmentHeader_fieldAccessorTable;
+      internal_static_goby_AlignmentHeader_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_reads_IdentifierMapping_descriptor;
+    internal_static_goby_IdentifierMapping_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_reads_IdentifierMapping_fieldAccessorTable;
+      internal_static_goby_IdentifierMapping_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_reads_IdentifierInfo_descriptor;
+    internal_static_goby_IdentifierInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_reads_IdentifierInfo_fieldAccessorTable;
+      internal_static_goby_IdentifierInfo_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_reads_AlignmentTooManyHits_descriptor;
+    internal_static_goby_AlignmentTooManyHits_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_reads_AlignmentTooManyHits_fieldAccessorTable;
+      internal_static_goby_AlignmentTooManyHits_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_reads_AmbiguousLocation_descriptor;
+    internal_static_goby_AmbiguousLocation_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_reads_AmbiguousLocation_fieldAccessorTable;
+      internal_static_goby_AmbiguousLocation_fieldAccessorTable;
   
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -3709,103 +3709,103 @@ public final class Alignments {
   static {
     java.lang.String[] descriptorData = {
       "\n8src/edu/cornell/med/icb/goby/alignment" +
-      "s/Alignments.proto\022\005reads\"F\n\023AlignmentCo" +
-      "llection\022/\n\020alignmentEntries\030\001 \003(\0132\025.rea" +
-      "ds.AlignmentEntry\"\327\002\n\016AlignmentEntry\022\024\n\014" +
-      "multiplicity\030\007 \001(\r\022\023\n\013query_index\030\001 \002(\r\022" +
-      "\024\n\014target_index\030\002 \002(\r\022\020\n\010position\030\003 \002(\r\022" +
-      "\037\n\027matching_reverse_strand\030\006 \002(\010\022\026\n\016quer" +
-      "y_position\030\005 \001(\r\022\r\n\005score\030\004 \001(\002\022\034\n\024numbe" +
-      "r_of_mismatches\030\010 \001(\r\022\030\n\020number_of_indel" +
-      "s\030\t \001(\r\022\034\n\024query_aligned_length\030\013 \001(\r\022\035\n",
-      "\025target_aligned_length\030\014 \001(\r\0225\n\023sequence" +
-      "_variations\030\r \003(\0132\030.reads.SequenceVariat" +
-      "ion\"f\n\021SequenceVariation\022\014\n\004from\030\002 \002(\t\022\n" +
-      "\n\002to\030\001 \002(\t\022\020\n\010position\030\003 \002(\r\022\021\n\treadInde" +
-      "x\030\005 \002(\r\022\022\n\nto_quality\030\004 \001(\014\"\237\002\n\017Alignmen" +
-      "tHeader\0224\n\022query_name_mapping\030\001 \001(\0132\030.re" +
-      "ads.IdentifierMapping\0225\n\023target_name_map" +
-      "ping\030\002 \001(\0132\030.reads.IdentifierMapping\022\031\n\021" +
-      "number_of_queries\030\005 \001(\r\022\031\n\021number_of_tar" +
-      "gets\030\006 \001(\r\022\037\n\027number_of_aligned_reads\030\007 ",
-      "\001(\r\022\024\n\014query_length\030\003 \003(\r\022\033\n\023constantQue" +
-      "ryLength\030\n \001(\r\022\025\n\rtarget_length\030\010 \003(\r\"<\n" +
-      "\021IdentifierMapping\022\'\n\010mappings\030\001 \003(\0132\025.r" +
-      "eads.IdentifierInfo\"-\n\016IdentifierInfo\022\014\n" +
-      "\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"X\n\024AlignmentT" +
-      "ooManyHits\022\030\n\020alignerThreshold\030\002 \002(\r\022&\n\004" +
-      "hits\030\001 \003(\0132\030.reads.AmbiguousLocation\"b\n\021" +
-      "AmbiguousLocation\022\023\n\013query_index\030\001 \002(\r\022\037" +
-      "\n\027at_least_number_of_hits\030\002 \002(\r\022\027\n\017lengt" +
-      "h_of_match\030\003 \001(\rB\'\n#edu.cornell.med.icb.",
-      "goby.alignmentsH\001"
+      "s/Alignments.proto\022\004goby\"E\n\023AlignmentCol" +
+      "lection\022.\n\020alignmentEntries\030\001 \003(\0132\024.goby" +
+      ".AlignmentEntry\"\326\002\n\016AlignmentEntry\022\024\n\014mu" +
+      "ltiplicity\030\007 \001(\r\022\023\n\013query_index\030\001 \002(\r\022\024\n" +
+      "\014target_index\030\002 \002(\r\022\020\n\010position\030\003 \002(\r\022\037\n" +
+      "\027matching_reverse_strand\030\006 \002(\010\022\026\n\016query_" +
+      "position\030\005 \001(\r\022\r\n\005score\030\004 \001(\002\022\034\n\024number_" +
+      "of_mismatches\030\010 \001(\r\022\030\n\020number_of_indels\030" +
+      "\t \001(\r\022\034\n\024query_aligned_length\030\013 \001(\r\022\035\n\025t",
+      "arget_aligned_length\030\014 \001(\r\0224\n\023sequence_v" +
+      "ariations\030\r \003(\0132\027.goby.SequenceVariation" +
+      "\"f\n\021SequenceVariation\022\014\n\004from\030\002 \002(\t\022\n\n\002t" +
+      "o\030\001 \002(\t\022\020\n\010position\030\003 \002(\r\022\021\n\treadIndex\030\005" +
+      " \002(\r\022\022\n\nto_quality\030\004 \001(\014\"\235\002\n\017AlignmentHe" +
+      "ader\0223\n\022query_name_mapping\030\001 \001(\0132\027.goby." +
+      "IdentifierMapping\0224\n\023target_name_mapping" +
+      "\030\002 \001(\0132\027.goby.IdentifierMapping\022\031\n\021numbe" +
+      "r_of_queries\030\005 \001(\r\022\031\n\021number_of_targets\030" +
+      "\006 \001(\r\022\037\n\027number_of_aligned_reads\030\007 \001(\r\022\024",
+      "\n\014query_length\030\003 \003(\r\022\033\n\023constantQueryLen" +
+      "gth\030\n \001(\r\022\025\n\rtarget_length\030\010 \003(\r\";\n\021Iden" +
+      "tifierMapping\022&\n\010mappings\030\001 \003(\0132\024.goby.I" +
+      "dentifierInfo\"-\n\016IdentifierInfo\022\014\n\004name\030" +
+      "\001 \002(\t\022\r\n\005index\030\002 \002(\r\"W\n\024AlignmentTooMany" +
+      "Hits\022\030\n\020alignerThreshold\030\002 \002(\r\022%\n\004hits\030\001" +
+      " \003(\0132\027.goby.AmbiguousLocation\"b\n\021Ambiguo" +
+      "usLocation\022\023\n\013query_index\030\001 \002(\r\022\037\n\027at_le" +
+      "ast_number_of_hits\030\002 \002(\r\022\027\n\017length_of_ma" +
+      "tch\030\003 \001(\rB\'\n#edu.cornell.med.icb.goby.al",
+      "ignmentsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
             com.google.protobuf.Descriptors.FileDescriptor root) {
           descriptor = root;
-          internal_static_reads_AlignmentCollection_descriptor =
+          internal_static_goby_AlignmentCollection_descriptor =
             getDescriptor().getMessageTypes().get(0);
-          internal_static_reads_AlignmentCollection_fieldAccessorTable = new
+          internal_static_goby_AlignmentCollection_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_reads_AlignmentCollection_descriptor,
+              internal_static_goby_AlignmentCollection_descriptor,
               new java.lang.String[] { "AlignmentEntries", },
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentCollection.class,
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentCollection.Builder.class);
-          internal_static_reads_AlignmentEntry_descriptor =
+          internal_static_goby_AlignmentEntry_descriptor =
             getDescriptor().getMessageTypes().get(1);
-          internal_static_reads_AlignmentEntry_fieldAccessorTable = new
+          internal_static_goby_AlignmentEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_reads_AlignmentEntry_descriptor,
+              internal_static_goby_AlignmentEntry_descriptor,
               new java.lang.String[] { "Multiplicity", "QueryIndex", "TargetIndex", "Position", "MatchingReverseStrand", "QueryPosition", "Score", "NumberOfMismatches", "NumberOfIndels", "QueryAlignedLength", "TargetAlignedLength", "SequenceVariations", },
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry.class,
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry.Builder.class);
-          internal_static_reads_SequenceVariation_descriptor =
+          internal_static_goby_SequenceVariation_descriptor =
             getDescriptor().getMessageTypes().get(2);
-          internal_static_reads_SequenceVariation_fieldAccessorTable = new
+          internal_static_goby_SequenceVariation_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_reads_SequenceVariation_descriptor,
+              internal_static_goby_SequenceVariation_descriptor,
               new java.lang.String[] { "From", "To", "Position", "ReadIndex", "ToQuality", },
               edu.cornell.med.icb.goby.alignments.Alignments.SequenceVariation.class,
               edu.cornell.med.icb.goby.alignments.Alignments.SequenceVariation.Builder.class);
-          internal_static_reads_AlignmentHeader_descriptor =
+          internal_static_goby_AlignmentHeader_descriptor =
             getDescriptor().getMessageTypes().get(3);
-          internal_static_reads_AlignmentHeader_fieldAccessorTable = new
+          internal_static_goby_AlignmentHeader_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_reads_AlignmentHeader_descriptor,
+              internal_static_goby_AlignmentHeader_descriptor,
               new java.lang.String[] { "QueryNameMapping", "TargetNameMapping", "NumberOfQueries", "NumberOfTargets", "NumberOfAlignedReads", "QueryLength", "ConstantQueryLength", "TargetLength", },
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentHeader.class,
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentHeader.Builder.class);
-          internal_static_reads_IdentifierMapping_descriptor =
+          internal_static_goby_IdentifierMapping_descriptor =
             getDescriptor().getMessageTypes().get(4);
-          internal_static_reads_IdentifierMapping_fieldAccessorTable = new
+          internal_static_goby_IdentifierMapping_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_reads_IdentifierMapping_descriptor,
+              internal_static_goby_IdentifierMapping_descriptor,
               new java.lang.String[] { "Mappings", },
               edu.cornell.med.icb.goby.alignments.Alignments.IdentifierMapping.class,
               edu.cornell.med.icb.goby.alignments.Alignments.IdentifierMapping.Builder.class);
-          internal_static_reads_IdentifierInfo_descriptor =
+          internal_static_goby_IdentifierInfo_descriptor =
             getDescriptor().getMessageTypes().get(5);
-          internal_static_reads_IdentifierInfo_fieldAccessorTable = new
+          internal_static_goby_IdentifierInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_reads_IdentifierInfo_descriptor,
+              internal_static_goby_IdentifierInfo_descriptor,
               new java.lang.String[] { "Name", "Index", },
               edu.cornell.med.icb.goby.alignments.Alignments.IdentifierInfo.class,
               edu.cornell.med.icb.goby.alignments.Alignments.IdentifierInfo.Builder.class);
-          internal_static_reads_AlignmentTooManyHits_descriptor =
+          internal_static_goby_AlignmentTooManyHits_descriptor =
             getDescriptor().getMessageTypes().get(6);
-          internal_static_reads_AlignmentTooManyHits_fieldAccessorTable = new
+          internal_static_goby_AlignmentTooManyHits_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_reads_AlignmentTooManyHits_descriptor,
+              internal_static_goby_AlignmentTooManyHits_descriptor,
               new java.lang.String[] { "AlignerThreshold", "Hits", },
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentTooManyHits.class,
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentTooManyHits.Builder.class);
-          internal_static_reads_AmbiguousLocation_descriptor =
+          internal_static_goby_AmbiguousLocation_descriptor =
             getDescriptor().getMessageTypes().get(7);
-          internal_static_reads_AmbiguousLocation_fieldAccessorTable = new
+          internal_static_goby_AmbiguousLocation_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_reads_AmbiguousLocation_descriptor,
+              internal_static_goby_AmbiguousLocation_descriptor,
               new java.lang.String[] { "QueryIndex", "AtLeastNumberOfHits", "LengthOfMatch", },
               edu.cornell.med.icb.goby.alignments.Alignments.AmbiguousLocation.class,
               edu.cornell.med.icb.goby.alignments.Alignments.AmbiguousLocation.Builder.class);
