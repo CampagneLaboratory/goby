@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.alignments.filters;
 
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
+import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.tissueinfo.similarity.GeneTranscriptRelationships;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -55,7 +56,7 @@ public final class TranscriptsAlignmentFilter extends AbstractAlignmentEntryFilt
      */
     private final IndexedIdentifier transcriptsIndexedIdentifiers;
     /**
-     * The map of read-name-index to gene's that read references.
+     * The map of read index to gene identifiers.
      */
     private final Int2ObjectMap<IntSet> readIndexToGeneIdSetMap;
     /**
@@ -70,12 +71,14 @@ public final class TranscriptsAlignmentFilter extends AbstractAlignmentEntryFilt
      * The number of times inspectEntry was called.
      */
     private int numInspected;
+   // private DoubleIndexedIdentifier backTranscriptIds;
+
 
     /**
      * Constructor.
      *
      * @param geneTranscriptFile the gene-transcripts-map file to read
-     * @param kVal the k value for the filter
+     * @param kVal               the k value for the filter
      * @throws java.io.FileNotFoundException if the gene-transcripts-map didn't exist
      */
     public TranscriptsAlignmentFilter(final String geneTranscriptFile, final int kVal)
@@ -86,6 +89,7 @@ public final class TranscriptsAlignmentFilter extends AbstractAlignmentEntryFilt
         readIndexToGeneIdSetMap = new Int2ObjectOpenHashMap<IntSet>();
         k = kVal;
         numInspected = 0;
+     //   backTranscriptIds = new DoubleIndexedIdentifier(transcriptsIndexedIdentifiers);
 
     }
 
@@ -99,10 +103,13 @@ public final class TranscriptsAlignmentFilter extends AbstractAlignmentEntryFilt
         final ObjectSet<MutableString> targetIds = targets.keySet();
         // Use an int[] for this
         alignmentReferenceIndexToTranscriptIndex = new int[targetIds.size()];
-        int i = 0;
+
         for (final MutableString id : targetIds) {
             assert transcriptsIndexedIdentifiers.containsKey(id) : "transcript id must be defined as a target sequence.";
-            alignmentReferenceIndexToTranscriptIndex[i++] = transcriptsIndexedIdentifiers.get(id);
+            int transcriptIndex = transcriptsIndexedIdentifiers.getInt(id);
+            int referenceIndex = targets.getInt(id);
+            alignmentReferenceIndexToTranscriptIndex[referenceIndex] = transcriptIndex;
+
         }
     }
 
@@ -122,24 +129,36 @@ public final class TranscriptsAlignmentFilter extends AbstractAlignmentEntryFilt
     @Override
     public void inspectEntry(final Alignments.AlignmentEntry entry) {
         numInspected++;
-        final int readNameIndex = entry.getQueryIndex();
-        IntSet geneIdSet = readIndexToGeneIdSetMap.get(readNameIndex);
+        final int queryIndex = entry.getQueryIndex();
+        IntSet geneIdSet = readIndexToGeneIdSetMap.get(queryIndex);
         if (geneIdSet != null && geneIdSet.size() > k) {
             //     System.out.println("read id found to match more than k genes..");
             return;
         }
         final int transcriptIndex = alignmentReferenceIndexToTranscriptIndex[entry.getTargetIndex()];
         final int geneIndex = gtr.transcript2Gene(transcriptIndex);
+        //   System.out.printf("transcript %s gene %s %n", backTranscriptIds.getId(transcriptIndex), gtr.getGeneId(geneIndex));
         if (geneIdSet == null) {
             // An array set is a fast implementation when the set is expected to be small
             // (a few genes on average per read). The ArraySet is also the smallest footprint implementation,
             // this matters most here where we keep one such set for each read.
             geneIdSet = new IntArraySet();
-            readIndexToGeneIdSetMap.put(readNameIndex, geneIdSet);
+            readIndexToGeneIdSetMap.put(queryIndex, geneIdSet);
         }
         if (geneIdSet.size() <= k) {
             // No need to add to the set if the size is already too big (save memory)
             geneIdSet.add(geneIndex);
+            boolean verbose = false;
+            if (verbose && geneIdSet.size() >= 5) {
+                System.out.print("gene set: ");
+                for (int geneIndex2 : geneIdSet) {
+                    if (geneIndex2 == geneIndex)
+                        System.out.printf("position: %d score: %g ", entry.getPosition(), entry.getScore());
+                    System.out.printf("%s ", gtr.getGeneId(geneIndex2));
+                }
+                System.out.println("");
+            }
+
         }
     }
 

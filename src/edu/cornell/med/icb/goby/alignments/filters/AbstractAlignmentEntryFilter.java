@@ -59,5 +59,7 @@ public abstract class AbstractAlignmentEntryFilter {
     public abstract boolean shouldRetainEntry(final Alignments.AlignmentEntry entry);
 
 
+    public void printStats() {
 
+    }
 }

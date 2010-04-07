@@ -25,20 +25,36 @@ import java.io.FileNotFoundException;
 
 /**
  * Filter by best score and by number of genes matched.
- * @author Fabien Campagne
- * Date: May 19, 2009
- * Time: 8:46:07 AM
  *
+ * @author Fabien Campagne
+ *         Date: May 19, 2009
+ *         Time: 8:46:07 AM
  */
 public class TranscriptBestScoreAlignmentFilter extends AbstractAlignmentEntryFilter {
     TranscriptsAlignmentFilter transcriptFilter;
     BestScoreOnlyAlignmentFilter bestScoreFilter;
+    private int notBestScoreCount;
+    private int geneAmbiguityCount;
+    private int entryCount;
+
+    @Override
+    public void printStats() {
+
+        System.out.printf("notBestScoreCount=%g %% geneAmbiguityCount=%g %% %n",
+                div(notBestScoreCount, entryCount)*100,
+                div(geneAmbiguityCount, entryCount)*100);
+    }
+
+    private double div(int a, int b) {
+        return ((double) a / (double) b);
+    }
 
     /**
      * Constructor.
      *
      * @param geneTranscriptFile the gene-transcripts-map file to read
      * @param kVal               the k value for the filter
+     * @param maxNumberOfReads   Maximum number of reads.
      * @throws java.io.FileNotFoundException if the gene-transcripts-map didn't exist
      */
     public TranscriptBestScoreAlignmentFilter(final String geneTranscriptFile, final int kVal,
@@ -61,23 +77,29 @@ public class TranscriptBestScoreAlignmentFilter extends AbstractAlignmentEntryFi
 
     @Override
     public boolean shouldRetainEntry(final Alignments.AlignmentEntry entry) {
+        entryCount +=  entry.getMultiplicity();
         if (!bestScoreFilter.shouldRetainEntry(entry)) {
             // if the entry does not have the best score, skip
-
+            notBestScoreCount += entry.getMultiplicity();
             return false;
         } else {
-            // let the transcript filter decide.
-            return transcriptFilter.shouldRetainEntry(entry);
+            // the entry has best score, let the transcript filter decide.
+            final boolean notGeneAmbiguous = transcriptFilter.shouldRetainEntry(entry);
+            if (!notGeneAmbiguous) {
+                geneAmbiguityCount += entry.getMultiplicity();
+            }
+            return notGeneAmbiguous;
         }
     }
-     /**
+
+    /**
      * Give the filter access to targets of the merged alignment.
      *
      * @param targets
      */
     @Override
     public void setHeader(final IndexedIdentifier targets) {
-         transcriptFilter.setHeader(targets);
-         bestScoreFilter.setHeader(targets);
+        transcriptFilter.setHeader(targets);
+        bestScoreFilter.setHeader(targets);
     }
 }
