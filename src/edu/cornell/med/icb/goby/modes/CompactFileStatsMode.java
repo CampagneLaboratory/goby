@@ -27,6 +27,9 @@ import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.math.stat.descriptive.rank.Percentile;
@@ -197,7 +200,9 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 reader.getQueryIdentifiers() != null && !reader.getTargetIdentifiers().isEmpty());
         System.out.printf("Has target identifiers = %s%n",
                 reader.getTargetIdentifiers() != null && !reader.getTargetIdentifiers().isEmpty());
-        describeAmbigousReads(basename, reader.getNumberOfQueries());
+        // the query indices that aligned. Includes those 
+        IntSet alignedQueryIndices = new IntOpenHashSet();
+        describeAmbigousReads(basename, reader.getNumberOfQueries(), alignedQueryIndices);
 
         int maxQueryIndex = -1;
         int maxTargetIndex = -1;
@@ -206,6 +211,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         long total = 0;
         double avgScore = 0;
         int sumNumVariations = 0;
+
         for (final Alignments.AlignmentEntry entry : reader) {
             numberOfReads++;   // Across all files
             numEntries++;      // Across this file
@@ -218,7 +224,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             minReadLength = Math.min(minReadLength, entry.getQueryAlignedLength());
             maxReadLength = Math.max(maxReadLength, entry.getQueryAlignedLength());
             sumNumVariations += entry.getSequenceVariationsCount();
-
+            alignedQueryIndices.add(entry.getQueryIndex());
         }
         avgScore /= (double) numLogicalAlignmentEntries;
 
@@ -230,7 +236,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         System.out.printf("num target indices= %,d%n", numTargetSequences);
         System.out.printf("Number of alignment entries = %,d%n", numLogicalAlignmentEntries);
         System.out.printf("Percent matched = %4.1f%% %n",
-                (double) numLogicalAlignmentEntries / (double) (long) numQuerySequences * 100.0d);
+                (double) alignedQueryIndices.size() / (double) (long) numQuerySequences * 100.0d);
         System.out.printf("Avg query alignment length = %,d%n", numEntries > 0 ? total / numEntries : -1);
         System.out.printf("Avg score alignment  = %f%n", avgScore);
         System.out.printf("Avg number of variations per query sequence = %3.2f %n",
@@ -244,9 +250,10 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         return ((double) a) / (double) b;
     }
 
-    private void describeAmbigousReads(String basename, double numReads) {
+    private void describeAmbigousReads(String basename, double numReads, IntSet queryIndices) {
         try {
             final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
+            queryIndices.addAll(tmhReader.getQueryIndices());
             System.out.printf("TMH: aligner threshold= %d%n", tmhReader.getAlignerThreshold());
             System.out.printf("TMH: number of ambiguous matches= %d%n", tmhReader.getQueryIndices().size());
             System.out.printf("TMH: %%ambiguous matches= %f %%%n", (tmhReader.getQueryIndices().size() * 100f) / numReads);
