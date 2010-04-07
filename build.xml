@@ -139,6 +139,11 @@
                            value="Institute for Computational Biomedicine (ICB), Weill Medical College of Cornell University"/>
                 <attribute name="Built-By" value="${user.name}"/>
             </manifest>
+            <!-- define the implementation of NormalizationMethods as Java ServiceProviders: -->
+            <service type="edu.cornell.med.icb.goby.stats.NormalizationMethod">
+                <provider classname="edu.cornell.med.icb.goby.stats.BullardUpperQuartileNormalization"/>
+                <provider classname="edu.cornell.med.icb.goby.stats.AlignedCountNormalization"/>
+            </service>
         </jar>
     </target>
 
@@ -151,7 +156,6 @@
                 <attribute name="Implementation-Version" value="${label} (${buildstamp})"/>
                 <attribute name="Implementation-Vendor"
                            value="Institute for Computational Biomedicine (ICB), Weill Medical College of Cornell University"/>
-                <attribute name="Main-Class" value="edu.cornell.med.icb.goby.modes.GobyDriver"/>
                 <attribute name="Built-By" value="${user.name}"/>
             </manifest>
             <!-- define the implementation of NormalizationMethods as Java ServiceProviders: -->
