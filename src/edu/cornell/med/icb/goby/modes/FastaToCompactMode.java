@@ -145,7 +145,9 @@ public class FastaToCompactMode extends AbstractGobyMode {
         excludeQuality = jsapResult.getBoolean("exclude-quality");
         verboseQualityScores = jsapResult.getBoolean("verbose-quality-scores");
         qualityEncoding = QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
-        outputFile = jsapResult.getString("output");
+        if (inputFilenames.length == 1) {
+            outputFile = jsapResult.getString("output");
+        }
         sequencePerChunk = jsapResult.getInt("sequence-per-chunk");
         return this;
     }
