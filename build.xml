@@ -57,6 +57,7 @@
     <target name="clean" depends="buildsupport.clean, testsupport.clean" description="Cleans up the directory">
         <delete file="${goby-jarfile}"/>
         <delete file="${goby-api-jarfile}"/>
+        <delete file="${goby-spi-jarfile}"/>
     </target>
 
     <target name="compile" depends="init" description="compiles the source code">
@@ -65,7 +66,7 @@
         </javac>
     </target>
 
-    <target name="jar" depends="jar-goby, jar-goby-api" description="Create project jarfiles"/>
+    <target name="jar" depends="jar-goby, jar-goby-api, jar-goby-spi" description="Create project jarfiles"/>
 
     <target name="jar-goby" depends="compile"
             description="Create the goby.jar file. Gobies are a large species of fish that include some of the smallest fish. Now, isn't that fitting?">
