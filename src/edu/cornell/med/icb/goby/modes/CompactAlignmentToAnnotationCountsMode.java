@@ -165,7 +165,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             filterByReferenceNames = true;
         }
         parseAnnotations(jsapResult);
-        normalizationMethods= deAnalyzer.parseNormalization(jsapResult);
+        normalizationMethods = deAnalyzer.parseNormalization(jsapResult);
         return this;
     }
 
@@ -176,11 +176,11 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         if (includeAnnotationTypeComas != null) {
             includeAnnotationTypes.addAll(Arrays.asList(includeAnnotationTypeComas.split("[,]")));
             for (final String name : includeAnnotationTypes) {
-                if (name.equals("gene") | name.equals("intron") | name.equals("exon")) {
+                if (name.equals("gene") | name.equals("other") | name.equals("exon")) {
                     continue;
                 } else {
                     System.out.println("Please enter a valid annotation type. "
-                            + "Valid annotation types include gene, intron and or exon.");
+                            + "Valid annotation types include gene, exon, and or other.");
                     System.exit(1);
                 }
                 System.out.println("Will write counts for the following annotation types:");
@@ -188,8 +188,6 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             }
         }
     }
-
-
 
 
     class BasenameParallelRegion extends ParallelRegion {
@@ -370,6 +368,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             int numberOfElements = 0;
             int numberOfGenes = 0;
             int numberOfExons = 0;
+            int numberOfIntrons = 0;
             for (final int referenceIndex : referencesToProcess) {
                 final String chromosomeName = referenceIds.getId(referenceIndex).toString();
 
@@ -379,8 +378,11 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 final ObjectList<Annotation> annots = allAnnots.get(chromosomeName);
 
                 for (final Annotation annot : annots) {
+                    final String geneID = annot.id;
+                    final int numExons = annot.segments.size();
+                    final int numberIntrons = numExons - 1;
+
                     if (includeAnnotationTypes.contains("gene")) {
-                        final String geneID = annot.id;
                         final int index = deCalculator.defineElement(geneID);
                         deCalculator.defineElementLength(index, annot.getLength());
                         numberOfGenes++;
@@ -388,7 +390,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     }
 
                     if (includeAnnotationTypes.contains("exon")) {
-                        final int numExons = annot.segments.size();
+
                         for (int i = 0; i < numExons; i++) {
                             final Segment exonSegment = annot.segments.get(i);
                             final String exonID = exonSegment.id;
@@ -398,159 +400,180 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                             numberOfElements++;
                         }
                     }
-                }
-            }
-      //      LOG.info(String.format("%d Genes %d exons total %d ", numberOfGenes, numberOfExons, numberOfElements));
-            deCalculator.reserve(numberOfElements, inputFilenames.length);
-        }
 
-        int numberOfAnottationCountsWritten = 0;
-        for (final int referenceIndex : referencesToProcess) {
-            final String chromosomeName = referenceIds.getId(referenceIndex).toString();
-            System.out.println("Writing annotation counts for reference " + chromosomeName);
+                    if (includeAnnotationTypes.contains("other")) {
 
-            if (!allAnnots.containsKey(chromosomeName)) {
-                continue;
-            }
-
-            final ObjectList<Annotation> annots = allAnnots.get(chromosomeName);
-            algs[referenceIndex].sortReads();
-            algs[referenceIndex].baseCounter.accumulate();
-            algs[referenceIndex].baseCounter.baseCount();
-            if (doComparison) {
-                for (final Annotation annot : annots) {
-                    final String geneID = annot.id;
-                    deCalculator.defineElement(geneID);
-                }
-            }
-            final String basename = FilenameUtils.getBaseName(inputBasename);
-            final String sampleId = basename;
-            for (final Annotation annot : annots) {
-                final String geneID = annot.id;
-
-                if (includeAnnotationTypes.contains("gene")) {
-                    final int geneStart = annot.getStart();
-                    final int geneEnd = annot.getEnd();
-                    final int geneLength = geneEnd - geneStart + 1;
-                    final float geneDepth = algs[referenceIndex].averageReadsPerPosition(geneStart, geneEnd);
-                    final int geneOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(geneStart, geneEnd);
-                    final int geneInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(geneStart, geneEnd);
-                    final int geneExpression = algs[referenceIndex].geneExpressionCount(annot);
-                    final int numExons = annot.segments.size();
-
-
-                    final double geneRPKM = deCalculator.calculateNormalized(geneOverlapReads, annot.getLength(), deCalculator.getNumAlignedInSample(sampleId));
-                    if (writeAnnotationCounts) {
-                        writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\t%d\t%d\t%n",
-                                basename,
-                                geneID,
-                                "",
-                                "gene",
-                                annot.chromosome,
-                                annot.strand,
-                                geneLength,
-                                geneStart,
-                                geneEnd,
-                                geneInsideReads,
-                                geneOverlapReads,
-                                geneRPKM,
-                                log2(geneRPKM),
-                                geneExpression,
-                                numExons));
-
-                    }
-                    numberOfAnottationCountsWritten++;
-                    if (doComparison) {
-                        deCalculator.observe(basename, geneID, geneExpression);
-                    }
-                }
-                final int numberExons = annot.segments.size();
-                final int numberIntrons = numberExons - 1;
-                // skip unnecessary computation if we don't need exon or intron info:
-                if (includeAnnotationTypes.contains("exon") || includeAnnotationTypes.contains("intron")) {
-                    for (int i = 0; i < numberExons; i++) {
-                        final Segment segment = annot.segments.get(i);
-                        final int exonStart = segment.start;
-                        final int exonEnd = segment.end;
-
-                        final String exonStrand = segment.strand;
-                        final int exonLength = segment.getLength();
-                        final String exonID = segment.id;
-                        final float exonDepth = algs[referenceIndex].averageReadsPerPosition(exonStart, exonEnd);
-                        final int exonOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(exonStart, exonEnd);
-                        final int exonInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(exonStart, exonEnd);
-                        final double exonRPKM = deCalculator.calculateNormalized(exonOverlapReads, segment.getLength(), deCalculator.getNumAlignedInSample(sampleId));
-                        if (includeAnnotationTypes.contains("exon")) {
-                            if (writeAnnotationCounts) {
-                                writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\t%n",
-                                        basename,
-                                        geneID,
-                                        exonID,
-                                        "exon",
-                                        annot.chromosome,
-                                        exonStrand,
-                                        exonLength,
-                                        exonStart,
-                                        exonEnd,
-                                        exonInsideReads,
-                                        exonOverlapReads,
-                                        exonRPKM,
-                                        log2(exonRPKM)));
-
-                            }
-                            numberOfAnottationCountsWritten++;
-                            if (doComparison && includeAnnotationTypes.contains("exon")) {
-                                deCalculator.observe(basename, exonID, exonOverlapReads);
+                        for (int i = 0; i < numExons; i++) {
+                            if (i < numberIntrons) {
+                                final Segment segment = annot.segments.get(i);
+                                final int intronStart = segment.end + 1;
+                                final Segment intronSegment = annot.segments.get(i + 1);
+                                final int intronEnd = intronSegment.start - 1;
+                                final int intronLength = intronEnd - intronStart + 1;
+                                final String intronID = segment.id + "-" + intronSegment.id;
+                                final int index = deCalculator.defineElement(intronID);
+                                deCalculator.defineElementLength(index, intronLength);
+                                numberOfIntrons++;
+                                numberOfElements++;
                             }
                         }
-                        if (i < numberIntrons) {
-                            final int intronStart = segment.end + 1;
-                            final Segment intronSegment = annot.segments.get(i + 1);
-                            final int intronEnd = intronSegment.start - 1;
-                            final int intronLength = intronEnd - intronStart + 1;
-                            final String intronID = segment.id + "-" + intronSegment.id;
-                            final float intronDepth = algs[referenceIndex].averageReadsPerPosition(intronStart, intronEnd);
-                            final int intronOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(intronStart, intronEnd);
-                            final int intronInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(intronStart, intronEnd);
-                            final double intronRPKM = deCalculator.calculateNormalized(intronOverlapReads, intronSegment.getLength(), deCalculator.getNumAlignedInSample(sampleId));
-                            if (intronLength > 0) {
-                                if (includeAnnotationTypes.contains("intron")) {
-                                    if (writeAnnotationCounts) {
-                                        writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%e\t%g\t%n",
-                                                basename,
-                                                geneID,
-                                                intronID,
-                                                "intron",
-                                                annot.chromosome,
-                                                exonStrand,
-                                                exonLength,
-                                                exonStart,
-                                                exonEnd,
-                                                intronInsideReads,
-                                                intronOverlapReads,
-                                                intronRPKM,
-                                                log2(intronRPKM)));
+                    }
+                }
+                LOG.info(String.format("%d Genes %d exons %d other total %d ", numberOfGenes, numberOfExons, numberOfIntrons, numberOfElements));
+                deCalculator.reserve(numberOfElements, inputFilenames.length);
+            }
+        }
 
+            int numberOfAnottationCountsWritten = 0;
+            for (final int referenceIndex : referencesToProcess) {
+                final String chromosomeName = referenceIds.getId(referenceIndex).toString();
+                System.out.println("Writing annotation counts for reference " + chromosomeName);
+
+                if (!allAnnots.containsKey(chromosomeName)) {
+                    continue;
+                }
+
+                final ObjectList<Annotation> annots = allAnnots.get(chromosomeName);
+                algs[referenceIndex].sortReads();
+                algs[referenceIndex].baseCounter.accumulate();
+                algs[referenceIndex].baseCounter.baseCount();
+                if (doComparison) {
+                    for (final Annotation annot : annots) {
+                        final String geneID = annot.id;
+                        deCalculator.defineElement(geneID);
+                    }
+                }
+                final String basename = FilenameUtils.getBaseName(inputBasename);
+                final String sampleId = basename;
+                for (final Annotation annot : annots) {
+                    final String geneID = annot.id;
+
+                    if (includeAnnotationTypes.contains("gene")) {
+                        final int geneStart = annot.getStart();
+                        final int geneEnd = annot.getEnd();
+                        final int geneLength = geneEnd - geneStart + 1;
+                        final float geneDepth = algs[referenceIndex].averageReadsPerPosition(geneStart, geneEnd);
+                        final int geneOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(geneStart, geneEnd);
+                        final int geneInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(geneStart, geneEnd);
+                        final int geneExpression = algs[referenceIndex].geneExpressionCount(annot);
+                        final int numExons = annot.segments.size();
+
+
+                        final double geneRPKM = deCalculator.calculateNormalized(geneOverlapReads, annot.getLength(), deCalculator.getNumAlignedInSample(sampleId));
+                        if (writeAnnotationCounts) {
+                            writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\t%d\t%d\t%n",
+                                    basename,
+                                    geneID,
+                                    "",
+                                    "gene",
+                                    annot.chromosome,
+                                    annot.strand,
+                                    geneLength,
+                                    geneStart,
+                                    geneEnd,
+                                    geneInsideReads,
+                                    geneOverlapReads,
+                                    geneRPKM,
+                                    log2(geneRPKM),
+                                    geneExpression,
+                                    numExons));
+
+                        }
+                        numberOfAnottationCountsWritten++;
+                        if (doComparison) {
+                            deCalculator.observe(basename, geneID, geneExpression);
+                        }
+                    }
+                    final int numberExons = annot.segments.size();
+                    final int numberIntrons = numberExons - 1;
+                    // skip unnecessary computation if we don't need exon or intron info:
+                    if (includeAnnotationTypes.contains("exon") || includeAnnotationTypes.contains("other")) {
+                        for (int i = 0; i < numberExons; i++) {
+                            final Segment segment = annot.segments.get(i);
+                            final int exonStart = segment.start;
+                            final int exonEnd = segment.end;
+
+                            final String exonStrand = segment.strand;
+                            final int exonLength = segment.getLength();
+                            final String exonID = segment.id;
+                            final float exonDepth = algs[referenceIndex].averageReadsPerPosition(exonStart, exonEnd);
+                            final int exonOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(exonStart, exonEnd);
+                            final int exonInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(exonStart, exonEnd);
+                            final double exonRPKM = deCalculator.calculateNormalized(exonOverlapReads, segment.getLength(), deCalculator.getNumAlignedInSample(sampleId));
+                            if (includeAnnotationTypes.contains("exon")) {
+                                if (writeAnnotationCounts) {
+                                    writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\t%n",
+                                            basename,
+                                            geneID,
+                                            exonID,
+                                            "exon",
+                                            annot.chromosome,
+                                            exonStrand,
+                                            exonLength,
+                                            exonStart,
+                                            exonEnd,
+                                            exonInsideReads,
+                                            exonOverlapReads,
+                                            exonRPKM,
+                                            log2(exonRPKM)));
+
+                                }
+                                numberOfAnottationCountsWritten++;
+                                if (doComparison && includeAnnotationTypes.contains("exon")) {
+                                    deCalculator.observe(basename, exonID, exonOverlapReads);
+                                }
+                            }
+                            if (i < numberIntrons) {
+                                final int intronStart = segment.end + 1;
+                                final Segment intronSegment = annot.segments.get(i + 1);
+                                final int intronEnd = intronSegment.start - 1;
+                                final int intronLength = intronEnd - intronStart + 1;
+                                final String intronID = segment.id + "-" + intronSegment.id;
+                                final float intronDepth = algs[referenceIndex].averageReadsPerPosition(intronStart, intronEnd);
+                                final int intronOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(intronStart, intronEnd);
+                                final int intronInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(intronStart, intronEnd);
+                                final double intronRPKM = deCalculator.calculateNormalized(intronOverlapReads, intronSegment.getLength(), deCalculator.getNumAlignedInSample(sampleId));
+                                if (intronLength > 0) {
+                                    if (includeAnnotationTypes.contains("intron")) {
+                                        if (writeAnnotationCounts) {
+                                            writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%e\t%g\t%n",
+                                                    basename,
+                                                    geneID,
+                                                    intronID,
+                                                    "other",
+                                                    annot.chromosome,
+                                                    exonStrand,
+                                                    exonLength,
+                                                    exonStart,
+                                                    exonEnd,
+                                                    intronInsideReads,
+                                                    intronOverlapReads,
+                                                    intronRPKM,
+                                                    log2(intronRPKM)));
+
+                                        }
+                                        numberOfAnottationCountsWritten++;
+                                        if (doComparison && includeAnnotationTypes.contains("other")) {
+                                            deCalculator.observe(basename, intronID, intronOverlapReads);
+                                        }
                                     }
-                                    numberOfAnottationCountsWritten++;
                                 }
                             }
                         }
                     }
                 }
+                algs[referenceIndex] = null;
             }
-            algs[referenceIndex] = null;
-        }
 
-        LOG.info("Wrote " + numberOfAnottationCountsWritten + " entries");
-        if (numberOfAnottationCountsWritten == 0) {
-            LOG.warn("No entries were written.  This may be due to the fact that names "
-                    + "in the reference dataset used do not match those in the annotation file.  "
-                    + "For example, ENSEMBL names chromosomes \"1\",\"2\",\"3\" whereas UCSC "
-                    + "names the same chromosomes \"chr1\",\"chr2\",\"chr3\". In these "
-                    + "cases you will need to adjust the names in the annotation file being used "
-                    + "so they match the names used in the reference dataset.");
-        }
+            LOG.info("Wrote " + numberOfAnottationCountsWritten + " entries");
+            if (numberOfAnottationCountsWritten == 0) {
+                LOG.warn("No entries were written.  This may be due to the fact that names "
+                        + "in the reference dataset used do not match those in the annotation file.  "
+                        + "For example, ENSEMBL names chromosomes \"1\",\"2\",\"3\" whereas UCSC "
+                        + "names the same chromosomes \"chr1\",\"chr2\",\"chr3\". In these "
+                        + "cases you will need to adjust the names in the annotation file being used "
+                        + "so they match the names used in the reference dataset.");
+            }
     }
 
     /**

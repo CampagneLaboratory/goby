@@ -69,9 +69,9 @@
             <longFlag>include-annotation-types</longFlag>
             <required>false</required>
             <defaults>
-                <string>gene,intron,exon</string>
+                <string>gene,exon,other</string>
             </defaults>
-            <help>Comma delimited list of annotation types. When provided, write annotation counts for the specified annotation type. By default, write annotation counts for gene exon or introns.</help>
+            <help>Comma delimited list of annotation types. When provided, write annotation counts for the specified annotation type. By default, write annotation counts for gene exon or introns.  The other category indicates intronic or intergenic regions currently not annotated as genes or exons by the given annotation.</help>
         </flaggedOption>
         <flaggedOption>
             <id>compare</id>
