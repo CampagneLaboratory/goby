@@ -40,9 +40,10 @@ echo ------------------------------------------------------
 # Pull in softlib commands
 . /etc/profile
 
+# Get the full path to the transcript file to align with
+TRANSCRIPT_FILE_NAME=`/bin/sed -n "${SGE_TASK_ID}p" transcript-list.txt`
+
 TRANSCRIPT_DIRECTORY=%TRANSCRIPT_DIRECTORY%
-# The full path to the transcript file to align with
-# TRANSCRIPT_FILE_NAME is defined elsewhere
 TRANSCRIPT_FILE=${TRANSCRIPT_DIRECTORY}/${TRANSCRIPT_FILE_NAME}
 
 TRANSCRIPT_NAME=${TRANSCRIPT_FILE_NAME%.*}
@@ -50,7 +51,7 @@ TRANSCRIPT_INDEX_NAME=${TRANSCRIPT_NAME}.fasta
 TRANSCRIPT_INDEX_DIRECTORY=%TRANSCRIPT_INDEX_DIRECTORY%
 
 # The reads file to process
-READS=%READS%
+READS_FILE=%READS%
 
 # basename includes the transcript name
 BASENAME=%BASENAME%-${TRANSCRIPT_NAME}
@@ -58,22 +59,6 @@ BASENAME=%BASENAME%-${TRANSCRIPT_NAME}
 # Copy the goby and support tools to the local node
 # TODO: copy bwa etc.
 /bin/cp ${SGE_O_WORKDIR}/goby.jar ${SGE_O_WORKDIR}/log4j.properties ${TMPDIR}
-
-# Extract the reads if a split is needed
-if [ ! -z ${SGE_TASK_ID} ] && [ "${SGE_TASK_ID}" != "undefined" ]; then
-    READS_FILE=${READS##*/}
-    CHUNK_SIZE=%CHUNK_SIZE%
-    START_POSITION=$(($((SGE_TASK_ID - 1)) * $CHUNK_SIZE))
-    END_POSITION=$(($START_POSITION + $CHUNK_SIZE - 1))
-    cd ${TMPDIR}
-    java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.properties \
-        -Dexecutables.path.bwa=%BWA_ALIGNER_PATH% -Dexecutables.path.last=%LAST_ALIGNER_PATH% \
-        -Dexecutables.path.lastag=%LASTAG_ALIGNER_PATH% \
-        -jar goby.jar --mode reformat-compact-reads --output ${READS_FILE} \
-        --start-position ${START_POSITION} --end-position ${END_POSITION} ${READS}
-else
-    READS_FILE=${READS}
-fi
 
 # Run the alignment
 cd ${TMPDIR}

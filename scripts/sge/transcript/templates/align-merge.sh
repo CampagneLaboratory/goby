@@ -4,21 +4,16 @@
 # Script to submit a SGE job that will run an alignment using goby
 #
 
-ALIGN_JOBS=
+ALIGN=`qsub -terse -N %SGE_JOB_NAME%-align goby-align.qsub`
+echo $ALIGN
 
-for TRANSCRIPT_FILE_NAME in `cat transcript-list.txt`; do
-    TRANSCRIPT_NAME=${TRANSCRIPT_FILE_NAME%.*}
-    # Run the aligner and pass in the name of the transcript file to run with
-    ALIGN=`qsub -terse -v TRANSCRIPT_FILE_NAME=${TRANSCRIPT_FILE_NAME} \
-        -N %SGE_JOB_NAME%-${TRANSCRIPT_NAME}-align goby-align.qsub`
-    echo $ALIGN
-    if [ -z ${ALIGN_JOBS} ]; then
-        ALIGN_JOBS=${ALIGN}
-    else
-        ALIGN_JOBS=${ALIGN_JOBS},${ALIGN}
-    fi
-done
+# if the align job is an array job then the id returned
+# is of the form N.I-J:K where N is the job id and the
+# I,J,K are the array indices and step value
+# we only care about the job id (N)
+ALIGN=${ALIGN%%.*}
+echo $ALIGN
 
 # Merge results from the alignment
-MERGE=`qsub -hold_jid ${ALIGN_JOBS} -terse goby-merge.qsub`
+MERGE=`qsub -hold_jid $ALIGN -terse goby-merge.qsub`
 echo $MERGE

@@ -44,28 +44,19 @@ fi
 
 /bin/mkdir -p ${JOB_DIR}
 
+if [ -z ${READS} ] || [ ! -r ${READS} ]; then
+    echo "WARNING: Reads ${READS} file cannot be read"
+fi
+
 ls -1 ${TRANSCRIPT_DIRECTORY} > ${JOB_DIR}/transcript-list.txt
 NUMBER_OF_TRANSCRIPTS=`wc -l < ${JOB_DIR}/transcript-list.txt`
 echo "Found ${NUMBER_OF_TRANSCRIPTS} transcript files"
 
-# Get the number of bytes in the reads file
-if [ -z ${READS} ] || [ ! -r ${READS} ]; then
-    echo "WARNING: Reads ${READS} file cannot be read"
-    READS_SIZE=0
-else
-    READS_SIZE=`/usr/bin/stat --format=%s ${READS}`
-fi
-
 echo "Bundling job submission files"
 
-# see if the job needs to split into a job array
-if [ -z ${CHUNK_SIZE} ] || [ ${CHUNK_SIZE} -le 0 ] || [ ${CHUNK_SIZE} -ge ${READS_SIZE} ]; then
-    echo "Alignment will not be split"
-else
-    NUMBER_OF_JOBS=$((${READS_SIZE} / ${CHUNK_SIZE} + 1))
-    SGE_ARRAY_DIRECTIVE="#$ -t 1-${NUMBER_OF_JOBS}"
-    echo "Alignment will run as ${NUMBER_OF_JOBS} jobs"
-fi
+NUMBER_OF_JOBS=$((${READS_SIZE} / ${CHUNK_SIZE} + 1))
+SGE_ARRAY_DIRECTIVE="#$ -t 1-${NUMBER_OF_TRANSCRIPTS}"
+echo "Alignment will run as ${NUMBER_OF_TRANSCRIPTS} jobs"
 
 if [ ! -z ${SGE_STATUS_MAILTO} ]; then
     SGE_MAILTO_DIRECTIVE="#$ -M ${SGE_STATUS_MAILTO}"
