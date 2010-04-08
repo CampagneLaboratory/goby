@@ -78,21 +78,62 @@ public final class FileExtensionHelper {
      * @return The type of data this file is likely to contain
      */
     public static CompactFileType determineCompactFileType(final String file) {
-        // does the file represent an alignment?
-        for (final String ext : COMPACT_ALIGNMENT_FILE_EXTS) {
-            if (file.endsWith(ext)) {
-                return CompactFileType.alignment;
-            }
+        if (hasCompactAlignmentExtension(file)) {
+            // The file represents an alignment
+            return CompactFileType.alignment;
+        } else if (hasCompactReadsExtension(file)) {
+            // The file represents a series of reads
+            return CompactFileType.reads;
+        } else {
+            // the file extension does not match a known Goby compact type
+            return CompactFileType.unknown;
         }
+    }
 
-        // does the file represent a series of reads?
+    /**
+     * Does the given file have an extension that matches a known Goby compact reads format?
+     * @param file The file to check
+     * @return true if the file is likely to be a compact reads file
+     */
+    public static boolean hasCompactReadsExtension(final File file) {
+        return hasCompactReadsExtension(file.toString());
+    }
+
+    /**
+     * Does the given filename have an extension that matches a known Goby compact reads format?
+     * @param file The name of file to check
+     * @return true if the filename is likely to be a compact reads file
+     */
+    public static boolean hasCompactReadsExtension(final String file) {
         for (final String ext : COMPACT_READS_FILE_EXTS) {
             if (file.endsWith(ext)) {
-                return CompactFileType.reads;
+                return true;
             }
         }
+        return false;
+    }
 
-        return CompactFileType.unknown;
+    /**
+     * Does the given file have an extension that matches a known Goby compact alignment format?
+     * @param file The file to check
+     * @return true if the file is likely to be a compact alignment file
+     */
+    public static boolean hasCompactAlignmentExtension(final File file) {
+        return hasCompactAlignmentExtension(file.toString());
+    }
+
+    /**
+     * Does the given filename have an extension that matches a known Goby compact alignment format?
+     * @param file The name of file to check
+     * @return true if the filename is likely to be a compact alignment file
+     */
+    public static boolean hasCompactAlignmentExtension(final String file) {
+        for (final String ext : COMPACT_ALIGNMENT_FILE_EXTS) {
+            if (file.endsWith(ext)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
