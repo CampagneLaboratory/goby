@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Submit to the rascals queue
+#$ -q *@@rascals.h
+
 # Execute the script from the current directory
 #$ -cwd
 
