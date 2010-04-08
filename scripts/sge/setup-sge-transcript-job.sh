@@ -54,7 +54,6 @@ echo "Found ${NUMBER_OF_TRANSCRIPTS} transcript files"
 
 echo "Bundling job submission files"
 
-NUMBER_OF_JOBS=$((${READS_SIZE} / ${CHUNK_SIZE} + 1))
 SGE_ARRAY_DIRECTIVE="#$ -t 1-${NUMBER_OF_TRANSCRIPTS}"
 echo "Alignment will run as ${NUMBER_OF_TRANSCRIPTS} jobs"
 
