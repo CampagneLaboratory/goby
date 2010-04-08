@@ -173,6 +173,8 @@ public class DifferentialExpressionAnalysis {
                 results = deCalculator.compare(results, method, new FoldChangeCalculator(), groupComparison);
                 //results.setOmitNonInformativeColumns(omitNonInformativeColumns);
                 results = deCalculator.compare(results, method, new FoldChangeMagnitudeCalculator(), groupComparison);
+                results = deCalculator.compare(results, method, new Log2FoldChangeCalculator(), groupComparison);
+                             
                 results = deCalculator.compare(results, method, new AverageCalculator(), groupComparison);
                 ttestflag = checkTtest();
                 if (ttestflag) {
