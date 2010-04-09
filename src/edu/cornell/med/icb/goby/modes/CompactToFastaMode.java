@@ -32,6 +32,7 @@ import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ArrayUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -336,7 +337,11 @@ public class CompactToFastaMode extends AbstractGobyMode {
                     writeSequence(writer, transformedSequence);
                     if (outputFormat == OutputFormat.FASTQ) {
                         final int readLength = transformedSequence.length();
-                        writeQualityScores(writer, readEntry.hasQualityScores(), readEntry.getQualityScores().toByteArray(), outputFakeQualityMode, readLength);
+                        final byte[] qualityScores = readEntry.getQualityScores().toByteArray();
+                        final boolean hasQualityScores =
+                                readEntry.hasQualityScores() && !ArrayUtils.isEmpty(qualityScores);
+                        writeQualityScores(writer, hasQualityScores, qualityScores,
+                                outputFakeQualityMode, readLength);
                     }
                     ++numberOfFilteredSequences;
 
@@ -413,6 +418,8 @@ public class CompactToFastaMode extends AbstractGobyMode {
     private void writeQualityScores(final Writer writer, final boolean hasScores,
                                     final byte[] qualityScores, final boolean fakeQualityScores,
                                     final int readLength) throws IOException {
+        // in theory the quality length and the read length should be equal
+        // however in practice this may not be the case
         final int length = Math.max(qualityScores.length, readLength);
         writer.write('+');
         writer.write('\n');
@@ -421,7 +428,8 @@ public class CompactToFastaMode extends AbstractGobyMode {
                 writer.write('\n');
             }
 
-            if (!fakeQualityScores && hasScores) {
+            // write the score if there is one otherwise write the default "fake" score
+            if (!fakeQualityScores && hasScores && i < qualityScores.length) {
                 writer.write(qualityEncoding.qualityScoreToAsciiEncoding(qualityScores[i]));
             } else {
                 writer.write(qualityEncoding.qualityScoreToAsciiEncoding(FAKE_QUALITY_SCORE));
