@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 # Submit to the rascals queue
 #$ -q *@@rascals.h
