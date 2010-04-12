@@ -23,25 +23,39 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.*;
 import it.unimi.dsi.lang.MutableString;
 
+import java.util.Map;
+import java.util.Set;
+
 /**
  * @author Fabien Campagne
  *         Date: Jan 11, 2010
  *         Time: 3:35:24 PM
  */
 public class DifferentialExpressionCalculator {
-    private final ObjectSet<String> groups;
-    private final Object2ObjectMap<String, String> sampleToGroupMap;
+    private final Set<String> groups;
+    private final Map<String, String> sampleToGroupMap;
     private final IndexedIdentifier elementLabels;
     private int elementsPerSample;
     private int numberOfSamples;
-    private final Object2ObjectMap<String, IntArrayList> sampleToCounts =
-            new Object2ObjectOpenHashMap<String, IntArrayList>();
+    private final Map<String, IntArrayList> sampleToCounts;
     private Object2DoubleMap<String> sampleProportions;
-    private IntArrayList lengths = new IntArrayList();
+    private final IntArrayList lengths;
+    private final Map<MutableString, MutableString> elementLabelToElementType;
     /**
      * The number of alignment entries observed in each sample.
      */
-    private Object2IntMap<String> numAlignedInSample = new Object2IntOpenHashMap<String>();
+    private Object2IntMap<String> numAlignedInSample;
+
+    public DifferentialExpressionCalculator() {
+        super();
+        groups = new ObjectArraySet<String>();
+        elementLabels = new IndexedIdentifier();
+        sampleToGroupMap = new Object2ObjectOpenHashMap<String, String>();
+        numAlignedInSample = new Object2IntOpenHashMap<String>();
+        sampleToCounts = new Object2ObjectOpenHashMap<String, IntArrayList>();
+        lengths = new IntArrayList();
+        elementLabelToElementType = new Object2ObjectOpenHashMap<MutableString, MutableString>();
+    }
 
     public double calculateNormalized(final int readCountInt, final int annotLength, final double normalizationFactor) {
         final double readCount = readCountInt;
@@ -50,19 +64,35 @@ public class DifferentialExpressionCalculator {
         return readCount / (length / 1000.0d) / (normalizationFactor / 1E6d);
     }
 
-    public DifferentialExpressionCalculator() {
-        super();
-        groups = new ObjectArraySet<String>();
-        elementLabels = new IndexedIdentifier();
-        sampleToGroupMap = new Object2ObjectOpenHashMap<String, String>();
-    }
-
     public synchronized void defineGroup(final String label) {
         groups.add(label);
     }
 
+    /**
+     * Define an element but don't specify the type. The version with the type is the preferred version.
+     * @param label element-id
+     * @return the index of the element
+     */
     public synchronized int defineElement(final String label) {
-        return elementLabels.registerIdentifier(new MutableString(label));
+        return defineElement(label, "");
+    }
+
+    /**
+     * Define an element and it's type
+     * @param label element-id
+     * @param type the type (gene, exon, ...)
+     * @return the index of the element
+     */
+    public synchronized int defineElement(final String label, final String type) {
+        MutableString elementLabel = new MutableString(label);
+        if (elementLabelToElementType.get(elementLabel) == null) {
+            elementLabelToElementType.put(elementLabel, new MutableString(type));
+        }
+        return elementLabels.registerIdentifier(elementLabel);
+    }
+
+    public Map<MutableString, MutableString> getElementLabelToElementTypeMap() {
+        return elementLabelToElementType;
     }
 
     /**
@@ -241,7 +271,7 @@ public class DifferentialExpressionCalculator {
     }
 
     public String[] samples() {
-        final ObjectSet<String> sampleSet = sampleToGroupMap.keySet();
+        final Set<String> sampleSet = sampleToGroupMap.keySet();
         return sampleSet.toArray(new String[sampleSet.size()]);
     }
 

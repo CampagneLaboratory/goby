@@ -23,6 +23,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.lang.MutableString;
 
 import java.io.PrintWriter;
+import java.util.Map;
 
 /**
  * @author Fabien Campagne
@@ -49,12 +50,20 @@ public class DifferentialExpressionInfo {
         return String.format("[ %s %s ]", elementId, statistics.toString());
     }
 
-    public void write(final PrintWriter printWriter, final char delimiter, final InformativeColumns informativeColumns) {
+    public void write(
+            final PrintWriter printWriter, final char delimiter, final InformativeColumns informativeColumns,
+            final Map<MutableString, MutableString> elementLabelToElementType) {
         printWriter.append(elementId);
+        printWriter.append(delimiter);
+        MutableString elementType = elementLabelToElementType.get(elementId);
+        if (elementType == null) {
+            elementType = new MutableString("");
+        }
+        printWriter.append(elementType);
         for (int i = 0; i < statistics.size(); i++) {
             if (informativeColumns == null || informativeColumns.isColumnInformative(i)) {
-                final double value = statistics.get(i);
                 printWriter.append(delimiter);
+                final double value = statistics.get(i);
                 printWriter.append(String.format("%g", value));
             }
         }

@@ -120,7 +120,7 @@ public class TestStatistics {
         assertEquals("average B must be around 1", 0.5d, results.getStatistic(info, averageCalculator.getStatisticId("B", "RPKM", normalizationMethod)), .1);
         System.out.println(results);
         try {
-            results.write(new PrintWriter("test-results/out-stats.tsv"), '\t');
+            results.write(new PrintWriter("test-results/out-stats.tsv"), '\t', deCalc.getElementLabelToElementTypeMap());
         } catch (FileNotFoundException e) {
             fail(e.getMessage());
         }

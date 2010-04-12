@@ -151,7 +151,7 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
             final PrintWriter statsOutput = new PrintWriter(statsFilename);
             DifferentialExpressionResults results = null;
             results = deAnalyzer.evaluateDifferentialExpressionStatistics(deCalculator, doComparison, normalizationMethods);
-            results.write(statsOutput, '\t');
+            results.write(statsOutput, '\t', deCalculator.getElementLabelToElementTypeMap());
             IOUtils.closeQuietly(statsOutput);
         }
 
