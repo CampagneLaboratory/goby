@@ -162,6 +162,20 @@ public abstract class AbstractAlignmentReader implements Closeable,
     }
 
     /**
+     * Returns the length of a target.
+     * @param targetIndex Index of the target sequence.
+     * @return Length of the specified target sequence.
+     */
+    public final int getTargetLength(final int targetIndex) {
+        assert isHeaderLoaded() : "Header must be loaded to access target lengths";
+
+        assert targetLengths != null : "Target lengths must exist in the header.";
+        return targetLengths[targetIndex];
+    }
+
+
+
+    /**
      * Returns target lengths. An array of size the number of query sequences, where each element
      * indicates the length of the query sequence.
      */
@@ -171,7 +185,6 @@ public abstract class AbstractAlignmentReader implements Closeable,
     }
 
     /**
-     *
      * @return True if the alignment stores a constant query length.
      */
     public boolean isConstantQueryLengths() {
