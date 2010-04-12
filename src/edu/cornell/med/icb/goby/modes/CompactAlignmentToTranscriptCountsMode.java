@@ -113,8 +113,9 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
         statsFilename = jsapResult.getString("stats");
         outputFile = jsapResult.getString("output");
         final String groupsDefinition = jsapResult.getString("groups");
+
         deAnalyzer.parseGroupsDefinition(groupsDefinition, deCalculator, inputFiles);
-        deAnalyzer.parseGroupsDefinition(groupsDefinition, deCalculator, inputFiles);
+
         final String compare = jsapResult.getString("compare");
         if (compare == null) {
             doComparison = false;
@@ -189,6 +190,16 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
             final String sampleId = FilenameUtils.getBaseName(basename);
             deCalculator.reserve(numberOfReferences, inputFiles.length);
             int numAlignedReadsInSample = 0;
+            // define elements that will be tested for differential expression:
+            for (int referenceIndex = 0; referenceIndex < numberOfReferences; ++referenceIndex) {
+
+                String transcriptId = targetIdBackward.getId(referenceIndex).toString();
+                final int index = deCalculator.defineElement(transcriptId, "transcript");
+
+                deCalculator.defineElementLength(index, reader.getTargetLength(referenceIndex));
+            }
+
+            // observe elements:
             for (int referenceIndex = 0; referenceIndex < numberOfReferences; ++referenceIndex) {
 
                 outputWriter.printf("%s\t%s\t%d\t%g\t%d%n", basename,
@@ -198,9 +209,7 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
                         cumulativeBasesPerReference[referenceIndex]);
 
                 String transcriptId = targetIdBackward.getId(referenceIndex).toString();
-                final int index = deCalculator.defineElement(transcriptId);
-                int [] targetLengths= reader.getTargetLength();
-                deCalculator.defineElementLength(index, targetLengths[index]);
+
                 deCalculator.observe(sampleId, transcriptId, numberOfReadsPerReference[referenceIndex]);
                 numAlignedReadsInSample += numberOfReadsPerReference[referenceIndex];
             }
