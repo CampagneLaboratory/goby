@@ -21,17 +21,17 @@ package edu.cornell.med.icb.goby.modes;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsReader;
+import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSets;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math.stat.descriptive.rank.Percentile;
 
 import java.io.File;
@@ -189,19 +189,46 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         final AlignmentReader reader = new AlignmentReader(basename);
         reader.readHeader();
         System.out.println("Info from header:");
-        System.out.printf("Number of query sequences = %,d%n", reader.getNumberOfQueries());
         System.out.printf("Number of target sequences = %,d%n", reader.getNumberOfTargets());
+        final int[] targetLength = reader.getTargetLength();
         System.out.printf("Number of target length entries = %,d%n",
                 ArrayUtils.getLength(reader.getTargetLength()));
+
+        // simple statistics for target lengths
+        final SummaryStatistics targetLengthStats = new SummaryStatistics();
+        if (targetLength != null) {
+            for (final double d : targetLength) {
+                targetLengthStats.addValue(d);
+            }
+        }
+        System.out.printf("Min target length = %,.2f%n", targetLengthStats.getMin());
+        System.out.printf("Max target length = %,.2f%n", targetLengthStats.getMax());
+        System.out.printf("Mean target length = %,.2f%n", targetLengthStats.getMean());
+        System.out.println();
+
+        System.out.printf("Number of query sequences = %,d%n", reader.getNumberOfQueries());
+        final int[] queryLength = reader.getQueryLengths();
         System.out.printf("Number of query length entries = %,d%n",
-                ArrayUtils.getLength(reader.getQueryLengths()));
+                ArrayUtils.getLength(queryLength));
+        final SummaryStatistics queryLengthStats = new SummaryStatistics();
+        if (queryLength != null) {
+            for (final double d : queryLength) {
+                queryLengthStats.addValue(d);
+            }
+        }
+        System.out.printf("Min query length = %,.2f%n", queryLengthStats.getMin());
+        System.out.printf("Max query length = %,.2f%n", queryLengthStats.getMax());
+        System.out.printf("Mean query length = %,.2f%n", queryLengthStats.getMean());
         System.out.println("Constant query lengths = " + reader.isConstantQueryLengths());
+
         System.out.printf("Has query identifiers = %s%n",
                 reader.getQueryIdentifiers() != null && !reader.getTargetIdentifiers().isEmpty());
         System.out.printf("Has target identifiers = %s%n",
                 reader.getTargetIdentifiers() != null && !reader.getTargetIdentifiers().isEmpty());
-        // the query indices that aligned. Includes those 
-        IntSet alignedQueryIndices = new IntOpenHashSet();
+        System.out.println();
+
+        // the query indices that aligned. Includes those
+        final IntSet alignedQueryIndices = new IntOpenHashSet();
         describeAmbigousReads(basename, reader.getNumberOfQueries(), alignedQueryIndices);
 
         int maxQueryIndex = -1;
@@ -241,16 +268,15 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         System.out.printf("Avg score alignment  = %f%n", avgScore);
         System.out.printf("Avg number of variations per query sequence = %3.2f %n",
                 avgNumVariationsPerQuery);
-        long size = file.length();
+        final long size = file.length();
         System.out.printf("Average bytes per entry: %f%n", divide(size, numLogicalAlignmentEntries));
     }
 
-    private double divide(long a, long b) {
-
+    private double divide(final long a, final long b) {
         return ((double) a) / (double) b;
     }
 
-    private void describeAmbigousReads(String basename, double numReads, IntSet queryIndices) {
+    private void describeAmbigousReads(final String basename, final double numReads, final IntSet queryIndices) {
         try {
             final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
             queryIndices.addAll(tmhReader.getQueryIndices());
@@ -287,7 +313,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         long totalReadLength = 0;
         ReadsReader reader = null;
         try {
-            long size = file.length();
+            final long size = file.length();
             reader = new ReadsReader(FileUtils.openInputStream(file));
             for (final Reads.ReadEntry entry : reader) {
                 final int readLength = entry.getReadLength();
