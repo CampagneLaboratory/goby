@@ -25,8 +25,8 @@ import edu.cornell.med.icb.goby.reads.MessageChunksReader;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
@@ -195,10 +195,12 @@ public class AlignmentReader extends AbstractAlignmentReader {
             queryLengths = null;
         } else if (header.getQueryLengthCount() > 0) {
             queryLengths = new IntArrayList(header.getQueryLengthList()).toIntArray();
-            IntSet distinctQueryLength = new IntOpenHashSet();
+            final IntSet distinctQueryLength = new IntOpenHashSet();
 
-            for (int length : queryLengths) {
-                if (length != 0) distinctQueryLength.add(length);
+            for (final int length : queryLengths) {
+                if (length != 0) {
+                    distinctQueryLength.add(length);
+                }
             }
             if (distinctQueryLength.size() == 1) {
                 this.constantQueryLengths = true;
@@ -288,7 +290,11 @@ public class AlignmentReader extends AbstractAlignmentReader {
      * @return True or false.
      */
     public boolean hasQueryLengths() {
-        if (constantQueryLengths) return true;
-        else return queryLengths != null;
+        if (constantQueryLengths) {
+            return true;
+        }
+        else {
+            return queryLengths != null;
+        }
     }
 }

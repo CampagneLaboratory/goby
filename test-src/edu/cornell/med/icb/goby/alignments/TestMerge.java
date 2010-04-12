@@ -27,6 +27,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -126,6 +127,10 @@ public class TestMerge {
         assertEquals("Only best score, non ambiguous gene matches should be kept. ", 4 - 1 , count);     // -1 removes an entry with lower score
 
         final AlignmentReader reader = new AlignmentReader(outputFile);
+        reader.readHeader();
+        assertEquals(5, reader.getNumberOfTargets());
+        assertArrayEquals(new int[] {1024, 5678, 1237, 9, 143}, reader.getTargetLength());
+        assertEquals(3, reader.getNumberOfQueries());
         final int maxTargetIndex = -1;
         final IntSet queryIndices = new IntArraySet();
         final IntSet targetIndices = new IntArraySet();
@@ -357,7 +362,7 @@ public class TestMerge {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Deleting base test directory: " + BASE_TEST_DIR);
         }
-        FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
+        //FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
     }
 
     @Before
@@ -381,15 +386,20 @@ public class TestMerge {
         }
 
         {
-
-            final AlignmentWriter writer = new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "transcript-101"));
+            final AlignmentWriter writer =
+                    new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "transcript-101"));
             writer.setNumAlignmentEntriesPerChunk(1000);
             final int numTargets = 5;
-            final int numQuery = 10;
             int position = 1;
             final int score = 30;
             final String[] transcriptIds = {"transcriptId1", "transcriptId2", "transcriptId3", "transcriptId4", "transcriptId5",};
             final int[] transcriptIndex = {0, 1, 2, 3, 4};
+            final int[] targetLengths = {1024, 5678, 1237, 9, 143};
+            writer.setTargetLengths(targetLengths);
+
+            final int[] queryLentghs = {35, 35, 35, 35, 35, 35, 35, 35, 35, 35};
+            writer.setQueryLengths(queryLentghs);
+
             final IndexedIdentifier targetIds = new IndexedIdentifier();
             for (int i = 0; i < numTargets; i++) {
                 if (transcriptIndex[i] != targetIds.registerIdentifier(new MutableString(transcriptIds[i]))) {

@@ -47,7 +47,7 @@ public class BestScoreOnlyAlignmentFilter extends AbstractAlignmentEntryFilter {
     }
 
     @Override
-    public void setHeader(final IndexedIdentifier targets) {
+    public void setTargetIdentifiers(final IndexedIdentifier targets) {
         // do nothing
     }
 

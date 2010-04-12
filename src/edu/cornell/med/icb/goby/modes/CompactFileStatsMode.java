@@ -201,8 +201,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 targetLengthStats.addValue(d);
             }
         }
-        System.out.printf("Min target length = %,.2f%n", targetLengthStats.getMin());
-        System.out.printf("Max target length = %,.2f%n", targetLengthStats.getMax());
+        System.out.printf("Min target length = %,d%n", (int) targetLengthStats.getMin());
+        System.out.printf("Max target length = %,d%n", (int) targetLengthStats.getMax());
         System.out.printf("Mean target length = %,.2f%n", targetLengthStats.getMean());
         System.out.println();
 
@@ -216,8 +216,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 queryLengthStats.addValue(d);
             }
         }
-        System.out.printf("Min query length = %,.2f%n", queryLengthStats.getMin());
-        System.out.printf("Max query length = %,.2f%n", queryLengthStats.getMax());
+        System.out.printf("Min query length = %,d%n", (int) queryLengthStats.getMin());
+        System.out.printf("Max query length = %,d%n", (int) queryLengthStats.getMax());
         System.out.printf("Mean query length = %,.2f%n", queryLengthStats.getMean());
         System.out.println("Constant query lengths = " + reader.isConstantQueryLengths());
 

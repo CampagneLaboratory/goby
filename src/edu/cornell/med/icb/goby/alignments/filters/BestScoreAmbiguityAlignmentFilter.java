@@ -92,7 +92,7 @@ public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFil
     }
 
     @Override
-    public void setHeader(final IndexedIdentifier targets) {
+    public void setTargetIdentifiers(final IndexedIdentifier targets) {
 
     }
 

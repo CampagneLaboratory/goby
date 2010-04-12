@@ -41,11 +41,11 @@ public class TranscriptBestScoreAlignmentFilter extends AbstractAlignmentEntryFi
     public void printStats() {
 
         System.out.printf("notBestScoreCount=%g %% geneAmbiguityCount=%g %% %n",
-                div(notBestScoreCount, entryCount)*100,
-                div(geneAmbiguityCount, entryCount)*100);
+                div(notBestScoreCount, entryCount) * 100,
+                div(geneAmbiguityCount, entryCount) * 100);
     }
 
-    private double div(int a, int b) {
+    private double div(final int a, final int b) {
         return ((double) a / (double) b);
     }
 
@@ -98,8 +98,8 @@ public class TranscriptBestScoreAlignmentFilter extends AbstractAlignmentEntryFi
      * @param targets
      */
     @Override
-    public void setHeader(final IndexedIdentifier targets) {
-        transcriptFilter.setHeader(targets);
-        bestScoreFilter.setHeader(targets);
+    public void setTargetIdentifiers(final IndexedIdentifier targets) {
+        transcriptFilter.setTargetIdentifiers(targets);
+        bestScoreFilter.setTargetIdentifiers(targets);
     }
 }

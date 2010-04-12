@@ -22,13 +22,9 @@ import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 
 /**
- * @author Fabien Campagne
- */
-
-
-/**
  * Abstract class for AlignmentEntryFilter. These assist with merging alignment files.
  *
+ * @author Fabien Campagne
  * @author Kevin Dorff
  */
 public abstract class AbstractAlignmentEntryFilter {
@@ -37,7 +33,7 @@ public abstract class AbstractAlignmentEntryFilter {
      *
      * @param targets
      */
-    public abstract void setHeader(final IndexedIdentifier targets);
+    public abstract void setTargetIdentifiers(final IndexedIdentifier targets);
 
     /**
      * Called during first pass processing of every entry.
@@ -53,8 +49,8 @@ public abstract class AbstractAlignmentEntryFilter {
 
     /**
      * Returns true if the entry should be retained.
-     *
      * @param entry the entry to be inspected.
+     * @return whether or not the entry should be retained
      */
     public abstract boolean shouldRetainEntry(final Alignments.AlignmentEntry entry);
 
