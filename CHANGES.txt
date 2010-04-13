@@ -1,8 +1,15 @@
 development  ->1.5
 
+ Added a mode to calculate counts and perform differential expression analysis for transcript
+ runs (alignment-to-transcript-counts). Transcript runs are performed against a cDNA library. They
+ finds matches through through exon-exon junctions represented in the input cDNA library. They are
+ a faster alternative to mapping the genome and exon-exon boundaries separately. Disadvantage is that
+ these searches will only map to transcripts represented in the input library.
+
  Changes to fasta-to-compact mode:
- - Add parallel processing in fasta-to-compact mode. Use the --parallel flag to activate. Will now only regenerate compact-reads that do not exist, or are older than the input file.
- 
+ - Add parallel processing in fasta-to-compact mode. Use the --parallel flag to activate.
+ Will now only regenerate compact-reads that do not exist, or are older than the input file.
+
  Added a mode to write a read set to text format (set-to-text). The output will show the multiplicity of each query index.
  ReadSets can be efficiently created with tally-reads as before.
 

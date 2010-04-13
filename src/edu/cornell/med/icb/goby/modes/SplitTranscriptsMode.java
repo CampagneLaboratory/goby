@@ -55,7 +55,9 @@ import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * Class to split transcripts FASTA into multiple files.
+ * Class to split transcripts FASTA into multiple files. This class will distribute the transcripts for the same gene
+ * across multiple files such that two transcripts from the same gene are never present in the same file. The split
+ * files can be used as reference to implement transcript searches.
  *
  * @author Kevin Dorff
  */
