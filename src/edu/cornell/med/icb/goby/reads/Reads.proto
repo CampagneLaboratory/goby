@@ -11,16 +11,29 @@ message ReadCollection {
 
 message ReadEntry {
 
+  /*
+    Index of a read.
+  */
   required uint32 readIndex =1;
-
+  /*
+     Read identifier/name may be present.
+  */
   optional string readIdentifier =23;
-
+  /*
+     Additional description about the read (from Fasta/Q format).
+   */
   optional string description =22;
-
+  /*
+    Length of the sequence.
+   */
   required uint32 readLength=2;
-
+  /*
+    Sequence, encoded as ascii characters stored in single bytes.
+   */
   optional bytes sequence =3;
-
+  /*
+    Quality scores in Phred units, stored as single bytes (0-255).
+  */
   optional bytes qualityScores =4;
 
 }

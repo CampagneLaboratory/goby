@@ -84,26 +84,26 @@ message AlignmentEntry {
 
    - Padding example:
 
-    012 (<-positions)
+    123 (<-positions)
 ref A-C
-    A-T [from="-" to=""  position=1] [from="C" to="T"  position=2]
-    ACT [from=""  to="C" position=1] [from="C" to="T"  position=2]
-    A-T [from="-" to=""  position=1] [from="C" to="T"  position=2]
+    A-T [from="-" to=""  position=2] [from="C" to="T"  position=3]
+    ACT [from=""  to="C" position=2] [from="C" to="T"  position=3]
+    A-T [from="-" to=""  position=2] [from="C" to="T"  position=3]
 
    - Mutation example:
-    012 (<-positions)
+    123 (<-positions)
 ref ATT
-    ACT [from="T"  to="C" position=1]
+    ACT [from="T"  to="C" position=2]
 
     -- Example of deletion in a read:
-    012 (<-positions)
+    123 (<-positions)
 ref ATT
-    A-T [from="T"  to="-" position=1]
+    A-T [from="T"  to="-" position=2]
 
     -- Example of insertion of two base pairs in a read:
-    012 (<-positions)
+    12345 (<-positions)
 ref A--TT
-    ACCTT [from=""  to="CC" position=1]
+    ACCTT [from=""  to="CC" position=2]
 
   */
 message SequenceVariation {
