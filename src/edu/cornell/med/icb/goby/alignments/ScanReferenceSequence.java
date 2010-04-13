@@ -134,7 +134,7 @@ public class ScanReferenceSequence {
                                     // multiplicity of a read is the number of times the sequence of the read is identically
                                     // repeated across a sample file.
                                     // When the sequence is exactly repeated, the alignment would yield exactly the same
-                                    // result. In such cases, we do not do the alignment, but just keep repeating the aligment
+                                    // result. In such cases, we do not do the alignment, but just keep repeating the alignment
                                     // multiplicity times.
 
                                     if (readIndexFilter != null) {

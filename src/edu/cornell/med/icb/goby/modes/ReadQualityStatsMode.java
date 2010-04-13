@@ -59,7 +59,7 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
      * The basename of the compact read files.
      */
     private String[] filenames;
-    private double sampleFraction = .01;
+    private final double sampleFraction = .01;
 
 
     @Override
@@ -112,12 +112,12 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
         final PrintWriter writer = outputFilename == null ? new PrintWriter(System.out) :
                 new PrintWriter(new FileWriter(outputFilename));
         try {
-            Int2ObjectMap<ReadQualityStats> qualityStats = new Int2ObjectOpenHashMap<ReadQualityStats>();
+            final Int2ObjectMap<ReadQualityStats> qualityStats = new Int2ObjectOpenHashMap<ReadQualityStats>();
 
             writer.write("basename\treadIndex\t25%-percentile\tmedian\taverageQuality\t75%-percentile\n");
             for (final String filename : filenames) {
                 final ReadsReader reader = new ReadsReader(filename);
-                String basename = ReadsReader.getBasename(filename);
+                final String basename = ReadsReader.getBasename(filename);
                 for (final Reads.ReadEntry entry : reader) {
 
                     final ByteString qualityScores = entry.getQualityScores();
@@ -176,13 +176,13 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
         ByteArrayList sample = new ByteArrayList();
         double averageQuality;
         int observedCount;
-        private double sampleFraction;
+        private final double sampleFraction;
 
-        private ReadQualityStats(double sampleFraction) {
+        private ReadQualityStats(final double sampleFraction) {
             this.sampleFraction = sampleFraction;
         }
 
-        void observe(byte b) {
+        void observe(final byte b) {
             averageQuality += b;
             observedCount += 1;
             if (random.nextDouble() < sampleFraction) {
@@ -194,7 +194,7 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
             Collections.sort(sample);
         }
 
-        public byte percentile(double percent) {
+        public byte percentile(final double percent) {
             final int index = (int) (((double) sample.size()) * percent / 100d);
             final Byte value = sample.get(index);
             return value;

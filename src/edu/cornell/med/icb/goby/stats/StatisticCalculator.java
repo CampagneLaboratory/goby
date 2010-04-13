@@ -43,7 +43,7 @@ public abstract class StatisticCalculator {
      */
     public int defineStatisticId(final DifferentialExpressionResults results, final MutableString statisticId) {
         if (!results.isStatisticDefined(statisticId)) {
-            int index = results.declareStatistic(statisticId);
+            final int index = results.declareStatistic(statisticId);
             statisticIds.add(statisticId);
             return index;
         }

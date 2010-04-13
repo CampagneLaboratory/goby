@@ -4,7 +4,7 @@ option java_package = "edu.cornell.med.icb.goby.alignments";
 option optimize_for = SPEED;
 
 message AlignmentCollection {
-     
+
      repeated AlignmentEntry alignmentEntries =1;
 }
 
@@ -80,7 +80,7 @@ message AlignmentEntry {
    For instance, an insertion at position 5 in the reference would be represented as from="A", to="" position=5.
    A mutation T->G at position 6 would be rendered as from="T", to="G" position=6. Padded alignments (see SAM description)
    can be described by a combination of pair-wise alignments, where the gap character '-' is used to indicate that no
-   base exists in the sequence considered for the aligment position, for instance:
+   base exists in the sequence considered for the alignment position, for instance:
 
    - Padding example:
 

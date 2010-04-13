@@ -31,8 +31,8 @@ import org.apache.log4j.Logger;
 public abstract class FDRAdjustment {
     Logger LOG = Logger.getLogger(FDRAdjustment.class);
 
-    public DifferentialExpressionResults adjust(final DifferentialExpressionResults list, NormalizationMethod method, final String... statisticIds) {
-        for (String statisticId : statisticIds) {
+    public DifferentialExpressionResults adjust(final DifferentialExpressionResults list, final NormalizationMethod method, final String... statisticIds) {
+        for (final String statisticId : statisticIds) {
             LOG.info("Trying to perform FDR adjustment for statistic " + statisticId);
             boolean adjusted = false;
             final IntList statisticIndexes = list.statisticsIndexesFor(statisticId, method);

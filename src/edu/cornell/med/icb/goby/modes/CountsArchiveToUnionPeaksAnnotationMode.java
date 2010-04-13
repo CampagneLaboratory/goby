@@ -187,7 +187,7 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
 
         //Consolidate all overlapping peaks across all input files by taking the union of overlapping peaks
         System.out.println("Consolidating overlapping peaks over all counts files.");
-        Set<String> chromsomes = allSegments.keySet();
+        final Set<String> chromsomes = allSegments.keySet();
         ObjectList<Segment> consensusList = null;
         for (final String chromsome : chromsomes) {
             consensusList = new ObjectArrayList<Segment>();
@@ -198,7 +198,9 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
             System.out.println(String.format("Reference %s: Starting with %d segments.", chromsome, segmentsList.size()));
             ObjectListIterator<Segment> segIterator = segmentsList.listIterator();
 
-            Segment segment = null, nextSeg = null, consolidatedSeg = null;
+            Segment segment = null;
+            Segment nextSeg = null;
+            Segment consolidatedSeg = null;
             if (segIterator.hasNext()) {
                 segment = segIterator.next();
             }
@@ -227,11 +229,11 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
             System.out.println(String.format("Reference %s: Finished with %d segments.", chromsome, segmentsList.size()));
 
             //Transform the segments back to annotations for easy writing to file
-            ObjectList<Annotation> annotationList = new ObjectArrayList<Annotation>();
+            final ObjectList<Annotation> annotationList = new ObjectArrayList<Annotation>();
             segIterator = segmentsList.listIterator();
             while (segIterator.hasNext()) {
                 segment = segIterator.next();
-                Annotation annot = new Annotation(chromsome + "." + segment.start + "." + segment.getLength(), chromsome);
+                final Annotation annot = new Annotation(chromsome + "." + segment.start + "." + segment.getLength(), chromsome);
                 annot.addSegment(segment);
                 annotationList.add(annot);
             }
@@ -241,9 +243,9 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
         }
     }
 
-    public static void writeAnnotations(String outputFileName, ObjectList<Annotation> annotationList, boolean append) {
+    public static void writeAnnotations(final String outputFileName, final ObjectList<Annotation> annotationList, final boolean append) {
         PrintWriter writer = null;
-        File outputFile = new File(outputFileName);
+        final File outputFile = new File(outputFileName);
 
         try {
             if (!outputFile.exists()) {
@@ -254,7 +256,7 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
             }
 
             if (writer != null) {
-                ObjectListIterator<Annotation> annotIterator = annotationList.listIterator();
+                final ObjectListIterator<Annotation> annotIterator = annotationList.listIterator();
                 while (annotIterator.hasNext()) {
                     final Annotation annotation = annotIterator.next();
                     annotation.write(writer);

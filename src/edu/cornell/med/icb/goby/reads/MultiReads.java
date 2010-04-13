@@ -27,9 +27,9 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
  *         Time: 10:51:11 AM
  */
 public class MultiReads {
-    int readIndex = -1;
-    int currentByteIndex = 0;
-    ByteArrayList bytes = new ByteArrayList();
+    private int readIndex = -1;
+    private int currentByteIndex;
+    private final ByteArrayList bytes = new ByteArrayList();
     private final IntArrayList ends = new IntArrayList();
     private final IntArrayList starts = new IntArrayList();
 
@@ -43,6 +43,5 @@ public class MultiReads {
     public void addByte(final byte base) {
         currentByteIndex += 1;
         bytes.add(base);
-
     }
 }

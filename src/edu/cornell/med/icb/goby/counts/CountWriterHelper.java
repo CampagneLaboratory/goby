@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.counts;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
@@ -25,35 +26,31 @@ import java.io.IOException;
  *         Date: Jun 12, 2009
  *         Time: 4:44:06 PM
  */
-public class CountWriterHelper {
-    CountsWriter delegate;
+public class CountWriterHelper implements Closeable {
+    private final CountsWriter delegate;
+    private int previousPosition = -1;
+    private int previousCount;
+    private int lengthConstant = 1;
+    private int previousPositionNotWritten;
 
     public CountWriterHelper(final CountsWriter delegate) {
         this.delegate = delegate;
     }
 
-    int previousPosition = -1;
-
-    int previousCount = 0;
-    int lengthConstant = 1;
-    int previousPositionNotWritten;
-
     public void appendCountAtPosition(final int count, final int position) throws IOException {
-
-        System.out.printf("// count=%d position=%d previousCount=%d %n", count, position, previousCount);
+        System.out.printf("// count=%d position=%d previousCount=%d %n",
+                count, position, previousCount);
         lengthConstant++;
         if (count == previousCount) {
-            lengthConstant+=position-previousPositionNotWritten;
-            previousPositionNotWritten=position;
+            lengthConstant += position - previousPositionNotWritten;
+            previousPositionNotWritten = position;
         } else {
-
             delegate.appendCount(previousCount, lengthConstant);
             previousCount = count;
-            lengthConstant =0 ;
+            lengthConstant = 0;
             previousPosition = position;
-            previousPositionNotWritten=position;
+            previousPositionNotWritten = position;
         }
-
     }
 
     public void close() throws IOException {

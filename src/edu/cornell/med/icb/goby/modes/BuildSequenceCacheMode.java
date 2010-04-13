@@ -22,7 +22,10 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -40,7 +43,8 @@ public class BuildSequenceCacheMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Converts a fasta input file to a random access cache.";
+    private static final String MODE_DESCRIPTION =
+            "Converts a fasta input file to a random access cache.";
 
     /**
      * The Fasta input file.
@@ -88,7 +92,6 @@ public class BuildSequenceCacheMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-
         final RandomAccessSequenceCache cacheBuilder = new RandomAccessSequenceCache();
 
         InputStream input = null;
@@ -107,8 +110,6 @@ public class BuildSequenceCacheMode extends AbstractGobyMode {
         System.out.println("Done loading input file. Starting to write random access cacheBuilder.");
         cacheBuilder.save(basename);
         System.out.println("Sequence cacheBuilder written to disk with basename " + basename);
-
-
     }
 
     /**

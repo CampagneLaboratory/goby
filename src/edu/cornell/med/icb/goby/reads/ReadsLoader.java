@@ -38,16 +38,18 @@ public class ReadsLoader {
     private final ReadSet readIndexFilter;
     private final MutableString sequence;
 
-    SequenceDigests[] digests = null;
+    private SequenceDigests[] digests;
     private final ObjectArrayList<byte[]> compressedReads;
     private int numReads;
     private final File readsFile;
     private static final int MAX_PROCESS_READS = Integer.MAX_VALUE;
 
-    int readLength;
-    private byte[] byteBuffer = null;
+    private int readLength;
+    private byte[] byteBuffer;
     private final int numberOfMismaches = 0;
 
+    private boolean colorSpace;
+    private SequenceEncoder encoder;
 
     public int getReadLength() {
         return readLength;
@@ -60,11 +62,7 @@ public class ReadsLoader {
         this.readsFile = readsFile;
         this.sequence = new MutableString();
         this.encoder = new SequenceEncoder();
-
     }
-
-    boolean colorSpace;
-    SequenceEncoder encoder;
 
 
     public void setColorSpace(final boolean colorSpace) {
@@ -72,7 +70,6 @@ public class ReadsLoader {
     }
 
     public int read() throws IOException {
-
         final ProgressLogger progress = new ProgressLogger();
         progress.displayFreeMemory = true;
         progress.start("parsing reads");
@@ -110,9 +107,7 @@ public class ReadsLoader {
                         digests[2] = new SequenceDigests(mask2, minReadLength, true);
                         digests[3] = new SequenceDigests(mask2, minReadLength, false);
                     }
-
                 }
-
 
                 byteBuffer = new byte[maxReadLength]; //2 bits per base require four times less space.
 
@@ -148,7 +143,6 @@ public class ReadsLoader {
     public ObjectList<byte[]> getCompressedReads() {
         return compressedReads;
     }
-
 
     public byte[] getByteBuffer() {
         return byteBuffer;

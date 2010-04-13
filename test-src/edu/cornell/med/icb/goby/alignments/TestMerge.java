@@ -362,7 +362,7 @@ public class TestMerge {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Deleting base test directory: " + BASE_TEST_DIR);
         }
-        //FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
+        FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
     }
 
     @Before

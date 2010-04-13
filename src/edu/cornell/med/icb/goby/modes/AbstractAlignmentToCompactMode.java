@@ -114,7 +114,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
      *
      * false by default when constructed, overidden by configure with default configuration=true when run as a mode
      * on the command line, set to false explictly each time another Goby mode needs to import internally the result
-     * of a Goby search. 
+     * of a Goby search.
      */
     protected boolean thirdPartyInput=true;
 
@@ -281,7 +281,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         this.numberOfReads = numberOfReads;
     }
 
-    public void setThirdPartyInput(boolean thirdPartyInput) {
+    public void setThirdPartyInput(final boolean thirdPartyInput) {
         this.thirdPartyInput = thirdPartyInput;
     }
 

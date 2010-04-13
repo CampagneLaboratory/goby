@@ -37,7 +37,7 @@ public class AnnotationRPKM extends Annotation{
 
     @Override
         public void write(final PrintWriter annotationWriter) {
-        char delimiter = '\t';
+        final char delimiter = '\t';
         write(annotationWriter, delimiter);
     }
 

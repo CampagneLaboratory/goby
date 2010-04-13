@@ -46,7 +46,7 @@ public class FisherExactTestCalculator extends StatisticCalculator {
 
     @Override
    public DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
-                                        NormalizationMethod method, final DifferentialExpressionResults results,
+                                        final NormalizationMethod method, final DifferentialExpressionResults results,
                                         final DifferentialExpressionInfo info,
                                         final String... group) {
 

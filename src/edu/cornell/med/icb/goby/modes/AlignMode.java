@@ -50,7 +50,7 @@ public class AlignMode extends AbstractGobyMode {
      */
     private static final Log LOG = LogFactory.getLog(AlignMode.class);
 
-    public void setKeepTemporaryFiles(boolean keepTemporaryFiles) {
+    public void setKeepTemporaryFiles(final boolean keepTemporaryFiles) {
         this.keepTemporaryFiles = keepTemporaryFiles;
     }
 
@@ -61,7 +61,7 @@ public class AlignMode extends AbstractGobyMode {
      *
      * @param qualityFilterParams String of the form threshold=<double>, see edu.cornell.med.icb.goby.alignments.filters.AlignmentQualityFilter for syntax of optional parameters.
      */
-    public void setQualityFilterParameters(String qualityFilterParams) {
+    public void setQualityFilterParameters(final String qualityFilterParams) {
         this.qualityFilterParameters = qualityFilterParams;
     }
 

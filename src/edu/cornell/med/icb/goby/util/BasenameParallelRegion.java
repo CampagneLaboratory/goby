@@ -18,9 +18,9 @@
 
 package edu.cornell.med.icb.goby.util;
 
-import edu.rit.pj.ParallelRegion;
-import edu.rit.pj.IntegerForLoop;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.rit.pj.IntegerForLoop;
+import edu.rit.pj.ParallelRegion;
 
 /**
  * @author Fabien Campagne
@@ -28,12 +28,10 @@ import edu.cornell.med.icb.goby.alignments.AlignmentReader;
  *         Time: 5:25:57 PM
  */
 class BasenameParallelRegion extends ParallelRegion {
-
     private final String[] inputFilenames;
-    private DoInParallel loop;
+    private final DoInParallel loop;
 
-    BasenameParallelRegion(DoInParallel loop, final String[] inputFilenames) {
-
+    BasenameParallelRegion(final DoInParallel loop, final String[] inputFilenames) {
         this.loop = loop;
         this.inputFilenames = inputFilenames;
 

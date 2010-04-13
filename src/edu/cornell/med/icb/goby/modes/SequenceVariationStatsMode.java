@@ -23,15 +23,14 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.IterateAlignments;
-
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntCollection;
 import org.apache.commons.io.FilenameUtils;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * Evaluate statistics for sequence variations found in alignments.
@@ -125,19 +124,19 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
                 break;
         }
         try {
-            for (String basename : basenames) {
+            for (final String basename : basenames) {
                 alignmentIterator.resetTallies();
-                String[] singleBasename = new String[]{basename};
+                final String[] singleBasename = {basename};
                 // Iterate through each alignment and write sequence variations to output file:
                 alignmentIterator.iterate(singleBasename);
 
-                Int2IntMap readIndexTallies = alignmentIterator.getReadIndexTally();
-                double numberMutations = sum(readIndexTallies.values());
-                double numberOfAlignmentEntries = alignmentIterator.getNumAlignmentEntries();
-                for (int readIndex : readIndexTallies.keySet()) {
-                    int count = readIndexTallies.get(readIndex);
-                    double frequency = ((double) count) / numberMutations;
-                    double alignFrequency = ((double) count) / numberOfAlignmentEntries;
+                final Int2IntMap readIndexTallies = alignmentIterator.getReadIndexTally();
+                final double numberMutations = sum(readIndexTallies.values());
+                final double numberOfAlignmentEntries = alignmentIterator.getNumAlignmentEntries();
+                for (final int readIndex : readIndexTallies.keySet()) {
+                    final int count = readIndexTallies.get(readIndex);
+                    final double frequency = ((double) count) / numberMutations;
+                    final double alignFrequency = ((double) count) / numberOfAlignmentEntries;
 
                     writer.printf("%s\t%d\t%d\t%f\t%f%n",
                             FilenameUtils.getBaseName(basename),
@@ -155,9 +154,9 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
 
     }
 
-    private double sum(IntCollection intCollection) {
+    private double sum(final IntCollection intCollection) {
         double sum = 0;
-        for (int value : intCollection) {
+        for (final int value : intCollection) {
             sum += value;
         }
         return sum;
@@ -176,7 +175,8 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
     }
 
     private class MyIterateAlignments extends IterateAlignments {
-        Int2IntMap readIndexTally = new Int2IntOpenHashMap();
+        private Int2IntMap readIndexTally = new Int2IntOpenHashMap();
+        private int numAlignmentEntries;
 
         public Int2IntMap getReadIndexTally() {
             return readIndexTally;
@@ -186,20 +186,16 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
             return numAlignmentEntries;
         }
 
-        int numAlignmentEntries = 0;
-
-        public void processAlignmentEntry(AlignmentReader alignmentReader,
-                                          Alignments.AlignmentEntry alignmentEntry) {
-
+        @Override
+        public void processAlignmentEntry(final AlignmentReader alignmentReader,
+                                          final Alignments.AlignmentEntry alignmentEntry) {
             numAlignmentEntries += 1;
-            for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
+            for (final Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
                 final int readIndex = var.getReadIndex();
-                int value = readIndexTally.get(readIndex);
+                final int value = readIndexTally.get(readIndex);
                 readIndexTally.put(readIndex, value + 1);
             }
-
         }
-
 
         public void resetTallies() {
             readIndexTally = new Int2IntOpenHashMap();

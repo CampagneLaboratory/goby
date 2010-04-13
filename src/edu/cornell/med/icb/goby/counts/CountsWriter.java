@@ -40,6 +40,7 @@ public class CountsWriter implements Closeable {
     private boolean dataAlreadyWritten;
     private int numberOfCountsWritten;
     private int bitsWritten;
+    private int position;
 
     @Deprecated
     public CountsWriter(final OutputStream output, final int initialCount) throws IOException {
@@ -85,9 +86,8 @@ public class CountsWriter implements Closeable {
         // }
         previousCount = count;
         ++numberOfCountsWritten;
-        position+=lengthConstant;
+        position += lengthConstant;
     }
-    private int position=0;
 
     protected static int encodeDeltaCount(final int deltaCount) {
         final int deltaCountEncoded;

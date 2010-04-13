@@ -53,7 +53,7 @@ public class DifferentialExpressionAnalysis {
      */
     private String[] groupComparison;
     private final ObjectSet<String> groups = new ObjectArraySet<String>();
-    private Object2ObjectMap<String, Integer> groupSizes = new Object2ObjectOpenHashMap<String, Integer>();
+    private final Object2ObjectMap<String, Integer> groupSizes = new Object2ObjectOpenHashMap<String, Integer>();
     /**
      * Flag for an invalid t-test due to any group size < 2
      *
@@ -70,8 +70,8 @@ public class DifferentialExpressionAnalysis {
     private static final ServiceLoader<NormalizationMethod> normalizationMethodLoader
             = ServiceLoader.load(NormalizationMethod.class);
 
-    public void parseGroupsDefinition(final String groupsDefinition, DifferentialExpressionCalculator deCalculator,
-                                      String[] inputFilenames) {
+    public void parseGroupsDefinition(final String groupsDefinition, final DifferentialExpressionCalculator deCalculator,
+                                      final String[] inputFilenames) {
         if (groupsDefinition == null) {
             // no groups definition to parse.
             return;
@@ -91,7 +91,7 @@ public class DifferentialExpressionAnalysis {
             groups.add(groupId);
             for (final String groupString : groupBasenames.split(",")) {
 
-                String groupBasename = FilenameUtils.getBaseName(AlignmentReader.getBasename(groupString));
+                final String groupBasename = FilenameUtils.getBaseName(AlignmentReader.getBasename(groupString));
                 if (!isInputBasename(groupBasename, inputFilenames)) {
                     System.err.printf("The group basename %s is not a valid input basename.%n", groupBasename);
                     System.exit(1);
@@ -99,7 +99,7 @@ public class DifferentialExpressionAnalysis {
                 System.out.println("Associating basename: " + groupBasename + " to group: " + groupId);
                 deCalculator.associateSampleToGroup(groupBasename, groupId);
             }
-            int groupSize = (groupBasenames.split(",")).length;
+            final int groupSize = (groupBasenames.split(",")).length;
             groupSizes.put(groupId, groupSize);
         }
     }
@@ -110,9 +110,11 @@ public class DifferentialExpressionAnalysis {
      * @param basename
      * @return
      */
-    private boolean isInputBasename(String basename, String[] inputFilenames) {
-        for (String inputFilename : inputFilenames) {
-            if (FilenameUtils.getBaseName(AlignmentReader.getBasename(inputFilename)).equals(basename)) return true;
+    private boolean isInputBasename(final String basename, final String[] inputFilenames) {
+        for (final String inputFilename : inputFilenames) {
+            if (FilenameUtils.getBaseName(AlignmentReader.getBasename(inputFilename)).equals(basename)) {
+                return true;
+            }
         }
         return false;
     }
@@ -151,7 +153,7 @@ public class DifferentialExpressionAnalysis {
 
     public boolean checkTtest() {
         boolean flag = true;
-        for (int size : groupSizes.values()) {
+        for (final int size : groupSizes.values()) {
             if (size < 2) {
                 flag = false;
                 System.out.println("Insufficient data for t-test: need at least 2 samples per group.");
@@ -161,20 +163,20 @@ public class DifferentialExpressionAnalysis {
     }
 
     public DifferentialExpressionResults evaluateDifferentialExpressionStatistics
-            (DifferentialExpressionCalculator deCalculator, boolean doComparison,
-             ObjectArraySet<NormalizationMethod> normalizationMethods) throws FileNotFoundException {
+            (final DifferentialExpressionCalculator deCalculator, final boolean doComparison,
+             final ObjectArraySet<NormalizationMethod> normalizationMethods) throws FileNotFoundException {
         DifferentialExpressionResults results = null;
         if (doComparison) {
             results = null;
 
-            for (NormalizationMethod method : normalizationMethods) {
+            for (final NormalizationMethod method : normalizationMethods) {
                 method.normalize(deCalculator, groupComparison);
                 // evaluate differences between groups:
                 results = deCalculator.compare(results, method, new FoldChangeCalculator(), groupComparison);
                 //results.setOmitNonInformativeColumns(omitNonInformativeColumns);
                 results = deCalculator.compare(results, method, new FoldChangeMagnitudeCalculator(), groupComparison);
                 results = deCalculator.compare(results, method, new Log2FoldChangeCalculator(), groupComparison);
-                             
+
                 results = deCalculator.compare(results, method, new AverageCalculator(), groupComparison);
                 ttestflag = checkTtest();
                 if (ttestflag) {

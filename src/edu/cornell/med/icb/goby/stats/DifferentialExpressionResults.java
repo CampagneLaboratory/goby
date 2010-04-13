@@ -39,8 +39,8 @@ import java.util.Set;
 public class DifferentialExpressionResults extends ObjectArrayList<DifferentialExpressionInfo> {
     private final IndexedIdentifier statisticIds = new IndexedIdentifier();
     private final List<MutableString> sortedStatisticIds = new ObjectArrayList<MutableString>();
-    private IntArrayList averageCountPerGroupIndexes = new IntArrayList();
-    private boolean omitNonInformativeColumns = false;
+    private final IntArrayList averageCountPerGroupIndexes = new IntArrayList();
+    private boolean omitNonInformativeColumns;
 
     /**
      * Declare a new statistic.
@@ -58,7 +58,7 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
      * @return the index of the statistic.
      */
     public int declareStatistic(final MutableString statisticId) {
-       int index= statisticIds.registerIdentifier(statisticId);
+       final int index = statisticIds.registerIdentifier(statisticId);
        // TODO There is no reason for this class to know anything about the name of columns it may contain. Remove this code.
         if (statisticId.startsWith("average count group ")) {
             averageCountPerGroupIndexes.add(sortedStatisticIds.size());
@@ -71,7 +71,7 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
         return omitNonInformativeColumns;
     }
 
-    public void setOmitNonInformativeColumns(boolean omitNonInformativeColumns) {
+    public void setOmitNonInformativeColumns(final boolean omitNonInformativeColumns) {
         this.omitNonInformativeColumns = omitNonInformativeColumns;
     }
 
@@ -114,8 +114,8 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
 
     public IntList statisticsIndexesFor(final String statPrefix, final NormalizationMethod method) {
         final IntList results = new IntArrayList();
-        String methodAbbr = "(" + method.getAbbreviation() + ")";
-        Set<Map.Entry<MutableString ,Integer>> entrySet = statisticIds.entrySet();
+        final String methodAbbr = "(" + method.getAbbreviation() + ")";
+        final Set<Map.Entry<MutableString, Integer>> entrySet = statisticIds.entrySet();
         for (final Map.Entry<MutableString, Integer> entry : entrySet) {
             // First try with the method abbreviation
             if (entry.getKey().startsWith(statPrefix) && entry.getKey().endsWith(methodAbbr)) {
@@ -143,9 +143,8 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
      * @param printWriter
      * @param delimiter
      */
-    public void write(
-            final PrintWriter printWriter, final char delimiter,
-            final Map<MutableString, MutableString> elementLabelToElementType) {
+    public void write(final PrintWriter printWriter, final char delimiter,
+                      final Map<MutableString, MutableString> elementLabelToElementType) {
         InformativeColumns informativeColumns = null;
         if (omitNonInformativeColumns) {
             informativeColumns = new InformativeColumns(sortedStatisticIds.size(), new InformativeNonZeroNonNaN());

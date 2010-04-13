@@ -20,16 +20,21 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
-
-import it.unimi.dsi.fastutil.objects.*;
-
-import java.io.*;
-import java.util.*;
-
+import edu.cornell.med.icb.goby.algorithmic.data.Segment;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import org.apache.commons.io.IOUtils;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Write annotations corresponding to consensus peaks found in each sequence of count archives.
@@ -40,8 +45,13 @@ public class AnnotationPenaltyMode extends AbstractGobyMode {
     /**
      * The mode name.
      */
-    public static final String MODE_NAME = "annotation-penalty";
-    public static final String MODE_DESCRIPTION = "Calculates the distances between two collections of annotations.";
+    private static final String MODE_NAME = "annotation-penalty";
+
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION =
+            "Calculates the distances between two collections of annotations.";
 
      /**
      * Constants
@@ -117,11 +127,11 @@ public class AnnotationPenaltyMode extends AbstractGobyMode {
         final Object2ObjectMap<String, ObjectList<Annotation>> allProposalAnnots = readAnnotations(proposalAnnotFile);
 
         //Find the references (chromosomes) common in both annotation files
-        Set<String> allGeneChroms = allGeneAnnots.keySet();
-        Set<String> allProposalChroms = allProposalAnnots.keySet();
-        Set<String> intersect = allGeneChroms;
+        final Set<String> allGeneChroms = allGeneAnnots.keySet();
+        final Set<String> allProposalChroms = allProposalAnnots.keySet();
+        final Set<String> intersect = allGeneChroms;
         intersect.retainAll(allProposalChroms);
-        Iterator<String> commonChromsIt = intersect.iterator();
+        final Iterator<String> commonChromsIt = intersect.iterator();
 
         //Find the overlapping differences between the official gene annotation and the proposed one.
         while (commonChromsIt.hasNext()) {
@@ -176,26 +186,29 @@ public class AnnotationPenaltyMode extends AbstractGobyMode {
         System.out.println("Score = " + score);
     }
 
-    private static void addPenalty(Annotation annot) {
+    private static void addPenalty(final Annotation annot) {
         score += (annot.getLength() * NON_OVERLAP_COST);
         lastPos = annot.getEnd();
     }
 
-    private static void addPenalty(Segment seg) {
-        if(seg.end < lastPos)
+    private static void addPenalty(final Segment seg) {
+        if(seg.end < lastPos) {
             return;
+        }
 
         score += (seg.getLength() * NON_OVERLAP_COST);
         lastPos = seg.end;
     }
 
-    private static void addPenalty(Segment geneSeg, Segment propSeg) {
-        int stop = Math.min(geneSeg.end, propSeg.end);
+    private static void addPenalty(final Segment geneSeg, final Segment propSeg) {
+        final int stop = Math.min(geneSeg.end, propSeg.end);
 
-        if(stop < lastPos)
+        if(stop < lastPos) {
             return;
+        }
 
-        int overlapLen = 0, nonOverlapLen = 0;
+        int overlapLen = 0;
+        int nonOverlapLen = 0;
         for(int i = lastPos; i < stop; i++)
         {
             if((geneSeg.start <= i && i <= geneSeg.end) && (propSeg.start <= i && i <= propSeg.end))
@@ -212,7 +225,7 @@ public class AnnotationPenaltyMode extends AbstractGobyMode {
         lastPos = stop;
     }
 
-    private static void addPenalty(Annotation geneAnnot, Annotation propAnnot) {
+    private static void addPenalty(final Annotation geneAnnot, final Annotation propAnnot) {
 
         final ObjectIterator<Segment> geneSegIt = geneAnnot.segments.iterator();
         final ObjectIterator<Segment> propSegIt = propAnnot.segments.iterator();
@@ -253,7 +266,7 @@ public class AnnotationPenaltyMode extends AbstractGobyMode {
             }
     }
 
-    private static Annotation getNextAnnotation(ObjectIterator<Annotation> iterator) {
+    private static Annotation getNextAnnotation(final ObjectIterator<Annotation> iterator) {
         Annotation annotation = null;
         if (iterator.hasNext()) {
             annotation = iterator.next();
@@ -262,7 +275,7 @@ public class AnnotationPenaltyMode extends AbstractGobyMode {
         return annotation;
     }
 
-        private static Segment getNextSegment(ObjectIterator<Segment> iterator) {
+        private static Segment getNextSegment(final ObjectIterator<Segment> iterator) {
         Segment segment = null;
         if (iterator.hasNext()) {
             segment = iterator.next();

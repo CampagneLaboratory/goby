@@ -25,10 +25,18 @@ import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
-import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import net.sf.samtools.AlignmentBlock;
+import net.sf.samtools.CigarElement;
+import net.sf.samtools.SAMFileHeader;
+import net.sf.samtools.SAMFileReader;
+import net.sf.samtools.SAMRecord;
+import net.sf.samtools.SAMSequenceDictionary;
+import net.sf.samtools.SAMSequenceRecord;
+import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -36,9 +44,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import net.sf.samtools.*;
-import net.sf.samtools.util.CloseableIterator;
 
 /**
  * Converts binary BWA alignments in the SAM format to the compact alignment format.
@@ -68,8 +73,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     protected String samBinaryFilename;
 
     private boolean skipMissingMdAttribute = true;
-    private int dummyQueryIndex = 0;
-
+    private int dummyQueryIndex;
 
     public String getSamBinaryFilename() {
         return samBinaryFilename;
@@ -124,11 +128,11 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
         final CloseableIterator<SAMRecord> recordCloseableIterator = parser.iterator();
 
-        MutableString readSequence = new MutableString();
+        final MutableString readSequence = new MutableString();
         // shared buffer for extract sequence variation work. We allocate here to avoid repetitive memory allocations.
-        MutableString referenceSequence = new MutableString();
+        final MutableString referenceSequence = new MutableString();
         // shared buffer for extract sequence variation work. We allocate here to avoid repetitive memory allocations.
-        MutableString readPostInsertions = new MutableString();
+        final MutableString readPostInsertions = new MutableString();
 
        // int stopEarly = 0;
         while (recordCloseableIterator.hasNext()) {
@@ -153,7 +157,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
                 continue;
             }
-            int targetIndex = LastToCompactMode.getTargetIndex(
+            final int targetIndex = LastToCompactMode.getTargetIndex(
                     targetIds, samRecord.getReferenceName(), thirdPartyInput);
 
             // positions reported by BWA appear to start at 1. We convert to start at zero.
@@ -229,13 +233,13 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             currentEntry.setTargetAlignedLength(targetAlignedLength);
             currentEntry.setTargetIndex(targetIndex);
 
-            String cigar = samRecord.getCigarString();
-            String attributeMD = (String) samRecord.getAttribute("MD");
-            String sequence = samRecord.getReadString();
+            final String cigar = samRecord.getCigarString();
+            final String attributeMD = (String) samRecord.getAttribute("MD");
+            final String sequence = samRecord.getReadString();
             readSequence.setLength(0);
             readSequence.append(sequence);
 
-            int queryLength = samRecord.getReadLength();
+            final int queryLength = samRecord.getReadLength();
 
             extractSequenceVariations(cigar, attributeMD, readSequence, readPostInsertions,
                     referenceSequence, currentEntry, queryLength, reverseStrand);
@@ -323,12 +327,12 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         attributeCIGAR_insertions_pattern = Pattern.compile("([0-9]+)([MID])");
     }
 
-    private void extractSequenceVariations(String cigar, String attributeMD, MutableString readSequence,
-                                           MutableString readPostInsertions,
-                                           MutableString referenceSequence,
-                                           Alignments.AlignmentEntry.Builder currentEntry,
-                                           int queryLength,
-                                           boolean reverseStrand) {
+    private void extractSequenceVariations(final String cigar, final String attributeMD, final MutableString readSequence,
+                                           final MutableString readPostInsertions,
+                                           final MutableString referenceSequence,
+                                           final Alignments.AlignmentEntry.Builder currentEntry,
+                                           final int queryLength,
+                                           final boolean reverseStrand) {
         /* From the SAM specification document, see http://samtools.sourceforge.net/SAM1.pdf
          MD Z String for mismatching positions in the format of [0-9]+(([ACGTN]|\^[ACGTN]+)[0-9]+)* 2,3
 
@@ -342,10 +346,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             return;
         }
 
-        int readStartPosition = produceReferenceSequence(cigar, attributeMD, readSequence, readPostInsertions,
+        final int readStartPosition = produceReferenceSequence(cigar, attributeMD, readSequence, readPostInsertions,
                 referenceSequence);
 
-        int alignmentLength = readSequence.length();
+        final int alignmentLength = readSequence.length();
         LastToCompactMode.extractSequenceVariations(currentEntry,
                 alignmentLength,
                 referenceSequence, readSequence, readStartPosition, queryLength, reverseStrand);
@@ -362,27 +366,27 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
      * @param referenceSequence The sequence of the reference that will be reconstructed.
      * @return alignedReadStartPosition The position on the read that starts to align.
      */
-    public static int produceReferenceSequence(String CIGAR, String mdAttribute, MutableString readSequence, MutableString readPostInsertions,
-                                               MutableString referenceSequence) {
-        Pattern matchPattern = attributeMD_pattern;
+    public static int produceReferenceSequence(final String CIGAR, final String mdAttribute, final MutableString readSequence, final MutableString readPostInsertions,
+                                               final MutableString referenceSequence) {
+        final Pattern matchPattern = attributeMD_pattern;
         referenceSequence.setLength(0);
         readPostInsertions.setLength(0);
         int end = 0;
         int positionInReadSequence = 0;
-        IntList positionAdjustment = new IntArrayList();
+        final IntList positionAdjustment = new IntArrayList();
         positionAdjustment.size(readSequence.length());
 
-        int readStartAlignedPosition = processInsertionsOnly(CIGAR, mdAttribute, readSequence, readPostInsertions, positionAdjustment);
+        final int readStartAlignedPosition = processInsertionsOnly(CIGAR, mdAttribute, readSequence, readPostInsertions, positionAdjustment);
 
-        Matcher matchMatcher = matchPattern.matcher(mdAttribute);
+        final Matcher matchMatcher = matchPattern.matcher(mdAttribute);
 
-        int currentAdjustment = 0;
+        final int currentAdjustment = 0;
         while (matchMatcher.find(end)) {
 
-            String matchChars = matchMatcher.group(1);
-            String variationChars = matchMatcher.group(2);
+            final String matchChars = matchMatcher.group(1);
+            final String variationChars = matchMatcher.group(2);
             if (matchChars != null) {
-                int matchLength = Integer.parseInt(matchChars);
+                final int matchLength = Integer.parseInt(matchChars);
 
                 /*    System.out.println(String.format("subsequence(%d,%d),",
                           positionInReadSequence,
@@ -404,7 +408,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
                 if (variationChars.charAt(0) == '^') {
                     // deletion in the reference, to reconstitute the reference, we append the deleted characters.
-                    int mutationLength = variationChars.length() - 1;   // -1 is for the indicator character '^'
+                    final int mutationLength = variationChars.length() - 1;   // -1 is for the indicator character '^'
                     final String toAppend = variationChars.substring(1);
                     referenceSequence.append(toAppend);
 
@@ -418,7 +422,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     positionInReadSequence += mutationLength;
                 } else {
                     // base mutations:
-                    int mutationLength = variationChars.length();
+                    final int mutationLength = variationChars.length();
 
                     referenceSequence.append(variationChars);
                     //   System.out.println("var " + variationChars + " appending " + variationChars);
@@ -439,19 +443,19 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         return readStartAlignedPosition;
     }
 
-    private static int processInsertionsOnly(String cigar, String mdAttribute, MutableString readSequence,
-                                             MutableString transformedSequence, IntList positionAdjustment) {
-        Pattern matchPattern = attributeCIGAR_insertions_pattern;
-        Matcher matchMatcher = matchPattern.matcher(cigar);
+    private static int processInsertionsOnly(final String cigar, final String mdAttribute, final MutableString readSequence,
+                                             final MutableString transformedSequence, final IntList positionAdjustment) {
+        final Pattern matchPattern = attributeCIGAR_insertions_pattern;
+        final Matcher matchMatcher = matchPattern.matcher(cigar);
         int end = 0;
         int positionInReadSequence = 0;
         int readStartAlignedPosition = 0;
         //   System.out.println("cigar: "+cigar +" mdAttribute: "+mdAttribute);
 
         while (matchMatcher.find(end)) {
-            String matchLenthAsString = matchMatcher.group(1);
-            String variationType = matchMatcher.group(2);
-            int matchLength = Integer.parseInt(matchLenthAsString);
+            final String matchLenthAsString = matchMatcher.group(1);
+            final String variationType = matchMatcher.group(2);
+            final int matchLength = Integer.parseInt(matchLenthAsString);
 
             //      System.out.println(String.format("length: %s type: %s", matchLenthAsString, variationType));
             assert variationType.length() == 1 : " CIGAR mutation type must be one character only";
@@ -473,7 +477,9 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                         positionAdjustment.set(positionInReadSequence + i, +1);
                     }
                     positionInReadSequence += matchLength;
-                    for (int i = 0; i < matchLength; ++i) transformedSequence.append('-');
+                    for (int i = 0; i < matchLength; ++i) {
+                        transformedSequence.append('-');
+                    }
                     break;
                 case 'D':
                     // the reference had extra bases.

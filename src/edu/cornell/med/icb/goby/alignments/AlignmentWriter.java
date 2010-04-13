@@ -21,8 +21,8 @@ package edu.cornell.med.icb.goby.alignments;
 import edu.cornell.med.icb.goby.reads.MessageChunksWriter;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.lang.MutableString;
@@ -307,10 +307,12 @@ public class AlignmentWriter implements Closeable {
         }
     }
 
-    private void compactQueryLengths(int[] queryLengths) {
-        if (queryLengths == null) return;
-        IntSet uniqueLengths = new IntOpenHashSet();
-        for (int length : queryLengths) {
+    private void compactQueryLengths(final int[] queryLengths) {
+        if (queryLengths == null) {
+            return;
+        }
+        final IntSet uniqueLengths = new IntOpenHashSet();
+        for (final int length : queryLengths) {
             if (length != 0) {
                 uniqueLengths.add(length);
 

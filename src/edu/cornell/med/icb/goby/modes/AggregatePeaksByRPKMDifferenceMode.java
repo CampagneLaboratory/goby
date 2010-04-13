@@ -125,9 +125,9 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
         timer.start();
 
         //For all input files, and given the union peaks, compute the average RPKM for each peak across all input samples
-        for (String inputFile : inputFilenames) {
+        for (final String inputFile : inputFilenames) {
             System.out.println("Reading alignment file: " + inputFile);
-            String inputBasename = AlignmentReader.getBasename(inputFile);
+            final String inputBasename = AlignmentReader.getBasename(inputFile);
             final AlignmentReader reader = new AlignmentReader(inputBasename);
             reader.readHeader();
             final int numberOfReferences = reader.getNumberOfTargets();
@@ -137,7 +137,7 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
             final AnnotationCount[] algs = new AnnotationCount[numberOfReferences];
             final IntSet referencesToProcess = new IntOpenHashSet();
 
-            Set<String> chromosomeNames = allAnnots.keySet();
+            final Set<String> chromosomeNames = allAnnots.keySet();
 
             // create count writers, one for each reference sequence in the alignment:
             for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
@@ -175,8 +175,8 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
 
         //Now that we've finished processing all samples, compute the average of the RPKMs across all samples
         //Also if a rpkm file is specified, write the averaged RPKM values to this file.
-        int numSamples = inputFilenames.length;
-        Set<String> references = allAnnots.keySet();
+        final int numSamples = inputFilenames.length;
+        final Set<String> references = allAnnots.keySet();
         if (rpkmFileName != null) {
             System.out.println("Writing the RPKM values to file: " + rpkmFileName);
         }
@@ -198,10 +198,11 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
         for (final String reference : references) {
             System.out.println("Aggregating annotations by RPKM for reference " + reference);
             final ObjectList<AnnotationRPKM> annots = allAnnots.get(reference);
-            ObjectList<Annotation> mergedAnnots = new ObjectArrayList<Annotation>();
-            ObjectListIterator<AnnotationRPKM> annotsIterator = annots.listIterator();
+            final ObjectList<Annotation> mergedAnnots = new ObjectArrayList<Annotation>();
+            final ObjectListIterator<AnnotationRPKM> annotsIterator = annots.listIterator();
 
-            AnnotationRPKM annot = null, nextAnnot = null;
+            AnnotationRPKM annot = null;
+            AnnotationRPKM nextAnnot = null;
             if (annotsIterator.hasNext()) {
                 annot = annotsIterator.next();
             }
@@ -237,8 +238,7 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
         System.out.println("time spent  " + timer.toString());
     }
 
-
-    private void computeAnnotationRPKM(Object2ObjectMap<String, ObjectList<AnnotationRPKM>> allAnnots, DoubleIndexedIdentifier referenceIds, AnnotationCount[] algs, IntSet referencesToProcess, int numAlignedReadsInSample) throws IOException {
+    private void computeAnnotationRPKM(final Object2ObjectMap<String, ObjectList<AnnotationRPKM>> allAnnots, final DoubleIndexedIdentifier referenceIds, final AnnotationCount[] algs, final IntSet referencesToProcess, final int numAlignedReadsInSample) {
         for (final int referenceIndex : referencesToProcess) {
 
             final String chromosomeName = referenceIds.getId(referenceIndex).toString();
@@ -328,9 +328,9 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
         return allAnnots;
     }
 
-    public static void writeRPKM(String outputFileName, ObjectList<AnnotationRPKM> annotationList, boolean append) {
+    public static void writeRPKM(final String outputFileName, final ObjectList<AnnotationRPKM> annotationList, final boolean append) {
         PrintWriter writer = null;
-        File outputFile = new File(outputFileName);
+        final File outputFile = new File(outputFileName);
 
         try {
             if (!outputFile.exists()) {
@@ -344,7 +344,7 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
             }
 
             if (writer != null) {
-                ObjectListIterator<AnnotationRPKM> annotIterator = annotationList.listIterator();
+                final ObjectListIterator<AnnotationRPKM> annotIterator = annotationList.listIterator();
                 while (annotIterator.hasNext()) {
                     final AnnotationRPKM annotation = annotIterator.next();
                     annotation.write(writer);
@@ -364,9 +364,9 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
         }
     }
 
-    public static void writeAnnotations(String outputFileName, ObjectList<Annotation> annotationList, boolean append) {
+    public static void writeAnnotations(final String outputFileName, final ObjectList<Annotation> annotationList, final boolean append) {
         PrintWriter writer = null;
-        File outputFile = new File(outputFileName);
+        final File outputFile = new File(outputFileName);
 
         try {
             if (!outputFile.exists()) {
@@ -381,7 +381,7 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
             }
 
             if (writer != null) {
-                ObjectListIterator<Annotation> annotIterator = annotationList.listIterator();
+                final ObjectListIterator<Annotation> annotIterator = annotationList.listIterator();
                 while (annotIterator.hasNext()) {
 
                     final Annotation annotation = annotIterator.next();

@@ -196,6 +196,10 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
                 outputFilename = getOutputFilename(outputBasename, ++splitIndex);
             }
 
+            if (inputFilename.equals(outputFilename)) {
+                System.err.println("input cannot equal the output name");
+                System.exit(2);
+            }
             System.out.printf("Converting [%d/%d] %s to %s%n",
                     ++numProcessed, numToProcess, inputFilename, outputFilename);
 

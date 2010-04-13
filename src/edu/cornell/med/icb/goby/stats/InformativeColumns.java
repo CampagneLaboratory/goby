@@ -78,7 +78,7 @@ public class InformativeColumns {
             return;
         }
         allColumnsInformative = true;
-        for (boolean column : data) {
+        for (final boolean column : data) {
             if (!column) {
                 allColumnsInformative = false;
             }

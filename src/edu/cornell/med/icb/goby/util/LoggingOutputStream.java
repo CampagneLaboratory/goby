@@ -81,7 +81,7 @@ public class LoggingOutputStream extends OutputStream {
     }
 
     /** Last character received. */
-    int lastb = 0;
+    private int lastb;
 
     /**
      * Write a character to the output stream. At the end of the line this will log the output.

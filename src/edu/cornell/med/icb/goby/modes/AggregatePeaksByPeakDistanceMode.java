@@ -18,18 +18,27 @@
 
 package edu.cornell.med.icb.goby.modes;
 
+import cern.colt.Timer;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
-import it.unimi.dsi.fastutil.objects.*;
-
-import java.io.*;
-import java.util.Set;
-import java.util.Collections;
-
+import edu.cornell.med.icb.goby.algorithmic.data.Segment;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import org.apache.commons.io.IOUtils;
-import cern.colt.Timer;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Collections;
+import java.util.Set;
 
 
 /**
@@ -41,8 +50,13 @@ public class AggregatePeaksByPeakDistanceMode extends AbstractGobyMode {
     /**
      * The mode name.
      */
-    public static final String MODE_NAME = "aggregate-by-peak-distance";
-    public static final String MODE_DESCRIPTION = "Aggregates peaks according to their interpeak distance given a threshold.";
+    private static final String MODE_NAME = "aggregate-by-peak-distance";
+
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION =
+            "Aggregates peaks according to their interpeak distance given a threshold.";
 
 
     /**
@@ -104,7 +118,7 @@ public class AggregatePeaksByPeakDistanceMode extends AbstractGobyMode {
         final Object2ObjectMap<String, ObjectList<Annotation>> unionAnnots = readAnnotations(inputFile);
 
 
-        //In the union file, all peaks should be non-overlapping 
+        //In the union file, all peaks should be non-overlapping
         System.out.println("Aggregating peaks by distance.");
         final Set<String> chromsomes = unionAnnots.keySet();
         ObjectList<Annotation> annotationList = null;
@@ -115,15 +129,16 @@ public class AggregatePeaksByPeakDistanceMode extends AbstractGobyMode {
             final ObjectList<Segment> segmentsList = new ObjectArrayList<Segment>();
             final ObjectList<Annotation> unionAnnotList = unionAnnots.get(chromsome);
             System.out.println(String.format("Reference %s: Starting with %d annotations.", chromsome, unionAnnotList.size()));
-            ObjectListIterator<Annotation> unionAnnotListIt = unionAnnotList.listIterator();
+            final ObjectListIterator<Annotation> unionAnnotListIt = unionAnnotList.listIterator();
             while (unionAnnotListIt.hasNext()) {
                 segmentsList.addAll(unionAnnotListIt.next().segments);
             }
             unionAnnotList.clear();
             Collections.sort(segmentsList);
-            ObjectListIterator<Segment> segIterator = segmentsList.listIterator();
+            final ObjectListIterator<Segment> segIterator = segmentsList.listIterator();
 
-            Segment segment = null, nextSeg = null;
+            Segment segment = null;
+            Segment nextSeg = null;
             if (segIterator.hasNext()) {
                 segment = segIterator.next();
             }
@@ -153,9 +168,9 @@ public class AggregatePeaksByPeakDistanceMode extends AbstractGobyMode {
         System.out.println("time spent  " + timer.toString());
     }
 
-    public static void writeAnnotations(String outputFileName, ObjectList<Annotation> annotationList, boolean append) {
+    public static void writeAnnotations(final String outputFileName, final ObjectList<Annotation> annotationList, final boolean append) {
         PrintWriter writer = null;
-        File outputFile = new File(outputFileName);
+        final File outputFile = new File(outputFileName);
 
         try {
             if (!outputFile.exists()) {
@@ -166,7 +181,7 @@ public class AggregatePeaksByPeakDistanceMode extends AbstractGobyMode {
             }
 
             if (writer != null) {
-                ObjectListIterator<Annotation> annotIterator = annotationList.listIterator();
+                final ObjectListIterator<Annotation> annotIterator = annotationList.listIterator();
                 while (annotIterator.hasNext()) {
                     final Annotation annotation = annotIterator.next();
                     annotation.write(writer);

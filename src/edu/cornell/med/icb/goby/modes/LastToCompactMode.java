@@ -32,8 +32,8 @@ import edu.cornell.med.icb.iterators.TsvLineIterator;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.logging.ProgressLogger;
 import it.unimi.dsi.lang.MutableString;
+import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
@@ -217,8 +217,8 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     currentEntry.setScore(score);
                     currentEntry.setTargetAlignedLength(reference.alignedLength);
                     currentEntry.setTargetIndex(targetIndex);
-                    int readStartPosition = query.alignedStart;
-                    int queryLength = query.sequenceLength;
+                    final int readStartPosition = query.alignedStart;
+                    final int queryLength = query.sequenceLength;
                     parseSequenceVariations(currentEntry, reference, query, readStartPosition, queryLength, reverseStrand);
                     final Alignments.AlignmentEntry alignmentEntry = currentEntry.build();
 
@@ -286,7 +286,9 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
         return numAligns;
     }
 
-    public final static int getTargetIndex(IndexedIdentifier targetIds, CharSequence targetIdentifier, boolean thirdPartyInput) {
+    public static int getTargetIndex(final IndexedIdentifier targetIds,
+                                     final CharSequence targetIdentifier,
+                                     final boolean thirdPartyInput) {
         int targetIndex = -1;
         try {
             if (thirdPartyInput) {
@@ -296,9 +298,8 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
             }
         } catch (NumberFormatException e) {
             if (targetIds != null) {
-                Integer object = targetIds.get(targetIdentifier);
+                final Integer object = targetIds.get(targetIdentifier);
                 if (object == null) {
-
                     LOG.warn("Input file contains a target id that is not defined in the target compact reads: " + targetIdentifier);
                     targetIndex = targetIds.registerIdentifier(new MutableString(targetIdentifier));
                 } else {
@@ -314,8 +315,8 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
     }
 
     private void parseSequenceVariations(final Alignments.AlignmentEntry.Builder currentEntry,
-                                         AlignedSequence reference,
-                                         AlignedSequence query, int readStartPosition, int queryLength, boolean reverseStrand) {
+                                         final AlignedSequence reference,
+                                         final AlignedSequence query, final int readStartPosition, final int queryLength, final boolean reverseStrand) {
         final int alignmentLength = reference.alignment.length();
         final MutableString referenceSequence = reference.alignment;
         final MutableString querySequence = query.alignment;
@@ -333,11 +334,11 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
      * @param readSequence      The read sequence
      * @param queryLength
      */
-    public static void extractSequenceVariations(Alignments.AlignmentEntry.Builder currentEntry, int alignmentLength,
-                                                 MutableString referenceSequence,
-                                                 MutableString readSequence,
-                                                 int readStartPosition,
-                                                 int queryLength, boolean reverseStrand) {
+    public static void extractSequenceVariations(final Alignments.AlignmentEntry.Builder currentEntry, final int alignmentLength,
+                                                 final MutableString referenceSequence,
+                                                 final MutableString readSequence,
+                                                 final int readStartPosition,
+                                                 final int queryLength, final boolean reverseStrand) {
         //     System.out.printf("Extracting variations from %n%s%n%s%n",
         //             referenceSequence, readSequence);
 
@@ -346,8 +347,8 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
         int variationPosition = Integer.MAX_VALUE;
         int minLength = Math.min(referenceSequence.length(), readSequence.length());
         minLength = Math.min(alignmentLength, minLength);
-        // will record the number of gaps in the read, up to the variation position. We need to substract this number
-        // from the position to obtain the read index.
+        // will record the number of gaps in the read, up to the variation position. We need to
+        // subtract this number from the position to obtain the read index.
         int readIndexAdjustment = 0;
         int newAdjustment = 0;
         for (int position = 0; position < minLength; ++position) {
@@ -377,13 +378,13 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
         appendNewSequenceVariation(currentEntry, from, to, variationPosition, readStartPosition, queryLength, reverseStrand, readIndexAdjustment);
     }
 
-    protected static void appendNewSequenceVariation(Alignments.AlignmentEntry.Builder currentEntry,
-                                                     MutableString from,
-                                                     MutableString to,
-                                                     int variationPosition,
-                                                     int readStartPosition, int queryLength, boolean reverseStrand, int readIndexAdjustment) {
+    protected static void appendNewSequenceVariation(final Alignments.AlignmentEntry.Builder currentEntry,
+                                                     final MutableString from,
+                                                     final MutableString to,
+                                                     final int variationPosition,
+                                                     final int readStartPosition, final int queryLength, final boolean reverseStrand, final int readIndexAdjustment) {
         if (variationPosition != Integer.MAX_VALUE) {
-            Alignments.SequenceVariation.Builder sequenceVariation =
+            final Alignments.SequenceVariation.Builder sequenceVariation =
                     Alignments.SequenceVariation.newBuilder();
 
             sequenceVariation.setFrom(from.toString());

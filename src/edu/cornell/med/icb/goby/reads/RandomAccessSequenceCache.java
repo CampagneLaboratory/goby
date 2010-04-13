@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.reads;
 
+import com.google.protobuf.ByteString;
 import edu.cornell.med.icb.parsers.ReaderFastaParser;
 import it.unimi.dsi.bits.BitVector;
 import it.unimi.dsi.bits.LongArrayBitVector;
@@ -29,14 +30,17 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.io.OutputBitStream;
 import it.unimi.dsi.lang.MutableString;
-import it.unimi.dsi.logging.ProgressLogger;
+import org.apache.log4j.Logger;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.Random;
 import java.util.zip.GZIPInputStream;
-
-import org.apache.log4j.Logger;
-import com.google.protobuf.ByteString;
 
 /**
  * Load a genome into memory and provide random access to individual bases. Supports DNA (ACTG) and
@@ -129,7 +133,7 @@ public class RandomAccessSequenceCache {
             final LongArrayBitVector referenceIgnoreList = LongArrayBitVector.ofLength(0);
             final ByteString seq = entry.getSequence();
             for (int position = 0; position < seq.size(); ++position) {
-                char c = (char) seq.byteAt(position);
+                final char c = (char) seq.byteAt(position);
                 encode(c, compressed, referenceIgnoreList);
 
             }

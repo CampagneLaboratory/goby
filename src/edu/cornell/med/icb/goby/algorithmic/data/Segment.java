@@ -58,7 +58,7 @@ public class Segment implements Comparable<Segment> {
         return sb.toString();
     }
 
-    public boolean overlap(Segment segment2) {
+    public boolean overlap(final Segment segment2) {
         boolean overlap = false;
 
         //4-cases to consider
@@ -80,7 +80,7 @@ public class Segment implements Comparable<Segment> {
             overlap = true;
 
         }
-        //4th: segment2 is contained within this 
+        //4th: segment2 is contained within this
         else if ((this.start <= segment2.start && segment2.start <= this.end) &&
                 (this.start <= segment2.end && segment2.end <= this.end)) {
             overlap = true;
@@ -89,14 +89,14 @@ public class Segment implements Comparable<Segment> {
         return overlap;
     }
 
-    public Segment merge(Segment mergee) {
+    public Segment merge(final Segment mergee) {
         //this segment is the merger
-        int newStart = Math.min(this.start, mergee.start);
-        int newEnd = Math.max(this.end, mergee.end);
+        final int newStart = Math.min(this.start, mergee.start);
+        final int newEnd = Math.max(this.end, mergee.end);
         return new Segment(newStart, newEnd, this.id + "_" + mergee.id, this.strand);
     }
 
-    public int distance(Segment segment2) {
+    public int distance(final Segment segment2) {
         int dist = 0;
         if (this.overlap(segment2)) {
             dist = 0;

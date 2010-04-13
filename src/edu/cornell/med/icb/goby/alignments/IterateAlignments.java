@@ -18,21 +18,17 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import it.unimi.dsi.fastutil.objects.ObjectSet;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
+import com.martiansoftware.jsap.JSAPResult;
+import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
-
-import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeCount;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeStartCount;
-import edu.cornell.med.icb.goby.counts.CountsArchiveWriter;
-import com.martiansoftware.jsap.JSAPResult;
 
 /**
  * A helper class to iterate through a set of alignments and process only a subset of references in each alignment.
@@ -42,7 +38,7 @@ import com.martiansoftware.jsap.JSAPResult;
  *         Time: 11:12:23 AM
  */
 public abstract class IterateAlignments {
-    boolean filterByReferenceNames;
+    private boolean filterByReferenceNames;
     private ObjectSet<String> includeReferenceNames = new ObjectOpenHashSet<String>();
     private IntSet referencesToProcess;
     private DoubleIndexedIdentifier referenceIds;
@@ -59,10 +55,8 @@ public abstract class IterateAlignments {
      * @param basenames
      * @throws FileNotFoundException
      */
-    public void iterate(String[] basenames) throws IOException {
-
-
-        for (String basename : basenames) {
+    public void iterate(final String[] basenames) throws IOException {
+        for (final String basename : basenames) {
             final AlignmentReader reader = new AlignmentReader(basename);
             reader.readHeader();
             final int numberOfReferences = reader.getNumberOfTargets();
@@ -79,7 +73,7 @@ public abstract class IterateAlignments {
 
 
                 final MutableString referenceId = referenceIds.getId(referenceIndex);
-                assert referenceId!=null: "reference id cannot be null for reference index="+referenceIndex;
+                assert referenceId != null : "reference id cannot be null for reference index=" + referenceIndex;
                 final String referenceName = referenceId.toString();
                 if (filterByReferenceNames) {
                     if (includeReferenceNames.contains(referenceName)) {
@@ -117,7 +111,7 @@ public abstract class IterateAlignments {
 
     public abstract void processAlignmentEntry(AlignmentReader alignmentReader, Alignments.AlignmentEntry alignmentEntry);
 
-    public void prepareDataStructuresForReference(int referenceIndex) {
+    public void prepareDataStructuresForReference(final int referenceIndex) {
 
     }
 
@@ -128,7 +122,7 @@ public abstract class IterateAlignments {
      * @param numberOfReferences
      * @throws IOException
      */
-    public void processNumberOfReferences(String basename, int numberOfReferences) throws IOException {
+    public void processNumberOfReferences(final String basename, final int numberOfReferences) throws IOException {
     }
 
     /**
@@ -156,7 +150,7 @@ public abstract class IterateAlignments {
      * @param targetIndex
      * @return
      */
-    protected CharSequence getReferenceId(int targetIndex) {
+    protected CharSequence getReferenceId(final int targetIndex) {
         return referenceIds.getId(targetIndex);
     }
 }

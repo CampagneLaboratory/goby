@@ -22,17 +22,17 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
-import edu.cornell.med.icb.goby.stats.NormalizationMethod;
+import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionResults;
+import edu.cornell.med.icb.goby.stats.NormalizationMethod;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -193,7 +193,7 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
             // define elements that will be tested for differential expression:
             for (int referenceIndex = 0; referenceIndex < numberOfReferences; ++referenceIndex) {
 
-                String transcriptId = targetIdBackward.getId(referenceIndex).toString();
+                final String transcriptId = targetIdBackward.getId(referenceIndex).toString();
                 final int index = deCalculator.defineElement(transcriptId, "transcript");
 
                 deCalculator.defineElementLength(index, reader.getTargetLength(referenceIndex));
@@ -208,7 +208,7 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
                         Math.log10(numberOfReadsPerReference[referenceIndex] + 1),
                         cumulativeBasesPerReference[referenceIndex]);
 
-                String transcriptId = targetIdBackward.getId(referenceIndex).toString();
+                final String transcriptId = targetIdBackward.getId(referenceIndex).toString();
 
                 deCalculator.observe(sampleId, transcriptId, numberOfReadsPerReference[referenceIndex]);
                 numAlignedReadsInSample += numberOfReadsPerReference[referenceIndex];
@@ -234,4 +234,4 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
         new CompactAlignmentToTranscriptCountsMode().configure(args).execute();
     }
 
-}                                            
+}

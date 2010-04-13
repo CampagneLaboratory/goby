@@ -182,7 +182,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
      */
     public synchronized void setInputFilenames(final String[] inputFilenames) {
         clearInputFiles();
-        for (String inputFilname : inputFilenames) {
+        for (final String inputFilname : inputFilenames) {
             addInputFile(new File(inputFilname));
         }
     }
@@ -195,9 +195,9 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
         if (inputFiles == null) {
             return new String[0];
         }
-        String[] array = new String[inputFiles.size()];
+        final String[] array = new String[inputFiles.size()];
         int i = 0;
-        for (File inputFile : inputFiles) {
+        for (final File inputFile : inputFiles) {
             array[i++] = inputFile.toString();
         }
         return array;

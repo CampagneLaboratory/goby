@@ -52,7 +52,6 @@ public class AlignmentTooManyHitsReader {
     private int alignerThreshold;
 
     public AlignmentTooManyHitsReader(final String basename) throws IOException {
-
         final String filename = basename + ".tmh";
         final File optionalFile = new File(filename);
         this.queryIndex2NumHits = new Int2IntOpenHashMap();

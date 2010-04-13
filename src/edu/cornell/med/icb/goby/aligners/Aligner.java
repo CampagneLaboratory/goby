@@ -155,6 +155,14 @@ public interface Aligner {
 
     String getDatabaseName();
 
+    /**
+     * Returns true if the reference is a database basename.
+     * Searches for databasePathPrefix + "." + [extensions] to make sure all those
+     * files exist.
+     *
+     * @param databasePathPrefix path prefix for database files
+     * @return true if databasePathPrefix specifies an existing database
+     */
     boolean isDatabaseBasename(final String databasePathPrefix);
 
     String getAlphabet();

@@ -75,7 +75,7 @@ public class DifferentialExpressionInfo {
      * @return true if all columns have been determined to be informative
      */
     public boolean checkInformativeColumns(final InformativeColumns informativeColumns) {
-        for (double value : statistics) {
+        for (final double value : statistics) {
             informativeColumns.checkInformative(value);
         }
         return informativeColumns.isAllColumnsInformative();
@@ -98,8 +98,8 @@ public class DifferentialExpressionInfo {
     public boolean informative(final IntArrayList averageCountPerGroupIndexes) {
         if (averageCountPerGroupIndexes != null && averageCountPerGroupIndexes.size() > 0) {
             boolean atLeastOneGroupAverageNotZero = false;
-            for (int informativeRequiredIndex : averageCountPerGroupIndexes) {
-                double value = statistics.get(informativeRequiredIndex);
+            for (final int informativeRequiredIndex : averageCountPerGroupIndexes) {
+                final double value = statistics.get(informativeRequiredIndex);
                 if (informativeDouble.isInformative(value)) {
                     atLeastOneGroupAverageNotZero = true;
                 }

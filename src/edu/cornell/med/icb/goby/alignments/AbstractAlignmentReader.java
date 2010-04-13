@@ -137,7 +137,7 @@ public abstract class AbstractAlignmentReader implements Closeable,
     public final int[] getQueryLengths() {
         assert isHeaderLoaded() : "Header must be loaded to access query lengths";
         if (constantQueryLengths) {
-            int[] localQueryLengths = new int[numberOfQueries];
+            final int[] localQueryLengths = new int[numberOfQueries];
             for (int i = 0; i < localQueryLengths.length; ++i) {
                 localQueryLengths[i] = constantLength;
 

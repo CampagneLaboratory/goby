@@ -20,19 +20,13 @@ package edu.cornell.med.icb.goby.algorithmic.data;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 
 import java.io.PrintWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
 import java.util.Collections;
 
-import org.apache.commons.io.IOUtils;
-
 /**
- * Represent annotations along reference sequences. Each annotation can contain several intervals along the reference
- * (called annotation segments).
+ * Represent annotations along reference sequences. Each annotation can contain several
+ * intervals along the reference (called annotation segments).
  */
 public class Annotation implements Comparable<Annotation> {
     public final String id;
@@ -79,7 +73,7 @@ public class Annotation implements Comparable<Annotation> {
         return result;
     }
 
-    public boolean overlap(Annotation annotation2) {
+    public boolean overlap(final Annotation annotation2) {
         boolean overlap = false;
         //4-cases to consider
 
@@ -126,10 +120,10 @@ public class Annotation implements Comparable<Annotation> {
     }
 
     public void write(final PrintWriter annotationWriter) {
-        char delimiter = '\t';
+        final char delimiter = '\t';
         write(annotationWriter, delimiter);
     }
-    
+
     public void write(final PrintWriter annotationWriter, final char delimiter) {
         // Chromosome Name Strand  Ensembl Gene ID Ensembl Exon ID Exon Chr Start (bp) Exon Chr End (bp)
         for (final Segment segment : segments) {

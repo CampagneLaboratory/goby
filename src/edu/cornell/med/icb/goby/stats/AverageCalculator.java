@@ -79,7 +79,7 @@ public class AverageCalculator extends StatisticCalculator {
     }
 
 
-    public MutableString getStatisticId(final String groupId, final String modifier, NormalizationMethod normalizationMethod) {
+    public MutableString getStatisticId(final String groupId, final String modifier, final NormalizationMethod normalizationMethod) {
         return new MutableString("average " + modifier + " group " + groupId + "(" + normalizationMethod.getAbbreviation() + ")");
     }
 

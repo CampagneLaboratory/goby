@@ -20,21 +20,17 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.alignments.IterateAlignments;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
-
-import java.io.*;
-
-import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
-import it.unimi.dsi.fastutil.ints.*;
-import it.unimi.dsi.logging.ProgressLogger;
 import it.unimi.dsi.lang.MutableString;
+import it.unimi.dsi.logging.ProgressLogger;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.util.CloseableIterator;
+import org.apache.log4j.Logger;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * Display the sequence variations found in alignments.
@@ -62,8 +58,8 @@ public class SamExtractReadsMode extends AbstractGobyMode {
      */
     private String outputFilename;
 
-    private int minimumUniqueReadIndices = 1;
-    private Logger LOG = Logger.getLogger(SamExtractReadsMode.class);
+    private final int minimumUniqueReadIndices = 1;
+    private static final Logger LOG = Logger.getLogger(SamExtractReadsMode.class);
 
 
     @Override
@@ -103,7 +99,7 @@ public class SamExtractReadsMode extends AbstractGobyMode {
     @Override
     public void execute() throws IOException {
 
-        ReadsWriter writer = new ReadsWriter(new FileOutputStream(outputFilename));
+        final ReadsWriter writer = new ReadsWriter(new FileOutputStream(outputFilename));
         try {
             final ProgressLogger progress = new ProgressLogger(LOG);
             final SAMFileReader parser = new SAMFileReader(new File(inputFilename));
@@ -133,7 +129,7 @@ public class SamExtractReadsMode extends AbstractGobyMode {
         }
     }
 
-    private byte[] remove33(byte[] input) {
+    private byte[] remove33(final byte[] input) {
         for (int i = 0; i < input.length; i++) {
             input[i] -= 33;
         }
@@ -141,8 +137,8 @@ public class SamExtractReadsMode extends AbstractGobyMode {
     }
 
 
-    private CharSequence byteToString(byte[] input) {
-        MutableString buffer = new MutableString();
+    private CharSequence byteToString(final byte[] input) {
+        final MutableString buffer = new MutableString();
         for (int i = 0; i < buffer.length(); i++) {
             buffer.setCharAt(i, (char) input[i]);
 

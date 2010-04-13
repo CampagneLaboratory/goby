@@ -18,7 +18,6 @@
 
 package edu.cornell.med.icb.goby.counts;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -32,23 +31,23 @@ import java.util.Arrays;
  *         Date: Jun 13, 2009
  *         Time: 2:00:21 PM
  */
-public class AnyTransitionCountsIterator implements Closeable, CountsReaderI {
-    final CountsReaderI[] readers;
-    final int[] position;
-    final int[] countUpToPosition;
+public class AnyTransitionCountsIterator implements CountsReaderI {
+    private final CountsReaderI[] readers;
+    private final int[] position;
+    private final int[] countUpToPosition;
     private boolean nextTransitionLoaded;
     private final int numReaders;
-
+    private int currentPosition;
+    private int currentLength;
 
     public AnyTransitionCountsIterator(final CountsReaderI... countReader) {
-
+        super();
         readers = countReader;
         numReaders = countReader.length;
         position = new int[numReaders];
         Arrays.fill(position, -1);
         countUpToPosition = new int[numReaders];
         currentPosition = -1;
-
     }
 
     public boolean hasNextTransition() throws IOException {
@@ -95,10 +94,10 @@ public class AnyTransitionCountsIterator implements Closeable, CountsReaderI {
         return true;
     }
 
-    /*
-   Return current position and update currentLength as the minimum length of any transition at the position
-   returned.
-    */
+    /**
+     * Return current position and update currentLength as the minimum length of any
+     * transition at the position returned.
+     */
     private int currentPosition() {
         int pos = Integer.MAX_VALUE;
         currentLength = Integer.MAX_VALUE;
@@ -112,9 +111,6 @@ public class AnyTransitionCountsIterator implements Closeable, CountsReaderI {
         }
         return pos;
     }
-
-    int currentPosition;
-    private int currentLength;
 
     /**
      * Advance to the next transition. After this method has been called successfully, position,

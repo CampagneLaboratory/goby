@@ -20,7 +20,13 @@ package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.objects.*;
+import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
 
 import java.util.Map;
@@ -44,7 +50,7 @@ public class DifferentialExpressionCalculator {
     /**
      * The number of alignment entries observed in each sample.
      */
-    private Object2IntMap<String> numAlignedInSample;
+    private final Object2IntMap<String> numAlignedInSample;
 
     public DifferentialExpressionCalculator() {
         super();
@@ -84,7 +90,7 @@ public class DifferentialExpressionCalculator {
      * @return the index of the element
      */
     public synchronized int defineElement(final String label, final String type) {
-        MutableString elementLabel = new MutableString(label);
+        final MutableString elementLabel = new MutableString(label);
         if (elementLabelToElementType.get(elementLabel) == null) {
             elementLabelToElementType.put(elementLabel, new MutableString(type));
         }
@@ -103,7 +109,9 @@ public class DifferentialExpressionCalculator {
      * @param length       length of the element.
      */
     public synchronized void defineElementLength(final int elementIndex, final int length) {
-        if (lengths.size() <= elementIndex) lengths.size(elementIndex + 1);
+        if (lengths.size() <= elementIndex) {
+            lengths.size(elementIndex + 1);
+        }
         lengths.set(elementIndex, length);
     }
 
@@ -117,8 +125,8 @@ public class DifferentialExpressionCalculator {
      * @param elementId
      * @return
      */
-    public int getElementLength(MutableString elementId) {
-        int elementIndex = elementLabels.getInt(elementId);
+    public int getElementLength(final MutableString elementId) {
+        final int elementIndex = elementLabels.getInt(elementId);
         return lengths.get(elementIndex);
     }
 
@@ -135,7 +143,7 @@ public class DifferentialExpressionCalculator {
         IntArrayList counts = sampleToCounts.get(sample);
         // the following looks a bit complicated. We are trying to avoid synchronizing every time observe is called.
         // This would slow the whole process too much. Instead, we synchronize only when we need to create a counts
-        // datastructure for a new sample, which should not happen too often.
+        // data structure for a new sample, which should not happen too often.
         if (counts == null) {
             synchronized (this) {
                 counts = sampleToCounts.get(sample);
@@ -158,7 +166,7 @@ public class DifferentialExpressionCalculator {
      * @param sampleId            The sample
      * @param numAlignedInSamples The number of alignment entries observed in the sample.
      */
-    public synchronized void setNumAlignedInSample(String sampleId, int numAlignedInSamples) {
+    public synchronized void setNumAlignedInSample(final String sampleId, final int numAlignedInSamples) {
         numAlignedInSample.put(sampleId, numAlignedInSamples);
     }
 
@@ -168,7 +176,7 @@ public class DifferentialExpressionCalculator {
      * @param sampleId Identifier of the sample.
      * @return the number of alignment entries found in the sample.
      */
-    public int getNumAlignedInSample(String sampleId) {
+    public int getNumAlignedInSample(final String sampleId) {
         return numAlignedInSample.get(sampleId);
     }
 
@@ -184,7 +192,9 @@ public class DifferentialExpressionCalculator {
             assert !tester.canDo(group) : "The number of groups to compare is not supported by the specified calculator.";
             tester.setResults(results);
             return tester.evaluate(this, method, results, group);
-        } else return results;
+        } else {
+            return results;
+        }
     }
 
     public DifferentialExpressionResults compare(final StatisticCalculator tester,
@@ -195,7 +205,9 @@ public class DifferentialExpressionCalculator {
             assert !tester.canDo(group) : "The number of groups to compare is not supported by the specified calculator.";
             tester.setResults(results);
             return tester.evaluate(this, method, results, group);
-        } else return results;
+        } else {
+            return results;
+        }
     }
 
     /**
@@ -233,7 +245,7 @@ public class DifferentialExpressionCalculator {
      * @param elementId           the element for which a normalized expression value is sought.
      * @return normalized expression value scaled by length and global normalization method.
      */
-    public double getNormalizedExpressionValue(final String sampleId, NormalizationMethod normalizationMethod, final MutableString elementId) {
+    public double getNormalizedExpressionValue(final String sampleId, final NormalizationMethod normalizationMethod, final MutableString elementId) {
         return normalizationMethod.getNormalizedExpressionValue(this, sampleId, elementId);
 
     }

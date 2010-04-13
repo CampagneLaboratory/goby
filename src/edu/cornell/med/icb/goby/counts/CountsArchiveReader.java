@@ -107,7 +107,7 @@ public class CountsArchiveReader implements Closeable {
     }
 
     private String makeFileIdentifier(final int countInfoIndex) {
-        return String.valueOf(countInfoIndex) + "," + indexToIdentifierMap.get(countInfoIndex);
+        return countInfoIndex + "," + indexToIdentifierMap.get(countInfoIndex);
     }
 
     public String getIdentifier(final int index) {
@@ -115,9 +115,8 @@ public class CountsArchiveReader implements Closeable {
     }
 
     private String makeFileIdentifier(final String countId) {
-        return countId.indexOf(',') == -1 ?
-                String.valueOf(identifierToIndexMap.get(countId)) + "," + countId
-                : countId;
+        return countId.indexOf(',') == -1
+                ? identifierToIndexMap.get(countId) + "," + countId : countId;
 
     }
 
@@ -152,7 +151,6 @@ public class CountsArchiveReader implements Closeable {
     }
 
     private void scanDirectory() {
-
         final Collection<CompoundDirectoryEntry> directory = compoundReader.getDirectory();
         for (final CompoundDirectoryEntry entry : directory) {
             final String name = entry.getName();

@@ -32,9 +32,10 @@ public abstract class DoInParallel {
     private ParallelTeam team;
     private boolean parallel;
     protected static final Logger LOG = Logger.getLogger(DoInParallel.class);
-    private int currentlyActive = 0;
+    private int currentlyActive;
 
-    public DoInParallel() {
+    protected DoInParallel() {
+        super();
     }
 
     protected synchronized ParallelTeam getParallelTeam() {
@@ -53,14 +54,14 @@ public abstract class DoInParallel {
 
     public abstract void action(DoInParallel forDataAccess, String inputBasename, int loopIndex);
 
-    protected void debugEnd(String inputBasename) {
+    protected void debugEnd(final String inputBasename) {
         synchronized (this) {
             currentlyActive--;
             LOG.debug("                                               Stopped " + inputBasename);
         }
     }
 
-    protected void debugStart(String inputBasename) {
+    protected void debugStart(final String inputBasename) {
         LOG.debug("                                               Starting " + inputBasename);
         synchronized (this) {
             currentlyActive++;
@@ -69,7 +70,7 @@ public abstract class DoInParallel {
         }
     }
 
-    public void execute(boolean parallel, String[] inputFilenames) throws Exception {
+    public void execute(final boolean parallel, final String[] inputFilenames) throws Exception {
 
         final BasenameParallelRegion region = new BasenameParallelRegion(this, inputFilenames);
         this.parallel = parallel;
@@ -78,11 +79,11 @@ public abstract class DoInParallel {
 
     }
 
-    public static void main(String args[]) throws Exception {
-        DoInParallel loop = new DoInParallel() {
+    public static void main(final String[] args) throws Exception {
+        final DoInParallel loop = new DoInParallel() {
 
             @Override
-            public void action(DoInParallel forDataAccess, String inputBasename, int loopIndex) {
+            public void action(final DoInParallel forDataAccess, final String inputBasename, final int loopIndex) {
                 try {
                     debugStart(inputBasename);
 
@@ -97,7 +98,7 @@ public abstract class DoInParallel {
 
 
         };
-        String[] inputs = new String[100];
+        final String[] inputs = new String[100];
         for (int i = 0; i < inputs.length; i++) {
 
             inputs[i] = Integer.toString(i + 1);

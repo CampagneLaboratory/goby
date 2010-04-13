@@ -23,9 +23,9 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.FileWriter;
 
 /**
  * Converts a compact alignment to plain text.
@@ -113,14 +113,14 @@ public class ReadSetToTextMode extends AbstractGobyMode {
 
         }
         try {
-            for (String basename : basenames) {
+            for (final String basename : basenames) {
 
-                ReadSet set = new ReadSet();
+                final ReadSet set = new ReadSet();
                 set.load(basename, suffix);
 
-                
+
                 for (int queryIndex = 0; queryIndex <= set.getMaxReadIndex(); queryIndex++) {
-                      int multiplicity = set.getMultiplicity(queryIndex);
+                      final int multiplicity = set.getMultiplicity(queryIndex);
                     writer.printf("%d\t%d%n", queryIndex,
 
                             multiplicity);
