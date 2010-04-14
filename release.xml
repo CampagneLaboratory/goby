@@ -86,6 +86,8 @@
         <!-- copy the changes file to the release directory -->
         <copy todir="${releasedir}" file="${exportdir}/${tag}/CHANGES.txt"/>
 
+        <tar destfile="release-${tag}.tgz" basedir="${releasedir}" compression="gzip"/>
+
         <!-- copy the zip to the web folder -->
         <!-- todo -->
         <!-- notify webmaster about new file -->
