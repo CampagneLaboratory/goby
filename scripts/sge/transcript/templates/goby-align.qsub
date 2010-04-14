@@ -11,6 +11,7 @@
 
 # Memory resource requirements
 #$ -l virtual_free=%SGE_MEMORY%
+#$ -l h_vmem=%SGE_MEMORY%
 
 # Mail job begin status
 #$ -m b

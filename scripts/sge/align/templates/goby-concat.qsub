@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Submit to the rascals queue
+#$ -q *@@rascals.h
+
 # Name of the job
 #$ -N %SGE_JOB_NAME%-concat
 
@@ -11,6 +14,7 @@
 
 # Memory resource requirements
 #$ -l virtual_free=%SGE_MEMORY%
+#$ -l h_vmem=%SGE_MEMORY%
 
 # Mail job begin status
 #$ -m b
