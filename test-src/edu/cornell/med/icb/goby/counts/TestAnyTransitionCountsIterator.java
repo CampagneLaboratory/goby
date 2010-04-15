@@ -165,7 +165,7 @@ public class TestAnyTransitionCountsIterator {
 
     private void makeStartCounts(final int[] starts, final String filename) throws IOException {
         final ComputeStartCount computer = new ComputeStartCount(ComputeStartCount.POSITIVE_STRAND_ONLY);
-        for (int start : starts) {
+        for (final int start : starts) {
             computer.populate(start, 10, true);
         }
 

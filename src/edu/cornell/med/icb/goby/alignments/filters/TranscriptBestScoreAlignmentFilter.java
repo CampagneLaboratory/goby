@@ -39,7 +39,6 @@ public class TranscriptBestScoreAlignmentFilter extends AbstractAlignmentEntryFi
 
     @Override
     public void printStats() {
-
         System.out.printf("notBestScoreCount=%g %% geneAmbiguityCount=%g %% %n",
                 div(notBestScoreCount, entryCount) * 100,
                 div(geneAmbiguityCount, entryCount) * 100);

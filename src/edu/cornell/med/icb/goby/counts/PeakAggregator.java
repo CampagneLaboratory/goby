@@ -89,9 +89,7 @@ public class PeakAggregator implements Iterator<Peak>, Iterable<Peak> {
             }
             currentPeak.length += reader.getLength();
             currentPeak.count += baseCount;
-
         }
-
 
         return nextLoaded;
     }
@@ -102,7 +100,6 @@ public class PeakAggregator implements Iterator<Peak>, Iterable<Peak> {
      * @return
      */
     public final Peak nextPeak() {
-
         if (hasNext()) {
             nextLoaded = false;
             return currentPeak;
@@ -120,9 +117,7 @@ public class PeakAggregator implements Iterator<Peak>, Iterable<Peak> {
     }
 
     public Peak next() {
-
         return nextPeak();
-
     }
 
     public void remove() {

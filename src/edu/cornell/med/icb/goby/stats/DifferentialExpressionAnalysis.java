@@ -29,7 +29,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.FileNotFoundException;
 import java.util.ServiceLoader;
 
 /**
@@ -162,9 +161,9 @@ public class DifferentialExpressionAnalysis {
         return flag;
     }
 
-    public DifferentialExpressionResults evaluateDifferentialExpressionStatistics
-            (final DifferentialExpressionCalculator deCalculator, final boolean doComparison,
-             final ObjectArraySet<NormalizationMethod> normalizationMethods) throws FileNotFoundException {
+    public DifferentialExpressionResults evaluateDifferentialExpressionStatistics(
+            final DifferentialExpressionCalculator deCalculator, final boolean doComparison,
+            final ObjectArraySet<NormalizationMethod> normalizationMethods) {
         DifferentialExpressionResults results = null;
         if (doComparison) {
             results = null;
@@ -189,16 +188,11 @@ public class DifferentialExpressionAnalysis {
                 final BenjaminiHochbergAdjustment benjaminiHochbergAdjustment = new BenjaminiHochbergAdjustment();
                 final BonferroniAdjustment bonferroniAdjustment = new BonferroniAdjustment();
 
-
                 results = bonferroniAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
                 results = benjaminiHochbergAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
-
             }
-
         }
         return results;
-
     }
-
 }
 

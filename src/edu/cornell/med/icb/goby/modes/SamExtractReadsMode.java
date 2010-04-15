@@ -25,7 +25,6 @@ import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
-import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -106,12 +105,8 @@ public class SamExtractReadsMode extends AbstractGobyMode {
 
             progress.start();
 
-            final CloseableIterator<SAMRecord> recordCloseableIterator = parser.iterator();
-
-            while (recordCloseableIterator.hasNext()) {
-                final SAMRecord samRecord = recordCloseableIterator.next();
+            for (final SAMRecord samRecord : parser) {
                 final String readId = samRecord.getReadName();
-
                 writer.setIdentifier(readId);
                 writer.setSequence(byteToString(samRecord.getReadBases()));
                 // How are quality scores encoded in a SAM file?

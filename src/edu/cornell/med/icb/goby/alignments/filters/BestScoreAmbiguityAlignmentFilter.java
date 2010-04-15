@@ -79,7 +79,6 @@ public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFil
      * @param maxNumberOfReads the maximum number of POSSIBLE reads we could encounter
      */
     public BestScoreAmbiguityAlignmentFilter(final int k, final int maxNumberOfReads) {
-
         indexToBestScore = new float[maxNumberOfReads];
         Arrays.fill(indexToBestScore, Float.MIN_VALUE);
         indexToCountAtBestScore = new short[maxNumberOfReads];
