@@ -72,7 +72,7 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
      */
     private String outputFile;
 
-    boolean filterByReferenceNames;
+    private boolean filterByReferenceNames;
     private ObjectSet<String> includeReferenceNames;
     private String alternativeCountsName;
     private int detectionThreshold;
@@ -233,7 +233,7 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
             segIterator = segmentsList.listIterator();
             while (segIterator.hasNext()) {
                 segment = segIterator.next();
-                final Annotation annot = new Annotation(chromsome + "." + segment.start + "." + segment.getLength(), chromsome);
+                final Annotation annot = new Annotation(chromsome + "." + segment.getStart() + "." + segment.getLength(), chromsome);
                 annot.addSegment(segment);
                 annotationList.add(annot);
             }

@@ -18,8 +18,6 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +33,6 @@ import java.io.IOException;
  */
 public class TestAnnotationCount {
     private AnnotationCount annotationCount;
-    private static final Log LOG = LogFactory.getLog(TestAnnotationCount.class);
 
     @Before
     public void setUp() throws IOException {
@@ -44,7 +41,7 @@ public class TestAnnotationCount {
 
     @Test
     public void testAnnotCountDepth() {
-        annotationCount.baseCounter.startPopulating();
+        annotationCount.getBaseCounter().startPopulating();
         annotationCount.populate(3, 8);
         annotationCount.populate(9, 10);
         annotationCount.populate(5, 12);
@@ -52,10 +49,10 @@ public class TestAnnotationCount {
         annotationCount.populate(8, 12);
 
         final int[] trueCount = {0, 0, 0, 2, 2, 3, 3, 3, 3, 3, 3, 2, 2, 0, 0, 0};
-        annotationCount.baseCounter.accumulate();
-        annotationCount.baseCounter.baseCount(); // final algorithm for base count without writer
-        System.out.println("count perbase" + annotationCount.baseCounter.countPerBase);
-        System.out.println("count keys " + annotationCount.baseCounter.countKeys);
+        annotationCount.getBaseCounter().accumulate();
+        annotationCount.getBaseCounter().baseCount(); // final algorithm for base count without writer
+        System.out.println("count perbase" + annotationCount.getBaseCounter().countPerBase);
+        System.out.println("count keys " + annotationCount.getBaseCounter().countKeys);
         for (int i = 0; i <= 15; i++) {
             for (int j = 0; j <= 15; j++) {
                 float sum = 0;
@@ -70,7 +67,7 @@ public class TestAnnotationCount {
 
     @Test
     public void testAnnotCountOverlapCount() {
-        annotationCount.baseCounter.startPopulating();
+        annotationCount.getBaseCounter().startPopulating();
         annotationCount.populate(3, 8);
         annotationCount.populate(9, 10);
         annotationCount.populate(5, 12);
@@ -78,9 +75,9 @@ public class TestAnnotationCount {
         annotationCount.populate(8, 12);
         annotationCount.populate(15, 18);
         annotationCount.sortReads();
-        annotationCount.baseCounter.accumulate();
-        annotationCount.baseCounter.baseCount(); // final algorithm for base count without writer
-        for(int i=-1; i<=30; i++) {
+        annotationCount.getBaseCounter().accumulate();
+        annotationCount.getBaseCounter().baseCount(); // final algorithm for base count without writer
+        for (int i = -1; i <= 30; i++) {
             System.out.println(i + " " + annotationCount.countReadsPartiallyOverlappingWithInterval(i, i));
         }
         System.out.println("overlapping count 3, 4 " + annotationCount.countReadsPartiallyOverlappingWithInterval(3, 4));
@@ -101,17 +98,17 @@ public class TestAnnotationCount {
 
     @Test
     public void testAnnotCountInsideCount() {
-        annotationCount.baseCounter.startPopulating();
-        annotationCount.populate(3, 8 );
-        annotationCount.populate(9, 10 );
-        annotationCount.populate(5, 12 );
-        annotationCount.populate(3, 7 );
-        annotationCount.populate(8, 12 );
-        annotationCount.populate(15, 18 );
+        annotationCount.getBaseCounter().startPopulating();
+        annotationCount.populate(3, 8);
+        annotationCount.populate(9, 10);
+        annotationCount.populate(5, 12);
+        annotationCount.populate(3, 7);
+        annotationCount.populate(8, 12);
+        annotationCount.populate(15, 18);
         annotationCount.sortReads();
-        annotationCount.baseCounter.accumulate();
-        annotationCount.baseCounter.baseCount(); // final algorithm for base count without writer
-        for(int i=-1; i<=30; i++) {
+        annotationCount.getBaseCounter().accumulate();
+        annotationCount.getBaseCounter().baseCount(); // final algorithm for base count without writer
+        for (int i = -1; i <= 30; i++) {
             System.out.println(i + " " + annotationCount.countReadsStriclyWithinInterval(i, i));
         }
         System.out.println("overlapping count 3, 4 " + annotationCount.countReadsStriclyWithinInterval(3, 4));
@@ -132,16 +129,16 @@ public class TestAnnotationCount {
 
     @Test
     public void testGeneExpression() {
-        annotationCount.baseCounter.startPopulating();
-        annotationCount.populate(3, 8 );
-        annotationCount.populate(9, 10 );
-        annotationCount.populate(5, 12 );
-        annotationCount.populate(3, 7 );
-        annotationCount.populate(8, 12 );
-        annotationCount.populate(15, 18 );
+        annotationCount.getBaseCounter().startPopulating();
+        annotationCount.populate(3, 8);
+        annotationCount.populate(9, 10);
+        annotationCount.populate(5, 12);
+        annotationCount.populate(3, 7);
+        annotationCount.populate(8, 12);
+        annotationCount.populate(15, 18);
         annotationCount.sortReads();
-        annotationCount.baseCounter.accumulate();
-        annotationCount.baseCounter.baseCount(); // final algorithm for base count without writer
+        annotationCount.getBaseCounter().accumulate();
+        annotationCount.getBaseCounter().baseCount(); // final algorithm for base count without writer
     }
 
     // TODO @Test

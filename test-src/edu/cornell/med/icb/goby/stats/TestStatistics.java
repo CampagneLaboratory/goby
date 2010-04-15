@@ -45,7 +45,7 @@ public class TestStatistics {
         final DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator() {
 
             @Override
-            public double getNormalizedExpressionValue(final String sample, NormalizationMethod method, final MutableString elementId) {
+            public double getNormalizedExpressionValue(final String sample, final NormalizationMethod method, final MutableString elementId) {
                 if (sample.startsWith("A")) {
                     return 2 * Math.abs(randomEngine.nextDouble());
                 } else {
@@ -74,7 +74,7 @@ public class TestStatistics {
         final DifferentialExpressionInfo info = new DifferentialExpressionInfo("id-1");
         final DifferentialExpressionResults results = new DifferentialExpressionResults();
         final FoldChangeCalculator foldChange = new FoldChangeCalculator(results);
-        NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+        final NormalizationMethod normalizationMethod = new AlignedCountNormalization();
         foldChange.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
         assertEquals("fold-change must be two fold", 2d, results.getStatistic(info, foldChange.statisticIds.get(0)), .1);
     }
@@ -85,7 +85,7 @@ public class TestStatistics {
         final DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator() {
 
             @Override
-            public double getNormalizedExpressionValue(final String sample, NormalizationMethod method, final MutableString elementId) {
+            public double getNormalizedExpressionValue(final String sample, final NormalizationMethod method, final MutableString elementId) {
                 if (sample.startsWith("A")) {
                     return 2 * Math.abs(randomEngine.nextDouble());
                 } else {
@@ -114,7 +114,7 @@ public class TestStatistics {
         final DifferentialExpressionResults results = new DifferentialExpressionResults();
         final AverageCalculator averageCalculator = new AverageCalculator(results);
         results.add(info);
-        NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+        final NormalizationMethod normalizationMethod = new AlignedCountNormalization();
         averageCalculator.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
         assertEquals("average A must be around 2", 1d, results.getStatistic(info, averageCalculator.getStatisticId("A", "RPKM", normalizationMethod)), .1);
         assertEquals("average B must be around 1", 0.5d, results.getStatistic(info, averageCalculator.getStatisticId("B", "RPKM", normalizationMethod)), .1);
@@ -132,7 +132,7 @@ public class TestStatistics {
         final DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator() {
 
             @Override
-            public double getNormalizedExpressionValue(final String sample, NormalizationMethod method, final MutableString elementId) {
+            public double getNormalizedExpressionValue(final String sample, final NormalizationMethod method, final MutableString elementId) {
                 if (sample.startsWith("A")) {
                     return 2 * Math.abs(randomEngine.nextGaussian());
                 } else {
@@ -144,7 +144,7 @@ public class TestStatistics {
 
             @Override
             public int getOverlapCount(final String sample, final MutableString elementId) {
-                NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+                final NormalizationMethod normalizationMethod = new AlignedCountNormalization();
                 return (int) (getNormalizedExpressionValue(sample, normalizationMethod, elementId) * 100);
             }
         };
@@ -180,7 +180,7 @@ public class TestStatistics {
         final FoldChangeCalculator foldChange = new FoldChangeCalculator(results);
         final TTestCalculator tTest = new TTestCalculator(results);
         final FisherExactTestCalculator fisher = new FisherExactTestCalculator(results);
-        NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+        final NormalizationMethod normalizationMethod = new AlignedCountNormalization();
         foldChange.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
         tTest.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
         fisher.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
@@ -228,7 +228,7 @@ public class TestStatistics {
         final DifferentialExpressionInfo info = new DifferentialExpressionInfo("id-1");
         final DifferentialExpressionResults results = new DifferentialExpressionResults();
         final FisherExactTestCalculator fisher = new FisherExactTestCalculator(results);
-        NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+        final NormalizationMethod normalizationMethod = new AlignedCountNormalization();
         fisher.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
         assertEquals("fisher test equal expected result", 0.5044757698516504, results.getStatistic(info, fisher.statisticIds.get(0)), 0.001);
 
@@ -300,7 +300,7 @@ public class TestStatistics {
 
         final FisherExactRCalculator fisher = new FisherExactRCalculator(results);
         if (fisher.installed()) {
-            NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+            final NormalizationMethod normalizationMethod = new AlignedCountNormalization();
             fisher.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
             assertEquals("fisher test equal expected result", 0.5044757698516504, results.getStatistic(info, fisher.statisticIds.get(0)), 0.001);
 
@@ -375,7 +375,7 @@ public class TestStatistics {
         final DifferentialExpressionResults results = new DifferentialExpressionResults();
 
         final ChiSquareTestCalculator calc = new ChiSquareTestCalculator(results);
-        NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+        final NormalizationMethod normalizationMethod = new AlignedCountNormalization();
         calc.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
         assertEquals("chi square test equal expected result", 0.456056540250256, results.getStatistic(info, calc.statisticIds.get(0)), 0.001);
 
@@ -424,7 +424,7 @@ public class TestStatistics {
         final DifferentialExpressionResults results = new DifferentialExpressionResults();
 
         final ChiSquareTestCalculator calc = new ChiSquareTestCalculator(results);
-        NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+        final NormalizationMethod normalizationMethod = new AlignedCountNormalization();
         calc.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
         assertTrue("chi square test result must be NaN (zero count)", Double.isNaN(results.getStatistic(info, calc.statisticIds.get(0))));
 
@@ -459,7 +459,7 @@ public class TestStatistics {
             info.statistics.size(list.getNumberOfStatistics());
             info.statistics.set(statIndex2, randomEngine.nextDouble());
         }
-        NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+        final NormalizationMethod normalizationMethod = new AlignedCountNormalization();
         bonferroni.adjust(list, normalizationMethod, statId, secondPValueId);
         fdr.adjust(list, normalizationMethod, statId, secondPValueId);
         final int index1 = list.getStatisticIndex("t-test-P-value-BH-FDR-q-value");
@@ -548,8 +548,8 @@ public class TestStatistics {
         System.out.println("list3:" + list3);
         final int index = list3.getStatisticIndex("p-value-BH-FDR-q-value");
         for (final DifferentialExpressionInfo infoAdjusted : list3) {
-            final int elementIndex = Integer.parseInt(infoAdjusted.elementId.toString());
-            assertEquals("adjusted p-values must match for i=" + infoAdjusted.elementId,
+            final int elementIndex = Integer.parseInt(infoAdjusted.getElementId().toString());
+            assertEquals("adjusted p-values must match for i=" + infoAdjusted.getElementId(),
                     adjusted_R[elementIndex], infoAdjusted.statistics.get(index), 0.01);
         }
     }

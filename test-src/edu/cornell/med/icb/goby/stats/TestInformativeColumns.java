@@ -18,9 +18,9 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import org.junit.Test;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 /**
  * Describe class here.
@@ -30,7 +30,7 @@ import static org.junit.Assert.assertFalse;
 public class TestInformativeColumns {
     @Test
     public void testInformativeEarly() {
-        InformativeColumns ic = new InformativeColumns(3, new InformativeNonZeroNonNaN());
+        final InformativeColumns ic = new InformativeColumns(3, new InformativeNonZeroNonNaN());
         ic.checkInformative(1.0);
         assertFalse(ic.isAllColumnsInformative());
         ic.checkInformative(3.0);
@@ -44,7 +44,7 @@ public class TestInformativeColumns {
 
     @Test
     public void testInformativeMid() {
-        InformativeColumns ic = new InformativeColumns(3, new InformativeNonZeroNonNaN());
+        final InformativeColumns ic = new InformativeColumns(3, new InformativeNonZeroNonNaN());
         ic.checkInformative(1.0);
         assertFalse(ic.isAllColumnsInformative());
         ic.checkInformative(0.0);
@@ -80,7 +80,7 @@ public class TestInformativeColumns {
 
     @Test
     public void testInformativeNever() {
-        InformativeColumns ic = new InformativeColumns(3, new InformativeNonZeroNonNaN());
+        final InformativeColumns ic = new InformativeColumns(3, new InformativeNonZeroNonNaN());
         ic.checkInformative(1.0);
         assertFalse(ic.isAllColumnsInformative());
         ic.checkInformative(0.0);

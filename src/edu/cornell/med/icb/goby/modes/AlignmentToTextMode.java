@@ -276,8 +276,8 @@ public class AlignmentToTextMode extends AbstractGobyMode {
             case PLAIN:
                 writer.printf("queryId\treferenceId\treferenceLength\tnumberOfIndels\tnumberOfMismatches\tscore\tstartPosition\talignmentLength\tmatchesReverseStrand%n");
             case SAM:
-                writer.printf("@HD\tVN:1.0%n" +
-                        "@PG\tGoby\tVN:" + VersionUtils.getImplementationVersion(GobyDriver.class) + "%n");
+                writer.printf("@HD\tVN:1.0%n" + "@PG\tGoby\tVN:"
+                        + VersionUtils.getImplementationVersion(GobyDriver.class) + "%n");
 
                 for (final String basename : basenames) {
                     final AlignmentReader reader = new AlignmentReader(basename);
@@ -287,7 +287,8 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                         if (targetId != null) {
                             final int[] targetLengths = reader.getTargetLength();
                             if (targetLengths != null) {
-                                writer.printf("@SQ\tSN:%s\tLN:%d%n", targetId, targetLengths[identifiers.getInt(targetId)]);
+                                writer.printf("@SQ\tSN:%s\tLN:%d%n", targetId,
+                                        targetLengths[identifiers.getInt(targetId)]);
                             } else {
                                 writer.printf("@SQ\tSN:%s%n", targetId);
                             }

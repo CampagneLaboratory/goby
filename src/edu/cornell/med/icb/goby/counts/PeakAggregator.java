@@ -32,7 +32,7 @@ import java.util.Iterator;
  *         Time: 6:41:18 PM
  */
 public class PeakAggregator implements Iterator<Peak>, Iterable<Peak> {
-    CountsReaderI reader;
+    private final CountsReaderI reader;
     private boolean nextLoaded;
     private int peakDetectionThreshold;
 

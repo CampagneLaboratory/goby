@@ -98,7 +98,6 @@ public class SamExtractReadsMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-
         final ReadsWriter writer = new ReadsWriter(new FileOutputStream(outputFilename));
         try {
             final ProgressLogger progress = new ProgressLogger(LOG);
@@ -120,11 +119,7 @@ public class SamExtractReadsMode extends AbstractGobyMode {
                 writer.appendEntry();
                 progress.lightUpdate();
             }
-        }
-
-
-        finally {
-
+        } finally {
             writer.close();
         }
     }

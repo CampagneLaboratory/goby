@@ -31,9 +31,9 @@ import java.util.Map;
  *         Time: 6:57:49 PM
  */
 public class DifferentialExpressionInfo {
-    final MutableString elementId;
+    private final MutableString elementId;
     final DoubleArrayList statistics = new DoubleArrayList();
-    final InformativeDouble informativeDouble = new InformativeNonZeroNonNaN();
+    private final InformativeDouble informativeDouble = new InformativeNonZeroNonNaN();
 
     public DifferentialExpressionInfo(final String elementId) {
         super();
@@ -43,6 +43,10 @@ public class DifferentialExpressionInfo {
     public DifferentialExpressionInfo(final MutableString elementId) {
         super();
         this.elementId = elementId;
+    }
+
+    public MutableString getElementId() {
+        return elementId;
     }
 
     @Override
@@ -70,7 +74,7 @@ public class DifferentialExpressionInfo {
     }
 
     /**
-     * Check the data in the current row to see which colums are informative
+     * Check the data in the current row to see which colums are informative.
      * @param informativeColumns the object that helps track which columns are informative
      * @return true if all columns have been determined to be informative
      */

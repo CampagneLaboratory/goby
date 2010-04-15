@@ -176,7 +176,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         if (includeAnnotationTypeComas != null) {
             includeAnnotationTypes.addAll(Arrays.asList(includeAnnotationTypeComas.split("[,]")));
             for (final String name : includeAnnotationTypes) {
-                if (name.equals("gene") | name.equals("other") | name.equals("exon")) {
+                if (name.equals("gene") || name.equals("other") || name.equals("exon")) {
                     continue;
                 } else {
                     System.out.println("Please enter a valid annotation type. "
@@ -188,7 +188,6 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             }
         }
     }
-
 
     class BasenameParallelRegion extends ParallelRegion {
         private final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots;
@@ -311,7 +310,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             }
             if (referencesToProcess.contains(referenceIndex)) {
                 algs[referenceIndex] = new AnnotationCount();
-                algs[referenceIndex].baseCounter.startPopulating();
+                algs[referenceIndex].getBaseCounter().startPopulating();
             }
         }
 
@@ -378,8 +377,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 final ObjectList<Annotation> annots = allAnnots.get(chromosomeName);
 
                 for (final Annotation annot : annots) {
-                    final String geneID = annot.id;
-                    final int numExons = annot.segments.size();
+                    final String geneID = annot.getId();
+                    final int numExons = annot.getSegments().size();
                     final int numberIntrons = numExons - 1;
 
                     if (includeAnnotationTypes.contains("gene")) {
@@ -392,8 +391,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     if (includeAnnotationTypes.contains("exon")) {
 
                         for (int i = 0; i < numExons; i++) {
-                            final Segment exonSegment = annot.segments.get(i);
-                            final String exonID = exonSegment.id;
+                            final Segment exonSegment = annot.getSegments().get(i);
+                            final String exonID = exonSegment.getId();
                             final int index = deCalculator.defineElement(exonID, "exon");
                             deCalculator.defineElementLength(index, annot.getLength());
                             numberOfExons++;
@@ -402,15 +401,14 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     }
 
                     if (includeAnnotationTypes.contains("other")) {
-
                         for (int i = 0; i < numExons; i++) {
                             if (i < numberIntrons) {
-                                final Segment segment = annot.segments.get(i);
-                                final int intronStart = segment.end + 1;
-                                final Segment intronSegment = annot.segments.get(i + 1);
-                                final int intronEnd = intronSegment.start - 1;
+                                final Segment segment = annot.getSegments().get(i);
+                                final int intronStart = segment.getEnd() + 1;
+                                final Segment intronSegment = annot.getSegments().get(i + 1);
+                                final int intronEnd = intronSegment.getStart() - 1;
                                 final int intronLength = intronEnd - intronStart + 1;
-                                final String intronID = segment.id + "-" + intronSegment.id;
+                                final String intronID = segment.getId() + "-" + intronSegment.getId();
                                 final int index = deCalculator.defineElement(intronID, "other");
                                 deCalculator.defineElementLength(index, intronLength);
                                 numberOfIntrons++;
@@ -435,18 +433,18 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
             final ObjectList<Annotation> annots = allAnnots.get(chromosomeName);
             algs[referenceIndex].sortReads();
-            algs[referenceIndex].baseCounter.accumulate();
-            algs[referenceIndex].baseCounter.baseCount();
+            algs[referenceIndex].getBaseCounter().accumulate();
+            algs[referenceIndex].getBaseCounter().baseCount();
             if (doComparison) {
                 for (final Annotation annot : annots) {
-                    final String geneID = annot.id;
+                    final String geneID = annot.getId();
                     deCalculator.defineElement(geneID);
                 }
             }
             final String basename = FilenameUtils.getBaseName(inputBasename);
             final String sampleId = basename;
             for (final Annotation annot : annots) {
-                final String geneID = annot.id;
+                final String geneID = annot.getId();
 
                 if (includeAnnotationTypes.contains("gene")) {
                     final int geneStart = annot.getStart();
@@ -456,7 +454,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     final int geneOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(geneStart, geneEnd);
                     final int geneInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(geneStart, geneEnd);
                     final int geneExpression = algs[referenceIndex].geneExpressionCount(annot);
-                    final int numExons = annot.segments.size();
+                    final int numExons = annot.getSegments().size();
 
 
                     final double geneRPKM = deCalculator.calculateNormalized(geneOverlapReads, annot.getLength(), deCalculator.getNumAlignedInSample(sampleId));
@@ -466,8 +464,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                                 geneID,
                                 "",
                                 "gene",
-                                annot.chromosome,
-                                annot.strand,
+                                annot.getChromosome(),
+                                annot.getStrand(),
                                 geneLength,
                                 geneStart,
                                 geneEnd,
@@ -484,18 +482,18 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                         deCalculator.observe(basename, geneID, geneExpression);
                     }
                 }
-                final int numberExons = annot.segments.size();
+                final int numberExons = annot.getSegments().size();
                 final int numberIntrons = numberExons - 1;
                 // skip unnecessary computation if we don't need exon or intron info:
                 if (includeAnnotationTypes.contains("exon") || includeAnnotationTypes.contains("other")) {
                     for (int i = 0; i < numberExons; i++) {
-                        final Segment segment = annot.segments.get(i);
-                        final int exonStart = segment.start;
-                        final int exonEnd = segment.end;
+                        final Segment segment = annot.getSegments().get(i);
+                        final int exonStart = segment.getStart();
+                        final int exonEnd = segment.getEnd();
 
-                        final String exonStrand = segment.strand;
+                        final String exonStrand = segment.getStrand();
                         final int exonLength = segment.getLength();
-                        final String exonID = segment.id;
+                        final String exonID = segment.getId();
                         final float exonDepth = algs[referenceIndex].averageReadsPerPosition(exonStart, exonEnd);
                         final int exonOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(exonStart, exonEnd);
                         final int exonInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(exonStart, exonEnd);
@@ -507,7 +505,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                                         geneID,
                                         exonID,
                                         "exon",
-                                        annot.chromosome,
+                                        annot.getChromosome(),
                                         exonStrand,
                                         exonLength,
                                         exonStart,
@@ -523,11 +521,11 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                             }
                         }
                         if (i < numberIntrons) {
-                            final int intronStart = segment.end + 1;
-                            final Segment intronSegment = annot.segments.get(i + 1);
-                            final int intronEnd = intronSegment.start - 1;
+                            final int intronStart = segment.getEnd() + 1;
+                            final Segment intronSegment = annot.getSegments().get(i + 1);
+                            final int intronEnd = intronSegment.getStart() - 1;
                             final int intronLength = intronEnd - intronStart + 1;
-                            final String intronID = segment.id + "-" + intronSegment.id;
+                            final String intronID = segment.getId() + "-" + intronSegment.getId();
                             final float intronDepth = algs[referenceIndex].averageReadsPerPosition(intronStart, intronEnd);
                             final int intronOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(intronStart, intronEnd);
                             final int intronInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(intronStart, intronEnd);
@@ -540,7 +538,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                                                 geneID,
                                                 intronID,
                                                 "other",
-                                                annot.chromosome,
+                                                annot.getChromosome(),
                                                 exonStrand,
                                                 exonLength,
                                                 exonStart,
@@ -622,8 +620,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     if (annots.containsKey(transcriptID)) {
                         annots.get(transcriptID).addSegment(segment);
                     } else {
-                        final Annotation annot = new Annotation(transcriptID, chromosome);
-                        annot.strand = strand;
+                        final Annotation annot = new Annotation(transcriptID, chromosome, strand);
                         annot.addSegment(segment);
                         annots.put(transcriptID, annot);
                     }
@@ -637,13 +634,14 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots
                 = new Object2ObjectOpenHashMap<String, ObjectList<Annotation>>();
         for (final Object2ObjectMap.Entry<String, Annotation> entry : annots.object2ObjectEntrySet()) {
-            entry.getValue().sortSegments();
-            final String chromosome = entry.getValue().chromosome;
+            final Annotation annotation = entry.getValue();
+            annotation.sortSegments();
+            final String chromosome = annotation.getChromosome();
             if (allAnnots.containsKey(chromosome)) {
-                allAnnots.get(chromosome).add(entry.getValue());
+                allAnnots.get(chromosome).add(annotation);
             } else {
                 final ObjectList<Annotation> annotations = new ObjectArrayList<Annotation>();
-                annotations.add(entry.getValue());
+                annotations.add(annotation);
                 allAnnots.put(chromosome, annotations);
             }
         }

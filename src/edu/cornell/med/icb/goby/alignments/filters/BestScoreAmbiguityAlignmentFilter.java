@@ -70,6 +70,8 @@ public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFil
      */
     private final long startTime;
 
+    private int willSkip;
+
     /**
      * Constructor.
      *
@@ -159,8 +161,6 @@ public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFil
     @Override
     public synchronized void postProcessing() {
     }
-
-    int willSkip;
 
     public int getWillSkip() {
         return willSkip;

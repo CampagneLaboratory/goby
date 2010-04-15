@@ -104,19 +104,24 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
     /**
      * Identifiers for the target sequences in this alignment.
      */
-    protected IndexedIdentifier targetIds = new IndexedIdentifier();
+    protected final IndexedIdentifier targetIds = new IndexedIdentifier();
     protected int numberOfReadsFromCommandLine;
+
     /**
-     * Indicate that the file being imported is from a third party. This means that :
-     * 1. queryNames are not integers, but are strings that need to be converted to indices.
-     * 2. targetNames should be treated as strings and defined from the input.
-     * 3. targetLength information should be read from the input, not from a supplied target file in compact format.
+     * Indicate that the file being imported is from a third party. This means that:
+     * <ol>
+     * <li>queryNames are not integers, but are strings that need to be converted to indices.</li>
+     * <li>targetNames should be treated as strings and defined from the input.</li>
+     * <li>targetLength information should be read from the input, not from a supplied target
+     *  file in compact format.</li>
+     * </ol>
      *
-     * false by default when constructed, overidden by configure with default configuration=true when run as a mode
-     * on the command line, set to false explictly each time another Goby mode needs to import internally the result
+     * False by default when constructed, overidden by configure with default
+     * configuration=true when run as a mode on the command line, set to false
+     * explictly each time another Goby mode needs to import internally the result
      * of a Goby search.
      */
-    protected boolean thirdPartyInput=true;
+    protected boolean thirdPartyInput = true;
 
     /**
      * Scan.
@@ -158,7 +163,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         readIndexFilterFile = jsapResult.getFile("read-index-filter");
         mParameter = jsapResult.getInt("ambiguity-threshold");
         qualityFilterParameters = jsapResult.getString("quality-filter-parameters");
-        thirdPartyInput= jsapResult.getBoolean("third-party-input");
+        thirdPartyInput = jsapResult.getBoolean("third-party-input");
 
         return this;
     }
@@ -170,8 +175,8 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-
-        // read target/query identifier lookup table, and initialize output alignment file with this information
+        // read target/query identifier lookup table, and initialize output alignment
+        // file with this information
         final TransferIds transferIds = new TransferIds().invoke();
         final ReadSet readIndexFilter = transferIds.getReadIndexFilter();
         final AlignmentWriter writer = transferIds.getWriter();
@@ -181,7 +186,8 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         targetIds.putAll(transferIds.getTargetIds());
 
         // initialize too-many-hits output file
-        final AlignmentTooManyHitsWriter tmhWriter = new AlignmentTooManyHitsWriter(outputFile, mParameter);
+        final AlignmentTooManyHitsWriter tmhWriter =
+                new AlignmentTooManyHitsWriter(outputFile, mParameter);
 
         try {
 
@@ -189,8 +195,8 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
             if (transferIds.numberOfReads != 0) {
                 numberOfReads = transferIds.numberOfReads;
             }
-            if (numberOfReads <=0) {
-                numberOfReads=numberOfReadsFromCommandLine;
+            if (numberOfReads <= 0) {
+                numberOfReads = numberOfReadsFromCommandLine;
             }
             if (numberOfReads <= 0) {
                 System.err.println("Cannot determine number of reads. Must set property or provide reads file with -q");
@@ -390,10 +396,8 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
                 final ObjectArrayList<String> ids = processIds(queryReadIdsFilename);
                 this.numberOfReads = ids.size();
                 System.out.println("Query file had " + this.numberOfReads + " entries.");
-                for (int queryIndex = 0; queryIndex < ids.size(); ++queryIndex) {
-                    final String id = ids.get(queryIndex);
+                for (final String id : ids) {
                     if (id != null) {
-
                         queryIds.registerIdentifier(new MutableString(id));
                     }
                 }

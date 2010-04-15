@@ -31,20 +31,19 @@ import java.util.zip.Checksum;
  *         Time: 2:12:28 PM
  */
 public class CompressedRead {
-    byte[] data;
+    private final byte[] data;
 
-    static final Checksum digester = new CRC32();
+    private static final Checksum DIGESTER = new CRC32();
     private final int hashCode;
+
     /**
-     * Read index is not part of the hashCode and not considerd by the equals method. It is only here to help
-     * map back to the position of the read in the inoput file.
+     * Read index is not part of the hashCode and not considerd by the equals method. It is
+     * only here to help map back to the position of the read in the inoput file.
      */
     public int readIndex;
 
     @Override
     public final int hashCode() {
-
-
         return hashCode;
     }
 
@@ -65,29 +64,24 @@ public class CompressedRead {
     }
 
     public static int hashCode(final byte[] data) {
-        synchronized (digester) {
-
+        synchronized (DIGESTER) {
             final long digest = hashCodeLong(data);
             return ((32 >> digest)) ^ ((int) (digest));
         }
     }
 
     public static long hashCodeLong(final byte[] data) {
-        synchronized (digester) {
-            digester.reset();
-
-            digester.update(data, 0, data.length);
-            final long digest = digester.getValue();
-            return digest;
+        synchronized (DIGESTER) {
+            DIGESTER.reset();
+            DIGESTER.update(data, 0, data.length);
+            return DIGESTER.getValue();
         }
     }
 
     public static long hashCodeLongNotSynchronized(final byte[] data) {
-        digester.reset();
-
-        digester.update(data, 0, data.length);
-        final long digest = digester.getValue();
-        return digest;
+        DIGESTER.reset();
+        DIGESTER.update(data, 0, data.length);
+        return DIGESTER.getValue();
     }
 
     public final long hashCodeLong() {

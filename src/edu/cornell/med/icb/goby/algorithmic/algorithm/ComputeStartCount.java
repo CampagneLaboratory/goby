@@ -29,23 +29,28 @@ import java.io.IOException;
 import java.util.Collections;
 
 /**
- * Support to write read start positions in a count writer. Strands of the reference sequence can be inspected together
- * or separately.
+ * Support to write read start positions in a count writer. Strands of the reference sequence
+ * can be inspected together or separately.
  *
  * @author Fabien Campagne
  *         Date: Jun 4, 2009
  *         Time: 6:37:41 PM
  */
 public class ComputeStartCount extends ComputeCount {
+    // TODO: Change to enum
+    public static final int POSITIVE_STRAND_ONLY = 0;
+    public static final int REVERSE_STRAND_ONLY = 1;
+    public static final int BOTH_STRAND = 2;
+
     /**
      * Indicates which strand(s) to collect.
      */
-    int focusOnStrand;
+    private final int focusOnStrand;
 
-    // TODO: Change to enum
-    public static int POSITIVE_STRAND_ONLY = 0;
-    public static int REVERSE_STRAND_ONLY = 1;
-    public static int BOTH_STRAND = 2;
+    /**
+     * Number of reads that start on this position on the forward, reverse, or on both strands.
+     */
+    private final Int2IntMap starts;
 
     /**
      * @param focusOnStrand Indicates which strand(s) should be inspected.
@@ -55,11 +60,6 @@ public class ComputeStartCount extends ComputeCount {
         this.focusOnStrand = focusOnStrand;
         starts = new Int2IntOpenHashMap();
     }
-
-    /**
-     * Number of reads that start on this position on the forward, reverse, or on both strands.
-     */
-    protected Int2IntMap starts;
 
     @Override
     public void accumulate() {

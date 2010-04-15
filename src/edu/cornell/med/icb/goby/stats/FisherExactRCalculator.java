@@ -81,11 +81,11 @@ public class FisherExactRCalculator extends StatisticCalculator {
             int sumCountInB = 0;
             // TODO correct sumCountIn? with normalization method.
             for (final String sample : samplesA) {
-                sumCountInA += differentialExpressionCalculator.getOverlapCount(sample, info.elementId);
+                sumCountInA += differentialExpressionCalculator.getOverlapCount(sample, info.getElementId());
             }
             // TODO correct sumCountIn? with normalization method.
             for (final String sample : samplesB) {
-                sumCountInB += differentialExpressionCalculator.getOverlapCount(sample, info.elementId);
+                sumCountInB += differentialExpressionCalculator.getOverlapCount(sample, info.getElementId());
             }
             int totalCountInA = 0;
             int totalCountInB = 0;

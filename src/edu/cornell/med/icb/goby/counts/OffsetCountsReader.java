@@ -29,8 +29,8 @@ import java.io.IOException;
  *         Date: Jun 15, 2009
  *         Time: 6:41:52 PM
  */
-public class OffsetCountsReader implements Cloneable, CountsReaderI {
-    CountsReader delegate;
+public class OffsetCountsReader implements CountsReaderI {
+    private final CountsReader delegate;
     private int offset;
 
     /**

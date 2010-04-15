@@ -221,7 +221,7 @@ public class LastagAligner extends LastAligner {
         final CompactToFastaMode toFastaConverter = super.getReadsCompactToFastaConverter();
         // for lastag, force fasta format:
         toFastaConverter.setOutputFormat(CompactToFastaMode.OutputFormat.FASTA);
-        return (toFastaConverter);
+        return toFastaConverter;
     }
 
     /**

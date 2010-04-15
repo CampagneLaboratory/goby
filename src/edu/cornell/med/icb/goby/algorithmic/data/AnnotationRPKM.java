@@ -21,22 +21,25 @@ package edu.cornell.med.icb.goby.algorithmic.data;
 import java.io.PrintWriter;
 
 /**
- * A data structure for storing RPKM value together with an annotation
+ * A data structure for storing RPKM value together with an annotation.
  *
  * @author Jaaved Mohammed
  */
+public class AnnotationRPKM extends Annotation {
+    public double rpkm;
 
-public class AnnotationRPKM extends Annotation{
-    public double RPKM;
-
-    public AnnotationRPKM(final String id, final String chromosome, final double RPKM)
-    {
+    public AnnotationRPKM(final String id, final String chromosome, final double rpkm) {
         super(id, chromosome);
-        this.RPKM = RPKM;
+        this.rpkm = rpkm;
+    }
+
+    public AnnotationRPKM(final String id, final String chromosome, final String strand, final double rpkm) {
+        super(id, chromosome, strand);
+        this.rpkm = rpkm;
     }
 
     @Override
-        public void write(final PrintWriter annotationWriter) {
+    public void write(final PrintWriter annotationWriter) {
         final char delimiter = '\t';
         write(annotationWriter, delimiter);
     }
@@ -51,13 +54,13 @@ public class AnnotationRPKM extends Annotation{
             annotationWriter.write(delimiter);
             annotationWriter.write(id);
             annotationWriter.write(delimiter);
-            annotationWriter.write(segment.id);
+            annotationWriter.write(segment.getId());
             annotationWriter.write(delimiter);
-            annotationWriter.write(Integer.toString(segment.start));
+            annotationWriter.write(Integer.toString(segment.getStart()));
             annotationWriter.write(delimiter);
-            annotationWriter.write(Integer.toString(segment.end));
+            annotationWriter.write(Integer.toString(segment.getEnd()));
             annotationWriter.write(delimiter);
-            annotationWriter.write(Double.toString(RPKM));
+            annotationWriter.write(Double.toString(rpkm));
             annotationWriter.write('\n');
         }
     }

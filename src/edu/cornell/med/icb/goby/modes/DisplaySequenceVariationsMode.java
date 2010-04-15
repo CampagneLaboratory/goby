@@ -124,20 +124,20 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        final PrintWriter writer = outputFilename == null ? new PrintWriter(System.out) :
-                new PrintWriter(new FileWriter(outputFilename));
-        switch (outputFormat) {
-            case CONCISE:
-
-                break;
-            case TAB_DELIMITED:
-            case TAB_SINGLE_BASE:
-            case TSV:
-                writer.println("basename\tquery-index\ttarget-id\tposition-on-reference\tread-index\tvar-from\tvar-to\ttype");
-                break;
-        }
-
+        PrintWriter writer = null;
         try {
+            writer = outputFilename == null ? new PrintWriter(System.out)
+                    : new PrintWriter(new FileWriter(outputFilename));
+            switch (outputFormat) {
+                case CONCISE:
+                    break;
+                case TAB_DELIMITED:
+                case TAB_SINGLE_BASE:
+                case TSV:
+                    writer.println("basename\tquery-index\ttarget-id\tposition-on-reference\tread-index\tvar-from\tvar-to\ttype");
+                    break;
+            }
+
             if (thresholds) {
                 firstPassIterator.iterate(basenames);
             }
@@ -166,9 +166,10 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
     }
 
     /**
-     * Collect the list of read indices where each variation is observed, for a given reference position.
+     * Collect the list of read indices where each variation is observed, for a given
+     * reference position.
      */
-    private class FirstPassIterateAlignments extends IterateAlignments {
+    private static class FirstPassIterateAlignments extends IterateAlignments {
         // reference index -> reference Position -> readIndex list
         private final Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArraySet>> readIndicesForReferencePositions =
                 new Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArraySet>>();
@@ -183,8 +184,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
 
         public IntArraySet getReadIndices(final int referenceIndex, final int referencePosition) {
             final Int2ObjectOpenHashMap<IntArraySet> referencePositionsMap = readIndicesForReferencePositions.get(referenceIndex);
-            final IntArraySet readIndexList = referencePositionsMap.get(referencePosition);
-            return readIndexList;
+            return referencePositionsMap.get(referencePosition);
         }
 
         @Override
@@ -210,9 +210,9 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
         private OutputFormat outputFormat;
         private FirstPassIterateAlignments firstPassIterator;
 
-        public void setOutputWriter(final PrintWriter outputWriter, final OutputFormat outputFormat) {
-            this.outputWriter = outputWriter;
-            this.outputFormat = outputFormat;
+        public void setOutputWriter(final PrintWriter writer, final OutputFormat format) {
+            this.outputWriter = writer;
+            this.outputFormat = format;
         }
 
         @Override

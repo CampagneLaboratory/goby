@@ -88,8 +88,8 @@ public class AlignmentTooManyHitsWriter implements Closeable {
      * Append the current too many hits record.
      */
     public void append() {
-        assert (tooManyHits.hasAlignerThreshold()) : "append> writer missing aligner threshold";
-        assert (newAmbiguousLocation.hasAtLeastNumberOfHits()) : "append> new record missing atLeastNumberOfHits";
+        assert tooManyHits.hasAlignerThreshold() : "append> writer missing aligner threshold";
+        assert newAmbiguousLocation.hasAtLeastNumberOfHits() : "append> new record missing atLeastNumberOfHits";
         if (newAmbiguousLocation.getAtLeastNumberOfHits() > tooManyHits.getAlignerThreshold()) {
             tooManyHits.addHits(newAmbiguousLocation.build());
         }

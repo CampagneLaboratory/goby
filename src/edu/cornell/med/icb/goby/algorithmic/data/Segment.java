@@ -19,10 +19,10 @@
 package edu.cornell.med.icb.goby.algorithmic.data;
 
 public class Segment implements Comparable<Segment> {
-    public final int start;
-    public final int end;
-    public final String id;
-    public final String strand;
+    private final int start;
+    private final int end;
+    private final String id;
+    private final String strand;
 
     public Segment(final int start, final int end, final String id, final String strand) {
         this.start = start;
@@ -31,12 +31,38 @@ public class Segment implements Comparable<Segment> {
         this.strand = strand;
     }
 
+    public int getStart() {
+        return start;
+    }
+
+    public int getEnd() {
+        return end;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getStrand() {
+        return strand;
+    }
+
     public int compareTo(final Segment seg) {
         return start - seg.start;
     }
 
-    public boolean equals(final Segment seg) {
-        return start == seg.start;
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        } else if (obj == this) {
+            return true;
+        } else if (!(obj instanceof Segment)) {
+            return false;
+        } else {
+            final Segment seg = (Segment) obj;
+            return start == seg.start;
+        }
     }
 
     /**

@@ -27,11 +27,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class FrequencyTable {
-    Int2IntMap a;
-    Int2IntMap c;
-    Int2IntMap t;
-    Int2IntMap g;
-    Int2IntMap n; //position to count
+    private final Int2IntMap a;
+    private final Int2IntMap c;
+    private final Int2IntMap t;
+    private final Int2IntMap g;
+    private final Int2IntMap n; // position to count
 
     public FrequencyTable() {
         a = new Int2IntOpenHashMap();

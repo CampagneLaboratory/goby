@@ -43,7 +43,7 @@ public class AlignmentTooManyHitsReader {
      */
     private static final Log LOG = LogFactory.getLog(AlignmentTooManyHitsReader.class);
 
-    private InputStream tooManyHitsStream;
+    private final InputStream tooManyHitsStream;
     private Int2IntMap queryIndex2NumHits = new Int2IntOpenHashMap();
     /**
      * A map from query index to depth/length of match.
@@ -74,6 +74,7 @@ public class AlignmentTooManyHitsReader {
             }
             this.alignerThreshold = tmh.getAlignerThreshold();
         } else {
+            tooManyHitsStream = null;
             // the file does not exist. Log this fact, and act as if no query had too many hits.
             LOG.info("basename " + optionalFile + " has no 'too many hits' information ("
                     + basename + ".tmh does not exist)."
@@ -105,7 +106,7 @@ public class AlignmentTooManyHitsReader {
      * This number can be >=k.
      */
     public final int getNumberOfHits(final int queryIndex) {
-        return (queryIndex2NumHits.get(queryIndex));
+        return queryIndex2NumHits.get(queryIndex);
     }
 
     /**
@@ -116,11 +117,11 @@ public class AlignmentTooManyHitsReader {
      * @return The length of the longest match between the query and the reference sequence(s) that yielded the number of hits.
      */
     public final int getLengthOfMatch(final int queryIndex) {
-        return (queryIndex2Depth.get(queryIndex));
+        return queryIndex2Depth.get(queryIndex);
     }
 
     public final IntSet getQueryIndices() {
-        return this.queryIndex2NumHits.keySet();
+        return queryIndex2NumHits.keySet();
     }
 
     /**
@@ -130,7 +131,7 @@ public class AlignmentTooManyHitsReader {
      * @return True or false.
      */
     public boolean isQueryAmbiguous(final int queryIndex) {
-        return (queryIndex2NumHits.containsKey(queryIndex));
+        return queryIndex2NumHits.containsKey(queryIndex);
     }
 
     /**

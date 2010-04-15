@@ -60,7 +60,7 @@ public class TestAlignmentReader {
 
     /**
      * Validate that the method
-     * {@link edu.cornell.med.icb.goby.alignments.AlignmentReader#getBasenames(String...)}
+     * {@link edu.cornell.med.icb.goby.alignments.AlignmentReader#getBasenames(String[])}
      * produces the proper results.
      */
     @Test

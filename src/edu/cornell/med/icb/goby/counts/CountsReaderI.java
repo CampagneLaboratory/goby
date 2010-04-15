@@ -66,7 +66,7 @@ public interface CountsReaderI extends Closeable {
      * @param position
      * @throws IOException
      */
-    public void skipTo(int position) throws IOException;
+    void skipTo(int position) throws IOException;
 
     /**
      * The length of the region/peak where the count is observed.

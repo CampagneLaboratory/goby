@@ -146,7 +146,7 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
                     // subset of reference names selected by the command line:
                     referencesToProcess.add(referenceIndex);
                     algs[referenceIndex] = new AnnotationCount();
-                    algs[referenceIndex].baseCounter.startPopulating();
+                    algs[referenceIndex].getBaseCounter().startPopulating();
                 }
             }
 
@@ -186,7 +186,7 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
             final ObjectList<AnnotationRPKM> annots = allAnnots.get(reference);
 
             for (final AnnotationRPKM annot : annots) {
-                annot.RPKM /= numSamples;
+                annot.rpkm /= numSamples;
             }
 
             if (rpkmFileName != null) {
@@ -207,13 +207,13 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
                 annot = annotsIterator.next();
             }
             while (annot != null) {
-                final Annotation newAnnot = new Annotation(annot.chromosome + "." + annot.getStart(), annot.chromosome);
-                newAnnot.segments.addAll(annot.segments);
+                final Annotation newAnnot = new Annotation(annot.getChromosome() + "." + annot.getStart(), annot.getChromosome());
+                newAnnot.getSegments().addAll(annot.getSegments());
                 if (annotsIterator.hasNext()) {
                     nextAnnot = annotsIterator.next();
-                    while ((nextAnnot != null) && Math.abs(annot.RPKM - nextAnnot.RPKM) <= rpkmDiffThreshold) {
+                    while ((nextAnnot != null) && Math.abs(annot.rpkm - nextAnnot.rpkm) <= rpkmDiffThreshold) {
                         //Merge the two annotations
-                        newAnnot.segments.addAll(nextAnnot.segments);
+                        newAnnot.getSegments().addAll(nextAnnot.getSegments());
                         if (annotsIterator.hasNext()) {
                             nextAnnot = annotsIterator.next();
                         } else {
@@ -240,24 +240,21 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
 
     private void computeAnnotationRPKM(final Object2ObjectMap<String, ObjectList<AnnotationRPKM>> allAnnots, final DoubleIndexedIdentifier referenceIds, final AnnotationCount[] algs, final IntSet referencesToProcess, final int numAlignedReadsInSample) {
         for (final int referenceIndex : referencesToProcess) {
-
             final String chromosomeName = referenceIds.getId(referenceIndex).toString();
+            if (allAnnots.containsKey(chromosomeName)) {
+                final ObjectList<AnnotationRPKM> annots = allAnnots.get(chromosomeName);
+                algs[referenceIndex].sortReads();
+                algs[referenceIndex].getBaseCounter().accumulate();
+                algs[referenceIndex].getBaseCounter().baseCount();
 
-            if (!allAnnots.containsKey(chromosomeName)) {
-                continue;
-            }
-            final ObjectList<AnnotationRPKM> annots = allAnnots.get(chromosomeName);
-            algs[referenceIndex].sortReads();
-            algs[referenceIndex].baseCounter.accumulate();
-            algs[referenceIndex].baseCounter.baseCount();
+                for (final AnnotationRPKM annot : annots) {
+                    final int start = annot.getStart();
+                    final int end = annot.getEnd();
+                    final int overlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(start, end);
 
-            for (final AnnotationRPKM annot : annots) {
-                final int start = annot.getStart();
-                final int end = annot.getEnd();
-                final int overlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(start, end);
-
-                final double RPKM = calculateRPKM(overlapReads, annot.getLength(), numAlignedReadsInSample);
-                annot.RPKM += RPKM;
+                    final double rpkm = calculateRPKM(overlapReads, annot.getLength(), numAlignedReadsInSample);
+                    annot.rpkm += rpkm;
+                }
             }
         }
     }
@@ -300,8 +297,7 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
                     if (annots.containsKey(transcriptID)) {
                         annots.get(transcriptID).addSegment(segment);
                     } else {
-                        final AnnotationRPKM annot = new AnnotationRPKM(transcriptID, chromosome, 0d);
-                        annot.strand = strand;
+                        final AnnotationRPKM annot = new AnnotationRPKM(transcriptID, chromosome, strand, 0d);
                         annot.addSegment(segment);
                         annots.put(transcriptID, annot);
                     }
@@ -315,13 +311,14 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
         final Object2ObjectMap<String, ObjectList<AnnotationRPKM>> allAnnots
                 = new Object2ObjectOpenHashMap<String, ObjectList<AnnotationRPKM>>();
         for (final Object2ObjectMap.Entry<String, AnnotationRPKM> entry : annots.object2ObjectEntrySet()) {
-            entry.getValue().sortSegments();
-            final String chromosome = entry.getValue().chromosome;
+            final AnnotationRPKM annotationRPKM = entry.getValue();
+            annotationRPKM.sortSegments();
+            final String chromosome = annotationRPKM.getChromosome();
             if (allAnnots.containsKey(chromosome)) {
-                allAnnots.get(chromosome).add(entry.getValue());
+                allAnnots.get(chromosome).add(annotationRPKM);
             } else {
                 final ObjectList<AnnotationRPKM> annotations = new ObjectArrayList<AnnotationRPKM>();
-                annotations.add(entry.getValue());
+                annotations.add(annotationRPKM);
                 allAnnots.put(chromosome, annotations);
             }
         }
@@ -336,30 +333,21 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
             if (!outputFile.exists()) {
                 writer = new PrintWriter(outputFile);
 
-                //Write the file header
+                // Write the file header
                 writer.write("Chromosome_Name\tStrand\tPrimary_ID\tSecondary_ID\tTranscript_Start\tTranscript_End\tAverage_RPKM\n");
-
             } else {
                 writer = new PrintWriter(new FileOutputStream(outputFile, append));
             }
 
-            if (writer != null) {
-                final ObjectListIterator<AnnotationRPKM> annotIterator = annotationList.listIterator();
-                while (annotIterator.hasNext()) {
-                    final AnnotationRPKM annotation = annotIterator.next();
-                    annotation.write(writer);
-                }
-            } else {
-                System.err.println("Cannot write annotations to file: " + outputFileName);
-                System.err.println("The writer failed to initialize.");
-                System.exit(1);
+            final ObjectListIterator<AnnotationRPKM> annotIterator = annotationList.listIterator();
+            while (annotIterator.hasNext()) {
+                final AnnotationRPKM annotation = annotIterator.next();
+                annotation.write(writer);
             }
-        }
-        catch (FileNotFoundException fnfe) {
+        } catch (FileNotFoundException fnfe) {
             System.err.println("Caught exception in writeAnnotations: " + fnfe.getMessage());
             System.exit(1);
-        }
-        finally {
+        } finally {
             IOUtils.closeQuietly(writer);
         }
     }
@@ -372,32 +360,21 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
             if (!outputFile.exists()) {
                 writer = new PrintWriter(outputFile);
 
-                //Write the file header
-
+                // Write the file header
                 writer.write("Chromosome_Name\tStrand\tPrimary_ID\tSecondary_ID\tTranscript_Start\tTranscript_End\n");
-
             } else {
                 writer = new PrintWriter(new FileOutputStream(outputFile, append));
             }
 
-            if (writer != null) {
-                final ObjectListIterator<Annotation> annotIterator = annotationList.listIterator();
-                while (annotIterator.hasNext()) {
-
-                    final Annotation annotation = annotIterator.next();
-                    annotation.write(writer);
-                }
-            } else {
-                System.err.println("Cannot write annotations to file: " + outputFileName);
-                System.err.println("The writer failed to initialize.");
-                System.exit(1);
+            final ObjectListIterator<Annotation> annotIterator = annotationList.listIterator();
+            while (annotIterator.hasNext()) {
+                final Annotation annotation = annotIterator.next();
+                annotation.write(writer);
             }
-        }
-        catch (FileNotFoundException fnfe) {
+        } catch (FileNotFoundException fnfe) {
             System.err.println("Caught exception in writeAnnotations: " + fnfe.getMessage());
             System.exit(1);
-        }
-        finally {
+        } finally {
             IOUtils.closeQuietly(writer);
         }
     }

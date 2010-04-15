@@ -117,7 +117,7 @@ public abstract class StatisticCalculator {
      * The name of the statistic implemented by this calculator.
      * May be null if the statistic name depends on the group name
      */
-    protected ObjectList<MutableString> statisticIds=new ObjectArrayList<MutableString>();
+    protected final ObjectList<MutableString> statisticIds = new ObjectArrayList<MutableString>();
 
     /**
      * Create a new StatisticCalculator with the given name.
@@ -152,7 +152,9 @@ public abstract class StatisticCalculator {
      * client code should not call evaluate.
      * @return True when the implementation is installed on the machine.
      */
-    public boolean installed(){ return true;}
+    public boolean installed() {
+        return true;
+    }
 
     public abstract DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
                                                  final NormalizationMethod method,

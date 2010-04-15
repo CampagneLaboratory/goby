@@ -635,18 +635,18 @@ public class TestLastToCompact {
         assertEquals(1, reader.getNumberOfTargets());
         int entryIndex = 0;
         while (reader.hasNext()) {
-            Alignments.AlignmentEntry alignmentEntry = reader.next();
+            final Alignments.AlignmentEntry alignmentEntry = reader.next();
 
             System.out.println(entryIndex + " entry : " + alignmentEntry);
             switch (entryIndex) {
                 case 0:
                     assertEquals(2, alignmentEntry.getSequenceVariationsCount());
-                    Alignments.SequenceVariation var1 = alignmentEntry.getSequenceVariations(0);
+                    final Alignments.SequenceVariation var1 = alignmentEntry.getSequenceVariations(0);
                     assertEquals("C", var1.getTo());
                     assertEquals("G", var1.getFrom());
                     assertEquals(1, var1.getPosition());
 
-                    Alignments.SequenceVariation var2 = alignmentEntry.getSequenceVariations(1);
+                    final Alignments.SequenceVariation var2 = alignmentEntry.getSequenceVariations(1);
                     assertEquals("C", var2.getTo());
                     assertEquals("A", var2.getFrom());
                     assertEquals(11, var2.getPosition());
@@ -654,7 +654,7 @@ public class TestLastToCompact {
 
                 case 1:
                     assertEquals(1, alignmentEntry.getSequenceVariationsCount());
-                    Alignments.SequenceVariation var1_0 = alignmentEntry.getSequenceVariations(0);
+                    final Alignments.SequenceVariation var1_0 = alignmentEntry.getSequenceVariations(0);
                     assertEquals("---", var1_0.getTo());
                     assertEquals("TTT", var1_0.getFrom());
                     assertEquals(3, var1_0.getPosition());
@@ -662,12 +662,12 @@ public class TestLastToCompact {
 
                 case 2:
                     assertEquals(2, alignmentEntry.getSequenceVariationsCount());
-                    Alignments.SequenceVariation var2_1 = alignmentEntry.getSequenceVariations(0);
+                    final Alignments.SequenceVariation var2_1 = alignmentEntry.getSequenceVariations(0);
                     assertEquals("A", var2_1.getTo());
                     assertEquals("G", var2_1.getFrom());
                     assertEquals(2, var2_1.getPosition());
 
-                    Alignments.SequenceVariation var2_2 = alignmentEntry.getSequenceVariations(1);
+                    final Alignments.SequenceVariation var2_2 = alignmentEntry.getSequenceVariations(1);
                     assertEquals("A", var2_2.getTo());
                     assertEquals("-", var2_2.getFrom());
                     assertEquals(29, var2_2.getPosition());

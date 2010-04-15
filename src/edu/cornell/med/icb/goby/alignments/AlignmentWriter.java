@@ -34,6 +34,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Map;
 import java.util.Properties;
 import java.util.zip.GZIPOutputStream;
 
@@ -326,8 +327,9 @@ public class AlignmentWriter implements Closeable {
     }
 
     public void setTargetLengths(final int[] targetLengths) {
-        assert targetLengths.length > maxTargetIndex :
-                "The number of elements of targetLength is too small to accomodate targetIndex=" + maxTargetIndex;
+        assert targetLengths.length > maxTargetIndex
+                : "The number of elements of targetLength is too small to accomodate targetIndex="
+                + maxTargetIndex;
         this.targetLengths = targetLengths;
     }
 
@@ -363,8 +365,8 @@ public class AlignmentWriter implements Closeable {
     }
 
     public void setStatistics(final Properties statistics) {
-        for (final Object key : statistics.keySet()) {
-            putStatistic(key.toString(), statistics.get(key).toString());
+        for (final Map.Entry<Object, Object> statistic : statistics.entrySet()) {
+            putStatistic(statistic.getKey().toString(), statistic.getValue().toString());
         }
     }
 }

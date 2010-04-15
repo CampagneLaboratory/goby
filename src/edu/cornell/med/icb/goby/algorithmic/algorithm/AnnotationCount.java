@@ -31,15 +31,19 @@ import java.text.NumberFormat;
 import java.util.Collections;
 
 public class AnnotationCount {
-    public ObjectList<Read> reads;
-    public IntList readStart;
-    public ComputeCount baseCounter;
+    private final ObjectList<Read> reads;
+    private final IntList readStart;
+    private final ComputeCount baseCounter;
 
     public AnnotationCount() {
         super();
         baseCounter = new ComputeCount();
         readStart = new IntArrayList();
         reads = new ObjectArrayList<Read>();
+    }
+
+    public ComputeCount getBaseCounter() {
+        return baseCounter;
     }
 
     public final void populate(final int startPosition, final int endPosition) {
@@ -144,9 +148,9 @@ public class AnnotationCount {
      */
     public int geneExpressionCount(final Annotation annot) {
         int sum = countReadsPartiallyOverlappingWithInterval(annot.getStart(), annot.getEnd());
-        final int numIntrons = annot.segments.size() - 1;
+        final int numIntrons = annot.getSegments().size() - 1;
         for (int k = 0; k < numIntrons; k++) {
-            sum -= countReadsStriclyWithinInterval(annot.segments.get(k).end + 1, annot.segments.get(k + 1).start - 1);
+            sum -= countReadsStriclyWithinInterval(annot.getSegments().get(k).getEnd() + 1, annot.getSegments().get(k + 1).getStart() - 1);
         }
         return sum;
     }
@@ -183,8 +187,8 @@ public class AnnotationCount {
      * @return the number of reads
      */
     public int countReadsPartiallyOverlappingWithInterval(final int start, final int end) {
-        return getValue(end, baseCounter.startKeys, baseCounter.starts) -
-                getValue(start, baseCounter.endKeys, baseCounter.ends);
+        return getValue(end, baseCounter.startKeys, baseCounter.starts)
+                - getValue(start, baseCounter.endKeys, baseCounter.ends);
     }
 
 }

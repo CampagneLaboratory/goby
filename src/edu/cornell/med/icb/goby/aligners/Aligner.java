@@ -50,6 +50,7 @@ public interface Aligner {
      * @param referenceFileOrDbBasename The compact file with the reference sequence to index OR
      * the database basename (prefix)
      * @return
+     * @throws InterruptedException Thrown when the task is interrupted for any reason.
      */
     File[] indexReference(File referenceFileOrDbBasename) throws IOException, InterruptedException;
 
@@ -63,11 +64,12 @@ public interface Aligner {
     File[] processAlignment(File referenceFile, File readsFile, String outputBasename) throws InterruptedException, IOException;
 
     /**
-     * Align reads to a reference. Convert reads and reference to aligner native format if necessary,
-     * index the reference if needed, perform the alignment, convert the resuls to compact alignment format.
+     * Align reads to a reference. Convert reads and reference to aligner native format
+     * if necessary, index the reference if needed, perform the alignment, convert the resuls
+     * to compact alignment format.
      *
-     * @param referenceFile  Compact or native database basename for reference sequences.
-     * @param readsFile      Compact or native format (i.e., fasta, fastq) aligner read format.
+     * @param referenceFile Compact or native database basename for reference sequences.
+     * @param readsFile Compact or native format (i.e., fasta, fastq) aligner read format.
      * @param outputBasename Basename where to write the compact alignment.
      * @return The set of files that make up the result alignment.
      * @throws InterruptedException Thrown when the task is interrupted for any reason.
@@ -75,7 +77,7 @@ public interface Aligner {
     File[] align(File referenceFile, File readsFile, String outputBasename) throws InterruptedException, IOException;
 
     /**
-     * Indicate whether the reads are in color-space
+     * Indicate whether the reads are in color-space.
      *
      * @param colorSpace True for color-space reads, false otherwise.
      */
@@ -104,22 +106,22 @@ public interface Aligner {
 
 
     /**
-     * Set parameters to filter reads for quality when importing from native format into compact format. See LastToCompactMode for
-     * details.
+     * Set parameters to filter reads for quality when importing from native format into
+     * compact format. See LastToCompactMode for details.
      *
-     * @param qualityFilterParameters i.e., threshold=0.05 to keep reads at most 5% bases different from reference.
+     * @param qualityFilterParameters i.e., threshold=0.05 to keep reads at most 5%
+     * bases different from reference.
      */
     void setQualityFilterParameters(String qualityFilterParameters);
 
     /**
-     * Set parameters to filter reads for quality when importing from native format into compact format. See LastToCompactMode for
-     * details.
+     * Set parameters to filter reads for quality when importing from native format into
+     * compact format. See LastToCompactMode for details.
      *
-     * @param mParameter i.e. mParameter=2 to keep reads with at most 2 optimal-scoring matches across target
+     * @param mParameter i.e. mParameter=2 to keep reads with at most 2 optimal-scoring
+     * matches across target
      */
     void setAmbiguityThreshold(int mParameter);
-
-
 
     /**
      * Instruct the aligner to filter reads with the read set encoded in this file.
@@ -129,8 +131,8 @@ public interface Aligner {
     void setReadIndexFilter(File readIndexFilterFile);
 
     /**
-     * Set aligner specific options. Options are comma separated, with the syntax key1=value1,key2=value2.
-     * Keys are aligner dependent.
+     * Set aligner specific options. Options are comma separated, with the
+     * syntax <code>key1=value1,key2=value2</code>. Keys are aligner dependent.
      *
      * @param options
      */

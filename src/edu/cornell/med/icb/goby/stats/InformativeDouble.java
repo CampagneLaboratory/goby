@@ -24,5 +24,5 @@ package edu.cornell.med.icb.goby.stats;
  * @author Kevin Dorff
  */
 public interface InformativeDouble {
-    public boolean isInformative(final double value);
+    boolean isInformative(final double value);
 }

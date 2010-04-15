@@ -94,9 +94,8 @@ public class LoggingOutputStream extends OutputStream {
             b = 10;
         }
         if (b == 10) {
-            if (lastb == 10) {
-                // Ignore blank lines (and if we get CR/LF treat it as one character instead of 2)
-            } else {
+            // Ignore blank lines (and if we get CR/LF treat it as one character instead of 2)
+            if (lastb != 10) {
                 log.log(logLevel, buffer.toString());
                 buffer.reset();
                 try {

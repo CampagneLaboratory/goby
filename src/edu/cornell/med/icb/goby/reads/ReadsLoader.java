@@ -49,7 +49,7 @@ public class ReadsLoader {
     private final int numberOfMismaches = 0;
 
     private boolean colorSpace;
-    private SequenceEncoder encoder;
+    private final SequenceEncoder encoder;
 
     public int getReadLength() {
         return readLength;

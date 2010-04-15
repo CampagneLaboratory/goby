@@ -18,13 +18,12 @@
 
 package edu.cornell.med.icb.goby.counts;
 
+import static junit.framework.Assert.assertEquals;
 import org.junit.Test;
 
-import java.io.PrintWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
-import static junit.framework.Assert.assertEquals;
+import java.io.PrintWriter;
 
 /**
  * Describe class here.
@@ -35,7 +34,7 @@ public class TestWiggleWindow {
 
     @Test
     public void testWiggleWindow() throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final WiggleWindow wiggleWindow = new WiggleWindow(new PrintWriter(baos), 10, 100);
         wiggleWindow.addData(0, 3, 3);
         wiggleWindow.addData(4, 3, 4);
@@ -45,8 +44,8 @@ public class TestWiggleWindow {
         wiggleWindow.addData(130, 24, 8);
         wiggleWindow.finish();
         baos.close();
-        String actual = baos.toString();
-        String expected = String.format("1 3%n12 5%n22 6%n81 7%n91 7%n");
+        final String actual = baos.toString();
+        final String expected = String.format("1 3%n12 5%n22 6%n81 7%n91 7%n");
         assertEquals(expected, actual);
     }
 

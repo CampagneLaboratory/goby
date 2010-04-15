@@ -67,10 +67,10 @@ public class Log2FoldChangeCalculator extends StatisticCalculator {
 
 
             for (final String sample : samplesA) {
-                averageA += differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.elementId);
+                averageA += differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.getElementId());
             }
             for (final String sample : samplesB) {
-                averageB += differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.elementId);
+                averageB += differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.getElementId());
             }
 
             final double foldChangeStatistic = log2((averageA+1) / (averageB+1));

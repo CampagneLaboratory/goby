@@ -292,8 +292,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
     public boolean hasQueryLengths() {
         if (constantQueryLengths) {
             return true;
-        }
-        else {
+        } else {
             return queryLengths != null;
         }
     }

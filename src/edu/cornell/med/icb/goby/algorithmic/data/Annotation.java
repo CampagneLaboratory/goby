@@ -29,16 +29,21 @@ import java.util.Collections;
  * intervals along the reference (called annotation segments).
  */
 public class Annotation implements Comparable<Annotation> {
-    public final String id;
-    public final String chromosome;
-    public final ObjectList<Segment> segments;
-    public String strand;
+    protected final String id;
+    protected final String chromosome;
+    protected final ObjectList<Segment> segments;
+    protected final String strand;
 
     public Annotation(final String id, final String chromosome) {
+        this(id, chromosome, "N/A");
+    }
+
+    public Annotation(final String id, final String chromosome, final String strand) {
+        super();
         segments = new ObjectArrayList<Segment>();
         this.id = id;
         this.chromosome = chromosome;
-        strand = "N/A";
+        this.strand = strand;
     }
 
     public void sortSegments() {
@@ -53,31 +58,57 @@ public class Annotation implements Comparable<Annotation> {
         return this.getStart() - annot.getStart();
     }
 
-    public boolean equals(final Annotation annot) {
-        return ((this.getStart() == annot.getStart()) && (this.getEnd() == annot.getEnd()));
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        } else if (obj == this) {
+            return true;
+        } else if (!(obj instanceof Annotation)) {
+            return false;
+        } else {
+            final Annotation annot = (Annotation) obj;
+            return ((this.getStart() == annot.getStart()) && (this.getEnd() == annot.getEnd()));
+        }
     }
 
     public int getStart() {
-        return segments.get(0).start;
+        return segments.get(0).getStart();
     }
 
     public int getEnd() {
-        return segments.get(segments.size() - 1).end;
+        return segments.get(segments.size() - 1).getEnd();
     }
 
     public int getLength() {
         int result = 0;
         for (final Segment segment : segments) {
-            result += segment.end - segment.start + 1;
+            result += segment.getEnd() - segment.getStart() + 1;
         }
         return result;
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public String getChromosome() {
+        return chromosome;
+    }
+
+    public ObjectList<Segment> getSegments() {
+        return segments;
+    }
+
+    public String getStrand() {
+        return strand;
+    }
+
     public boolean overlap(final Annotation annotation2) {
         boolean overlap = false;
-        //4-cases to consider
+        // 4-cases to consider
 
-        //1st: annotation2's start is between this annotation start and end AND annotation2's end is after this end
+        // 1st: annotation2's start is between this annotation start and end AND annotation2's end is after this end
         if ((this.getStart() <= annotation2.getStart() && annotation2.getStart() <= this.getStart()) &&
                 (annotation2.getEnd() >= this.getEnd())) {
             overlap = true;
@@ -110,10 +141,10 @@ public class Annotation implements Comparable<Annotation> {
         sb.append(chromosome);
         sb.append(' ');
         sb.append(id);
-        sb.append(" ");
+        sb.append(' ');
         for (final Segment segment : segments) {
             sb.append(segment);
-            sb.append(" ");
+            sb.append(' ');
         }
         sb.append(" ]");
         return sb.toString();
@@ -133,11 +164,11 @@ public class Annotation implements Comparable<Annotation> {
             annotationWriter.write(delimiter);
             annotationWriter.write(id);
             annotationWriter.write(delimiter);
-            annotationWriter.write(segment.id);
+            annotationWriter.write(segment.getId());
             annotationWriter.write(delimiter);
-            annotationWriter.write(Integer.toString(segment.start));
+            annotationWriter.write(Integer.toString(segment.getStart()));
             annotationWriter.write(delimiter);
-            annotationWriter.write(Integer.toString(segment.end));
+            annotationWriter.write(Integer.toString(segment.getEnd()));
             annotationWriter.write('\n');
         }
     }

@@ -18,25 +18,22 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.modes.AlignMode;
-import it.unimi.dsi.lang.MutableString;
+import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.Before;
-import static org.junit.Assert.*;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.FileOutputStream;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
+import java.io.IOException;
 
 /**
  * @author Fabien Campagne
@@ -46,8 +43,10 @@ import java.util.regex.Matcher;
 public class TestSequenceVariations {
     private static final Log LOG = LogFactory.getLog(TestSequenceVariations.class);
     private static final String BASE_TEST_DIR = "test-results/sequence-variations";
-    final String referenceFilename = FilenameUtils.concat(BASE_TEST_DIR, "reference-sequence-vars.compact-reads");
-    final String readsFilename = FilenameUtils.concat(BASE_TEST_DIR, "query-sequence-vars.compact-reads");
+    private final String referenceFilename =
+            FilenameUtils.concat(BASE_TEST_DIR, "reference-sequence-vars.compact-reads");
+    private final String readsFilename =
+            FilenameUtils.concat(BASE_TEST_DIR, "query-sequence-vars.compact-reads");
     private String lastagAlignmentFilename;
     private String bwaAlignmentFilename;
 
@@ -56,12 +55,12 @@ public class TestSequenceVariations {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Creating base test directory: " + BASE_TEST_DIR);
         }
-       
+
         FileUtils.forceMkdir(new File(BASE_TEST_DIR));
     }
 
     @AfterClass
-    public static void cleanupTestDirectory() throws IOException {
+    public static void cleanupTestDirectory()  {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Deleting base test directory: " + BASE_TEST_DIR);
         }
@@ -70,13 +69,13 @@ public class TestSequenceVariations {
 
     @Test
     public void testLastagSequenceVariationParsing() throws IOException {
-        AlignmentReader reader = new AlignmentReader(lastagAlignmentFilename);
+        final AlignmentReader reader = new AlignmentReader(lastagAlignmentFilename);
         while (reader.hasNext()) {
-            Alignments.AlignmentEntry alignmentEntry = reader.next();
+            final Alignments.AlignmentEntry alignmentEntry = reader.next();
 
             assertTrue("alignment must have variation", alignmentEntry.getSequenceVariationsCount() > 0);
             int variationIndex = 0;
-            for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
+            for (final Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
                 variationIndex++;
                 System.out.println(String.format("last entry score=%f referenceIndex=%d  queryIndex=%d variation: %s",
                         alignmentEntry.getScore(),
@@ -129,13 +128,12 @@ public class TestSequenceVariations {
                     case 8:
                         switch (variationIndex) {
                             case 1:
-
                                 assertEquals(36, var.getPosition());
                                 assertEquals(36, var.getReadIndex());
                                 assertEquals("A", var.getFrom());
                                 assertEquals("G", var.getTo());
                                 break;
-                            
+
                         }
                         break;
                 }
@@ -144,7 +142,7 @@ public class TestSequenceVariations {
         }
     }
 
-    private void assertLength(Alignments.AlignmentEntry alignmentEntry, Alignments.SequenceVariation var) {
+    private void assertLength(final Alignments.AlignmentEntry alignmentEntry, final Alignments.SequenceVariation var) {
         final String readRaw = alignments[alignmentEntry.getQueryIndex()].read;
         final String readProcessed = readRaw.replaceAll("-", "");
         assertTrue(String.format("read index %d must be less than read length %d.", var.getReadIndex(), readProcessed.length()),
@@ -154,13 +152,13 @@ public class TestSequenceVariations {
 
     @Test
     public void testBwaSequenceVariationParsing() throws IOException {
-        AlignmentReader reader = new AlignmentReader(bwaAlignmentFilename);
+        final AlignmentReader reader = new AlignmentReader(bwaAlignmentFilename);
         while (reader.hasNext()) {
-            Alignments.AlignmentEntry alignmentEntry = reader.next();
+            final Alignments.AlignmentEntry alignmentEntry = reader.next();
 
             assertTrue("alignment must have variation", alignmentEntry.getSequenceVariationsCount() > 0);
 
-            for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
+            for (final Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
                 System.out.println(String.format("bwa entry score=%f referenceIndex=%d  queryIndex=%d variation: %s",
                         alignmentEntry.getScore(),
                         alignmentEntry.getQueryIndex(),
@@ -210,9 +208,9 @@ public class TestSequenceVariations {
 
     @Before
     public void setUp() throws IOException {
-        ReadsWriter referenceWriter = new ReadsWriter(new FileOutputStream(referenceFilename));
-        ReadsWriter queryWriter = new ReadsWriter(new FileOutputStream(readsFilename));
-        for (alignment entry : alignments) {
+        final ReadsWriter referenceWriter = new ReadsWriter(new FileOutputStream(referenceFilename));
+        final ReadsWriter queryWriter = new ReadsWriter(new FileOutputStream(readsFilename));
+        for (final Alignment entry : alignments) {
             referenceWriter.setDescription("reference:" + entry.description);
             referenceWriter.setIdentifier("reference:" + entry.description);
             referenceWriter.setSequence(entry.reference.replaceAll("-", ""));
@@ -224,19 +222,15 @@ public class TestSequenceVariations {
         }
         referenceWriter.close();
         queryWriter.close();
-
-
         // align with Lastag:
 
         lastagAlignmentFilename = alignWith("lastag");
         bwaAlignmentFilename = alignWith("bwa");
-
-
     }
 
-    private String alignWith(String alignerName) throws IOException {
-        String alignmentFilename = FilenameUtils.concat(BASE_TEST_DIR, alignerName + "-alignment");
-        AlignMode aligner = new AlignMode();
+    private String alignWith(final String alignerName) throws IOException {
+        final String alignmentFilename = FilenameUtils.concat(BASE_TEST_DIR, alignerName + "-alignment");
+        final AlignMode aligner = new AlignMode();
         aligner.setWorkDirectory(new File(BASE_TEST_DIR));
         aligner.setAlignerName(alignerName);
         aligner.setColorSpace(false);
@@ -253,68 +247,65 @@ public class TestSequenceVariations {
         return alignmentFilename;
     }
 
-    private class alignment {
-        String reference = "";
-        String read = "";
-        String description = "";
+    private class Alignment {
+        private String reference = "";
+        private String read = "";
+        private String description = "";
 
-        public alignment(String description, String reference, String read) {
+        public Alignment(final String description, final String reference, final String read) {
             this.description = description;
             this.reference = reference;
             this.read = read;
         }
     }
 
-    alignment[] alignments = new alignment[]{
-
-            new alignment("0_insertion",
+    private final Alignment[] alignments = {
+            new Alignment("0_insertion",
                     //1234567891111111111222
                     //         0123456789012
                     "TTTAAAA--TAAAAAAAAAAAAAAACCCC",
                     "TTTAAAACCTAAAAAAAAAAAAAAACCCC"),
             //  "TTTTAAAACTAAAAAAAAAAAAAAACCCC")
-            new alignment("1_deletion",
+            new Alignment("1_deletion",
                     //1234567891111111111222
                     //         0123456789012
                     "CCAAAAAAAAAAATCCAAAAAAAAAACCCAAAAAAAAAA",
                     "CCAAAAAAAAAAA---AAAAAAAAAACCCAAAAAAAAAA"),
-            new alignment("2_mutations",
+            new Alignment("2_mutations",
                     //1234567891111111111222
                     //         0123456789012
                     "TTTCCCAAATTTCACATCACTACTACTACGGATACAGAACGGGG",
                     "TTTCCCACATTTCCCATCACCACTACTACGGATACAGAACGGGG"),
             //.......M.....M......M.......................
-            new alignment("3_insertion",
+            new Alignment("3_insertion",
                     //1234567891111111111222
                     //         0123456789012
                     "NNNNNNNNNNNNNNNNNNNNNNNNNNNNN", // use Ns when the query already matches another reference.
                     "TTTTAAAACTAAAAAAAAAAAAAAACCCC"),  // has a C inserted (compare to 0_insertion), at position 8 in the reference, and 9 in the read.
-            new alignment("4_deletion",
+            new Alignment("4_deletion",
                     //1234567891111111111222
                     //         0123456789012
                     "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN", // use Ns when the query already matches another reference.
                     "CCAAAAAAAAAAA---AAAAAAAAAACCCAAAAAAAAAA"),
-            new alignment("5_deletion",
+            new Alignment("5_deletion",
                     //1234567891111111111222222
                     //         0123456789012345
                     "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN", // use Ns when the query already matches another reference.
                     "TTTCCCAAATTTCACATCACTAC-ACTACGGATACAGAACGGGG"),     // The reference has a T instead of the gap character at position 24.
-            new alignment("6_mutations-reversed",
+            new Alignment("6_mutations-reversed",
                     //1234567891111111111222
                     //         0123456789012
                     "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
                     "CCCCGTTCTGTATCCGTAGTAGTGGTGATGGGAAATGTGGGAAA"),    // reverse complement of sequence 2_mutations, used to check positions for reverse strand matches
-            new alignment("7_mutations_padding",
+            new Alignment("7_mutations_padding",
                     //1234567891111111111222
                     //         0123456789012
                     "--CCTTCCTTCCTTCCTTCCACTATCATTTTAACTACTCATACTATCCCATATA",
                     "AACCTTCCTTCCTTCCTTCCTCTATCATTTTAACTACTCATACTATCCCATATA"),
-             new alignment("8_read_padding",
+             new Alignment("8_read_padding",
                     //1234567891111111111222
                     //         0123456789012
                     "NNNN",
                    "TTCCACTATCATTTTAACTACTCATACTATCCCATGTA"),    //   A->G  readIndex=36, position=
     };
-
-
 }

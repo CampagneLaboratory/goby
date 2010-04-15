@@ -62,10 +62,10 @@ public class FoldChangeCalculator extends StatisticCalculator {
 
 
         for (final String sample : samplesA) {
-            averageA += differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.elementId);
+            averageA += differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.getElementId());
         }
         for (final String sample : samplesB) {
-            averageB += differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.elementId);
+            averageB += differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.getElementId());
         }
 
         final double foldChangeStatistic = ((averageA+1) / (averageB+1));

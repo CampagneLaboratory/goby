@@ -86,8 +86,7 @@ public class ChiSquareTestCalculator extends StatisticCalculator {
             final ObjectArraySet<String> samplesForGroup = differentialExpressionCalculator.getSamples(oneGroupId);
 
             for (final String sample : samplesForGroup) {
-
-                final long observedCount = differentialExpressionCalculator.getOverlapCount(sample, info.elementId);
+                final long observedCount = differentialExpressionCalculator.getOverlapCount(sample, info.getElementId());
                 final double sampleProportion = differentialExpressionCalculator.getSampleProportion(sample);
                 observedCounts[i] += observedCount;
                 groupProportions[i] += sampleProportion;
@@ -117,7 +116,7 @@ public class ChiSquareTestCalculator extends StatisticCalculator {
             // math commons can return negative p-values?
             pValue = Math.abs(pValueRaw);
         } catch (MaxIterationsExceededException e) {
-            LOG.error("elementId:" + info.elementId);
+            LOG.error("elementId:" + info.getElementId());
             LOG.error("expected:" + DoubleArrayList.wrap(expectedCounts).toString());
             LOG.error("observed:" + LongArrayList.wrap(observedCounts).toString());
             LOG.error(e);

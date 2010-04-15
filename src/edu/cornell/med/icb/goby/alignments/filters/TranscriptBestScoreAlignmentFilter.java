@@ -31,8 +31,8 @@ import java.io.FileNotFoundException;
  *         Time: 8:46:07 AM
  */
 public class TranscriptBestScoreAlignmentFilter extends AbstractAlignmentEntryFilter {
-    TranscriptsAlignmentFilter transcriptFilter;
-    BestScoreOnlyAlignmentFilter bestScoreFilter;
+    private final TranscriptsAlignmentFilter transcriptFilter;
+    private final BestScoreOnlyAlignmentFilter bestScoreFilter;
     private int notBestScoreCount;
     private int geneAmbiguityCount;
     private int entryCount;

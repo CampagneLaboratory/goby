@@ -52,12 +52,11 @@ public interface AlignmentQualityFilter {
      * Set parameters for this filter.
      * @param parameters A string in the format described by printUsage.
      */
-    public void setParameters(String parameters);
+    void setParameters(String parameters);
 
     /**
      * Print usage information for this filter. Describes any optional parameters to the end user.
      * @param out
      */
-    public void printUsage(PrintStream out);
-
+    void printUsage(PrintStream out);
 }

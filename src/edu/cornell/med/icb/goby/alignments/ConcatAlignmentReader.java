@@ -23,6 +23,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
@@ -192,9 +193,8 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
         final Properties result = new Properties();
         for (final AlignmentReader reader : this.readers) {
             final Properties localProps = reader.getStatistics();
-
-            for (final Object key : localProps.keySet()) {
-                result.put("part" + index + "." + key.toString(), localProps.get(key));
+            for (final Map.Entry<Object, Object> localProp : localProps.entrySet()) {
+                result.put("part" + index + "." + localProp.getKey().toString(), localProp.getValue());
             }
             index++;
         }

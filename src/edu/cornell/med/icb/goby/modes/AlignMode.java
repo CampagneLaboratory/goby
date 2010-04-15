@@ -288,10 +288,10 @@ public class AlignMode extends AbstractGobyMode {
         try {
             final Configuration configuration = GobyConfiguration.getConfiguration();
             aligner.setConfiguration(configuration);
-            aligner.setWorkDirectory(workDirectory != null ? workDirectory.getPath() :
-                    configuration.getString(GobyConfiguration.WORK_DIRECTORY));
-            aligner.setDatabaseDirectory(databaseDirectory != null ? databaseDirectory.getPath() :
-                    configuration.getString(GobyConfiguration.DATABASE_DIRECTORY));
+            aligner.setWorkDirectory(workDirectory != null ? workDirectory.getPath()
+                    : configuration.getString(GobyConfiguration.WORK_DIRECTORY));
+            aligner.setDatabaseDirectory(databaseDirectory != null ? databaseDirectory.getPath()
+                    : configuration.getString(GobyConfiguration.DATABASE_DIRECTORY));
             aligner.setDatabaseName(databasePath);
             aligner.setReadIndexFilter(readIndexFilterFile);
             aligner.setReferenceIndexFilter(referenceIndexFilterFile);

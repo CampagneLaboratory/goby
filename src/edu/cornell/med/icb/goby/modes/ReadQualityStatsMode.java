@@ -28,6 +28,7 @@ import edu.cornell.med.icb.goby.reads.ReadsReader;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import org.apache.commons.io.IOUtils;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -48,7 +49,8 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Calculate statistics for quality scores in a compact reads file.";
+    private static final String MODE_DESCRIPTION =
+            "Calculate statistics for quality scores in a compact reads file.";
 
     /**
      * The output file.
@@ -93,8 +95,7 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
             throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
-        final String[] inputFiles = jsapResult.getStringArray("input");
-        filenames = inputFiles;
+        filenames = jsapResult.getStringArray("input");
         outputFilename = jsapResult.getString("output");
         outputFormat = OutputFormat.valueOf(jsapResult.getString("format").toUpperCase());
 
@@ -109,9 +110,10 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        final PrintWriter writer = outputFilename == null ? new PrintWriter(System.out) :
-                new PrintWriter(new FileWriter(outputFilename));
+        PrintWriter writer = null;
         try {
+            writer = outputFilename == null ? new PrintWriter(System.out)
+                    : new PrintWriter(new FileWriter(outputFilename));
             final Int2ObjectMap<ReadQualityStats> qualityStats = new Int2ObjectOpenHashMap<ReadQualityStats>();
 
             writer.write("basename\treadIndex\t25%-percentile\tmedian\taverageQuality\t75%-percentile\n");
@@ -145,13 +147,9 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
                             stat.percentile(75));
                 }
             }
+        } finally {
+            IOUtils.closeQuietly(writer);
         }
-
-        finally {
-
-            writer.close();
-        }
-
     }
 
 
@@ -169,13 +167,13 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
     }
 
     private static class ReadQualityStats {
-        RandomEngine random = new MersenneTwister();
-        int readIndex;
-        //  byte minValue;
+        private final RandomEngine random = new MersenneTwister();
+        private int readIndex;
+        // byte minValue;
         // byte maxValue;
-        ByteArrayList sample = new ByteArrayList();
-        double averageQuality;
-        int observedCount;
+        private final ByteArrayList sample = new ByteArrayList();
+        private double averageQuality;
+        private int observedCount;
         private final double sampleFraction;
 
         private ReadQualityStats(final double sampleFraction) {
@@ -196,8 +194,7 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
 
         public byte percentile(final double percent) {
             final int index = (int) (((double) sample.size()) * percent / 100d);
-            final Byte value = sample.get(index);
-            return value;
+            return sample.get(index);
         }
     }
 }

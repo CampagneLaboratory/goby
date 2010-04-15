@@ -45,26 +45,25 @@ public class ComputeCount {
     /**
      * Number of reads that start ON or BEFORE this position.
      */
-    protected Int2IntMap starts;
+    protected final Int2IntMap starts;
     /**
      * Number of reads that end BEFORE position.
      */
-    protected Int2IntMap ends;
-    protected IntList startKeys;
-    protected IntList endKeys;
+    protected final Int2IntMap ends;
+    protected final IntList startKeys;
+    protected final IntList endKeys;
     /**
      * Used to store bases count in memory.
      */
-    protected Int2IntMap countPerBase;
+    protected final Int2IntMap countPerBase;
     /**
      * Sorted keys of countPerBase.
      */
-    protected IntList countKeys;
+    protected final IntList countKeys;
 
     protected int fixedLength;
     protected boolean isFixedLength;
     protected boolean startPopulateInitialized;
-
 
     public ComputeCount() {
         super();
@@ -75,10 +74,7 @@ public class ComputeCount {
         fixedLength = -1;   // not fixed Length
         countPerBase = new Int2IntOpenHashMap();
         countKeys = new IntArrayList();
-
-
     }
-
 
     /**
      * This method must be called before calling the populate method. It initializes data structures.

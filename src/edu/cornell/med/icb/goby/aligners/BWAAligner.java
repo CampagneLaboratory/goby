@@ -316,8 +316,8 @@ public class BWAAligner extends AbstractAligner {
     @Override
     public AbstractAlignmentToCompactMode getNativeAlignmentToCompactMode(final String outputBasename) {
         // can not initialize, unless correct input file exists
-        assert (samBinaryFilename != null) : "Can not initialize, unless SAM Binary input file exists";
-        assert (new File(samBinaryFilename).exists()) : "Can not initialize, unless correct SAM Binary file exists";
+        assert samBinaryFilename != null : "Can not initialize, unless SAM Binary input file exists";
+        assert new File(samBinaryFilename).exists() : "Can not initialize, unless correct SAM Binary file exists";
         final SAMToCompactMode processor = new SAMToCompactMode();
         processor.setInputFile(samBinaryFilename);
         processor.setNumberOfReads(numberOfReads);

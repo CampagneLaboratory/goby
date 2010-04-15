@@ -319,8 +319,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         }
     }
 
-    static Pattern attributeMD_pattern;
-    static Pattern attributeCIGAR_insertions_pattern;
+    private static final Pattern attributeMD_pattern;
+    private static final Pattern attributeCIGAR_insertions_pattern;
 
     static {
         attributeMD_pattern = Pattern.compile("([0-9]+)(([ACGTN]|\\^[ACGTN])+)?");

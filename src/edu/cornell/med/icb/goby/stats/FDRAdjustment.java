@@ -19,7 +19,8 @@
 package edu.cornell.med.icb.goby.stats;
 
 import it.unimi.dsi.fastutil.ints.IntList;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Abstract class for all implementations of FDR correction methods.
@@ -29,7 +30,7 @@ import org.apache.log4j.Logger;
  *         Time: 6:59:01 PM
  */
 public abstract class FDRAdjustment {
-    Logger LOG = Logger.getLogger(FDRAdjustment.class);
+    private static final Log LOG = LogFactory.getLog(FDRAdjustment.class);
 
     public DifferentialExpressionResults adjust(final DifferentialExpressionResults list, final NormalizationMethod method, final String... statisticIds) {
         for (final String statisticId : statisticIds) {

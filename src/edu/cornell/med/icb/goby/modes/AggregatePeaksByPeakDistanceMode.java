@@ -131,7 +131,7 @@ public class AggregatePeaksByPeakDistanceMode extends AbstractGobyMode {
             System.out.println(String.format("Reference %s: Starting with %d annotations.", chromsome, unionAnnotList.size()));
             final ObjectListIterator<Annotation> unionAnnotListIt = unionAnnotList.listIterator();
             while (unionAnnotListIt.hasNext()) {
-                segmentsList.addAll(unionAnnotListIt.next().segments);
+                segmentsList.addAll(unionAnnotListIt.next().getSegments());
             }
             unionAnnotList.clear();
             Collections.sort(segmentsList);
@@ -143,7 +143,7 @@ public class AggregatePeaksByPeakDistanceMode extends AbstractGobyMode {
                 segment = segIterator.next();
             }
             while (segment != null) {
-                final Annotation annotation = new Annotation(chromsome + "." + segment.start + "." + segment.getLength(), chromsome);
+                final Annotation annotation = new Annotation(chromsome + "." + segment.getStart() + "." + segment.getLength(), chromsome);
                 annotation.addSegment(segment);
                 if (segIterator.hasNext()) {
                     nextSeg = segIterator.next();
@@ -191,12 +191,10 @@ public class AggregatePeaksByPeakDistanceMode extends AbstractGobyMode {
                 System.err.println("The writer failed to initialize.");
                 System.exit(1);
             }
-        }
-        catch (FileNotFoundException fnfe) {
+        } catch (FileNotFoundException fnfe) {
             System.err.println("Caught exception in writeAnnotations: " + fnfe.getMessage());
             System.exit(1);
-        }
-        finally {
+        } finally {
             IOUtils.closeQuietly(writer);
         }
     }
@@ -232,8 +230,7 @@ public class AggregatePeaksByPeakDistanceMode extends AbstractGobyMode {
                     if (annots.containsKey(transcriptID)) {
                         annots.get(transcriptID).addSegment(segment);
                     } else {
-                        final Annotation annot = new Annotation(transcriptID, chromosome);
-                        annot.strand = strand;
+                        final Annotation annot = new Annotation(transcriptID, chromosome, strand);
                         annot.addSegment(segment);
                         annots.put(transcriptID, annot);
                     }
@@ -247,13 +244,14 @@ public class AggregatePeaksByPeakDistanceMode extends AbstractGobyMode {
         final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots
                 = new Object2ObjectOpenHashMap<String, ObjectList<Annotation>>();
         for (final Object2ObjectMap.Entry<String, Annotation> entry : annots.object2ObjectEntrySet()) {
-            entry.getValue().sortSegments();
-            final String chromosome = entry.getValue().chromosome;
+            final Annotation annotation = entry.getValue();
+            annotation.sortSegments();
+            final String chromosome = annotation.getChromosome();
             if (allAnnots.containsKey(chromosome)) {
-                allAnnots.get(chromosome).add(entry.getValue());
+                allAnnots.get(chromosome).add(annotation);
             } else {
                 final ObjectList<Annotation> annotations = new ObjectArrayList<Annotation>();
-                annotations.add(entry.getValue());
+                annotations.add(annotation);
                 allAnnots.put(chromosome, annotations);
             }
         }

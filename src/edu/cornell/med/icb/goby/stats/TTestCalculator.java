@@ -74,12 +74,12 @@ public class TTestCalculator extends StatisticCalculator {
 
         int i = 0;
         for (final String sample : samplesA) {
-            valuesA[i++] = StrictMath.log1p(differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.elementId));
+            valuesA[i++] = StrictMath.log1p(differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.getElementId()));
         }
 
         i = 0;
         for (final String sample : samplesB) {
-            valuesB[i++] = StrictMath.log1p(differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.elementId));
+            valuesB[i++] = StrictMath.log1p(differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.getElementId()));
         }
 
         double pValue = 0;

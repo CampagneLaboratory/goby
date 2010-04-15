@@ -166,7 +166,6 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
             // first pass: collect minimum score to keep each queryEntry
             // second pass: write to compact alignment file for those entries with score above threshold
             for (final boolean writeAlignment : new boolean[]{false, true}) {
-                //
                 assert new File(mafInputFile).exists() : "Missing MAF file: " + mafInputFile;
                 final LastParser parser = new LastParser(new FileReader(mafInputFile));
 
@@ -226,7 +225,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                         final float currentMax = queryIndexToMaxAlignmentScore.get(queryIndex);
                         final int currentNumHits = queryIndexToNumHitsAtMaxScore.get(queryIndex);
                         // on the first pass, writeAlignment=false
-                        if (writeAlignment == false) {
+                        if (!writeAlignment) {
                             // save the maximum score per read
                             //   and reset the counter to reflect numHits at this new value
                             if (score > currentMax) {

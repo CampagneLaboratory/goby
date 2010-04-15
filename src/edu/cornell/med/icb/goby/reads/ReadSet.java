@@ -21,7 +21,6 @@ package edu.cornell.med.icb.goby.reads;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -189,11 +188,8 @@ public class ReadSet {
      */
     public int getMaxReadIndex() {
         int maxQueryIndex = -1;
-        final IntIterator intIterator = filter.iterator();
-        while (intIterator.hasNext()) {
-            final int queryIndex = intIterator.next();
+        for (final int queryIndex : filter) {
             maxQueryIndex = Math.max(maxQueryIndex, queryIndex);
-
         }
         return maxQueryIndex;
     }

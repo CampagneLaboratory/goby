@@ -62,11 +62,11 @@ public class FisherExactTestCalculator extends StatisticCalculator {
         int sumCountInB = 0; // = new double[samplesB.size()];
 
         for (final String sample : samplesA) {
-            sumCountInA += differentialExpressionCalculator.getOverlapCount(sample, info.elementId);
+            sumCountInA += differentialExpressionCalculator.getOverlapCount(sample, info.getElementId());
         }
 
         for (final String sample : samplesB) {
-            sumCountInB += differentialExpressionCalculator.getOverlapCount(sample, info.elementId);
+            sumCountInB += differentialExpressionCalculator.getOverlapCount(sample, info.getElementId());
         }
 
         int totalCountInA = 0;

@@ -1,12 +1,10 @@
 package edu.cornell.med.icb.goby.stats;
 
 import it.unimi.dsi.lang.MutableString;
-
-import java.util.Random;
-
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
+import java.util.Random;
 
 /**
  * @author Fabien Campagne
@@ -17,9 +15,9 @@ public class TestBullardUpperQuartileNormalization {
     @Test
     public void testNormalize() {
         final DifferentialExpressionCalculator deCalc = makeDiffExprCalc();
-        RpkmLikeNormalizationMethod method = new BullardUpperQuartileNormalization();
+        final RpkmLikeNormalizationMethod method = new BullardUpperQuartileNormalization();
         method.normalize(deCalc, "group-A", "group-B");
-        assertTrue("", method.getDenominator(deCalc, "A-1")>75000);
+        assertTrue("", method.getDenominator(deCalc, "A-1") > 75000);
     }
 
     public DifferentialExpressionCalculator makeDiffExprCalc() {
@@ -29,22 +27,23 @@ public class TestBullardUpperQuartileNormalization {
             @Override
             public int getOverlapCount(final String sample, final MutableString elementId) {
                 if (sample.startsWith("A")) {
-                    return (int) (2 * Math.abs(randomEngine.nextDouble()*1000));
+                    return (int) (2 * Math.abs(randomEngine.nextDouble() * 1000));
                 } else {
-                    return (int) Math.abs(randomEngine.nextDouble()*1000);
+                    return (int) Math.abs(randomEngine.nextDouble() * 1000);
                 }
 
                 // fold change A/B = 2
             }
+            @Override
             public int getSumOverlapCounts(final String sample) {
                 if (sample.startsWith("A")) {
-                    return (int) (2 * Math.abs(randomEngine.nextDouble()*100000));
+                    return (int) (2 * Math.abs(randomEngine.nextDouble() * 100000));
                 } else {
-                    return (int) Math.abs(randomEngine.nextDouble()*100000);
+                    return (int) Math.abs(randomEngine.nextDouble() * 100000);
                 }
             }
         };
-        int numElements = 1000;
+        final int numElements = 1000;
         for (int i = 1; i < numElements; i++) {
             deCalc.defineElement("id-" + i);
         }

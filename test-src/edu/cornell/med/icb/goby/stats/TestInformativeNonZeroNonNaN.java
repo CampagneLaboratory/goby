@@ -18,9 +18,9 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import org.junit.Test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 /**
  * Test InformativeNonZeroNonNaN.
@@ -30,7 +30,7 @@ import static org.junit.Assert.assertTrue;
 public class TestInformativeNonZeroNonNaN {
     @Test
     public void testInformative() {
-        InformativeDouble informativeObj = new InformativeNonZeroNonNaN();
+        final InformativeDouble informativeObj = new InformativeNonZeroNonNaN();
         assertFalse(informativeObj.isInformative(Double.NaN));
         assertFalse(informativeObj.isInformative(0));
         assertTrue(informativeObj.isInformative(-10));

@@ -64,8 +64,8 @@ public class AverageCalculator extends StatisticCalculator {
             double averageCount = 0;
 
             for (final String sample : samplesA) {
-                averageNormalizedExpressionValue += differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.elementId);
-                averageCount += differentialExpressionCalculator.getOverlapCount(sample, info.elementId);
+                averageNormalizedExpressionValue += differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.getElementId());
+                averageCount += differentialExpressionCalculator.getOverlapCount(sample, info.getElementId());
             }
             averageNormalizedExpressionValue /= (double) samplesA.size();
             averageCount /= (double) samplesA.size();
