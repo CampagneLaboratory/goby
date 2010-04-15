@@ -22,7 +22,6 @@ import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import it.unimi.dsi.fastutil.booleans.BooleanList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 
 import java.io.File;
@@ -36,8 +35,6 @@ import java.io.IOException;
  */
 public class ReadsLoader {
     private final ReadSet readIndexFilter;
-    private final MutableString sequence;
-
     private SequenceDigests[] digests;
     private final ObjectArrayList<byte[]> compressedReads;
     private int numReads;
@@ -49,21 +46,17 @@ public class ReadsLoader {
     private final int numberOfMismaches = 0;
 
     private boolean colorSpace;
-    private final SequenceEncoder encoder;
 
     public int getReadLength() {
         return readLength;
     }
 
     public ReadsLoader(final ReadSet readIndexFilter, final File readsFile) {
+        super();
         this.readIndexFilter = readIndexFilter;
-
         compressedReads = new ObjectArrayList<byte[]>(1000000);
         this.readsFile = readsFile;
-        this.sequence = new MutableString();
-        this.encoder = new SequenceEncoder();
     }
-
 
     public void setColorSpace(final boolean colorSpace) {
         this.colorSpace = colorSpace;
@@ -80,7 +73,6 @@ public class ReadsLoader {
         for (final Reads.ReadEntry readEntry : readsReader) {
 
             if (readIndexFilter == null || readIndexFilter.contains(readEntry.getReadIndex())) {
-
                 maxReadLength = Math.max(maxReadLength, readEntry.getReadLength());
                 minReadLength = Math.min(minReadLength, readEntry.getReadLength());
                 if (minReadLength != maxReadLength) {

@@ -22,6 +22,7 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.reads.ReadSet;
+import org.apache.commons.io.IOUtils;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -105,34 +106,33 @@ public class ReadSetToTextMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        final PrintWriter writer = outputFilename == null ? new PrintWriter(System.out) :
-                new PrintWriter(new FileWriter(outputFilename));
-        switch (outputFormat) {
-            case PLAIN:
-                writer.printf("queryIndex\tmultiplicity%n");
-
-        }
+        PrintWriter writer = null;
         try {
-            for (final String basename : basenames) {
+            writer = outputFilename == null ? new PrintWriter(System.out) :
+                    new PrintWriter(new FileWriter(outputFilename));
+            switch (outputFormat) {
+                case PLAIN:
+                    writer.printf("queryIndex\tmultiplicity%n");
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown output format: " + outputFormat);
+            }
 
+            for (final String basename : basenames) {
                 final ReadSet set = new ReadSet();
                 set.load(basename, suffix);
 
 
                 for (int queryIndex = 0; queryIndex <= set.getMaxReadIndex(); queryIndex++) {
-                      final int multiplicity = set.getMultiplicity(queryIndex);
+                    final int multiplicity = set.getMultiplicity(queryIndex);
                     writer.printf("%d\t%d%n", queryIndex,
 
                             multiplicity);
                 }
             }
-
+        } finally {
+            IOUtils.closeQuietly(writer);
         }
-        finally {
-
-            writer.close();
-        }
-
     }
 
 

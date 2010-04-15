@@ -74,9 +74,11 @@ public class AlignmentWriter implements Closeable {
     private int numberOfAlignedReads;
     private int constantQueryLength;
     private boolean isConstantQueryLength;
+    private Alignments.AlignmentEntry.Builder newEntry;
+    private final FileOutputStream alignmentEntries;
 
     public AlignmentWriter(final String outputBasename) throws IOException {
-        final FileOutputStream alignmentEntries = new FileOutputStream(outputBasename + ".entries");
+        alignmentEntries = new FileOutputStream(outputBasename + ".entries");
         headerOutput = new GZIPOutputStream(new FileOutputStream(outputBasename + ".header"));
         statsWriter = new FileWriter(outputBasename + ".stats");
         this.basename = outputBasename;
@@ -90,8 +92,6 @@ public class AlignmentWriter implements Closeable {
         statsWritten = true;
 
     }
-
-    private Alignments.AlignmentEntry.Builder newEntry;
 
     public final void setQueryIndex(final int queryIndex) {
         newEntry.setQueryIndex(queryIndex);
@@ -138,7 +138,6 @@ public class AlignmentWriter implements Closeable {
      * @throws IOException
      */
     public synchronized void appendEntry() throws IOException {
-
         final Alignments.AlignmentEntry builtEntry = newEntry.build();
         maxQueryIndex = Math.max(builtEntry.getQueryIndex(), maxQueryIndex);
         maxTargetIndex = Math.max(builtEntry.getTargetIndex(), maxTargetIndex);
@@ -148,7 +147,8 @@ public class AlignmentWriter implements Closeable {
     }
 
     /**
-     * Append an entry to the file being written. The entry must have been prepared outside this writter.
+     * Append an entry to the file being written. The entry must have been prepared
+     * outside this writer.
      *
      * @param builtEntry
      * @throws IOException If an error occurs writting this entry.
@@ -182,6 +182,8 @@ public class AlignmentWriter implements Closeable {
         writeStats();
         IOUtils.closeQuietly(headerOutput);
         entriesChunkWriter.close(collectionBuilder);
+        IOUtils.closeQuietly(alignmentEntries);
+        IOUtils.closeQuietly(statsWriter);
     }
 
     private void writeHeader() throws IOException {
@@ -202,7 +204,7 @@ public class AlignmentWriter implements Closeable {
             } else if (queryLengths != null) {
                 headerBuilder.addAllQueryLength(IntArrayList.wrap(queryLengths));
             }
-            //store target lengths:
+            // store target lengths:
             if (targetLengths != null) {
                 headerBuilder.addAllTargetLength(IntArrayList.wrap(targetLengths));
             }

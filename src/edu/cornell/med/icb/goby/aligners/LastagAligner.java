@@ -225,16 +225,11 @@ public class LastagAligner extends LastAligner {
     }
 
     /**
-     * Align.
-     *
-     * @param referenceFile  Compact or native database basename for reference sequences.
-     * @param readsFile      Compact or native format (i.e., fasta, fastq) aligner read format.
-     * @param outputBasename Basename where to write the compact alignment.
-     * @return
-     * @throws IOException
+     * {@inheritDoc}
      */
     @Override
-    public File[] align(final File referenceFile, final File readsFile, final String outputBasename) throws IOException {
+    public File[] align(final File referenceFile, final File readsFile, final String outputBasename)
+            throws IOException {
         assert pathToExecutables != null : "path to executables must be defined.";
         validateScoreOptions();
 
@@ -242,7 +237,7 @@ public class LastagAligner extends LastAligner {
         if (databaseName == null) {
             databaseName = getDefaultDbNameForReferenceFile(referenceFile);
         }
-        final File[] indexedReference = indexReference(referenceFile);
+        indexReference(referenceFile);
         LOG.info("Searching..");
         assert outputBasename != null : "basename must not be null";
         forceMakeParentDir(outputBasename);

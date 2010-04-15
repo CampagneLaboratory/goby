@@ -35,32 +35,31 @@ public class SequenceDigests {
     private final boolean matchesPositiveStrand;
     private final boolean[] mask;
     private final int readLength;
-    private final int step = 0;
     private static final int[] NIL = new int[0];
-
 
     /**
      * Construct digests over the bases active in mask.
-     * Mask is a list of booleans, where each boolean indicates if a base of the sequence (at the corresponding position of the mask)
-     * should be included in the digest.
+     * Mask is a list of booleans, where each boolean indicates if a base of the
+     * sequence (at the corresponding position of the mask) should be included in the digest.
      *
      * @param mask
      * @param readLength
      */
-    public SequenceDigests(final BooleanList mask, final int readLength, final boolean matchesPositiveStrand) {
+    public SequenceDigests(final BooleanList mask, final int readLength,
+                           final boolean matchesPositiveStrand) {
         this(mask.toBooleanArray(), readLength, matchesPositiveStrand, new Int2ObjectOpenHashMap<int[]>());
-
-
     }
 
-    private SequenceDigests(final boolean[] mask, final int readLength, final boolean matchesPositiveStrand, final Int2ObjectMap<int[]> readDigests) {
+    private SequenceDigests(final boolean[] mask, final int readLength,
+                            final boolean matchesPositiveStrand,
+                            final Int2ObjectMap<int[]> readDigests) {
+        super();
         readDigestsToSequenceIndex = readDigests;
         readDigestsToSequenceIndex.defaultReturnValue(NIL);
         this.mask = mask;
         this.readLength = readLength;
         this.matchesPositiveStrand = matchesPositiveStrand;
     }
-
 
     /**
      * Construct digests over the entire length of the sequence.
@@ -69,51 +68,34 @@ public class SequenceDigests {
      */
     public SequenceDigests(final int readLength, final boolean matchesPositiveStrand) {
         this(null, readLength, matchesPositiveStrand, new Int2ObjectOpenHashMap<int[]>());
-
     }
 
-
     public final int digest(final byte[] sequence, final int offset, final int length) {
-
-        return mask == null ?
-                (matchesPositiveStrand ?
-                        crc32(sequence, offset, length) :
-                        crc32ReverseComplement(sequence, offset, length)) :
-
-                crc32WithMask(sequence, offset, length);
-
-
+        return mask == null ? (matchesPositiveStrand
+                ? crc32(sequence, offset, length)
+                : crc32ReverseComplement(sequence, offset, length))
+                : crc32WithMask(sequence, offset, length);
     }
 
     public final int digestDirectStrandOnly(final byte[] sequence, final int offset, final int length) {
-
-        return mask == null ?
-                crc32(sequence, offset, length) :
-                crc32WithMask(sequence, offset, length);
-
-
+        return mask == null ? crc32(sequence, offset, length)
+                : crc32WithMask(sequence, offset, length);
     }
 
     public final int digest(final byte[] sequence, final int offset) {
-
-        return mask == null ?
-                (matchesPositiveStrand ?
-                        crc32(sequence, offset, readLength) :
-                        crc32ReverseComplement(sequence, offset, readLength)) :
-
-                crc32WithMask(sequence, offset, readLength);
+        return mask == null ? (matchesPositiveStrand
+                ? crc32(sequence, offset, readLength)
+                : crc32ReverseComplement(sequence, offset, readLength))
+                : crc32WithMask(sequence, offset, readLength);
 
     }
 
     public final int digest(final ByteString sequence, final int offset, final int length) {
-        return mask == null ?
-                (matchesPositiveStrand ?
-                        crc32(sequence, offset, length) :
-                        crc32ReverseComplement(sequence, offset, length)) :
-
-                crc32WithMask(sequence, offset, length);
+        return mask == null ? (matchesPositiveStrand
+                ? crc32(sequence, offset, length)
+                : crc32ReverseComplement(sequence, offset, length))
+                : crc32WithMask(sequence, offset, length);
     }
-
 
     public final void digestAndStore(final byte[] sequence, final int offset, final int sequenceIndex) {
         final int digest = digest(sequence, offset);
@@ -140,7 +122,6 @@ public class SequenceDigests {
      * Reference: http://snippets.dzone.com/tag/crc32
      * ************************************************************************
      */
-
     private static final int[] table = {
             0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f, 0xe963a535, 0x9e6495a3,
             0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988, 0x09b64c2b, 0x7eb17cbd, 0xe7b82d07, 0x90bf1d91,
@@ -177,7 +158,6 @@ public class SequenceDigests {
     };
 
     public final int crc32(final byte[] bytes, final int offset, final int length) {
-
         int crc = 0xffffffff;
         final int end = offset + length;
         for (int i = offset; i < end; ++i) {
@@ -206,7 +186,6 @@ public class SequenceDigests {
     }
 
     private int crc32ReverseComplement(final byte[] sequence, final int offset, final int length) {
-
         int crc = 0xffffffff;
         final int end = offset + length - 1;
         for (int i = end; i >= offset; --i) {
@@ -221,7 +200,6 @@ public class SequenceDigests {
     }
 
     private int crc32ReverseComplement(final ByteString sequence, final int offset, final int length) {
-
         int crc = 0xffffffff;
         final int end = offset + length - 1;
         for (int i = end; i >= offset; --i) {
@@ -236,7 +214,6 @@ public class SequenceDigests {
     }
 
     public final int crc32WithMask(final byte[] bytes, final int offset, final int length) {
-
         int crc = 0xffffffff;
         final int end = offset + length;
         for (int i = offset; i < end; ++i) {
@@ -251,12 +228,12 @@ public class SequenceDigests {
         crc = ~crc;
         return crc;
     }
-    public final int crc32WithMask(final ByteString sequence, final int offset, final int length) {
 
+    public final int crc32WithMask(final ByteString sequence, final int offset, final int length) {
         int crc = 0xffffffff;
         final int end = offset + length;
         for (int i = offset; i < end; ++i) {
-            final byte b =sequence.byteAt(i);
+            final byte b = sequence.byteAt(i);
             if (mask[i]) {
                 crc = (crc >>> 8) ^ table[(crc ^ b) & 0xff];
 
@@ -270,8 +247,8 @@ public class SequenceDigests {
 
 
     /**
-     * Return the possible sequence indices for a segment of sequence.  A digest is calculated from the bytes
-     * of the sequence between in the range [offset, offset+length[.
+     * Return the possible sequence indices for a segment of sequence.  A digest is
+     * calculated from the bytes of the sequence between in the range [offset, offset+length[.
      *
      * @param sequence Complete sequence
      * @param offset   Offset from start of complete sequence where the segment starts.
@@ -293,8 +270,8 @@ public class SequenceDigests {
     }
 
     /**
-     * Remove a digest from the digest to read index map. getReadIndex and lookup will no longer be able to retrive the
-     * sequence index for this digest.
+     * Remove a digest from the digest to read index map. getReadIndex and lookup will no
+     * longer be able to retrive the sequence index for this digest.
      *
      * @param digest
      */
@@ -303,8 +280,8 @@ public class SequenceDigests {
     }
 
     /**
-     * Remove the association between a digest and a read index. If the digest is associated with no other read index,
-     * removes the digest entirely.
+     * Remove the association between a digest and a read index. If the digest is associated
+     * with no other read index, removes the digest entirely.
      *
      * @param digest
      */

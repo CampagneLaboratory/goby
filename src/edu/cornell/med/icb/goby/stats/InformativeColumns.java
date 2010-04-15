@@ -33,35 +33,36 @@ public class InformativeColumns {
      * True if all columns have been determined to be informative. This will only be
      * set after the last entry of a row has been checked.
      */
-    public boolean allColumnsInformative;
+    private boolean allColumnsInformative;
 
     /**
      * The number of columns in each row of the dataset.
      */
-    int numberOfColumns;
+    private final int numberOfColumns;
     /**
      * The current position in the current row we are checking. Automatically returns to
      * 0 when we have checked numberOfColumns values.
      */
-    int positionInCurrentRow;
+    private int positionInCurrentRow;
 
     /**
      * The data, one boolean per numberOfColumns. Starts off as all false since rows are not
      * yet known to be informative.
      */
-    boolean[] data;
+    private final boolean[] data;
 
     /**
      * The object that defines what is informative.
      */
-    public InformativeDouble informativeDouble;
+    private final InformativeDouble informativeDouble;
 
     /**
      * Create an InformativeColumns object for numberOfColumns.
      * @param numberOfColumns the fixed number of columns in the dataset for any number of rows.
      * @param informativeDouble the object that defines what is informative.
      */
-    public InformativeColumns(final int numberOfColumns, final InformativeDouble informativeDouble) {
+    public InformativeColumns(final int numberOfColumns,
+                              final InformativeDouble informativeDouble) {
         assert numberOfColumns > 0;
         this.informativeDouble = informativeDouble;
         this.numberOfColumns = numberOfColumns;

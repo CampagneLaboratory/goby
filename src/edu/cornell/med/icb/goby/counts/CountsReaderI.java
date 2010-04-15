@@ -60,8 +60,9 @@ public interface CountsReaderI extends Closeable {
     int getCount();
 
     /**
-     * Advance up to or past the specified position. The reader is advanced until the position returned by getPosition()
-     * is at least equal, or greater to the specified position.
+     * Advance up to or past the specified position. The reader is advanced until the
+     * position returned by {@link #getPosition()} is at least equal, or greater to
+     * the specified position.
      *
      * @param position
      * @throws IOException
@@ -70,7 +71,7 @@ public interface CountsReaderI extends Closeable {
 
     /**
      * The length of the region/peak where the count is observed.
-     * @return
+     * @return The length of the region
      */
     int getLength();
 }

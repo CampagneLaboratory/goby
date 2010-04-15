@@ -58,11 +58,6 @@ public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFil
      */
     private int shouldWrite;
 
-    /**
-     * The start time.
-     */
-    private final long startTime;
-
     private int willSkip;
 
     /**
@@ -72,14 +67,13 @@ public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFil
      * @param maxNumberOfReads the maximum number of POSSIBLE reads we could encounter
      */
     public BestScoreAmbiguityAlignmentFilter(final int k, final int maxNumberOfReads) {
+        super();
         indexToBestScore = new float[maxNumberOfReads];
         Arrays.fill(indexToBestScore, Float.MIN_VALUE);
         indexToCountAtBestScore = new short[maxNumberOfReads];
         Arrays.fill(indexToCountAtBestScore, (short) 0);
 
-        this.k = k;
-        this.startTime = System.currentTimeMillis();
-    }
+        this.k = k;    }
 
     public void setHeader(final AlignmentReader reader) {
         // do nothing

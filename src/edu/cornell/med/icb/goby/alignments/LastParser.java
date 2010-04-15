@@ -180,7 +180,7 @@ public class LastParser implements Closeable {
     /**
      * Returns the list of aligned sequences associated with this entry.
      *
-     * @return
+     * @return a list of aligned sequences
      */
     public ObjectArrayList<AlignedSequence> getAlignedSequences() {
         return alignedSequences;

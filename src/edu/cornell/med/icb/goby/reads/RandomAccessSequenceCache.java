@@ -190,8 +190,8 @@ public class RandomAccessSequenceCache {
      * Return the index of the reference sequence identified by name, or -1 if the sequence name
      * is not in the cache.
      *
-     * @param referenceName
-     * @return
+     * @param referenceName The name of the sequence to get the index for
+     * @return The index for the specified refreence
      */
     public final int getReferenceIndex(final String referenceName) {
         return referenceNameMap.getInt(referenceName);

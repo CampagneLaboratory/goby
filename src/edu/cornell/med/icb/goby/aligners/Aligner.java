@@ -40,7 +40,7 @@ public interface Aligner {
      * @param compactReadsFile Reads.
      * @return The file that contains the reads converted to native aligner format
      * (e.g., fasta, fastq or other)
-     * @throws IOException
+     * @throws IOException if the input file cannot be read or the output file cannot be written
      */
     File prepareReads(File compactReadsFile) throws IOException;
 
@@ -49,7 +49,9 @@ public interface Aligner {
      *
      * @param referenceFileOrDbBasename The compact file with the reference sequence to index OR
      * the database basename (prefix)
-     * @return
+     * @return A list of files that comprise the index created from the referecne file.
+     * @throws IOException if the reference file cannot be read or any of index
+     * files cannot be created
      * @throws InterruptedException Thrown when the task is interrupted for any reason.
      */
     File[] indexReference(File referenceFileOrDbBasename) throws IOException, InterruptedException;
@@ -61,7 +63,8 @@ public interface Aligner {
      * @return The set of files that make up the result alignment.
      * @throws InterruptedException Thrown when the task is interrupted for any reason.
      */
-    File[] processAlignment(File referenceFile, File readsFile, String outputBasename) throws InterruptedException, IOException;
+    File[] processAlignment(File referenceFile, File readsFile, String outputBasename)
+            throws InterruptedException, IOException;
 
     /**
      * Align reads to a reference. Convert reads and reference to aligner native format
@@ -72,9 +75,12 @@ public interface Aligner {
      * @param readsFile Compact or native format (i.e., fasta, fastq) aligner read format.
      * @param outputBasename Basename where to write the compact alignment.
      * @return The set of files that make up the result alignment.
+     * @throws IOException if the reference or reads files cannot be read or the
+     * output files cannot be written
      * @throws InterruptedException Thrown when the task is interrupted for any reason.
      */
-    File[] align(File referenceFile, File readsFile, String outputBasename) throws InterruptedException, IOException;
+    File[] align(File referenceFile, File readsFile, String outputBasename)
+            throws InterruptedException, IOException;
 
     /**
      * Indicate whether the reads are in color-space.

@@ -58,6 +58,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
      * @throws IOException If an error occurs reading the header of the alignments.
      */
     public ConcatAlignmentReader(final String... basenames) throws IOException {
+        super();
         readers = new AlignmentReader[basenames.length];
         readersWithMoreEntries = new IntArraySet();
         int readerIndex = 0;
@@ -186,7 +187,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
     /**
      * Obtain statistics about this alignment as a Java property instance.
      *
-     * @return
+     * @return statistics about this alignment
      */
     public Properties getStatistics() {
         int index = 1;

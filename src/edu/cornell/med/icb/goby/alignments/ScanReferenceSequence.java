@@ -35,7 +35,6 @@ import java.io.IOException;
  *         Time: 12:11:09 PM
  */
 public class ScanReferenceSequence {
-
     private byte[] sequence;
     private ProgressLogger progress;
     private int readLength;

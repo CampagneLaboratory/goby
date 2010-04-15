@@ -191,7 +191,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
      * Get the input filenames.
      * @return the input filenames
      */
-    public String[] getInputFilenames() {
+    public synchronized String[] getInputFilenames() {
         if (inputFiles == null) {
             return new String[0];
         }

@@ -203,6 +203,4 @@ public class ReadSet {
         multiplicityMap.defaultReturnValue(value);
         smallestStoredMultiplicity = value;
     }
-
-
 }

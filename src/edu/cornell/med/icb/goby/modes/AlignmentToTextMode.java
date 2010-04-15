@@ -123,8 +123,6 @@ public class AlignmentToTextMode extends AbstractGobyMode {
 
             if (cachedReader != alignmentReader) {
                 hasReadIds = alignmentReader.getQueryIdentifiers().size() > 0;
-                final DoubleIndexedIdentifier readIds =
-                        new DoubleIndexedIdentifier(alignmentReader.getQueryIdentifiers());
                 referenceLengths = alignmentReader.getTargetLength();
             }
 
@@ -270,35 +268,36 @@ public class AlignmentToTextMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        final PrintWriter writer = outputFilename == null ? new PrintWriter(System.out) :
-                new PrintWriter(new FileWriter(outputFilename));
-        switch (outputFormat) {
-            case PLAIN:
-                writer.printf("queryId\treferenceId\treferenceLength\tnumberOfIndels\tnumberOfMismatches\tscore\tstartPosition\talignmentLength\tmatchesReverseStrand%n");
-            case SAM:
-                writer.printf("@HD\tVN:1.0%n" + "@PG\tGoby\tVN:"
-                        + VersionUtils.getImplementationVersion(GobyDriver.class) + "%n");
+        PrintWriter writer = null;
+        try {
+            writer = outputFilename == null ? new PrintWriter(System.out)
+                    : new PrintWriter(new FileWriter(outputFilename));
+            switch (outputFormat) {
+                case PLAIN:
+                    writer.printf("queryId\treferenceId\treferenceLength\tnumberOfIndels\tnumberOfMismatches\tscore\tstartPosition\talignmentLength\tmatchesReverseStrand%n");
+                case SAM:
+                    writer.printf("@HD\tVN:1.0%n" + "@PG\tGoby\tVN:"
+                            + VersionUtils.getImplementationVersion(GobyDriver.class) + "%n");
 
-                for (final String basename : basenames) {
-                    final AlignmentReader reader = new AlignmentReader(basename);
-                    reader.readHeader();
-                    final IndexedIdentifier identifiers = reader.getTargetIdentifiers();
-                    for (final MutableString targetId : identifiers.keySet()) {
-                        if (targetId != null) {
-                            final int[] targetLengths = reader.getTargetLength();
-                            if (targetLengths != null) {
-                                writer.printf("@SQ\tSN:%s\tLN:%d%n", targetId,
-                                        targetLengths[identifiers.getInt(targetId)]);
-                            } else {
-                                writer.printf("@SQ\tSN:%s%n", targetId);
+                    for (final String basename : basenames) {
+                        final AlignmentReader reader = new AlignmentReader(basename);
+                        reader.readHeader();
+                        final IndexedIdentifier identifiers = reader.getTargetIdentifiers();
+                        for (final MutableString targetId : identifiers.keySet()) {
+                            if (targetId != null) {
+                                final int[] targetLengths = reader.getTargetLength();
+                                if (targetLengths != null) {
+                                    writer.printf("@SQ\tSN:%s\tLN:%d%n", targetId,
+                                            targetLengths[identifiers.getInt(targetId)]);
+                                } else {
+                                    writer.printf("@SQ\tSN:%s%n", targetId);
+                                }
                             }
                         }
                     }
-                }
-                break;
-        }
+                    break;
+            }
 
-        try {
             alignmentIterator.setOutputWriter(writer, outputFormat);
             // Iterate through each alignment and write sequence variations to output file:
             alignmentIterator.iterate(basenames);

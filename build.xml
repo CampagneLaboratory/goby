@@ -100,8 +100,7 @@
                 <include name="tisim-api.jar"/>
                 <include name="pj*.jar"/>
                 <include name="JRI.jar"/>
-                <include name="xstream-1.3.1.jar"/>
-                <!-- Required by JSAP -->
+                <include name="xstream-1.3.1.jar"/>  <!-- Required by JSAP -->
             </zipgroupfileset>
 
             <manifest>
@@ -189,7 +188,7 @@
             <link href="http://commons.apache.org/io/api-release/"/>
             <link href="http://commons.apache.org/logging/apidocs/"/>
             <link href="http://commons.apache.org/lang/api-release"/>
-            <link href="http://commons.apache.org/math/api-2.0/"/>
+            <link href="http://commons.apache.org/math/api-2.1/"/>
             <link href="http://martiansoftware.com/jsap/doc/javadoc/"/>
             <link href="http://code.google.com/apis/protocolbuffers/docs/reference/java/"/>
             <link href="http://icbtools.med.cornell.edu/javadocs/bdval/"/>
@@ -197,6 +196,7 @@
             <link href="http://icbtools.med.cornell.edu/javadocs/icb-utils/"/>
             <link href="http://icbtools.med.cornell.edu/javadocs/squil/"/>
             <link href="http://icbtools.med.cornell.edu/javadocs/tissueinfo/"/>
+            <link href="http://picard.sourceforge.net/javadoc/"/>
             <classpath>
                 <path refid="compile.classpath"/>
                 <pathelement location="${classes}"/>

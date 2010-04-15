@@ -67,7 +67,6 @@ public class TallyBasesMode extends AbstractGobyMode {
      * The output file.
      */
     private String outputFilename;
-    private boolean filterByReferenceNames;
     private ObjectSet<String> includeReferenceNames = new ObjectOpenHashSet<String>();
     private String[] basenames;
     private String alternativeCountArhive;
@@ -132,7 +131,6 @@ public class TallyBasesMode extends AbstractGobyMode {
             for (final String name : includeReferenceNames) {
                 System.out.println(name);
             }
-            filterByReferenceNames = true;
         }
         return this;
     }

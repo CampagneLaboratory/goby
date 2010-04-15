@@ -66,9 +66,8 @@ public class Segment implements Comparable<Segment> {
     }
 
     /**
-     * Return the length of this annotation segment (number of bases in the segment). End-start+1;
-     *
-     * @return
+     * Return the length of this annotation segment (number of bases in the segment).
+     * @return The length of this segment
      */
     public int getLength() {
         return end - start + 1;

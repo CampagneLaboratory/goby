@@ -197,6 +197,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
         BasenameParallelRegion(final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots,
                                final String[] inputFiles, final BufferedWriter writer) {
+            super();
             this.allAnnots = allAnnots;
             this.inputFiles = inputFiles;
             this.writer = writer;

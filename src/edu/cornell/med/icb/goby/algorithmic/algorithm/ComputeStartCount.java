@@ -68,24 +68,18 @@ public class ComputeStartCount extends ComputeCount {
 
     @Override
     public void populate(final int startPosition, final int endPosition, final boolean forwardStrand) {
-
         //    assert forwardStrand && startPosition <= endPosition ||
         //           !forwardStrand && endPosition <= startPosition : "start (resp. end) must occur before end (start) on forward (reverse) strand.";
         final int beginPosition;
-
         if (!forwardStrand) {
             beginPosition = endPosition;
-
         } else {
             beginPosition = startPosition;
-
         }
         if (forwardStrand && focusOnStrand == BOTH_STRAND || focusOnStrand == POSITIVE_STRAND_ONLY) {
             final int count = starts.get(beginPosition) + 1;
             starts.put(beginPosition, count);
-
         } else if (!forwardStrand && (focusOnStrand == BOTH_STRAND || focusOnStrand == REVERSE_STRAND_ONLY)) {
-
             final int count = starts.get(beginPosition) + 1;
             starts.put(beginPosition, count);
 
@@ -93,15 +87,14 @@ public class ComputeStartCount extends ComputeCount {
     }
 
     /**
-     * Accumulate the number of reads that start at a given position. Write the resulting histogram to the counts writer.
+     * Accumulate the number of reads that start at a given position. Write the
+     * resulting histogram to the counts writer.
      *
      * @param writer
-     * @throws java.io.IOException
+     * @throws IOException
      */
     @Override
     public void baseCount(final CountsWriter writer) throws IOException {
-
-
         final IntSet startPositions = starts.keySet();
         if (starts.size() == 0) {
             writer.close();
@@ -121,7 +114,6 @@ public class ComputeStartCount extends ComputeCount {
         final int maxPosition = Integer.MAX_VALUE;
         int startPosition;
         for (currentIndex = 0; currentIndex < sortedStartPositions.size(); ++currentIndex) {
-
             startPosition = sortedStartPositions.get(currentIndex);
             count = starts.get(startPosition);
             //determine the stretch of constant values after this start position:
@@ -129,8 +121,7 @@ public class ComputeStartCount extends ComputeCount {
             for (int i = startPosition + 1; i < maxPosition; ++i) {
                 if (starts.get(i) == count) {
                     lengthConstant++;
-                }
-                else {
+                } else {
                     currentIndex += lengthConstant - 1;
                     break;
                 }
@@ -156,7 +147,6 @@ public class ComputeStartCount extends ComputeCount {
                 writer.appendCount(0, length);
                 prevCount = 0;
             }
-
         }
 
         writer.close();

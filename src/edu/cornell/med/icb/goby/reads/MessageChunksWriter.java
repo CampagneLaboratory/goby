@@ -168,7 +168,7 @@ public class MessageChunksWriter {
     /**
      * Returns the number of entries written to output.
      *
-     * @return
+     * @return The total number of entries were written
      */
     public long getTotalEntriesWritten() {
         return totalEntriesWritten;
@@ -177,7 +177,7 @@ public class MessageChunksWriter {
     /**
      * Returns the number of bytes written to output.
      *
-     * @return
+     * @return The total number of bytes that have been written
      */
     public long getTotalBytesWritten() {
         return totalBytesWritten;
@@ -191,7 +191,8 @@ public class MessageChunksWriter {
     public void printStats(final PrintWriter out) {
         out.println("Total logical entries written: " + totalEntriesWritten);
         out.println("Total bytes written: " + totalBytesWritten);
-        out.println("Average bytes/logical entry: " + (float) totalBytesWritten / (float) totalEntriesWritten);
+        out.println("Average bytes/logical entry: "
+                + (float) totalBytesWritten / (float) totalEntriesWritten);
         out.flush();
     }
 

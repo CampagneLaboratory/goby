@@ -43,13 +43,12 @@ public class BenjaminiHochbergAdjustment extends FDRAdjustment {
         Collections.sort(list, new StatisticComparator(list, statistic));
 
         final int statisticIndex = list.getStatisticIndex(statistic);
-        final double listSize = getListSize(list, statisticIndex);
+        final double listSize = getListSize(list);
 
         ///int rank = 1;
         double cummin = 1;
 
         for (int rank = list.size(); rank >= 1; --rank) {
-
             //   for (DifferentialExpressionInfo info : list) {
             final DifferentialExpressionInfo info = list.get(rank - 1);
             final double pValue = info.statistics.get(statisticIndex);

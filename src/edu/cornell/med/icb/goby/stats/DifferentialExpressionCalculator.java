@@ -176,7 +176,7 @@ public class DifferentialExpressionCalculator {
      * @param sampleId Identifier of the sample.
      * @return the number of alignment entries found in the sample.
      */
-    public int getNumAlignedInSample(final String sampleId) {
+    public synchronized int getNumAlignedInSample(final String sampleId) {
         return numAlignedInSample.get(sampleId);
     }
 
@@ -211,7 +211,8 @@ public class DifferentialExpressionCalculator {
     }
 
     /**
-     * Reserve storage for specified number of elements and samples. One DE test will be conducted for each element.
+     * Reserve storage for specified number of elements and samples. One DE test will be
+     * conducted for each element.
      *
      * @param elementsPerSample
      * @param numberOfSamples
@@ -237,8 +238,9 @@ public class DifferentialExpressionCalculator {
     }
 
     /**
-     * Get the normalized expression value an element in a given sample.  Equivalent to calling the normalizationMethod
-     * getNormalizedExpressionValue method.
+     * Get the normalized expression value an element in a given sample.  Equivalent
+     * to calling the {@link NormalizationMethod#getNormalizedExpressionValue(DifferentialExpressionCalculator, String, it.unimi.dsi.lang.MutableString)}
+     * method.
      *
      * @param sampleId            sample identifier
      * @param normalizationMethod Normalization method (adjusts the denominator of the RPKM value).

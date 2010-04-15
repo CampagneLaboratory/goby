@@ -37,13 +37,12 @@ public class BestScoreOnlyAlignmentFilter extends AbstractAlignmentEntryFilter {
     /**
      * Constructor.
      *
-     * @param k                The maximum number of alignment at best score.
      * @param maxNumberOfReads the maximum number of POSSIBLE reads we could encounter
      */
-    public BestScoreOnlyAlignmentFilter(final int k, final int maxNumberOfReads) {
+    public BestScoreOnlyAlignmentFilter(final int maxNumberOfReads) {
+        super();
         indexToBestScore = new float[maxNumberOfReads];
         Arrays.fill(indexToBestScore, Float.MIN_VALUE);
-
     }
 
     @Override
@@ -62,7 +61,6 @@ public class BestScoreOnlyAlignmentFilter extends AbstractAlignmentEntryFilter {
     public void inspectEntry(final Alignments.AlignmentEntry entry) {
         final int index = entry.getQueryIndex();
         final float score = entry.getScore();
-
 
         final float previousScore = indexToBestScore[index];
         if (previousScore < score) {

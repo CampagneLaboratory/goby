@@ -341,7 +341,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
     /**
      * Set the number of sequences per output file.
      *
-     * @param sequencePerOutput    number of sequences per output file.
+     * @param sequencePerOutput number of sequences per output file.
      */
     public void setSequencePerOutput(final int sequencePerOutput) {
         this.sequencePerOutput = sequencePerOutput;
@@ -349,7 +349,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
 
     /**
      * Returns the set of filenames where data was output.
-     * @return
+     * @return The list of filenames that were created as a result of the reformat operation
      */
     public String[] getOutputFilenames() {
         return outputFilenames.toArray(new String[outputFilenames.size()]);

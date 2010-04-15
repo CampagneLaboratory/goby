@@ -26,12 +26,12 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 
 /**
- * A helper class to iterate through a set of alignments and process only a subset of references in each alignment.
+ * A helper class to iterate through a set of alignments and process only a subset of
+ * references in each alignment.
  *
  * @author Fabien Campagne
  *         Date: Mar 10, 2010
@@ -43,7 +43,6 @@ public abstract class IterateAlignments {
     private IntSet referencesToProcess;
     private DoubleIndexedIdentifier referenceIds;
 
-
     /**
      * Iterate through a set of alignments. Iterations are performed through these steps:
      * <UL>
@@ -53,7 +52,7 @@ public abstract class IterateAlignments {
      * </UL>
      *
      * @param basenames
-     * @throws FileNotFoundException
+     * @throws IOException
      */
     public void iterate(final String[] basenames) throws IOException {
         for (final String basename : basenames) {
@@ -147,8 +146,8 @@ public abstract class IterateAlignments {
 
     /**
      * Return the reference sequence id given its index.
-     * @param targetIndex
-     * @return
+     * @param targetIndex The index of the desired reference sequence
+     * @return The id of the reference sequence
      */
     protected CharSequence getReferenceId(final int targetIndex) {
         return referenceIds.getId(targetIndex);

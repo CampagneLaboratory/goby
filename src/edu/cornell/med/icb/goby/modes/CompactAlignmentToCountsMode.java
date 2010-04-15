@@ -150,11 +150,9 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
                 outputFile = basename;
             }
 
-                processFullGenomeAlignment(basename);
-
+            processFullGenomeAlignment(basename);
         }
     }
-
 
     private void processFullGenomeAlignment(final String basename) throws IOException {
         final AlignmentReader reader = new AlignmentReader(basename);
@@ -172,8 +170,6 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
 
         // create count writers, one for each reference sequence in the alignment:
         for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
-
-
             final String referenceName = referenceIds.getId(referenceIndex).toString();
             if (filterByReferenceNames) {
                 if (includeReferenceNames.contains(referenceName)) {

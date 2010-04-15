@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.readers;
 
+import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import it.unimi.dsi.io.FastBufferedReader;
 import org.apache.commons.io.IOUtils;
@@ -33,10 +34,12 @@ import java.util.NoSuchElementException;
 import java.util.zip.GZIPInputStream;
 
 /**
- * A reader for FASTA / FASTQ / similar files. This reuses the same FastXEntry
- * over and over for reading the FASTX file, so don't directly store it.
- * If you need to store the resultant FastXEntry object, use the copy() method
- * to clone the FastXEntry object.
+ * A reader for <a href="http://en.wikipedia.org/wiki/FASTA_format">FASTA</a>
+ * or <a href="http://en.wikipedia.org/wiki/FASTQ_format">FASTQ</a> files.
+ * This reuses the same {@link edu.cornell.med.icb.goby.readers.FastXEntry} over and
+ * over for reading the file, so don't directly store it. If you need to store the
+ * resultant FastXEntry object, use the {@link edu.cornell.med.icb.goby.readers.FastXEntry#clone()}
+ * method to duplicate the FastXEntry object.
  *
  * For FASTQ this parser assumes the # of quality symbols is the same (or more,
  * but should be the same) than the # of sequence characters. The position of linefeeds
@@ -69,9 +72,9 @@ public class FastXReader implements Iterator<FastXEntry>, Iterable<FastXEntry>, 
      * @throws IOException error reading or the input stream doesn't support "mark"
      */
     public FastXReader(final String file) throws IOException {
-        this(file.endsWith(".gz") ?
-                new GZIPInputStream(new FastBufferedInputStream(new FileInputStream(file))) :
-                new FileInputStream(file));
+        this(file.endsWith(".gz")
+                ? new GZIPInputStream(new FastBufferedInputStream(new FileInputStream(file)))
+                : new FileInputStream(file));
     }
 
     /**
@@ -155,7 +158,7 @@ public class FastXReader implements Iterator<FastXEntry>, Iterable<FastXEntry>, 
                     throw new NoSuchElementException();
                 }
             } catch (IOException e) {
-                throw new NoSuchElementException();
+                throw new GobyRuntimeException(e);
             }
         }
         final FastXEntry toReturn = nextEntry;

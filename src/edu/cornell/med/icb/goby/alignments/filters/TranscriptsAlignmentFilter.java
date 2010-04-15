@@ -82,6 +82,7 @@ public final class TranscriptsAlignmentFilter extends AbstractAlignmentEntryFilt
      */
     public TranscriptsAlignmentFilter(final String geneTranscriptFile, final int kVal)
             throws FileNotFoundException {
+        super();
         LOG.debug("** TRANSCRIPT MODE **");
         this.gtr = new GeneTranscriptRelationships();
         transcriptsIndexedIdentifiers = gtr.load(geneTranscriptFile);

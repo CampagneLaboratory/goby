@@ -257,8 +257,7 @@ public class ComputeCount {
 
     /**
      * Returns the total number of counts on the reference sequence.
-     *
-     * @return
+     * @return the number of counts on the reference
      */
     public int totalCountOnReference() {
         return starts.get(startKeys.getInt(startKeys.size() - 1));

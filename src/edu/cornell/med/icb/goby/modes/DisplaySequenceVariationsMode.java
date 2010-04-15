@@ -179,6 +179,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
         }
 
         private FirstPassIterateAlignments() {
+            super();
             readIndicesForReferencePositions.defaultReturnValue(new Int2ObjectOpenHashMap<IntArraySet>());
         }
 

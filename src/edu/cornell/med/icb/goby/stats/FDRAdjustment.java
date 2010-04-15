@@ -50,11 +50,10 @@ public abstract class FDRAdjustment {
         return list;
     }
 
-    public double getListSize(final DifferentialExpressionResults list, final int statisticIndex) {
+    public double getListSize(final DifferentialExpressionResults list) {
         int listSize = 0;
         // exclude NaN p-values from the number of comparisons:
         for (final DifferentialExpressionInfo info : list) {
-            final double pValue = info.statistics.get(statisticIndex);
             if (info.informative()) {
                 listSize++;
             }

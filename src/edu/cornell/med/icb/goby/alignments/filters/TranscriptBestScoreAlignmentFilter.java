@@ -58,8 +58,9 @@ public class TranscriptBestScoreAlignmentFilter extends AbstractAlignmentEntryFi
      */
     public TranscriptBestScoreAlignmentFilter(final String geneTranscriptFile, final int kVal,
                                               final int maxNumberOfReads) throws FileNotFoundException {
+        super();
         transcriptFilter = new TranscriptsAlignmentFilter(geneTranscriptFile, kVal);
-        bestScoreFilter = new BestScoreOnlyAlignmentFilter(kVal, maxNumberOfReads);
+        bestScoreFilter = new BestScoreOnlyAlignmentFilter(maxNumberOfReads);
     }
 
     @Override

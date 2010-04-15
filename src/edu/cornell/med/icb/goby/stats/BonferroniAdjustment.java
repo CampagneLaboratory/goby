@@ -38,11 +38,10 @@ public class BonferroniAdjustment extends FDRAdjustment {
         final int adjustedStatisticIndex = list.getStatisticIndex(new MutableString(adjustedStatisticId));
 
         final int statisticIndex = list.getStatisticIndex(statistic);
-        final double listSize = getListSize(list, statisticIndex);
+        final double listSize = getListSize(list);
 
 
         for (final DifferentialExpressionInfo info : list) {
-
             final double pValue = info.statistics.get(statisticIndex);
             double adjustedPValue = pValue * listSize;
 
@@ -54,8 +53,5 @@ public class BonferroniAdjustment extends FDRAdjustment {
 
         }
         return list;
-
     }
-
-
 }

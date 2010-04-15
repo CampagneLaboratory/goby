@@ -27,6 +27,7 @@ import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntCollection;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -70,7 +71,6 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
     }
 
     enum OutputFormat {
-
         TSV,
         TAB_DELIMITED,
 
@@ -113,17 +113,17 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        final PrintWriter writer = outputFilename == null ? new PrintWriter(System.out) :
-                new PrintWriter(new FileWriter(outputFilename));
-        switch (outputFormat) {
-
-            case TAB_DELIMITED:
-
-            case TSV:
-                writer.println("basename\tquery-index\tcount\tcount/total_variations\tcount/total_alignments");
-                break;
-        }
+        PrintWriter writer = null;
         try {
+            writer = outputFilename == null ? new PrintWriter(System.out) :
+                    new PrintWriter(new FileWriter(outputFilename));
+            switch (outputFormat) {
+                case TAB_DELIMITED:
+                case TSV:
+                    writer.println("basename\tquery-index\tcount\tcount/total_variations\tcount/total_alignments");
+                    break;
+            }
+
             for (final String basename : basenames) {
                 alignmentIterator.resetTallies();
                 final String[] singleBasename = {basename};
@@ -144,14 +144,9 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
                             count, frequency, alignFrequency);
                 }
             }
+        } finally {
+            IOUtils.closeQuietly(writer);
         }
-
-
-        finally {
-
-            writer.close();
-        }
-
     }
 
     private double sum(final IntCollection intCollection) {
@@ -174,7 +169,7 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
         new SequenceVariationStatsMode().configure(args).execute();
     }
 
-    private class MyIterateAlignments extends IterateAlignments {
+    private static class MyIterateAlignments extends IterateAlignments {
         private Int2IntMap readIndexTally = new Int2IntOpenHashMap();
         private int numAlignmentEntries;
 

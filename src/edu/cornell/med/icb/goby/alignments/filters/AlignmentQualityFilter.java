@@ -36,7 +36,7 @@ public interface AlignmentQualityFilter {
      *
      * @param header header of the alignment to which this entry belongs.
      * @param entry  The entry to inspect.
-     * @return True or false.
+     * @return true if the entry should be kept
      */
     boolean keepEntry(Alignments.AlignmentHeader header, Alignments.AlignmentEntry entry);
      /**
@@ -44,7 +44,7 @@ public interface AlignmentQualityFilter {
      *
      * @param queryLength the length of the query sequence described by this entry.
      * @param entry  The entry to inspect.
-     * @return True or false.
+     * @return true if the entry should be kept
      */
     boolean keepEntry(int queryLength, Alignments.AlignmentEntry entry);
 
@@ -56,7 +56,7 @@ public interface AlignmentQualityFilter {
 
     /**
      * Print usage information for this filter. Describes any optional parameters to the end user.
-     * @param out
+     * @param out The stream to print the usage information to
      */
     void printUsage(PrintStream out);
 }

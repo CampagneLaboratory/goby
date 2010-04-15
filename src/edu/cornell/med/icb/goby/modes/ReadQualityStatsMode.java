@@ -76,7 +76,6 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
 
     enum OutputFormat {
         TSV,
-
     }
 
     private OutputFormat outputFormat;
@@ -98,7 +97,6 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
         filenames = jsapResult.getStringArray("input");
         outputFilename = jsapResult.getString("output");
         outputFormat = OutputFormat.valueOf(jsapResult.getString("format").toUpperCase());
-
         return this;
     }
 

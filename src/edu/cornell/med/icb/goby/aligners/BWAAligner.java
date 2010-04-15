@@ -253,9 +253,6 @@ public class BWAAligner extends AbstractAligner {
 
     private int seedLength = DEFAULT_SEED_LENGTH;
 
-
-
-
     public BWAAligner() {
         super();
         extensions = new String[]{"rsa", "rpac", "rbwt", "pac", "bwt", "ann", "amb", "sa"};
@@ -440,7 +437,7 @@ public class BWAAligner extends AbstractAligner {
         if (databaseName == null) {
             databaseName = getDefaultDbNameForReferenceFile(referenceFile);
         }
-        final File[] indexedReference = indexReference(referenceFile);
+        indexReference(referenceFile);
         saiBinaryFilename = FilenameUtils.concat(workDirectory,
                 File.createTempFile(RandomStringUtils.randomAlphabetic(10), ".sai").getName());
         samBinaryFilename = FilenameUtils.concat(workDirectory,

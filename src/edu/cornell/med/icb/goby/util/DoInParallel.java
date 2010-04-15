@@ -71,12 +71,9 @@ public abstract class DoInParallel {
     }
 
     public void execute(final boolean parallel, final String[] inputFilenames) throws Exception {
-
         final BasenameParallelRegion region = new BasenameParallelRegion(this, inputFilenames);
         this.parallel = parallel;
         getParallelTeam().execute(region);
-
-
     }
 
     public static void main(final String[] args) throws Exception {
@@ -89,14 +86,10 @@ public abstract class DoInParallel {
 
                     Thread.sleep(10000);
                     debugEnd(inputBasename);
-
-
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-
-
         };
         final String[] inputs = new String[100];
         for (int i = 0; i < inputs.length; i++) {

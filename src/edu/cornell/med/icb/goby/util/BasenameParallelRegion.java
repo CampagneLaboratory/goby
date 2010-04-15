@@ -32,6 +32,7 @@ class BasenameParallelRegion extends ParallelRegion {
     private final DoInParallel loop;
 
     BasenameParallelRegion(final DoInParallel loop, final String[] inputFilenames) {
+        super();
         this.loop = loop;
         this.inputFilenames = inputFilenames;
 

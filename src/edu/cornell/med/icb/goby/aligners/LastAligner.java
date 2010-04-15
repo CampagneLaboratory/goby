@@ -248,7 +248,6 @@ public class LastAligner extends AbstractAligner {
         return processor;
     }
 
-
     /**
      * Return the reads file converter used by aligner algorithm.
      */
@@ -356,7 +355,7 @@ public class LastAligner extends AbstractAligner {
     }
 
     /**
-     * Specifies matchQuality, which can be one of:
+     * Specifies matchQuality, which can be one of.
      * <p/>
      * <LI> PERFECT_MATCHES_ONLY,
      * <LI> ONE_MISMATCH,
@@ -555,14 +554,7 @@ public class LastAligner extends AbstractAligner {
     }
 
     /**
-     * If referenceFileOrDbBasename is a reference compact (compact-reads or fasta or fa)
-     * this will create a database based on database directory and database name.
-     * If referenceFileOrDbBasename is a db basename, it must already exist.
-     *
-     * @param referenceFileOrDbBasename The compact file with the reference sequence to index OR
-     *                                  the database basename (prefix)
-     * @return
-     * @throws IOException
+     * {@inheritDoc}
      */
     public File[] indexReference(final File referenceFileOrDbBasename) throws IOException {
         if (isDatabaseBasename(referenceFileOrDbBasename.toString())) {
@@ -606,15 +598,10 @@ public class LastAligner extends AbstractAligner {
     }
 
     /**
-     * Align.
-     *
-     * @param referenceFile  Compact or native database basename for reference sequences.
-     * @param readsFile      Compact or native format (i.e., fasta, fastq) aligner read format.
-     * @param outputBasename Basename where to write the compact alignment.
-     * @return
-     * @throws IOException
+     * {@inheritDoc}
      */
-    public File[] align(final File referenceFile, final File readsFile, final String outputBasename) throws IOException {
+    public File[] align(final File referenceFile, final File readsFile,
+                        final String outputBasename) throws IOException {
         assert pathToExecutables != null : "path to executables must be defined.";
         validateScoreOptions();
 
@@ -622,7 +609,7 @@ public class LastAligner extends AbstractAligner {
         if (databaseName == null) {
             databaseName = getDefaultDbNameForReferenceFile(referenceFile);
         }
-        final File[] indexedReference = indexReference(referenceFile);
+        indexReference(referenceFile);
         LOG.info("Searching..");
         forceMakeParentDir(outputBasename);
         // if (colorSpace) { prepareMatrixFile(); }

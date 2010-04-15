@@ -33,11 +33,12 @@ public class PercentMismatchesQualityFilter implements AlignmentQualityFilter {
     private double qualityThresholdPercent;
 
     /**
-     * Reject entries that have more than threshold % differences with the query, in either mismatches or indels.
+     * Reject entries that have more than threshold % differences with the query, in either
+     * mismatches or indels.
      *
      * @param header header of the alignment to which this entry belongs.
      * @param entry  The entry to inspect.
-     * @return
+     * @return true if the entry should be kept
      */
     public final boolean keepEntry(final Alignments.AlignmentHeader header,
                                    final Alignments.AlignmentEntry entry) {
@@ -63,10 +64,12 @@ public class PercentMismatchesQualityFilter implements AlignmentQualityFilter {
     }
 
     public void printUsage(final PrintStream out) {
-        out.append("This quality filter rejects alignment entries that have more than a certain threshold " +
-                "of differences with the target sequence. Base mismatches, as well as insertion or deletion differences " +
-                "are counted towards the difference count. The threshold is set by default to 5% (0.05), " +
-                "but can be changed with the threshold parameter. Use syntax threshold=value.\n");
+        out.append("This quality filter rejects alignment entries that have more than a "
+                + "certain threshold of differences with the target sequence. Base "
+                + "mismatches, as well as insertion or deletion differences "
+                + "are counted towards the difference count. The threshold is set by default "
+                + "to 5% (0.05), but can be changed with the threshold parameter. Use "
+                + "syntax threshold=value.\n");
 
     }
 }
