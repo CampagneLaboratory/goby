@@ -19,13 +19,13 @@
 
 <jsap>
     <parameters>
-         <unflaggedOption>
+        <unflaggedOption>
             <id>input</id>
             <required>true</required>
             <greedy>true</greedy>
             <help>The compact alignment file(s) to read as input.</help>
         </unflaggedOption>
- <flaggedOption>
+        <flaggedOption>
             <id>output</id>
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
@@ -49,12 +49,12 @@
             <id>normalization-methods</id>
             <longFlag>normalization-methods</longFlag>
             <required>false</required>
-              <defaults>
+            <defaults>
                 <string>campagne-aligned-count,bullard-upper-quartile</string>
             </defaults>
-            <help>comma separated list of the normalization methods to apply</help>
-          </flaggedOption>
-          <flaggedOption>
+            <help>Comma separated list of the normalization methods to apply</help>
+        </flaggedOption>
+        <flaggedOption>
             <id>stats</id>
             <shortFlag>s</shortFlag>
             <longFlag>stats</longFlag>
@@ -64,6 +64,5 @@
             </defaults>
             <help>The filename where statistics will be written (for group comparisons). These files are tab delimited.</help>
         </flaggedOption>
-        
- </parameters>
+    </parameters>
 </jsap>

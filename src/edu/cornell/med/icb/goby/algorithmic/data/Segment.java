@@ -78,7 +78,7 @@ public class Segment implements Comparable<Segment> {
     public String toString() {
         final StringBuffer sb = new StringBuffer();
         sb.append(start);
-        sb.append("-");
+        sb.append('-');
         sb.append(end);
 
         return sb.toString();

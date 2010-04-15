@@ -310,7 +310,7 @@ public class AlignMode extends AbstractGobyMode {
                 System.out.println(aligner.getDefaultDbNameForReferenceFile(referenceFile));
             }
         } catch (InterruptedException e) {
-            LOG.error(e);
+            LOG.error("Interrupted", e);
             Thread.currentThread().interrupt();
         }
     }

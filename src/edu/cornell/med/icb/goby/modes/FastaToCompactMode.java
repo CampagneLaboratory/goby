@@ -169,20 +169,19 @@ public class FastaToCompactMode extends AbstractGobyMode {
             final DoInParallel loop = new DoInParallel() {
                 @Override
                 public void action(final DoInParallel forDataAccess, final String inputBasename, final int loopIndex) {
-
                     try {
                         debugStart(inputBasename);
                         processOneFile(loopIndex, inputFilenames.length, inputBasename);
                         debugEnd(inputBasename);
                     } catch (IOException e) {
-                        LOG.error(e);
+                        LOG.error("Error processing index " + loopIndex + ", " + inputBasename, e);
                     }
                 }
             };
             System.out.println("parallel: " + parallel);
             loop.execute(parallel, inputFilenames);
         } catch (Exception e) {
-            LOG.error(e);
+            LOG.error("Error processing", e);
         }
     }
 

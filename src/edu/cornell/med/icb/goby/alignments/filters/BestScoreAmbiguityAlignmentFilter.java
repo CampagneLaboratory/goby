@@ -21,8 +21,6 @@ package edu.cornell.med.icb.goby.alignments.filters;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.util.Arrays;
 
@@ -31,11 +29,6 @@ import java.util.Arrays;
  * @author Fabien Campagne
  */
 public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFilter {
-    /**
-     * Used to log debug and informational messages.
-     */
-    public static final Log LOG = LogFactory.getLog(BestScoreAmbiguityAlignmentFilter.class);
-
     /**
      * An array of of read-name-index to the number of fewest mismatches.
      */

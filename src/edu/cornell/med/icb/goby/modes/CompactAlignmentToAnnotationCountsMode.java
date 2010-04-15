@@ -26,6 +26,7 @@ import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionResults;
@@ -214,9 +215,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                             try {
                                 processOneBasename(allAnnots, writer, inputFiles[i], inputBasename);
                             } catch (IOException e) {
-                                throw new RuntimeException(e);
+                                throw new GobyRuntimeException(e);
                             } finally {
-
                                 IOUtils.closeQuietly(writer);
                             }
                         }

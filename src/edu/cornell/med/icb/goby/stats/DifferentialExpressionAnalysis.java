@@ -20,7 +20,6 @@ package edu.cornell.med.icb.goby.stats;
 
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.modes.CompactAlignmentToAnnotationCountsMode;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
@@ -36,29 +35,28 @@ import java.util.ServiceLoader;
  * User: nyasha
  * Date: Mar 24, 2010
  * Time: 3:29:26 PM
- * Class that organizes group comparisons and facillitates differential expression statistical testing
+ * Class that organizes group comparisons and facillitates differential expression
+ * statistical testing.
  */
 public class DifferentialExpressionAnalysis {
-
-    public DifferentialExpressionAnalysis() {
-    }
-
-    /* Used to log debug and informational messages.
-         */
-    private static final Log LOG = LogFactory.getLog(CompactAlignmentToAnnotationCountsMode.class);
+    /**
+     *  Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(DifferentialExpressionAnalysis.class);
 
     /**
      * The groups that should be compared, order matters.
      */
     private String[] groupComparison;
     private final ObjectSet<String> groups = new ObjectArraySet<String>();
-    private final Object2ObjectMap<String, Integer> groupSizes = new Object2ObjectOpenHashMap<String, Integer>();
+    private final Object2ObjectMap<String, Integer> groupSizes =
+            new Object2ObjectOpenHashMap<String, Integer>();
+
     /**
-     * Flag for an invalid t-test due to any group size < 2
-     *
-     * @return
+     * Flag for an invalid t-test due to any group size < 2.
      */
     private boolean ttestflag;
+
     /**
      * The set of normalization methods to use for the comparison.
      */
@@ -69,7 +67,12 @@ public class DifferentialExpressionAnalysis {
     private static final ServiceLoader<NormalizationMethod> normalizationMethodLoader
             = ServiceLoader.load(NormalizationMethod.class);
 
-    public void parseGroupsDefinition(final String groupsDefinition, final DifferentialExpressionCalculator deCalculator,
+    public DifferentialExpressionAnalysis() {
+        super();
+    }
+
+    public void parseGroupsDefinition(final String groupsDefinition,
+                                      final DifferentialExpressionCalculator deCalculator,
                                       final String[] inputFilenames) {
         if (groupsDefinition == null) {
             // no groups definition to parse.
