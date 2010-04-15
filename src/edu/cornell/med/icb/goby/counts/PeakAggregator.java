@@ -19,76 +19,87 @@
 package edu.cornell.med.icb.goby.counts;
 
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
- * Aggregate counts for peaks. Peaks are defined as a contiguous set of bases such that no base has zero count.
- * This class defines the peaks and aggregate counts for the peak.
+ * Aggregate counts for peaks. Peaks are defined as a contiguous set of bases such that
+ * no base has zero count.  This class defines the peaks and aggregate counts for the peak.
  *
  * @author Fabien Campagne
  *         Date: May 27, 2009
  *         Time: 6:41:18 PM
  */
 public class PeakAggregator implements Iterator<Peak>, Iterable<Peak> {
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(PeakAggregator.class);
+
     private final CountsReaderI reader;
     private boolean nextLoaded;
     private int peakDetectionThreshold;
 
+    private final Peak currentPeak;
+
     /**
      * Will detect peaks in the counts information provided by reader.
-     * @param reader
+     * @param reader The counts reader to exttract peaks from
      */
     public PeakAggregator(final CountsReaderI reader) {
         this.reader = reader;
         currentPeak = new Peak();
     }
 
-
-    private final Peak currentPeak;
-
     /**
      * Returns true if another peak is detected above the detection threshold.
      *
-     * @return
-     * @throws java.io.IOException When an error occurs reading counts.
+     * @return true if there are more peaks
      */
-    public final boolean hasNextPeak() throws IOException {
+    public boolean hasNext() {
         if (nextLoaded) {
             return true;
         }
-        currentPeak.start = -1;
-        currentPeak.length = 0;
-        currentPeak.count = 0;
-        // find start of peak:
+        try {
+            currentPeak.start = -1;
+            currentPeak.length = 0;
+            currentPeak.count = 0;
+            // find start of peak:
 
-        while (reader.hasNextTransition()) {
-            reader.nextTransition();
+            while (reader.hasNextTransition()) {
+                reader.nextTransition();
 
-            final int baseCount = reader.getCount();
-            if (baseCount > peakDetectionThreshold) {
-                nextLoaded = true;
-                //start of a new peak.
-                currentPeak.count += baseCount;
+                final int baseCount = reader.getCount();
+                if (baseCount > peakDetectionThreshold) {
+                    nextLoaded = true;
+                    //start of a new peak.
+                    currentPeak.count += baseCount;
+                    currentPeak.length += reader.getLength();
+                    break;
+                }
+
+            }
+            currentPeak.start = reader.getPosition();
+
+            // find end of peak:
+            while (reader.hasNextTransition()) {
+                reader.nextTransition();
+
+                final int baseCount = reader.getCount();
+                if (baseCount <= peakDetectionThreshold) {
+                    // past end of the peak.
+                    break;
+                }
                 currentPeak.length += reader.getLength();
-                break;
+                currentPeak.count += baseCount;
             }
-
-        }
-        currentPeak.start = reader.getPosition();
-
-        // find end of peak:
-        while (reader.hasNextTransition()) {
-            reader.nextTransition();
-
-            final int baseCount = reader.getCount();
-            if (baseCount <= peakDetectionThreshold) {
-                // past end of the peak.
-                break;
-            }
-            currentPeak.length += reader.getLength();
-            currentPeak.count += baseCount;
+        } catch (IOException e) {
+            LOG.error("", e);
+            throw new GobyRuntimeException(e);
         }
 
         return nextLoaded;
@@ -97,33 +108,28 @@ public class PeakAggregator implements Iterator<Peak>, Iterable<Peak> {
     /**
      * Return the next detected peak. The same instance of Peak is reused to provide information
      * about the peak. Make a copy if you need to save the peak for some purpose.
-     * @return
+     * @return the next detected peak
      */
-    public final Peak nextPeak() {
+    public Peak next() {
         if (hasNext()) {
             nextLoaded = false;
             return currentPeak;
         } else {
-            throw new IllegalStateException();
+            throw new NoSuchElementException();
         }
     }
 
-    public boolean hasNext() {
-        try {
-            return hasNextPeak();
-        } catch (IOException e) {
-            throw new GobyRuntimeException(e);
-        }
-    }
-
-    public Peak next() {
-        return nextPeak();
-    }
-
+    /**
+     * Not supported.
+     */
     public void remove() {
-        throw new UnsupportedOperationException("This operation is not supported. Peaks are read-only.");
+        throw new UnsupportedOperationException("This operation is not supported. "
+                + "Peaks are read-only.");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public Iterator<Peak> iterator() {
         return this;
     }

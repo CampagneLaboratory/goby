@@ -132,10 +132,10 @@ public abstract class IterateAlignments {
      */
     public void parseIncludeReferenceArgument(final JSAPResult jsapResult) {
 
-        final String includeReferenceNameComas = jsapResult.getString("include-reference-names");
-        if (includeReferenceNameComas != null) {
+        final String includeReferenceNameCommas = jsapResult.getString("include-reference-names");
+        if (includeReferenceNameCommas != null) {
             includeReferenceNames = new ObjectOpenHashSet<String>();
-            includeReferenceNames.addAll(Arrays.asList(includeReferenceNameComas.split("[,]")));
+            includeReferenceNames.addAll(Arrays.asList(includeReferenceNameCommas.split("[,]")));
             System.out.println("Will write counts for the following sequences:");
             for (final String name : includeReferenceNames) {
                 System.out.println(name);

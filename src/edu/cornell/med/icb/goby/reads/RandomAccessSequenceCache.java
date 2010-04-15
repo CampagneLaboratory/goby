@@ -122,7 +122,6 @@ public class RandomAccessSequenceCache {
         Reads.ReadEntry entry;
 
         while (parser.hasNext()) {
-
             entry = parser.next();
 
             final String referenceName = entry.getReadIdentifier();

@@ -24,7 +24,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -32,6 +34,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 /**
  * @author Fabien Campagne
@@ -61,7 +64,7 @@ public class TestPeakAggregator {
         }
         assertEquals(2, count);
 
-        //rewind and start again:
+        // rewind and start again:
         countReader = new CountsReader(new FileInputStream(basename));
         peakIterator = new PeakAggregator(countReader);
 
@@ -73,10 +76,29 @@ public class TestPeakAggregator {
         assertEquals(13, peak.count);
 
         peak = peakIterator.next();
-        assertEquals(lengthA+lengthB+lengthC+lengthA, peak.start);
+        assertEquals(lengthA + lengthB + lengthC + lengthA, peak.start);
         assertEquals(lengthD, peak.length);
         assertEquals(10, peak.count);
+    }
 
+    @Test
+    public void testHasNext() throws IOException {
+        final String basename = FilenameUtils.concat(BASE_TEST_DIR, "counts-101.bin");
+        writeSomeCounts(basename);
+        final CountsReader countReader = new CountsReader(new FileInputStream(basename));
+        final PeakAggregator peakIterator = new PeakAggregator(countReader);
+        assertTrue(peakIterator.hasNext());
+        peakIterator.next();
+        assertTrue(peakIterator.hasNext());
+        peakIterator.next();
+        assertFalse(peakIterator.hasNext());
+        try {
+            peakIterator.next();
+        } catch (NoSuchElementException e) {
+            // we expect this
+            return;
+        }
+        fail("Expected an exception when calling next too many times");
     }
 
     private void writeSomeCounts(final String basename) throws IOException {

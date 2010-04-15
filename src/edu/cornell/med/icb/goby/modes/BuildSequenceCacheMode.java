@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
+import org.apache.commons.io.IOUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -72,9 +73,8 @@ public class BuildSequenceCacheMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws java.io.IOException error parsing
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
+     * @throws IOException error parsing
+     * @throws JSAPException error parsing
      */
     @Override
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
@@ -95,20 +95,25 @@ public class BuildSequenceCacheMode extends AbstractGobyMode {
         final RandomAccessSequenceCache cacheBuilder = new RandomAccessSequenceCache();
 
         InputStream input = null;
-        if (inputFile.endsWith(".compact-reads")) {
-            cacheBuilder.loadCompact(new FileInputStream(inputFile));
-        } else {
-            if (inputFile.endsWith(".gz")) {
-                input = new GZIPInputStream(new FileInputStream(inputFile));
-
-            } else {
+        try {
+            if (inputFile.endsWith(".compact-reads")) {
                 input = new FileInputStream(inputFile);
-            }
-            cacheBuilder.loadFasta(new InputStreamReader(input));
-        }
+                cacheBuilder.loadCompact(input);
+            } else {
+                if (inputFile.endsWith(".gz")) {
+                    input = new GZIPInputStream(new FileInputStream(inputFile));
 
-        System.out.println("Done loading input file. Starting to write random access cacheBuilder.");
-        cacheBuilder.save(basename);
+                } else {
+                    input = new FileInputStream(inputFile);
+                }
+                cacheBuilder.loadFasta(new InputStreamReader(input));
+            }
+
+            System.out.println("Done loading input. Starting to write random access cacheBuilder.");
+            cacheBuilder.save(basename);
+        } finally {
+            IOUtils.closeQuietly(input);
+        }
         System.out.println("Sequence cacheBuilder written to disk with basename " + basename);
     }
 

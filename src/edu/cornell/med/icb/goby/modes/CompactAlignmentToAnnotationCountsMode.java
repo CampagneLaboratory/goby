@@ -154,10 +154,10 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         if (doComparison) {
             deAnalyzer.parseCompare(compare);
         }
-        final String includeReferenceNameComas = jsapResult.getString("include-reference-names");
+        final String includeReferenceNameCommas = jsapResult.getString("include-reference-names");
         includeReferenceNames = new ObjectOpenHashSet<String>();
-        if (includeReferenceNameComas != null) {
-            includeReferenceNames.addAll(Arrays.asList(includeReferenceNameComas.split("[,]")));
+        if (includeReferenceNameCommas != null) {
+            includeReferenceNames.addAll(Arrays.asList(includeReferenceNameCommas.split("[,]")));
             System.out.println("Will write counts for the following sequences:");
             for (final String name : includeReferenceNames) {
                 System.out.println(name);
@@ -171,10 +171,10 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
     private void parseAnnotations(final JSAPResult jsapResult) {
         annotationFile = jsapResult.getString("annotation");
-        final String includeAnnotationTypeComas = jsapResult.getString("include-annotation-types");
+        final String includeAnnotationTypeCommas = jsapResult.getString("include-annotation-types");
         includeAnnotationTypes = new ObjectOpenHashSet<String>();
-        if (includeAnnotationTypeComas != null) {
-            includeAnnotationTypes.addAll(Arrays.asList(includeAnnotationTypeComas.split("[,]")));
+        if (includeAnnotationTypeCommas != null) {
+            includeAnnotationTypes.addAll(Arrays.asList(includeAnnotationTypeCommas.split("[,]")));
             for (final String name : includeAnnotationTypes) {
                 if (name.equals("gene") || name.equals("other") || name.equals("exon")) {
                     continue;

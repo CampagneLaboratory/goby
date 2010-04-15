@@ -32,12 +32,14 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.Reader;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.zip.GZIPInputStream;
@@ -122,10 +124,10 @@ public class TallyBasesMode extends AbstractGobyMode {
         }
 
 
-        final String includeReferenceNameComas = jsapResult.getString("include-reference-names");
-        if (includeReferenceNameComas != null) {
+        final String includeReferenceNameCommas = jsapResult.getString("include-reference-names");
+        if (includeReferenceNameCommas != null) {
             includeReferenceNames = new ObjectOpenHashSet<String>();
-            includeReferenceNames.addAll(Arrays.asList(includeReferenceNameComas.split("[,]")));
+            includeReferenceNames.addAll(Arrays.asList(includeReferenceNameCommas.split("[,]")));
             System.out.println("Will tally bases for the following sequences:");
             for (final String name : includeReferenceNames) {
                 System.out.println(name);
@@ -160,11 +162,9 @@ public class TallyBasesMode extends AbstractGobyMode {
         identifiers.retainAll(archiveB.getIdentifiers());
         // find the optimal offset A vs B:
         final int offset = offsetString.equals("auto") ? optimizeOffset(archiveA, archiveB, identifiers) : Integer.parseInt(offsetString);
-        System.out.println("offset: "
-                + offset);
+        System.out.println("offset: " + offset);
 
         final RandomAccessSequenceCache cache = new RandomAccessSequenceCache();
-
         if (cache.canLoad(genomeCacheFilename)) {
             try {
                 cache.load(genomeCacheFilename);
@@ -174,13 +174,20 @@ public class TallyBasesMode extends AbstractGobyMode {
                 System.exit(1);
             }
         } else {
-            if (genomeFilename.endsWith(".fa") || genomeFilename.endsWith(".fasta")) {
-                cache.loadFasta(new FileReader(genomeFilename));
-            } else if (genomeFilename.endsWith(".fa.gz") || genomeFilename.endsWith(".fasta.gz")) {
-                cache.loadFasta(new InputStreamReader(new GZIPInputStream(new FileInputStream(genomeFilename))));
-            } else {
-                System.err.println("The format of the input file is not supported at this time.");
-                System.exit(1);
+            Reader reader = null;
+            try {
+                if (genomeFilename.endsWith(".fa") || genomeFilename.endsWith(".fasta")) {
+                    reader = new FileReader(genomeFilename);
+                    cache.loadFasta(reader);
+                } else if (genomeFilename.endsWith(".fa.gz") || genomeFilename.endsWith(".fasta.gz")) {
+                    reader = new InputStreamReader(new GZIPInputStream(new FileInputStream(genomeFilename)));
+                    cache.loadFasta(reader);
+                } else {
+                    System.err.println("The format of the input file is not supported at this time.");
+                    System.exit(1);
+                }
+            } finally {
+                IOUtils.closeQuietly(reader);
             }
         }
 
@@ -214,7 +221,6 @@ public class TallyBasesMode extends AbstractGobyMode {
                         final int countB = iterator.getCount(1);
 
                         if (countA + countB >= countThreshold) {
-
                             final double foldChange = Math.log1p(countA) - Math.log1p(countB) - Math.log(sumA) + Math.log(sumB);
                             if (foldChange >= delta || foldChange <= -delta) {
                                 if (random.nextDouble() < sampleRate) {
@@ -291,11 +297,8 @@ public class TallyBasesMode extends AbstractGobyMode {
         buffer.append("referenceId");
         buffer.append('\t');
         for (int i = -windowSize; i < windowSize; i++) {
-
-
             buffer.append("position").append(i < 0 ? "" : '+').append(String.valueOf(i));
             buffer.append('\t');
-
         }
         buffer.append("foldChange");
         buffer.append('\t');
@@ -328,7 +331,6 @@ public class TallyBasesMode extends AbstractGobyMode {
         buffer.append(referenceId);
         buffer.append('\t');
         for (int i = position - windowSize; i < position + windowSize; i++) {
-
             final char base;
             if (i >= minPosition && i <= maxPosition) {
                 base = cache.get(referenceIndex, i);

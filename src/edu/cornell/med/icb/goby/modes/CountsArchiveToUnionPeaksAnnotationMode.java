@@ -38,6 +38,7 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -50,7 +51,8 @@ import java.util.Set;
 
 
 /**
- * Write annotations corresponding to a consolidation of peaks accross each sequence in the count archives.
+ * Write annotations corresponding to a consolidation of peaks accross each sequence in
+ * the count archives.
  *
  * @author Jaaved Mohammed
  */
@@ -58,9 +60,13 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
     /**
      * The mode name.
      */
-    public static final String MODE_NAME = "count-archive-to-peak-union-annotations";
-    public static final String MODE_DESCRIPTION = "Write annotations corresponding to a consolidation of peaks accross each sequence in the count archives.";
+    private static final String MODE_NAME = "count-archive-to-peak-union-annotations";
 
+    /**
+     * The mode description help text.
+     */
+    private static final String MODE_DESCRIPTION = "Write annotations corresponding "
+            + "to a consolidation of peaks accross each sequence in the count archives.";
 
     /**
      * The input files. Must reduce to alignment basenames.
@@ -92,9 +98,8 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws java.io.IOException error parsing
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
+     * @throws IOException error parsing
+     * @throws JSAPException error parsing
      */
     @Override
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
@@ -102,11 +107,10 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
 
         inputFiles = AlignmentReader.getBasenames(jsapResult.getStringArray("input"));
         outputFile = jsapResult.getString("output");
-        final String includeReferenceNameComas = jsapResult.getString("include-reference-names");
+        final String includeReferenceNameCommas = jsapResult.getString("include-reference-names");
         includeReferenceNames = new ObjectOpenHashSet<String>();
-        if (includeReferenceNameComas != null) {
-
-            includeReferenceNames.addAll(Arrays.asList(includeReferenceNameComas.split("[,]")));
+        if (includeReferenceNameCommas != null) {
+            includeReferenceNames.addAll(Arrays.asList(includeReferenceNameCommas.split("[,]")));
             System.out.println("Will write counts for the following sequences:");
             for (final String name : includeReferenceNames) {
                 System.out.println(name);
@@ -142,9 +146,9 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
             countArchiveReaders[i++] = new CountsArchiveReader(inputFile, alternativeCountsName);
         }
 
-        // for each reference sequence, generate annotations for the union of peaks across all the input samples.
-        // More precisely, we generate an annotation across the widest peak that can be called with the sum of counts
-        // across all the input samples.
+        // for each reference sequence, generate annotations for the union of peaks across all
+        //  the input samples. More precisely, we generate an annotation across the widest peak
+        // that can be called with the sum of counts across all the input samples.
         final Object2ObjectMap<String, ObjectList<Segment>> allSegments = new Object2ObjectOpenHashMap<String, ObjectList<Segment>>();
         for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
             final String referenceId = backwards.getId(referenceIndex).toString();
@@ -159,9 +163,7 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
                 final CountsReaderI[] readers = new CountsReaderI[countArchiveReaders.length];
                 int readerIndex = 0;
                 for (final CountsArchiveReader archive : countArchiveReaders) {
-
                     if (archive.getIdentifier(referenceIndex) != null) {
-
                         readers[readerIndex++] = archive.getCountReader(referenceIndex);
 
                         if (allSegments.get(referenceId) == null) {
@@ -170,9 +172,9 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
                     }
                 }
 
-                //Reads in all the files and defines one iterator over all input files
+                // Reads in all the files and defines one iterator over all input files
                 final AnyTransitionCountsIterator iterator = new AnyTransitionCountsIterator(readers);
-                //Given all input files and one iterator over them, start collecting (possibly overlapping)
+                // Given all input files and one iterator over them, start collecting (possibly overlapping)
                 // peaks across all input files
                 final PeakAggregator peakAggregator = new PeakAggregator(iterator);
                 peakAggregator.setPeakDetectionThreshold(detectionThreshold);
@@ -185,7 +187,8 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
             }
         }
 
-        //Consolidate all overlapping peaks across all input files by taking the union of overlapping peaks
+        // Consolidate all overlapping peaks across all input files by taking the
+        // union of overlapping peaks
         System.out.println("Consolidating overlapping peaks over all counts files.");
         final Set<String> chromsomes = allSegments.keySet();
         ObjectList<Segment> consensusList = null;
@@ -193,7 +196,7 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
             consensusList = new ObjectArrayList<Segment>();
             final ObjectList<Segment> segmentsList = allSegments.get(chromsome);
 
-            //Sort the segments to make consolidation by union easier.
+            // Sort the segments to make consolidation by union easier.
             Collections.sort(segmentsList);
             System.out.println(String.format("Reference %s: Starting with %d segments.", chromsome, segmentsList.size()));
             ObjectListIterator<Segment> segIterator = segmentsList.listIterator();
@@ -207,8 +210,8 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
             while (segment != null) {
                 if (segIterator.hasNext()) {
                     nextSeg = segIterator.next();
-                    while ((nextSeg != null) && segment.overlap(nextSeg)){
-                        //merge the two segments
+                    while ((nextSeg != null) && segment.overlap(nextSeg)) {
+                        // merge the two segments
                         consolidatedSeg = segment.merge(nextSeg);
                         segment = consolidatedSeg;
                         if (segIterator.hasNext()) {
@@ -228,7 +231,7 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
 
             System.out.println(String.format("Reference %s: Finished with %d segments.", chromsome, segmentsList.size()));
 
-            //Transform the segments back to annotations for easy writing to file
+            // Transform the segments back to annotations for easy writing to file
             final ObjectList<Annotation> annotationList = new ObjectArrayList<Annotation>();
             segIterator = segmentsList.listIterator();
             while (segIterator.hasNext()) {
@@ -238,15 +241,14 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
                 annotationList.add(annot);
             }
 
-            //Write the list of annotations to file
+            // Write the list of annotations to file
             writeAnnotations(outputFile, annotationList, true);
         }
     }
 
     public static void writeAnnotations(final String outputFileName, final ObjectList<Annotation> annotationList, final boolean append) {
-        PrintWriter writer = null;
         final File outputFile = new File(outputFileName);
-
+        PrintWriter writer = null;
         try {
             if (!outputFile.exists()) {
                 writer = new PrintWriter(outputFile);
@@ -255,28 +257,17 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
                 writer = new PrintWriter(new FileOutputStream(outputFile, append));
             }
 
-            if (writer != null) {
-                final ObjectListIterator<Annotation> annotIterator = annotationList.listIterator();
-                while (annotIterator.hasNext()) {
-                    final Annotation annotation = annotIterator.next();
-                    annotation.write(writer);
-                }
-            } else {
-                System.err.println("Cannot write annotations to file: " + outputFileName);
-                System.err.println("The writer failed to initialize.");
-                System.exit(1);
+            final ObjectListIterator<Annotation> annotIterator = annotationList.listIterator();
+            while (annotIterator.hasNext()) {
+                final Annotation annotation = annotIterator.next();
+                annotation.write(writer);
             }
-        }
-        catch (FileNotFoundException fnfe) {
+        } catch (FileNotFoundException fnfe) {
             System.err.println("Caught exception in writeAnnotations: " + fnfe.getMessage());
             System.exit(1);
+        } finally {
+            IOUtils.closeQuietly(writer);
         }
-        finally {
-            if (writer != null) {
-                writer.close();
-            }
-        }
-
     }
 
     /**
