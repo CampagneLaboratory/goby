@@ -20,6 +20,8 @@ package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -31,6 +33,7 @@ import it.unimi.dsi.lang.MutableString;
 
 import java.util.Map;
 import java.util.Set;
+import java.lang.annotation.ElementType;
 
 /**
  * @author Fabien Campagne
@@ -46,7 +49,26 @@ public class DifferentialExpressionCalculator {
     private final Map<String, IntArrayList> sampleToCounts;
     private Object2DoubleMap<String> sampleProportions;
     private final IntArrayList lengths;
-    private final Map<MutableString, MutableString> elementLabelToElementType;
+    private final Int2IntMap elementLabelToElementType;
+
+    /**
+     * Return the type of the element.
+     * @param elementId
+     * @return ElementType
+     */
+    public ElementTypes getElementType(MutableString elementId) {
+        int elementIndex = elementLabels.get(elementId);
+        int ordinal = elementLabelToElementType.get(elementIndex);
+        return ElementTypes.values()[ordinal];
+    }
+
+    public enum ElementTypes {
+        EXON,
+        TRANSCRIPT,
+        GENE,
+        OTHER
+    }
+
     /**
      * The number of alignment entries observed in each sample.
      */
@@ -60,7 +82,7 @@ public class DifferentialExpressionCalculator {
         numAlignedInSample = new Object2IntOpenHashMap<String>();
         sampleToCounts = new Object2ObjectOpenHashMap<String, IntArrayList>();
         lengths = new IntArrayList();
-        elementLabelToElementType = new Object2ObjectOpenHashMap<MutableString, MutableString>();
+        elementLabelToElementType = new Int2IntOpenHashMap();
     }
 
     public double calculateNormalized(final int readCountInt, final int annotLength, final double normalizationFactor) {
@@ -76,28 +98,30 @@ public class DifferentialExpressionCalculator {
 
     /**
      * Define an element but don't specify the type. The version with the type is the preferred version.
+     *
      * @param label element-id
      * @return the index of the element
      */
     public synchronized int defineElement(final String label) {
-        return defineElement(label, "");
+        return defineElement(label, ElementTypes.OTHER);
     }
 
     /**
      * Define an element and it's type
+     *
      * @param label element-id
-     * @param type the type (gene, exon, ...)
+     * @param type  the type (gene, exon, ...)
      * @return the index of the element
      */
-    public synchronized int defineElement(final String label, final String type) {
+    public synchronized int defineElement(final String label, final ElementTypes type) {
         final MutableString elementLabel = new MutableString(label);
-        if (elementLabelToElementType.get(elementLabel) == null) {
-            elementLabelToElementType.put(elementLabel, new MutableString(type));
-        }
-        return elementLabels.registerIdentifier(elementLabel);
+
+        int elementIndex = elementLabels.registerIdentifier(elementLabel);
+        elementLabelToElementType.put(elementIndex, type.ordinal());
+        return elementIndex;
     }
 
-    public Map<MutableString, MutableString> getElementLabelToElementTypeMap() {
+    public Int2IntMap getElementLabelToElementTypeMap() {
         return elementLabelToElementType;
     }
 

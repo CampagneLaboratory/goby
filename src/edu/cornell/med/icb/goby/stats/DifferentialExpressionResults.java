@@ -142,9 +142,10 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
      *
      * @param printWriter
      * @param delimiter
+     * @param deCalculator
      */
     public void write(final PrintWriter printWriter, final char delimiter,
-                      final Map<MutableString, MutableString> elementLabelToElementType) {
+                      final DifferentialExpressionCalculator deCalculator) {
         InformativeColumns informativeColumns = null;
         if (omitNonInformativeColumns) {
             informativeColumns = new InformativeColumns(sortedStatisticIds.size(), new InformativeNonZeroNonNaN());
@@ -168,7 +169,7 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
 
         for (final DifferentialExpressionInfo info : this.subList(0, size())) {
             if (info.informative(getAverageCountPerGroupIndexes())) {
-                info.write(printWriter, delimiter, informativeColumns, elementLabelToElementType);
+                info.write(printWriter, delimiter, informativeColumns, deCalculator);
                 printWriter.append("\n");
             }
         }

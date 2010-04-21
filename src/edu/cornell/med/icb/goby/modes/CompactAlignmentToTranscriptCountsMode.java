@@ -33,6 +33,8 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -46,6 +48,12 @@ import java.io.PrintWriter;
  * Time: 11:05:47 AM
  */
 public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
+
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(CompactAlignmentToAnnotationCountsMode.class);
+
     /**
      * The mode name.
      */
@@ -58,19 +66,18 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
     private String[] inputFiles;
     private String[] basenames;
     /**
-     * The output file for transcript counts.
+     * The output file for transcript counts
      */
     private String outputFile;
     /**
-     * The output file giving summary statistics for differential expression between groups.
+     * The output file giving summary statistics for differential expression between groups
      */
     private String statsFilename;
     private boolean doComparison;
 
     private final DifferentialExpressionCalculator deCalculator = new DifferentialExpressionCalculator();
     private final DifferentialExpressionAnalysis deAnalyzer = new DifferentialExpressionAnalysis();
-    /**
-     * The set of normalization methods to use for the comparison.
+    /* The set of normalization methods to use for the comparison.
      */
     private ObjectArraySet<NormalizationMethod> normalizationMethods;
 
@@ -118,6 +125,7 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
         if (doComparison) {
             deAnalyzer.parseCompare(compare);
         }
+        final String needCountsFiles = jsapResult.getString("output-counts-per-sample");
         normalizationMethods = deAnalyzer.parseNormalization(jsapResult);
         return this;
 
@@ -141,16 +149,14 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
 
 
         if (doComparison) {
-            PrintWriter statsOutput = null;
-            try {
-                statsOutput = new PrintWriter(statsFilename);
-                final DifferentialExpressionResults results =
-                        deAnalyzer.evaluateDifferentialExpressionStatistics(deCalculator, doComparison, normalizationMethods);
-                results.write(statsOutput, '\t', deCalculator.getElementLabelToElementTypeMap());
-            } finally {
-                IOUtils.closeQuietly(statsOutput);
-           }
+            final PrintWriter statsOutput = new PrintWriter(statsFilename);
+            DifferentialExpressionResults results = null;
+            results = deAnalyzer.evaluateDifferentialExpressionStatistics(deCalculator, doComparison, normalizationMethods);
+            results.write(statsOutput, '\t', deCalculator);
+            IOUtils.closeQuietly(statsOutput);
         }
+
+
     }
 
     private void processTranscriptAlignment(final String basename) throws IOException {
@@ -188,7 +194,7 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
             for (int referenceIndex = 0; referenceIndex < numberOfReferences; ++referenceIndex) {
 
                 final String transcriptId = targetIdBackward.getId(referenceIndex).toString();
-                final int index = deCalculator.defineElement(transcriptId, "transcript");
+                final int index = deCalculator.defineElement(transcriptId, DifferentialExpressionCalculator.ElementTypes.TRANSCRIPT);
 
                 deCalculator.defineElementLength(index, reader.getTargetLength(referenceIndex));
             }

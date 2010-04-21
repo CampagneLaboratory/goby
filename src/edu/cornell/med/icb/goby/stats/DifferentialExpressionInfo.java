@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.stats;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.lang.MutableString;
 
 import java.io.PrintWriter;
@@ -56,13 +57,11 @@ public class DifferentialExpressionInfo {
 
     public void write(
             final PrintWriter printWriter, final char delimiter, final InformativeColumns informativeColumns,
-            final Map<MutableString, MutableString> elementLabelToElementType) {
+            final DifferentialExpressionCalculator deCalculator) {
         printWriter.append(elementId);
         printWriter.append(delimiter);
-        MutableString elementType = elementLabelToElementType.get(elementId);
-        if (elementType == null) {
-            elementType = new MutableString("");
-        }
+        String elementType = deCalculator.getElementType(elementId).toString();
+        
         printWriter.append(elementType);
         for (int i = 0; i < statistics.size(); i++) {
             if (informativeColumns == null || informativeColumns.isColumnInformative(i)) {

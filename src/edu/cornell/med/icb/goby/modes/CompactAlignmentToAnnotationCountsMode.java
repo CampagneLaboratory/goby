@@ -56,6 +56,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.lang.annotation.ElementType;
 
 /**
  * Reads a compact alignment and genome annotations and output read counts that overlap with
@@ -270,7 +271,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 DifferentialExpressionResults results = null;
                 results = deAnalyzer.evaluateDifferentialExpressionStatistics(deCalculator, doComparison, normalizationMethods);
                 final PrintWriter statsOutput = new PrintWriter(statsFilename);
-                results.write(statsOutput, '\t', deCalculator.getElementLabelToElementTypeMap());
+                results.write(statsOutput, '\t', deCalculator);
 
                 IOUtils.closeQuietly(statsOutput);
             }
@@ -383,7 +384,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     final int numberIntrons = numExons - 1;
 
                     if (includeAnnotationTypes.contains("gene")) {
-                        final int index = deCalculator.defineElement(geneID, "gene");
+                        final int index = deCalculator.defineElement(geneID, DifferentialExpressionCalculator.ElementTypes.GENE);
                         deCalculator.defineElementLength(index, annot.getLength());
                         numberOfGenes++;
                         numberOfElements++;
@@ -394,7 +395,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                         for (int i = 0; i < numExons; i++) {
                             final Segment exonSegment = annot.getSegments().get(i);
                             final String exonID = exonSegment.getId();
-                            final int index = deCalculator.defineElement(exonID, "exon");
+                            final int index = deCalculator.defineElement(exonID, DifferentialExpressionCalculator.ElementTypes.EXON);
                             deCalculator.defineElementLength(index, annot.getLength());
                             numberOfExons++;
                             numberOfElements++;
@@ -410,7 +411,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                                 final int intronEnd = intronSegment.getStart() - 1;
                                 final int intronLength = intronEnd - intronStart + 1;
                                 final String intronID = segment.getId() + "-" + intronSegment.getId();
-                                final int index = deCalculator.defineElement(intronID, "other");
+                                final int index = deCalculator.defineElement(intronID, DifferentialExpressionCalculator.ElementTypes.OTHER);
                                 deCalculator.defineElementLength(index, intronLength);
                                 numberOfIntrons++;
                                 numberOfElements++;

@@ -1,4 +1,7 @@
-development  ->1.5
+development -> 1.5.1
+ - Optimized DE type storage.
+
+1.5
 
  Added a mode to calculate counts and perform differential expression analysis for transcript
  runs (alignment-to-transcript-counts). Transcript runs are performed against a cDNA library. They
