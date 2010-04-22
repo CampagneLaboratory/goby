@@ -24,7 +24,8 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 
-import java.io.PrintWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -140,12 +141,12 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
     /**
      * Write results with delimiter.
      *
-     * @param printWriter
+     * @param writer
      * @param delimiter
      * @param deCalculator
      */
-    public void write(final PrintWriter printWriter, final char delimiter,
-                      final DifferentialExpressionCalculator deCalculator) {
+    public void write(final Writer writer, final char delimiter,
+                      final DifferentialExpressionCalculator deCalculator) throws IOException {
         InformativeColumns informativeColumns = null;
         if (omitNonInformativeColumns) {
             informativeColumns = new InformativeColumns(sortedStatisticIds.size(), new InformativeNonZeroNonNaN());
@@ -156,24 +157,24 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
             }
         }
 
-        printWriter.append("element-id");
-        printWriter.append(delimiter);
-        printWriter.append("element-type");
+        writer.append("element-id");
+        writer.append(delimiter);
+        writer.append("element-type");
         for (int i = 0; i < sortedStatisticIds.size(); i++) {
             if (informativeColumns == null || informativeColumns.isColumnInformative(i)) {
-                printWriter.append(delimiter);
-                printWriter.append(sortedStatisticIds.get(i));
+                writer.append(delimiter);
+                writer.append(sortedStatisticIds.get(i));
             }
         }
-        printWriter.append("\n");
+        writer.append("\n");
 
         for (final DifferentialExpressionInfo info : this.subList(0, size())) {
             if (info.informative(getAverageCountPerGroupIndexes())) {
-                info.write(printWriter, delimiter, informativeColumns, deCalculator);
-                printWriter.append("\n");
+                info.write(writer, delimiter, informativeColumns, deCalculator);
+                writer.append("\n");
             }
         }
-        printWriter.flush();
+        writer.flush();
     }
 
     public int getStatisticIndex(final String statisticId) {

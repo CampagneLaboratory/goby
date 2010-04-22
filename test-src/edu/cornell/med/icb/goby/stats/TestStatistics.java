@@ -26,10 +26,9 @@ import org.apache.commons.math.stat.inference.ChiSquareTest;
 import org.apache.commons.math.stat.inference.ChiSquareTestImpl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Test;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Random;
 
@@ -80,7 +79,7 @@ public class TestStatistics {
     }
 
     @Test
-    public void testAverage() {
+    public void testAverage() throws IOException {
         final Random randomEngine = new Random();
         final DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator() {
 
@@ -119,11 +118,7 @@ public class TestStatistics {
         assertEquals("average A must be around 2", 1d, results.getStatistic(info, averageCalculator.getStatisticId("A", "RPKM", normalizationMethod)), .1);
         assertEquals("average B must be around 1", 0.5d, results.getStatistic(info, averageCalculator.getStatisticId("B", "RPKM", normalizationMethod)), .1);
         System.out.println(results);
-        try {
-            results.write(new PrintWriter("test-results/out-stats.tsv"), '\t', deCalc.getElementLabelToElementTypeMap());
-        } catch (FileNotFoundException e) {
-            fail(e.getMessage());
-        }
+        results.write(new PrintWriter("test-results/out-stats.tsv"), '\t', deCalc);
     }
 
     @Test
@@ -249,9 +244,7 @@ public class TestStatistics {
         final double[] expected = {divide(sumCountInA + sumCountInB, nGroups) * proportionTotalA * nGroups,
                 divide(sumCountInA + sumCountInB, nGroups) * proportionTotalB * nGroups};
         final long[] observed = {sumCountInA, sumCountInB};
-        double chiPValue = 0;
-
-        chiPValue = Math.abs(chisquare.chiSquareTest(expected, observed));
+        final double chiPValue = Math.abs(chisquare.chiSquareTest(expected, observed));
 
         assertTrue("pValue: " + chiPValue, chiPValue < 0.001);
 // The Fisher implementation we are using return 1 for the above. This is wrong. Compare to the chi-square result
@@ -324,9 +317,7 @@ public class TestStatistics {
             final double[] expected = {divide(sumCountInA + sumCountInB, nGroups) * proportionTotalA * nGroups,
                     divide(sumCountInA + sumCountInB, nGroups) * proportionTotalB * nGroups};
             final long[] observed = {sumCountInA, sumCountInB};
-            double chiPValue = 0;
-
-            chiPValue = Math.abs(chisquare.chiSquareTest(expected, observed));
+            final double chiPValue = Math.abs(chisquare.chiSquareTest(expected, observed));
 
             assertTrue("pValue: " + chiPValue, chiPValue < 0.001);
 // The Fisher implementation we are using return 1 for the above. This is wrong. Compare to
@@ -382,9 +373,7 @@ public class TestStatistics {
         final ChiSquareTest chisquare = new ChiSquareTestImpl();
         final double[] expected = {30, 12};
         final long[] observed = {0, 100};
-        double chiPValue = 0;
-
-        chiPValue = chisquare.chiSquareTest(expected, observed);
+        final double chiPValue = chisquare.chiSquareTest(expected, observed);
 
         assertTrue("pValue: " + chiPValue, chiPValue < 0.001);
 // The Fisher implementation we are using return 1 for the above. This is wrong. Compare to the chi-square result
@@ -528,9 +517,7 @@ public class TestStatistics {
 
 
         final int n = p.length;
-        for (int rank = p.length; rank >= 1; rank--)
-
-        {
+        for (int rank = p.length; rank >= 1; rank--) {
             final int index = rank - 1;
             assertEquals("rank: " + rank, adjusted_R_nocummin[index], p[index] * (((double) n) / (double) rank), 0.01);
         }

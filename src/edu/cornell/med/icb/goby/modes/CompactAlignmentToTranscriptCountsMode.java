@@ -66,11 +66,11 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
     private String[] inputFiles;
     private String[] basenames;
     /**
-     * The output file for transcript counts
+     * The output file for transcript counts.
      */
     private String outputFile;
     /**
-     * The output file giving summary statistics for differential expression between groups
+     * The output file giving summary statistics for differential expression between groups.
      */
     private String statsFilename;
     private boolean doComparison;
@@ -125,7 +125,6 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
         if (doComparison) {
             deAnalyzer.parseCompare(compare);
         }
-        final String needCountsFiles = jsapResult.getString("output-counts-per-sample");
         normalizationMethods = deAnalyzer.parseNormalization(jsapResult);
         return this;
 
@@ -149,14 +148,16 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
 
 
         if (doComparison) {
-            final PrintWriter statsOutput = new PrintWriter(statsFilename);
-            DifferentialExpressionResults results = null;
-            results = deAnalyzer.evaluateDifferentialExpressionStatistics(deCalculator, doComparison, normalizationMethods);
-            results.write(statsOutput, '\t', deCalculator);
-            IOUtils.closeQuietly(statsOutput);
+            PrintWriter statsOutput = null;
+            try {
+                statsOutput = new PrintWriter(statsFilename);
+                final DifferentialExpressionResults results =
+                        deAnalyzer.evaluateDifferentialExpressionStatistics(deCalculator, doComparison, normalizationMethods);
+                results.write(statsOutput, '\t', deCalculator);
+            } finally {
+                IOUtils.closeQuietly(statsOutput);
+            }
         }
-
-
     }
 
     private void processTranscriptAlignment(final String basename) throws IOException {
