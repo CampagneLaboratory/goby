@@ -1,5 +1,7 @@
 development -> 1.5.1
  - Optimized DE type storage.
+ - Fixed a race condition in CompactAlignmentToAnnotationCountsMode.java when running in Parallel
+   by moving .reserve() out of the for loop.
 
 1.5
 
