@@ -419,9 +419,9 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                         }
                     }
                 }
-                LOG.info(String.format("%d Genes %d exons %d other total %d ", numberOfGenes, numberOfExons, numberOfIntrons, numberOfElements));
-                deCalculator.reserve(numberOfElements, inputFilenames.length);
             }
+            LOG.info(String.format("%d Genes %d exons %d other total %d ", numberOfGenes, numberOfExons, numberOfIntrons, numberOfElements));
+            deCalculator.reserve(numberOfElements, inputFilenames.length);
         }
 
         int numberOfAnottationCountsWritten = 0;
