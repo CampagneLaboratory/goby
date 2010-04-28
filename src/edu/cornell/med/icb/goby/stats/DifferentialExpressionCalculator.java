@@ -59,7 +59,11 @@ public class DifferentialExpressionCalculator {
     public ElementTypes getElementType(MutableString elementId) {
         int elementIndex = elementLabels.get(elementId);
         int ordinal = elementLabelToElementType.get(elementIndex);
-        return ElementTypes.values()[ordinal];
+        if (ordinal == -1) {
+            return ElementTypes.OTHER;
+        } else {
+            return ElementTypes.values()[ordinal];
+        }
     }
 
     public enum ElementTypes {
@@ -83,6 +87,7 @@ public class DifferentialExpressionCalculator {
         sampleToCounts = new Object2ObjectOpenHashMap<String, IntArrayList>();
         lengths = new IntArrayList();
         elementLabelToElementType = new Int2IntOpenHashMap();
+        elementLabelToElementType.defaultReturnValue(-1);
     }
 
     public double calculateNormalized(final int readCountInt, final int annotLength, final double normalizationFactor) {
@@ -115,9 +120,11 @@ public class DifferentialExpressionCalculator {
      */
     public synchronized int defineElement(final String label, final ElementTypes type) {
         final MutableString elementLabel = new MutableString(label);
-
         int elementIndex = elementLabels.registerIdentifier(elementLabel);
-        elementLabelToElementType.put(elementIndex, type.ordinal());
+        if (elementLabelToElementType.get(elementIndex) == -1) {
+            // Don't REPLACE the ElementType for an label. If it was set before, leave it alone.
+            elementLabelToElementType.put(elementIndex, type.ordinal());
+        }
         return elementIndex;
     }
 
