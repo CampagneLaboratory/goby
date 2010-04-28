@@ -2,6 +2,10 @@ development -> 1.5.1
  - Optimized DE type storage.
  - Fixed a race condition in CompactAlignmentToAnnotationCountsMode.java when running in Parallel
    by moving .reserve() out of the for loop.
+ - Renamed DifferentialExpression.ElementTypes enum to ElementType
+ - Fixed a bug in the DifferentialExpressionCalculator which re-set ElementType for a value from
+   the actual value to OTHER (in occured in CompactAlignmentToAnnotationCountsMode). Now once
+   ElementTypes is set for a label it cannot be changed.
 
 1.5
 

@@ -33,7 +33,6 @@ import it.unimi.dsi.lang.MutableString;
 
 import java.util.Map;
 import java.util.Set;
-import java.lang.annotation.ElementType;
 
 /**
  * @author Fabien Campagne
@@ -56,17 +55,17 @@ public class DifferentialExpressionCalculator {
      * @param elementId
      * @return ElementType
      */
-    public ElementTypes getElementType(MutableString elementId) {
+    public ElementType getElementType(final MutableString elementId) {
         int elementIndex = elementLabels.get(elementId);
         int ordinal = elementLabelToElementType.get(elementIndex);
         if (ordinal == -1) {
-            return ElementTypes.OTHER;
+            return ElementType.OTHER;
         } else {
-            return ElementTypes.values()[ordinal];
+            return ElementType.values()[ordinal];
         }
     }
 
-    public enum ElementTypes {
+    public enum ElementType {
         EXON,
         TRANSCRIPT,
         GENE,
@@ -108,7 +107,7 @@ public class DifferentialExpressionCalculator {
      * @return the index of the element
      */
     public synchronized int defineElement(final String label) {
-        return defineElement(label, ElementTypes.OTHER);
+        return defineElement(label, ElementType.OTHER);
     }
 
     /**
@@ -118,7 +117,7 @@ public class DifferentialExpressionCalculator {
      * @param type  the type (gene, exon, ...)
      * @return the index of the element
      */
-    public synchronized int defineElement(final String label, final ElementTypes type) {
+    public synchronized int defineElement(final String label, final ElementType type) {
         final MutableString elementLabel = new MutableString(label);
         int elementIndex = elementLabels.registerIdentifier(elementLabel);
         if (elementLabelToElementType.get(elementIndex) == -1) {

@@ -56,7 +56,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
-import java.lang.annotation.ElementType;
 
 /**
  * Reads a compact alignment and genome annotations and output read counts that overlap with
@@ -384,7 +383,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     final int numberIntrons = numExons - 1;
 
                     if (includeAnnotationTypes.contains("gene")) {
-                        final int index = deCalculator.defineElement(geneID, DifferentialExpressionCalculator.ElementTypes.GENE);
+                        final int index = deCalculator.defineElement(geneID, DifferentialExpressionCalculator.ElementType.GENE);
                         deCalculator.defineElementLength(index, annot.getLength());
                         numberOfGenes++;
                         numberOfElements++;
@@ -395,7 +394,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                         for (int i = 0; i < numExons; i++) {
                             final Segment exonSegment = annot.getSegments().get(i);
                             final String exonID = exonSegment.getId();
-                            final int index = deCalculator.defineElement(exonID, DifferentialExpressionCalculator.ElementTypes.EXON);
+                            final int index = deCalculator.defineElement(exonID, DifferentialExpressionCalculator.ElementType.EXON);
                             deCalculator.defineElementLength(index, annot.getLength());
                             numberOfExons++;
                             numberOfElements++;
@@ -411,7 +410,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                                 final int intronEnd = intronSegment.getStart() - 1;
                                 final int intronLength = intronEnd - intronStart + 1;
                                 final String intronID = segment.getId() + "-" + intronSegment.getId();
-                                final int index = deCalculator.defineElement(intronID, DifferentialExpressionCalculator.ElementTypes.OTHER);
+                                final int index = deCalculator.defineElement(intronID, DifferentialExpressionCalculator.ElementType.OTHER);
                                 deCalculator.defineElementLength(index, intronLength);
                                 numberOfIntrons++;
                                 numberOfElements++;

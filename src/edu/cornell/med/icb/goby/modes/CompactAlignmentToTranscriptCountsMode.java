@@ -195,7 +195,7 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
             for (int referenceIndex = 0; referenceIndex < numberOfReferences; ++referenceIndex) {
 
                 final String transcriptId = targetIdBackward.getId(referenceIndex).toString();
-                final int index = deCalculator.defineElement(transcriptId, DifferentialExpressionCalculator.ElementTypes.TRANSCRIPT);
+                final int index = deCalculator.defineElement(transcriptId, DifferentialExpressionCalculator.ElementType.TRANSCRIPT);
 
                 deCalculator.defineElementLength(index, reader.getTargetLength(referenceIndex));
             }
