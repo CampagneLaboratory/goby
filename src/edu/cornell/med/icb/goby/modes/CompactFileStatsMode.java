@@ -30,12 +30,15 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math.stat.descriptive.rank.Percentile;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.FileWriter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -96,6 +99,16 @@ public class CompactFileStatsMode extends AbstractGobyMode {
      */
     private boolean verbose;
 
+    /**
+     * The output filename or null if we should write to stdout.
+     */
+    private String outputFilename;
+
+    /**
+     * The actual writer to use to write the output.
+     */
+    private PrintWriter writer;
+
     @Override
     public String getModeName() {
         return MODE_NAME;
@@ -120,6 +133,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         final JSAPResult jsapResult = parseJsapArguments(args);
         reset();
         final File[] inputFilesArray = jsapResult.getFileArray("input");
+        outputFilename = jsapResult.getString("output");
         inputFiles.addAll(Arrays.asList(inputFilesArray));
         computeQuantiles = jsapResult.userSpecified("number-of-quantiles");
         numberOfQuantiles = jsapResult.getInt("number-of-quantiles", 1);
@@ -145,35 +159,43 @@ public class CompactFileStatsMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        int numberOfFilesProcessed = 0;
-        for (final File file : inputFiles) {
-            if (file.exists() && file.canRead()) {
-                switch (FileExtensionHelper.determineCompactFileType(file)) {
-                    case alignment:
-                        describeCompactAlignment(file);
-                        numberOfFilesProcessed++;
-                        break;
-                    case reads:
-                        describeCompactReads(file);
-                        numberOfFilesProcessed++;
-                        break;
-                    case unknown:
-                    default:
-                        System.err.println("Unknown file type: " + file);
-                        break;
+        writer = null;
+        try {
+            writer = outputFilename == null ? new PrintWriter(System.out) :
+                    new PrintWriter(new FileWriter(outputFilename));
+            int numberOfFilesProcessed = 0;
+            for (final File file : inputFiles) {
+                if (file.exists() && file.canRead()) {
+                    switch (FileExtensionHelper.determineCompactFileType(file)) {
+                        case alignment:
+                            describeCompactAlignment(file);
+                            numberOfFilesProcessed++;
+                            break;
+                        case reads:
+                            describeCompactReads(file);
+                            numberOfFilesProcessed++;
+                            break;
+                        case unknown:
+                        default:
+                            System.err.println("Unknown file type: " + file);
+                            break;
+                    }
+                } else {
+                    System.err.println("Cannot read file: " + file);
                 }
-            } else {
-                System.err.println("Cannot read file: " + file);
             }
-        }
 
-        System.out.println();
-        System.out.printf("Total number of files processed = %,d\n", numberOfFilesProcessed);
-        System.out.printf("Total number of reads = %,d%n", numberOfReads);
-        System.out.printf("Min read length = %,d%n", numberOfReads > 0 ? minReadLength : 0);
-        System.out.printf("Max read length = %,d%n", numberOfReads > 0 ? maxReadLength : 0);
-        System.out.printf("Avg read length = %,d%n", numberOfReads > 0 ? cumulativeReadLength / numberOfReads : 0);
-        System.out.println();
+            writer.println();
+            writer.printf("Total number of files processed = %,d\n", numberOfFilesProcessed);
+            writer.printf("Total number of reads = %,d%n", numberOfReads);
+            writer.printf("Min read length = %,d%n", numberOfReads > 0 ? minReadLength : 0);
+            writer.printf("Max read length = %,d%n", numberOfReads > 0 ? maxReadLength : 0);
+            writer.printf("Avg read length = %,d%n", numberOfReads > 0 ? cumulativeReadLength / numberOfReads : 0);
+            writer.println();
+        } finally {
+            IOUtils.closeQuietly(writer);
+            writer = null;
+        }
     }
 
     /**
@@ -184,14 +206,14 @@ public class CompactFileStatsMode extends AbstractGobyMode {
      */
     private void describeCompactAlignment(final File file) throws IOException {
         final String basename = AlignmentReader.getBasename(file.toString());
-        System.out.printf("Compact Alignment basename = %s%n", basename);
+        writer.printf("Compact Alignment basename = %s%n", basename);
 
         final AlignmentReader reader = new AlignmentReader(basename);
         reader.readHeader();
-        System.out.println("Info from header:");
-        System.out.printf("Number of target sequences = %,d%n", reader.getNumberOfTargets());
+        writer.println("Info from header:");
+        writer.printf("Number of target sequences = %,d%n", reader.getNumberOfTargets());
         final int[] targetLength = reader.getTargetLength();
-        System.out.printf("Number of target length entries = %,d%n",
+        writer.printf("Number of target length entries = %,d%n",
                 ArrayUtils.getLength(reader.getTargetLength()));
 
         // simple statistics for target lengths
@@ -201,14 +223,14 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 targetLengthStats.addValue(d);
             }
         }
-        System.out.printf("Min target length = %,d%n", (int) targetLengthStats.getMin());
-        System.out.printf("Max target length = %,d%n", (int) targetLengthStats.getMax());
-        System.out.printf("Mean target length = %,.2f%n", targetLengthStats.getMean());
-        System.out.println();
+        writer.printf("Min target length = %,d%n", (int) targetLengthStats.getMin());
+        writer.printf("Max target length = %,d%n", (int) targetLengthStats.getMax());
+        writer.printf("Mean target length = %,.2f%n", targetLengthStats.getMean());
+        writer.println();
 
-        System.out.printf("Number of query sequences = %,d%n", reader.getNumberOfQueries());
+        writer.printf("Number of query sequences = %,d%n", reader.getNumberOfQueries());
         final int[] queryLength = reader.getQueryLengths();
-        System.out.printf("Number of query length entries = %,d%n",
+        writer.printf("Number of query length entries = %,d%n",
                 ArrayUtils.getLength(queryLength));
         final SummaryStatistics queryLengthStats = new SummaryStatistics();
         if (queryLength != null) {
@@ -216,16 +238,16 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 queryLengthStats.addValue(d);
             }
         }
-        System.out.printf("Min query length = %,d%n", (int) queryLengthStats.getMin());
-        System.out.printf("Max query length = %,d%n", (int) queryLengthStats.getMax());
-        System.out.printf("Mean query length = %,.2f%n", queryLengthStats.getMean());
-        System.out.println("Constant query lengths = " + reader.isConstantQueryLengths());
+        writer.printf("Min query length = %,d%n", (int) queryLengthStats.getMin());
+        writer.printf("Max query length = %,d%n", (int) queryLengthStats.getMax());
+        writer.printf("Mean query length = %,.2f%n", queryLengthStats.getMean());
+        writer.println("Constant query lengths = " + reader.isConstantQueryLengths());
 
-        System.out.printf("Has query identifiers = %s%n",
+        writer.printf("Has query identifiers = %s%n",
                 reader.getQueryIdentifiers() != null && !reader.getTargetIdentifiers().isEmpty());
-        System.out.printf("Has target identifiers = %s%n",
+        writer.printf("Has target identifiers = %s%n",
                 reader.getTargetIdentifiers() != null && !reader.getTargetIdentifiers().isEmpty());
-        System.out.println();
+        writer.println();
 
         // the query indices that aligned. Includes those
         final IntSet alignedQueryIndices = new IntOpenHashSet();
@@ -256,20 +278,21 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         avgScore /= (double) numLogicalAlignmentEntries;
 
         final int numQuerySequences = maxQueryIndex + 1;
-        System.out.printf("num query indices= %,d%n", numQuerySequences);
+        writer.printf("num query indices = %,d%n", numQuerySequences);
         final int numTargetSequences = maxTargetIndex + 1;
         final double avgNumVariationsPerQuery =
                 ((double) sumNumVariations) / (double) numQuerySequences;
-        System.out.printf("num target indices= %,d%n", numTargetSequences);
-        System.out.printf("Number of alignment entries = %,d%n", numLogicalAlignmentEntries);
-        System.out.printf("Percent matched = %4.1f%% %n",
+        writer.printf("num target indices = %,d%n", numTargetSequences);
+        writer.printf("Number of alignment entries = %,d%n", numLogicalAlignmentEntries);
+        writer.printf("Number of query indices that matched = %,d%n", alignedQueryIndices.size());
+        writer.printf("Percent matched = %4.1f %% %n",
                 (double) alignedQueryIndices.size() / (double) (long) numQuerySequences * 100.0d);
-        System.out.printf("Avg query alignment length = %,d%n", numEntries > 0 ? total / numEntries : -1);
-        System.out.printf("Avg score alignment  = %f%n", avgScore);
-        System.out.printf("Avg number of variations per query sequence = %3.2f %n",
+        writer.printf("Avg query alignment length = %,d%n", numEntries > 0 ? total / numEntries : -1);
+        writer.printf("Avg score alignment = %f%n", avgScore);
+        writer.printf("Avg number of variations per query sequence = %3.2f %n",
                 avgNumVariationsPerQuery);
         final long size = file.length();
-        System.out.printf("Average bytes per entry: %f%n", divide(size, numLogicalAlignmentEntries));
+        writer.printf("Average bytes per entry = %f%n", divide(size, numLogicalAlignmentEntries));
     }
 
     private double divide(final long a, final long b) {
@@ -280,11 +303,11 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         try {
             final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
             queryIndices.addAll(tmhReader.getQueryIndices());
-            System.out.printf("TMH: aligner threshold= %d%n", tmhReader.getAlignerThreshold());
-            System.out.printf("TMH: number of ambiguous matches= %d%n", tmhReader.getQueryIndices().size());
-            System.out.printf("TMH: %%ambiguous matches= %f %%%n", (tmhReader.getQueryIndices().size() * 100f) / numReads);
+            writer.printf("TMH: aligner threshold = %,d%n", tmhReader.getAlignerThreshold());
+            writer.printf("TMH: number of ambiguous matches = %,d%n", tmhReader.getQueryIndices().size());
+            writer.printf("TMH: %%ambiguous matches = %f %%%n", (tmhReader.getQueryIndices().size() * 100f) / numReads);
         } catch (IOException e) {
-            System.out.println("Cannot read TMH file for basename " + basename);
+            writer.println("Cannot read TMH file for basename " + basename);
 
         }
     }
@@ -296,7 +319,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
      * @throws IOException if the file cannot be read
      */
     private void describeCompactReads(final File file) throws IOException {
-        System.out.printf("Compact reads filename = %s%n", file);
+        writer.printf("Compact reads filename = %s%n", file);
 
         // keep the read lengths for computing quantiles
         final DoubleArrayList readLengths = new DoubleArrayList();
@@ -328,11 +351,11 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 cumulativeReadLength += readLength;
 
                 if (verbose && entry.hasDescription()) {
-                    System.out.println("Description found: " + entry.getDescription());
+                    writer.println("Description found: " + entry.getDescription());
                 }
                 numberOfIdentifiers += entry.hasReadIdentifier() ? 1 : 0;
                 if (verbose && entry.hasReadIdentifier()) {
-                    System.out.println("Identifier found: " + entry.getReadIdentifier());
+                    writer.println("Identifier found: " + entry.getReadIdentifier());
                 }
                 numberOfSequences += entry.hasSequence() && !entry.getSequence().isEmpty() ? 1 : 0;
                 numberOfQualityScores +=
@@ -350,34 +373,34 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 maxReadLength = Math.max(maxReadLength, readLength);
             }
 
-            System.out.printf("Average bytes per entry: %f%n", divide(size, numReadEntries));
-            System.out.printf("Average bytes per base: %f%n", divide(size, cumulativeReadLength));
+            writer.printf("Average bytes per entry: %f%n", divide(size, numReadEntries));
+            writer.printf("Average bytes per base: %f%n", divide(size, cumulativeReadLength));
         } finally {
             if (reader != null) {
                 reader.close();
             }
         }
 
-        System.out.printf("Has identifiers    = %s (%,d) %n", numberOfIdentifiers > 0, numberOfIdentifiers);
-        System.out.printf("Has descriptions   = %s (%,d) %n", numberOfDescriptions > 0, numberOfDescriptions);
-        System.out.printf("Has sequences      = %s (%,d) %n", numberOfSequences > 0, numberOfSequences);
-        System.out.printf("Has quality scores = %s (%,d) %n", numberOfQualityScores > 0, numberOfQualityScores);
+        writer.printf("Has identifiers = %s (%,d) %n", numberOfIdentifiers > 0, numberOfIdentifiers);
+        writer.printf("Has descriptions = %s (%,d) %n", numberOfDescriptions > 0, numberOfDescriptions);
+        writer.printf("Has sequences = %s (%,d) %n", numberOfSequences > 0, numberOfSequences);
+        writer.printf("Has quality scores = %s (%,d) %n", numberOfQualityScores > 0, numberOfQualityScores);
 
-        System.out.printf("Number of entries = %,d%n", numReadEntries);
-        System.out.printf("Min read length = %,d%n", numReadEntries > 0 ? minLength : 0);
-        System.out.printf("Max read length = %,d%n", numReadEntries > 0 ? maxLength : 0);
-        System.out.printf("Avg read length = %,d%n", numReadEntries > 0 ? totalReadLength / numReadEntries : 0);
+        writer.printf("Number of entries = %,d%n", numReadEntries);
+        writer.printf("Min read length = %,d%n", numReadEntries > 0 ? minLength : 0);
+        writer.printf("Max read length = %,d%n", numReadEntries > 0 ? maxLength : 0);
+        writer.printf("Avg read length = %,d%n", numReadEntries > 0 ? totalReadLength / numReadEntries : 0);
 
         // compute quantiles
         if (computeQuantiles) {
             final Percentile percentile = new Percentile();
             final double[] increasingReadLengths = readLengths.toDoubleArray();
             Arrays.sort(increasingReadLengths);
-            System.out.printf("Read length quantiles = [ ");
+            writer.printf("Read length quantiles = [ ");
             for (int quantile = 1; quantile < numberOfQuantiles + 1; quantile++) {
-                System.out.printf("%,f ", percentile.evaluate(increasingReadLengths, quantile));
+                writer.printf("%,f ", percentile.evaluate(increasingReadLengths, quantile));
             }
-            System.out.printf("]%n");
+            writer.printf("]%n");
         }
     }
 

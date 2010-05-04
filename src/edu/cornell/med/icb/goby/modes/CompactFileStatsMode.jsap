@@ -29,6 +29,13 @@
             </stringParser>
         </unflaggedOption>
         <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>false</required>
+            <help>Where the output will be written. If not specified, output will be written to stdout.</help>
+        </flaggedOption>
+        <flaggedOption>
             <id>number-of-quantiles</id>
             <shortFlag>q</shortFlag>
             <longFlag>number-of-quantiles</longFlag>
