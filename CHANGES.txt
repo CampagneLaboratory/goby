@@ -6,6 +6,8 @@ development -> 1.5.1
  - Fixed a bug in the DifferentialExpressionCalculator which re-set ElementType for a value from
    the actual value to OTHER (in occured in CompactAlignmentToAnnotationCountsMode). Now once
    ElementTypes is set for a label it cannot be changed.
+ - CompactFileStatsMode now supports an optional -o to write the output to a file. If not specified
+   the output will be written to stdout.
 
 1.5
 
