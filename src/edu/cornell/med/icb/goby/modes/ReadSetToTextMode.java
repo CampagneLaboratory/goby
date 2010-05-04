@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 /**
- * Converts a compact alignment to plain text.
+ * Converts a compact read sets to plain text.
  *
  * @author Fabien Campagne
  */

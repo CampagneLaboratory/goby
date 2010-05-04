@@ -18,7 +18,6 @@
 
 <jsap>
     <parameters>
-
         <flaggedOption>
             <id>output</id>
             <shortFlag>o</shortFlag>
@@ -34,7 +33,7 @@
             <defaults>
                 <string>concise</string>
             </defaults>
-            <help>Format of the output file (consise, tsv/tab_delimited, tab_single_base).</help>
+            <help>Format of the output file (concise, tsv/tab_delimited, tab_single_base).</help>
         </flaggedOption>
         <unflaggedOption>
             <id>input</id>
@@ -51,7 +50,6 @@
         </flaggedOption>
          <flaggedOption>
             <id>minimum-read-indices</id>
-           
             <longFlag>minimum-read-indices</longFlag>
             <stringParser>
                 <classname>IntegerStringParser</classname>

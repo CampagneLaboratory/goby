@@ -1,119 +1,151 @@
 development -> 1.5.1
+ - Update JRI.jar to version 0.8-4 which now works properly with 64-bit
+   Windows.
  - Optimized DE type storage.
- - Fixed a race condition in CompactAlignmentToAnnotationCountsMode.java when running in Parallel
-   by moving .reserve() out of the for loop.
+ - Fixed a race condition in CompactAlignmentToAnnotationCountsMode.java
+   when running in parallel by moving .reserve() out of the for loop.
  - Renamed DifferentialExpression.ElementTypes enum to ElementType
- - Fixed a bug in the DifferentialExpressionCalculator which re-set ElementType for a value from
-   the actual value to OTHER (in occured in CompactAlignmentToAnnotationCountsMode). Now once
-   ElementTypes is set for a label it cannot be changed.
- - CompactFileStatsMode now supports an optional -o to write the output to a file. If not specified
-   the output will be written to stdout.
+ - Fixed a bug in the DifferentialExpressionCalculator which reset
+   ElementType for a value from the actual value to OTHER (in occurred
+   in CompactAlignmentToAnnotationCountsMode). Now once ElementTypes
+   is set for a label it cannot be changed.
+ - CompactFileStatsMode now supports an optional -o to write the output
+   to a file. If not specified the output will be written to stdout.
 
 1.5
+ - Added a mode to calculate counts and perform differential expression
+   analysis for transcript runs (alignment-to-transcript-counts).
+   Transcript runs are performed against a cDNA library. They find matches
+   through through exon-exon junctions represented in the input cDNA
+   library. They are a faster alternative to mapping the genome and
+   exon-exon boundaries separately. Disadvantage is that these searches
+   will only map to transcripts represented in the input library.
 
- Added a mode to calculate counts and perform differential expression analysis for transcript
- runs (alignment-to-transcript-counts). Transcript runs are performed against a cDNA library. They
- finds matches through through exon-exon junctions represented in the input cDNA library. They are
- a faster alternative to mapping the genome and exon-exon boundaries separately. Disadvantage is that
- these searches will only map to transcripts represented in the input library.
+ - Changes to fasta-to-compact mode:
+   - Add parallel processing in fasta-to-compact mode. Use the --parallel
+     flag to activate.
+   - Will now only regenerate compact-reads that do not
+     exist, or are older than the input file.
 
- Changes to fasta-to-compact mode:
- - Add parallel processing in fasta-to-compact mode. Use the --parallel flag to activate.
- Will now only regenerate compact-reads that do not exist, or are older than the input file.
+ - Added a mode to write a read set to text format (set-to-text). The output
+   will show the multiplicity of each query index.  ReadSets can be
+   efficiently created with tally-reads as before.
 
- Added a mode to write a read set to text format (set-to-text). The output will show the multiplicity of each query index.
- ReadSets can be efficiently created with tally-reads as before.
+ - Changes to CompactAlignmentToAnnotationCountsMode
+   - Added new option --write-annotation-counts boolean, defaults to
+     true. If set to false the annotation counts intermediate files
+     will not be written.
+   - Lines where "average count group *" values are ALL NaN or <= 0 will
+     not be written.  This makes it so lines that don't add anything to
+     the output are just omitted.
+   - Added new option --omit-non-informative-columns, defaults to false.
+     If set to true, columns in which all of the data is non-informative
+     (values are ALL NaN or <= 0)  will be omitted.
+   - Support for alternative global normalization methods. We currently
+     provide an implementation of the upper quartile normalization method
+     by Bullard et al (BUQ) and the normalization method provided in
+     Goby 1.4 (CAC, normalize by the number of alignment record in a sample)
+     See the --normalization-methods argument. New normalization methods
+     can be used with Goby by creating an implementation of the
+     edu.cornell.med.icb.goby.stats.NormalizationMethod interface,
+     and adding a jar on the classpath that defines a ServiceProvider
+     (see build.xml goby-jar target for an example of how this is done).
+     When several normalization methods are given as an argument
+     to --normalization-methods Goby will produce derived statistics
+     for each normalization method and append them as new columns in
+     the summary stats output. This makes it easy to compare alternative
+     normalization methods on the same dataset.
 
- Changes to CompactAlignmentToAnnotationCountsMode
- - added new option --write-annotation-counts boolean, defaults to true. If set to
-   false the annotation counts intermediate files will not be written.
- - Lines where "average count group *" values are ALL NaN or <= 0 will not be written
-   This makes it so lines that don't add anything to the output are just omitted.
- - added new option --omit-non-informative-columns, defaults to false. If set to
-   true, columns in which all of the data is non-informative (values are ALL NaN or <= 0)
-   will be omitted.
- - support for alternative global normalization methods. We currently provide an implementation of the
-   upper quartile normalization method by Bullard et al (BUQ) and the normalization method
-   provided in Goby 1.4 (CAC, normalize by the number of alignment record in a sample)
-   See the --normalization-methods argument. New normalization methods can be used with Goby by
-   creating an implementation of the edu.cornell.med.icb.goby.stats.NormalizationMethod interface,
-   and adding a jar on the classpath that defines a ServiceProvider (see build.xml goby-jar target
-   for an example of how this is done). When several normalization methods are given as an argument
-   to --normalization-methods Goby will produce derived statistics for each normalization method and
-   append them as new columns in the summary stats output. This makes it easy to compare alternative
-   normalization methods on the same dataset.
+ - Added support for sequence variations:
+   - Changed the compact alignment format to support recording sequence
+     variations.
+   - The new mode display-sequence-variations provides text output of
+     sequence variations in several formats.
+   - The new mode sequence-variation-stats will print statistics about
+     sequence variations found in a set of alignments.
 
- Added support for sequence variations:
- - changed the compact alignment format to support recording sequence variations.
- - the new mode display-sequence-variations provides text output of sequence variations in several formats.
- - the new mode sequence-variation-stats will print statistics about sequence variations found in a set of alignments.
- 
- Added support for quality scores:
+ - Added support for quality scores:
+   - Changed fasta-to-compact and compact-to-fasta to read and write with
+     the Sanger or Illumina quality encoding.
+   - Modified aligners to indicate which format they require (bwa needs
+     fastq format, lastag fasta format, lastal fastq format). This will
+     need extensive testing as some of these changes can affect gobyweb.
+     We use the FASTQ-SANGER encoding to communicate with lastal.
+     We don't yet support the Solexa quality score encoding (it is a bit
+     obsolete anyway).
 
- - Changed fasta-to-compact and compact-to-fasta to read and write with the Sanger or Illumina quality encoding.
- - Modified aligners to indicate which format they require (bwa needs fastq format, lastag fasta format, lastal fastq format). This will need extensive testing as some of these changes can affect gobyweb.
-   We use the FASTQ-SANGER encoding to communicate with lastal.
- We don't yet support the Solexa quality score encoding (it is a bit obsolete anyway).
+   Please note that the output format in compact-to-fasta now defaults to
+   Fasta format.  This format has no quality scores, and consequently, we
+   now never write quality scores when Fasta is requested. The aligners
+   that need quality scores must request FASTQ format explicitly.
 
- Please note that the output format in compact-to-fasta now defaults to Fasta format.
- This format has no quality scores, and consequently, we now never write quality scores
- when Fasta is requested. The aligners that need quality scores must request FastaQ format
- explicitely.
- See also:
-  http://en.wikipedia.org/wiki/FASTQ_format
-  http://maq.sourceforge.net/fastq.shtml
-  http://last.cbrc.jp/last/doc/last-manual.txt (look for FASTQ-SANGER)
- 
- Changes to the Compact format:
- - Store target/reference sequence lengths in the alignment header. This information is helpful when calculating
-   statistics such as RPKMs (transcript-level searches).
- - Store constant query lengths as one integer. Goby 1.4.1- stored one length for each read. This can become very
-   memory consuming when the number of reads is very large. This change saves memory and storage.
+   See also:
+     http://en.wikipedia.org/wiki/FASTQ_format
+     http://maq.sourceforge.net/fastq.shtml
+     http://last.cbrc.jp/last/doc/last-manual.txt (look for FASTQ-SANGER)
+
+ - Changes to the Compact format:
+   - Store target/reference sequence lengths in the alignment header. This
+     information is helpful when calculating statistics such as RPKMs
+     (transcript-level searches).
+   - Store constant query lengths as one integer. Goby 1.4.1 stored one
+     length for each read. This can become very memory consuming when the
+     number of reads is very large. This change saves memory and storage.
 
 1.4.1
- - Added a mode to write a read set to text format (set-to-text). The output will show the
-   multiplicity of each query index.  ReadSets can be efficiently created with tally-reads
-   as before.
+ - Added a mode to write a read set to text format (set-to-text). The
+   output will show the multiplicity of each query index.  ReadSets can
+   be efficiently created with tally-reads as before.
 
 1.4
- - Last aligner (http://last.cbrc.jp/) is now supported "out of the box".  Tested against
-   version last-96.  Support for the enhanced version "lastag" still exists.
- - Alignment-to-annotation-counts mode now computes a p-value using R (if available on the host)
+ - Last aligner (http://last.cbrc.jp/) is now supported "out of the box".
+   Tested against version last-96.  Support for the enhanced version
+   "lastag" still exists.
+ - Alignment-to-annotation-counts mode now computes a p-value using R
+   (if available on the host)
  - Update to protobuf 2.3.0 (http://code.google.com/p/protobuf/)
- - Default extension for files written in Wiggle Track Format is now ".wig" for easier
-   integration with the Integrative Genomics Viewer (http://www.broadinstitute.org/igv/).
-   Similarly, the default extension for BedGraph Track Format files is now ".bed".
+ - Default extension for files written in Wiggle Track Format is now ".wig"
+   for easier integration with the Integrative Genomics Viewer
+   (http://www.broadinstitute.org/igv/).
+   Similarly, the default extension for BedGraph Track Format files is
+   now ".bed".
 
 1.3
- - New "counts-to-bedgraph" mode which is similar to "counts-to-wiggle" but writes the
-   data in "bedgraph" format, which is another format the Genome Browser accepts.
+ - New "counts-to-bedgraph" mode which is similar to "counts-to-wiggle" but
+   writes the data in "bedgraph" format, which is another format the
+   Genome Browser accepts.
  - New mode "version" to write the jar's version number to stdout
 
- counts-to-wiggle mode:
-  - Write at most one entry per resolution-sized window of data (averaging the data in that window)
-  - Not write data past the end of the size of the chromosome (which is possible with resolution > 1)
+ - counts-to-wiggle mode:
+   - Write at most one entry per resolution-sized window of data (averaging
+     the data in that window)
+   - Don't write data past the end of the size of the chromosome (which
+     is possible with resolution > 1)
 
- compact-alignment-to-annotation-counts mode:
- - Fixed problem with BH FDR adjustment caused by NaN p-values.
- - ChiSquare test p-values are now correctly reported.
- - Adjusted P-values (Bonferroni and BH) are set to 1.0 if they would be larger than 1.
- - Added magnitude of fold change to group comparison tsv output.
+ - compact-alignment-to-annotation-counts mode:
+   - Fixed problem with BH FDR adjustment caused by NaN p-values.
+   - ChiSquare test p-values are now correctly reported.
+   - Adjusted P-values (Bonferroni and BH) are set to 1.0 if they would be
+     larger than 1.
+   - Added magnitude of fold change to group comparison tsv output.
 
 1.2
- compact-alignment-to-annotation-counts mode:
-  - Added chi square test statistic and associated FDR adjusted stat. Chi-square statistics
-    support multi-group comparisons.
-  - Added the --parallel option to speed up computations on multiple core machines.
+ - compact-alignment-to-annotation-counts mode:
+   - Added chi square test statistic and associated FDR adjusted stat.
+     Chi-square statistics support multi-group comparisons.
+   - Added the --parallel option to speed up computations on multiple core
+     machines.
 
 1.1
- compact-alignment-to-annotation-counts mode:
-  - Make it possible to process multiple alignment files in one run of the mode.
-  - Added support for group comparisons. Group statistics are now computed
-    and written to a summary file (see --comparison --stats and --groups
-    options). The following statistics have been implemented: T-Test and
-    fold-change across RPKMs in the comparison groups, Benjamini-Hochberg
-    FDR adjustment for t-test P-value and Bonferroni correction for t-test
-    P-value. Average RPKM in each group.
+ - compact-alignment-to-annotation-counts mode:
+   - Make it possible to process multiple alignment files in one run of
+     the mode.
+   - Added support for group comparisons. Group statistics are now computed
+     and written to a summary file (see --comparison --stats and --groups
+     options). The following statistics have been implemented: T-Test and
+     fold-change across RPKMs in the comparison groups, Benjamini-Hochberg
+     FDR adjustment for t-test P-value and Bonferroni correction for t-test
+     P-value. Average RPKM in each group.
 
 - Fix a bug where data matching chromosome "chr1" was excluded from wiggle
   tracks created from Goby count data.  (Mantis issue #1349)

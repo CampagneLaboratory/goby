@@ -32,11 +32,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
- * Display the sequence variations found in alignments.
+ * Extract reads from a <a href="http://samtools.sourceforge.net/">SAM</a> file.
  *
  * @author Fabien Campagne
  */
 public class SamExtractReadsMode extends AbstractGobyMode {
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Logger LOG = Logger.getLogger(SamExtractReadsMode.class);
+
     /**
      * The mode name.
      */
@@ -56,9 +61,6 @@ public class SamExtractReadsMode extends AbstractGobyMode {
      * The output file.
      */
     private String outputFilename;
-
-    private final int minimumUniqueReadIndices = 1;
-    private static final Logger LOG = Logger.getLogger(SamExtractReadsMode.class);
 
 
     @Override

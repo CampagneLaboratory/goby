@@ -24,7 +24,7 @@
             <longFlag>include-descriptions</longFlag>
             <shortFlag>d</shortFlag>
             <defaults>false</defaults>
-            <help>When this switch is provided, include description lines into the compact output. By default, ignore description lines.  </help>
+            <help>When this switch is provided, include description lines into the compact output. By default, ignore description lines.</help>
         </switch>
         <switch>
             <id>include-identifiers</id>
@@ -84,12 +84,12 @@
             <id>input</id>
             <required>true</required>
             <greedy>true</greedy>
-            <help>The input fasta files to convert to compact reads.  The output files will have the same filename but end in .compact-reads.  If the input file ends in .gz it will be decompressed on the fly.  </help>
+            <help>The input fasta files to convert to compact reads.  The output files will have the same filename but end in .compact-reads.  If the input file ends in .gz it will be decompressed on the fly.</help>
         </unflaggedOption>
         <switch>
             <id>parallel</id>
             <longFlag>parallel</longFlag>
-            <help>Process input files in parallel. Use when you have many input files to proces. You can tune the number of processors used by setting the property pj.nt. For instance, -Dpj.nt=5 will use 5 parallel threads. When --parallel is specified, one thread per processing core of the machine will be used unless specified otherwise (with pj.nt).</help>
+            <help>Process input files in parallel. Use when you have many input files to process. You can tune the number of processors used by setting the property pj.nt. For instance, -Dpj.nt=5 will use 5 parallel threads. When --parallel is specified, one thread per processing core of the machine will be used unless specified otherwise (with pj.nt).</help>
         </switch>
     </parameters>
 </jsap>

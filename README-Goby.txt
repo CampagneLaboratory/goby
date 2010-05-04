@@ -1,2 +1,2 @@
-See http://icbtools.med.cornell.edu/goby/ for information about the Goby project.
- 
+See http://goby.campagnelab.org/ for information about the Goby project.
+

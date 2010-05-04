@@ -18,20 +18,17 @@
 
 <jsap>
     <parameters>
-
         <flaggedOption>
             <id>output</id>
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
             <required>false</required>
-            <help>Where the sequence variations will be written.</help>
+            <help>Where the output will be written.</help>
         </flaggedOption>
-
         <unflaggedOption>
             <id>input</id>
             <required>true</required>
-                       <help>The SAM input file.</help>
+            <help>The SAM input file.</help>
         </unflaggedOption>
-       
     </parameters>
 </jsap>
