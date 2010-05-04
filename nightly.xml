@@ -155,6 +155,18 @@
             <arg value="counts-to-wiggle"/>
             <arg value="goby-bwa-sample"/>
         </java>
+
+        <java jar="${goby-jarfile}" fork="true" failonerror="true"
+              maxmemory="${max.memory}" timeout="${timeout}">
+            <assertions enablesystemassertions="true"/>
+            <sysproperty key="log4j.debug" value="${log4j.debug}"/>
+            <sysproperty key="log4j.configuration" value="${log4j.config.url}"/>
+            <arg value="--mode"/>
+            <arg value="alignment-to-annotation-counts"/>
+            <arg value="--annotation"/>
+            <arg value="data/biomart-mouse-exons-ensembl57-genes-MM9.txt"/>
+            <arg value="goby-bwa-sample"/>
+        </java>
     </target>
 
     <target name="nightly-last" depends="prepare-reference, prepare-reads">
@@ -217,6 +229,18 @@
             <arg value="counts-to-wiggle"/>
             <arg value="goby-last-sample"/>
         </java>
+
+        <java jar="${goby-jarfile}" fork="true" failonerror="true"
+              maxmemory="${max.memory}" timeout="${timeout}">
+            <assertions enablesystemassertions="true"/>
+            <sysproperty key="log4j.debug" value="${log4j.debug}"/>
+            <sysproperty key="log4j.configuration" value="${log4j.config.url}"/>
+            <arg value="--mode"/>
+            <arg value="alignment-to-annotation-counts"/>
+            <arg value="--annotation"/>
+            <arg value="data/biomart-mouse-exons-ensembl57-genes-MM9.txt"/>
+            <arg value="goby-last-sample"/>
+        </java>
     </target>
 
     <target name="nightly-lastag" depends="prepare-reference, prepare-reads">
@@ -277,6 +301,18 @@
             <sysproperty key="log4j.configuration" value="${log4j.config.url}"/>
             <arg value="--mode"/>
             <arg value="counts-to-wiggle"/>
+            <arg value="goby-lastag-sample"/>
+        </java>
+
+        <java jar="${goby-jarfile}" fork="true" failonerror="true"
+              maxmemory="${max.memory}" timeout="${timeout}">
+            <assertions enablesystemassertions="true"/>
+            <sysproperty key="log4j.debug" value="${log4j.debug}"/>
+            <sysproperty key="log4j.configuration" value="${log4j.config.url}"/>
+            <arg value="--mode"/>
+            <arg value="alignment-to-annotation-counts"/>
+            <arg value="--annotation"/>
+            <arg value="data/biomart-mouse-exons-ensembl57-genes-MM9.txt"/>
             <arg value="goby-lastag-sample"/>
         </java>
     </target>
