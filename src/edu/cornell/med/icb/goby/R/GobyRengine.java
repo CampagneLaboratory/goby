@@ -23,6 +23,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.rosuda.JRI.Rengine;
 
+import java.util.Map;
+import java.util.TreeMap;
+
 /**
  * Main interface to R. This requires native R libraries and rJava to be installed. From the R
  * console enter:
@@ -32,8 +35,9 @@ import org.rosuda.JRI.Rengine;
  * <em>-Djava.library.path="C:\Program Files (x86)\R\R-2.10.1\library\rJava\jri"</em>.  On
  * Unix, add the R and JRI paths to the <em>LD_LIBRARY_PATH</em> environment variable.
  * <p>
- * See <a href="http://www.r-project.org/">The R Project for Statistical Computing</a> and
- * <a href="http://www.rforge.net/rJava/">rJava</a> for reference.
+ * See <a href="http://www.r-project.org/">The R Project for Statistical Computing</a>,
+ * <a href="http://www.rforge.net/rJava/">rJava</a> and
+ * <a href="http://www.rforge.net/JRI/">JRI</a> for reference.
  */
 public final class GobyRengine {
     /**
@@ -85,7 +89,14 @@ public final class GobyRengine {
                 }
             }
         } catch (UnsatisfiedLinkError e) {
-            LOG.warn("Rengine libraries can not be found", e);
+            if (LOG.isWarnEnabled()) {
+                LOG.warn("Rengine libraries can not be found", e);
+                LOG.warn("java.library.path = " + SystemUtils.JAVA_LIBRARY_PATH);
+                final Map<String, String> env = new TreeMap<String, String>(System.getenv());
+                for (final Map.Entry<String, String> entry : env.entrySet()) {
+                    LOG.warn(entry.getKey() + " = " + entry.getValue());
+                }
+            }
             rengine = null;
         }
 
