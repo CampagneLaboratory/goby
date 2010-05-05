@@ -460,7 +460,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
                     final double geneRPKM = deCalculator.calculateNormalized(geneOverlapReads, annot.getLength(), deCalculator.getNumAlignedInSample(sampleId));
                     if (writeAnnotationCounts) {
-                        writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\t%d\t%d\t%n",
+                        writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\t%d\t%d%n",
                                 basename,
                                 geneID,
                                 "",
@@ -501,7 +501,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                         final double exonRPKM = deCalculator.calculateNormalized(exonOverlapReads, segment.getLength(), deCalculator.getNumAlignedInSample(sampleId));
                         if (includeAnnotationTypes.contains("exon")) {
                             if (writeAnnotationCounts) {
-                                writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\t%n",
+                                writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g%n",
                                         basename,
                                         geneID,
                                         exonID,
@@ -534,7 +534,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                             if (intronLength > 0) {
                                 if (includeAnnotationTypes.contains("intron")) {
                                     if (writeAnnotationCounts) {
-                                        writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%e\t%g\t%n",
+                                        writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%e\t%g%n",
                                                 basename,
                                                 geneID,
                                                 intronID,
