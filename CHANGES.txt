@@ -1,4 +1,8 @@
 development -> 1.5.1
+ - Added within-group-variability mode. This mode estimates Fisher P-values
+   between pairs of samples taken from a group of homogeneous samples.
+   Summary statistics such as average p-value, or minimum p-value are reported
+   for each gene in each pair considered.
  - Update JRI.jar to version 0.8-4 which now works properly with 64-bit
    Windows.
  - Optimized DE type storage.

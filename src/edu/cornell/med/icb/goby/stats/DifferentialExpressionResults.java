@@ -79,6 +79,9 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
     public double getStatistic(final DifferentialExpressionInfo info, final MutableString statisticId) {
         return info.statistics.get(statisticIds.get(statisticId));
     }
+     public double getStatistic(final DifferentialExpressionInfo info, final int statIndex) {
+        return info.statistics.get(statIndex);
+    }
 
     public int getStatisticIndex(final MutableString statisticId) {
         return statisticIds.getInt(statisticId);

@@ -105,7 +105,9 @@ public class DifferentialExpressionAnalysis {
             groupSizes.put(groupId, groupSize);
         }
     }
-
+    public String[] getGroups() {
+        return groups.toArray(new String[groups.size()]);
+    }
     /**
      * Return true if the basename is on the command line as an input basename.
      *

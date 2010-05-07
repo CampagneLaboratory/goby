@@ -598,7 +598,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      * @return
      * @throws IOException
      */
-    public Object2ObjectMap<String, ObjectList<Annotation>> readAnnotations(final String annotFile) throws IOException {
+    public static Object2ObjectMap<String, ObjectList<Annotation>> readAnnotations(final String annotFile) throws IOException {
 
         BufferedReader reader = null;
         final Object2ObjectMap<String, Annotation> annots = new Object2ObjectOpenHashMap<String, Annotation>();

@@ -47,7 +47,7 @@
             <shortFlag>a</shortFlag>
             <longFlag>annotation</longFlag>
             <required>true</required>
-            <help>The annoation file as input.</help>
+            <help>The annotation file as input.</help>
         </flaggedOption>
 
         <flaggedOption>

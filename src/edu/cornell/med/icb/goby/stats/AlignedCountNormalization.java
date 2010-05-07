@@ -24,7 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Normalize by the number of alignments observed in each sample.
+ * Normalize by the number of alignments observed in each sample. First described in Moriatti et al 2008.
  *
  * @author Fabien Campagne
  *         Date: Mar 27, 2010
@@ -40,14 +40,14 @@ public class AlignedCountNormalization extends RpkmLikeNormalizationMethod {
      * {@inheritDoc}
      */
     public String getIdentifier() {
-        return "campagne-aligned-count";
+        return "aligned-count";
     }
 
     /**
      * {@inheritDoc}
      */
     public String getAbbreviation() {
-        return "CAC";
+        return "AC";
     }
 
     /**
