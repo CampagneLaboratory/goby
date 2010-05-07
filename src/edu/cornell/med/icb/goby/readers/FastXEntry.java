@@ -163,6 +163,14 @@ public class FastXEntry implements Cloneable {
     }
 
     /**
+     * Get the FASTQ quality header (inclues the start of line symbol).
+     * @return the FASTX entry quality
+     */
+    public MutableString getQualityHeader() {
+        return qualityHeader;
+    }
+
+    /**
      * Get the FASTX entry without the header.
      * @return the FASTX entry without the header
      */
