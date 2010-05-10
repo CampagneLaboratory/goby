@@ -84,7 +84,7 @@
             <longFlag>normalization-methods</longFlag>
             <required>false</required>
               <defaults>
-                <string>campagne-aligned-count,bullard-upper-quartile</string>
+                <string>aligned-count,bullard-upper-quartile</string>
             </defaults>
             <help>comma separated list of the normalization methods to apply</help>
          </flaggedOption>
