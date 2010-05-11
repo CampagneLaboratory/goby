@@ -21,8 +21,12 @@
 import gzip
 import Alignments_pb2
 
+# Java properties - http://pypi.python.org/pypi/pyjavaproperties/
 from pyjavaproperties import Properties
 
+#
+# Reads alignments written in the Goby "compact" format
+#
 class AlignmentReader():
     # basename for this alignment
     basename = None
@@ -32,6 +36,9 @@ class AlignmentReader():
 
     # alignment header
     header = Alignments_pb2.AlignmentHeader()
+
+    # too many hits
+    tmh = Alignments_pb2.AlignmentTooManyHits()
 
     def __init__(self, basename, verbose = False):
         # store the basename
@@ -48,6 +55,11 @@ class AlignmentReader():
         # read the header (TODO: support old format?)
         f = gzip.open(basename + ".header", "rb")
         self.header.ParseFromString(f.read())
+        f.close()
+
+        # read the "too many hits" info
+        f = open(basename + ".tmh", "rb")
+        self.tmh.ParseFromString(f.read())
         f.close()
 
     def __str__(self):
