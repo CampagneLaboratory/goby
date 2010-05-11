@@ -36,9 +36,9 @@ import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math.stat.descriptive.rank.Percentile;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.FileWriter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -244,7 +244,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         writer.println("Constant query lengths = " + reader.isConstantQueryLengths());
 
         writer.printf("Has query identifiers = %s%n",
-                reader.getQueryIdentifiers() != null && !reader.getTargetIdentifiers().isEmpty());
+                reader.getQueryIdentifiers() != null && !reader.getQueryIdentifiers().isEmpty());
         writer.printf("Has target identifiers = %s%n",
                 reader.getTargetIdentifiers() != null && !reader.getTargetIdentifiers().isEmpty());
         writer.println();
