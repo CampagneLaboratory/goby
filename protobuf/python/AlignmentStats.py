@@ -21,7 +21,7 @@
 import getopt
 import sys
 
-from AlignmentReader import AlignmentReader
+from goby.Alignments import AlignmentReader
 
 verbose = False
 
