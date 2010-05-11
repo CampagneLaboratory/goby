@@ -49,7 +49,7 @@ class AlignmentReader():
             print str(err)
             pass
 
-        # read the header (TODO: support old format?)
+        # read the header
         header_filename = basename + ".header"
         if verbose:
             print "Reading header from", header_filename
@@ -90,7 +90,7 @@ class TooManyHitsReader():
             f = open(tmh_filename, "rb")
             self.tmh.ParseFromString(f.read())
             f.close()
-            
+
             for hit in self.tmh.hits:
                 self.queryindex_to_numhits[hit.query_index] = hit.at_least_number_of_hits
                 if hit.HasField("length_of_match"):
