@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 #
 # Copyright (C) 2010 Institute for Computational Biomedicine,
 #                    Weill Medical College of Cornell University
@@ -32,13 +30,10 @@ class AlignmentReader():
     basename = None
 
     # statistics from this alignment
-    statistics = None
+    statistics = Properties()
 
     # alignment header
     header = Alignments_pb2.AlignmentHeader()
-
-    # too many hits
-    tmh = Alignments_pb2.AlignmentTooManyHits()
 
     def __init__(self, basename, verbose = False):
         # store the basename
@@ -48,19 +43,61 @@ class AlignmentReader():
         stats_filename = basename + ".stats"
         if verbose:
             print "Reading properties from", stats_filename
-
-        self.statistics = Properties()
-        self.statistics.load(open(stats_filename))
+        try:
+            self.statistics.load(open(stats_filename))
+        except IOError, err:
+            print str(err)
+            pass
 
         # read the header (TODO: support old format?)
-        f = gzip.open(basename + ".header", "rb")
+        header_filename = basename + ".header"
+        if verbose:
+            print "Reading header from", header_filename
+        f = gzip.open(header_filename, "rb")
         self.header.ParseFromString(f.read())
         f.close()
 
+    def __str__(self):
+        return self.basename
+
+#
+# Reads "Too Many Hits information from alignments
+# written in the Goby "compact" format
+#
+class TooManyHitsReader():
+    # basename for this alignment
+    basename = None
+
+    # too many hits
+    tmh = Alignments_pb2.AlignmentTooManyHits()
+
+    # query index to number of hits
+    queryindex_to_numhits = dict()
+
+    # query index to depth/length of match.
+    queryindex_to_depth = dict()
+
+    def __init__(self, basename, verbose = False):
+        # store the basename
+        self.basename = basename
+
         # read the "too many hits" info
-        f = open(basename + ".tmh", "rb")
-        self.tmh.ParseFromString(f.read())
-        f.close()
+        tmh_filename = basename + ".tmh"
+        if verbose:
+            print "Reading too many hits info from", tmh_filename
+
+        try:
+            f = open(tmh_filename, "rb")
+            self.tmh.ParseFromString(f.read())
+            f.close()
+            
+            for hit in self.tmh.hits:
+                self.queryindex_to_numhits[hit.query_index] = hit.at_least_number_of_hits
+                if hit.HasField("length_of_match"):
+                    self.queryindex_to_depth[hit.query_index] = hit.length_of_match
+        except IOError, err:
+            print str(err)
+            pass
 
     def __str__(self):
         return self.basename

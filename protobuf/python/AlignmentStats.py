@@ -21,7 +21,7 @@
 import getopt
 import sys
 
-from goby.Alignments import AlignmentReader
+from goby.Alignments import AlignmentReader, TooManyHitsReader
 
 verbose = False
 
@@ -53,25 +53,47 @@ def main():
     basename = args[0]
     print "Compact Alignment basename =", basename
 
-    reader = AlignmentReader(basename, verbose)
-    header = reader.header
+    alignment_reader = AlignmentReader(basename, verbose)
+    header = alignment_reader.header
+
+    tmh_reader = TooManyHitsReader(basename, verbose)
+    tmh = tmh_reader.tmh
 
     print "Info from header:"
     print "Number of target sequences =", header.number_of_targets
-    print "Number of target length entries =", len(header.target_length)
-    print "Min target length =", min(header.target_length)
-    print "Max target length =", max(header.target_length)
-    print "Mean target length =", sum(header.target_length) / len(header.target_length)
+
+    # target length stats
+    target_length = len(header.target_length)
+    if target_length > 0:
+        min_target_length = min(header.target_length)
+        max_target_length = max(header.target_length)
+        mean_target_length =  sum(header.target_length) / target_length
+    else:
+        min_target_length = 0
+        max_target_length = 0
+        mean_target_length = 0
+        
+    print "Number of target length entries =", target_length
+    print "Min target length =", min_target_length
+    print "Max target length =", max_target_length
+    print "Mean target length =", mean_target_length
+    print
 
     print "Number of query sequences =", header.number_of_queries
     print "Number of query length entries =", len(header.query_length)
-#    print "Min query length =", min(header.query_length)
-#    print "Max query length =", max(header.query_length)
-#    print "Mean query length =", sum(header.query_length) / len(header.query_length)
+    if len(header.query_length):
+        print "Min query length =", min(header.query_length)
+        print "Max query length =", max(header.query_length)
+        print "Mean query length =", sum(header.query_length) / len(header.query_length)
 
     print "Constant query lengths =", header.constantQueryLength
     print "Has query identifiers =", len(header.query_name_mapping.mappings) > 0
     print "Has target identifiers =", len(header.target_name_mapping.mappings) > 0
+    print
+
+    print "TMH: aligner threshold =", tmh.alignerThreshold
+    print "TMH: number of ambiguous matches =", len(tmh_reader.queryindex_to_numhits)
+    print "TMH: %ambiguous matches =", len(tmh_reader.queryindex_to_numhits) * 100 / header.number_of_queries
 
 if __name__ == "__main__":
     main()
