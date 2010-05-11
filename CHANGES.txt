@@ -1,4 +1,6 @@
 development -> 1.5.1
+ - Fix bug where compact file stats mode reported that a compact alignment
+   had query identifiers but actually did not
  - Added within-group-variability mode. This mode estimates Fisher P-values
    between pairs of samples taken from a group of homogeneous samples.
    Summary statistics such as average p-value, or minimum p-value are reported
