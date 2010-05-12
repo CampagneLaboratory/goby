@@ -18,6 +18,7 @@
 
 import gzip
 import Alignments_pb2
+from MessageChunksReader import MessageChunksReader
 
 # Java properties - http://pypi.python.org/pypi/pyjavaproperties/
 from pyjavaproperties import Properties
@@ -34,6 +35,9 @@ class AlignmentReader():
 
     # alignment header
     header = Alignments_pb2.AlignmentHeader()
+
+    # reader for the alignment entries
+    entries_reader = None
 
     def __init__(self, basename, verbose = False):
         # store the basename
@@ -56,6 +60,9 @@ class AlignmentReader():
         f = gzip.open(header_filename, "rb")
         self.header.ParseFromString(f.read())
         f.close()
+
+        # open the entries
+        self.entries_reader = MessageReader(basename)
 
     def __str__(self):
         return self.basename
@@ -98,6 +105,28 @@ class TooManyHitsReader():
         except IOError, err:
             print str(err)
             pass
+
+    def __str__(self):
+        return self.basename
+
+#
+# Iterator for alignment collections within the alignment entries 
+#
+class AlignmentCollectionReader(MessageChunksReader):
+    def __init__(self, basename, verbose = False):
+        MessageChunksReader.__init__(self, basename, verbose)
+
+    #
+    # Return next alignment collection from the entries file
+    #
+    def next(self):
+        buf = MessageChunksReader.next(self)
+        collection = Alignments_pb2.AlignmentCollection()
+        collection.ParseFromString(buf)
+        return collection
+
+    def __iter__(self):
+        return self
 
     def __str__(self):
         return self.basename

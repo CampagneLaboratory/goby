@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 #
 # Copyright (C) 2010 Institute for Computational Biomedicine,
 #                    Weill Medical College of Cornell University
@@ -18,76 +16,94 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import getopt
 import os
+import stat
 import struct
-import sys
 import StringIO
 from gzip import GzipFile
 
 import Alignments_pb2
 
+# Python implementation of Java's DataInputStream.readUTF method.
 def read_utf(fd):
-    "Python implementation of Java's DataInputStream.readUTF method."
     length = struct.unpack('>H', fd.read(2))[0]
     return fd.read(length).decode('utf8')
 
+# Python implementation of Java's DataInputStream.readInt method.
 def read_int(fd):
-    "Python implementation of Java's DataInputStream.readInt method."
     return struct.unpack('>I', fd.read(4))[0]
 
-def usage():
-    print "usage:", sys.argv[0], "[-h|--help] [-v|--verbose] <basename>" 
-
-def main():
-    DELIMITER_CONTENT = 0xFF;
-    DELIMITER_LENGTH = 8;
-
+#
+# Class to parse goby "chunked" data
+#
+class MessageChunksReader():
+    # verbose messages
     verbose = False
 
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "hv", ["help", "verbose"])
-    except getopt.GetoptError, err:
-        print str(err)
-        usage()
-        sys.exit(1)
+    # basename for this alignment
+    basename = None
 
-    # Collect options
-    for opt, arg in opts:
-        if opt in ("-h", "--help"):
-            usage()
-            sys.exit()
-        elif opt in ("-v", "--verbose"):
-            verbose = True
-        
-    if len(args) != 1:
-        usage()
-        sys.exit(2)
+    # the name of the entries file for this alignment
+    entries_filename = None
 
-    basename = args[0]
-    if verbose:
-        print "Compact Alignment basename =", basename
+    # the size of the entries file (in bytes)
+    entries_filesize = None
 
-    # read the entries file
-    entries_filename = basename + ".entries"
-    if verbose:
-        print "Reading entries from", entries_filename
-    f = open(entries_filename, "rb")
-    try:
-        collection = Alignments_pb2.AlignmentCollection()
-        num_bytes = None
-        while num_bytes != 0:
-            f.seek(DELIMITER_LENGTH, os.SEEK_CUR)
+    # the current index into the entries file
+    entries_fileindex = None;
+
+    # length of the delimiter tag (in bytes)
+    DELIMITER_LENGTH = 8;
+
+    def __init__(self, basename, verbose = False):
+        self.verbose = verbose
+
+        # store the basename
+        self.basename = basename
+
+        # read the entries file
+        self.entries_filename = basename + ".entries"
+        if self.verbose:
+            print "Reading entries from", self.entries_filename
+
+        self.entries_filesize = os.stat(self.entries_filename)[stat.ST_SIZE]
+        self.entries_fileindex = 0
+
+    #
+    # Return next chunk of bytes from the file
+    #
+    def next(self):
+        # stop iteration if the file index has reached the end of file
+        if self.entries_fileindex >= self.entries_filesize:
+            raise StopIteration
+
+        # open the entries file
+        f = open(self.entries_filename, "rb")
+        try:
+            #  position to point just after the next delimiter
+            self.entries_fileindex += self.DELIMITER_LENGTH
+            if self.verbose:
+                print "seeking to position", self.entries_fileindex
+            f.seek(self.entries_fileindex, os.SEEK_SET)
+
+            # get the number of bytes expected in the next chunk
             num_bytes = read_int(f)
-            if (num_bytes != 0):
+            if self.verbose:
+                print "expecting", num_bytes, "in next chunk"
+
+            # if there are no more bytes, we're done
+            if (num_bytes == 0):
+                raise StopIteration
+            else:
                 buf = f.read(num_bytes)
                 buf = GzipFile("", "rb", 0, StringIO.StringIO(buf)).read()
-                collection.ParseFromString(buf)
-                print collection
-        
-    finally:
-        f.close()
+                return buf
+        finally:
+            self.entries_fileindex = f.tell()
+            f.close()
 
-if __name__ == "__main__":
-    main()
-        
+    def __iter__(self):
+        return self
+
+    def __str__(self):
+        return self.basename
