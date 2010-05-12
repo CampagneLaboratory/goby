@@ -204,7 +204,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
     private void convert(final int loopIndex, final int length, final String inputFilename, final String outputFilename) throws IOException {
         System.out.printf("Converting [%d/%d] %s to %s%n",
-                loopIndex, length, inputFilename, outputFilename);
+                loopIndex + 1, length, inputFilename, outputFilename);
 
         // Create directory for output file if it doesn't already exist
         final String outputPath = FilenameUtils.getFullPath(outputFilename);
@@ -235,7 +235,6 @@ public class FastaToCompactMode extends AbstractGobyMode {
                 writer.appendEntry();
             }
         } finally {
-
             writer.close();
             writer.printStats(System.out);
         }
