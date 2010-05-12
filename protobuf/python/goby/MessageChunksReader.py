@@ -22,6 +22,10 @@ import getopt
 import os
 import struct
 import sys
+import StringIO
+from gzip import GzipFile
+
+import Alignments_pb2
 
 def read_utf(fd):
     "Python implementation of Java's DataInputStream.readUTF method."
@@ -61,7 +65,8 @@ def main():
         sys.exit(2)
 
     basename = args[0]
-    print "Compact Alignment basename =", basename
+    if verbose:
+        print "Compact Alignment basename =", basename
 
     # read the entries file
     entries_filename = basename + ".entries"
@@ -69,13 +74,16 @@ def main():
         print "Reading entries from", entries_filename
     f = open(entries_filename, "rb")
     try:
+        collection = Alignments_pb2.AlignmentCollection()
         num_bytes = None
         while num_bytes != 0:
             f.seek(DELIMITER_LENGTH, os.SEEK_CUR)
             num_bytes = read_int(f)
-            print num_bytes
             if (num_bytes != 0):
-                f.seek(num_bytes, os.SEEK_CUR)
+                buf = f.read(num_bytes)
+                buf = GzipFile("", "rb", 0, StringIO.StringIO(buf)).read()
+                collection.ParseFromString(buf)
+                print collection
         
     finally:
         f.close()
