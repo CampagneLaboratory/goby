@@ -1,11 +1,15 @@
 #!/bin/sh
 
 #
-# Script to submit a SGE job that will run an alignment and
-# merge the results using goby using goby
-#
+# Script to submit a SGE job that will build a reference index,
+# run an alignment and merge the results using goby#
 
-ALIGN=`qsub -terse -N %SGE_JOB_NAME%-align goby-align.qsub`
+# Build the reference index
+INDEX=`qsub -terse goby-index.qsub`
+echo $INDEX
+
+# Run the aligner if the index was built successfully
+ALIGN=`qsub -terse -hold_jid $INDEX -N %SGE_JOB_NAME%-align goby-align.qsub`
 echo $ALIGN
 
 # if the align job is an array job then the id returned
