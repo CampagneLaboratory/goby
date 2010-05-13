@@ -8,6 +8,13 @@
 INDEX=`qsub -terse goby-index.qsub`
 echo $INDEX
 
+# if the index job is an array job then the id returned
+# is of the form N.I-J:K where N is the job id and the
+# I,J,K are the array indices and step value
+# we only care about the job id (N)
+INDEX=${INDEX%%.*}
+echo $INDEX
+
 # Run the aligner if the index was built successfully
 ALIGN=`qsub -terse -hold_jid $INDEX -N %SGE_JOB_NAME%-align goby-align.qsub`
 echo $ALIGN
