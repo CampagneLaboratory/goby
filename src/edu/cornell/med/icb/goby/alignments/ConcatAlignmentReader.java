@@ -103,11 +103,12 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
             } else {
                 this.numberOfTargets = targetNumbers.iterator().nextInt();
             }
-            // they are all the same, use the first one:
+
+            // target information is all the same across each alignment so just use the first one
             targetIdentifiers = readers[0].getTargetIdentifiers();
+            targetLengths = readers[0].getTargetLength();
 
             queryLengths = new int[numberOfQueries];
-
             for (int i = 1; i < queryIndexOffset.length; i++) {
                 final int offset = numQueriesPerReader[i - 1] + queryIndexOffset[i - 1];
                 queryIndexOffset[i] = offset;
@@ -129,6 +130,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
 
     /**
      * Iterator over alignment entries.
+     * @return an iterator over the alignment entries.
      */
     public final Iterator<Alignments.AlignmentEntry> iterator() {
         return this;
@@ -171,9 +173,8 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
         }
     }
 
-
     /**
-     * This operation is not supported.
+     * This operation is not supported by this iterator.
      */
     public void remove() {
         throw new UnsupportedOperationException("Cannot remove from a reader.");

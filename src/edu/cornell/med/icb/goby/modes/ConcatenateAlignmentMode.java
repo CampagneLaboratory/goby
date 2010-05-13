@@ -103,11 +103,11 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        final String outputFilename                 = outputFile;
-        final AlignmentWriter writer                = new AlignmentWriter(outputFilename);
-        final String[] basenames                    = AlignmentReader.getBasenames(inputFilenames);
+        final String outputFilename = outputFile;
+        final AlignmentWriter writer = new AlignmentWriter(outputFilename);
+        final String[] basenames  = AlignmentReader.getBasenames(inputFilenames);
         final ConcatAlignmentReader alignmentReader = new ConcatAlignmentReader(basenames);
-        final ProgressLogger progress               = new ProgressLogger();
+        final ProgressLogger progress = new ProgressLogger();
 
         alignmentReader.setAdjustQueryIndices(adjustQueryIndices);
 
@@ -135,8 +135,14 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         if (alignmentReader.getTargetIdentifiers() != null) {
             writer.setTargetIdentifiers(alignmentReader.getTargetIdentifiers());
         }
+        if (alignmentReader.getTargetLength() != null) {
+            writer.setTargetLengths(alignmentReader.getTargetLength());
+        }
         if (alignmentReader.getQueryIdentifiers() != null) {
             writer.setQueryIdentifiers(alignmentReader.getQueryIdentifiers());
+        }
+        if (alignmentReader.getQueryLengths() != null) {
+            writer.setQueryLengths(alignmentReader.getQueryLengths());
         }
         writer.setStatistics(alignmentReader.getStatistics());
         writer.putStatistic("overall.matched.percent",
