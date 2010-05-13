@@ -24,8 +24,6 @@ import sys
 
 from goby.Alignments import AlignmentReader, TooManyHitsReader
 
-verbose = False
-
 commify_regex = re.compile(r'^(-?\d+)(\d{3})')
 
 #
@@ -46,7 +44,7 @@ def usage():
     print "usage:", sys.argv[0], "[-h|--help] [-v|--verbose] <basename>" 
 
 def main():
-    global verbose
+    verbose = False
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hv", ["help", "verbose"])
@@ -106,7 +104,7 @@ def main():
         query_length =  header.number_of_queries
         min_query_length = header.constantQueryLength
         max_query_length =  header.constantQueryLength
-        mean_query_length =  header.constantQueryLength
+        mean_query_length =  float(header.constantQueryLength)
     else:
         query_length = len(header.query_length)
         if query_length > 0:
@@ -131,6 +129,42 @@ def main():
     print "TMH: aligner threshold = %d" % tmh.alignerThreshold
     print "TMH: number of ambiguous matches = %s" % commify(len(tmh_reader.queryindex_to_numhits))
     print "TMH: %%ambiguous matches = %f %%" % (len(tmh_reader.queryindex_to_numhits) * 100.0 / header.number_of_queries)
+
+    max_query_index = -1
+    max_target_index = -1
+    number_of_entries = 0
+    number_of_logical_alignment_entries = 0
+    total = 0
+    average_score = 0
+    sumNumVariations = 0
+    
+    for entry in alignment_reader:
+        number_of_entries += 1      # Across this file
+        number_of_logical_alignment_entries += entry.multiplicity
+        total += entry.query_aligned_length
+        average_score += entry.score
+        max_query_index = max(max_query_index, entry.query_index)
+        max_target_index = max(max_target_index, entry.target_index)
+        sumNumVariations += len(entry.sequence_variations)
+
+    average_score /= float(number_of_logical_alignment_entries)
+    
+    print "num query indices = %s" % commify(max_query_index + 1)
+    print "num target indices = %s" % commify(max_target_index + 1)
+    print "Number of alignment entries = %s" % commify(number_of_logical_alignment_entries)
+    print "Number of query indices that matched = %s" % "TODO"
+    print "Percent matched = %s" % "TODO"
+    print "Avg query alignment length = %s" % commify(total / float(number_of_entries))
+    print "Avg score alignment = %d" % average_score
+    print "Avg number of variations per query sequence = %s" % "TODO"
+    print "Average bytes per entry = %s" % "TODO"
+    print
+
+    print "Total number of files processed = %s" % "TODO"
+    print "Total number of reads = %s" % "TODO"
+    print "Min read length = %s" % "TODO"
+    print "Max read length = %s" % "TODO"
+    print "Avg read length = %s" % "TODO"
 
 if __name__ == "__main__":
     main()

@@ -31,7 +31,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Reads alignments too many hits data structure written with AlignmentTooManyHitsWriter.
+ * Reads alignments too many hits data structure written with
+ * {@link edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsWriter}.
  *
  * @author Fabien Campagne
  *         Date: Apr 30, 2009
@@ -110,11 +111,12 @@ public class AlignmentTooManyHitsReader {
     }
 
     /**
-     * Returns the length of match that resulted in the number of occurence againt the specific reference sequence(s) this
-     * alignment was produced against.
+     * Returns the length of match that resulted in the number of occurence againt the specific
+     * reference sequence(s) this alignment was produced against.
      *
      * @param queryIndex The index of the query sequence.
-     * @return The length of the longest match between the query and the reference sequence(s) that yielded the number of hits.
+     * @return The length of the longest match between the query and the reference sequence(s)
+     * that yielded the number of hits.
      */
     public final int getLengthOfMatch(final int queryIndex) {
         return queryIndex2Depth.get(queryIndex);

@@ -48,7 +48,7 @@ public abstract class AbstractAlignmentReader implements Closeable,
     protected int numberOfQueries;
 
     /**
-     * Length of each query sequence, or null when constantQueryLengths is true.
+     * Length of each query sequence, or null when {@link #constantQueryLengths} is true.
      */
     protected int[] queryLengths;
 
@@ -66,7 +66,7 @@ public abstract class AbstractAlignmentReader implements Closeable,
     protected int numberOfTargets;
 
     /**
-     * Length of each target sequence, or null when constantQueryLengths==true.
+     * Length of each target sequence.
      */
     protected int[] targetLengths;
 
@@ -74,36 +74,26 @@ public abstract class AbstractAlignmentReader implements Closeable,
      * Indicates that the alignment header has been processed.
      */
     private boolean headerLoaded;
+
     /**
      * True if all the query sequences have the same lengths.
      */
     protected boolean constantQueryLengths;
+
     /**
-     * The length of all the query sequences. Only valid if constantQueryLengths==true.
+     * The length of all the query sequences. Only valid if {@link #constantQueryLengths} is true.
      */
     protected int constantLength;
 
-    /**
-     * Get the number of query sequences represented in this alignment.
-     * @return The number of query sequences in this alignment
-     */
     public int getNumberOfQueries() {
         assert isHeaderLoaded() : "Header must be loaded to access number of queries";
         return Math.max(numberOfQueries, 0);
     }
 
-    /**
-     * Determine whether or not the alignment header informaton has been processed.
-     * @return true if the header has been loaded
-     */
     protected boolean isHeaderLoaded() {
         return this.headerLoaded;
     }
 
-    /**
-     * Indicate whether or not the alignment header informaton has been processed.
-     * @param headerLoaded whether or not the header has been loaded
-     */
     protected void setHeaderLoaded(final boolean headerLoaded) {
         this.headerLoaded = headerLoaded;
     }
@@ -137,10 +127,6 @@ public abstract class AbstractAlignmentReader implements Closeable,
         return targetIdentifiers;
     }
 
-    /**
-     * Get the number of target sequences used in this alignment.
-     * @return The number of target sequences in this alignment
-     */
     public int getNumberOfTargets() {
         assert isHeaderLoaded() : "Header must be loaded to access number of targets";
         return Math.max(0, numberOfTargets);
@@ -149,7 +135,6 @@ public abstract class AbstractAlignmentReader implements Closeable,
     /**
      * Returns query lengths. An array of size the number of query sequences, where each element
      * indicates the length of the query sequence.
-     * @return an array of target lengths
      */
     public final int[] getQueryLengths() {
         assert isHeaderLoaded() : "Header must be loaded to access query lengths";
@@ -167,8 +152,6 @@ public abstract class AbstractAlignmentReader implements Closeable,
 
     /**
      * Returns the length of a query.
-     * @param queryIndex Index of the query sequence.
-     * @return Length of the specified query sequence.
      */
     public final int getQueryLength(final int queryIndex) {
         assert isHeaderLoaded() : "Header must be loaded to access query lengths";
@@ -195,9 +178,8 @@ public abstract class AbstractAlignmentReader implements Closeable,
 
 
     /**
-     * Returns target lengths. An array of size the number of target sequences, where each
-     * element indicates the length of the target sequence.
-     * @return an array of target lengths
+     * Returns target lengths. An array of size the number of query sequences, where each element
+     * indicates the length of the query sequence.
      */
     public final int[] getTargetLength() {
         assert isHeaderLoaded() : "Header must be loaded to access target lengths";
