@@ -59,7 +59,9 @@ public class AlignMode extends AbstractGobyMode {
     /**
      * Set quality filter parameters programmatically.
      *
-     * @param qualityFilterParams String of the form threshold=<double>, see edu.cornell.med.icb.goby.alignments.filters.AlignmentQualityFilter for syntax of optional parameters.
+     * @param qualityFilterParams String of the form threshold=<double>, see
+     * {@link edu.cornell.med.icb.goby.alignments.filters.AlignmentQualityFilter} for syntax
+     * of optional parameters.
      */
     public void setQualityFilterParameters(final String qualityFilterParams) {
         this.qualityFilterParameters = qualityFilterParams;
