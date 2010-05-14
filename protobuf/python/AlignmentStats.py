@@ -137,6 +137,8 @@ def main():
     total = 0
     average_score = 0.0
     number_of_variations = 0
+
+    aligned_query_indices = set(tmh_reader.queryindex_to_numhits.keys())
     
     for entry in alignment_reader:
         number_of_entries += 1      # Across this file
@@ -146,6 +148,7 @@ def main():
         max_query_index = max(max_query_index, entry.query_index)
         max_target_index = max(max_target_index, entry.target_index)
         number_of_variations += len(entry.sequence_variations)
+        aligned_query_indices.add(entry.query_index)
 
     number_of_query_sequences = max_query_index + 1
     number_of_target_sequences = max_target_index + 1
@@ -154,20 +157,13 @@ def main():
     print "num query indices = %s" % commify(number_of_query_sequences)
     print "num target indices = %s" % commify(number_of_target_sequences)
     print "Number of alignment entries = %s" % commify(number_of_logical_alignment_entries)
-    print "Number of query indices that matched = %s" % "TODO"
-    print "Percent matched = %s" % "TODO"
+    print "Number of query indices that matched = %s" % commify(len(aligned_query_indices))
+    print "Percent matched = %s %%" % commify(len(aligned_query_indices) * 100.0 / number_of_query_sequences)
     print "Avg query alignment length = %s" % commify(total / float(number_of_entries))
     print "Avg score alignment = %s" % commify(average_score)
     print "Avg number of variations per query sequence = %s" % commify(number_of_variations / float(number_of_query_sequences))
-    print "Average bytes per entry = %s" % "TODO"
+    print "Average bytes per entry = %s" % commify(alignment_reader.entries_reader.entries_filesize / float(number_of_logical_alignment_entries))
     print
-
-    print "Total number of files processed = %s" % "TODO"
-    print "Total number of reads = %s" % "TODO"
-    print "Min read length = %s" % "TODO"
-    print "Max read length = %s" % "TODO"
-    print "Avg read length = %s" % "TODO"
 
 if __name__ == "__main__":
     main()
-        
