@@ -33,6 +33,13 @@
             <help>The basename of the output counts.</help>
         </flaggedOption>
         <flaggedOption>
+            <id>weights</id>
+            <shortFlag>w</shortFlag>
+            <longFlag>weights</longFlag>
+            <required>false</required>
+            <help>The weights filename. This file can be created with the heptamer-frequencies mode. When provided, the output will contain counts reweighted to correct for heptamer bias (see Hansen KD et al. NAR 2010).</help>
+        </flaggedOption>
+        <flaggedOption>
             <id>groups</id>
             <shortFlag>g</shortFlag>
             <longFlag>groups</longFlag>
