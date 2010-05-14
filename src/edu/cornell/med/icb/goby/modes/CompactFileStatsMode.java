@@ -287,7 +287,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         writer.printf("Number of query indices that matched = %,d%n", alignedQueryIndices.size());
         writer.printf("Percent matched = %4.1f %% %n",
                 (double) alignedQueryIndices.size() / (double) (long) numQuerySequences * 100.0d);
-        writer.printf("Avg query alignment length = %,d%n", numEntries > 0 ? total / numEntries : -1);
+        writer.printf("Avg query alignment length = %,f%n",
+                numEntries > 0 ? divide(total, numEntries) : -1);
         writer.printf("Avg score alignment = %f%n", avgScore);
         writer.printf("Avg number of variations per query sequence = %3.2f %n",
                 avgNumVariationsPerQuery);
@@ -308,7 +309,6 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             writer.printf("TMH: %%ambiguous matches = %f %%%n", (tmhReader.getQueryIndices().size() * 100f) / numReads);
         } catch (IOException e) {
             writer.println("Cannot read TMH file for basename " + basename);
-
         }
     }
 
