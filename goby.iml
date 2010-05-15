@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module relativePaths="true" type="JAVA_MODULE" version="4">
-  <component name="FacetManager">
-    <facet type="Python" name="Python">
-      <configuration sdkName="" />
-    </facet>
-  </component>
   <component name="NewModuleRootManager" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/classes" />
     <output-test url="file://$MODULE_DIR$/test-classes" />
@@ -24,15 +19,6 @@
       <library>
         <CLASSES>
           <root url="file://$MODULE_DIR$/src" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/goby-spi.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -77,17 +63,6 @@
         <JAVADOC />
         <SOURCES>
           <root url="jar://$MODULE_DIR$/../../java/commons-io-1.4-src.zip!/commons-io-1.4-src/src/java" />
-        </SOURCES>
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/commons-lang-2.4.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../java/commons-lang-2.4-src.zip!/commons-lang-2.4-src/src/java" />
         </SOURCES>
       </library>
     </orderEntry>
@@ -163,9 +138,7 @@
           <root url="jar://$MODULE_DIR$/lib/log4j-1.2.15.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../java/apache-log4j-1.2.15.zip!/apache-log4j-1.2.15/src/main/java" />
-        </SOURCES>
+        <SOURCES />
       </library>
     </orderEntry>
     <orderEntry type="module-library">
@@ -249,7 +222,7 @@
         <JAVADOC />
         <SOURCES>
           <root url="file://$MODULE_DIR$/../rJava/src" />
-          <root url="file://$MODULE_DIR$/../../../../../Program Files (x86)/R/R-2.10.1/library/rJava/jri/examples" />
+          <root url="file:///../Program Files (x86)/R/R-2.10.1/library/rJava/jri/examples" />
         </SOURCES>
       </library>
     </orderEntry>
@@ -260,7 +233,7 @@
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="file://$MODULE_DIR$/../../../../../cygwin/home/marko/protobuf-2.3.0/java/src/main/java" />
+          <root url="file:///../cygwin/home/marko/protobuf-2.3.0/java/src/main/java" />
         </SOURCES>
       </library>
     </orderEntry>
@@ -278,12 +251,19 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/commons-lang-2.5.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/commons-math-2.1.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../java/commons-math-2.1-src.zip!/commons-math-2.1-src/src/main/java" />
-        </SOURCES>
+        <SOURCES />
       </library>
     </orderEntry>
   </component>

@@ -158,7 +158,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
     }
 
     /**
-     * Perform the conversion fasta -> compact-reads on one or more files.
+     * Reformat compact reads.
      * @throws IOException
      */
     @Override
@@ -244,11 +244,14 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
                     writer.setSequence(sequence);
                 } else {
                     writer.setSequence("");
+
                 }
 
                 if (entry.hasQualityScores()) {
                     writer.setQualityScores(entry.getQualityScores().toByteArray());
                 }
+                // Important: preserve the read index in the input entry:
+            //    writer.appendEntry(entry.getReadIndex());
                 writer.appendEntry();
                 entriesInOutputFile++;
 
