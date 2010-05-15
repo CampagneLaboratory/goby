@@ -1,4 +1,6 @@
-development -> 1.5.1
+development -> 1.6
+ - First draft of the Goby Python API and demonstration tools (see directory
+   protobuf/python).
  - Fix bug where compact file stats mode reported that a compact alignment
    had query identifiers but actually did not
  - Added within-group-variability mode. This mode estimates Fisher P-values
@@ -17,6 +19,8 @@ development -> 1.5.1
    is set for a label it cannot be changed.
  - CompactFileStatsMode now supports an optional -o to write the output
    to a file. If not specified the output will be written to stdout.
+ - Reformat reads now preserve read indices from the input file.
+   This is necessary when using concat alignment with --adjust-query-indice false
 
 1.5
  - Added a mode to calculate counts and perform differential expression
