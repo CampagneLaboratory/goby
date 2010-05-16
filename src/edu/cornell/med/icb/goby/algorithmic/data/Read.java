@@ -25,9 +25,18 @@ public class Read {
     public final int start;
     public final int end;
 
+
+
+    /**
+     *
+     * @param start Start position of the alignment entry.
+     * @param end  End position of the alignment entry on the reference sequence.
+
+     */
     public Read(final int start, final int end) {
         this.start = start;
         this.end = end;
+
     }
 
     public static final class ReadSortByStart implements Comparator<Read>, Serializable {

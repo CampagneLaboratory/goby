@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2009-2010 Institute for Computational Biomedicine,
- *                         Weill Medical College of Cornell University
+ * Copyright (C) 2010 Institute for Computational Biomedicine,
+ *                    Weill Medical College of Cornell University
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,62 +18,60 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import edu.cornell.med.icb.goby.algorithmic.data.Read;
+import edu.cornell.med.icb.goby.algorithmic.data.ReadWithIndex;
 import edu.cornell.med.icb.goby.counts.CountsWriter;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.ints.IntSortedSet;
+import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Map;
 
 /**
  * Data structure and algorithm to compute base-level read coverage histogram over a reference sequence.
  */
-public class ComputeCount implements AbstractCount {
+public class ComputeWeightCount implements AbstractCount {
     /**
      * Used to log debug and informational messages.
      */
-    private static final Log LOG = LogFactory.getLog(ComputeCount.class);
+    private static final Log LOG = LogFactory.getLog(ComputeWeightCount.class);
 
     /**
-     * Number of reads that start ON or BEFORE this position.
+     * Cumulative weights of reads that start ON or BEFORE this position.
      */
-    protected final Int2IntMap starts;
+    protected final Int2DoubleMap starts;
     /**
-     * Number of reads that end BEFORE position.
+     * Cumulative weights of reads that end BEFORE position.
      */
-    protected final Int2IntMap ends;
+    protected final Int2DoubleMap ends;
     protected final IntList startKeys;
     protected final IntList endKeys;
     /**
-     * Used to store bases count in memory.
+     * Used to store the weight of each base in memory.
      */
-    protected final Int2IntMap countPerBase;
+    protected final Int2FloatMap countPerBase;
     /**
      * Sorted keys of countPerBase.
      */
     protected final IntList countKeys;
 
-
+    protected int fixedLength;
+    protected boolean isFixedLength;
     protected boolean startPopulateInitialized;
+    private FloatArrayList weights;
 
-    public ComputeCount() {
+    public ComputeWeightCount(FloatArrayList weights) {
         super();
         startKeys = new IntArrayList();
         endKeys = new IntArrayList();
-        starts = new Int2IntOpenHashMap();
-        ends = new Int2IntOpenHashMap();
-
-        countPerBase = new Int2IntOpenHashMap();
+        starts = new Int2DoubleOpenHashMap();
+        ends = new Int2DoubleOpenHashMap();
+        fixedLength = -1;   // not fixed Length
+        countPerBase = new Int2FloatOpenHashMap();
         countKeys = new IntArrayList();
+        this.weights = weights;
     }
 
     /**
@@ -95,13 +93,14 @@ public class ComputeCount implements AbstractCount {
      *
      * @param reads
      */
-    public final void populate(final ObjectList<Read> reads) {
+    public final void populate(final ObjectList<ReadWithIndex> reads) {
         startPopulating();
 
-        for (final Read read : reads) {
+        fixedLength = reads.get(0).end - reads.get(0).start; //first read length
+        for (final ReadWithIndex read : reads) {
             final int startIndex = read.start;
             final int endIndex = read.end;
-            populate(startIndex, endIndex);
+            populate(startIndex, endIndex, read.readIndex);
         }
     }
 
@@ -110,16 +109,19 @@ public class ComputeCount implements AbstractCount {
      *
      * @param startIndex Start position of the read ON or BEFORE the startIndex on the reference sequence.
      * @param endIndex   End position of the read BEFORE the endIndex on the reference sequence.
+     * @param readIndex  index of the read for the alignment entry being processed.
      * @return length of the read.
      */
-    public int populate(final int startIndex, final int endIndex) {
+    public double populate(final int startIndex, final int endIndex, int readIndex) {
         assert startPopulateInitialized : "You must call startPopulating before you can populate.";
 
-        int sval = starts.get(startIndex);
-        starts.put(startIndex, ++sval);
+        double sval = starts.get(startIndex);
+        sval += weights.get(readIndex);
+        starts.put(startIndex, sval);
 
-        int eval = ends.get(endIndex + 1);
-        ends.put(endIndex + 1, ++eval);
+        double eval = ends.get(endIndex + 1);
+        eval += weights.get(readIndex);
+        ends.put(endIndex + 1, eval);
 
         return endIndex - startIndex;
     }
@@ -130,7 +132,7 @@ public class ComputeCount implements AbstractCount {
      * @param position position along the reference sequence.
      * @return Cumulative start count.
      */
-    protected final int getNumberOfReadsWithStartAt(final int position) {
+    protected final double getNumberOfReadsWithStartAt(final int position) {
         return starts.get(position);
     }
 
@@ -141,7 +143,7 @@ public class ComputeCount implements AbstractCount {
      * @param position position along the reference sequence.
      * @return The cumulative end count.
      */
-    protected final int getNumberOfReadsWithEndAt(final int position) {
+    protected final double getNumberOfReadsWithEndAt(final int position) {
         return ends.get(position + 1);
     }
 
@@ -171,18 +173,18 @@ public class ComputeCount implements AbstractCount {
      * @param map
      * @param mapKeys
      */
-    public final void accumulateOneMap(final Int2IntMap map, final IntList mapKeys) {
-        int prevValue = 0;
+    public final void accumulateOneMap(final Int2DoubleMap map, final IntList mapKeys) {
+        double prevValue = 0;
         for (final int key : mapKeys) {
-            final int value = map.get(key);
-            final int newValue = prevValue + value;
+            final double value = map.get(key);
+            final double newValue = prevValue + value;
             map.put(key, newValue);
             prevValue = newValue;
         }
     }
 
     /**
-     * Calculate base counts. Stores the result in the countPerBase and countKey maps.
+     * Calculate reweighted base counts. Stores the result in the countPerBase and countKey maps.
      */
     public void baseCount() {
         final IntSortedSet joints = new IntAVLTreeSet();
@@ -190,11 +192,11 @@ public class ComputeCount implements AbstractCount {
         joints.addAll(ends.keySet());
         LOG.debug("joints  " + joints);
         final int[] jointsArray = joints.toArray(new int[joints.size()]);
-        int prevCount = 0;
-        int count;
+        double prevCount = 0;
+        double count;
         LOG.debug("counting");
-        int startValue = starts.get(0);
-        int endValue = ends.get(0);
+        double startValue = starts.get(0);
+        double endValue = ends.get(0);
         for (int i = 1; i < jointsArray.length; i++) {
             final int curKey = jointsArray[i];
             if (starts.containsKey(curKey)) {
@@ -205,20 +207,12 @@ public class ComputeCount implements AbstractCount {
             }
             count = startValue - endValue;
             if (count != prevCount) {
-                countPerBase.put(curKey, count);
+                countPerBase.put(curKey, (float)count);
                 prevCount = count;
             }
         }
         countKeys.addAll(countPerBase.keySet());
         Collections.sort(countKeys);
-    }
-
-    public Map getCountPerBase() {
-        return countPerBase;
-    }
-
-    public IntList getCountKeys() {
-        return countKeys;
     }
 
     /**
@@ -230,13 +224,13 @@ public class ComputeCount implements AbstractCount {
         joints.addAll(ends.keySet());
 
         final int[] jointsArray = joints.toArray(new int[joints.size()]);
-        int prevCount = 0;
+        double prevCount = 0;
         int lengthConstant = 0;
-        int count;
+        double count;
         int line = 0;
         LOG.debug("counting");
-        int startValue = starts.get(0);
-        int endValue = ends.get(0);
+        double startValue = starts.get(0);
+        double endValue = ends.get(0);
         for (int i = 1; i < jointsArray.length; i++) {
             if (line % 1000000 == 0) {
                 LOG.debug("line " + line);
@@ -253,7 +247,7 @@ public class ComputeCount implements AbstractCount {
             count = startValue - endValue;
             lengthConstant += curKey - prevKey;
             if (count != prevCount) {
-                writer.appendCount(prevCount, lengthConstant);
+                writer.appendCount((int)Math.round(prevCount), lengthConstant);
                 prevCount = count;
                 lengthConstant = 0;
             }
@@ -264,10 +258,11 @@ public class ComputeCount implements AbstractCount {
 
     /**
      * Returns the total number of counts on the reference sequence.
+     *
      * @return the number of counts on the reference
      */
     public int totalCountOnReference() {
-        return starts.get(startKeys.getInt(startKeys.size() - 1));
+        return (int)Math.round(starts.get(startKeys.getInt(startKeys.size() - 1)));
     }
 
     /**
@@ -279,6 +274,15 @@ public class ComputeCount implements AbstractCount {
      */
 
     public void populate(final int startPosition, final int endPosition, final boolean forwardStrand) {
-        populate(startPosition, endPosition);
+       throw new UnsupportedOperationException("This implementation does not support strand specific populate.");
+    }
+
+    public Int2FloatMap getCountPerBase() {
+        return countPerBase;
+    }
+
+    public IntList getCountKeys() {
+
+        return countKeys;
     }
 }

@@ -25,11 +25,12 @@ import org.junit.Test;
 import java.io.IOException;
 
 /**
- * Created by IntelliJ IDEA.
- * User: xutao
+ * TODO this class tests nothing, it just prints whatever result the computation produces.
+ * 
+ * @author  Xutao Deng
  * Date: May 17, 2009
  * Time: 1:02:50 AM
- * To change this template use File | Settings | File Templates.
+ *
  */
 public class TestAnnotationCount {
     private AnnotationCount annotationCount;
@@ -51,8 +52,8 @@ public class TestAnnotationCount {
         final int[] trueCount = {0, 0, 0, 2, 2, 3, 3, 3, 3, 3, 3, 2, 2, 0, 0, 0};
         annotationCount.getBaseCounter().accumulate();
         annotationCount.getBaseCounter().baseCount(); // final algorithm for base count without writer
-        System.out.println("count perbase" + annotationCount.getBaseCounter().countPerBase);
-        System.out.println("count keys " + annotationCount.getBaseCounter().countKeys);
+        System.out.println("count perbase" + annotationCount.getBaseCounter().getCountPerBase());
+        System.out.println("count keys " + annotationCount.getBaseCounter().getCountKeys());
         for (int i = 0; i <= 15; i++) {
             for (int j = 0; j <= 15; j++) {
                 float sum = 0;
@@ -60,7 +61,8 @@ public class TestAnnotationCount {
                     sum += trueCount[p];
                 }
                 final float expDepth = sum == 0 ? 0 : sum / (j - i + 1);
-                assertEquals(expDepth, annotationCount.averageReadsPerPosition(i, j), 0.01);
+                float actual=annotationCount.averageReadsPerPosition(i, j);
+                assertEquals(expDepth, actual, 0.01);
             }
         }
     }

@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2009-2010 Institute for Computational Biomedicine,
- *                         Weill Medical College of Cornell University
+ * Copyright (C) 2010 Institute for Computational Biomedicine,
+ *                    Weill Medical College of Cornell University
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,38 +20,60 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Read;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import edu.cornell.med.icb.goby.algorithmic.data.ReadWithIndex;
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
+import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.Collections;
 
-public class AnnotationCount {
-    private final ObjectList<Read> reads;
+/**
+ * Calculates annotation counts with count reweighting.
+ * This class was copied from AnnotationCount and adapted to use ReadWithIndex and ComputeWeightCount.
+ */
+public class AnnotationWeightCount {
+    private final ObjectList<ReadWithIndex> reads;
     private final IntList readStart;
-    private final ComputeCount baseCounter;
+    private final ComputeWeightCount baseCounter;
+    private FloatArrayList weights;
 
-    public AnnotationCount() {
+    /**
+     * Constructor.
+     *
+     * @param weights An array whose indices are read indices and elements are weights corresponding to each read.
+     */
+    public AnnotationWeightCount(FloatArrayList weights) {
         super();
-        baseCounter = new ComputeCount();
+        baseCounter = new ComputeWeightCount(weights);
         readStart = new IntArrayList();
-        reads = new ObjectArrayList<Read>();
+        reads = new ObjectArrayList<ReadWithIndex>();
+        this.weights = weights;
     }
 
+    /**
+     * Return the AbstractCount implementation used.
+     *
+     * @return
+     */
     public AbstractCount getBaseCounter() {
         return baseCounter;
     }
 
-    public final void populate(final int startPosition, final int endPosition) {
-        final Read read = new Read(startPosition, endPosition);
+    /**
+     * Populate data structure for a specific alignemnt observation.
+     *
+     * @param startPosition position where the read starts to aligns on the reference.
+     * @param endPosition   position where the read stops to aligns on the reference.
+     * @param readIndex     index of the read in the compact reads file used as input.
+     */
+    public final void populate(final int startPosition, final int endPosition, final int readIndex) {
+        final ReadWithIndex read = new ReadWithIndex(startPosition, endPosition, readIndex);
         reads.add(read);
         readStart.add(startPosition);
-        baseCounter.populate(startPosition, endPosition);
+        baseCounter.populate(startPosition, endPosition, readIndex);
     }
 
     public void sortReads() {
@@ -60,7 +82,7 @@ public class AnnotationCount {
     }
 
     /**
-     * For hasmap map with keylist key, find the key for index.
+     * For hasmap map with keylist key, find the index for the searchKey.
      * if index is in map, return the key, otherwise return the key immediately less than index
      *
      * @param searchKey the key to look for
@@ -68,7 +90,7 @@ public class AnnotationCount {
      * @return the index on the keyList for the searchKey postion or immediate previous one
      */
     public final int getIndex(final int searchKey, final IntList keyList) {
-        //  if (map.containsKey(index)) return index;
+
         final int x = Collections.binarySearch(keyList, searchKey); //fails to find index returns position+1
         int index = x < 0 ? -x - 2 : x; //the true index to
         index = (index < 0) ? 0 : index;
@@ -76,14 +98,14 @@ public class AnnotationCount {
     }
 
     /**
-     * Returns the value at index at the map either starts or ends.
+     * Returns the reweightedCount at index in a starts or ends map.
      *
      * @param searchKey the position on chromosome to get value
      * @param keyList   e.g. startKeys or endKeys
-     * @param map       e.g. starts or ends
+     * @param map       e.g. starts or ends map
      * @return the count on position index on chromosome
      */
-    public final int getValue(final int searchKey, final IntList keyList, final Int2IntMap map) {
+    public final double getValue(final int searchKey, final IntList keyList, final Int2DoubleMap map) {
         if (map.containsKey(searchKey)) {
             return map.get(searchKey);
         }
@@ -96,89 +118,82 @@ public class AnnotationCount {
      * requires baseRun to generate the countPerBase hashmap
      *
      * @param start of a segment
-     * @param end of a segment
+     * @param end   of a segment
      * @return average count per base on this segment
      */
     public final float averageReadsPerPosition(final int start, final int end) {
-        long sum = 0;
+        double sum = 0;
 
         final int startIndex = getIndex(start, baseCounter.countKeys);
         final int startKey = baseCounter.countKeys.get(startIndex);
-        final int startCount = baseCounter.countPerBase.get(startKey);
+        final float startCount = baseCounter.countPerBase.get(startKey);
 
         //    System.out.println("start   "+start +"  start index   "+startIndex +"   start Key   "+startKey);
-        final long startOverCountArea = (start - startKey) * startCount;
+        final double startOverCountArea = (start - startKey) * startCount;
 
         final int maxIndex = baseCounter.countKeys.size() - 1;
         int endIndex = maxIndex;
         int index = startIndex;
         while (index < maxIndex) {
             final int key = baseCounter.countKeys.get(index);
-            final int count = baseCounter.countPerBase.get(key);
+            final float count = baseCounter.countPerBase.get(key);
             final int nextKey = baseCounter.countKeys.get(index + 1);
             //      System.out.println(key+"    nextkey "+nextKey+" count   "+count);
             if (nextKey > end) {
                 endIndex = index;
                 break;
             }
-            final long recArea = count * (nextKey - key);
+            final double recArea = count * (nextKey - key);
             sum += recArea;
             index++;
         }
 
         final int endKey = baseCounter.countKeys.get(endIndex);
-        final int endCount = baseCounter.countPerBase.get(endKey);
-        final long endUnderCountArea = (end - endKey + 1) * endCount;
-        //    System.out.println("sum "+sum+" startOver   "+startOverCountArea+"  endUnder    "+endUnderCountArea);
+        final double endCount = baseCounter.countPerBase.get(endKey);
+        final double endUnderCountArea = (end - endKey + 1) * endCount;
         sum = sum - startOverCountArea + endUnderCountArea;
 
         final int segmentSize = end - start + 1;
-        //     System.out.println("new sum "+sum+" segsize "+segmentSize);
+
         if (end < start) {
             return 0;
         } else {
-           return ((float)sum) / ((float)segmentSize);
+            return ((float) sum) / ((float) segmentSize);
         }
     }
 
     /**
-     * Return the number of reads that map within exons of an annotation, excluding intron counts.
+     * Return the sum of weights for reads that map within exons of an annotation, excluding intron counts.
      *
-     * @param annot an annotation
-    * @return number of reads covered on the genes except all reads exclusively in introns
+     * @param annot an annotation, which defines exons (segments) and introns (regions between contiguous segments).
+     * @return the sum of weights for reads that map within exons of an annotation, excluding reads that map completely within introns.
      */
-    public int geneExpressionCount(final Annotation annot) {
-        int sum = countReadsPartiallyOverlappingWithInterval(annot.getStart(), annot.getEnd());
+    public double geneExpressionCount(final Annotation annot) {
+        double sum = countReadsPartiallyOverlappingWithInterval(annot.getStart(), annot.getEnd());
         final int numIntrons = annot.getSegments().size() - 1;
         for (int k = 0; k < numIntrons; k++) {
-            sum -= countReadsStriclyWithinInterval(annot.getSegments().get(k).getEnd() + 1, annot.getSegments().get(k + 1).getStart() - 1);
+            sum -= countReadsStriclyWithinInterval(annot.getSegments().get(k).getEnd() + 1,
+                    annot.getSegments().get(k + 1).getStart() - 1);
         }
-        return sum;
+        return (float) sum;
     }
-     public float geneReweightedExpressionCount(Annotation annot, FloatArrayList weights) {
-        int sum = countReadsPartiallyOverlappingWithInterval(annot.getStart(), annot.getEnd());
-        final int numIntrons = annot.getSegments().size() - 1;
-        for (int k = 0; k < numIntrons; k++) {
-            sum -= countReadsStriclyWithinInterval(annot.getSegments().get(k).getEnd() + 1, annot.getSegments().get(k + 1).getStart() - 1);
-        }
-        return sum;
-    }
+
     /**
-     * Returns the number of reads completely contained within an interval of the reference sequence.
+     * Returns the sum of weights for reads completely contained within an interval of the reference sequence.
      *
      * @param start position
      * @param end   position
-     * @return the number of reads
+     * @return the sum of weights for the reads that satisfy the criteria.
      */
-    public int countReadsStriclyWithinInterval(final int start, final int end) {
+    public double countReadsStriclyWithinInterval(final int start, final int end) {
         final int n = reads.size();
         int i = getIndex(start, readStart);
-        int count = 0;
+        double count = 0;
 
         while (i < n) {
-            final Read read = reads.get(i);
+            final ReadWithIndex read = reads.get(i);
             if (read.start >= start && read.end <= end) {
-                count++;
+                count += weights.get(read.readIndex);
             } else if (read.start > end) {
                 break;
             }
@@ -188,7 +203,6 @@ public class AnnotationCount {
     }
 
 
-
     /**
      * Returns the number of reads that partially overlap  with the given annotation interval.
      *
@@ -196,7 +210,7 @@ public class AnnotationCount {
      * @param end   position
      * @return the number of reads
      */
-    public int countReadsPartiallyOverlappingWithInterval(final int start, final int end) {
+    public double countReadsPartiallyOverlappingWithInterval(final int start, final int end) {
         return getValue(end, baseCounter.startKeys, baseCounter.starts)
                 - getValue(start, baseCounter.endKeys, baseCounter.ends);
     }
