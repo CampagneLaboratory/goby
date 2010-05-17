@@ -98,7 +98,8 @@ public class ReadsWriter implements Closeable {
      * @throws IOException  If an error occurs while writting the file. 
      */
     public synchronized void appendEntry() throws IOException {
-        appendEntry(readIndex++);
+        appendEntry(readIndex);
+        readIndex++;
     }
 
     /**
