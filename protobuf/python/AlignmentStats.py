@@ -19,26 +19,10 @@
 #
 
 import getopt
-import re
 import sys
 
 from goby.Alignments import AlignmentReader, TooManyHitsReader
-
-commify_regex = re.compile(r'^(-?\d+)(\d{3})')
-
-#
-# commify(num, separator) ->  string
-#
-# Return a string representing the number num with separator inserted
-# for every power of 1000.   Separator defaults to a comma.
-# E.g., commify(1234567) ->  '1,234,567'
-#
-def commify(num, separator=','):
-    num = str(num)  # just in case we were passed a numeric value
-    more_to_do = 1
-    while more_to_do:
-        (num, more_to_do) = commify_regex.subn(r'\1%s\2' % separator,num)
-    return num
+from goby.utils import commify
 
 def usage():
     print "usage:", sys.argv[0], "[-h|--help] [-v|--verbose] <basename>" 
