@@ -26,10 +26,10 @@ import com.martiansoftware.jsap.Switch;
 import com.martiansoftware.jsap.stringparsers.FileStringParser;
 import edu.cornell.med.icb.goby.modes.CompactToFastaMode;
 import edu.cornell.med.icb.parsers.FastaParser;
-import it.unimi.dsi.fastutil.chars.Char2IntArrayMap;
-import it.unimi.dsi.fastutil.chars.Char2IntMap;
-import it.unimi.dsi.fastutil.chars.Char2ObjectArrayMap;
-import it.unimi.dsi.fastutil.chars.Char2ObjectMap;
+import it.unimi.dsi.fastutil.chars.*;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2CharArrayMap;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -56,30 +56,10 @@ import java.util.zip.GZIPInputStream;
  */
 public final class ColorSpaceConverter {
     private static final Char2ObjectMap<Char2IntMap> CONVERSION_MAP;
+    private static final Int2ObjectMap<Int2CharArrayMap> DECODING_MAP;
     public static final int UNKNOWN = 7;
-
-    /**
-     * Private constructor for utility class.
-     */
-    private ColorSpaceConverter() {
-        super();
-    }
-
-    private static void push(final String s, final int colorCode) {
-        final char firstBase = s.charAt(0);
-        final char secondBase = s.charAt(1);
-        CONVERSION_MAP.get(firstBase).put(secondBase, colorCode);
-    }
-
-    private static int getColorCode(final char firstBase, final char secondBase) {
-        final Char2IntMap intMap = CONVERSION_MAP.get(firstBase);
-        if (intMap == null) {
-            return UNKNOWN;
-        }
-        return intMap.get(secondBase);
-    }
-
-    static {
+    public static final char UNKNOWN_BASE = 'N';
+     static {
         CONVERSION_MAP = new Char2ObjectArrayMap<Char2IntMap>();
         CONVERSION_MAP.put('A', new Char2IntArrayMap());
         CONVERSION_MAP.put('C', new Char2IntArrayMap());
@@ -89,7 +69,18 @@ public final class ColorSpaceConverter {
         for (final Char2IntMap map : CONVERSION_MAP.values()) {
             map.defaultReturnValue(UNKNOWN);
         }
+        DECODING_MAP = new Int2ObjectArrayMap<Int2CharArrayMap>();
+        DECODING_MAP.put(0, new Int2CharArrayMap());
+        DECODING_MAP.put(1, new Int2CharArrayMap());
+        DECODING_MAP.put(2, new Int2CharArrayMap());
+        DECODING_MAP.put(3, new Int2CharArrayMap());
+        DECODING_MAP.put(4, new Int2CharArrayMap());
+        DECODING_MAP.put(5, new Int2CharArrayMap());
+        DECODING_MAP.put(6, new Int2CharArrayMap());
 
+        for (final Int2CharArrayMap map : DECODING_MAP.values()) {
+            map.defaultReturnValue(UNKNOWN_BASE);
+        }
         push("AA", 0);
         push("CC", 0);
         push("GG", 0);
@@ -115,7 +106,44 @@ public final class ColorSpaceConverter {
         push("NG", 5);
         push("NT", 5);
         push("NN", 6);
+
+
+
     }
+    /**
+     * Private constructor for utility class.
+     */
+    private ColorSpaceConverter() {
+        super();
+    }
+
+    private static void push(final String s, final int colorCode) {
+        final char firstBase = s.charAt(0);
+        final char secondBase = s.charAt(1);
+        CONVERSION_MAP.get(firstBase).put(secondBase, colorCode);
+        DECODING_MAP.get(colorCode).put(firstBase, secondBase);
+    }
+
+    /**
+     * Return the base corresponding to the previous base and color code transition.
+     *
+     * @param previousBase Base in sequence space at the previous position.
+     * @param colorCode    Transition in color space.
+     * @return
+     */
+    public static char decodeColor(final char previousBase, final char colorCode) {
+        return DECODING_MAP.get(colorCode).get(previousBase);
+    }
+
+    private static int getColorCode(final char firstBase, final char secondBase) {
+        final Char2IntMap intMap = CONVERSION_MAP.get(firstBase);
+        if (intMap == null) {
+            return UNKNOWN;
+        }
+        return intMap.get(secondBase);
+    }
+
+
 
     /**
      * Converts a sequence into the equivalent sequence in color space.
@@ -232,7 +260,6 @@ public final class ColorSpaceConverter {
         if (verbose) {
             System.out.println("Reading sequence from: " + sequenceFile);
         }
-
 
 
         // extract the title to use for the output header
