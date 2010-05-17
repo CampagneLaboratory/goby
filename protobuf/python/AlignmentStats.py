@@ -49,7 +49,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hv", ["help", "verbose"])
     except getopt.GetoptError, err:
-        print str(err)
+        print >> sys.stderr, str(err)
         usage()
         sys.exit(1)
 
