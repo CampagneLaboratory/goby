@@ -161,4 +161,4 @@ development -> 1.6
   tracks created from Goby count data.  (Mantis issue #1349)
 
 1.0
-- First release.
+- First public release.
