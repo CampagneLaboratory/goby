@@ -25,12 +25,18 @@
             <longFlag>output</longFlag>
             <required>false</required>
             <help>The quality statistics in tab delimited format.</help>
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
         </flaggedOption>
-
         <unflaggedOption>
             <id>input</id>
             <required>true</required>
+            <greedy>true</greedy>
             <help>The compact reads file to read as input.</help>
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
         </unflaggedOption>
         <flaggedOption>
             <id>format</id>

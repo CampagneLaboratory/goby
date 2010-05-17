@@ -33,7 +33,11 @@ import org.apache.commons.io.IOUtils;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.File;
 import java.util.Collections;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Arrays;
 
 /**
  * Evaluate statistics for read qualities.
@@ -55,12 +59,12 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
     /**
      * The output file.
      */
-    private String outputFilename;
+    private File outputFile;
 
     /**
      * The basename of the compact read files.
      */
-    private String[] filenames;
+    private final List<File> inputFiles = new LinkedList<File>();
     private final double sampleFraction = .01;
 
 
@@ -78,7 +82,7 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
         TSV,
     }
 
-    private OutputFormat outputFormat;
+    private OutputFormat outputFormat = OutputFormat.TSV;
 
     /**
      * Configure.
@@ -94,12 +98,46 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
             throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
-        filenames = jsapResult.getStringArray("input");
-        outputFilename = jsapResult.getString("output");
+        final File[] inputFilesArray = jsapResult.getFileArray("input");
+        inputFiles.addAll(Arrays.asList(inputFilesArray));
+        outputFile = jsapResult.getFile("output");
         outputFormat = OutputFormat.valueOf(jsapResult.getString("format").toUpperCase());
         return this;
     }
 
+    /**
+     * Get the list of files (reads/alignments) to process.
+     *
+     * @return The list of files.
+     */
+    public List<File> getInputFiles() {
+        return inputFiles;
+    }
+
+    /**
+     * Add the specified file to the list of files to process.
+     *
+     * @param inputFile The file to process
+     */
+    public void addInputFile(final File inputFile) {
+        inputFiles.add(inputFile);
+    }
+
+    /**
+     * Get the output file
+     * @return the output file
+     */
+    public File getOutputFile() {
+        return outputFile;
+    }
+
+    /**
+     * Set the output file
+     * @param outputFile the output file
+     */
+    public void setOutputFile(final File outputFile) {
+        this.outputFile = outputFile;
+    }
 
     /**
      * Display the alignments as text files.
@@ -110,14 +148,14 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
     public void execute() throws IOException {
         PrintWriter writer = null;
         try {
-            writer = outputFilename == null ? new PrintWriter(System.out)
-                    : new PrintWriter(new FileWriter(outputFilename));
+            writer = outputFile == null ? new PrintWriter(System.out)
+                    : new PrintWriter(new FileWriter(outputFile));
             final Int2ObjectMap<ReadQualityStats> qualityStats = new Int2ObjectOpenHashMap<ReadQualityStats>();
 
             writer.write("basename\treadIndex\t25%-percentile\tmedian\taverageQuality\t75%-percentile\n");
-            for (final String filename : filenames) {
+            for (final File filename : inputFiles) {
                 final ReadsReader reader = new ReadsReader(filename);
-                final String basename = ReadsReader.getBasename(filename);
+                final String basename = ReadsReader.getBasename(filename.toString());
                 for (final Reads.ReadEntry entry : reader) {
 
                     final ByteString qualityScores = entry.getQualityScores();
