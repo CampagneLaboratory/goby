@@ -25,15 +25,11 @@ import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
 import it.unimi.dsi.fastutil.io.BinIO;
 import it.unimi.dsi.fastutil.shorts.ShortList;
 import it.unimi.dsi.fastutil.shorts.ShortArrayList;
 import it.unimi.dsi.fastutil.shorts.Short2FloatMap;
 import it.unimi.dsi.fastutil.shorts.Short2FloatOpenHashMap;
-import it.unimi.dsi.fastutil.floats.FloatList;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
@@ -75,6 +71,7 @@ public class HeptamerFrequenciesMode extends AbstractGobyMode {
     private String weightFilename;
     private int[] heptamerTotalCounts;
     private ShortList readIndexToHeptamerIndex = new ShortArrayList();
+    private String mapFilename;
 
 
     public String getModeName() {
@@ -102,6 +99,7 @@ public class HeptamerFrequenciesMode extends AbstractGobyMode {
         inputFilenames = jsapResult.getStringArray("input");
         outputFilename = jsapResult.getString("output");
         weightFilename = jsapResult.getString("weights");
+        mapFilename = jsapResult.getString("map");
 
 
         return this;
@@ -129,19 +127,19 @@ public class HeptamerFrequenciesMode extends AbstractGobyMode {
                     // if (count++ > 1000000) break;
                     int item = 0;
 
-                    for (int readIndex : readIndices) {
-                        int recodedReadIndex = recodeReadIndex(sequence, readIndex);
+                    for (int positionInRead : readIndices) {
+                        int recodedReadIndex = recodeReadIndex(sequence, positionInRead);
 
                         final int end = recodedReadIndex - 1 + heptamerLength;
                         final int start = recodedReadIndex - 1;
-                        //     System.out.printf("%d %d %d %d%n", readIndex,sequence.length(),start, end );
+                        //     System.out.printf("%d %d %d %d%n", positionInRead,sequence.length(),start, end );
                         final MutableString heptamer = sequence.substring(start, end);
 
                         if (heptamer.indexOf('N') == -1) {
                             // heptamers that include any number of Ns are ignored.
                             short heptamerIndex = (short) heptamerToIndices.registerIdentifier(heptamer);
-                            accumulateFrequency(heptamerIndex, readIndex, item, readIndices.length);
-                            if (readIndex == 1) {
+                            accumulateFrequency(heptamerIndex, positionInRead, item, readIndices.length);
+                            if (positionInRead == 1) {
                                 // this is the heptamer that starts at position 1 of the read,
                                 // associate this read index to the heptamer index:
                                 int compactReadIndex = readEntry.getReadIndex();
@@ -216,7 +214,7 @@ public class HeptamerFrequenciesMode extends AbstractGobyMode {
                 weights.set(readIndex, heptamerIndex == -1 ? 1 : heptamerIndexToWeight.get(heptamerIndex));
             }
 
-            BinIO.storeObject(weights, "read-index-to-heptamer-weights.bin");
+            BinIO.storeObject(weights, mapFilename);
         }
 
 
