@@ -106,10 +106,8 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         final String outputFilename = outputFile;
         final AlignmentWriter writer = new AlignmentWriter(outputFilename);
         final String[] basenames  = AlignmentReader.getBasenames(inputFilenames);
-        final ConcatAlignmentReader alignmentReader = new ConcatAlignmentReader(basenames);
+        final ConcatAlignmentReader alignmentReader = new ConcatAlignmentReader(adjustQueryIndices, basenames);
         final ProgressLogger progress = new ProgressLogger();
-
-        alignmentReader.setAdjustQueryIndices(adjustQueryIndices);
 
         int entriesInOutputFile = 0;
         long numLogicalEntries  = 0;

@@ -132,6 +132,9 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
     @Override
     public void execute() throws IOException {
         final String[] basenames = AlignmentReader.getBasenames(inputFiles);
+        /**
+         * TODO: Determine of adjustQueryIndices should be the default of true.
+         */
         final ConcatAlignmentReader reader = new ConcatAlignmentReader(basenames);
         reader.readHeader();
         final int numberOfReferences = reader.getNumberOfTargets();

@@ -53,12 +53,27 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
      * Construct an alignment reader over a set of alignments.
      * Please note that the constructor access the header of each individual alignment to
      * check reference sequence identity and obtain the number of queries in each input alignment.
+     * This version uses adjustQueryIndices as the default true.
      *
      * @param basenames Basenames of the individual alignemnts to combine.
      * @throws IOException If an error occurs reading the header of the alignments.
      */
     public ConcatAlignmentReader(final String... basenames) throws IOException {
+        this(true, basenames);
+    }
+
+    /**
+     * Construct an alignment reader over a set of alignments.
+     * Please note that the constructor access the header of each individual alignment to
+     * check reference sequence identity and obtain the number of queries in each input alignment.
+     *
+     * @param adjustQueryIndices if we need to adjustQueryIndices
+     * @param basenames Basenames of the individual alignemnts to combine.
+     * @throws IOException If an error occurs reading the header of the alignments.
+     */
+    public ConcatAlignmentReader(final boolean adjustQueryIndices, final String... basenames) throws IOException {
         super();
+        this.adjustQueryIndices = adjustQueryIndices;
         readers = new AlignmentReader[basenames.length];
         readersWithMoreEntries = new IntArraySet();
         int readerIndex = 0;
