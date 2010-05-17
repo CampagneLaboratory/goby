@@ -82,7 +82,7 @@ def main():
     # write the actual alignment information
     for entry in reader:
         # use the query name if we have it
-# TODO
+# TODO - write the query name
 #        if header.query_name_mapping:
 #            query_id = header.query_name_mapping[entry.query_index].name
 #        else:
@@ -91,8 +91,6 @@ def main():
         target_id = header.target_name_mapping.mappings[entry.target_index].name
         target_length = header.target_length[entry.target_index]
         writer.writerow([query_id, target_id, target_length, entry.number_of_indels, entry.number_of_mismatches, entry.score, entry.position, entry.query_aligned_length, entry.matching_reverse_strand])
-
-    writer.close()
 
 if __name__ == "__main__":
     main()

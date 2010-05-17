@@ -136,7 +136,7 @@ class TooManyHitsReader():
 #
 class AlignmentCollectionReader(MessageChunksReader):
     def __init__(self, basename, verbose = False):
-        MessageChunksReader.__init__(self, basename, verbose)
+        MessageChunksReader.__init__(self, basename + ".entries", verbose)
 
     #
     # Return next alignment collection from the entries file

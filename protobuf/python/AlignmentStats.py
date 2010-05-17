@@ -162,7 +162,7 @@ def main():
     print "Avg query alignment length = %s" % commify(total / float(number_of_entries))
     print "Avg score alignment = %s" % commify(average_score)
     print "Avg number of variations per query sequence = %s" % commify(number_of_variations / float(number_of_query_sequences))
-    print "Average bytes per entry = %s" % commify(alignment_reader.entries_reader.entries_filesize / float(number_of_logical_alignment_entries))
+    print "Average bytes per entry = %s" % commify(alignment_reader.entries_reader.filesize / float(number_of_logical_alignment_entries))
     print
 
 if __name__ == "__main__":

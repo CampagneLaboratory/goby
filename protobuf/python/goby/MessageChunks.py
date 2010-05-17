@@ -22,8 +22,6 @@ import struct
 import StringIO
 from gzip import GzipFile
 
-import Alignments_pb2
-
 # Python implementation of Java's DataInputStream.readUTF method.
 def read_utf(fd):
     length = struct.unpack('>H', fd.read(2))[0]
@@ -34,57 +32,51 @@ def read_int(fd):
     return struct.unpack('>I', fd.read(4))[0]
 
 #
-# Class to parse goby "chunked" data
+# Class to parse a file that contains goby "chunked" data
 #
 class MessageChunksReader():
     # verbose messages
     verbose = False
 
-    # basename for this alignment
-    basename = None
+    # the name of the chunked file
+    filename = None
 
-    # the name of the entries file for this alignment
-    entries_filename = None
+    # the size of the chunked file (in bytes)
+    filesize = None
 
-    # the size of the entries file (in bytes)
-    entries_filesize = None
-
-    # the current index into the entries file
-    entries_fileindex = None;
+    # the current index into the chunked file
+    fileindex = None;
 
     # length of the delimiter tag (in bytes)
     DELIMITER_LENGTH = 8;
 
-    def __init__(self, basename, verbose = False):
+    def __init__(self, filename, verbose = False):
         self.verbose = verbose
 
-        # store the basename
-        self.basename = basename
-
         # read the entries file
-        self.entries_filename = basename + ".entries"
+        self.filename = filename
         if self.verbose:
-            print "Reading entries from", self.entries_filename
+            print "Reading data from", self.filename
 
-        self.entries_filesize = os.stat(self.entries_filename)[stat.ST_SIZE]
-        self.entries_fileindex = 0
+        self.filesize = os.stat(self.filename)[stat.ST_SIZE]
+        self.fileindex = 0
 
     #
     # Return next chunk of bytes from the file
     #
     def next(self):
         # stop iteration if the file index has reached the end of file
-        if self.entries_fileindex >= self.entries_filesize:
+        if self.fileindex >= self.filesize:
             raise StopIteration
 
         # open the entries file
-        f = open(self.entries_filename, "rb")
+        f = open(self.filename, "rb")
         try:
             #  position to point just after the next delimiter
-            self.entries_fileindex += self.DELIMITER_LENGTH
+            self.fileindex += self.DELIMITER_LENGTH
             if self.verbose:
-                print "seeking to position", self.entries_fileindex
-            f.seek(self.entries_fileindex, os.SEEK_SET)
+                print "seeking to position", self.fileindex
+            f.seek(self.fileindex, os.SEEK_SET)
 
             # get the number of bytes expected in the next chunk
             num_bytes = read_int(f)
@@ -99,11 +91,11 @@ class MessageChunksReader():
                 buf = GzipFile("", "rb", 0, StringIO.StringIO(buf)).read()
                 return buf
         finally:
-            self.entries_fileindex = f.tell()
+            self.fileindex = f.tell()
             f.close()
 
     def __iter__(self):
         return self
 
     def __str__(self):
-        return self.basename
+        return self.filename
