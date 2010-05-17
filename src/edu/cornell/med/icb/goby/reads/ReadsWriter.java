@@ -98,8 +98,7 @@ public class ReadsWriter implements Closeable {
      * @throws IOException  If an error occurs while writting the file. 
      */
     public synchronized void appendEntry() throws IOException {
-        appendEntry(readIndex);
-        readIndex++;
+        appendEntry(readIndex++);
     }
 
     /**
@@ -112,8 +111,9 @@ public class ReadsWriter implements Closeable {
         final Reads.ReadEntry.Builder entryBuilder = Reads.ReadEntry.newBuilder();
 
         entryBuilder.setReadIndex(readIndex);
+
         // set current read index to enable interleaving calls to appendEntry(readIndex)/appendEntry().
-        this.readIndex=readIndex;
+        this.readIndex = readIndex;
 
         if (description != null) {
             entryBuilder.setDescription(description.toString());

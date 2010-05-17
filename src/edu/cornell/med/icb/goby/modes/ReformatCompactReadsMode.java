@@ -251,8 +251,8 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
                     writer.setQualityScores(entry.getQualityScores().toByteArray());
                 }
                 // Important: preserve the read index in the input entry:
-            //    writer.appendEntry(entry.getReadIndex());
-                writer.appendEntry();
+                writer.appendEntry(entry.getReadIndex());
+                //writer.appendEntry();
                 entriesInOutputFile++;
 
                 if (entriesInOutputFile > sequencePerOutput) {
