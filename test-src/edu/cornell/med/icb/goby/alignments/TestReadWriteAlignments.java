@@ -25,9 +25,13 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -211,7 +215,5 @@ public class TestReadWriteAlignments {
         assertTrue("query length must be constant", reader.isConstantQueryLengths());
         assertArrayEquals("Query lengths do not match", queryLengths, reader.getQueryLengths());
         assertEquals("Number of queries do not match", 3, reader.getNumberOfQueries());
-
-
-          }
+    }
 }

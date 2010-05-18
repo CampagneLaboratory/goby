@@ -38,14 +38,22 @@ public class OverlapResult {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
-        OverlapResult that = (OverlapResult) o;
+        final OverlapResult that = (OverlapResult) o;
 
-        if (length != that.length) return false;
-        if (start != that.start) return false;
+        if (length != that.length) {
+            return false;
+        }
+        if (start != that.start) {
+            return false;
+        }
 
         return true;
     }

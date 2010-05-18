@@ -18,21 +18,21 @@
 
 package edu.cornell.med.icb.goby.util.barcode;
 
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import edu.cornell.med.icb.goby.readers.FastXEntry;
+import edu.cornell.med.icb.goby.readers.FastXReader;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.lang.MutableString;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.io.IOUtils;
-import it.unimi.dsi.lang.MutableString;
-import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Random;
-
-import edu.cornell.med.icb.goby.readers.FastXReader;
-import edu.cornell.med.icb.goby.readers.FastXEntry;
 
 /**
  * Describe class here.
@@ -43,9 +43,9 @@ public class TestPostBarcodeMatcher {
     /** Logging. */
     private static final Log LOG = LogFactory.getLog(TestPostBarcodeMatcher.class);
 
-    private final static Random rnd = new Random(System.currentTimeMillis());
+    private static final Random rnd = new Random(System.currentTimeMillis());
 
-    public final static char[] ACGT = new char[] {'A', 'C', 'G', 'T'};
+    public static final char[] ACGT = new char[] {'A', 'C', 'G', 'T'};
 
     public static String SPACES = null;
 
@@ -66,7 +66,7 @@ public class TestPostBarcodeMatcher {
 
     @Test
     public void testNumDifferences() {
-        PostBarcodeMatcher matcher = new PostBarcodeMatcher(null, 0, 100);
+        final PostBarcodeMatcher matcher = new PostBarcodeMatcher(null, 0, 100);
         assertEquals(3, matcher.numDifferences(new MutableString("ABC"), new MutableString("123"), 0, 0, 3));
         assertEquals(0, matcher.numDifferences(new MutableString("ABC"), new MutableString("ABC"), 0, 0, 3));
         assertEquals(1, matcher.numDifferences(new MutableString("ABC"), new MutableString("BBC"), 0, 0, 3));
@@ -87,14 +87,14 @@ public class TestPostBarcodeMatcher {
 
     @Test
     public void testNumDifferencesStartLength() {
-        PostBarcodeMatcher matcher = new PostBarcodeMatcher(null, 0, 100);
+        final PostBarcodeMatcher matcher = new PostBarcodeMatcher(null, 0, 100);
         assertEquals(0, matcher.numDifferences(new MutableString("DEFABC"), new MutableString("ABC"), 3, 0, 3));
         assertEquals(1, matcher.numDifferences(new MutableString("ABC"), new MutableString("ACCDEF"), 0, 0, 3));
     }
 
     @Test
     public void testNumDifferences2() {
-        PostBarcodeMatcher matcher = new PostBarcodeMatcher(null, 0, 100);
+        final PostBarcodeMatcher matcher = new PostBarcodeMatcher(null, 0, 100);
         // Perfect match when considering 5
         assertEquals(0, matcher.numDifferences(m("ABCDEFGHIJKL"), m("HIJKLMNOPQRS"), 7, 0, 5));
         // Almost perfect match, just the X is different
@@ -107,7 +107,7 @@ public class TestPostBarcodeMatcher {
 
     @Test
     public void testBestMatch() {
-        PostBarcodeMatcher matcher = new PostBarcodeMatcher(null, 0, 100);
+        final PostBarcodeMatcher matcher = new PostBarcodeMatcher(null, 0, 100);
         assertEquals(new BarcodeMatcherResult(new HashMap<String, Object>() {{
                     put("barcodeIndex", 1);
                     put("numberOfDiffs", 3);
@@ -138,7 +138,7 @@ public class TestPostBarcodeMatcher {
 
     @Test
     public void testOverlapPortion() {
-        PostBarcodeMatcher matcher = new PostBarcodeMatcher(null, 0, 100);
+        final PostBarcodeMatcher matcher = new PostBarcodeMatcher(null, 0, 100);
         assertEquals(new OverlapResult(0, 3), matcher.overlapPortion(m("ABC"), m("123")));
         assertEquals(new OverlapResult(0, 6), matcher.overlapPortion(m("ABCDEF"), m("CDEFGHIJKL")));
         assertEquals(new OverlapResult(4, 6), matcher.overlapPortion(m("ABCDEFEFGH"), m("DGFGHI")));
@@ -147,7 +147,7 @@ public class TestPostBarcodeMatcher {
     @Test
     public void testMatchBarcodes() throws IOException {
         final long time = System.currentTimeMillis();
-        PostBarcodeMatcher matcher = new PostBarcodeMatcher(TEST_BARCODES, 5, 2);
+        final PostBarcodeMatcher matcher = new PostBarcodeMatcher(TEST_BARCODES, 5, 2);
 
         int i = 0;
         int numMatches = 0;
@@ -155,9 +155,9 @@ public class TestPostBarcodeMatcher {
         int numNoMatches = 0;
         for (final FastXEntry entry :
                 new FastXReader("test-data/barcode/post-test.fa")) {
-            BarcodeMatcherResult bestMatch = matcher.matchSequence(entry.getSequence());
+            final BarcodeMatcherResult bestMatch = matcher.matchSequence(entry.getSequence());
             if (bestMatch != null) {
-                int[] result = parseTestHeader(entry.getEntryHeader());
+                final int[] result = parseTestHeader(entry.getEntryHeader());
                 final int sequenceLength = result[0];
                 final int barcodeLen = result[1];
                 final int whichBarcodeIndex = result[2];
@@ -194,13 +194,13 @@ public class TestPostBarcodeMatcher {
         }
         LOG.info(String.format("Num matches = %d, Num Ambiguous = %d, Num no matches = %d",
                 numMatches, numAmbiguous, numNoMatches));
-        long duration = (System.currentTimeMillis() - time) / 1000;
+        final long duration = (System.currentTimeMillis() - time) / 1000;
         LOG.info(String.format("Time to parse 8 million reads %d seconds", duration));
     }
 
     public static int[] parseTestHeader(final MutableString testHeader) {
-        String[] parts = testHeader.toString().split(":");
-        int[] result = new int[parts.length];
+        final String[] parts = testHeader.toString().split(":");
+        final int[] result = new int[parts.length];
         for (int i = 0; i < parts.length; i++) {
             result[i] = Integer.parseInt(parts[i]);
         }
@@ -217,9 +217,9 @@ public class TestPostBarcodeMatcher {
             final int randomSpan = maxBarcodeLen - minBarcodeLen + 1;
             final int totalSequenceLength = maxBarcodeLen + 5;
             for (int i = 0; i < 200; i++) {
-                int barcodeLen = rnd.nextInt(randomSpan) + minBarcodeLen;
-                int sequenceLength = totalSequenceLength - barcodeLen;
-                int whichBarcodeIndex = rnd.nextInt(TEST_BARCODES.length);
+                final int barcodeLen = rnd.nextInt(randomSpan) + minBarcodeLen;
+                final int sequenceLength = totalSequenceLength - barcodeLen;
+                final int whichBarcodeIndex = rnd.nextInt(TEST_BARCODES.length);
                 out.printf(">%d:%d:%d%n", sequenceLength, barcodeLen, whichBarcodeIndex);
                 for (int j = 0; j < sequenceLength; j++) {
                     out.print(ACGT[rnd.nextInt(ACGT.length)]);
@@ -236,7 +236,7 @@ public class TestPostBarcodeMatcher {
         if (numDiffs == 0) {
             return barcode;
         }
-        IntList perturbLocations = new IntArrayList(numDiffs);
+        final IntList perturbLocations = new IntArrayList(numDiffs);
         for (int i = 0; i < numDiffs; i++) {
             while (true) {
                 final int position = rnd.nextInt(barcode.length());
@@ -246,7 +246,7 @@ public class TestPostBarcodeMatcher {
                 }
             }
         }
-        for (int perturbLocation : perturbLocations) {
+        for (final int perturbLocation : perturbLocations) {
             while (true) {
                 final char newChar = TestPostBarcodeMatcher.ACGT[rnd.nextInt(TestPostBarcodeMatcher.ACGT.length)];
                 if (barcode.charAt(perturbLocation) != newChar) {
@@ -258,9 +258,9 @@ public class TestPostBarcodeMatcher {
         return barcode;
     }
 
-    public synchronized static String spaces(int num) {
+    public static synchronized String spaces(final int num) {
         if (SPACES == null) {
-            StringBuffer sb = new StringBuffer();
+            final StringBuffer sb = new StringBuffer();
             for (int i = 0; i < 2048; i++) {
                 sb.append(' ');
             }

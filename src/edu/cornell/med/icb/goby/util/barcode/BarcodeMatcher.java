@@ -18,9 +18,9 @@
 
 package edu.cornell.med.icb.goby.util.barcode;
 
-import it.unimi.dsi.lang.MutableString;
-import it.unimi.dsi.fastutil.ints.Int2LongMap;
 import it.unimi.dsi.fastutil.ints.Int2LongLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2LongMap;
+import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -52,7 +52,7 @@ public abstract class BarcodeMatcher {
      * @param barcodeLength the length of the barcode (not including the adapter)
      * @param allowedMismatches the number of allowed mismatches when matching to be acceptable
      */
-    public void init(final String[] barcodesStrArray, final int barcodeLength, int allowedMismatches) {
+    public void init(final String[] barcodesStrArray, final int barcodeLength, final int allowedMismatches) {
         if (barcodesStrArray != null) {
             barcodes = new MutableString[barcodesStrArray.length];
             for (int i = 0; i < barcodesStrArray.length; i++) {
@@ -104,7 +104,7 @@ public abstract class BarcodeMatcher {
         if (numAtBestMatch > 1) {
             bestMatch.setAmbiguous(true);
         }
-        int bestBarcodeNum = bestMatch.getBarcodeIndex();
+        final int bestBarcodeNum = bestMatch.getBarcodeIndex();
         barcodeIndexToHitsMap.put(bestBarcodeNum, barcodeIndexToHitsMap.get(bestBarcodeNum) + 1);
         return bestMatch;
     }

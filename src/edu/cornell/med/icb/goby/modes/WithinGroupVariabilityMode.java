@@ -20,17 +20,26 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.stats.*;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCount;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCount;
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.stats.AverageFisherRCalculator;
+import edu.cornell.med.icb.goby.stats.BullardUpperQuartileNormalization;
+import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
+import edu.cornell.med.icb.goby.stats.DifferentialExpressionResults;
+import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
+import edu.cornell.med.icb.goby.stats.NormalizationMethod;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import it.unimi.dsi.fastutil.objects.*;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -39,7 +48,6 @@ import org.apache.commons.logging.LogFactory;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.BufferedWriter;
 import java.util.Arrays;
 
 /**
@@ -81,7 +89,7 @@ public class WithinGroupVariabilityMode extends AbstractGobyMode {
      */
     private ObjectArraySet<NormalizationMethod> normalizationMethods;
     private ObjectOpenHashSet<String> includeAnnotationTypes;
-    private boolean transcripts = false;
+    private final boolean transcripts = false;
 
     @Override
     public String getModeName() {
@@ -166,8 +174,8 @@ public class WithinGroupVariabilityMode extends AbstractGobyMode {
 
 
         // each sample belongs to its own group:
-        for (String sample : basenames) {
-            String basename = AlignmentReader.getBasename(FilenameUtils.getBaseName(sample));
+        for (final String sample : basenames) {
+            final String basename = AlignmentReader.getBasename(FilenameUtils.getBaseName(sample));
             deCalculator.defineGroup(basename);
             deCalculator.associateSampleToGroup(basename, basename);
 
@@ -196,21 +204,21 @@ public class WithinGroupVariabilityMode extends AbstractGobyMode {
 
             results = null;
 
-            NormalizationMethod method = new BullardUpperQuartileNormalization();
+            final NormalizationMethod method = new BullardUpperQuartileNormalization();
 
 
             // evaluate differences between samples:
             int i = 0, j = 0;
-            boolean done[][] = new boolean[basenames.length][basenames.length];
+            final boolean[][] done = new boolean[basenames.length][basenames.length];
 
             for (i=0;i<basenames.length; i++) {
                 for (j=0; j<basenames.length; j++) {
                     if (i != j && !done[i][j]) {
-                        String sample1=basenames[i];
-                        String sample2=basenames[j];
+                        final String sample1=basenames[i];
+                        final String sample2=basenames[j];
                         // consider each pair of samples only once:
-                        String basename1 = AlignmentReader.getBasename(FilenameUtils.getBaseName(sample1));
-                        String basename2 = AlignmentReader.getBasename(FilenameUtils.getBaseName(sample2));
+                        final String basename1 = AlignmentReader.getBasename(FilenameUtils.getBaseName(sample1));
+                        final String basename2 = AlignmentReader.getBasename(FilenameUtils.getBaseName(sample2));
                         method.normalize(deCalculator, basename1, basename2);
                         results = deCalculator.compare(results, method, new FisherExactRCalculator(), basename1, basename2);
                         done[i][j] = true;
@@ -238,7 +246,7 @@ public class WithinGroupVariabilityMode extends AbstractGobyMode {
     private boolean filterByReferenceNames;
     private ObjectSet<String> includeReferenceNames;
 
-    private void processOneBasename(Object2ObjectMap<String, ObjectList<Annotation>> allAnnots, final String inputBasename) throws IOException {
+    private void processOneBasename(final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots, final String inputBasename) throws IOException {
         final AlignmentReader reader = new AlignmentReader(inputBasename);
         reader.readHeader();
         final int numberOfReferences = reader.getNumberOfTargets();

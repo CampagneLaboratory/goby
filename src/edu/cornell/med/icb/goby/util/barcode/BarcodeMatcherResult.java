@@ -18,14 +18,13 @@
 
 package edu.cornell.med.icb.goby.util.barcode;
 
+import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.lang.reflect.Field;
-
-import it.unimi.dsi.lang.MutableString;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A match from a BarcodeMatcher.
@@ -59,11 +58,11 @@ class BarcodeMatcherResult {
 
     private static Map<String, Field> FIELDS_MAP = null;
 
-    public synchronized static void ensureFieldsMap() {
+    public static synchronized void ensureFieldsMap() {
         if (FIELDS_MAP != null) {
             return;
         }
-        Field[] fields = BarcodeMatcherResult.class.getDeclaredFields();
+        final Field[] fields = BarcodeMatcherResult.class.getDeclaredFields();
         FIELDS_MAP = new HashMap<String, Field>(fields.length);
         for (final Field field : fields) {
             FIELDS_MAP.put(field.getName(), field);
@@ -79,7 +78,7 @@ class BarcodeMatcherResult {
      */
     public BarcodeMatcherResult(final Map<String, Object> init) {
         ensureFieldsMap();
-        for (Map.Entry<String, Object> entry : init.entrySet()) {
+        for (final Map.Entry<String, Object> entry : init.entrySet()) {
             try {
                 final Object value = entry.getValue();
                 if (value == null) {
@@ -127,7 +126,7 @@ class BarcodeMatcherResult {
         return ambiguous;
     }
 
-    public void setAmbiguous(boolean ambiguous) {
+    public void setAmbiguous(final boolean ambiguous) {
         this.ambiguous = ambiguous;
     }
 
@@ -150,19 +149,37 @@ class BarcodeMatcherResult {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
-        BarcodeMatcherResult that = (BarcodeMatcherResult) o;
+        final BarcodeMatcherResult that = (BarcodeMatcherResult) o;
 
-        if (ambiguous != that.ambiguous) return false;
-        if (barcodeIndex != that.barcodeIndex) return false;
-        if (barcodeMatchLength != that.barcodeMatchLength) return false;
-        if (barcodeStartPosition != that.barcodeStartPosition) return false;
-        if (numberOfDiffs != that.numberOfDiffs) return false;
-        if (sequenceLength != that.sequenceLength) return false;
-        if (sequenceStartPosition != that.sequenceStartPosition) return false;
+        if (ambiguous != that.ambiguous) {
+            return false;
+        }
+        if (barcodeIndex != that.barcodeIndex) {
+            return false;
+        }
+        if (barcodeMatchLength != that.barcodeMatchLength) {
+            return false;
+        }
+        if (barcodeStartPosition != that.barcodeStartPosition) {
+            return false;
+        }
+        if (numberOfDiffs != that.numberOfDiffs) {
+            return false;
+        }
+        if (sequenceLength != that.sequenceLength) {
+            return false;
+        }
+        if (sequenceStartPosition != that.sequenceStartPosition) {
+            return false;
+        }
 
         return true;
     }

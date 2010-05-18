@@ -18,7 +18,6 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.lang.MutableString;
 
@@ -62,9 +61,9 @@ public class AverageFisherRCalculator extends StatisticCalculator {
 
         double averagePValue = 0;
         double minPValue = Double.MAX_VALUE;
-        IntList statIndices = results.statisticsIndexesFor("fisher-exact-R", method);
+        final IntList statIndices = results.statisticsIndexesFor("fisher-exact-R", method);
 
-        for (int index : statIndices) {
+        for (final int index : statIndices) {
             final double pValue = results.getStatistic(info, index);
             averagePValue += pValue;
             minPValue = Math.min(minPValue, pValue);

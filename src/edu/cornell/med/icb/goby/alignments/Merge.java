@@ -224,7 +224,7 @@ public class Merge {
                     // with this specific query/read.
                 }
                 if (((wrote + skipped) % 1000000) == 0) {
-                    printStatus((int) wrote + skipped, wrote, skipped, skippedTooManyHits, skippedNotBestScore);
+                    printStatus(wrote + skipped, wrote, skipped, skippedTooManyHits, skippedNotBestScore);
                 }
 
             }

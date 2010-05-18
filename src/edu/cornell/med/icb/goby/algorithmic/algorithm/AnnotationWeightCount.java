@@ -38,14 +38,14 @@ public class AnnotationWeightCount {
     private final ObjectList<ReadWithIndex> reads;
     private final IntList readStart;
     private final ComputeWeightCount baseCounter;
-    private FloatArrayList weights;
+    private final FloatArrayList weights;
 
     /**
      * Constructor.
      *
      * @param weights An array whose indices are read indices and elements are weights corresponding to each read.
      */
-    public AnnotationWeightCount(FloatArrayList weights) {
+    public AnnotationWeightCount(final FloatArrayList weights) {
         super();
         baseCounter = new ComputeWeightCount(weights);
         readStart = new IntArrayList();

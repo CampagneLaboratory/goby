@@ -38,7 +38,7 @@ public class PostBarcodeMatcher extends BarcodeMatcher{
      * @param barcodeLength the length of the barcode (not including the adapter)
      * @param allowedMismatches the number of allowed mismatches when matching to be acceptable
      */
-    public PostBarcodeMatcher(final String[] barcodesStrArray, final int barcodeLength, int allowedMismatches) {
+    public PostBarcodeMatcher(final String[] barcodesStrArray, final int barcodeLength, final int allowedMismatches) {
         init(barcodesStrArray, barcodeLength, allowedMismatches);
     }
 
@@ -51,6 +51,7 @@ public class PostBarcodeMatcher extends BarcodeMatcher{
      * @param minMatchLength the minimum match length to consider
      * @return returns the number of differences between sequence and toFind
      */
+    @Override
     BarcodeMatcherResult bestMatch(final MutableString sequence, final MutableString toFind, final int barcodeIndex, final int minMatchLength) {
         final OverlapResult overlapResult = overlapPortion(sequence, toFind);
         int leastNumDiffs = Integer.MAX_VALUE;
@@ -84,9 +85,9 @@ public class PostBarcodeMatcher extends BarcodeMatcher{
      * @return OverlapResult which specifies start and length
      */
     OverlapResult overlapPortion(final MutableString sequence, final MutableString toFind) {
-        OverlapResult overlapResult = new OverlapResult();
-        int sequenceLength = sequence.length();
-        int toFindLength = toFind.length();
+        final OverlapResult overlapResult = new OverlapResult();
+        final int sequenceLength = sequence.length();
+        final int toFindLength = toFind.length();
         if (sequenceLength >= toFindLength) {
             overlapResult.start = (sequenceLength - toFindLength);
             overlapResult.length = toFindLength;

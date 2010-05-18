@@ -20,15 +20,13 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Read;
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.Collections;
 
 public class AnnotationCount {
@@ -155,7 +153,7 @@ public class AnnotationCount {
         }
         return sum;
     }
-     public float geneReweightedExpressionCount(Annotation annot, FloatArrayList weights) {
+     public float geneReweightedExpressionCount(final Annotation annot, final FloatArrayList weights) {
         int sum = countReadsPartiallyOverlappingWithInterval(annot.getStart(), annot.getEnd());
         final int numIntrons = annot.getSegments().size() - 1;
         for (int k = 0; k < numIntrons; k++) {

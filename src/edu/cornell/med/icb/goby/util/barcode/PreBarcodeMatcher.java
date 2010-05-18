@@ -38,7 +38,7 @@ public class PreBarcodeMatcher extends BarcodeMatcher{
      * @param barcodeLength the length of the barcode (not including the adapter)
      * @param allowedMismatches the number of allowed mismatches when matching to be acceptable
      */
-    public PreBarcodeMatcher(final String[] barcodesStrArray, final int barcodeLength, int allowedMismatches) {
+    public PreBarcodeMatcher(final String[] barcodesStrArray, final int barcodeLength, final int allowedMismatches) {
         init(barcodesStrArray, barcodeLength, allowedMismatches);
     }
 
@@ -51,8 +51,9 @@ public class PreBarcodeMatcher extends BarcodeMatcher{
      * @param minMatchLength the minimum match length to consider
      * @return returns the number of differences between sequence and toFind
      */
+    @Override
     BarcodeMatcherResult bestMatch(final MutableString sequence, final MutableString toFind, final int barcodeIndex, final int minMatchLength) {
-        int overlapLength = Math.min(sequence.length(), toFind.length());
+        final int overlapLength = Math.min(sequence.length(), toFind.length());
         int leastNumDiffs = Integer.MAX_VALUE;
         int leastNumDiffsMatchedBarcodeLength = 0;
         int pos = 0;

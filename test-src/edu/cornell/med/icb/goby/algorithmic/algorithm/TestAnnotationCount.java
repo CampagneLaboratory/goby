@@ -26,7 +26,7 @@ import java.io.IOException;
 
 /**
  * TODO this class tests nothing, it just prints whatever result the computation produces.
- * 
+ *
  * @author  Xutao Deng
  * Date: May 17, 2009
  * Time: 1:02:50 AM
@@ -61,7 +61,7 @@ public class TestAnnotationCount {
                     sum += trueCount[p];
                 }
                 final float expDepth = sum == 0 ? 0 : sum / (j - i + 1);
-                float actual=annotationCount.averageReadsPerPosition(i, j);
+                final float actual=annotationCount.averageReadsPerPosition(i, j);
                 assertEquals(expDepth, actual, 0.01);
             }
         }

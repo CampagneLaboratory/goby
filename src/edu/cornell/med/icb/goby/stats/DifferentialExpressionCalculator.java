@@ -19,9 +19,9 @@
 package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -56,8 +56,8 @@ public class DifferentialExpressionCalculator {
      * @return ElementType
      */
     public ElementType getElementType(final MutableString elementId) {
-        int elementIndex = elementLabels.get(elementId);
-        int ordinal = elementLabelToElementType.get(elementIndex);
+        final int elementIndex = elementLabels.get(elementId);
+        final int ordinal = elementLabelToElementType.get(elementIndex);
         if (ordinal == -1) {
             return ElementType.OTHER;
         } else {
@@ -119,7 +119,7 @@ public class DifferentialExpressionCalculator {
      */
     public synchronized int defineElement(final String label, final ElementType type) {
         final MutableString elementLabel = new MutableString(label);
-        int elementIndex = elementLabels.registerIdentifier(elementLabel);
+        final int elementIndex = elementLabels.registerIdentifier(elementLabel);
         if (elementLabelToElementType.get(elementIndex) == -1) {
             // Don't REPLACE the ElementType for an label. If it was set before, leave it alone.
             elementLabelToElementType.put(elementIndex, type.ordinal());
