@@ -33,11 +33,11 @@ class ReadsReader(object):
     # name of this file
     filename = None
 
-    # reader for the alignment entries (interally stored in chunks)
+    # reader for the sequence entries (interally stored in chunks)
     entries_reader = None
 
-    # Current chunk of alignment entries
-    entries = None
+    # Current chunk of sequence entries
+    entries = []
 
     # current entry index
     current_entry_index = 0
@@ -57,10 +57,17 @@ class ReadsReader(object):
     def next(self):
         """ Return next sequence entry from the file.
         """
+
+        #print "%d of %d" % (self.current_entry_index, len(self.entries))
+
         # is it time to get the next chunk from the file?
-        if self.entries is None or self.current_entry_index >= len(self.entries):
+        if not self.entries or self.current_entry_index >= len(self.entries):
             self.entries = self.entries_reader.next().reads
             self.current_entry_index = 0
+
+            # If the entries came back empty, we're done
+            if not self.entries:
+                raise StopIteration
 
         entry = self.entries[self.current_entry_index]
         self.current_entry_index += 1

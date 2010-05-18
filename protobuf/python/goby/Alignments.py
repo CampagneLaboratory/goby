@@ -56,7 +56,7 @@ class AlignmentReader(object):
     entries_reader = None
 
     # Current chunk of alignment entries
-    entries = None
+    entries = []
 
     # current entry index
     current_entry_index = 0
@@ -101,9 +101,13 @@ class AlignmentReader(object):
         """ Return next alignment entry from the entries file
         """
         # is it time to get the next chunk from the entries file?
-        if self.entries is None or self.current_entry_index >= len(self.entries):
+        if not self.entries or self.current_entry_index >= len(self.entries):
             self.entries = self.entries_reader.next().alignmentEntries
             self.current_entry_index = 0
+
+            # If the entries came back empty, we're done
+            if not self.entries:
+                raise StopIteration
 
         entry = self.entries[self.current_entry_index]
         self.current_entry_index += 1
