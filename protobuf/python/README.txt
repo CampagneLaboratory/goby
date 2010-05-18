@@ -47,7 +47,7 @@ Usage
 
 Example scripts are provided to demonstrate how to access the content of Goby files in Python.
 
-- Here is how to scan a Goby alignment files:
+- Here is how to scan a Goby alignment file:
 
 GobyAlignmentStats.py basename
 
@@ -63,7 +63,7 @@ GobyCompactToFasta.py file.compact-reads
 
 - The next command will print statistics about the content of a compact reads file:
 
-GobyReadsStats.py
+GobyReadsStats.py file.compact-reads
 
 The complete documentation for Goby is available online at:
 
