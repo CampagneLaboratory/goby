@@ -19,6 +19,7 @@
 #
 
 import csv
+import goby
 import getopt
 import sys
 
@@ -60,7 +61,7 @@ def main():
         usage()
         sys.exit(2)
 
-    basename = args[0]
+    basename = goby.Alignments.get_basename(args[0])
     if verbose:
         print "Compact Alignment basename =", basename
 

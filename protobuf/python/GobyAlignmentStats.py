@@ -20,6 +20,7 @@
 
 import getopt
 import sys
+import goby
 
 from goby.Alignments import AlignmentReader, TooManyHitsReader
 from goby.utils import commify
@@ -49,7 +50,7 @@ def main():
         usage()
         sys.exit(2)
 
-    basename = args[0]
+    basename = goby.Alignments.get_basename(args[0])
     print "Compact Alignment basename =", basename
 
     alignment_reader = AlignmentReader(basename, verbose)

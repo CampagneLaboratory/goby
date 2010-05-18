@@ -27,6 +27,16 @@ from pyjavaproperties import Properties
 stored in the Goby "compact" format.
 """
 
+def get_basename(filename):
+    """ Return the basename corresponding to the input alignment filename.
+    Note that if the filename does have the extension known to be a
+    compact alignemt the returned value is the original filename.
+    """
+    for ext in [".entries", ".header", ".tmh", ".stats", ".counts"]:
+        if filename.endswith(ext):
+            return filename[:-len(ext)]
+    return filename
+
 class AlignmentReader(object):
     """ Reads alignments written in the Goby "compact" format.
     The AlignmentReader is actually an iterator over indiviual
