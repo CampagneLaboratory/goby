@@ -104,7 +104,7 @@ public class Merge {
         // we will store one target index permutation for each input file in the following list:
         referenceIndexPermutation = new ObjectArrayList<int[]>();
 
-        int maxNumberOfReads = 0;
+        int maxNumberOfReads = Integer.MIN_VALUE;
         if (verbose) {
             System.out.println("Finding max number of reads...");
             System.out.flush();
@@ -113,7 +113,8 @@ public class Merge {
         int mergedReferenceIndex = 0;
         final IndexedIdentifier mergedTargetIdentifiers = new IndexedIdentifier();
         final Int2IntMap mergedTargetLengths = new Int2IntOpenHashMap();
-        final IntSet numberOfReads = new IntArraySet();
+        final IntSet numberOfReadsSet = new IntArraySet();
+        int minQueryIndex = Integer.MAX_VALUE;
         for (final File inputFile : inputFiles) {
             final AlignmentReader reader = new AlignmentReader(inputFile.toString());
             reader.readHeader();
@@ -122,21 +123,26 @@ public class Merge {
             mergedReferenceIndex = constructTargetIndexPermutations(mergedReferenceIndex,
                     mergedTargetIdentifiers, mergedTargetLengths, reader);
 
-            numberOfReads.add(reader.getNumberOfQueries());
+            if (reader.hasNext()) {
+                final Alignments.AlignmentEntry entry = reader.next();
+                minQueryIndex = Math.min(minQueryIndex, entry.getQueryIndex());
+            }
+
+            numberOfReadsSet.add(reader.getNumberOfQueries());
             reader.close();
 
         }
-        if (numberOfReads.size() != 1) {
+        if (numberOfReadsSet.size() != 1) {
             message("Aborting: the input alignments must have exactly the same number of reads, "
-                    + "we found different number of reads in " + numberOfReads + " input files:");
+                    + "we found different number of reads in " + numberOfReadsSet + " input files:");
             return;
 
         }
-        maxNumberOfReads = numberOfReads.iterator().next();
+        maxNumberOfReads = numberOfReadsSet.iterator().nextInt();
 
         message("... max number of reads was " + maxNumberOfReads);
 
-        final AbstractAlignmentEntryFilter entryFilter = getFilter(maxNumberOfReads);
+        final AbstractAlignmentEntryFilter entryFilter = getFilter(maxNumberOfReads, minQueryIndex);
         entryFilter.setTargetIdentifiers(mergedTargetIdentifiers);
 
         ProgressLogger progress = new ProgressLogger(LOG);
@@ -166,7 +172,8 @@ public class Merge {
 
         message(String.format("Found %d logical alignment entries.", (int) totalNumberOfLogicalEntries));
         message("Prepare merged too many hits information.");
-        prepareMergedTooManyHits(outputFile, maxNumberOfReads, inputFiles.toArray(new File[inputFiles.size()]));
+        prepareMergedTooManyHits(outputFile, maxNumberOfReads, minQueryIndex,
+                inputFiles.toArray(new File[inputFiles.size()]));
 
         message("Second pass: writing the merged alignment.");
 
@@ -284,24 +291,29 @@ public class Merge {
                 ((float) skippedNotBestScore / ((float) totalNumberOfLogicalEntries) * 100f)));
     }
 
-    public static void prepareMergedTooManyHits(final String outputFilename, final int numberOfReads, final File[] inputFiles) throws IOException {
+    public static void prepareMergedTooManyHits(
+            final String outputFilename, final int numberOfReads, final int minQueryIndex,
+            final File[] inputFiles) throws IOException {
         final String[] inputFilenames = new String[inputFiles.length];
         int i = 0;
         for (final File file : inputFiles) {
             inputFilenames[i++] = file.toString();
         }
-        prepareMergedTooManyHits(outputFilename, numberOfReads, inputFilenames);
+        prepareMergedTooManyHits(outputFilename, numberOfReads, minQueryIndex, inputFilenames);
     }
 
     /**
      * Merge too many hits data structures across alignments.
      *
-     * @param basenames  Input alignment basenames
      * @param outputFile Destination basename for merged too many hits data structure.
-     * @throws IOException
+     * @param numberOfReads the number of reads
+     * @param minQueryIndex the minimum query index, in the case where we are working with a split read situation
+     * @param basenames  Input alignment basenames
+     * @throws IOException error processing
      */
-    public static void prepareMergedTooManyHits(final String outputFile, final int numberOfReads,
-                                                final String... basenames) throws IOException {
+    public static void prepareMergedTooManyHits(
+            final String outputFile, final int numberOfReads, final int minQueryIndex,
+            final String... basenames) throws IOException {
         final Int2IntMap tmhMap = new Int2IntOpenHashMap();
         tmhMap.defaultReturnValue(0);
         // accumulate too many hits over all the input alignments:
@@ -317,9 +329,9 @@ public class Merge {
 
             for (final int queryIndex : tmhReader.getQueryIndices()) {
                 final int currentMatchLength = tmhReader.getLengthOfMatch(queryIndex);
-                final int maxDepth = Math.max(currentMatchLength, queryIndex2MaxDepth[queryIndex]);
+                final int maxDepth = Math.max(currentMatchLength, queryIndex2MaxDepth[queryIndex - minQueryIndex]);
                 if (maxDepth != -1) {
-                    queryIndex2MaxDepth[queryIndex] = maxDepth;
+                    queryIndex2MaxDepth[queryIndex - minQueryIndex] = maxDepth;
                 }
 
             }
@@ -331,7 +343,7 @@ public class Merge {
             final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
             for (final int queryIndex : tmhReader.getQueryIndices()) {
                 final int depthForBasename = tmhReader.getLengthOfMatch(queryIndex);
-                if (depthForBasename == queryIndex2MaxDepth[queryIndex]) {
+                if (depthForBasename == queryIndex2MaxDepth[queryIndex - minQueryIndex]) {
                     if (depthForBasename != 1) {
                         final int newValue = tmhMap.get(queryIndex) + tmhReader.getNumberOfHits(queryIndex);
                         tmhMap.put(queryIndex, newValue);
@@ -345,7 +357,7 @@ public class Merge {
         }
         final AlignmentTooManyHitsWriter mergedTmhWriter = new AlignmentTooManyHitsWriter(outputFile, consensusAlignerThreshold);
         for (final int queryIndex : tmhMap.keySet()) {
-            mergedTmhWriter.append(queryIndex, tmhMap.get(queryIndex), queryIndex2MaxDepth[queryIndex]);
+            mergedTmhWriter.append(queryIndex, tmhMap.get(queryIndex), queryIndex2MaxDepth[queryIndex - minQueryIndex]);
         }
         mergedTmhWriter.close();
     }
@@ -413,12 +425,12 @@ public class Merge {
      * @return An alignment filter.
      * @throws FileNotFoundException If the transcript to gene mapping file cannot be found.
      */
-    public AbstractAlignmentEntryFilter getFilter(final int maxNumberOfReads) throws FileNotFoundException {
+    public AbstractAlignmentEntryFilter getFilter(final int maxNumberOfReads, final int minQueryIndex) throws FileNotFoundException {
         final AbstractAlignmentEntryFilter entryFilter;
         if (geneTranscriptMapFile != null) {
-            entryFilter = new TranscriptBestScoreAlignmentFilter(geneTranscriptMapFile, k, maxNumberOfReads);
+            entryFilter = new TranscriptBestScoreAlignmentFilter(geneTranscriptMapFile, k, maxNumberOfReads, minQueryIndex);
         } else {
-            entryFilter = new BestScoreAmbiguityAlignmentFilter(k, maxNumberOfReads);
+            entryFilter = new BestScoreAmbiguityAlignmentFilter(k, maxNumberOfReads, minQueryIndex);
         }
         return entryFilter;
     }

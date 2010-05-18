@@ -66,7 +66,9 @@ public class AlignmentWriter implements Closeable {
     private String[] queryIdentifiersArray;
     private String[] targetIdentifiersArray;
     private int maxTargetIndex = -1;
-    private int maxQueryIndex = -1;
+    private int minQueryIndex = Integer.MAX_VALUE;
+    private int maxQueryIndex = Integer.MIN_VALUE;
+    private int actualNumberOfQueries = Integer.MIN_VALUE;
     private final Properties stats;
     private boolean statsWritten;
     private final FileWriter statsWriter;
@@ -139,7 +141,11 @@ public class AlignmentWriter implements Closeable {
      */
     public synchronized void appendEntry() throws IOException {
         final Alignments.AlignmentEntry builtEntry = newEntry.build();
-        maxQueryIndex = Math.max(builtEntry.getQueryIndex(), maxQueryIndex);
+
+        final int currentQueryIndex = builtEntry.getQueryIndex();
+        minQueryIndex = Math.min(currentQueryIndex, minQueryIndex);
+        maxQueryIndex = Math.max(currentQueryIndex, maxQueryIndex);
+
         maxTargetIndex = Math.max(builtEntry.getTargetIndex(), maxTargetIndex);
         this.collectionBuilder.addAlignmentEntries(builtEntry);
         entriesChunkWriter.writeAsNeeded(collectionBuilder, builtEntry.getMultiplicity());
@@ -157,7 +163,10 @@ public class AlignmentWriter implements Closeable {
         this.collectionBuilder.addAlignmentEntries(builtEntry);
         entriesChunkWriter.writeAsNeeded(collectionBuilder, builtEntry.getMultiplicity());
 
-        maxQueryIndex = Math.max(builtEntry.getQueryIndex(), maxQueryIndex);
+        final int currentQueryIndex = builtEntry.getQueryIndex();
+        minQueryIndex = Math.min(currentQueryIndex, minQueryIndex);
+        maxQueryIndex = Math.max(currentQueryIndex, maxQueryIndex);
+
         maxTargetIndex = Math.max(builtEntry.getTargetIndex(), maxTargetIndex);
         numberOfAlignedReads += 1;
     }
@@ -191,7 +200,7 @@ public class AlignmentWriter implements Closeable {
             final Alignments.AlignmentHeader.Builder headerBuilder = Alignments.AlignmentHeader.newBuilder();
 
             headerBuilder.setNumberOfTargets(maxTargetIndex + 1);
-            headerBuilder.setNumberOfQueries(maxQueryIndex + 1);
+            headerBuilder.setNumberOfQueries(getNumQueries());
 
             headerBuilder.setQueryNameMapping(getMapping(queryIdentifiers, queryIdentifiersArray));
             headerBuilder.setTargetNameMapping(getMapping(targetIdentifiers, targetIdentifiersArray));
@@ -217,6 +226,10 @@ public class AlignmentWriter implements Closeable {
     private void writeStats() throws IOException {
         if (!statsWritten) {
             stats.put("basename", FilenameUtils.getBaseName(basename));
+            stats.put("min.query.index", Integer.toString(minQueryIndex));
+            stats.put("max.query.index", Integer.toString(maxQueryIndex));
+            stats.put("number.of.queries", Integer.toString(getNumQueries()));
+
             stats.put("basename.full", basename);
             stats.put("number.aligned.reads", Integer.toString(numberOfAlignedReads));
             stats.store(statsWriter, "Statistics for merged alignment. ");
@@ -282,7 +295,9 @@ public class AlignmentWriter implements Closeable {
 
     public void printStats(final PrintStream out) {
         this.entriesChunkWriter.printStats(out);
-        out.println("Number of queries: " + (maxQueryIndex + 1));
+        out.println("Min query index: " + minQueryIndex);
+        out.println("Max query index: " + maxQueryIndex);
+        out.println("Number of queries: " + getNumQueries());
         out.println("Number of targets: " + (maxTargetIndex + 1));
     }
 
@@ -341,9 +356,26 @@ public class AlignmentWriter implements Closeable {
      * @param numQueries The number of query sequences.
      */
     public void setNumQueries(final int numQueries) {
+        actualNumberOfQueries = numQueries;
         maxQueryIndex = numQueries - 1;
     }
 
+    /**
+     * Get the total number of queries.
+     *
+     * @return The number of query sequences.
+     */
+    public int getNumQueries() {
+        if (actualNumberOfQueries != Integer.MIN_VALUE) {
+            return actualNumberOfQueries;
+        } else {
+            if (minQueryIndex == Integer.MAX_VALUE) {
+                minQueryIndex = 0;
+            }
+            return maxQueryIndex - minQueryIndex + 1;
+        }
+    }
+    
     /**
      * Set the total number of targets.
      *

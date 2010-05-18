@@ -36,6 +36,7 @@ public class TranscriptBestScoreAlignmentFilter extends AbstractAlignmentEntryFi
     private int notBestScoreCount;
     private int geneAmbiguityCount;
     private int entryCount;
+    private final int minQueryIndex;
 
     @Override
     public void printStats() {
@@ -56,11 +57,13 @@ public class TranscriptBestScoreAlignmentFilter extends AbstractAlignmentEntryFi
      * @param maxNumberOfReads   Maximum number of reads.
      * @throws java.io.FileNotFoundException if the gene-transcripts-map didn't exist
      */
-    public TranscriptBestScoreAlignmentFilter(final String geneTranscriptFile, final int kVal,
-                                              final int maxNumberOfReads) throws FileNotFoundException {
+    public TranscriptBestScoreAlignmentFilter(
+            final String geneTranscriptFile, final int kVal,
+            final int maxNumberOfReads, final int minQueryIndex) throws FileNotFoundException {
         super();
+        this.minQueryIndex = minQueryIndex;
         transcriptFilter = new TranscriptsAlignmentFilter(geneTranscriptFile, kVal);
-        bestScoreFilter = new BestScoreOnlyAlignmentFilter(maxNumberOfReads);
+        bestScoreFilter = new BestScoreOnlyAlignmentFilter(maxNumberOfReads, minQueryIndex);
     }
 
     @Override

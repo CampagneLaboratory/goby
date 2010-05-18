@@ -105,13 +105,9 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
                 targetNumbers.add(reader.getNumberOfTargets());
                 final int numQueriesForReader = reader.getNumberOfQueries();
                 numQueriesPerReader[readerIndex] = numQueriesForReader;
-                if (adjustQueryIndices) {
-                    numberOfQueries += numQueriesForReader;
-                } else {
-                    numberOfQueries = Math.max(numberOfQueries, numQueriesForReader);
-                }
-                readerIndex++;
+                numberOfQueries += numQueriesForReader;
                 numberOfAlignedReads += reader.getNumberOfAlignedReads();
+                readerIndex++;
             }
             if (targetNumbers.size() != 1) {
                 throw new IllegalArgumentException("The number of targets must match exactly across the input basenames. Found " + targetNumbers.toString());
@@ -124,14 +120,17 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
             targetLengths = readers[0].getTargetLength();
 
             queryLengths = new int[numberOfQueries];
-            for (int i = 1; i < queryIndexOffset.length; i++) {
-                final int offset = numQueriesPerReader[i - 1] + queryIndexOffset[i - 1];
-                queryIndexOffset[i] = offset;
-                final int[] localQueryLenth = readers[i].getQueryLengths();
-                if (localQueryLenth != null) {
-                    for (final int length : localQueryLenth) {
-                        queryLengths[offset] = length;
-                    }
+            int offset = 0;
+            for (int i = 0; i < queryIndexOffset.length; i++) {
+                if (i == 0) {
+                    offset = 0;
+                } else {
+                    offset += numQueriesPerReader[i - 1];
+                }
+                queryIndexOffset[i] = adjustQueryIndices ? offset : 0;
+                final int[] localQueryLenths = readers[i].getQueryLengths();
+                if (localQueryLenths != null) {
+                    System.arraycopy(localQueryLenths, 0, queryLengths, offset, localQueryLenths.length);
                 }
             }
 

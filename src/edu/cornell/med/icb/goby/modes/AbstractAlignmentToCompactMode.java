@@ -297,6 +297,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         private AlignmentWriter writer;
         private IndexedIdentifier targetIds;
         public int numberOfReads;
+        public int numberOfReadsForSplit;
         private int numberOfTargets;
 
         public ReadSet getReadIndexFilter() {
@@ -316,7 +317,8 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
          */
         private ObjectArrayList<String> processIds(final String idsFilename) throws FileNotFoundException {
             final ObjectArrayList<String> ids = new ObjectArrayList<String>(500000);
-            int maxSequenceIndex = -1;
+            int minSequenceIndex = Integer.MAX_VALUE;
+            int maxSequenceIndex = Integer.MIN_VALUE;
             ReadsReader idsReader = null;
             try {
                 idsReader = new ReadsReader(new FileInputStream(idsFilename));
@@ -337,6 +339,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
                         ids.set(readIndex, readEntry.getReadIdentifier());
                         atLeastOneId = true;
                     }
+                    minSequenceIndex = Math.min(minSequenceIndex, readIndex);
                     maxSequenceIndex = Math.max(maxSequenceIndex, readIndex);
                 }
             } finally {
@@ -349,6 +352,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
                 }
             }
             ids.size(maxSequenceIndex + 1);
+            this.numberOfReadsForSplit = (maxSequenceIndex - minSequenceIndex) + 1;
             ids.trim();
             assert ids.size() == maxSequenceIndex + 1;
             return ids;
@@ -402,7 +406,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
                     }
                 }
                 // write ids to header
-                writer.setNumQueries(this.numberOfReads);
+                writer.setNumQueries(this.numberOfReadsForSplit);
                 if (this.numberOfReads > 0 && propagateQueryIds) {
                     writer.setQueryIdentifiersArray(ids.toArray(new String[ids.size()]));
                     System.out.println("Wrote " + ids.size() + " query ids to alignment header.");

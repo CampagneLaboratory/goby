@@ -34,15 +34,18 @@ public class BestScoreOnlyAlignmentFilter extends AbstractAlignmentEntryFilter {
      */
     private final float[] indexToBestScore;
 
+    private final int minQueryIndex;
+
     /**
      * Constructor.
      *
      * @param maxNumberOfReads the maximum number of POSSIBLE reads we could encounter
      */
-    public BestScoreOnlyAlignmentFilter(final int maxNumberOfReads) {
+    public BestScoreOnlyAlignmentFilter(final int maxNumberOfReads, final int minQueryIndex) {
         super();
         indexToBestScore = new float[maxNumberOfReads];
         Arrays.fill(indexToBestScore, Float.MIN_VALUE);
+        this.minQueryIndex = minQueryIndex;
     }
 
     @Override
@@ -62,10 +65,10 @@ public class BestScoreOnlyAlignmentFilter extends AbstractAlignmentEntryFilter {
         final int index = entry.getQueryIndex();
         final float score = entry.getScore();
 
-        final float previousScore = indexToBestScore[index];
+        final float previousScore = indexToBestScore[index - minQueryIndex];
         if (previousScore < score) {
             // update the best score for this query
-            indexToBestScore[index] = score;
+            indexToBestScore[index - minQueryIndex] = score;
         }
     }
 
@@ -80,7 +83,7 @@ public class BestScoreOnlyAlignmentFilter extends AbstractAlignmentEntryFilter {
     public boolean shouldRetainEntry(final Alignments.AlignmentEntry entry) {
         final int index = entry.getQueryIndex();
         final float score = entry.getScore();
-        final float keepHighestScore = indexToBestScore[index];
+        final float keepHighestScore = indexToBestScore[index - minQueryIndex];
         if (keepHighestScore == Float.MIN_VALUE) {
             return false;
         }

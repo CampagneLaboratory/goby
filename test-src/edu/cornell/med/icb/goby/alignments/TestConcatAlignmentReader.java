@@ -79,7 +79,7 @@ public class TestConcatAlignmentReader {
         assertEquals(count101 + count102, count);
         concatReader.readHeader();
 
-        assertEquals(Math.max(numQueries101, numQueries102), concatReader.getNumberOfQueries());
+        assertEquals(numQueries101 + numQueries102, concatReader.getNumberOfQueries());
         assertEquals(numTargets, concatReader.getNumberOfTargets());
 
     }

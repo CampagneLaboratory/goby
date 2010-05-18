@@ -60,20 +60,24 @@ public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFil
 
     private int willSkip;
 
+    private final int minQueryIndex;
+
     /**
      * Constructor.
      *
      * @param k                The maximum number of alignment at best score.
      * @param maxNumberOfReads the maximum number of POSSIBLE reads we could encounter
      */
-    public BestScoreAmbiguityAlignmentFilter(final int k, final int maxNumberOfReads) {
+    public BestScoreAmbiguityAlignmentFilter(final int k, final int maxNumberOfReads, final int minQueryIndex) {
         super();
         indexToBestScore = new float[maxNumberOfReads];
         Arrays.fill(indexToBestScore, Float.MIN_VALUE);
         indexToCountAtBestScore = new short[maxNumberOfReads];
         Arrays.fill(indexToCountAtBestScore, (short) 0);
 
-        this.k = k;    }
+        this.k = k;
+        this.minQueryIndex = minQueryIndex;
+    }
 
     public void setHeader(final AlignmentReader reader) {
         // do nothing
@@ -97,15 +101,15 @@ public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFil
         final float score = entry.getScore();
 
 
-        final float previousScore = indexToBestScore[index];
+        final float previousScore = indexToBestScore[index - minQueryIndex];
         if (previousScore == score) {
             // Increment the count for this quality
-            indexToCountAtBestScore[index] += 1;
+            indexToCountAtBestScore[index - minQueryIndex] += 1;
 
         } else if (previousScore < score) {
             // We have a new best score: start over with this as the new best score
-            indexToBestScore[index] = score;
-            indexToCountAtBestScore[index] = 1;
+            indexToBestScore[index - minQueryIndex] = score;
+            indexToCountAtBestScore[index - minQueryIndex] = 1;
         }
     }
 
@@ -120,12 +124,12 @@ public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFil
     public boolean shouldRetainEntry(final Alignments.AlignmentEntry entry) {
         final int index = entry.getQueryIndex();
         final float score = entry.getScore();
-        final float keepHighestScore = indexToBestScore[index];
+        final float keepHighestScore = indexToBestScore[index - minQueryIndex];
         if (keepHighestScore == Float.MIN_VALUE) {
             return false;
         }
         if (keepHighestScore == score) {
-            final short count = indexToCountAtBestScore[index];
+            final short count = indexToCountAtBestScore[index - minQueryIndex];
             if (count > k) {
                 // the entry matches too many reference locations. We do not keep it.
                 return false;
