@@ -3,6 +3,8 @@ development -> 1.7
    See http://campagnelab.org/software/goby/tutorials/estimate-heptamer-weights/
    In contrast to the initial publication, Goby supports using the weights to
    reweight annotation counts and transcript counts.
+ - Preliminary support for barcoded reads (barcodes in the sequence), see new
+   mode decode-barcodes. 
 
 1.6
  - First draft of the Goby Python API and demonstration tools (see
