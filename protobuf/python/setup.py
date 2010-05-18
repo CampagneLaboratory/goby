@@ -12,8 +12,8 @@ setup(
     name='goby',
     version='1.6',
     packages=['goby'],
-    author='Fabien Campagne',
-    author_email='fac2003@med.cornell.edu',
+    author='Campagne Lab',
+    author_email='icb@med.cornell.edu',
     scripts=[
         'GobyAlignmentStats.py',
         'GobyAlignmentToText.py',
