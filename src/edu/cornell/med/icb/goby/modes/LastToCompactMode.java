@@ -258,9 +258,9 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                         writer.putStatistic("keep-filter-filename", readIndexFilterFile.getName());
                     }
                     writer.putStatistic("number-of-entries-written", numAligns);
-                    writer.printStats(System.out);
                     writer.setQueryLengths(readLengths);
                     writer.setNumQueries(numberOfReads);
+                    writer.printStats(System.out);
                 }
                 progress.stop();
             }
