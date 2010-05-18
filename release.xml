@@ -72,6 +72,9 @@
             <include name="src/edu/cornell/med/icb/goby/modes/AnnotationPenaltyMode*"/>
             <include name="src/edu/cornell/med/icb/goby/modes/CountsArchiveToUnionPeaksAnnotationMode*"/>
         </delete>
+
+         <!-- Create a "version" file which contains the release number -->
+     	<writeln file="${exportdir}/${tag}/VERSION.txt" message="${tag}" append="false"/>
     </target>
 
     <target name="release" description="Tag and release build"
@@ -83,10 +86,25 @@
 	    <symlink link="${releasedir}/goby-data.zip" resource="${tag}-data.zip"/>
         <symlink link="${releasedir}/goby.zip" resource="${tag}-goby.zip"/>
 
-        <!-- copy the changes file to the release directory -->
-        <copy todir="${releasedir}" file="${exportdir}/${tag}/CHANGES.txt"/>
+        <!-- copy the changes and version info files to the release directory -->
+     	<copy todir="${releasedir}">
+         	<fileset dir="${exportdir}/${tag}">
+             	<include name="CHANGES.txt"/>
+         	    <include name="VERSION.txt"/>
+         	</fileset>
+     	</copy>
 
-        <tar destfile="release-${tag}.tgz" basedir="${releasedir}" compression="gzip"/>
+        <!-- bundle everything up so it can be easily transferred to the release site -->
+<!-- Ant tar task doesn't seem to handle softlinks properly but just makes duplicate copies :-(
+        <tar destfile="release-${tag}.tgz" compression="gzip">
+            <tarfileset dir="">
+                <include name="${releasedir}/**"/>
+            </tarfileset>
+        </tar>
+-->
+        <shellscript shell="bash" dir="${basedir}">
+            tar zcvf release-${tag}.tgz ${releasedir}
+        </shellscript>
 
         <!-- copy the zip to the web folder -->
         <!-- todo -->
@@ -159,6 +177,7 @@
         	<fileset dir="${exportdir}">
                 <include name="${tag}/README-Goby.txt"/>
                 <include name="${tag}/CHANGES.txt"/>
+                <include name="${tag}/VERSION.txt"/>
                 <include name="${tag}/data/**"/>
                 <include name="${tag}/goby.jar"/>
                 <include name="${tag}/config/**"/>
