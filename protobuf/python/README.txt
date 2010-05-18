@@ -26,11 +26,11 @@ Installation
 
      $ python -V
 
-2) Download and install the prerequsite python packages:
+2) Download and install the prerequisite python packages:
 
 2a) Google Protocol Buffers
 
-    - Avaiable from http://code.google.com/p/protobuf/ or PyPI
+    - Available from http://code.google.com/p/protobuf/ or PyPI
 
 2b) pyjavaproperties - Python replacement for java.util.Properties
 
@@ -45,7 +45,21 @@ Installation
 Usage
 =====
 
-The complete documentation for Goby is available via the
-web at:
+Example scripts are provided demonstrate how to access the content of Goby files in Python.
+
+Here is how to scan a Goby alignment files:
+
+GobyAlignmentStats.py basename
+
+(The files basename.entries and basename.header must exit.)
+
+GobyAlignmentToText.py basename
+
+GobyCompactToFasta.py file.compact-reads
+
+GobyReadsStats.py
+
+The complete documentation for Goby is available online at:
 
   http://goby.campagnelab.org/
+
