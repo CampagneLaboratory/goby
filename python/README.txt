@@ -8,9 +8,7 @@ available from:
 
 The complete package includes the Java source code.  If you downloaded
 this package from PyPI or some other Python-specific source, you may
-have received only the Python part of the code.  In this case, you
-will need to obtain the Protocol Compiler from some other source
-before you can use this package.
+have received only the Python part of the code.
 
 Development Warning
 ===================
@@ -28,7 +26,7 @@ Installation
 
 2) Download and install the prerequisite python packages:
 
-2a) Google Protocol Buffers
+2a) Protocol Buffers
 
     - Available from http://code.google.com/p/protobuf/ or PyPI
 
