@@ -71,6 +71,20 @@ public class TestConcatAlignmentReader {
     }
 
     @Test
+    public void testLoadTwoAdjustFalse() throws IOException {
+        final int count;
+
+        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(false, outputBasename2, outputBasename1);
+        count = countAlignmentEntries(concatReader);
+        assertEquals(count101 + count102, count);
+        concatReader.readHeader();
+
+        assertEquals(Math.max(numQueries101, numQueries102), concatReader.getNumberOfQueries());
+        assertEquals(numTargets, concatReader.getNumberOfTargets());
+
+    }
+
+    @Test
     public void testQueryIndices() throws IOException {
         final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(outputBasename1, outputBasename2);
         while (concatReader.hasNext()) {
@@ -89,15 +103,15 @@ public class TestConcatAlignmentReader {
 
     @Test
     public void testQueryIndicesNoAdjustment() throws IOException {
-        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(outputBasename1, outputBasename2);
-        concatReader.setAdjustQueryIndices(false);
+        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(false,outputBasename1, outputBasename2);
+       
         while (concatReader.hasNext()) {
             final Alignments.AlignmentEntry alignmentEntry = concatReader.next();
 
             if (alignmentEntry.getScore() == 50) {
-                assertTrue(alignmentEntry.getQueryIndex() <= Math.max(numQueries101,numQueries102));
+                assertTrue(alignmentEntry.getQueryIndex() <= Math.max(numQueries101, numQueries102));
             } else if (alignmentEntry.getScore() == 30) {
-               assertTrue(alignmentEntry.getQueryIndex() <= Math.max(numQueries101,numQueries102));
+                assertTrue(alignmentEntry.getQueryIndex() <= Math.max(numQueries101, numQueries102));
             } else {
                 fail("only scores possible are 30 and 50.");
             }
@@ -153,6 +167,11 @@ public class TestConcatAlignmentReader {
                 }
             }
             numQueries101 = numQuery;
+            int[] queryLengths = new int[numQuery];
+            for (int i = 0; i < queryLengths.length; i++) {
+                queryLengths[i] = i;
+            }
+            writer.setQueryLengths(queryLengths);
             writer.close();
         }
         {
@@ -172,6 +191,11 @@ public class TestConcatAlignmentReader {
                 }
             }
             numQueries102 = numQuery;
+            int[] queryLengths = new int[numQuery];
+            for (int i = 0; i < queryLengths.length; i++) {
+                queryLengths[i] = i;
+            }
+            writer.setQueryLengths(queryLengths);
             writer.close();
         }
 

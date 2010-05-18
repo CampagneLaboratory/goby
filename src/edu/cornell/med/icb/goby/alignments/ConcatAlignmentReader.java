@@ -68,7 +68,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
      * check reference sequence identity and obtain the number of queries in each input alignment.
      *
      * @param adjustQueryIndices if we need to adjustQueryIndices
-     * @param basenames Basenames of the individual alignemnts to combine.
+     * @param basenames          Basenames of the individual alignemnts to combine.
      * @throws IOException If an error occurs reading the header of the alignments.
      */
     public ConcatAlignmentReader(final boolean adjustQueryIndices, final String... basenames) throws IOException {
@@ -145,6 +145,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
 
     /**
      * Iterator over alignment entries.
+     *
      * @return an iterator over the alignment entries.
      */
     public final Iterator<Alignments.AlignmentEntry> iterator() {
@@ -152,9 +153,10 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
     }
 
     /**
-      * Returns true if the input has more entries.
-      * @return true if the input has more entries, false otherwise.
-      */
+     * Returns true if the input has more entries.
+     *
+     * @return true if the input has more entries, false otherwise.
+     */
     public final boolean hasNext() {
         while (!readersWithMoreEntries.isEmpty()) {
             activeIndex = readersWithMoreEntries.iterator().nextInt();
@@ -172,6 +174,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
 
     /**
      * Returns the next alignment entry from the input stream.
+     *
      * @return the alignment read entry from the input stream.
      */
     public final Alignments.AlignmentEntry next() {
@@ -194,10 +197,12 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
     public void remove() {
         throw new UnsupportedOperationException("Cannot remove from a reader.");
     }
-
+    /**
+    @deprecated
+    */
 
     public void setAdjustQueryIndices(final boolean adjustQueryIndices) {
-        this.adjustQueryIndices = adjustQueryIndices;
+        throw new UnsupportedOperationException("This operation is unsafe. Set flag through the constructor.");
     }
 
     /**
@@ -224,6 +229,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
 
     /**
      * Close the underlying readers.
+     *
      * @throws IOException if an I/O error occurs
      */
     public void close() throws IOException {
