@@ -15,6 +15,10 @@ message ReadEntry {
     Index of a read.
   */
   required uint32 readIndex =1;
+   /*
+    Index of the barcode, if any.
+  */
+  optional uint32 barcodeIndex =10;
   /*
      Read identifier/name may be present.
   */

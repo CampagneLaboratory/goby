@@ -376,6 +376,13 @@ public final class Reads {
     public boolean hasReadIndex() { return hasReadIndex; }
     public int getReadIndex() { return readIndex_; }
     
+    // optional uint32 barcodeIndex = 10;
+    public static final int BARCODEINDEX_FIELD_NUMBER = 10;
+    private boolean hasBarcodeIndex;
+    private int barcodeIndex_ = 0;
+    public boolean hasBarcodeIndex() { return hasBarcodeIndex; }
+    public int getBarcodeIndex() { return barcodeIndex_; }
+    
     // optional string readIdentifier = 23;
     public static final int READIDENTIFIER_FIELD_NUMBER = 23;
     private boolean hasReadIdentifier;
@@ -434,6 +441,9 @@ public final class Reads {
       if (hasQualityScores()) {
         output.writeBytes(4, getQualityScores());
       }
+      if (hasBarcodeIndex()) {
+        output.writeUInt32(10, getBarcodeIndex());
+      }
       if (hasDescription()) {
         output.writeString(22, getDescription());
       }
@@ -464,6 +474,10 @@ public final class Reads {
       if (hasQualityScores()) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(4, getQualityScores());
+      }
+      if (hasBarcodeIndex()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(10, getBarcodeIndex());
       }
       if (hasDescription()) {
         size += com.google.protobuf.CodedOutputStream
@@ -634,6 +648,9 @@ public final class Reads {
         if (other.hasReadIndex()) {
           setReadIndex(other.getReadIndex());
         }
+        if (other.hasBarcodeIndex()) {
+          setBarcodeIndex(other.getBarcodeIndex());
+        }
         if (other.hasReadIdentifier()) {
           setReadIdentifier(other.getReadIdentifier());
         }
@@ -690,6 +707,10 @@ public final class Reads {
               setQualityScores(input.readBytes());
               break;
             }
+            case 80: {
+              setBarcodeIndex(input.readUInt32());
+              break;
+            }
             case 178: {
               setDescription(input.readString());
               break;
@@ -718,6 +739,24 @@ public final class Reads {
       public Builder clearReadIndex() {
         result.hasReadIndex = false;
         result.readIndex_ = 0;
+        return this;
+      }
+      
+      // optional uint32 barcodeIndex = 10;
+      public boolean hasBarcodeIndex() {
+        return result.hasBarcodeIndex();
+      }
+      public int getBarcodeIndex() {
+        return result.getBarcodeIndex();
+      }
+      public Builder setBarcodeIndex(int value) {
+        result.hasBarcodeIndex = true;
+        result.barcodeIndex_ = value;
+        return this;
+      }
+      public Builder clearBarcodeIndex() {
+        result.hasBarcodeIndex = false;
+        result.barcodeIndex_ = 0;
         return this;
       }
       
@@ -856,11 +895,12 @@ public final class Reads {
     java.lang.String[] descriptorData = {
       "\n.src/edu/cornell/med/icb/goby/reads/Rea" +
       "ds.proto\022\004goby\"0\n\016ReadCollection\022\036\n\005read" +
-      "s\030\001 \003(\0132\017.goby.ReadEntry\"\210\001\n\tReadEntry\022\021" +
-      "\n\treadIndex\030\001 \002(\r\022\026\n\016readIdentifier\030\027 \001(" +
-      "\t\022\023\n\013description\030\026 \001(\t\022\022\n\nreadLength\030\002 \002" +
-      "(\r\022\020\n\010sequence\030\003 \001(\014\022\025\n\rqualityScores\030\004 " +
-      "\001(\014B\"\n\036edu.cornell.med.icb.goby.readsH\001"
+      "s\030\001 \003(\0132\017.goby.ReadEntry\"\236\001\n\tReadEntry\022\021" +
+      "\n\treadIndex\030\001 \002(\r\022\024\n\014barcodeIndex\030\n \001(\r\022" +
+      "\026\n\016readIdentifier\030\027 \001(\t\022\023\n\013description\030\026" +
+      " \001(\t\022\022\n\nreadLength\030\002 \002(\r\022\020\n\010sequence\030\003 \001" +
+      "(\014\022\025\n\rqualityScores\030\004 \001(\014B\"\n\036edu.cornell" +
+      ".med.icb.goby.readsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -880,7 +920,7 @@ public final class Reads {
           internal_static_goby_ReadEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_goby_ReadEntry_descriptor,
-              new java.lang.String[] { "ReadIndex", "ReadIdentifier", "Description", "ReadLength", "Sequence", "QualityScores", },
+              new java.lang.String[] { "ReadIndex", "BarcodeIndex", "ReadIdentifier", "Description", "ReadLength", "Sequence", "QualityScores", },
               edu.cornell.med.icb.goby.reads.Reads.ReadEntry.class,
               edu.cornell.med.icb.goby.reads.Reads.ReadEntry.Builder.class);
           return null;

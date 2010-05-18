@@ -46,6 +46,7 @@ public class ReadsWriter implements Closeable {
     private final MessageChunksWriter messageChunkWriter;
 
     private byte[] byteBuffer = new byte[100];
+    private int barcodeIndex=-1;
 
     public ReadsWriter(final OutputStream output) {
         collectionBuilder = Reads.ReadCollection.newBuilder();
@@ -115,7 +116,9 @@ public class ReadsWriter implements Closeable {
 
         // set current read index to enable interleaving calls to appendEntry(readIndex)/appendEntry().
         this.readIndex = readIndex;
-
+        if (barcodeIndex!=-1) {
+            entryBuilder.setBarcodeIndex(barcodeIndex);
+        }
         if (description != null) {
             entryBuilder.setDescription(description.toString());
             description = null;
@@ -136,6 +139,7 @@ public class ReadsWriter implements Closeable {
 
         collectionBuilder.addReads(entryBuilder.build());
         messageChunkWriter.writeAsNeeded(collectionBuilder);
+        barcodeIndex=-1;
     }
 
     private synchronized ByteString encodeSequence(final CharSequence sequence) {
@@ -170,5 +174,9 @@ public class ReadsWriter implements Closeable {
         messageChunkWriter.printStats(out);
         out.println("Number of bits/base " +
                 (messageChunkWriter.getTotalBytesWritten() * 8.0f) / (float) sequenceBasesWritten);
+    }
+
+    public void setBarcodeIndex(int barcodeIndex) {
+        this.barcodeIndex=barcodeIndex;
     }
 }
