@@ -23,10 +23,16 @@ from MessageChunks import MessageChunksReader
 # Java properties - http://pypi.python.org/pypi/pyjavaproperties/
 from pyjavaproperties import Properties
 
-#
-# Reads alignments written in the Goby "compact" format
-#
-class AlignmentReader():
+""" Contains classes that can parse binary alignment data
+stored in the Goby "compact" format.
+"""
+
+class AlignmentReader(object):
+    """ Reads alignments written in the Goby "compact" format.
+    The AlignmentReader is actually an iterator over indiviual
+    alignment entries stored in the file.
+    """
+
     # basename for this alignment
     basename = None
 
@@ -46,6 +52,17 @@ class AlignmentReader():
     current_entry_index = 0
     
     def __init__(self, basename, verbose = False):
+        """ Initialize the AlignmentReader using the
+        basename of the alignment files.  Goby alignments
+        are made up of files ending with:
+
+        ".entries", ".header", ".tmh", ".stats",
+
+        The basename of this alignment is the full path to
+        one of these files including everything but the
+        extension.
+        """
+
         # store the basename
         self.basename = basename
 
@@ -70,10 +87,9 @@ class AlignmentReader():
         # open the entries
         self.entries_reader = AlignmentCollectionReader(basename)
 
-    #
-    # Return next alignment entry from the entries file
-    #
     def next(self):
+        """ Return next alignment entry from the entries file
+        """
         # is it time to get the next chunk from the entries file?
         if self.entries is None or self.current_entry_index >= len(self.entries):
             self.entries = self.entries_reader.next().alignmentEntries
@@ -89,11 +105,11 @@ class AlignmentReader():
     def __str__(self):
         return self.basename
 
-#
-# Reads "Too Many Hits information from alignments
-# written in the Goby "compact" format
-#
-class TooManyHitsReader():
+class TooManyHitsReader(object):
+    """ Reads "Too Many Hits information from alignments
+    written in the Goby "compact" format
+    """
+
     # basename for this alignment
     basename = None
 
@@ -107,6 +123,10 @@ class TooManyHitsReader():
     queryindex_to_depth = dict()
 
     def __init__(self, basename, verbose = False):
+        """ Initialize the TooManyHitsReader using the basename
+        of the alignment files.
+        """
+
         # store the basename
         self.basename = basename
 
@@ -131,17 +151,14 @@ class TooManyHitsReader():
     def __str__(self):
         return self.basename
 
-#
-# Iterator for alignment collections within the alignment entries 
-#
 class AlignmentCollectionReader(MessageChunksReader):
+    """ Iterator for alignment collections within the alignment entries."""
+
     def __init__(self, basename, verbose = False):
         MessageChunksReader.__init__(self, basename + ".entries", verbose)
 
-    #
-    # Return next alignment collection from the entries file
-    #
     def next(self):
+        """ Return next alignment collection from the entries file."""
         buf = MessageChunksReader.next(self)
         collection = Alignments_pb2.AlignmentCollection()
         collection.ParseFromString(buf)

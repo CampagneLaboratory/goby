@@ -20,10 +20,16 @@ import gzip
 import Reads_pb2
 from MessageChunks import MessageChunksReader
 
-#
-# Reads sequence "reads" written in the Goby "compact" format
-#
-class ReadsReader():
+""" Contains classes that can parse binary sequence data
+stored in the Goby "compact" format.
+"""
+
+class ReadsReader(object):
+    """ Reads sequence "reads" written in the Goby "compact" format.
+    The ReadsReader is actually an iterator over indiviual
+    sequence entries stored in the file.
+    """
+
     # name of this file
     filename = None
 
@@ -37,16 +43,20 @@ class ReadsReader():
     current_entry_index = 0
     
     def __init__(self, filename, verbose = False):
+        """ Initialize the ReadsReader using the name
+        of the compact file.  Goby compact reads have
+        the extension ".compact-reads"
+        """
+
         # store the filename
         self.filename = filename
 
         # open the entries
         self.entries_reader = ReadsCollectionReader(filename)
 
-    #
-    # Return next read entry from the file
-    #
     def next(self):
+        """ Return next sequence entry from the file.
+        """
         # is it time to get the next chunk from the file?
         if self.entries is None or self.current_entry_index >= len(self.entries):
             self.entries = self.entries_reader.next().reads
@@ -62,17 +72,18 @@ class ReadsReader():
     def __str__(self):
         return self.filename
 
-#
-# Iterator for read collections
-#
 class ReadsCollectionReader(MessageChunksReader):
+    """ Iterator for sequence collections within a compact
+    reads file
+    """
+
     def __init__(self, filename, verbose = False):
         MessageChunksReader.__init__(self, filename, verbose)
 
-    #
-    # Return next alignment collection from the entries file
-    #
     def next(self):
+        """ Return next sequence collection from the
+        compact reads file
+        """
         buf = MessageChunksReader.next(self)
         collection = Reads_pb2.ReadCollection()
         collection.ParseFromString(buf)

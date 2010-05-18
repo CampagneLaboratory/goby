@@ -22,19 +22,26 @@ import struct
 import StringIO
 from gzip import GzipFile
 
-# Python implementation of Java's DataInputStream.readUTF method.
+""" Support for reading Goby "compact" files.
+"""
+
 def read_utf(fd):
+    """ Python implementation of Java's DataInputStream.readUTF method.
+    """
     length = struct.unpack('>H', fd.read(2))[0]
     return fd.read(length).decode('utf8')
 
-# Python implementation of Java's DataInputStream.readInt method.
 def read_int(fd):
+    """ Python implementation of Java's DataInputStream.readInt method.
+    """
     return struct.unpack('>I', fd.read(4))[0]
 
-#
-# Class to parse a file that contains goby "chunked" data
-#
-class MessageChunksReader():
+class MessageChunksReader(object):
+    """ Class to parse a file that contains goby "chunked" data.
+    The MessageChunksReader is actually an iterator over indiviual
+    entries stored in the compressed file.
+    """
+
     # verbose messages
     verbose = False
 
@@ -61,10 +68,9 @@ class MessageChunksReader():
         self.filesize = os.stat(self.filename)[stat.ST_SIZE]
         self.fileindex = 0
 
-    #
-    # Return next chunk of bytes from the file
-    #
     def next(self):
+        """ Return next chunk of bytes from the file. """
+
         # stop iteration if the file index has reached the end of file
         if self.fileindex >= self.filesize:
             raise StopIteration
