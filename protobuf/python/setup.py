@@ -1,16 +1,37 @@
+import os
+import sys
+try:
+    import ez_setup
+    ez_setup.use_setuptools()
+except ImportError:
+    pass
+
 from distutils.core import setup
 
 setup(
-    name='Goby',
+    name='goby',
     version='1.6',
     packages=['goby'],
     author='Fabien Campagne',
     author_email='fac2003@med.cornell.edu',
-    scripts=['GobyAlignmentStats.py', 'GobyAlignmentToText.py', 'GobyCompactToFasta.py', 'GobyReadsStats.py'],
+    scripts=[
+        'GobyAlignmentStats.py',
+        'GobyAlignmentToText.py',
+        'GobyCompactToFasta.py',
+        'GobyReadsStats.py'
+        ],
     url='http://goby.campagnelab.org/',
-    description='Goby is a next-gen data management framework designed to facilitate the implementation of efficient data analysis pipelines.',
+    description='Python API for reading binary data files created with the Goby next-gen data management framework.',
     license='GNU General Public License (GPL)',
     long_description=open('README.txt').read(),
-    requires=['pyjavaproperties (>=0.3)', 'google.protobuf (>=2.3)'],
-    classifiers=['Development Status :: 4 - Beta', 'Intended Audience :: Developers', 'License :: OSI Approved :: GNU General Public License (GPL)', 'Topic :: Scientific/Engineering :: Bio-Informatics'],
+    requires=[
+        'google.protobuf (>=2.3)',
+        'pyjavaproperties (>=0.3)',
+        ],
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: GNU General Public License (GPL)',
+        'Topic :: Scientific/Engineering :: Bio-Informatics'
+        ],
 )
