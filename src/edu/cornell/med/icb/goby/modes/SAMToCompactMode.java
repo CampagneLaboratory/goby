@@ -274,8 +274,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             writer.putStatistic("keep-filter-filename", readIndexFilterFile.getName());
         }
         writer.putStatistic("number-of-entries-written", numAligns);
-        writer.printStats(System.out);
         writer.setQueryLengths(readLengths);
+        writer.printStats(System.out);
 
         // write information from SAM file header
         final SAMFileHeader samHeader = parser.getFileHeader();
