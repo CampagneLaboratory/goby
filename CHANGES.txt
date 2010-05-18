@@ -1,14 +1,15 @@
-development -> 1.6
- - First draft of the Goby Python API and demonstration tools (see directory
-   protobuf/python).
+1.6
+ - First draft of the Goby Python API and demonstration tools (see
+   directory python).
  - Fix bug where compact file stats mode reported that a compact alignment
    had query identifiers but actually did not
  - Added within-group-variability mode. This mode estimates Fisher P-values
    between pairs of samples taken from a group of homogeneous samples.
-   Summary statistics such as average p-value, or minimum p-value are reported
-   for each gene in each pair considered.
+   Summary statistics such as average p-value, or minimum p-value are
+   reported for each gene in each pair considered.
  - Update JRI.jar to version 0.8-4 which now works properly with 64-bit
    Windows.
+ - Update commons-lang to version 2.5.
  - Optimized DE type storage.
  - Fixed a race condition in CompactAlignmentToAnnotationCountsMode.java
    when running in parallel by moving .reserve() out of the for loop.
@@ -20,7 +21,8 @@ development -> 1.6
  - CompactFileStatsMode now supports an optional -o to write the output
    to a file. If not specified the output will be written to stdout.
  - Reformat reads now preserve read indices from the input file.
-   This is necessary when using concat alignment with --adjust-query-indice false
+   This is necessary when using concat alignment with
+   --adjust-query-indices false
 
 1.5
  - Added a mode to calculate counts and perform differential expression
