@@ -31,7 +31,9 @@ setup(
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
+        'Intended Audience :: Science/Research'
         'License :: OSI Approved :: GNU General Public License (GPL)',
+        'Operating System :: OS Independent'
         'Topic :: Scientific/Engineering :: Bio-Informatics'
         ],
 )

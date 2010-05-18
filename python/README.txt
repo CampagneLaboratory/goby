@@ -45,11 +45,12 @@ Installation
 Usage
 =====
 
-Example scripts are provided to demonstrate how to access the content of Goby files in Python.
+Example scripts are provided to demonstrate how to access the content
+of Goby files in Python.
 
 - Here is how to scan a Goby alignment file:
 
-GobyAlignmentStats.py basename
+  GobyAlignmentStats.py basename
 
 (The files basename.entries and basename.header must exit.)
 
@@ -61,9 +62,13 @@ GobyAlignmentToText.py basename
 
 GobyCompactToFasta.py file.compact-reads
 
-- The next command will print statistics about the content of a compact reads file:
+- The next command will print statistics about the content of a
+  compact reads file: 
 
 GobyReadsStats.py file.compact-reads
+
+Documentation
+=============
 
 The complete documentation for Goby is available online at:
 
