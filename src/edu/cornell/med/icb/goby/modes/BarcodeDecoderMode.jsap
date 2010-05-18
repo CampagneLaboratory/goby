@@ -1,0 +1,70 @@
+<!--
+  ~ Copyright (C) 2010 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <!--greedy>true</greedy-->
+            <help>The compact alignment file(s) to read as input.</help>
+        </unflaggedOption>
+
+
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>false</required>
+            <help>The basename of the output counts.</help>
+        </flaggedOption>
+
+           <flaggedOption>
+            <id>barcode-info</id>
+            <shortFlag>b</shortFlag>
+            <longFlag>barcode-info</longFlag>
+            <required>false</required>
+            <help>A tab delimited file with barcode[\t]barcodeIndex\tsampleId</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>max-mismatches</id>
+           <shortFlag>x</shortFlag>
+            <longFlag>max-mismatches</longFlag>
+            <defaults>
+                <string>0</string>
+            </defaults>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <help>The maximum number of mismatches allowed in the barcode/adapter to accept the barcode match.</help>
+        </flaggedOption>
+         <flaggedOption>
+            <id>minimal-match-length</id>
+             <shortFlag>l</shortFlag>
+             <longFlag>minimal-match-length</longFlag>
+            <defaults>
+                <string>5</string>
+            </defaults>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <help>The minimal match length between read and barcode/adapter to accept the barcode match.</help>
+        </flaggedOption>
+    </parameters>
+</jsap>
