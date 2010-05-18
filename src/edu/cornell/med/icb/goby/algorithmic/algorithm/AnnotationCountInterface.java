@@ -18,23 +18,26 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import it.unimi.dsi.fastutil.ints.IntList;
-
-import java.util.Map;
+import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 
 /**
+ * Interface for implementations that estimate counts for annotations.
  * @author Fabien Campagne
  *         Date: May 16, 2010
- *         Time: 12:55:53 PM
+ *         Time: 3:48:37 PM
  */
-public interface AbstractCount {
-    void startPopulating();
+public interface AnnotationCountInterface {
+    ComputeCountInterface getBaseCounter();
 
-    void accumulate();
+    void populate(int startPosition, int endPosition, int queryIndex);
 
-    void baseCount();
+    void sortReads();
 
-    Map getCountPerBase();
+    float averageReadsPerPosition(int geneStart, int geneEnd);
 
-    IntList getCountKeys();
+    double countReadsPartiallyOverlappingWithInterval(int geneStart, int geneEnd);
+
+    double countReadsStriclyWithinInterval(int geneStart, int geneEnd);
+
+    double geneExpressionCount(Annotation annot);
 }

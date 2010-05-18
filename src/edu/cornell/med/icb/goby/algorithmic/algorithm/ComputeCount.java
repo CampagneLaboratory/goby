@@ -37,7 +37,7 @@ import java.util.Map;
 /**
  * Data structure and algorithm to compute base-level read coverage histogram over a reference sequence.
  */
-public class ComputeCount implements AbstractCount {
+public class ComputeCount implements ComputeCountInterface {
     /**
      * Used to log debug and informational messages.
      */
@@ -279,6 +279,18 @@ public class ComputeCount implements AbstractCount {
      */
 
     public void populate(final int startPosition, final int endPosition, final boolean forwardStrand) {
+        populate(startPosition, endPosition);
+    }
+
+      /**
+     * This implementation ignores strand and queryIndex, but some sub-classes need this information.
+     *
+     * @param startPosition Start position of a read.
+     * @param endPosition   End position of a read.
+     * @param forwardStrand True when the read matches the forward strand, false otherwise.
+     */
+
+    public void populate(final int startPosition, final int endPosition, final boolean forwardStrand, final int queryIndex) {
         populate(startPosition, endPosition);
     }
 }

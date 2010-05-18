@@ -32,12 +32,18 @@
             <required>false</required>
             <help>The basename of the output counts.</help>
         </flaggedOption>
-        <flaggedOption>
-            <id>weights</id>
-            <shortFlag>w</shortFlag>
-            <longFlag>weights</longFlag>
-            <required>false</required>
-            <help>The weights filename. This file can be created with the heptamer-frequencies mode. When provided, the output will contain counts reweighted to correct for heptamer bias (see Hansen KD et al. NAR 2010).</help>
+       <flaggedOption>
+             <id>use-weights</id>
+             <shortFlag>w</shortFlag>
+             <longFlag>use-weights</longFlag>
+             <required>false</required>
+             <stringParser>
+                <classname>BooleanStringParser</classname>
+             </stringParser>
+             <defaults>
+                <string>false</string>
+             </defaults>
+             <help>Whether weights should be used to adjust read counts. When the flag is true, this mode will try to load a weights file associated with each input basename ('basename'.weight). If found, the weights are used to adjust the read count for annotations.</help>
         </flaggedOption>
         <flaggedOption>
             <id>groups</id>

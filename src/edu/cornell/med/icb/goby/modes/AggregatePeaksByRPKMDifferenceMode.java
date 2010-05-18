@@ -250,7 +250,7 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
                 for (final AnnotationRPKM annot : annots) {
                     final int start = annot.getStart();
                     final int end = annot.getEnd();
-                    final int overlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(start, end);
+                    final double overlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(start, end);
 
                     final double rpkm = calculateRPKM(overlapReads, annot.getLength(), numAlignedReadsInSample);
                     annot.rpkm += rpkm;
@@ -259,10 +259,10 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
         }
     }
 
-    private float calculateRPKM(final int readCountInt, final int annotLength, final int geneOverlapReads) {
-        final float readCount = readCountInt;
-        final float length = annotLength; // in bases
-        final float sampleReadCount = geneOverlapReads; // in read
+    private double calculateRPKM(final double readCountInt, final int annotLength, final double geneOverlapReads) {
+        final double readCount = readCountInt;
+        final double length = annotLength; // in bases
+        final double sampleReadCount = geneOverlapReads; // in read
         return readCount / (length / 1000.0f) / (sampleReadCount / 1E6f);
     }
 

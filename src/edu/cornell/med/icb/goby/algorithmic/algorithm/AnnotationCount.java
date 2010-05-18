@@ -20,7 +20,6 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Read;
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -29,7 +28,7 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 
 import java.util.Collections;
 
-public class AnnotationCount {
+public class AnnotationCount implements AnnotationCountInterface {
     private final ObjectList<Read> reads;
     private final IntList readStart;
     private final ComputeCount baseCounter;
@@ -41,8 +40,20 @@ public class AnnotationCount {
         reads = new ObjectArrayList<Read>();
     }
 
-    public AbstractCount getBaseCounter() {
+    public ComputeCountInterface getBaseCounter() {
         return baseCounter;
+    }
+
+    /**
+     * Populate the data structures with start and end positions.
+     * This implementation ignores queryIndex.
+     *
+     * @param startPosition
+     * @param endPosition
+     * @param queryIndex
+     */
+    public void populate(int startPosition, int endPosition, int queryIndex) {
+        this.populate(startPosition, endPosition);
     }
 
     public final void populate(final int startPosition, final int endPosition) {
@@ -94,7 +105,7 @@ public class AnnotationCount {
      * requires baseRun to generate the countPerBase hashmap
      *
      * @param start of a segment
-     * @param end of a segment
+     * @param end   of a segment
      * @return average count per base on this segment
      */
     public final float averageReadsPerPosition(final int start, final int end) {
@@ -135,7 +146,7 @@ public class AnnotationCount {
         if (end < start) {
             return 0;
         } else {
-           return ((float)sum) / ((float)segmentSize);
+            return ((float) sum) / ((float) segmentSize);
         }
     }
 
@@ -143,24 +154,19 @@ public class AnnotationCount {
      * Return the number of reads that map within exons of an annotation, excluding intron counts.
      *
      * @param annot an annotation
-    * @return number of reads covered on the genes except all reads exclusively in introns
+     * @return number of reads covered on the genes except all reads exclusively in introns
      */
-    public int geneExpressionCount(final Annotation annot) {
-        int sum = countReadsPartiallyOverlappingWithInterval(annot.getStart(), annot.getEnd());
+    public double geneExpressionCount(final Annotation annot) {
+        double sum = countReadsPartiallyOverlappingWithInterval(annot.getStart(), annot.getEnd());
         final int numIntrons = annot.getSegments().size() - 1;
         for (int k = 0; k < numIntrons; k++) {
             sum -= countReadsStriclyWithinInterval(annot.getSegments().get(k).getEnd() + 1, annot.getSegments().get(k + 1).getStart() - 1);
         }
         return sum;
     }
-     public float geneReweightedExpressionCount(final Annotation annot, final FloatArrayList weights) {
-        int sum = countReadsPartiallyOverlappingWithInterval(annot.getStart(), annot.getEnd());
-        final int numIntrons = annot.getSegments().size() - 1;
-        for (int k = 0; k < numIntrons; k++) {
-            sum -= countReadsStriclyWithinInterval(annot.getSegments().get(k).getEnd() + 1, annot.getSegments().get(k + 1).getStart() - 1);
-        }
-        return sum;
-    }
+
+
+
     /**
      * Returns the number of reads completely contained within an interval of the reference sequence.
      *
@@ -168,7 +174,7 @@ public class AnnotationCount {
      * @param end   position
      * @return the number of reads
      */
-    public int countReadsStriclyWithinInterval(final int start, final int end) {
+    public double countReadsStriclyWithinInterval(final int start, final int end) {
         final int n = reads.size();
         int i = getIndex(start, readStart);
         int count = 0;
@@ -186,7 +192,6 @@ public class AnnotationCount {
     }
 
 
-
     /**
      * Returns the number of reads that partially overlap  with the given annotation interval.
      *
@@ -194,7 +199,7 @@ public class AnnotationCount {
      * @param end   position
      * @return the number of reads
      */
-    public int countReadsPartiallyOverlappingWithInterval(final int start, final int end) {
+    public double countReadsPartiallyOverlappingWithInterval(final int start, final int end) {
         return getValue(end, baseCounter.startKeys, baseCounter.starts)
                 - getValue(start, baseCounter.endKeys, baseCounter.ends);
     }

@@ -22,8 +22,11 @@ import cern.colt.Timer;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCount;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationWeightCount;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCountInterface;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
+import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
@@ -44,18 +47,16 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
+import it.unimi.dsi.fastutil.io.BinIO;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Arrays;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Reads a compact alignment and genome annotations and output read counts that overlap with
@@ -89,7 +90,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     /**
      * The output file.
      */
-    private String outputFile;
+    private String outputFilename;
     /**
      * The annotation file.
      */
@@ -113,6 +114,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      */
 
     private ObjectArraySet<NormalizationMethod> normalizationMethods;
+
+    private boolean useWeights;
 
 
     @Override
@@ -142,7 +145,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         writeAnnotationCounts = jsapResult.getBoolean("write-annotation-counts");
         omitNonInformativeColumns = jsapResult.getBoolean("omit-non-informative-columns");
         inputFilenames = jsapResult.getStringArray("input");
-        outputFile = jsapResult.getString("output");
+        outputFilename = jsapResult.getString("output");
+        useWeights = jsapResult.getBoolean("use-weights");
         statsFilename = jsapResult.getString("stats");
         final String groupsDefinition = jsapResult.getString("groups");
         deAnalyzer.parseGroupsDefinition(groupsDefinition, deCalculator, inputFilenames);
@@ -167,6 +171,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         }
         parseAnnotations(jsapResult);
         normalizationMethods = deAnalyzer.parseNormalization(jsapResult);
+
+
         return this;
     }
 
@@ -225,6 +231,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 }
             });
         }
+
+
     }
 
     protected synchronized ParallelTeam getParallelTeam() {
@@ -255,11 +263,13 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         timer.start();
         BufferedWriter writer = null;
         try {
-            if (outputFile != null) {
-                writer = new BufferedWriter(new FileWriter(outputFile));
+
+            if (outputFilename != null) {
+                writer = new BufferedWriter(new FileWriter(outputFilename));
                 writer.write("basename\tmain-id\tsecondary-id\ttype\tchro\tstrand\tlength\tstart\tend\tin-count\tover-count\tRPKM\tlog2(RPKM+1)\texpression\tnum-exons\n");
             }
             final BasenameParallelRegion region = new BasenameParallelRegion(allAnnots, inputFilenames, writer);
+
             try {
                 getParallelTeam().execute(region);
             } catch (Exception e) {
@@ -286,6 +296,14 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
     private void processOneBasename(final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots,
                                     BufferedWriter writer, final String inputFile, final String inputBasename) throws IOException {
+
+        WeightsInfo weights = null;
+        if (useWeights) {
+            weights = loadWeights(inputBasename, useWeights);
+        } else {
+            System.err.println("Weights have not been provided, the 'reweightedCounts' column will contain the same value as count.");
+        }
+
         final AlignmentReader reader = new AlignmentReader(inputBasename);
         reader.readHeader();
         final int numberOfReferences = reader.getNumberOfTargets();
@@ -293,7 +311,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         final DoubleIndexedIdentifier referenceIds = new DoubleIndexedIdentifier(reader.getTargetIdentifiers());
         reader.close();
         System.out.println(String.format("Alignment contains %d reference sequences", numberOfReferences));
-        final AnnotationCount[] algs = new AnnotationCount[numberOfReferences];
+        final AnnotationCountInterface[] algs = new AnnotationCountInterface[numberOfReferences];
         final IntSet referencesToProcess = new IntOpenHashSet();
 
         // create count writers, one for each reference sequence in the alignment:
@@ -310,7 +328,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 referencesToProcess.add(referenceIndex);
             }
             if (referencesToProcess.contains(referenceIndex)) {
-                algs[referenceIndex] = new AnnotationCount();
+                algs[referenceIndex] = useWeights ? new AnnotationWeightCount(weights) : new AnnotationCount();
                 algs[referenceIndex].getBaseCounter().startPopulating();
             }
         }
@@ -330,7 +348,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 final int alignmentLength = alignmentEntry.getQueryAlignedLength();
                 //shifted the ends populating by 1
                 for (int i = 0; i < alignmentEntry.getMultiplicity(); ++i) {
-                    algs[referenceIndex].populate(startPosition, startPosition + alignmentLength);
+                    algs[referenceIndex].populate(startPosition, startPosition + alignmentLength, alignmentEntry.getQueryIndex());
                     ++numAlignedReadsInSample;
                 }
             }
@@ -341,7 +359,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
         deCalculator.setNumAlignedInSample(sampleId, numAlignedReadsInSample);
 
-        if (outputFile == null) {
+        if (outputFilename == null) {
             // output filename was not provided on the command line. We make one output per input basename
             if (writeAnnotationCounts) {
                 final String outputFileTmp = FilenameUtils.removeExtension(inputFile) + ".ann-counts.tsv";
@@ -351,16 +369,34 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         }
 
         writeAnnotationCounts(allAnnots, writer, inputBasename, referenceIds, algs, referencesToProcess);
-        if (outputFile == null) {
+        if (outputFilename == null) {
             // output filename was not provided on the command line. We close each basename output.
             IOUtils.closeQuietly(writer);
         }
     }
 
+    public static WeightsInfo loadWeights(String inputBasename, boolean useWeights) {
+        WeightsInfo weights = null;
+        if (useWeights) {
+
+            try {
+                weights = WeightsInfo.loadForBasename(inputBasename);
+            } catch (IOException e) {
+                LOG.error("Cannot load weights file for " + inputBasename);
+                System.exit(1);
+            } catch (ClassNotFoundException e) {
+                LOG.error("Cannot load weights file for " + inputBasename);
+                System.exit(1);
+            }
+
+        }
+        return weights;
+    }
+
 
     private void writeAnnotationCounts(final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots,
                                        final BufferedWriter writer, final String inputBasename,
-                                       final DoubleIndexedIdentifier referenceIds, final AnnotationCount[] algs,
+                                       final DoubleIndexedIdentifier referenceIds, final AnnotationCountInterface[] algs,
                                        final IntSet referencesToProcess) throws IOException {
 
         // collect all element ids:
@@ -452,15 +488,16 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     final int geneEnd = annot.getEnd();
                     final int geneLength = geneEnd - geneStart + 1;
                     final float geneDepth = algs[referenceIndex].averageReadsPerPosition(geneStart, geneEnd);
-                    final int geneOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(geneStart, geneEnd);
-                    final int geneInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(geneStart, geneEnd);
-                    final int geneExpression = algs[referenceIndex].geneExpressionCount(annot);
+                    final double geneOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(geneStart, geneEnd);
+                    final double geneInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(geneStart, geneEnd);
+                    final double geneExpression = algs[referenceIndex].geneExpressionCount(annot);
+
                     final int numExons = annot.getSegments().size();
 
-
-                    final double geneRPKM = deCalculator.calculateNormalized(geneOverlapReads, annot.getLength(), deCalculator.getNumAlignedInSample(sampleId));
+                    final double geneRPKM = deCalculator.calculateNormalized(geneOverlapReads, annot.getLength(),
+                            deCalculator.getNumAlignedInSample(sampleId));
                     if (writeAnnotationCounts) {
-                        writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g\t%d\t%d%n",
+                        writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%g\t%g\t%g\t%g\t%g\t%d%n",
                                 basename,
                                 geneID,
                                 "",
@@ -496,12 +533,12 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                         final int exonLength = segment.getLength();
                         final String exonID = segment.getId();
                         final float exonDepth = algs[referenceIndex].averageReadsPerPosition(exonStart, exonEnd);
-                        final int exonOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(exonStart, exonEnd);
-                        final int exonInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(exonStart, exonEnd);
+                        final double exonOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(exonStart, exonEnd);
+                        final double exonInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(exonStart, exonEnd);
                         final double exonRPKM = deCalculator.calculateNormalized(exonOverlapReads, segment.getLength(), deCalculator.getNumAlignedInSample(sampleId));
                         if (includeAnnotationTypes.contains("exon")) {
                             if (writeAnnotationCounts) {
-                                writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%g\t%g%n",
+                                writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%g\t%g\t%g\t%g%n",
                                         basename,
                                         geneID,
                                         exonID,
@@ -528,13 +565,13 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                             final int intronLength = intronEnd - intronStart + 1;
                             final String intronID = segment.getId() + "-" + intronSegment.getId();
                             final float intronDepth = algs[referenceIndex].averageReadsPerPosition(intronStart, intronEnd);
-                            final int intronOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(intronStart, intronEnd);
-                            final int intronInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(intronStart, intronEnd);
+                            final double intronOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(intronStart, intronEnd);
+                            final double intronInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(intronStart, intronEnd);
                             final double intronRPKM = deCalculator.calculateNormalized(intronOverlapReads, intronSegment.getLength(), deCalculator.getNumAlignedInSample(sampleId));
                             if (intronLength > 0) {
                                 if (includeAnnotationTypes.contains("intron")) {
                                     if (writeAnnotationCounts) {
-                                        writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%e\t%g%n",
+                                        writer.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%g\t%g\t%e\t%g%n",
                                                 basename,
                                                 geneID,
                                                 intronID,
@@ -583,12 +620,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         return Math.log1p(x) / LOG_2;
     }
 
-    private double calculateRPKM(final int readCountInt, final int annotLength, final int geneOverlapReads) {
-        final double readCount = readCountInt;
-        final double length = annotLength; // in bases
-        final double sampleReadCount = geneOverlapReads; // in read
-        return readCount / (length / 1000.0f) / (sampleReadCount / 1E6f);
-    }
+   
 
     /**
      * Read tab delimited annotation file including 6 columns : chromosome, strand, transcriptID,

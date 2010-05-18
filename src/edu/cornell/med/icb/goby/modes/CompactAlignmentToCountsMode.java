@@ -23,6 +23,9 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeCount;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeStartCount;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeWeightCount;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeCountInterface;
+import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.counts.CountsArchiveWriter;
@@ -72,6 +75,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
     private int focusOnStrand;
 
     private String countArchiveModifier = COUNT_ARCHIVE_MODIFIER_DEFAULT;
+    private boolean useWeights;
 
     @Override
     public String getModeName() {
@@ -104,7 +108,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         }
 
         basenames = basenameSet.toArray(new String[basenameSet.size()]);
-
+        useWeights = jsapResult.getBoolean("use-weights");
         optionalOutputFile = jsapResult.getString("output");
 
         final String includeReferenceNameCommas = jsapResult.getString("include-reference-names");
@@ -162,11 +166,17 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         final DoubleIndexedIdentifier referenceIds = new DoubleIndexedIdentifier(reader.getTargetIdentifiers());
         reader.close();
         System.out.println(String.format("Alignment contains %d reference sequences", numberOfReferences));
-        final ComputeCount[] algs = new ComputeCount[numberOfReferences];
+        final ComputeCountInterface[] algs = new ComputeCountInterface[numberOfReferences];
         final CountsArchiveWriter countArchive;
         countArchive = new CountsArchiveWriter(basename, countArchiveModifier);
         //  CountsWriter writers[] = new CountsWriter[numberOfReferences];
         final IntSet referencesToProcess = new IntOpenHashSet();
+        WeightsInfo weights = null;
+        if (useWeights) {
+            weights = CompactAlignmentToAnnotationCountsMode.loadWeights(basename, useWeights);
+            if (weights != null)
+                System.err.println("Weights have been provided and loaded and will be used to reweight counts.");
+        }
 
         // create count writers, one for each reference sequence in the alignment:
         for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
@@ -183,7 +193,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
 
             if (referencesToProcess.contains(referenceIndex)) {
                 if (accumulatePeakHistogram) {
-                    algs[referenceIndex] = new ComputeCount();
+                    algs[referenceIndex] = useWeights ? new ComputeWeightCount(weights) : new ComputeCount();
                 } else {
                     algs[referenceIndex] = new ComputeStartCount(focusOnStrand);
                 }
@@ -205,7 +215,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
                 for (int i = 0; i < alignmentEntry.getMultiplicity(); ++i) {
 
                     algs[referenceIndex].populate(startPosition, startPosition + alignmentLength,
-                            !alignmentEntry.getMatchingReverseStrand());
+                            !alignmentEntry.getMatchingReverseStrand(), alignmentEntry.getQueryIndex());
                 }
             }
         }

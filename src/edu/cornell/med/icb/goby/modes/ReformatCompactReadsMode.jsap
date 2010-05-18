@@ -138,7 +138,7 @@
         </flaggedOption>
         <flaggedOption>
             <id>trim-read-length</id>
-            <shortFlag>t</shortFlag>
+          
             <longFlag>trim-read-length</longFlag>
             <stringParser>
                 <classname>IntegerStringParser</classname>
@@ -148,6 +148,19 @@
                 <string>2147483647</string>
             </defaults>
             <help>When this option is present read lengths will be trimmed to a maximum length of this value.  Unlike the maximum-read-length, all reads are kept but may be trimmed.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>trim-read-start</id>
+            <shortFlag>t</shortFlag>
+            <longFlag>trim-read-start</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>-1</string>
+            </defaults>
+            <help>When this option is present read lengths will be start trimmed by the specified number of characters.</help>
         </flaggedOption>
     </parameters>
 </jsap>

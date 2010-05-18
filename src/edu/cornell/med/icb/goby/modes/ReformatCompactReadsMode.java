@@ -94,14 +94,24 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
     private int trimReadLength = Integer.MAX_VALUE;
     private final ObjectSet<String> outputFilenames = new ObjectOpenHashSet<String>();
 
-    /** An "unset" value for startPosition and endPosition. */
+    /**
+     * An "unset" value for startPosition and endPosition.
+     */
     private boolean hasStartOrEndPosition;
 
-    /** The start position for the reformat. */
+    /**
+     * The start position for the reformat.
+     */
     private long startPosition;
 
-    /** The end position for the reformat. */
+    /**
+     * The end position for the reformat.
+     */
     private long endPosition = Long.MAX_VALUE;
+    /**
+     * The number of bases to trim at the start of the sequence.
+     */
+    private int trimReadStartLength = Integer.MIN_VALUE;
 
     @Override
     public String getModeName() {
@@ -118,7 +128,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws IOException error parsing
+     * @throws IOException   error parsing
      * @throws JSAPException error parsing
      */
     @Override
@@ -134,6 +144,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
         minReadLength = jsapResult.getInt("minimum-read-length", minReadLength);
         maxReadLength = jsapResult.getInt("maximum-read-length", maxReadLength);
         trimReadLength = jsapResult.getInt("trim-read-length", trimReadLength);
+        trimReadStartLength = jsapResult.getInt("trim-read-start", trimReadLength);
         mutateSequences = jsapResult.getBoolean("mutate-sequences");
         numberOfMismatches = jsapResult.getInt("mismatch-number");
 
@@ -159,6 +170,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
 
     /**
      * Reformat compact reads.
+     *
      * @throws IOException
      */
     @Override
@@ -237,6 +249,9 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
                     // trim the read length down to size
                     if (sequence.length() > trimReadLength) {
                         sequence.length(trimReadLength);
+                    }
+                    if (trimReadStartLength < sequence.length()) {
+                        sequence.delete(0, trimReadStartLength);
                     }
                     if (mutateSequences) {
                         mutate(sequence, numberOfMismatches);
@@ -352,6 +367,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
 
     /**
      * Returns the set of filenames where data was output.
+     *
      * @return The list of filenames that were created as a result of the reformat operation
      */
     public String[] getOutputFilenames() {
@@ -366,6 +382,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
      * Set the end position. This will stop copying records
      * ending at the endPosition. If endPosition is in the
      * middle of a record, this will copy to the end of that record.
+     *
      * @param endPosition the start position
      */
     public void setEndPosition(final long endPosition) {
@@ -378,6 +395,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
      * Get the end position. This will stop copying records
      * ending at the endPosition. If endPosition is in the
      * middle of a record, this will copy to the end of that record.
+     *
      * @return the start position
      */
     public long getEndPosition() {
@@ -389,6 +407,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
      * starting at the startPosition. If startPosition is in the
      * middle of a record, this will advance to the start of the
      * next record.
+     *
      * @param startPosition the start position
      */
     public void setStartPosition(final long startPosition) {
@@ -402,6 +421,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
      * starting at the startPosition. If startPosition is in the
      * middle of a record, this will advance to the start of the
      * next record.
+     *
      * @return the start position
      */
     public long getStartPosition() {

@@ -399,9 +399,9 @@ public class WithinGroupVariabilityMode extends AbstractGobyMode {
                     final int geneEnd = annot.getEnd();
                     final int geneLength = geneEnd - geneStart + 1;
                     final float geneDepth = algs[referenceIndex].averageReadsPerPosition(geneStart, geneEnd);
-                    final int geneOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(geneStart, geneEnd);
-                    final int geneInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(geneStart, geneEnd);
-                    final int geneExpression = algs[referenceIndex].geneExpressionCount(annot);
+                    final double geneOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(geneStart, geneEnd);
+                    final double geneInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(geneStart, geneEnd);
+                    final double geneExpression = algs[referenceIndex].geneExpressionCount(annot);
                     final int numExons = annot.getSegments().size();
 
 
@@ -425,8 +425,8 @@ public class WithinGroupVariabilityMode extends AbstractGobyMode {
                         final int exonLength = segment.getLength();
                         final String exonID = segment.getId();
                         final float exonDepth = algs[referenceIndex].averageReadsPerPosition(exonStart, exonEnd);
-                        final int exonOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(exonStart, exonEnd);
-                        final int exonInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(exonStart, exonEnd);
+                        final double exonOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(exonStart, exonEnd);
+                        final double exonInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(exonStart, exonEnd);
                         final double exonRPKM = deCalculator.calculateNormalized(exonOverlapReads, segment.getLength(), deCalculator.getNumAlignedInSample(sampleId));
                         if (includeAnnotationTypes.contains("exon")) {
 
@@ -442,8 +442,8 @@ public class WithinGroupVariabilityMode extends AbstractGobyMode {
                             final int intronLength = intronEnd - intronStart + 1;
                             final String intronID = segment.getId() + "-" + intronSegment.getId();
                             final float intronDepth = algs[referenceIndex].averageReadsPerPosition(intronStart, intronEnd);
-                            final int intronOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(intronStart, intronEnd);
-                            final int intronInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(intronStart, intronEnd);
+                            final double intronOverlapReads = algs[referenceIndex].countReadsPartiallyOverlappingWithInterval(intronStart, intronEnd);
+                            final double intronInsideReads = algs[referenceIndex].countReadsStriclyWithinInterval(intronStart, intronEnd);
                             final double intronRPKM = deCalculator.calculateNormalized(intronOverlapReads, intronSegment.getLength(), deCalculator.getNumAlignedInSample(sampleId));
                             if (intronLength > 0) {
                                 if (includeAnnotationTypes.contains("intron")) {

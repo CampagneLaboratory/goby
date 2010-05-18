@@ -19,31 +19,41 @@
 <jsap>
     <parameters>
         <flaggedOption>
-            <id>output</id>
-            <shortFlag>o</shortFlag>
-            <longFlag>output</longFlag>
+            <id>heptamer-counts</id>
+            <shortFlag>c</shortFlag>
+            <longFlag>heptamer-counts</longFlag>
             <required>false</required>
-            <help>The output filename.</help>
+             <defaults>
+                <string>heptamer-counts.tsv</string>
+            </defaults>
+            <help>The filename where heptamer count statistics will be written (in tab delimited format).</help>
         </flaggedOption>
         <flaggedOption>
             <id>weights</id>
             <shortFlag>w</shortFlag>
             <longFlag>weights</longFlag>
             <required>false</required>
-             <defaults>
-                <string>weights.tsv</string>
-            </defaults>
-            <help>The filename where weights will be written for individual heptamers.</help>
+            <help>The filename where weights will be written for individual heptamers (in tab delimited format).</help>
         </flaggedOption>
          <flaggedOption>
             <id>map</id>
-            <shortFlag>m</shortFlag>
+            <shortFlag>p</shortFlag>
             <longFlag>map</longFlag>
             <required>false</required>
              <defaults>
                 <string>read-index-to-heptamer-weights.bin</string>
             </defaults>
             <help>The filename where a map will be written that associates individual read indices (in the input) to weight. Such maps can for instance be used by alignment to transcript count to produce reweighted transcript counts.</help>
+        </flaggedOption>
+         <flaggedOption>
+            <id>heptamer-info</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>heptamer-info</longFlag>
+            <required>false</required>
+             <defaults>
+                <string>heptamer-info.bin</string>
+            </defaults>
+            <help>The filename where heptamer information will be written. This file contains enough information to map a set of new reads to weights.</help>
         </flaggedOption>
         <unflaggedOption>
             <id>input</id>

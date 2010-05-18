@@ -318,7 +318,7 @@ public class Merge {
         tmhMap.defaultReturnValue(0);
         // accumulate too many hits over all the input alignments:
         int consensusAlignerThreshold = Integer.MAX_VALUE;
-        // todo refactor to use array:
+
         final int[] queryIndex2MaxDepth = new int[numberOfReads];
         Arrays.fill(queryIndex2MaxDepth, -1);
         // calculate maxDepth for each query sequence:

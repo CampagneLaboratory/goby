@@ -42,7 +42,15 @@ import java.util.Properties;
 public class ConcatAlignmentReader extends AbstractAlignmentReader {
     private final AlignmentReader[] readers;
     private final IntSet readersWithMoreEntries;
+    /**
+     * One element per reader:
+     */
+
     private final int[] numQueriesPerReader;
+    /**
+     * One element per reader:
+     */
+
     private final int[] queryIndexOffset;
 
     private int activeIndex;

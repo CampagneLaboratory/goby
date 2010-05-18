@@ -1,3 +1,9 @@
+development -> 1.7
+ - Support to estimate read weights described in Hansen KD et al NAR 2010.
+   See http://campagnelab.org/software/goby/tutorials/estimate-heptamer-weights/
+   In contrast to the initial publication, Goby supports using the weights to
+   reweight annotation counts and transcript counts.
+
 1.6
  - First draft of the Goby Python API and demonstration tools (see
    directory python).

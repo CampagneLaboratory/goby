@@ -141,6 +141,7 @@ message SequenceVariation {
 */
 
 message AlignmentHeader {
+   
    /* Mapping from query identifier name to query index (as used in alignment entries).
     */
    optional IdentifierMapping query_name_mapping=1;

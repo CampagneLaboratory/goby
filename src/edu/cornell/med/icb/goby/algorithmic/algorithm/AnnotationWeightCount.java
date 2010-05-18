@@ -21,7 +21,7 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Read;
 import edu.cornell.med.icb.goby.algorithmic.data.ReadWithIndex;
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
+import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -34,18 +34,18 @@ import java.util.Collections;
  * Calculates annotation counts with count reweighting.
  * This class was copied from AnnotationCount and adapted to use ReadWithIndex and ComputeWeightCount.
  */
-public class AnnotationWeightCount {
+public class AnnotationWeightCount implements AnnotationCountInterface {
     private final ObjectList<ReadWithIndex> reads;
     private final IntList readStart;
     private final ComputeWeightCount baseCounter;
-    private final FloatArrayList weights;
+    private WeightsInfo weights;
 
     /**
      * Constructor.
      *
      * @param weights An array whose indices are read indices and elements are weights corresponding to each read.
      */
-    public AnnotationWeightCount(final FloatArrayList weights) {
+    public AnnotationWeightCount(WeightsInfo weights) {
         super();
         baseCounter = new ComputeWeightCount(weights);
         readStart = new IntArrayList();
@@ -58,7 +58,7 @@ public class AnnotationWeightCount {
      *
      * @return
      */
-    public AbstractCount getBaseCounter() {
+    public ComputeCountInterface getBaseCounter() {
         return baseCounter;
     }
 
@@ -193,7 +193,7 @@ public class AnnotationWeightCount {
         while (i < n) {
             final ReadWithIndex read = reads.get(i);
             if (read.start >= start && read.end <= end) {
-                count += weights.get(read.readIndex);
+                count += weights.getWeight(read.readIndex);
             } else if (read.start > end) {
                 break;
             }

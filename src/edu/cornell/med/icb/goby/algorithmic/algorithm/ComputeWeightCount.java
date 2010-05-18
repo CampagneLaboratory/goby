@@ -19,16 +19,9 @@
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
 import edu.cornell.med.icb.goby.algorithmic.data.ReadWithIndex;
+import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.goby.counts.CountsWriter;
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
-import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
-import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.ints.Int2FloatMap;
-import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.ints.IntSortedSet;
+import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,7 +32,7 @@ import java.util.Collections;
 /**
  * Data structure and algorithm to compute base-level read coverage histogram over a reference sequence.
  */
-public class ComputeWeightCount implements AbstractCount {
+public class ComputeWeightCount implements ComputeCountInterface {
     /**
      * Used to log debug and informational messages.
      */
@@ -67,9 +60,9 @@ public class ComputeWeightCount implements AbstractCount {
     protected int fixedLength;
     protected boolean isFixedLength;
     protected boolean startPopulateInitialized;
-    private final FloatArrayList weights;
+    private WeightsInfo weights;
 
-    public ComputeWeightCount(final FloatArrayList weights) {
+    public ComputeWeightCount(WeightsInfo weights) {
         super();
         startKeys = new IntArrayList();
         endKeys = new IntArrayList();
@@ -119,15 +112,15 @@ public class ComputeWeightCount implements AbstractCount {
      * @param readIndex  index of the read for the alignment entry being processed.
      * @return length of the read.
      */
-    public double populate(final int startIndex, final int endIndex, final int readIndex) {
+    public double populate(final int startIndex, final int endIndex, int readIndex) {
         assert startPopulateInitialized : "You must call startPopulating before you can populate.";
 
         double sval = starts.get(startIndex);
-        sval += weights.get(readIndex);
+        sval += weights.getWeight(readIndex);
         starts.put(startIndex, sval);
 
         double eval = ends.get(endIndex + 1);
-        eval += weights.get(readIndex);
+        eval += weights.getWeight(readIndex);
         ends.put(endIndex + 1, eval);
 
         return endIndex - startIndex;
@@ -214,7 +207,7 @@ public class ComputeWeightCount implements AbstractCount {
             }
             count = startValue - endValue;
             if (count != prevCount) {
-                countPerBase.put(curKey, (float)count);
+                countPerBase.put(curKey, (float) count);
                 prevCount = count;
             }
         }
@@ -254,7 +247,7 @@ public class ComputeWeightCount implements AbstractCount {
             count = startValue - endValue;
             lengthConstant += curKey - prevKey;
             if (count != prevCount) {
-                writer.appendCount((int)Math.round(prevCount), lengthConstant);
+                writer.appendCount((int) Math.round(prevCount), lengthConstant);
                 prevCount = count;
                 lengthConstant = 0;
             }
@@ -269,7 +262,7 @@ public class ComputeWeightCount implements AbstractCount {
      * @return the number of counts on the reference
      */
     public int totalCountOnReference() {
-        return (int)Math.round(starts.get(startKeys.getInt(startKeys.size() - 1)));
+        return (int) Math.round(starts.get(startKeys.getInt(startKeys.size() - 1)));
     }
 
     /**
@@ -281,7 +274,7 @@ public class ComputeWeightCount implements AbstractCount {
      */
 
     public void populate(final int startPosition, final int endPosition, final boolean forwardStrand) {
-       throw new UnsupportedOperationException("This implementation does not support strand specific populate.");
+        throw new UnsupportedOperationException("This implementation does not support strand specific populate.");
     }
 
     public Int2FloatMap getCountPerBase() {
@@ -291,5 +284,17 @@ public class ComputeWeightCount implements AbstractCount {
     public IntList getCountKeys() {
 
         return countKeys;
+    }
+
+    /**
+     * This implementation ignores strand.
+     *
+     * @param startPosition
+     * @param endPosition
+     * @param forwardStrand
+     * @param queryIndex
+     */
+    public void populate(int startPosition, int endPosition, boolean forwardStrand, int queryIndex) {
+        populate(startPosition, endPosition, queryIndex);
     }
 }

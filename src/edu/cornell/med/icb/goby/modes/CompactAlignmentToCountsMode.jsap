@@ -72,5 +72,18 @@
             </defaults>
             <help>When provided with the --start argument, consider only start positions on the specified strand.  Valid strand choices include {positive/forward, negative/reverse, both/either}.  </help>
         </flaggedOption>
+        <flaggedOption>
+                   <id>use-weights</id>
+                   <shortFlag>w</shortFlag>
+                   <longFlag>use-weights</longFlag>
+                   <required>false</required>
+             <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>false</string>
+            </defaults>
+                   <help>Whether weights should be used to adjust read counts. When the flag is true, this mode will try to load a weights file associated with each input basename ('basename'.weight). If found, the weights are used to adjust the read count for annotations.</help>
+        </flaggedOption>
     </parameters>
 </jsap>

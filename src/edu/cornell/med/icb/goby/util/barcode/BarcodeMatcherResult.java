@@ -31,7 +31,7 @@ import java.util.Map;
  *
  * @author Kevin Dorff
  */
-class BarcodeMatcherResult {
+public class BarcodeMatcherResult {
     /** Logging. */
     private static final Log LOG = LogFactory.getLog(BarcodeMatcherResult.class);
 

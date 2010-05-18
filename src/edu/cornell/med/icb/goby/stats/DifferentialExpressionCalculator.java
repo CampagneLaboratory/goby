@@ -52,6 +52,7 @@ public class DifferentialExpressionCalculator {
 
     /**
      * Return the type of the element.
+     *
      * @param elementId
      * @return ElementType
      */
@@ -90,6 +91,13 @@ public class DifferentialExpressionCalculator {
     }
 
     public double calculateNormalized(final int readCountInt, final int annotLength, final double normalizationFactor) {
+        final double readCount = readCountInt;
+        final double length = annotLength; // in bases
+        final double sampleReadCount = normalizationFactor; // in reads
+        return readCount / (length / 1000.0d) / (normalizationFactor / 1E6d);
+    }
+
+    public double calculateNormalized(final double readCountInt, final int annotLength, final double normalizationFactor) {
         final double readCount = readCountInt;
         final double length = annotLength; // in bases
         final double sampleReadCount = normalizationFactor; // in reads
@@ -158,6 +166,18 @@ public class DifferentialExpressionCalculator {
     public int getElementLength(final MutableString elementId) {
         final int elementIndex = elementLabels.getInt(elementId);
         return lengths.get(elementIndex);
+    }
+
+    /**
+     * Observe counts and RPKM for a sample.
+     *
+     * @param sample    sample id.
+     * @param elementId element id.
+     * @param count     Number of reads that can be assigned to the element.
+     */
+    public void observe(final String sample, final String elementId, final double count) {
+
+        this.observe(sample, elementId, (int) Math.round(count));
     }
 
     /**
