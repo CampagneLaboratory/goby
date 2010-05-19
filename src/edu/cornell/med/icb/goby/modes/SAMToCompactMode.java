@@ -75,6 +75,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     private boolean skipMissingMdAttribute = true;
     private int dummyQueryIndex;
 
+
     public String getSamBinaryFilename() {
         return samBinaryFilename;
     }
@@ -118,7 +119,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                        final AlignmentWriter writer, final AlignmentTooManyHitsWriter tmhWriter)
             throws IOException {
         int numAligns = 0;
-        final int[] readLengths = new int[numberOfReads];
+        final int[] readLengths = createReadLengthArray();
 
         final ProgressLogger progress = new ProgressLogger(LOG);
         final SAMFileReader parser = new SAMFileReader(new File(inputFile));
@@ -143,7 +144,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
          //   if (stopEarly > 10000) break;
             final int readLength = samRecord.getReadLength();
             // save length
-            readLengths[queryIndex] = readLength;
+            readLengths[queryIndex-getSmallestSplitQueryIndex()] = readLength;
 
             // if SAM reports read is unmapped (we don't know how or why), skip record
             if (samRecord.getReadUnmappedFlag()) {
@@ -301,6 +302,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         progress.stop();
         return numAligns;
     }
+
 
 
     private int getQueryIndex(final SAMRecord samRecord) {
@@ -507,5 +509,9 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
      */
     public static void main(final String[] args) throws JSAPException, IOException {
         new SAMToCompactMode().configure(args).execute();
+    }
+
+    public int getSmallestSplitQueryIndex() {
+        return smallestQueryIndex;
     }
 }

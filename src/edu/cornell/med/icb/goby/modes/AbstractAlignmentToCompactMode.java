@@ -41,7 +41,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
- * JSAP files must include baseclass options
+ * Abstract class for modes that convert alignment formats to compact format.
+ * The JSAP file of the concrete implementation must include the following options in addition to the options specific
+ * to the concrete mode.
  * <p/>
  * "input"
  * "output"
@@ -54,10 +56,10 @@ import java.io.IOException;
  * "quality-filter-parameters"
  * <p/>
  * <p/>
- * User: stu
- * Date: Sep 11, 2009
- * Time: 9:30:16 PM
- * To change this template use File | Settings | File Templates.
+ *
+ * @author Stuart Andrews
+ *         Date: Sep 11, 2009
+ *         Time: 9:30:16 PM
  */
 public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
     /**
@@ -95,7 +97,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
     protected AlignmentQualityFilter qualityFilter;
     protected File readIndexFilterFile;
     protected int mParameter = DEFAULT_M_PARAM;
-    protected int numberOfReads;
+    protected int numberOfReads = -1;
 
     /**
      * Identifiers for the query sequences in this alignment.
@@ -113,15 +115,21 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
      * <li>queryNames are not integers, but are strings that need to be converted to indices.</li>
      * <li>targetNames should be treated as strings and defined from the input.</li>
      * <li>targetLength information should be read from the input, not from a supplied target
-     *  file in compact format.</li>
+     * file in compact format.</li>
      * </ol>
-     *
+     * <p/>
      * False by default when constructed, overidden by configure with default
      * configuration=true when run as a mode on the command line, set to false
      * explictly each time another Goby mode needs to import internally the result
      * of a Goby search.
      */
     protected boolean thirdPartyInput = true;
+    protected int smallestQueryIndex;
+    protected int largestQueryIndex;
+
+    protected int[] createReadLengthArray() {
+        return new int[largestQueryIndex - smallestQueryIndex + 1];
+    }
 
     /**
      * Scan.
@@ -180,7 +188,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         final TransferIds transferIds = new TransferIds().invoke();
         final ReadSet readIndexFilter = transferIds.getReadIndexFilter();
         final AlignmentWriter writer = transferIds.getWriter();
-
+        assert largestQueryIndex>0 : "largestQueryIndex must be set";
         // This is ugly...
         targetIds.clear();
         targetIds.putAll(transferIds.getTargetIds());
@@ -192,7 +200,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         try {
 
             // initialize numberOfReads
-            if (transferIds.numberOfReads != 0) {
+            if (numberOfReads < 0 && transferIds.numberOfReads != 0) {
                 numberOfReads = transferIds.numberOfReads;
             }
             if (numberOfReads <= 0) {
@@ -208,6 +216,9 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
             qualityFilter = new PercentMismatchesQualityFilter();
             qualityFilter.setParameters(qualityFilterParameters);
 
+            writer.setSmallestSplitQueryIndex(smallestQueryIndex);
+            writer.setLargestSplitQueryIndex(largestQueryIndex);
+
             final int numAligns = scan(readIndexFilter, targetIds, writer, tmhWriter);
             System.out.println("Number of alignments written: " + numAligns);
             if (propagateQueryIds && !queryIds.isEmpty()) {
@@ -218,6 +229,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
                 // we collected target ids, let's write them to the header:
                 writer.setTargetIdentifiers(targetIds);
             }
+
 
         } finally {
             writer.close();
@@ -291,12 +303,24 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         this.thirdPartyInput = thirdPartyInput;
     }
 
+    public void setSmallestQueryIndex(int smallestQueryIndex) {
+        this.smallestQueryIndex = smallestQueryIndex;
+    }
+
+    public void setLargestQueryIndex(int largestQueryIndex) {
+        this.largestQueryIndex = largestQueryIndex;
+    }
+
+    public void setNumberOfQuerySequences(int numberOfReads) {
+        this.numberOfReadsFromCommandLine = numberOfReads;
+    }
+
 
     public class TransferIds {
         private ReadSet readIndexFilter;
         private AlignmentWriter writer;
         private IndexedIdentifier targetIds;
-        public int numberOfReads;
+        public int numberOfReads = -1;
         public int numberOfReadsForSplit;
         private int numberOfTargets;
 

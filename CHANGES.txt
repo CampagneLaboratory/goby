@@ -5,6 +5,11 @@ development -> 1.7
    reweight annotation counts and transcript counts.
  - Preliminary support for barcoded reads (barcodes in the sequence), see new
    mode decode-barcodes. 
+ - Reduce memory requirements when concatenating many alignments. A change
+   introduced in 1.6 caused more memory than needed to be allocated for each
+   split of an alignment (as much as the number of reads in the file that
+   was split). Each split now uses only as much memory as needed to keep
+   query lengths for the split.
 
 1.6
  - First draft of the Goby Python API and demonstration tools (see

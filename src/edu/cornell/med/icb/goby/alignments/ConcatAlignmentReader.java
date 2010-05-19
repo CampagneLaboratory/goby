@@ -107,12 +107,12 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
             int readerIndex = 0;
             numberOfQueries = 0;
             smallestQueryIndex = Integer.MAX_VALUE;
-            largestQueryIndex = adjustQueryIndices?Integer.MIN_VALUE:0;
+            largestQueryIndex = adjustQueryIndices ? Integer.MIN_VALUE : 0;
             for (final AlignmentReader reader : readers) {
                 reader.readHeader();
                 smallestQueryIndex = Math.min(reader.getSmallestSplitQueryIndex(), smallestQueryIndex);
-                largestQueryIndex = adjustQueryIndices?Math.max(reader.getLargestSplitQueryIndex(), largestQueryIndex):
-                        largestQueryIndex+1+reader.getLargestSplitQueryIndex();
+                largestQueryIndex = adjustQueryIndices ? Math.max(reader.getLargestSplitQueryIndex(), largestQueryIndex) :
+                        largestQueryIndex + 1 + reader.getLargestSplitQueryIndex();
 
                 targetNumbers.add(reader.getNumberOfTargets());
                 final int numQueriesForReader = reader.getNumberOfQueries();
@@ -131,19 +131,17 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
             targetIdentifiers = readers[0].getTargetIdentifiers();
             targetLengths = readers[0].getTargetLength();
 
-            queryLengths = new int[numberOfQueries];
+            queryLengths = new int[getLargestSplitQueryIndex()- getSmallestSplitQueryIndex()+1];
             int offset = 0;
             for (int i = 0; i < queryIndexOffset.length; i++) {
-                if (i == 0) {
-                    offset = 0;
-                } else {
-                    offset += numQueriesPerReader[i - 1];
-                }
+
+                offset = readers[i].getSmallestSplitQueryIndex();
+
                 queryIndexOffset[i] = adjustQueryIndices ? offset : 0;
                 final int[] localQueryLenths = readers[i].getQueryLengths();
                 if (localQueryLenths != null) {
                     System.arraycopy(localQueryLenths, 0, queryLengths,
-                            offset - readers[i].getSmallestSplitQueryIndex(), localQueryLenths.length);
+                            offset, localQueryLenths.length);
                 }
             }
 

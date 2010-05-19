@@ -426,4 +426,12 @@ public class AlignmentWriter implements Closeable {
             putStatistic(statistic.getKey().toString(), statistic.getValue().toString());
         }
     }
+
+    public void setSmallestSplitQueryIndex(int smallestQueryIndex) {
+        minQueryIndex=smallestQueryIndex;
+    }
+
+    public void setLargestSplitQueryIndex(int largestQueryIndex) {
+        maxQueryIndex=largestQueryIndex;
+    }
 }

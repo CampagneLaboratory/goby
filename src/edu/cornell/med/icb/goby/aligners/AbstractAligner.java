@@ -62,6 +62,8 @@ public abstract class AbstractAligner implements Aligner {
     protected String qualityFilterParameters = "threshold=0.05";
     protected int mParameter = 2;
     protected boolean keepTemporaryFiles;
+    private int smallestQueryIndex;
+    private int largestQueryIndex;
 
     /**
      * When true, will not delete the native aligner files generated during alignment. These files are deleted by default.
@@ -323,6 +325,8 @@ public abstract class AbstractAligner implements Aligner {
             processor.execute();
             numberOfReads = processor.getNumberOfSequences();
             minReadLength = processor.getMinSequenceLength();
+            smallestQueryIndex=processor.getSmallestQueryIndex();
+            largestQueryIndex=processor.getLargestQueryIndex();
             return new File(processor.getOutputFilename());
         }
     }
@@ -342,6 +346,9 @@ public abstract class AbstractAligner implements Aligner {
         processor.setQueryReadIdsFilename(readsFile.getPath());
         processor.setQualityFilterParameters(qualityFilterParameters);
         processor.setAmbiguityThreshold(mParameter);
+        processor.setSmallestQueryIndex(smallestQueryIndex);
+        processor.setLargestQueryIndex(largestQueryIndex);
+        processor.setNumberOfQuerySequences(numberOfReads);
         processor.execute();
 
         return buildResults(outputBasename);

@@ -161,7 +161,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
 
             final ProgressLogger progress = new ProgressLogger(LOG);
             final AlignmentStats stats = new AlignmentStats();
-            final int[] readLengths = new int[numberOfReads];
+            final int[] readLengths = createReadLengthArray();
 
             // first pass: collect minimum score to keep each queryEntry
             // second pass: write to compact alignment file for those entries with score above threshold
@@ -190,7 +190,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     final int depth = query.sequenceLength;
                     final int targetPosition = reference.alignedStart;
                     // save length
-                    readLengths[queryIndex] = depth;
+                    readLengths[queryIndex-smallestQueryIndex] = depth;
 
                     // we have a multiplicity filter. Use it to determine multiplicity.
                     int multiplicity = 1;

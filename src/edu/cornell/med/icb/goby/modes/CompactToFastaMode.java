@@ -66,10 +66,21 @@ public class CompactToFastaMode extends AbstractGobyMode {
     private static final int FASTA_LINE_LENGTH = 60;
 
     /**
-     * Constatnt quality score to use when writing a FASTQ file from a source file that
+     * Constant quality score to use when writing a FASTQ file from a source file that
      * contains no quality score values.
      */
     private static final byte FAKE_QUALITY_SCORE = 40;
+    private int smallestQueryIndex = Integer.MAX_VALUE;
+
+    private int largestQueryIndex = Integer.MIN_VALUE;
+
+    public int getSmallestQueryIndex() {
+        return smallestQueryIndex;
+    }
+
+    public int getLargestQueryIndex() {
+        return largestQueryIndex;
+    }
 
     /**
      * Output formats supported by Goby.
@@ -118,6 +129,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
 
     /**
      * Select the desired output format.
+     *
      * @param format The output format to convert to
      */
     public void setOutputFormat(final OutputFormat format) {
@@ -127,6 +139,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
     /**
      * Set the type of encoding to write quality scores.  Applies to
      * {@link OutputFormat#FASTQ} only.
+     *
      * @param qualityEncoding The encoding format to use.
      */
     public void setQualityEncoding(final QualityEncoding qualityEncoding) {
@@ -136,6 +149,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
     /**
      * Fet the type of encoding used to write quality scores.  Applies to
      * {@link OutputFormat#FASTQ} only.
+     *
      * @return The encoding format in use.
      */
     public QualityEncoding getQualityEncoding() {
@@ -308,6 +322,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
                     writer.write(newEntryCharacter);
                     writer.write(description);
                     writer.write('\n');
+                    observeReadIndex(readEntry.getReadIndex());
                     ReadsReader.decodeSequence(readEntry, sequence);
                     if (queryLengths != null) {
                         queryLengths.put(readEntry.getReadIndex(), sequence.length());
@@ -362,6 +377,11 @@ public class CompactToFastaMode extends AbstractGobyMode {
 
         progress.stop();
     }
+    // determine the values of smallestQueryIndex and largestQueryIndex over the input files.
+    private void observeReadIndex(int readIndex) {
+        smallestQueryIndex = Math.min(smallestQueryIndex, readIndex);
+        largestQueryIndex = Math.max(largestQueryIndex, readIndex);
+    }
 
 
     /**
@@ -387,7 +407,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
     /**
      * Write the sequence at 60 chars per line.
      *
-     * @param writer the writer
+     * @param writer   the writer
      * @param sequence the sequence
      * @throws IOException error reading
      */
@@ -408,11 +428,11 @@ public class CompactToFastaMode extends AbstractGobyMode {
      * Write quality scores, or fake some anyway if the input does not have any or
      * fakeQualityScores is true.
      *
-     * @param writer  Where to write quality scores.
-     * @param hasScores If the compact-reads file has quality scores.
-     * @param qualityScores The quality scores (Phred unit)
-     * @param fakeQualityScores  Whether quality scores should be faked.
-     * @param readLength The read lenth, used when faking.
+     * @param writer            Where to write quality scores.
+     * @param hasScores         If the compact-reads file has quality scores.
+     * @param qualityScores     The quality scores (Phred unit)
+     * @param fakeQualityScores Whether quality scores should be faked.
+     * @param readLength        The read lenth, used when faking.
      * @throws IOException If an error occured.
      */
     private void writeQualityScores(final Writer writer, final boolean hasScores,

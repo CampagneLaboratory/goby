@@ -105,14 +105,14 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
     public void execute() throws IOException {
         final String outputFilename = outputFile;
         final AlignmentWriter writer = new AlignmentWriter(outputFilename);
-        final String[] basenames  = AlignmentReader.getBasenames(inputFilenames);
+        final String[] basenames = AlignmentReader.getBasenames(inputFilenames);
         final ConcatAlignmentReader alignmentReader = new ConcatAlignmentReader(adjustQueryIndices, basenames);
         final ProgressLogger progress = new ProgressLogger();
-
+        progress.displayFreeMemory = true;
         int entriesInOutputFile = 0;
-        long numLogicalEntries  = 0;
-        long numEntries         = 0;
-        final int numQueries          = alignmentReader.getNumberOfQueries();
+        long numLogicalEntries = 0;
+        long numEntries = 0;
+        final int numQueries = alignmentReader.getNumberOfQueries();
 
         progress.start("concatenating entries");
 

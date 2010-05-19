@@ -45,6 +45,8 @@ public class TestLastToCompact {
         processor.setOutputFile("test-results/alignments/last-to-compact/last-101.compact");
         processor.setOnlyMafFile(true);
         processor.setNumberOfReads(2857819);
+        processor.setLargestQueryIndex(2857819);
+        processor.setSmallestQueryIndex(0);
         processor.setPropagateQueryIds(false);
         processor.setPropagateTargetIds(true);
         processor.execute();
@@ -147,6 +149,8 @@ public class TestLastToCompact {
         processor.setOutputFile("test-results/alignments/last-to-compact/last-102.compact");
         processor.setOnlyMafFile(true);
         processor.setNumberOfReads(3538282);
+        processor.setLargestQueryIndex(3538282);
+        processor.setSmallestQueryIndex(0);
         processor.setPropagateQueryIds(false);
         processor.setPropagateTargetIds(true);
         processor.execute();
@@ -622,6 +626,8 @@ public class TestLastToCompact {
         processor.setOutputFile("test-results/alignments/last-to-compact/last-103-variations.entries");
         processor.setOnlyMafFile(true);
         processor.setNumberOfReads(2857822);
+        processor.setLargestQueryIndex(2857822);
+        processor.setSmallestQueryIndex(0);
         processor.setPropagateQueryIds(false);
         processor.setPropagateTargetIds(true);
         processor.setQualityFilterParameters("threshold=1"); // allow everything to pass through, important to detect all variations in this test.
