@@ -26,13 +26,13 @@ Installation
 
 2) Download and install the prerequisite python packages:
 
-2a) Protocol Buffers
+a) Protocol Buffers
 
-    - Available from http://code.google.com/p/protobuf/ or PyPI
+   Available from http://code.google.com/p/protobuf/ or PyPI
 
-2b) pyjavaproperties - Python replacement for java.util.Properties
+b) pyjavaproperties - Python replacement for java.util.Properties
 
-   - Available from http://pypi.python.org/pypi/pyjavaproperties
+   Available from http://pypi.python.org/pypi/pyjavaproperties
 
 3) Install the Goby package:
 

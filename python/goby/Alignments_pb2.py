@@ -10,7 +10,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = descriptor.FileDescriptor(
   name='Alignments.proto',
   package='goby',
-  serialized_pb='\n\x10\x41lignments.proto\x12\x04goby\"E\n\x13\x41lignmentCollection\x12.\n\x10\x61lignmentEntries\x18\x01 \x03(\x0b\x32\x14.goby.AlignmentEntry\"\xd6\x02\n\x0e\x41lignmentEntry\x12\x14\n\x0cmultiplicity\x18\x07 \x01(\r\x12\x13\n\x0bquery_index\x18\x01 \x02(\r\x12\x14\n\x0ctarget_index\x18\x02 \x02(\r\x12\x10\n\x08position\x18\x03 \x02(\r\x12\x1f\n\x17matching_reverse_strand\x18\x06 \x02(\x08\x12\x16\n\x0equery_position\x18\x05 \x01(\r\x12\r\n\x05score\x18\x04 \x01(\x02\x12\x1c\n\x14number_of_mismatches\x18\x08 \x01(\r\x12\x18\n\x10number_of_indels\x18\t \x01(\r\x12\x1c\n\x14query_aligned_length\x18\x0b \x01(\r\x12\x1d\n\x15target_aligned_length\x18\x0c \x01(\r\x12\x34\n\x13sequence_variations\x18\r \x03(\x0b\x32\x17.goby.SequenceVariation\"f\n\x11SequenceVariation\x12\x0c\n\x04\x66rom\x18\x02 \x02(\t\x12\n\n\x02to\x18\x01 \x02(\t\x12\x10\n\x08position\x18\x03 \x02(\r\x12\x11\n\treadIndex\x18\x05 \x02(\r\x12\x12\n\nto_quality\x18\x04 \x01(\x0c\"\x9d\x02\n\x0f\x41lignmentHeader\x12\x33\n\x12query_name_mapping\x18\x01 \x01(\x0b\x32\x17.goby.IdentifierMapping\x12\x34\n\x13target_name_mapping\x18\x02 \x01(\x0b\x32\x17.goby.IdentifierMapping\x12\x19\n\x11number_of_queries\x18\x05 \x01(\r\x12\x19\n\x11number_of_targets\x18\x06 \x01(\r\x12\x1f\n\x17number_of_aligned_reads\x18\x07 \x01(\r\x12\x14\n\x0cquery_length\x18\x03 \x03(\r\x12\x1b\n\x13\x63onstantQueryLength\x18\n \x01(\r\x12\x15\n\rtarget_length\x18\x08 \x03(\r\";\n\x11IdentifierMapping\x12&\n\x08mappings\x18\x01 \x03(\x0b\x32\x14.goby.IdentifierInfo\"-\n\x0eIdentifierInfo\x12\x0c\n\x04name\x18\x01 \x02(\t\x12\r\n\x05index\x18\x02 \x02(\r\"W\n\x14\x41lignmentTooManyHits\x12\x18\n\x10\x61lignerThreshold\x18\x02 \x02(\r\x12%\n\x04hits\x18\x01 \x03(\x0b\x32\x17.goby.AmbiguousLocation\"b\n\x11\x41mbiguousLocation\x12\x13\n\x0bquery_index\x18\x01 \x02(\r\x12\x1f\n\x17\x61t_least_number_of_hits\x18\x02 \x02(\r\x12\x17\n\x0flength_of_match\x18\x03 \x01(\rB\'\n#edu.cornell.med.icb.goby.alignmentsH\x01')
+  serialized_pb='\n\x10\x41lignments.proto\x12\x04goby\"E\n\x13\x41lignmentCollection\x12.\n\x10\x61lignmentEntries\x18\x01 \x03(\x0b\x32\x14.goby.AlignmentEntry\"\xd6\x02\n\x0e\x41lignmentEntry\x12\x14\n\x0cmultiplicity\x18\x07 \x01(\r\x12\x13\n\x0bquery_index\x18\x01 \x02(\r\x12\x14\n\x0ctarget_index\x18\x02 \x02(\r\x12\x10\n\x08position\x18\x03 \x02(\r\x12\x1f\n\x17matching_reverse_strand\x18\x06 \x02(\x08\x12\x16\n\x0equery_position\x18\x05 \x01(\r\x12\r\n\x05score\x18\x04 \x01(\x02\x12\x1c\n\x14number_of_mismatches\x18\x08 \x01(\r\x12\x18\n\x10number_of_indels\x18\t \x01(\r\x12\x1c\n\x14query_aligned_length\x18\x0b \x01(\r\x12\x1d\n\x15target_aligned_length\x18\x0c \x01(\r\x12\x34\n\x13sequence_variations\x18\r \x03(\x0b\x32\x17.goby.SequenceVariation\"f\n\x11SequenceVariation\x12\x0c\n\x04\x66rom\x18\x02 \x02(\t\x12\n\n\x02to\x18\x01 \x02(\t\x12\x10\n\x08position\x18\x03 \x02(\r\x12\x11\n\treadIndex\x18\x05 \x02(\r\x12\x12\n\nto_quality\x18\x04 \x01(\x0c\"\xe6\x02\n\x0f\x41lignmentHeader\x12\x1f\n\x17smallestSplitQueryIndex\x18\t \x01(\r\x12\x1e\n\x16largestSplitQueryIndex\x18\x0b \x01(\r\x12\x33\n\x12query_name_mapping\x18\x01 \x01(\x0b\x32\x17.goby.IdentifierMapping\x12\x34\n\x13target_name_mapping\x18\x02 \x01(\x0b\x32\x17.goby.IdentifierMapping\x12\x19\n\x11number_of_queries\x18\x05 \x01(\r\x12\x19\n\x11number_of_targets\x18\x06 \x01(\r\x12\x1f\n\x17number_of_aligned_reads\x18\x07 \x01(\r\x12\x18\n\x0cquery_length\x18\x03 \x03(\rB\x02\x10\x01\x12\x1b\n\x13\x63onstantQueryLength\x18\n \x01(\r\x12\x19\n\rtarget_length\x18\x08 \x03(\rB\x02\x10\x01\";\n\x11IdentifierMapping\x12&\n\x08mappings\x18\x01 \x03(\x0b\x32\x14.goby.IdentifierInfo\"-\n\x0eIdentifierInfo\x12\x0c\n\x04name\x18\x01 \x02(\t\x12\r\n\x05index\x18\x02 \x02(\r\"W\n\x14\x41lignmentTooManyHits\x12\x18\n\x10\x61lignerThreshold\x18\x02 \x02(\r\x12%\n\x04hits\x18\x01 \x03(\x0b\x32\x17.goby.AmbiguousLocation\"b\n\x11\x41mbiguousLocation\x12\x13\n\x0bquery_index\x18\x01 \x02(\r\x12\x1f\n\x17\x61t_least_number_of_hits\x18\x02 \x02(\r\x12\x17\n\x0flength_of_match\x18\x03 \x01(\rB\'\n#edu.cornell.med.icb.goby.alignmentsH\x01')
 
 
 
@@ -212,61 +212,75 @@ _ALIGNMENTHEADER = descriptor.Descriptor(
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='query_name_mapping', full_name='goby.AlignmentHeader.query_name_mapping', index=0,
+      name='smallestSplitQueryIndex', full_name='goby.AlignmentHeader.smallestSplitQueryIndex', index=0,
+      number=9, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='largestSplitQueryIndex', full_name='goby.AlignmentHeader.largestSplitQueryIndex', index=1,
+      number=11, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='query_name_mapping', full_name='goby.AlignmentHeader.query_name_mapping', index=2,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='target_name_mapping', full_name='goby.AlignmentHeader.target_name_mapping', index=1,
+      name='target_name_mapping', full_name='goby.AlignmentHeader.target_name_mapping', index=3,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='number_of_queries', full_name='goby.AlignmentHeader.number_of_queries', index=2,
+      name='number_of_queries', full_name='goby.AlignmentHeader.number_of_queries', index=4,
       number=5, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='number_of_targets', full_name='goby.AlignmentHeader.number_of_targets', index=3,
+      name='number_of_targets', full_name='goby.AlignmentHeader.number_of_targets', index=5,
       number=6, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='number_of_aligned_reads', full_name='goby.AlignmentHeader.number_of_aligned_reads', index=4,
+      name='number_of_aligned_reads', full_name='goby.AlignmentHeader.number_of_aligned_reads', index=6,
       number=7, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='query_length', full_name='goby.AlignmentHeader.query_length', index=5,
+      name='query_length', full_name='goby.AlignmentHeader.query_length', index=7,
       number=3, type=13, cpp_type=3, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=descriptor._ParseOptions(descriptor_pb2.FieldOptions(), '\020\001')),
     descriptor.FieldDescriptor(
-      name='constantQueryLength', full_name='goby.AlignmentHeader.constantQueryLength', index=6,
+      name='constantQueryLength', full_name='goby.AlignmentHeader.constantQueryLength', index=8,
       number=10, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='target_length', full_name='goby.AlignmentHeader.target_length', index=7,
+      name='target_length', full_name='goby.AlignmentHeader.target_length', index=9,
       number=8, type=13, cpp_type=3, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=descriptor._ParseOptions(descriptor_pb2.FieldOptions(), '\020\001')),
   ],
   extensions=[
   ],
@@ -277,7 +291,7 @@ _ALIGNMENTHEADER = descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=547,
-  serialized_end=832,
+  serialized_end=905,
 )
 
 
@@ -304,8 +318,8 @@ _IDENTIFIERMAPPING = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=834,
-  serialized_end=893,
+  serialized_start=907,
+  serialized_end=966,
 )
 
 
@@ -339,8 +353,8 @@ _IDENTIFIERINFO = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=895,
-  serialized_end=940,
+  serialized_start=968,
+  serialized_end=1013,
 )
 
 
@@ -374,8 +388,8 @@ _ALIGNMENTTOOMANYHITS = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=942,
-  serialized_end=1029,
+  serialized_start=1015,
+  serialized_end=1102,
 )
 
 
@@ -416,8 +430,8 @@ _AMBIGUOUSLOCATION = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1031,
-  serialized_end=1129,
+  serialized_start=1104,
+  serialized_end=1202,
 )
 
 

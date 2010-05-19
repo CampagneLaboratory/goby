@@ -182,7 +182,7 @@ message AlignmentHeader {
    /*
       Length of the query sequences. One number per query, in the order of increasing query index.
     */
-   repeated uint32 query_length=3;
+   repeated uint32 query_length=3 [packed=true];
    /*
       If query length is constant across all the queries, this field contains the constant length. \
       In such cases, query_length will be empty.
@@ -191,7 +191,7 @@ message AlignmentHeader {
 
    /* Length of the target sequences. One number per target, in the order of increasing target index.
     */
-   repeated uint32 target_length=8;
+   repeated uint32 target_length=8 [packed=true];
 
 }
 

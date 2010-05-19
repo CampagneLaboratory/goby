@@ -506,6 +506,20 @@ class AlignmentHeader : public ::google::protobuf::Message {
   
   // accessors -------------------------------------------------------
   
+  // optional uint32 smallestSplitQueryIndex = 9;
+  inline bool has_smallestsplitqueryindex() const;
+  inline void clear_smallestsplitqueryindex();
+  static const int kSmallestSplitQueryIndexFieldNumber = 9;
+  inline ::google::protobuf::uint32 smallestsplitqueryindex() const;
+  inline void set_smallestsplitqueryindex(::google::protobuf::uint32 value);
+  
+  // optional uint32 largestSplitQueryIndex = 11;
+  inline bool has_largestsplitqueryindex() const;
+  inline void clear_largestsplitqueryindex();
+  static const int kLargestSplitQueryIndexFieldNumber = 11;
+  inline ::google::protobuf::uint32 largestsplitqueryindex() const;
+  inline void set_largestsplitqueryindex(::google::protobuf::uint32 value);
+  
   // optional .goby.IdentifierMapping query_name_mapping = 1;
   inline bool has_query_name_mapping() const;
   inline void clear_query_name_mapping();
@@ -541,7 +555,7 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 number_of_aligned_reads() const;
   inline void set_number_of_aligned_reads(::google::protobuf::uint32 value);
   
-  // repeated uint32 query_length = 3;
+  // repeated uint32 query_length = 3 [packed = true];
   inline int query_length_size() const;
   inline void clear_query_length();
   static const int kQueryLengthFieldNumber = 3;
@@ -560,7 +574,7 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 constantquerylength() const;
   inline void set_constantquerylength(::google::protobuf::uint32 value);
   
-  // repeated uint32 target_length = 8;
+  // repeated uint32 target_length = 8 [packed = true];
   inline int target_length_size() const;
   inline void clear_target_length();
   static const int kTargetLengthFieldNumber = 8;
@@ -577,19 +591,23 @@ class AlignmentHeader : public ::google::protobuf::Message {
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   mutable int _cached_size_;
   
+  ::google::protobuf::uint32 smallestsplitqueryindex_;
+  ::google::protobuf::uint32 largestsplitqueryindex_;
   ::goby::IdentifierMapping* query_name_mapping_;
   ::goby::IdentifierMapping* target_name_mapping_;
   ::google::protobuf::uint32 number_of_queries_;
   ::google::protobuf::uint32 number_of_targets_;
   ::google::protobuf::uint32 number_of_aligned_reads_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > query_length_;
+  mutable int _query_length_cached_byte_size_;
   ::google::protobuf::uint32 constantquerylength_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > target_length_;
+  mutable int _target_length_cached_byte_size_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
   friend void protobuf_ShutdownFile_Alignments_2eproto();
   
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
   inline bool _has_bit(int index) const {
@@ -1410,89 +1428,121 @@ inline ::std::string* SequenceVariation::mutable_to_quality() {
 
 // AlignmentHeader
 
+// optional uint32 smallestSplitQueryIndex = 9;
+inline bool AlignmentHeader::has_smallestsplitqueryindex() const {
+  return _has_bit(0);
+}
+inline void AlignmentHeader::clear_smallestsplitqueryindex() {
+  smallestsplitqueryindex_ = 0u;
+  _clear_bit(0);
+}
+inline ::google::protobuf::uint32 AlignmentHeader::smallestsplitqueryindex() const {
+  return smallestsplitqueryindex_;
+}
+inline void AlignmentHeader::set_smallestsplitqueryindex(::google::protobuf::uint32 value) {
+  _set_bit(0);
+  smallestsplitqueryindex_ = value;
+}
+
+// optional uint32 largestSplitQueryIndex = 11;
+inline bool AlignmentHeader::has_largestsplitqueryindex() const {
+  return _has_bit(1);
+}
+inline void AlignmentHeader::clear_largestsplitqueryindex() {
+  largestsplitqueryindex_ = 0u;
+  _clear_bit(1);
+}
+inline ::google::protobuf::uint32 AlignmentHeader::largestsplitqueryindex() const {
+  return largestsplitqueryindex_;
+}
+inline void AlignmentHeader::set_largestsplitqueryindex(::google::protobuf::uint32 value) {
+  _set_bit(1);
+  largestsplitqueryindex_ = value;
+}
+
 // optional .goby.IdentifierMapping query_name_mapping = 1;
 inline bool AlignmentHeader::has_query_name_mapping() const {
-  return _has_bit(0);
+  return _has_bit(2);
 }
 inline void AlignmentHeader::clear_query_name_mapping() {
   if (query_name_mapping_ != NULL) query_name_mapping_->::goby::IdentifierMapping::Clear();
-  _clear_bit(0);
+  _clear_bit(2);
 }
 inline const ::goby::IdentifierMapping& AlignmentHeader::query_name_mapping() const {
   return query_name_mapping_ != NULL ? *query_name_mapping_ : *default_instance_->query_name_mapping_;
 }
 inline ::goby::IdentifierMapping* AlignmentHeader::mutable_query_name_mapping() {
-  _set_bit(0);
+  _set_bit(2);
   if (query_name_mapping_ == NULL) query_name_mapping_ = new ::goby::IdentifierMapping;
   return query_name_mapping_;
 }
 
 // optional .goby.IdentifierMapping target_name_mapping = 2;
 inline bool AlignmentHeader::has_target_name_mapping() const {
-  return _has_bit(1);
+  return _has_bit(3);
 }
 inline void AlignmentHeader::clear_target_name_mapping() {
   if (target_name_mapping_ != NULL) target_name_mapping_->::goby::IdentifierMapping::Clear();
-  _clear_bit(1);
+  _clear_bit(3);
 }
 inline const ::goby::IdentifierMapping& AlignmentHeader::target_name_mapping() const {
   return target_name_mapping_ != NULL ? *target_name_mapping_ : *default_instance_->target_name_mapping_;
 }
 inline ::goby::IdentifierMapping* AlignmentHeader::mutable_target_name_mapping() {
-  _set_bit(1);
+  _set_bit(3);
   if (target_name_mapping_ == NULL) target_name_mapping_ = new ::goby::IdentifierMapping;
   return target_name_mapping_;
 }
 
 // optional uint32 number_of_queries = 5;
 inline bool AlignmentHeader::has_number_of_queries() const {
-  return _has_bit(2);
+  return _has_bit(4);
 }
 inline void AlignmentHeader::clear_number_of_queries() {
   number_of_queries_ = 0u;
-  _clear_bit(2);
+  _clear_bit(4);
 }
 inline ::google::protobuf::uint32 AlignmentHeader::number_of_queries() const {
   return number_of_queries_;
 }
 inline void AlignmentHeader::set_number_of_queries(::google::protobuf::uint32 value) {
-  _set_bit(2);
+  _set_bit(4);
   number_of_queries_ = value;
 }
 
 // optional uint32 number_of_targets = 6;
 inline bool AlignmentHeader::has_number_of_targets() const {
-  return _has_bit(3);
+  return _has_bit(5);
 }
 inline void AlignmentHeader::clear_number_of_targets() {
   number_of_targets_ = 0u;
-  _clear_bit(3);
+  _clear_bit(5);
 }
 inline ::google::protobuf::uint32 AlignmentHeader::number_of_targets() const {
   return number_of_targets_;
 }
 inline void AlignmentHeader::set_number_of_targets(::google::protobuf::uint32 value) {
-  _set_bit(3);
+  _set_bit(5);
   number_of_targets_ = value;
 }
 
 // optional uint32 number_of_aligned_reads = 7;
 inline bool AlignmentHeader::has_number_of_aligned_reads() const {
-  return _has_bit(4);
+  return _has_bit(6);
 }
 inline void AlignmentHeader::clear_number_of_aligned_reads() {
   number_of_aligned_reads_ = 0u;
-  _clear_bit(4);
+  _clear_bit(6);
 }
 inline ::google::protobuf::uint32 AlignmentHeader::number_of_aligned_reads() const {
   return number_of_aligned_reads_;
 }
 inline void AlignmentHeader::set_number_of_aligned_reads(::google::protobuf::uint32 value) {
-  _set_bit(4);
+  _set_bit(6);
   number_of_aligned_reads_ = value;
 }
 
-// repeated uint32 query_length = 3;
+// repeated uint32 query_length = 3 [packed = true];
 inline int AlignmentHeader::query_length_size() const {
   return query_length_.size();
 }
@@ -1519,21 +1569,21 @@ AlignmentHeader::mutable_query_length() {
 
 // optional uint32 constantQueryLength = 10;
 inline bool AlignmentHeader::has_constantquerylength() const {
-  return _has_bit(6);
+  return _has_bit(8);
 }
 inline void AlignmentHeader::clear_constantquerylength() {
   constantquerylength_ = 0u;
-  _clear_bit(6);
+  _clear_bit(8);
 }
 inline ::google::protobuf::uint32 AlignmentHeader::constantquerylength() const {
   return constantquerylength_;
 }
 inline void AlignmentHeader::set_constantquerylength(::google::protobuf::uint32 value) {
-  _set_bit(6);
+  _set_bit(8);
   constantquerylength_ = value;
 }
 
-// repeated uint32 target_length = 8;
+// repeated uint32 target_length = 8 [packed = true];
 inline int AlignmentHeader::target_length_size() const {
   return target_length_.size();
 }

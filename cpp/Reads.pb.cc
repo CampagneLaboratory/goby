@@ -46,8 +46,9 @@ void protobuf_AssignDesc_Reads_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ReadCollection));
   ReadEntry_descriptor_ = file->message_type(1);
-  static const int ReadEntry_offsets_[6] = {
+  static const int ReadEntry_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, readindex_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, barcodeindex_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, readidentifier_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, description_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, readlength_),
@@ -100,12 +101,12 @@ void protobuf_AddDesc_Reads_2eproto() {
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\013Reads.proto\022\004goby\"0\n\016ReadCollection\022\036\n"
-    "\005reads\030\001 \003(\0132\017.goby.ReadEntry\"\210\001\n\tReadEn"
-    "try\022\021\n\treadIndex\030\001 \002(\r\022\026\n\016readIdentifier"
-    "\030\027 \001(\t\022\023\n\013description\030\026 \001(\t\022\022\n\nreadLengt"
-    "h\030\002 \002(\r\022\020\n\010sequence\030\003 \001(\014\022\025\n\rqualityScor"
-    "es\030\004 \001(\014B\"\n\036edu.cornell.med.icb.goby.rea"
-    "dsH\001", 244);
+    "\005reads\030\001 \003(\0132\017.goby.ReadEntry\"\236\001\n\tReadEn"
+    "try\022\021\n\treadIndex\030\001 \002(\r\022\024\n\014barcodeIndex\030\n"
+    " \001(\r\022\026\n\016readIdentifier\030\027 \001(\t\022\023\n\013descript"
+    "ion\030\026 \001(\t\022\022\n\nreadLength\030\002 \002(\r\022\020\n\010sequenc"
+    "e\030\003 \001(\014\022\025\n\rqualityScores\030\004 \001(\014B\"\n\036edu.co"
+    "rnell.med.icb.goby.readsH\001", 266);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "Reads.proto", &protobuf_RegisterTypes);
   ReadCollection::default_instance_ = new ReadCollection();
@@ -336,6 +337,7 @@ const ::std::string ReadEntry::_default_sequence_;
 const ::std::string ReadEntry::_default_qualityscores_;
 #ifndef _MSC_VER
 const int ReadEntry::kReadIndexFieldNumber;
+const int ReadEntry::kBarcodeIndexFieldNumber;
 const int ReadEntry::kReadIdentifierFieldNumber;
 const int ReadEntry::kDescriptionFieldNumber;
 const int ReadEntry::kReadLengthFieldNumber;
@@ -360,6 +362,7 @@ ReadEntry::ReadEntry(const ReadEntry& from)
 void ReadEntry::SharedCtor() {
   _cached_size_ = 0;
   readindex_ = 0u;
+  barcodeindex_ = 0u;
   readidentifier_ = const_cast< ::std::string*>(&_default_readidentifier_);
   description_ = const_cast< ::std::string*>(&_default_description_);
   readlength_ = 0u;
@@ -412,23 +415,24 @@ ReadEntry* ReadEntry::New() const {
 void ReadEntry::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     readindex_ = 0u;
-    if (_has_bit(1)) {
+    barcodeindex_ = 0u;
+    if (_has_bit(2)) {
       if (readidentifier_ != &_default_readidentifier_) {
         readidentifier_->clear();
       }
     }
-    if (_has_bit(2)) {
+    if (_has_bit(3)) {
       if (description_ != &_default_description_) {
         description_->clear();
       }
     }
     readlength_ = 0u;
-    if (_has_bit(4)) {
+    if (_has_bit(5)) {
       if (sequence_ != &_default_sequence_) {
         sequence_->clear();
       }
     }
-    if (_has_bit(5)) {
+    if (_has_bit(6)) {
       if (qualityscores_ != &_default_qualityscores_) {
         qualityscores_->clear();
       }
@@ -467,7 +471,7 @@ bool ReadEntry::MergePartialFromCodedStream(
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
                  input, &readlength_)));
-          _set_bit(3);
+          _set_bit(4);
         } else {
           goto handle_uninterpreted;
         }
@@ -496,6 +500,22 @@ bool ReadEntry::MergePartialFromCodedStream(
          parse_qualityScores:
           DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
                 input, this->mutable_qualityscores()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(80)) goto parse_barcodeIndex;
+        break;
+      }
+      
+      // optional uint32 barcodeIndex = 10;
+      case 10: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_barcodeIndex:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &barcodeindex_)));
+          _set_bit(1);
         } else {
           goto handle_uninterpreted;
         }
@@ -561,24 +581,29 @@ void ReadEntry::SerializeWithCachedSizes(
   }
   
   // required uint32 readLength = 2;
-  if (_has_bit(3)) {
+  if (_has_bit(4)) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->readlength(), output);
   }
   
   // optional bytes sequence = 3;
-  if (_has_bit(4)) {
+  if (_has_bit(5)) {
     ::google::protobuf::internal::WireFormatLite::WriteBytes(
       3, this->sequence(), output);
   }
   
   // optional bytes qualityScores = 4;
-  if (_has_bit(5)) {
+  if (_has_bit(6)) {
     ::google::protobuf::internal::WireFormatLite::WriteBytes(
       4, this->qualityscores(), output);
   }
   
+  // optional uint32 barcodeIndex = 10;
+  if (_has_bit(1)) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(10, this->barcodeindex(), output);
+  }
+  
   // optional string description = 22;
-  if (_has_bit(2)) {
+  if (_has_bit(3)) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->description().data(), this->description().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -587,7 +612,7 @@ void ReadEntry::SerializeWithCachedSizes(
   }
   
   // optional string readIdentifier = 23;
-  if (_has_bit(1)) {
+  if (_has_bit(2)) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->readidentifier().data(), this->readidentifier().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -609,26 +634,31 @@ void ReadEntry::SerializeWithCachedSizes(
   }
   
   // required uint32 readLength = 2;
-  if (_has_bit(3)) {
+  if (_has_bit(4)) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->readlength(), target);
   }
   
   // optional bytes sequence = 3;
-  if (_has_bit(4)) {
+  if (_has_bit(5)) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         3, this->sequence(), target);
   }
   
   // optional bytes qualityScores = 4;
-  if (_has_bit(5)) {
+  if (_has_bit(6)) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         4, this->qualityscores(), target);
   }
   
+  // optional uint32 barcodeIndex = 10;
+  if (_has_bit(1)) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(10, this->barcodeindex(), target);
+  }
+  
   // optional string description = 22;
-  if (_has_bit(2)) {
+  if (_has_bit(3)) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->description().data(), this->description().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -638,7 +668,7 @@ void ReadEntry::SerializeWithCachedSizes(
   }
   
   // optional string readIdentifier = 23;
-  if (_has_bit(1)) {
+  if (_has_bit(2)) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->readidentifier().data(), this->readidentifier().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -663,6 +693,13 @@ int ReadEntry::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
           this->readindex());
+    }
+    
+    // optional uint32 barcodeIndex = 10;
+    if (has_barcodeindex()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->barcodeindex());
     }
     
     // optional string readIdentifier = 23;
@@ -731,18 +768,21 @@ void ReadEntry::MergeFrom(const ReadEntry& from) {
       set_readindex(from.readindex());
     }
     if (from._has_bit(1)) {
-      set_readidentifier(from.readidentifier());
+      set_barcodeindex(from.barcodeindex());
     }
     if (from._has_bit(2)) {
-      set_description(from.description());
+      set_readidentifier(from.readidentifier());
     }
     if (from._has_bit(3)) {
-      set_readlength(from.readlength());
+      set_description(from.description());
     }
     if (from._has_bit(4)) {
-      set_sequence(from.sequence());
+      set_readlength(from.readlength());
     }
     if (from._has_bit(5)) {
+      set_sequence(from.sequence());
+    }
+    if (from._has_bit(6)) {
       set_qualityscores(from.qualityscores());
     }
   }
@@ -762,7 +802,7 @@ void ReadEntry::CopyFrom(const ReadEntry& from) {
 }
 
 bool ReadEntry::IsInitialized() const {
-  if ((_has_bits_[0] & 0x00000009) != 0x00000009) return false;
+  if ((_has_bits_[0] & 0x00000011) != 0x00000011) return false;
   
   return true;
 }
@@ -770,6 +810,7 @@ bool ReadEntry::IsInitialized() const {
 void ReadEntry::Swap(ReadEntry* other) {
   if (other != this) {
     std::swap(readindex_, other->readindex_);
+    std::swap(barcodeindex_, other->barcodeindex_);
     std::swap(readidentifier_, other->readidentifier_);
     std::swap(description_, other->description_);
     std::swap(readlength_, other->readlength_);
