@@ -300,8 +300,9 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         WeightsInfo weights = null;
         if (useWeights) {
             weights = loadWeights(inputBasename, useWeights);
-        } else {
-            System.err.println("Weights have not been provided, the 'reweightedCounts' column will contain the same value as count.");
+            if (weights != null) {
+                System.err.println("Weights have been provided and loaded and will be used to reweight transcript counts.");
+            }
         }
 
         final AlignmentReader reader = new AlignmentReader(inputBasename);
@@ -315,7 +316,11 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         final IntSet referencesToProcess = new IntOpenHashSet();
 
         // create count writers, one for each reference sequence in the alignment:
-        for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
+        for (
+                int referenceIndex = 0;
+                referenceIndex < numberOfReferences; referenceIndex++)
+
+        {
             final String referenceName = referenceIds.getId(referenceIndex).toString();
             if (filterByReferenceNames) {
                 if (includeReferenceNames.contains(referenceName)) {
@@ -340,7 +345,11 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         // read the alignment:
         System.out.println("Loading alignment " + inputBasename + "..");
         int numAlignedReadsInSample = 0;
-        for (final Alignments.AlignmentEntry alignmentEntry : referenceReader) {
+        for (
+                final Alignments.AlignmentEntry alignmentEntry
+                : referenceReader)
+
+        {
             final int referenceIndex = alignmentEntry.getTargetIndex();
             if (referencesToProcess.contains(referenceIndex)) {
                 final int startPosition = alignmentEntry.getPosition();
@@ -359,7 +368,9 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
         deCalculator.setNumAlignedInSample(sampleId, numAlignedReadsInSample);
 
-        if (outputFilename == null) {
+        if (outputFilename == null)
+
+        {
             // output filename was not provided on the command line. We make one output per input basename
             if (writeAnnotationCounts) {
                 final String outputFileTmp = FilenameUtils.removeExtension(inputFile) + ".ann-counts.tsv";
@@ -369,10 +380,14 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         }
 
         writeAnnotationCounts(allAnnots, writer, inputBasename, referenceIds, algs, referencesToProcess);
-        if (outputFilename == null) {
+
+        if (outputFilename == null)
+
+        {
             // output filename was not provided on the command line. We close each basename output.
             IOUtils.closeQuietly(writer);
         }
+
     }
 
     public static WeightsInfo loadWeights(String inputBasename, boolean useWeights) {
@@ -620,7 +635,6 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         return Math.log1p(x) / LOG_2;
     }
 
-   
 
     /**
      * Read tab delimited annotation file including 6 columns : chromosome, strand, transcriptID,
