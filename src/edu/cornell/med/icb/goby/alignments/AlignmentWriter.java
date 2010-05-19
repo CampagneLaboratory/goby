@@ -327,6 +327,11 @@ public class AlignmentWriter implements Closeable {
             this.queryLengths = queryLengths;
         }
     }
+    public void setQueryLengths(final AlignmentReader reader) {
+            if (reader.isConstantQueryLengths()) {
+                setQueryLengths(new int[1]);
+            }
+        }
 
     /**
      * Replace queryLength with constantQueryLength where the length is the same for all queries.

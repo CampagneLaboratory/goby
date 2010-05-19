@@ -305,20 +305,29 @@ public class Merge {
     /**
      * Merge too many hits data structures across alignments.
      *
-     * @param outputFile Destination basename for merged too many hits data structure.
+     * @param outputFile    Destination basename for merged too many hits data structure.
      * @param numberOfReads the number of reads
      * @param minQueryIndex the minimum query index, in the case where we are working with a split read situation
-     * @param basenames  Input alignment basenames
+     * @param basenames     Input alignment basenames
      * @throws IOException error processing
      */
-    public static void prepareMergedTooManyHits(
-            final String outputFile, final int numberOfReads, final int minQueryIndex,
+    public static int prepareMergedTooManyHits(
+            final String outputFile,  int numberOfReads, final int minQueryIndex,
             final String... basenames) throws IOException {
         final Int2IntMap tmhMap = new Int2IntOpenHashMap();
         tmhMap.defaultReturnValue(0);
         // accumulate too many hits over all the input alignments:
         int consensusAlignerThreshold = Integer.MAX_VALUE;
 
+        // numberOfReads does not include the TMH reads that are past the aligned entries.
+        int maxQueryIndex = numberOfReads - 1;
+        for (final String basename : basenames) {
+            final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
+            for (final int queryIndex : tmhReader.getQueryIndices()) {
+                maxQueryIndex = Math.max(maxQueryIndex, queryIndex);
+            }
+        }
+        numberOfReads=maxQueryIndex+1;
         final int[] queryIndex2MaxDepth = new int[numberOfReads];
         Arrays.fill(queryIndex2MaxDepth, -1);
         // calculate maxDepth for each query sequence:
@@ -360,6 +369,7 @@ public class Merge {
             mergedTmhWriter.append(queryIndex, tmhMap.get(queryIndex), queryIndex2MaxDepth[queryIndex - minQueryIndex]);
         }
         mergedTmhWriter.close();
+        return numberOfReads;
     }
 
     private int constructTargetIndexPermutations(int mergedReferenceIndex,

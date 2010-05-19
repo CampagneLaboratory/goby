@@ -111,8 +111,9 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
             for (final AlignmentReader reader : readers) {
                 reader.readHeader();
                 smallestQueryIndex = Math.min(reader.getSmallestSplitQueryIndex(), smallestQueryIndex);
-                largestQueryIndex = adjustQueryIndices ? Math.max(reader.getLargestSplitQueryIndex(), largestQueryIndex) :
-                        largestQueryIndex + 1 + reader.getLargestSplitQueryIndex();
+                largestQueryIndex = adjustQueryIndices ?
+                        largestQueryIndex + 1 + reader.getLargestSplitQueryIndex():
+                        Math.max(reader.getLargestSplitQueryIndex(), largestQueryIndex);
 
                 targetNumbers.add(reader.getNumberOfTargets());
                 final int numQueriesForReader = reader.getNumberOfQueries();

@@ -114,7 +114,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         long numEntries = 0;
         final int numQueries = alignmentReader.getNumberOfQueries();
 
-        progress.start("concatenating entries");
+        progress.start("Concatenating entries");
 
         for (final Alignments.AlignmentEntry entry : alignmentReader) {
             writer.appendEntry(entry);
@@ -128,7 +128,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         progress.stop();
         // too many hits is prepared as for Merge:
         Merge.prepareMergedTooManyHits(outputFile, alignmentReader.getNumberOfQueries(), 0, basenames);
-        writer.setNumQueries(alignmentReader.getNumberOfQueries());
+       
         writer.setNumTargets(alignmentReader.getNumberOfTargets());
         if (alignmentReader.getTargetIdentifiers() != null) {
             writer.setTargetIdentifiers(alignmentReader.getTargetIdentifiers());
