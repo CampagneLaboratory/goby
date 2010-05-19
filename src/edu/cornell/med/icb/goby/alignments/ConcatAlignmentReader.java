@@ -112,7 +112,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
                 reader.readHeader();
                 smallestQueryIndex = Math.min(reader.getSmallestSplitQueryIndex(), smallestQueryIndex);
                 largestQueryIndex = adjustQueryIndices ?
-                        largestQueryIndex + 1 + reader.getLargestSplitQueryIndex():
+                        Math.max(largestQueryIndex, 0) + 1 + reader.getLargestSplitQueryIndex() :
                         Math.max(reader.getLargestSplitQueryIndex(), largestQueryIndex);
 
                 targetNumbers.add(reader.getNumberOfTargets());
@@ -132,13 +132,13 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
             targetIdentifiers = readers[0].getTargetIdentifiers();
             targetLengths = readers[0].getTargetLength();
 
-            queryLengths = new int[getLargestSplitQueryIndex()- getSmallestSplitQueryIndex()+1];
+            queryLengths = new int[largestQueryIndex - smallestQueryIndex + 1];
             int offset = 0;
             for (int i = 0; i < queryIndexOffset.length; i++) {
 
                 offset = readers[i].getSmallestSplitQueryIndex();
 
-                queryIndexOffset[i] = adjustQueryIndices ? offset : 0;
+                queryIndexOffset[i] = adjustQueryIndices ? i==0?0:readers[i-1].getLargestSplitQueryIndex()+1 : 0;
                 final int[] localQueryLenths = readers[i].getQueryLengths();
                 if (localQueryLenths != null) {
                     System.arraycopy(localQueryLenths, 0, queryLengths,

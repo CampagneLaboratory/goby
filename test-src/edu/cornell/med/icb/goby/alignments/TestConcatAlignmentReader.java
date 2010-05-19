@@ -87,7 +87,7 @@ public class TestConcatAlignmentReader {
 
     @Test
     public void testQueryIndices() throws IOException {
-        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(outputBasename1, outputBasename2);
+        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(true, outputBasename1, outputBasename2);
         while (concatReader.hasNext()) {
             final Alignments.AlignmentEntry alignmentEntry = concatReader.next();
 
