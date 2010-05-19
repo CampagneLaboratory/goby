@@ -67,6 +67,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
     private Alignments.AlignmentCollection collection;
     private Properties stats;
     private String basename;
+    
 
     public AlignmentReader(final String basename) throws FileNotFoundException {
         super();
@@ -186,7 +187,8 @@ public class AlignmentReader extends AbstractAlignmentReader {
         codedInput.setSizeLimit(Integer.MAX_VALUE);
         final Alignments.AlignmentHeader header = Alignments.AlignmentHeader.parseFrom(codedInput);
 
-
+        smallestQueryIndex=header.getSmallestSplitQueryIndex();
+        largestQueryIndex=header.getLargestSplitQueryIndex();
         queryIdentifiers = parseIdentifiers(header.getQueryNameMapping());
         targetIdentifiers = parseIdentifiers(header.getTargetNameMapping());
         if (header.hasConstantQueryLength()) {
@@ -195,19 +197,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
             queryLengths = null;
         } else if (header.getQueryLengthCount() > 0) {
             queryLengths = new IntArrayList(header.getQueryLengthList()).toIntArray();
-            final IntSet distinctQueryLength = new IntOpenHashSet();
-
-            for (final int length : queryLengths) {
-                if (length != 0) {
-                    distinctQueryLength.add(length);
-                }
-            }
-            if (distinctQueryLength.size() == 1) {
-                this.constantQueryLengths = true;
-                this.constantLength = distinctQueryLength.iterator().nextInt();
-                //release the space:
-                queryLengths = null;
-            }
+            compactQueryLengths();
         }
 
         if (header.getTargetLengthCount() > 0) {
@@ -217,6 +207,22 @@ public class AlignmentReader extends AbstractAlignmentReader {
         numberOfTargets = header.getNumberOfTargets();
         setHeaderLoaded(true);
         numberOfAlignedReads = header.getNumberOfAlignedReads();
+    }
+
+    private void compactQueryLengths() {
+        final IntSet distinctQueryLength = new IntOpenHashSet();
+
+        for (final int length : queryLengths) {
+            if (length != 0) {
+                distinctQueryLength.add(length);
+            }
+        }
+        if (distinctQueryLength.size() == 1) {
+            this.constantQueryLengths = true;
+            this.constantLength = distinctQueryLength.iterator().nextInt();
+            //release the space:
+            queryLengths = null;
+        }
     }
 
     private IndexedIdentifier parseIdentifiers(final Alignments.IdentifierMapping nameMapping) {

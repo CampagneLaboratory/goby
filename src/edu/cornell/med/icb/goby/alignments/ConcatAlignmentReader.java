@@ -106,9 +106,13 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
             final IntSet targetNumbers = new IntArraySet();
             int readerIndex = 0;
             numberOfQueries = 0;
-
+            smallestQueryIndex = Integer.MAX_VALUE;
+            largestQueryIndex = adjustQueryIndices?Integer.MIN_VALUE:0;
             for (final AlignmentReader reader : readers) {
                 reader.readHeader();
+                smallestQueryIndex = Math.min(reader.getSmallestSplitQueryIndex(), smallestQueryIndex);
+                largestQueryIndex = adjustQueryIndices?Math.max(reader.getLargestSplitQueryIndex(), largestQueryIndex):
+                        largestQueryIndex+1+reader.getLargestSplitQueryIndex();
 
                 targetNumbers.add(reader.getNumberOfTargets());
                 final int numQueriesForReader = reader.getNumberOfQueries();
@@ -138,7 +142,8 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
                 queryIndexOffset[i] = adjustQueryIndices ? offset : 0;
                 final int[] localQueryLenths = readers[i].getQueryLengths();
                 if (localQueryLenths != null) {
-                    System.arraycopy(localQueryLenths, 0, queryLengths, offset, localQueryLenths.length);
+                    System.arraycopy(localQueryLenths, 0, queryLengths,
+                            offset - readers[i].getSmallestSplitQueryIndex(), localQueryLenths.length);
                 }
             }
 
@@ -204,9 +209,10 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
     public void remove() {
         throw new UnsupportedOperationException("Cannot remove from a reader.");
     }
+
     /**
-    @deprecated
-    */
+     * @deprecated
+     */
 
     public void setAdjustQueryIndices(final boolean adjustQueryIndices) {
         throw new UnsupportedOperationException("This operation is unsafe. Set flag through the constructor.");

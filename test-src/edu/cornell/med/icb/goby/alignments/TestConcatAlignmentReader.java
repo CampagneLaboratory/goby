@@ -78,7 +78,8 @@ public class TestConcatAlignmentReader {
         count = countAlignmentEntries(concatReader);
         assertEquals(count101 + count102, count);
         concatReader.readHeader();
-
+        System.out.println(concatReader.getSmallestSplitQueryIndex());
+        System.out.println(concatReader.getLargestSplitQueryIndex());
         assertEquals(numQueries101 + numQueries102, concatReader.getNumberOfQueries());
         assertEquals(numTargets, concatReader.getNumberOfTargets());
 

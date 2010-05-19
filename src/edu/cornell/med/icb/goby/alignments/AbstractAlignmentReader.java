@@ -84,6 +84,41 @@ public abstract class AbstractAlignmentReader implements Closeable,
      * The length of all the query sequences. Only valid if {@link #constantQueryLengths} is true.
      */
     protected int constantLength;
+    /**
+     * The smallest possible query index in this alignment. Data stored as an array where
+     * queryIndex is the array index will be stored with only the elements in the inclusive
+     * range [smallestSplitQueryIndex largestSplitQueryIndex]
+     * Such data structures include queryLength and some arrays in the TooManyHits data
+     * structure.
+     */
+    protected int smallestQueryIndex;
+
+    /**
+     * The smallest possible query index in this alignment.
+     *
+     * @return The smallest possible query index in this alignment.
+     */
+    public int getSmallestSplitQueryIndex() {
+        return smallestQueryIndex;
+    }
+
+    /**
+     * The largest possible query index in this alignment.
+     *
+     * @return The largest possible query index in this alignment.
+     */
+    public int getLargestSplitQueryIndex() {
+        return largestQueryIndex;
+    }
+
+    /**
+     * The largest possible query index in this alignment. Data stored as an array where
+     * queryIndex is the array index will be stored with only the elements in the inclusive
+     * range [smallestSplitQueryIndex largestSplitQueryIndex]
+     * Such data structures include queryLength and some arrays in the TooManyHits data
+     * structure.
+     */
+    protected int largestQueryIndex;
 
     public int getNumberOfQueries() {
         assert isHeaderLoaded() : "Header must be loaded to access number of queries";
@@ -159,12 +194,13 @@ public abstract class AbstractAlignmentReader implements Closeable,
             return constantLength;
         } else {
             assert queryLengths != null : "Query lengths must exist in the header.";
-            return queryLengths[queryIndex];
+            return queryLengths[queryIndex-smallestQueryIndex];
         }
     }
 
     /**
      * Returns the length of a target.
+     *
      * @param targetIndex Index of the target sequence.
      * @return Length of the specified target sequence.
      */
@@ -174,7 +210,6 @@ public abstract class AbstractAlignmentReader implements Closeable,
         assert targetLengths != null : "Target lengths must exist in the header.";
         return targetLengths[targetIndex];
     }
-
 
 
     /**

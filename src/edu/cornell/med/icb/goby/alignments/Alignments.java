@@ -1589,6 +1589,20 @@ public final class Alignments {
       return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_AlignmentHeader_fieldAccessorTable;
     }
     
+    // optional uint32 smallestSplitQueryIndex = 9;
+    public static final int SMALLESTSPLITQUERYINDEX_FIELD_NUMBER = 9;
+    private boolean hasSmallestSplitQueryIndex;
+    private int smallestSplitQueryIndex_ = 0;
+    public boolean hasSmallestSplitQueryIndex() { return hasSmallestSplitQueryIndex; }
+    public int getSmallestSplitQueryIndex() { return smallestSplitQueryIndex_; }
+    
+    // optional uint32 largestSplitQueryIndex = 11;
+    public static final int LARGESTSPLITQUERYINDEX_FIELD_NUMBER = 11;
+    private boolean hasLargestSplitQueryIndex;
+    private int largestSplitQueryIndex_ = 0;
+    public boolean hasLargestSplitQueryIndex() { return hasLargestSplitQueryIndex; }
+    public int getLargestSplitQueryIndex() { return largestSplitQueryIndex_; }
+    
     // optional .goby.IdentifierMapping query_name_mapping = 1;
     public static final int QUERY_NAME_MAPPING_FIELD_NUMBER = 1;
     private boolean hasQueryNameMapping;
@@ -1693,8 +1707,14 @@ public final class Alignments {
       for (int element : getTargetLengthList()) {
         output.writeUInt32(8, element);
       }
+      if (hasSmallestSplitQueryIndex()) {
+        output.writeUInt32(9, getSmallestSplitQueryIndex());
+      }
       if (hasConstantQueryLength()) {
         output.writeUInt32(10, getConstantQueryLength());
+      }
+      if (hasLargestSplitQueryIndex()) {
+        output.writeUInt32(11, getLargestSplitQueryIndex());
       }
       getUnknownFields().writeTo(output);
     }
@@ -1743,9 +1763,17 @@ public final class Alignments {
         size += dataSize;
         size += 1 * getTargetLengthList().size();
       }
+      if (hasSmallestSplitQueryIndex()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(9, getSmallestSplitQueryIndex());
+      }
       if (hasConstantQueryLength()) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(10, getConstantQueryLength());
+      }
+      if (hasLargestSplitQueryIndex()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(11, getLargestSplitQueryIndex());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1913,6 +1941,12 @@ public final class Alignments {
       
       public Builder mergeFrom(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentHeader other) {
         if (other == edu.cornell.med.icb.goby.alignments.Alignments.AlignmentHeader.getDefaultInstance()) return this;
+        if (other.hasSmallestSplitQueryIndex()) {
+          setSmallestSplitQueryIndex(other.getSmallestSplitQueryIndex());
+        }
+        if (other.hasLargestSplitQueryIndex()) {
+          setLargestSplitQueryIndex(other.getLargestSplitQueryIndex());
+        }
         if (other.hasQueryNameMapping()) {
           mergeQueryNameMapping(other.getQueryNameMapping());
         }
@@ -2024,14 +2058,58 @@ public final class Alignments {
               input.popLimit(limit);
               break;
             }
+            case 72: {
+              setSmallestSplitQueryIndex(input.readUInt32());
+              break;
+            }
             case 80: {
               setConstantQueryLength(input.readUInt32());
+              break;
+            }
+            case 88: {
+              setLargestSplitQueryIndex(input.readUInt32());
               break;
             }
           }
         }
       }
       
+      
+      // optional uint32 smallestSplitQueryIndex = 9;
+      public boolean hasSmallestSplitQueryIndex() {
+        return result.hasSmallestSplitQueryIndex();
+      }
+      public int getSmallestSplitQueryIndex() {
+        return result.getSmallestSplitQueryIndex();
+      }
+      public Builder setSmallestSplitQueryIndex(int value) {
+        result.hasSmallestSplitQueryIndex = true;
+        result.smallestSplitQueryIndex_ = value;
+        return this;
+      }
+      public Builder clearSmallestSplitQueryIndex() {
+        result.hasSmallestSplitQueryIndex = false;
+        result.smallestSplitQueryIndex_ = 0;
+        return this;
+      }
+      
+      // optional uint32 largestSplitQueryIndex = 11;
+      public boolean hasLargestSplitQueryIndex() {
+        return result.hasLargestSplitQueryIndex();
+      }
+      public int getLargestSplitQueryIndex() {
+        return result.getLargestSplitQueryIndex();
+      }
+      public Builder setLargestSplitQueryIndex(int value) {
+        result.hasLargestSplitQueryIndex = true;
+        result.largestSplitQueryIndex_ = value;
+        return this;
+      }
+      public Builder clearLargestSplitQueryIndex() {
+        result.hasLargestSplitQueryIndex = false;
+        result.largestSplitQueryIndex_ = 0;
+        return this;
+      }
       
       // optional .goby.IdentifierMapping query_name_mapping = 1;
       public boolean hasQueryNameMapping() {
@@ -3722,23 +3800,24 @@ public final class Alignments {
       "ariations\030\r \003(\0132\027.goby.SequenceVariation" +
       "\"f\n\021SequenceVariation\022\014\n\004from\030\002 \002(\t\022\n\n\002t" +
       "o\030\001 \002(\t\022\020\n\010position\030\003 \002(\r\022\021\n\treadIndex\030\005" +
-      " \002(\r\022\022\n\nto_quality\030\004 \001(\014\"\235\002\n\017AlignmentHe" +
-      "ader\0223\n\022query_name_mapping\030\001 \001(\0132\027.goby." +
-      "IdentifierMapping\0224\n\023target_name_mapping" +
-      "\030\002 \001(\0132\027.goby.IdentifierMapping\022\031\n\021numbe" +
-      "r_of_queries\030\005 \001(\r\022\031\n\021number_of_targets\030" +
-      "\006 \001(\r\022\037\n\027number_of_aligned_reads\030\007 \001(\r\022\024",
-      "\n\014query_length\030\003 \003(\r\022\033\n\023constantQueryLen" +
-      "gth\030\n \001(\r\022\025\n\rtarget_length\030\010 \003(\r\";\n\021Iden" +
-      "tifierMapping\022&\n\010mappings\030\001 \003(\0132\024.goby.I" +
-      "dentifierInfo\"-\n\016IdentifierInfo\022\014\n\004name\030" +
-      "\001 \002(\t\022\r\n\005index\030\002 \002(\r\"W\n\024AlignmentTooMany" +
-      "Hits\022\030\n\020alignerThreshold\030\002 \002(\r\022%\n\004hits\030\001" +
-      " \003(\0132\027.goby.AmbiguousLocation\"b\n\021Ambiguo" +
-      "usLocation\022\023\n\013query_index\030\001 \002(\r\022\037\n\027at_le" +
-      "ast_number_of_hits\030\002 \002(\r\022\027\n\017length_of_ma" +
-      "tch\030\003 \001(\rB\'\n#edu.cornell.med.icb.goby.al",
-      "ignmentsH\001"
+      " \002(\r\022\022\n\nto_quality\030\004 \001(\014\"\336\002\n\017AlignmentHe" +
+      "ader\022\037\n\027smallestSplitQueryIndex\030\t \001(\r\022\036\n" +
+      "\026largestSplitQueryIndex\030\013 \001(\r\0223\n\022query_n" +
+      "ame_mapping\030\001 \001(\0132\027.goby.IdentifierMappi" +
+      "ng\0224\n\023target_name_mapping\030\002 \001(\0132\027.goby.I" +
+      "dentifierMapping\022\031\n\021number_of_queries\030\005 ",
+      "\001(\r\022\031\n\021number_of_targets\030\006 \001(\r\022\037\n\027number" +
+      "_of_aligned_reads\030\007 \001(\r\022\024\n\014query_length\030" +
+      "\003 \003(\r\022\033\n\023constantQueryLength\030\n \001(\r\022\025\n\rta" +
+      "rget_length\030\010 \003(\r\";\n\021IdentifierMapping\022&" +
+      "\n\010mappings\030\001 \003(\0132\024.goby.IdentifierInfo\"-" +
+      "\n\016IdentifierInfo\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030" +
+      "\002 \002(\r\"W\n\024AlignmentTooManyHits\022\030\n\020aligner" +
+      "Threshold\030\002 \002(\r\022%\n\004hits\030\001 \003(\0132\027.goby.Amb" +
+      "iguousLocation\"b\n\021AmbiguousLocation\022\023\n\013q" +
+      "uery_index\030\001 \002(\r\022\037\n\027at_least_number_of_h",
+      "its\030\002 \002(\r\022\027\n\017length_of_match\030\003 \001(\rB\'\n#ed" +
+      "u.cornell.med.icb.goby.alignmentsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -3774,7 +3853,7 @@ public final class Alignments {
           internal_static_goby_AlignmentHeader_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_goby_AlignmentHeader_descriptor,
-              new java.lang.String[] { "QueryNameMapping", "TargetNameMapping", "NumberOfQueries", "NumberOfTargets", "NumberOfAlignedReads", "QueryLength", "ConstantQueryLength", "TargetLength", },
+              new java.lang.String[] { "SmallestSplitQueryIndex", "LargestSplitQueryIndex", "QueryNameMapping", "TargetNameMapping", "NumberOfQueries", "NumberOfTargets", "NumberOfAlignedReads", "QueryLength", "ConstantQueryLength", "TargetLength", },
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentHeader.class,
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentHeader.Builder.class);
           internal_static_goby_IdentifierMapping_descriptor =

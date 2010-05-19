@@ -141,7 +141,23 @@ message SequenceVariation {
 */
 
 message AlignmentHeader {
-   
+   /*
+     The smallest possible query index in this alignment. Data stored as an array where
+     queryIndex is the array index will be stored with only the elements in the inclusive
+     range [smallestSplitQueryIndex largestSplitQueryIndex]
+     Such data structures include queryLength and some arrays in the TooManyHits data
+     structure.
+    */
+   optional uint32 smallestSplitQueryIndex=9;
+    /*
+     The largest possible query index in this alignment. Data stored as an array where
+     queryIndex is the array index will be stored with only the elements in the inclusive
+     range [smallestSplitQueryIndex largestSplitQueryIndex]
+     Such data structures include queryLength and some arrays in the TooManyHits data
+     structure.
+    */
+   optional uint32 largestSplitQueryIndex=11;
+
    /* Mapping from query identifier name to query index (as used in alignment entries).
     */
    optional IdentifierMapping query_name_mapping=1;

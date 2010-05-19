@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Arrays;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -199,6 +200,8 @@ public class AlignmentWriter implements Closeable {
         if (!headerWritten) {
             final Alignments.AlignmentHeader.Builder headerBuilder = Alignments.AlignmentHeader.newBuilder();
 
+            headerBuilder.setLargestSplitQueryIndex(maxQueryIndex);
+            headerBuilder.setSmallestSplitQueryIndex(minQueryIndex);
             headerBuilder.setNumberOfTargets(maxTargetIndex + 1);
             headerBuilder.setNumberOfQueries(getNumQueries());
 
@@ -325,6 +328,13 @@ public class AlignmentWriter implements Closeable {
         }
     }
 
+    /**
+     * Replace queryLength with constantQueryLength where the length is the same for all queries.
+     * Use a smaller queryLength array if we are storing just a slice of a larger alignment. In this
+     * case, the smaller array has size (maxQueryIndex-minQueryIndex+1)
+     *
+     * @param queryLengths An array of integers where each element indicates the length of a query
+     */
     private void compactQueryLengths(final int[] queryLengths) {
         if (queryLengths == null) {
             return;
@@ -340,6 +350,19 @@ public class AlignmentWriter implements Closeable {
             // detected constant read length.
             constantQueryLength = uniqueLengths.iterator().nextInt();
             isConstantQueryLength = true;
+            this.queryLengths = null;
+        } else {
+            if (actualNumberOfQueries != Integer.MIN_VALUE) {
+                // we know how many queries we are dealing with
+                int smallerLength = maxQueryIndex - minQueryIndex + 1;
+                if (smallerLength != getNumQueries()) {
+                    int[] smaller = new int[smallerLength];
+                    System.arraycopy(queryLengths, minQueryIndex, smaller, 0, smallerLength);
+                    this.queryLengths = smaller;
+                }
+            } else {
+                this.queryLengths=queryLengths;
+            }
         }
     }
 
@@ -375,7 +398,7 @@ public class AlignmentWriter implements Closeable {
             return maxQueryIndex - minQueryIndex + 1;
         }
     }
-    
+
     /**
      * Set the total number of targets.
      *
