@@ -396,12 +396,17 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
             try {
                 weights = WeightsInfo.loadForBasename(inputBasename);
-            } catch (IOException e) {
-                LOG.error("Cannot load weights file for " + inputBasename);
-                System.exit(1);
-            } catch (ClassNotFoundException e) {
-                LOG.error("Cannot load weights file for " + inputBasename);
-                System.exit(1);
+            } catch (Exception e) {
+                LOG.warn("Cannot load weights file for " + inputBasename);
+                LOG.warn("Using weight=1.0 for each read.");
+                WeightsInfo dummyWeights = new WeightsInfo() {
+
+                    @Override
+                    public float getWeight(int readIndex) {
+                        return 1f;
+                    }
+                };
+                return dummyWeights;
             }
 
         }
