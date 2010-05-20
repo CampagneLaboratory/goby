@@ -12,7 +12,7 @@ SCRIPT="$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")"
 SCRIPT_DIR=`dirname $SCRIPT` 
 
 # Destination directory for C++ code
-CPP_DEST_DIR=../cpp
+CPP_DEST_DIR=../cpp/src
 
 # Destination directory for Java code
 JAVA_DEST_DIR=../src
