@@ -42,7 +42,7 @@ public class HeptamerInfo implements Serializable {
     public IndexedIdentifier heptamerToIndices = new IndexedIdentifier();
     public Short2FloatMap heptamerIndexToWeight = new Short2FloatOpenHashMap();
     public int heptamerLength = 7;
-
+    public boolean colorSpace=false;
     /**
      * Load heptamer info from disk.
      *

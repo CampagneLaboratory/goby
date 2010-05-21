@@ -69,6 +69,7 @@ public class HeptamerWeightsMode extends AbstractGobyMode {
     private ShortList readIndexToHeptamerIndex = new ShortArrayList();
     private String mapFilename;
     private String heptamerInfoFilename;
+    private boolean colorSpace;
 
 
     public String getModeName() {
@@ -98,7 +99,7 @@ public class HeptamerWeightsMode extends AbstractGobyMode {
         tabWeightFilename = jsapResult.getString("weights");
         mapFilename = jsapResult.getString("map");
         heptamerInfoFilename = jsapResult.getString("heptamer-info");
-
+        colorSpace = jsapResult.getBoolean("color-space");
 
         return this;
     }
@@ -122,9 +123,14 @@ public class HeptamerWeightsMode extends AbstractGobyMode {
                 int count = 0;
                 final MutableString sequence = new MutableString();
                 int numberOfReads = 0;
+                heptamers.colorSpace = colorSpace;
                 for (final Reads.ReadEntry readEntry : reader) {
                     ReadsReader.decodeSequence(readEntry, sequence);
-                  //       if (count++ > 100000) break;
+                    if (colorSpace) {
+                        sequence.delete(0, 1);
+
+                    }
+                    // if (count++ > 100000) break;
                     int item = 0;
 
                     for (int positionInRead : readIndices) {

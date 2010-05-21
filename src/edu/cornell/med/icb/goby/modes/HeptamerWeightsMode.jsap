@@ -61,6 +61,10 @@
             <greedy>true</greedy>
             <help>The basenames of the input alignments to concatenate.</help>
         </unflaggedOption>
-       
+         <switch>
+            <id>color-space</id>
+            <longFlag>color-space</longFlag>
+            <help>When this switch is provided, the reads are color-space and the first character of each read is skipped. </help>
+        </switch>
     </parameters>
 </jsap>

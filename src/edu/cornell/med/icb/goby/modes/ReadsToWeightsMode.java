@@ -130,6 +130,9 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
                 int numberOfReads = 0;
                 for (final Reads.ReadEntry readEntry : reader) {
                     ReadsReader.decodeSequence(readEntry, sequence);
+                    if (heptamers.colorSpace) {
+                        sequence.delete(0, 1);
+                    }
                     // if (count++ > 1000000) break;
                     int item = 0;
                     final int readIndex = readEntry.getReadIndex();
