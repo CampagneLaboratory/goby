@@ -186,7 +186,10 @@ public abstract class AbstractAlignmentReader implements Closeable,
     }
 
     /**
-     * Returns the length of a query.
+     * Returns the length of a query. NB this method is only available for backward compatibility. It will be
+     * removed in a future release of Goby. Do not write new code that depends on it. Instead, store query
+     * lengths in alignment entries.
+     * @deprecated Store query lengths directly in the alignment entries
      */
     public final int getQueryLength(final int queryIndex) {
         assert isHeaderLoaded() : "Header must be loaded to access query lengths";

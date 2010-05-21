@@ -216,8 +216,10 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     currentEntry.setScore(score);
                     currentEntry.setTargetAlignedLength(reference.alignedLength);
                     currentEntry.setTargetIndex(targetIndex);
-                    final int readStartPosition = query.alignedStart;
                     final int queryLength = query.sequenceLength;
+                    currentEntry.setQueryLength(queryLength);
+                    final int readStartPosition = query.alignedStart;
+
                     parseSequenceVariations(currentEntry, reference, query, readStartPosition, queryLength, reverseStrand);
                     final Alignments.AlignmentEntry alignmentEntry = currentEntry.build();
 
@@ -258,7 +260,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                         writer.putStatistic("keep-filter-filename", readIndexFilterFile.getName());
                     }
                     writer.putStatistic("number-of-entries-written", numAligns);
-                    writer.setQueryLengths(readLengths);
+
                     writer.setNumQueries(numberOfReads);
                     writer.printStats(System.out);
                 }

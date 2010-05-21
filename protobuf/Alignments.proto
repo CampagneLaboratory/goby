@@ -74,6 +74,10 @@ message AlignmentEntry {
    */
   optional uint32 target_aligned_length=12;
   repeated SequenceVariation sequence_variations=13;
+    /*
+     Length of the query sequence.
+    */
+    optional uint32 queryLength=10;
 }
 /*
    Represents sequence variations between the query and the reference sequences. Many variations can be represented.
@@ -135,6 +139,8 @@ message SequenceVariation {
     (this option is currently not implemented in Goby.)
   */
   optional bytes to_quality=4;
+
+
 }
 /*
   This message is written to 'basename'.header

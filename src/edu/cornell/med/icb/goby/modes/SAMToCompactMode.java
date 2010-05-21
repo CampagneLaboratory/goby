@@ -143,8 +143,6 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         //    stopEarly++;
          //   if (stopEarly > 10000) break;
             final int readLength = samRecord.getReadLength();
-            // save length
-            readLengths[queryIndex-getSmallestSplitQueryIndex()] = readLength;
 
             // if SAM reports read is unmapped (we don't know how or why), skip record
             if (samRecord.getReadUnmappedFlag()) {
@@ -233,7 +231,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             currentEntry.setScore(score);
             currentEntry.setTargetAlignedLength(targetAlignedLength);
             currentEntry.setTargetIndex(targetIndex);
-
+            currentEntry.setQueryLength(readLength);
             final String cigar = samRecord.getCigarString();
             final String attributeMD = (String) samRecord.getAttribute("MD");
             final String sequence = samRecord.getReadString();
@@ -275,8 +273,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             writer.putStatistic("keep-filter-filename", readIndexFilterFile.getName());
         }
         writer.putStatistic("number-of-entries-written", numAligns);
-        writer.setQueryLengths(readLengths);
-        writer.printStats(System.out);
+             writer.printStats(System.out);
 
         // write information from SAM file header
         final SAMFileHeader samHeader = parser.getFileHeader();

@@ -79,6 +79,7 @@ public class AlignmentWriter implements Closeable {
     private boolean isConstantQueryLength;
     private Alignments.AlignmentEntry.Builder newEntry;
     private final FileOutputStream alignmentEntries;
+    private int queryLength;
 
     public AlignmentWriter(final String outputBasename) throws IOException {
         alignmentEntries = new FileOutputStream(outputBasename + ".entries");
@@ -141,6 +142,12 @@ public class AlignmentWriter implements Closeable {
      * @throws IOException
      */
     public synchronized void appendEntry() throws IOException {
+
+        if (!newEntry.hasQueryLength() && queryLengths != null) {
+            // when the entry does not already have a defined query length,
+            // set query Length from the length array if it is available 
+            newEntry.setQueryLength(queryLengths[newEntry.getQueryIndex()]);
+        }
         final Alignments.AlignmentEntry builtEntry = newEntry.build();
 
         final int currentQueryIndex = builtEntry.getQueryIndex();
@@ -181,6 +188,18 @@ public class AlignmentWriter implements Closeable {
      */
     public void appendEntry(Alignments.AlignmentEntry entry, final int replacementTargetIndex) throws IOException {
         entry = entry.newBuilderForType().mergeFrom(entry).setTargetIndex(replacementTargetIndex).build();
+        this.appendEntry(entry);
+    }
+
+    /**
+     * Set the query length on this entry, then append.
+     *
+     * @param entry       Entry to write
+     * @param queryLength the query length.
+     * @throws IOException
+     */
+    public void appendEntryWithLength(Alignments.AlignmentEntry entry, final int queryLength) throws IOException {
+        entry = entry.newBuilderForType().mergeFrom(entry).setQueryLength(queryLength).build();
         this.appendEntry(entry);
     }
 
@@ -319,20 +338,20 @@ public class AlignmentWriter implements Closeable {
         }
     }
 
-    public void setQueryLengths(final int[] queryLengths) {
+    /*  public void setQueryLengths(final int[] queryLengths) {
         assert queryLengths.length > maxQueryIndex :
                 "The number of elements of queryLength is too small to accomodate queryIndex=" + maxQueryIndex;
         compactQueryLengths(queryLengths);
         if (!isConstantQueryLength) {
             this.queryLengths = queryLengths;
         }
-    }
-    public void setQueryLengths(final AlignmentReader reader) {
-            if (reader.isConstantQueryLengths()) {
-                setQueryLengths(new int[1]);
-            }
-        }
-
+    }*/
+    /* public void setQueryLengths(final AlignmentReader reader) {
+           if (reader.isConstantQueryLengths()) {
+               setQueryLengths(new int[1]);
+           }
+       }
+    */
     /**
      * Replace queryLength with constantQueryLength where the length is the same for all queries.
      * Use a smaller queryLength array if we are storing just a slice of a larger alignment. In this
@@ -366,7 +385,7 @@ public class AlignmentWriter implements Closeable {
                     this.queryLengths = smaller;
                 }
             } else {
-                this.queryLengths=queryLengths;
+                this.queryLengths = queryLengths;
             }
         }
     }
@@ -433,10 +452,21 @@ public class AlignmentWriter implements Closeable {
     }
 
     public void setSmallestSplitQueryIndex(int smallestQueryIndex) {
-        minQueryIndex=smallestQueryIndex;
+        minQueryIndex = smallestQueryIndex;
     }
 
     public void setLargestSplitQueryIndex(int largestQueryIndex) {
-        maxQueryIndex=largestQueryIndex;
+        maxQueryIndex = largestQueryIndex;
+    }
+
+
+    public void setQueryLength(int queryLength) {
+        newEntry.setQueryLength(queryLength);
+    }
+
+    public void setQueryLengths(int[] queryLengths) {
+        assert queryLengths.length > maxQueryIndex :
+                "The number of elements of queryLength is too small to accomodate queryIndex=" + maxQueryIndex;
+        this.queryLengths = queryLengths;
     }
 }

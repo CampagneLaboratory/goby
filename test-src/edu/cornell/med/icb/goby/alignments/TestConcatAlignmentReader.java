@@ -104,8 +104,8 @@ public class TestConcatAlignmentReader {
 
     @Test
     public void testQueryIndicesNoAdjustment() throws IOException {
-        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(false,outputBasename1, outputBasename2);
-       
+        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(false, outputBasename1, outputBasename2);
+
         while (concatReader.hasNext()) {
             final Alignments.AlignmentEntry alignmentEntry = concatReader.next();
 
@@ -159,20 +159,22 @@ public class TestConcatAlignmentReader {
             final int numQuery = 10;
             int position = 1;
             final int score = 30;
+            int[] queryLengths = new int[numQuery];
+            for (int i = 0; i < queryLengths.length; i++) {
+                queryLengths[i] = i;
+            }
+
             for (int targetIndex = 0; targetIndex < numTargets; targetIndex++) {
                 for (int queryIndex = 0; queryIndex < numQuery; queryIndex++) {
                     writer.setAlignmentEntry(queryIndex, targetIndex, position++, score, false);
+                    writer.setQueryLength(queryLengths[queryIndex]);
                     writer.appendEntry();
                     numEntriesIn101++;
                     count101++;
                 }
             }
             numQueries101 = numQuery;
-            int[] queryLengths = new int[numQuery];
-            for (int i = 0; i < queryLengths.length; i++) {
-                queryLengths[i] = i;
-            }
-            writer.setQueryLengths(queryLengths);
+
             writer.close();
         }
         {
@@ -181,22 +183,24 @@ public class TestConcatAlignmentReader {
             writer.setNumAlignmentEntriesPerChunk(1000);
 
             final int numQuery = 13;
+            int[] queryLengths = new int[numQuery];
+            for (int i = 0; i < queryLengths.length; i++) {
+                queryLengths[i] = i;
+            }
+
             int position = 1;
             final int score = 50;
             for (int targetIndex = 0; targetIndex < numTargets; targetIndex++) {
                 for (int queryIndex = 0; queryIndex < numQuery; queryIndex++) {
                     writer.setAlignmentEntry(queryIndex, targetIndex, position++, score, false);
+                    writer.setQueryLength(queryLengths[queryIndex]);
                     writer.appendEntry();
                     numEntriesIn102++;
                     count102++;
                 }
             }
             numQueries102 = numQuery;
-            int[] queryLengths = new int[numQuery];
-            for (int i = 0; i < queryLengths.length; i++) {
-                queryLengths[i] = i;
-            }
-            writer.setQueryLengths(queryLengths);
+
             writer.close();
         }
 

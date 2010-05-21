@@ -115,9 +115,17 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         final int numQueries = alignmentReader.getNumberOfQueries();
 
         progress.start("Concatenating entries");
-
+        int[] queryLengths = null;
+        if (alignmentReader.getQueryLengths() != null) {
+            queryLengths = alignmentReader.getQueryLengths();
+        }
         for (final Alignments.AlignmentEntry entry : alignmentReader) {
-            writer.appendEntry(entry);
+            if (queryLengths != null) {
+                writer.appendEntryWithLength(entry, queryLengths[entry.getQueryIndex()]);
+            } else {
+                writer.appendEntry(entry);
+            }
+
             numLogicalEntries += entry.getMultiplicity();
             numEntries++;
             entriesInOutputFile++;
@@ -128,7 +136,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         progress.stop();
         // too many hits is prepared as for Merge:
         Merge.prepareMergedTooManyHits(outputFile, alignmentReader.getNumberOfQueries(), 0, basenames);
-       
+
         writer.setNumTargets(alignmentReader.getNumberOfTargets());
         if (alignmentReader.getTargetIdentifiers() != null) {
             writer.setTargetIdentifiers(alignmentReader.getTargetIdentifiers());
@@ -139,9 +147,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         if (alignmentReader.getQueryIdentifiers() != null) {
             writer.setQueryIdentifiers(alignmentReader.getQueryIdentifiers());
         }
-        if (alignmentReader.getQueryLengths() != null) {
-            writer.setQueryLengths(alignmentReader.getQueryLengths());
-        }
+
         writer.setStatistics(alignmentReader.getStatistics());
         writer.putStatistic("overall.matched.percent",
                 String.format("%3.3g", divide(numLogicalEntries, numQueries) * 100d));

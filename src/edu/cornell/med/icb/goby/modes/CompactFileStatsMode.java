@@ -236,15 +236,14 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         final int[] queryLength = reader.getQueryLengths();
         writer.printf("Number of query length entries = %,d%n",
                 ArrayUtils.getLength(queryLength));
+
         final SummaryStatistics queryLengthStats = new SummaryStatistics();
         if (queryLength != null) {
+            System.out.println("Query lengths are encoded in the header");
             for (final double d : queryLength) {
                 queryLengthStats.addValue(d);
             }
         }
-        writer.printf("Min query length = %,d%n", (int) queryLengthStats.getMin());
-        writer.printf("Max query length = %,d%n", (int) queryLengthStats.getMax());
-        writer.printf("Mean query length = %,.2f%n", queryLengthStats.getMean());
         writer.println("Constant query lengths = " + reader.isConstantQueryLengths());
 
         writer.printf("Has query identifiers = %s%n",
@@ -265,6 +264,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         double avgScore = 0;
         int sumNumVariations = 0;
 
+
         for (final Alignments.AlignmentEntry entry : reader) {
             numberOfReads++;   // Across all files
             numEntries++;      // Across this file
@@ -278,6 +278,12 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             maxReadLength = Math.max(maxReadLength, entry.getQueryAlignedLength());
             sumNumVariations += entry.getSequenceVariationsCount();
             alignedQueryIndices.add(entry.getQueryIndex());
+            if (entry.hasQueryLength()) {
+                assert (queryLength == null): "Query lengths cannot be stored both in alignment entries and header.";
+
+                    queryLengthStats.addValue(entry.getQueryLength());
+
+            }
         }
         avgScore /= (double) numLogicalAlignmentEntries;
 
@@ -298,6 +304,10 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 avgNumVariationsPerQuery);
         final long size = file.length();
         writer.printf("Average bytes per entry = %f%n", divide(size, numLogicalAlignmentEntries));
+
+        writer.printf("Min query length = %,d%n", (int) queryLengthStats.getMin());
+        writer.printf("Max query length = %,d%n", (int) queryLengthStats.getMax());
+        writer.printf("Mean query length = %,.2f%n", queryLengthStats.getMean());
     }
 
     private double divide(final long a, final long b) {

@@ -280,6 +280,13 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::goby::SequenceVariation >*
       mutable_sequence_variations();
   
+  // optional uint32 queryLength = 10;
+  inline bool has_querylength() const;
+  inline void clear_querylength();
+  static const int kQueryLengthFieldNumber = 10;
+  inline ::google::protobuf::uint32 querylength() const;
+  inline void set_querylength(::google::protobuf::uint32 value);
+  
   // @@protoc_insertion_point(class_scope:goby.AlignmentEntry)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
@@ -297,11 +304,12 @@ class AlignmentEntry : public ::google::protobuf::Message {
   ::google::protobuf::uint32 query_aligned_length_;
   ::google::protobuf::uint32 target_aligned_length_;
   ::google::protobuf::RepeatedPtrField< ::goby::SequenceVariation > sequence_variations_;
+  ::google::protobuf::uint32 querylength_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
   friend void protobuf_ShutdownFile_Alignments_2eproto();
   
-  ::google::protobuf::uint32 _has_bits_[(12 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(13 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
   inline bool _has_bit(int index) const {
@@ -1260,6 +1268,22 @@ AlignmentEntry::sequence_variations() const {
 inline ::google::protobuf::RepeatedPtrField< ::goby::SequenceVariation >*
 AlignmentEntry::mutable_sequence_variations() {
   return &sequence_variations_;
+}
+
+// optional uint32 queryLength = 10;
+inline bool AlignmentEntry::has_querylength() const {
+  return _has_bit(12);
+}
+inline void AlignmentEntry::clear_querylength() {
+  querylength_ = 0u;
+  _clear_bit(12);
+}
+inline ::google::protobuf::uint32 AlignmentEntry::querylength() const {
+  return querylength_;
+}
+inline void AlignmentEntry::set_querylength(::google::protobuf::uint32 value) {
+  _set_bit(12);
+  querylength_ = value;
 }
 
 // -------------------------------------------------------------------
