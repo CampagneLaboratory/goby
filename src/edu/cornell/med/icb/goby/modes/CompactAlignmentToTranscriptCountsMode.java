@@ -48,9 +48,10 @@ import java.util.zip.GZIPInputStream;
  * Reads a compact alignment outputs read counts that overlap with transcript annotation segments.
  * Will adjust counts with weights when --use-weights is provided.
  * <p/>
+ *
  * @author Nyasha Chambwe
- * Date: Mar 31, 2010
- * Time: 11:05:47 AM
+ *         Date: Mar 31, 2010
+ *         Time: 11:05:47 AM
  */
 public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
 
@@ -136,6 +137,7 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
             deAnalyzer.parseCompare(compare);
         }
         normalizationMethods = deAnalyzer.parseNormalization(jsapResult);
+        CompactAlignmentToAnnotationCountsMode.parseEval(jsapResult, deAnalyzer);
         return this;
 
     }

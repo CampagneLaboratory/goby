@@ -171,9 +171,19 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         }
         parseAnnotations(jsapResult);
         normalizationMethods = deAnalyzer.parseNormalization(jsapResult);
-
-
+        parseEval(jsapResult, deAnalyzer);
         return this;
+    }
+
+    public static void parseEval(JSAPResult jsapResult, DifferentialExpressionAnalysis deAnalyzer) {
+        String evalString = jsapResult.getString("eval");
+
+        String[] evalArray = evalString.split(",");
+        ObjectSet<String> evalSet = new ObjectOpenHashSet<String>();
+        for (String evalName : evalArray) {
+            evalSet.add(evalName.trim().intern());
+        }
+        deAnalyzer.setEvalNames(evalSet);
     }
 
     private void parseAnnotations(final JSAPResult jsapResult) {

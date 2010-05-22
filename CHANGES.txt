@@ -4,7 +4,9 @@ development -> 1.7
    In contrast to the initial publication, Goby supports using the weights to
    reweight annotation counts and transcript counts.
  - Preliminary support for barcoded reads (barcodes in the sequence), see new
-   mode decode-barcodes. 
+   mode decode-barcodes.
+ - alignment-to-*-counts: New --eval argument allows to specify which statistics to evaluate when 
+   comparing samples.
  - Reduce memory requirements when concatenating many alignments. A change
    introduced in 1.6 caused more memory than needed to be allocated for each
    split of an alignment (as much as the number of reads in the file that

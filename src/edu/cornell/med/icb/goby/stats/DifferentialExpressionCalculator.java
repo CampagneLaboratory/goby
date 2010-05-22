@@ -49,6 +49,7 @@ public class DifferentialExpressionCalculator {
     private Object2DoubleMap<String> sampleProportions;
     private final IntArrayList lengths;
     private final Int2IntMap elementLabelToElementType;
+   
 
     /**
      * Return the type of the element.

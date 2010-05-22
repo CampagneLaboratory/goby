@@ -9,8 +9,11 @@
       <maximumHeapSize value="128" />
       <maximumStackSize value="32" />
       <properties />
+      <executeOn event="beforeRun" target="compile" />
       <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="SnpCatalogIndexer" />
-      <executeOn event="beforeRun" target="compile-tests" />
+      <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="annotation counts" />
+      <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestConcatAlignmentReader.testLoadTwoAdjustFalse" />
+      <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestReadWriteAlignments.readWriteHeader103" />
       <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="edu.cornell.med.icb.goby in goby" />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/release.xml">
@@ -116,6 +119,15 @@
   </component>
   <component name="EntryPointsManager">
     <entry_points version="2.0" />
+  </component>
+  <component name="FacetAutodetectingManager">
+    <autodetection-disabled>
+      <facet-type id="ejb">
+        <modules>
+          <module name="goby" />
+        </modules>
+      </facet-type>
+    </autodetection-disabled>
   </component>
   <component name="IdProvider" IDEtalkID="9D09B031F11E3ECE8D92498DE58C1E8C" />
   <component name="InspectionProjectProfileManager">
@@ -754,10 +766,10 @@
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
-    <configuration default="false" name="CompactFileStatsMode" type="Application" factoryName="Application" enabled="false" merge="false" runner="emma">
+    <configuration default="false" name="annotation counts" type="Application" factoryName="Application" enabled="false" merge="false" sample_coverage="true" runner="emma">
       <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.GobyDriver" />
-      <option name="VM_PARAMETERS" value="-Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties" />
-      <option name="PROGRAM_PARAMETERS" value=" --mode compact-file-stats /data/SEQC/RNHIWVU-CALHM1s3_313_WT-all-files/RNHIWVU-CALHM1s3_313_WT.entries" />
+      <option name="VM_PARAMETERS" value="-Xmx3g -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties" />
+      <option name="PROGRAM_PARAMETERS" value="-m alignment-to-annotation-counts -a data/biomart_human_transcript-exon_ensembl54_NCBI36.txt  HHNVSNR-Bullard-HBR-SRR037440-all-files/HHNVSNR-Bullard-HBR-SRR037440 DLTTEJH-Bullard-HBR-SRR037439-all-files/DLTTEJH-Bullard-HBR-SRR037439 -r 2 --compare A/B --groups A=DLTTEJH-Bullard-HBR-SRR037439/B=HHNVSNR-Bullard-HBR-SRR037440 --write-annotation-counts  false  --parallel --eval group-averages,log2-fold-change" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
@@ -766,12 +778,18 @@
       <option name="PASS_PARENT_ENVS" value="true" />
       <module name="goby" />
       <envs />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="54802" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
       <RunnerSettings RunnerId="JProfiler">
         <option name="WINDOW" value="false" />
         <option name="JVMPI" value="false" />
         <option name="INTERPRETED" value="false" />
       </RunnerSettings>
       <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
         <option name="Run Ant target" value="true" />
@@ -954,7 +972,7 @@
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
-    <configuration default="false" name="TestReadWriteAlignments.readWriteHeader103" type="JUnit" factoryName="JUnit" enabled="false" merge="false" runner="emma">
+    <configuration default="false" name="TestReadWriteAlignments.readWriteHeader103" type="JUnit" factoryName="JUnit" enabled="false" merge="false" sample_coverage="true" runner="emma">
       <module name="goby" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
@@ -1095,50 +1113,6 @@
         <entry key="$PROJECT_DIR$">
           <value>
             <SvnBranchConfiguration>
-              <option name="branchMap">
-                <map>
-                  <entry key="https://pbtech-vc.med.cornell.edu/public/svn/icb/3rdparty">
-                    <value>
-                      <list />
-                    </value>
-                  </entry>
-                  <entry key="https://pbtech-vc.med.cornell.edu/public/svn/icb/branches">
-                    <value>
-                      <list />
-                    </value>
-                  </entry>
-                  <entry key="https://pbtech-vc.med.cornell.edu/public/svn/icb/buildsupport">
-                    <value>
-                      <list />
-                    </value>
-                  </entry>
-                  <entry key="https://pbtech-vc.med.cornell.edu/public/svn/icb/data">
-                    <value>
-                      <list />
-                    </value>
-                  </entry>
-                  <entry key="https://pbtech-vc.med.cornell.edu/public/svn/icb/scripts">
-                    <value>
-                      <list />
-                    </value>
-                  </entry>
-                  <entry key="https://pbtech-vc.med.cornell.edu/public/svn/icb/shelves">
-                    <value>
-                      <list />
-                    </value>
-                  </entry>
-                  <entry key="https://pbtech-vc.med.cornell.edu/public/svn/icb/tags">
-                    <value>
-                      <list />
-                    </value>
-                  </entry>
-                  <entry key="https://pbtech-vc.med.cornell.edu/public/svn/icb/testsupport">
-                    <value>
-                      <list />
-                    </value>
-                  </entry>
-                </map>
-              </option>
               <option name="branchUrls">
                 <list>
                   <option value="https://pbtech-vc.med.cornell.edu/public/svn/icb/3rdparty" />

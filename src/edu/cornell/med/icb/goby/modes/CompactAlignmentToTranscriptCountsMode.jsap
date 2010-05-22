@@ -77,5 +77,18 @@
             </defaults>
             <help>The filename where statistics will be written (for group comparisons). These files are tab delimited.</help>
         </flaggedOption>
+        <flaggedOption>
+             <id>eval</id>
+             <shortFlag>t</shortFlag>
+             <longFlag>eval</longFlag>
+             <required>false</required>
+             <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+             <defaults>
+                <string>fold-change,fold-change-magnitude,log2-fold-change,grou-averages,t-test,fisher,chi-square,Bonferroni,BH</string>
+            </defaults>
+                   <help>Name the statistics to evaluate.</help>
+        </flaggedOption>
     </parameters>
 </jsap>

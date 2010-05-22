@@ -131,5 +131,18 @@
                    <help>Whether weights should be used to adjust read counts. When the flag is true, this mode will try to load a weights file associated with each input basename ('basename'.weight). If found, the weights are used to adjust the read count for annotations.</help>
         </flaggedOption>
 
+         <flaggedOption>
+             <id>eval</id>
+             <shortFlag>t</shortFlag>
+             <longFlag>eval</longFlag>
+             <required>false</required>
+             <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+             <defaults>
+                <string>fold-change,fold-change-magnitude,log2-fold-change,grou-averages,t-test,fisher,chi-square,Bonferroni,BH</string>
+            </defaults>
+                   <help>Name the statistics to evaluate.</help>
+        </flaggedOption>
     </parameters>
 </jsap>
