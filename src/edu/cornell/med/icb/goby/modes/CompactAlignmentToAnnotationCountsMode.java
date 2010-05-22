@@ -181,7 +181,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         String[] evalArray = evalString.split(",");
         ObjectSet<String> evalSet = new ObjectOpenHashSet<String>();
         for (String evalName : evalArray) {
-            evalSet.add(evalName.trim().intern());
+            evalSet.add(evalName.trim().toLowerCase().intern());
         }
         deAnalyzer.setEvalNames(evalSet);
     }
