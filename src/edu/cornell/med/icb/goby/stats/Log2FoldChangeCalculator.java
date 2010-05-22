@@ -21,7 +21,6 @@ package edu.cornell.med.icb.goby.stats;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 
 /**
- *
  * User: nyasha
  * Date: Apr 8, 2010
  * Time: 12:04:01 PM
@@ -29,56 +28,58 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
  */
 public class Log2FoldChangeCalculator extends StatisticCalculator {
 
-     /**
+    /**
      * The natural log of the number two.
      */
     private static final double LOG_2 = Math.log(2);
 
-        public Log2FoldChangeCalculator(final DifferentialExpressionResults results) {
-            this();
-            setResults(results);
+    public Log2FoldChangeCalculator(final DifferentialExpressionResults results) {
+        this();
+        setResults(results);
 
 
+    }
+
+    public Log2FoldChangeCalculator() {
+        super();
+    }
+
+
+    @Override
+    public boolean canDo(final String[] group) {
+        return group.length == 2;
+    }
+
+    @Override
+    public DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
+                                               final NormalizationMethod method, final DifferentialExpressionResults results,
+                                               final DifferentialExpressionInfo info,
+                                               final String... group) {
+        final String groupA = group[0];
+        final String groupB = group[1];
+        final int foldChangeStatIndex = defineStatisticId(results, "log2-fold-change", method, group);
+
+        final ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
+        final ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);
+        double averageA = 0;
+        double averageB = 0;
+
+
+        for (final String sample : samplesA) {
+            averageA += differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.getElementId());
         }
 
-        public Log2FoldChangeCalculator() {
-            super();
+        for (final String sample : samplesB) {
+            averageB += differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.getElementId());
         }
+        averageA /= samplesA.size();
+        averageB /= samplesB.size();
+        final double foldChangeStatistic = log2((averageA + 1) / (averageB + 1));
+        info.statistics.size(results.getNumberOfStatistics());
+        info.statistics.set(foldChangeStatIndex, foldChangeStatistic);
 
-
-        @Override
-       public boolean canDo(final String[] group) {
-            return group.length == 2;
-        }
-
-        @Override
-       public DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
-                                            final NormalizationMethod method, final DifferentialExpressionResults results,
-                                            final DifferentialExpressionInfo info,
-                                            final String... group) {
-            final String groupA = group[0];
-            final String groupB = group[1];
-            final int foldChangeStatIndex = defineStatisticId(results, "log2-fold-change", method, group);
-
-            final ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
-            final ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);
-            double averageA = 0;
-            double averageB = 0;
-
-
-            for (final String sample : samplesA) {
-                averageA += differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.getElementId());
-            }
-            for (final String sample : samplesB) {
-                averageB += differentialExpressionCalculator.getNormalizedExpressionValue(sample, method, info.getElementId());
-            }
-
-            final double foldChangeStatistic = log2((averageA+1) / (averageB+1));
-            info.statistics.size(results.getNumberOfStatistics());
-            info.statistics.set(foldChangeStatIndex, foldChangeStatistic);
-
-            return info;
-        }
+        return info;
+    }
 
 
     /**
