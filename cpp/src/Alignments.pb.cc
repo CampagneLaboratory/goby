@@ -269,24 +269,24 @@ void protobuf_AddDesc_Alignments_2eproto() {
     "\022\023\n\013queryLength\030\n \001(\r\"f\n\021SequenceVariati"
     "on\022\014\n\004from\030\002 \002(\t\022\n\n\002to\030\001 \002(\t\022\020\n\010position"
     "\030\003 \002(\r\022\021\n\treadIndex\030\005 \002(\r\022\022\n\nto_quality\030"
-    "\004 \001(\014\"\346\002\n\017AlignmentHeader\022\037\n\027smallestSpl"
+    "\004 \001(\014\"\350\002\n\017AlignmentHeader\022\037\n\027smallestSpl"
     "itQueryIndex\030\t \001(\r\022\036\n\026largestSplitQueryI"
     "ndex\030\013 \001(\r\0223\n\022query_name_mapping\030\001 \001(\0132\027"
     ".goby.IdentifierMapping\0224\n\023target_name_m"
     "apping\030\002 \001(\0132\027.goby.IdentifierMapping\022\031\n"
     "\021number_of_queries\030\005 \001(\r\022\031\n\021number_of_ta"
     "rgets\030\006 \001(\r\022\037\n\027number_of_aligned_reads\030\007"
-    " \001(\r\022\030\n\014query_length\030\003 \003(\rB\002\020\001\022\033\n\023consta"
-    "ntQueryLength\030\n \001(\r\022\031\n\rtarget_length\030\010 \003"
-    "(\rB\002\020\001\";\n\021IdentifierMapping\022&\n\010mappings\030"
-    "\001 \003(\0132\024.goby.IdentifierInfo\"-\n\016Identifie"
-    "rInfo\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"W\n\024Al"
-    "ignmentTooManyHits\022\030\n\020alignerThreshold\030\002"
-    " \002(\r\022%\n\004hits\030\001 \003(\0132\027.goby.AmbiguousLocat"
-    "ion\"b\n\021AmbiguousLocation\022\023\n\013query_index\030"
-    "\001 \002(\r\022\037\n\027at_least_number_of_hits\030\002 \002(\r\022\027"
-    "\n\017length_of_match\030\003 \001(\rB\'\n#edu.cornell.m"
-    "ed.icb.goby.alignmentsH\001", 1264);
+    " \001(\r\022\032\n\014query_length\030\003 \003(\rB\004\020\001\030\001\022\033\n\023cons"
+    "tantQueryLength\030\n \001(\r\022\031\n\rtarget_length\030\010"
+    " \003(\rB\002\020\001\";\n\021IdentifierMapping\022&\n\010mapping"
+    "s\030\001 \003(\0132\024.goby.IdentifierInfo\"-\n\016Identif"
+    "ierInfo\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"W\n\024"
+    "AlignmentTooManyHits\022\030\n\020alignerThreshold"
+    "\030\002 \002(\r\022%\n\004hits\030\001 \003(\0132\027.goby.AmbiguousLoc"
+    "ation\"b\n\021AmbiguousLocation\022\023\n\013query_inde"
+    "x\030\001 \002(\r\022\037\n\027at_least_number_of_hits\030\002 \002(\r"
+    "\022\027\n\017length_of_match\030\003 \001(\rB\'\n#edu.cornell"
+    ".med.icb.goby.alignmentsH\001", 1266);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "Alignments.proto", &protobuf_RegisterTypes);
   AlignmentCollection::default_instance_ = new AlignmentCollection();
@@ -1758,7 +1758,7 @@ bool AlignmentHeader::MergePartialFromCodedStream(
         break;
       }
       
-      // repeated uint32 query_length = 3 [packed = true];
+      // repeated uint32 query_length = 3 [packed = true, deprecated = true];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -1926,7 +1926,7 @@ void AlignmentHeader::SerializeWithCachedSizes(
       2, this->target_name_mapping(), output);
   }
   
-  // repeated uint32 query_length = 3 [packed = true];
+  // repeated uint32 query_length = 3 [packed = true, deprecated = true];
   if (this->query_length_size() > 0) {
     ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
     output->WriteVarint32(_query_length_cached_byte_size_);
@@ -1998,7 +1998,7 @@ void AlignmentHeader::SerializeWithCachedSizes(
         2, this->target_name_mapping(), target);
   }
   
-  // repeated uint32 query_length = 3 [packed = true];
+  // repeated uint32 query_length = 3 [packed = true, deprecated = true];
   if (this->query_length_size() > 0) {
     target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
       3,
@@ -2126,7 +2126,7 @@ int AlignmentHeader::ByteSize() const {
     }
     
   }
-  // repeated uint32 query_length = 3 [packed = true];
+  // repeated uint32 query_length = 3 [packed = true, deprecated = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->query_length_size(); i++) {

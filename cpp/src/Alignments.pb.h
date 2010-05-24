@@ -563,17 +563,17 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 number_of_aligned_reads() const;
   inline void set_number_of_aligned_reads(::google::protobuf::uint32 value);
   
-  // repeated uint32 query_length = 3 [packed = true];
-  inline int query_length_size() const;
-  inline void clear_query_length();
+  // repeated uint32 query_length = 3 [packed = true, deprecated = true];
+  inline int query_length_size() const PROTOBUF_DEPRECATED;
+  inline void clear_query_length() PROTOBUF_DEPRECATED;
   static const int kQueryLengthFieldNumber = 3;
-  inline ::google::protobuf::uint32 query_length(int index) const;
-  inline void set_query_length(int index, ::google::protobuf::uint32 value);
-  inline void add_query_length(::google::protobuf::uint32 value);
+  inline ::google::protobuf::uint32 query_length(int index) const PROTOBUF_DEPRECATED;
+  inline void set_query_length(int index, ::google::protobuf::uint32 value) PROTOBUF_DEPRECATED;
+  inline void add_query_length(::google::protobuf::uint32 value) PROTOBUF_DEPRECATED;
   inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
-      query_length() const;
+      query_length() const PROTOBUF_DEPRECATED;
   inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
-      mutable_query_length();
+      mutable_query_length() PROTOBUF_DEPRECATED;
   
   // optional uint32 constantQueryLength = 10;
   inline bool has_constantquerylength() const;
@@ -1566,7 +1566,7 @@ inline void AlignmentHeader::set_number_of_aligned_reads(::google::protobuf::uin
   number_of_aligned_reads_ = value;
 }
 
-// repeated uint32 query_length = 3 [packed = true];
+// repeated uint32 query_length = 3 [packed = true, deprecated = true];
 inline int AlignmentHeader::query_length_size() const {
   return query_length_.size();
 }

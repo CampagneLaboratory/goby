@@ -187,8 +187,9 @@ message AlignmentHeader {
 
    /*
       Length of the query sequences. One number per query, in the order of increasing query index.
+      This information has been moved to the individual alignment entries.
     */
-   repeated uint32 query_length=3 [packed=true];
+   repeated uint32 query_length=3 [packed=true, deprecated=true];
    /*
       If query length is constant across all the queries, this field contains the constant length. \
       In such cases, query_length will be empty.
