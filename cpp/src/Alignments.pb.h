@@ -563,7 +563,7 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 number_of_aligned_reads() const;
   inline void set_number_of_aligned_reads(::google::protobuf::uint32 value);
   
-  // repeated uint32 query_length = 3 [packed = true, deprecated = true];
+  // repeated uint32 query_length = 3 [deprecated = true];
   inline int query_length_size() const PROTOBUF_DEPRECATED;
   inline void clear_query_length() PROTOBUF_DEPRECATED;
   static const int kQueryLengthFieldNumber = 3;
@@ -582,7 +582,7 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 constantquerylength() const;
   inline void set_constantquerylength(::google::protobuf::uint32 value);
   
-  // repeated uint32 target_length = 8 [packed = true];
+  // repeated uint32 target_length = 8;
   inline int target_length_size() const;
   inline void clear_target_length();
   static const int kTargetLengthFieldNumber = 8;
@@ -607,10 +607,8 @@ class AlignmentHeader : public ::google::protobuf::Message {
   ::google::protobuf::uint32 number_of_targets_;
   ::google::protobuf::uint32 number_of_aligned_reads_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > query_length_;
-  mutable int _query_length_cached_byte_size_;
   ::google::protobuf::uint32 constantquerylength_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > target_length_;
-  mutable int _target_length_cached_byte_size_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
   friend void protobuf_ShutdownFile_Alignments_2eproto();
@@ -1566,7 +1564,7 @@ inline void AlignmentHeader::set_number_of_aligned_reads(::google::protobuf::uin
   number_of_aligned_reads_ = value;
 }
 
-// repeated uint32 query_length = 3 [packed = true, deprecated = true];
+// repeated uint32 query_length = 3 [deprecated = true];
 inline int AlignmentHeader::query_length_size() const {
   return query_length_.size();
 }
@@ -1607,7 +1605,7 @@ inline void AlignmentHeader::set_constantquerylength(::google::protobuf::uint32 
   constantquerylength_ = value;
 }
 
-// repeated uint32 target_length = 8 [packed = true];
+// repeated uint32 target_length = 8;
 inline int AlignmentHeader::target_length_size() const {
   return target_length_.size();
 }

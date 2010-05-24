@@ -269,24 +269,24 @@ void protobuf_AddDesc_Alignments_2eproto() {
     "\022\023\n\013queryLength\030\n \001(\r\"f\n\021SequenceVariati"
     "on\022\014\n\004from\030\002 \002(\t\022\n\n\002to\030\001 \002(\t\022\020\n\010position"
     "\030\003 \002(\r\022\021\n\treadIndex\030\005 \002(\r\022\022\n\nto_quality\030"
-    "\004 \001(\014\"\350\002\n\017AlignmentHeader\022\037\n\027smallestSpl"
+    "\004 \001(\014\"\342\002\n\017AlignmentHeader\022\037\n\027smallestSpl"
     "itQueryIndex\030\t \001(\r\022\036\n\026largestSplitQueryI"
     "ndex\030\013 \001(\r\0223\n\022query_name_mapping\030\001 \001(\0132\027"
     ".goby.IdentifierMapping\0224\n\023target_name_m"
     "apping\030\002 \001(\0132\027.goby.IdentifierMapping\022\031\n"
     "\021number_of_queries\030\005 \001(\r\022\031\n\021number_of_ta"
     "rgets\030\006 \001(\r\022\037\n\027number_of_aligned_reads\030\007"
-    " \001(\r\022\032\n\014query_length\030\003 \003(\rB\004\020\001\030\001\022\033\n\023cons"
-    "tantQueryLength\030\n \001(\r\022\031\n\rtarget_length\030\010"
-    " \003(\rB\002\020\001\";\n\021IdentifierMapping\022&\n\010mapping"
-    "s\030\001 \003(\0132\024.goby.IdentifierInfo\"-\n\016Identif"
-    "ierInfo\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"W\n\024"
-    "AlignmentTooManyHits\022\030\n\020alignerThreshold"
-    "\030\002 \002(\r\022%\n\004hits\030\001 \003(\0132\027.goby.AmbiguousLoc"
-    "ation\"b\n\021AmbiguousLocation\022\023\n\013query_inde"
-    "x\030\001 \002(\r\022\037\n\027at_least_number_of_hits\030\002 \002(\r"
-    "\022\027\n\017length_of_match\030\003 \001(\rB\'\n#edu.cornell"
-    ".med.icb.goby.alignmentsH\001", 1266);
+    " \001(\r\022\030\n\014query_length\030\003 \003(\rB\002\030\001\022\033\n\023consta"
+    "ntQueryLength\030\n \001(\r\022\025\n\rtarget_length\030\010 \003"
+    "(\r\";\n\021IdentifierMapping\022&\n\010mappings\030\001 \003("
+    "\0132\024.goby.IdentifierInfo\"-\n\016IdentifierInf"
+    "o\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"W\n\024Alignm"
+    "entTooManyHits\022\030\n\020alignerThreshold\030\002 \002(\r"
+    "\022%\n\004hits\030\001 \003(\0132\027.goby.AmbiguousLocation\""
+    "b\n\021AmbiguousLocation\022\023\n\013query_index\030\001 \002("
+    "\r\022\037\n\027at_least_number_of_hits\030\002 \002(\r\022\027\n\017le"
+    "ngth_of_match\030\003 \001(\rB\'\n#edu.cornell.med.i"
+    "cb.goby.alignmentsH\001", 1260);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "Alignments.proto", &protobuf_RegisterTypes);
   AlignmentCollection::default_instance_ = new AlignmentCollection();
@@ -1754,27 +1754,28 @@ bool AlignmentHeader::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(26)) goto parse_query_length;
+        if (input->ExpectTag(24)) goto parse_query_length;
         break;
       }
       
-      // repeated uint32 query_length = 3 [packed = true, deprecated = true];
+      // repeated uint32 query_length = 3 [deprecated = true];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_query_length:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 input, this->mutable_query_length())));
+                 1, 24, input, this->mutable_query_length())));
         } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
                    == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_VARINT) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                      WIRETYPE_LENGTH_DELIMITED) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 1, 26, input, this->mutable_query_length())));
+                 input, this->mutable_query_length())));
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(24)) goto parse_query_length;
         if (input->ExpectTag(40)) goto parse_number_of_queries;
         break;
       }
@@ -1823,27 +1824,28 @@ bool AlignmentHeader::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(66)) goto parse_target_length;
+        if (input->ExpectTag(64)) goto parse_target_length;
         break;
       }
       
-      // repeated uint32 target_length = 8 [packed = true];
+      // repeated uint32 target_length = 8;
       case 8: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_target_length:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 input, this->mutable_target_length())));
+                 1, 64, input, this->mutable_target_length())));
         } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
                    == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_VARINT) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                      WIRETYPE_LENGTH_DELIMITED) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 1, 66, input, this->mutable_target_length())));
+                 input, this->mutable_target_length())));
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(64)) goto parse_target_length;
         if (input->ExpectTag(72)) goto parse_smallestSplitQueryIndex;
         break;
       }
@@ -1926,14 +1928,10 @@ void AlignmentHeader::SerializeWithCachedSizes(
       2, this->target_name_mapping(), output);
   }
   
-  // repeated uint32 query_length = 3 [packed = true, deprecated = true];
-  if (this->query_length_size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
-    output->WriteVarint32(_query_length_cached_byte_size_);
-  }
+  // repeated uint32 query_length = 3 [deprecated = true];
   for (int i = 0; i < this->query_length_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32NoTag(
-      this->query_length(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(
+      3, this->query_length(i), output);
   }
   
   // optional uint32 number_of_queries = 5;
@@ -1951,14 +1949,10 @@ void AlignmentHeader::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(7, this->number_of_aligned_reads(), output);
   }
   
-  // repeated uint32 target_length = 8 [packed = true];
-  if (this->target_length_size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteTag(8, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
-    output->WriteVarint32(_target_length_cached_byte_size_);
-  }
+  // repeated uint32 target_length = 8;
   for (int i = 0; i < this->target_length_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32NoTag(
-      this->target_length(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(
+      8, this->target_length(i), output);
   }
   
   // optional uint32 smallestSplitQueryIndex = 9;
@@ -1998,18 +1992,10 @@ void AlignmentHeader::SerializeWithCachedSizes(
         2, this->target_name_mapping(), target);
   }
   
-  // repeated uint32 query_length = 3 [packed = true, deprecated = true];
-  if (this->query_length_size() > 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
-      3,
-      ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
-      target);
-    target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
-      _query_length_cached_byte_size_, target);
-  }
+  // repeated uint32 query_length = 3 [deprecated = true];
   for (int i = 0; i < this->query_length_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteUInt32NoTagToArray(this->query_length(i), target);
+      WriteUInt32ToArray(3, this->query_length(i), target);
   }
   
   // optional uint32 number_of_queries = 5;
@@ -2027,18 +2013,10 @@ void AlignmentHeader::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(7, this->number_of_aligned_reads(), target);
   }
   
-  // repeated uint32 target_length = 8 [packed = true];
-  if (this->target_length_size() > 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
-      8,
-      ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
-      target);
-    target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
-      _target_length_cached_byte_size_, target);
-  }
+  // repeated uint32 target_length = 8;
   for (int i = 0; i < this->target_length_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteUInt32NoTagToArray(this->target_length(i), target);
+      WriteUInt32ToArray(8, this->target_length(i), target);
   }
   
   // optional uint32 smallestSplitQueryIndex = 9;
@@ -2126,34 +2104,24 @@ int AlignmentHeader::ByteSize() const {
     }
     
   }
-  // repeated uint32 query_length = 3 [packed = true, deprecated = true];
+  // repeated uint32 query_length = 3 [deprecated = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->query_length_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
         UInt32Size(this->query_length(i));
     }
-    if (data_size > 0) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
-    }
-    _query_length_cached_byte_size_ = data_size;
-    total_size += data_size;
+    total_size += 1 * this->query_length_size() + data_size;
   }
   
-  // repeated uint32 target_length = 8 [packed = true];
+  // repeated uint32 target_length = 8;
   {
     int data_size = 0;
     for (int i = 0; i < this->target_length_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
         UInt32Size(this->target_length(i));
     }
-    if (data_size > 0) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
-    }
-    _target_length_cached_byte_size_ = data_size;
-    total_size += data_size;
+    total_size += 1 * this->target_length_size() + data_size;
   }
   
   if (!unknown_fields().empty()) {

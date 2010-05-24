@@ -1677,7 +1677,7 @@ public final class Alignments {
     public boolean hasNumberOfAlignedReads() { return hasNumberOfAlignedReads; }
     public int getNumberOfAlignedReads() { return numberOfAlignedReads_; }
     
-    // repeated uint32 query_length = 3 [packed = true, deprecated = true];
+    // repeated uint32 query_length = 3 [deprecated = true];
     public static final int QUERY_LENGTH_FIELD_NUMBER = 3;
     private java.util.List<java.lang.Integer> queryLength_ =
       java.util.Collections.emptyList();
@@ -1688,7 +1688,6 @@ public final class Alignments {
     public int getQueryLength(int index) {
       return queryLength_.get(index);
     }
-    private int queryLengthMemoizedSerializedSize = -1;
     
     // optional uint32 constantQueryLength = 10;
     public static final int CONSTANTQUERYLENGTH_FIELD_NUMBER = 10;
@@ -1697,7 +1696,7 @@ public final class Alignments {
     public boolean hasConstantQueryLength() { return hasConstantQueryLength; }
     public int getConstantQueryLength() { return constantQueryLength_; }
     
-    // repeated uint32 target_length = 8 [packed = true];
+    // repeated uint32 target_length = 8;
     public static final int TARGET_LENGTH_FIELD_NUMBER = 8;
     private java.util.List<java.lang.Integer> targetLength_ =
       java.util.Collections.emptyList();
@@ -1708,7 +1707,6 @@ public final class Alignments {
     public int getTargetLength(int index) {
       return targetLength_.get(index);
     }
-    private int targetLengthMemoizedSerializedSize = -1;
     
     private void initFields() {
       queryNameMapping_ = edu.cornell.med.icb.goby.alignments.Alignments.IdentifierMapping.getDefaultInstance();
@@ -1733,12 +1731,8 @@ public final class Alignments {
       if (hasTargetNameMapping()) {
         output.writeMessage(2, getTargetNameMapping());
       }
-      if (getQueryLengthList().size() > 0) {
-        output.writeRawVarint32(26);
-        output.writeRawVarint32(queryLengthMemoizedSerializedSize);
-      }
       for (int element : getQueryLengthList()) {
-        output.writeUInt32NoTag(element);
+        output.writeUInt32(3, element);
       }
       if (hasNumberOfQueries()) {
         output.writeUInt32(5, getNumberOfQueries());
@@ -1749,12 +1743,8 @@ public final class Alignments {
       if (hasNumberOfAlignedReads()) {
         output.writeUInt32(7, getNumberOfAlignedReads());
       }
-      if (getTargetLengthList().size() > 0) {
-        output.writeRawVarint32(66);
-        output.writeRawVarint32(targetLengthMemoizedSerializedSize);
-      }
       for (int element : getTargetLengthList()) {
-        output.writeUInt32NoTag(element);
+        output.writeUInt32(8, element);
       }
       if (hasSmallestSplitQueryIndex()) {
         output.writeUInt32(9, getSmallestSplitQueryIndex());
@@ -1789,12 +1779,7 @@ public final class Alignments {
             .computeUInt32SizeNoTag(element);
         }
         size += dataSize;
-        if (!getQueryLengthList().isEmpty()) {
-          size += 1;
-          size += com.google.protobuf.CodedOutputStream
-              .computeInt32SizeNoTag(dataSize);
-        }
-        queryLengthMemoizedSerializedSize = dataSize;
+        size += 1 * getQueryLengthList().size();
       }
       if (hasNumberOfQueries()) {
         size += com.google.protobuf.CodedOutputStream
@@ -1815,12 +1800,7 @@ public final class Alignments {
             .computeUInt32SizeNoTag(element);
         }
         size += dataSize;
-        if (!getTargetLengthList().isEmpty()) {
-          size += 1;
-          size += com.google.protobuf.CodedOutputStream
-              .computeInt32SizeNoTag(dataSize);
-        }
-        targetLengthMemoizedSerializedSize = dataSize;
+        size += 1 * getTargetLengthList().size();
       }
       if (hasSmallestSplitQueryIndex()) {
         size += com.google.protobuf.CodedOutputStream
@@ -2298,7 +2278,7 @@ public final class Alignments {
         return this;
       }
       
-      // repeated uint32 query_length = 3 [packed = true, deprecated = true];
+      // repeated uint32 query_length = 3 [deprecated = true];
       public java.util.List<java.lang.Integer> getQueryLengthList() {
         return java.util.Collections.unmodifiableList(result.queryLength_);
       }
@@ -2350,7 +2330,7 @@ public final class Alignments {
         return this;
       }
       
-      // repeated uint32 target_length = 8 [packed = true];
+      // repeated uint32 target_length = 8;
       public java.util.List<java.lang.Integer> getTargetLengthList() {
         return java.util.Collections.unmodifiableList(result.targetLength_);
       }
@@ -3859,24 +3839,24 @@ public final class Alignments {
       "\022\023\n\013queryLength\030\n \001(\r\"f\n\021SequenceVariati" +
       "on\022\014\n\004from\030\002 \002(\t\022\n\n\002to\030\001 \002(\t\022\020\n\010position" +
       "\030\003 \002(\r\022\021\n\treadIndex\030\005 \002(\r\022\022\n\nto_quality\030" +
-      "\004 \001(\014\"\350\002\n\017AlignmentHeader\022\037\n\027smallestSpl" +
+      "\004 \001(\014\"\342\002\n\017AlignmentHeader\022\037\n\027smallestSpl" +
       "itQueryIndex\030\t \001(\r\022\036\n\026largestSplitQueryI" +
       "ndex\030\013 \001(\r\0223\n\022query_name_mapping\030\001 \001(\0132\027" +
       ".goby.IdentifierMapping\0224\n\023target_name_m" +
       "apping\030\002 \001(\0132\027.goby.IdentifierMapping\022\031\n" +
       "\021number_of_queries\030\005 \001(\r\022\031\n\021number_of_ta",
       "rgets\030\006 \001(\r\022\037\n\027number_of_aligned_reads\030\007" +
-      " \001(\r\022\032\n\014query_length\030\003 \003(\rB\004\020\001\030\001\022\033\n\023cons" +
-      "tantQueryLength\030\n \001(\r\022\031\n\rtarget_length\030\010" +
-      " \003(\rB\002\020\001\";\n\021IdentifierMapping\022&\n\010mapping" +
-      "s\030\001 \003(\0132\024.goby.IdentifierInfo\"-\n\016Identif" +
-      "ierInfo\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"W\n\024" +
-      "AlignmentTooManyHits\022\030\n\020alignerThreshold" +
-      "\030\002 \002(\r\022%\n\004hits\030\001 \003(\0132\027.goby.AmbiguousLoc" +
-      "ation\"b\n\021AmbiguousLocation\022\023\n\013query_inde" +
-      "x\030\001 \002(\r\022\037\n\027at_least_number_of_hits\030\002 \002(\r",
-      "\022\027\n\017length_of_match\030\003 \001(\rB\'\n#edu.cornell" +
-      ".med.icb.goby.alignmentsH\001"
+      " \001(\r\022\030\n\014query_length\030\003 \003(\rB\002\030\001\022\033\n\023consta" +
+      "ntQueryLength\030\n \001(\r\022\025\n\rtarget_length\030\010 \003" +
+      "(\r\";\n\021IdentifierMapping\022&\n\010mappings\030\001 \003(" +
+      "\0132\024.goby.IdentifierInfo\"-\n\016IdentifierInf" +
+      "o\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"W\n\024Alignm" +
+      "entTooManyHits\022\030\n\020alignerThreshold\030\002 \002(\r" +
+      "\022%\n\004hits\030\001 \003(\0132\027.goby.AmbiguousLocation\"" +
+      "b\n\021AmbiguousLocation\022\023\n\013query_index\030\001 \002(" +
+      "\r\022\037\n\027at_least_number_of_hits\030\002 \002(\r\022\027\n\017le",
+      "ngth_of_match\030\003 \001(\rB\'\n#edu.cornell.med.i" +
+      "cb.goby.alignmentsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
