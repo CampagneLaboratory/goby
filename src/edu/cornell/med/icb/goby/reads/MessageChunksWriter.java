@@ -72,7 +72,6 @@ public class MessageChunksWriter {
         this.numEntriesPerChunk = numEntriesPerChunk;
     }
 
-
     public MessageChunksWriter(final OutputStream output) {
         this.out = new DataOutputStream(output);
     }
@@ -83,13 +82,11 @@ public class MessageChunksWriter {
      * can just keep adding to the collection and call writeAsNeeded for every entry.
      *
      * @param collectionBuilder The builder prepared with the growing collection of entries.
-     * @throws IOException
+     * @throws IOException if there was an error writing the entries
      */
-    public void writeAsNeeded(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder) throws IOException {
-        ++totalEntriesWritten;
-        if (++numAppended >= numEntriesPerChunk) {
-            flush(collectionBuilder);
-        }
+    public void writeAsNeeded(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder)
+            throws IOException {
+        writeAsNeeded(collectionBuilder, 1);
     }
 
     /**
@@ -100,7 +97,7 @@ public class MessageChunksWriter {
      * @param collectionBuilder The builder prepared with the growing collection of entries.
      * @param multiplicity Indicates how many logical entries are included in the message that
      * was just appended.
-     * @throws IOException
+     * @throws IOException if there was an error writing the entries
      */
     public void writeAsNeeded(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder,
                               final int multiplicity) throws IOException {
@@ -115,9 +112,10 @@ public class MessageChunksWriter {
      * Force the writting of the collection to the output stream.
      *
      * @param collectionBuilder The builder prepared with the growing collection of entries.
-     * @throws IOException If an error occurs writting to the output stream.
+     * @throws IOException if there was an error writing the entries
      */
-    public void flush(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder) throws IOException {
+    public void flush(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder)
+            throws IOException {
         // Write the separation between two chunks: eight bytes with value zero.
         if (LOG.isTraceEnabled()) {
             LOG.trace("writting zero bytes {" + DELIMITER_LENGTH);
@@ -153,14 +151,15 @@ public class MessageChunksWriter {
      * Flush and release resources.
      *
      * @param collectionBuilder The builder prepared with the growing collection of entries.
-     * @throws IOException
+     * @throws IOException if there is a problem closing the stream unerlying stream
      */
-    public void close(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder) throws IOException {
+    public void close(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder)
+            throws IOException {
         flush(collectionBuilder);
         for (int i = 0; i < DELIMITER_LENGTH; i++) {
-            out.writeByte(0); //last collection is empty
+            out.writeByte(0); // last collection is empty
         }
-        out.writeInt(0); //last collection is empty
+        out.writeInt(0); // last collection is empty
         out.flush();
         // we do not own the output stream, so we do not close it.
     }
@@ -186,14 +185,14 @@ public class MessageChunksWriter {
     /**
      * Print statistics.
      *
-     * @param out Where to print.
+     * @param writer the writer used to print the statistics
      */
-    public void printStats(final PrintWriter out) {
-        out.println("Total logical entries written: " + totalEntriesWritten);
-        out.println("Total bytes written: " + totalBytesWritten);
-        out.println("Average bytes/logical entry: "
+    public void printStats(final PrintWriter writer) {
+        writer.println("Total logical entries written: " + totalEntriesWritten);
+        writer.println("Total bytes written: " + totalBytesWritten);
+        writer.println("Average bytes/logical entry: "
                 + (float) totalBytesWritten / (float) totalEntriesWritten);
-        out.flush();
+        writer.flush();
     }
 
     /**

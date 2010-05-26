@@ -68,6 +68,7 @@ public class MessageChunksReader implements Closeable {
             }
 
             try {
+                // read the 8 bytes of separation
                 final long numSkipped = in.skip(MessageChunksWriter.DELIMITER_LENGTH);
                 if (numSkipped != MessageChunksWriter.DELIMITER_LENGTH) {
                     LOG.warn("Skip returned " + numSkipped);
@@ -84,10 +85,12 @@ public class MessageChunksReader implements Closeable {
 
                 // read the compressed stream:
                 final byte[] bytes = new byte[numBytes];
-                in.read(bytes);
+                final int numRead = in.read(bytes);
+                if (numRead != numBytes) {
+                    LOG.warn("Expected " + numBytes + " but got " + numRead);
+                }
                 // uncompress the bytes on the fly and read into collection:
                 uncompressStream = new GZIPInputStream(new ByteArrayInputStream(bytes));
-                // read the 8 bytes of separation:
 
                 entryIndex = 0;
                 return true;

@@ -160,6 +160,7 @@ public class RandomAccessSequenceCache {
         BinIO.storeObject(referenceNameMap, basename + ".names");
     }
 
+    @SuppressWarnings("unchecked")
     public void load(final String basename) throws IOException, ClassNotFoundException {
         sizes = (IntList) BinIO.loadObject(basename + ".sizes");
         compressedData = (ObjectArrayList<byte[]>) BinIO.loadObject(basename + ".bases");
