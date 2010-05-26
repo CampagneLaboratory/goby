@@ -19,7 +19,6 @@
 
 <jsap>
     <parameters>
-
         <flaggedOption>
             <id>output</id>
             <shortFlag>o</shortFlag>
@@ -27,13 +26,12 @@
             <required>false</required>
             <help>The alignments in text format</help>
         </flaggedOption>
-
         <unflaggedOption>
             <id>input</id>
             <required>true</required>
             <help>The compact alignment file to read as input.</help>
         </unflaggedOption>
-       <flaggedOption>
+        <flaggedOption>
             <id>format</id>
             <shortFlag>f</shortFlag>
             <longFlag>format</longFlag>
@@ -43,9 +41,9 @@
             </defaults>
             <help>Format of the output file (plain, SAM).</help>
         </flaggedOption>
-         <flaggedOption>
+        <flaggedOption>
             <id>constant-read-length</id>
-             <shortFlag>l</shortFlag>
+            <shortFlag>l</shortFlag>
             <longFlag>constant-read-length</longFlag>
             <stringParser>
                 <classname>IntegerStringParser</classname>
@@ -54,7 +52,7 @@
             <defaults>
                 <string>0</string>
             </defaults>
-            <help>Use this number as read length for every read when the query length is not included in the alignment header.</help>
+            <help>Use this number as read length for every read when the query length is not included in the alignment.</help>
         </flaggedOption>
     </parameters>
 </jsap>

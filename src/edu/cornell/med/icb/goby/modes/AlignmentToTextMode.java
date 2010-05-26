@@ -60,6 +60,10 @@ public class AlignmentToTextMode extends AbstractGobyMode {
      */
     private String[] basenames;
     private MyIterateAlignments alignmentIterator;
+
+    /**
+     * The values to use for read lengths if none are found in the alignment entries/header.
+     */
     private int defaultReadLength;
 
 
@@ -157,9 +161,14 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                         final String cigar = calculateCigar(alignmentEntry);
                         final String MRNM = "=";
                         final int inferredInsertSize = 0;
-                        int readLength = defaultReadLength;
-                        if (alignmentReader.hasQueryLengths()) {
+                        final int readLength;
+                        // check entry then header for the query/read length otherwise use default
+                        if (alignmentEntry.hasQueryLength()) {
+                            readLength = alignmentEntry.getQueryLength();
+                        } else  if (alignmentReader.hasQueryLengths()) {
                             readLength = alignmentReader.getQueryLength(alignmentEntry.getQueryIndex());
+                        } else {
+                            readLength = defaultReadLength;
                         }
 
                         final MutableString readSequence = getReadSequence(alignmentEntry, readLength);
@@ -186,12 +195,11 @@ public class AlignmentToTextMode extends AbstractGobyMode {
     }
 
     private MutableString getReadSequence(final Alignments.AlignmentEntry alignmentEntry, final int readLength) {
-        final MutableString sequence = new MutableString();
+        final MutableString sequence = new MutableString(readLength);
         for (int i = 0; i < readLength; ++i) {
             sequence.append('.');
         }
         for (final Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
-
             final String to = var.getTo();
             if (var.getFrom().length() == to.length()) {
                 for (int i = 0; i < to.length(); i++) {
