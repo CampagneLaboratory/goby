@@ -120,15 +120,27 @@ public abstract class AbstractAlignmentReader implements Closeable,
      */
     protected int largestQueryIndex;
 
+    /**
+     * Get the number of query sequences represented in this alignment.
+     * @return the number of query sequences represented in this alignment.
+     */
     public int getNumberOfQueries() {
         assert isHeaderLoaded() : "Header must be loaded to access number of queries";
         return Math.max(numberOfQueries, 0);
     }
 
+    /**
+     * Has the alignment header has been processed?
+     * @return true if the reader has loaded the header
+     */
     protected boolean isHeaderLoaded() {
         return this.headerLoaded;
     }
 
+    /**
+     * Indicate that the alignment header has been processed.
+     * @param headerLoaded whether or not the reader has loaded the header
+     */
     protected void setHeaderLoaded(final boolean headerLoaded) {
         this.headerLoaded = headerLoaded;
     }
@@ -162,6 +174,10 @@ public abstract class AbstractAlignmentReader implements Closeable,
         return targetIdentifiers;
     }
 
+    /**
+     * Get the number of target sequences represented in this alignment.
+     * @return the number of target sequences represented in this alignment.
+     */
     public int getNumberOfTargets() {
         assert isHeaderLoaded() : "Header must be loaded to access number of targets";
         return Math.max(0, numberOfTargets);
@@ -170,14 +186,18 @@ public abstract class AbstractAlignmentReader implements Closeable,
     /**
      * Returns query lengths. An array of size the number of query sequences, where each element
      * indicates the length of the query sequence.
+     * @return an array containing the lengths of all the queries represented in the alignment
+     * @deprecated Query lengths are now stored as part of the individual alignment entry and
+     * can be retrieved with
+     * {@link edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry#getQueryLength()}
      */
+    @Deprecated
     public final int[] getQueryLengths() {
         assert isHeaderLoaded() : "Header must be loaded to access query lengths";
         if (constantQueryLengths) {
             final int[] localQueryLengths = new int[numberOfQueries];
             for (int i = 0; i < localQueryLengths.length; ++i) {
                 localQueryLengths[i] = constantLength;
-
             }
             return localQueryLengths;
         } else {
@@ -186,18 +206,23 @@ public abstract class AbstractAlignmentReader implements Closeable,
     }
 
     /**
-     * Returns the length of a query. NB this method is only available for backward compatibility. It will be
-     * removed in a future release of Goby. Do not write new code that depends on it. Instead, store query
-     * lengths in alignment entries.
-     * @deprecated Store query lengths directly in the alignment entries
+     * Returns the length of a query. NB this method is only available for backward compatibility.
+     * It will be removed in a future release of Goby. Do not write new code that depends on it.
+     * Instead, store query lengths in alignment entries.
+     * @param queryIndex The index of the query to get the length for
+     * @return the length of the specified query entry
+     * @deprecated Query lengths are now stored as part of the individual alignment entry and
+     * can be retrieved with
+     * {@link edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry#getQueryLength()}
      */
+    @Deprecated
     public final int getQueryLength(final int queryIndex) {
         assert isHeaderLoaded() : "Header must be loaded to access query lengths";
         if (constantQueryLengths) {
             return constantLength;
         } else {
             assert queryLengths != null : "Query lengths must exist in the header.";
-            return queryLengths[queryIndex-smallestQueryIndex];
+            return queryLengths[queryIndex - smallestQueryIndex];
         }
     }
 
@@ -214,10 +239,10 @@ public abstract class AbstractAlignmentReader implements Closeable,
         return targetLengths[targetIndex];
     }
 
-
     /**
      * Returns target lengths. An array of size the number of query sequences, where each element
      * indicates the length of the query sequence.
+     * @return an array containing the lengths of all the targets represented in the alignment
      */
     public final int[] getTargetLength() {
         assert isHeaderLoaded() : "Header must be loaded to access target lengths";
