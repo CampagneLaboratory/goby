@@ -67,7 +67,6 @@ public class AlignmentReader extends AbstractAlignmentReader {
     private Alignments.AlignmentCollection collection;
     private Properties stats;
     private String basename;
-    
 
     public AlignmentReader(final String basename) throws FileNotFoundException {
         super();
@@ -187,8 +186,8 @@ public class AlignmentReader extends AbstractAlignmentReader {
         codedInput.setSizeLimit(Integer.MAX_VALUE);
         final Alignments.AlignmentHeader header = Alignments.AlignmentHeader.parseFrom(codedInput);
 
-        smallestQueryIndex=header.getSmallestSplitQueryIndex();
-        largestQueryIndex=header.getLargestSplitQueryIndex();
+        smallestQueryIndex = header.getSmallestSplitQueryIndex();
+        largestQueryIndex = header.getLargestSplitQueryIndex();
         queryIdentifiers = parseIdentifiers(header.getQueryNameMapping());
         targetIdentifiers = parseIdentifiers(header.getTargetNameMapping());
         if (header.hasConstantQueryLength()) {
