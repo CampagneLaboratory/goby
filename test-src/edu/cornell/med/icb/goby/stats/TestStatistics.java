@@ -66,8 +66,6 @@ public class TestStatistics {
             deCalc.associateSampleToGroup("A-" + i, "A");
             deCalc.associateSampleToGroup("B-" + i, "B");
         }
-        //deCalc.associateSampleToGroup("A-", "A");
-        //deCalc.associateSampleToGroup("B-1", "B");
 
 
         final DifferentialExpressionInfo info = new DifferentialExpressionInfo("id-1");
@@ -75,7 +73,8 @@ public class TestStatistics {
         final FoldChangeCalculator foldChange = new FoldChangeCalculator(results);
         final NormalizationMethod normalizationMethod = new AlignedCountNormalization();
         foldChange.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
-        assertEquals("fold-change must be two fold", 2d, results.getStatistic(info, foldChange.statisticIds.get(0)), .1);
+        assertEquals("fold-change does not match", 1.3371121385291218,
+                results.getStatistic(info, foldChange.statisticIds.get(0)), .1);
     }
 
     @Test
@@ -106,8 +105,6 @@ public class TestStatistics {
             deCalc.associateSampleToGroup("A-" + i, "A");
             deCalc.associateSampleToGroup("B-" + i, "B");
         }
-        //deCalc.associateSampleToGroup("A-", "A");
-        //deCalc.associateSampleToGroup("B-1", "B");
 
         final DifferentialExpressionInfo info = new DifferentialExpressionInfo("id-1");
         final DifferentialExpressionResults results = new DifferentialExpressionResults();
@@ -179,9 +176,12 @@ public class TestStatistics {
         foldChange.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
         tTest.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
         fisher.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
-        assertEquals("fold-change must be two fold", 2d, results.getStatistic(info, foldChange.statisticIds.get(0)), .1);
-        assertTrue("T-test must be significant", results.getStatistic(info, tTest.statisticIds.get(0)) < 0.01);
-        assertTrue("fisher test must not be significant", results.getStatistic(info, fisher.statisticIds.get(0)) > 0.05);
+        assertEquals("fold-change does not match", 1.4139327824612316d,
+                results.getStatistic(info, foldChange.statisticIds.get(0)), .1);
+        assertTrue("T-test must be significant",
+                results.getStatistic(info, tTest.statisticIds.get(0)) < 0.01);
+        assertTrue("fisher test must not be significant",
+                results.getStatistic(info, fisher.statisticIds.get(0)) > 0.05);
     }
 
     @Test
@@ -296,7 +296,6 @@ public class TestStatistics {
             final NormalizationMethod normalizationMethod = new AlignedCountNormalization();
             fisher.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
             assertEquals("fisher test equal expected result", 0.5044757698516504, results.getStatistic(info, fisher.statisticIds.get(0)), 0.001);
-
 
             final int totalCountInA = 1700;
             final int totalCountInB = 170; // equal total in each group
