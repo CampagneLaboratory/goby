@@ -5,7 +5,7 @@ rem Assumes that the ".proto" files reside alongside the script.
 rem
 
 rem Destination directory for C++ code
-set CPP_DEST_DIR=..\cpp\src
+set CPP_DEST_DIR=..\cpp\src\goby
 
 rem Destination directory for Java code
 set JAVA_DEST_DIR=..\src

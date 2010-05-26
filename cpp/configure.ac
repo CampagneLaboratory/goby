@@ -21,7 +21,7 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 
-AC_SUBST(version_info)
+AC_SUBST(version_info, [0:0:0])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
