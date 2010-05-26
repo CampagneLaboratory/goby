@@ -120,33 +120,34 @@ public class ScanReferenceSequence {
                                     // remove without checking that the digest is not produced by another read.
                                     sd.remove(digest, readIndex);
                                 } else {
-                                    final Alignments.AlignmentEntry.Builder entry = writer.getAlignmentEntry();
-                                    entry.setQueryIndex(readIndex);
-                                    entry.setTargetIndex(referenceSequenceIndex);
-                                    entry.setPosition(referencePosition);
-                                    entry.setMatchingReverseStrand(!sd.isMatchingPositiveStrand());
+                                    final Alignments.AlignmentEntry.Builder builder =
+                                            Alignments.AlignmentEntry.newBuilder();
+                                    builder.setQueryIndex(readIndex);
+                                    builder.setTargetIndex(referenceSequenceIndex);
+                                    builder.setPosition(referencePosition);
+                                    builder.setMatchingReverseStrand(!sd.isMatchingPositiveStrand());
 
-                                    entry.setScore(readLength);
-                                    entry.setNumberOfIndels(0);
-                                    entry.setQueryAlignedLength(readLength);
+                                    builder.setScore(readLength);
+                                    builder.setNumberOfIndels(0);
+
+                                    builder.setQueryAlignedLength(readLength);
                                     int multiplicity = 1;
-                                    // multiplicity of a read is the number of times the sequence of the read is identically
-                                    // repeated across a sample file.
-                                    // When the sequence is exactly repeated, the alignment would yield exactly the same
-                                    // result. In such cases, we do not do the alignment, but just keep repeating the alignment
+                                    // multiplicity of a read is the number of times the sequence
+                                    // of the read is identically repeated across a sample file.
+                                    // When the sequence is exactly repeated, the alignment would
+                                    // yield exactly the same result. In such cases, we do not do
+                                    // the alignment, but just keep repeating the alignment
                                     // multiplicity times.
 
                                     if (readIndexFilter != null) {
                                         // we have a multiplicity filter. Use it to determine multiplicity.
                                         multiplicity = readIndexFilter.getMultiplicity(readIndex);
                                     }
-                                    entry.setMultiplicity(multiplicity);
-
-                                    writer.appendEntry();
+                                    builder.setMultiplicity(multiplicity);
+                                    final Alignments.AlignmentEntry entry = builder.build();
+                                    writer.appendEntry(entry);
                                 }
-
                             }
-
                         }
                         ++potentialMatches;
                     }
