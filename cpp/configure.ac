@@ -9,6 +9,7 @@ AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
+AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE
 
@@ -18,6 +19,9 @@ AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
+AC_DISABLE_STATIC
+
+AC_SUBST(version_info)
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
