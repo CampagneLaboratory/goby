@@ -7,15 +7,17 @@ AC_PREREQ([2.59])
 AC_INIT([Goby],[1.7-dev],[mas2062@med.cornell.edu])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_MACRO_DIR([m4])
 
 AC_CANONICAL_TARGET
-AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+AM_INIT_AUTOMAKE
 
 # Checks for programs.
 AC_LANG([C++])
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_INSTALL
+AC_PROG_LIBTOOL
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
@@ -25,6 +27,9 @@ AC_TYPE_SIZE_T
 
 # Checks for library functions.
 AC_CHECK_FUNCS([memset])
+
+# use pkg-config to make sure that protobuf is available
+PKG_CHECK_MODULES([PROTOBUF], [protobuf >= 2.3.0]) 
 
 AC_CONFIG_FILES([Makefile src/Makefile goby.pc])
 AC_OUTPUT
