@@ -24,9 +24,9 @@ import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import org.apache.commons.io.IOUtils;
 
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.PrintStream;
 
 /**
  * Converts a compact read sets to plain text.
@@ -106,13 +106,13 @@ public class ReadSetToTextMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        PrintWriter writer = null;
+        PrintStream stream = null;
         try {
-            writer = outputFilename == null ? new PrintWriter(System.out) :
-                    new PrintWriter(new FileWriter(outputFilename));
+            stream = outputFilename == null ? System.out :
+                    new PrintStream(new FileOutputStream(outputFilename));
             switch (outputFormat) {
                 case PLAIN:
-                    writer.printf("queryIndex\tmultiplicity%n");
+                    stream.printf("queryIndex\tmultiplicity%n");
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown output format: " + outputFormat);
@@ -125,13 +125,15 @@ public class ReadSetToTextMode extends AbstractGobyMode {
 
                 for (int queryIndex = 0; queryIndex <= set.getMaxReadIndex(); queryIndex++) {
                     final int multiplicity = set.getMultiplicity(queryIndex);
-                    writer.printf("%d\t%d%n", queryIndex,
+                    stream.printf("%d\t%d%n", queryIndex,
 
                             multiplicity);
                 }
             }
         } finally {
-            IOUtils.closeQuietly(writer);
+            if (stream != System.out) {
+                IOUtils.closeQuietly(stream);
+            }
         }
     }
 

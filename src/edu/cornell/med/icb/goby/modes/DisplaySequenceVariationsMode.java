@@ -28,9 +28,9 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.PrintStream;
 
 /**
  * Display the sequence variations found in alignments.
@@ -124,17 +124,17 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        PrintWriter writer = null;
+        PrintStream stream = null;
         try {
-            writer = outputFilename == null ? new PrintWriter(System.out)
-                    : new PrintWriter(new FileWriter(outputFilename));
+            stream = outputFilename == null ? System.out
+                    : new PrintStream(new FileOutputStream(outputFilename));
             switch (outputFormat) {
                 case CONCISE:
                     break;
                 case TAB_DELIMITED:
                 case TAB_SINGLE_BASE:
                 case TSV:
-                    writer.println("basename\tquery-index\ttarget-id\tposition-on-reference\tread-index\tvar-from\tvar-to\ttype");
+                    stream.println("basename\tquery-index\ttarget-id\tposition-on-reference\tread-index\tvar-from\tvar-to\ttype");
                     break;
             }
 
@@ -142,14 +142,16 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                 firstPassIterator.iterate(basenames);
             }
 
-            alignmentIterator.setOutputWriter(writer, outputFormat);
+            alignmentIterator.setOutputWriter(stream, outputFormat);
             if (thresholds) {
                 alignmentIterator.setFirstPass(firstPassIterator);
             }
             // Iterate through each alignment and write sequence variations to output file:
             alignmentIterator.iterate(basenames);
         } finally {
-            IOUtils.closeQuietly(writer);
+            if (stream != System.out) {
+                IOUtils.closeQuietly(stream);
+            }
         }
     }
 
@@ -207,12 +209,12 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
     }
 
     private class MyIterateAlignments extends IterateAlignments {
-        private PrintWriter outputWriter;
+        private PrintStream outputStream;
         private OutputFormat outputFormat;
         private FirstPassIterateAlignments firstPassIterator;
 
-        public void setOutputWriter(final PrintWriter writer, final OutputFormat format) {
-            this.outputWriter = writer;
+        public void setOutputWriter(final PrintStream stream, final OutputFormat format) {
+            this.outputStream = stream;
             this.outputFormat = format;
         }
 
@@ -225,7 +227,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
 
                 case CONCISE: {
                     if (alignmentEntry.getSequenceVariationsCount() > 0) {
-                        outputWriter.print(String.format("%d %s ",
+                        outputStream.print(String.format("%d %s ",
 
                                 alignmentEntry.getQueryIndex(),
                                 getReferenceId(alignmentEntry.getTargetIndex())));
@@ -238,7 +240,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                             boolean keepVar = true;
                             keepVar = determineKeepVariation(positionOnReference, referenceIndex, keepVar);
                             if (keepVar) {
-                                outputWriter.print(String.format("%d:%d:%s/%s,",
+                                outputStream.print(String.format("%d:%d:%s/%s,",
 
 
                                         positionOnReference,
@@ -248,7 +250,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                             }
                         }
                         if (variations) {
-                            outputWriter.println();
+                            outputStream.println();
 
                         }
                     }
@@ -347,7 +349,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                 // one or more bases are mutated. no insertions or deletions.
                 type = "MUTATION";
             }
-            outputWriter.println(String.format("%s\t%d\t%s\t%d\t%d\t%s\t%s\t%s",
+            outputStream.println(String.format("%s\t%d\t%s\t%d\t%d\t%s\t%s\t%s",
                     basename,
                     alignmentEntry.getQueryIndex(),
                     getReferenceId(alignmentEntry.getTargetIndex()),

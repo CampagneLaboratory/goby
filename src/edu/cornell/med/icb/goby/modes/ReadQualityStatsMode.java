@@ -30,10 +30,10 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.commons.io.IOUtils;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.LinkedList;
@@ -146,13 +146,13 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        PrintWriter writer = null;
+        PrintStream writer = null;
         try {
-            writer = outputFile == null ? new PrintWriter(System.out)
-                    : new PrintWriter(new FileWriter(outputFile));
+            writer = outputFile == null ? System.out
+                    : new PrintStream(new FileOutputStream(outputFile));
             final Int2ObjectMap<ReadQualityStats> qualityStats = new Int2ObjectOpenHashMap<ReadQualityStats>();
 
-            writer.write("basename\treadIndex\t25%-percentile\tmedian\taverageQuality\t75%-percentile\n");
+            writer.println("basename\treadIndex\t25%-percentile\tmedian\taverageQuality\t75%-percentile");
             for (final File filename : inputFiles) {
                 final ReadsReader reader = new ReadsReader(filename);
                 final String basename = ReadsReader.getBasename(filename.toString());
@@ -184,7 +184,9 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
                 }
             }
         } finally {
-            IOUtils.closeQuietly(writer);
+            if (writer != System.out) {
+                IOUtils.closeQuietly(writer);
+            }
         }
     }
 

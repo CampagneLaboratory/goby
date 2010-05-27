@@ -30,9 +30,9 @@ import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.PrintStream;
+import java.io.FileOutputStream;
 
 /**
  * Converts a compact alignment to plain text.
@@ -109,15 +109,15 @@ public class AlignmentToTextMode extends AbstractGobyMode {
     }
 
     private class MyIterateAlignments extends IterateAlignments {
-        private PrintWriter outputWriter;
+        private PrintStream outputStream;
         private OutputFormat outputFormat;
         private AlignmentReader cachedReader;
         private boolean hasReadIds;
         private DoubleIndexedIdentifier readIds;
         private int[] referenceLengths;
 
-        public void setOutputWriter(final PrintWriter outputWriter, final OutputFormat outputFormat) {
-            this.outputWriter = outputWriter;
+        public void setOutputWriter(final PrintStream outputStreawm, final OutputFormat outputFormat) {
+            this.outputStream = outputStreawm;
             this.outputFormat = outputFormat;
         }
 
@@ -144,7 +144,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 }
                 switch (outputFormat) {
                     case PLAIN:
-                        outputWriter.write(String.format("%s\t%s\t%d\t%d\t%d\t%g\t%d\t%d\t%b%n",
+                        outputStream.printf("%s\t%s\t%d\t%d\t%d\t%g\t%d\t%d\t%b%n",
                                 hasReadIds ? readIds.getId(queryIndex) : queryIndex,
                                 getReferenceId(alignmentEntry.getTargetIndex()),
                                 referenceLength,
@@ -153,7 +153,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                                 alignmentEntry.getScore(),
                                 startPosition,
                                 alignmentLength,
-                                alignmentEntry.getMatchingReverseStrand()));
+                                alignmentEntry.getMatchingReverseStrand());
                         break;
                     case SAM:
                         final int flag = (alignmentEntry.getMatchingReverseStrand() ? 1 : 0) << 4;   // strand is encoded in 0x10, shift left by 4 bits.
@@ -174,7 +174,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                         final MutableString readSequence = getReadSequence(alignmentEntry, readLength);
 
                         final String readQualities = "........";
-                        outputWriter.write(String.format("%s\t%d\t%s\t%d\t%d\t%s\t%s\t%d\t%d\t%s\t%s\t%s%n",
+                        outputStream.printf("%s\t%d\t%s\t%d\t%d\t%s\t%s\t%d\t%d\t%s\t%s\t%s%n",
                                 hasReadIds ? readIds.getId(queryIndex) : queryIndex,
                                 flag,
                                 getReferenceId(alignmentEntry.getTargetIndex()),
@@ -186,8 +186,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                                 inferredInsertSize,
                                 readSequence,
                                 readQualities,
-                                getTags(alignmentEntry, readLength)
-                        ));
+                                getTags(alignmentEntry, readLength));
                         break;
                 }
             }
@@ -276,15 +275,15 @@ public class AlignmentToTextMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        PrintWriter writer = null;
+        PrintStream stream = null;
         try {
-            writer = outputFilename == null ? new PrintWriter(System.out)
-                    : new PrintWriter(new FileWriter(outputFilename));
+            stream = outputFilename == null ? System.out
+                    : new PrintStream(new FileOutputStream(outputFilename));
             switch (outputFormat) {
                 case PLAIN:
-                    writer.printf("queryId\treferenceId\treferenceLength\tnumberOfIndels\tnumberOfMismatches\tscore\tstartPosition\talignmentLength\tmatchesReverseStrand%n");
+                    stream.printf("queryId\treferenceId\treferenceLength\tnumberOfIndels\tnumberOfMismatches\tscore\tstartPosition\talignmentLength\tmatchesReverseStrand%n");
                 case SAM:
-                    writer.printf("@HD\tVN:1.0%n" + "@PG\tGoby\tVN:"
+                    stream.printf("@HD\tVN:1.0%n" + "@PG\tGoby\tVN:"
                             + VersionUtils.getImplementationVersion(GobyDriver.class) + "%n");
 
                     for (final String basename : basenames) {
@@ -295,10 +294,10 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                             if (targetId != null) {
                                 final int[] targetLengths = reader.getTargetLength();
                                 if (targetLengths != null) {
-                                    writer.printf("@SQ\tSN:%s\tLN:%d%n", targetId,
+                                    stream.printf("@SQ\tSN:%s\tLN:%d%n", targetId,
                                             targetLengths[identifiers.getInt(targetId)]);
                                 } else {
-                                    writer.printf("@SQ\tSN:%s%n", targetId);
+                                    stream.printf("@SQ\tSN:%s%n", targetId);
                                 }
                             }
                         }
@@ -306,11 +305,13 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                     break;
             }
 
-            alignmentIterator.setOutputWriter(writer, outputFormat);
+            alignmentIterator.setOutputWriter(stream, outputFormat);
             // Iterate through each alignment and write sequence variations to output file:
             alignmentIterator.iterate(basenames);
         } finally {
-            IOUtils.closeQuietly(writer);
+            if (stream != System.out) {
+                IOUtils.closeQuietly(stream);
+            }
         }
     }
 

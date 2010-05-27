@@ -26,7 +26,6 @@ import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Option;
 import com.martiansoftware.jsap.Parameter;
 import com.martiansoftware.jsap.Switch;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -34,7 +33,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -108,68 +107,63 @@ public abstract class AbstractCommandLineMode {
      * @param jsap The parameters for the mode
      */
     public void printUsageAsWikiTable(final JSAP jsap) {
-        PrintWriter writer = null;
-        try {
-            writer = new PrintWriter(System.out);
+        PrintStream stream = System.out;
 
-            // Table definition/header
-            writer.println("{| class=\"wikitable\" style=\"margin: 1em auto 1em auto; background:#efefef;\" valign=\"top\" align=\"center\" border=\"1\" cellpadding=\"5\" width=\"80%\"");
-            writer.println("|- valign=\"bottom\" align=\"left\" style=\"background:#ffdead;\"");
-            writer.println("!width=\"15%\"| Flag");
-            writer.println("!width=\"10%\" | Arguments");
-            writer.println("!width=\"5%\"| Required");
-            writer.println("! Description");
-            writer.println();
+        // Table definition/header
+        stream.println("{| class=\"wikitable\" style=\"margin: 1em auto 1em auto; background:#efefef;\" valign=\"top\" align=\"center\" border=\"1\" cellpadding=\"5\" width=\"80%\"");
+        stream.println("|- valign=\"bottom\" align=\"left\" style=\"background:#ffdead;\"");
+        stream.println("!width=\"15%\"| Flag");
+        stream.println("!width=\"10%\" | Arguments");
+        stream.println("!width=\"5%\"| Required");
+        stream.println("! Description");
+        stream.println();
 
-            // iterate through help entries for the mode
-            final IDMap idMap = jsap.getIDMap();
-            final Iterator iterator = idMap.idIterator();
-            while (iterator.hasNext()) {
-                final String id = (String) iterator.next();
-                if (!"mode".equals(id) && !isJSAPHelpId(id)) { // skip the mode and help ids
-                    final Parameter parameter = jsap.getByID(id);
-                    writer.println("|- valign=\"top\" align=\"left\"");
-                    writer.print("| <nowiki>");
-                    if (parameter instanceof Flagged) {
-                        final Flagged flagged = (Flagged) parameter;
-                        final Character characterFlag = flagged.getShortFlagCharacter();
-                        final String longFlag = flagged.getLongFlag();
-                        if (characterFlag != null && StringUtils.isNotBlank(longFlag)) {
-                            writer.print("(-" + characterFlag + "|--" + longFlag + ")");
-                        } else if (characterFlag != null) {
-                            writer.print("-" + characterFlag);
-                        } else if (StringUtils.isNotBlank(longFlag)) {
-                            writer.print("--" + longFlag);
-                        }
-                    } else {
-                        writer.print("n/a");
+        // iterate through help entries for the mode
+        final IDMap idMap = jsap.getIDMap();
+        final Iterator iterator = idMap.idIterator();
+        while (iterator.hasNext()) {
+            final String id = (String) iterator.next();
+            if (!"mode".equals(id) && !isJSAPHelpId(id)) { // skip the mode and help ids
+                final Parameter parameter = jsap.getByID(id);
+                stream.println("|- valign=\"top\" align=\"left\"");
+                stream.print("| <nowiki>");
+                if (parameter instanceof Flagged) {
+                    final Flagged flagged = (Flagged) parameter;
+                    final Character characterFlag = flagged.getShortFlagCharacter();
+                    final String longFlag = flagged.getLongFlag();
+                    if (characterFlag != null && StringUtils.isNotBlank(longFlag)) {
+                        stream.print("(-" + characterFlag + "|--" + longFlag + ")");
+                    } else if (characterFlag != null) {
+                        stream.print("-" + characterFlag);
+                    } else if (StringUtils.isNotBlank(longFlag)) {
+                        stream.print("--" + longFlag);
                     }
-                    writer.println("</nowiki>");
-                    writer.print("| ");
-                    if (parameter instanceof Switch) {
-                        writer.println("n/a");
-                    } else {
-                        writer.println(id);
-                    }
-
-                    final boolean required;
-                    if (parameter instanceof Option) {
-                        final Option option = (Option) parameter;
-                        required = option.required();
-                    } else {
-                        required = !(parameter instanceof Switch);
-                    }
-                    writer.println("| " + BooleanUtils.toStringYesNo(required));
-                    writer.println("| " + parameter.getHelp());
-                    writer.println();
+                } else {
+                    stream.print("n/a");
                 }
-            }
+                stream.println("</nowiki>");
+                stream.print("| ");
+                if (parameter instanceof Switch) {
+                    stream.println("n/a");
+                } else {
+                    stream.println(id);
+                }
 
-            // table close
-            writer.println("|}");
-        } finally {
-            IOUtils.closeQuietly(writer);
+                final boolean required;
+                if (parameter instanceof Option) {
+                    final Option option = (Option) parameter;
+                    required = option.required();
+                } else {
+                    required = !(parameter instanceof Switch);
+                }
+                stream.println("| " + BooleanUtils.toStringYesNo(required));
+                stream.println("| " + parameter.getHelp());
+                stream.println();
+            }
         }
+
+        // table close
+        stream.println("|}");
     }
 
     /**
@@ -177,76 +171,71 @@ public abstract class AbstractCommandLineMode {
      * @param jsap The parameters for the mode
      */
     public void printUsageAsHtmlTable(final JSAP jsap) {
-        PrintWriter writer = null;
-        try {
-            writer = new PrintWriter(System.out);
+        PrintStream writer = System.out;
 
-            // Table definition/header
-            writer.println("<table style=\"background: #efefef;\" border=\"1\" cellpadding=\"5\">");
-            writer.println("<tbody>");
-            writer.println("<tr style=\"background: #ffdead;\" align=\"left\" valign=\"bottom\">");
-            writer.println("<th style=\"width: 15%\">Flag</th>");
-            writer.println("<th style=\"width: 10%\">Arguments</th>");
-            writer.println("<th style=\"width: 5%\">Required</th>");
-            writer.println("<th>Description</th>");
-            writer.println("</tr>");
+        // Table definition/header
+        writer.println("<table style=\"background: #efefef;\" border=\"1\" cellpadding=\"5\">");
+        writer.println("<tbody>");
+        writer.println("<tr style=\"background: #ffdead;\" align=\"left\" valign=\"bottom\">");
+        writer.println("<th style=\"width: 15%\">Flag</th>");
+        writer.println("<th style=\"width: 10%\">Arguments</th>");
+        writer.println("<th style=\"width: 5%\">Required</th>");
+        writer.println("<th>Description</th>");
+        writer.println("</tr>");
 
-            // iterate through help entries for the mode
-            final IDMap idMap = jsap.getIDMap();
-            final Iterator iterator = idMap.idIterator();
-            while (iterator.hasNext()) {
-                final String id = (String) iterator.next();
-                if (!"mode".equals(id) && !isJSAPHelpId(id)) { // skip the mode and help ids
-                    final Parameter parameter = jsap.getByID(id);
-                    writer.println("<tr align=\"left\" valign=\"top\">");
-                    writer.print("<td><code>");
-                    if (parameter instanceof Flagged) {
-                        final Flagged flagged = (Flagged) parameter;
-                        final Character characterFlag = flagged.getShortFlagCharacter();
-                        final String longFlag = flagged.getLongFlag();
-                        if (characterFlag != null && StringUtils.isNotBlank(longFlag)) {
-                            writer.print("(-" + characterFlag + "|--" + longFlag + ")");
-                        } else if (characterFlag != null) {
-                            writer.print("-" + characterFlag);
-                        } else if (StringUtils.isNotBlank(longFlag)) {
-                            writer.print("--" + longFlag);
-                        }
-                    } else {
-                        writer.print("n/a");
+        // iterate through help entries for the mode
+        final IDMap idMap = jsap.getIDMap();
+        final Iterator iterator = idMap.idIterator();
+        while (iterator.hasNext()) {
+            final String id = (String) iterator.next();
+            if (!"mode".equals(id) && !isJSAPHelpId(id)) { // skip the mode and help ids
+                final Parameter parameter = jsap.getByID(id);
+                writer.println("<tr align=\"left\" valign=\"top\">");
+                writer.print("<td><code>");
+                if (parameter instanceof Flagged) {
+                    final Flagged flagged = (Flagged) parameter;
+                    final Character characterFlag = flagged.getShortFlagCharacter();
+                    final String longFlag = flagged.getLongFlag();
+                    if (characterFlag != null && StringUtils.isNotBlank(longFlag)) {
+                        writer.print("(-" + characterFlag + "|--" + longFlag + ")");
+                    } else if (characterFlag != null) {
+                        writer.print("-" + characterFlag);
+                    } else if (StringUtils.isNotBlank(longFlag)) {
+                        writer.print("--" + longFlag);
                     }
-                    writer.println("</code></td>");
-                    writer.print("<td>");
-                    if (parameter instanceof Switch) {
-                        writer.print("n/a");
-                    } else {
-                        writer.print(id);
-                    }
-                    writer.println("</td>");
-                    final boolean required;
-                    if (parameter instanceof Option) {
-                        final Option option = (Option) parameter;
-                        required = option.required();
-                    } else {
-                        required = !(parameter instanceof Switch);
-                    }
-                    writer.println("<td>" + BooleanUtils.toStringYesNo(required) + "</td>");
-                    writer.print("<td>");
-
-                    // convert any strange characters to html codes
-                    final String htmlHelpString = StringEscapeUtils.escapeHtml(parameter.getHelp());
-                    // and also convert "-" to the hyphen character code
-                    writer.print(StringUtils.replace(htmlHelpString, "-", "&#45;"));
-                    writer.println("</td>");
-                    writer.println("</tr>");
+                } else {
+                    writer.print("n/a");
                 }
-            }
+                writer.println("</code></td>");
+                writer.print("<td>");
+                if (parameter instanceof Switch) {
+                    writer.print("n/a");
+                } else {
+                    writer.print(id);
+                }
+                writer.println("</td>");
+                final boolean required;
+                if (parameter instanceof Option) {
+                    final Option option = (Option) parameter;
+                    required = option.required();
+                } else {
+                    required = !(parameter instanceof Switch);
+                }
+                writer.println("<td>" + BooleanUtils.toStringYesNo(required) + "</td>");
+                writer.print("<td>");
 
-            // table close
-            writer.println("</tbody>");
-            writer.println("</table>");
-        } finally {
-            IOUtils.closeQuietly(writer);
+                // convert any strange characters to html codes
+                final String htmlHelpString = StringEscapeUtils.escapeHtml(parameter.getHelp());
+                // and also convert "-" to the hyphen character code
+                writer.print(StringUtils.replace(htmlHelpString, "-", "&#45;"));
+                writer.println("</td>");
+                writer.println("</tr>");
+            }
         }
+
+        // table close
+        writer.println("</tbody>");
+        writer.println("</table>");
     }
 
     /**
