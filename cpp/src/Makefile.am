@@ -11,6 +11,10 @@ libgoby_la_SOURCES = \
 	goby/Reads.pb.cc \
 	goby/Reads.pb.h
 
+nobase_include_HEADERS = \
+	goby/Alignments.pb.h \
+	goby/Reads.pb.h
+
 #bin_PROGRAMS = goby
 #goby_SOURCES = \
 	Alignments.pb.cc \
