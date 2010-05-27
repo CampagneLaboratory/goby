@@ -3,7 +3,7 @@
 # Process this file with autoconf to produce a configure script.
 # In general, the safest way to proceed is to run ./autogen.sh
 
-AC_PREREQ([2.59])
+AC_PREREQ(2.59)
 AC_INIT([Goby],[1.7-dev],[mas2062@med.cornell.edu])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADERS([config.h])

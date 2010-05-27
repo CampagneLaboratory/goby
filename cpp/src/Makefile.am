@@ -2,7 +2,8 @@
 
 lib_LTLIBRARIES = libgoby.la
 
-libgoby_la_CPPFLAGS = @PROTOBUF_CFLAGS@
+AM_CPPFLAGS = @PROTOBUF_CFLAGS@
+
 libgoby_la_LIBADD = @PROTOBUF_LIBS@
 libgoby_la_LDFLAGS = -version-info @version_info@ -export-dynamic -no-undefined
 libgoby_la_SOURCES = \
@@ -15,10 +16,10 @@ nobase_include_HEADERS = \
 	goby/Alignments.pb.h \
 	goby/Reads.pb.h
 
-#bin_PROGRAMS = goby
-#goby_SOURCES = \
-	Alignments.pb.cc \
-	Reads.pb.cc
+bin_PROGRAMS = goby
+goby_LDADD = libgoby.la
+goby_SOURCES = \
+	goby.cc
 
 MAINTAINERCLEANFILES = \
 	Makefile.in
