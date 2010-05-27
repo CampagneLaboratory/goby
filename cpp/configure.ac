@@ -32,6 +32,8 @@ AC_TYPE_SIZE_T
 # Checks for library functions.
 AC_CHECK_FUNCS([memset])
 
+ACX_PTHREAD
+
 # use pkg-config to make sure that protobuf is available
 PKG_CHECK_MODULES([PROTOBUF], [protobuf >= 2.3.0]) 
 

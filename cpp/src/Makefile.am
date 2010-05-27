@@ -2,9 +2,10 @@
 
 lib_LTLIBRARIES = libgoby.la
 
-AM_CPPFLAGS = @PROTOBUF_CFLAGS@
+AM_CXXFLAGS = $(PTHREAD_CFLAGS) @PROTOBUF_CFLAGS@
+AM_LDFLAGS = $(PTHREAD_CFLAGS)
 
-libgoby_la_LIBADD = @PROTOBUF_LIBS@
+libgoby_la_LIBADD = $(PTHREAD_LIBS) @PROTOBUF_LIBS@
 libgoby_la_LDFLAGS = -version-info @version_info@ -export-dynamic -no-undefined
 libgoby_la_SOURCES = \
 	goby/Alignments.pb.cc \
@@ -16,9 +17,9 @@ nobase_include_HEADERS = \
 	goby/Alignments.pb.h \
 	goby/Reads.pb.h
 
-bin_PROGRAMS = goby
-goby_LDADD = libgoby.la
-goby_SOURCES = \
+bin_PROGRAMS = gobytools
+gobytools_LDADD = $(PTHREAD_LIBS) libgoby.la
+gobytools_SOURCES = \
 	goby.cc
 
 MAINTAINERCLEANFILES = \
