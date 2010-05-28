@@ -16,32 +16,19 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.cornell.med.icb.goby.algorithmic.algorithm;
-
-import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
+package edu.cornell.med.icb.goby.stats;
 
 /**
- * Interface for implementations that estimate counts for annotations.
  * @author Fabien Campagne
- *         Date: May 16, 2010
- *         Time: 3:48:37 PM
+ *         Date: May 21, 2010
+ *         Time: 4:04:04 PM
  */
-public interface AnnotationCountInterface {
+public class Log2RPKMCalculator extends StatisticCalculator {
+    public boolean canDo(String[] group) {
+        return true;
+    }
 
-    void startPopulating();
-    void populate(int startPosition, int endPosition, int queryIndex);
-
-    void sortReads();
-
-    float averageReadsPerPosition(int geneStart, int geneEnd);
-
-    double countReadsPartiallyOverlappingWithInterval(int geneStart, int geneEnd);
-
-    double countReadsStriclyWithinInterval(int geneStart, int geneEnd);
-
-    double geneExpressionCount(Annotation annot);
-
-    void accumulate();
-
-    void baseCount();
+    public DifferentialExpressionInfo evaluate(DifferentialExpressionCalculator differentialExpressionCalculator, NormalizationMethod method, DifferentialExpressionResults results, DifferentialExpressionInfo info, String... group) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
 }

@@ -19,11 +19,13 @@
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
 import edu.cornell.med.icb.goby.counts.CountsWriter;
+import edu.cornell.med.icb.goby.algorithmic.data.HeptamerInfo;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.lang.MutableString;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -151,4 +153,5 @@ public class ComputeStartCount extends ComputeCount {
 
         writer.close();
     }
+
 }

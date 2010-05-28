@@ -27,6 +27,7 @@ import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCountInterface;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
+import edu.cornell.med.icb.goby.algorithmic.data.FormulaWeightCount;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
@@ -116,7 +117,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     private ObjectArraySet<NormalizationMethod> normalizationMethods;
 
     private boolean useWeights;
-
+    private String weightId;
+    private boolean adjustGcBias;
 
     @Override
     public String getModeName() {
@@ -146,7 +148,13 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         omitNonInformativeColumns = jsapResult.getBoolean("omit-non-informative-columns");
         inputFilenames = jsapResult.getStringArray("input");
         outputFilename = jsapResult.getString("output");
-        useWeights = jsapResult.getBoolean("use-weights");
+        weightId = jsapResult.getString("use-weights");
+        if (weightId == null || weightId.equals("false")) {
+            useWeights = false;
+        } else {
+            useWeights = true;
+        }
+
         statsFilename = jsapResult.getString("stats");
         final String groupsDefinition = jsapResult.getString("groups");
         deAnalyzer.parseGroupsDefinition(groupsDefinition, deCalculator, inputFilenames);
@@ -172,6 +180,20 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         parseAnnotations(jsapResult);
         normalizationMethods = deAnalyzer.parseNormalization(jsapResult);
         parseEval(jsapResult, deAnalyzer);
+        adjustGcBias = jsapResult.getBoolean("adjust-gc-bias");
+        if (adjustGcBias && !useWeights) {
+            System.err.println("Cannot adjust bias when use-weights is false");
+            System.exit(1);
+        }
+        if (useWeights) {
+            if (!adjustGcBias) {
+                System.out.println("Estimating expression as sum of weights");
+
+            } else {
+                System.out.println("Estimating expression with gc bias adjustment");
+
+            }
+        }
         return this;
     }
 
@@ -309,7 +331,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
         WeightsInfo weights = null;
         if (useWeights) {
-            weights = loadWeights(inputBasename, useWeights);
+            weights = loadWeights(inputBasename, useWeights, weightId);
             if (weights != null) {
                 System.err.println("Weights have been provided and loaded and will be used to reweight transcript counts.");
             }
@@ -343,8 +365,19 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 referencesToProcess.add(referenceIndex);
             }
             if (referencesToProcess.contains(referenceIndex)) {
-                algs[referenceIndex] = useWeights ? new AnnotationWeightCount(weights) : new AnnotationCount();
-                algs[referenceIndex].getBaseCounter().startPopulating();
+                AnnotationCountInterface algo = new AnnotationCount();
+
+                if (useWeights) {
+                    if (!adjustGcBias) {
+
+                        algo = new AnnotationWeightCount(weights);
+                    } else {
+
+                        algo = new FormulaWeightCount(weights);
+                    }
+                }
+                algs[referenceIndex] = algo;
+                algs[referenceIndex].startPopulating();
             }
         }
 
@@ -400,12 +433,12 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
     }
 
-    public static WeightsInfo loadWeights(String inputBasename, boolean useWeights) {
+    public static WeightsInfo loadWeights(String inputBasename, boolean useWeights, String id) {
         WeightsInfo weights = null;
         if (useWeights) {
 
             try {
-                weights = WeightsInfo.loadForBasename(inputBasename);
+                weights = WeightsInfo.loadForBasename(inputBasename, id);
             } catch (Exception e) {
                 LOG.warn("Cannot load weights file for " + inputBasename);
                 LOG.warn("Using weight=1.0 for each read.");
@@ -500,8 +533,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
             final ObjectList<Annotation> annots = allAnnots.get(chromosomeName);
             algs[referenceIndex].sortReads();
-            algs[referenceIndex].getBaseCounter().accumulate();
-            algs[referenceIndex].getBaseCounter().baseCount();
+            algs[referenceIndex].accumulate();
+            algs[referenceIndex].baseCount();
             if (doComparison) {
                 for (final Annotation annot : annots) {
                     final String geneID = annot.getId();

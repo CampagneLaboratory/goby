@@ -20,9 +20,11 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
 import edu.cornell.med.icb.goby.algorithmic.data.ReadWithIndex;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
+import edu.cornell.med.icb.goby.algorithmic.data.HeptamerInfo;
 import edu.cornell.med.icb.goby.counts.CountsWriter;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -297,4 +299,5 @@ public class ComputeWeightCount implements ComputeCountInterface {
     public void populate(int startPosition, int endPosition, boolean forwardStrand, int queryIndex) {
         populate(startPosition, endPosition, queryIndex);
     }
+
 }

@@ -62,6 +62,10 @@ public class AnnotationWeightCount implements AnnotationCountInterface {
         return baseCounter;
     }
 
+    public void startPopulating() {
+        baseCounter.startPopulating();
+    }
+
     /**
      * Populate data structure for a specific alignemnt observation.
      *
@@ -177,6 +181,15 @@ public class AnnotationWeightCount implements AnnotationCountInterface {
         }
         return (float) sum;
     }
+
+    public void accumulate() {
+        baseCounter.accumulate();
+    }
+
+       public void baseCount() {
+        baseCounter.baseCount();
+    }
+
 
     /**
      * Returns the sum of weights for reads completely contained within an interval of the reference sequence.

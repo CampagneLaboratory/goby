@@ -18,30 +18,14 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
+import it.unimi.dsi.lang.MutableString;
 
 /**
- * Interface for implementations that estimate counts for annotations.
  * @author Fabien Campagne
- *         Date: May 16, 2010
- *         Time: 3:48:37 PM
+ *         Date: May 21, 2010
+ *         Time: 5:05:31 PM
  */
-public interface AnnotationCountInterface {
-
-    void startPopulating();
-    void populate(int startPosition, int endPosition, int queryIndex);
-
-    void sortReads();
-
-    float averageReadsPerPosition(int geneStart, int geneEnd);
-
-    double countReadsPartiallyOverlappingWithInterval(int geneStart, int geneEnd);
-
-    double countReadsStriclyWithinInterval(int geneStart, int geneEnd);
-
-    double geneExpressionCount(Annotation annot);
-
-    void accumulate();
-
-    void baseCount();
+public interface WeightCalculator {
+     float weight(MutableString sequence);
+     String id();
 }

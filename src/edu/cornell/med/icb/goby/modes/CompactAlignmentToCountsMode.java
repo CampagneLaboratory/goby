@@ -76,6 +76,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
 
     private String countArchiveModifier = COUNT_ARCHIVE_MODIFIER_DEFAULT;
     private boolean useWeights;
+    private String weightId;
 
     @Override
     public String getModeName() {
@@ -139,6 +140,12 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
                 System.exit(2);
             }
         }
+        weightId = jsapResult.getString("use-weights");
+        if (weightId == null || weightId.equals("false")) {
+            useWeights = false;
+        } else {
+            useWeights = true;
+        }
         return this;
     }
 
@@ -173,7 +180,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         final IntSet referencesToProcess = new IntOpenHashSet();
         WeightsInfo weights = null;
         if (useWeights) {
-            weights = CompactAlignmentToAnnotationCountsMode.loadWeights(basename, useWeights);
+            weights = CompactAlignmentToAnnotationCountsMode.loadWeights(basename, useWeights, weightId);
             if (weights != null)
                 System.err.println("Weights have been provided and loaded and will be used to reweight counts.");
         }

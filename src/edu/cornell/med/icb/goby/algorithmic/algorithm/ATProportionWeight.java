@@ -18,30 +18,32 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
+import edu.cornell.med.icb.goby.algorithmic.data.HeptamerInfo;
+import it.unimi.dsi.lang.MutableString;
 
 /**
- * Interface for implementations that estimate counts for annotations.
  * @author Fabien Campagne
- *         Date: May 16, 2010
- *         Time: 3:48:37 PM
- */
-public interface AnnotationCountInterface {
+     *         Date: May 21, 2010
+     *         Time: 5:19:54 PM
+     */
+    public class ATProportionWeight implements WeightCalculator {
+        public ATProportionWeight(HeptamerInfo heptamers) {
+            assert !heptamers.colorSpace : "GC content is not implemented for color-space reads";
 
-    void startPopulating();
-    void populate(int startPosition, int endPosition, int queryIndex);
+        }
 
-    void sortReads();
+        public float weight(MutableString sequence) {
 
-    float averageReadsPerPosition(int geneStart, int geneEnd);
-
-    double countReadsPartiallyOverlappingWithInterval(int geneStart, int geneEnd);
-
-    double countReadsStriclyWithinInterval(int geneStart, int geneEnd);
-
-    double geneExpressionCount(Annotation annot);
-
-    void accumulate();
-
-    void baseCount();
-}
+            float GC = 0;
+            float total = 0;
+            for (int i = 0; i < sequence.length(); i++) {
+                total++;
+                final char c = sequence.charAt(i);
+                GC += (c == 'A' || c == 'T') ? 1 : 0;
+            }
+            return GC / total;
+        }
+         public String id() {
+            return "at";
+        }
+    }

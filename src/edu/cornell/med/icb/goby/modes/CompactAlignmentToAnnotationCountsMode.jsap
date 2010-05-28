@@ -123,14 +123,26 @@
              <longFlag>use-weights</longFlag>
              <required>false</required>
              <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+             <defaults>
+                <string>false</string>
+            </defaults>
+                   <help>Whether weights should be used to adjust read counts. When the flag is set to a string 'id' other than false, this mode will try to load a weights file associated with each input basename ('basename'.'id'-weight). If found, the weights are used to adjust the read count for annotations.</help>
+        </flaggedOption>
+
+        <flaggedOption>
+             <id>adjust-gc-bias</id>
+                        <longFlag>adjust-gc-bias</longFlag>
+             <required>false</required>
+             <stringParser>
                 <classname>BooleanStringParser</classname>
             </stringParser>
              <defaults>
                 <string>false</string>
             </defaults>
-                   <help>Whether weights should be used to adjust read counts. When the flag is true, this mode will try to load a weights file associated with each input basename ('basename'.weight). If found, the weights are used to adjust the read count for annotations.</help>
-        </flaggedOption>
-
+                   <help>When true, adjusts counts for GC bias (requires use-weights gc).</help>
+         </flaggedOption>
          <flaggedOption>
              <id>eval</id>
              <shortFlag>t</shortFlag>
@@ -140,7 +152,7 @@
                 <classname>StringStringParser</classname>
             </stringParser>
              <defaults>
-                <string>fold-change,fold-change-magnitude,log2-fold-change,grou-averages,t-test,fisher,chi-square,Bonferroni,BH</string>
+                <string>fold-change,fold-change-magnitude,log2-fold-change,group-averages,t-test,fisher,chi-square,Bonferroni,BH</string>
             </defaults>
                    <help>Name the statistics to evaluate.</help>
         </flaggedOption>

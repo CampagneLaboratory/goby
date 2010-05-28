@@ -24,7 +24,7 @@ import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.algorithmic.data.HeptamerInfo;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
-import it.unimi.dsi.fastutil.io.BinIO;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.*;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.io.FilenameUtils;
@@ -32,7 +32,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
-import java.util.zip.GZIPOutputStream;
 
 /**
  * Create the read to weight map. This class scans a compact reads file to determine which heptamer
@@ -65,6 +64,7 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
 
     private String mapFilename;
     private String heptamerInfoFilename;
+    private String estimationMethod;
 
 
     public String getModeName() {
@@ -92,11 +92,21 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
         inputFilenames = jsapResult.getStringArray("input");
         heptamerInfoFilename = jsapResult.getString("heptamer-info");
         mapFilename = jsapResult.getString("map");
-
+        estimationMethod = jsapResult.getString("method");
 
         return this;
     }
 
+    enum WeightCalculationMethod {
+        HEPTAMERS,
+        G_PROPORTION,
+        C_PROPORTION,
+        A_PROPORTION,
+        T_PROPORTION,
+        GC_PROPORTION,
+        AT_PROPORTION,
+        ATGC_CORRECTION
+    }
 
     @Override
     public void execute() throws IOException {
@@ -113,7 +123,49 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
         final ProgressLogger progress = new ProgressLogger();
         progress.start();
         progress.displayFreeMemory = true;
+        WeightCalculator calculator = null;
+        WeightCalculationMethod method = WeightCalculationMethod.valueOf(estimationMethod.toUpperCase());
 
+        switch (method) {
+            case HEPTAMERS:
+                calculator = new HeptamerWeight(heptamers);
+
+                break;
+            case G_PROPORTION: {
+                BaseProportionWeight calc = new BaseProportionWeight(heptamers);
+                calc.setBase('G');
+                calculator = calc;
+                break;
+            }
+
+            case C_PROPORTION: {
+                BaseProportionWeight calc = new BaseProportionWeight(heptamers);
+                calc.setBase('C');
+                calculator = calc;
+                break;
+            }
+            case A_PROPORTION: {
+                BaseProportionWeight calc = new BaseProportionWeight(heptamers);
+                calc.setBase('A');
+                calculator = calc;
+                break;
+            }
+            case T_PROPORTION: {
+                BaseProportionWeight calc = new BaseProportionWeight(heptamers);
+                calc.setBase('T');
+                calculator = calc;
+                break;
+            }
+            case GC_PROPORTION:
+                calculator = new GCProportionWeight(heptamers);
+                break;
+            case AT_PROPORTION:
+                calculator = new ATProportionWeight(heptamers);
+                break;
+            case ATGC_CORRECTION:
+                calculator = new ATGCCorrectionWeight(heptamers);
+                break;
+        }
 
         for (String inputFilename : inputFilenames) {
             // for each reads file:
@@ -121,7 +173,7 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
 
             if (inputFilenames.length > 1) {
                 // if we process more than one reads file, build the map filename dynamically for each input file.
-                mapFilename = FilenameUtils.removeExtension(inputFilename) + ".weights";
+                mapFilename = FilenameUtils.removeExtension(inputFilename) + "." + calculator.id() + "-weights";
             }
             ReadsReader reader = new ReadsReader(new FileInputStream(inputFilename));
             try {
@@ -130,28 +182,11 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
                 int numberOfReads = 0;
                 for (final Reads.ReadEntry readEntry : reader) {
                     ReadsReader.decodeSequence(readEntry, sequence);
-                    if (heptamers.colorSpace) {
-                        sequence.delete(0, 1);
-                    }
-                    // if (count++ > 1000000) break;
-                    int item = 0;
                     final int readIndex = readEntry.getReadIndex();
-                    int positionInRead = 1;
+                    float weight = calculator.weight(sequence);
 
+                    weights.setWeight(readIndex, weight);
 
-                    final int end = positionInRead - 1 + heptamers.heptamerLength;
-                    final int start = positionInRead - 1;
-                    //     System.out.printf("%d %d %d %d%n", positionInRead,sequence.length(),start, end );
-                    final MutableString heptamer = sequence.substring(start, end);
-
-                    if (heptamer.indexOf('N') == -1) {
-                        // heptamers that include any number of Ns are ignored.
-                        short heptamerIndex = (short) heptamers.heptamerToIndices.getInt(heptamer);
-
-                        weights.setWeight(readIndex,
-                                heptamerIndex == -1 ? 1 : heptamers.heptamerIndexToWeight.get(heptamerIndex));
-
-                    }
                     progress.lightUpdate();
                     numberOfReads++;
                 }

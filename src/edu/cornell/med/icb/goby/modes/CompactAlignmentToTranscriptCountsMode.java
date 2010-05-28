@@ -90,6 +90,7 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
     private ObjectArraySet<NormalizationMethod> normalizationMethods;
 
     private boolean useWeights;
+    private String weightId;
 
     @Override
     public String getModeName() {
@@ -122,7 +123,12 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
         basenames = basenameSet.toArray(new String[basenameSet.size()]);
         statsFilename = jsapResult.getString("stats");
         outputFile = jsapResult.getString("output");
-        useWeights = jsapResult.getBoolean("use-weights");
+        weightId = jsapResult.getString("use-weights");
+        if (weightId == null || weightId.equals("false")) {
+            useWeights = false;
+        } else {
+            useWeights = true;
+        }
         final String groupsDefinition = jsapResult.getString("groups");
 
         deAnalyzer.parseGroupsDefinition(groupsDefinition, deCalculator, inputFiles);
@@ -178,7 +184,7 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
         try {
             WeightsInfo weights = null;
             if (useWeights) {
-                weights = CompactAlignmentToAnnotationCountsMode.loadWeights(basename, useWeights);
+                weights = CompactAlignmentToAnnotationCountsMode.loadWeights(basename, useWeights,weightId);
                 if (weights != null)
                     System.err.println("Weights have been provided and loaded and will be used to reweight transcript counts.");
             }

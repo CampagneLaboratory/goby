@@ -44,6 +44,10 @@ public class AnnotationCount implements AnnotationCountInterface {
         return baseCounter;
     }
 
+    public void startPopulating() {
+        baseCounter.startPopulating();
+    }
+
     /**
      * Populate the data structures with start and end positions.
      * This implementation ignores queryIndex.
@@ -165,6 +169,13 @@ public class AnnotationCount implements AnnotationCountInterface {
         return sum;
     }
 
+    public void accumulate() {
+        baseCounter.accumulate();
+    }
+
+    public void baseCount() {
+        baseCounter.baseCount();
+    }
 
 
     /**

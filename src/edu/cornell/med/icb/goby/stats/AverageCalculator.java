@@ -40,19 +40,46 @@ public class AverageCalculator extends StatisticCalculator {
      * Can do as long as there is at least one group.
      */
     @Override
-  public  boolean canDo(final String[] group) {
+    public boolean canDo(final String[] group) {
         return group.length > 0;
     }
 
     @Override
     public DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
-                                        final NormalizationMethod method,
-                                        final DifferentialExpressionResults results,
-                                        final DifferentialExpressionInfo info,
-                                        final String... group) {
+                                               final NormalizationMethod method,
+                                               final DifferentialExpressionResults results,
+                                               final DifferentialExpressionInfo info,
+                                               final String... group) {
+        // group statistic by type rather than by DE 'group':
+        
+        for (final String groupId : group) {
+            final MutableString rpkmStatId = getStatisticId(groupId, "RPKM", method);
+            defineStatisticId(results, rpkmStatId);
+
+
+        }
+        for (final String groupId : group) {
+
+
+            final MutableString log2RpkmStatId = getStatisticId(groupId, "log2_RPKM", method);
+            defineStatisticId(results, log2RpkmStatId);
+
+
+        }
+        for (final String groupId : group) {
+
+
+            final MutableString countStatisticId = getStatisticId(groupId, "count");
+            defineStatisticId(results, countStatisticId);
+        }
+
+
         for (final String groupId : group) {
             final MutableString rpkmStatId = getStatisticId(groupId, "RPKM", method);
             final int rpkmStatIndex = defineStatisticId(results, rpkmStatId);
+
+            final MutableString log2RpkmStatId = getStatisticId(groupId, "log2_RPKM", method);
+            final int log2RpkmStatIndex = defineStatisticId(results, log2RpkmStatId);
 
             final MutableString countStatisticId = getStatisticId(groupId, "count");
             final int countStatIndex = defineStatisticId(results, countStatisticId);
@@ -72,6 +99,7 @@ public class AverageCalculator extends StatisticCalculator {
 
             info.statistics.size(results.getNumberOfStatistics());
             info.statistics.set(rpkmStatIndex, averageNormalizedExpressionValue);
+            info.statistics.set(log2RpkmStatIndex, Math.log(averageNormalizedExpressionValue) / Math.log(2));
             info.statistics.set(countStatIndex, averageCount);
         }
 

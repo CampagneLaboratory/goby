@@ -40,7 +40,6 @@ import edu.cornell.med.icb.goby.reads.ReadsReader;
  *         Time: 1:10:19 PM
  */
 public class WeightsInfo implements Serializable {
-
     /**
      * Used to log debug and informational messages.
      */
@@ -86,14 +85,15 @@ public class WeightsInfo implements Serializable {
      * appends .hepmap to try and locate the weights corresponding to the reads or alignment file.
      *
      * @param filename name of a compact reads or alignment
+     * @param id
      * @return
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public static WeightsInfo loadForBasename(String filename) throws IOException, ClassNotFoundException {
+    public static WeightsInfo loadForBasename(String filename, String id) throws IOException, ClassNotFoundException {
         String basename = AlignmentReader.getBasename(filename);
         basename = ReadsReader.getBasename(basename);
-        return load(basename + ".weights");
+        return load(basename + "."+id+"-weights");
     }
 
     /**

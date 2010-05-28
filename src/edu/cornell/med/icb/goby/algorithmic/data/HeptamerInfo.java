@@ -38,7 +38,9 @@ import org.apache.commons.io.IOUtils;
  *         Time: 11:24:48 AM
  */
 public class HeptamerInfo implements Serializable {
+    static final long serialVersionUID = -6209837092878262426L;
 
+        
     public IndexedIdentifier heptamerToIndices = new IndexedIdentifier();
     public Short2FloatMap heptamerIndexToWeight = new Short2FloatOpenHashMap();
     public int heptamerLength = 7;

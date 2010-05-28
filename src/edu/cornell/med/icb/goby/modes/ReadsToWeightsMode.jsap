@@ -21,7 +21,7 @@
 
          <flaggedOption>
             <id>map</id>
-            <shortFlag>p</shortFlag>
+            <shortFlag>o</shortFlag>
             <longFlag>map</longFlag>
             <required>false</required>
              <defaults>
@@ -38,6 +38,16 @@
                 <string>heptamer-info.bin</string>
             </defaults>
             <help>The name of the file that contains heptamer information.</help>
+        </flaggedOption>
+         <flaggedOption>
+            <id>method</id>
+
+            <longFlag>method</longFlag>
+            <required>false</required>
+             <defaults>
+                <string>heptamers</string>
+            </defaults>
+            <help>The weight estimation method.</help>
         </flaggedOption>
         <unflaggedOption>
             <id>input</id>
