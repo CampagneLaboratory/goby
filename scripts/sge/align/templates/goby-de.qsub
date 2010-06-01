@@ -55,9 +55,10 @@ MAC_LOCAL_PATH=/data/helicos-ILM-SOLID
 
 # Copy input alignment files:
 for FILE in %alignment-basenames%; do
-/usr/bin/scp -v mac133621:${MAC_LOCAL_PATH}/${FILE%.*}.entries ${TMPDIR}
-/usr/bin/scp -v mac133621:${MAC_LOCAL_PATH}/${FILE%.*}.header ${TMPDIR}
-/usr/bin/scp -v mac133621:${MAC_LOCAL_PATH}/${FILE%.*}.tmh ${TMPDIR}
+echo "Copying ${FILE}"
+/usr/bin/scp mac133621:${MAC_LOCAL_PATH}/${FILE%.*}.entries ${TMPDIR}
+/usr/bin/scp mac133621:${MAC_LOCAL_PATH}/${FILE%.*}.header ${TMPDIR}
+/usr/bin/scp mac133621:${MAC_LOCAL_PATH}/${FILE%.*}.tmh ${TMPDIR}
 done
 
 # Copy annotation file:
