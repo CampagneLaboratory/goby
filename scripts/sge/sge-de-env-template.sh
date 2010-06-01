@@ -24,14 +24,14 @@ SGE_MEMORY=5g
 SGE_JVM_FLAGS=-Xmx16g
 
 
-alignment_basenames=  \
+alignment_basenames="\
       DLTTEJH-Bullard-HBR-SRR037439.entries  \
       HHNVSNR-Bullard-HBR-SRR037440.entries  \
       RRTFBOP-Bullard-HBR-SRR037443.entries  \
       ZOBXCNB-Bullard-HBR-SRR037441.entries  \
       DOWTGPI-Bullard-HBR-SRR037444.entries  \
       WKQCRQC-Bullard-HBR-SRR037442.entries  \
-      LHFEDQE-solid-HBR.entries
+      LHFEDQE-solid-HBR.entries"
 
 group1=HBR-Bullard-ILM
 group2=HBR-SOLID
