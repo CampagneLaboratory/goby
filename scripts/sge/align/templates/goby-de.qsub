@@ -55,13 +55,13 @@ MAC_LOCAL_PATH=/data/helicos-ILM-SOLID
 
 # Copy input alignment files:
 for FILE in %alignment-basenames%; do
-/bin/scp -v mac133621:${MAC_LOCAL_PATH}/${FILE%.*}.entries ${TMPDIR}
-/bin/scp -v mac133621:${MAC_LOCAL_PATH}/${FILE%.*}.header ${TMPDIR}
-/bin/scp -v mac133621:${MAC_LOCAL_PATH}/${FILE%.*}.tmh ${TMPDIR}
+/usr/bin/scp -v mac133621:${MAC_LOCAL_PATH}/${FILE%.*}.entries ${TMPDIR}
+/usr/bin/scp -v mac133621:${MAC_LOCAL_PATH}/${FILE%.*}.header ${TMPDIR}
+/usr/bin/scp -v mac133621:${MAC_LOCAL_PATH}/${FILE%.*}.tmh ${TMPDIR}
 done
 
 # Copy annotation file:
-/bin/scp -v mac133621:${MAC_LOCAL_PATH}/${annotation_file} ${TMPDIR}
+/usr/bin/scp -v mac133621:${MAC_LOCAL_PATH}/${annotation_file} ${TMPDIR}
 
 # Run the alignment
 cd ${TMPDIR}
@@ -81,4 +81,4 @@ java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.propert
 #RESULT_DIR=${SGE_O_WORKDIR}/results/
 
 #/bin/mkdir -p ${RESULT_DIR}
-/bin/scp %group1%-%group2%-%use-weights%-%adjust-gc-bias-boolean%.tsv  mac133621:${MAC_LOCAL_PATH}/
+/usr/bin/scp %group1%-%group2%-%use-weights%-%adjust-gc-bias-boolean%.tsv  mac133621:${MAC_LOCAL_PATH}/
