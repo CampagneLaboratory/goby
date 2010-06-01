@@ -76,6 +76,7 @@
     </macrodef>
 
     <target name="clean" depends="goby.clean">
+        <delete dir="logs"/>
         <delete dir="data/bwa-reference-index"/>
         <delete dir="data/last-reference-index"/>
         <delete dir="data/lastag-reference-index"/>
