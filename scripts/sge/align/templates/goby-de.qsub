@@ -62,7 +62,7 @@ echo "Copying ${FILE}"
 done
 
 # Copy annotation file:
-/usr/bin/scp -v mac133621:${MAC_LOCAL_PATH}/${annotation_file} ${TMPDIR}
+/usr/bin/scp -v mac133621:${MAC_LOCAL_PATH}/%annotation-file% ${TMPDIR}
 
 # Run the alignment
 cd ${TMPDIR}
