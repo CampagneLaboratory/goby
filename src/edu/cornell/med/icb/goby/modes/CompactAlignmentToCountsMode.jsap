@@ -19,15 +19,12 @@
 
 <jsap>
     <parameters>
-
         <unflaggedOption>
             <id>input</id>
             <required>true</required>
             <greedy>true</greedy>
             <help>The compact alignment file(s) to read as input.</help>
         </unflaggedOption>
-
-
         <flaggedOption>
             <id>output</id>
             <shortFlag>o</shortFlag>
@@ -35,7 +32,6 @@
             <required>false</required>
             <help>The basename of the output counts.</help>
         </flaggedOption>
-
         <flaggedOption>
             <id>include-reference-names</id>
             <shortFlag>r</shortFlag>
@@ -43,7 +39,6 @@
             <required>false</required>
             <help>When provided, only write counts for reference identifiers listed in this comma separated list. To process only counts for chromosome 19 and 1, if sequences are identified by 1 and 19, use: --include-reference-names 1,19 </help>
         </flaggedOption>
-
         <flaggedOption>
             <id>full-genome</id>
             <longFlag>full-genome</longFlag>
@@ -53,15 +48,13 @@
             <stringParser>
                 <classname>BooleanStringParser</classname>
             </stringParser>
-            <help>Indicates that the query sequences were aligned to a full genome. When this argument is true, counts are calculated along each reference sequence and the full count histogram is output in compressed format (basename ".counts"). When this argument is false, the alignment is assumed to have been done to many short reference sequences, and counts are output in a tab delimited format, one for each reference sequence identifier.  </help>
+            <help>Indicates that the query sequences were aligned to a full genome. When this argument is true, counts are calculated along each reference sequence and the full count histogram is output in compressed format (basename ".counts"). When this argument is false, the alignment is assumed to have been done to many short reference sequences, and counts are output in a tab delimited format, one for each reference sequence identifier.</help>
         </flaggedOption>
-
         <switch>
             <id>start-only</id>
             <longFlag>start-only</longFlag>
-            <help>When this switch is provided, will only accumulate start positions in the specified strand.  </help>
+            <help>When this switch is provided, will only accumulate start positions in the specified strand.</help>
         </switch>
-
         <flaggedOption>
             <id>strand-choice</id>
             <shortFlag>s</shortFlag>
@@ -70,20 +63,17 @@
             <defaults>
                 <string>both</string>
             </defaults>
-            <help>When provided with the --start argument, consider only start positions on the specified strand.  Valid strand choices include {positive/forward, negative/reverse, both/either}.  </help>
+            <help>When provided with the --start argument, consider only start positions on the specified strand.  Valid strand choices include {positive/forward, negative/reverse, both/either}.</help>
         </flaggedOption>
         <flaggedOption>
-                   <id>use-weights</id>
-                   <shortFlag>w</shortFlag>
-                   <longFlag>use-weights</longFlag>
-                   <required>false</required>
-             <stringParser>
-                <classname>BooleanStringParser</classname>
-            </stringParser>
+            <id>use-weights</id>
+            <shortFlag>w</shortFlag>
+            <longFlag>use-weights</longFlag>
+            <required>false</required>
             <defaults>
                 <string>false</string>
             </defaults>
-                   <help>Whether weights should be used to adjust read counts. When the flag is true, this mode will try to load a weights file associated with each input basename ('basename'.weight). If found, the weights are used to adjust the read count for annotations.</help>
+            <help>When the flag is set to anything but "false" this mode will attemtpt to load a file containing weights which are used to adjust the read count for annotations.  The file loaded will be named using the basename with the extension of this parameter appended with the string"-weights" </help>
         </flaggedOption>
     </parameters>
 </jsap>

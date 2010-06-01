@@ -22,12 +22,12 @@ import cern.colt.Timer;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCount;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationWeightCount;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCountInterface;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationWeightCount;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
+import edu.cornell.med.icb.goby.algorithmic.data.FormulaWeightCount;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
-import edu.cornell.med.icb.goby.algorithmic.data.FormulaWeightCount;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
@@ -48,16 +48,18 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
-import it.unimi.dsi.fastutil.io.BinIO;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Reads a compact alignment and genome annotations and output read counts that overlap with
@@ -197,12 +199,12 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         return this;
     }
 
-    public static void parseEval(JSAPResult jsapResult, DifferentialExpressionAnalysis deAnalyzer) {
-        String evalString = jsapResult.getString("eval");
+    public static void parseEval(final JSAPResult jsapResult, final DifferentialExpressionAnalysis deAnalyzer) {
+        final String evalString = jsapResult.getString("eval");
 
-        String[] evalArray = evalString.split(",");
-        ObjectSet<String> evalSet = new ObjectOpenHashSet<String>();
-        for (String evalName : evalArray) {
+        final String[] evalArray = evalString.split(",");
+        final ObjectSet<String> evalSet = new ObjectOpenHashSet<String>();
+        for (final String evalName : evalArray) {
             evalSet.add(evalName.trim().toLowerCase().intern());
         }
         deAnalyzer.setEvalNames(evalSet);
@@ -309,12 +311,15 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             }
 
             if (doComparison) {
-                DifferentialExpressionResults results = null;
-                results = deAnalyzer.evaluateDifferentialExpressionStatistics(deCalculator, doComparison, normalizationMethods);
-                final PrintWriter statsOutput = new PrintWriter(statsFilename);
-                results.write(statsOutput, '\t', deCalculator);
-
-                IOUtils.closeQuietly(statsOutput);
+                final DifferentialExpressionResults results =
+                        deAnalyzer.evaluateDifferentialExpressionStatistics(deCalculator, doComparison, normalizationMethods);
+                PrintWriter statsWriter = null;
+                try {
+                    statsWriter = new PrintWriter(statsFilename);
+                    results.write(statsWriter, '\t', deCalculator);
+                } finally {
+                    IOUtils.closeQuietly(statsWriter);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -411,9 +416,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
         deCalculator.setNumAlignedInSample(sampleId, numAlignedReadsInSample);
 
-        if (outputFilename == null)
-
-        {
+        if (outputFilename == null) {
             // output filename was not provided on the command line. We make one output per input basename
             if (writeAnnotationCounts) {
                 final String outputFileTmp = FilenameUtils.removeExtension(inputFile) + ".ann-counts.tsv";
@@ -424,34 +427,27 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
         writeAnnotationCounts(allAnnots, writer, inputBasename, referenceIds, algs, referencesToProcess);
 
-        if (outputFilename == null)
-
-        {
+        if (outputFilename == null) {
             // output filename was not provided on the command line. We close each basename output.
             IOUtils.closeQuietly(writer);
         }
-
     }
 
-    public static WeightsInfo loadWeights(String inputBasename, boolean useWeights, String id) {
+    public static WeightsInfo loadWeights(final String inputBasename, final boolean useWeights, final String id) {
         WeightsInfo weights = null;
         if (useWeights) {
-
             try {
                 weights = WeightsInfo.loadForBasename(inputBasename, id);
             } catch (Exception e) {
-                LOG.warn("Cannot load weights file for " + inputBasename);
+                LOG.warn("Cannot load weights file for " + inputBasename, e);
                 LOG.warn("Using weight=1.0 for each read.");
-                WeightsInfo dummyWeights = new WeightsInfo() {
-
+                return new WeightsInfo() {
                     @Override
-                    public float getWeight(int readIndex) {
+                    public float getWeight(final int readIndex) {
                         return 1f;
                     }
                 };
-                return dummyWeights;
             }
-
         }
         return weights;
     }

@@ -22,9 +22,9 @@ import cern.colt.Timer;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeCount;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeCountInterface;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeStartCount;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeWeightCount;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeCountInterface;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
@@ -109,7 +109,6 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         }
 
         basenames = basenameSet.toArray(new String[basenameSet.size()]);
-        useWeights = jsapResult.getBoolean("use-weights");
         optionalOutputFile = jsapResult.getString("output");
 
         final String includeReferenceNameCommas = jsapResult.getString("include-reference-names");
@@ -140,6 +139,8 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
                 System.exit(2);
             }
         }
+
+        // determine whether or not to use weights to adjust the read counts
         weightId = jsapResult.getString("use-weights");
         if (weightId == null || weightId.equals("false")) {
             useWeights = false;

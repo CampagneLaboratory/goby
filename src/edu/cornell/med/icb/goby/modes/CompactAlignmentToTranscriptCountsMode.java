@@ -20,29 +20,26 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionResults;
 import edu.cornell.med.icb.goby.stats.NormalizationMethod;
-import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import it.unimi.dsi.fastutil.io.BinIO;
-import it.unimi.dsi.fastutil.ints.Int2FloatArrayMap;
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.*;
-import java.util.Collections;
-import java.util.zip.GZIPInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * Reads a compact alignment outputs read counts that overlap with transcript annotation segments.
@@ -54,7 +51,6 @@ import java.util.zip.GZIPInputStream;
  *         Time: 11:05:47 AM
  */
 public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
-
     /**
      * Used to log debug and informational messages.
      */
@@ -68,11 +64,12 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Estimates transcript counts for a transcript alignment." +
-            " Will use reweight counts with" +
-            " weights when --use-weights is active.";
+    private static final String MODE_DESCRIPTION = "Estimates transcript counts for a transcript"
+            + " alignment. Will use reweight counts with weights when --use-weights is active.";
+
     private String[] inputFiles;
     private String[] basenames;
+
     /**
      * The output file for transcript counts.
      */
@@ -134,18 +131,13 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
         deAnalyzer.parseGroupsDefinition(groupsDefinition, deCalculator, inputFiles);
 
         final String compare = jsapResult.getString("compare");
-        if (compare == null) {
-            doComparison = false;
-        } else {
-            doComparison = true;
-        }
+        doComparison = compare != null;
         if (doComparison) {
             deAnalyzer.parseCompare(compare);
         }
         normalizationMethods = deAnalyzer.parseNormalization(jsapResult);
         CompactAlignmentToAnnotationCountsMode.parseEval(jsapResult, deAnalyzer);
         return this;
-
     }
 
     /**
@@ -184,9 +176,10 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
         try {
             WeightsInfo weights = null;
             if (useWeights) {
-                weights = CompactAlignmentToAnnotationCountsMode.loadWeights(basename, useWeights,weightId);
-                if (weights != null)
+                weights = CompactAlignmentToAnnotationCountsMode.loadWeights(basename, useWeights, weightId);
+                if (weights != null) {
                     System.err.println("Weights have been provided and loaded and will be used to reweight transcript counts.");
+                }
             }
             outputWriter = new PrintWriter(new FileWriter(outputFile));
 
@@ -207,8 +200,7 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
                 final int referenceIndex = alignmentEntry.getTargetIndex();
 
                 numberOfReadsPerReference[referenceIndex] += (weights != null ?
-                        weights.getWeight(alignmentEntry.getQueryIndex()) :
-                        1);
+                        weights.getWeight(alignmentEntry.getQueryIndex()) : 1);
 
                 cumulativeBasesPerReference[referenceIndex] +=
                         Math.min(alignmentEntry.getQueryAlignedLength(),

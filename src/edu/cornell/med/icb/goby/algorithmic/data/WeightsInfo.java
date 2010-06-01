@@ -18,21 +18,20 @@
 
 package edu.cornell.med.icb.goby.algorithmic.data;
 
-import it.unimi.dsi.fastutil.io.BinIO;
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.reads.ReadsReader;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
-
-import java.io.IOException;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.Serializable;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-
+import it.unimi.dsi.fastutil.io.BinIO;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.reads.ReadsReader;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * @author Fabien Campagne
@@ -45,9 +44,9 @@ public class WeightsInfo implements Serializable {
      */
     private static final Log LOG = LogFactory.getLog(WeightsInfo.class);
 
-    FloatArrayList weights = new FloatArrayList();
+    protected final FloatArrayList weights = new FloatArrayList();
 
-    public void setWeight(int readIndex, float weight) {
+    public void setWeight(final int readIndex, final float weight) {
         if (weights.size() - 1 < readIndex) {
             weights.size((readIndex + 10) * 2);
         }
@@ -55,72 +54,67 @@ public class WeightsInfo implements Serializable {
         weights.set(readIndex, weight);
     }
 
-    public float getWeight(int readIndex) {
+    public float getWeight(final int readIndex) {
         return weights.getFloat(readIndex);
     }
 
     /**
      * Load weights info from disk.
      *
-     * @param filename
-     * @return
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
+     * @param filename The name of the file to load
+     * @return The populated WeightsInfo object read from the file
+     * @throws IOException If the file cannot be read
+     * @throws ClassNotFoundException if the file contains a class that cannot be found.
      */
-    public static WeightsInfo load(String filename) throws IOException, ClassNotFoundException {
+    public static WeightsInfo load(final String filename) throws IOException, ClassNotFoundException {
         GZIPInputStream inputStream = null;
         try {
             inputStream = new GZIPInputStream(new FileInputStream(filename));
             return (WeightsInfo) BinIO.loadObject(inputStream);
         } finally {
-            if (inputStream != null) {
-                IOUtils.closeQuietly(inputStream);
-
-            }
+            IOUtils.closeQuietly(inputStream);
         }
     }
 
     /**
-     * Tries to load a weight information file matching basename. Simply takes out the file extension and
-     * appends .hepmap to try and locate the weights corresponding to the reads or alignment file.
+     * Tries to load a weight information file matching basename. The file is the basename with
+     * the extension in the form of the id plus the string "-weights".
      *
      * @param filename name of a compact reads or alignment
-     * @param id
-     * @return
-     * @throws IOException
-     * @throws ClassNotFoundException
+     * @param id The id for the weights file to load
+     * @return The populated WeightsInfo object read from the file
+     * @throws IOException If the file cannot be read
+     * @throws ClassNotFoundException if the file contains a class that cannot be found.
      */
-    public static WeightsInfo loadForBasename(String filename, String id) throws IOException, ClassNotFoundException {
+    public static WeightsInfo loadForBasename(final String filename, final String id)
+            throws IOException, ClassNotFoundException {
+        // strip any compact alignment extensions
         String basename = AlignmentReader.getBasename(filename);
+
+        // strip any compact reads extensions
         basename = ReadsReader.getBasename(basename);
-        return load(basename + "."+id+"-weights");
+        return load(basename + "." + id + "-weights");
     }
 
     /**
      * Save weights info to disk.
      *
-     * @param filename
-     * @throws IOException
-     * @throws ClassNotFoundException
+     * @param filename The name of the file to save to
+     * @throws IOException If the file cannot be written
      */
-
-    public void save(String filename) throws IOException {
-
+    public void save(final String filename) throws IOException {
         GZIPOutputStream gzipOutputStream = null;
-
         try {
             gzipOutputStream = new GZIPOutputStream(new FileOutputStream(filename));
             BinIO.storeObject(this, gzipOutputStream);
             gzipOutputStream.flush();
             LOG.info("Saved " + filename);
-        }
-        finally {
+        } finally {
             IOUtils.closeQuietly(gzipOutputStream);
         }
-
     }
 
-    public void size(int numberOfReads) {
+    public void size(final int numberOfReads) {
         weights.size(numberOfReads);
     }
 }
