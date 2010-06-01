@@ -54,7 +54,7 @@ echo ------------------------------------------------------
 MAC_LOCAL_PATH=/data/helicos-ILM-SOLID
 
 # Copy input alignment files:
-for FILE in ${alignment_basenames}; do
+for FILE in %alignment_basenames%; do
 /bin/scp -v mac133621:${MAC_LOCAL_PATH}/${FILE%.*}.entries ${TMPDIR}
 /bin/scp -v mac133621:${MAC_LOCAL_PATH}/${FILE%.*}.header ${TMPDIR}
 /bin/scp -v mac133621:${MAC_LOCAL_PATH}/${FILE%.*}.tmh ${TMPDIR}
