@@ -1,0 +1,8 @@
+#!/bin/sh
+# * Utility to rename weight files to matching alignment basenames.
+# * Usage: java -cp goby.jar edu.cornell.med.icb.goby.util.RenameWeights *XXX.gc-weights
+# * The previous line will copy each XXX/match/.gc-weight to the alignment basename
+# * that matches XXX and ends with .entries.  For instance, the file XXX.gc-weights
+# * will be renamed 1212-XXX.gc-weights if an alignment file named 1212-XXX.entries exists.
+
+java -cp goby.jar edu.cornell.med.icb.goby.util.RenameWeights    $*
