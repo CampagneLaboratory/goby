@@ -38,7 +38,7 @@ if [ ! -e ${GOBY_DIR}/goby.jar ]; then
 fi
 
 # The job name identifies the location for the scripts
-JOB_TAG=$1
+JOB_TAG=$2
 JOB_DIR=$(readlink -f .)/${JOB_TAG}
 JOB_RESULTS_DIR=${JOB_RESULTS_DIR:-$(readlink -f .)/${JOB_TAG}-results}
 
