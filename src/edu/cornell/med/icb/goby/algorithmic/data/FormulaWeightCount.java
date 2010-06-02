@@ -73,16 +73,21 @@ public class FormulaWeightCount implements AnnotationCountInterface {
                 regularCounter.countReadsStriclyWithinInterval(geneStart, geneEnd));
     }
 
-    enum FormulaChoice {
+   public enum FormulaChoice {
 
         FORMULA1,
         FORMULA2,
         FORMULA3,
-
+       /** Fit against both Helicos and SOLID on HBR datasets: */
+        FORMULA4
 
     }
 
-    private static FormulaChoice formulaChoice = FormulaChoice.FORMULA2;
+    public void setFormulaChoice(FormulaChoice formulaChoice) {
+        this.formulaChoice = formulaChoice;
+    }
+
+    private FormulaChoice formulaChoice = FormulaChoice.FORMULA2;
 
     private double evaluateFormula(double sumGamma, double rawCount) {
         double value;
@@ -101,6 +106,11 @@ public class FormulaWeightCount implements AnnotationCountInterface {
                 double logGC_a_plus1 = Math.log(sumGamma + 1) - Math.log(rawCount + 1);
                 value = Math.exp(-0.843924877396631d + 0.887303234304011d * Math.log(rawCount + 1) -
                         3.45874660923795d * logGC_a_plus1);
+                return value;
+            }
+            case FORMULA4: {
+                 double logGC_a = Math.log(sumGamma) - Math.log(rawCount);
+                value = (float) Math.exp(-1.4050204825287  - 3.5820783386146 * logGC_a + Math.log(rawCount));
                 return value;
             }
             default:

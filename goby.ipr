@@ -13,6 +13,7 @@
       <executeOn event="beforeRun" target="compile-tests" />
       <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestReadWriteAlignments.readWriteHeader103" />
       <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="edu.cornell.med.icb.goby in goby" />
+      <executeOn event="beforeRun" target="jar-goby-spi" runConfigurationType="Application" runConfigurationName="CompactAlignmentToAnnotationCountsMode" />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/release.xml">
       <additionalClassPath />

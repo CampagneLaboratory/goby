@@ -133,15 +133,15 @@
 
         <flaggedOption>
              <id>adjust-gc-bias</id>
-                        <longFlag>adjust-gc-bias</longFlag>
+             <longFlag>adjust-gc-bias</longFlag>
              <required>false</required>
              <stringParser>
-                <classname>BooleanStringParser</classname>
+                <classname>StringStringParser</classname>
             </stringParser>
              <defaults>
                 <string>false</string>
             </defaults>
-                   <help>When true, adjusts counts for GC bias (requires use-weights gc).</help>
+                   <help>When other than false, the identifier of a formula to reweight counts (requires use-weights gc). If false, no reweighting is done.</help>
          </flaggedOption>
          <flaggedOption>
              <id>eval</id>

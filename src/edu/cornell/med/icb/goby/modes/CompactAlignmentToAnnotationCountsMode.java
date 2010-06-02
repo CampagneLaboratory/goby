@@ -121,6 +121,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     private boolean useWeights;
     private String weightId;
     private boolean adjustGcBias;
+    private String formulaChoice;
 
     @Override
     public String getModeName() {
@@ -182,7 +183,13 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         parseAnnotations(jsapResult);
         normalizationMethods = deAnalyzer.parseNormalization(jsapResult);
         parseEval(jsapResult, deAnalyzer);
-        adjustGcBias = jsapResult.getBoolean("adjust-gc-bias");
+
+        formulaChoice = jsapResult.getString("adjust-gc-bias");
+        useWeights = !(formulaChoice == null || "false".equals(formulaChoice));
+        if (formulaChoice != null) {
+            formulaChoice = formulaChoice.toUpperCase();
+            adjustGcBias = true;
+        }
         if (adjustGcBias && !useWeights) {
             System.err.println("Cannot adjust bias when use-weights is false");
             System.exit(1);
@@ -192,7 +199,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 System.out.println("Estimating expression as sum of weights");
 
             } else {
-                System.out.println("Estimating expression with gc bias adjustment");
+                System.out.println("Estimating expression with gc bias adjustment formula=" + formulaChoice);
 
             }
         }
@@ -378,7 +385,10 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                         algo = new AnnotationWeightCount(weights);
                     } else {
 
-                        algo = new FormulaWeightCount(weights);
+                        FormulaWeightCount algo1 = new FormulaWeightCount(weights);
+
+                        algo1.setFormulaChoice(FormulaWeightCount.FormulaChoice.valueOf(formulaChoice));
+                        algo = algo1;
                     }
                 }
                 algs[referenceIndex] = algo;
