@@ -23,6 +23,10 @@ SGE_MEMORY=5g
  #
 SGE_JVM_FLAGS=-Xmx16g
 
+# The following properties depend on the job:
+
+remote_path=/data/helicos-ILM-SOLID
+remote_host=mac133621
 
 alignment_basenames="\
       DLTTEJH-Bullard-HBR-SRR037439.entries  \

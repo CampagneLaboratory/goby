@@ -51,15 +51,16 @@ echo ------------------------------------------------------
 # Copy the goby and support tools to the local node
 /bin/cp ${SGE_O_WORKDIR}/goby.jar ${SGE_O_WORKDIR}/log4j.properties ${TMPDIR}
 
-MAC_LOCAL_PATH=/data/helicos-ILM-SOLID
+REMOTE_HOST=%remote-host%
+MAC_LOCAL_PATH=%remote-path%
 
 # Copy input alignment files:
 for FILE in %alignment-basenames%; do
 echo Copying ${FILE%.*}
-/usr/bin/scp mac133621:${MAC_LOCAL_PATH}/${FILE%.*}.entries ${TMPDIR}
-/usr/bin/scp mac133621:${MAC_LOCAL_PATH}/${FILE%.*}.header ${TMPDIR}
-/usr/bin/scp mac133621:${MAC_LOCAL_PATH}/${FILE%.*}.tmh ${TMPDIR}
-/usr/bin/scp mac133621:${MAC_LOCAL_PATH}/${FILE%.*}.%use-weights%-weights ${TMPDIR}
+/usr/bin/scp ${REMOTE_HOST}:${MAC_LOCAL_PATH}/${FILE%.*}.entries ${TMPDIR}
+/usr/bin/scp ${REMOTE_HOST}:${MAC_LOCAL_PATH}/${FILE%.*}.header ${TMPDIR}
+/usr/bin/scp ${REMOTE_HOST}:${MAC_LOCAL_PATH}/${FILE%.*}.tmh ${TMPDIR}
+/usr/bin/scp ${REMOTE_HOST}:${MAC_LOCAL_PATH}/${FILE%.*}.%use-weights%-weights ${TMPDIR}
 done
 
 # Copy annotation file:
@@ -83,5 +84,5 @@ java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.propert
 #RESULT_DIR=${SGE_O_WORKDIR}/results/
 
 #/bin/mkdir -p ${RESULT_DIR}
-/usr/bin/scp %group1%-%group2%-%use-weights%-%adjust-gc-bias-boolean%.tsv  mac133621:${MAC_LOCAL_PATH}/
+/usr/bin/scp %group1%-%group2%-%use-weights%-%adjust-gc-bias-boolean%.tsv  ${REMOTE_HOST}:${MAC_LOCAL_PATH}/
 cp %group1%-%group2%-%use-weights%-%adjust-gc-bias-boolean%.tsv ${SGE_O_WORKDIR}/

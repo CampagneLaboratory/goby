@@ -89,6 +89,8 @@ for FILE in goby-de.qsub; do
         -e "s|%annotation-file%|${annotation_file}|" \
         -e "s|%use-weights%|${use_weights}|" \
         -e "s|%adjust-gc-bias-boolean%|${adjust_gc_bias_boolean}|" \
+        -e "s|%remote-host%|${remote_host}|" \
+        -e "s|%remote-path%|${remote_path}|" \
         -e "s|%SGE_QUEUE%|${SGE_QUEUE}|" \
         -e "s|%SGE_MEMORY%|${SGE_MEMORY}|" \
         -e "s|%SGE_JVM_FLAGS%|${SGE_JVM_FLAGS}|" \
