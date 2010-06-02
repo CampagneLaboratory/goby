@@ -109,6 +109,9 @@ public class FormulaWeightCount implements AnnotationCountInterface {
                 return value;
             }
             case FORMULA4: {
+                // These estimates were obtained by comparing the Bullard Illumina HBR dataset to the SEQC Helicos
+                // and SOLID datasets. A covariate was used to represent the Helicos or SOLID target platform.
+                
                  double logGC_a = Math.log(sumGamma) - Math.log(rawCount);
                 value = (float) Math.exp(-1.4050204825287  - 3.5820783386146 * logGC_a + Math.log(rawCount));
                 return value;
