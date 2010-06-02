@@ -84,3 +84,4 @@ java %SGE_JVM_FLAGS% -Dlog4j.debug=true -Dlog4j.configuration=file:log4j.propert
 
 #/bin/mkdir -p ${RESULT_DIR}
 /usr/bin/scp %group1%-%group2%-%use-weights%-%adjust-gc-bias-boolean%.tsv  mac133621:${MAC_LOCAL_PATH}/
+cp %group1%-%group2%-%use-weights%-%adjust-gc-bias-boolean%.tsv ${SGE_O_WORKDIR}/
