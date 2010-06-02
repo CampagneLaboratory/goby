@@ -43,7 +43,8 @@ public class WeightsInfo implements Serializable {
      * Used to log debug and informational messages.
      */
     private static final Log LOG = LogFactory.getLog(WeightsInfo.class);
-
+    static final long serialVersionUID = 3965165699293207843l;
+   
     protected final FloatArrayList weights = new FloatArrayList();
 
     public void setWeight(final int readIndex, final float weight) {
