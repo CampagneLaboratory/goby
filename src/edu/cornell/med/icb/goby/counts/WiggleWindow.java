@@ -51,6 +51,12 @@ public class WiggleWindow {
     /** The running total for the current window. */
     private int windowTotal;
 
+    /**
+     * Create a new WiggleWindow with the given parameters.
+     * @param writer The writer to output wiggle data to
+     * @param windowSize The window size to use
+     * @param maxDataSize The maximum data size, will not create a window with this value or larger
+     */
     public WiggleWindow(final PrintWriter writer, final int windowSize, final int maxDataSize) {
         this.writer = writer;
         this.windowSize = windowSize;
@@ -89,8 +95,8 @@ public class WiggleWindow {
     private void writeDataToWindow(final int length, final int value) {
         for (int i = 0; i < length; i++) {
             windowTotal += value;
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("pos[%d]=%d", curWindowPosition + startPosition, value));
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(String.format("pos[%d]=%d", curWindowPosition + startPosition, value));
             }
             curWindowPosition++;
             if (curWindowPosition == windowSize) {
@@ -101,8 +107,8 @@ public class WiggleWindow {
     }
 
     /**
-     * Finish writing the data. You should call this after calling addData() for all of the data
-     * to finish writing the output.
+     * Finish writing the data. You should call this after calling {@link #addData(int, int, int)}
+     * for all of the data to finish writing the output.
      */
     public void finish() {
         outputCurrentWindow();
@@ -144,8 +150,8 @@ public class WiggleWindow {
             return;
         }
         final int windowAverage = Math.round((float) windowTotal / (float) curWindowPosition);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("... average=%d (%d/%d)",
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(String.format("... average=%d (%d/%d)",
                     windowAverage, windowTotal, curWindowPosition));
         }
         if ((startPosition + windowSize) <= maxDataSize) {
