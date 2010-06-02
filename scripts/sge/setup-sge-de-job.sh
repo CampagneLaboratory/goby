@@ -10,14 +10,24 @@ SCRIPT=$(readlink -f $0)
 # Absolute path this script is in.
 SCRIPT_DIR=$(dirname $SCRIPT)
 # Absolute path to the SGE align scripts
-ALIGN_SCRIPT_DIR=${SCRIPT_DIR}/align
+DE_SCRIPT_DIR=${SCRIPT_DIR}/de
+
+
 
 if [ -z "$1" ]; then
-    echo "Job name is required"
+    echo "Environment script file name is required (first argument)."
     exit 1
 fi
 
-. sge-env.sh
+if [ -z "$2" ]; then
+    echo "Job name is required (second argument)."
+    exit 1
+fi
+
+ENV_SCRIPT_FILENAME=$1
+ENV_SCRIPT=${SCRIPT_DIR}/${ENV_SCRIPT_FILENAME}
+
+. ${ENV_SCRIPT}
 
 # Local goby locations
 GOBY_DIR=${GOBY_DIR:-$SCRIPT_DIR/../..}
@@ -66,8 +76,8 @@ SGE_JOB_NAME=${JOB_TAG}
 # Copy goby and submission scripts to the run directory
 /bin/mkdir -p ${JOB_DIR}
 /bin/cp ${GOBY_DIR}/goby.jar ${GOBY_DIR}/config/log4j.properties \
-    ${ALIGN_SCRIPT_DIR}/de.sh \
-    ${SCRIPT_DIR}/sge-env.sh ${JOB_DIR}
+    ${DE_SCRIPT_DIR}/de.sh \
+    ${ENV_SCRIPT} ${JOB_DIR}
 
 # Create job specific scripts from the template files
 for FILE in goby-de.qsub; do
@@ -85,7 +95,7 @@ for FILE in goby-de.qsub; do
         -e "s|%SGE_ARRAY_DIRECTIVE%|${SGE_ARRAY_DIRECTIVE}|" \
         -e "s|%SGE_MAILTO_DIRECTIVE%|${SGE_MAILTO_DIRECTIVE}|" \
         -e "s|%SGE_JOB_NAME%|${SGE_JOB_NAME}|" \
-        ${ALIGN_SCRIPT_DIR}/templates/${FILE} > ${JOB_DIR}/${FILE}
+        ${DE_SCRIPT_DIR}/templates/${FILE} > ${JOB_DIR}/${FILE}
 done
 
 echo "Scripts were written to ${JOB_DIR}"
