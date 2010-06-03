@@ -185,10 +185,10 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         parseEval(jsapResult, deAnalyzer);
 
         formulaChoice = jsapResult.getString("adjust-gc-bias");
-        useWeights = !(formulaChoice == null || "false".equals(formulaChoice));
+        adjustGcBias = !(formulaChoice == null || "false".equals(formulaChoice));
         if (formulaChoice != null) {
             formulaChoice = formulaChoice.toUpperCase();
-            adjustGcBias = true;
+            
         }
         if (adjustGcBias && !useWeights) {
             System.err.println("Cannot adjust bias when use-weights is false");
