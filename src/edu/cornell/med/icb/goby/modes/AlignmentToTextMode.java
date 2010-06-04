@@ -137,7 +137,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
 
                 // Get the length of the reference (if available)
                 final int referenceLength;
-                if (ArrayUtils.getLength(referenceLengths) >= referenceIndex) {
+                if (referenceLengths!=null && ArrayUtils.getLength(referenceLengths) >= referenceIndex) {
                     referenceLength = referenceLengths[referenceIndex];
                 } else {
                     referenceLength = -1;
