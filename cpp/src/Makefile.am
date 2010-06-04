@@ -6,7 +6,7 @@ AM_CXXFLAGS = $(PTHREAD_CFLAGS) @PROTOBUF_CFLAGS@
 AM_LDFLAGS = $(PTHREAD_CFLAGS)
 
 libgoby_la_LIBADD = $(PTHREAD_LIBS) @PROTOBUF_LIBS@
-libgoby_la_LDFLAGS = -version-info @version_info@ -export-dynamic -no-undefined
+libgoby_la_LDFLAGS = -version-info @version_info@ -export-dynamic #-no-undefined
 libgoby_la_SOURCES = \
 	goby/AlignmentReader.cc \
 	goby/AlignmentReader.h \
