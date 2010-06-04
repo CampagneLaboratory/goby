@@ -11,7 +11,6 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
-#AC_DISABLE_STATIC
 AM_INIT_AUTOMAKE
 
 # Checks for programs.
@@ -21,7 +20,7 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 
-AC_SUBST(version_info, [0:0:0])
+AC_SUBST(version_info, [1:0:0])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
