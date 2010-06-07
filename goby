@@ -16,7 +16,7 @@ export other_parameters=$*
 
 
 export WORKING_DIR=`dirname "$0"`
-export GOBY_JAR=${WORKING_DIR}/../../goby.jar
+export GOBY_JAR=${WORKING_DIR}/goby.jar
 
 echo java -Xmx${memory_requirement} -jar ${GOBY_JAR} --mode ${other_parameters}
 java -Xmx${memory_requirement} -jar ${GOBY_JAR} --mode ${other_parameters}

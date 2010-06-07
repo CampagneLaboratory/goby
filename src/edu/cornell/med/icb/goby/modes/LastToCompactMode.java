@@ -159,9 +159,9 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
             final Int2FloatOpenHashMap queryIndexToMaxAlignmentScore = new Int2FloatOpenHashMap();
             final Int2IntOpenHashMap queryIndexToNumHitsAtMaxScore = new Int2IntOpenHashMap();
 
-            final ProgressLogger progress = new ProgressLogger(LOG);
+
             final AlignmentStats stats = new AlignmentStats();
-            final int[] readLengths = createReadLengthArray();
+            //      final int[] readLengths = createReadLengthArray();
 
             // first pass: collect minimum score to keep each queryEntry
             // second pass: write to compact alignment file for those entries with score above threshold
@@ -170,9 +170,12 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                 final LastParser parser = new LastParser(new FileReader(mafInputFile));
 
                 //
+                final ProgressLogger progress = new ProgressLogger(LOG);
                 progress.start();
                 numAligns = 0;
-
+                int removedByQualityFilter = 0;
+                int notBestScore = 0;
+                int numberOfEntries=0;
                 while (parser.hasNext()) {
                     // parse maf alignment entry
                     parser.next();
@@ -189,8 +192,6 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     final boolean reverseStrand = !(query.strand == reference.strand);
                     final int depth = query.sequenceLength;
                     final int targetPosition = reference.alignedStart;
-                    // save length
-                    readLengths[queryIndex-smallestQueryIndex] = depth;
 
                     // we have a multiplicity filter. Use it to determine multiplicity.
                     int multiplicity = 1;
@@ -248,8 +249,13 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                                     numAligns += multiplicity;
                                 }
                                 // TMH writer adds the alignment entry only if hits > thresh
+                            } else {
+                                notBestScore++;
+                        //        System.out.println("Excluding entry "+alignmentEntry);
                             }
                         }
+                    } else {
+                        removedByQualityFilter++;
                     }
 
                     progress.lightUpdate();
@@ -263,6 +269,8 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
 
                     writer.setNumQueries(numberOfReads);
                     writer.printStats(System.out);
+                    System.out.printf("Removed by quality filter: %d%n", removedByQualityFilter);
+                    System.out.printf("Not best score: %d%n", notBestScore);
                 }
                 progress.stop();
             }
