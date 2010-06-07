@@ -119,6 +119,8 @@
                 <provider classname="edu.cornell.med.icb.goby.stats.AlignedCountNormalization"/>
             </service>
         </jar>
+        <!-- Set executable permissions on the goby wrapper scrip -->
+        <chmod file="goby" perm="+x"/>
         <delete file="${classes}/log4j.properties" failonerror="true"/>
     </target>
 

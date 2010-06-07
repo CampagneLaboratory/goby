@@ -1,9 +1,0 @@
-#!/bin/sh  
-
-export memory_requirement=$1
-shift
-export other_parameters=$*
-export GOBY_JAR=/Users/fac2003/IdeaProjects/goby/goby.jar
-
-echo java -Xmx${memory_requirement} -jar ${GOBY_JAR} --mode ${other_parameters}
-java -Xmx${memory_requirement} -jar ${GOBY_JAR} --mode ${other_parameters}
