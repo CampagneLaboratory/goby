@@ -39,13 +39,13 @@ public class TestFisherExact {
 
     /**
      * Example data from
-     * <href="http://darwin.eeb.uconn.edu/eeb348/supplements-2006/chi-squared/chi-squared.html">
+     * <a href="http://darwin.eeb.uconn.edu/eeb348/supplements-2006/chi-squared/chi-squared.html">
      * http://darwin.eeb.uconn.edu/eeb348/supplements-2006/chi-squared/chi-squared.html</a>.
      */
     @Test
     public void chiSquaredUConn() {
         final FisherExact.Result result =
-                FisherExact.fexact(new int[] { 12, 4, 15, 17, 25, 4 }, 3, 2 );
+                FisherExact.fexact(new int[] {12, 4, 15, 17, 25, 4 }, 3, 2);
         assertEquals("pValue does not match", 2.9565806126420623e-05, result.getPValue(), EPSILON);
     }
 

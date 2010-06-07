@@ -17,7 +17,6 @@
  */
 
 #include <fstream>
-#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
@@ -73,16 +72,30 @@ namespace goby {
     return lengthOfMatch;
   }
   
+  // Returns true if the query was considered ambiguous by the alignment tool
   bool TooManyHits::isQueryAmbiguous(int queryIndex) const {
-    // TODO
+    return queryIndex2NumHits.find(queryIndex) != queryIndex2NumHits.end();
   }
 
   bool TooManyHits::isQueryAmbiguous(int queryIndex, int k) const {
-    // TODO
+    map<int, int>::const_iterator it = queryIndex2Depth.find(queryIndex);
+    if (it == queryIndex2NumHits.end()) {
+      return false;
+    } if (k >= getAlignerThreshold()) {
+      // since k is larger than the aligner threshold, we have to assume the query is
+      // ambiguous at k, this is the safe choice.
+      return true;
+    } else {
+      return it->second >= k;
+    }
   }
 
   bool TooManyHits::isQueryAmbiguous(int queryIndex, int k, int matchLength) const {
-    // TODO
+    if (matchLength < getLengthOfMatch(queryIndex)) {
+      return true;
+    } else {
+      return isQueryAmbiguous(queryIndex, k);
+    }
   }
 
   ostream& operator<<(ostream& out, const TooManyHits& tmh) {
@@ -129,14 +142,21 @@ namespace goby {
       int queryIndex = hitsIterator->query_index();
       queryIndex2NumHits[queryIndex] = hitsIterator->at_least_number_of_hits();
       if (hitsIterator->has_length_of_match()) {
-	  queryIndex2Depth[queryIndex] = hitsIterator->length_of_match();
+        queryIndex2Depth[queryIndex] = hitsIterator->length_of_match();
       }
     }
-
-    cout << "Number of hits = " << pbTmh.hits().size() << endl;
-    cout << "Number of query entries = " << queryIndex2NumHits.size() << endl;
   }
 
   TooManyHitsReader::~TooManyHitsReader(void) {
   }
+
+  /*
+   * TooManyHitsWriter
+   */
+  TooManyHitsWriter::TooManyHitsWriter(string basename) : TooManyHits(basename) {
+  }
+
+  TooManyHitsWriter::~TooManyHitsWriter(void) {
+  }
+
 }

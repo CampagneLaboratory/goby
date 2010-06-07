@@ -25,10 +25,18 @@
 #include <map>
 #include <string>
 #include <vector>
+
 #include "Alignments.pb.h"
+#include "common.h"
 
 namespace goby {
-  class TooManyHits {
+  // Instantiate classes map<int, int>
+  // This does not create an object. It only forces the generation of all
+  // of the members of classes vector<int> and vector<char>. It exports
+  // them from the DLL and imports them into the .exe file.
+  // LIBGOBY_EXPIMP_TEMPLATE template class LIBGOBY_EXPORT std::map<int, int>;
+
+  class LIBGOBY_EXPORT TooManyHits {
     std::string basename;
 
   protected:
@@ -47,7 +55,7 @@ namespace goby {
     //TooManyHits(const TooManyHits& from);
     //TooManyHits& operator=(const TooManyHits& from);
 
-    inline std::string getBasename() const { return basename; };
+    inline const std::string& getBasename() const { return basename; };
 
     // Number of hits that the aligner considered was too many to report.
     int getAlignerThreshold() const;
@@ -66,13 +74,13 @@ namespace goby {
     friend TooManyHits& operator<<(TooManyHits& tmh, std::string& in);
   };
 
-  class TooManyHitsReader : public TooManyHits {
+  class LIBGOBY_EXPORT TooManyHitsReader : public TooManyHits {
   public:
     TooManyHitsReader(std::string basename);
     ~TooManyHitsReader(void);
   };
 
-  class TooManyHitsWriter : public TooManyHits {
+  class LIBGOBY_EXPORT TooManyHitsWriter : public TooManyHits {
   public:
     TooManyHitsWriter(std::string basename);
     ~TooManyHitsWriter(void);
@@ -81,7 +89,6 @@ namespace goby {
 
     void write();
   };
-
 }
 
 #endif // GOBY_TOO_MANY_HITS_H

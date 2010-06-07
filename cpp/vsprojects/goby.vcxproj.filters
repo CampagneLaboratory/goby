@@ -18,21 +18,21 @@
     <ClInclude Include="..\src\goby\TooManyHits.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\goby\AlignmentReader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\goby\Alignments.pb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\goby\Reads.pb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\goby\common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\goby\Alignments.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\goby\TooManyHits.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\goby\AlignmentReader.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\goby\Alignments.pb.cc">
@@ -41,7 +41,7 @@
     <ClCompile Include="..\src\goby\Reads.pb.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\goby.cc">
+    <ClCompile Include="..\src\goby\Alignments.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

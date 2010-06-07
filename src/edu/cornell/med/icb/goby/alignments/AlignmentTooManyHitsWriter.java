@@ -38,20 +38,19 @@ public class AlignmentTooManyHitsWriter implements Closeable {
     private Alignments.AmbiguousLocation.Builder newAmbiguousLocation;
 
 
-    public AlignmentTooManyHitsWriter(final String outputBasename, final int alignerThreshjold) throws FileNotFoundException {
+    public AlignmentTooManyHitsWriter(final String outputBasename, final int alignerThreshold) throws FileNotFoundException {
         tooManyHitsOutput = new FileOutputStream(outputBasename + ".tmh");
         newAmbiguousLocation = Alignments.AmbiguousLocation.newBuilder();
         tooManyHits = Alignments.AlignmentTooManyHits.newBuilder();
-        tooManyHits.setAlignerThreshold(alignerThreshjold);
-
+        tooManyHits.setAlignerThreshold(alignerThreshold);
     }
 
     /**
      * Update the aligner threshold.
-     * @param alignerThreshjold the new threshold to write in the too many hits file.
+     * @param alignerThreshold the new threshold to write in the too many hits file.
      */
-    public void setAlignerThreshold(final int alignerThreshjold) {
-        tooManyHits.setAlignerThreshold(alignerThreshjold);
+    public void setAlignerThreshold(final int alignerThreshold) {
+        tooManyHits.setAlignerThreshold(alignerThreshold);
     }
 
     /**
@@ -74,7 +73,7 @@ public class AlignmentTooManyHitsWriter implements Closeable {
     }
 
     /**
-     * Append record defined by 3 arguments
+     * Append record defined by 3 arguments.
      * previously called appendTooManyHits()
      */
     public void append(final int queryIndex, final int howManyHits, final int lengthOfMatch) {

@@ -44,12 +44,25 @@ public class AlignmentTooManyHitsReader {
      */
     private static final Log LOG = LogFactory.getLog(AlignmentTooManyHitsReader.class);
 
+    /**
+     * The underlying protocol buffer stream.
+     */
     private final InputStream tooManyHitsStream;
+
+    /**
+     * A map from query index to the number of hits at that index.
+     */
     private Int2IntMap queryIndex2NumHits = new Int2IntOpenHashMap();
+
     /**
      * A map from query index to depth/length of match.
      */
     private final Int2IntMap queryIndex2Depth = new Int2IntOpenHashMap();
+
+    /**
+     * The threshold used by the aligner to determine that a query is ambiguous and
+     * should be dropped.
+     */
     private int alignerThreshold;
 
     public AlignmentTooManyHitsReader(final String basename) throws IOException {
@@ -83,8 +96,8 @@ public class AlignmentTooManyHitsReader {
         }
     }
 
-    public AlignmentTooManyHitsReader(final InputStream entriesStream) {
-        tooManyHitsStream = entriesStream;
+    public AlignmentTooManyHitsReader(final InputStream tooManyHitsStream) {
+        this.tooManyHitsStream = tooManyHitsStream;
     }
 
     /**

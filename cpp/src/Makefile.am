@@ -23,10 +23,11 @@ nobase_include_HEADERS = \
 	goby/Reads.pb.h \
 	goby/TooManyHits.h
 
-bin_PROGRAMS = gobytools
-gobytools_LDADD = $(PTHREAD_LIBS) libgoby.la
-gobytools_SOURCES = \
-	goby.cc
+bin_PROGRAMS = GobyAlignmentStats
+
+GobyAlignmentStats_LDADD = $(PTHREAD_LIBS) libgoby.la
+GobyAlignmentStats_SOURCES = \
+	GobyAlignmentStats.cc
 
 MAINTAINERCLEANFILES = \
 	Makefile.in

@@ -60,7 +60,7 @@ class AlignmentReader(object):
 
     # current entry index
     current_entry_index = 0
-    
+
     def __init__(self, basename, verbose = False):
         """ Initialize the AlignmentReader using the
         basename of the alignment files.  Goby alignments
