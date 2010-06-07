@@ -126,7 +126,7 @@ namespace goby {
    */
   TooManyHitsReader::TooManyHitsReader(string basename) : TooManyHits(basename) {
     // open the "tmh" file
-    string tmhFilename = basename + ".tmh";
+    const string tmhFilename = basename + ".tmh";
     ifstream tmhStream(tmhFilename.c_str(), ios::in | ios::binary);
 
     // populate the too many hits object from the file
@@ -154,6 +154,9 @@ namespace goby {
    * TooManyHitsWriter
    */
   TooManyHitsWriter::TooManyHitsWriter(string basename) : TooManyHits(basename) {
+    // open the "tmh" file
+    const string tmhFilename = basename + ".tmh";
+    ofstream tmhStream(tmhFilename.c_str(), ios::out | ios::binary);
   }
 
   TooManyHitsWriter::~TooManyHitsWriter(void) {
