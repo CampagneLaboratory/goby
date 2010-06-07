@@ -37,7 +37,7 @@ string adjustGCBias) {
 
 
 
-(tsv t) call_de(string groupId1,
+(tsv t) call_de(     string groupId1,
                      string group1_basenames,
                      string groupId2,
                      string group2_basenames,
@@ -49,8 +49,9 @@ string adjustGCBias) {
   string spaceSeparatedBasename2 = @regexp(group2_basenames, ","," ");
 
   string allBasenames = @strcat(spaceSeparatedBasename1," ",spaceSeparatedBasename2);
-  
 
+  string statsFilename=@strcat(groupId1 ,"-",groupId2 ,"-",useWeights ,"-",adjustGCBias ,".tsv");
+  tsv stats <single_file_mapper;file=statsFilename>;
   t=  alignment_to_annotation_counts(groupId1="A", group1_basenames,
                                    groupId2="B", group2_basenames=group2_basenames,
                                    spaceSeparatedBasenames=allBasenames,
@@ -68,9 +69,9 @@ string groupId2="B";
 string useWeights="true";
 string adjustGCBias="false";
 
-tsv stats <"output.tsv">;
-// textfile out <"output.txt">;
 
+// textfile out <"output.txt">;
+tsv stats;
 stats =  call_de(groupId1="A",
                        group1_basenames,
                        groupId2="B",
