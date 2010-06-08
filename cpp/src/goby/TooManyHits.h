@@ -83,6 +83,7 @@ namespace goby {
   class LIBGOBY_EXPORT TooManyHitsWriter : public TooManyHits {
   public:
     TooManyHitsWriter(const std::string& basename);
+    TooManyHitsWriter(const std::string& basename, unsigned threshold);
     ~TooManyHitsWriter(void);
 
     inline void setAlignerThreshold(unsigned threshold) { pbTmh.set_alignerthreshold(threshold); };
