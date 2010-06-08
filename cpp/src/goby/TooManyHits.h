@@ -49,7 +49,7 @@ namespace goby {
     std::map<unsigned, unsigned> queryIndex2Depth;
 
   public:
-    TooManyHits(std::string basename);
+    TooManyHits(const std::string& basename);
     virtual ~TooManyHits(void);
 
     //TooManyHits(const TooManyHits& from);
@@ -76,13 +76,13 @@ namespace goby {
 
   class LIBGOBY_EXPORT TooManyHitsReader : public TooManyHits {
   public:
-    TooManyHitsReader(std::string basename);
+    TooManyHitsReader(const std::string& basename);
     ~TooManyHitsReader(void);
   };
 
   class LIBGOBY_EXPORT TooManyHitsWriter : public TooManyHits {
   public:
-    TooManyHitsWriter(std::string basename);
+    TooManyHitsWriter(const std::string& basename);
     ~TooManyHitsWriter(void);
 
     inline void setAlignerThreshold(unsigned threshold) { pbTmh.set_alignerthreshold(threshold); };

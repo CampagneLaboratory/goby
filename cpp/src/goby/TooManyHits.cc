@@ -30,7 +30,7 @@ namespace goby {
   /*
    * TooManyHits
    */
-  TooManyHits::TooManyHits(string basename) {
+  TooManyHits::TooManyHits(const string& basename) {
     // store the basename
     this->basename = basename;
     this->pbTmh = AlignmentTooManyHits::default_instance();
@@ -125,7 +125,7 @@ namespace goby {
   /*
    * TooManyHitsReader
    */
-  TooManyHitsReader::TooManyHitsReader(string basename) : TooManyHits(basename) {
+  TooManyHitsReader::TooManyHitsReader(const string& basename) : TooManyHits(basename) {
     // open the "tmh" file
     const string tmhFilename = basename + ".tmh";
     ifstream tmhStream(tmhFilename.c_str(), ios::in | ios::binary);
@@ -154,7 +154,11 @@ namespace goby {
   /*
    * TooManyHitsWriter
    */
-  TooManyHitsWriter::TooManyHitsWriter(string basename) : TooManyHits(basename) {
+  TooManyHitsWriter::TooManyHitsWriter(const string& basename) : TooManyHits(basename) {
+  }
+
+  TooManyHitsWriter::TooManyHitsWriter(const std::string& basename, unsigned threshold) : TooManyHits(basename) {
+    pbTmh.set_alignerthreshold(threshold);
   }
 
   TooManyHitsWriter::~TooManyHitsWriter(void) {
