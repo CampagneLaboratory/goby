@@ -17,6 +17,7 @@
  */
 
 #include <fstream>
+#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
@@ -35,24 +36,24 @@ namespace goby {
     this->pbTmh = AlignmentTooManyHits::default_instance();
   }
 
-  int TooManyHits::getAlignerThreshold() const {
+  unsigned TooManyHits::getAlignerThreshold() const {
     return pbTmh.alignerthreshold();
   }
   
-  vector<int> TooManyHits::getQueryIndicies() const {
+  vector<unsigned> TooManyHits::getQueryIndicies() const {
     // copy the keys from the queryIndex2NumHits and return as a new vector 
-    vector<int> queryIndicies(queryIndex2NumHits.size());
-    int i = 0;
-    for (map<int, int>::const_iterator it = queryIndex2NumHits.begin(); it != queryIndex2NumHits.end(); it++) {
+    vector<unsigned> queryIndicies(queryIndex2NumHits.size());
+    unsigned i = 0;
+    for (map<unsigned, unsigned>::const_iterator it = queryIndex2NumHits.begin(); it != queryIndex2NumHits.end(); it++) {
       queryIndicies[i++] = it->first;
     }
 
     return queryIndicies;
   }
   
-  int TooManyHits::getNumberOfHits(int queryIndex) const {
-    int numberOfHits;
-    map<int, int>::const_iterator it = queryIndex2NumHits.find(queryIndex);
+  unsigned TooManyHits::getNumberOfHits(unsigned queryIndex) const {
+    unsigned numberOfHits;
+    map<unsigned, unsigned>::const_iterator it = queryIndex2NumHits.find(queryIndex);
     if (it != queryIndex2NumHits.end()) {
       numberOfHits = it->second;
     } else {
@@ -61,9 +62,9 @@ namespace goby {
     return numberOfHits;
   }
 
-  int TooManyHits::getLengthOfMatch(int queryIndex) const {
-    int lengthOfMatch;
-    map<int, int>::const_iterator it = queryIndex2Depth.find(queryIndex);
+  unsigned TooManyHits::getLengthOfMatch(unsigned queryIndex) const {
+    unsigned lengthOfMatch;
+    map<unsigned, unsigned>::const_iterator it = queryIndex2Depth.find(queryIndex);
     if (it != queryIndex2NumHits.end()) {
       lengthOfMatch = it->second;
     } else {
@@ -73,12 +74,12 @@ namespace goby {
   }
   
   // Returns true if the query was considered ambiguous by the alignment tool
-  bool TooManyHits::isQueryAmbiguous(int queryIndex) const {
+  bool TooManyHits::isQueryAmbiguous(unsigned queryIndex) const {
     return queryIndex2NumHits.find(queryIndex) != queryIndex2NumHits.end();
   }
 
-  bool TooManyHits::isQueryAmbiguous(int queryIndex, int k) const {
-    map<int, int>::const_iterator it = queryIndex2Depth.find(queryIndex);
+  bool TooManyHits::isQueryAmbiguous(unsigned queryIndex, unsigned k) const {
+    map<unsigned, unsigned>::const_iterator it = queryIndex2Depth.find(queryIndex);
     if (it == queryIndex2NumHits.end()) {
       return false;
     } if (k >= getAlignerThreshold()) {
@@ -90,7 +91,7 @@ namespace goby {
     }
   }
 
-  bool TooManyHits::isQueryAmbiguous(int queryIndex, int k, int matchLength) const {
+  bool TooManyHits::isQueryAmbiguous(unsigned queryIndex, unsigned k, unsigned matchLength) const {
     if (matchLength < getLengthOfMatch(queryIndex)) {
       return true;
     } else {
@@ -139,7 +140,7 @@ namespace goby {
     // populate the query index to number of hits and depth maps
     google::protobuf::RepeatedPtrField<const goby::AmbiguousLocation>::const_iterator hitsIterator;
     for (hitsIterator = pbTmh.hits().begin(); hitsIterator != pbTmh.hits().end(); hitsIterator++) {
-      int queryIndex = hitsIterator->query_index();
+      unsigned queryIndex = hitsIterator->query_index();
       queryIndex2NumHits[queryIndex] = hitsIterator->at_least_number_of_hits();
       if (hitsIterator->has_length_of_match()) {
         queryIndex2Depth[queryIndex] = hitsIterator->length_of_match();
@@ -154,12 +155,26 @@ namespace goby {
    * TooManyHitsWriter
    */
   TooManyHitsWriter::TooManyHitsWriter(string basename) : TooManyHits(basename) {
-    // open the "tmh" file
-    const string tmhFilename = basename + ".tmh";
-    ofstream tmhStream(tmhFilename.c_str(), ios::out | ios::binary);
   }
 
   TooManyHitsWriter::~TooManyHitsWriter(void) {
   }
 
+  void TooManyHitsWriter::append(unsigned queryIndex, unsigned howManyHits, unsigned lengthOfMatch) {
+    if (howManyHits > pbTmh.alignerthreshold()) {
+      AmbiguousLocation *ambiguousLocation = pbTmh.add_hits();
+      ambiguousLocation->set_query_index(queryIndex);
+      ambiguousLocation->set_at_least_number_of_hits(howManyHits);
+      ambiguousLocation->set_length_of_match(lengthOfMatch);
+    }
+  }
+
+  void TooManyHitsWriter::write() {
+    // Write to the "tmh" file
+    const string tmhFilename = basename + ".tmh";
+    ofstream tmhStream(tmhFilename.c_str(), ios::out | ios::binary);
+    if (!pbTmh.SerializeToOstream(&tmhStream)) {
+      cerr << "Failed to write too many hits file: " << tmhFilename << endl;
+    }
+  }
 }

@@ -30,23 +30,23 @@
 #include "common.h"
 
 namespace goby {
-  // Instantiate classes map<int, int>
+  // Instantiate classes map<unsigned, unsigned>
   // This does not create an object. It only forces the generation of all
-  // of the members of classes vector<int> and vector<char>. It exports
-  // them from the DLL and imports them into the .exe file.
-  // LIBGOBY_EXPIMP_TEMPLATE template class LIBGOBY_EXPORT std::map<int, int>;
+  // of the members of classes vector<unsigned> and vector<char>. It exports
+  // them from the DLL and imports them unsignedo the .exe file.
+  // LIBGOBY_EXPIMP_TEMPLATE template class LIBGOBY_EXPORT std::map<unsigned, unsigned>;
 
   class LIBGOBY_EXPORT TooManyHits {
+  protected:
     std::string basename;
 
-  protected:
     AlignmentTooManyHits pbTmh;
 
     // A map from query index to the number of hits at that index.
-    std::map<int, int> queryIndex2NumHits;
+    std::map<unsigned, unsigned> queryIndex2NumHits;
 
     // A map from query index to depth/length of match.
-    std::map<int, int> queryIndex2Depth;
+    std::map<unsigned, unsigned> queryIndex2Depth;
 
   public:
     TooManyHits(std::string basename);
@@ -58,15 +58,15 @@ namespace goby {
     inline const std::string& getBasename() const { return basename; };
 
     // Number of hits that the aligner considered was too many to report.
-    int getAlignerThreshold() const;
-    std::vector<int> getQueryIndicies() const;
+    unsigned getAlignerThreshold() const;
+    std::vector<unsigned> getQueryIndicies() const;
 
-    int getNumberOfHits(int queryIndex) const;
-    int getLengthOfMatch(int queryIndex) const;
+    unsigned getNumberOfHits(unsigned queryIndex) const;
+    unsigned getLengthOfMatch(unsigned queryIndex) const;
 
-    bool isQueryAmbiguous(int queryIndex) const;
-    bool isQueryAmbiguous(int queryIndex, int k) const;
-    bool isQueryAmbiguous(int queryIndex, int k, int matchLength) const;
+    bool isQueryAmbiguous(unsigned queryIndex) const;
+    bool isQueryAmbiguous(unsigned queryIndex, unsigned k) const;
+    bool isQueryAmbiguous(unsigned queryIndex, unsigned k, unsigned matchLength) const;
 
     friend std::ostream &operator<<(std::ostream &out, const TooManyHits& tmh);
     friend std::string& operator<<(std::string& out, const TooManyHits& tmh);
@@ -85,8 +85,9 @@ namespace goby {
     TooManyHitsWriter(std::string basename);
     ~TooManyHitsWriter(void);
 
-    inline void setAlignerThreshold(int threshold) { pbTmh.set_alignerthreshold(threshold); };
+    inline void setAlignerThreshold(unsigned threshold) { pbTmh.set_alignerthreshold(threshold); };
 
+    void append(unsigned queryIndex, unsigned howManyHits, unsigned lengthOfMatch);
     void write();
   };
 }

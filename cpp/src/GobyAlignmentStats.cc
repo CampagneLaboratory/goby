@@ -46,7 +46,7 @@ int main (int argc, const char *const argv[]) {
   cout << "Compact Alignment basename = " << basename << endl;
 
   goby::TooManyHits tmhReader = goby::TooManyHitsReader(basename);
-  const vector<int> queryIndicies = tmhReader.getQueryIndicies();
+  const vector<unsigned> queryIndicies = tmhReader.getQueryIndicies();
   
   cout << "TMH: aligner threshold = " << tmhReader.getAlignerThreshold() << endl;
   cout << "TMH: number of ambiguous matches = " << queryIndicies.size() << endl;
