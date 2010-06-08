@@ -40,7 +40,7 @@ namespace goby {
   protected:
     std::string basename;
 
-    AlignmentTooManyHits pbTmh;
+    AlignmentTooManyHits* pbTmh;
 
     // A map from query index to the number of hits at that index.
     std::map<unsigned, unsigned> queryIndex2NumHits;
@@ -86,7 +86,7 @@ namespace goby {
     TooManyHitsWriter(const std::string& basename, unsigned threshold);
     ~TooManyHitsWriter(void);
 
-    inline void setAlignerThreshold(unsigned threshold) { pbTmh.set_alignerthreshold(threshold); };
+    inline void setAlignerThreshold(unsigned threshold) { pbTmh->set_alignerthreshold(threshold); };
 
     void append(unsigned queryIndex, unsigned howManyHits, unsigned lengthOfMatch);
     void write();
