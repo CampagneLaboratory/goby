@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
@@ -35,7 +36,7 @@ public class TestTooManyHits {
         final AlignmentTooManyHitsWriter tmhWriter =
                 new AlignmentTooManyHitsWriter("test-results/alignments/align-101-tmh", 4);
 
-        // tmhWriter will only write entries if numHits > thresh
+        // tmhWriter will only write entries if numHits > threshold
         tmhWriter.getNewAmbiguousLocation().setAtLeastNumberOfHits(5);
         tmhWriter.getNewAmbiguousLocation().setQueryIndex(0);
         tmhWriter.append();
@@ -46,6 +47,7 @@ public class TestTooManyHits {
 
         final AlignmentTooManyHitsReader tmhReader =
                 new AlignmentTooManyHitsReader("test-results/alignments/align-101-tmh");
+        assertEquals("threshold is not correct", 4, tmhReader.getAlignerThreshold());
         assertTrue("query sequence 0 must be found", tmhReader.isQueryAmbiguous(0));
         /*
         There are three ambiguity-related values involved in the following test.
@@ -63,6 +65,5 @@ public class TestTooManyHits {
         assertTrue("query sequence 12 must be found", tmhReader.isQueryAmbiguous(12));
         assertFalse("query sequence 13 must NOT be found", tmhReader.isQueryAmbiguous(13));
         assertFalse("query sequence 1100239028 must NOT be found", tmhReader.isQueryAmbiguous(1100239028));
-
     }
 }
