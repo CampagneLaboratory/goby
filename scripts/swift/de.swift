@@ -9,6 +9,13 @@ app (textfile t) version_goby() {
    goby "1g" "version" stdout=@filename(t);
 }
 
+(string result) tr(string text, string from, string to) {
+    app {
+        tr from to stdin=text stdout=result;  
+    }
+}
+
+
 app (tsv stats) alignment_to_annotation_counts(
 string groupId1,
 string group1_basenames,
@@ -45,37 +52,24 @@ string adjustGCBias) {
                      string useWeights,
                      string adjustGCBias) {
 
-  string spaceSeparatedBasename1 = @regexp(group1_basenames, ","," ");
-  string spaceSeparatedBasename2 = @regexp(group2_basenames, ","," ");
-
+  // string spaceSeparatedBasename1 = @regexp(group1_basenames, "[,]"," ");
+  string spaceSeparatedBasename1 = tr(group1_basenames, "[,]","[ ]");
+  trace(spaceSeparatedBasename1);
+  string spaceSeparatedBasename2 = tr(group2_basenames, "[,]","[ ]");
+  trace(spaceSeparatedBasename2);
   string allBasenames = @strcat(spaceSeparatedBasename1," ",spaceSeparatedBasename2);
 
   string statsFilename=@strcat(groupId1 ,"-",groupId2 ,"-",useWeights ,"-",adjustGCBias ,".tsv");
   tsv stats <single_file_mapper;file=statsFilename>;
-  t=  alignment_to_annotation_counts(groupId1="A", group1_basenames,
+
+  trace(tr("AAABBBCCC","[B]","[Z]"));
+ 
+ /* t=  alignment_to_annotation_counts(groupId1="A", group1_basenames,
                                    groupId2="B", group2_basenames=group2_basenames,
                                    spaceSeparatedBasenames=allBasenames,
                                    annotationFile,
                                    useWeights, adjustGCBias);
-
+   */
 }
 
 
-
-string group1_basenames="basename1,basename2";
-string group2_basenames="basename3,basename4";
-string groupId1="A";
-string groupId2="B";
-string useWeights="true";
-string adjustGCBias="false";
-
-
-// textfile out <"output.txt">;
-tsv stats;
-stats =  call_de(groupId1="A",
-                       group1_basenames,
-                       groupId2="B",
-                       group2_basenames,
-                       "/Users/fac2003/IdeaProjects/goby/data/biomart_human_exon_esmbl57genes_NCBI_GRCh37.txt",
-                       "true",
-                       "false");
