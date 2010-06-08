@@ -16,24 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <fstream>
+#include <iostream>
 #include <string>
 #include "Alignments.h"
 
 using namespace std;
 
 namespace goby {
-  Alignments::Alignments(string basename) {
+  Alignment::Alignment(string basename) {
     this->basename = basename;
+    this->pbHeader = AlignmentHeader::default_instance();
   }
 
-  Alignments::~Alignments(void) {
+  Alignment::~Alignment(void) {
   }
 
-  string Alignments::getBasename(const char* filename) {
+  string Alignment::getBasename(const char* filename) {
    return getBasename(string(filename));
   }
 
-  string Alignments::getBasename(const string& filename) {
+  string Alignment::getBasename(const string& filename) {
     const string COMPACT_ALIGNMENT_FILE_EXTS[] = {
       ".entries", ".header", ".tmh", ".stats", ".counts"
     };
@@ -51,4 +54,21 @@ namespace goby {
 
     return filename;
   }
+
+  AlignmentReader::AlignmentReader(const string& basename) : Alignment(basename) {
+    // open the "header" file
+    const string headerFilename = basename + ".header";
+    ifstream headerStream(headerFilename.c_str(), ios::in | ios::binary);
+
+    // populate the alignment header object from the file
+    if (!pbHeader.ParseFromIstream(&headerStream)) {
+      cerr << "Failed to parse alignment header file: " << headerFilename << endl;
+    }
+
+    headerStream.close();
+  }
+
+  AlignmentReader::~AlignmentReader(void) {
+  }
+
 }

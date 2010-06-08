@@ -18,24 +18,34 @@
 
 #pragma once
 
-#ifndef _ALIGNMENTS_H_
-#define _ALIGNMENTS_H_
+#ifndef GOBY_ALIGNMENT_H_
+#define GOBY_ALIGNMENT_H_
 
 #include <string>
 #include "common.h"
+#include "Alignments.pb.h"
 
 namespace goby {
-  class LIBGOBY_EXPORT Alignments {
+  class LIBGOBY_EXPORT Alignment {
+  protected:
     std::string basename;
+    AlignmentHeader pbHeader;
 
   public:
-    Alignments(std::string basename);
-    virtual ~Alignments(void);
+    Alignment(std::string basename);
+    virtual ~Alignment(void);
     inline const std::string& getBasename() const { return basename; };
 
     static std::string getBasename(const char* filename);
     static std::string getBasename(const std::string& filename);
   };
+
+  class LIBGOBY_EXPORT AlignmentReader : public Alignment {
+  public:
+    AlignmentReader(const std::string& basename);
+    ~AlignmentReader(void);
+  };
+
 }
 
 #endif // _ALIGNMENTS_H_

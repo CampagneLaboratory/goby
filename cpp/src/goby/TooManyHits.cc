@@ -33,11 +33,11 @@ namespace goby {
   TooManyHits::TooManyHits(const string& basename) {
     // store the basename
     this->basename = basename;
-    this->pbTmh = new AlignmentTooManyHits;
+    this->pbTmh = AlignmentTooManyHits::default_instance();
   }
 
   unsigned TooManyHits::getAlignerThreshold() const {
-    return pbTmh->alignerthreshold();
+    return pbTmh.alignerthreshold();
   }
   
   vector<unsigned> TooManyHits::getQueryIndicies() const {
@@ -100,27 +100,26 @@ namespace goby {
   }
 
   ostream& operator<<(ostream& out, const TooManyHits& tmh) {
-    tmh.pbTmh->SerializeToOstream(&out);
+    tmh.pbTmh.SerializeToOstream(&out);
     return out;
   }
 
   string& operator<<(string& out, const TooManyHits& tmh) {
-    tmh.pbTmh->SerializeToString(&out);
+    tmh.pbTmh.SerializeToString(&out);
     return out;
   }
 
   TooManyHits& operator<<(TooManyHits& tmh, istream& in) {
-    tmh.pbTmh->ParseFromIstream(&in);
+    tmh.pbTmh.ParseFromIstream(&in);
     return tmh;
   }
 
   TooManyHits& operator<<(TooManyHits& tmh, string& in) {
-    tmh.pbTmh->ParseFromString(in);
+    tmh.pbTmh.ParseFromString(in);
     return tmh;
   }
 
   TooManyHits::~TooManyHits(void) {
-    delete pbTmh;
   }
 
   /*
@@ -132,7 +131,7 @@ namespace goby {
     ifstream tmhStream(tmhFilename.c_str(), ios::in | ios::binary);
 
     // populate the too many hits object from the file
-    if (!pbTmh->ParseFromIstream(&tmhStream)) {
+    if (!pbTmh.ParseFromIstream(&tmhStream)) {
       cerr << "Failed to parse too many hits file: " << tmhFilename << endl;
     }
 
@@ -140,7 +139,7 @@ namespace goby {
 
     // populate the query index to number of hits and depth maps
     google::protobuf::RepeatedPtrField<const goby::AmbiguousLocation>::const_iterator hitsIterator;
-    for (hitsIterator = pbTmh->hits().begin(); hitsIterator != pbTmh->hits().end(); hitsIterator++) {
+    for (hitsIterator = pbTmh.hits().begin(); hitsIterator != pbTmh.hits().end(); hitsIterator++) {
       unsigned queryIndex = hitsIterator->query_index();
       queryIndex2NumHits[queryIndex] = hitsIterator->at_least_number_of_hits();
       if (hitsIterator->has_length_of_match()) {
@@ -159,15 +158,15 @@ namespace goby {
   }
 
   TooManyHitsWriter::TooManyHitsWriter(const std::string& basename, unsigned threshold) : TooManyHits(basename) {
-    pbTmh->set_alignerthreshold(threshold);
+    pbTmh.set_alignerthreshold(threshold);
   }
 
   TooManyHitsWriter::~TooManyHitsWriter(void) {
   }
 
   void TooManyHitsWriter::append(unsigned queryIndex, unsigned howManyHits, unsigned lengthOfMatch) {
-    if (howManyHits > pbTmh->alignerthreshold()) {
-      AmbiguousLocation *ambiguousLocation = pbTmh->add_hits();
+    if (howManyHits > pbTmh.alignerthreshold()) {
+      AmbiguousLocation *ambiguousLocation = pbTmh.add_hits();
       ambiguousLocation->set_query_index(queryIndex);
       ambiguousLocation->set_at_least_number_of_hits(howManyHits);
       ambiguousLocation->set_length_of_match(lengthOfMatch);
@@ -177,8 +176,8 @@ namespace goby {
   void TooManyHitsWriter::write() {
     // Write to the "tmh" file
     const string tmhFilename = basename + ".tmh";
-    ofstream tmhStream(tmhFilename.c_str(), ios::out | ios::binary);
-    if (!pbTmh->SerializeToOstream(&tmhStream)) {
+    ofstream tmhStream(tmhFilename.c_str(), ios::out | ios::trunc | ios::binary);
+    if (!pbTmh.SerializeToOstream(&tmhStream)) {
       cerr << "Failed to write too many hits file: " << tmhFilename << endl;
     }
   }

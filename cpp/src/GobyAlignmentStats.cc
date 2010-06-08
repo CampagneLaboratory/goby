@@ -42,9 +42,10 @@ int main (int argc, const char *const argv[]) {
     return -1;
   }
 
-  const string basename = goby::Alignments::getBasename(argv[1]);
+  const string basename = goby::Alignment::getBasename(argv[1]);
   cout << "Compact Alignment basename = " << basename << endl;
 
+  goby::Alignment alignmentReader = goby::AlignmentReader(basename);
   goby::TooManyHits tmhReader = goby::TooManyHitsReader(basename);
   const vector<unsigned> queryIndicies = tmhReader.getQueryIndicies();
   
@@ -52,7 +53,7 @@ int main (int argc, const char *const argv[]) {
   cout << "TMH: number of ambiguous matches = " << queryIndicies.size() << endl;
   cout << "TMH: %ambiguous matches = " << queryIndicies.size() * 100.0f / 1077455 << " %" << endl;
 
- // Delete all global objects allocated by libprotobuf.
+  // Delete all global objects allocated by libprotobuf.
   google::protobuf::ShutdownProtobufLibrary();
 
   return 0;
