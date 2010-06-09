@@ -70,7 +70,7 @@ int main (int argc, const char *const argv[]) {
   
   cout << "TMH: aligner threshold = " << tmhReader.getAlignerThreshold() << endl;
   cout << "TMH: number of ambiguous matches = " << queryIndicies.size() << endl;
-  cout << "TMH: %ambiguous matches = " << queryIndicies.size() * 100.0f / 1077455 << " %" << endl;
+  cout << "TMH: %ambiguous matches = " << queryIndicies.size() * 100.0f / alignmentReader.getNumberOfQueries() << " %" << endl;
 
   cout << "num query indices = TODO" << endl;
   cout << "num target indices = TODO" << endl;
