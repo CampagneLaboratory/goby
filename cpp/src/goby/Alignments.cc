@@ -16,9 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <fcntl.h>
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <google/protobuf/io/gzip_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+
 #include "Alignments.h"
 
 using namespace std;
@@ -58,17 +62,56 @@ namespace goby {
   AlignmentReader::AlignmentReader(const string& basename) : Alignment(basename) {
     // open the "header" file
     const string headerFilename = basename + ".header";
-    ifstream headerStream(headerFilename.c_str(), ios::in | ios::binary);
+    int fd = ::open(headerFilename.c_str(), O_RDONLY);
 
-    // populate the alignment header object from the file
-    if (!pbHeader.ParseFromIstream(&headerStream)) {
+    // uncompress file into memory so that it can be parsed
+    google::protobuf::io::FileInputStream headerFileStream(fd);
+    google::protobuf::io::GzipInputStream gzipHeaderStream(&headerFileStream);
+
+    // the stream may not get all read in at once so we may need to copy in chunks
+    void* header = NULL;
+    int headerSize = 0;
+
+    const void* buffer;
+    int bufferSize;
+    while (gzipHeaderStream.Next(&buffer, &bufferSize)) {
+      // store the end location of the header buffer
+      int index = headerSize;
+
+      // resize the header buffer to fit the new data just read
+      headerSize += bufferSize;
+      header = (void *)realloc(header, headerSize);
+
+      // and append the new data over to the end of the header buffer
+      memcpy(reinterpret_cast<char*>(header) + index, buffer, bufferSize);
+    }
+
+    // populate the alignment header object from the uncompressed data
+    if (!pbHeader.ParseFromArray(header, headerSize)) {
       cerr << "Failed to parse alignment header file: " << headerFilename << endl;
     }
 
-    headerStream.close();
+    // free up the temporary buffers and close the file
+    free(header);
+    ::close(fd);
   }
 
   AlignmentReader::~AlignmentReader(void) {
   }
 
+  AlignmentWriter::AlignmentWriter(const string& basename) : Alignment(basename) {
+  }
+
+  AlignmentWriter::~AlignmentWriter(void) {
+  }
+
+  void AlignmentWriter::write() {
+    pbHeader.set_number_of_aligned_reads(42);
+    // Write to the "header" file
+    const string headerFilename = basename + ".header";
+    ofstream headerStream(headerFilename.c_str(), ios::out | ios::trunc | ios::binary);
+    if (!pbHeader.SerializeToOstream(&headerStream)) {
+      cerr << "Failed to write alignment header file: " << headerFilename << endl;
+    }
+  }
 }

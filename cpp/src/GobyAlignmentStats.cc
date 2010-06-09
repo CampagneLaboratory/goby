@@ -46,6 +46,10 @@ int main (int argc, const char *const argv[]) {
   cout << "Compact Alignment basename = " << basename << endl;
 
   goby::Alignment alignmentReader = goby::AlignmentReader(basename);
+  cout << "Info from header:" << endl;
+  cout << "Number of target sequences = " << alignmentReader.getNumberOfTargets() << endl;
+  cout << "Number of query sequences = " << alignmentReader.getNumberOfQueries() << endl;
+
   goby::TooManyHits tmhReader = goby::TooManyHitsReader(basename);
   const vector<unsigned> queryIndicies = tmhReader.getQueryIndicies();
   
