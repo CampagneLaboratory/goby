@@ -180,5 +180,6 @@ namespace goby {
     if (!pbTmh.SerializeToOstream(&tmhStream)) {
       cerr << "Failed to write too many hits file: " << tmhFilename << endl;
     }
+    tmhStream.close();
   }
 }
