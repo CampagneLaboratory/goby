@@ -21,6 +21,8 @@
 #ifndef GOBY_COMMON_H
 #define GOBY_COMMON_H
 
+#include <fcntl.h>
+
 namespace goby {
 
 #if defined(_MSC_VER)
@@ -35,6 +37,13 @@ namespace goby {
   #define LIBGOBY_EXPORT
 #endif
 
+#ifndef O_BINARY
+#ifdef _O_BINARY
+#define O_BINARY _O_BINARY
+#else
+#define O_BINARY 0     // If this isn't defined, the platform doesn't need it.
+#endif
+#endif
 }
 
 #endif // GOBY_COMMON_H
