@@ -34,7 +34,7 @@ int main (int argc, const char *const argv[]) {
   // compatible with the version of the headers we compiled against.
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-  cout.imbue(std::locale(""));
+  //cout.imbue(std::locale(""));
   cout << std::fixed << std::setprecision(6); 
 
   if (argc != 2) {
@@ -82,8 +82,12 @@ int main (int argc, const char *const argv[]) {
   cout << "Avg number of variations per query sequence = TODO" << endl;
   cout << "Average bytes per entry = TODO" << endl;
 
-  //goby::AlignmentWriter alignmentWriter = goby::AlignmentWriter("foo");
-  //alignmentWriter.write();
+  // TODO : testing
+  goby::AlignmentWriter alignmentWriter = goby::AlignmentWriter(alignmentReader);
+  alignmentWriter.write();
+
+  goby::TooManyHitsWriter tmhWriter = goby::TooManyHitsWriter(tmhReader);
+  tmhWriter.write();
 
   // Delete all global objects allocated by libprotobuf.
   google::protobuf::ShutdownProtobufLibrary();
