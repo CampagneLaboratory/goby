@@ -161,6 +161,11 @@ namespace goby {
     pbTmh.set_alignerthreshold(threshold);
   }
 
+  TooManyHitsWriter::TooManyHitsWriter(const TooManyHits& tooManyHits) : TooManyHits(tooManyHits) {
+    // TODO: testing only
+    this->basename = "foo";
+  }
+
   TooManyHitsWriter::~TooManyHitsWriter(void) {
   }
 
@@ -176,6 +181,7 @@ namespace goby {
   void TooManyHitsWriter::write() {
     // Write to the "tmh" file
     const string tmhFilename = basename + ".tmh";
+    cout << "Writing file: " << tmhFilename << endl;
     ofstream tmhStream(tmhFilename.c_str(), ios::out | ios::trunc | ios::binary);
     if (!pbTmh.SerializeToOstream(&tmhStream)) {
       cerr << "Failed to write too many hits file: " << tmhFilename << endl;

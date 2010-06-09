@@ -84,6 +84,7 @@ namespace goby {
   public:
     TooManyHitsWriter(const std::string& basename);
     TooManyHitsWriter(const std::string& basename, unsigned threshold);
+    TooManyHitsWriter(const TooManyHits& tooManyHits);
     ~TooManyHitsWriter(void);
 
     inline void setAlignerThreshold(unsigned threshold) { pbTmh.set_alignerthreshold(threshold); };

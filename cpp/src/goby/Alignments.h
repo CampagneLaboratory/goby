@@ -53,6 +53,7 @@ namespace goby {
   class LIBGOBY_EXPORT AlignmentWriter : public Alignment {
   public:
     AlignmentWriter(const std::string& basename);
+    AlignmentWriter(const Alignment& alignment);
     ~AlignmentWriter(void);
 
     void write();

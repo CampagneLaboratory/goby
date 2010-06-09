@@ -91,8 +91,11 @@ namespace goby {
       cerr << "Failed to parse alignment header file: " << headerFilename << endl;
     }
 
-    // free up the temporary buffers and close the file
+    // free up the temporary buffers
     ::free(header);
+
+    // close the streams and files
+    headerFileStream.Close();
     ::close(fd);
   }
 
@@ -102,13 +105,19 @@ namespace goby {
   AlignmentWriter::AlignmentWriter(const string& basename) : Alignment(basename) {
   }
 
+  AlignmentWriter::AlignmentWriter(const Alignment& alignment) : Alignment(alignment) {
+    // TODO: testing only
+    this->basename = "foo";
+  }
+
   AlignmentWriter::~AlignmentWriter(void) {
   }
 
   void AlignmentWriter::write() {
     // Write to the "header" file
     const string headerFilename = basename + ".header";
-    int fd = ::open(headerFilename.c_str(), O_WRONLY | O_CREAT | O_TRUNC);
+    cout << "Writing file: " << headerFilename << endl;
+    int fd = ::open(headerFilename.c_str(), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, 0644);
 
     // set up a gzip output stream to compress the header
     google::protobuf::io::FileOutputStream headerFileStream(fd);
@@ -118,12 +127,8 @@ namespace goby {
       cerr << "Failed to write alignment header file: " << headerFilename << endl;
     }
 
-  bool result;
-//  result = gzipHeaderStream.Close();
-//  cout << result << endl;
-//  result = headerFileStream.Close();
-//  cout << result << endl;
-  result = ::close(fd);
-  cout << result << endl;
+    gzipHeaderStream.Close();
+    // NOTE: it seems that we should NOT close the file descriptor here
+    // ::close(fd);
   }
 }
