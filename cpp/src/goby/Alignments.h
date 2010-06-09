@@ -27,6 +27,7 @@
 
 namespace goby {
   class LIBGOBY_EXPORT Alignment {
+
   protected:
     std::string basename;
     AlignmentHeader pbHeader;
@@ -34,10 +35,13 @@ namespace goby {
   public:
     Alignment(std::string basename);
     virtual ~Alignment(void);
-    inline const std::string& getBasename() const { return basename; };
 
     static std::string getBasename(const char* filename);
     static std::string getBasename(const std::string& filename);
+
+    inline const std::string& getBasename() const { return basename; };
+    inline unsigned getNumberOfQueries() const { return pbHeader.number_of_queries(); };
+    inline unsigned getNumberOfTargets() const { return pbHeader.number_of_targets(); };
   };
 
   class LIBGOBY_EXPORT AlignmentReader : public Alignment {
@@ -46,6 +50,13 @@ namespace goby {
     ~AlignmentReader(void);
   };
 
+  class LIBGOBY_EXPORT AlignmentWriter : public Alignment {
+  public:
+    AlignmentWriter(const std::string& basename);
+    ~AlignmentWriter(void);
+
+    void write();
+  };
 }
 
 #endif // _ALIGNMENTS_H_
