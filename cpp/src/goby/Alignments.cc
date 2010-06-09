@@ -37,7 +37,7 @@ namespace goby {
   }
 
   string Alignment::getBasename(const char* filename) {
-   return getBasename(string(filename));
+    return getBasename(string(filename));
   }
 
   string Alignment::getBasename(const string& filename) {
@@ -83,7 +83,7 @@ namespace goby {
       header = (void *)realloc(header, headerSize);
 
       // and append the new data over to the end of the header buffer
-      memcpy(reinterpret_cast<char*>(header) + index, buffer, bufferSize);
+      ::memcpy(reinterpret_cast<char*>(header) + index, buffer, bufferSize);
     }
 
     // populate the alignment header object from the uncompressed data
@@ -92,7 +92,7 @@ namespace goby {
     }
 
     // free up the temporary buffers and close the file
-    free(header);
+    ::free(header);
     ::close(fd);
   }
 
@@ -106,12 +106,24 @@ namespace goby {
   }
 
   void AlignmentWriter::write() {
-    pbHeader.set_number_of_aligned_reads(42);
     // Write to the "header" file
     const string headerFilename = basename + ".header";
-    ofstream headerStream(headerFilename.c_str(), ios::out | ios::trunc | ios::binary);
-    if (!pbHeader.SerializeToOstream(&headerStream)) {
+    int fd = ::open(headerFilename.c_str(), O_WRONLY | O_CREAT | O_TRUNC);
+
+    // set up a gzip output stream to compress the header
+    google::protobuf::io::FileOutputStream headerFileStream(fd);
+    google::protobuf::io::GzipOutputStream gzipHeaderStream(&headerFileStream);
+
+    if (!pbHeader.SerializeToZeroCopyStream(&gzipHeaderStream)) {
       cerr << "Failed to write alignment header file: " << headerFilename << endl;
     }
+
+  bool result;
+//  result = gzipHeaderStream.Close();
+//  cout << result << endl;
+//  result = headerFileStream.Close();
+//  cout << result << endl;
+  result = ::close(fd);
+  cout << result << endl;
   }
 }

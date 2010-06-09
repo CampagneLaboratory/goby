@@ -48,14 +48,42 @@ int main (int argc, const char *const argv[]) {
   goby::Alignment alignmentReader = goby::AlignmentReader(basename);
   cout << "Info from header:" << endl;
   cout << "Number of target sequences = " << alignmentReader.getNumberOfTargets() << endl;
-  cout << "Number of query sequences = " << alignmentReader.getNumberOfQueries() << endl;
+  cout << "Number of target length entries = TODO" << endl;
+  cout << "Min target length = TOOD" << endl;
+  cout << "Max target length = TODO" << endl;
+  cout << "Mean target length = TODO" << endl;
+  cout << endl;
 
+  cout << "Number of query sequences = " << alignmentReader.getNumberOfQueries() << endl;
+  cout << "Number of query length entries = TODO" << endl;
+  cout << "Min query length = TODO" << endl;
+  cout << "Max query length = TODO" << endl;
+  cout << "Mean query length = TODO" << endl;
+  cout << "Constant query lengths = TODO" << endl;
+  cout << "Has query identifiers = TODO" << endl;
+  cout << "Has target identifiers = TODO" << endl;
+  cout << endl;
+
+  // Too many hits information
   goby::TooManyHits tmhReader = goby::TooManyHitsReader(basename);
   const vector<unsigned> queryIndicies = tmhReader.getQueryIndicies();
   
   cout << "TMH: aligner threshold = " << tmhReader.getAlignerThreshold() << endl;
   cout << "TMH: number of ambiguous matches = " << queryIndicies.size() << endl;
   cout << "TMH: %ambiguous matches = " << queryIndicies.size() * 100.0f / 1077455 << " %" << endl;
+
+  cout << "num query indices = TODO" << endl;
+  cout << "num target indices = TODO" << endl;
+  cout << "Number of alignment entries = TODO" << endl;
+  cout << "Number of query indices that matched = TODO" << endl;
+  cout << "Percent matched = TODO %" << endl;
+  cout << "Avg query alignment length = TODO" << endl;
+  cout << "Avg score alignment = TODO" << endl;
+  cout << "Avg number of variations per query sequence = TODO" << endl;
+  cout << "Average bytes per entry = TODO" << endl;
+
+  //goby::AlignmentWriter alignmentWriter = goby::AlignmentWriter("foo");
+  //alignmentWriter.write();
 
   // Delete all global objects allocated by libprotobuf.
   google::protobuf::ShutdownProtobufLibrary();
