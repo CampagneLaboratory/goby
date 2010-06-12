@@ -59,6 +59,23 @@ namespace goby {
     return filename;
   }
 
+  vector<unsigned> Alignment::getQueryLengths() const {
+    vector<unsigned> queryLengths(pbHeader.number_of_queries());
+    if (hasConstantQueryLength()) {
+      // The alignment has constant query lengths
+      queryLengths.assign(pbHeader.number_of_queries(), getConstantQuerylength());
+    } else {
+      queryLengths.assign(pbHeader.query_length().begin(), pbHeader.query_length().end());
+    }
+  
+    return queryLengths;
+  }
+
+  vector<unsigned> Alignment::getTargetLengths() const {
+    vector<unsigned> targetLengths(pbHeader.target_length().begin(), pbHeader.target_length().end());
+    return targetLengths;
+  }
+  
   AlignmentReader::AlignmentReader(const string& basename) : Alignment(basename) {
     // open the "header" file
     const string headerFilename = basename + ".header";

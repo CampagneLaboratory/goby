@@ -20,9 +20,11 @@
 #include <config.h>
 #endif
 
+#include <algorithm>
 #include <iostream>
 #include <iomanip>
 #include <locale>
+#include <vector>
 
 #include "goby/Alignments.h"
 #include "goby/TooManyHits.h"
@@ -34,8 +36,8 @@ int main (int argc, const char *const argv[]) {
   // compatible with the version of the headers we compiled against.
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-  //cout.imbue(std::locale(""));
-  cout << std::fixed << std::setprecision(6); 
+  cout.imbue(std::locale(""));
+  cout << std::fixed << std::setprecision(6) << boolalpha; 
 
   if (argc != 2) {
     cerr << "usage: " << argv[0] << " <basename>" << endl;
@@ -48,18 +50,25 @@ int main (int argc, const char *const argv[]) {
   goby::Alignment alignmentReader = goby::AlignmentReader(basename);
   cout << "Info from header:" << endl;
   cout << "Number of target sequences = " << alignmentReader.getNumberOfTargets() << endl;
-  cout << "Number of target length entries = TODO" << endl;
-  cout << "Min target length = TOOD" << endl;
-  cout << "Max target length = TODO" << endl;
+  
+  const vector<unsigned> targetLengths = alignmentReader.getTargetLengths();
+  cout << "Number of target length entries = " << targetLengths.size() << endl;
+  cout << "smallestSplitQueryIndex = " <<  alignmentReader.getSmallestSplitQueryIndex() << endl;
+  cout << "largestSplitQueryIndex = " << alignmentReader.getLargestSplitQueryIndex() << endl;
+  
+  cout << "Min target length = " << *min_element(targetLengths.begin(), targetLengths.end()) << endl;
+  cout << "Max target length = " << *max_element(targetLengths.begin(), targetLengths.end()) << endl;
   cout << "Mean target length = TODO" << endl;
   cout << endl;
 
   cout << "Number of query sequences = " << alignmentReader.getNumberOfQueries() << endl;
-  cout << "Number of query length entries = TODO" << endl;
-  cout << "Min query length = TODO" << endl;
-  cout << "Max query length = TODO" << endl;
+
+  const vector<unsigned> queryLengths = alignmentReader.getQueryLengths();
+  cout << "Number of query length entries = " << queryLengths.size() << endl;
+  cout << "Min query length = "  << *min_element(queryLengths.begin(), queryLengths.end()) << endl;
+  cout << "Max query length = " << *max_element(queryLengths.begin(), queryLengths.end()) << endl;
   cout << "Mean query length = TODO" << endl;
-  cout << "Constant query lengths = TODO" << endl;
+  cout << "Constant query lengths = " << alignmentReader.hasConstantQueryLength() << endl;
   cout << "Has query identifiers = TODO" << endl;
   cout << "Has target identifiers = TODO" << endl;
   cout << endl;

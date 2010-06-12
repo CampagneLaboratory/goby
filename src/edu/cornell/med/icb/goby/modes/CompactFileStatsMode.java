@@ -217,9 +217,9 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         final int[] targetLength = reader.getTargetLength();
         stream.printf("Number of target length entries = %,d%n",
                 ArrayUtils.getLength(reader.getTargetLength()));
-        stream.printf("smallestSplitQueryIndex =%d%n",
+        stream.printf("smallestSplitQueryIndex = %d%n",
                 reader.getSmallestSplitQueryIndex());
-        stream.printf("largestSplitQueryIndex =%d%n",
+        stream.printf("largestSplitQueryIndex = %d%n",
                 reader.getLargestSplitQueryIndex());
 
         // simple statistics for target lengths
