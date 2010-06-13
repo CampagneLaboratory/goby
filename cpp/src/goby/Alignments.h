@@ -24,6 +24,7 @@
 #include <string>
 #include "common.h"
 #include "Alignments.pb.h"
+#include "MessageChunks.h"
 
 namespace goby {
   class LIBGOBY_EXPORT Alignment {
@@ -62,6 +63,7 @@ namespace goby {
   };
 
   class LIBGOBY_EXPORT AlignmentReader : public Alignment {
+    MessageChunksReader *messageChunksReader;
   public:
     AlignmentReader(const std::string& basename);
     ~AlignmentReader(void);
@@ -82,7 +84,9 @@ namespace goby {
 
     void setTargetLengths(const std::vector<unsigned>& targetLengths);
     void setTargetLengths(const unsigned* targetLengths);
-
+    // NOTE: Query Lentgh setters are not provided - this information is no longer in the header
+    
+    // TODO: Target and Query Identifiers
     void write();
   };
 }

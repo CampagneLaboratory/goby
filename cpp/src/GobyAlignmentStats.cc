@@ -24,9 +24,11 @@
 #include <iostream>
 #include <iomanip>
 #include <locale>
+#include <numeric>
 #include <vector>
 
 #include "goby/Alignments.h"
+#include "goby/MessageChunks.h"
 #include "goby/TooManyHits.h"
 
 using namespace std;
@@ -58,7 +60,7 @@ int main (int argc, const char *const argv[]) {
   
   cout << "Min target length = " << *min_element(targetLengths.begin(), targetLengths.end()) << endl;
   cout << "Max target length = " << *max_element(targetLengths.begin(), targetLengths.end()) << endl;
-  cout << "Mean target length = TODO" << endl;
+  cout << "Mean target length = " << accumulate(targetLengths.begin(), targetLengths.end(), 0) / targetLengths.size() << endl;
   cout << endl;
 
   cout << "Number of query sequences = " << alignmentReader.getNumberOfQueries() << endl;
@@ -67,7 +69,7 @@ int main (int argc, const char *const argv[]) {
   cout << "Number of query length entries = " << queryLengths.size() << endl;
   cout << "Min query length = "  << *min_element(queryLengths.begin(), queryLengths.end()) << endl;
   cout << "Max query length = " << *max_element(queryLengths.begin(), queryLengths.end()) << endl;
-  cout << "Mean query length = TODO" << endl;
+  cout << "Mean query length = " << accumulate(queryLengths.begin(), queryLengths.end(), 0) / queryLengths.size() << endl;
   cout << "Constant query lengths = " << alignmentReader.hasConstantQueryLength() << endl;
   cout << "Has query identifiers = " << !alignmentReader.getQueryIdentifiers().empty() << endl;
   cout << "Has target identifiers = " << !alignmentReader.getTargetIdentifiers().empty() << endl;

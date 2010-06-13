@@ -12,6 +12,8 @@ libgoby_la_SOURCES = \
 	goby/Alignments.h \
 	goby/Alignments.pb.cc \
 	goby/Alignments.pb.h \
+	goby/MessageChunks.h \
+	goby/MessageChunks.cc \
 	goby/Reads.pb.cc \
 	goby/Reads.pb.h \
 	goby/TooManyHits.cc \

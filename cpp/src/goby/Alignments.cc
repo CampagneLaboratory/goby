@@ -79,7 +79,7 @@ namespace goby {
   AlignmentReader::AlignmentReader(const string& basename) : Alignment(basename) {
     // open the "header" file
     const string headerFilename = basename + ".header";
-    int fd = ::open(headerFilename.c_str(), O_RDONLY);
+    const int fd = ::open(headerFilename.c_str(), O_RDONLY | O_BINARY);
 
     // uncompress file into memory so that it can be parsed
     google::protobuf::io::FileInputStream headerFileStream(fd);
@@ -130,9 +130,12 @@ namespace goby {
       const unsigned queryIndex = queryMappingIterator->index();
       queryIdentifiers.insert(pair<string,unsigned>(queryName, queryIndex));
     }
+    
+    this->messageChunksReader = new MessageChunksReader(basename + ".entries");
   }
 
   AlignmentReader::~AlignmentReader(void) {
+    delete messageChunksReader;
   }
 
   AlignmentWriter::AlignmentWriter(const string& basename) : Alignment(basename) {
