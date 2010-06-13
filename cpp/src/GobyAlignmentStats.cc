@@ -69,8 +69,8 @@ int main (int argc, const char *const argv[]) {
   cout << "Max query length = " << *max_element(queryLengths.begin(), queryLengths.end()) << endl;
   cout << "Mean query length = TODO" << endl;
   cout << "Constant query lengths = " << alignmentReader.hasConstantQueryLength() << endl;
-  cout << "Has query identifiers = TODO" << endl;
-  cout << "Has target identifiers = TODO" << endl;
+  cout << "Has query identifiers = " << !alignmentReader.getQueryIdentifiers().empty() << endl;
+  cout << "Has target identifiers = " << !alignmentReader.getTargetIdentifiers().empty() << endl;
   cout << endl;
 
   // Too many hits information

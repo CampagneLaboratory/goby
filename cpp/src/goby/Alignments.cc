@@ -114,6 +114,22 @@ namespace goby {
     // close the streams and files
     headerFileStream.Close();
     ::close(fd);
+    
+    // populate the target identifiers
+    google::protobuf::RepeatedPtrField<const goby::IdentifierInfo>::const_iterator targetMappingIterator;
+    for (targetMappingIterator = pbHeader.target_name_mapping().mappings().begin(); targetMappingIterator != pbHeader.target_name_mapping().mappings().end(); targetMappingIterator++) {
+      const string targetName = targetMappingIterator->name();
+      const unsigned targetIndex = targetMappingIterator->index();
+      targetIdentifiers.insert(pair<string,unsigned>(targetName, targetIndex));
+    }
+
+    // populate the query identifiers
+    google::protobuf::RepeatedPtrField<const goby::IdentifierInfo>::const_iterator queryMappingIterator;
+    for (queryMappingIterator = pbHeader.query_name_mapping().mappings().begin(); queryMappingIterator != pbHeader.query_name_mapping().mappings().end(); queryMappingIterator++) {
+      string queryName = queryMappingIterator->name();
+      const unsigned queryIndex = queryMappingIterator->index();
+      queryIdentifiers.insert(pair<string,unsigned>(queryName, queryIndex));
+    }
   }
 
   AlignmentReader::~AlignmentReader(void) {

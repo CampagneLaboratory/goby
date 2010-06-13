@@ -32,6 +32,12 @@ namespace goby {
     std::string basename;
     AlignmentHeader pbHeader;
 
+    // A map of target identifiers (name to index)
+    std::map<std::string, unsigned> targetIdentifiers;
+    
+    // A map of target identifiers (name to index)
+    std::map<std::string, unsigned> queryIdentifiers;
+    
   public:
     Alignment(std::string basename);
     virtual ~Alignment(void);
@@ -49,7 +55,10 @@ namespace goby {
     inline unsigned getLargestSplitQueryIndex() const { return  pbHeader.largestsplitqueryindex(); };
     
     std::vector<unsigned> getTargetLengths() const;
-    std::vector<unsigned> getQueryLengths() const;    
+    std::vector<unsigned> getQueryLengths() const;   
+    
+    inline const std::map<std::string, unsigned>& getTargetIdentifiers() const { return targetIdentifiers; };
+    inline const std::map<std::string, unsigned>& getQueryIdentifiers() const { return queryIdentifiers; };
   };
 
   class LIBGOBY_EXPORT AlignmentReader : public Alignment {
@@ -70,6 +79,9 @@ namespace goby {
     inline void setConstantquerylength(unsigned constantQueryLength) { pbHeader.set_constantquerylength(constantQueryLength); };
     inline void setSmallestSplitQueryIndex(unsigned smallestSplitQueryIndex) { pbHeader.set_smallestsplitqueryindex(smallestSplitQueryIndex); };
     inline void setLargestSplitQueryIndex(unsigned largestSplitQueryIndex) { pbHeader.set_largestsplitqueryindex(largestSplitQueryIndex); };
+
+    void setTargetLengths(const std::vector<unsigned>& targetLengths);
+    void setTargetLengths(const unsigned* targetLengths);
 
     void write();
   };
