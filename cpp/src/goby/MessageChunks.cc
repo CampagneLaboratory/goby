@@ -29,17 +29,25 @@ namespace goby {
     this->currentIndex = 0;
     this->currentCollection = AlignmentCollection::default_instance();
 
+    // get the positions each of the chunks in the file
     ifstream stream;
     stream.open(filename.c_str(), ios::in | ios::binary);
     while (stream.good()) {
+      // each chunk is delimited by DELIMITER_LENGTH bytes
       stream.seekg(DELIMITER_LENGTH, ios::cur);
+
+      // then the size of the next chunk follows
       int size = readInt(stream);
       cout << "size is " << size << endl;
+
+      // the last chunk has a size of zero bytes
       if (!stream.eof() && size != 0) {
         const streampos position = stream.tellg();
         this->positions.push_back(position);
         this->lengths.push_back(size);
         stream.seekg(size, ios::cur);
+      } else {
+        break;
       }
     }
     stream.close();
