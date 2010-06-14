@@ -42,14 +42,20 @@ namespace goby {
     // the name of the chunked file
     std::string filename;
 
+    // the underlying stream
+    std::ifstream *stream;
+
     // positions of compressed alignment collections within the entries file
     std::vector<MessageChunk> chunks;
-    
-    unsigned currentIndex;
+
+    // index of current chunk
+    unsigned currentChunk;
+
+    // the current processed chunk
     T current;
 
     // Java DataInput.readInt()
-    static int readInt(std::istream& stream) {
+    static int readInt(std::istream &stream) {
       const int ch1 = stream.get();
       const int ch2 = stream.get();
       const int ch3 = stream.get();
@@ -60,38 +66,38 @@ namespace goby {
   public:
     MessageChunksReader(const std::string& filename) {
       this->filename = filename;
-      this->currentIndex = 0;
+      this->currentChunk = 0;
       this->current = T::default_instance();
+      this->stream = new std::ifstream(filename.c_str(), std::ios::in | std::ios::binary);
 
       // get the positions each of the chunks in the file
-      std::ifstream stream;
-      stream.open(filename.c_str(), std::ios::in | std::ios::binary);
-      while (stream.good()) {
+      while (stream->good()) {
         // each chunk is delimited by DELIMITER_LENGTH bytes
-        stream.seekg(GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH, std::ios::cur);
+        stream->seekg(GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH, std::ios::cur);
 
         // then the size of the next chunk follows
-        const int size = readInt(stream);
+        const int size = readInt(*stream);
 #if GOBY_DEBUG
         std::cout << "size is " << size << std::endl;
 #endif // GOBY_DEBUG
 
         // the last chunk has a size of zero bytes
-        if (!stream.eof() && size != 0) {
-          const std::streampos position = stream.tellg();
+        if (!stream->eof() && size != 0) {
+          const std::streampos position = stream->tellg();
           MessageChunk chunk;
           chunk.position = position;
           chunk.length = size;
           chunks.push_back(chunk);
-          stream.seekg(size, std::ios::cur);
+          stream->seekg(size, std::ios::cur);
         } else {
           break;
         }
       }
-      stream.close();
     }
 
     virtual ~MessageChunksReader(void) {
+      stream->close();
+      delete stream;
     }
 
     MessageChunksReader(const MessageChunksReader& reader);
@@ -100,6 +106,14 @@ namespace goby {
     bool operator==(const MessageChunksReader& rhs);
     bool operator!=(const MessageChunksReader& rhs);
     T& operator*() { return current; };
+
+    MessageChunksReader begin() {
+      return(MessageChunksReader(NULL));
+    }
+
+    MessageChunksReader end() {
+      return(MessageChunksReader(NULL));
+    }
   };
 }
 
