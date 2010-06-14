@@ -20,6 +20,13 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+
+#ifdef _MSC_VER
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
+
 #include <google/protobuf/io/gzip_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
