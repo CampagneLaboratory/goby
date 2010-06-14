@@ -58,7 +58,7 @@ namespace goby {
     MessageChunksReader& operator++(int);
     bool operator==(const MessageChunksReader& rhs);
     bool operator!=(const MessageChunksReader& rhs);
-    AlignmentCollection& operator*() { return currentCollection };
+    AlignmentCollection& operator*() { return currentCollection; };
   };
 }
 

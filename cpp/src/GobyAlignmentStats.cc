@@ -25,6 +25,7 @@
 #include <iomanip>
 #include <locale>
 #include <numeric>
+#include <stdexcept>
 #include <vector>
 
 #include "goby/Alignments.h"
@@ -38,13 +39,19 @@ int main (int argc, const char *const argv[]) {
   // compatible with the version of the headers we compiled against.
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-  cout.imbue(std::locale(""));
-  cout << std::fixed << std::setprecision(6) << boolalpha; 
-
   if (argc != 2) {
     cerr << "usage: " << argv[0] << " <basename>" << endl;
     return -1;
   }
+
+  try {
+    // this should format the output nicely
+    cout.imbue(locale(""));
+  } catch (runtime_error& e) {
+    // we couldn't set the locale, but that's ok
+    cerr << e.what() << endl;
+  }
+  cout << std::fixed << std::setprecision(6) << boolalpha; 
 
   const string basename = goby::Alignment::getBasename(argv[1]);
   cout << "Compact Alignment basename = " << basename << endl;
