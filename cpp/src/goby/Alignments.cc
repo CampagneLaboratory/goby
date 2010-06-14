@@ -120,7 +120,7 @@ namespace goby {
 
     // close the streams and files
     headerFileStream.Close();
-    ::close(fd);
+    // TODO? ::close(fd);
     
     // populate the target identifiers
     google::protobuf::RepeatedPtrField<const goby::IdentifierInfo>::const_iterator targetMappingIterator;
@@ -138,7 +138,7 @@ namespace goby {
       queryIdentifiers.insert(pair<string,unsigned>(queryName, queryIndex));
     }
     
-    this->messageChunksReader = new MessageChunksReader(basename + ".entries");
+    this->messageChunksReader = new MessageChunksReader<AlignmentCollection>(basename + ".entries");
   }
 
   AlignmentReader::~AlignmentReader(void) {
@@ -171,7 +171,6 @@ namespace goby {
     }
 
     gzipHeaderStream.Close();
-    // NOTE: it seems that we should NOT close the file descriptor here
-    // ::close(fd);
+    // TODO? ::close(fd);
   }
 }

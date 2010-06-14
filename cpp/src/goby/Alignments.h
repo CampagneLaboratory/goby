@@ -63,7 +63,7 @@ namespace goby {
   };
 
   class LIBGOBY_EXPORT AlignmentReader : public Alignment {
-    MessageChunksReader *messageChunksReader;
+    MessageChunksReader<AlignmentCollection> *messageChunksReader;
   public:
     AlignmentReader(const std::string& basename);
     ~AlignmentReader(void);

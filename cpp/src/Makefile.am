@@ -13,7 +13,6 @@ libgoby_la_SOURCES = \
 	goby/Alignments.pb.cc \
 	goby/Alignments.pb.h \
 	goby/MessageChunks.h \
-	goby/MessageChunks.cc \
 	goby/Reads.pb.cc \
 	goby/Reads.pb.h \
 	goby/TooManyHits.cc \
@@ -22,6 +21,7 @@ libgoby_la_SOURCES = \
 nobase_include_HEADERS = \
 	goby/Alignments.h \
 	goby/Alignments.pb.h \
+	goby/MessageChunks.h \
 	goby/Reads.pb.h \
 	goby/TooManyHits.h
 

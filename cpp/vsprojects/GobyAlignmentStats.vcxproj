@@ -49,14 +49,14 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions);ZLIB_WINAPI;HAVE_ZLIB</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>C:\protobuf-2.3.0\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\protobuf-2.3.0\src;C:\zlib-1.2.5</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libprotobuf.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\protobuf-2.3.0\vsprojects\Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libprotobuf.lib;zlibwapi.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\protobuf-2.3.0\vsprojects\Debug;C:\zlib-1.2.5\dll32</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

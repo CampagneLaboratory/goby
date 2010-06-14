@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include</IncludePath>
-    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;C:\protobuf-2.3.0\src</SourcePath>
+    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;C:\protobuf-2.3.0\src;C:\zlib-1.2.5</SourcePath>
     <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -52,9 +52,9 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions);LIBGOBY_EXPORTS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions);LIBGOBY_EXPORTS;ZLIB_WINAPI;GOBY_DEBUG</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>C:\protobuf-2.3.0\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\protobuf-2.3.0\src;C:\zlib-1.2.5</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -83,6 +83,7 @@
     <ClInclude Include="..\src\goby\Alignments.h" />
     <ClInclude Include="..\src\goby\Alignments.pb.h" />
     <ClInclude Include="..\src\goby\common.h" />
+    <ClInclude Include="..\src\goby\MessageChunks.h" />
     <ClInclude Include="..\src\goby\Reads.pb.h" />
     <ClInclude Include="..\src\goby\TooManyHits.h" />
   </ItemGroup>
