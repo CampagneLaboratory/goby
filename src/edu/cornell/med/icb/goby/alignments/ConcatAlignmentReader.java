@@ -27,6 +27,9 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * Read over a set of alignments. This aligner concatenates entries from the input alignment.
  * Reference sequences must match exactly across the input alignments.
@@ -40,6 +43,11 @@ import java.util.Properties;
  *         Time: 5:06:01 PM
  */
 public class ConcatAlignmentReader extends AbstractAlignmentReader {
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(ConcatAlignmentReader.class);
+
     private final AlignmentReader[] readers;
     private final IntSet readersWithMoreEntries;
     /**
@@ -138,11 +146,15 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
 
                 offset = readers[i].getSmallestSplitQueryIndex();
 
-                queryIndexOffset[i] = adjustQueryIndices ? i==0?0:readers[i-1].getLargestSplitQueryIndex()+1 : 0;
+                queryIndexOffset[i] = adjustQueryIndices ? i == 0 ? 0 : readers[i - 1].getLargestSplitQueryIndex() + 1 : 0;
                 final int[] localQueryLenths = readers[i].getQueryLengths();
                 if (localQueryLenths != null) {
-                    System.arraycopy(localQueryLenths, 0, queryLengths,
-                            offset, localQueryLenths.length);
+                    if (localQueryLenths.length + offset <= queryLengths.length) {
+                        System.arraycopy(localQueryLenths, 0, queryLengths,
+                                offset, localQueryLenths.length);
+                    } else {
+                        LOG.error("Cannot copy query lengths to destination array. Skipping this step.");
+                    }
                 }
             }
 
