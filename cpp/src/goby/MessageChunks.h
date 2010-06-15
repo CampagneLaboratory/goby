@@ -56,12 +56,13 @@ namespace goby {
 
     // Java DataInput.readInt()
     static int readInt(std::istream &stream) {
+      // TODO? Do we need to worry about endian order here?
       const int ch1 = stream.get();
       const int ch2 = stream.get();
       const int ch3 = stream.get();
       const int ch4 = stream.get();
       return (ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4 << 0);
-    }
+    };
 
   public:
     MessageChunksReader(const std::string& filename) {
@@ -70,6 +71,7 @@ namespace goby {
       this->current = T::default_instance();
       this->stream = new std::ifstream(filename.c_str(), std::ios::in | std::ios::binary);
 
+      int chunkNumber = 0;
       // get the positions each of the chunks in the file
       while (stream->good()) {
         // each chunk is delimited by DELIMITER_LENGTH bytes
@@ -78,7 +80,7 @@ namespace goby {
         // then the size of the next chunk follows
         const int size = readInt(*stream);
 #if GOBY_DEBUG
-        std::cout << "size is " << size << std::endl;
+        std::cout << "length of chunk #" << chunkNumber++ << " is " << size << std::endl;
 #endif // GOBY_DEBUG
 
         // the last chunk has a size of zero bytes
@@ -93,27 +95,56 @@ namespace goby {
           break;
         }
       }
-    }
+    };
 
     virtual ~MessageChunksReader(void) {
       stream->close();
       delete stream;
-    }
+    };
 
-    MessageChunksReader(const MessageChunksReader& reader);
-    MessageChunksReader& operator++();
-    MessageChunksReader& operator++(int);
-    bool operator==(const MessageChunksReader& rhs);
-    bool operator!=(const MessageChunksReader& rhs);
-    T& operator*() { return current; };
+    // TODO MessageChunksReader(const MessageChunksReader& reader);
+
+    // Prefix increment operator
+    MessageChunksReader& operator++() {
+      std::cout << "Prefix operator++() " << this->currentChunk << std::endl;
+      ++currentChunk;
+      return *this;
+    };
+
+    // Postfix increment operator
+    MessageChunksReader& operator++(int) {
+      std::cout << "Postfix operator++(int) " << this->currentChunk << std::endl;
+      currentChunk++;
+      return *this;
+    };
+
+    bool operator==(const MessageChunksReader& rhs) {
+      return currentChunk == rhs.currentChunk;  // TODO
+    };
+
+    bool operator!=(const MessageChunksReader& rhs) {
+      return currentChunk != rhs.currentChunk;  // TODO
+    };
+
+    T& operator*() {
+#if GOBY_DEBUG
+        std::cout << "chunk number is " << currentChunk << std::endl;
+#endif // GOBY_DEBUG
+      return current;
+    };
+
+    friend std::ostream &operator<<(std::ostream &out, const MessageChunksReader& reader) {
+      out << "ostream &operator<< " << reader.currentChunk;
+      return out;
+    };
 
     MessageChunksReader begin() {
-      return(MessageChunksReader(NULL));
-    }
+      return(MessageChunksReader(NULL)); // TODO
+    };
 
     MessageChunksReader end() {
-      return(MessageChunksReader(NULL));
-    }
+      return(MessageChunksReader(NULL)); // TODO
+    };
   };
 }
 
