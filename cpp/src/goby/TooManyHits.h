@@ -33,7 +33,7 @@ namespace goby {
   // Instantiate classes map<unsigned, unsigned>
   // This does not create an object. It only forces the generation of all
   // of the members of classes vector<unsigned> and vector<char>. It exports
-  // them from the DLL and imports them unsignedo the .exe file.
+  // them from the DLL and imports them into the .exe file.
   // LIBGOBY_EXPIMP_TEMPLATE template class LIBGOBY_EXPORT std::map<unsigned, unsigned>;
 
   class LIBGOBY_EXPORT TooManyHits {
