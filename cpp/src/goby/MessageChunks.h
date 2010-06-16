@@ -33,8 +33,11 @@
 namespace goby {
 #define GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH 8    // length of the delimiter tag (in bytes)
 
+  // details of an individual chunk of protocol buffer messages
   struct MessageChunk {
+    // the position within the stream
     std::streampos position;
+    // the length of the chunk
     size_t length;
   };
 
@@ -45,14 +48,14 @@ namespace goby {
     // the underlying stream
     std::ifstream *stream;
 
-    // positions of compressed alignment collections within the entries file
+    // positions of compressed alignment collections within the goby chunked file
     std::vector<MessageChunk> chunks;
 
-    // index of current chunk
-    unsigned currentChunk;
+    // the current chunk details
+    std::vector<MessageChunk>::const_iterator chunkIterator;
 
     // the current processed chunk
-    T current;
+    T currentChunk;
 
     // Java DataInput.readInt()
     static int readInt(std::istream &stream) {
@@ -67,8 +70,6 @@ namespace goby {
   public:
     MessageChunksReader(const std::string& filename) {
       this->filename = filename;
-      this->currentChunk = 0;
-      this->current = T::default_instance();
       this->stream = new std::ifstream(filename.c_str(), std::ios::in | std::ios::binary);
 
       int chunkNumber = 0;
@@ -95,6 +96,10 @@ namespace goby {
           break;
         }
       }
+
+      this->chunkIterator = chunks.begin();
+      this->currentChunk = T::default_instance();
+
     };
 
     virtual ~MessageChunksReader(void) {
@@ -106,44 +111,47 @@ namespace goby {
 
     // Prefix increment operator
     MessageChunksReader& operator++() {
-      std::cout << "Prefix operator++() " << this->currentChunk << std::endl;
-      ++currentChunk;
+      std::cout << "Prefix operator++() " << std::endl;
+      ++chunkIterator;
       return *this;
     };
 
     // Postfix increment operator
     MessageChunksReader& operator++(int) {
-      std::cout << "Postfix operator++(int) " << this->currentChunk << std::endl;
-      currentChunk++;
+      std::cout << "Postfix operator++(int) " << std::endl;
+      chunkIterator++;
       return *this;
     };
 
     bool operator==(const MessageChunksReader& rhs) {
-      return currentChunk == rhs.currentChunk;  // TODO
+      return chunkIterator == rhs.chunkIterator;
     };
 
     bool operator!=(const MessageChunksReader& rhs) {
-      return currentChunk != rhs.currentChunk;  // TODO
+      return chunkIterator != rhs.chunkIterator;
     };
 
     T& operator*() {
 #if GOBY_DEBUG
-        std::cout << "chunk number is " << currentChunk << std::endl;
 #endif // GOBY_DEBUG
-      return current;
+      return currentChunk;
     };
 
     friend std::ostream &operator<<(std::ostream &out, const MessageChunksReader& reader) {
-      out << "ostream &operator<< " << reader.currentChunk;
+      out << "ostream &operator<< " << reader.chunkIterator->length;
       return out;
     };
 
     MessageChunksReader begin() {
-      return(MessageChunksReader(NULL)); // TODO
+      MessageChunksReader newReader = MessageChunksReader(this);
+      newReader.chunkIterator = newReader.chunks.begin();
+      return(newReader);
     };
 
     MessageChunksReader end() {
-      return(MessageChunksReader(NULL)); // TODO
+      MessageChunksReader newReader = MessageChunksReader(this);
+      newReader.chunkIterator = newReader.chunks.end();
+      return(newReader);
     };
   };
 }
