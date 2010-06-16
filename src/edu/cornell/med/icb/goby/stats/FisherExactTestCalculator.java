@@ -73,14 +73,12 @@ public class FisherExactTestCalculator extends StatisticCalculator {
         int totalCountInB = 0;
 
         for (final String sample : samplesA) {
-            final int sumOverlapCounts = differentialExpressionCalculator.getSumOverlapCounts(sample);
-            totalCountInA += sumOverlapCounts;
-            System.out.printf("sample %s sumOverlapCounts %d%n", sample, sumOverlapCounts);
+            totalCountInA += differentialExpressionCalculator.getSumOverlapCounts(sample);
+
         }
         for (final String sample : samplesB) {
-            final int sumOverlapCounts = differentialExpressionCalculator.getSumOverlapCounts(sample);
-            totalCountInB += sumOverlapCounts;
-            System.out.printf("sample %s sumOverlapCounts %d%n", sample, sumOverlapCounts);
+            totalCountInB += differentialExpressionCalculator.getSumOverlapCounts(sample);
+
         }
 
 
