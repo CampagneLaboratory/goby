@@ -79,12 +79,14 @@ public class Annotation implements Comparable<Annotation> {
     public int getEnd() {
         return segments.get(segments.size() - 1).getEnd();
     }
-
+    int length=-1;
     public int getLength() {
+        if (length!=-1) return length;
         int result = 0;
         for (final Segment segment : segments) {
             result += segment.getEnd() - segment.getStart() + 1;
         }
+        length=result;
         return result;
     }
 

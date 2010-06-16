@@ -19,20 +19,18 @@
 package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
+import edu.rit.mp.buf.SharedCharacterArrayBuf;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.*;
 import it.unimi.dsi.lang.MutableString;
 
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Fabien Campagne
@@ -49,7 +47,12 @@ public class DifferentialExpressionCalculator {
     private Object2DoubleMap<String> sampleProportions;
     private final IntArrayList lengths;
     private final Int2IntMap elementLabelToElementType;
-   
+    private Object2IntMap<String> sampleToSumCount;
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(BullardUpperQuartileNormalization.class);
+
 
     /**
      * Return the type of the element.
@@ -89,6 +92,8 @@ public class DifferentialExpressionCalculator {
         lengths = new IntArrayList();
         elementLabelToElementType = new Int2IntOpenHashMap();
         elementLabelToElementType.defaultReturnValue(-1);
+        sampleToSumCount = new Object2IntRBTreeMap<String>();
+        sampleToSumCount.defaultReturnValue(-1);
     }
 
     public double calculateNormalized(final int readCountInt, final int annotLength, final double normalizationFactor) {
@@ -148,10 +153,14 @@ public class DifferentialExpressionCalculator {
      * @param length       length of the element.
      */
     public synchronized void defineElementLength(final int elementIndex, final int length) {
-        if (lengths.size() <= elementIndex) {
-            lengths.size(elementIndex + 1);
+        if (lengths.size() == elementIndex) {
+            lengths.add(length);
+        } else {
+            if (lengths.size() < elementIndex) {
+                lengths.size(elementIndex + 1);
+            }
+            lengths.set(elementIndex, length);
         }
-        lengths.set(elementIndex, length);
     }
 
     public synchronized void associateSampleToGroup(final String sample, final String group) {
@@ -240,9 +249,13 @@ public class DifferentialExpressionCalculator {
             results = new DifferentialExpressionResults();
         }
         if (tester.installed()) {
-            assert !tester.canDo(group) : "The number of groups to compare is not supported by the specified calculator.";
-            tester.setResults(results);
-            return tester.evaluate(this, method, results, group);
+            if (tester.canDo(group)) {
+                tester.setResults(results);
+                return tester.evaluate(this, method, results, group);
+            } else {
+                LOG.warn("The number of groups to compare is not supported by the calculator ");
+                return results;
+            }
         } else {
             return results;
         }
@@ -322,8 +335,17 @@ public class DifferentialExpressionCalculator {
 
     /**
      * Returns the sum of counts in a given sample.
+     *
+     * @param sample
+     * @return Returns the sum of counts in a given sample.
      */
-    public int getSumOverlapCounts(final String sample) {
+    public synchronized int getSumOverlapCounts(final String sample) {
+
+
+        int sumCountsCached = sampleToSumCount.getInt(sample);
+        if (sumCountsCached != -1) {
+            return sumCountsCached;
+        }
         int sumCounts = 0;
         final IntArrayList counts = sampleToCounts.get(sample);
         if (counts == null) {
@@ -332,6 +354,7 @@ public class DifferentialExpressionCalculator {
         for (final int count : counts) {
             sumCounts += count;
         }
+        sampleToSumCount.put(sample, sumCounts);
         return sumCounts;
     }
 

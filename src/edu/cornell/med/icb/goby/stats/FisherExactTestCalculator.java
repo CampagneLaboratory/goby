@@ -45,10 +45,10 @@ public class FisherExactTestCalculator extends StatisticCalculator {
     }
 
     @Override
-   public DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
-                                        final NormalizationMethod method, final DifferentialExpressionResults results,
-                                        final DifferentialExpressionInfo info,
-                                        final String... group) {
+    public DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
+                                               final NormalizationMethod method, final DifferentialExpressionResults results,
+                                               final DifferentialExpressionInfo info,
+                                               final String... group) {
 
         final String groupA = group[0];
         final String groupB = group[1];
@@ -73,10 +73,14 @@ public class FisherExactTestCalculator extends StatisticCalculator {
         int totalCountInB = 0;
 
         for (final String sample : samplesA) {
-            totalCountInA += differentialExpressionCalculator.getSumOverlapCounts(sample);
+            final int sumOverlapCounts = differentialExpressionCalculator.getSumOverlapCounts(sample);
+            totalCountInA += sumOverlapCounts;
+            System.out.printf("sample %s sumOverlapCounts %d%n", sample, sumOverlapCounts);
         }
         for (final String sample : samplesB) {
-            totalCountInB += differentialExpressionCalculator.getSumOverlapCounts(sample);
+            final int sumOverlapCounts = differentialExpressionCalculator.getSumOverlapCounts(sample);
+            totalCountInB += sumOverlapCounts;
+            System.out.printf("sample %s sumOverlapCounts %d%n", sample, sumOverlapCounts);
         }
 
 
