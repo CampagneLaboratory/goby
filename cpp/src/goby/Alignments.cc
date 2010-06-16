@@ -94,7 +94,7 @@ namespace goby {
 
     // the stream may not get all read in at once so we may need to copy in chunks
     void* header = NULL;
-    int headerSize = 0;
+    size_t headerSize = 0;
 
     const void* buffer;
     int bufferSize;

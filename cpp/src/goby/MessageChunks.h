@@ -27,6 +27,9 @@
 #include <iterator>
 #include <string>
 #include <vector>
+#include <google/protobuf/io/gzip_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+
 #include "common.h"
 #include "Alignments.pb.h"
 
@@ -131,9 +134,52 @@ namespace goby {
       return chunkIterator != rhs.chunkIterator;
     };
 
+    // return the parsed results for the current chunk
+    // the contract of the input iterator is that this is only done once
+    // so we uncompress at this time rather than during the increment
     T& operator*() {
-#if GOBY_DEBUG
-#endif // GOBY_DEBUG
+      // position the stream to the current chunk location
+      stream->seekg((*chunkIterator).position, std::ios::beg);
+
+      // read the compressed buffer into memory
+      const size_t compressedChunkLength = (*chunkIterator).length;
+      char *compressedChunk = new char[compressedChunkLength];
+      stream->read(compressedChunk, compressedChunkLength);
+      if (stream->bad()) {
+        std::cerr << "There was a problem reading raw data from " << filename << std::endl;
+      }
+      // uncompress the buffer so that it can be parsed
+      google::protobuf::io::ArrayInputStream rawChunkStream(compressedChunk, compressedChunkLength);
+      google::protobuf::io::GzipInputStream chunkStream(&rawChunkStream);
+
+      // the stream may not get all read in at once so we may need to copy in stages
+      void* uncompressedChunk = NULL;
+      size_t chunkSize = 0;
+
+      const void* buffer;
+      int bufferSize;
+      while (chunkStream.Next(&buffer, &bufferSize)) {
+        // store the end location of the chunk buffer
+        int index = chunkSize;
+
+        // resize the chunk buffer to fit the new data just read
+        chunkSize += bufferSize;
+        uncompressedChunk = (void *)realloc(uncompressedChunk, chunkSize);
+
+        // and append the new data over to the end of the header buffer
+        ::memcpy(reinterpret_cast<char*>(uncompressedChunk) + index, buffer, bufferSize);
+      }
+
+      // populate the current object from the uncompressed data
+      if (!currentChunk.ParseFromArray(uncompressedChunk, chunkSize)) {
+        std::cerr << "Failed to parse message chunk from " << filename << std::endl;
+      }
+
+      // free up the temporary buffers
+      ::free(uncompressedChunk);
+      ::free(compressedChunk);
+
+      // and retrun the processed chunk
       return currentChunk;
     };
 
