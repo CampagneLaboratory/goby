@@ -111,8 +111,11 @@ public class BullardUpperQuartileNormalization extends RpkmLikeNormalizationMeth
         for (final String sampleId : samplesToNormalize) {
             double adjustedFactor = normalizationFactors.get(sampleId);
             adjustedFactor *= adjustmentRatio;
-            normalizationFactors.put(sampleId, adjustedFactor);
-            LOG.info(String.format("normalization denominator %g for sample %s", adjustedFactor, sampleId));
+            // force normalization factor to be at least one (to prevent divisions by zero when counts are overall
+            // very small across all samples and the 75 percentile is zero.)
+            final double notZero = Math.max(1, adjustedFactor);
+            normalizationFactors.put(sampleId, notZero);
+            LOG.info(String.format("normalization denominator %g for sample %s", notZero, sampleId));
         }
 
     }

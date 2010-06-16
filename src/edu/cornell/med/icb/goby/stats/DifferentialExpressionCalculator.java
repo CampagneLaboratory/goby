@@ -349,10 +349,10 @@ public class DifferentialExpressionCalculator {
     public synchronized int getSumOverlapCounts(final String sample) {
 
 
-   /*     int sumCountsCached = sampleToSumCount.getInt(sample);
+        int sumCountsCached = sampleToSumCount.getInt(sample);
         if (sumCountsCached != -1) {
             return sumCountsCached;
-        } */
+        }
         int sumCounts = 0;
         final IntArrayList counts = sampleToCounts.get(sample);
         if (counts == null) {
@@ -361,7 +361,7 @@ public class DifferentialExpressionCalculator {
         for (final int count : counts) {
             sumCounts += count;
         }
-      //  sampleToSumCount.put(sample, sumCounts);
+        sampleToSumCount.put(sample, sumCounts);
         return sumCounts;
     }
 
