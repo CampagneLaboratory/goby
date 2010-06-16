@@ -93,9 +93,11 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
         heptamerInfoFilename = jsapResult.getString("heptamer-info");
         mapFilename = jsapResult.getString("map");
         estimationMethod = jsapResult.getString("method");
+        colorSpace=jsapResult.getBoolean("color-space");
 
         return this;
     }
+    boolean colorSpace;
 
     enum WeightCalculationMethod {
         HEPTAMERS,
@@ -113,7 +115,9 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
 
         HeptamerInfo heptamers = null;
         try {
-            heptamers = HeptamerInfo.load(heptamerInfoFilename);
+           if (heptamerInfoFilename!=null) {
+               heptamers = HeptamerInfo.load(heptamerInfoFilename);
+           }
 
         } catch (ClassNotFoundException e) {
             System.err.println("Cannot load heptamer information from file " + heptamerInfoFilename);
@@ -128,42 +132,46 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
 
         switch (method) {
             case HEPTAMERS:
+                if (heptamers==null) {
+                    System.err.println("Heptamer info must be provided to estimate heptamer weights.");
+                    System.exit(0);
+                }
                 calculator = new HeptamerWeight(heptamers);
 
                 break;
             case G_PROPORTION: {
-                BaseProportionWeight calc = new BaseProportionWeight(heptamers);
+                BaseProportionWeight calc = new BaseProportionWeight(colorSpace);
                 calc.setBase('G');
                 calculator = calc;
                 break;
             }
 
             case C_PROPORTION: {
-                BaseProportionWeight calc = new BaseProportionWeight(heptamers);
+                BaseProportionWeight calc = new BaseProportionWeight(colorSpace);
                 calc.setBase('C');
                 calculator = calc;
                 break;
             }
             case A_PROPORTION: {
-                BaseProportionWeight calc = new BaseProportionWeight(heptamers);
+                BaseProportionWeight calc = new BaseProportionWeight(colorSpace);
                 calc.setBase('A');
                 calculator = calc;
                 break;
             }
             case T_PROPORTION: {
-                BaseProportionWeight calc = new BaseProportionWeight(heptamers);
+                BaseProportionWeight calc = new BaseProportionWeight(colorSpace);
                 calc.setBase('T');
                 calculator = calc;
                 break;
             }
             case GC_PROPORTION:
-                calculator = new GCProportionWeight(heptamers);
+                calculator = new GCProportionWeight(colorSpace);
                 break;
             case AT_PROPORTION:
-                calculator = new ATProportionWeight(heptamers);
+                calculator = new ATProportionWeight(colorSpace);
                 break;
             case ATGC_CORRECTION:
-                calculator = new ATGCCorrectionWeight(heptamers);
+                calculator = new ATGCCorrectionWeight(colorSpace);
                 break;
         }
 
@@ -171,7 +179,7 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
             // for each reads file:
             LOG.info("Now scanning " + inputFilename);
 
-            if (inputFilenames.length > 1) {
+            if (inputFilenames.length > 1 && mapFilename==null) {
                 // if we process more than one reads file, build the map filename dynamically for each input file.
                 mapFilename = FilenameUtils.removeExtension(inputFilename) + "." + calculator.id() + "-weights";
             }

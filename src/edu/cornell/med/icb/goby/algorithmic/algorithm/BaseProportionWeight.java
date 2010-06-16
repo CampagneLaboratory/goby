@@ -27,10 +27,11 @@ import it.unimi.dsi.lang.MutableString;
      *         Time: 5:19:54 PM
      */
     public class BaseProportionWeight implements WeightCalculator {
-        public BaseProportionWeight(HeptamerInfo heptamers) {
-            assert !heptamers.colorSpace : "base content is not implemented for color-space reads";
-
-        }
+        public BaseProportionWeight(boolean colorSpace) {
+            if (colorSpace) {
+                throw new UnsupportedOperationException("base content is not implemented for color-space reads");
+            }
+                   }
 
         public void setBase(char base) {
             this.base = base;

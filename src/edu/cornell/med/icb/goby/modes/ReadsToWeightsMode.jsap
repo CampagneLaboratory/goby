@@ -19,35 +19,33 @@
 <jsap>
     <parameters>
 
-         <flaggedOption>
+        <flaggedOption>
             <id>map</id>
             <shortFlag>o</shortFlag>
             <longFlag>map</longFlag>
             <required>false</required>
-             <defaults>
-                <string>read-index-to-heptamer-weights.bin</string>
-            </defaults>
-            <help>The filename where a map will be written that associates individual read indices (in the input) to weight. Such maps can for instance be used by alignment to transcript count to produce reweighted transcript counts. When several reads files are processed, the map filename is build dynamically from by removing the reads file extension and adding .hepmap</help>
+           <help>The filename where a map will be written that associates individual read indices (in the input) to weight. Such maps can for instance be used by alignment to transcript count to produce reweighted transcript counts. When several reads files are processed (of if argument is absent), the map filename is build dynamically from by removing the reads file extension and adding .id-weights, where id designates the type of weight estimation method used.</help>
         </flaggedOption>
-         <flaggedOption>
+        <flaggedOption>
             <id>heptamer-info</id>
             <shortFlag>e</shortFlag>
             <longFlag>heptamer-info</longFlag>
-            <required>true</required>
-             <defaults>
+            <required>false</required>
+            <defaults>
                 <string>heptamer-info.bin</string>
             </defaults>
-            <help>The name of the file that contains heptamer information.</help>
+            <help>The name of the file that contains heptamer information. Required when the heptamer weight method is used.
+            </help>
         </flaggedOption>
-         <flaggedOption>
+        <flaggedOption>
             <id>method</id>
 
             <longFlag>method</longFlag>
             <required>false</required>
-             <defaults>
+            <defaults>
                 <string>heptamers</string>
             </defaults>
-            <help>The weight estimation method.</help>
+            <help>The weight estimation method. Valid methods include GC, AT, A, T, C, G.</help>
         </flaggedOption>
         <unflaggedOption>
             <id>input</id>
@@ -55,7 +53,11 @@
             <greedy>true</greedy>
             <help>The basenames of the input alignments to concatenate.</help>
         </unflaggedOption>
-       
+        <switch>
+            <id>color-space</id>
+            <longFlag>color-space</longFlag>
+            <help>When this switch is provided, the reads are in color-space.</help>
+        </switch>
     </parameters>
 </jsap>
 

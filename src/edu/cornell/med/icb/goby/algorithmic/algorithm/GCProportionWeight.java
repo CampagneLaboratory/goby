@@ -29,10 +29,10 @@ import it.unimi.dsi.lang.MutableString;
 public class GCProportionWeight implements WeightCalculator {
 
 
-    public GCProportionWeight(HeptamerInfo heptamers) {
-        assert !heptamers.colorSpace : "GC content is not implemented for color-space reads";
-
-        
+    public GCProportionWeight(boolean colorSpace) {
+        if (colorSpace) {
+            throw new UnsupportedOperationException("GC content is not implemented for color-space reads");
+        }
     }
 
     public float weight(MutableString sequence) {

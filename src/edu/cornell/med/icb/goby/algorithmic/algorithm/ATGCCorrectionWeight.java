@@ -23,35 +23,35 @@ import it.unimi.dsi.lang.MutableString;
 
 /**
  * @author Fabien Campagne
-     *         Date: May 21, 2010
-     *         Time: 5:19:54 PM
-     */
-    public class ATGCCorrectionWeight implements WeightCalculator {
+ *         Date: May 21, 2010
+ *         Time: 5:19:54 PM
+ */
+public class ATGCCorrectionWeight implements WeightCalculator {
 
-        public ATGCCorrectionWeight(HeptamerInfo heptamers) {
-            assert !heptamers.colorSpace : "GC content is not implemented for color-space reads";
-
-
-        }
-
-
-        public float weight(MutableString sequence) {
-
-            float GC = 0;
-            float AT = 0;
-
-            for (int i = 0; i < sequence.length(); i++) {
-
-                final char c = sequence.charAt(i);
-                GC += (c == 'G' || c == 'C') ? 1 : 0;
-                AT += (c == 'A' || c == 'T') ? 1 : 0;
-            }
-
-            float normGC = GC / (AT + GC);
-            return (10.4436f -8.266972f * normGC);
-        }
-
-        public String id() {
-            return "atgc";
+    public ATGCCorrectionWeight(boolean colorSpace) {
+        if (colorSpace) {
+            throw new UnsupportedOperationException("ATGC content is not implemented for color-space reads");
         }
     }
+
+
+    public float weight(MutableString sequence) {
+
+        float GC = 0;
+        float AT = 0;
+
+        for (int i = 0; i < sequence.length(); i++) {
+
+            final char c = sequence.charAt(i);
+            GC += (c == 'G' || c == 'C') ? 1 : 0;
+            AT += (c == 'A' || c == 'T') ? 1 : 0;
+        }
+
+        float normGC = GC / (AT + GC);
+        return (10.4436f - 8.266972f * normGC);
+    }
+
+    public String id() {
+        return "atgc";
+    }
+}

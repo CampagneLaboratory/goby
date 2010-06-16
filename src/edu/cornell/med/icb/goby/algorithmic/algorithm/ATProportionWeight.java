@@ -27,9 +27,10 @@ import it.unimi.dsi.lang.MutableString;
      *         Time: 5:19:54 PM
      */
     public class ATProportionWeight implements WeightCalculator {
-        public ATProportionWeight(HeptamerInfo heptamers) {
-            assert !heptamers.colorSpace : "GC content is not implemented for color-space reads";
-
+        public ATProportionWeight(boolean colorSpace) {
+            if (colorSpace) {
+                throw new UnsupportedOperationException("AT content is not implemented for color-space reads");
+            }
         }
 
         public float weight(MutableString sequence) {
