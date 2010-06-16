@@ -188,7 +188,7 @@ public class DifferentialExpressionAnalysis {
 
                 if (eval("group-averages"))
                     results = deCalculator.compare(results, method, new AverageCalculator(), groupComparison);
-                results = deCalculator.compare(results, method, new Log2RPKMCalculator(), groupComparison);
+                
                 ttestflag = checkTtest();
                 if (ttestflag) {
                     if (eval("t-test"))

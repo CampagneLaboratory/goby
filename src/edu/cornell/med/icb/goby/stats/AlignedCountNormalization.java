@@ -55,7 +55,7 @@ public class AlignedCountNormalization extends RpkmLikeNormalizationMethod {
      */
     public void normalize(final DifferentialExpressionCalculator calculator, final String... groups) {
         // nothing to do: deCalculator already stored the normalization factor.
-
+        calculator.resetSumOverlapCounts();
         final ObjectSet<String> samplesToNormalize = new ObjectOpenHashSet<String>();
         for (final String group : groups) {
             samplesToNormalize.addAll(calculator.getSamples(group));

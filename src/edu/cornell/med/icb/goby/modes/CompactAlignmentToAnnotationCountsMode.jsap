@@ -152,7 +152,7 @@
                 <classname>StringStringParser</classname>
             </stringParser>
              <defaults>
-                <string>fold-change,fold-change-magnitude,log2-fold-change,group-averages,t-test,fisher,chi-square,Bonferroni,BH</string>
+                <string>fold-change,fold-change-magnitude,log2-fold-change,group-averages,t-test,fisher,fisher-r,chi-square,Bonferroni,BH</string>
             </defaults>
                    <help>Name the statistics to evaluate.</help>
         </flaggedOption>

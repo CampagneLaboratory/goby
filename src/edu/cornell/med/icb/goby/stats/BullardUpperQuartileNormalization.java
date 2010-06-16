@@ -68,6 +68,7 @@ public class BullardUpperQuartileNormalization extends RpkmLikeNormalizationMeth
      * {@inheritDoc}
      */
     public void normalize(final DifferentialExpressionCalculator calculator, final String... groups) {
+        calculator.resetSumOverlapCounts();
         final ObjectSet<String> samplesToNormalize = new ObjectOpenHashSet<String>();
         for (final String group : groups) {
             samplesToNormalize.addAll(calculator.getSamples(group));
@@ -104,7 +105,7 @@ public class BullardUpperQuartileNormalization extends RpkmLikeNormalizationMeth
             sumFactors += normalizationFactors.get(sampleId);
         }
 
-        // adjust the normalization factors by a constant proportion (adjustmentRatio), to bring that their sum
+        // adjust the normalization factors by a constant proportion (adjustmentRatio), to bring their sum
         // to equal the sum of counts over all samples (sumOverSamples)
         final double adjustmentRatio = ((double) sumOverSamples) / sumFactors;
         for (final String sampleId : samplesToNormalize) {
