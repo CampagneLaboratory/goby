@@ -37,14 +37,14 @@ namespace goby {
 #define GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH 8    // length of the delimiter tag (in bytes)
 
   // details of an individual chunk of protocol buffer messages
-  struct MessageChunk {
+  struct MessageChunkInfo {
     // the position within the stream
     std::streampos position;
     // the length of the chunk
     size_t length;
   };
 
-  template <class T> class LIBGOBY_EXPORT MessageChunksReader : public std::iterator<std::input_iterator_tag, T> {
+  template <typename T> class LIBGOBY_EXPORT MessageChunksReader : public std::iterator<std::input_iterator_tag, T> {
     // the name of the chunked file
     std::string filename;
 
@@ -52,13 +52,60 @@ namespace goby {
     std::ifstream *stream;
 
     // positions of compressed alignment collections within the goby chunked file
-    std::vector<MessageChunk> chunks;
+    std::vector<MessageChunkInfo> chunks;
 
     // the current chunk details
-    std::vector<MessageChunk>::const_iterator chunkIterator;
+    std::vector<MessageChunkInfo>::const_iterator chunkIterator;
 
     // the current processed chunk
     T currentChunk;
+
+        // populate T with the data from the given chunk
+    T populateChunk(T& chunk, const MessageChunkInfo& chunkInfo) {
+            // position the stream to the current chunk location
+      stream->seekg(chunkInfo.position, std::ios::beg);
+
+      // read the compressed buffer into memory
+      const size_t compressedChunkLength = chunkInfo.length;
+      char *compressedChunk = new char[compressedChunkLength];
+      stream->read(compressedChunk, compressedChunkLength);
+      if (stream->bad()) {
+        std::cerr << "There was a problem reading raw data from " << filename << std::endl;
+      }
+      // uncompress the buffer so that it can be parsed
+      google::protobuf::io::ArrayInputStream rawChunkStream(compressedChunk, compressedChunkLength);
+      google::protobuf::io::GzipInputStream chunkStream(&rawChunkStream);
+
+      // the stream may not get all read in at once so we may need to copy in stages
+      void* uncompressedChunk = NULL;
+      size_t chunkSize = 0;
+
+      const void* buffer;
+      int bufferSize;
+      while (chunkStream.Next(&buffer, &bufferSize)) {
+        // store the end location of the chunk buffer
+        int index = chunkSize;
+
+        // resize the chunk buffer to fit the new data just read
+        chunkSize += bufferSize;
+        uncompressedChunk = (void *)realloc(uncompressedChunk, chunkSize);
+
+        // and append the new data over to the end of the header buffer
+        ::memcpy(reinterpret_cast<char*>(uncompressedChunk) + index, buffer, bufferSize);
+      }
+
+      // populate the current object from the uncompressed data
+      if (!chunk.ParseFromArray(uncompressedChunk, chunkSize)) {
+        std::cerr << "Failed to parse message chunk from " << filename << std::endl;
+      }
+
+      // free up the temporary buffers
+      ::free(uncompressedChunk);
+      ::free(compressedChunk);
+
+      // and retrun the processed chunk
+      return chunk;
+    };
 
     // Java DataInput.readInt()
     static int readInt(std::istream &stream) {
@@ -90,10 +137,10 @@ namespace goby {
         // the last chunk has a size of zero bytes
         if (!stream->eof() && size != 0) {
           const std::streampos position = stream->tellg();
-          MessageChunk chunk;
-          chunk.position = position;
-          chunk.length = size;
-          chunks.push_back(chunk);
+          MessageChunkInfo chunkInfo;
+          chunkInfo.position = position;
+          chunkInfo.length = size;
+          chunks.push_back(chunkInfo);
           stream->seekg(size, std::ios::cur);
         } else {
           break;
@@ -102,7 +149,6 @@ namespace goby {
 
       this->chunkIterator = chunks.begin();
       this->currentChunk = T::default_instance();
-
     };
 
     virtual ~MessageChunksReader(void) {
@@ -111,7 +157,6 @@ namespace goby {
     };
 
     // TODO MessageChunksReader(const MessageChunksReader& reader);
-
     // Prefix increment operator
     MessageChunksReader& operator++() {
       std::cout << "Prefix operator++() " << std::endl;
@@ -126,61 +171,17 @@ namespace goby {
       return *this;
     };
 
-    bool operator==(const MessageChunksReader& rhs) {
-      return chunkIterator == rhs.chunkIterator;
-    };
-
-    bool operator!=(const MessageChunksReader& rhs) {
-      return chunkIterator != rhs.chunkIterator;
-    };
-
     // return the parsed results for the current chunk
     // the contract of the input iterator is that this is only done once
     // so we uncompress at this time rather than during the increment
-    T& operator*() {
-      // position the stream to the current chunk location
-      stream->seekg((*chunkIterator).position, std::ios::beg);
-
-      // read the compressed buffer into memory
-      const size_t compressedChunkLength = (*chunkIterator).length;
-      char *compressedChunk = new char[compressedChunkLength];
-      stream->read(compressedChunk, compressedChunkLength);
-      if (stream->bad()) {
-        std::cerr << "There was a problem reading raw data from " << filename << std::endl;
-      }
-      // uncompress the buffer so that it can be parsed
-      google::protobuf::io::ArrayInputStream rawChunkStream(compressedChunk, compressedChunkLength);
-      google::protobuf::io::GzipInputStream chunkStream(&rawChunkStream);
-
-      // the stream may not get all read in at once so we may need to copy in stages
-      void* uncompressedChunk = NULL;
-      size_t chunkSize = 0;
-
-      const void* buffer;
-      int bufferSize;
-      while (chunkStream.Next(&buffer, &bufferSize)) {
-        // store the end location of the chunk buffer
-        int index = chunkSize;
-
-        // resize the chunk buffer to fit the new data just read
-        chunkSize += bufferSize;
-        uncompressedChunk = (void *)realloc(uncompressedChunk, chunkSize);
-
-        // and append the new data over to the end of the header buffer
-        ::memcpy(reinterpret_cast<char*>(uncompressedChunk) + index, buffer, bufferSize);
-      }
-
-      // populate the current object from the uncompressed data
-      if (!currentChunk.ParseFromArray(uncompressedChunk, chunkSize)) {
-        std::cerr << "Failed to parse message chunk from " << filename << std::endl;
-      }
-
-      // free up the temporary buffers
-      ::free(uncompressedChunk);
-      ::free(compressedChunk);
-
-      // and retrun the processed chunk
+    const T& operator*() {
+      populateChunk(currentChunk, *chunkIterator);
       return currentChunk;
+    };
+
+    T* const operator->() {
+      populateChunk(currentChunk, *chunkIterator);
+      return &currentChunk;
     };
 
     friend std::ostream &operator<<(std::ostream &out, const MessageChunksReader& reader) {
@@ -200,6 +201,28 @@ namespace goby {
       return(newReader);
     };
   };
+
+  template <typename T> inline bool operator==(MessageChunksReader<T> const& lhs, MessageChunksReader<T> const& rhs) {
+    return lhs.chunkIterator == rhs.chunkIterator;
+  };
+
+  template <typename T> inline bool operator!=(MessageChunksReader<T> const& lhs, MessageChunksReader<T> const& rhs) {
+    return lhs.chunkIterator != rhs.chunkIterator;
+  };
+
+  // Prefix increment operator
+  template <typename T> MessageChunksReader<T>& operator++(MessageChunksReader<T> const& reader) {
+    std::cout << "Prefix operator++() " << std::endl;
+    ++reader;
+    return *reader;
+   };
+
+   // Postfix increment operator
+   template <typename T> MessageChunksReader<T>& operator++(MessageChunksReader<T> const& reader, int) {
+     std::cout << "Postfix operator++(int) " << std::endl;
+     reader++;
+     return *reader;
+   };
 }
 
 #endif // GOBY_MESSAGE_CHUNKS_H
