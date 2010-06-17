@@ -59,18 +59,21 @@ public abstract class AbstractCommandLineMode {
 
     /**
      * Returns the mode name defined by subclasses.
+     *
      * @return The name of the mode
      */
     public abstract String getModeName();
 
     /**
      * Returns the mode description defined by subclasses.
+     *
      * @return A description of the mode
      */
     public abstract String getModeDescription();
 
     /**
      * Returns true when the id represents a help option.
+     *
      * @param id The id to check
      * @return true if the id is a known help option.
      */
@@ -104,6 +107,7 @@ public abstract class AbstractCommandLineMode {
     /**
      * Print the usage for a mode in the format appropriate for a
      * <a href="http://www.wikimedia.org/">Wikimedia</a> table.
+     *
      * @param jsap The parameters for the mode
      */
     public void printUsageAsWikiTable(final JSAP jsap) {
@@ -158,6 +162,13 @@ public abstract class AbstractCommandLineMode {
                 }
                 stream.println("| " + BooleanUtils.toStringYesNo(required));
                 stream.println("| " + parameter.getHelp());
+                if (parameter.getDefault() != null) {
+                    stream.print("Default value: ");
+                    for (String defaultValue : parameter.getDefault()) {
+                        stream.print(" ");
+                        stream.print(defaultValue);
+                    }
+                }
                 stream.println();
             }
         }
@@ -168,6 +179,7 @@ public abstract class AbstractCommandLineMode {
 
     /**
      * Print the usage for a mode in the format appropriate for a table in HTML.
+     *
      * @param jsap The parameters for the mode
      */
     public void printUsageAsHtmlTable(final JSAP jsap) {
@@ -228,6 +240,13 @@ public abstract class AbstractCommandLineMode {
                 final String htmlHelpString = StringEscapeUtils.escapeHtml(parameter.getHelp());
                 // and also convert "-" to the hyphen character code
                 writer.print(StringUtils.replace(htmlHelpString, "-", "&#45;"));
+                 if (parameter.getDefault() != null) {
+                    writer.print(" Default value: ");
+                    for (String defaultValue : parameter.getDefault()) {
+                        writer.print(" ");
+                        writer.print(StringUtils.replace(defaultValue, "-", "&#45;"));
+                    }
+                }
                 writer.println("</td>");
                 writer.println("</tr>");
             }
@@ -242,7 +261,7 @@ public abstract class AbstractCommandLineMode {
      * Load JSAP from resource with no modifications to help / defaults.
      *
      * @return the configured JSAP object
-     * @throws IOException error reading or configuring
+     * @throws IOException   error reading or configuring
      * @throws JSAPException error reading or configuring
      */
     public JSAP loadJsapFromResource() throws IOException, JSAPException {
@@ -255,7 +274,7 @@ public abstract class AbstractCommandLineMode {
      *
      * @param helpValues a map of values to replace in the jsap help with other values
      * @return the configured JSAP object
-     * @throws IOException error reading or configuring
+     * @throws IOException   error reading or configuring
      * @throws JSAPException error reading or configuring
      */
     @SuppressWarnings("unchecked")
@@ -344,7 +363,7 @@ public abstract class AbstractCommandLineMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws IOException error configuring
+     * @throws IOException   error configuring
      * @throws JSAPException error configuring
      */
     public abstract AbstractCommandLineMode configure(final String[] args)
@@ -360,14 +379,14 @@ public abstract class AbstractCommandLineMode {
     /**
      * Parse the JSAP arguments defined for the mode. Different arguments can be defined for
      * each mode.
-     * @see #loadJsapFromResource()
-     * @see #loadJsapFromResource(java.util.Map)
      *
-     * @param args command line arguments.
+     * @param args       command line arguments.
      * @param helpValues A map of option names to help strings
      * @return Parsed arguments.
-     * @throws IOException if there was a problem configuring the parser
+     * @throws IOException   if there was a problem configuring the parser
      * @throws JSAPException if there was a problem parsing the args
+     * @see #loadJsapFromResource()
+     * @see #loadJsapFromResource(java.util.Map)
      */
     protected JSAPResult parseJsapArguments(final String[] args, final Map<String, String> helpValues)
             throws IOException, JSAPException {
@@ -380,13 +399,13 @@ public abstract class AbstractCommandLineMode {
     /**
      * Parse the JSAP arguments defined for the mode. Different arguments can be defined for
      * each mode.
-     * @see #loadJsapFromResource()
-     * @see #loadJsapFromResource(java.util.Map)
      *
      * @param args command line arguments.
      * @return Parsed arguments.
-     * @throws IOException if there was a problem parsing the help text
+     * @throws IOException   if there was a problem parsing the help text
      * @throws JSAPException if there was a problem parsing the args
+     * @see #loadJsapFromResource()
+     * @see #loadJsapFromResource(java.util.Map)
      */
     protected JSAPResult parseJsapArguments(final String[] args) throws IOException, JSAPException {
         final JSAP jsap = loadJsapFromResource();
@@ -399,7 +418,8 @@ public abstract class AbstractCommandLineMode {
      * Print out specific error messages describing the problems
      * with the command line, THEN print usage, THEN print full
      * help.  This is called "beating the user with a clue stick."
-     * @param jsap The argument parser
+     *
+     * @param jsap       The argument parser
      * @param jsapResult The results of the parse
      */
     private void abortOnError(final JSAP jsap, final JSAPResult jsapResult) {

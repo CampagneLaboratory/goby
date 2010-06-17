@@ -39,13 +39,12 @@
         </flaggedOption>
         <flaggedOption>
             <id>method</id>
-
             <longFlag>method</longFlag>
             <required>false</required>
             <defaults>
                 <string>heptamers</string>
             </defaults>
-            <help>The weight estimation method. Valid methods include GC, AT, A, T, C, G.</help>
+            <help>The weight estimation method. Valid methods include heptamers, GC, AT, A, T, C, G.</help>
         </flaggedOption>
         <unflaggedOption>
             <id>input</id>

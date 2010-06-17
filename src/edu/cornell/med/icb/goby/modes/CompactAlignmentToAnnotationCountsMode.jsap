@@ -86,7 +86,7 @@
               <defaults>
                 <string>aligned-count,bullard-upper-quartile</string>
             </defaults>
-            <help>comma separated list of the normalization methods to apply</help>
+            <help>Comma separated list of the normalization methods to apply. Method currently supported include (AC) normalization by aligned sample count, or (BUQ) Bullard Upper Quantile normalization. By default both options are evaluated.</help>
          </flaggedOption>
         <switch>
             <id>parallel</id>
