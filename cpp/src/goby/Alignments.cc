@@ -30,7 +30,14 @@
 #include <google/protobuf/io/gzip_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
+#include "common.h"
 #include "Alignments.h"
+
+#ifdef _MSC_VER
+// Disable Microsoft deprecation warnings for POSIX functions called from this class (open, close)
+#pragma warning(push)
+#pragma warning(disable:4996)
+#endif
 
 using namespace std;
 
@@ -173,4 +180,8 @@ namespace goby {
     gzipHeaderStream.Close();
     // TODO? ::close(fd);
   }
+
+#ifdef _MSC_VER
+#pragma warning(pop)  // Restores the warning state.
+#endif
 }
