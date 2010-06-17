@@ -36,13 +36,22 @@
 namespace goby {
 #define GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH 8    // length of the delimiter tag (in bytes)
 
+#if defined(_MSC_VER)
+  template class LIBGOBY_EXPORT std::fpos<_Mbstatet>;
+#endif
+
   // details of an individual chunk of protocol buffer messages
-  struct MessageChunkInfo {
+  struct LIBGOBY_EXPORT MessageChunkInfo {
     // the position within the stream
     std::streampos position;
     // the length of the chunk
     size_t length;
   };
+
+#if defined(_MSC_VER)
+  template class LIBGOBY_EXPORT std::allocator<MessageChunkInfo>;
+  template class LIBGOBY_EXPORT std::vector<MessageChunkInfo, std::allocator<MessageChunkInfo>>;
+#endif
 
   template <typename T> class LIBGOBY_EXPORT MessageChunksReader : public std::iterator<std::input_iterator_tag, T> {
     // the name of the chunked file
@@ -169,6 +178,14 @@ namespace goby {
       std::cout << "Postfix operator++(int) " << std::endl;
       chunkIterator++;
       return *this;
+    };
+
+    bool operator==(const MessageChunksReader<T>& rhs) {
+      return chunkIterator == rhs.chunkIterator;
+    };
+
+    bool operator!=(const MessageChunksReader<T>& rhs) {
+      return chunkIterator != rhs.chunkIterator;
     };
 
     // return the parsed results for the current chunk
