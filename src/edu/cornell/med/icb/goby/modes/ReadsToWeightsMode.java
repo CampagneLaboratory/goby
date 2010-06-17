@@ -93,21 +93,22 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
         heptamerInfoFilename = jsapResult.getString("heptamer-info");
         mapFilename = jsapResult.getString("map");
         estimationMethod = jsapResult.getString("method");
-        colorSpace=jsapResult.getBoolean("color-space");
+        colorSpace = jsapResult.getBoolean("color-space");
 
         return this;
     }
+
     boolean colorSpace;
 
     enum WeightCalculationMethod {
         HEPTAMERS,
-        G_PROPORTION,
-        C_PROPORTION,
-        A_PROPORTION,
-        T_PROPORTION,
-        GC_PROPORTION,
-        AT_PROPORTION,
-        ATGC_CORRECTION
+        G,
+        C,
+        A,
+        T,
+        GC,
+        AT,
+        ATGC
     }
 
     @Override
@@ -115,9 +116,9 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
 
         HeptamerInfo heptamers = null;
         try {
-           if (heptamerInfoFilename!=null) {
-               heptamers = HeptamerInfo.load(heptamerInfoFilename);
-           }
+            if (heptamerInfoFilename != null) {
+                heptamers = HeptamerInfo.load(heptamerInfoFilename);
+            }
 
         } catch (ClassNotFoundException e) {
             System.err.println("Cannot load heptamer information from file " + heptamerInfoFilename);
@@ -128,49 +129,56 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
         progress.start();
         progress.displayFreeMemory = true;
         WeightCalculator calculator = null;
-        WeightCalculationMethod method = WeightCalculationMethod.valueOf(estimationMethod.toUpperCase());
+        WeightCalculationMethod method = null;
+        try {
+            method = WeightCalculationMethod.valueOf(estimationMethod.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            System.err.println("The estimation method entered is not valid. Valid methods include " +
+                    "heptamers, GC, AT, A, T, C, G ");
+            System.exit(1);
+        }
 
         switch (method) {
             case HEPTAMERS:
-                if (heptamers==null) {
+                if (heptamers == null) {
                     System.err.println("Heptamer info must be provided to estimate heptamer weights.");
                     System.exit(0);
                 }
                 calculator = new HeptamerWeight(heptamers);
 
                 break;
-            case G_PROPORTION: {
+            case G: {
                 BaseProportionWeight calc = new BaseProportionWeight(colorSpace);
                 calc.setBase('G');
                 calculator = calc;
                 break;
             }
 
-            case C_PROPORTION: {
+            case C: {
                 BaseProportionWeight calc = new BaseProportionWeight(colorSpace);
                 calc.setBase('C');
                 calculator = calc;
                 break;
             }
-            case A_PROPORTION: {
+            case A: {
                 BaseProportionWeight calc = new BaseProportionWeight(colorSpace);
                 calc.setBase('A');
                 calculator = calc;
                 break;
             }
-            case T_PROPORTION: {
+            case T: {
                 BaseProportionWeight calc = new BaseProportionWeight(colorSpace);
                 calc.setBase('T');
                 calculator = calc;
                 break;
             }
-            case GC_PROPORTION:
+            case GC:
                 calculator = new GCProportionWeight(colorSpace);
                 break;
-            case AT_PROPORTION:
+            case AT:
                 calculator = new ATProportionWeight(colorSpace);
                 break;
-            case ATGC_CORRECTION:
+            case ATGC:
                 calculator = new ATGCCorrectionWeight(colorSpace);
                 break;
         }
@@ -179,8 +187,8 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
             // for each reads file:
             LOG.info("Now scanning " + inputFilename);
 
-            if (inputFilenames.length > 1 && mapFilename==null) {
-                // if we process more than one reads file, build the map filename dynamically for each input file.
+            if (inputFilenames.length >= 1 && mapFilename == null) {
+                // if we process one or more reads file, build the map filename dynamically for each input file.
                 mapFilename = FilenameUtils.removeExtension(inputFilename) + "." + calculator.id() + "-weights";
             }
             ReadsReader reader = new ReadsReader(new FileInputStream(inputFilename));

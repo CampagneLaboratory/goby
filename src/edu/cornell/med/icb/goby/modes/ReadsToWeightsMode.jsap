@@ -31,9 +31,6 @@
             <shortFlag>e</shortFlag>
             <longFlag>heptamer-info</longFlag>
             <required>false</required>
-            <defaults>
-                <string>heptamer-info.bin</string>
-            </defaults>
             <help>The name of the file that contains heptamer information. Required when the heptamer weight method is used.
             </help>
         </flaggedOption>
