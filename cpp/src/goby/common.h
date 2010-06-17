@@ -22,6 +22,7 @@
 #define GOBY_COMMON_H
 
 #include <fcntl.h>
+#include <string>
 
 namespace goby {
 
@@ -35,6 +36,9 @@ namespace goby {
     #define LIBGOBY_EXPORT __declspec(dllimport)
     #define LIBGOBY_EXPIMP_TEMPLATE extern
   #endif
+
+  template class LIBGOBY_EXPORT std::allocator<char>;
+  template class LIBGOBY_EXPORT std::basic_string<char>;
 #else
   #define LIBGOBY_EXPORT
 #endif
