@@ -174,9 +174,16 @@ public class DifferentialExpressionAnalysis {
         DifferentialExpressionResults results = null;
         if (doComparison) {
             results = null;
-
+            LOG.info("Evaluating statistics..");
             for (final NormalizationMethod method : normalizationMethods) {
                 method.normalize(deCalculator, groupComparison);
+
+                // evaluate per-sample statistics:
+
+                if (eval("samples"))
+                    results = deCalculator.compare(results, method, new SampleCountCalculator());
+
+
                 // evaluate differences between groups:
                 if (eval("fold-change"))
                     results = deCalculator.compare(results, method, new FoldChangeCalculator(), groupComparison);
@@ -188,7 +195,7 @@ public class DifferentialExpressionAnalysis {
 
                 if (eval("group-averages"))
                     results = deCalculator.compare(results, method, new AverageCalculator(), groupComparison);
-                
+
                 ttestflag = checkTtest();
                 if (ttestflag) {
                     if (eval("t-test"))

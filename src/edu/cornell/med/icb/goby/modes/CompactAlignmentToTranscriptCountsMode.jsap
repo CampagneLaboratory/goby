@@ -32,19 +32,7 @@
             <required>false</required>
             <help>The basename of the output counts.</help>
         </flaggedOption>
-       <flaggedOption>
-             <id>use-weights</id>
-             <shortFlag>w</shortFlag>
-             <longFlag>use-weights</longFlag>
-             <required>false</required>
-             <stringParser>
-                <classname>BooleanStringParser</classname>
-             </stringParser>
-             <defaults>
-                <string>false</string>
-             </defaults>
-             <help>Whether weights should be used to adjust read counts. When the flag is true, this mode will try to load a weights file associated with each input basename ('basename'.weight). If found, the weights are used to adjust the read count for annotations.</help>
-        </flaggedOption>
+
         <flaggedOption>
             <id>groups</id>
             <shortFlag>g</shortFlag>
@@ -62,12 +50,12 @@
             <id>normalization-methods</id>
             <longFlag>normalization-methods</longFlag>
             <required>false</required>
-            <defaults>
+              <defaults>
                 <string>aligned-count,bullard-upper-quartile</string>
             </defaults>
-            <help>Comma separated list of the normalization methods to apply</help>
-        </flaggedOption>
-        <flaggedOption>
+            <help>Comma separated list of the normalization methods to apply. Method currently supported include (AC=aligned-count) normalization by aligned sample count, or (BUQ=bullard-upper-quartile) Bullard Upper Quantile normalization. By default both options are evaluated. This option is available since goby 1.5.</help>
+         </flaggedOption>
+                <flaggedOption>
             <id>stats</id>
             <shortFlag>s</shortFlag>
             <longFlag>stats</longFlag>
@@ -78,6 +66,19 @@
             <help>The filename where statistics will be written (for group comparisons). These files are tab delimited.</help>
         </flaggedOption>
         <flaggedOption>
+             <id>use-weights</id>
+             <shortFlag>w</shortFlag>
+             <longFlag>use-weights</longFlag>
+             <required>false</required>
+             <stringParser>
+                <classname>BooleanStringParser</classname>
+             </stringParser>
+             <defaults>
+                <string>false</string>
+             </defaults>
+             <help>Whether weights should be used to adjust read counts. When the flag is true, this mode will try to load a weights file associated with each input basename ('basename'.weight). If found, the weights are used to adjust the read count for annotations. This option is available since Goby 1.7.</help>
+        </flaggedOption>
+        <flaggedOption>
              <id>eval</id>
              <shortFlag>t</shortFlag>
              <longFlag>eval</longFlag>
@@ -86,9 +87,9 @@
                 <classname>StringStringParser</classname>
             </stringParser>
              <defaults>
-                <string>fold-change,fold-change-magnitude,log2-fold-change,grou-averages,t-test,fisher,chi-square,Bonferroni,BH</string>
+                <string>samples,fold-change,fold-change-magnitude,log2-fold-change,group-averages,t-test,fisher-r,BH</string>
             </defaults>
-                   <help>Name the statistics to evaluate.</help>
+                   <help>Name the statistics to evaluate. The complete list of valid statistics names is "samples,fold-change,fold-change-magnitude,log2-fold-change,group-averages,t-test,fisher,fisher-r,chi-square,Bonferroni,BH". This option is available since Goby 1.7.</help>
         </flaggedOption>
     </parameters>
 </jsap>

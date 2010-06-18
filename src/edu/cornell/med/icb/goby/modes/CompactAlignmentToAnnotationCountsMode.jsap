@@ -79,15 +79,15 @@
             <required>false</required>
             <help>Compare annotation counts between groups of samples. The compare flag must be followed by group ids separated by slashes. For instance, if groups group-A and group-B have been defined (see --groups option), --compare group-A/group-B will evaluate statistical tests of different count representation between samples in groups A and B.</help>
         </flaggedOption>
-         <flaggedOption>
+        <flaggedOption>
             <id>normalization-methods</id>
             <longFlag>normalization-methods</longFlag>
             <required>false</required>
               <defaults>
                 <string>aligned-count,bullard-upper-quartile</string>
             </defaults>
-            <help>Comma separated list of the normalization methods to apply. Method currently supported include (AC) normalization by aligned sample count, or (BUQ) Bullard Upper Quantile normalization. By default both options are evaluated.</help>
-         </flaggedOption>
+            <help>Comma separated list of the normalization methods to apply. Method currently supported include (AC=aligned-count) normalization by aligned sample count, or (BUQ=bullard-upper-quartile) Bullard Upper Quantile normalization. By default both options are evaluated. This option is available since goby 1.5.</help>
+        </flaggedOption>
         <switch>
             <id>parallel</id>
             <longFlag>parallel</longFlag>
@@ -128,7 +128,7 @@
              <defaults>
                 <string>false</string>
             </defaults>
-                   <help>Whether weights should be used to adjust read counts. When the flag is set to a string 'id' other than false, this mode will try to load a weights file associated with each input basename ('basename'.'id'-weight). If found, the weights are used to adjust the read count for annotations.</help>
+                   <help>Whether weights should be used to adjust read counts. When the flag is set to a string 'id' other than false, this mode will try to load a weights file associated with each input basename ('basename'.'id'-weight). If found, the weights are used to adjust the read count for annotations. This option is available since Goby 1.7.</help>
         </flaggedOption>
 
         <flaggedOption>
@@ -141,9 +141,9 @@
              <defaults>
                 <string>false</string>
             </defaults>
-                   <help>When other than false, the identifier of a formula to reweight counts (requires use-weights gc). If false, no reweighting is done.</help>
+                   <help>When other than false, the identifier of a formula to reweight counts (requires use-weights gc). If false, no reweighting is done. This option is available since Goby 1.7.</help>
          </flaggedOption>
-         <flaggedOption>
+          <flaggedOption>
              <id>eval</id>
              <shortFlag>t</shortFlag>
              <longFlag>eval</longFlag>
@@ -152,9 +152,9 @@
                 <classname>StringStringParser</classname>
             </stringParser>
              <defaults>
-                <string>fold-change,fold-change-magnitude,log2-fold-change,group-averages,t-test,fisher,fisher-r,chi-square,Bonferroni,BH</string>
+                <string>samples,fold-change,fold-change-magnitude,log2-fold-change,group-averages,t-test,fisher-r,BH</string>
             </defaults>
-                   <help>Name the statistics to evaluate.</help>
+                   <help>Name the statistics to evaluate. The complete list of valid statistics names is "samples,fold-change,fold-change-magnitude,log2-fold-change,group-averages,t-test,fisher,fisher-r,chi-square,Bonferroni,BH". This option is available since Goby 1.7.</help>
         </flaggedOption>
     </parameters>
 </jsap>

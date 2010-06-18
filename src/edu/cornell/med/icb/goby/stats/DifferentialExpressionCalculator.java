@@ -52,6 +52,7 @@ public class DifferentialExpressionCalculator {
      * Used to log debug and informational messages.
      */
     private static final Log LOG = LogFactory.getLog(BullardUpperQuartileNormalization.class);
+    private ObjectArrayList<String> allSamples;
 
 
     /**
@@ -76,6 +77,7 @@ public class DifferentialExpressionCalculator {
     public void resetSumOverlapCounts() {
         sampleToSumCount.clear();
     }
+
 
     public enum ElementType {
         EXON,
