@@ -36,24 +36,15 @@
 namespace goby {
 #define GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH 8    // length of the delimiter tag (in bytes)
 
-#if defined(_MSC_VER)
-  template class LIBGOBY_EXPORT std::fpos<_Mbstatet>;
-#endif
-
   // details of an individual chunk of protocol buffer messages
-  struct LIBGOBY_EXPORT MessageChunkInfo {
+  struct MessageChunkInfo {
     // the position within the stream
     std::streampos position;
     // the length of the chunk
     size_t length;
   };
 
-#if defined(_MSC_VER)
-  template class LIBGOBY_EXPORT std::allocator<MessageChunkInfo>;
-  template class LIBGOBY_EXPORT std::vector<MessageChunkInfo, std::allocator<MessageChunkInfo>>;
-#endif
-
-  template <typename T> class LIBGOBY_EXPORT MessageChunksReader : public std::iterator<std::input_iterator_tag, T> {
+  template <typename T> class MessageChunksReader : public std::iterator<std::input_iterator_tag, T> {
     // the name of the chunked file
     std::string filename;
 
@@ -69,9 +60,9 @@ namespace goby {
     // the current processed chunk
     T currentChunk;
 
-        // populate T with the data from the given chunk
+    // populate T with the data from the given chunk
     T populateChunk(T& chunk, const MessageChunkInfo& chunkInfo) {
-            // position the stream to the current chunk location
+      // position the stream to the current chunk location
       stream->seekg(chunkInfo.position, std::ios::beg);
 
       // read the compressed buffer into memory
@@ -181,11 +172,20 @@ namespace goby {
     };
 
     bool operator==(const MessageChunksReader<T>& rhs) {
-      return chunkIterator == rhs.chunkIterator;
+      // the filenames must match and either the chunks are
+      // both empty or the chunk positions are the same
+      return filename == rhs.filename
+        && (chunks.empty() && rhs.chunks.empty()
+        || (chunkIterator == rhs.chunkIterator));
     };
 
     bool operator!=(const MessageChunksReader<T>& rhs) {
-      return chunkIterator != rhs.chunkIterator;
+      // the filenames must match and either the chunks are
+      // both empty or the chunk positions are the same
+      return filename != rhs.filename
+        || (chunks.empty() && !rhs.chunks.empty())
+        || (!chunks.empty() && rhs.chunks.empty())
+        || chunkIterator != rhs.chunkIterator;
     };
 
     // return the parsed results for the current chunk
@@ -201,6 +201,7 @@ namespace goby {
       return &currentChunk;
     };
 
+    // TODO - remove the operator<< - for testing only
     friend std::ostream &operator<<(std::ostream &out, const MessageChunksReader& reader) {
       out << "ostream &operator<< " << reader.chunkIterator->length;
       return out;
@@ -217,29 +218,16 @@ namespace goby {
       newReader.chunkIterator = newReader.chunks.end();
       return(newReader);
     };
+
+    /*
+    MessageChunksReader& operator=(const MessageChunksReader<T>& that)  {
+      if (this != &that) {
+        // TODO
+      }
+      return *this;
+    };
+    */
   };
-
-  template <typename T> inline bool operator==(MessageChunksReader<T> const& lhs, MessageChunksReader<T> const& rhs) {
-    return lhs.chunkIterator == rhs.chunkIterator;
-  };
-
-  template <typename T> inline bool operator!=(MessageChunksReader<T> const& lhs, MessageChunksReader<T> const& rhs) {
-    return lhs.chunkIterator != rhs.chunkIterator;
-  };
-
-  // Prefix increment operator
-  template <typename T> MessageChunksReader<T>& operator++(MessageChunksReader<T> const& reader) {
-    std::cout << "Prefix operator++() " << std::endl;
-    ++reader;
-    return *reader;
-   };
-
-   // Postfix increment operator
-   template <typename T> MessageChunksReader<T>& operator++(MessageChunksReader<T> const& reader, int) {
-     std::cout << "Postfix operator++(int) " << std::endl;
-     reader++;
-     return *reader;
-   };
 }
 
 #endif // GOBY_MESSAGE_CHUNKS_H
