@@ -221,7 +221,7 @@ public class DifferentialExpressionAnalysis {
     }
 
     private boolean eval(String evalName) {
-        return evalSet.contains(evalName);
+        return evalSet.contains(evalName.toLowerCase());
     }
 
     private ObjectSet<String> evalSet;
