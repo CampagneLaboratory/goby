@@ -3,20 +3,31 @@ development -> 1.7
    See http://campagnelab.org/software/goby/tutorials/estimate-heptamer-weights/
    In contrast to the initial publication, Goby supports using the weights to
    reweight annotation counts and transcript counts.
+ - Support to estimate GC content weights for reads and to reweight raw counts to
+   remove the dependence of counts on GC read content.
  - Preliminary support for barcoded reads (barcodes in the sequence), see new
-   mode decode-barcodes.
- - alignment-to-*-counts: New --eval argument allows to specify which statistics to evaluate when 
-   comparing samples.
+   mode decode-barcodes (and tutorial online at
+   http://campagnelab.org/software/goby/tutorials/handling-barcoded-reads/).
+ - alignment-to-*-counts: New --eval argument allows to specify which statistics
+   to evaluate when comparing samples.
+ - alignment-to-*-counts: New eval options 'samples' will write a column per sample
+   for RPKM, log2(RPKM) and raw counts. RPKM and log2(RPKM) are written once per sample
+   and global normalization method.
  - Reduce memory requirements when concatenating many alignments. A change
    introduced in 1.6 caused more memory than needed to be allocated for each
    split of an alignment (as much as the number of reads in the file that
    was split). Each split now uses only as much memory as needed to keep
    query lengths for the split.
+ - Dramatically improved performance for differential expression tests with millions of
+   differentially expressed elements (e.g., exon+gene+other). The code previously
+   incorrectly grew internal arrays from zero to the number of new DE element described
+   in the annotation file.
 
- Changes to compact alignment format:
+ Changes that impact the compact alignment format:
  - Moved query lengths from header to alignment entries. This scales much
    better when processing large alignment files (generated from more than
    a few hundred million reads).
+
 1.6
  - First draft of the Goby Python API and demonstration tools (see
    directory python).

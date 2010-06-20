@@ -66,5 +66,17 @@
             </stringParser>
             <help>The minimal match length between read and barcode/adapter to accept the barcode match.</help>
         </flaggedOption>
+         <flaggedOption>
+            <id>extremity</id>
+             <shortFlag>e</shortFlag>
+             <longFlag>extremity</longFlag>
+            <defaults>
+                <string>3_PRIME</string>
+            </defaults>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <help>The extremity that contains the barcode. Can be either 3_PRIME or 5_PRIME.</help>
+        </flaggedOption>
     </parameters>
 </jsap>

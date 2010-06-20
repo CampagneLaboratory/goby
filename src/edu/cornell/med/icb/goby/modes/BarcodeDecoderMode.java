@@ -38,6 +38,7 @@ import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.util.barcode.BarcodeMatcher;
 import edu.cornell.med.icb.goby.util.barcode.PostBarcodeMatcher;
 import edu.cornell.med.icb.goby.util.barcode.BarcodeMatcherResult;
+import edu.cornell.med.icb.goby.util.barcode.PreBarcodeMatcher;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
@@ -91,6 +92,7 @@ public class BarcodeDecoderMode extends AbstractGobyMode {
         return MODE_DESCRIPTION;
     }
 
+    boolean is3Prime;
 
     /**
      * Configure.
@@ -108,6 +110,16 @@ public class BarcodeDecoderMode extends AbstractGobyMode {
         inputFilename = jsapResult.getString("input");
         outputFilename = jsapResult.getString("output");
         barcodeInfoFilename = jsapResult.getString("barcode-info");
+
+        String extremity = jsapResult.getString("extremity");
+        if ("3_PRIME".equalsIgnoreCase(extremity)) {
+            is3Prime = true;
+        } else if ("5_PRIME".equalsIgnoreCase(extremity)) {
+            is3Prime = false;
+        } else {
+            System.err.println("argument --extremity can only be 3_PRIME or 5_PRIME");
+            System.exit(1);
+        }
         minimalMatchLength = jsapResult.getInt("minimal-match-length");
         maxMismatches = jsapResult.getInt("max-mismatches");
 
@@ -130,7 +142,9 @@ public class BarcodeDecoderMode extends AbstractGobyMode {
         }
 
         String inputReadsFilename = inputFilename;
-        BarcodeMatcher matcher = new PostBarcodeMatcher(barcodes, minimalMatchLength, maxMismatches);
+        BarcodeMatcher matcher = is3Prime ? new PostBarcodeMatcher(barcodes, minimalMatchLength, maxMismatches) :
+                new PreBarcodeMatcher(barcodes, minimalMatchLength, maxMismatches);
+        
         MutableString sequence = new MutableString();
         MutableString sequenceNoBarcode = new MutableString();
         try {
