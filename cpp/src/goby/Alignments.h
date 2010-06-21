@@ -38,7 +38,7 @@ namespace goby {
     
     // A map of target identifiers (name to index)
     std::map<std::string, unsigned> queryIdentifiers;
-    
+
   public:
     Alignment(std::string basename);
     virtual ~Alignment(void);

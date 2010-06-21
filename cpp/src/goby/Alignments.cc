@@ -95,40 +95,43 @@ namespace goby {
     const string headerFilename = basename + ".header";
     const int fd = ::open(headerFilename.c_str(), O_RDONLY | O_BINARY);
 
-    // uncompress file into memory so that it can be parsed
-    google::protobuf::io::FileInputStream headerFileStream(fd);
-    google::protobuf::io::GzipInputStream gzipHeaderStream(&headerFileStream);
+    if (fd > 0) {
+      // uncompress file into memory so that it can be parsed
+      google::protobuf::io::FileInputStream headerFileStream(fd);
+      google::protobuf::io::GzipInputStream gzipHeaderStream(&headerFileStream);
 
-    // the stream may not get all read in at once so we may need to copy in chunks
-    void* header = NULL;
-    size_t headerSize = 0;
+      // the stream may not get all read in at once so we may need to copy in chunks
+      void* header = NULL;
+      size_t headerSize = 0;
 
-    const void* buffer;
-    int bufferSize;
-    while (gzipHeaderStream.Next(&buffer, &bufferSize)) {
-      // store the end location of the header buffer
-      int index = headerSize;
+      const void* buffer;
+      int bufferSize;
+      while (gzipHeaderStream.Next(&buffer, &bufferSize)) {
+        // store the end location of the header buffer
+        int index = headerSize;
 
-      // resize the header buffer to fit the new data just read
-      headerSize += bufferSize;
-      header = (void *)realloc(header, headerSize);
+        // resize the header buffer to fit the new data just read
+        headerSize += bufferSize;
+        header = (void *)realloc(header, headerSize);
 
-      // and append the new data over to the end of the header buffer
-      ::memcpy(reinterpret_cast<char*>(header) + index, buffer, bufferSize);
+        // and append the new data over to the end of the header buffer
+        ::memcpy(reinterpret_cast<char*>(header) + index, buffer, bufferSize);
+      }
+
+      // populate the alignment header object from the uncompressed data
+      if (!pbHeader.ParseFromArray(header, headerSize)) {
+        cerr << "Failed to parse alignment header file: " << headerFilename << endl;
+      }
+
+      // free up the temporary buffers
+      ::free(header);
+
+      // close the streams and files
+      headerFileStream.Close();
+    } else {
+      cerr << "Failed to open alignment header file: " << headerFilename << endl;
     }
 
-    // populate the alignment header object from the uncompressed data
-    if (!pbHeader.ParseFromArray(header, headerSize)) {
-      cerr << "Failed to parse alignment header file: " << headerFilename << endl;
-    }
-
-    // free up the temporary buffers
-    ::free(header);
-
-    // close the streams and files
-    headerFileStream.Close();
-    // TODO? ::close(fd);
-    
     // populate the target identifiers
     google::protobuf::RepeatedPtrField<const goby::IdentifierInfo>::const_iterator targetMappingIterator;
     for (targetMappingIterator = pbHeader.target_name_mapping().mappings().begin(); targetMappingIterator != pbHeader.target_name_mapping().mappings().end(); targetMappingIterator++) {
