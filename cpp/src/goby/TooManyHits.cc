@@ -130,9 +130,13 @@ namespace goby {
     const string tmhFilename = basename + ".tmh";
     ifstream tmhStream(tmhFilename.c_str(), ios::in | ios::binary);
 
-    // populate the too many hits object from the file
-    if (!pbTmh.ParseFromIstream(&tmhStream)) {
-      cerr << "Failed to parse too many hits file: " << tmhFilename << endl;
+    if (tmhStream.good()) {
+      // populate the too many hits object from the file
+      if (!pbTmh.ParseFromIstream(&tmhStream)) {
+        cerr << "Failed to parse too many hits file: " << tmhFilename << endl;
+      }
+    } else {
+      cerr << "Failed to open too many hits file: " << tmhFilename << endl;
     }
 
     tmhStream.close();
