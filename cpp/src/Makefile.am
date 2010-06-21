@@ -13,6 +13,8 @@ libgoby_la_SOURCES = \
 	goby/Alignments.pb.cc \
 	goby/Alignments.pb.h \
 	goby/MessageChunks.h \
+	goby/Reads.cc \
+	goby/Reads.h \
 	goby/Reads.pb.cc \
 	goby/Reads.pb.h \
 	goby/TooManyHits.cc \
@@ -22,14 +24,19 @@ nobase_include_HEADERS = \
 	goby/Alignments.h \
 	goby/Alignments.pb.h \
 	goby/MessageChunks.h \
+	goby/Reads.h \
 	goby/Reads.pb.h \
 	goby/TooManyHits.h
 
-bin_PROGRAMS = GobyAlignmentStats
+bin_PROGRAMS = GobyAlignmentStats GobyReadsStats
 
 GobyAlignmentStats_LDADD = $(PTHREAD_LIBS) libgoby.la
 GobyAlignmentStats_SOURCES = \
 	GobyAlignmentStats.cc
+
+GobyReadsStats_LDADD = $(PTHREAD_LIBS) libgoby.la
+GobyReadsStats_SOURCES = \
+	GobyReadsStats.cc
 
 MAINTAINERCLEANFILES = \
 	Makefile.in
