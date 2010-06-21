@@ -34,7 +34,7 @@
 #include "Alignments.pb.h"
 
 namespace goby {
-#define GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH 8    // length of the delimiter tag (in bytes)
+  #define GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH 8      // length of the delimiter tag (in bytes)
 
   // details of an individual chunk of protocol buffer messages
   struct MessageChunkInfo {
@@ -48,28 +48,27 @@ namespace goby {
     // the name of the chunked file
     std::string filename;
 
-    // the underlying stream
-    std::ifstream *stream;
-
     // positions of compressed alignment collections within the goby chunked file
     std::vector<MessageChunkInfo> chunks;
 
-    // the current chunk details
-    std::vector<MessageChunkInfo>::const_iterator chunkIterator;
+    // index to the current chunk details
+    int chunkIndex;
 
     // the current processed chunk
     T currentChunk;
 
     // populate T with the data from the given chunk
     T populateChunk(T& chunk, const MessageChunkInfo& chunkInfo) {
+       std::ifstream stream(filename.c_str(), std::ios::in | std::ios::binary);
+
       // position the stream to the current chunk location
-      stream->seekg(chunkInfo.position, std::ios::beg);
+      stream.seekg(chunkInfo.position, std::ios::beg);
 
       // read the compressed buffer into memory
       const size_t compressedChunkLength = chunkInfo.length;
       char *compressedChunk = new char[compressedChunkLength];
-      stream->read(compressedChunk, compressedChunkLength);
-      if (stream->bad()) {
+      stream.read(compressedChunk, compressedChunkLength);
+      if (stream.bad()) {
         std::cerr << "There was a problem reading raw data from " << filename << std::endl;
       }
       // uncompress the buffer so that it can be parsed
@@ -99,9 +98,11 @@ namespace goby {
         std::cerr << "Failed to parse message chunk from " << filename << std::endl;
       }
 
-      // free up the temporary buffers
+      // free up the temporary buffers and close the stream
       ::free(uncompressedChunk);
       ::free(compressedChunk);
+
+      stream.close();
 
       // and retrun the processed chunk
       return chunk;
@@ -118,105 +119,112 @@ namespace goby {
     };
 
   public:
-    MessageChunksReader(const std::string& filename) {
-      this->filename = filename;
-      this->stream = new std::ifstream(filename.c_str(), std::ios::in | std::ios::binary);
+    MessageChunksReader(const std::string& filename) : filename(filename) {
+      chunks.clear();
+
+      std::ifstream stream(filename.c_str(), std::ios::in | std::ios::binary);
 
       int chunkNumber = 0;
       // get the positions each of the chunks in the file
-      while (stream->good()) {
+      while (stream.good()) {
         // each chunk is delimited by DELIMITER_LENGTH bytes
-        stream->seekg(GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH, std::ios::cur);
+        stream.seekg(GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH, std::ios::cur);
 
         // then the size of the next chunk follows
-        const int size = readInt(*stream);
+        const int size = readInt(stream);
 #if GOBY_DEBUG
         std::cout << "length of chunk #" << chunkNumber++ << " is " << size << std::endl;
 #endif // GOBY_DEBUG
 
         // the last chunk has a size of zero bytes
-        if (!stream->eof() && size != 0) {
-          const std::streampos position = stream->tellg();
+        if (!stream.eof() && size != 0) {
+          const std::streampos position = stream.tellg();
           MessageChunkInfo chunkInfo;
           chunkInfo.position = position;
           chunkInfo.length = size;
           chunks.push_back(chunkInfo);
-          stream->seekg(size, std::ios::cur);
+          stream.seekg(size, std::ios::cur);
         } else {
           break;
         }
       }
 
-      this->chunkIterator = chunks.begin();
+      stream.close();
+
+      this->chunkIndex = 0;
       this->currentChunk = T::default_instance();
     };
 
     virtual ~MessageChunksReader(void) {
-      stream->close();
-      delete stream;
     };
 
-    // TODO MessageChunksReader(const MessageChunksReader& reader);
+    MessageChunksReader(const MessageChunksReader& reader)
+      : filename(reader.filename),
+        chunks(reader.chunks),
+        chunkIndex(reader.chunkIndex),
+        currentChunk(reader.currentChunk) {
+      std::cout << "Copy constructor" << std::endl;
+    }
+
+    MessageChunksReader(const MessageChunksReader& reader, int chunkIndex)
+      : filename(reader.filename),
+        chunks(reader.chunks),
+        chunkIndex(chunkIndex),
+        currentChunk(reader.currentChunk) {
+      std::cout << "Copy constructor" << std::endl;
+    }
+
     // Prefix increment operator
     MessageChunksReader& operator++() {
       std::cout << "Prefix operator++() " << std::endl;
-      ++chunkIterator;
+      ++chunkIndex;
       return *this;
     };
 
     // Postfix increment operator
     MessageChunksReader& operator++(int) {
       std::cout << "Postfix operator++(int) " << std::endl;
-      chunkIterator++;
+      chunkIndex++;
       return *this;
     };
 
-    bool operator==(const MessageChunksReader<T>& rhs) {
+    bool operator==(const MessageChunksReader<T>& rhs) const {
       // the filenames must match and either the chunks are
       // both empty or the chunk positions are the same
-      return filename == rhs.filename
-        && (chunks.empty() && rhs.chunks.empty()
-        || (chunkIterator == rhs.chunkIterator));
+      return filename == rhs.filename && chunkIndex == rhs.chunkIndex;
     };
 
-    bool operator!=(const MessageChunksReader<T>& rhs) {
+    bool operator!=(const MessageChunksReader<T>& rhs) const {
       // the filenames must match and either the chunks are
       // both empty or the chunk positions are the same
-      return filename != rhs.filename
-        || (chunks.empty() && !rhs.chunks.empty())
-        || (!chunks.empty() && rhs.chunks.empty())
-        || chunkIterator != rhs.chunkIterator;
+      return filename != rhs.filename || chunkIndex != rhs.chunkIndex;
     };
 
     // return the parsed results for the current chunk
     // the contract of the input iterator is that this is only done once
     // so we uncompress at this time rather than during the increment
     const T& operator*() {
-      populateChunk(currentChunk, *chunkIterator);
+      populateChunk(currentChunk, chunks[chunkIndex]);
       return currentChunk;
     };
 
     T* const operator->() {
-      populateChunk(currentChunk, *chunkIterator);
+      populateChunk(currentChunk, chunks[chunkIndex]);
       return &currentChunk;
     };
 
     // TODO - remove the operator<< - for testing only
     friend std::ostream &operator<<(std::ostream &out, const MessageChunksReader& reader) {
-      out << "ostream &operator<< " << reader.chunkIterator->length;
+      out << "ostream &operator<< " << reader.chunkIndex;
       return out;
     };
 
-    MessageChunksReader begin() {
-      MessageChunksReader newReader = MessageChunksReader(this);
-      newReader.chunkIterator = newReader.chunks.begin();
-      return(newReader);
+    MessageChunksReader begin() const {
+      return MessageChunksReader(*this, 0);
     };
 
-    MessageChunksReader end() {
-      MessageChunksReader newReader = MessageChunksReader(this);
-      newReader.chunkIterator = newReader.chunks.end();
-      return(newReader);
+    MessageChunksReader end() const {
+      return MessageChunksReader(*this, chunks.size());
     };
 
     /*
