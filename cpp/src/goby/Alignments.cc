@@ -42,7 +42,7 @@
 using namespace std;
 
 namespace goby {
-  Alignment::Alignment(string basename) {
+  Alignment::Alignment(const std::string& basename) {
     this->basename = basename;
     this->pbHeader = AlignmentHeader::default_instance();
   }

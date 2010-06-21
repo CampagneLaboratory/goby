@@ -18,8 +18,8 @@
 
 #pragma once
 
-#ifndef GOBY_ALIGNMENT_H_
-#define GOBY_ALIGNMENT_H_
+#ifndef GOBY_ALIGNMENTS_H
+#define GOBY_ALIGNMENTS_H
 
 #include <string>
 #include "common.h"
@@ -40,7 +40,7 @@ namespace goby {
     std::map<std::string, unsigned> queryIdentifiers;
 
   public:
-    Alignment(std::string basename);
+    Alignment(const std::string& basename);
     virtual ~Alignment(void);
 
     static std::string getBasename(const char* filename);
@@ -91,4 +91,4 @@ namespace goby {
   };
 }
 
-#endif // _ALIGNMENTS_H_
+#endif // GOBY_ALIGNMENTS_H
