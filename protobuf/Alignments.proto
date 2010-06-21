@@ -199,6 +199,12 @@ message AlignmentHeader {
    /* Length of the target sequences. One number per target, in the order of increasing target index.
     */
    repeated uint32 target_length=8;
+   /*
+   Indicate whether this alignment is sorted by position. True: the alignment entries occur in sorted
+    order, such that entry a occurs before entry b if a.targetIndex< b.targetIndex or, when entries
+    have the same target, when a.position < b.position.
+   */
+   optional bool sorted=13;
 
 }
 

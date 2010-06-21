@@ -594,6 +594,13 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
       mutable_target_length();
   
+  // optional bool sorted = 13;
+  inline bool has_sorted() const;
+  inline void clear_sorted();
+  static const int kSortedFieldNumber = 13;
+  inline bool sorted() const;
+  inline void set_sorted(bool value);
+  
   // @@protoc_insertion_point(class_scope:goby.AlignmentHeader)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
@@ -609,11 +616,12 @@ class AlignmentHeader : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > query_length_;
   ::google::protobuf::uint32 constantquerylength_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > target_length_;
+  bool sorted_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
   friend void protobuf_ShutdownFile_Alignments_2eproto();
   
-  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(11 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
   inline bool _has_bit(int index) const {
@@ -1628,6 +1636,22 @@ AlignmentHeader::target_length() const {
 inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
 AlignmentHeader::mutable_target_length() {
   return &target_length_;
+}
+
+// optional bool sorted = 13;
+inline bool AlignmentHeader::has_sorted() const {
+  return _has_bit(10);
+}
+inline void AlignmentHeader::clear_sorted() {
+  sorted_ = false;
+  _clear_bit(10);
+}
+inline bool AlignmentHeader::sorted() const {
+  return sorted_;
+}
+inline void AlignmentHeader::set_sorted(bool value) {
+  _set_bit(10);
+  sorted_ = value;
 }
 
 // -------------------------------------------------------------------

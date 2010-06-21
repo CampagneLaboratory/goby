@@ -54,5 +54,12 @@
             </defaults>
             <help>Use this number as read length for every read when the query length is not included in the alignment.</help>
         </flaggedOption>
+         <flaggedOption>
+            <id>include-reference-names</id>
+            <shortFlag>r</shortFlag>
+            <longFlag>include-reference-names</longFlag>
+            <required>false</required>
+            <help>When provided, only write counts for reference identifiers listed in this comma separated list. To process only counts for chromosome 19 and 1, if sequences are identified by 1 and 19, use: --include-reference-names 1,19</help>
+        </flaggedOption>
     </parameters>
 </jsap>

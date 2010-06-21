@@ -68,6 +68,22 @@ public class AlignmentReader extends AbstractAlignmentReader {
     private Properties stats;
     private String basename;
 
+    /**
+     * Returns whether this alignment is sorted. Entries in a sorted alignment appear in order of
+     * increasing target index and position.
+     *
+     * @return True if this position is sorted by position. False otherwise.
+     */
+    public boolean isSorted() {
+        return sortedState;
+    }
+
+    /**
+     * Whether this alignment was sorted by position.
+     */
+
+    private boolean sortedState;
+
     public AlignmentReader(final String basename) throws FileNotFoundException {
         super();
         this.basename = basename;
@@ -167,6 +183,21 @@ public class AlignmentReader extends AbstractAlignmentReader {
         return collection.getAlignmentEntries(alignmentEntryReader.incrementEntryIndex());
     }
 
+    public Alignments.AlignmentEntry skipTo(int targetIndex, int position) {
+        if (!sortedState) throw new UnsupportedOperationException("skipTo cannot be used with unsorted alignments.");
+        Alignments.AlignmentEntry entry = null;
+        boolean hasNext = false;
+        while ((hasNext = hasNext()) &&
+                (entry = next()) != null &&
+                entry.getTargetIndex() < targetIndex &&
+                entry.getPosition() < position) {
+         // go to next entry
+        }
+        if (!hasNext) return null;
+        else if (entry != null && entry.getTargetIndex() <= targetIndex && entry.getPosition() <= position) return entry;
+        else return null;
+    }
+
     /**
      * This operation is not supported.
      */
@@ -206,6 +237,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
         numberOfTargets = header.getNumberOfTargets();
         setHeaderLoaded(true);
         numberOfAlignedReads = header.getNumberOfAlignedReads();
+        sortedState = header.getSorted();
     }
 
     private void compactQueryLengths() {

@@ -5,7 +5,8 @@
     <makeurl file="${config}/log4j.properties" property="log4j.config.url" validate="false"/>
 
     <!-- timeout (in milliseconds) to prevent jobs getting "stuck" indefinitely -->
-    <property name="timeout" value="1800000"/>   <!-- 30 minutes -->
+    <property name="timeout" value="1800000"/>
+    <!-- 30 minutes -->
 
     <!-- memory used per step -->
     <property name="max.memory" value="3g"/>
@@ -94,6 +95,7 @@
         <fasta-to-compact input="data/reference/mm9/chr1.fa.gz" include-identifiers="true"/>
     </target>
 
+
     <target name="nightly" depends="clean, nightly-bwa, nightly-lastag"/>
     <!-- TODO <target name="nightly" depends="clean, nightly-bwa, nightly-lastag, nightly-last"/>-->
 
@@ -137,7 +139,17 @@
             <arg value="--basename"/>
             <arg value="goby-bwa-sample"/>
         </java>
-
+        <java jar="${goby-jarfile}" fork="true" failonerror="true"
+              maxmemory="${max.memory}" timeout="${timeout}">
+            <assertions enablesystemassertions="true"/>
+            <sysproperty key="log4j.debug" value="${log4j.debug}"/>
+            <sysproperty key="log4j.configuration" value="${log4j.config.url}"/>
+            <arg value="--mode"/>
+            <arg value="sort"/>
+            <arg value="goby-bwa-sample"/>
+            <arg value="--output"/>
+            <arg value="goby-bwa-sample-sorted"/>
+        </java>
         <java jar="${goby-jarfile}" fork="true" failonerror="true"
               maxmemory="${max.memory}" timeout="${timeout}">
             <assertions enablesystemassertions="true"/>
@@ -401,5 +413,6 @@
             <arg value="display-sequence-variations"/>
             <arg value="goby-lastag-sample"/>
         </java>
+
     </target>
 </project>

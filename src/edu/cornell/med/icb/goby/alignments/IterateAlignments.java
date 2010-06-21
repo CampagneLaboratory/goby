@@ -22,6 +22,8 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
@@ -84,15 +86,16 @@ public abstract class IterateAlignments {
                     referencesToProcess.add(referenceIndex);
                 }
             }
-            // Give the client the ability to prepare data structures for each reference that will be processed.
-            for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
-                if (referencesToProcess.contains(referenceIndex)) {
-                    prepareDataStructuresForReference(referenceIndex);
-                }
-            }
 
             final AlignmentReader alignmentReader = new AlignmentReader(basename);
             alignmentReader.readHeader();
+
+            // Give the client the ability to prepare data structures for each reference that will be processed.
+                       for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
+                           if (referencesToProcess.contains(referenceIndex)) {
+                               prepareDataStructuresForReference(alignmentReader, referenceIndex);
+                           }
+                       }
 
             // read the alignment:
             System.out.println("Loading the alignment " + basename);
@@ -110,10 +113,10 @@ public abstract class IterateAlignments {
 
     public abstract void processAlignmentEntry(AlignmentReader alignmentReader, Alignments.AlignmentEntry alignmentEntry);
 
-    public void prepareDataStructuresForReference(final int referenceIndex) {
+    public void prepareDataStructuresForReference(AlignmentReader alignmentReader, final int referenceIndex) {
 
     }
-
+    
     /**
      * Will be called to let the client know how many references will be processed in a given alignment.
      *

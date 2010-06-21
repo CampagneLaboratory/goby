@@ -80,6 +80,7 @@ public class AlignmentWriter implements Closeable {
     private Alignments.AlignmentEntry.Builder newEntry;
     private final FileOutputStream alignmentEntries;
     private int queryLength;
+    private boolean sortedState;
 
     public AlignmentWriter(final String outputBasename) throws IOException {
         alignmentEntries = new FileOutputStream(outputBasename + ".entries");
@@ -96,7 +97,9 @@ public class AlignmentWriter implements Closeable {
         statsWritten = true;
 
     }
-
+    public void setSorted(boolean sortedState) {
+        this.sortedState=sortedState;
+    }
     public final void setQueryIndex(final int queryIndex) {
         newEntry.setQueryIndex(queryIndex);
     }
@@ -223,6 +226,7 @@ public class AlignmentWriter implements Closeable {
             headerBuilder.setSmallestSplitQueryIndex(minQueryIndex);
             headerBuilder.setNumberOfTargets(maxTargetIndex + 1);
             headerBuilder.setNumberOfQueries(getNumQueries());
+            headerBuilder.setSorted(sortedState);
 
             headerBuilder.setQueryNameMapping(getMapping(queryIdentifiers, queryIdentifiersArray));
             headerBuilder.setTargetNameMapping(getMapping(targetIdentifiers, targetIdentifiersArray));
