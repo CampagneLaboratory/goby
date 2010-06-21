@@ -1,4 +1,6 @@
 development -> 1.7
+ - Added a mode to sort alignment by reference sequence and then by position
+   on the reference sequence.
  - Support to estimate read weights described in Hansen KD et al NAR 2010.
    See http://campagnelab.org/software/goby/tutorials/estimate-heptamer-weights/
    In contrast to the initial publication, Goby supports using the weights to
@@ -27,6 +29,7 @@ development -> 1.7
  - Moved query lengths from header to alignment entries. This scales much
    better when processing large alignment files (generated from more than
    a few hundred million reads).
+ - The optional 'sorted' attribute in header indicates if an alignment has been sorted.
 
 1.6
  - First draft of the Goby Python API and demonstration tools (see
