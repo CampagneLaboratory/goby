@@ -1,4 +1,6 @@
 development -> 1.7
+ - Index alignments that are sorted upon writing. The skipTo method leverages the index
+   to provide fast semi-random access to entries by genomic location.
  - Concatenate alignment now produces sorted alignments if all the input alignments
    are sorted.
  - Added a mode to sort alignment by reference sequence and then by position

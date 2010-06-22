@@ -45,7 +45,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
      * returning new entries if the position in the input stream is past end.
      *
      * @param start The start index for the split
-     * @param end The end index for the split
+     * @param end   The end index for the split
      * @param input The input stream containing the data
      * @throws IOException if there is a problem reading from the stream
      */
@@ -65,12 +65,17 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
             throw new IllegalArgumentException("Start position ("
                     + start + ") must not be greater than the end position (" + end + ")");
         }
-
-        input.position(start);
-        this.end = end;
-        if (end != Long.MAX_VALUE) {
+        if (end != Long.MAX_VALUE && start != end) {
             end += MessageChunksWriter.DELIMITER_LENGTH + 4;
         }
+        this.end = end;
+        this.input=input;
+        reposition(start,end );
+    }
+
+    private void reposition(long start, long end) throws IOException {
+        input.position(start);
+
 
         int b;
         int contiguousZeroBytes = 0;
@@ -95,6 +100,16 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
             }
             position = start + skipped;
         }
+    }
+
+    /**
+     * Seek to the given position in the compact file.
+     *
+     * @param position Position where to seek to.
+     * @throws IOException If an error occurs reading this file.
+     */
+    public void seek(long position) throws IOException {
+        reposition(position, Long.MAX_VALUE);
     }
 
     /**
@@ -132,5 +147,9 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
     public void close() {
         super.close();
         IOUtils.closeQuietly(input);
+    }
+
+    public long position() throws IOException {
+        return input.position();
     }
 }

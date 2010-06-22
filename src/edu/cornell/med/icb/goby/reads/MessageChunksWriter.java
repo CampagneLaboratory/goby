@@ -62,6 +62,7 @@ public class MessageChunksWriter {
      */
     private long totalEntriesWritten;
     private long totalBytesWritten;
+    private int currentChunkStartOffset;
 
     /**
      * Specify the maximum number of entries to store in any given chunk.
@@ -95,18 +96,18 @@ public class MessageChunksWriter {
      * can just keep adding to the collection and call writeAsNeeded for every entry.
      *
      * @param collectionBuilder The builder prepared with the growing collection of entries.
-     * @param multiplicity Indicates how many logical entries are included in the message that
-     * was just appended.
+     * @param multiplicity      Indicates how many logical entries are included in the message that
+     *                          was just appended.
      * @throws IOException if there was an error writing the entries
      */
-    public void writeAsNeeded(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder,
-                              final int multiplicity) throws IOException {
-            totalEntriesWritten += multiplicity;
-            if (++numAppended >= numEntriesPerChunk) {
-                flush(collectionBuilder);
-            }
-
+    public int writeAsNeeded(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder,
+                             final int multiplicity) throws IOException {
+        totalEntriesWritten += multiplicity;
+        if (++numAppended >= numEntriesPerChunk) {
+            flush(collectionBuilder);
         }
+        return currentChunkStartOffset;
+    }
 
     /**
      * Force the writting of the collection to the output stream.
@@ -135,7 +136,9 @@ public class MessageChunksWriter {
         if (LOG.isTraceEnabled()) {
             LOG.trace("serializedSize: " + serializedSize);
         }
-
+       
+        // the position just before this chunk is written is recorded:
+        currentChunkStartOffset = out.size();
         // write the compressed size followed by the compressed stream:
         out.writeInt(serializedSize);
         out.write(compressedStream.toByteArray());

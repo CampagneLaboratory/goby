@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Arrays;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -82,6 +81,16 @@ public class AlignmentWriter implements Closeable {
     private int queryLength;
     private boolean sortedState;
 
+    // data structures to build index:
+    private int previousChunkOffset = 0;
+    private int firstTargetIndexInChunk;
+    private boolean firstEntryInChunk = true;
+    private int firstPositionInChunk;
+    private IntArrayList indexOffsets = new IntArrayList();
+    private IntArrayList indexAbsolutePositions = new IntArrayList();
+    private boolean indexWritten;
+    private int[] targetPositionOffsets;
+
     public AlignmentWriter(final String outputBasename) throws IOException {
         alignmentEntries = new FileOutputStream(outputBasename + ".entries");
         headerOutput = new GZIPOutputStream(new FileOutputStream(outputBasename + ".header"));
@@ -97,9 +106,17 @@ public class AlignmentWriter implements Closeable {
         statsWritten = true;
 
     }
+
     public void setSorted(boolean sortedState) {
-        this.sortedState=sortedState;
+        this.sortedState = sortedState;
+        if (sortedState) {
+            if (targetPositionOffsets == null) {
+                throw new UnsupportedOperationException("Indexing sorted alignments requires knowning target lengths " +
+                        "before entries are appended. setTargetLength must be called before setSorted(true).");
+            }
+        }
     }
+
     public final void setQueryIndex(final int queryIndex) {
         newEntry.setQueryIndex(queryIndex);
     }
@@ -159,8 +176,38 @@ public class AlignmentWriter implements Closeable {
 
         maxTargetIndex = Math.max(builtEntry.getTargetIndex(), maxTargetIndex);
         this.collectionBuilder.addAlignmentEntries(builtEntry);
-        entriesChunkWriter.writeAsNeeded(collectionBuilder, builtEntry.getMultiplicity());
+        writeIndexEntry(builtEntry);
+
         newEntry = Alignments.AlignmentEntry.newBuilder();
+    }
+
+    private void writeIndexEntry(Alignments.AlignmentEntry builtEntry) throws IOException {
+       if (firstEntryInChunk) {
+            firstTargetIndexInChunk = builtEntry.getTargetIndex();
+            firstPositionInChunk = builtEntry.getPosition();
+            firstEntryInChunk=false;
+        }
+        int currentChunkOffset = entriesChunkWriter.writeAsNeeded(collectionBuilder, builtEntry.getMultiplicity());
+        if (sortedState && currentChunkOffset != previousChunkOffset) {
+            // we have just written a new chunk.
+            pushIndex(previousChunkOffset, firstTargetIndexInChunk, firstPositionInChunk);
+            previousChunkOffset = currentChunkOffset;
+            firstEntryInChunk = true;
+
+        } else {
+            firstEntryInChunk = false;
+        }
+    }
+
+    private void pushIndex(int previousChunkOffset, int firstTargetIndexInChunk, int firstPositionInChunk) {
+        indexOffsets.add(previousChunkOffset-8);
+        final int codedPosition = recodePosition(firstTargetIndexInChunk, firstPositionInChunk);
+        indexAbsolutePositions.add(codedPosition);
+
+    }
+
+    protected int recodePosition(final int firstTargetIndexInChunk, final int firstPositionInChunk) {
+        return targetPositionOffsets[firstTargetIndexInChunk] + firstPositionInChunk;
     }
 
     /**
@@ -172,7 +219,7 @@ public class AlignmentWriter implements Closeable {
      */
     public synchronized void appendEntry(final Alignments.AlignmentEntry builtEntry) throws IOException {
         this.collectionBuilder.addAlignmentEntries(builtEntry);
-        entriesChunkWriter.writeAsNeeded(collectionBuilder, builtEntry.getMultiplicity());
+        writeIndexEntry(builtEntry);
 
         final int currentQueryIndex = builtEntry.getQueryIndex();
         minQueryIndex = Math.min(currentQueryIndex, minQueryIndex);
@@ -210,12 +257,27 @@ public class AlignmentWriter implements Closeable {
      * {@inheritDoc}
      */
     public void close() throws IOException {
+        if (sortedState) writeIndex();
         writeHeader();
+
         writeStats();
         IOUtils.closeQuietly(headerOutput);
         entriesChunkWriter.close(collectionBuilder);
         IOUtils.closeQuietly(alignmentEntries);
         IOUtils.closeQuietly(statsWriter);
+    }
+
+    private void writeIndex() throws IOException {
+        if (!indexWritten) {
+            GZIPOutputStream indexOutput = new GZIPOutputStream(new FileOutputStream(basename + ".index"));
+            final Alignments.AlignmentIndex.Builder indexBuilder = Alignments.AlignmentIndex.newBuilder();
+            assert (indexOffsets.size() == indexAbsolutePositions.size()) : "index sizes must be consistent.";
+            indexBuilder.addAllOffsets(indexOffsets);
+            indexBuilder.addAllAbsolutePositions(indexAbsolutePositions);
+            indexBuilder.build().writeTo(indexOutput);
+            indexOutput.close();
+            indexWritten = true;
+        }
     }
 
     private void writeHeader() throws IOException {
@@ -227,6 +289,8 @@ public class AlignmentWriter implements Closeable {
             headerBuilder.setNumberOfTargets(maxTargetIndex + 1);
             headerBuilder.setNumberOfQueries(getNumQueries());
             headerBuilder.setSorted(sortedState);
+            // The Java implementation always indexes an index written in sorted order.
+            headerBuilder.setIndexed(sortedState);
 
             headerBuilder.setQueryNameMapping(getMapping(queryIdentifiers, queryIdentifiersArray));
             headerBuilder.setTargetNameMapping(getMapping(targetIdentifiers, targetIdentifiersArray));
@@ -398,6 +462,14 @@ public class AlignmentWriter implements Closeable {
         assert targetLengths.length > maxTargetIndex
                 : "The number of elements of targetLength is too small to accomodate targetIndex="
                 + maxTargetIndex;
+
+        // calculate the coding offset for each target index. This information will be used by recode
+        targetPositionOffsets = new int[targetLengths.length];
+        for (int targetIndex = 0; targetIndex < targetLengths.length; targetIndex++) {
+            targetPositionOffsets[targetIndex] += targetLengths[targetIndex];
+            targetPositionOffsets[targetIndex] += targetIndex < 1 ? 0 : targetPositionOffsets[targetIndex - 1];
+        }
+
         this.targetLengths = targetLengths;
     }
 

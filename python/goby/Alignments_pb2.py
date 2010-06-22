@@ -10,7 +10,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = descriptor.FileDescriptor(
   name='Alignments.proto',
   package='goby',
-  serialized_pb='\n\x10\x41lignments.proto\x12\x04goby\"E\n\x13\x41lignmentCollection\x12.\n\x10\x61lignmentEntries\x18\x01 \x03(\x0b\x32\x14.goby.AlignmentEntry\"\xeb\x02\n\x0e\x41lignmentEntry\x12\x14\n\x0cmultiplicity\x18\x07 \x01(\r\x12\x13\n\x0bquery_index\x18\x01 \x02(\r\x12\x14\n\x0ctarget_index\x18\x02 \x02(\r\x12\x10\n\x08position\x18\x03 \x02(\r\x12\x1f\n\x17matching_reverse_strand\x18\x06 \x02(\x08\x12\x16\n\x0equery_position\x18\x05 \x01(\r\x12\r\n\x05score\x18\x04 \x01(\x02\x12\x1c\n\x14number_of_mismatches\x18\x08 \x01(\r\x12\x18\n\x10number_of_indels\x18\t \x01(\r\x12\x1c\n\x14query_aligned_length\x18\x0b \x01(\r\x12\x1d\n\x15target_aligned_length\x18\x0c \x01(\r\x12\x34\n\x13sequence_variations\x18\r \x03(\x0b\x32\x17.goby.SequenceVariation\x12\x13\n\x0bqueryLength\x18\n \x01(\r\"f\n\x11SequenceVariation\x12\x0c\n\x04\x66rom\x18\x02 \x02(\t\x12\n\n\x02to\x18\x01 \x02(\t\x12\x10\n\x08position\x18\x03 \x02(\r\x12\x11\n\treadIndex\x18\x05 \x02(\r\x12\x12\n\nto_quality\x18\x04 \x01(\x0c\"\xf2\x02\n\x0f\x41lignmentHeader\x12\x1f\n\x17smallestSplitQueryIndex\x18\t \x01(\r\x12\x1e\n\x16largestSplitQueryIndex\x18\x0b \x01(\r\x12\x33\n\x12query_name_mapping\x18\x01 \x01(\x0b\x32\x17.goby.IdentifierMapping\x12\x34\n\x13target_name_mapping\x18\x02 \x01(\x0b\x32\x17.goby.IdentifierMapping\x12\x19\n\x11number_of_queries\x18\x05 \x01(\r\x12\x19\n\x11number_of_targets\x18\x06 \x01(\r\x12\x1f\n\x17number_of_aligned_reads\x18\x07 \x01(\r\x12\x18\n\x0cquery_length\x18\x03 \x03(\rB\x02\x18\x01\x12\x1b\n\x13\x63onstantQueryLength\x18\n \x01(\r\x12\x15\n\rtarget_length\x18\x08 \x03(\r\x12\x0e\n\x06sorted\x18\r \x01(\x08\";\n\x11IdentifierMapping\x12&\n\x08mappings\x18\x01 \x03(\x0b\x32\x14.goby.IdentifierInfo\"-\n\x0eIdentifierInfo\x12\x0c\n\x04name\x18\x01 \x02(\t\x12\r\n\x05index\x18\x02 \x02(\r\"W\n\x14\x41lignmentTooManyHits\x12\x18\n\x10\x61lignerThreshold\x18\x02 \x02(\r\x12%\n\x04hits\x18\x01 \x03(\x0b\x32\x17.goby.AmbiguousLocation\"b\n\x11\x41mbiguousLocation\x12\x13\n\x0bquery_index\x18\x01 \x02(\r\x12\x1f\n\x17\x61t_least_number_of_hits\x18\x02 \x02(\r\x12\x17\n\x0flength_of_match\x18\x03 \x01(\rB\'\n#edu.cornell.med.icb.goby.alignmentsH\x01')
+  serialized_pb='\n\x10\x41lignments.proto\x12\x04goby\"E\n\x13\x41lignmentCollection\x12.\n\x10\x61lignmentEntries\x18\x01 \x03(\x0b\x32\x14.goby.AlignmentEntry\"\xeb\x02\n\x0e\x41lignmentEntry\x12\x14\n\x0cmultiplicity\x18\x07 \x01(\r\x12\x13\n\x0bquery_index\x18\x01 \x02(\r\x12\x14\n\x0ctarget_index\x18\x02 \x02(\r\x12\x10\n\x08position\x18\x03 \x02(\r\x12\x1f\n\x17matching_reverse_strand\x18\x06 \x02(\x08\x12\x16\n\x0equery_position\x18\x05 \x01(\r\x12\r\n\x05score\x18\x04 \x01(\x02\x12\x1c\n\x14number_of_mismatches\x18\x08 \x01(\r\x12\x18\n\x10number_of_indels\x18\t \x01(\r\x12\x1c\n\x14query_aligned_length\x18\x0b \x01(\r\x12\x1d\n\x15target_aligned_length\x18\x0c \x01(\r\x12\x34\n\x13sequence_variations\x18\r \x03(\x0b\x32\x17.goby.SequenceVariation\x12\x13\n\x0bqueryLength\x18\n \x01(\r\"f\n\x11SequenceVariation\x12\x0c\n\x04\x66rom\x18\x02 \x02(\t\x12\n\n\x02to\x18\x01 \x02(\t\x12\x10\n\x08position\x18\x03 \x02(\r\x12\x11\n\treadIndex\x18\x05 \x02(\r\x12\x12\n\nto_quality\x18\x04 \x01(\x0c\"\x83\x03\n\x0f\x41lignmentHeader\x12\x1f\n\x17smallestSplitQueryIndex\x18\t \x01(\r\x12\x1e\n\x16largestSplitQueryIndex\x18\x0b \x01(\r\x12\x33\n\x12query_name_mapping\x18\x01 \x01(\x0b\x32\x17.goby.IdentifierMapping\x12\x34\n\x13target_name_mapping\x18\x02 \x01(\x0b\x32\x17.goby.IdentifierMapping\x12\x19\n\x11number_of_queries\x18\x05 \x01(\r\x12\x19\n\x11number_of_targets\x18\x06 \x01(\r\x12\x1f\n\x17number_of_aligned_reads\x18\x07 \x01(\r\x12\x18\n\x0cquery_length\x18\x03 \x03(\rB\x02\x18\x01\x12\x1b\n\x13\x63onstantQueryLength\x18\n \x01(\r\x12\x15\n\rtarget_length\x18\x08 \x03(\r\x12\x0e\n\x06sorted\x18\r \x01(\x08\x12\x0f\n\x07indexed\x18\x0e \x01(\x08\";\n\x11IdentifierMapping\x12&\n\x08mappings\x18\x01 \x03(\x0b\x32\x14.goby.IdentifierInfo\"-\n\x0eIdentifierInfo\x12\x0c\n\x04name\x18\x01 \x02(\t\x12\r\n\x05index\x18\x02 \x02(\r\"W\n\x14\x41lignmentTooManyHits\x12\x18\n\x10\x61lignerThreshold\x18\x02 \x02(\r\x12%\n\x04hits\x18\x01 \x03(\x0b\x32\x17.goby.AmbiguousLocation\"b\n\x11\x41mbiguousLocation\x12\x13\n\x0bquery_index\x18\x01 \x02(\r\x12\x1f\n\x17\x61t_least_number_of_hits\x18\x02 \x02(\r\x12\x17\n\x0flength_of_match\x18\x03 \x01(\r\"g\n\x0e\x41lignmentIndex\x12!\n\x15targetPositionOffsets\x18\x01 \x03(\rB\x02\x10\x01\x12\x13\n\x07offsets\x18\x02 \x03(\rB\x02\x10\x01\x12\x1d\n\x11\x61\x62solutePositions\x18\x03 \x03(\rB\x02\x10\x01\x42\'\n#edu.cornell.med.icb.goby.alignmentsH\x01')
 
 
 
@@ -295,6 +295,13 @@ _ALIGNMENTHEADER = descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    descriptor.FieldDescriptor(
+      name='indexed', full_name='goby.AlignmentHeader.indexed', index=11,
+      number=14, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -305,7 +312,7 @@ _ALIGNMENTHEADER = descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=568,
-  serialized_end=938,
+  serialized_end=955,
 )
 
 
@@ -332,8 +339,8 @@ _IDENTIFIERMAPPING = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=940,
-  serialized_end=999,
+  serialized_start=957,
+  serialized_end=1016,
 )
 
 
@@ -367,8 +374,8 @@ _IDENTIFIERINFO = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1001,
-  serialized_end=1046,
+  serialized_start=1018,
+  serialized_end=1063,
 )
 
 
@@ -402,8 +409,8 @@ _ALIGNMENTTOOMANYHITS = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1048,
-  serialized_end=1135,
+  serialized_start=1065,
+  serialized_end=1152,
 )
 
 
@@ -444,8 +451,50 @@ _AMBIGUOUSLOCATION = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1137,
-  serialized_end=1235,
+  serialized_start=1154,
+  serialized_end=1252,
+)
+
+
+_ALIGNMENTINDEX = descriptor.Descriptor(
+  name='AlignmentIndex',
+  full_name='goby.AlignmentIndex',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    descriptor.FieldDescriptor(
+      name='targetPositionOffsets', full_name='goby.AlignmentIndex.targetPositionOffsets', index=0,
+      number=1, type=13, cpp_type=3, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=descriptor._ParseOptions(descriptor_pb2.FieldOptions(), '\020\001')),
+    descriptor.FieldDescriptor(
+      name='offsets', full_name='goby.AlignmentIndex.offsets', index=1,
+      number=2, type=13, cpp_type=3, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=descriptor._ParseOptions(descriptor_pb2.FieldOptions(), '\020\001')),
+    descriptor.FieldDescriptor(
+      name='absolutePositions', full_name='goby.AlignmentIndex.absolutePositions', index=2,
+      number=3, type=13, cpp_type=3, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=descriptor._ParseOptions(descriptor_pb2.FieldOptions(), '\020\001')),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=1254,
+  serialized_end=1357,
 )
 
 
@@ -503,5 +552,11 @@ class AmbiguousLocation(message.Message):
   DESCRIPTOR = _AMBIGUOUSLOCATION
   
   # @@protoc_insertion_point(class_scope:goby.AmbiguousLocation)
+
+class AlignmentIndex(message.Message):
+  __metaclass__ = reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _ALIGNMENTINDEX
+  
+  # @@protoc_insertion_point(class_scope:goby.AlignmentIndex)
 
 # @@protoc_insertion_point(module_scope)

@@ -196,15 +196,22 @@ message AlignmentHeader {
    */
    optional uint32 constantQueryLength=10;
 
-   /* Length of the target sequences. One number per target, in the order of increasing target index.
+   /*
+      Length of the target sequences. One number per target, in the order of increasing target index.
     */
    repeated uint32 target_length=8;
    /*
-   Indicate whether this alignment is sorted by position. True: the alignment entries occur in sorted
-    order, such that entry a occurs before entry b if a.targetIndex< b.targetIndex or, when entries
-    have the same target, when a.position < b.position.
+      Indicates whether this alignment is sorted by position. True: the alignment entries occur in sorted
+      order, such that entry a occurs before entry b if a.targetIndex< b.targetIndex or, when entries
+      have the same target, when a.position < b.position.
    */
    optional bool sorted=13;
+
+   /*
+      Indicates whether this alignment is indexed by position. When this attribute is true, a file called
+     'basename'.index exists that contains the AlignmentIndex message (GZip compressed).
+   */
+   optional bool indexed=14;
 
 }
 
@@ -245,9 +252,36 @@ message AmbiguousLocation {
      a threshold and stop counting. This number can be >=k.
     */
    required uint32 at_least_number_of_hits=2;
-   /** The length of the part of the query sequence that could be matched to the target (also called depth).
+   /**
+   The length of the part of the query sequence that could be matched to the target (also called depth).
    May be less than the length of the query sequence, in which case the match was not perfect. When merging
    alignments produced by searching different reference sequences, consider only at_least_number_of_hits
    from alignments that have exactly the longer depth for the query. */
    optional uint32 length_of_match=3;
+}
+
+/*
+      This message is written to 'basename'.index
+  */
+message AlignmentIndex {
+/*
+   Stores one element by target sequence. Each element is the cumulative target length for the target
+   stored at index i. Assume there are four target sequences, with lengths {10, 12, 15, 34}. The field
+   targetPositionOffsets will contain: {0,10,22,37}. Such offsets can be used to calculate the absolute
+   position of a genomic location. Given targetIndex and positionOnReference, the absolute location
+   is defined as  targetPositionOffsets[targetIndex]+positionOnReference.
+ */
+   repeated uint32 targetPositionOffsets=1 [packed=true];
+   /*
+    The byte offsets into the compressed entries file. Byte offsets are matched with absolute position
+    by index. There should be as many elements in offsets as there are in absolutePosition
+    where chunks start which represent entries whose absolute positions are less than
+   */
+   repeated uint32 offsets=2 [packed=true];
+   /*
+     The absolute positions of the first entry in the chunk that immediately start at offset. One element
+     per chunk in the 'basename'.entries file.
+   */
+   repeated uint32 absolutePositions=3[packed=true];
+
 }

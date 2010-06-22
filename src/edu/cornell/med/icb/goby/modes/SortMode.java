@@ -63,6 +63,7 @@ public class SortMode extends AbstractGobyMode {
      */
     private String[] basenames;
     private MyIterateAlignments alignmentIterator;
+    private int[] targetLengths;
 
 
     @Override
@@ -141,6 +142,8 @@ public class SortMode extends AbstractGobyMode {
             Merge.prepareMergedTooManyHits(outputFilename, alignmentReader.getNumberOfQueries(), 0, basenames);
             writer.setTargetIdentifiers(alignmentReader.getTargetIdentifiers());
             writer.setQueryIdentifiers(alignmentReader.getQueryIdentifiers());
+            writer.setTargetLengths(alignmentReader.getTargetLength());
+            writer.setSorted(true);
 
 
             for (Alignments.AlignmentEntry entry : entries) {
@@ -166,7 +169,6 @@ public class SortMode extends AbstractGobyMode {
             stream = outputFilename == null ? System.out
                     : new PrintStream(new FileOutputStream(outputFilename));
             AlignmentWriter writer = new AlignmentWriter(outputFilename);
-            writer.setSorted(true);
 
             // Iterate through each alignment and write sequence variations to output file:
             LOG.info("Loading entries..");

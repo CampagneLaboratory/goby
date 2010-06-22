@@ -337,7 +337,7 @@ public class TestMerge {
         }
     }
 
-    private int countAlignmentEntries(final String basename) throws FileNotFoundException {
+    private int countAlignmentEntries(final String basename) throws IOException {
         int count = 0;
         final AlignmentReader reader = new AlignmentReader(basename);
         while (reader.hasNext()) {

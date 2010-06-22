@@ -89,7 +89,7 @@ public class TestConcatSortedAlignmentReader {
         final AlignmentWriter writer1 =
                 new AlignmentWriter(basename1);
         writer1.setNumAlignmentEntriesPerChunk(1000);
-
+        writer1.setTargetLengths(new int[]{10000});
         // we write this alignment sorted:
         writer1.setSorted(true);
 
@@ -104,7 +104,7 @@ public class TestConcatSortedAlignmentReader {
         final AlignmentWriter writer2 =
                 new AlignmentWriter(basename2);
         writer2.setNumAlignmentEntriesPerChunk(1000);
-
+        writer2.setTargetLengths(new int[]{10000});
         // we write this alignment sorted:
         writer2.setSorted(true);
 
@@ -118,7 +118,8 @@ public class TestConcatSortedAlignmentReader {
         final AlignmentWriter writer3 =
                 new AlignmentWriter(basename3);
         writer3.setNumAlignmentEntriesPerChunk(1000);
-
+        writer3.setTargetLengths(new int[]{10000});
+        
         // we write this alignment sorted:
         writer3.setSorted(true);
 

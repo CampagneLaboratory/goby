@@ -61,6 +61,7 @@ def main():
 
     print "Info from header:"
     print "Sorted:", header.sorted;
+    print "Indexed: ", header.indexed;
     print "Number of target sequences = %s" % commify(header.number_of_targets)
 
     # target length stats

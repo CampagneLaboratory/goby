@@ -38,6 +38,9 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 const ::google::protobuf::Descriptor* AmbiguousLocation_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   AmbiguousLocation_reflection_ = NULL;
+const ::google::protobuf::Descriptor* AlignmentIndex_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  AlignmentIndex_reflection_ = NULL;
 
 }  // namespace
 
@@ -110,7 +113,7 @@ void protobuf_AssignDesc_Alignments_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(SequenceVariation));
   AlignmentHeader_descriptor_ = file->message_type(3);
-  static const int AlignmentHeader_offsets_[11] = {
+  static const int AlignmentHeader_offsets_[12] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, smallestsplitqueryindex_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, largestsplitqueryindex_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, query_name_mapping_),
@@ -122,6 +125,7 @@ void protobuf_AssignDesc_Alignments_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, constantquerylength_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, target_length_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, sorted_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, indexed_),
   };
   AlignmentHeader_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -198,6 +202,23 @@ void protobuf_AssignDesc_Alignments_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(AmbiguousLocation));
+  AlignmentIndex_descriptor_ = file->message_type(8);
+  static const int AlignmentIndex_offsets_[3] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentIndex, targetpositionoffsets_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentIndex, offsets_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentIndex, absolutepositions_),
+  };
+  AlignmentIndex_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      AlignmentIndex_descriptor_,
+      AlignmentIndex::default_instance_,
+      AlignmentIndex_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentIndex, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentIndex, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(AlignmentIndex));
 }
 
 namespace {
@@ -226,6 +247,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
     AlignmentTooManyHits_descriptor_, &AlignmentTooManyHits::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     AmbiguousLocation_descriptor_, &AmbiguousLocation::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    AlignmentIndex_descriptor_, &AlignmentIndex::default_instance());
 }
 
 }  // namespace
@@ -247,6 +270,8 @@ void protobuf_ShutdownFile_Alignments_2eproto() {
   delete AlignmentTooManyHits_reflection_;
   delete AmbiguousLocation::default_instance_;
   delete AmbiguousLocation_reflection_;
+  delete AlignmentIndex::default_instance_;
+  delete AlignmentIndex_reflection_;
 }
 
 void protobuf_AddDesc_Alignments_2eproto() {
@@ -270,7 +295,7 @@ void protobuf_AddDesc_Alignments_2eproto() {
     "\022\023\n\013queryLength\030\n \001(\r\"f\n\021SequenceVariati"
     "on\022\014\n\004from\030\002 \002(\t\022\n\n\002to\030\001 \002(\t\022\020\n\010position"
     "\030\003 \002(\r\022\021\n\treadIndex\030\005 \002(\r\022\022\n\nto_quality\030"
-    "\004 \001(\014\"\362\002\n\017AlignmentHeader\022\037\n\027smallestSpl"
+    "\004 \001(\014\"\203\003\n\017AlignmentHeader\022\037\n\027smallestSpl"
     "itQueryIndex\030\t \001(\r\022\036\n\026largestSplitQueryI"
     "ndex\030\013 \001(\r\0223\n\022query_name_mapping\030\001 \001(\0132\027"
     ".goby.IdentifierMapping\0224\n\023target_name_m"
@@ -279,15 +304,18 @@ void protobuf_AddDesc_Alignments_2eproto() {
     "rgets\030\006 \001(\r\022\037\n\027number_of_aligned_reads\030\007"
     " \001(\r\022\030\n\014query_length\030\003 \003(\rB\002\030\001\022\033\n\023consta"
     "ntQueryLength\030\n \001(\r\022\025\n\rtarget_length\030\010 \003"
-    "(\r\022\016\n\006sorted\030\r \001(\010\";\n\021IdentifierMapping\022"
-    "&\n\010mappings\030\001 \003(\0132\024.goby.IdentifierInfo\""
-    "-\n\016IdentifierInfo\022\014\n\004name\030\001 \002(\t\022\r\n\005index"
-    "\030\002 \002(\r\"W\n\024AlignmentTooManyHits\022\030\n\020aligne"
-    "rThreshold\030\002 \002(\r\022%\n\004hits\030\001 \003(\0132\027.goby.Am"
-    "biguousLocation\"b\n\021AmbiguousLocation\022\023\n\013"
-    "query_index\030\001 \002(\r\022\037\n\027at_least_number_of_"
-    "hits\030\002 \002(\r\022\027\n\017length_of_match\030\003 \001(\rB\'\n#e"
-    "du.cornell.med.icb.goby.alignmentsH\001", 1276);
+    "(\r\022\016\n\006sorted\030\r \001(\010\022\017\n\007indexed\030\016 \001(\010\";\n\021I"
+    "dentifierMapping\022&\n\010mappings\030\001 \003(\0132\024.gob"
+    "y.IdentifierInfo\"-\n\016IdentifierInfo\022\014\n\004na"
+    "me\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"W\n\024AlignmentTooM"
+    "anyHits\022\030\n\020alignerThreshold\030\002 \002(\r\022%\n\004hit"
+    "s\030\001 \003(\0132\027.goby.AmbiguousLocation\"b\n\021Ambi"
+    "guousLocation\022\023\n\013query_index\030\001 \002(\r\022\037\n\027at"
+    "_least_number_of_hits\030\002 \002(\r\022\027\n\017length_of"
+    "_match\030\003 \001(\r\"g\n\016AlignmentIndex\022!\n\025target"
+    "PositionOffsets\030\001 \003(\rB\002\020\001\022\023\n\007offsets\030\002 \003"
+    "(\rB\002\020\001\022\035\n\021absolutePositions\030\003 \003(\rB\002\020\001B\'\n"
+    "#edu.cornell.med.icb.goby.alignmentsH\001", 1398);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "Alignments.proto", &protobuf_RegisterTypes);
   AlignmentCollection::default_instance_ = new AlignmentCollection();
@@ -298,6 +326,7 @@ void protobuf_AddDesc_Alignments_2eproto() {
   IdentifierInfo::default_instance_ = new IdentifierInfo();
   AlignmentTooManyHits::default_instance_ = new AlignmentTooManyHits();
   AmbiguousLocation::default_instance_ = new AmbiguousLocation();
+  AlignmentIndex::default_instance_ = new AlignmentIndex();
   AlignmentCollection::default_instance_->InitAsDefaultInstance();
   AlignmentEntry::default_instance_->InitAsDefaultInstance();
   SequenceVariation::default_instance_->InitAsDefaultInstance();
@@ -306,6 +335,7 @@ void protobuf_AddDesc_Alignments_2eproto() {
   IdentifierInfo::default_instance_->InitAsDefaultInstance();
   AlignmentTooManyHits::default_instance_->InitAsDefaultInstance();
   AmbiguousLocation::default_instance_->InitAsDefaultInstance();
+  AlignmentIndex::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_Alignments_2eproto);
 }
 
@@ -1642,6 +1672,7 @@ const int AlignmentHeader::kQueryLengthFieldNumber;
 const int AlignmentHeader::kConstantQueryLengthFieldNumber;
 const int AlignmentHeader::kTargetLengthFieldNumber;
 const int AlignmentHeader::kSortedFieldNumber;
+const int AlignmentHeader::kIndexedFieldNumber;
 #endif  // !_MSC_VER
 
 AlignmentHeader::AlignmentHeader()
@@ -1671,6 +1702,7 @@ void AlignmentHeader::SharedCtor() {
   number_of_aligned_reads_ = 0u;
   constantquerylength_ = 0u;
   sorted_ = false;
+  indexed_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -1722,6 +1754,7 @@ void AlignmentHeader::Clear() {
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     constantquerylength_ = 0u;
     sorted_ = false;
+    indexed_ = false;
   }
   query_length_.Clear();
   target_length_.Clear();
@@ -1914,6 +1947,22 @@ bool AlignmentHeader::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(112)) goto parse_indexed;
+        break;
+      }
+      
+      // optional bool indexed = 14;
+      case 14: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_indexed:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &indexed_)));
+          _set_bit(11);
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -1995,6 +2044,11 @@ void AlignmentHeader::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(13, this->sorted(), output);
   }
   
+  // optional bool indexed = 14;
+  if (_has_bit(11)) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(14, this->indexed(), output);
+  }
+  
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -2062,6 +2116,11 @@ void AlignmentHeader::SerializeWithCachedSizes(
   // optional bool sorted = 13;
   if (_has_bit(10)) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(13, this->sorted(), target);
+  }
+  
+  // optional bool indexed = 14;
+  if (_has_bit(11)) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(14, this->indexed(), target);
   }
   
   if (!unknown_fields().empty()) {
@@ -2135,6 +2194,11 @@ int AlignmentHeader::ByteSize() const {
     
     // optional bool sorted = 13;
     if (has_sorted()) {
+      total_size += 1 + 1;
+    }
+    
+    // optional bool indexed = 14;
+    if (has_indexed()) {
       total_size += 1 + 1;
     }
     
@@ -2216,6 +2280,9 @@ void AlignmentHeader::MergeFrom(const AlignmentHeader& from) {
     if (from._has_bit(10)) {
       set_sorted(from.sorted());
     }
+    if (from._has_bit(11)) {
+      set_indexed(from.indexed());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -2256,6 +2323,7 @@ void AlignmentHeader::Swap(AlignmentHeader* other) {
     std::swap(constantquerylength_, other->constantquerylength_);
     target_length_.Swap(&other->target_length_);
     std::swap(sorted_, other->sorted_);
+    std::swap(indexed_, other->indexed_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -3278,6 +3346,359 @@ void AmbiguousLocation::Swap(AmbiguousLocation* other) {
   ::google::protobuf::Metadata metadata;
   metadata.descriptor = AmbiguousLocation_descriptor_;
   metadata.reflection = AmbiguousLocation_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+#ifndef _MSC_VER
+const int AlignmentIndex::kTargetPositionOffsetsFieldNumber;
+const int AlignmentIndex::kOffsetsFieldNumber;
+const int AlignmentIndex::kAbsolutePositionsFieldNumber;
+#endif  // !_MSC_VER
+
+AlignmentIndex::AlignmentIndex()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void AlignmentIndex::InitAsDefaultInstance() {
+}
+
+AlignmentIndex::AlignmentIndex(const AlignmentIndex& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void AlignmentIndex::SharedCtor() {
+  _cached_size_ = 0;
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+AlignmentIndex::~AlignmentIndex() {
+  SharedDtor();
+}
+
+void AlignmentIndex::SharedDtor() {
+  if (this != default_instance_) {
+  }
+}
+
+void AlignmentIndex::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* AlignmentIndex::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return AlignmentIndex_descriptor_;
+}
+
+const AlignmentIndex& AlignmentIndex::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_Alignments_2eproto();  return *default_instance_;
+}
+
+AlignmentIndex* AlignmentIndex::default_instance_ = NULL;
+
+AlignmentIndex* AlignmentIndex::New() const {
+  return new AlignmentIndex;
+}
+
+void AlignmentIndex::Clear() {
+  targetpositionoffsets_.Clear();
+  offsets_.Clear();
+  absolutepositions_.Clear();
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool AlignmentIndex::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // repeated uint32 targetPositionOffsets = 1 [packed = true];
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, this->mutable_targetpositionoffsets())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 1, 10, input, this->mutable_targetpositionoffsets())));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(18)) goto parse_offsets;
+        break;
+      }
+      
+      // repeated uint32 offsets = 2 [packed = true];
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_offsets:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, this->mutable_offsets())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 1, 18, input, this->mutable_offsets())));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(26)) goto parse_absolutePositions;
+        break;
+      }
+      
+      // repeated uint32 absolutePositions = 3 [packed = true];
+      case 3: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_absolutePositions:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, this->mutable_absolutepositions())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 1, 26, input, this->mutable_absolutepositions())));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+      
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void AlignmentIndex::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // repeated uint32 targetPositionOffsets = 1 [packed = true];
+  if (this->targetpositionoffsets_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(1, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_targetpositionoffsets_cached_byte_size_);
+  }
+  for (int i = 0; i < this->targetpositionoffsets_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32NoTag(
+      this->targetpositionoffsets(i), output);
+  }
+  
+  // repeated uint32 offsets = 2 [packed = true];
+  if (this->offsets_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(2, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_offsets_cached_byte_size_);
+  }
+  for (int i = 0; i < this->offsets_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32NoTag(
+      this->offsets(i), output);
+  }
+  
+  // repeated uint32 absolutePositions = 3 [packed = true];
+  if (this->absolutepositions_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_absolutepositions_cached_byte_size_);
+  }
+  for (int i = 0; i < this->absolutepositions_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32NoTag(
+      this->absolutepositions(i), output);
+  }
+  
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* AlignmentIndex::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // repeated uint32 targetPositionOffsets = 1 [packed = true];
+  if (this->targetpositionoffsets_size() > 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
+      1,
+      ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+      target);
+    target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
+      _targetpositionoffsets_cached_byte_size_, target);
+  }
+  for (int i = 0; i < this->targetpositionoffsets_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteUInt32NoTagToArray(this->targetpositionoffsets(i), target);
+  }
+  
+  // repeated uint32 offsets = 2 [packed = true];
+  if (this->offsets_size() > 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
+      2,
+      ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+      target);
+    target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
+      _offsets_cached_byte_size_, target);
+  }
+  for (int i = 0; i < this->offsets_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteUInt32NoTagToArray(this->offsets(i), target);
+  }
+  
+  // repeated uint32 absolutePositions = 3 [packed = true];
+  if (this->absolutepositions_size() > 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
+      3,
+      ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+      target);
+    target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
+      _absolutepositions_cached_byte_size_, target);
+  }
+  for (int i = 0; i < this->absolutepositions_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteUInt32NoTagToArray(this->absolutepositions(i), target);
+  }
+  
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int AlignmentIndex::ByteSize() const {
+  int total_size = 0;
+  
+  // repeated uint32 targetPositionOffsets = 1 [packed = true];
+  {
+    int data_size = 0;
+    for (int i = 0; i < this->targetpositionoffsets_size(); i++) {
+      data_size += ::google::protobuf::internal::WireFormatLite::
+        UInt32Size(this->targetpositionoffsets(i));
+    }
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    _targetpositionoffsets_cached_byte_size_ = data_size;
+    total_size += data_size;
+  }
+  
+  // repeated uint32 offsets = 2 [packed = true];
+  {
+    int data_size = 0;
+    for (int i = 0; i < this->offsets_size(); i++) {
+      data_size += ::google::protobuf::internal::WireFormatLite::
+        UInt32Size(this->offsets(i));
+    }
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    _offsets_cached_byte_size_ = data_size;
+    total_size += data_size;
+  }
+  
+  // repeated uint32 absolutePositions = 3 [packed = true];
+  {
+    int data_size = 0;
+    for (int i = 0; i < this->absolutepositions_size(); i++) {
+      data_size += ::google::protobuf::internal::WireFormatLite::
+        UInt32Size(this->absolutepositions(i));
+    }
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    _absolutepositions_cached_byte_size_ = data_size;
+    total_size += data_size;
+  }
+  
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void AlignmentIndex::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const AlignmentIndex* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const AlignmentIndex*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void AlignmentIndex::MergeFrom(const AlignmentIndex& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  targetpositionoffsets_.MergeFrom(from.targetpositionoffsets_);
+  offsets_.MergeFrom(from.offsets_);
+  absolutepositions_.MergeFrom(from.absolutepositions_);
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void AlignmentIndex::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void AlignmentIndex::CopyFrom(const AlignmentIndex& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool AlignmentIndex::IsInitialized() const {
+  
+  return true;
+}
+
+void AlignmentIndex::Swap(AlignmentIndex* other) {
+  if (other != this) {
+    targetpositionoffsets_.Swap(&other->targetpositionoffsets_);
+    offsets_.Swap(&other->offsets_);
+    absolutepositions_.Swap(&other->absolutepositions_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata AlignmentIndex::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = AlignmentIndex_descriptor_;
+  metadata.reflection = AlignmentIndex_reflection_;
   return metadata;
 }
 

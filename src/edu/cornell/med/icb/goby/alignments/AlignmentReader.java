@@ -21,7 +21,6 @@ package edu.cornell.med.icb.goby.alignments;
 import com.google.protobuf.CodedInputStream;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import edu.cornell.med.icb.goby.reads.FastBufferedMessageChunksReader;
-import edu.cornell.med.icb.goby.reads.MessageChunksReader;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -38,14 +37,11 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Properties;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -63,10 +59,13 @@ public class AlignmentReader extends AbstractAlignmentReader {
 
     private InputStream headerStream;
     private int numberOfAlignedReads;
-    private final MessageChunksReader alignmentEntryReader;
+    private final FastBufferedMessageChunksReader alignmentEntryReader;
     private Alignments.AlignmentCollection collection;
     private Properties stats;
     private String basename;
+    private boolean indexLoaded;
+    private int[] targetPositionOffsets;
+
 
     /**
      * Returns whether this alignment is sorted. Entries in a sorted alignment appear in order of
@@ -75,20 +74,32 @@ public class AlignmentReader extends AbstractAlignmentReader {
      * @return True if this position is sorted by position. False otherwise.
      */
     public boolean isSorted() {
-        return sortedState;
+        return sorted;
     }
 
     /**
      * Whether this alignment was sorted by position.
      */
 
-    private boolean sortedState;
+    private boolean sorted;
 
-    public AlignmentReader(final String basename) throws FileNotFoundException {
+    /**
+     * Returns true if this alignment is indexed. When this method returns true,
+     * a file called 'basename'.index is expected.
+     *
+     * @return
+     */
+    public boolean isIndexed() {
+        return indexed;
+    }
+
+    private boolean indexed;
+
+    public AlignmentReader(final String basename) throws IOException {
         super();
         this.basename = basename;
         final FileInputStream stream = new FileInputStream(basename + ".entries");
-        alignmentEntryReader = new MessageChunksReader(stream);
+        alignmentEntryReader = new FastBufferedMessageChunksReader(0, Long.MAX_VALUE, new FastBufferedInputStream(stream));
         try {
             headerStream = new GZIPInputStream(new FileInputStream(basename + ".header"));
         } catch (IOException e) {
@@ -122,9 +133,9 @@ public class AlignmentReader extends AbstractAlignmentReader {
         return basename;
     }
 
-    public AlignmentReader(final InputStream entriesStream) {
+    public AlignmentReader(final InputStream entriesStream) throws IOException {
         super();
-        alignmentEntryReader = new MessageChunksReader(entriesStream);
+        alignmentEntryReader = new FastBufferedMessageChunksReader(0, Long.MAX_VALUE, new FastBufferedInputStream(entriesStream));
     }
 
     /**
@@ -184,15 +195,21 @@ public class AlignmentReader extends AbstractAlignmentReader {
     }
 
     /**
-     * Skip all entries that have position before (targetIndex,position).
+     * Skip all entries that have position before (targetIndex,position). This method will use the alignment index
+     * when it is available to skip directly to the closest chunk start before the entry identified by targetIndex
+     * and position.
+     *
      * @param targetIndex The index of the target sequence to skip to.
-     * @param position   The position on the target sequence.
+     * @param position    The position on the target sequence.
      * @return The next entry, at position or past position (if not entry at position is found).
      * @throws IOException If an error occurs reading the alignment header. The header is accessed to check that the alignment is sorted.
      */
     public Alignments.AlignmentEntry skipTo(int targetIndex, int position) throws IOException {
         readHeader();
-        if (!sortedState) throw new UnsupportedOperationException("skipTo cannot be used with unsorted alignments.");
+        if (!sorted) throw new UnsupportedOperationException("skipTo cannot be used with unsorted alignments.");
+
+        readIndex();
+        reposition(targetIndex, position);
         Alignments.AlignmentEntry entry = null;
         boolean hasNext = false;
         while ((hasNext = hasNext()) &&
@@ -204,6 +221,23 @@ public class AlignmentReader extends AbstractAlignmentReader {
         if (!hasNext) return null;
         else return entry;
 
+    }
+
+    private void reposition(int targetIndex, int position) throws IOException {
+        int absolutePosition = recodePosition(targetIndex, position);
+        int offsetIndex = Arrays.binarySearch(indexAbsolutePositions.elements(), absolutePosition);
+        offsetIndex= offsetIndex<0 ? -offsetIndex:offsetIndex;
+        offsetIndex= offsetIndex>indexOffsets.size()? indexOffsets.size()-1:offsetIndex;
+        final long newPosition = indexOffsets.getInt(offsetIndex);
+        long currentPosition = alignmentEntryReader.position();
+        if (newPosition > currentPosition) {
+
+            alignmentEntryReader.seek(newPosition);
+        }
+    }
+
+    protected int recodePosition(final int firstTargetIndexInChunk, final int firstPositionInChunk) {
+        return targetPositionOffsets[firstTargetIndexInChunk] + firstPositionInChunk;
     }
 
     /**
@@ -246,7 +280,46 @@ public class AlignmentReader extends AbstractAlignmentReader {
             numberOfTargets = header.getNumberOfTargets();
             setHeaderLoaded(true);
             numberOfAlignedReads = header.getNumberOfAlignedReads();
-            sortedState = header.getSorted();
+            sorted = header.getSorted();
+            indexed = header.getIndexed();
+
+        }
+    }
+
+    private IntArrayList indexOffsets = new IntArrayList();
+    private IntArrayList indexAbsolutePositions = new IntArrayList();
+
+    /**
+     * Read the index. The header is also loaded.
+     *
+     * @throws IOException If an error occurs loading the index or header.
+     */
+    public void readIndex() throws IOException {
+        if (indexed && !indexLoaded) {
+            // header is needed to access target lengths:
+            readHeader();
+            GZIPInputStream indexStream = new GZIPInputStream(new FileInputStream(basename + ".index"));
+
+            final CodedInputStream codedInput = CodedInputStream.newInstance(indexStream);
+            codedInput.setSizeLimit(Integer.MAX_VALUE);
+            final Alignments.AlignmentIndex index = Alignments.AlignmentIndex.parseFrom(codedInput);
+            indexOffsets.clear();
+            indexAbsolutePositions.clear();
+
+            for (int offset : index.getOffsetsList()) {
+                indexOffsets.add(offset);
+            }
+            for (int absolutePosition : index.getAbsolutePositionsList()) {
+                indexAbsolutePositions.add(absolutePosition);
+            }
+// calculate the coding offset for each target index. This information will be used by recode
+            targetPositionOffsets = new int[targetLengths.length];
+            for (int targetIndex = 0; targetIndex < targetLengths.length; targetIndex++) {
+                targetPositionOffsets[targetIndex] += targetLengths[targetIndex];
+                targetPositionOffsets[targetIndex] += targetIndex < 1 ? 0 : targetPositionOffsets[targetIndex - 1];
+            }
+
+            indexLoaded = true;
         }
     }
 

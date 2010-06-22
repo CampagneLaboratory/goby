@@ -127,6 +127,9 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         if (alignmentReader.getQueryLengths() != null) {
             queryLengths = alignmentReader.getQueryLengths();
         }
+        if (alignmentReader.getTargetLength() != null) {
+            writer.setTargetLengths(alignmentReader.getTargetLength());
+        }
         writer.setSorted(allSorted);
         for (final Alignments.AlignmentEntry entry : alignmentReader) {
             if (queryLengths != null) {
@@ -150,9 +153,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         if (alignmentReader.getTargetIdentifiers() != null) {
             writer.setTargetIdentifiers(alignmentReader.getTargetIdentifiers());
         }
-        if (alignmentReader.getTargetLength() != null) {
-            writer.setTargetLengths(alignmentReader.getTargetLength());
-        }
+
         if (alignmentReader.getQueryIdentifiers() != null) {
             writer.setQueryIdentifiers(alignmentReader.getQueryIdentifiers());
         }
