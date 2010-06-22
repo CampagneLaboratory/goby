@@ -60,98 +60,96 @@ def main():
     tmh = tmh_reader.tmh
 
     print "Info from header:"
-    print "Sorted: " % header.sorted;
+    print "Sorted:", header.sorted;
     print "Number of target sequences = %s" % commify(header.number_of_targets)
 
-# target length stats
-target_length = len(header.target_length)
-if target_length > 0:
-    min_target_length = min(header.target_length)
-    max_target_length = max(header.target_length)
-    mean_target_length =  sum(header.target_length) / float(target_length)
-else:
-    min_target_length = 0
-    max_target_length = 0
-    mean_target_length = 0
-
-print "Number of target length entries = %s" % commify(target_length)
-print "Min target length = %s" % commify(min_target_length)
-print "Max target length = %s" % commify(max_target_length)
-print "Mean target length = %s" % commify(mean_target_length)
-print
-
-print "Number of query sequences = %s" % commify(header.number_of_queries)
-
-# query length stats
-has_constant_query_length = header.HasField("constantQueryLength")
-
-# special case if query lengths are constant to reduce storage
-if has_constant_query_length:
-    query_length =  header.number_of_queries
-    min_query_length = header.constantQueryLength
-    max_query_length =  header.constantQueryLength
-    mean_query_length =  float(header.constantQueryLength)
-else:
-    query_length = len(header.query_length)
-    if query_length > 0:
-        min_query_length = min(header.query_length)
-        max_query_length = max(header.query_length)
-        mean_query_length =  sum(header.query_length) / query_length
+    # target length stats
+    target_length = len(header.target_length)
+    if target_length > 0:
+        min_target_length = min(header.target_length)
+        max_target_length = max(header.target_length)
+        mean_target_length =  sum(header.target_length) / float(target_length)
     else:
-        min_query_length = 0
-        max_query_length = 0
-        mean_query_length = 0
+        min_target_length = 0
+        max_target_length = 0
+        mean_target_length = 0
 
-print "Number of query length entries = %s" % commify(query_length)
-print "Min query length = %s" % commify(min_query_length)
-print "Max query length = %s" % commify(max_query_length)
-print "Mean query length = %s" % commify(mean_query_length)
+    print "Number of target length entries = %s" % commify(target_length)
+    print "Min target length = %s" % commify(min_target_length)
+    print "Max target length = %s" % commify(max_target_length)
+    print "Mean target length = %s" % commify(mean_target_length)
+    print
 
-print "Constant query lengths = %s" % has_constant_query_length
-print "Has query identifiers = %s" % (len(header.query_name_mapping.mappings) > 0)
-print "Has target identifiers = %s" % (len(header.target_name_mapping.mappings) > 0)
-print
+    print "Number of query sequences = %s" % commify(header.number_of_queries)
 
-print "TMH: aligner threshold = %d" % tmh.alignerThreshold
-print "TMH: number of ambiguous matches = %s" % commify(len(tmh_reader.queryindex_to_numhits))
-print "TMH: %%ambiguous matches = %f %%" % (len(tmh_reader.queryindex_to_numhits) * 100.0 / header.number_of_queries)
+    # query length stats
+    has_constant_query_length = header.HasField("constantQueryLength")
 
-max_query_index = -1
-max_target_index = -1
-number_of_entries = 0
-number_of_logical_alignment_entries = 0
-total = 0
-average_score = 0.0
-number_of_variations = 0
+    # special case if query lengths are constant to reduce storage
+    if has_constant_query_length:
+        query_length =  header.number_of_queries
+        min_query_length = header.constantQueryLength
+        max_query_length = header.constantQueryLength
+        mean_query_length = float(header.constantQueryLength)
+    else:
+        query_length = len(header.query_length)
+        if query_length > 0:
+            min_query_length = min(header.query_length)
+            max_query_length = max(header.query_length)
+            mean_query_length =  sum(header.query_length) / query_length
+        else:
+            min_query_length = 0
+            max_query_length = 0
+            mean_query_length = 0
 
-aligned_query_indices = set(tmh_reader.queryindex_to_numhits.keys())
+    print "Number of query length entries = %s" % commify(query_length)
+    print "Min query length = %s" % commify(min_query_length)
+    print "Max query length = %s" % commify(max_query_length)
+    print "Mean query length = %s" % commify(mean_query_length)
 
-for entry in alignment_reader:
-    number_of_entries += 1      # Across this file
-    number_of_logical_alignment_entries += entry.multiplicity
-    total += entry.query_aligned_length
-    average_score += entry.score
-    max_query_index = max(max_query_index, entry.query_index)
-    max_target_index = max(max_target_index, entry.target_index)
-    number_of_variations += len(entry.sequence_variations)
-    aligned_query_indices.add(entry.query_index)
+    print "Constant query lengths = %s" % has_constant_query_length
+    print "Has query identifiers = %s" % (len(header.query_name_mapping.mappings) > 0)
+    print "Has target identifiers = %s" % (len(header.target_name_mapping.mappings) > 0)
+    print
 
-number_of_query_sequences = max_query_index + 1
-number_of_target_sequences = max_target_index + 1
-average_score = average_score / float(number_of_logical_alignment_entries)
+    print "TMH: aligner threshold = %d" % tmh.alignerThreshold
+    print "TMH: number of ambiguous matches = %s" % commify(len(tmh_reader.queryindex_to_numhits))
+    print "TMH: %%ambiguous matches = %f %%" % (len(tmh_reader.queryindex_to_numhits) * 100.0 / header.number_of_queries)
 
-print "num query indices = %s" % commify(number_of_query_sequences)
-print "num target indices = %s" % commify(number_of_target_sequences)
-print "Number of alignment entries = %s" % commify(number_of_logical_alignment_entries)
-print "Number of query indices that matched = %s" % commify(len(aligned_query_indices))
-print "Percent matched = %s %%" % commify(len(aligned_query_indices) * 100.0 / number_of_query_sequences)
-print "Avg query alignment length = %s" % commify(total / float(number_of_entries))
-print "Avg score alignment = %s" % commify(average_score)
-print "Avg number of variations per query sequence = %s" % commify(
-        number_of_variations / float(number_of_query_sequences))
-print "Average bytes per entry = %s" % commify(
-        alignment_reader.entries_reader.filesize / float(number_of_logical_alignment_entries))
-print
+    max_query_index = -1
+    max_target_index = -1
+    number_of_entries = 0
+    number_of_logical_alignment_entries = 0
+    total = 0
+    average_score = 0.0
+    number_of_variations = 0
+
+    aligned_query_indices = set(tmh_reader.queryindex_to_numhits.keys())
+    
+    for entry in alignment_reader:
+        number_of_entries += 1      # Across this file
+        number_of_logical_alignment_entries += entry.multiplicity
+        total += entry.query_aligned_length
+        average_score += entry.score
+        max_query_index = max(max_query_index, entry.query_index)
+        max_target_index = max(max_target_index, entry.target_index)
+        number_of_variations += len(entry.sequence_variations)
+        aligned_query_indices.add(entry.query_index)
+
+    number_of_query_sequences = max_query_index + 1
+    number_of_target_sequences = max_target_index + 1
+    average_score = average_score / float(number_of_logical_alignment_entries)
+
+    print "num query indices = %s" % commify(number_of_query_sequences)
+    print "num target indices = %s" % commify(number_of_target_sequences)
+    print "Number of alignment entries = %s" % commify(number_of_logical_alignment_entries)
+    print "Number of query indices that matched = %s" % commify(len(aligned_query_indices))
+    print "Percent matched = %s %%" % commify(len(aligned_query_indices) * 100.0 / number_of_query_sequences)
+    print "Avg query alignment length = %s" % commify(total / float(number_of_entries))
+    print "Avg score alignment = %s" % commify(average_score)
+    print "Avg number of variations per query sequence = %s" % commify(number_of_variations / float(number_of_query_sequences))
+    print "Average bytes per entry = %s" % commify(alignment_reader.entries_reader.filesize / float(number_of_logical_alignment_entries))
+    print
 
 if __name__ == "__main__":
     main()
