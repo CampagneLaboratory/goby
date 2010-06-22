@@ -24,8 +24,8 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCount;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCountInterface;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationWeightCount;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.FormulaWeightAnnotationCount;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
-import edu.cornell.med.icb.goby.algorithmic.data.FormulaWeightCount;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
@@ -118,10 +118,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
     private ObjectArraySet<NormalizationMethod> normalizationMethods;
 
-    private boolean useWeights;
-    private String weightId;
-    private boolean adjustGcBias;
-    private String formulaChoice;
+    WeightParameters weightParams;
 
     @Override
     public String getModeName() {
@@ -151,12 +148,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         omitNonInformativeColumns = jsapResult.getBoolean("omit-non-informative-columns");
         inputFilenames = jsapResult.getStringArray("input");
         outputFilename = jsapResult.getString("output");
-        weightId = jsapResult.getString("use-weights");
-        if (weightId == null || weightId.equals("false")) {
-            useWeights = false;
-        } else {
-            useWeights = true;
-        }
+
 
         statsFilename = jsapResult.getString("stats");
         final String groupsDefinition = jsapResult.getString("groups");
@@ -184,26 +176,40 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         normalizationMethods = deAnalyzer.parseNormalization(jsapResult);
         parseEval(jsapResult, deAnalyzer);
 
-        formulaChoice = jsapResult.getString("adjust-gc-bias");
-        adjustGcBias = !(formulaChoice == null || "false".equals(formulaChoice));
-        if (formulaChoice != null) {
-            formulaChoice = formulaChoice.toUpperCase();
-            
+
+       weightParams=configureWeights(jsapResult);
+        return this;
+    }
+
+    protected static WeightParameters configureWeights(JSAPResult jsapResult) {
+      WeightParameters params=new WeightParameters();
+        params.weightId = jsapResult.getString("use-weights");
+        if (params.weightId == null || params.weightId.equals("false")) {
+            params.useWeights = false;
+        } else {
+            params.useWeights = true;
         }
-        if (adjustGcBias && !useWeights) {
+
+        params.formulaChoice = jsapResult.getString("adjust-gc-bias");
+        params.adjustGcBias = !(params.formulaChoice == null || "false".equals(params.formulaChoice));
+        if (params.formulaChoice != null) {
+            params.formulaChoice = params.formulaChoice.toUpperCase();
+
+        }
+        if (params.adjustGcBias && !params.useWeights) {
             System.err.println("Cannot adjust bias when use-weights is false");
             System.exit(1);
         }
-        if (useWeights) {
-            if (!adjustGcBias) {
+        if (params.useWeights) {
+            if (!params.adjustGcBias) {
                 System.out.println("Estimating expression as sum of weights");
 
             } else {
-                System.out.println("Estimating expression with gc bias adjustment formula=" + formulaChoice);
+                System.out.println("Estimating expression with gc bias adjustment formula=" + params.formulaChoice);
 
             }
         }
-        return this;
+        return params;
     }
 
     public static void parseEval(final JSAPResult jsapResult, final DifferentialExpressionAnalysis deAnalyzer) {
@@ -342,8 +348,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                                     BufferedWriter writer, final String inputFile, final String inputBasename) throws IOException {
 
         WeightsInfo weights = null;
-        if (useWeights) {
-            weights = loadWeights(inputBasename, useWeights, weightId);
+        if (weightParams.useWeights) {
+            weights = loadWeights(inputBasename, weightParams.useWeights, weightParams.weightId);
             if (weights != null) {
                 System.err.println("Weights have been provided and loaded and will be used to reweight transcript counts.");
             }
@@ -379,18 +385,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             if (referencesToProcess.contains(referenceIndex)) {
                 AnnotationCountInterface algo = new AnnotationCount();
 
-                if (useWeights) {
-                    if (!adjustGcBias) {
-
-                        algo = new AnnotationWeightCount(weights);
-                    } else {
-
-                        FormulaWeightCount algo1 = new FormulaWeightCount(weights);
-
-                        algo1.setFormulaChoice(FormulaWeightCount.FormulaChoice.valueOf(formulaChoice));
-                        algo = algo1;
-                    }
-                }
+                algo = chooseAlgorithm(weightParams, weights, algo);
                 algs[referenceIndex] = algo;
                 algs[referenceIndex].startPopulating();
             }
@@ -441,6 +436,24 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             // output filename was not provided on the command line. We close each basename output.
             IOUtils.closeQuietly(writer);
         }
+    }
+
+    protected static AnnotationCountInterface chooseAlgorithm(WeightParameters params,
+                                                              WeightsInfo weights,
+                                                              AnnotationCountInterface algo) {
+        if (params.useWeights) {
+            if (!params.adjustGcBias) {
+
+                algo = new AnnotationWeightCount(weights);
+            } else {
+
+                FormulaWeightAnnotationCount algo1 = new FormulaWeightAnnotationCount(weights);
+
+                algo1.setFormulaChoice(FormulaWeightAnnotationCount.FormulaChoice.valueOf(params.formulaChoice));
+                algo = algo1;
+            }
+        }
+        return algo;
     }
 
     public static WeightsInfo loadWeights(final String inputBasename, final boolean useWeights, final String id) {

@@ -72,7 +72,8 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION = "Reformat a compact file, possibly dropping "
-            + "identifiers, or descriptions, or splitting the file.  When a compact-reads file "
+            + "identifiers, or descriptions, or splitting the file. The mode also supports randomly mutating "
+            + "bases and other modifications, trimming reads, etc. When a compact-reads file "
             + "is split, reads in each split are renumbered (their readIndex is changed), "
             + "starting at zero for the first sequence of each split. This ensures that indices "
             + "are correctly concatenated back together. ";

@@ -16,38 +16,17 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.cornell.med.icb.goby.algorithmic.algorithm;
-
-import it.unimi.dsi.lang.MutableString;
+package edu.cornell.med.icb.goby.modes;
 
 /**
+ * Configuration parameters for weights/reweighting operation.
  * @author Fabien Campagne
- *         Date: May 21, 2010
- *         Time: 5:13:49 PM
+ *         Date: Jun 20, 2010
+ *         Time: 1:03:52 PM
  */
-public class GCProportionWeight implements WeightCalculator {
-
-
-    public GCProportionWeight(boolean colorSpace) {
-        if (colorSpace) {
-            throw new UnsupportedOperationException("GC content is not implemented for color-space reads");
-        }
-    }
-
-    public float weight(MutableString sequence) {
-
-        float GC = 0;
-        float total = 0;
-        for (int i = 0; i < sequence.length(); i++) {
-            total++;
-            final char c = sequence.charAt(i);
-            GC += (c == 'G' || c == 'C') ? 1 : 0;
-        }
-        return GC / total;
-    }
-
-    public String id() {
-        return "gc";
-    }
-
+public class WeightParameters {
+    public boolean useWeights;
+    public String weightId;
+    public boolean adjustGcBias;
+    public String formulaChoice;
 }

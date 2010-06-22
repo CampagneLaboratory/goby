@@ -75,5 +75,17 @@
             </defaults>
             <help>When the flag is set to anything but "false" this mode will attemtpt to load a file containing weights which are used to adjust the read count for annotations.  The file loaded will be named using the basename with the extension of this parameter appended with the string"-weights" </help>
         </flaggedOption>
+         <flaggedOption>
+             <id>adjust-gc-bias</id>
+             <longFlag>adjust-gc-bias</longFlag>
+             <required>false</required>
+             <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+             <defaults>
+                <string>false</string>
+            </defaults>
+                   <help>When other than false, the identifier of a formula to reweight counts (requires use-weights gc). If false, no reweighting is done. This option is available since Goby 1.7.</help>
+         </flaggedOption>
     </parameters>
 </jsap>

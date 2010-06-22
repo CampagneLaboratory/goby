@@ -20,16 +20,15 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
 import edu.cornell.med.icb.goby.algorithmic.data.ReadWithIndex;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
-import edu.cornell.med.icb.goby.algorithmic.data.HeptamerInfo;
 import edu.cornell.med.icb.goby.counts.CountsWriter;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * Data structure and algorithm to compute base-level read coverage histogram over a reference sequence.
@@ -279,7 +278,7 @@ public class ComputeWeightCount implements ComputeCountInterface {
         throw new UnsupportedOperationException("This implementation does not support strand specific populate.");
     }
 
-    public Int2FloatMap getCountPerBase() {
+    public Map getCountPerBase() {
         return countPerBase;
     }
 

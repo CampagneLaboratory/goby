@@ -21,10 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import cern.colt.Timer;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeCount;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeCountInterface;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeStartCount;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeWeightCount;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.*;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
@@ -75,8 +72,8 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
     private int focusOnStrand;
 
     private String countArchiveModifier = COUNT_ARCHIVE_MODIFIER_DEFAULT;
-    private boolean useWeights;
-    private String weightId;
+
+    private WeightParameters weightParams;
 
     @Override
     public String getModeName() {
@@ -140,13 +137,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
             }
         }
 
-        // determine whether or not to use weights to adjust the read counts
-        weightId = jsapResult.getString("use-weights");
-        if (weightId == null || weightId.equals("false")) {
-            useWeights = false;
-        } else {
-            useWeights = true;
-        }
+        weightParams = CompactAlignmentToAnnotationCountsMode.configureWeights(jsapResult);
         return this;
     }
 
@@ -180,10 +171,12 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         //  CountsWriter writers[] = new CountsWriter[numberOfReferences];
         final IntSet referencesToProcess = new IntOpenHashSet();
         WeightsInfo weights = null;
-        if (useWeights) {
-            weights = CompactAlignmentToAnnotationCountsMode.loadWeights(basename, useWeights, weightId);
-            if (weights != null)
+        if (weightParams.useWeights) {
+            weights = CompactAlignmentToAnnotationCountsMode.loadWeights(basename, weightParams.useWeights,
+                    weightParams.weightId);
+            if (weights != null) {
                 System.err.println("Weights have been provided and loaded and will be used to reweight counts.");
+            }
         }
 
         // create count writers, one for each reference sequence in the alignment:
@@ -201,7 +194,8 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
 
             if (referencesToProcess.contains(referenceIndex)) {
                 if (accumulatePeakHistogram) {
-                    algs[referenceIndex] = useWeights ? new ComputeWeightCount(weights) : new ComputeCount();
+                    ComputeCountInterface algo = new ComputeCount();
+                    algs[referenceIndex] = chooseAlgorithm(weightParams, weights, algo);
                 } else {
                     algs[referenceIndex] = new ComputeStartCount(focusOnStrand);
                 }
@@ -249,6 +243,25 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         System.out.println(String.format("time spent  %d ms %g secs %g mins",
                 timer.millis(), timer.seconds(),
                 timer.minutes()));
+    }
+
+    private ComputeCountInterface chooseAlgorithm(WeightParameters weightParams, WeightsInfo weights, ComputeCountInterface algo) {
+
+        if (weightParams.useWeights) {
+            if (!weightParams.adjustGcBias) {
+                // weights only:
+                algo = new ComputeWeightCount(weights);
+            } else {
+                // use weights to reweight with formula:
+                FormulaWeightCount algo1 = new FormulaWeightCount(weights);
+
+                algo1.setFormulaChoice(FormulaWeightAnnotationCount.FormulaChoice.valueOf(weightParams.formulaChoice));
+                algo = algo1;
+            }
+
+        }
+        return algo;
+
     }
 
     /**

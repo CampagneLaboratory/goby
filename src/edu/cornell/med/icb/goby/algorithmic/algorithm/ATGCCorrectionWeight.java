@@ -18,7 +18,6 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import edu.cornell.med.icb.goby.algorithmic.data.HeptamerInfo;
 import it.unimi.dsi.lang.MutableString;
 
 /**

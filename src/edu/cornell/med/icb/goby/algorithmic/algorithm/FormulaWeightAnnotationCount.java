@@ -16,23 +16,21 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.cornell.med.icb.goby.algorithmic.data;
+package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCountInterface;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeCountInterface;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationWeightCount;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCount;
+import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
+import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 
 /**
  * @author Fabien Campagne
  *         Date: May 25, 2010
  *         Time: 5:43:34 PM
  */
-public class FormulaWeightCount implements AnnotationCountInterface {
+public class FormulaWeightAnnotationCount implements AnnotationCountInterface {
     AnnotationWeightCount weightCounter;
     AnnotationCount regularCounter;
 
-    public FormulaWeightCount(WeightsInfo weights) {
+    public FormulaWeightAnnotationCount(WeightsInfo weights) {
         this.weightCounter = new AnnotationWeightCount(weights);
         this.regularCounter = new AnnotationCount();
     }
@@ -58,27 +56,29 @@ public class FormulaWeightCount implements AnnotationCountInterface {
     }
 
     public float averageReadsPerPosition(int geneStart, int geneEnd) {
-        return (float) evaluateFormula(weightCounter.averageReadsPerPosition(geneStart, geneEnd),
+        return (float) evaluateFormula(formulaChoice, weightCounter.averageReadsPerPosition(geneStart, geneEnd),
                 regularCounter.averageReadsPerPosition(geneStart, geneEnd));
     }
 
 
     public double countReadsPartiallyOverlappingWithInterval(int geneStart, int geneEnd) {
-        return evaluateFormula(weightCounter.countReadsPartiallyOverlappingWithInterval(geneStart, geneEnd),
+        return evaluateFormula(formulaChoice, weightCounter.countReadsPartiallyOverlappingWithInterval(geneStart, geneEnd),
                 regularCounter.countReadsPartiallyOverlappingWithInterval(geneStart, geneEnd));
     }
 
     public double countReadsStriclyWithinInterval(int geneStart, int geneEnd) {
-        return evaluateFormula(weightCounter.countReadsStriclyWithinInterval(geneStart, geneEnd),
+        return evaluateFormula(formulaChoice, weightCounter.countReadsStriclyWithinInterval(geneStart, geneEnd),
                 regularCounter.countReadsStriclyWithinInterval(geneStart, geneEnd));
     }
 
-   public enum FormulaChoice {
+    public enum FormulaChoice {
 
         FORMULA1,
         FORMULA2,
         FORMULA3,
-       /** Fit against both Helicos and SOLID on HBR datasets: */
+        /**
+         * Fit against both Helicos and SOLID on HBR datasets:
+         */
         FORMULA4
 
     }
@@ -89,7 +89,9 @@ public class FormulaWeightCount implements AnnotationCountInterface {
 
     private FormulaChoice formulaChoice = FormulaChoice.FORMULA2;
 
-    private double evaluateFormula(double sumGamma, double rawCount) {
+    public static double evaluateFormula(FormulaChoice formulaChoice, double sumGamma, double rawCount) {
+        if (rawCount == 0) return 0;
+        if (sumGamma == 0) return rawCount;
         double value;
         switch (formulaChoice) {
             case FORMULA1:
@@ -111,9 +113,9 @@ public class FormulaWeightCount implements AnnotationCountInterface {
             case FORMULA4: {
                 // These estimates were obtained by comparing the Bullard Illumina HBR dataset to the SEQC Helicos
                 // and SOLID datasets. A covariate was used to represent the Helicos or SOLID target platform.
-                
-                 double logGC_a = Math.log(sumGamma) - Math.log(rawCount);
-                value = (float) Math.exp(-1.4050204825287  - 3.5820783386146 * logGC_a + Math.log(rawCount));
+
+                double logGC_a = Math.log(sumGamma) - Math.log(rawCount);
+                value = (float) Math.exp(-1.4050204825287 - 3.5820783386146 * logGC_a + Math.log(rawCount));
                 return value;
             }
             default:
@@ -125,7 +127,7 @@ public class FormulaWeightCount implements AnnotationCountInterface {
     public double geneExpressionCount(Annotation annot) {
         double weightExpression = weightCounter.geneExpressionCount(annot);
         double regularExpression = regularCounter.geneExpressionCount(annot);
-        return evaluateFormula(weightExpression, regularExpression);
+        return evaluateFormula(formulaChoice, weightExpression, regularExpression);
     }
 
     public void accumulate() {
