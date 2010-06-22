@@ -21,18 +21,16 @@ package edu.cornell.med.icb.goby.modes;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.aligners.AbstractAligner;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.alignments.ConcatAlignmentReader;
-import edu.cornell.med.icb.goby.alignments.Merge;
+import edu.cornell.med.icb.goby.alignments.*;
 import it.unimi.dsi.logging.ProgressLogger;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.FileNotFoundException;
 
 /**
- * Concatenate compact alignment files.
+ * Concatenate compact alignment files. Concatenation preserves
+ * sorting when every input alignment is sorted.
  * <p/>
  * Reference sequences must match exactly across the input alignments.
  * Query are assumed to be entirely distinct and will be treated as independent observations (e.g.,
@@ -52,7 +50,8 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Concatenate compact alignment files."
+    private static final String MODE_DESCRIPTION = "Concatenate compact alignment files. Concatenation preserves "
+            + "sorting when every input alignment is sorted."
             + "Reference sequences must match exactly across the input alignments.  Queries "
             + "are assumed to be entirely distinct and will be treated as independent observations "
             + "(e.g., reads from multiple independent samples). To this effect, alignment entries "
@@ -106,7 +105,16 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         final String outputFilename = outputFile;
         final AlignmentWriter writer = new AlignmentWriter(outputFilename);
         final String[] basenames = AlignmentReader.getBasenames(inputFilenames);
-        final ConcatAlignmentReader alignmentReader = new ConcatAlignmentReader(adjustQueryIndices, basenames);
+        boolean allSorted = isAllSorted(basenames);
+        if (allSorted) {
+            System.out.println("input alignments are all sorted, the output will also be sorted.");
+        } else {
+
+            System.out.println("At least one of the input alignments is not sorted, the output will NOT be sorted.");
+
+        }
+        final ConcatAlignmentReader alignmentReader = allSorted ? new ConcatSortedAlignmentReader(adjustQueryIndices, basenames) :
+                new ConcatAlignmentReader(adjustQueryIndices, basenames);
         final ProgressLogger progress = new ProgressLogger();
         progress.displayFreeMemory = true;
         int entriesInOutputFile = 0;
@@ -119,6 +127,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         if (alignmentReader.getQueryLengths() != null) {
             queryLengths = alignmentReader.getQueryLengths();
         }
+        writer.setSorted(allSorted);
         for (final Alignments.AlignmentEntry entry : alignmentReader) {
             if (queryLengths != null) {
                 writer.appendEntryWithLength(entry, queryLengths[entry.getQueryIndex()]);
@@ -155,6 +164,20 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
 
         writer.printStats(System.out);
         System.out.printf("Wrote a total of %d alignment entries.%n", entriesInOutputFile);
+    }
+
+    private boolean isAllSorted(String[] basenames) throws IOException {
+        boolean sorted = true;
+        for (String basename : basenames) {
+            AlignmentReader reader = new AlignmentReader(basename);
+            reader.readHeader();
+
+
+            sorted &= reader.isSorted();
+
+        }
+        return sorted;
+
     }
 
     private double divide(final long a, final long b) {

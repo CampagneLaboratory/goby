@@ -1,4 +1,6 @@
 development -> 1.7
+ - Concatenate alignment now produces sorted alignments if all the input alignments
+   are sorted.
  - Added a mode to sort alignment by reference sequence and then by position
    on the reference sequence.
  - Support to estimate read weights described in Hansen KD et al NAR 2010.

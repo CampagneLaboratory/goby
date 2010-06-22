@@ -42,3 +42,4 @@ public class AlignmentPositionComparator implements Comparator<Alignments.Alignm
 
     }
 }
+

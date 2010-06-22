@@ -48,8 +48,8 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
      */
     private static final Log LOG = LogFactory.getLog(ConcatAlignmentReader.class);
 
-    private final AlignmentReader[] readers;
-    private final IntSet readersWithMoreEntries;
+    protected final AlignmentReader[] readers;
+    protected final IntSet readersWithMoreEntries;
     /**
      * One element per reader:
      */
@@ -61,8 +61,8 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
 
     private final int[] queryIndexOffset;
 
-    private int activeIndex;
-    private boolean adjustQueryIndices = true;
+    protected int activeIndex;
+    protected boolean adjustQueryIndices = true;
     private int numberOfAlignedReads;
 
     /**
@@ -162,7 +162,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
         }
     }
 
-    private int mergedQueryIndex(final int queryIndex) {
+    protected int mergedQueryIndex(final int queryIndex) {
         return queryIndexOffset[activeIndex] + queryIndex;
     }
 
@@ -180,7 +180,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
      *
      * @return true if the input has more entries, false otherwise.
      */
-    public final boolean hasNext() {
+    public boolean hasNext() {
         while (!readersWithMoreEntries.isEmpty()) {
             activeIndex = readersWithMoreEntries.iterator().nextInt();
             final AlignmentReader reader = readers[activeIndex];
@@ -200,7 +200,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
      *
      * @return the alignment read entry from the input stream.
      */
-    public final Alignments.AlignmentEntry next() {
+    public Alignments.AlignmentEntry next() {
         if (!hasNext()) {
             throw new NoSuchElementException();
         } else {

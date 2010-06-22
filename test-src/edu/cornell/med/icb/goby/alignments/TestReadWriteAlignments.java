@@ -99,6 +99,45 @@ public class TestReadWriteAlignments {
         assertEquals(numExpected, count);
         assertEquals("number of queries must match", numReads - 1, maxQueryIndex);
         assertEquals("number of targets must match", numTargets - 1, maxTargetIndex);
+
+
+    }
+
+    @Test
+    public void testSkipTo() throws IOException {
+        final AlignmentWriter writer =
+                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-skip-to"));
+        writer.setNumAlignmentEntriesPerChunk(1000);
+        final int numReads = 2000;
+        final int numTargets = 10;
+        int numExpected = 0;
+        int position = 1;
+        // we write this alignment sorted:
+        writer.setSorted(true);
+        for (int referenceIndex = 0; referenceIndex < numTargets; referenceIndex++) {
+            for (int queryIndex = 0; queryIndex < numReads; queryIndex++) {
+                //        System.out.printf("referenceIndex=%d position=%d%n", referenceIndex, position);
+
+                writer.setAlignmentEntry(queryIndex, referenceIndex, position++, 30, false);
+                writer.appendEntry();
+                numExpected++;
+            }
+        }
+
+        writer.close();
+        writer.printStats(System.out);
+
+
+        final AlignmentReader reader =
+                new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, "align-skip-to"));
+
+        Alignments.AlignmentEntry a = reader.skipTo(2, 12);
+        assertNotNull(a);
+        Alignments.AlignmentEntry b = reader.skipTo(2, 4001);
+        assertNotNull(b);
+        assertEquals(4002, b.getPosition());
+
+
     }
 
     @Test

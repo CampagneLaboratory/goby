@@ -183,19 +183,27 @@ public class AlignmentReader extends AbstractAlignmentReader {
         return collection.getAlignmentEntries(alignmentEntryReader.incrementEntryIndex());
     }
 
-    public Alignments.AlignmentEntry skipTo(int targetIndex, int position) {
+    /**
+     * Skip all entries that have position before (targetIndex,position).
+     * @param targetIndex The index of the target sequence to skip to.
+     * @param position   The position on the target sequence.
+     * @return The next entry, at position or past position (if not entry at position is found).
+     * @throws IOException If an error occurs reading the alignment header. The header is accessed to check that the alignment is sorted.
+     */
+    public Alignments.AlignmentEntry skipTo(int targetIndex, int position) throws IOException {
+        readHeader();
         if (!sortedState) throw new UnsupportedOperationException("skipTo cannot be used with unsorted alignments.");
         Alignments.AlignmentEntry entry = null;
         boolean hasNext = false;
         while ((hasNext = hasNext()) &&
                 (entry = next()) != null &&
-                entry.getTargetIndex() < targetIndex &&
-                entry.getPosition() < position) {
-         // go to next entry
+                (entry.getTargetIndex() < targetIndex ||
+                        (entry.getTargetIndex() == targetIndex && entry.getPosition() < position))) {
         }
+
         if (!hasNext) return null;
-        else if (entry != null && entry.getTargetIndex() <= targetIndex && entry.getPosition() <= position) return entry;
-        else return null;
+        else return entry;
+
     }
 
     /**
@@ -212,32 +220,34 @@ public class AlignmentReader extends AbstractAlignmentReader {
      */
     @Override
     public void readHeader() throws IOException {
-        // accept very large header messages, since these may contain query identifiers:
-        final CodedInputStream codedInput = CodedInputStream.newInstance(headerStream);
-        codedInput.setSizeLimit(Integer.MAX_VALUE);
-        final Alignments.AlignmentHeader header = Alignments.AlignmentHeader.parseFrom(codedInput);
+        if (!isHeaderLoaded()) {
+            // accept very large header messages, since these may contain query identifiers:
+            final CodedInputStream codedInput = CodedInputStream.newInstance(headerStream);
+            codedInput.setSizeLimit(Integer.MAX_VALUE);
+            final Alignments.AlignmentHeader header = Alignments.AlignmentHeader.parseFrom(codedInput);
 
-        smallestQueryIndex = header.getSmallestSplitQueryIndex();
-        largestQueryIndex = header.getLargestSplitQueryIndex();
-        queryIdentifiers = parseIdentifiers(header.getQueryNameMapping());
-        targetIdentifiers = parseIdentifiers(header.getTargetNameMapping());
-        if (header.hasConstantQueryLength()) {
-            this.constantQueryLengths = true;
-            this.constantLength = header.getConstantQueryLength();
-            queryLengths = null;
-        } else if (header.getQueryLengthCount() > 0) {
-            queryLengths = new IntArrayList(header.getQueryLengthList()).toIntArray();
-            compactQueryLengths();
-        }
+            smallestQueryIndex = header.getSmallestSplitQueryIndex();
+            largestQueryIndex = header.getLargestSplitQueryIndex();
+            queryIdentifiers = parseIdentifiers(header.getQueryNameMapping());
+            targetIdentifiers = parseIdentifiers(header.getTargetNameMapping());
+            if (header.hasConstantQueryLength()) {
+                this.constantQueryLengths = true;
+                this.constantLength = header.getConstantQueryLength();
+                queryLengths = null;
+            } else if (header.getQueryLengthCount() > 0) {
+                queryLengths = new IntArrayList(header.getQueryLengthList()).toIntArray();
+                compactQueryLengths();
+            }
 
-        if (header.getTargetLengthCount() > 0) {
-            targetLengths = new IntArrayList(header.getTargetLengthList()).toIntArray();
+            if (header.getTargetLengthCount() > 0) {
+                targetLengths = new IntArrayList(header.getTargetLengthList()).toIntArray();
+            }
+            numberOfQueries = header.getNumberOfQueries();
+            numberOfTargets = header.getNumberOfTargets();
+            setHeaderLoaded(true);
+            numberOfAlignedReads = header.getNumberOfAlignedReads();
+            sortedState = header.getSorted();
         }
-        numberOfQueries = header.getNumberOfQueries();
-        numberOfTargets = header.getNumberOfTargets();
-        setHeaderLoaded(true);
-        numberOfAlignedReads = header.getNumberOfAlignedReads();
-        sortedState = header.getSorted();
     }
 
     private void compactQueryLengths() {
