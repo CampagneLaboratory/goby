@@ -116,7 +116,6 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
     WeightParameters weightParams;
     private String includeReferenceNameCommas;
-    private IntSet referencesSelected;
 
     @Override
     public String getModeName() {

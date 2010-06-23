@@ -96,11 +96,12 @@ public class AlignmentReader extends AbstractAlignmentReader {
 
     private boolean indexed;
 
-    public AlignmentReader(final String basename) throws IOException {
+    public AlignmentReader(final long startOffset, final long endOffset, final String basename) throws IOException {
         super();
         this.basename = basename;
         final FileInputStream stream = new FileInputStream(basename + ".entries");
-        alignmentEntryReader = new FastBufferedMessageChunksReader(0, Long.MAX_VALUE, new FastBufferedInputStream(stream));
+        alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset, endOffset, new FastBufferedInputStream(stream));
+        LOG.trace("start offset :" +startOffset + " end offset "+endOffset);
         try {
             headerStream = new GZIPInputStream(new FileInputStream(basename + ".header"));
         } catch (IOException e) {
@@ -122,6 +123,10 @@ public class AlignmentReader extends AbstractAlignmentReader {
                 IOUtils.closeQuietly(statsFileReader);
             }
         }
+    }
+
+    public AlignmentReader(final String basename) throws IOException {
+        this(0, Long.MAX_VALUE, basename);
     }
 
     /**
@@ -205,7 +210,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
      * @return The next entry, at position or past position (if not entry at position is found).
      * @throws IOException If an error occurs reading the alignment header. The header is accessed to check that the alignment is sorted.
      */
-    public final Alignments.AlignmentEntry skipTo(final int targetIndex,final int position) throws IOException {
+    public final Alignments.AlignmentEntry skipTo(final int targetIndex, final int position) throws IOException {
         readHeader();
         if (!sorted) throw new UnsupportedOperationException("skipTo cannot be used with unsorted alignments.");
 

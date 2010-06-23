@@ -22,13 +22,10 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
-import java.io.PrintStream;
-import java.io.FileOutputStream;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -61,9 +58,12 @@ public class SortMode extends AbstractGobyMode {
     /**
      * The basename of the compact alignment.
      */
-    private String[] basenames;
-    private MyIterateAlignments alignmentIterator;
+    private String basename;
+    private SortIterateAlignments alignmentIterator;
     private int[] targetLengths;
+    private boolean hasStartOrEndPosition;
+    private long startPosition;
+    private long endPosition;
 
 
     @Override
@@ -91,19 +91,73 @@ public class SortMode extends AbstractGobyMode {
             throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
-        final String[] inputFiles = jsapResult.getStringArray("input");
-        basenames = AlignmentReader.getBasenames(inputFiles);
+        final String inputFile = jsapResult.getString("input");
+        basename = AlignmentReader.getBasename(inputFile);
         outputFilename = jsapResult.getString("output");
-        alignmentIterator = new MyIterateAlignments();
+        alignmentIterator = new SortIterateAlignments();
         alignmentIterator.parseIncludeReferenceArgument(jsapResult);
+        if (jsapResult.contains("start-position") || jsapResult.contains("end-position")) {
+            hasStartOrEndPosition = true;
+            startPosition = jsapResult.getLong("start-position", 0L);
+            endPosition = jsapResult.getLong("end-position", Long.MAX_VALUE);
+        }
+
+        if (startPosition < 0L) {
+            throw new JSAPException("Start position must not be less than zero");
+        }
+        if (endPosition < 0L) {
+            throw new JSAPException("End position must not be less than zero");
+        }
+        if (startPosition > endPosition) {
+            throw new JSAPException("Start position must not be greater than the end position");
+        }
 
         return this;
     }
 
-    private class MyIterateAlignments extends IterateAlignments {
+
+    private static final Comparator<Alignments.AlignmentEntry> POSITION_ENTRY_COMPARATOR =
+            new AlignmentPositionComparator();
+
+    /**
+     * Sort the alignment.
+     *
+     * @throws java.io.IOException error reading / writing
+     */
+    @Override
+    public void execute() throws IOException {
 
 
-        private MyIterateAlignments() {
+        AlignmentWriter writer = new AlignmentWriter(outputFilename);
+
+        // Iterate through each alignment and write sequence variations to output file:
+        LOG.info("Loading entries..");
+        alignmentIterator.iterate(startPosition, endPosition, basename);
+        LOG.info("Sorting..");
+        alignmentIterator.sort();
+        LOG.info("Writing sorted alignment..");
+        alignmentIterator.write(writer);
+
+    }
+
+
+    /**
+     * Main method.
+     *
+     * @param args command line args.
+     * @throws com.martiansoftware.jsap.JSAPException
+     *                             error parsing
+     * @throws java.io.IOException error parsing or executing.
+     */
+
+    public static void main(final String[] args) throws JSAPException, IOException {
+        new SortMode().configure(args).execute();
+    }
+
+    private class SortIterateAlignments extends IterateAlignments {
+
+
+        private SortIterateAlignments() {
 
             entries = new ObjectArrayList<Alignments.AlignmentEntry>();
         }
@@ -126,9 +180,7 @@ public class SortMode extends AbstractGobyMode {
         public void processAlignmentEntry(final AlignmentReader alignmentReader,
                                           final Alignments.AlignmentEntry alignmentEntry) {
 
-
             entries.add(alignmentEntry);
-
         }
 
         AlignmentReader alignmentReader = null;
@@ -140,12 +192,11 @@ public class SortMode extends AbstractGobyMode {
         public void write(AlignmentWriter writer) throws IOException {
             // too many hits is prepared as for Merge:
             try {
-                Merge.prepareMergedTooManyHits(outputFilename, alignmentReader.getNumberOfQueries(), 0, basenames);
+                Merge.prepareMergedTooManyHits(outputFilename, alignmentReader.getNumberOfQueries(), 0, basename);
                 writer.setTargetIdentifiers(alignmentReader.getTargetIdentifiers());
                 writer.setQueryIdentifiers(alignmentReader.getQueryIdentifiers());
                 writer.setTargetLengths(alignmentReader.getTargetLength());
                 writer.setSorted(true);
-
 
                 for (Alignments.AlignmentEntry entry : entries) {
                     writer.appendEntry(entry);
@@ -156,43 +207,4 @@ public class SortMode extends AbstractGobyMode {
 
         }
     }
-
-    private static final Comparator<Alignments.AlignmentEntry> POSITION_ENTRY_COMPARATOR =
-            new AlignmentPositionComparator();
-
-    /**
-     * Sort the alignment.
-     *
-     * @throws java.io.IOException error reading / writing
-     */
-    @Override
-    public void execute() throws IOException {
-
-
-        AlignmentWriter writer = new AlignmentWriter(outputFilename);
-
-        // Iterate through each alignment and write sequence variations to output file:
-        LOG.info("Loading entries..");
-        alignmentIterator.iterate(basenames);
-        LOG.info("Sorting..");
-        alignmentIterator.sort();
-        LOG.info("Writing sorted alignment..");
-        alignmentIterator.write(writer);
-
-    }
-
-
-    /**
-     * Main method.
-     *
-     * @param args command line args.
-     * @throws com.martiansoftware.jsap.JSAPException
-     *                             error parsing
-     * @throws java.io.IOException error parsing or executing.
-     */
-
-    public static void main(final String[] args) throws JSAPException, IOException {
-        new SortMode().configure(args).execute();
-    }
-
 }

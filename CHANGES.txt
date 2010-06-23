@@ -1,4 +1,6 @@
 development -> 1.7
+ - The sort mode now supports reading only a slice of an input alignment (see options
+   --start-position and --end-position).
  - Refactored CompactAlignmentToAnnotationCountsMode to use IterateAlignments (provides
    large speed ups when working with sorted/indexed alignments and selecting a subset of
    reference sequences for DE).
