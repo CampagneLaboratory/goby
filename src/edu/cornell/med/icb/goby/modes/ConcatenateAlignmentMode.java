@@ -50,13 +50,15 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Concatenate compact alignment files. Concatenation preserves "
-            + "sorting when every input alignment is sorted."
-            + "Reference sequences must match exactly across the input alignments.  Queries "
-            + "are assumed to be entirely distinct and will be treated as independent observations "
-            + "(e.g., reads from multiple independent samples). To this effect, alignment entries "
-            + "read from different input basenames, which would otherwise share an identical "
-            + "query index, are renumbered with distinct query indices.";
+    private static final String MODE_DESCRIPTION =
+            "Concatenate compact alignment files. Concatenation preserves sorting when " +
+            "every input alignment is already sorted.Reference sequences must match " +
+            "exactly across the input alignments.  Queries are assumed to be entirely " +
+            "distinct and will be treated as independent observations (e.g., reads from " +
+            "multiple independent samples). To this effect, alignment entries read from " +
+            "different input basenames, which would otherwise share an identical query " +
+            "index, are renumbered with distinct query indices (this behaviour can be " +
+            "turned off with the adjust-query-indices option).";
 
     private String[] inputFilenames;
     private String outputFile;
@@ -160,7 +162,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         }
         writer.setNumQueries(alignmentReader.getNumberOfQueries());
         writer.setNumTargets(alignmentReader.getNumberOfTargets());
-       
+
         writer.setStatistics(alignmentReader.getStatistics());
         writer.putStatistic("overall.matched.percent",
                 String.format("%3.3g", divide(numLogicalEntries, numQueries) * 100d));

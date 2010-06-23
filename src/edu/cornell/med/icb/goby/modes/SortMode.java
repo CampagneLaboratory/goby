@@ -48,7 +48,7 @@ public class SortMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Sort a compact alignment by reference position.";
+    private static final String MODE_DESCRIPTION = "Sort a compact alignment by reference position. The output alignment is sorted and indexed.";
 
     /**
      * The output file.

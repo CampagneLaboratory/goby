@@ -25,18 +25,14 @@
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
             <required>false</required>
-            <help>The basename of the output compact alignments.</help>
+            <help>The basename of the output alignment.</help>
         </flaggedOption>
-
-
         <unflaggedOption>
             <id>input</id>
             <required>true</required>
             <greedy>true</greedy>
             <help>The basenames of the input alignments to concatenate.</help>
         </unflaggedOption>
-
-
         <flaggedOption>
             <id>adjust-query-indices</id>
             <longFlag>adjust-query-indices</longFlag>
