@@ -19,11 +19,9 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import com.martiansoftware.jsap.JSAPResult;
+import com.sun.tools.internal.ws.wscompile.ErrorReceiver;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
@@ -31,18 +29,27 @@ import it.unimi.dsi.lang.MutableString;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * A helper class to iterate through a set of alignments and process only a subset of
- * references in each alignment.
+ * references in each alignment. Since Goby 1.7, this class uses the skipTo method to
+ * scan alignments that are both sorted and indexed.
  *
  * @author Fabien Campagne
  *         Date: Mar 10, 2010
  *         Time: 11:12:23 AM
  */
 public abstract class IterateAlignments {
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(IterateAlignments.class);
+
     private boolean filterByReferenceNames;
     private ObjectSet<String> includeReferenceNames = new ObjectOpenHashSet<String>();
-    private IntSet referencesToProcess;
+    private IntSortedSet referencesToProcess;
     private DoubleIndexedIdentifier referenceIds;
 
     /**
@@ -67,7 +74,7 @@ public abstract class IterateAlignments {
             System.out.println(String.format("Alignment contains %d reference sequences", numberOfReferences));
             processNumberOfReferences(basename, numberOfReferences);
             //  CountsWriter writers[] = new CountsWriter[numberOfReferences];
-            referencesToProcess = new IntOpenHashSet();
+            referencesToProcess = new IntLinkedOpenHashSet();
 
             // setup referencesToProcess data structure according to the command line (filterByReferenceNames and includeReferenceNames)
             for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
@@ -91,18 +98,49 @@ public abstract class IterateAlignments {
             alignmentReader.readHeader();
 
             // Give the client the ability to prepare data structures for each reference that will be processed.
-                       for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
-                           if (referencesToProcess.contains(referenceIndex)) {
-                               prepareDataStructuresForReference(alignmentReader, referenceIndex);
-                           }
-                       }
+            for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
+                if (referencesToProcess.contains(referenceIndex)) {
+                    prepareDataStructuresForReference(alignmentReader, referenceIndex);
+                }
+            }
 
             // read the alignment:
+
             System.out.println("Loading the alignment " + basename);
-            for (final Alignments.AlignmentEntry alignmentEntry : alignmentReader) {
-                final int referenceIndex = alignmentEntry.getTargetIndex();
-                if (referencesToProcess.contains(referenceIndex)) {
-                    processAlignmentEntry(alignmentReader, alignmentEntry);
+            if (alignmentReader.isSorted()) {
+                LOG.info("The alignment is sorted, iteration will use the faster skipTo method.");
+                // the alignment is not sorted, we leverage skipTo to get directly to the sequence of interest.:
+
+                Alignments.AlignmentEntry alignmentEntry = null;
+                // the first reference that we should skip to:
+                int currentMinTargetIndex = referencesToProcess.firstInt();
+                // skip to will go to the next entry in or after currentMinTargetIndex with at least position 0
+                while ((alignmentEntry = alignmentReader.skipTo(currentMinTargetIndex, 0)) != null) {
+                    final int referenceIndex = alignmentEntry.getTargetIndex();
+                    if (referencesToProcess.contains(referenceIndex)) {
+                        processAlignmentEntry(alignmentReader, alignmentEntry);
+                    }
+                    if (referenceIndex > currentMinTargetIndex) {
+                        // we are past the reference sequence we use to skip to
+                        // Check if we are done:
+                        boolean success = referencesToProcess.remove(currentMinTargetIndex);
+                        assert success : "removing an element from referencesToProcess must succeed. ";
+                        if (referencesToProcess.isEmpty()) {
+                            // we are done.
+                            break;
+                        }
+                        // Not done, we now look for the next requested reference sequence:
+                        currentMinTargetIndex = referencesToProcess.firstInt();
+                    }
+                }
+            } else {
+                // the alignment is not sorted, we cannot use skipTo:
+
+                for (final Alignments.AlignmentEntry alignmentEntry : alignmentReader) {
+                    final int referenceIndex = alignmentEntry.getTargetIndex();
+                    if (referencesToProcess.contains(referenceIndex)) {
+                        processAlignmentEntry(alignmentReader, alignmentEntry);
+                    }
                 }
             }
             reader.close();
@@ -116,7 +154,7 @@ public abstract class IterateAlignments {
     public void prepareDataStructuresForReference(AlignmentReader alignmentReader, final int referenceIndex) {
 
     }
-    
+
     /**
      * Will be called to let the client know how many references will be processed in a given alignment.
      *
@@ -149,6 +187,7 @@ public abstract class IterateAlignments {
 
     /**
      * Return the reference sequence id given its index.
+     *
      * @param targetIndex The index of the desired reference sequence
      * @return The id of the reference sequence
      */

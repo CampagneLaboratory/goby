@@ -213,8 +213,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         final AlignmentReader reader = new AlignmentReader(basename);
         reader.readHeader();
         stream.println("Info from header:");
-        stream.printf("Sorted: "+reader.isSorted());
-        stream.printf("Indexed: "+reader.isIndexed());
+        stream.printf("Sorted: %b%n",reader.isSorted());
+        stream.printf("Indexed: %b%n",reader.isIndexed());
         stream.printf("Number of target sequences = %,d%n", reader.getNumberOfTargets());
         final int[] targetLength = reader.getTargetLength();
         stream.printf("Number of target length entries = %,d%n",

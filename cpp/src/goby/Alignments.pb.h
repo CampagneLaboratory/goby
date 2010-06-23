@@ -1116,28 +1116,28 @@ class AlignmentIndex : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
       mutable_targetpositionoffsets();
   
-  // repeated uint32 offsets = 2 [packed = true];
+  // repeated uint64 offsets = 2 [packed = true];
   inline int offsets_size() const;
   inline void clear_offsets();
   static const int kOffsetsFieldNumber = 2;
-  inline ::google::protobuf::uint32 offsets(int index) const;
-  inline void set_offsets(int index, ::google::protobuf::uint32 value);
-  inline void add_offsets(::google::protobuf::uint32 value);
-  inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
+  inline ::google::protobuf::uint64 offsets(int index) const;
+  inline void set_offsets(int index, ::google::protobuf::uint64 value);
+  inline void add_offsets(::google::protobuf::uint64 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
       offsets() const;
-  inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
       mutable_offsets();
   
-  // repeated uint32 absolutePositions = 3 [packed = true];
+  // repeated uint64 absolutePositions = 3 [packed = true];
   inline int absolutepositions_size() const;
   inline void clear_absolutepositions();
   static const int kAbsolutePositionsFieldNumber = 3;
-  inline ::google::protobuf::uint32 absolutepositions(int index) const;
-  inline void set_absolutepositions(int index, ::google::protobuf::uint32 value);
-  inline void add_absolutepositions(::google::protobuf::uint32 value);
-  inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
+  inline ::google::protobuf::uint64 absolutepositions(int index) const;
+  inline void set_absolutepositions(int index, ::google::protobuf::uint64 value);
+  inline void add_absolutepositions(::google::protobuf::uint64 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
       absolutepositions() const;
-  inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
       mutable_absolutepositions();
   
   // @@protoc_insertion_point(class_scope:goby.AlignmentIndex)
@@ -1147,9 +1147,9 @@ class AlignmentIndex : public ::google::protobuf::Message {
   
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > targetpositionoffsets_;
   mutable int _targetpositionoffsets_cached_byte_size_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > offsets_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > offsets_;
   mutable int _offsets_cached_byte_size_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > absolutepositions_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > absolutepositions_;
   mutable int _absolutepositions_cached_byte_size_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
@@ -2019,52 +2019,52 @@ AlignmentIndex::mutable_targetpositionoffsets() {
   return &targetpositionoffsets_;
 }
 
-// repeated uint32 offsets = 2 [packed = true];
+// repeated uint64 offsets = 2 [packed = true];
 inline int AlignmentIndex::offsets_size() const {
   return offsets_.size();
 }
 inline void AlignmentIndex::clear_offsets() {
   offsets_.Clear();
 }
-inline ::google::protobuf::uint32 AlignmentIndex::offsets(int index) const {
+inline ::google::protobuf::uint64 AlignmentIndex::offsets(int index) const {
   return offsets_.Get(index);
 }
-inline void AlignmentIndex::set_offsets(int index, ::google::protobuf::uint32 value) {
+inline void AlignmentIndex::set_offsets(int index, ::google::protobuf::uint64 value) {
   offsets_.Set(index, value);
 }
-inline void AlignmentIndex::add_offsets(::google::protobuf::uint32 value) {
+inline void AlignmentIndex::add_offsets(::google::protobuf::uint64 value) {
   offsets_.Add(value);
 }
-inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
 AlignmentIndex::offsets() const {
   return offsets_;
 }
-inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
 AlignmentIndex::mutable_offsets() {
   return &offsets_;
 }
 
-// repeated uint32 absolutePositions = 3 [packed = true];
+// repeated uint64 absolutePositions = 3 [packed = true];
 inline int AlignmentIndex::absolutepositions_size() const {
   return absolutepositions_.size();
 }
 inline void AlignmentIndex::clear_absolutepositions() {
   absolutepositions_.Clear();
 }
-inline ::google::protobuf::uint32 AlignmentIndex::absolutepositions(int index) const {
+inline ::google::protobuf::uint64 AlignmentIndex::absolutepositions(int index) const {
   return absolutepositions_.Get(index);
 }
-inline void AlignmentIndex::set_absolutepositions(int index, ::google::protobuf::uint32 value) {
+inline void AlignmentIndex::set_absolutepositions(int index, ::google::protobuf::uint64 value) {
   absolutepositions_.Set(index, value);
 }
-inline void AlignmentIndex::add_absolutepositions(::google::protobuf::uint32 value) {
+inline void AlignmentIndex::add_absolutepositions(::google::protobuf::uint64 value) {
   absolutepositions_.Add(value);
 }
-inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
 AlignmentIndex::absolutepositions() const {
   return absolutepositions_;
 }
-inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
 AlignmentIndex::mutable_absolutepositions() {
   return &absolutepositions_;
 }

@@ -314,7 +314,7 @@ void protobuf_AddDesc_Alignments_2eproto() {
     "_least_number_of_hits\030\002 \002(\r\022\027\n\017length_of"
     "_match\030\003 \001(\r\"g\n\016AlignmentIndex\022!\n\025target"
     "PositionOffsets\030\001 \003(\rB\002\020\001\022\023\n\007offsets\030\002 \003"
-    "(\rB\002\020\001\022\035\n\021absolutePositions\030\003 \003(\rB\002\020\001B\'\n"
+    "(\004B\002\020\001\022\035\n\021absolutePositions\030\003 \003(\004B\002\020\001B\'\n"
     "#edu.cornell.med.icb.goby.alignmentsH\001", 1398);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "Alignments.proto", &protobuf_RegisterTypes);
@@ -3440,19 +3440,19 @@ bool AlignmentIndex::MergePartialFromCodedStream(
         break;
       }
       
-      // repeated uint32 offsets = 2 [packed = true];
+      // repeated uint64 offsets = 2 [packed = true];
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_offsets:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
                  input, this->mutable_offsets())));
         } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
                    == ::google::protobuf::internal::WireFormatLite::
                       WIRETYPE_VARINT) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
                  1, 18, input, this->mutable_offsets())));
         } else {
           goto handle_uninterpreted;
@@ -3461,19 +3461,19 @@ bool AlignmentIndex::MergePartialFromCodedStream(
         break;
       }
       
-      // repeated uint32 absolutePositions = 3 [packed = true];
+      // repeated uint64 absolutePositions = 3 [packed = true];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_absolutePositions:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
                  input, this->mutable_absolutepositions())));
         } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
                    == ::google::protobuf::internal::WireFormatLite::
                       WIRETYPE_VARINT) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
                  1, 26, input, this->mutable_absolutepositions())));
         } else {
           goto handle_uninterpreted;
@@ -3510,23 +3510,23 @@ void AlignmentIndex::SerializeWithCachedSizes(
       this->targetpositionoffsets(i), output);
   }
   
-  // repeated uint32 offsets = 2 [packed = true];
+  // repeated uint64 offsets = 2 [packed = true];
   if (this->offsets_size() > 0) {
     ::google::protobuf::internal::WireFormatLite::WriteTag(2, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
     output->WriteVarint32(_offsets_cached_byte_size_);
   }
   for (int i = 0; i < this->offsets_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32NoTag(
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64NoTag(
       this->offsets(i), output);
   }
   
-  // repeated uint32 absolutePositions = 3 [packed = true];
+  // repeated uint64 absolutePositions = 3 [packed = true];
   if (this->absolutepositions_size() > 0) {
     ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
     output->WriteVarint32(_absolutepositions_cached_byte_size_);
   }
   for (int i = 0; i < this->absolutepositions_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32NoTag(
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64NoTag(
       this->absolutepositions(i), output);
   }
   
@@ -3552,7 +3552,7 @@ void AlignmentIndex::SerializeWithCachedSizes(
       WriteUInt32NoTagToArray(this->targetpositionoffsets(i), target);
   }
   
-  // repeated uint32 offsets = 2 [packed = true];
+  // repeated uint64 offsets = 2 [packed = true];
   if (this->offsets_size() > 0) {
     target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
       2,
@@ -3563,10 +3563,10 @@ void AlignmentIndex::SerializeWithCachedSizes(
   }
   for (int i = 0; i < this->offsets_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteUInt32NoTagToArray(this->offsets(i), target);
+      WriteUInt64NoTagToArray(this->offsets(i), target);
   }
   
-  // repeated uint32 absolutePositions = 3 [packed = true];
+  // repeated uint64 absolutePositions = 3 [packed = true];
   if (this->absolutepositions_size() > 0) {
     target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
       3,
@@ -3577,7 +3577,7 @@ void AlignmentIndex::SerializeWithCachedSizes(
   }
   for (int i = 0; i < this->absolutepositions_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteUInt32NoTagToArray(this->absolutepositions(i), target);
+      WriteUInt64NoTagToArray(this->absolutepositions(i), target);
   }
   
   if (!unknown_fields().empty()) {
@@ -3605,12 +3605,12 @@ int AlignmentIndex::ByteSize() const {
     total_size += data_size;
   }
   
-  // repeated uint32 offsets = 2 [packed = true];
+  // repeated uint64 offsets = 2 [packed = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->offsets_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
-        UInt32Size(this->offsets(i));
+        UInt64Size(this->offsets(i));
     }
     if (data_size > 0) {
       total_size += 1 +
@@ -3620,12 +3620,12 @@ int AlignmentIndex::ByteSize() const {
     total_size += data_size;
   }
   
-  // repeated uint32 absolutePositions = 3 [packed = true];
+  // repeated uint64 absolutePositions = 3 [packed = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->absolutepositions_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
-        UInt32Size(this->absolutepositions(i));
+        UInt64Size(this->absolutepositions(i));
     }
     if (data_size > 0) {
       total_size += 1 +

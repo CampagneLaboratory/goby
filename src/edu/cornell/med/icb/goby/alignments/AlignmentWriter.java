@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -86,10 +87,10 @@ public class AlignmentWriter implements Closeable {
     private int firstTargetIndexInChunk;
     private boolean firstEntryInChunk = true;
     private int firstPositionInChunk;
-    private IntArrayList indexOffsets = new IntArrayList();
-    private IntArrayList indexAbsolutePositions = new IntArrayList();
+    private LongArrayList indexOffsets = new LongArrayList();
+    private LongArrayList indexAbsolutePositions = new LongArrayList();
     private boolean indexWritten;
-    private int[] targetPositionOffsets;
+    private long[] targetPositionOffsets;
 
     public AlignmentWriter(final String outputBasename) throws IOException {
         alignmentEntries = new FileOutputStream(outputBasename + ".entries");
@@ -206,14 +207,16 @@ public class AlignmentWriter implements Closeable {
         final int size = indexOffsets.size();
         // remove duplicates because the behavior of binary search is undefined for duplicates:
         if (size == 0 || newOffset != indexOffsets.get(size - 1)) {
+
             indexOffsets.add(newOffset);
-            final int codedPosition = recodePosition(firstTargetIndexInChunk, firstPositionInChunk);
+            final long codedPosition = recodePosition(firstTargetIndexInChunk, firstPositionInChunk);
             indexAbsolutePositions.add(codedPosition);
+            System.out.printf("INDEX Pushing offset %d %d ", newOffset, codedPosition);
         }
 
     }
 
-    protected int recodePosition(final int firstTargetIndexInChunk, final int firstPositionInChunk) {
+    protected long recodePosition(final int firstTargetIndexInChunk, final int firstPositionInChunk) {
         return targetPositionOffsets[firstTargetIndexInChunk] + firstPositionInChunk;
     }
 
@@ -466,12 +469,13 @@ public class AlignmentWriter implements Closeable {
     }
 
     public void setTargetLengths(final int[] targetLengths) {
+        assert targetLengths != null : "Target lengths cannot be null.";
         assert targetLengths.length > maxTargetIndex
                 : "The number of elements of targetLength is too small to accomodate targetIndex="
                 + maxTargetIndex;
 
         // calculate the coding offset for each target index. This information will be used by recode
-        targetPositionOffsets = new int[targetLengths.length];
+        targetPositionOffsets = new long[targetLengths.length];
         for (int targetIndex = 0; targetIndex < targetLengths.length; targetIndex++) {
             targetPositionOffsets[targetIndex] += targetLengths[targetIndex];
             targetPositionOffsets[targetIndex] += targetIndex < 1 ? 0 : targetPositionOffsets[targetIndex - 1];

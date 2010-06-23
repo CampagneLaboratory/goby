@@ -3894,28 +3894,28 @@ public final class Alignments {
     }
     private int targetPositionOffsetsMemoizedSerializedSize = -1;
     
-    // repeated uint32 offsets = 2 [packed = true];
+    // repeated uint64 offsets = 2 [packed = true];
     public static final int OFFSETS_FIELD_NUMBER = 2;
-    private java.util.List<java.lang.Integer> offsets_ =
+    private java.util.List<java.lang.Long> offsets_ =
       java.util.Collections.emptyList();
-    public java.util.List<java.lang.Integer> getOffsetsList() {
+    public java.util.List<java.lang.Long> getOffsetsList() {
       return offsets_;
     }
     public int getOffsetsCount() { return offsets_.size(); }
-    public int getOffsets(int index) {
+    public long getOffsets(int index) {
       return offsets_.get(index);
     }
     private int offsetsMemoizedSerializedSize = -1;
     
-    // repeated uint32 absolutePositions = 3 [packed = true];
+    // repeated uint64 absolutePositions = 3 [packed = true];
     public static final int ABSOLUTEPOSITIONS_FIELD_NUMBER = 3;
-    private java.util.List<java.lang.Integer> absolutePositions_ =
+    private java.util.List<java.lang.Long> absolutePositions_ =
       java.util.Collections.emptyList();
-    public java.util.List<java.lang.Integer> getAbsolutePositionsList() {
+    public java.util.List<java.lang.Long> getAbsolutePositionsList() {
       return absolutePositions_;
     }
     public int getAbsolutePositionsCount() { return absolutePositions_.size(); }
-    public int getAbsolutePositions(int index) {
+    public long getAbsolutePositions(int index) {
       return absolutePositions_.get(index);
     }
     private int absolutePositionsMemoizedSerializedSize = -1;
@@ -3940,15 +3940,15 @@ public final class Alignments {
         output.writeRawVarint32(18);
         output.writeRawVarint32(offsetsMemoizedSerializedSize);
       }
-      for (int element : getOffsetsList()) {
-        output.writeUInt32NoTag(element);
+      for (long element : getOffsetsList()) {
+        output.writeUInt64NoTag(element);
       }
       if (getAbsolutePositionsList().size() > 0) {
         output.writeRawVarint32(26);
         output.writeRawVarint32(absolutePositionsMemoizedSerializedSize);
       }
-      for (int element : getAbsolutePositionsList()) {
-        output.writeUInt32NoTag(element);
+      for (long element : getAbsolutePositionsList()) {
+        output.writeUInt64NoTag(element);
       }
       getUnknownFields().writeTo(output);
     }
@@ -3975,9 +3975,9 @@ public final class Alignments {
       }
       {
         int dataSize = 0;
-        for (int element : getOffsetsList()) {
+        for (long element : getOffsetsList()) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeUInt32SizeNoTag(element);
+            .computeUInt64SizeNoTag(element);
         }
         size += dataSize;
         if (!getOffsetsList().isEmpty()) {
@@ -3989,9 +3989,9 @@ public final class Alignments {
       }
       {
         int dataSize = 0;
-        for (int element : getAbsolutePositionsList()) {
+        for (long element : getAbsolutePositionsList()) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeUInt32SizeNoTag(element);
+            .computeUInt64SizeNoTag(element);
         }
         size += dataSize;
         if (!getAbsolutePositionsList().isEmpty()) {
@@ -4179,13 +4179,13 @@ public final class Alignments {
         }
         if (!other.offsets_.isEmpty()) {
           if (result.offsets_.isEmpty()) {
-            result.offsets_ = new java.util.ArrayList<java.lang.Integer>();
+            result.offsets_ = new java.util.ArrayList<java.lang.Long>();
           }
           result.offsets_.addAll(other.offsets_);
         }
         if (!other.absolutePositions_.isEmpty()) {
           if (result.absolutePositions_.isEmpty()) {
-            result.absolutePositions_ = new java.util.ArrayList<java.lang.Integer>();
+            result.absolutePositions_ = new java.util.ArrayList<java.lang.Long>();
           }
           result.absolutePositions_.addAll(other.absolutePositions_);
         }
@@ -4228,27 +4228,27 @@ public final class Alignments {
               break;
             }
             case 16: {
-              addOffsets(input.readUInt32());
+              addOffsets(input.readUInt64());
               break;
             }
             case 18: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               while (input.getBytesUntilLimit() > 0) {
-                addOffsets(input.readUInt32());
+                addOffsets(input.readUInt64());
               }
               input.popLimit(limit);
               break;
             }
             case 24: {
-              addAbsolutePositions(input.readUInt32());
+              addAbsolutePositions(input.readUInt64());
               break;
             }
             case 26: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               while (input.getBytesUntilLimit() > 0) {
-                addAbsolutePositions(input.readUInt32());
+                addAbsolutePositions(input.readUInt64());
               }
               input.popLimit(limit);
               break;
@@ -4292,31 +4292,31 @@ public final class Alignments {
         return this;
       }
       
-      // repeated uint32 offsets = 2 [packed = true];
-      public java.util.List<java.lang.Integer> getOffsetsList() {
+      // repeated uint64 offsets = 2 [packed = true];
+      public java.util.List<java.lang.Long> getOffsetsList() {
         return java.util.Collections.unmodifiableList(result.offsets_);
       }
       public int getOffsetsCount() {
         return result.getOffsetsCount();
       }
-      public int getOffsets(int index) {
+      public long getOffsets(int index) {
         return result.getOffsets(index);
       }
-      public Builder setOffsets(int index, int value) {
+      public Builder setOffsets(int index, long value) {
         result.offsets_.set(index, value);
         return this;
       }
-      public Builder addOffsets(int value) {
+      public Builder addOffsets(long value) {
         if (result.offsets_.isEmpty()) {
-          result.offsets_ = new java.util.ArrayList<java.lang.Integer>();
+          result.offsets_ = new java.util.ArrayList<java.lang.Long>();
         }
         result.offsets_.add(value);
         return this;
       }
       public Builder addAllOffsets(
-          java.lang.Iterable<? extends java.lang.Integer> values) {
+          java.lang.Iterable<? extends java.lang.Long> values) {
         if (result.offsets_.isEmpty()) {
-          result.offsets_ = new java.util.ArrayList<java.lang.Integer>();
+          result.offsets_ = new java.util.ArrayList<java.lang.Long>();
         }
         super.addAll(values, result.offsets_);
         return this;
@@ -4326,31 +4326,31 @@ public final class Alignments {
         return this;
       }
       
-      // repeated uint32 absolutePositions = 3 [packed = true];
-      public java.util.List<java.lang.Integer> getAbsolutePositionsList() {
+      // repeated uint64 absolutePositions = 3 [packed = true];
+      public java.util.List<java.lang.Long> getAbsolutePositionsList() {
         return java.util.Collections.unmodifiableList(result.absolutePositions_);
       }
       public int getAbsolutePositionsCount() {
         return result.getAbsolutePositionsCount();
       }
-      public int getAbsolutePositions(int index) {
+      public long getAbsolutePositions(int index) {
         return result.getAbsolutePositions(index);
       }
-      public Builder setAbsolutePositions(int index, int value) {
+      public Builder setAbsolutePositions(int index, long value) {
         result.absolutePositions_.set(index, value);
         return this;
       }
-      public Builder addAbsolutePositions(int value) {
+      public Builder addAbsolutePositions(long value) {
         if (result.absolutePositions_.isEmpty()) {
-          result.absolutePositions_ = new java.util.ArrayList<java.lang.Integer>();
+          result.absolutePositions_ = new java.util.ArrayList<java.lang.Long>();
         }
         result.absolutePositions_.add(value);
         return this;
       }
       public Builder addAllAbsolutePositions(
-          java.lang.Iterable<? extends java.lang.Integer> values) {
+          java.lang.Iterable<? extends java.lang.Long> values) {
         if (result.absolutePositions_.isEmpty()) {
-          result.absolutePositions_ = new java.util.ArrayList<java.lang.Integer>();
+          result.absolutePositions_ = new java.util.ArrayList<java.lang.Long>();
         }
         super.addAll(values, result.absolutePositions_);
         return this;
@@ -4459,7 +4459,7 @@ public final class Alignments {
       "_least_number_of_hits\030\002 \002(\r\022\027\n\017length_of" +
       "_match\030\003 \001(\r\"g\n\016AlignmentIndex\022!\n\025target" +
       "PositionOffsets\030\001 \003(\rB\002\020\001\022\023\n\007offsets\030\002 \003" +
-      "(\rB\002\020\001\022\035\n\021absolutePositions\030\003 \003(\rB\002\020\001B\'\n" +
+      "(\004B\002\020\001\022\035\n\021absolutePositions\030\003 \003(\004B\002\020\001B\'\n" +
       "#edu.cornell.med.icb.goby.alignmentsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =

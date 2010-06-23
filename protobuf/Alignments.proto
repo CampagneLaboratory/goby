@@ -277,11 +277,11 @@ message AlignmentIndex {
     by index. There should be as many elements in offsets as there are in absolutePosition
     where chunks start which represent entries whose absolute positions are less than
    */
-   repeated uint32 offsets=2 [packed=true];
+   repeated uint64 offsets=2 [packed=true];
    /*
      The absolute positions of the first entry in the chunk that immediately start at offset. One element
      per chunk in the 'basename'.entries file.
    */
-   repeated uint32 absolutePositions=3[packed=true];
+   repeated uint64 absolutePositions=3[packed=true];
 
 }

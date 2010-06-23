@@ -29,6 +29,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -228,8 +229,8 @@ public class AlignmentReader extends AbstractAlignmentReader {
         int absolutePosition = recodePosition(targetIndex, position);
         int offsetIndex = Arrays.binarySearch(indexAbsolutePositions.elements(), absolutePosition);
         offsetIndex = offsetIndex < 0 ? -1 - offsetIndex : offsetIndex;
-        offsetIndex = offsetIndex > indexOffsets.size() ? indexOffsets.size() - 1 : offsetIndex;
-        final long newPosition = indexOffsets.getInt(offsetIndex);
+        offsetIndex = offsetIndex >= indexOffsets.size() ? indexOffsets.size() - 1 : offsetIndex;
+        final long newPosition = indexOffsets.getLong(offsetIndex);
         long currentPosition = alignmentEntryReader.position();
         if (newPosition > currentPosition) {
 
@@ -287,8 +288,8 @@ public class AlignmentReader extends AbstractAlignmentReader {
         }
     }
 
-    private IntArrayList indexOffsets = new IntArrayList();
-    private IntArrayList indexAbsolutePositions = new IntArrayList();
+    private LongArrayList indexOffsets = new LongArrayList();
+    private LongArrayList indexAbsolutePositions = new LongArrayList();
 
     /**
      * Read the index. The header is also loaded.
@@ -307,10 +308,10 @@ public class AlignmentReader extends AbstractAlignmentReader {
             indexOffsets.clear();
             indexAbsolutePositions.clear();
 
-            for (int offset : index.getOffsetsList()) {
+            for (long offset : index.getOffsetsList()) {
                 indexOffsets.add(offset);
             }
-            for (int absolutePosition : index.getAbsolutePositionsList()) {
+            for (long absolutePosition : index.getAbsolutePositionsList()) {
                 indexAbsolutePositions.add(absolutePosition);
             }
             // trimming is essential for the binary search to work reliably with the result of elements():
