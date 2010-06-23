@@ -23,10 +23,10 @@ import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import java.io.IOException;
 
 /**
- *  Print data in a weight file.
+ * Print data in a weight file.
  * Usage: java -cp goby.jar edu.cornell.med.icb.goby.util.PrintWeights DLTTEJH-Bullard-HBR-SRR037439.gc-weights
-
- *  @author Fabien Campagne
+ *
+ * @author Fabien Campagne
  *         Date: Jun 23, 2010
  *         Time: 11:12:36 AM
  */
