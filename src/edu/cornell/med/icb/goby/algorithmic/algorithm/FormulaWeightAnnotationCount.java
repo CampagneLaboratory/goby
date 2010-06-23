@@ -98,16 +98,19 @@ public class FormulaWeightAnnotationCount implements AnnotationCountInterface {
                 value = (float) Math.exp(-0.898699452975139d +
                         4.32171188401506d * Math.log(rawCount)
                         - 3.42375631012767d * Math.log(sumGamma));
+                value= Math.max(value, 0);
                 return value;
             case FORMULA2: {
                 double logGC_a = Math.log(sumGamma) - Math.log(rawCount);
                 value = (float) Math.exp(-1.57361718748031d - 3.62887641327823 * logGC_a + Math.log(rawCount));
+                value= Math.max(value, 0);
                 return value;
             }
             case FORMULA3: {
                 double logGC_a_plus1 = Math.log(sumGamma + 1) - Math.log(rawCount + 1);
                 value = Math.exp(-0.843924877396631d + 0.887303234304011d * Math.log(rawCount + 1) -
                         3.45874660923795d * logGC_a_plus1);
+                value= Math.max(value, 0);
                 return value;
             }
             case FORMULA4: {
@@ -116,6 +119,7 @@ public class FormulaWeightAnnotationCount implements AnnotationCountInterface {
 
                 double logGC_a = Math.log(sumGamma) - Math.log(rawCount);
                 value = (float) Math.exp(-1.4050204825287 - 3.5820783386146 * logGC_a + Math.log(rawCount));
+                value= Math.max(value, 0);
                 return value;
             }
             default:
