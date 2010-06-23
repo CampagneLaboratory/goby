@@ -145,6 +145,7 @@ public class AlignmentWriter implements Closeable {
         newEntry.setScore(score);
         newEntry.setPosition(position);
         newEntry.setMatchingReverseStrand(matchesReverseStrand);
+        newEntry.setMultiplicity(1);
     }
 
     /**
@@ -182,10 +183,10 @@ public class AlignmentWriter implements Closeable {
     }
 
     private void writeIndexEntry(Alignments.AlignmentEntry builtEntry) throws IOException {
-       if (firstEntryInChunk) {
+        if (firstEntryInChunk) {
             firstTargetIndexInChunk = builtEntry.getTargetIndex();
             firstPositionInChunk = builtEntry.getPosition();
-            firstEntryInChunk=false;
+            firstEntryInChunk = false;
         }
         int currentChunkOffset = entriesChunkWriter.writeAsNeeded(collectionBuilder, builtEntry.getMultiplicity());
         if (sortedState && currentChunkOffset != previousChunkOffset) {
@@ -200,9 +201,15 @@ public class AlignmentWriter implements Closeable {
     }
 
     private void pushIndex(int previousChunkOffset, int firstTargetIndexInChunk, int firstPositionInChunk) {
-        indexOffsets.add(previousChunkOffset-8);
-        final int codedPosition = recodePosition(firstTargetIndexInChunk, firstPositionInChunk);
-        indexAbsolutePositions.add(codedPosition);
+
+        final int newOffset = Math.max(previousChunkOffset - 8, 0);
+        final int size = indexOffsets.size();
+        // remove duplicates because the behavior of binary search is undefined for duplicates:
+        if (size == 0 || newOffset != indexOffsets.get(size - 1)) {
+            indexOffsets.add(newOffset);
+            final int codedPosition = recodePosition(firstTargetIndexInChunk, firstPositionInChunk);
+            indexAbsolutePositions.add(codedPosition);
+        }
 
     }
 

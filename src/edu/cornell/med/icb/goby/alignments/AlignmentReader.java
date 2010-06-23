@@ -204,7 +204,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
      * @return The next entry, at position or past position (if not entry at position is found).
      * @throws IOException If an error occurs reading the alignment header. The header is accessed to check that the alignment is sorted.
      */
-    public Alignments.AlignmentEntry skipTo(int targetIndex, int position) throws IOException {
+    public final Alignments.AlignmentEntry skipTo(final int targetIndex,final int position) throws IOException {
         readHeader();
         if (!sorted) throw new UnsupportedOperationException("skipTo cannot be used with unsorted alignments.");
 
@@ -223,11 +223,12 @@ public class AlignmentReader extends AbstractAlignmentReader {
 
     }
 
-    private void reposition(int targetIndex, int position) throws IOException {
+    private void reposition(final int targetIndex, final int position) throws IOException {
+        if (!indexLoaded) return;
         int absolutePosition = recodePosition(targetIndex, position);
         int offsetIndex = Arrays.binarySearch(indexAbsolutePositions.elements(), absolutePosition);
-        offsetIndex= offsetIndex<0 ? -offsetIndex:offsetIndex;
-        offsetIndex= offsetIndex>indexOffsets.size()? indexOffsets.size()-1:offsetIndex;
+        offsetIndex = offsetIndex < 0 ? -1 - offsetIndex : offsetIndex;
+        offsetIndex = offsetIndex > indexOffsets.size() ? indexOffsets.size() - 1 : offsetIndex;
         final long newPosition = indexOffsets.getInt(offsetIndex);
         long currentPosition = alignmentEntryReader.position();
         if (newPosition > currentPosition) {
@@ -312,6 +313,9 @@ public class AlignmentReader extends AbstractAlignmentReader {
             for (int absolutePosition : index.getAbsolutePositionsList()) {
                 indexAbsolutePositions.add(absolutePosition);
             }
+            // trimming is essential for the binary search to work reliably with the result of elements():
+            indexAbsolutePositions.trim();
+            indexOffsets.trim();
 // calculate the coding offset for each target index. This information will be used by recode
             targetPositionOffsets = new int[targetLengths.length];
             for (int targetIndex = 0; targetIndex < targetLengths.length; targetIndex++) {

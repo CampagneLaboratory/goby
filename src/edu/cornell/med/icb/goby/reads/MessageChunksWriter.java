@@ -87,6 +87,7 @@ public class MessageChunksWriter {
      */
     public void writeAsNeeded(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder)
             throws IOException {
+     
         writeAsNeeded(collectionBuilder, 1);
     }
 

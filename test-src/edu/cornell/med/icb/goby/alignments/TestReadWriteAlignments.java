@@ -103,54 +103,7 @@ public class TestReadWriteAlignments {
 
     }
 
-    @Test
-    public void testSkipTo() throws IOException {
-        final AlignmentWriter writer =
-                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-skip-to"));
-        writer.setNumAlignmentEntriesPerChunk(1000);
-        final int numReads = 200000;
-        final int numTargets = 10;
-        int numExpected = 0;
-        int position = 1;
-        int targetLengths[] = new int[numTargets];
-
-        for (int referenceIndex = 0; referenceIndex < numTargets; referenceIndex++) {
-            targetLengths[referenceIndex] = 10000000;
-        }
-        writer.setTargetLengths(targetLengths);
-        // we write this alignment sorted:
-
-        writer.setSorted(true);
-
-        for (int referenceIndex = 0; referenceIndex < numTargets; referenceIndex++) {
-            for (int queryIndex = 0; queryIndex < numReads; queryIndex++) {
-                //        System.out.printf("referenceIndex=%d position=%d%n", referenceIndex, position);
-
-                assert position < targetLengths[referenceIndex];
-                writer.setAlignmentEntry(queryIndex, referenceIndex, position++, 30, false);
-                writer.appendEntry();
-                numExpected++;
-            }
-        }
-
-        writer.close();
-        writer.printStats(System.out);
-
-
-        final AlignmentReader reader =
-                new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, "align-skip-to"));
-
-        Alignments.AlignmentEntry a = reader.skipTo(2, 12);
-        assertNotNull(a);
-        Alignments.AlignmentEntry b = reader.skipTo(2, 400001);
-        assertNotNull(b);
-        assertEquals(400002, b.getPosition());
-
-        Alignments.AlignmentEntry c = reader.skipTo(9, 400002);
-        assertNotNull(c);
-        assertEquals(1998001, c.getPosition());
-
-    }
+   
 
     @Test
     public void writeEmptyIds() throws IOException {
