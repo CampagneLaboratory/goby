@@ -118,4 +118,12 @@ public class WeightsInfo implements Serializable {
     public void size(final int numberOfReads) {
         weights.size(numberOfReads);
     }
+
+    /**
+     * Returns the number of weights stored.
+     * @return maximum read index stored.
+     */
+    public int size() {
+        return weights.size();
+    }
 }
