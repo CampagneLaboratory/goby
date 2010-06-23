@@ -19,7 +19,6 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import com.martiansoftware.jsap.JSAPResult;
-import com.sun.tools.internal.ws.wscompile.ErrorReceiver;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -51,6 +50,34 @@ public abstract class IterateAlignments {
     private ObjectSet<String> includeReferenceNames = new ObjectOpenHashSet<String>();
     private IntSortedSet referencesToProcess;
     private DoubleIndexedIdentifier referenceIds;
+    
+    /**
+     * Parse the string of reference sequences to include the iteration.
+     *
+     * @param jsapResult The jsapResult available to the mode.
+     */
+    public void parseIncludeReferenceArgument(final JSAPResult jsapResult) {
+
+        final String includeReferenceNameCommas = jsapResult.getString("include-reference-names");
+        parseIncludeReferenceArgument(includeReferenceNameCommas);
+
+    }
+    /**
+     * Parse the string of reference sequences to include the iteration. The string must be a coma
+     * separated list of reference identifies.
+     */
+    public void parseIncludeReferenceArgument(String includeReferenceNameCommas) {
+        if (includeReferenceNameCommas != null) {
+            includeReferenceNames = new ObjectOpenHashSet<String>();
+            includeReferenceNames.addAll(Arrays.asList(includeReferenceNameCommas.split("[,]")));
+            LOG.info("Will iterate through the following sequences:");
+            for (final String name : includeReferenceNames) {
+                System.out.println(name);
+            }
+            filterByReferenceNames = true;
+        }
+    }
+
 
     /**
      * Iterate through a set of alignments. Iterations are performed through these steps:
@@ -63,7 +90,7 @@ public abstract class IterateAlignments {
      * @param basenames
      * @throws IOException
      */
-    public void iterate(final String[] basenames) throws IOException {
+    public void iterate(final String... basenames) throws IOException {
         for (final String basename : basenames) {
             final AlignmentReader reader = new AlignmentReader(basename);
             reader.readHeader();
@@ -71,7 +98,7 @@ public abstract class IterateAlignments {
 
             referenceIds = new DoubleIndexedIdentifier(reader.getTargetIdentifiers());
             reader.close();
-            System.out.println(String.format("Alignment contains %d reference sequences", numberOfReferences));
+            LOG.info(String.format("Alignment contains %d reference sequences", numberOfReferences));
             processNumberOfReferences(basename, numberOfReferences);
             //  CountsWriter writers[] = new CountsWriter[numberOfReferences];
             referencesToProcess = new IntLinkedOpenHashSet();
@@ -108,7 +135,7 @@ public abstract class IterateAlignments {
 
             System.out.println("Loading the alignment " + basename);
             if (alignmentReader.isSorted()) {
-                LOG.info("The alignment is sorted, iteration will use the faster skipTo method.");
+                LOG.debug("The alignment is sorted, iteration will use the faster skipTo method.");
                 // the alignment is not sorted, we leverage skipTo to get directly to the sequence of interest.:
 
                 Alignments.AlignmentEntry alignmentEntry = null;
@@ -151,6 +178,8 @@ public abstract class IterateAlignments {
 
     public abstract void processAlignmentEntry(AlignmentReader alignmentReader, Alignments.AlignmentEntry alignmentEntry);
 
+
+
     public void prepareDataStructuresForReference(AlignmentReader alignmentReader, final int referenceIndex) {
 
     }
@@ -165,25 +194,7 @@ public abstract class IterateAlignments {
     public void processNumberOfReferences(final String basename, final int numberOfReferences) throws IOException {
     }
 
-    /**
-     * Parse the string of reference sequences to include the iteration.
-     *
-     * @param jsapResult The jsapResult available to the mode.
-     */
-    public void parseIncludeReferenceArgument(final JSAPResult jsapResult) {
 
-        final String includeReferenceNameCommas = jsapResult.getString("include-reference-names");
-        if (includeReferenceNameCommas != null) {
-            includeReferenceNames = new ObjectOpenHashSet<String>();
-            includeReferenceNames.addAll(Arrays.asList(includeReferenceNameCommas.split("[,]")));
-            System.out.println("Will write counts for the following sequences:");
-            for (final String name : includeReferenceNames) {
-                System.out.println(name);
-            }
-            filterByReferenceNames = true;
-        }
-
-    }
 
     /**
      * Return the reference sequence id given its index.
@@ -194,4 +205,6 @@ public abstract class IterateAlignments {
     protected CharSequence getReferenceId(final int targetIndex) {
         return referenceIds.getId(targetIndex);
     }
+
+
 }

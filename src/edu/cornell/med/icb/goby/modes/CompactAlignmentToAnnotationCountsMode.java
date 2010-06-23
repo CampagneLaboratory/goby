@@ -21,15 +21,11 @@ package edu.cornell.med.icb.goby.modes;
 import cern.colt.Timer;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCount;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCountInterface;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationWeightCount;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.FormulaWeightAnnotationCount;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.*;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
@@ -119,6 +115,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     private ObjectArraySet<NormalizationMethod> normalizationMethods;
 
     WeightParameters weightParams;
+    private String includeReferenceNameCommas;
+    private IntSet referencesSelected;
 
     @Override
     public String getModeName() {
@@ -162,7 +160,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         if (doComparison) {
             deAnalyzer.parseCompare(compare);
         }
-        final String includeReferenceNameCommas = jsapResult.getString("include-reference-names");
+
+        includeReferenceNameCommas = jsapResult.getString("include-reference-names");
         includeReferenceNames = new ObjectOpenHashSet<String>();
         if (includeReferenceNameCommas != null) {
             includeReferenceNames.addAll(Arrays.asList(includeReferenceNameCommas.split("[,]")));
@@ -177,12 +176,12 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         parseEval(jsapResult, deAnalyzer);
 
 
-       weightParams=configureWeights(jsapResult);
+        weightParams = configureWeights(jsapResult);
         return this;
     }
 
     protected static WeightParameters configureWeights(JSAPResult jsapResult) {
-      WeightParameters params=new WeightParameters();
+        WeightParameters params = new WeightParameters();
         params.weightId = jsapResult.getString("use-weights");
         if (params.weightId == null || params.weightId.equals("false")) {
             params.useWeights = false;
@@ -242,6 +241,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             }
         }
     }
+
 
     class BasenameParallelRegion extends ParallelRegion {
         private final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots;
@@ -362,61 +362,23 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         final DoubleIndexedIdentifier referenceIds = new DoubleIndexedIdentifier(reader.getTargetIdentifiers());
         reader.close();
         System.out.println(String.format("Alignment contains %d reference sequences", numberOfReferences));
-        final AnnotationCountInterface[] algs = new AnnotationCountInterface[numberOfReferences];
-        final IntSet referencesToProcess = new IntOpenHashSet();
 
-        // create count writers, one for each reference sequence in the alignment:
-        for (
-                int referenceIndex = 0;
-                referenceIndex < numberOfReferences; referenceIndex++)
-
-        {
-            final String referenceName = referenceIds.getId(referenceIndex).toString();
-            if (filterByReferenceNames) {
-                if (includeReferenceNames.contains(referenceName)) {
-                    // subset of reference names selected by the command line:
-                    referencesToProcess.add(referenceIndex);
-                }
-
-            } else {
-                // process each sequence:
-                referencesToProcess.add(referenceIndex);
-            }
-            if (referencesToProcess.contains(referenceIndex)) {
-                AnnotationCountInterface algo = new AnnotationCount();
-
-                algo = chooseAlgorithm(weightParams, weights, algo);
-                algs[referenceIndex] = algo;
-                algs[referenceIndex].startPopulating();
-            }
-        }
+        AnnotationCountIterateAlignments iterateAlignment = new AnnotationCountIterateAlignments();
+        iterateAlignment.setWeightInfo(weightParams, weights);
+        iterateAlignment.parseIncludeReferenceArgument(includeReferenceNameCommas);
 
 
         final AlignmentReader referenceReader = new AlignmentReader(inputBasename);
         referenceReader.readHeader();
 
-        // read the alignment:
+        // ITerate through the alignment and retrieve algs:
         System.out.println("Loading alignment " + inputBasename + "..");
-        int numAlignedReadsInSample = 0;
-        for (
-                final Alignments.AlignmentEntry alignmentEntry
-                : referenceReader)
+        iterateAlignment.iterate(inputBasename);
 
-        {
-            final int referenceIndex = alignmentEntry.getTargetIndex();
-            if (referencesToProcess.contains(referenceIndex)) {
-                final int startPosition = alignmentEntry.getPosition();
-
-                final int alignmentLength = alignmentEntry.getQueryAlignedLength();
-                //shifted the ends populating by 1
-                for (int i = 0; i < alignmentEntry.getMultiplicity(); ++i) {
-                    algs[referenceIndex].populate(startPosition, startPosition + alignmentLength, alignmentEntry.getQueryIndex());
-                    ++numAlignedReadsInSample;
-                }
-            }
-        }
-
-        reader.close();
+        int numAlignedReadsInSample = iterateAlignment.getNumAlignedReadsInSample();
+        final AnnotationCountInterface[] algs = iterateAlignment.getAlgs();
+        final IntSet referencesToProcess = iterateAlignment.getReferencesSelected();
+        
         final String sampleId = FilenameUtils.getBaseName(inputBasename);
 
         deCalculator.setNumAlignedInSample(sampleId, numAlignedReadsInSample);
@@ -438,23 +400,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         }
     }
 
-    protected static AnnotationCountInterface chooseAlgorithm(WeightParameters params,
-                                                              WeightsInfo weights,
-                                                              AnnotationCountInterface algo) {
-        if (params.useWeights) {
-            if (!params.adjustGcBias) {
 
-                algo = new AnnotationWeightCount(weights);
-            } else {
-
-                FormulaWeightAnnotationCount algo1 = new FormulaWeightAnnotationCount(weights);
-
-                algo1.setFormulaChoice(FormulaWeightAnnotationCount.FormulaChoice.valueOf(params.formulaChoice));
-                algo = algo1;
-            }
-        }
-        return algo;
-    }
 
     public static WeightsInfo loadWeights(final String inputBasename, final boolean useWeights, final String id) {
         WeightsInfo weights = null;
@@ -773,4 +719,5 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     public static void main(final String[] args) throws JSAPException, IOException {
         new CompactAlignmentToAnnotationCountsMode().configure(args).execute();
     }
+
 }

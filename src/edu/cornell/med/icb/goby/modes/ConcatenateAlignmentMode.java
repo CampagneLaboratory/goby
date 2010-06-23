@@ -149,15 +149,18 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         // too many hits is prepared as for Merge:
         Merge.prepareMergedTooManyHits(outputFile, alignmentReader.getNumberOfQueries(), 0, basenames);
 
-        writer.setNumTargets(alignmentReader.getNumberOfTargets());
-        if (alignmentReader.getTargetIdentifiers() != null) {
-            writer.setTargetIdentifiers(alignmentReader.getTargetIdentifiers());
-        }
+        writer.setSmallestSplitQueryIndex(alignmentReader.getSmallestSplitQueryIndex());
+        writer.setLargestSplitQueryIndex(alignmentReader.getLargestSplitQueryIndex());
 
         if (alignmentReader.getQueryIdentifiers() != null) {
             writer.setQueryIdentifiers(alignmentReader.getQueryIdentifiers());
         }
-
+        if (alignmentReader.getTargetIdentifiers() != null) {
+            writer.setTargetIdentifiers(alignmentReader.getTargetIdentifiers());
+        }
+        writer.setNumQueries(alignmentReader.getNumberOfQueries());
+        writer.setNumTargets(alignmentReader.getNumberOfTargets());
+       
         writer.setStatistics(alignmentReader.getStatistics());
         writer.putStatistic("overall.matched.percent",
                 String.format("%3.3g", divide(numLogicalEntries, numQueries) * 100d));

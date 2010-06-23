@@ -211,7 +211,7 @@ public class AlignmentWriter implements Closeable {
             indexOffsets.add(newOffset);
             final long codedPosition = recodePosition(firstTargetIndexInChunk, firstPositionInChunk);
             indexAbsolutePositions.add(codedPosition);
-            System.out.printf("INDEX Pushing offset %d %d ", newOffset, codedPosition);
+        //    System.out.printf("INDEX Pushing offset %d %d ", newOffset, codedPosition);
         }
 
     }

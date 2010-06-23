@@ -1,4 +1,7 @@
 development -> 1.7
+ - Refactored CompactAlignmentToAnnotationCountsMode to use IterateAlignments (provides
+   large speed ups when working with sorted/indexed alignments and selecting a subset of
+   reference sequences for DE).
  - IterateAlignments now takes advantage of the skipTo method when the alignment is sorted
    and indexed. This provides large performance improvements when one needs to access data
    for only a few reference sequences in an alignments. All the modes that use

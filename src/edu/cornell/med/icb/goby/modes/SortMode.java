@@ -139,18 +139,21 @@ public class SortMode extends AbstractGobyMode {
 
         public void write(AlignmentWriter writer) throws IOException {
             // too many hits is prepared as for Merge:
-            Merge.prepareMergedTooManyHits(outputFilename, alignmentReader.getNumberOfQueries(), 0, basenames);
-            writer.setTargetIdentifiers(alignmentReader.getTargetIdentifiers());
-            writer.setQueryIdentifiers(alignmentReader.getQueryIdentifiers());
-            writer.setTargetLengths(alignmentReader.getTargetLength());
-            writer.setSorted(true);
+            try {
+                Merge.prepareMergedTooManyHits(outputFilename, alignmentReader.getNumberOfQueries(), 0, basenames);
+                writer.setTargetIdentifiers(alignmentReader.getTargetIdentifiers());
+                writer.setQueryIdentifiers(alignmentReader.getQueryIdentifiers());
+                writer.setTargetLengths(alignmentReader.getTargetLength());
+                writer.setSorted(true);
 
 
-            for (Alignments.AlignmentEntry entry : entries) {
-                writer.appendEntry(entry);
+                for (Alignments.AlignmentEntry entry : entries) {
+                    writer.appendEntry(entry);
+                }
+            } finally {
+                writer.close();
             }
 
-            writer.close();
         }
     }
 
@@ -164,25 +167,18 @@ public class SortMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        PrintStream stream = null;
-        try {
-            stream = outputFilename == null ? System.out
-                    : new PrintStream(new FileOutputStream(outputFilename));
-            AlignmentWriter writer = new AlignmentWriter(outputFilename);
 
-            // Iterate through each alignment and write sequence variations to output file:
-            LOG.info("Loading entries..");
-            alignmentIterator.iterate(basenames);
-            LOG.info("Sorting..");
-            alignmentIterator.sort();
-            LOG.info("Writing sorted alignment..");
-            alignmentIterator.write(writer);
 
-        } finally {
-            if (stream != System.out) {
-                IOUtils.closeQuietly(stream);
-            }
-        }
+        AlignmentWriter writer = new AlignmentWriter(outputFilename);
+
+        // Iterate through each alignment and write sequence variations to output file:
+        LOG.info("Loading entries..");
+        alignmentIterator.iterate(basenames);
+        LOG.info("Sorting..");
+        alignmentIterator.sort();
+        LOG.info("Writing sorted alignment..");
+        alignmentIterator.write(writer);
+
     }
 
 
