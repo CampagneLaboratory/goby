@@ -52,7 +52,8 @@ public abstract class IterateAlignments {
     private DoubleIndexedIdentifier referenceIds;
 
     /**
-     * Parse the string of reference sequences to include the iteration.
+     * Parse the string of reference sequences to process during the iteration. The JSAP argument include-reference-names
+     * must be defined.
      *
      * @param jsapResult The jsapResult available to the mode.
      */
@@ -65,7 +66,7 @@ public abstract class IterateAlignments {
 
     /**
      * Parse the string of reference sequences to include the iteration. The string must be a coma
-     * separated list of reference identifies.
+     * separated list of reference identifiers.
      */
     public void parseIncludeReferenceArgument(String includeReferenceNameCommas) {
         if (includeReferenceNameCommas != null) {
@@ -194,9 +195,19 @@ public abstract class IterateAlignments {
         reader.close();
     }
 
+    /**
+     * Process one alignment entry.
+     * @param alignmentReader The reader that parsed this entry.
+     * @param alignmentEntry  The parsed entry.
+     */
     public abstract void processAlignmentEntry(AlignmentReader alignmentReader, Alignments.AlignmentEntry alignmentEntry);
 
-
+    /**
+     * Called to let the subclass prepare some datastructure for each reference sequence. The method is called
+     * exactly once for each valid reference index.
+     * @param alignmentReader The reader currently being iterated over.
+     * @param referenceIndex  The index of the reference sequence for which data structures should be initialized.
+     */
     public void prepareDataStructuresForReference(AlignmentReader alignmentReader, final int referenceIndex) {
 
     }
@@ -204,9 +215,9 @@ public abstract class IterateAlignments {
     /**
      * Will be called to let the client know how many references will be processed in a given alignment.
      *
-     * @param basename
-     * @param numberOfReferences
-     * @throws IOException
+     * @param basename   The basename of the alignment being processed.
+     * @param numberOfReferences The number of references in this alignment.
+     * @throws IOException If an error occcurs.
      */
     public void processNumberOfReferences(final String basename, final int numberOfReferences) throws IOException {
     }
