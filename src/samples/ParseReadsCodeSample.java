@@ -40,7 +40,7 @@ public class ParseReadsCodeSample {
             for (final Reads.ReadEntry readEntry : reader) {
 
                 ReadsReader.decodeSequence(readEntry, sequence);
-                System.out.printf("read-index: %d read-id: %s sequence: %s",
+                System.out.printf("read-index: %d read-id: %s sequence: %s %n",
                         readEntry.getReadIndex(),
                         readEntry.hasReadIdentifier() ? readEntry.getReadIdentifier() : "",
                         sequence);
