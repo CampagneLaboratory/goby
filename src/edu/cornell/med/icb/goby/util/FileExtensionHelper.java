@@ -48,7 +48,7 @@ public final class FileExtensionHelper {
      * File extenstion for alignment data in "compact reads" format.
      */
     public static final String[] COMPACT_ALIGNMENT_FILE_EXTS = {
-            ".entries", ".header", ".tmh", ".stats", ".counts"
+            ".entries", ".header", ".tmh", ".stats", ".counts", ".index"
     };
 
     /**
