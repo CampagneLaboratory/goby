@@ -59,7 +59,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
      * The basename of the compact alignment.
      */
     private String[] basenames;
-    private MyIterateAlignments alignmentIterator;
+    private AlignmentToTextIterateAlignments alignmentIterator;
 
     /**
      * The values to use for read lengths if none are found in the alignment entries/header.
@@ -102,13 +102,13 @@ public class AlignmentToTextMode extends AbstractGobyMode {
         outputFilename = jsapResult.getString("output");
         outputFormat = OutputFormat.valueOf(jsapResult.getString("format").toUpperCase());
         defaultReadLength = jsapResult.getInt("constant-read-length");
-        alignmentIterator = new MyIterateAlignments();
+        alignmentIterator = new AlignmentToTextIterateAlignments();
         alignmentIterator.parseIncludeReferenceArgument(jsapResult);
 
         return this;
     }
 
-    private class MyIterateAlignments extends IterateAlignments {
+    private class AlignmentToTextIterateAlignments extends IterateAlignments {
         private PrintStream outputStream;
         private OutputFormat outputFormat;
         private AlignmentReader cachedReader;
