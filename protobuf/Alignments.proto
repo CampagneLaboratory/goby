@@ -3,6 +3,9 @@ package goby;
 option java_package = "edu.cornell.med.icb.goby.alignments";
 option optimize_for = SPEED;
 
+/*
+  This message is written to 'basename'.entries as a very large chunked collection.
+*/
 message AlignmentCollection {
 
      repeated AlignmentEntry alignmentEntries =1;
