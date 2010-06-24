@@ -33,6 +33,7 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -415,15 +416,11 @@ public class AlignmentReader extends AbstractAlignmentReader {
     }
 
     /**
-     * Returns whether this read has query lentgh information.
+     * Returns whether this read has query length information.
      *
      * @return True or false.
      */
     public boolean hasQueryLengths() {
-        if (constantQueryLengths) {
-            return true;
-        } else {
-            return queryLengths != null;
-        }
+        return ArrayUtils.isNotEmpty(queryLengths);
     }
 }

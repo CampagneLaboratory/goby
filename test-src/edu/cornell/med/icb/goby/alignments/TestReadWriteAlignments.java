@@ -30,6 +30,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertFalse;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -103,7 +104,7 @@ public class TestReadWriteAlignments {
 
     }
 
-   
+
 
     @Test
     public void writeEmptyIds() throws IOException {
@@ -188,7 +189,7 @@ public class TestReadWriteAlignments {
     }
 
     @Test
-    public void testConstantLength() throws IOException {
+    public void readWriteHeader104() throws IOException {
         final IndexedIdentifier queryIds = new IndexedIdentifier();
         // NOTE: there is no id for entry 0, this is ok
         queryIds.put(new MutableString("query:1"), 1);
@@ -219,5 +220,80 @@ public class TestReadWriteAlignments {
         assertTrue("query length must be constant", reader.isConstantQueryLengths());
         assertArrayEquals("Query lengths do not match", queryLengths, reader.getQueryLengths());
         assertEquals("Number of queries do not match", 3, reader.getNumberOfQueries());
+
+        for (final Alignments.AlignmentEntry entry : reader) {
+            assertEquals(queryLengths[entry.getQueryIndex()], entry.getQueryLength());
+        }
     }
+
+    /**
+     * Validate that the the alignment header constant query length
+     * ({@link edu.cornell.med.icb.goby.alignments.Alignments.AlignmentHeader#hasConstantQueryLength()})
+     * is set to true when queries of the same length get appended.
+     * @throws IOException if there is a problem reading or writting the alignment
+     */
+    @Test
+    public void constantQueryLengths() throws IOException {
+        final AlignmentWriter writer = new AlignmentWriter(FilenameUtils.concat(
+                BASE_TEST_DIR, "constant-query-lengths"));
+
+        for (int queryIndex = 0; queryIndex < 4; queryIndex++) {
+            final Alignments.AlignmentEntry.Builder builder = Alignments.AlignmentEntry.newBuilder();
+            builder.setQueryLength(11);
+            builder.setQueryIndex(queryIndex);
+            builder.setTargetIndex(42);
+            builder.setPosition(0);
+            builder.setMatchingReverseStrand(true);
+            final Alignments.AlignmentEntry entry = builder.build();
+            writer.appendEntry(entry);
+        }
+        writer.close();
+
+        final AlignmentReader reader = new AlignmentReader(
+                FilenameUtils.concat(BASE_TEST_DIR, "constant-query-lengths"));
+        for (final Alignments.AlignmentEntry entry : reader) {
+            assertEquals(11, entry.getQueryLength());
+        }
+        reader.readHeader();
+        assertTrue("query length should be constant", reader.isConstantQueryLengths());
+        assertEquals("Number of queries do not match", 4, reader.getNumberOfQueries());
+        assertFalse("New style header shouldn't have query lengths", reader.hasQueryLengths());
+    }
+
+    /**
+     * Validate that the the alignment header constant query length
+     * ({@link edu.cornell.med.icb.goby.alignments.Alignments.AlignmentHeader#hasConstantQueryLength()})
+     * is set to false when queries of the same length get appended.
+     * @throws IOException if there is a problem reading or writting the alignment
+     */
+    @Test
+    public void nonConstantQueryLengths() throws IOException {
+        final int[] queryLengths = {11, 21, 12, 42};
+        final AlignmentWriter writer = new AlignmentWriter(FilenameUtils.concat(
+                BASE_TEST_DIR, "non-constant-query-lengths"));
+
+        int queryIndex = 0;
+        for (final int queryLength : queryLengths) {
+            final Alignments.AlignmentEntry.Builder builder = Alignments.AlignmentEntry.newBuilder();
+            builder.setQueryLength(queryLength);
+            builder.setQueryIndex(queryIndex++);
+            builder.setTargetIndex(42);
+            builder.setPosition(0);
+            builder.setMatchingReverseStrand(true);
+            final Alignments.AlignmentEntry entry = builder.build();
+            writer.appendEntry(entry);
+        }
+        writer.close();
+
+        final AlignmentReader reader = new AlignmentReader(
+                FilenameUtils.concat(BASE_TEST_DIR, "non-constant-query-lengths"));
+        for (final Alignments.AlignmentEntry entry : reader) {
+            assertEquals(queryLengths[entry.getQueryIndex()], entry.getQueryLength());
+        }
+        reader.readHeader();
+        assertFalse("query length must not be constant", reader.isConstantQueryLengths());
+        assertEquals("Number of queries do not match", 4, reader.getNumberOfQueries());
+        assertFalse("New style header shouldn't have query lengths", reader.hasQueryLengths());
+    }
+
 }

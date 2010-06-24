@@ -59,6 +59,12 @@ public class AlignmentWriter implements Closeable {
      * Length of each query sequence.
      */
     private int[] queryLengths;
+
+    /**
+     * Set of query lengths to determine whether or not they are unique.
+     */
+    private final IntSet uniqueQueryLengths = new IntOpenHashSet();
+
     /**
      * Length of each target sequence.
      */
@@ -83,12 +89,12 @@ public class AlignmentWriter implements Closeable {
     private boolean sortedState;
 
     // data structures to build index:
-    private int previousChunkOffset = 0;
+    private int previousChunkOffset;
     private int firstTargetIndexInChunk;
     private boolean firstEntryInChunk = true;
     private int firstPositionInChunk;
-    private LongArrayList indexOffsets = new LongArrayList();
-    private LongArrayList indexAbsolutePositions = new LongArrayList();
+    private final LongArrayList indexOffsets = new LongArrayList();
+    private final LongArrayList indexAbsolutePositions = new LongArrayList();
     private boolean indexWritten;
     private long[] targetPositionOffsets;
 
@@ -108,28 +114,57 @@ public class AlignmentWriter implements Closeable {
 
     }
 
-    public void setSorted(boolean sortedState) {
+    public void setSorted(final boolean sortedState) {
         this.sortedState = sortedState;
         if (sortedState) {
             if (targetPositionOffsets == null) {
-                throw new UnsupportedOperationException("Indexing sorted alignments requires knowning target lengths " +
-                        "before entries are appended. setTargetLength must be called before setSorted(true).");
+                throw new UnsupportedOperationException("Indexing sorted alignments requires"
+                        + " knowning target lengths before entries are appended. setTargetLength"
+                        + " must be called before setSorted(true).");
             }
         }
     }
 
+    /**
+     * Set the query index for the next alignment extry.
+     * @param queryIndex The query index of the next alignment entry to append
+     * @deprecated use
+     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     */
+    @Deprecated
     public final void setQueryIndex(final int queryIndex) {
         newEntry.setQueryIndex(queryIndex);
     }
 
-    public final void setTargetIndex(final int referenceIndex) {
-        newEntry.setTargetIndex(referenceIndex);
+    /**
+     * Set the target index for the next alignment extry.
+     * @param targetIndex The target index of the next alignment entry to append
+     * @deprecated use
+     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     */
+    @Deprecated
+    public final void setTargetIndex(final int targetIndex) {
+        newEntry.setTargetIndex(targetIndex);
     }
 
+    /**
+     * Set the target position for the next alignment extry.
+     * @param position The target position of the next alignment entry to append
+     * @deprecated use
+     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     */
+    @Deprecated
     public final void setTargetPosition(final int position) {
         newEntry.setPosition(position);
     }
 
+    /**
+     * Set the score for the next alignment extry.
+     * @param score The score of the next alignment entry to append
+     * @deprecated use
+     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     */
+    @Deprecated
     public final void setAlignmentScore(final float score) {
         newEntry.setScore(score);
     }
@@ -138,11 +173,22 @@ public class AlignmentWriter implements Closeable {
         entriesChunkWriter.setNumEntriesPerChunk(numEntriesPerChunk);
     }
 
-    public final void setAlignmentEntry(final int queryIndex, final int referenceIndex,
+    /**
+     * Set fields for the next alignment extry.
+     * @param queryIndex The query index of the next alignment entry to append
+     * @param targetIndex The target index of the next alignment entry to append
+     * @param position The target position of the next alignment entry to append
+     * @param score The score of the next alignment entry to append
+     * @param matchesReverseStrand true if the entry matches the reverse strand
+     * @deprecated use
+     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     */
+    @Deprecated
+    public final void setAlignmentEntry(final int queryIndex, final int targetIndex,
                                         final int position,
                                         final float score, final boolean matchesReverseStrand) {
         newEntry.setQueryIndex(queryIndex);
-        newEntry.setTargetIndex(referenceIndex);
+        newEntry.setTargetIndex(targetIndex);
         newEntry.setScore(score);
         newEntry.setPosition(position);
         newEntry.setMatchingReverseStrand(matchesReverseStrand);
@@ -150,26 +196,37 @@ public class AlignmentWriter implements Closeable {
     }
 
     /**
-     * Obtain the alignment entry that is being prepared. Set values on the entry, then call appendAlignmentEntry()
+     * Obtain the alignment entry that is being prepared. Set values on the entry,
+     * then call {@link #appendEntry()}.
      *
      * @return the current alignment entry.
+     * @deprecated use
+     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
      */
+    @Deprecated
     public Alignments.AlignmentEntry.Builder getAlignmentEntry() {
         return newEntry;
     }
 
     /**
      * Append the current entry to the file being written.
-     *
-     * @throws IOException
+     * @throws IOException if the entry cannot be written
+     * @deprecated use
+     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
      */
+    @Deprecated
     public synchronized void appendEntry() throws IOException {
-
-        if (!newEntry.hasQueryLength() && queryLengths != null) {
-            // when the entry does not already have a defined query length,
-            // set query Length from the length array if it is available 
-            newEntry.setQueryLength(queryLengths[newEntry.getQueryIndex()]);
+        if (newEntry.hasQueryLength()) {
+            // update the unique query length set
+            uniqueQueryLengths.add(newEntry.getQueryLength());
+        } else {
+            if (queryLengths != null) {
+                // when the entry does not already have a defined query length,
+                // set query Length from the length array if it is available
+                newEntry.setQueryLength(queryLengths[newEntry.getQueryIndex()]);
+            }
         }
+
         final Alignments.AlignmentEntry builtEntry = newEntry.build();
 
         final int currentQueryIndex = builtEntry.getQueryIndex();
@@ -183,13 +240,13 @@ public class AlignmentWriter implements Closeable {
         newEntry = Alignments.AlignmentEntry.newBuilder();
     }
 
-    private void writeIndexEntry(Alignments.AlignmentEntry builtEntry) throws IOException {
+    private void writeIndexEntry(final Alignments.AlignmentEntry builtEntry) throws IOException {
         if (firstEntryInChunk) {
             firstTargetIndexInChunk = builtEntry.getTargetIndex();
             firstPositionInChunk = builtEntry.getPosition();
             firstEntryInChunk = false;
         }
-        int currentChunkOffset = entriesChunkWriter.writeAsNeeded(collectionBuilder, builtEntry.getMultiplicity());
+        final int currentChunkOffset = entriesChunkWriter.writeAsNeeded(collectionBuilder, builtEntry.getMultiplicity());
         if (sortedState && currentChunkOffset != previousChunkOffset) {
             // we have just written a new chunk.
             pushIndex(previousChunkOffset, firstTargetIndexInChunk, firstPositionInChunk);
@@ -201,8 +258,7 @@ public class AlignmentWriter implements Closeable {
         }
     }
 
-    private void pushIndex(int previousChunkOffset, int firstTargetIndexInChunk, int firstPositionInChunk) {
-
+    private void pushIndex(final int previousChunkOffset, final int firstTargetIndexInChunk, final int firstPositionInChunk) {
         final int newOffset = Math.max(previousChunkOffset - 8, 0);
         final int size = indexOffsets.size();
         // remove duplicates because the behavior of binary search is undefined for duplicates:
@@ -224,18 +280,23 @@ public class AlignmentWriter implements Closeable {
      * Append an entry to the file being written. The entry must have been prepared
      * outside this writer.
      *
-     * @param builtEntry
+     * @param entry The entry to append
      * @throws IOException If an error occurs writting this entry.
      */
-    public synchronized void appendEntry(final Alignments.AlignmentEntry builtEntry) throws IOException {
-        this.collectionBuilder.addAlignmentEntries(builtEntry);
-        writeIndexEntry(builtEntry);
+    public synchronized void appendEntry(final Alignments.AlignmentEntry entry) throws IOException {
+        if (entry.hasQueryLength()) {
+            // update the unique query length set
+            uniqueQueryLengths.add(entry.getQueryLength());
+        }
 
-        final int currentQueryIndex = builtEntry.getQueryIndex();
+        this.collectionBuilder.addAlignmentEntries(entry);
+        writeIndexEntry(entry);
+
+        final int currentQueryIndex = entry.getQueryIndex();
         minQueryIndex = Math.min(currentQueryIndex, minQueryIndex);
         maxQueryIndex = Math.max(currentQueryIndex, maxQueryIndex);
 
-        maxTargetIndex = Math.max(builtEntry.getTargetIndex(), maxTargetIndex);
+        maxTargetIndex = Math.max(entry.getTargetIndex(), maxTargetIndex);
         numberOfAlignedReads += 1;
     }
 
@@ -267,7 +328,9 @@ public class AlignmentWriter implements Closeable {
      * {@inheritDoc}
      */
     public void close() throws IOException {
-        if (sortedState) writeIndex();
+        if (sortedState) {
+            writeIndex();
+        }
         writeHeader();
 
         writeStats();
@@ -279,7 +342,7 @@ public class AlignmentWriter implements Closeable {
 
     private void writeIndex() throws IOException {
         if (!indexWritten) {
-            GZIPOutputStream indexOutput = new GZIPOutputStream(new FileOutputStream(basename + ".index"));
+            final GZIPOutputStream indexOutput = new GZIPOutputStream(new FileOutputStream(basename + ".index"));
             final Alignments.AlignmentIndex.Builder indexBuilder = Alignments.AlignmentIndex.newBuilder();
             assert (indexOffsets.size() == indexAbsolutePositions.size()) : "index sizes must be consistent.";
             indexBuilder.addAllOffsets(indexOffsets);
@@ -307,7 +370,7 @@ public class AlignmentWriter implements Closeable {
             headerBuilder.setNumberOfAlignedReads(numberOfAlignedReads);
 
             // store query lengths:
-            compactQueryLengths(queryLengths);
+            compactQueryLengths();
             if (isConstantQueryLength) {
                 headerBuilder.setConstantQueryLength(constantQueryLength);
             } else if (queryLengths != null) {
@@ -416,54 +479,32 @@ public class AlignmentWriter implements Closeable {
         }
     }
 
-    /*  public void setQueryLengths(final int[] queryLengths) {
-        assert queryLengths.length > maxQueryIndex :
-                "The number of elements of queryLength is too small to accomodate queryIndex=" + maxQueryIndex;
-        compactQueryLengths(queryLengths);
-        if (!isConstantQueryLength) {
-            this.queryLengths = queryLengths;
-        }
-    }*/
-    /* public void setQueryLengths(final AlignmentReader reader) {
-           if (reader.isConstantQueryLengths()) {
-               setQueryLengths(new int[1]);
-           }
-       }
-    */
     /**
      * Replace queryLength with constantQueryLength where the length is the same for all queries.
      * Use a smaller queryLength array if we are storing just a slice of a larger alignment. In this
      * case, the smaller array has size (maxQueryIndex-minQueryIndex+1)
-     *
-     * @param queryLengths An array of integers where each element indicates the length of a query
      */
-    private void compactQueryLengths(final int[] queryLengths) {
-        if (queryLengths == null) {
-            return;
-        }
-        final IntSet uniqueLengths = new IntOpenHashSet();
-        for (final int length : queryLengths) {
-            if (length != 0) {
-                uniqueLengths.add(length);
-
-            }
-        }
-        if (uniqueLengths.size() == 1) {
+    private void compactQueryLengths() {
+        if (uniqueQueryLengths.size() == 1) {
             // detected constant read length.
-            constantQueryLength = uniqueLengths.iterator().nextInt();
+            if (queryLengths != null) {
+                constantQueryLength = uniqueQueryLengths.iterator().nextInt();
+            } else {
+                constantQueryLength = 0;
+            }
             isConstantQueryLength = true;
             this.queryLengths = null;
         } else {
-            if (actualNumberOfQueries != Integer.MIN_VALUE) {
-                // we know how many queries we are dealing with
-                int smallerLength = maxQueryIndex - minQueryIndex + 1;
-                if (smallerLength != getNumQueries()) {
-                    int[] smaller = new int[smallerLength];
-                    System.arraycopy(queryLengths, minQueryIndex, smaller, 0, smallerLength);
-                    this.queryLengths = smaller;
+            if (queryLengths != null) {
+                if (actualNumberOfQueries != Integer.MIN_VALUE) {
+                    // we know how many queries we are dealing with
+                    final int smallerLength = maxQueryIndex - minQueryIndex + 1;
+                    if (smallerLength != getNumQueries()) {
+                        final int[] smaller = new int[smallerLength];
+                        System.arraycopy(queryLengths, minQueryIndex, smaller, 0, smallerLength);
+                        this.queryLengths = smaller;
+                    }
                 }
-            } else {
-                this.queryLengths = queryLengths;
             }
         }
     }
@@ -538,22 +579,34 @@ public class AlignmentWriter implements Closeable {
         }
     }
 
-    public void setSmallestSplitQueryIndex(int smallestQueryIndex) {
+    public void setSmallestSplitQueryIndex(final int smallestQueryIndex) {
         minQueryIndex = smallestQueryIndex;
     }
 
-    public void setLargestSplitQueryIndex(int largestQueryIndex) {
+    public void setLargestSplitQueryIndex(final int largestQueryIndex) {
         maxQueryIndex = largestQueryIndex;
     }
 
 
-    public void setQueryLength(int queryLength) {
+    /**
+     * Set the query legnth for the next alignment extry.
+     * @param queryLength The query length of the next alignment entry to append
+     * @deprecated use
+     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     */
+    @Deprecated
+    public void setQueryLength(final int queryLength) {
         newEntry.setQueryLength(queryLength);
     }
 
-    public void setQueryLengths(int[] queryLengths) {
-        assert queryLengths.length > maxQueryIndex :
-                "The number of elements of queryLength is too small to accomodate queryIndex=" + maxQueryIndex;
+    public void setQueryLengths(final int[] queryLengths) {
+        assert queryLengths.length > maxQueryIndex
+                : "The number of elements of queryLength is too small to accomodate queryIndex="
+                + maxQueryIndex;
         this.queryLengths = queryLengths;
+
+        // update the unique query length set
+        uniqueQueryLengths.clear();
+        uniqueQueryLengths.addAll(IntArrayList.wrap(queryLengths));
     }
 }
