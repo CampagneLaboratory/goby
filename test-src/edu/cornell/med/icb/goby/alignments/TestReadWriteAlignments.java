@@ -27,10 +27,10 @@ import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assert.assertFalse;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -230,7 +230,7 @@ public class TestReadWriteAlignments {
      * Validate that the the alignment header constant query length
      * ({@link edu.cornell.med.icb.goby.alignments.Alignments.AlignmentHeader#hasConstantQueryLength()})
      * is set to true when queries of the same length get appended.
-     * @throws IOException if there is a problem reading or writting the alignment
+     * @throws IOException if there is a problem reading or writing the alignment
      */
     @Test
     public void constantQueryLengths() throws IOException {
@@ -264,7 +264,7 @@ public class TestReadWriteAlignments {
      * Validate that the the alignment header constant query length
      * ({@link edu.cornell.med.icb.goby.alignments.Alignments.AlignmentHeader#hasConstantQueryLength()})
      * is set to false when queries of the same length get appended.
-     * @throws IOException if there is a problem reading or writting the alignment
+     * @throws IOException if there is a problem reading or writing the alignment
      */
     @Test
     public void nonConstantQueryLengths() throws IOException {
