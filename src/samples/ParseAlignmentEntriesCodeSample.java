@@ -34,7 +34,7 @@ import java.io.IOException;
  * @author Fabien Campagne
  *         Date: Jun 24, 2010
  */
-public class ParseAlignmentEntriesCodeSample {
+public class ParseAlignmentEntriesCodeSample { 
     static {
         try {
             String inputFilename = "input.entries";
