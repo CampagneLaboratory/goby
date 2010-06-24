@@ -23,9 +23,9 @@ import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -281,7 +281,7 @@ public class AlignmentWriter implements Closeable {
      * outside this writer.
      *
      * @param entry The entry to append
-     * @throws IOException If an error occurs writting this entry.
+     * @throws IOException If an error occurs writing this entry.
      */
     public synchronized void appendEntry(final Alignments.AlignmentEntry entry) throws IOException {
         if (entry.hasQueryLength()) {

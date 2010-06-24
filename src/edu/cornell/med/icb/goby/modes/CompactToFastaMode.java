@@ -61,7 +61,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
     private static final String MODE_DESCRIPTION = "Converts a Compact file to Fasta format.";
 
     /**
-     * Maximimum length of a line when writting a FASTA/FASTQ file.
+     * Maximimum length of a line when writing a FASTA/FASTQ file.
      */
     private static final int FASTA_LINE_LENGTH = 60;
 

@@ -96,7 +96,7 @@ public class ReadsWriter implements Closeable {
 
     /**
      * Append an entry with the next available readindex.
-     * @throws IOException  If an error occurs while writting the file.
+     * @throws IOException  If an error occurs while writing the file.
      */
     public synchronized void appendEntry() throws IOException {
         appendEntry(readIndex);
@@ -106,7 +106,7 @@ public class ReadsWriter implements Closeable {
     /**
      * Append an entry with a specific read index.
      * @param readIndex  Index of the read that will be written
-     * @throws IOException If an error occurs while writting the file.
+     * @throws IOException If an error occurs while writing the file.
      */
     public synchronized void appendEntry(final int readIndex) throws IOException {
 

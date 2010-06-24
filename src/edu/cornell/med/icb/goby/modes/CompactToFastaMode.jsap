@@ -43,7 +43,7 @@
         <switch>
             <id>reference</id>
             <longFlag>reference</longFlag>
-            <help>When this switch is provided with output-color-space, any transition on the N character will result in writting an 'N' base.</help>
+            <help>When this switch is provided with output-color-space, any transition on the N character will result in writing an 'N' base.</help>
         </switch>
         <flaggedOption>
             <id>trim-adaptor-length</id>

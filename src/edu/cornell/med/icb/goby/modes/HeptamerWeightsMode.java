@@ -20,22 +20,25 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.reads.Reads;
-import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.algorithmic.data.HeptamerInfo;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
+import edu.cornell.med.icb.goby.reads.Reads;
+import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.shorts.ShortList;
 import it.unimi.dsi.fastutil.shorts.ShortArrayList;
+import it.unimi.dsi.fastutil.shorts.ShortList;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * Evaluate heptamer weights following the method of Hansen et al, NAR April 2010.
@@ -226,10 +229,10 @@ public class HeptamerWeightsMode extends AbstractGobyMode {
                 }
                 heptamers.heptamerIndexToWeight.put(heptamerIndex, weight);
             }
-            LOG.info("writting heptamer info.");
+            LOG.info("writing heptamer info.");
             heptamers.save(heptamerInfoFilename);
 
-            LOG.info("writting binary weight file.");
+            LOG.info("writing binary weight file.");
             WeightsInfo weights = new WeightsInfo();
             weights.size(readIndexToHeptamerIndex.size());
             for (int readIndex = 0; readIndex < readIndexToHeptamerIndex.size(); readIndex++) {

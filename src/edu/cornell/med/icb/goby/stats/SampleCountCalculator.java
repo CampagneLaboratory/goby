@@ -18,11 +18,10 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.lang.MutableString;
 
 /**
- * Estimates sample counts, writting one new column per sample in the comparison group.
+ * Estimates sample counts, writing one new column per sample in the comparison group.
  *
  * @author Fabien Campagne
  *         Date: Jan 13, 2010

@@ -87,7 +87,7 @@ public class MessageChunksWriter {
      */
     public void writeAsNeeded(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder)
             throws IOException {
-     
+
         writeAsNeeded(collectionBuilder, 1);
     }
 
@@ -111,7 +111,7 @@ public class MessageChunksWriter {
     }
 
     /**
-     * Force the writting of the collection to the output stream.
+     * Force the writing of the collection to the output stream.
      *
      * @param collectionBuilder The builder prepared with the growing collection of entries.
      * @throws IOException if there was an error writing the entries
@@ -120,7 +120,7 @@ public class MessageChunksWriter {
             throws IOException {
         // Write the separation between two chunks: eight bytes with value zero.
         if (LOG.isTraceEnabled()) {
-            LOG.trace("writting zero bytes {" + DELIMITER_LENGTH);
+            LOG.trace("writing zero bytes {" + DELIMITER_LENGTH);
         }
         for (int i = 0; i < DELIMITER_LENGTH; i++) {
             out.writeByte(DELIMITER_CONTENT);
@@ -137,7 +137,7 @@ public class MessageChunksWriter {
         if (LOG.isTraceEnabled()) {
             LOG.trace("serializedSize: " + serializedSize);
         }
-       
+
         // the position just before this chunk is written is recorded:
         currentChunkStartOffset = out.size();
         // write the compressed size followed by the compressed stream:
