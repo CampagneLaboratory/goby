@@ -95,7 +95,7 @@ class AlignmentReader(object):
         f.close()
 
         # open the entries
-        self.entries_reader = AlignmentCollectionReader(basename)
+        self.entries_reader = AlignmentCollectionReader(basename, verbose)
 
     def next(self):
         """ Return next alignment entry from the entries file

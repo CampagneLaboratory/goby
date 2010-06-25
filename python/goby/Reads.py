@@ -52,7 +52,7 @@ class ReadsReader(object):
         self.filename = filename
 
         # open the entries
-        self.entries_reader = ReadsCollectionReader(filename)
+        self.entries_reader = ReadsCollectionReader(filename, verbose)
 
     def next(self):
         """ Return next sequence entry from the file.

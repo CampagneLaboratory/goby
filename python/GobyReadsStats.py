@@ -19,6 +19,8 @@
 #
 
 import getopt
+import os
+import stat
 import sys
 
 from goby.Reads import ReadsReader
@@ -53,6 +55,7 @@ def main():
     if verbose:
         print "Processing file =", filename
 
+    filesize = os.stat(filename)[stat.ST_SIZE]
     number_of_entries = 0
     number_of_identifiers = 0;
     number_of_descriptions = 0;
@@ -82,8 +85,8 @@ def main():
 
     print "Compact reads filename = %s" % filename
     print
-    print "Average bytes per entry: %s" % commify(reads_reader.entries_reader.filesize / float(number_of_entries))
-    print "Average bytes per base:  %s" % commify(reads_reader.entries_reader.filesize / float(total_read_length))
+    print "Average bytes per entry: %s" % commify(filesize / float(number_of_entries))
+    print "Average bytes per base:  %s" % commify(filesize / float(total_read_length))
     print "Has identifiers = %s (%s)" % (number_of_identifiers > 0, commify(number_of_identifiers))
     print "Has descriptions = %s (%s)" % (number_of_descriptions > 0, commify(number_of_descriptions))
     print "Has sequences = %s (%s)" % (number_of_sequences > 0, commify(number_of_sequences))
