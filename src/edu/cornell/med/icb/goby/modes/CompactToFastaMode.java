@@ -450,9 +450,9 @@ public class CompactToFastaMode extends AbstractGobyMode {
 
             // write the score if there is one otherwise write the default "fake" score
             if (!fakeQualityScores && hasScores && i < qualityScores.length) {
-                writer.write(qualityEncoding.qualityScoreToAsciiEncoding(qualityScores[i]));
+                writer.write(qualityEncoding.phredQualityScoreToAsciiEncoding(qualityScores[i]));
             } else {
-                writer.write(qualityEncoding.qualityScoreToAsciiEncoding(FAKE_QUALITY_SCORE));
+                writer.write(qualityEncoding.phredQualityScoreToAsciiEncoding(FAKE_QUALITY_SCORE));
             }
         }
         writer.write('\n');

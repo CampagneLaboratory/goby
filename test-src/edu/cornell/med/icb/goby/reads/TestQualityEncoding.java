@@ -32,15 +32,15 @@ import org.junit.Test;
  * 0 to 40 only are expected). Solexa/Illumina 1.0 format can encode a Solexa/Illumina
  * quality score from -5 to 62 using ASCII 59 to 126 (although in raw read data Solexa
  * scores from -5 to 40 only are expected)
- *
+ * <p/>
  * <pre>
  * SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS.....................................................
- ^ ...............................IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII......................
+ * ^ ...............................IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII......................
  * ..........................XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
  * !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
  * |                         |    |        |                              |                     |
  * 33                        59   64       73                            104                   126
- *
+ * <p/>
  * S - Sanger       Phred+33,  41 values  (0, 40)
  * I - Illumina 1.3 Phred+64,  41 values  (0, 40)
  * X - Solexa       Solexa+64, 68 values (-5, 62)
@@ -65,9 +65,17 @@ public class TestQualityEncoding {
         for (int i = 0; i < 40; i++) {
             final byte score = (byte) (qualityRange.getMinimumInteger() + i);
             assertEquals("wrong character for score " + score,
-                    qualityChars.charAt(i), encoding.qualityScoreToAsciiEncoding(score));
+                    qualityChars.charAt(i), encoding.phredQualityScoreToAsciiEncoding(score));
             assertEquals("wrong score for character " + qualityChars.charAt(i),
-                    score, encoding.asciiEncodingToQualityScore(qualityChars.charAt(i)));
+                    score, encoding.asciiEncodingToPhredQualityScore(qualityChars.charAt(i)));
+        }
+
+        final QualityEncoding solexaEncoding = QualityEncoding.ILLUMINA;
+        for (byte qPhred = 0; qPhred < 93; qPhred++) {
+            char sanger = solexaEncoding.phredQualityScoreToAsciiEncoding(qPhred);
+            byte roundTrip = solexaEncoding.asciiEncodingToPhredQualityScore(sanger);
+            assertEquals(qPhred, roundTrip);
+
         }
     }
 
@@ -83,9 +91,17 @@ public class TestQualityEncoding {
         for (int i = 0; i < 40; i++) {
             final byte score = (byte) (qualityRange.getMinimumInteger() + i);
             assertEquals("wrong character for score " + score,
-                    qualityChars.charAt(i), encoding.qualityScoreToAsciiEncoding(score));
+                    qualityChars.charAt(i), encoding.phredQualityScoreToAsciiEncoding(score));
             assertEquals("wrong score for character " + qualityChars.charAt(i),
-                    score, encoding.asciiEncodingToQualityScore(qualityChars.charAt(i)));
+                    score, encoding.asciiEncodingToPhredQualityScore(qualityChars.charAt(i)));
+        }
+
+        final QualityEncoding solexaEncoding = QualityEncoding.ILLUMINA;
+        for (byte qPhred = 0; qPhred < 62; qPhred++) {
+            char illumina13 = solexaEncoding.phredQualityScoreToAsciiEncoding(qPhred);
+            byte roundTrip = solexaEncoding.asciiEncodingToPhredQualityScore(illumina13);
+            assertEquals(qPhred, roundTrip);
+
         }
     }
 
@@ -94,15 +110,17 @@ public class TestQualityEncoding {
      */
     @Test
     public void solexa() {
-        final Range qualityRange = new IntRange(-5, 62);
-        final String qualityChars = encodedQualityCharacters.substring(26);
-        final QualityEncoding encoding = QualityEncoding.SOLEXA;
-        for (int i = 0; i < 67; i++) {
-            final byte score = (byte) (qualityRange.getMinimumInteger() + i);
-            assertEquals("wrong character for score " + score,
-                    qualityChars.charAt(i), encoding.qualityScoreToAsciiEncoding(score));
-            assertEquals("wrong score for character " + qualityChars.charAt(i),
-                    score, encoding.asciiEncodingToQualityScore(qualityChars.charAt(i)));
+        final QualityEncoding solexaEncoding = QualityEncoding.SOLEXA;
+
+
+        for (byte qPhred = 1; qPhred < 62; qPhred++) {
+            System.out.println("qPhred="+qPhred);
+            char solexa = solexaEncoding.phredQualityScoreToAsciiEncoding(qPhred);
+
+            byte roundTripSolexa = solexaEncoding.asciiEncodingToPhredQualityScore(solexa);
+
+            assertEquals(qPhred, roundTripSolexa);
+
         }
     }
 }

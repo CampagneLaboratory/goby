@@ -260,8 +260,14 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
         for (int position = 0; position < size; position++) {
             qualityScoreBuffer[position] =
-                    qualityEncoding.asciiEncodingToQualityScore(quality.charAt(position));
-            checkRange(qualityScoreBuffer[position]);
+                    qualityEncoding.asciiEncodingToPhredQualityScore(quality.charAt(position));
+
+            if (!qualityEncoding.isWithinValidRange(qualityScoreBuffer[position])) {
+                System.err.println("Phred quality scores must be within specific ranges for specfic encodings. The value decoded "
+                        + "was " + qualityScoreBuffer[position] + " and outside of the valid range for "+ qualityEncoding
+                        +" You may have selected an incorrect encoding.");
+                System.exit(10);
+            }
             if (verboseQualityScores) {
                 System.out.print(qualityScoreBuffer[position]);
                 System.out.print(" ");
@@ -275,11 +281,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
     }
 
     private void checkRange(final byte qualityDecoded) {
-        if (!(qualityDecoded >= 0 && qualityDecoded <= 40)) {
-            System.err.println("Phred quality scores must be within 0 and 40. The value decoded "
-                    + "was " + qualityDecoded + " You may have selected an incorrect encoding.");
-            System.exit(10);
-        }
+
     }
 
     /**
@@ -287,7 +289,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
      *
      * @param name the full path to the file in question
      * @return the full path to file without the fastx/gz extensions or the same name if
-     * those extensions weren't found.
+     *         those extensions weren't found.
      * @see edu.cornell.med.icb.goby.util.FileExtensionHelper#FASTX_FILE_EXTS
      */
     private static String stripFastxExtensions(final String name) {

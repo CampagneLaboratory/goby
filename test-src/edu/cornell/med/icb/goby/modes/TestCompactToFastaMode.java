@@ -170,7 +170,7 @@ public class TestCompactToFastaMode {
             for (int i = 0; i < 35; i++) {
                 final char qualityCharacter = quality.charAt(i);
                 assertEquals("Entry " + index + " has incorrect quality score at index " + i, 40,
-                        QualityEncoding.ILLUMINA.asciiEncodingToQualityScore(qualityCharacter));
+                        QualityEncoding.ILLUMINA.asciiEncodingToPhredQualityScore(qualityCharacter));
             }
             assertTrue("Entry " + index + " is not complete", entry.isEntryComplete());
             index++;
@@ -210,7 +210,7 @@ public class TestCompactToFastaMode {
             for (int i = 0; i < 35; i++) {
                 final char qualityCharacter = quality.charAt(i);
                 assertEquals("Entry " + index + " has incorrect quality score at index " + i, 40,
-                        QualityEncoding.SANGER.asciiEncodingToQualityScore(qualityCharacter));
+                        QualityEncoding.SANGER.asciiEncodingToPhredQualityScore(qualityCharacter));
             }
             assertTrue("Entry " + index + " is not complete", entry.isEntryComplete());
             index++;
@@ -286,7 +286,7 @@ public class TestCompactToFastaMode {
                 final char qualityCharacter = quality.charAt(i);
                 assertEquals("Entry " + index + " has incorrect quality score at index " + i,
                         expectedQualityScores[index][i],
-                        QualityEncoding.ILLUMINA.asciiEncodingToQualityScore(qualityCharacter));
+                        QualityEncoding.ILLUMINA.asciiEncodingToPhredQualityScore(qualityCharacter));
             }
             assertTrue("Entry " + index + " is not complete", entry.isEntryComplete());
             index++;
@@ -328,7 +328,7 @@ public class TestCompactToFastaMode {
                 final char qualityCharacter = quality.charAt(i);
                 assertEquals("Entry " + index + " has incorrect quality score at index " + i,
                         expectedQualityScores[index][i],
-                        QualityEncoding.SANGER.asciiEncodingToQualityScore(qualityCharacter));
+                        QualityEncoding.SANGER.asciiEncodingToPhredQualityScore(qualityCharacter));
             }
             assertTrue("Entry " + index + " is not complete", entry.isEntryComplete());
             index++;

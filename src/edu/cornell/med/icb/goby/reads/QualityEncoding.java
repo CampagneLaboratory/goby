@@ -21,8 +21,9 @@ package edu.cornell.med.icb.goby.reads;
 /**
  * Quality score encodings supported by Goby. See
  * <a href="http://en.wikipedia.org/wiki/FASTQ_format">http://en.wikipedia.org/wiki/FASTQ_format</a>
- * for a description of these various encodings.
- *
+ * for a description of these various encodings. A much better description appeared in
+ * Cock PJ et a, Nucleic Acids Research 2010, Vol 38, No 6.
+ * <p/>
  * Sanger format can encode a Phred quality score from 0 to 93 using ASCII 33 to 126
  * (although in raw read data the Phred quality score rarely exceeds 60, higher scores are
  * possible in assemblies or read maps).  Illumina 1.3+ format can encode a Phred quality
@@ -30,15 +31,15 @@ package edu.cornell.med.icb.goby.reads;
  * 0 to 40 only are expected). Solexa/Illumina 1.0 format can encode a Solexa/Illumina
  * quality score from -5 to 62 using ASCII 59 to 126 (although in raw read data Solexa
  * scores from -5 to 40 only are expected)
- *
+ * <p/>
  * <pre>
  * SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS.....................................................
- ^ ...............................IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII......................
+ * ^ ...............................IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII......................
  * ..........................XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
  * !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
  * |                         |    |        |                              |                     |
  * 33                        59   64       73                            104                   126
- *
+ * <p/>
  * S - Sanger       Phred+33,  41 values  (0, 40)
  * I - Illumina 1.3 Phred+64,  41 values  (0, 40)
  * X - Solexa       Solexa+64, 68 values (-5, 62)
@@ -48,44 +49,95 @@ public enum QualityEncoding {
     /**
      * Sanger encoding.
      */
-    SANGER(33),
+    SANGER(33, false, 0, 93),
     /**
      * Illumina encoding.
      */
-    ILLUMINA(64),
+    ILLUMINA(64, false, 0, 62),
     /**
      * Solexa encoding.
      */
-    SOLEXA(64);
+    SOLEXA(59, true, -5, 62);
 
     /**
      * The offset used to convert quality scores to/from ASCII characters.
      */
-    private final int phredOffset;
+    private final int asciiOffset;
+    /**
+     * A flag to indicate that solexa scale conversion must occur.
+     * See Cock PJ et a, Nucleic Acids Research 2010, Vol 38, No 6.
+     */
+    private final boolean solexaEncoding;
+    private int minPhredScore;
+    private int maxPhredScore;
 
     /**
      * Create a new QualityEncoding with the specified offset.
-     * @param phredOffset The offset used to convert quality scores to/from ASCII characters.
+     *
+     * @param asciiOffset    The offset used to convert quality scores to/from ASCII characters.
+     * @param solexaEncoding Indicates whether solexa scale conversion must occur.
      */
-    private QualityEncoding(final int phredOffset) {
-        this.phredOffset = phredOffset;
+    private QualityEncoding(final int asciiOffset, boolean solexaEncoding, int minPhredScore, int maxPhredScore) {
+        this.asciiOffset = asciiOffset;
+        this.solexaEncoding = solexaEncoding;
+        this.minPhredScore = minPhredScore;
+        this.maxPhredScore = maxPhredScore;
     }
 
     /**
      * Convert a quality score value to the ascii encoded equivalent.
-     * @param qualityScore The quality score to convert.
+     * Conversion implemented as described in Cock PJ et a, Nucleic Acids Research 2010, Vol 38, No 6.
+     *
+     * @param qPhred The quality score to convert in Phred scale.
      * @return The ASCII character representation of the score
      */
-    public char qualityScoreToAsciiEncoding(final byte qualityScore) {
-        return (char) (qualityScore + phredOffset);
+    public final char phredQualityScoreToAsciiEncoding(final byte qPhred) {
+        if (solexaEncoding) {
+            int qSolexa = (int) Math.round((10 * Math.log10(
+                    Math.pow(10d,
+                            ((double) qPhred) / 10d)
+                            - 1
+            )
+            ));
+            System.out.printf("qSolexa=%d%n", qSolexa);
+            return (char) (qSolexa + asciiOffset);
+        } else {
+            return (char) (qPhred + asciiOffset);
+        }
+
+
     }
 
     /**
-     * Convert a quality score value from the ascii encoded equivalent.
+     * Convert a quality score value from the ascii encoded equivalent to Phred scale.
+     * Conversion implemented as described in Cock PJ et a, Nucleic Acids Research 2010, Vol 38, No 6.
+     *
      * @param asciiCharacter the character to convert
-     * @return The score value converted from the ascii encoding
+     * @return The score value converted to Phred quality score scale.
      */
-    public byte asciiEncodingToQualityScore(final char asciiCharacter) {
-        return (byte) (asciiCharacter - phredOffset);
+    public final byte asciiEncodingToPhredQualityScore(final char asciiCharacter) {
+        if (solexaEncoding) {
+            final int qSolexa = (asciiCharacter - asciiOffset);
+            System.out.printf("qSolexa=%d%n", qSolexa);
+            // convert Qsolexa to Qphred:
+            return (byte) Math.round((10 * Math.log10(
+                    Math.pow(10d, (((double) qSolexa) / 10d))
+                            + 1)
+            ));
+
+        } else {
+            return (byte) (asciiCharacter - asciiOffset);
+        }
+
+    }
+
+    /**
+     * Returns true if the phredScore is within valid range for this encoding.
+     *
+     * @param phredScore quality score on Phred scale.
+     * @return True  if the phredScore is within valid range for this encoding, false otherwise.
+     */
+    public boolean isWithinValidRange(byte phredScore) {
+        return (phredScore > maxPhredScore || phredScore < minPhredScore);
     }
 }
