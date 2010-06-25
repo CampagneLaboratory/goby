@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 #include <google/protobuf/io/gzip_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 
 #include "common.h"
 #include "Alignments.pb.h"
@@ -64,15 +64,12 @@ namespace goby {
       // position the stream to the current chunk location
       stream.seekg(chunkInfo.position, std::ios::beg);
 
-      // read the compressed buffer into memory
+      // Set up a stream that will only read up the current chunk length
       const size_t compressedChunkLength = chunkInfo.length;
-      char *compressedChunk = new char[compressedChunkLength];
-      stream.read(compressedChunk, compressedChunkLength);
-      if (stream.bad()) {
-        std::cerr << "There was a problem reading raw data from " << filename << std::endl;
-      }
+      google::protobuf::io::IstreamInputStream istream(&stream);
+      google::protobuf::io::LimitingInputStream rawChunkStream(&istream, compressedChunkLength);
+
       // uncompress the buffer so that it can be parsed
-      google::protobuf::io::ArrayInputStream rawChunkStream(compressedChunk, compressedChunkLength);
       google::protobuf::io::GzipInputStream chunkStream(&rawChunkStream);
 
       // the stream may not get all read in at once so we may need to copy in stages
@@ -100,7 +97,6 @@ namespace goby {
 
       // free up the temporary buffers and close the stream
       ::free(uncompressedChunk);
-      ::free(compressedChunk);
 
       stream.close();
 
@@ -163,7 +159,7 @@ namespace goby {
         chunks(reader.chunks),
         chunkIndex(reader.chunkIndex),
         currentChunk(reader.currentChunk) {
-      std::cout << "Copy constructor" << std::endl;
+      std::cout << "MessageChunksReader Copy constructor" << std::endl;
     }
 
     MessageChunksReader(const MessageChunksReader& reader, int chunkIndex)
@@ -171,7 +167,7 @@ namespace goby {
         chunks(reader.chunks),
         chunkIndex(chunkIndex),
         currentChunk(reader.currentChunk) {
-      std::cout << "Copy constructor" << std::endl;
+      std::cout << "MessageChunksReader Copy constructor" << std::endl;
     }
 
     // Prefix increment operator
@@ -226,7 +222,6 @@ namespace goby {
     MessageChunksReader end() const {
       return MessageChunksReader(*this, chunks.size());
     };
-
     /*
     MessageChunksReader& operator=(const MessageChunksReader<T>& that)  {
       if (this != &that) {
