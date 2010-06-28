@@ -155,7 +155,6 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
     public void remove() {
         throw new UnsupportedOperationException("Cannot remove from a reader.");
     }
-
     /**
      * Decode the sequence in this entry to the sequence MutableString.
      *
@@ -163,8 +162,18 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
      * @param sequence Where to write the decoded sequence.
      */
     public static void decodeSequence(final Reads.ReadEntry entry, final MutableString sequence) {
-        final ByteString seq = entry.getSequence();
-        final int length = entry.getReadLength();
+        decodeSequence(entry, sequence, false);
+    }
+    /**
+     * Decode the sequence in this entry to the sequence MutableString.
+     *
+     * @param entry    The entry which provides the sequence in encoded format.
+     * @param sequence Where to write the decoded sequence.
+     * @param decodePair True: decodes the pair sequence. False: decodes the primary sequence.
+     */
+    public static void decodeSequence(final Reads.ReadEntry entry, final MutableString sequence, boolean decodePair) {
+        final ByteString seq = decodePair ? entry.getSequencePair() : entry.getSequence();
+        final int length =decodePair ? entry.getReadLengthPair(): entry.getReadLength();
         sequence.setLength(length);
         for (int i = 0; i < length; ++i) {
             sequence.setCharAt(i, (char) seq.byteAt(i));

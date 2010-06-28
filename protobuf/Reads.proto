@@ -35,10 +35,22 @@ message ReadEntry {
     Sequence, encoded as ascii characters stored in single bytes.
    */
   optional bytes sequence =3;
+   /*
+    The second sequence in a pair. Stored the same way as the sequence attribute.
+   */
+  optional bytes sequencePair =5;
+  /*
+    Length of the second sequence in a pair.
+  */
+  required uint32 readLengthPair=6;
+
   /*
     Quality scores in Phred units, stored as single bytes (0-255).
   */
   optional bytes qualityScores =4;
-
+  /*
+    Quality scores for the second sequence in a pair. Stored as the 'qualityScores' attribute.
+   */
+  optional bytes qualityScoresPair =7;
 }
 

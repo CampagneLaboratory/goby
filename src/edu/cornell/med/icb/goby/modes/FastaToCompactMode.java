@@ -40,8 +40,9 @@ import java.io.IOException;
 
 /**
  * Converts a <a href="http://en.wikipedia.org/wiki/FASTA_format">FASTA</a>
- * or <a href="http://en.wikipedia.org/wiki/FASTQ_format">FASTQ</a> file to the
- * protocol buffer file format described by Reads.proto.
+ * or <a href="http://en.wikipedia.org/wiki/FASTQ_format">FASTQ</a> file to the compact reads format.
+ * Compact reads are in the chunked protocol buffer file format described by Reads.proto.
+ * Since Goby 1.7, this mode can load paired-end runs into single compact files.
  *
  * @author Fabien Campagne
  *         Date: Apr 28, 2009
@@ -61,8 +62,9 @@ public class FastaToCompactMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Converts a FASTA/FASTQ file to the "
-            + "Goby \"compact-reads\" file format.";
+    private static final String MODE_DESCRIPTION = "Converts FASTA/FASTQ files to the "
+            + "Goby \"compact-reads\" file format. Since Goby 1.7, this mode can load paired-end runs " +
+            "into single compact files.";
 
     /**
      * The files to convert to compact reads.
@@ -105,6 +107,9 @@ public class FastaToCompactMode extends AbstractGobyMode {
     private boolean parallel = true;
 
     private QualityEncoding qualityEncoding;
+    private boolean processPairs;
+    private String pairIndicator1;
+    private String pairIndicator2;
 
     /**
      * Returns the mode name defined by subclasses.
@@ -139,6 +144,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
         final JSAPResult jsapResult = parseJsapArguments(args);
         parallel = jsapResult.getBoolean("parallel", false);
         inputFilenames = jsapResult.getStringArray("input");
+
         includeDescriptions = jsapResult.getBoolean("include-descriptions");
         includeIdentifiers = jsapResult.getBoolean("include-identifiers");
         excludeSequences = jsapResult.getBoolean("exclude-sequences");
@@ -149,6 +155,18 @@ public class FastaToCompactMode extends AbstractGobyMode {
             outputFile = jsapResult.getString("output");
         }
         sequencePerChunk = jsapResult.getInt("sequence-per-chunk");
+        processPairs = jsapResult.getBoolean("paired-end");
+        String tokens = jsapResult.getString("pair-indicator");
+        
+        if (processPairs && tokens != null) {
+            String tmp[] = tokens.split("[,]");
+            if (tmp.length != 2) {
+                System.err.println("Pair indicator argument must have exactly two tokens, separated by coma. Offending syntax: " + tokens);
+                System.exit(1);
+            }
+            pairIndicator1 = tmp[0];
+            pairIndicator2 = tmp[1];
+        }
         return this;
     }
 
@@ -167,11 +185,14 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
         try {
             final DoInParallel loop = new DoInParallel() {
+
                 @Override
                 public void action(final DoInParallel forDataAccess, final String inputBasename, final int loopIndex) {
+
                     try {
                         debugStart(inputBasename);
                         processOneFile(loopIndex, inputFilenames.length, inputBasename);
+
                         debugEnd(inputBasename);
                     } catch (IOException e) {
                         LOG.error("Error processing index " + loopIndex + ", " + inputBasename, e);
@@ -187,11 +208,16 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
 
     private void processOneFile(final int loopIndex, final int length, final String inputFilename) throws IOException {
-        final String outputFilename;
+         String outputFilename;
         if (loopIndex == 0 && StringUtils.isNotBlank(outputFile)) {
             outputFilename = outputFile;
         } else {
             outputFilename = stripFastxExtensions(inputFilename) + ".compact-reads";
+
+        }
+        if (processPairs) {
+                      // remove _1 from the destination compact filename.
+            outputFilename = outputFilename.replace(pairIndicator1, "");
         }
         System.out.println("Creating file " + outputFilename);
         final File output = new File(outputFilename);
@@ -215,7 +241,22 @@ public class FastaToCompactMode extends AbstractGobyMode {
         try {
 
             writer.setNumEntriesPerChunk(sequencePerChunk);
+            FastXReader pairReader = null;
+            if (processPairs) {
+                String pairInputFilename = inputFilename.replace(pairIndicator1, pairIndicator2);
+                LOG.info(String.format("Located paired-end input files (%s,%s)", inputFilename, pairInputFilename));
+                pairReader = new FastXReader(pairInputFilename);
+
+            }
+            FastXEntry pairEntry = null;
+
             for (final FastXEntry entry : new FastXReader(inputFilename)) {
+                if (pairReader != null) {
+                    pairEntry = pairReader.next();
+                    if (pairEntry == null) {
+                        System.err.println("Cannot find matching sequence for " + entry.getEntryHeader());
+                    }
+                }
                 if (includeDescriptions) {
                     writer.setDescription(entry.getEntryHeader());
                 }
@@ -226,11 +267,17 @@ public class FastaToCompactMode extends AbstractGobyMode {
                 }
                 if (!excludeSequences) {
                     writer.setSequence(entry.getSequence());
+                    if (pairEntry != null) {
+                        writer.setPairSequence(pairEntry.getSequence());
+                    }
                 } else {
                     writer.setSequence("");
                 }
                 if (!excludeQuality) {
                     writer.setQualityScores(convertQualityScores(entry.getQuality()));
+                    if (pairEntry != null) {
+                        writer.setQualityScoresPair(convertQualityScores(pairEntry.getQuality()));
+                    }
                 }
                 writer.appendEntry();
             }
@@ -242,12 +289,10 @@ public class FastaToCompactMode extends AbstractGobyMode {
     }
 
     private byte[] convertQualityScores(final MutableString quality) {
-        // Only sanger and illumina encoding are supported at this time
-        if (qualityEncoding == QualityEncoding.SOLEXA) {
-            throw new UnsupportedOperationException("SOLEXA encoding is not supported "
-                    + "at this time for lack of clear documentation.");
-        } else if (qualityEncoding != QualityEncoding.SANGER
-                && qualityEncoding != QualityEncoding.ILLUMINA) {
+        // Only Solexa, Sanger and Illumina encoding are supported at this time
+        if (qualityEncoding != QualityEncoding.SANGER
+                && qualityEncoding != QualityEncoding.ILLUMINA
+                && qualityEncoding != QualityEncoding.SOLEXA) {
             throw new UnsupportedOperationException("Unknown encoding: " + qualityEncoding);
         }
 
@@ -264,8 +309,8 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
             if (!qualityEncoding.isWithinValidRange(qualityScoreBuffer[position])) {
                 System.err.println("Phred quality scores must be within specific ranges for specfic encodings. The value decoded "
-                        + "was " + qualityScoreBuffer[position] + " and outside of the valid range for "+ qualityEncoding
-                        +" You may have selected an incorrect encoding.");
+                        + "was " + qualityScoreBuffer[position] + " and outside of the valid range for " + qualityEncoding
+                        + " You may have selected an incorrect encoding.");
                 System.exit(10);
             }
             if (verboseQualityScores) {

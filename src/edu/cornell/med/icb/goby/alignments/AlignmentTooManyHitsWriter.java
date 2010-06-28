@@ -18,10 +18,8 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import java.io.Closeable;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * This class write the too many hit datastructure Protocol Buffer format.
@@ -33,13 +31,13 @@ import java.io.IOException;
  */
 public class AlignmentTooManyHitsWriter implements Closeable {
     private boolean tooManyHitsWritten;
-    private final FileOutputStream tooManyHitsOutput;
+    private final OutputStream tooManyHitsOutput;
     private final Alignments.AlignmentTooManyHits.Builder tooManyHits;
     private Alignments.AmbiguousLocation.Builder newAmbiguousLocation;
 
 
-    public AlignmentTooManyHitsWriter(final String outputBasename, final int alignerThreshold) throws FileNotFoundException {
-        tooManyHitsOutput = new FileOutputStream(outputBasename + ".tmh");
+    public AlignmentTooManyHitsWriter(final String outputBasename, final int alignerThreshold) throws IOException {
+        tooManyHitsOutput = new GZIPOutputStream(new FileOutputStream(outputBasename + ".tmh"));
         newAmbiguousLocation = Alignments.AmbiguousLocation.newBuilder();
         tooManyHits = Alignments.AlignmentTooManyHits.newBuilder();
         tooManyHits.setAlignerThreshold(alignerThreshold);

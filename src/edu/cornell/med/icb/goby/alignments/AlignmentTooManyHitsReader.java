@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Reads alignments too many hits data structure written with
@@ -72,8 +73,17 @@ public class AlignmentTooManyHitsReader {
         this.queryIndex2NumHits.defaultReturnValue(-1);
         this.queryIndex2Depth.defaultReturnValue(-1);
 
+        InputStream tmhStream = null;
         if (optionalFile.exists()) {
-            tooManyHitsStream = new FileInputStream(optionalFile);
+            try {
+                tmhStream = new GZIPInputStream(new FileInputStream(optionalFile));
+            } catch (IOException e) {
+                // try not compressed for compatibility with 1.6-:
+                LOG.trace("falling back to legacy 1.6- uncompressed TMH.");
+
+                tmhStream = new FileInputStream(optionalFile);
+            }
+            tooManyHitsStream=tmhStream;
             // accept very large too many hits messages, since these may describe more than 60 million reads:
             final CodedInputStream codedInput = CodedInputStream.newInstance(tooManyHitsStream);
             codedInput.setSizeLimit(Integer.MAX_VALUE);
@@ -115,9 +125,9 @@ public class AlignmentTooManyHitsReader {
      *
      * @param queryIndex The index of the query sequence.
      * @return The number of hits that triggered membership in the too many hits list.
-     * The query may hit more locations than reported here, since some alignment
-     * tools will just drop queries that match above a threshold and stop counting.
-     * This number can be >=k.
+     *         The query may hit more locations than reported here, since some alignment
+     *         tools will just drop queries that match above a threshold and stop counting.
+     *         This number can be >=k.
      */
     public final int getNumberOfHits(final int queryIndex) {
         return queryIndex2NumHits.get(queryIndex);
@@ -129,7 +139,7 @@ public class AlignmentTooManyHitsReader {
      *
      * @param queryIndex The index of the query sequence.
      * @return The length of the longest match between the query and the reference sequence(s)
-     * that yielded the number of hits.
+     *         that yielded the number of hits.
      */
     public final int getLengthOfMatch(final int queryIndex) {
         return queryIndex2Depth.get(queryIndex);
@@ -152,9 +162,9 @@ public class AlignmentTooManyHitsReader {
     /**
      * Returns true if the query matched at least k number of locations in the reference.
      * However, if k >= alignerThreshold, then true is returned regardless.
-     *
+     * <p/>
      * TODO : provide rationale for logic of k >= alignerThreshold behaviour
-     *
+     * <p/>
      * TODO : discuss removal of this method as result is logically equivalent to isQueryAmbiguous(queryIndex)
      * TODO : given that tmhWriter.append() guarantees numHits > threshold
      *
@@ -180,12 +190,12 @@ public class AlignmentTooManyHitsReader {
     /**
      * Returns true if the query matched at least k number of locations in the reference, at the
      * specified match length or less.
-     *
+     * <p/>
      * TODO : discuss removal of 2nd argument from this method as result does not depend on its value
      * TODO : see comments at isQueryAmbiguous above
      *
-     * @param queryIndex The index of the query sequence.
-     * @param k The parameter k.
+     * @param queryIndex  The index of the query sequence.
+     * @param k           The parameter k.
      * @param matchLength The match length.
      * @return True or false.
      */

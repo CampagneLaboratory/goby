@@ -138,6 +138,6 @@ public enum QualityEncoding {
      * @return True  if the phredScore is within valid range for this encoding, false otherwise.
      */
     public boolean isWithinValidRange(byte phredScore) {
-        return (phredScore > maxPhredScore || phredScore < minPhredScore);
+        return (phredScore <= maxPhredScore || phredScore >= minPhredScore);
     }
 }

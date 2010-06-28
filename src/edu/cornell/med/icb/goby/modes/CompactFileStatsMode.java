@@ -348,11 +348,16 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         int numberOfIdentifiers = 0;
         int numberOfDescriptions = 0;
         int numberOfSequences = 0;
+        int numberOfSequencePairs = 0;
         int numberOfQualityScores = 0;
+        int numberOfQualityScorePairs = 0;
 
         long numReadEntries = 0;
         long totalReadLength = 0;
+        long totalReadLengthPair =0;
+        
         ReadsReader reader = null;
+
         try {
             final long size = file.length();
             reader = new ReadsReader(FileUtils.openInputStream(file));
@@ -362,12 +367,13 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 // across this file
                 numReadEntries++;
                 totalReadLength += readLength;
+                totalReadLengthPair += entry.getReadLengthPair();
 
                 // across all files
                 numberOfReads++;
                 numberOfDescriptions += entry.hasDescription() ? 1 : 0;
                 cumulativeReadLength += readLength;
-
+                
                 if (verbose && entry.hasDescription()) {
                     stream.println("Description found: " + entry.getDescription());
                 }
@@ -376,8 +382,12 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                     stream.println("Identifier found: " + entry.getReadIdentifier());
                 }
                 numberOfSequences += entry.hasSequence() && !entry.getSequence().isEmpty() ? 1 : 0;
+                numberOfSequencePairs += entry.hasSequencePair() && !entry.getSequencePair().isEmpty() ? 1 : 0;
                 numberOfQualityScores +=
                         entry.hasQualityScores() && !entry.getQualityScores().isEmpty() ? 1 : 0;
+
+                numberOfQualityScorePairs +=
+                                        entry.hasQualityScoresPair() && !entry.getQualityScoresPair().isEmpty() ? 1 : 0;
 
                 // we only need to keep all the read lengths if quantiles are being computed
                 if (computeQuantiles) {
@@ -402,12 +412,15 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         stream.printf("Has identifiers = %s (%,d) %n", numberOfIdentifiers > 0, numberOfIdentifiers);
         stream.printf("Has descriptions = %s (%,d) %n", numberOfDescriptions > 0, numberOfDescriptions);
         stream.printf("Has sequences = %s (%,d) %n", numberOfSequences > 0, numberOfSequences);
+        stream.printf("Has sequencePairs = %s (%,d) %n", numberOfSequencePairs > 0, numberOfSequencePairs);
         stream.printf("Has quality scores = %s (%,d) %n", numberOfQualityScores > 0, numberOfQualityScores);
+        stream.printf("Has quality score Pairs = %s (%,d) %n", numberOfQualityScorePairs > 0, numberOfQualityScorePairs);
 
         stream.printf("Number of entries = %,d%n", numReadEntries);
         stream.printf("Min read length = %,d%n", numReadEntries > 0 ? minLength : 0);
         stream.printf("Max read length = %,d%n", numReadEntries > 0 ? maxLength : 0);
         stream.printf("Avg read length = %,d%n", numReadEntries > 0 ? totalReadLength / numReadEntries : 0);
+        stream.printf("Avg read pair length = %,d%n", numReadEntries > 0 ? totalReadLengthPair / numReadEntries : 0);
 
         // compute quantiles
         if (computeQuantiles) {

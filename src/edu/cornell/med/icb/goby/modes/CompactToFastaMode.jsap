@@ -78,6 +78,16 @@
             <help>Name of the fasta file output.</help>
         </flaggedOption>
         <flaggedOption>
+            <id>pair-output</id>
+            <shortFlag>p</shortFlag>
+            <longFlag>pair-output</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>Name of the pair output file (where paired sequence will be written).</help>
+        </flaggedOption>
+        <flaggedOption>
             <id>output-format</id>
             <shortFlag>t</shortFlag>
             <longFlag>output-format</longFlag>

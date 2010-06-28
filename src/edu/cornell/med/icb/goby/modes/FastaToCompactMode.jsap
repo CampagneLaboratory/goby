@@ -91,5 +91,23 @@
             <longFlag>parallel</longFlag>
             <help>Process input files in parallel. Use when you have many input files to process. You can tune the number of processors used by setting the property pj.nt. For instance, -Dpj.nt=5 will use 5 parallel threads. When --parallel is specified, one thread per processing core of the machine will be used unless specified otherwise (with pj.nt).</help>
         </switch>
+         <switch>
+            <id>paired-end</id>
+            <longFlag>paired-end</longFlag>
+            <help>Indicates a paired-end run. When this switch is provided, this mode will try to locate a pair input file for each input provided. When a pair input file can be found (see --pair-indicator argument, the pair sequence, and quality scores are loaded in the output compact file. The two paired input files must have exactly the same number of sequnces, and the sequences must appear in the same order.</help>
+         </switch>
+        <flaggedOption>
+            <id>pair-indicator</id>
+            <longFlag>pair-indicator</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>_1,_2</string>
+            </defaults>
+            <help>Pair indicators are used to locate paired sequence input files. The indicator must be two string tokens separated by one coma. The first token should appear in the first input filename of a pair, while the second token should appear in the second filename of a pair. This mode will substitute the first token by the second to transform an input filename into a paired input filename.</help>
+        </flaggedOption>
+
     </parameters>
 </jsap>

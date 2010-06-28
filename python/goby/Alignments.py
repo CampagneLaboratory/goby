@@ -150,10 +150,11 @@ class TooManyHitsReader(object):
             print "Reading too many hits info from", tmh_filename
 
         try:
+            print "opening TMH file"
             f = open(tmh_filename, "rb")
             self.tmh.ParseFromString(f.read())
             f.close()
-
+            print "Done parsing TMH file"   
             for hit in self.tmh.hits:
                 self.queryindex_to_numhits[hit.query_index] = hit.at_least_number_of_hits
                 if hit.HasField("length_of_match"):

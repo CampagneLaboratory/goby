@@ -411,6 +411,20 @@ public final class Reads {
     public boolean hasSequence() { return hasSequence; }
     public com.google.protobuf.ByteString getSequence() { return sequence_; }
     
+    // optional bytes sequencePair = 5;
+    public static final int SEQUENCEPAIR_FIELD_NUMBER = 5;
+    private boolean hasSequencePair;
+    private com.google.protobuf.ByteString sequencePair_ = com.google.protobuf.ByteString.EMPTY;
+    public boolean hasSequencePair() { return hasSequencePair; }
+    public com.google.protobuf.ByteString getSequencePair() { return sequencePair_; }
+    
+    // required uint32 readLengthPair = 6;
+    public static final int READLENGTHPAIR_FIELD_NUMBER = 6;
+    private boolean hasReadLengthPair;
+    private int readLengthPair_ = 0;
+    public boolean hasReadLengthPair() { return hasReadLengthPair; }
+    public int getReadLengthPair() { return readLengthPair_; }
+    
     // optional bytes qualityScores = 4;
     public static final int QUALITYSCORES_FIELD_NUMBER = 4;
     private boolean hasQualityScores;
@@ -418,11 +432,19 @@ public final class Reads {
     public boolean hasQualityScores() { return hasQualityScores; }
     public com.google.protobuf.ByteString getQualityScores() { return qualityScores_; }
     
+    // optional bytes qualityScoresPair = 7;
+    public static final int QUALITYSCORESPAIR_FIELD_NUMBER = 7;
+    private boolean hasQualityScoresPair;
+    private com.google.protobuf.ByteString qualityScoresPair_ = com.google.protobuf.ByteString.EMPTY;
+    public boolean hasQualityScoresPair() { return hasQualityScoresPair; }
+    public com.google.protobuf.ByteString getQualityScoresPair() { return qualityScoresPair_; }
+    
     private void initFields() {
     }
     public final boolean isInitialized() {
       if (!hasReadIndex) return false;
       if (!hasReadLength) return false;
+      if (!hasReadLengthPair) return false;
       return true;
     }
     
@@ -440,6 +462,15 @@ public final class Reads {
       }
       if (hasQualityScores()) {
         output.writeBytes(4, getQualityScores());
+      }
+      if (hasSequencePair()) {
+        output.writeBytes(5, getSequencePair());
+      }
+      if (hasReadLengthPair()) {
+        output.writeUInt32(6, getReadLengthPair());
+      }
+      if (hasQualityScoresPair()) {
+        output.writeBytes(7, getQualityScoresPair());
       }
       if (hasBarcodeIndex()) {
         output.writeUInt32(10, getBarcodeIndex());
@@ -474,6 +505,18 @@ public final class Reads {
       if (hasQualityScores()) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(4, getQualityScores());
+      }
+      if (hasSequencePair()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(5, getSequencePair());
+      }
+      if (hasReadLengthPair()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(6, getReadLengthPair());
+      }
+      if (hasQualityScoresPair()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(7, getQualityScoresPair());
       }
       if (hasBarcodeIndex()) {
         size += com.google.protobuf.CodedOutputStream
@@ -663,8 +706,17 @@ public final class Reads {
         if (other.hasSequence()) {
           setSequence(other.getSequence());
         }
+        if (other.hasSequencePair()) {
+          setSequencePair(other.getSequencePair());
+        }
+        if (other.hasReadLengthPair()) {
+          setReadLengthPair(other.getReadLengthPair());
+        }
         if (other.hasQualityScores()) {
           setQualityScores(other.getQualityScores());
+        }
+        if (other.hasQualityScoresPair()) {
+          setQualityScoresPair(other.getQualityScoresPair());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -705,6 +757,18 @@ public final class Reads {
             }
             case 34: {
               setQualityScores(input.readBytes());
+              break;
+            }
+            case 42: {
+              setSequencePair(input.readBytes());
+              break;
+            }
+            case 48: {
+              setReadLengthPair(input.readUInt32());
+              break;
+            }
+            case 58: {
+              setQualityScoresPair(input.readBytes());
               break;
             }
             case 80: {
@@ -841,6 +905,45 @@ public final class Reads {
         return this;
       }
       
+      // optional bytes sequencePair = 5;
+      public boolean hasSequencePair() {
+        return result.hasSequencePair();
+      }
+      public com.google.protobuf.ByteString getSequencePair() {
+        return result.getSequencePair();
+      }
+      public Builder setSequencePair(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasSequencePair = true;
+        result.sequencePair_ = value;
+        return this;
+      }
+      public Builder clearSequencePair() {
+        result.hasSequencePair = false;
+        result.sequencePair_ = getDefaultInstance().getSequencePair();
+        return this;
+      }
+      
+      // required uint32 readLengthPair = 6;
+      public boolean hasReadLengthPair() {
+        return result.hasReadLengthPair();
+      }
+      public int getReadLengthPair() {
+        return result.getReadLengthPair();
+      }
+      public Builder setReadLengthPair(int value) {
+        result.hasReadLengthPair = true;
+        result.readLengthPair_ = value;
+        return this;
+      }
+      public Builder clearReadLengthPair() {
+        result.hasReadLengthPair = false;
+        result.readLengthPair_ = 0;
+        return this;
+      }
+      
       // optional bytes qualityScores = 4;
       public boolean hasQualityScores() {
         return result.hasQualityScores();
@@ -859,6 +962,27 @@ public final class Reads {
       public Builder clearQualityScores() {
         result.hasQualityScores = false;
         result.qualityScores_ = getDefaultInstance().getQualityScores();
+        return this;
+      }
+      
+      // optional bytes qualityScoresPair = 7;
+      public boolean hasQualityScoresPair() {
+        return result.hasQualityScoresPair();
+      }
+      public com.google.protobuf.ByteString getQualityScoresPair() {
+        return result.getQualityScoresPair();
+      }
+      public Builder setQualityScoresPair(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasQualityScoresPair = true;
+        result.qualityScoresPair_ = value;
+        return this;
+      }
+      public Builder clearQualityScoresPair() {
+        result.hasQualityScoresPair = false;
+        result.qualityScoresPair_ = getDefaultInstance().getQualityScoresPair();
         return this;
       }
       
@@ -894,12 +1018,14 @@ public final class Reads {
   static {
     java.lang.String[] descriptorData = {
       "\n\013Reads.proto\022\004goby\"0\n\016ReadCollection\022\036\n" +
-      "\005reads\030\001 \003(\0132\017.goby.ReadEntry\"\236\001\n\tReadEn" +
+      "\005reads\030\001 \003(\0132\017.goby.ReadEntry\"\347\001\n\tReadEn" +
       "try\022\021\n\treadIndex\030\001 \002(\r\022\024\n\014barcodeIndex\030\n" +
       " \001(\r\022\026\n\016readIdentifier\030\027 \001(\t\022\023\n\013descript" +
       "ion\030\026 \001(\t\022\022\n\nreadLength\030\002 \002(\r\022\020\n\010sequenc" +
-      "e\030\003 \001(\014\022\025\n\rqualityScores\030\004 \001(\014B\"\n\036edu.co" +
-      "rnell.med.icb.goby.readsH\001"
+      "e\030\003 \001(\014\022\024\n\014sequencePair\030\005 \001(\014\022\026\n\016readLen" +
+      "gthPair\030\006 \002(\r\022\025\n\rqualityScores\030\004 \001(\014\022\031\n\021" +
+      "qualityScoresPair\030\007 \001(\014B\"\n\036edu.cornell.m" +
+      "ed.icb.goby.readsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -919,7 +1045,7 @@ public final class Reads {
           internal_static_goby_ReadEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_goby_ReadEntry_descriptor,
-              new java.lang.String[] { "ReadIndex", "BarcodeIndex", "ReadIdentifier", "Description", "ReadLength", "Sequence", "QualityScores", },
+              new java.lang.String[] { "ReadIndex", "BarcodeIndex", "ReadIdentifier", "Description", "ReadLength", "Sequence", "SequencePair", "ReadLengthPair", "QualityScores", "QualityScoresPair", },
               edu.cornell.med.icb.goby.reads.Reads.ReadEntry.class,
               edu.cornell.med.icb.goby.reads.Reads.ReadEntry.Builder.class);
           return null;

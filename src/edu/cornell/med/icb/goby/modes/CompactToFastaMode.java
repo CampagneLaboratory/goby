@@ -73,6 +73,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
     private int smallestQueryIndex = Integer.MAX_VALUE;
 
     private int largestQueryIndex = Integer.MIN_VALUE;
+    private boolean processPairs;
 
     public int getSmallestQueryIndex() {
         return smallestQueryIndex;
@@ -98,6 +99,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
 
     private String inputFilename;
     private String outputFilename;
+    private String outputPairFilename;
     private boolean indexToHeader;
     private boolean referenceConversion;
     private String alphabet;
@@ -203,6 +205,10 @@ public class CompactToFastaMode extends AbstractGobyMode {
 
         inputFilename = jsapResult.getString("input");
         outputFilename = jsapResult.getString("output");
+        outputPairFilename = jsapResult.getString("pair-output");
+        if (outputPairFilename != null) {
+            processPairs = true;
+        }
         outputFormat = OutputFormat.valueOf(jsapResult.getString("output-format").toUpperCase(Locale.getDefault()));
         alphabet = jsapResult.getString("alphabet");
         indexToHeader = jsapResult.getBoolean("index-to-header");
@@ -292,7 +298,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
 
         ReadsReader reader = null;
         Writer writer = null;
-
+        OutputStreamWriter pairWriter = null;
         final int newEntryCharacter;
         switch (outputFormat) {
             case FASTQ:
@@ -305,8 +311,12 @@ public class CompactToFastaMode extends AbstractGobyMode {
         }
         try {
             writer = new OutputStreamWriter(new FastBufferedOutputStream(new FileOutputStream(outputFilename)));
+            pairWriter = processPairs ?
+                    new OutputStreamWriter(new FastBufferedOutputStream(new FileOutputStream(outputPairFilename))) : null;
+
             final MutableString colorSpaceBuffer = new MutableString();
             final MutableString sequence = new MutableString();
+            final MutableString sequencePair = new MutableString();
 
             reader = new ReadsReader(new FileInputStream(inputFilename));
             for (final Reads.ReadEntry readEntry : reader) {
@@ -322,24 +332,50 @@ public class CompactToFastaMode extends AbstractGobyMode {
                     writer.write(newEntryCharacter);
                     writer.write(description);
                     writer.write('\n');
+                    if (processPairs) {
+                        pairWriter.write(newEntryCharacter);
+                        pairWriter.write(description);
+                        pairWriter.write('\n');
+                    }
                     observeReadIndex(readEntry.getReadIndex());
                     ReadsReader.decodeSequence(readEntry, sequence);
+                    if (processPairs && !readEntry.hasSequencePair()) {
+                        System.err.println("The input file has no pair sequence information. Cannot write paired output.");
+                        System.exit(1);
+                    }
+                    if (processPairs) {
+                        ReadsReader.decodeSequence(readEntry, sequencePair, true);
+                    }
+
                     if (queryLengths != null) {
                         queryLengths.put(readEntry.getReadIndex(), sequence.length());
                     }
 
                     MutableString transformedSequence = sequence;
+                    MutableString transformedSequencePair = sequencePair;
                     if (outputColorMode) {
                         ColorSpaceConverter.convert(transformedSequence, colorSpaceBuffer, referenceConversion);
                         transformedSequence = colorSpaceBuffer;
+                        if (processPairs) {
+                            ColorSpaceConverter.convert(transformedSequencePair, colorSpaceBuffer, referenceConversion);
+                            transformedSequencePair = colorSpaceBuffer;
+                        }
                     }
                     if (outputFakeNtMode) {
                         for (int i = 0; i < transformedSequence.length(); i++) {
                             transformedSequence.charAt(i, getFakeNtCharacter(transformedSequence.charAt(i)));
                         }
+                        if (processPairs) {
+                            for (int i = 0; i < transformedSequencePair.length(); i++) {
+                                transformedSequencePair.charAt(i, getFakeNtCharacter(transformedSequencePair.charAt(i)));
+                            }
+                        }
                     }
                     if (trimAdaptorLength > 0) {
                         transformedSequence = transformedSequence.substring(trimAdaptorLength);
+                        if (processPairs) {
+                            transformedSequencePair = transformedSequencePair.substring(trimAdaptorLength);
+                        }
                     }
                     // filter unrecognized bases from output
                     if (alphabet != null) {
@@ -349,7 +385,20 @@ public class CompactToFastaMode extends AbstractGobyMode {
                             }
                         }
                     }
+                    if (processPairs) {
+                        if (alphabet != null) {
+
+                            for (int i = 0; i < transformedSequencePair.length(); i++) {
+                                if (alphabet.indexOf(transformedSequencePair.charAt(i)) == -1) {
+                                    transformedSequencePair.charAt(i, 'N');
+                                }
+                            }
+                        }
+                    }
                     writeSequence(writer, transformedSequence);
+                    if (processPairs) {
+                        writeSequence(pairWriter, transformedSequencePair);
+                    }
                     if (outputFormat == OutputFormat.FASTQ) {
                         final int readLength = transformedSequence.length();
                         final byte[] qualityScores = readEntry.getQualityScores().toByteArray();
@@ -357,6 +406,16 @@ public class CompactToFastaMode extends AbstractGobyMode {
                                 readEntry.hasQualityScores() && !ArrayUtils.isEmpty(qualityScores);
                         writeQualityScores(writer, hasQualityScores, qualityScores,
                                 outputFakeQualityMode, readLength);
+
+                        if (processPairs) {
+                            final int readLengthPair = transformedSequencePair.length();
+                            final byte[] qualityScoresPair = readEntry.getQualityScoresPair().toByteArray();
+                            final boolean hasPairQualityScores =
+                                    readEntry.hasQualityScoresPair() && !ArrayUtils.isEmpty(qualityScoresPair);
+                            writeQualityScores(pairWriter, hasPairQualityScores, qualityScoresPair,
+                                    outputFakeQualityMode, readLengthPair);
+
+                        }
                     }
                     ++numberOfFilteredSequences;
 
@@ -366,6 +425,9 @@ public class CompactToFastaMode extends AbstractGobyMode {
             }
         } finally {
             IOUtils.closeQuietly(writer);
+            if (processPairs) {
+                IOUtils.closeQuietly(pairWriter);
+            }
             if (reader != null) {
                 try {
                     reader.close();
@@ -377,6 +439,11 @@ public class CompactToFastaMode extends AbstractGobyMode {
 
         progress.stop();
     }
+
+    private String getPair2(String outputFilename) {
+        return null;  //To change body of created methods use File | Settings | File Templates.
+    }
+
     // determine the values of smallestQueryIndex and largestQueryIndex over the input files.
     private void observeReadIndex(int readIndex) {
         smallestQueryIndex = Math.min(smallestQueryIndex, readIndex);

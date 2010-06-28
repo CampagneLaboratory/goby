@@ -46,7 +46,10 @@ public class ReadsWriter implements Closeable {
     private final MessageChunksWriter messageChunkWriter;
 
     private byte[] byteBuffer = new byte[100];
-    private int barcodeIndex=-1;
+    private int barcodeIndex = -1;
+    private CharSequence pairSequence;
+    private byte[] qualityScoresPair;
+
 
     public ReadsWriter(final OutputStream output) {
         collectionBuilder = Reads.ReadCollection.newBuilder();
@@ -64,6 +67,10 @@ public class ReadsWriter implements Closeable {
 
     public synchronized void setSequence(final CharSequence sequence) {
         this.sequence = sequence;
+    }
+
+    public synchronized void setPairSequence(final CharSequence sequence) {
+        this.pairSequence = sequence;
     }
 
     public synchronized void appendEntry(final CharSequence description,
@@ -96,7 +103,8 @@ public class ReadsWriter implements Closeable {
 
     /**
      * Append an entry with the next available readindex.
-     * @throws IOException  If an error occurs while writing the file.
+     *
+     * @throws IOException If an error occurs while writing the file.
      */
     public synchronized void appendEntry() throws IOException {
         appendEntry(readIndex);
@@ -105,7 +113,8 @@ public class ReadsWriter implements Closeable {
 
     /**
      * Append an entry with a specific read index.
-     * @param readIndex  Index of the read that will be written
+     *
+     * @param readIndex Index of the read that will be written
      * @throws IOException If an error occurs while writing the file.
      */
     public synchronized void appendEntry(final int readIndex) throws IOException {
@@ -116,7 +125,7 @@ public class ReadsWriter implements Closeable {
 
         // set current read index to enable interleaving calls to appendEntry(readIndex)/appendEntry().
         this.readIndex = readIndex;
-        if (barcodeIndex!=-1) {
+        if (barcodeIndex != -1) {
             entryBuilder.setBarcodeIndex(barcodeIndex);
         }
         if (description != null) {
@@ -130,16 +139,28 @@ public class ReadsWriter implements Closeable {
         if (sequence != null) {
             entryBuilder.setSequence(encodeSequence(sequence));
             sequence = null;
+
         }
         entryBuilder.setReadLength(previousReadLength);
+        if (pairSequence != null) {
+            entryBuilder.setSequencePair(encodeSequence(pairSequence));
+            pairSequence = null;
+            entryBuilder.setReadLengthPair(previousReadLength);
+        }
+
         if (qualityScores != null) {
             entryBuilder.setQualityScores(ByteString.copyFrom(qualityScores));
             qualityScores = null;
         }
 
+        if (qualityScoresPair != null) {
+            entryBuilder.setQualityScoresPair(ByteString.copyFrom(qualityScoresPair));
+            qualityScoresPair = null;
+        }
+
         collectionBuilder.addReads(entryBuilder.build());
         messageChunkWriter.writeAsNeeded(collectionBuilder);
-        barcodeIndex=-1;
+        barcodeIndex = -1;
     }
 
     private synchronized ByteString encodeSequence(final CharSequence sequence) {
@@ -177,6 +198,14 @@ public class ReadsWriter implements Closeable {
     }
 
     public void setBarcodeIndex(int barcodeIndex) {
-        this.barcodeIndex=barcodeIndex;
+        this.barcodeIndex = barcodeIndex;
+    }
+
+    /**
+     * Set quality scores for the second sequence in a pair.
+     * @param qualityScores quality Scores in Phred scale.
+     */
+    public void setQualityScoresPair(byte[] qualityScores) {
+        this.qualityScoresPair=qualityScores;
     }
 }

@@ -1,4 +1,11 @@
 development -> 1.7
+ - Extended fasta-to-compact and compact-to-fasta to handle paired end runs. See new command
+   line arguments --paired-end and pair-indicator arguments in fasta-to-compact and
+   --pair-output argument in compact-to-fasta.
+ - Draft support for paired sequence runs. The compact file format is extended to store
+   sequence, sequence length and quality scores for the paired run. This extension makes
+   it possible to store both paired end runs in a single compact file. This should help
+   keep the data together.
  - Implemented translation back and from Solexa quality score encoding in fasta-to-compact
    and compact-to-fasta. Thanks to Cock PJA et al NAR 2010 for the clear description of the 
    Solexa base quality scores.
