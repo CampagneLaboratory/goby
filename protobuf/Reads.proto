@@ -42,7 +42,7 @@ message ReadEntry {
   /*
     Length of the second sequence in a pair.
   */
-  required uint32 readLengthPair=6;
+  optional uint32 readLengthPair=6;
 
   /*
     Quality scores in Phred units, stored as single bytes (0-255).

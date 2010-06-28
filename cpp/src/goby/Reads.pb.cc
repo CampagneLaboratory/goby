@@ -109,7 +109,7 @@ void protobuf_AddDesc_Reads_2eproto() {
     " \001(\r\022\026\n\016readIdentifier\030\027 \001(\t\022\023\n\013descript"
     "ion\030\026 \001(\t\022\022\n\nreadLength\030\002 \002(\r\022\020\n\010sequenc"
     "e\030\003 \001(\014\022\024\n\014sequencePair\030\005 \001(\014\022\026\n\016readLen"
-    "gthPair\030\006 \002(\r\022\025\n\rqualityScores\030\004 \001(\014\022\031\n\021"
+    "gthPair\030\006 \001(\r\022\025\n\rqualityScores\030\004 \001(\014\022\031\n\021"
     "qualityScoresPair\030\007 \001(\014B\"\n\036edu.cornell.m"
     "ed.icb.goby.readsH\001", 339);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
@@ -553,7 +553,7 @@ bool ReadEntry::MergePartialFromCodedStream(
         break;
       }
       
-      // required uint32 readLengthPair = 6;
+      // optional uint32 readLengthPair = 6;
       case 6: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
@@ -679,7 +679,7 @@ void ReadEntry::SerializeWithCachedSizes(
       5, this->sequencepair(), output);
   }
   
-  // required uint32 readLengthPair = 6;
+  // optional uint32 readLengthPair = 6;
   if (_has_bit(7)) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(6, this->readlengthpair(), output);
   }
@@ -752,7 +752,7 @@ void ReadEntry::SerializeWithCachedSizes(
         5, this->sequencepair(), target);
   }
   
-  // required uint32 readLengthPair = 6;
+  // optional uint32 readLengthPair = 6;
   if (_has_bit(7)) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(6, this->readlengthpair(), target);
   }
@@ -849,7 +849,7 @@ int ReadEntry::ByteSize() const {
           this->sequencepair());
     }
     
-    // required uint32 readLengthPair = 6;
+    // optional uint32 readLengthPair = 6;
     if (has_readlengthpair()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
@@ -948,7 +948,7 @@ void ReadEntry::CopyFrom(const ReadEntry& from) {
 }
 
 bool ReadEntry::IsInitialized() const {
-  if ((_has_bits_[0] & 0x00000091) != 0x00000091) return false;
+  if ((_has_bits_[0] & 0x00000011) != 0x00000011) return false;
   
   return true;
 }

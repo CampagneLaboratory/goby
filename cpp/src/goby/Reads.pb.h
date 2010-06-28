@@ -246,7 +246,7 @@ class ReadEntry : public ::google::protobuf::Message {
   inline void set_sequencepair(const void* value, size_t size);
   inline ::std::string* mutable_sequencepair();
   
-  // required uint32 readLengthPair = 6;
+  // optional uint32 readLengthPair = 6;
   inline bool has_readlengthpair() const;
   inline void clear_readlengthpair();
   static const int kReadLengthPairFieldNumber = 6;
@@ -566,7 +566,7 @@ inline ::std::string* ReadEntry::mutable_sequencepair() {
   return sequencepair_;
 }
 
-// required uint32 readLengthPair = 6;
+// optional uint32 readLengthPair = 6;
 inline bool ReadEntry::has_readlengthpair() const {
   return _has_bit(7);
 }

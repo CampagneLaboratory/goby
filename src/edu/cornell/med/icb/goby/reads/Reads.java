@@ -418,7 +418,7 @@ public final class Reads {
     public boolean hasSequencePair() { return hasSequencePair; }
     public com.google.protobuf.ByteString getSequencePair() { return sequencePair_; }
     
-    // required uint32 readLengthPair = 6;
+    // optional uint32 readLengthPair = 6;
     public static final int READLENGTHPAIR_FIELD_NUMBER = 6;
     private boolean hasReadLengthPair;
     private int readLengthPair_ = 0;
@@ -444,7 +444,6 @@ public final class Reads {
     public final boolean isInitialized() {
       if (!hasReadIndex) return false;
       if (!hasReadLength) return false;
-      if (!hasReadLengthPair) return false;
       return true;
     }
     
@@ -926,7 +925,7 @@ public final class Reads {
         return this;
       }
       
-      // required uint32 readLengthPair = 6;
+      // optional uint32 readLengthPair = 6;
       public boolean hasReadLengthPair() {
         return result.hasReadLengthPair();
       }
@@ -1023,7 +1022,7 @@ public final class Reads {
       " \001(\r\022\026\n\016readIdentifier\030\027 \001(\t\022\023\n\013descript" +
       "ion\030\026 \001(\t\022\022\n\nreadLength\030\002 \002(\r\022\020\n\010sequenc" +
       "e\030\003 \001(\014\022\024\n\014sequencePair\030\005 \001(\014\022\026\n\016readLen" +
-      "gthPair\030\006 \002(\r\022\025\n\rqualityScores\030\004 \001(\014\022\031\n\021" +
+      "gthPair\030\006 \001(\r\022\025\n\rqualityScores\030\004 \001(\014\022\031\n\021" +
       "qualityScoresPair\030\007 \001(\014B\"\n\036edu.cornell.m" +
       "ed.icb.goby.readsH\001"
     };

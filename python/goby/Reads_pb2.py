@@ -10,7 +10,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = descriptor.FileDescriptor(
   name='Reads.proto',
   package='goby',
-  serialized_pb='\n\x0bReads.proto\x12\x04goby\"0\n\x0eReadCollection\x12\x1e\n\x05reads\x18\x01 \x03(\x0b\x32\x0f.goby.ReadEntry\"\xe7\x01\n\tReadEntry\x12\x11\n\treadIndex\x18\x01 \x02(\r\x12\x14\n\x0c\x62\x61rcodeIndex\x18\n \x01(\r\x12\x16\n\x0ereadIdentifier\x18\x17 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x16 \x01(\t\x12\x12\n\nreadLength\x18\x02 \x02(\r\x12\x10\n\x08sequence\x18\x03 \x01(\x0c\x12\x14\n\x0csequencePair\x18\x05 \x01(\x0c\x12\x16\n\x0ereadLengthPair\x18\x06 \x02(\r\x12\x15\n\rqualityScores\x18\x04 \x01(\x0c\x12\x19\n\x11qualityScoresPair\x18\x07 \x01(\x0c\x42\"\n\x1e\x65\x64u.cornell.med.icb.goby.readsH\x01')
+  serialized_pb='\n\x0bReads.proto\x12\x04goby\"0\n\x0eReadCollection\x12\x1e\n\x05reads\x18\x01 \x03(\x0b\x32\x0f.goby.ReadEntry\"\xe7\x01\n\tReadEntry\x12\x11\n\treadIndex\x18\x01 \x02(\r\x12\x14\n\x0c\x62\x61rcodeIndex\x18\n \x01(\r\x12\x16\n\x0ereadIdentifier\x18\x17 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x16 \x01(\t\x12\x12\n\nreadLength\x18\x02 \x02(\r\x12\x10\n\x08sequence\x18\x03 \x01(\x0c\x12\x14\n\x0csequencePair\x18\x05 \x01(\x0c\x12\x16\n\x0ereadLengthPair\x18\x06 \x01(\r\x12\x15\n\rqualityScores\x18\x04 \x01(\x0c\x12\x19\n\x11qualityScoresPair\x18\x07 \x01(\x0c\x42\"\n\x1e\x65\x64u.cornell.med.icb.goby.readsH\x01')
 
 
 
@@ -101,7 +101,7 @@ _READENTRY = descriptor.Descriptor(
       options=None),
     descriptor.FieldDescriptor(
       name='readLengthPair', full_name='goby.ReadEntry.readLengthPair', index=7,
-      number=6, type=13, cpp_type=3, label=2,
+      number=6, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
