@@ -30,9 +30,9 @@ import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.FileOutputStream;
 
 /**
  * Converts a compact alignment to plain text.
@@ -165,7 +165,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                         // check entry then header for the query/read length otherwise use default
                         if (alignmentEntry.hasQueryLength()) {
                             readLength = alignmentEntry.getQueryLength();
-                        } else  if (alignmentReader.hasQueryLengths()) {
+                        } else if (alignmentReader.hasQueryLengths() || alignmentReader.isConstantQueryLengths()) {
                             readLength = alignmentReader.getQueryLength(alignmentEntry.getQueryIndex());
                         } else {
                             readLength = defaultReadLength;
@@ -195,14 +195,16 @@ public class AlignmentToTextMode extends AbstractGobyMode {
 
     private MutableString getReadSequence(final Alignments.AlignmentEntry alignmentEntry, final int readLength) {
         final MutableString sequence = new MutableString(readLength);
-        for (int i = 0; i < readLength; ++i) {
-            sequence.append('.');
-        }
-        for (final Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
-            final String to = var.getTo();
-            if (var.getFrom().length() == to.length()) {
-                for (int i = 0; i < to.length(); i++) {
-                    sequence.setCharAt(var.getReadIndex() - 1, to.charAt(i));
+        if (readLength > 0) {
+            for (int i = 0; i < readLength; ++i) {
+                sequence.append('.');
+            }
+            for (final Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
+                final String to = var.getTo();
+                if (var.getFrom().length() == to.length()) {
+                    for (int i = 0; i < to.length(); i++) {
+                        sequence.setCharAt(var.getReadIndex() - 1, to.charAt(i));
+                    }
                 }
             }
         }
