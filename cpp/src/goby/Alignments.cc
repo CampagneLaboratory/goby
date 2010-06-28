@@ -148,11 +148,11 @@ namespace goby {
       queryIdentifiers.insert(pair<string,unsigned>(queryName, queryIndex));
     }
     
-    this->messageChunksReader = new MessageChunksReader<AlignmentCollection>(basename + ".entries");
+    this->messageChunksIterator = new MessageChunksIterator<AlignmentCollection>(basename + ".entries");
   }
 
   AlignmentReader::~AlignmentReader(void) {
-    delete messageChunksReader;
+    delete messageChunksIterator;
   }
 
   AlignmentWriter::AlignmentWriter(const string& basename) : Alignment(basename) {

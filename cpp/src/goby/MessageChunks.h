@@ -44,7 +44,7 @@ namespace goby {
     size_t length;
   };
 
-  template <typename T> class MessageChunksReader : public std::iterator<std::input_iterator_tag, T> {
+  template <typename T> class MessageChunksIterator : public std::iterator<std::input_iterator_tag, T> {
     // the name of the chunked file
     std::string filename;
 
@@ -115,7 +115,9 @@ namespace goby {
     };
 
   public:
-    MessageChunksReader(const std::string& filename) : filename(filename) {
+    // TODO: MessageChunksIterator(int fileDescriptor);
+    // TODO: MessageChunksIterator(istream* stream);
+    MessageChunksIterator(const std::string& filename) : filename(filename) {
       chunks.clear();
 
       std::ifstream stream(filename.c_str(), std::ios::in | std::ios::binary);
@@ -151,46 +153,46 @@ namespace goby {
       this->currentChunk = T::default_instance();
     };
 
-    virtual ~MessageChunksReader(void) {
+    virtual ~MessageChunksIterator(void) {
     };
 
-    MessageChunksReader(const MessageChunksReader& reader)
+    MessageChunksIterator(const MessageChunksIterator& reader)
       : filename(reader.filename),
         chunks(reader.chunks),
         chunkIndex(reader.chunkIndex),
         currentChunk(reader.currentChunk) {
-      std::cout << "MessageChunksReader Copy constructor" << std::endl;
+      std::cout << "MessageChunksIterator Copy constructor" << std::endl;
     }
 
-    MessageChunksReader(const MessageChunksReader& reader, int chunkIndex)
+    MessageChunksIterator(const MessageChunksIterator& reader, int chunkIndex)
       : filename(reader.filename),
         chunks(reader.chunks),
         chunkIndex(chunkIndex),
         currentChunk(reader.currentChunk) {
-      std::cout << "MessageChunksReader Copy constructor" << std::endl;
+      std::cout << "MessageChunksIterator Copy constructor" << std::endl;
     }
 
     // Prefix increment operator
-    MessageChunksReader& operator++() {
+    MessageChunksIterator& operator++() {
       std::cout << "Prefix operator++() " << std::endl;
       ++chunkIndex;
       return *this;
     };
 
     // Postfix increment operator
-    MessageChunksReader& operator++(int) {
+    MessageChunksIterator& operator++(int) {
       std::cout << "Postfix operator++(int) " << std::endl;
       chunkIndex++;
       return *this;
     };
 
-    bool operator==(const MessageChunksReader<T>& rhs) const {
+    bool operator==(const MessageChunksIterator<T>& rhs) const {
       // the filenames must match and either the chunks are
       // both empty or the chunk positions are the same
       return filename == rhs.filename && chunkIndex == rhs.chunkIndex;
     };
 
-    bool operator!=(const MessageChunksReader<T>& rhs) const {
+    bool operator!=(const MessageChunksIterator<T>& rhs) const {
       // the filenames must match and either the chunks are
       // both empty or the chunk positions are the same
       return filename != rhs.filename || chunkIndex != rhs.chunkIndex;
@@ -210,20 +212,20 @@ namespace goby {
     };
 
     // TODO - remove the operator<< - for testing only
-    friend std::ostream &operator<<(std::ostream &out, const MessageChunksReader& reader) {
+    friend std::ostream &operator<<(std::ostream &out, const MessageChunksIterator& reader) {
       out << "ostream &operator<< " << reader.chunkIndex;
       return out;
     };
 
-    MessageChunksReader begin() const {
-      return MessageChunksReader(*this, 0);
+    MessageChunksIterator begin() const {
+      return MessageChunksIterator(*this, 0);
     };
 
-    MessageChunksReader end() const {
-      return MessageChunksReader(*this, chunks.size());
+    MessageChunksIterator end() const {
+      return MessageChunksIterator(*this, chunks.size());
     };
     /*
-    MessageChunksReader& operator=(const MessageChunksReader<T>& that)  {
+    MessageChunksIterator& operator=(const MessageChunksIterator<T>& that)  {
       if (this != &that) {
         // TODO
       }

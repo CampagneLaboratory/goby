@@ -30,10 +30,7 @@ namespace goby {
   /*
    * TooManyHits
    */
-  TooManyHits::TooManyHits(const string& basename) {
-    // store the basename
-    this->basename = basename;
-    this->pbTmh = AlignmentTooManyHits::default_instance();
+  TooManyHits::TooManyHits(const string& basename) : basename(basename), pbTmh(AlignmentTooManyHits::default_instance()) {
   }
 
   unsigned TooManyHits::getAlignerThreshold() const {

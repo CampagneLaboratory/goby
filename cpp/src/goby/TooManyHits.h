@@ -52,9 +52,6 @@ namespace goby {
     TooManyHits(const std::string& basename);
     virtual ~TooManyHits(void);
 
-    //TooManyHits(const TooManyHits& from);
-    //TooManyHits& operator=(const TooManyHits& from);
-
     inline const std::string& getBasename() const { return basename; };
 
     // Number of hits that the aligner considered was too many to report.
