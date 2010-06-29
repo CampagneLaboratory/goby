@@ -32,6 +32,7 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -68,7 +69,14 @@ public class AlignmentReader extends AbstractAlignmentReader {
     private boolean indexLoaded;
     private int[] targetPositionOffsets;
 
-
+     /**
+     * Required file extension for alignment data in "compact reads" format. Basename + extension
+     * must exist and be readable for each extension in this set for an alignment to be
+     * readable.
+     */
+    public static final String[] COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS = {
+            ".entries", ".header"
+    };
     /**
      * Returns whether this alignment is sorted. Entries in a sorted alignment appear in order of
      * increasing target index and position.
@@ -97,6 +105,25 @@ public class AlignmentReader extends AbstractAlignmentReader {
 
     private boolean indexed;
 
+    /**
+     * Returns true if filename belongs to an alignment basename that can be read.
+     * @param filename Filename of an alignment component.
+     * @return True if the alignment can be read, false otherwise.
+     */
+    public static boolean canRead(String filename) {
+        
+        String filenameNoExtension= FilenameUtils.removeExtension(filename);
+        int count=0;
+        for (String extension:COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS) {
+            File fileComponent=new File(filenameNoExtension+extension);
+
+            if (fileComponent.canRead()) {
+                // we can read this file.
+                count++;
+            }
+        }
+        return count==COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS.length;
+    }
     public AlignmentReader(final long startOffset, final long endOffset, final String basename) throws IOException {
         super();
         this.basename = basename;
@@ -127,7 +154,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
     }
 
     public AlignmentReader(final String basename) throws IOException {
-        this(0, Long.MAX_VALUE, basename);
+        this(0, Long.MAX_VALUE,getBasename(basename));
     }
 
     /**

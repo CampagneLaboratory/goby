@@ -45,26 +45,36 @@ public final class FileExtensionHelper {
     };
 
     /**
-     * File extenstion for alignment data in "compact reads" format.
+     * File extensions for alignment data in "compact reads" format.
      */
     public static final String[] COMPACT_ALIGNMENT_FILE_EXTS = {
             ".entries", ".header", ".tmh", ".stats", ".counts", ".index"
     };
 
+   
+
+
     /**
      * Possible types for compact files.
      */
     public enum CompactFileType {
-        /** The file contains alignment data. */
+        /**
+         * The file contains alignment data.
+         */
         alignment,
-        /** The file contains reads or possibly reference data. */
+        /**
+         * The file contains reads or possibly reference data.
+         */
         reads,
-        /** The file contents cannot be determined or is not a supported type. */
+        /**
+         * The file contents cannot be determined or is not a supported type.
+         */
         unknown
     }
 
     /**
      * Determine the type of data within a file in compact reads format.
+     *
      * @param file The file to check
      * @return The type of data this file is likely to contain
      */
@@ -74,6 +84,7 @@ public final class FileExtensionHelper {
 
     /**
      * Determine the type of data within a file in compact reads format.
+     *
      * @param file The name of file to check
      * @return The type of data this file is likely to contain
      */
@@ -92,6 +103,7 @@ public final class FileExtensionHelper {
 
     /**
      * Does the given file have an extension that matches a known Goby compact reads format?
+     *
      * @param file The file to check
      * @return true if the file is likely to be a compact reads file
      */
@@ -101,6 +113,7 @@ public final class FileExtensionHelper {
 
     /**
      * Does the given filename have an extension that matches a known Goby compact reads format?
+     *
      * @param file The name of file to check
      * @return true if the filename is likely to be a compact reads file
      */
@@ -115,6 +128,7 @@ public final class FileExtensionHelper {
 
     /**
      * Does the given file have an extension that matches a known Goby compact alignment format?
+     *
      * @param file The file to check
      * @return true if the file is likely to be a compact alignment file
      */
@@ -124,6 +138,7 @@ public final class FileExtensionHelper {
 
     /**
      * Does the given filename have an extension that matches a known Goby compact alignment format?
+     *
      * @param file The name of file to check
      * @return true if the filename is likely to be a compact alignment file
      */
