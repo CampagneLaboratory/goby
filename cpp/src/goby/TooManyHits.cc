@@ -16,13 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <fcntl.h>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
+
+#ifdef _MSC_VER
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
+
 #include "Alignments.pb.h"
 #include "TooManyHits.h"
+
+#ifdef _MSC_VER
+// Disable Microsoft deprecation warnings for POSIX functions called from this class (open, close)
+#pragma warning(push)
+#pragma warning(disable:4996)
+#endif
 
 using namespace std;
 
@@ -125,18 +139,11 @@ namespace goby {
   TooManyHitsReader::TooManyHitsReader(const string& basename) : TooManyHits(basename) {
     // open the "tmh" file
     const string tmhFilename = basename + ".tmh";
-    ifstream tmhStream(tmhFilename.c_str(), ios::in | ios::binary);
-
-    if (tmhStream.good()) {
-      // populate the too many hits object from the file
-      if (!pbTmh.ParseFromIstream(&tmhStream)) {
-        cerr << "Failed to parse too many hits file: " << tmhFilename << endl;
-      }
-    } else {
-      cerr << "Failed to open too many hits file: " << tmhFilename << endl;
+    const int fd = ::open(tmhFilename.c_str(), O_RDONLY | O_BINARY);
+    if (!pbTmh.ParseFromFileDescriptor(fd)) {
+      cerr << "Failed to parse too many hits file: " << tmhFilename << endl;
     }
-
-    tmhStream.close();
+    ::close(fd);
 
     // populate the query index to number of hits and depth maps
     google::protobuf::RepeatedPtrField<const goby::AmbiguousLocation>::const_iterator hitsIterator;
@@ -189,4 +196,9 @@ namespace goby {
     }
     tmhStream.close();
   }
+
+#ifdef _MSC_VER
+#pragma warning(pop)  // Restores the warning state.
+#endif
+
 }
