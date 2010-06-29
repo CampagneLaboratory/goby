@@ -100,31 +100,10 @@ namespace goby {
       google::protobuf::io::FileInputStream headerFileStream(fd);
       google::protobuf::io::GzipInputStream gzipHeaderStream(&headerFileStream);
 
-      // the stream may not get all read in at once so we may need to copy in chunks
-      void* header = NULL;
-      size_t headerSize = 0;
-
-      const void* buffer;
-      int bufferSize;
-      while (gzipHeaderStream.Next(&buffer, &bufferSize)) {
-        // store the end location of the header buffer
-        int index = headerSize;
-
-        // resize the header buffer to fit the new data just read
-        headerSize += bufferSize;
-        header = (void *)realloc(header, headerSize);
-
-        // and append the new data over to the end of the header buffer
-        ::memcpy(reinterpret_cast<char*>(header) + index, buffer, bufferSize);
-      }
-
       // populate the alignment header object from the uncompressed data
-      if (!pbHeader.ParseFromArray(header, headerSize)) {
+      if (!pbHeader.ParseFromZeroCopyStream(&gzipHeaderStream)) {
         cerr << "Failed to parse alignment header file: " << headerFilename << endl;
       }
-
-      // free up the temporary buffers
-      ::free(header);
 
       // close the streams and files
       headerFileStream.Close();
