@@ -140,10 +140,15 @@ namespace goby {
     // open the "tmh" file
     const string tmhFilename = basename + ".tmh";
     const int fd = ::open(tmhFilename.c_str(), O_RDONLY | O_BINARY);
-    if (!pbTmh.ParseFromFileDescriptor(fd)) {
-      cerr << "Failed to parse too many hits file: " << tmhFilename << endl;
+    if (fd < 0) {
+      pbTmh = AlignmentTooManyHits::default_instance();
+      cerr << "Failed to open too many hits file: " << tmhFilename << endl;
+    } else {
+      if (!pbTmh.ParseFromFileDescriptor(fd)) {
+        cerr << "Failed to parse too many hits file: " << tmhFilename << endl;
+      }
+      ::close(fd);
     }
-    ::close(fd);
 
     // populate the query index to number of hits and depth maps
     google::protobuf::RepeatedPtrField<const goby::AmbiguousLocation>::const_iterator hitsIterator;
