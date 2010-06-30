@@ -55,6 +55,9 @@ namespace goby {
     inline unsigned getSmallestSplitQueryIndex() const { return pbHeader.smallestsplitqueryindex(); };
     inline unsigned getLargestSplitQueryIndex() const { return  pbHeader.largestsplitqueryindex(); };
     
+    inline bool isSorted() const { return pbHeader.sorted(); };
+    inline bool isIndexed() const { return pbHeader.indexed(); };
+
     std::vector<unsigned> getTargetLengths() const;
     std::vector<unsigned> getQueryLengths() const;   
     
@@ -81,6 +84,9 @@ namespace goby {
     inline void setConstantquerylength(unsigned constantQueryLength) { pbHeader.set_constantquerylength(constantQueryLength); };
     inline void setSmallestSplitQueryIndex(unsigned smallestSplitQueryIndex) { pbHeader.set_smallestsplitqueryindex(smallestSplitQueryIndex); };
     inline void setLargestSplitQueryIndex(unsigned largestSplitQueryIndex) { pbHeader.set_largestsplitqueryindex(largestSplitQueryIndex); };
+
+    inline void setSorted(bool sorted) { pbHeader.set_sorted(sorted); };
+    inline void setIndexed(bool indexed) { pbHeader.set_indexed(indexed); };
 
     void setTargetLengths(const std::vector<unsigned>& targetLengths);
     void setTargetLengths(const unsigned* targetLengths);
