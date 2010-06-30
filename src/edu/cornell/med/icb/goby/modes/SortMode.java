@@ -196,6 +196,8 @@ public class SortMode extends AbstractGobyMode {
                 writer.setTargetIdentifiers(alignmentReader.getTargetIdentifiers());
                 writer.setQueryIdentifiers(alignmentReader.getQueryIdentifiers());
                 writer.setTargetLengths(alignmentReader.getTargetLength());
+                writer.setLargestSplitQueryIndex(alignmentReader.getLargestSplitQueryIndex());
+                writer.setSmallestSplitQueryIndex(alignmentReader.getSmallestSplitQueryIndex());                
                 writer.setSorted(true);
 
                 for (Alignments.AlignmentEntry entry : entries) {

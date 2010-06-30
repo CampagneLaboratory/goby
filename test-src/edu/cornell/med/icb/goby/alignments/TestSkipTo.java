@@ -178,5 +178,36 @@ public class TestSkipTo {
 
     }
 
+     @Test
+    public void testEmptyAlignment() throws IOException {
+        final String basename = "align-skip-to-3";
+        final AlignmentWriter writer =
+                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, basename));
+        writer.setNumAlignmentEntriesPerChunk(1);
 
+        final int numTargets = 3;
+        int targetLengths[] = new int[numTargets];
+
+        for (int referenceIndex = 0; referenceIndex < numTargets; referenceIndex++) {
+            targetLengths[referenceIndex] = 1000;
+        }
+        writer.setTargetLengths(targetLengths);
+        // we write this alignment sorted:
+
+        writer.setSorted(true);
+
+        writer.close();
+        writer.printStats(System.out);
+
+        final AlignmentReader reader =
+                new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, basename));
+
+
+        Alignments.AlignmentEntry c = reader.skipTo(2, 0);
+        assertNull( c);
+
+        assertFalse(reader.hasNext());
+
+
+    }
 }

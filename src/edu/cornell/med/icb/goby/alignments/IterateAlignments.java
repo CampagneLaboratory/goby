@@ -157,7 +157,7 @@ public abstract class IterateAlignments {
 
         System.out.println("Loading the alignment " + basename);
         if (alignmentReader.isSorted()) {
-            LOG.debug("The alignment is sorted, iteration will use the faster skipTo method.");
+            LOG.info("The alignment is sorted, iteration will use the faster skipTo method.");
             // the alignment is not sorted, we leverage skipTo to get directly to the sequence of interest.:
 
             Alignments.AlignmentEntry alignmentEntry = null;
