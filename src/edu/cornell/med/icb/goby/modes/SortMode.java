@@ -96,6 +96,7 @@ public class SortMode extends AbstractGobyMode {
         outputFilename = jsapResult.getString("output");
         alignmentIterator = new SortIterateAlignments();
         alignmentIterator.parseIncludeReferenceArgument(jsapResult);
+        endPosition= Long.MAX_VALUE;
         if (jsapResult.contains("start-position") || jsapResult.contains("end-position")) {
             hasStartOrEndPosition = true;
             startPosition = jsapResult.getLong("start-position", 0L);

@@ -282,12 +282,12 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             maxReadLength = Math.max(maxReadLength, entry.getQueryAlignedLength());
             sumNumVariations += entry.getSequenceVariationsCount();
             alignedQueryIndices.add(entry.getQueryIndex());
-            if (entry.hasQueryLength()) {
+            /*if (entry.hasQueryLength()) {
                 assert (queryLength == null): "Query lengths cannot be stored both in alignment entries and header.";
 
                     queryLengthStats.addValue(entry.getQueryLength());
 
-            }
+            } */
         }
         avgScore /= (double) numLogicalAlignmentEntries;
 
