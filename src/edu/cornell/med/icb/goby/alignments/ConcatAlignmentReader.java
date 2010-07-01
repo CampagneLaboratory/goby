@@ -157,10 +157,12 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
                     }
                 }
             }
-
-            setHeaderLoaded(true);
         }
+
+
+        setHeaderLoaded(true);
     }
+
 
     protected int mergedQueryIndex(final int queryIndex) {
         return queryIndexOffset[activeIndex] + queryIndex;
@@ -261,4 +263,5 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
             reader.close();
         }
     }
+
 }

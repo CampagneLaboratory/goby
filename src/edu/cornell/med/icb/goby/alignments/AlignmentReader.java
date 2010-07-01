@@ -69,7 +69,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
     private boolean indexLoaded;
     private int[] targetPositionOffsets;
 
-     /**
+    /**
      * Required file extension for alignment data in "compact reads" format. Basename + extension
      * must exist and be readable for each extension in this set for an alignment to be
      * readable.
@@ -77,6 +77,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
     public static final String[] COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS = {
             ".entries", ".header"
     };
+
     /**
      * Returns whether this alignment is sorted. Entries in a sorted alignment appear in order of
      * increasing target index and position.
@@ -107,29 +108,31 @@ public class AlignmentReader extends AbstractAlignmentReader {
 
     /**
      * Returns true if filename belongs to an alignment basename that can be read.
+     *
      * @param filename Filename of an alignment component.
      * @return True if the alignment can be read, false otherwise.
      */
     public static boolean canRead(String filename) {
-        
-        String filenameNoExtension= FilenameUtils.removeExtension(filename);
-        int count=0;
-        for (String extension:COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS) {
-            File fileComponent=new File(filenameNoExtension+extension);
+
+        String filenameNoExtension = FilenameUtils.removeExtension(filename);
+        int count = 0;
+        for (String extension : COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS) {
+            File fileComponent = new File(filenameNoExtension + extension);
 
             if (fileComponent.canRead()) {
                 // we can read this file.
                 count++;
             }
         }
-        return count==COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS.length;
+        return count == COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS.length;
     }
+
     public AlignmentReader(final long startOffset, final long endOffset, final String basename) throws IOException {
         super();
         this.basename = basename;
         final FileInputStream stream = new FileInputStream(basename + ".entries");
         alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset, endOffset, new FastBufferedInputStream(stream));
-        LOG.trace("start offset :" +startOffset + " end offset "+endOffset);
+        LOG.trace("start offset :" + startOffset + " end offset " + endOffset);
         try {
             headerStream = new GZIPInputStream(new FileInputStream(basename + ".header"));
         } catch (IOException e) {
@@ -154,7 +157,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
     }
 
     public AlignmentReader(final String basename) throws IOException {
-        this(0, Long.MAX_VALUE,getBasename(basename));
+        this(0, Long.MAX_VALUE, getBasename(basename));
     }
 
     /**
@@ -198,6 +201,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
      * @return true if the input has more entries, false otherwise.
      */
     public boolean hasNext() {
+
         final boolean hasNext = alignmentEntryReader.hasNext(collection, numberOfEntries());
         if (!hasNext) {
             collection = null;
@@ -222,6 +226,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
      * @return the alignment read entry from the input stream.
      */
     public Alignments.AlignmentEntry next() {
+
         if (!alignmentEntryReader.hasNext(collection, numberOfEntries())) {
             throw new NoSuchElementException();
         }
@@ -239,10 +244,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
      * @throws IOException If an error occurs reading the alignment header. The header is accessed to check that the alignment is sorted.
      */
     public final Alignments.AlignmentEntry skipTo(final int targetIndex, final int position) throws IOException {
-        readHeader();
-        if (!sorted) throw new UnsupportedOperationException("skipTo cannot be used with unsorted alignments.");
 
-        readIndex();
         reposition(targetIndex, position);
         Alignments.AlignmentEntry entry = null;
         boolean hasNext = false;
@@ -257,14 +259,34 @@ public class AlignmentReader extends AbstractAlignmentReader {
 
     }
 
-    private void reposition(final int targetIndex, final int position) throws IOException {
+    /**
+     * Reposition the reader to a new target sequence and start position.
+     *
+     * @param targetIndex Index of the target sequence to reposition to.
+     * @param position    Position in the target sequence to reposition to.
+     * @throws IOException If an error occurs repositioning.
+     */
+    public final void reposition(final int targetIndex, final int position) throws IOException {
+        readHeader();
+        if (!sorted) throw new UnsupportedOperationException("skipTo cannot be used with unsorted alignments.");
+
+        readIndex();
+        repositionInternal(targetIndex, position);
+    }
+
+    private void repositionInternal(final int targetIndex, final int position) throws IOException {
         if (!indexLoaded) return;
-        int absolutePosition = recodePosition(targetIndex, position);
+        final int absolutePosition = recodePosition(targetIndex, position);
         int offsetIndex = Arrays.binarySearch(indexAbsolutePositions.elements(), absolutePosition);
         offsetIndex = offsetIndex < 0 ? -1 - offsetIndex : offsetIndex;
         offsetIndex = offsetIndex >= indexOffsets.size() ? indexOffsets.size() - 1 : offsetIndex;
+        if (offsetIndex < 0) {
+            // empty alignment.
+            return;
+        }
+
         final long newPosition = indexOffsets.getLong(offsetIndex);
-        long currentPosition = alignmentEntryReader.position();
+        final long currentPosition = alignmentEntryReader.position();
         if (newPosition > currentPosition) {
 
             alignmentEntryReader.seek(newPosition);
@@ -329,7 +351,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
      *
      * @throws IOException If an error occurs loading the index or header.
      */
-    public void readIndex() throws IOException {
+    public final void readIndex() throws IOException {
         if (indexed && !indexLoaded) {
             // header is needed to access target lengths:
             readHeader();
