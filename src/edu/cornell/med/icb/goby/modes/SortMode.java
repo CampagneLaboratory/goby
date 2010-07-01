@@ -24,6 +24,7 @@ import edu.cornell.med.icb.goby.alignments.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -200,6 +201,11 @@ public class SortMode extends AbstractGobyMode {
                 writer.setLargestSplitQueryIndex(alignmentReader.getLargestSplitQueryIndex());
                 writer.setSmallestSplitQueryIndex(alignmentReader.getSmallestSplitQueryIndex());                
                 writer.setSorted(true);
+
+                // Propagate the statistics from the input, but update the basename
+                writer.setStatistics(alignmentReader.getStatistics());
+                writer.putStatistic("basename", FilenameUtils.getBaseName(basename));
+                writer.putStatistic("basename.full", basename);
 
                 for (Alignments.AlignmentEntry entry : entries) {
                     writer.appendEntry(entry);
