@@ -609,6 +609,13 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline bool indexed() const;
   inline void set_indexed(bool value);
   
+  // optional bool queryLengthsStoredInEntries = 15;
+  inline bool has_querylengthsstoredinentries() const;
+  inline void clear_querylengthsstoredinentries();
+  static const int kQueryLengthsStoredInEntriesFieldNumber = 15;
+  inline bool querylengthsstoredinentries() const;
+  inline void set_querylengthsstoredinentries(bool value);
+  
   // @@protoc_insertion_point(class_scope:goby.AlignmentHeader)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
@@ -626,11 +633,12 @@ class AlignmentHeader : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > target_length_;
   bool sorted_;
   bool indexed_;
+  bool querylengthsstoredinentries_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
   friend void protobuf_ShutdownFile_Alignments_2eproto();
   
-  ::google::protobuf::uint32 _has_bits_[(12 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(13 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
   inline bool _has_bit(int index) const {
@@ -1800,6 +1808,22 @@ inline bool AlignmentHeader::indexed() const {
 inline void AlignmentHeader::set_indexed(bool value) {
   _set_bit(11);
   indexed_ = value;
+}
+
+// optional bool queryLengthsStoredInEntries = 15;
+inline bool AlignmentHeader::has_querylengthsstoredinentries() const {
+  return _has_bit(12);
+}
+inline void AlignmentHeader::clear_querylengthsstoredinentries() {
+  querylengthsstoredinentries_ = false;
+  _clear_bit(12);
+}
+inline bool AlignmentHeader::querylengthsstoredinentries() const {
+  return querylengthsstoredinentries_;
+}
+inline void AlignmentHeader::set_querylengthsstoredinentries(bool value) {
+  _set_bit(12);
+  querylengthsstoredinentries_ = value;
 }
 
 // -------------------------------------------------------------------

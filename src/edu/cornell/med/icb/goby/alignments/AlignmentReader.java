@@ -321,15 +321,19 @@ public class AlignmentReader extends AbstractAlignmentReader {
             largestQueryIndex = header.getLargestSplitQueryIndex();
             queryIdentifiers = parseIdentifiers(header.getQueryNameMapping());
             targetIdentifiers = parseIdentifiers(header.getTargetNameMapping());
-            if (header.hasConstantQueryLength()) {
-                this.constantQueryLengths = true;
-                this.constantLength = header.getConstantQueryLength();
+            if (!header.getQueryLengthsStoredInEntries()) {
+                if (header.hasConstantQueryLength()) {
+                    this.constantQueryLengths = true;
+                    this.constantLength = header.getConstantQueryLength();
+                    queryLengths = null;
+                } else if (header.getQueryLengthCount() > 0) {
+                    queryLengths = new IntArrayList(header.getQueryLengthList()).toIntArray();
+                    compactQueryLengths();
+                }
+            } else {
                 queryLengths = null;
-            } else if (header.getQueryLengthCount() > 0) {
-                queryLengths = new IntArrayList(header.getQueryLengthList()).toIntArray();
-                compactQueryLengths();
+                constantQueryLengths = false;
             }
-
             if (header.getTargetLengthCount() > 0) {
                 targetLengths = new IntArrayList(header.getTargetLengthList()).toIntArray();
             }

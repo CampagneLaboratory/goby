@@ -54,7 +54,7 @@ public class AlignmentWriter implements Closeable {
     private IndexedIdentifier targetIdentifiers;
     private boolean headerWritten;
     private final GZIPOutputStream headerOutput;
-
+    private boolean entriesHaveQueryLength = false;
     /**
      * Length of each query sequence.
      */
@@ -127,9 +127,10 @@ public class AlignmentWriter implements Closeable {
 
     /**
      * Set the query index for the next alignment extry.
+     *
      * @param queryIndex The query index of the next alignment entry to append
      * @deprecated use
-     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     *             {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
      */
     @Deprecated
     public final void setQueryIndex(final int queryIndex) {
@@ -138,9 +139,10 @@ public class AlignmentWriter implements Closeable {
 
     /**
      * Set the target index for the next alignment extry.
+     *
      * @param targetIndex The target index of the next alignment entry to append
      * @deprecated use
-     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     *             {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
      */
     @Deprecated
     public final void setTargetIndex(final int targetIndex) {
@@ -149,9 +151,10 @@ public class AlignmentWriter implements Closeable {
 
     /**
      * Set the target position for the next alignment extry.
+     *
      * @param position The target position of the next alignment entry to append
      * @deprecated use
-     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     *             {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
      */
     @Deprecated
     public final void setTargetPosition(final int position) {
@@ -160,9 +163,10 @@ public class AlignmentWriter implements Closeable {
 
     /**
      * Set the score for the next alignment extry.
+     *
      * @param score The score of the next alignment entry to append
      * @deprecated use
-     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     *             {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
      */
     @Deprecated
     public final void setAlignmentScore(final float score) {
@@ -175,13 +179,14 @@ public class AlignmentWriter implements Closeable {
 
     /**
      * Set fields for the next alignment extry.
-     * @param queryIndex The query index of the next alignment entry to append
-     * @param targetIndex The target index of the next alignment entry to append
-     * @param position The target position of the next alignment entry to append
-     * @param score The score of the next alignment entry to append
+     *
+     * @param queryIndex           The query index of the next alignment entry to append
+     * @param targetIndex          The target index of the next alignment entry to append
+     * @param position             The target position of the next alignment entry to append
+     * @param score                The score of the next alignment entry to append
      * @param matchesReverseStrand true if the entry matches the reverse strand
      * @deprecated use
-     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     *             {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
      */
     @Deprecated
     public final void setAlignmentEntry(final int queryIndex, final int targetIndex,
@@ -201,7 +206,7 @@ public class AlignmentWriter implements Closeable {
      *
      * @return the current alignment entry.
      * @deprecated use
-     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     *             {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
      */
     @Deprecated
     public Alignments.AlignmentEntry.Builder getAlignmentEntry() {
@@ -210,9 +215,10 @@ public class AlignmentWriter implements Closeable {
 
     /**
      * Append the current entry to the file being written.
+     *
      * @throws IOException if the entry cannot be written
      * @deprecated use
-     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     *             {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
      */
     @Deprecated
     public synchronized void appendEntry() throws IOException {
@@ -235,12 +241,17 @@ public class AlignmentWriter implements Closeable {
 
         maxTargetIndex = Math.max(builtEntry.getTargetIndex(), maxTargetIndex);
         this.collectionBuilder.addAlignmentEntries(builtEntry);
+
+
         writeIndexEntry(builtEntry);
 
         newEntry = Alignments.AlignmentEntry.newBuilder();
     }
 
     private void writeIndexEntry(final Alignments.AlignmentEntry builtEntry) throws IOException {
+        // detect when one or more entries have query length:
+        entriesHaveQueryLength |= builtEntry.hasQueryLength();
+
         if (firstEntryInChunk) {
             firstTargetIndexInChunk = builtEntry.getTargetIndex();
             firstPositionInChunk = builtEntry.getPosition();
@@ -267,7 +278,7 @@ public class AlignmentWriter implements Closeable {
             indexOffsets.add(newOffset);
             final long codedPosition = recodePosition(firstTargetIndexInChunk, firstPositionInChunk);
             indexAbsolutePositions.add(codedPosition);
-        //    System.out.printf("INDEX Pushing offset %d %d ", newOffset, codedPosition);
+            //    System.out.printf("INDEX Pushing offset %d %d ", newOffset, codedPosition);
         }
 
     }
@@ -331,6 +342,7 @@ public class AlignmentWriter implements Closeable {
         if (sortedState) {
             writeIndex();
         }
+
         writeHeader();
 
         writeStats();
@@ -355,6 +367,7 @@ public class AlignmentWriter implements Closeable {
 
     private void writeHeader() throws IOException {
         if (!headerWritten) {
+
             final Alignments.AlignmentHeader.Builder headerBuilder = Alignments.AlignmentHeader.newBuilder();
 
             headerBuilder.setLargestSplitQueryIndex(maxQueryIndex);
@@ -368,13 +381,17 @@ public class AlignmentWriter implements Closeable {
             headerBuilder.setQueryNameMapping(getMapping(queryIdentifiers, queryIdentifiersArray));
             headerBuilder.setTargetNameMapping(getMapping(targetIdentifiers, targetIdentifiersArray));
             headerBuilder.setNumberOfAlignedReads(numberOfAlignedReads);
-
-            // store query lengths:
-            compactQueryLengths();
-            if (isConstantQueryLength) {
-                headerBuilder.setConstantQueryLength(constantQueryLength);
-            } else if (queryLengths != null) {
-                headerBuilder.addAllQueryLength(IntArrayList.wrap(queryLengths));
+            if (entriesHaveQueryLength) {
+                // if some entries had query length, remove the information from the header. Do not duplicate.
+                headerBuilder.setQueryLengthsStoredInEntries(true);
+            } else {
+                // store query lengths:
+                compactQueryLengths();
+                if (isConstantQueryLength) {
+                    headerBuilder.setConstantQueryLength(constantQueryLength);
+                } else if (queryLengths != null) {
+                    headerBuilder.addAllQueryLength(IntArrayList.wrap(queryLengths));
+                }
             }
             // store target lengths:
             if (targetLengths != null) {
@@ -590,9 +607,10 @@ public class AlignmentWriter implements Closeable {
 
     /**
      * Set the query legnth for the next alignment extry.
+     *
      * @param queryLength The query length of the next alignment entry to append
      * @deprecated use
-     * {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
+     *             {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
      */
     @Deprecated
     public void setQueryLength(final int queryLength) {

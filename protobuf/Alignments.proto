@@ -215,6 +215,10 @@ message AlignmentHeader {
      'basename'.index exists that contains the AlignmentIndex message (GZip compressed).
    */
    optional bool indexed=14;
+   /*
+     True when query lengths are stored in alignment entries (Goby 1.7+).
+   */
+   optional bool queryLengthsStoredInEntries=15;
 
 }
 

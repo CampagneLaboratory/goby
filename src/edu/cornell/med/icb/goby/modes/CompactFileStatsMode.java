@@ -213,8 +213,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         final AlignmentReader reader = new AlignmentReader(basename);
         reader.readHeader();
         stream.println("Info from header:");
-        stream.printf("Sorted: %b%n",reader.isSorted());
-        stream.printf("Indexed: %b%n",reader.isIndexed());
+        stream.printf("Sorted: %b%n", reader.isSorted());
+        stream.printf("Indexed: %b%n", reader.isIndexed());
         stream.printf("Number of target sequences = %,d%n", reader.getNumberOfTargets());
         final int[] targetLength = reader.getTargetLength();
         stream.printf("Number of target length entries = %,d%n",
@@ -282,12 +282,12 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             maxReadLength = Math.max(maxReadLength, entry.getQueryAlignedLength());
             sumNumVariations += entry.getSequenceVariationsCount();
             alignedQueryIndices.add(entry.getQueryIndex());
-            /*if (entry.hasQueryLength()) {
-                assert (queryLength == null): "Query lengths cannot be stored both in alignment entries and header.";
 
-                    queryLengthStats.addValue(entry.getQueryLength());
+            assert (queryLength == null) : "Query lengths cannot be stored both in alignment entries and header.";
 
-            } */
+            queryLengthStats.addValue(entry.getQueryLength());
+
+
         }
         avgScore /= (double) numLogicalAlignmentEntries;
 
@@ -354,8 +354,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
 
         long numReadEntries = 0;
         long totalReadLength = 0;
-        long totalReadLengthPair =0;
-        
+        long totalReadLengthPair = 0;
+
         ReadsReader reader = null;
 
         try {
@@ -373,7 +373,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 numberOfReads++;
                 numberOfDescriptions += entry.hasDescription() ? 1 : 0;
                 cumulativeReadLength += readLength;
-                
+
                 if (verbose && entry.hasDescription()) {
                     stream.println("Description found: " + entry.getDescription());
                 }
@@ -387,7 +387,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                         entry.hasQualityScores() && !entry.getQualityScores().isEmpty() ? 1 : 0;
 
                 numberOfQualityScorePairs +=
-                                        entry.hasQualityScoresPair() && !entry.getQualityScoresPair().isEmpty() ? 1 : 0;
+                        entry.hasQualityScoresPair() && !entry.getQualityScoresPair().isEmpty() ? 1 : 0;
 
                 // we only need to keep all the read lengths if quantiles are being computed
                 if (computeQuantiles) {
