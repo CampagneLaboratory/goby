@@ -63,8 +63,8 @@ def main():
     print "Done reading TMH"
     entries_filesize = os.stat(basename + ".entries")[stat.ST_SIZE]
     print "Info from header:"
-    print "Sorted:", header.sorted;
-    print "Indexed: ", header.indexed;
+    print "Sorted:", header.sorted
+    print "Indexed: ", header.indexed
     print "Number of target sequences = %s" % commify(header.number_of_targets)
 
     # target length stats

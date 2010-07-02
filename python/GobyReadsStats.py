@@ -57,33 +57,35 @@ def main():
 
     filesize = os.stat(filename)[stat.ST_SIZE]
     number_of_entries = 0
-    number_of_identifiers = 0;
-    number_of_descriptions = 0;
-    number_of_sequences = 0;
-    number_of_sequence_pairs = 0;
-    number_of_quality_scores = 0;
-    number_of_quality_score_pairs = 0;
+    number_of_identifiers = 0
+    number_of_descriptions = 0
+    number_of_sequences = 0
+    number_of_sequence_pairs = 0
+    number_of_quality_scores = 0
+    number_of_quality_score_pairs = 0
     min_read_length = sys.maxint
     max_read_length = -sys.maxint - 1
     total_read_length = 0
+    total_read_length_pair = 0
 
     reads_reader = ReadsReader(filename, verbose)
     for entry in reads_reader:
         number_of_entries += 1
         read_length = entry.readLength
         total_read_length += read_length
+        total_read_length_pair += entry.readLengthPair
 
-        if (entry.HasField("readIdentifier")):
-            number_of_identifiers += 1;
-        if (entry.HasField("description")):
+        if entry.HasField("readIdentifier"):
+            number_of_identifiers += 1
+        if entry.HasField("description"):
             number_of_descriptions += 1
-        if (entry.HasField("sequence")):
+        if entry.HasField("sequence"):
             number_of_sequences += 1
-        if (entry.HasField("sequencePair")):
+        if entry.HasField("sequencePair"):
             number_of_sequences_pairs += 1
-        if (entry.HasField("qualityScores")):
+        if entry.HasField("qualityScores"):
             number_of_quality_scores += 1
-        if (entry.HasField("qualityScoresPair")):
+        if entry.HasField("qualityScoresPair"):
             number_of_quality_score_pairs += 1
 
         min_read_length = min(min_read_length, read_length)
@@ -101,6 +103,7 @@ def main():
     print "Min read length = %s" % commify(min_read_length)
     print "Max read length = %s" % commify(max_read_length)
     print "Avg read length = %s" % commify(total_read_length / float(number_of_entries))
+    print "Avg read pair length = %s" % commify(total_read_length_pair / float(number_of_entries))
 
 if __name__ == "__main__":
     main()

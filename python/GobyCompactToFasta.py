@@ -33,7 +33,7 @@ def main():
     format = "fasta"
     output = sys.stdout
 
-    fake_quality_score = 40;
+    fake_quality_score = 40
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "f:o:hv", ["format=", "output=", "help", "verbose"])

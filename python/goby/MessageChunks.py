@@ -27,11 +27,11 @@ from gzip import GzipFile
 def read_int(fd):
     """ Python implementation of Java's DataInputStream.readInt method.
     """
-    buf = fd.read(4);
+    buf = fd.read(4)
     if len(buf) == 4:
-        length = struct.unpack('>I', buf)[0];
+        length = struct.unpack('>I', buf)[0]
     else:
-        length = 0;
+        length = 0
     return length
 
 class MessageChunksReader(object):
@@ -50,10 +50,10 @@ class MessageChunksReader(object):
     fileobject = None
 
     # the current index into the chunked file
-    fileindex = None;
+    fileindex = None
 
     # length of the delimiter tag (in bytes)
-    DELIMITER_LENGTH = 8;
+    DELIMITER_LENGTH = 8
 
     def __init__(self, filename, verbose = False):
         self.verbose = verbose
