@@ -11,19 +11,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{A6CBA075-D0AB-4A66-893E-9DF35197FB12}</ProjectGuid>
+    <ProjectGuid>{616DDD1C-49D7-4304-BBA2-BF8F578E8D39}</ProjectGuid>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <Keyword>ManagedCProj</Keyword>
-    <RootNamespace>goby</RootNamespace>
-    <ProjectName>libgoby</ProjectName>
+    <RootNamespace>GobyReadsStats</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CLRSupport>false</CLRSupport>
-    <CharacterSet>
-    </CharacterSet>
+    <CLRSupport>true</CLRSupport>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -43,9 +41,6 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include</IncludePath>
-    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;C:\protobuf-2.3.0\src;C:\zlib-1.2.5</SourcePath>
-    <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -54,14 +49,14 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions);_USRDLL;LIBGOBY_EXPORTS;ZLIB_WINAPI;GOBY_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions);ZLIB_WINAPI;HAVE_ZLIB</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalIncludeDirectories>C:\protobuf-2.3.0\src;C:\zlib-1.2.5</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libprotobuf.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>;C:\protobuf-2.3.0\vsprojects\Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libprotobuf.lib;zlibwapi.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\protobuf-2.3.0\vsprojects\Debug;C:\zlib-1.2.5\dll32</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -82,20 +77,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\goby\Alignments.h" />
-    <ClInclude Include="..\src\goby\Alignments.pb.h" />
-    <ClInclude Include="..\src\goby\common.h" />
-    <ClInclude Include="..\src\goby\MessageChunks.h" />
-    <ClInclude Include="..\src\goby\Reads.h" />
-    <ClInclude Include="..\src\goby\Reads.pb.h" />
-    <ClInclude Include="..\src\goby\TooManyHits.h" />
+    <ClCompile Include="..\src\GobyReadsStats.cc" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\goby\Alignments.cc" />
-    <ClCompile Include="..\src\goby\Alignments.pb.cc" />
-    <ClCompile Include="..\src\goby\Reads.cc" />
-    <ClCompile Include="..\src\goby\Reads.pb.cc" />
-    <ClCompile Include="..\src\goby\TooManyHits.cc" />
+    <ProjectReference Include="goby.vcxproj">
+      <Project>{a6cba075-d0ab-4a66-893e-9df35197fb12}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

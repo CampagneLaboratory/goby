@@ -1,9 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C++ Express 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "goby", "goby.vcxproj", "{A6CBA075-D0AB-4A66-893E-9DF35197FB12}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libgoby", "goby.vcxproj", "{A6CBA075-D0AB-4A66-893E-9DF35197FB12}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GobyAlignmentStats", "GobyAlignmentStats.vcxproj", "{E320074C-693C-4972-A0A8-6ABD51FCB7D5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GobyReadsStats", "GobyReadsStats.vcxproj", "{616DDD1C-49D7-4304-BBA2-BF8F578E8D39}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A6CBA075-D0AB-4A66-893E-9DF35197FB12} = {A6CBA075-D0AB-4A66-893E-9DF35197FB12}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,6 +24,10 @@ Global
 		{E320074C-693C-4972-A0A8-6ABD51FCB7D5}.Debug|Win32.Build.0 = Debug|Win32
 		{E320074C-693C-4972-A0A8-6ABD51FCB7D5}.Release|Win32.ActiveCfg = Release|Win32
 		{E320074C-693C-4972-A0A8-6ABD51FCB7D5}.Release|Win32.Build.0 = Release|Win32
+		{616DDD1C-49D7-4304-BBA2-BF8F578E8D39}.Debug|Win32.ActiveCfg = Debug|Win32
+		{616DDD1C-49D7-4304-BBA2-BF8F578E8D39}.Debug|Win32.Build.0 = Debug|Win32
+		{616DDD1C-49D7-4304-BBA2-BF8F578E8D39}.Release|Win32.ActiveCfg = Release|Win32
+		{616DDD1C-49D7-4304-BBA2-BF8F578E8D39}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
