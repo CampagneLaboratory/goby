@@ -52,15 +52,17 @@ def main():
         sys.exit(2)
 
     filename = args[0]
-    if verbose:
-        print "Processing file =", filename
+    print "Compact reads filename = %s" % filename
+    print
 
     filesize = os.stat(filename)[stat.ST_SIZE]
     number_of_entries = 0
     number_of_identifiers = 0;
     number_of_descriptions = 0;
     number_of_sequences = 0;
+    number_of_sequence_pairs = 0;
     number_of_quality_scores = 0;
+    number_of_quality_score_pairs = 0;
     min_read_length = sys.maxint
     max_read_length = -sys.maxint - 1
     total_read_length = 0
@@ -77,20 +79,24 @@ def main():
             number_of_descriptions += 1
         if (entry.HasField("sequence")):
             number_of_sequences += 1
+        if (entry.HasField("sequencePair")):
+            number_of_sequences_pairs += 1
         if (entry.HasField("qualityScores")):
             number_of_quality_scores += 1
+        if (entry.HasField("qualityScoresPair")):
+            number_of_quality_score_pairs += 1
 
         min_read_length = min(min_read_length, read_length)
         max_read_length = max(max_read_length, read_length)
 
-    print "Compact reads filename = %s" % filename
-    print
     print "Average bytes per entry: %s" % commify(filesize / float(number_of_entries))
     print "Average bytes per base:  %s" % commify(filesize / float(total_read_length))
     print "Has identifiers = %s (%s)" % (number_of_identifiers > 0, commify(number_of_identifiers))
     print "Has descriptions = %s (%s)" % (number_of_descriptions > 0, commify(number_of_descriptions))
     print "Has sequences = %s (%s)" % (number_of_sequences > 0, commify(number_of_sequences))
+    print "Has sequence pairs = %s (%s)" % (number_of_sequence_pairs > 0, commify(number_of_sequence_pairs))
     print "Has quality scores = %s (%s)" % (number_of_quality_scores > 0, commify(number_of_quality_scores))
+    print "Has quality score pairs = %s (%s)" % (number_of_quality_score_pairs > 0, commify(number_of_quality_score_pairs))
     print "Number of entries = %s" % commify(number_of_entries)
     print "Min read length = %s" % commify(min_read_length)
     print "Max read length = %s" % commify(max_read_length)
