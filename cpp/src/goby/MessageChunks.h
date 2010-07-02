@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/gzip_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -87,10 +88,14 @@ namespace goby {
       google::protobuf::io::LimitingInputStream rawChunkStream(&istream, chunkLength);
 
       // and handle the fact that each chunk is compressed with gzip
-      google::protobuf::io::GzipInputStream chunkStream(&rawChunkStream);
+      google::protobuf::io::GzipInputStream gzipChunkStream(&rawChunkStream);
+
+      // since the chunks may be large, we may need to increase the limit
+      google::protobuf::io::CodedInputStream codedStream(&gzipChunkStream);
+      codedStream.SetTotalBytesLimit(chunkLength, 0);
 
       // populate the current object from the compressed data
-      if (!chunk.ParseFromZeroCopyStream(&chunkStream)) {
+      if (!chunk.ParseFromCodedStream(&codedStream)) {
         std::cerr << "Failed to parse message chunk from " << filename << std::endl;
       }
 
