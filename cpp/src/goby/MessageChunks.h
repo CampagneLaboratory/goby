@@ -123,7 +123,7 @@ namespace goby {
 
   public:
     // TOOD: currently assumes that the position is at the start of chunk boundary
-    MessageChunksIterator<T>(const std::string& filename,  const std::streampos position = 0) :
+    MessageChunksIterator<T>(const std::string& filename, const std::streampos position = 0) :
         filename(filename),
         current_position(position),
         current_chunk(T::default_instance()) {
@@ -176,12 +176,12 @@ namespace goby {
       return *this;
     };
 
-    bool operator==(MessageChunksIterator<T>& rhs) const {
+    bool operator==(const MessageChunksIterator<T>& rhs) const {
       // the filenames and the stream positions must match
       return filename == rhs.filename && current_position == rhs.current_position;
     };
 
-    bool operator!=(MessageChunksIterator<T>& rhs) const {
+    bool operator!=(const MessageChunksIterator<T>& rhs) const {
       // the filenames and the stream positions must match
       return filename != rhs.filename || current_position != rhs.current_position;
     };
@@ -201,11 +201,11 @@ namespace goby {
       return out;
     };
 
-    MessageChunksIterator begin() {
+    MessageChunksIterator begin() const {
       return MessageChunksIterator(*this, static_cast<std::streamoff>(0), std::ios_base::beg);
     };
 
-    MessageChunksIterator end() {
+    MessageChunksIterator end() const {
       return MessageChunksIterator(*this, static_cast<std::streamoff>(0), std::ios_base::end);
     };
 
