@@ -36,9 +36,9 @@ import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math.stat.descriptive.rank.Percentile;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.FileOutputStream;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -187,10 +187,6 @@ public class CompactFileStatsMode extends AbstractGobyMode {
 
             stream.println();
             stream.printf("Total number of files processed = %,d\n", numberOfFilesProcessed);
-            stream.printf("Total number of reads = %,d%n", numberOfReads);
-            stream.printf("Min read length = %,d%n", numberOfReads > 0 ? minReadLength : 0);
-            stream.printf("Max read length = %,d%n", numberOfReads > 0 ? maxReadLength : 0);
-            stream.printf("Avg read length = %,d%n", numberOfReads > 0 ? cumulativeReadLength / numberOfReads : 0);
             stream.println();
         } finally {
             if (stream != System.out) {
@@ -216,7 +212,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         stream.printf("Sorted: %b%n", reader.isSorted());
         stream.printf("Indexed: %b%n", reader.isIndexed());
         stream.printf("Number of target sequences = %,d%n", reader.getNumberOfTargets());
-        final int[] targetLength = reader.getTargetLength();
+        final int[] targetLengthsFromHeader = reader.getTargetLength();
         stream.printf("Number of target length entries = %,d%n",
                 ArrayUtils.getLength(reader.getTargetLength()));
         stream.printf("smallestSplitQueryIndex = %d%n",
@@ -226,8 +222,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
 
         // simple statistics for target lengths
         final SummaryStatistics targetLengthStats = new SummaryStatistics();
-        if (targetLength != null) {
-            for (final double d : targetLength) {
+        if (targetLengthsFromHeader != null) {
+            for (final double d : targetLengthsFromHeader) {
                 targetLengthStats.addValue(d);
             }
         }
@@ -237,16 +233,13 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         stream.println();
 
         stream.printf("Number of query sequences = %,d%n", reader.getNumberOfQueries());
-        final int[] queryLength = reader.getQueryLengths();
+        final int[] queryLengthsFromHeader = reader.getQueryLengths();
         stream.printf("Number of query length entries = %,d%n",
-                ArrayUtils.getLength(queryLength));
+                ArrayUtils.getLength(queryLengthsFromHeader));
 
         final SummaryStatistics queryLengthStats = new SummaryStatistics();
-        if (queryLength != null) {
-            System.out.println("Query lengths are encoded in the header");
-            for (final double d : queryLength) {
-                queryLengthStats.addValue(d);
-            }
+        if (queryLengthsFromHeader != null) {
+            stream.println("Query lengths are encoded in the header");
         }
         stream.println("Constant query lengths = " + reader.isConstantQueryLengths());
 
@@ -268,7 +261,6 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         double avgScore = 0;
         int sumNumVariations = 0;
 
-
         for (final Alignments.AlignmentEntry entry : reader) {
             numberOfReads++;   // Across all files
             numEntries++;      // Across this file
@@ -283,12 +275,15 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             sumNumVariations += entry.getSequenceVariationsCount();
             alignedQueryIndices.add(entry.getQueryIndex());
 
-            assert (queryLength == null) : "Query lengths cannot be stored both in alignment entries and header.";
-
-            queryLengthStats.addValue(entry.getQueryLength());
-
-
+            final double queryLength;
+            if (entry.hasQueryLength()) {
+                queryLength = entry.getQueryLength();
+            } else {
+                 queryLength = reader.getQueryLength(entry.getQueryIndex());
+            }
+            queryLengthStats.addValue(queryLength);
         }
+
         avgScore /= (double) numLogicalAlignmentEntries;
 
         final int numQuerySequences = maxQueryIndex + 1;
