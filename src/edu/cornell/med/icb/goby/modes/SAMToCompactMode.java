@@ -156,7 +156,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
                 continue;
             }
-            final int targetIndex = LastToCompactMode.getTargetIndex(
+            final int targetIndex = getTargetIndex(
                     targetIds, samRecord.getReferenceName(), thirdPartyInput);
 
             // positions reported by BWA appear to start at 1. We convert to start at zero.
@@ -349,8 +349,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 referenceSequence);
 
         final int alignmentLength = readSequence.length();
-        LastToCompactMode.extractSequenceVariations(currentEntry,
-                alignmentLength,
+        extractSequenceVariations(currentEntry, alignmentLength,
                 referenceSequence, readSequence, readStartPosition, queryLength, reverseStrand);
 
     }

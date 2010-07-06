@@ -24,6 +24,7 @@ import edu.cornell.med.icb.goby.alignments.AlignedSequence;
 import edu.cornell.med.icb.goby.alignments.AlignmentStats;
 import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsWriter;
 import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
+import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.filters.AlignmentQualityFilter;
 import edu.cornell.med.icb.goby.alignments.filters.PercentMismatchesQualityFilter;
 import edu.cornell.med.icb.goby.reads.ReadSet;
@@ -177,7 +178,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
     }
 
     /**
-     * Run the last-to-compact mode.
+     * Run the alignment-to-compact mode.
      *
      * @throws java.io.IOException error reading / writing
      */
@@ -315,6 +316,122 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         this.numberOfReadsFromCommandLine = numberOfReads;
     }
 
+    public static int getTargetIndex(final IndexedIdentifier targetIds,
+                                     final CharSequence targetIdentifier,
+                                     final boolean thirdPartyInput) {
+        int targetIndex = -1;
+        try {
+            if (thirdPartyInput) {
+                targetIndex = targetIds.registerIdentifier(new MutableString(targetIdentifier));
+            } else {
+                targetIndex = Integer.parseInt(targetIdentifier.toString());
+            }
+        } catch (NumberFormatException e) {
+            if (targetIds != null) {
+                final Integer object = targetIds.get(targetIdentifier);
+                if (object == null) {
+                    LOG.warn("Input file contains a target id that is not defined in the target compact reads: " + targetIdentifier);
+                    targetIndex = targetIds.registerIdentifier(new MutableString(targetIdentifier));
+                } else {
+                    targetIndex = object;
+                }
+                if (targetIndex == -1) {
+                    System.out.println("Cannot convert reference identifier to index. " + targetIdentifier);
+                    System.exit(1);
+                }
+            }
+        }
+        return targetIndex;
+    }
+
+    /**
+     * Compare read and reference sequences to determine sequence variations. The variations found
+     * are appended to the alignment entry builder.
+     *
+     * @param currentEntry      alignment entry where variations will be stored.
+     * @param alignmentLength   length of the sequence alignment (common length of reference and read sequences)
+     * @param referenceSequence The reference sequence
+     * @param readSequence      The read sequence
+     * @param queryLength
+     */
+    public static void extractSequenceVariations(final Alignments.AlignmentEntry.Builder currentEntry, final int alignmentLength,
+                                                 final MutableString referenceSequence,
+                                                 final MutableString readSequence,
+                                                 final int readStartPosition,
+                                                 final int queryLength, final boolean reverseStrand) {
+        //     System.out.printf("Extracting variations from %n%s%n%s%n",
+        //             referenceSequence, readSequence);
+
+        final MutableString from = new MutableString();
+        final MutableString to = new MutableString();
+        int variationPosition = Integer.MAX_VALUE;
+        int minLength = Math.min(referenceSequence.length(), readSequence.length());
+        minLength = Math.min(alignmentLength, minLength);
+        // will record the number of gaps in the read, up to the variation position. We need to
+        // subtract this number from the position to obtain the read index.
+        int readIndexAdjustment = 0;
+        int newAdjustment = 0;
+        for (int position = 0; position < minLength; ++position) {
+
+            final char referenceBase = referenceSequence.charAt(position);
+            final char queryBase = readSequence.charAt(position);
+
+            if (referenceBase != queryBase) {
+                from.append(referenceBase);
+                to.append(queryBase);
+                variationPosition = Math.min(variationPosition, position);
+                if (queryBase == '-') {
+
+                    ++newAdjustment;
+                }
+
+            } else {
+                appendNewSequenceVariation(currentEntry, from, to, variationPosition, readStartPosition, queryLength,
+                        reverseStrand, readIndexAdjustment);
+                variationPosition = Integer.MAX_VALUE;
+                from.setLength(0);
+                to.setLength(0);
+                readIndexAdjustment = newAdjustment;
+            }
+
+        }
+        appendNewSequenceVariation(currentEntry, from, to, variationPosition, readStartPosition, queryLength, reverseStrand, readIndexAdjustment);
+    }
+
+    private static void appendNewSequenceVariation(final Alignments.AlignmentEntry.Builder currentEntry,
+                                                     final MutableString from,
+                                                     final MutableString to,
+                                                     final int variationPosition,
+                                                     final int readStartPosition, final int queryLength, final boolean reverseStrand, final int readIndexAdjustment) {
+        if (variationPosition != Integer.MAX_VALUE) {
+            final Alignments.SequenceVariation.Builder sequenceVariation =
+                    Alignments.SequenceVariation.newBuilder();
+
+            sequenceVariation.setFrom(from.toString());
+            sequenceVariation.setTo(to.toString());
+            sequenceVariation.setPosition(variationPosition + 1); // positions start at 1
+            // calculate the readIndex, taking strand and query length into consideration:
+            final int readIndex = (reverseStrand ? (queryLength - (variationPosition - readIndexAdjustment) - readStartPosition) :
+                    variationPosition - readIndexAdjustment + readStartPosition);
+            if (readIndex > queryLength) {
+                assert readIndex <= queryLength : String.format(" readIndex %d must be smaller than read length %d .",
+                        readIndex,
+                        queryLength);
+                LOG.warn(String.format(
+                        "Ignoring sequence variations for a read since readIndex %d must be smaller than read length %d. query index=%d reference index=%d%n", readIndex,
+                        queryLength, currentEntry.getQueryIndex(),
+                        currentEntry.getTargetIndex()));
+                //System.exit(1);
+                return;
+            }
+            sequenceVariation.setReadIndex(readIndex + 1);    // positions start at 1
+            //        System.out.printf("Appending variation: %d %s/%s ", variationPosition, from, to);
+            currentEntry.addSequenceVariations(sequenceVariation);
+            // reset since they are used:
+            from.setLength(0);
+            to.setLength(0);
+        }
+    }
 
     public class TransferIds {
         private ReadSet readIndexFilter;
