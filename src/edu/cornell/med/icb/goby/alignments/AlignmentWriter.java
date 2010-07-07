@@ -381,15 +381,25 @@ public class AlignmentWriter implements Closeable {
             headerBuilder.setQueryNameMapping(getMapping(queryIdentifiers, queryIdentifiersArray));
             headerBuilder.setTargetNameMapping(getMapping(targetIdentifiers, targetIdentifiersArray));
             headerBuilder.setNumberOfAlignedReads(numberOfAlignedReads);
+
+            // determine query lengths are constant (regardless of where they came from)
+            if (uniqueQueryLengths.size() == 1) {
+                // detected constant read length.
+                 constantQueryLength = uniqueQueryLengths.iterator().nextInt();
+                 headerBuilder.setConstantQueryLength(constantQueryLength);
+                 isConstantQueryLength = true;
+            } else {
+                constantQueryLength = 0;
+                isConstantQueryLength = false;
+            }
+
             if (entriesHaveQueryLength) {
                 // if some entries had query length, remove the information from the header. Do not duplicate.
                 headerBuilder.setQueryLengthsStoredInEntries(true);
             } else {
                 // store query lengths:
                 compactQueryLengths();
-                if (isConstantQueryLength) {
-                    headerBuilder.setConstantQueryLength(constantQueryLength);
-                } else if (queryLengths != null) {
+                if (queryLengths != null) {
                     headerBuilder.addAllQueryLength(IntArrayList.wrap(queryLengths));
                 }
             }
@@ -502,14 +512,7 @@ public class AlignmentWriter implements Closeable {
      * case, the smaller array has size (maxQueryIndex-minQueryIndex+1)
      */
     private void compactQueryLengths() {
-        if (uniqueQueryLengths.size() == 1) {
-            // detected constant read length.
-            if (queryLengths != null) {
-                constantQueryLength = uniqueQueryLengths.iterator().nextInt();
-            } else {
-                constantQueryLength = 0;
-            }
-            isConstantQueryLength = true;
+        if (isConstantQueryLength) {
             this.queryLengths = null;
         } else {
             if (queryLengths != null) {

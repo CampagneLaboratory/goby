@@ -27,14 +27,14 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.lang.MutableString;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -44,7 +44,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Properties;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -321,10 +324,13 @@ public class AlignmentReader extends AbstractAlignmentReader {
             largestQueryIndex = header.getLargestSplitQueryIndex();
             queryIdentifiers = parseIdentifiers(header.getQueryNameMapping());
             targetIdentifiers = parseIdentifiers(header.getTargetNameMapping());
+            if (header.hasConstantQueryLength()) {
+                this.constantQueryLengths = true;
+                this.constantLength = header.getConstantQueryLength();
+            }
+
             if (!header.getQueryLengthsStoredInEntries()) {
-                if (header.hasConstantQueryLength()) {
-                    this.constantQueryLengths = true;
-                    this.constantLength = header.getConstantQueryLength();
+                if (this.constantQueryLengths) {
                     queryLengths = null;
                 } else if (header.getQueryLengthCount() > 0) {
                     queryLengths = new IntArrayList(header.getQueryLengthList()).toIntArray();
@@ -332,8 +338,8 @@ public class AlignmentReader extends AbstractAlignmentReader {
                 }
             } else {
                 queryLengths = null;
-                constantQueryLengths = false;
             }
+
             if (header.getTargetLengthCount() > 0) {
                 targetLengths = new IntArrayList(header.getTargetLengthList()).toIntArray();
             }
