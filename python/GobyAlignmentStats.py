@@ -57,10 +57,8 @@ def main():
 
     alignment_reader = AlignmentReader(basename, verbose)
     header = alignment_reader.header
-    print "Reading TMH"
     tmh_reader = TooManyHitsReader(basename, verbose)
     tmh = tmh_reader.tmh
-    print "Done reading TMH"
     entries_filesize = os.stat(basename + ".entries")[stat.ST_SIZE]
     print "Info from header:"
     print "Sorted:", header.sorted

@@ -17,6 +17,8 @@
 #
 
 import gzip
+import sys
+
 import Alignments_pb2
 from MessageChunks import MessageChunksReader
 
@@ -32,7 +34,7 @@ def get_basename(filename):
     Note that if the filename does have the extension known to be a
     compact alignemt the returned value is the original filename.
     """
-    for ext in [".entries", ".header", ".tmh", ".stats", ".counts"]:
+    for ext in [".entries", ".header", ".tmh", ".stats", ".counts", ".index"]:
         if filename.endswith(ext):
             return filename[:-len(ext)]
     return filename
@@ -66,28 +68,31 @@ class AlignmentReader(object):
         basename of the alignment files.  Goby alignments
         are made up of files ending with:
 
-        ".entries", ".header", ".tmh", ".stats",
+        ".entries", ".header", ".tmh", ".stats", ".counts", ".index"
 
         The basename of this alignment is the full path to
         one of these files including everything but the
-        extension.
+        extension.  If a basename is passed in with one of
+        these extensions, it will be stripped.
         """
 
         # store the basename
-        self.basename = basename
+        self.basename = get_basename(basename);
 
         # read the "stats" file
-        stats_filename = basename + ".stats"
+        stats_filename = self.basename + ".stats"
         if verbose:
             print "Reading properties from", stats_filename
         try:
             self.statistics.load(open(stats_filename))
         except IOError, err:
-            print str(err)
+            # the "stats" file is optional
+            print >>sys.stderr, "Could not read alignment statistics from", stats_filename
+            print >>sys.stderr, str(err)
             pass
 
         # read the header
-        header_filename = basename + ".header"
+        header_filename = self.basename + ".header"
         if verbose:
             print "Reading header from", header_filename
         f = gzip.open(header_filename, "rb")
@@ -95,7 +100,7 @@ class AlignmentReader(object):
         f.close()
 
         # open the entries
-        self.entries_reader = AlignmentCollectionReader(basename, verbose)
+        self.entries_reader = AlignmentCollectionReader(self.basename, verbose)
 
     def next(self):
         """ Return next alignment entry from the entries file
@@ -142,25 +147,26 @@ class TooManyHitsReader(object):
         """
 
         # store the basename
-        self.basename = basename
+        self.basename = get_basename(basename)
 
         # read the "too many hits" info
-        tmh_filename = basename + ".tmh"
+        tmh_filename = self.basename + ".tmh"
         if verbose:
             print "Reading too many hits info from", tmh_filename
 
         try:
-            print "opening TMH file"
             f = open(tmh_filename, "rb")
             self.tmh.ParseFromString(f.read())
             f.close()
-            print "Done parsing TMH file"   
             for hit in self.tmh.hits:
                 self.queryindex_to_numhits[hit.query_index] = hit.at_least_number_of_hits
                 if hit.HasField("length_of_match"):
                     self.queryindex_to_depth[hit.query_index] = hit.length_of_match
         except IOError, err:
-            print str(err)
+            # the "Too Many Hits" file is optional
+            print >>sys.stderr, "Could not read \"Too Many Hits\" information from", tmh_filename
+            print >>sys.stderr, "Assuming no queries have too many hits."
+            print >>sys.stderr, str(err)
             pass
 
     def __str__(self):
@@ -170,7 +176,7 @@ class AlignmentCollectionReader(MessageChunksReader):
     """ Iterator for alignment collections within the alignment entries."""
 
     def __init__(self, basename, verbose = False):
-        MessageChunksReader.__init__(self, basename + ".entries", verbose)
+        MessageChunksReader.__init__(self, get_basename(basename) + ".entries", verbose)
 
     def next(self):
         """ Return next alignment collection from the entries file."""
