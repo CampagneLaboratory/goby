@@ -51,7 +51,7 @@ namespace goby {
     currentReadIndex(that.currentReadIndex) {
   }
 
-  ReadsIterator::ReadsIterator(const ReadsIterator& that, std::streamoff off, std::ios_base::seekdir dir = std::ios_base::beg) :
+  ReadsIterator::ReadsIterator(const ReadsIterator& that, const std::streamoff off, const std::ios_base::seekdir dir = std::ios_base::beg) :
     filename(that.filename),
     messageChunksIterator(that.messageChunksIterator, off, dir),
     readCollection(*messageChunksIterator),
