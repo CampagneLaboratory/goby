@@ -623,7 +623,7 @@ public class TestLastToCompact {
         final int LAST_TO_COMPACT_M_PARAM = 2;
         processor.setAmbiguityThreshold(LAST_TO_COMPACT_M_PARAM);
         processor.setInputFile("test-results/alignments/last-to-compact/last-103-variations.maf");
-        processor.setOutputFile("test-results/alignments/last-to-compact/last-103-variations.entries");
+        processor.setOutputFile("test-results/alignments/last-to-compact/last-103-variations");
         processor.setOnlyMafFile(true);
         processor.setNumberOfReads(2857822);
         processor.setLargestQueryIndex(2857822);
