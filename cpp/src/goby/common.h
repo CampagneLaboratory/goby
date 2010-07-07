@@ -26,7 +26,7 @@
 
 namespace goby {
 
-#define GOBY_DEBUG 1 // TODO - Remove
+//#define GOBY_DEBUG 1 // TODO - Remove
 
 #if defined(_MSC_VER)
   #ifdef LIBGOBY_EXPORTS

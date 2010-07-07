@@ -49,7 +49,6 @@ namespace goby {
     messageChunksIterator(that.messageChunksIterator),
     readCollection(that.readCollection),
     currentReadIndex(that.currentReadIndex) {
-    std::cout << "ReadsIterator Copy constructor" << std::endl;
   }
 
   ReadsIterator::ReadsIterator(const ReadsIterator& that, std::streamoff off, std::ios_base::seekdir dir = std::ios_base::beg) :
@@ -57,7 +56,6 @@ namespace goby {
     messageChunksIterator(that.messageChunksIterator, off, dir),
     readCollection(*messageChunksIterator),
     currentReadIndex(0) {
-    std::cout << "ReadsIterator Copy constructor" << std::endl;
   }
 
     // Prefix increment operator
@@ -70,7 +68,7 @@ namespace goby {
         messageChunksIterator++;
         readCollection = *messageChunksIterator;
       } else {
-          readCollection = ReadCollection::default_instance();
+        readCollection = ReadCollection::default_instance();
       }
       currentReadIndex = 0;
     }

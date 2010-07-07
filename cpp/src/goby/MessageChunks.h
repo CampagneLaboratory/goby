@@ -24,6 +24,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -90,9 +91,10 @@ namespace goby {
       // and handle the fact that each chunk is compressed with gzip
       google::protobuf::io::GzipInputStream gzipChunkStream(&rawChunkStream);
 
-      // since the chunks may be large, we may need to increase the limit
+      // since the chunks may be large, we need to increase the limit
+      // TODO: we may want to be smarter about the actual limit here
       google::protobuf::io::CodedInputStream codedStream(&gzipChunkStream);
-      codedStream.SetTotalBytesLimit(chunkLength, 0);
+      codedStream.SetTotalBytesLimit(INT_MAX, -1);
 
       // populate the current object from the compressed data
       if (!chunk.ParseFromCodedStream(&codedStream)) {
@@ -153,7 +155,6 @@ namespace goby {
       // TODO: there is probably a better way to copy the stream
       stream.open(filename.c_str(), std::ios::in | std::ios::binary);
       stream.seekg(current_position);
-      std::cout << "MessageChunksIterator Copy constructor" << std::endl;
     }
 
     MessageChunksIterator(const MessageChunksIterator<T>& that, std::streamoff off, std::ios_base::seekdir dir = std::ios_base::beg) :
@@ -163,7 +164,6 @@ namespace goby {
       stream.seekg(off, dir);
       current_position = stream.tellg();
       populateChunk(stream, current_chunk);
-      std::cout << "MessageChunksIterator Copy constructor" << std::endl;
     }
 
     // TODO: Prefix and Postfix operators currently do the same thing!
@@ -176,7 +176,6 @@ namespace goby {
 
     // Postfix increment operator
     MessageChunksIterator& operator++(int) {
-      std::cout << "Postfix operator++(int) " << std::endl;
       populateChunk(stream, current_chunk);
       return *this;
     };
