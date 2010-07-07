@@ -16,9 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import re
-
 """ General purpose utiliies used by Goby. """
+
+import re
 
 commify_regex = re.compile(r'^(-?\d+)(\d{3})')
 

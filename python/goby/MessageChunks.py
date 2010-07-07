@@ -16,13 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+""" Support for reading Goby chunked "compact" files. """
+
 import os
 import struct
 import StringIO
 from gzip import GzipFile
-
-""" Support for reading Goby "compact" files.
-"""
 
 def read_int(fd):
     """ Python implementation of Java's DataInputStream.readInt method.
@@ -39,23 +38,27 @@ class MessageChunksReader(object):
     The MessageChunksReader is actually an iterator over indiviual
     entries stored in the compressed file.
     """
-
-    # verbose messages
+ 
     verbose = False
+    """ print verbose messages """
 
-    # the name of the chunked file
     filename = None
+    """ the name of the chunked file """
 
-    # handle to the actual chunked file
     fileobject = None
+    """ handle to the actual chunked file """
 
-    # the current index into the chunked file
     fileindex = None
+    """ the current index into the chunked file """
 
-    # length of the delimiter tag (in bytes)
     DELIMITER_LENGTH = 8
+    """ length of the delimiter tag (in bytes) """
 
     def __init__(self, filename, verbose = False):
+        """ Initialize the MessageChunksReader using the name
+        of the of the compact file (reads, alignment entries, etc.)
+        """
+
         self.verbose = verbose
 
         if self.verbose:
@@ -71,6 +74,7 @@ class MessageChunksReader(object):
         self.fileindex = 0
 
     def __del__(self):
+        """ Close the underlying file when the object is destroyed """
         if self.verbose:
             print "closing file:", self.filename
         self.fileobject.close()
@@ -101,6 +105,9 @@ class MessageChunksReader(object):
             self.fileindex = self.fileobject.tell()
 
     def __iter__(self):
+        """ The message chunks reader is actually an iterator over chunks
+        in the compact file.  Each iteration will return a chunk of bytes raw
+        bytes which can then be processed """
         return self
 
     def __str__(self):

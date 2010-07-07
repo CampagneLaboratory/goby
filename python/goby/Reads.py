@@ -16,31 +16,31 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import gzip
-import Reads_pb2
-from MessageChunks import MessageChunksReader
-
 """ Contains classes that can parse binary sequence data
 stored in the Goby "compact" format.
 """
 
+import gzip
+import Reads_pb2
+from MessageChunks import MessageChunksReader
+
 class ReadsReader(object):
     """ Reads sequence "reads" written in the Goby "compact" format.
     The ReadsReader is actually an iterator over indiviual
-    sequence entries stored in the file.
+    read entries stored in the file.
     """
 
-    # name of this file
     filename = None
+    """ name of the compact reads file """
 
-    # reader for the sequence entries (interally stored in chunks)
     entries_reader = None
+    """ reader for the read entries (interally stored in chunks) """
 
-    # Current chunk of sequence entries
     entries = []
+    """ Current chunk of read entries """
 
-    # current entry index
     current_entry_index = 0
+    """ current entry index """
     
     def __init__(self, filename, verbose = False):
         """ Initialize the ReadsReader using the name
@@ -55,10 +55,8 @@ class ReadsReader(object):
         self.entries_reader = ReadsCollectionReader(filename, verbose)
 
     def next(self):
-        """ Return next sequence entry from the file.
+        """ Return next read entry from the file.
         """
-
-        #print "%d of %d" % (self.current_entry_index, len(self.entries))
 
         # is it time to get the next chunk from the file?
         if not self.entries or self.current_entry_index >= len(self.entries):
@@ -80,7 +78,7 @@ class ReadsReader(object):
         return self.filename
 
 class ReadsCollectionReader(MessageChunksReader):
-    """ Iterator for sequence collections within a compact
+    """ Iterator for read collections within a compact
     reads file
     """
 
@@ -88,7 +86,7 @@ class ReadsCollectionReader(MessageChunksReader):
         MessageChunksReader.__init__(self, filename, verbose)
 
     def next(self):
-        """ Return next sequence collection from the
+        """ Return next read collection from the
         compact reads file
         """
         buf = MessageChunksReader.next(self)

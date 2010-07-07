@@ -16,6 +16,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+""" Contains classes that can parse binary alignment data
+stored in the Goby "compact" format.
+"""
+
 import gzip
 import sys
 
@@ -25,14 +29,10 @@ from MessageChunks import MessageChunksReader
 # Java properties - http://pypi.python.org/pypi/pyjavaproperties/
 from pyjavaproperties import Properties
 
-""" Contains classes that can parse binary alignment data
-stored in the Goby "compact" format.
-"""
-
 def get_basename(filename):
     """ Return the basename corresponding to the input alignment filename.
     Note that if the filename does have the extension known to be a
-    compact alignemt the returned value is the original filename.
+    compact alignment the returned value is the original filename.
     """
     for ext in [".entries", ".header", ".tmh", ".stats", ".counts", ".index"]:
         if filename.endswith(ext):
@@ -45,23 +45,23 @@ class AlignmentReader(object):
     alignment entries stored in the file.
     """
 
-    # basename for this alignment
     basename = None
+    """ basename for this alignment """
 
-    # statistics from this alignment
     statistics = Properties()
+    """ statistics from this alignment """
 
-    # alignment header
     header = Alignments_pb2.AlignmentHeader()
+    """ alignment header """
 
-    # reader for the alignment entries (interally stored in chunks)
     entries_reader = None
+    """ reader for the alignment entries (interally stored in chunks) """
 
-    # Current chunk of alignment entries
     entries = []
+    """ Current chunk of alignment entries """
 
-    # current entry index
     current_entry_index = 0
+    """ current entry index """
 
     def __init__(self, basename, verbose = False):
         """ Initialize the AlignmentReader using the
@@ -129,17 +129,17 @@ class TooManyHitsReader(object):
     written in the Goby "compact" format
     """
 
-    # basename for this alignment
     basename = None
+    """ basename for this alignment """
 
-    # too many hits
     tmh = Alignments_pb2.AlignmentTooManyHits()
+    """ too many hits """
 
-    # query index to number of hits
     queryindex_to_numhits = dict()
+    """ query index to number of hits """
 
-    # query index to depth/length of match.
     queryindex_to_depth = dict()
+    """ query index to depth/length of match. """
 
     def __init__(self, basename, verbose = False):
         """ Initialize the TooManyHitsReader using the basename
