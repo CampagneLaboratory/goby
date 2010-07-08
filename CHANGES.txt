@@ -51,6 +51,9 @@
    in the annotation file.
 
  Changes that impact the compact alignment format:
+ - The compact file format is extended to store sequence, sequence length and quality scores
+   for the paired run. This extension makes it possible to store both paired end runs in a
+   single compact file. This should help keep the data together.
  - Moved query lengths from header to alignment entries. This scales much
    better when processing large alignment files (generated from more than
    a few hundred million reads).
