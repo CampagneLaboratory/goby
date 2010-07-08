@@ -18,7 +18,10 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**

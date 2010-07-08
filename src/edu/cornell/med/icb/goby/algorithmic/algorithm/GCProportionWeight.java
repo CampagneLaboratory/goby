@@ -28,13 +28,13 @@ import it.unimi.dsi.lang.MutableString;
 public class GCProportionWeight implements WeightCalculator {
 
 
-    public GCProportionWeight(boolean colorSpace) {
+    public GCProportionWeight(final boolean colorSpace) {
         if (colorSpace) {
             throw new UnsupportedOperationException("GC content is not implemented for color-space reads");
         }
     }
 
-    public float weight(MutableString sequence) {
+    public float weight(final MutableString sequence) {
 
         float GC = 0;
         float total = 0;

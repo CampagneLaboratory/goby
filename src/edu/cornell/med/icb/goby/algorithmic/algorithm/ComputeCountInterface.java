@@ -86,7 +86,7 @@ public interface ComputeCountInterface {
      * @param forwardStrand True when the read matches the forward strand, false otherwise.
      */
 
-    public void populate(final int startPosition, final int endPosition, final boolean forwardStrand);
+    void populate(final int startPosition, final int endPosition, final boolean forwardStrand);
 
 
 }

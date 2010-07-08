@@ -69,11 +69,11 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
             end += MessageChunksWriter.DELIMITER_LENGTH + 4;
         }
         this.end = end;
-        this.input=input;
-        reposition(start,end );
+        this.input = input;
+        reposition(start, end);
     }
 
-    private void reposition(long start, long end) throws IOException {
+    private void reposition(final long start, final long end) throws IOException {
         input.position(start);
 
 
@@ -92,7 +92,6 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
             ++skipped;
             if (contiguousZeroBytes == MessageChunksWriter.DELIMITER_LENGTH) {
                 // a delimiter was found, start reading data from here
-                this.input = input;
                 in = new DataInputStream(input);
                 final long seekPosition = start + skipped - contiguousZeroBytes;
                 input.position(seekPosition);
@@ -108,7 +107,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
      * @param position Position where to seek to.
      * @throws IOException If an error occurs reading this file.
      */
-    public void seek(long position) throws IOException {
+    public void seek(final long position) throws IOException {
         reposition(position, Long.MAX_VALUE);
     }
 

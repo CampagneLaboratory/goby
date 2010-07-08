@@ -18,21 +18,20 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import org.junit.Test;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import org.apache.commons.io.FilenameUtils;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import java.io.IOException;
 import java.io.File;
-
-import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import java.io.IOException;
 
 /**
  * @author Fabien Campagne
@@ -66,10 +65,10 @@ public class TestConcatSortedAlignmentReader {
 
     @Test
     public void testSortConcat() throws IOException {
-        ConcatSortedAlignmentReader concat = new ConcatSortedAlignmentReader(basename1, basename2, basename3);
-        IntList sortedPositions = new IntArrayList();
-        int[] expectedPositions = {1, 2, 3, 5, 6, 7, 8, 9, 10, 10, 12, 99};
-        for (Alignments.AlignmentEntry entry : concat) {
+        final ConcatSortedAlignmentReader concat = new ConcatSortedAlignmentReader(basename1, basename2, basename3);
+        final IntList sortedPositions = new IntArrayList();
+        final int[] expectedPositions = {1, 2, 3, 5, 6, 7, 8, 9, 10, 10, 12, 99};
+        for (final Alignments.AlignmentEntry entry : concat) {
             // System.out.println("entry.position(): "+entry.getPosition());
             sortedPositions.add(entry.getPosition());
         }
@@ -79,9 +78,9 @@ public class TestConcatSortedAlignmentReader {
         }
     }
 
-    final static String basename1 = FilenameUtils.concat(BASE_TEST_DIR, "sort-concat-1");
-    final static String basename2 = FilenameUtils.concat(BASE_TEST_DIR, "sort-concat-2");
-    final static String basename3 = FilenameUtils.concat(BASE_TEST_DIR, "sort-concat-3");
+    static final String basename1 = FilenameUtils.concat(BASE_TEST_DIR, "sort-concat-1");
+    static final String basename2 = FilenameUtils.concat(BASE_TEST_DIR, "sort-concat-2");
+    static final String basename3 = FilenameUtils.concat(BASE_TEST_DIR, "sort-concat-3");
 
     @Before
     public void setUp() throws IOException {
@@ -119,7 +118,7 @@ public class TestConcatSortedAlignmentReader {
                 new AlignmentWriter(basename3);
         writer3.setNumAlignmentEntriesPerChunk(1000);
         writer3.setTargetLengths(new int[]{10000});
-        
+
         // we write this alignment sorted:
         writer3.setSorted(true);
 
@@ -132,7 +131,7 @@ public class TestConcatSortedAlignmentReader {
 
     }
 
-    private void append(AlignmentWriter writer, int referenceIndex, int position) throws IOException {
+    private void append(final AlignmentWriter writer, final int referenceIndex, final int position) throws IOException {
         writer.setAlignmentEntry(0, referenceIndex, position, 1, false);
         writer.appendEntry();
     }

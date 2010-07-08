@@ -54,7 +54,7 @@ public class AlignmentWriter implements Closeable {
     private IndexedIdentifier targetIdentifiers;
     private boolean headerWritten;
     private final GZIPOutputStream headerOutput;
-    private boolean entriesHaveQueryLength = false;
+    private boolean entriesHaveQueryLength;
     /**
      * Length of each query sequence.
      */

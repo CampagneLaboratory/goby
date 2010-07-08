@@ -175,7 +175,6 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                 numAligns = 0;
                 int removedByQualityFilter = 0;
                 int notBestScore = 0;
-                int numberOfEntries=0;
                 while (parser.hasNext()) {
                     // parse maf alignment entry
                     parser.next();

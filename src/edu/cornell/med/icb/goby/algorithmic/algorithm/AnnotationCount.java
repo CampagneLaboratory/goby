@@ -56,7 +56,7 @@ public class AnnotationCount implements AnnotationCountInterface {
      * @param endPosition
      * @param queryIndex
      */
-    public void populate(int startPosition, int endPosition, int queryIndex) {
+    public void populate(final int startPosition, final int endPosition, final int queryIndex) {
         this.populate(startPosition, endPosition);
     }
 

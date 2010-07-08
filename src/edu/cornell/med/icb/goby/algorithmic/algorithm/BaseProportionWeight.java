@@ -26,26 +26,26 @@ import it.unimi.dsi.lang.MutableString;
      *         Time: 5:19:54 PM
      */
     public class BaseProportionWeight implements WeightCalculator {
-        public BaseProportionWeight(boolean colorSpace) {
+        public BaseProportionWeight(final boolean colorSpace) {
             if (colorSpace) {
                 throw new UnsupportedOperationException("base content is not implemented for color-space reads");
             }
                    }
 
-        public void setBase(char base) {
+        public void setBase(final char base) {
             this.base = base;
         }
 
         char base;
 
-        public float weight(MutableString sequence) {
+        public float weight(final MutableString sequence) {
 
             float baseContent = 0;
             float total = 0;
             for (int i = 0; i < sequence.length(); i++) {
                 total++;
                 final char c = sequence.charAt(i);
-                baseContent += (c == base ) ? 1 : 0;
+                baseContent += (c == base) ? 1 : 0;
             }
             return baseContent / total;
         }

@@ -29,18 +29,18 @@ import it.unimi.dsi.lang.MutableString;
 public class HeptamerWeight implements WeightCalculator {
     private HeptamerInfo heptamers;
 
-    public HeptamerWeight(HeptamerInfo heptamers) {
+    public HeptamerWeight(final HeptamerInfo heptamers) {
         this.heptamers = heptamers;
-    }                   
+    }
 
-    public float weight(MutableString sequence) {
+    public float weight(final MutableString sequence) {
         if (heptamers.colorSpace) {
             sequence.delete(0, 1);
         }
         // if (count++ > 1000000) break;
-        int item = 0;
+        final int item = 0;
 
-        int positionInRead = 1;
+        final int positionInRead = 1;
 
 
         final int end = positionInRead - 1 + heptamers.heptamerLength;
@@ -50,11 +50,13 @@ public class HeptamerWeight implements WeightCalculator {
 
         if (heptamer.indexOf('N') == -1) {
             // heptamers that include any number of Ns are ignored.
-            short heptamerIndex = (short) heptamers.heptamerToIndices.getInt(heptamer);
+            final short heptamerIndex = (short) heptamers.heptamerToIndices.getInt(heptamer);
 
-            float weight = heptamerIndex == -1 ? 1 : heptamers.heptamerIndexToWeight.get(heptamerIndex);
+            final float weight = heptamerIndex == -1 ? 1 : heptamers.heptamerIndexToWeight.get(heptamerIndex);
             return weight;
-        }else return 1f;
+        } else {
+            return 1f;
+        }
 
     }
      public String id() {

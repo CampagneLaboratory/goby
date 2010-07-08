@@ -77,7 +77,7 @@ public enum QualityEncoding {
      * @param asciiOffset    The offset used to convert quality scores to/from ASCII characters.
      * @param solexaEncoding Indicates whether solexa scale conversion must occur.
      */
-    private QualityEncoding(final int asciiOffset, boolean solexaEncoding, int minPhredScore, int maxPhredScore) {
+    private QualityEncoding(final int asciiOffset, final boolean solexaEncoding, final int minPhredScore, final int maxPhredScore) {
         this.asciiOffset = asciiOffset;
         this.solexaEncoding = solexaEncoding;
         this.minPhredScore = minPhredScore;
@@ -91,9 +91,9 @@ public enum QualityEncoding {
      * @param qPhred The quality score to convert in Phred scale.
      * @return The ASCII character representation of the score
      */
-    public final char phredQualityScoreToAsciiEncoding(final byte qPhred) {
+    public char phredQualityScoreToAsciiEncoding(final byte qPhred) {
         if (solexaEncoding) {
-            int qSolexa = (int) Math.round((10 * Math.log10(
+            final int qSolexa = (int) Math.round((10 * Math.log10(
                     Math.pow(10d,
                             ((double) qPhred) / 10d)
                             - 1
@@ -115,7 +115,7 @@ public enum QualityEncoding {
      * @param asciiCharacter the character to convert
      * @return The score value converted to Phred quality score scale.
      */
-    public final byte asciiEncodingToPhredQualityScore(final char asciiCharacter) {
+    public byte asciiEncodingToPhredQualityScore(final char asciiCharacter) {
         if (solexaEncoding) {
             final int qSolexa = (asciiCharacter - asciiOffset);
             System.out.printf("qSolexa=%d%n", qSolexa);
@@ -137,7 +137,7 @@ public enum QualityEncoding {
      * @param phredScore quality score on Phred scale.
      * @return True  if the phredScore is within valid range for this encoding, false otherwise.
      */
-    public boolean isWithinValidRange(byte phredScore) {
+    public boolean isWithinValidRange(final byte phredScore) {
         return (phredScore <= maxPhredScore || phredScore >= minPhredScore);
     }
 }

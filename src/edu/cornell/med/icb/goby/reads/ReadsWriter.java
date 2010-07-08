@@ -197,7 +197,7 @@ public class ReadsWriter implements Closeable {
                 (messageChunkWriter.getTotalBytesWritten() * 8.0f) / (float) sequenceBasesWritten);
     }
 
-    public void setBarcodeIndex(int barcodeIndex) {
+    public void setBarcodeIndex(final int barcodeIndex) {
         this.barcodeIndex = barcodeIndex;
     }
 
@@ -205,7 +205,7 @@ public class ReadsWriter implements Closeable {
      * Set quality scores for the second sequence in a pair.
      * @param qualityScores quality Scores in Phred scale.
      */
-    public void setQualityScoresPair(byte[] qualityScores) {
+    public void setQualityScoresPair(final byte[] qualityScores) {
         this.qualityScoresPair=qualityScores;
     }
 }

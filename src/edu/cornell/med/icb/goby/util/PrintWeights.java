@@ -31,15 +31,17 @@ import java.io.IOException;
  *         Time: 11:12:36 AM
  */
 public class PrintWeights {
+    private PrintWeights() {
+    }
 
-    public static void main(String args[]) throws IOException, ClassNotFoundException {
+    public static void main(final String[] args) throws IOException, ClassNotFoundException {
         if (args.length == 0) {
             System.err.println("This utility requires exactly one arguments: the filename of the weights file to print.");
         }
-        String filename = args[0];
+        final String filename = args[0];
 
-        WeightsInfo weights = WeightsInfo.load(filename);
-        int size = weights.size();
+        final WeightsInfo weights = WeightsInfo.load(filename);
+        final int size = weights.size();
         for (int i = 0; i < size; i++) {
             System.out.printf("readIndex %d weight %g%n", i, weights.getWeight(i));
         }

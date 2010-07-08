@@ -18,13 +18,9 @@
 
 package samples;
 
-import it.unimi.dsi.lang.MutableString;
-import edu.cornell.med.icb.goby.reads.ReadsReader;
-import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -34,12 +30,12 @@ import java.io.IOException;
  * @author Fabien Campagne
  *         Date: Jun 24, 2010
  */
-public class ParseAlignmentEntriesCodeSample { 
+public class ParseAlignmentEntriesCodeSample {
     static {
         try {
-            String inputFilename = "input.entries";
+            final String inputFilename = "input.entries";
 
-            AlignmentReader reader = new AlignmentReader(inputFilename);
+            final AlignmentReader reader = new AlignmentReader(inputFilename);
 
             for (final Alignments.AlignmentEntry alignmentEntry : reader) {
 

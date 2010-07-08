@@ -27,14 +27,14 @@ import it.unimi.dsi.lang.MutableString;
  */
 public class ATGCCorrectionWeight implements WeightCalculator {
 
-    public ATGCCorrectionWeight(boolean colorSpace) {
+    public ATGCCorrectionWeight(final boolean colorSpace) {
         if (colorSpace) {
             throw new UnsupportedOperationException("ATGC content is not implemented for color-space reads");
         }
     }
 
 
-    public float weight(MutableString sequence) {
+    public float weight(final MutableString sequence) {
 
         float GC = 0;
         float AT = 0;
@@ -46,7 +46,7 @@ public class ATGCCorrectionWeight implements WeightCalculator {
             AT += (c == 'A' || c == 'T') ? 1 : 0;
         }
 
-        float normGC = GC / (AT + GC);
+        final float normGC = GC / (AT + GC);
         return (10.4436f - 8.266972f * normGC);
     }
 

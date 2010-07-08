@@ -112,7 +112,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
     /**
      * The number of bases to trim at the start of the sequence.
      */
-    private int trimReadStartLength = 0;
+    private int trimReadStartLength;
 
     @Override
     public String getModeName() {
@@ -251,7 +251,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
                     if (sequence.length() > trimReadLength) {
                         sequence.length(trimReadLength);
                     }
-                    if (trimReadStartLength >0 ) {
+                    if (trimReadStartLength > 0) {
                         sequence.delete(0, trimReadStartLength);
                     }
                     if (mutateSequences) {

@@ -159,7 +159,7 @@ public class TestConcatAlignmentReader {
             final int numQuery = 10;
             int position = 1;
             final int score = 30;
-            int[] queryLengths = new int[numQuery];
+            final int[] queryLengths = new int[numQuery];
             for (int i = 0; i < queryLengths.length; i++) {
                 queryLengths[i] = i;
             }
@@ -183,7 +183,7 @@ public class TestConcatAlignmentReader {
             writer.setNumAlignmentEntriesPerChunk(1000);
 
             final int numQuery = 13;
-            int[] queryLengths = new int[numQuery];
+            final int[] queryLengths = new int[numQuery];
             for (int i = 0; i < queryLengths.length; i++) {
                 queryLengths[i] = i;
             }

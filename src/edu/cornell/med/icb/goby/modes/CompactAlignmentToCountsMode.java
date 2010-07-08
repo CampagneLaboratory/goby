@@ -21,7 +21,12 @@ package edu.cornell.med.icb.goby.modes;
 import cern.colt.Timer;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.*;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeCount;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeCountInterface;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeStartCount;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeWeightCount;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.FormulaWeightAnnotationCount;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.FormulaWeightCount;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
@@ -194,7 +199,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
 
             if (referencesToProcess.contains(referenceIndex)) {
                 if (accumulatePeakHistogram) {
-                    ComputeCountInterface algo = new ComputeCount();
+                    final ComputeCountInterface algo = new ComputeCount();
                     algs[referenceIndex] = chooseAlgorithm(weightParams, weights, algo);
                 } else {
                     algs[referenceIndex] = new ComputeStartCount(focusOnStrand);
@@ -245,7 +250,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
                 timer.minutes()));
     }
 
-    private ComputeCountInterface chooseAlgorithm(WeightParameters weightParams, WeightsInfo weights, ComputeCountInterface algo) {
+    private ComputeCountInterface chooseAlgorithm(final WeightParameters weightParams, final WeightsInfo weights, ComputeCountInterface algo) {
 
         if (weightParams.useWeights) {
             if (!weightParams.adjustGcBias) {
@@ -253,7 +258,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
                 algo = new ComputeWeightCount(weights);
             } else {
                 // use weights to reweight with formula:
-                FormulaWeightCount algo1 = new FormulaWeightCount(weights);
+                final FormulaWeightCount algo1 = new FormulaWeightCount(weights);
 
                 algo1.setFormulaChoice(FormulaWeightAnnotationCount.FormulaChoice.valueOf(weightParams.formulaChoice));
                 algo = algo1;

@@ -115,12 +115,12 @@ public class AlignmentReader extends AbstractAlignmentReader {
      * @param filename Filename of an alignment component.
      * @return True if the alignment can be read, false otherwise.
      */
-    public static boolean canRead(String filename) {
+    public static boolean canRead(final String filename) {
 
-        String filenameNoExtension = FilenameUtils.removeExtension(filename);
+        final String filenameNoExtension = FilenameUtils.removeExtension(filename);
         int count = 0;
-        for (String extension : COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS) {
-            File fileComponent = new File(filenameNoExtension + extension);
+        for (final String extension : COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS) {
+            final File fileComponent = new File(filenameNoExtension + extension);
 
             if (fileComponent.canRead()) {
                 // we can read this file.
@@ -257,9 +257,11 @@ public class AlignmentReader extends AbstractAlignmentReader {
                         (entry.getTargetIndex() == targetIndex && entry.getPosition() < position))) {
         }
 
-        if (!hasNext) return null;
-        else return entry;
-
+        if (!hasNext) {
+            return null;
+        } else {
+            return entry;
+        }
     }
 
     /**
@@ -271,14 +273,18 @@ public class AlignmentReader extends AbstractAlignmentReader {
      */
     public final void reposition(final int targetIndex, final int position) throws IOException {
         readHeader();
-        if (!sorted) throw new UnsupportedOperationException("skipTo cannot be used with unsorted alignments.");
+        if (!sorted) {
+            throw new UnsupportedOperationException("skipTo cannot be used with unsorted alignments.");
+        }
 
         readIndex();
         repositionInternal(targetIndex, position);
     }
 
     private void repositionInternal(final int targetIndex, final int position) throws IOException {
-        if (!indexLoaded) return;
+        if (!indexLoaded) {
+            return;
+        }
         final int absolutePosition = recodePosition(targetIndex, position);
         int offsetIndex = Arrays.binarySearch(indexAbsolutePositions.elements(), absolutePosition);
         offsetIndex = offsetIndex < 0 ? -1 - offsetIndex : offsetIndex;
@@ -365,7 +371,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
         if (indexed && !indexLoaded) {
             // header is needed to access target lengths:
             readHeader();
-            GZIPInputStream indexStream = new GZIPInputStream(new FileInputStream(basename + ".index"));
+            final GZIPInputStream indexStream = new GZIPInputStream(new FileInputStream(basename + ".index"));
 
             final CodedInputStream codedInput = CodedInputStream.newInstance(indexStream);
             codedInput.setSizeLimit(Integer.MAX_VALUE);
@@ -373,10 +379,10 @@ public class AlignmentReader extends AbstractAlignmentReader {
             indexOffsets.clear();
             indexAbsolutePositions.clear();
 
-            for (long offset : index.getOffsetsList()) {
+            for (final long offset : index.getOffsetsList()) {
                 indexOffsets.add(offset);
             }
-            for (long absolutePosition : index.getAbsolutePositionsList()) {
+            for (final long absolutePosition : index.getAbsolutePositionsList()) {
                 indexAbsolutePositions.add(absolutePosition);
             }
             // trimming is essential for the binary search to work reliably with the result of elements():

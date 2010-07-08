@@ -23,9 +23,12 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,7 +69,7 @@ public class TestSkipTo {
         writer.setNumAlignmentEntriesPerChunk(1);
 
         final int numTargets = 3;
-        int targetLengths[] = new int[numTargets];
+        final int[] targetLengths = new int[numTargets];
 
         for (int referenceIndex = 0; referenceIndex < numTargets; referenceIndex++) {
             targetLengths[referenceIndex] = 1000;
@@ -97,23 +100,23 @@ public class TestSkipTo {
         final AlignmentReader reader =
                 new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, basename));
 
-        Alignments.AlignmentEntry a = reader.skipTo(0, 0);
+        final Alignments.AlignmentEntry a = reader.skipTo(0, 0);
         assertNotNull(a);
         assertEquals(1, a.getTargetIndex());
         assertEquals(12, a.getPosition());
-        Alignments.AlignmentEntry b = reader.skipTo(0, 0);
+        final Alignments.AlignmentEntry b = reader.skipTo(0, 0);
         assertEquals(1, b.getTargetIndex());
         assertEquals(13, b.getPosition());
 
-        Alignments.AlignmentEntry c = reader.skipTo(0, 0);
+        final Alignments.AlignmentEntry c = reader.skipTo(0, 0);
         assertEquals(1, c.getTargetIndex());
         assertEquals(13, c.getPosition());
 
-        Alignments.AlignmentEntry d = reader.skipTo(2, 300);
+        final Alignments.AlignmentEntry d = reader.skipTo(2, 300);
         assertEquals(2, d.getTargetIndex());
         assertEquals(300, d.getPosition());
 
-        Alignments.AlignmentEntry e = reader.skipTo(2, 300);
+        final Alignments.AlignmentEntry e = reader.skipTo(2, 300);
         assertEquals(2, e.getTargetIndex());
         assertEquals(300, e.getPosition());
         assertFalse(reader.hasNext());
@@ -129,7 +132,7 @@ public class TestSkipTo {
         writer.setNumAlignmentEntriesPerChunk(1);
 
         final int numTargets = 3;
-        int targetLengths[] = new int[numTargets];
+        final int[] targetLengths = new int[numTargets];
 
         for (int referenceIndex = 0; referenceIndex < numTargets; referenceIndex++) {
             targetLengths[referenceIndex] = 1000;
@@ -161,16 +164,16 @@ public class TestSkipTo {
                 new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, basename));
 
 
-        Alignments.AlignmentEntry c = reader.skipTo(2, 0);
+        final Alignments.AlignmentEntry c = reader.skipTo(2, 0);
         assertEquals(2, c.getTargetIndex());
         assertEquals(123, c.getPosition());
 
 
-        Alignments.AlignmentEntry d = reader.skipTo(2, 300);
+        final Alignments.AlignmentEntry d = reader.skipTo(2, 300);
         assertEquals(2, d.getTargetIndex());
         assertEquals(300, d.getPosition());
 
-        Alignments.AlignmentEntry e = reader.skipTo(2, 300);
+        final Alignments.AlignmentEntry e = reader.skipTo(2, 300);
         assertEquals(2, e.getTargetIndex());
         assertEquals(300, e.getPosition());
         assertFalse(reader.hasNext());
@@ -186,7 +189,7 @@ public class TestSkipTo {
         writer.setNumAlignmentEntriesPerChunk(1);
 
         final int numTargets = 3;
-        int targetLengths[] = new int[numTargets];
+        final int[] targetLengths = new int[numTargets];
 
         for (int referenceIndex = 0; referenceIndex < numTargets; referenceIndex++) {
             targetLengths[referenceIndex] = 1000;
@@ -203,7 +206,7 @@ public class TestSkipTo {
                 new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, basename));
 
 
-        Alignments.AlignmentEntry c = reader.skipTo(2, 0);
+        final Alignments.AlignmentEntry c = reader.skipTo(2, 0);
         assertNull( c);
 
         assertFalse(reader.hasNext());

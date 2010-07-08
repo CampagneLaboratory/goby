@@ -36,8 +36,6 @@ public class Log2FoldChangeCalculator extends StatisticCalculator {
     public Log2FoldChangeCalculator(final DifferentialExpressionResults results) {
         this();
         setResults(results);
-
-
     }
 
     public Log2FoldChangeCalculator() {
@@ -83,7 +81,7 @@ public class Log2FoldChangeCalculator extends StatisticCalculator {
 
 
     /**
-     * Calculate the log2 of x
+     * Calculate the log2 of x.
      *
      * @param x
      * @return log2(x+1)=Math.log1p(x)/Math.log(2)

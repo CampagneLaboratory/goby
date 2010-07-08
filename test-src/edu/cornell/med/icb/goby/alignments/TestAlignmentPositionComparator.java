@@ -18,8 +18,8 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import org.junit.Test;
 import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 /**
  * @author Fabien Campagne
@@ -30,10 +30,10 @@ public class TestAlignmentPositionComparator {
     @Test
     public void compare() {
 
-        AlignmentPositionComparator comparator = new AlignmentPositionComparator();
-        Alignments.AlignmentEntry.Builder builderA = newInstance();
-        Alignments.AlignmentEntry.Builder builderB = newInstance();
-        Alignments.AlignmentEntry.Builder builderC = newInstance();
+        final AlignmentPositionComparator comparator = new AlignmentPositionComparator();
+        final Alignments.AlignmentEntry.Builder builderA = newInstance();
+        final Alignments.AlignmentEntry.Builder builderB = newInstance();
+        final Alignments.AlignmentEntry.Builder builderC = newInstance();
 
         //initialized required fields:
 
@@ -48,10 +48,10 @@ public class TestAlignmentPositionComparator {
         builderB.setPosition(6);
         builderC.setPosition(8);
 
-        Alignments.AlignmentEntry entryA = builderA.build();
-        Alignments.AlignmentEntry entryB = builderB.build();
-        Alignments.AlignmentEntry entryC = builderC.build();
-        
+        final Alignments.AlignmentEntry entryA = builderA.build();
+        final Alignments.AlignmentEntry entryB = builderB.build();
+        final Alignments.AlignmentEntry entryC = builderC.build();
+
         assertTrue(comparator.compare(entryA, entryB) < 0);
         assertTrue(comparator.compare(entryA, entryC) < 0);
         assertTrue(comparator.compare(entryB, entryC) > 0);

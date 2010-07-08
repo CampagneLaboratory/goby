@@ -63,7 +63,7 @@ public class HeptamerWeightsMode extends AbstractGobyMode {
     private static final Log LOG = LogFactory.getLog(HeptamerWeightsMode.class);
 
     private HeptamerInfo heptamers;
-    private String inputFilenames[];
+    private String[] inputFilenames;
     private String heptamerCountFilename;
     private PrintWriter writer;
     private Int2ObjectOpenHashMap<int[]> heptamerCounts = new Int2ObjectOpenHashMap<int[]>();
@@ -75,10 +75,12 @@ public class HeptamerWeightsMode extends AbstractGobyMode {
     private boolean colorSpace;
 
 
+    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
@@ -117,13 +119,13 @@ public class HeptamerWeightsMode extends AbstractGobyMode {
         final ProgressLogger progress = new ProgressLogger();
         progress.start();
         progress.displayFreeMemory = true;
-        int readIndices[] = {1, 2, -5, -4, -3, -2, -1, 0};
+        final int[] readIndices = {1, 2, -5, -4, -3, -2, -1, 0};
         heptamerTotalCounts = new int[readIndices.length];
-        for (String inputFilename : inputFilenames) {
+        for (final String inputFilename : inputFilenames) {
             LOG.info("Now scanning " + inputFilename);
-            ReadsReader reader = new ReadsReader(new FileInputStream(inputFilename));
+            final ReadsReader reader = new ReadsReader(new FileInputStream(inputFilename));
             try {
-                int count = 0;
+                final int count = 0;
                 final MutableString sequence = new MutableString();
                 int numberOfReads = 0;
                 heptamers.colorSpace = colorSpace;
@@ -136,8 +138,8 @@ public class HeptamerWeightsMode extends AbstractGobyMode {
                     // if (count++ > 100000) break;
                     int item = 0;
 
-                    for (int positionInRead : readIndices) {
-                        int recodedReadIndex = recodeReadIndex(sequence, positionInRead);
+                    for (final int positionInRead : readIndices) {
+                        final int recodedReadIndex = recodeReadIndex(sequence, positionInRead);
 
                         final int end = recodedReadIndex - 1 + heptamers.heptamerLength;
                         final int start = recodedReadIndex - 1;
@@ -146,12 +148,12 @@ public class HeptamerWeightsMode extends AbstractGobyMode {
 
                         if (heptamer.indexOf('N') == -1) {
                             // heptamers that include any number of Ns are ignored.
-                            short heptamerIndex = (short) heptamers.heptamerToIndices.registerIdentifier(heptamer);
+                            final short heptamerIndex = (short) heptamers.heptamerToIndices.registerIdentifier(heptamer);
                             accumulateFrequency(heptamerIndex, positionInRead, item, readIndices.length);
                             if (positionInRead == 1) {
                                 // this is the heptamer that starts at position 1 of the read,
                                 // associate this read index to the heptamer index:
-                                int compactReadIndex = readEntry.getReadIndex();
+                                final int compactReadIndex = readEntry.getReadIndex();
 
                                 // readIndexToHeptamerIndex.add(heptamerIndex);
                                 if (readIndexToHeptamerIndex.size() - 1 < compactReadIndex) {
@@ -183,19 +185,21 @@ public class HeptamerWeightsMode extends AbstractGobyMode {
                 }
             }
         }
-        DoubleIndexedIdentifier indicesToHeptamer = new DoubleIndexedIdentifier(heptamers.heptamerToIndices);
+        final DoubleIndexedIdentifier indicesToHeptamer = new DoubleIndexedIdentifier(heptamers.heptamerToIndices);
         PrintWriter tabWeightWriter = null;
 
-        StringBuffer basenameBuffer = new StringBuffer();
+        final StringBuffer basenameBuffer = new StringBuffer();
         int last = 0;
-        for (String inputFile : inputFilenames) {
+        for (final String inputFile : inputFilenames) {
             basenameBuffer.append(FilenameUtils.getBaseName(inputFile));
-            if ((++last) != inputFilenames.length) basenameBuffer.append(",");
+            if ((++last) != inputFilenames.length) {
+                basenameBuffer.append(",");
+            }
         }
 
         LOG.info("Writing frequencies and weights.");
 
-        String basename = basenameBuffer.toString();
+        final String basename = basenameBuffer.toString();
         try {
 
             writer = heptamerCountFilename == null ? null : new PrintWriter(new FileWriter(heptamerCountFilename));
@@ -211,7 +215,7 @@ public class HeptamerWeightsMode extends AbstractGobyMode {
             for (short heptamerIndex = 0; heptamerIndex < heptamerCounts.size(); heptamerIndex++) {
                 final MutableString heptamer = indicesToHeptamer.getId(heptamerIndex);
                 int itemIndex = 0;
-                for (int readIndex : readIndices) {
+                for (final int readIndex : readIndices) {
 
                     if (writer != null) {
                         writer.printf("%s\t%s\t%d\t%d\t%d%n",
@@ -233,7 +237,7 @@ public class HeptamerWeightsMode extends AbstractGobyMode {
             heptamers.save(heptamerInfoFilename);
 
             LOG.info("writing binary weight file.");
-            WeightsInfo weights = new WeightsInfo();
+            final WeightsInfo weights = new WeightsInfo();
             weights.size(readIndexToHeptamerIndex.size());
             for (int readIndex = 0; readIndex < readIndexToHeptamerIndex.size(); readIndex++) {
                 final short heptamerIndex = readIndexToHeptamerIndex.get(readIndex);
@@ -253,18 +257,20 @@ public class HeptamerWeightsMode extends AbstractGobyMode {
         progress.stop();
     }
 
-    private String totabs(MutableString heptamer) {
-        MutableString result = new MutableString();
+    private String totabs(final MutableString heptamer) {
+        final MutableString result = new MutableString();
         for (int i = 0; i < heptamer.length(); i++) {
             result.append(heptamer.charAt(i));
-            boolean notEnd = i < heptamer.length() - 1;
-            if (notEnd) result.append('\t');
+            final boolean notEnd = i < heptamer.length() - 1;
+            if (notEnd) {
+                result.append('\t');
+            }
         }
         return result.toString();
     }
 
 
-    private int recodeReadIndex(MutableString sequence, int readIndex) {
+    private int recodeReadIndex(final MutableString sequence, final int readIndex) {
         int recodedReadIndex = readIndex;
         if (readIndex <= 0) {
             recodedReadIndex = sequence.length() - heptamers.heptamerLength + readIndex;
@@ -272,15 +278,15 @@ public class HeptamerWeightsMode extends AbstractGobyMode {
         return recodedReadIndex;
     }
 
-    private float calculateWeight(int heptamerIndex, int readIndices[]) {
+    private float calculateWeight(final int heptamerIndex, final int[] readIndices) {
         float numerator = 0;
         float denominator = 0;
         int itemIndex = 0;
         int numEndPositions = 0;
         int numStartPositions = 0;
-        for (int readIndex : readIndices) {
+        for (final int readIndex : readIndices) {
 
-            double proportion = divide(heptamerCounts.get(heptamerIndex)[itemIndex], heptamerTotalCounts[itemIndex]);
+            final double proportion = divide(heptamerCounts.get(heptamerIndex)[itemIndex], heptamerTotalCounts[itemIndex]);
             if (readIndex <= 0) {
                 numerator += proportion;
                 numEndPositions++;
@@ -296,11 +302,11 @@ public class HeptamerWeightsMode extends AbstractGobyMode {
 
     }
 
-    private double divide(int numerator, int denominator) {
+    private double divide(final int numerator, final int denominator) {
         return (double) numerator / (double) denominator;
     }
 
-    private void accumulateFrequency(int heptamerIndex, int readIndex, int i, int maxItems) {
+    private void accumulateFrequency(final int heptamerIndex, final int readIndex, final int i, final int maxItems) {
         int[] countByReadIndex = heptamerCounts.get(heptamerIndex);
         if (countByReadIndex == null) {
             countByReadIndex = new int[maxItems];

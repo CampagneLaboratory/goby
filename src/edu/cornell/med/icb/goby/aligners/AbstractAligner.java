@@ -325,8 +325,8 @@ public abstract class AbstractAligner implements Aligner {
             processor.execute();
             numberOfReads = processor.getNumberOfSequences();
             minReadLength = processor.getMinSequenceLength();
-            smallestQueryIndex=processor.getSmallestQueryIndex();
-            largestQueryIndex=processor.getLargestQueryIndex();
+            smallestQueryIndex = processor.getSmallestQueryIndex();
+            largestQueryIndex = processor.getLargestQueryIndex();
             return new File(processor.getOutputFilename());
         }
     }

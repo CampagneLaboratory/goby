@@ -162,7 +162,7 @@ public class SplitFastaMode extends AbstractGobyMode {
                 out = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFilename)));
                 outputMap.put(readLen, out);
             }
-            int numEntries =entriesPerReadLen.get(readLen);
+            int numEntries = entriesPerReadLen.get(readLen);
             if (numEntries == maxReadsPerFile) {
                 out.close();
                 numEntries = 0;

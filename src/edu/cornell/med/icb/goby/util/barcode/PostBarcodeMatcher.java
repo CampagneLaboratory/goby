@@ -27,10 +27,10 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author Kevin Dorff
  */
-public class PostBarcodeMatcher extends BarcodeMatcher{
+public class PostBarcodeMatcher extends BarcodeMatcher {
 
     /** Logging. */
-    private static final Log LOG = LogFactory.getLog(BarcodeMatcherResult.class);
+    private static final Log LOG = LogFactory.getLog(PostBarcodeMatcher.class);
 
     /**
      * Create a PostBarcodeMatcher.
@@ -79,7 +79,7 @@ public class PostBarcodeMatcher extends BarcodeMatcher{
     }
 
     /**
-     * Determine the overlap portion of the two strings given their lengths
+     * Determine the overlap portion of the two strings given their lengths.
      * @param sequence the string we are searching
      * @param toFind the string we are looking for (at the end of search)
      * @return OverlapResult which specifies start and length

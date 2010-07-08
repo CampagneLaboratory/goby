@@ -34,10 +34,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.LinkedList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Evaluate statistics for read qualities.
@@ -124,7 +124,7 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
     }
 
     /**
-     * Get the output file
+     * Get the output file.
      * @return the output file
      */
     public File getOutputFile() {
@@ -132,7 +132,7 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
     }
 
     /**
-     * Set the output file
+     * Set the output file.
      * @param outputFile the output file
      */
     public void setOutputFile(final File outputFile) {

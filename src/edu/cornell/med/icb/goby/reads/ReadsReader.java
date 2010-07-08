@@ -171,7 +171,7 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
      * @param sequence Where to write the decoded sequence.
      * @param decodePair True: decodes the pair sequence. False: decodes the primary sequence.
      */
-    public static void decodeSequence(final Reads.ReadEntry entry, final MutableString sequence, boolean decodePair) {
+    public static void decodeSequence(final Reads.ReadEntry entry, final MutableString sequence, final boolean decodePair) {
         final ByteString seq = decodePair ? entry.getSequencePair() : entry.getSequence();
         final int length =decodePair ? entry.getReadLengthPair(): entry.getReadLength();
         sequence.setLength(length);

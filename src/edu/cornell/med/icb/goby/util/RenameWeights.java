@@ -18,8 +18,8 @@
 
 package edu.cornell.med.icb.goby.util;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -31,27 +31,30 @@ import java.io.IOException;
  * The previous line will copy each XXX/match/.gc-weight to the alignment basename
  * that matches XXX and ends with .entries.  For instance, the file XXX.gc-weights
  * will be renamed 1212-XXX.gc-weights if an alignment file named 1212-XXX.entries exists.
- * 
+ *
  * @author Fabien Campagne
  *         Date: Jun 2, 2010
  *         Time: 11:34:32 AM
  */
 public class RenameWeights {
-    public static void main(String args[]) throws IOException {
-        File directory = new File(".");
+    private RenameWeights() {
+    }
 
-        String[] list = directory.list(new FilenameFilter() {
-            public boolean accept(File directory, String filename) {
-               
+    public static void main(final String[] args) throws IOException {
+        final File directory = new File(".");
+
+        final String[] list = directory.list(new FilenameFilter() {
+            public boolean accept(final File directory, final String filename) {
+
                 final String extension = FilenameUtils.getExtension(filename);
                 return (extension.equals("entries"));
             }
         });
-        for (String filename : args) {
-            String extension = FilenameUtils.getExtension(filename);
-            String basename = FilenameUtils.removeExtension(filename);
-            for (String alignFilename : list) {
-                String alignBasename = FilenameUtils.removeExtension(alignFilename);
+        for (final String filename : args) {
+            final String extension = FilenameUtils.getExtension(filename);
+            final String basename = FilenameUtils.removeExtension(filename);
+            for (final String alignFilename : list) {
+                final String alignBasename = FilenameUtils.removeExtension(alignFilename);
                 if (alignBasename.endsWith(basename)) {
                     System.out.println("move " + filename + " to " + alignBasename + "." + extension);
 

@@ -20,15 +20,14 @@ package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Read over a set of alignments. This aligner concatenates entries from the input alignment.
@@ -50,15 +49,15 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
 
     protected final AlignmentReader[] readers;
     protected final IntSet readersWithMoreEntries;
-    /**
-     * One element per reader:
-     */
 
+    /**
+     * One element per reader.
+     */
     private final int[] numQueriesPerReader;
-    /**
-     * One element per reader:
-     */
 
+    /**
+     * One element per reader.
+     */
     private final int[] queryIndexOffset;
 
     protected int activeIndex;
@@ -227,6 +226,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
      * @deprecated
      */
 
+    @Deprecated
     public void setAdjustQueryIndices(final boolean adjustQueryIndices) {
         throw new UnsupportedOperationException("This operation is unsafe. Set flag through the constructor.");
     }

@@ -111,7 +111,7 @@ public abstract class AbstractCommandLineMode {
      * @param jsap The parameters for the mode
      */
     public void printUsageAsWikiTable(final JSAP jsap) {
-        PrintStream stream = System.out;
+        final PrintStream stream = System.out;
 
         // Table definition/header
         stream.println("{| class=\"wikitable\" style=\"margin: 1em auto 1em auto; background:#efefef;\" valign=\"top\" align=\"center\" border=\"1\" cellpadding=\"5\" width=\"80%\"");
@@ -164,7 +164,7 @@ public abstract class AbstractCommandLineMode {
                 stream.println("| " + parameter.getHelp());
                 if (parameter.getDefault() != null) {
                     stream.print("Default value: ");
-                    for (String defaultValue : parameter.getDefault()) {
+                    for (final String defaultValue : parameter.getDefault()) {
                         stream.print(" ");
                         stream.print(defaultValue);
                     }
@@ -183,7 +183,7 @@ public abstract class AbstractCommandLineMode {
      * @param jsap The parameters for the mode
      */
     public void printUsageAsHtmlTable(final JSAP jsap) {
-        PrintStream writer = System.out;
+        final PrintStream writer = System.out;
 
         // Table definition/header
         writer.println("<table style=\"background: #efefef;\" border=\"1\" cellpadding=\"5\">");
@@ -242,7 +242,7 @@ public abstract class AbstractCommandLineMode {
                 writer.print(StringUtils.replace(htmlHelpString, "-", "&#45;"));
                  if (parameter.getDefault() != null) {
                     writer.print(" Default value: ");
-                    for (String defaultValue : parameter.getDefault()) {
+                    for (final String defaultValue : parameter.getDefault()) {
                         writer.print(" ");
                         writer.print(StringUtils.replace(defaultValue, "-", "&#45;"));
                     }

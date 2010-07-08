@@ -40,7 +40,7 @@ public class FormulaWeightCount implements ComputeCountInterface {
     /**
      * Used to log debug and informational messages.
      */
-    private static final Log LOG = LogFactory.getLog(ComputeCount.class);
+    private static final Log LOG = LogFactory.getLog(FormulaWeightCount.class);
 
     /**
      * Counter that sums read weights.
@@ -51,7 +51,7 @@ public class FormulaWeightCount implements ComputeCountInterface {
      */
     ComputeCount regularCounter;
 
-    public FormulaWeightCount(WeightsInfo weights) {
+    public FormulaWeightCount(final WeightsInfo weights) {
         this.weightCounter = new ComputeWeightCount(weights);
         this.regularCounter = new ComputeCount();
     }
@@ -66,13 +66,13 @@ public class FormulaWeightCount implements ComputeCountInterface {
         regularCounter.startPopulating();
     }
 
-    public void populate(int startPosition, int endPosition, int queryIndex) {
+    public void populate(final int startPosition, final int endPosition, final int queryIndex) {
         weightCounter.populate(startPosition, endPosition, queryIndex);
         regularCounter.populate(startPosition, endPosition);
     }
 
 
-    public void setFormulaChoice(FormulaWeightAnnotationCount.FormulaChoice formulaChoice) {
+    public void setFormulaChoice(final FormulaWeightAnnotationCount.FormulaChoice formulaChoice) {
         this.formulaChoice = formulaChoice;
     }
 
@@ -84,7 +84,7 @@ public class FormulaWeightCount implements ComputeCountInterface {
         regularCounter.accumulate();
     }
 
-    public void baseCount(CountsWriter writer) throws IOException {
+    public void baseCount(final CountsWriter writer) throws IOException {
         final IntSortedSet joints = new IntAVLTreeSet();
         joints.addAll(regularCounter.starts.keySet());
         joints.addAll(regularCounter.starts.keySet());
@@ -155,12 +155,12 @@ public class FormulaWeightCount implements ComputeCountInterface {
         throw new UnsupportedOperationException("This method is not implemented.");
     }
 
-    public void populate(int startPosition, int endPosition, boolean forwardStrand, int queryIndex) {
+    public void populate(final int startPosition, final int endPosition, final boolean forwardStrand, final int queryIndex) {
         weightCounter.populate(startPosition, endPosition, forwardStrand, queryIndex);
         regularCounter.populate(startPosition, endPosition, forwardStrand, queryIndex);
     }
 
-    public void populate(int startPosition, int endPosition, boolean forwardStrand) {
+    public void populate(final int startPosition, final int endPosition, final boolean forwardStrand) {
         weightCounter.populate(startPosition, endPosition, forwardStrand);
         regularCounter.populate(startPosition, endPosition, forwardStrand);
     }

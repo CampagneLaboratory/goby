@@ -20,18 +20,24 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.reads.Reads;
-import edu.cornell.med.icb.goby.reads.ReadsReader;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.ATGCCorrectionWeight;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.ATProportionWeight;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.BaseProportionWeight;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.GCProportionWeight;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.HeptamerWeight;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.WeightCalculator;
 import edu.cornell.med.icb.goby.algorithmic.data.HeptamerInfo;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.*;
+import edu.cornell.med.icb.goby.reads.Reads;
+import edu.cornell.med.icb.goby.reads.ReadsReader;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 /**
  * Create the read to weight map. This class scans a compact reads file to determine which heptamer
@@ -60,17 +66,19 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
     private static final Log LOG = LogFactory.getLog(ReadsToWeightsMode.class);
 
 
-    private String inputFilenames[];
+    private String[] inputFilenames;
 
     private String mapFilename;
     private String heptamerInfoFilename;
     private String estimationMethod;
 
 
+    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
@@ -148,26 +156,26 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
 
                 break;
             case G: {
-                BaseProportionWeight calc = new BaseProportionWeight(colorSpace);
+                final BaseProportionWeight calc = new BaseProportionWeight(colorSpace);
                 calc.setBase('G');
                 calculator = calc;
                 break;
             }
 
             case C: {
-                BaseProportionWeight calc = new BaseProportionWeight(colorSpace);
+                final BaseProportionWeight calc = new BaseProportionWeight(colorSpace);
                 calc.setBase('C');
                 calculator = calc;
                 break;
             }
             case A: {
-                BaseProportionWeight calc = new BaseProportionWeight(colorSpace);
+                final BaseProportionWeight calc = new BaseProportionWeight(colorSpace);
                 calc.setBase('A');
                 calculator = calc;
                 break;
             }
             case T: {
-                BaseProportionWeight calc = new BaseProportionWeight(colorSpace);
+                final BaseProportionWeight calc = new BaseProportionWeight(colorSpace);
                 calc.setBase('T');
                 calculator = calc;
                 break;
@@ -183,7 +191,7 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
                 break;
         }
 
-        for (String inputFilename : inputFilenames) {
+        for (final String inputFilename : inputFilenames) {
             // for each reads file:
             LOG.info("Now scanning " + inputFilename);
 
@@ -191,15 +199,15 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
                 // if we process one or more reads file, build the map filename dynamically for each input file.
                 mapFilename = FilenameUtils.removeExtension(inputFilename) + "." + calculator.id() + "-weights";
             }
-            ReadsReader reader = new ReadsReader(new FileInputStream(inputFilename));
+            final ReadsReader reader = new ReadsReader(new FileInputStream(inputFilename));
             try {
-                WeightsInfo weights = new WeightsInfo();
+                final WeightsInfo weights = new WeightsInfo();
                 final MutableString sequence = new MutableString();
                 int numberOfReads = 0;
                 for (final Reads.ReadEntry readEntry : reader) {
                     ReadsReader.decodeSequence(readEntry, sequence);
                     final int readIndex = readEntry.getReadIndex();
-                    float weight = calculator.weight(sequence);
+                    final float weight = calculator.weight(sequence);
 
                     weights.setWeight(readIndex, weight);
 

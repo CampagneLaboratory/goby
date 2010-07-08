@@ -18,32 +18,26 @@
 
 package edu.cornell.med.icb.goby.modes;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-
-import java.io.IOException;
-import java.io.FileReader;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.util.prefs.Preferences;
-
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.io.TSVReader;
-import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.reads.Reads;
+import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.util.barcode.BarcodeMatcher;
-import edu.cornell.med.icb.goby.util.barcode.PostBarcodeMatcher;
 import edu.cornell.med.icb.goby.util.barcode.BarcodeMatcherResult;
+import edu.cornell.med.icb.goby.util.barcode.PostBarcodeMatcher;
 import edu.cornell.med.icb.goby.util.barcode.PreBarcodeMatcher;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import edu.cornell.med.icb.io.TSVReader;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 
 /**
  * @author Fabien Campagne
@@ -79,15 +73,17 @@ public class BarcodeDecoderMode extends AbstractGobyMode {
     private String barcodeInfoFilename;
     private Int2ObjectMap<String> barcodeIndexToSampleId;
     private String[] barcodes;
-    private int maxMismatches = 0;
+    private int maxMismatches;
 
     private String outputFilename;
     private int minimalMatchLength;
 
+    @Override
     public String getModeName() {
         return MODE_NAME;
     }
 
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
@@ -111,7 +107,7 @@ public class BarcodeDecoderMode extends AbstractGobyMode {
         outputFilename = jsapResult.getString("output");
         barcodeInfoFilename = jsapResult.getString("barcode-info");
 
-        String extremity = jsapResult.getString("extremity");
+        final String extremity = jsapResult.getString("extremity");
         if ("3_PRIME".equalsIgnoreCase(extremity)) {
             is3Prime = true;
         } else if ("5_PRIME".equalsIgnoreCase(extremity)) {
@@ -126,13 +122,14 @@ public class BarcodeDecoderMode extends AbstractGobyMode {
         return this;
     }
 
+    @Override
     public void execute() throws IOException {
         loadBarcodeInfo(barcodeInfoFilename);
 
 
         //   assert inputFilenames.length == 1 : "only one read file supported for now.";
         ReadsWriter singleWriter = null;
-        ReadsWriter writers[] = new ReadsWriter[barcodeIndexToSampleId.size()];
+        final ReadsWriter[] writers = new ReadsWriter[barcodeIndexToSampleId.size()];
         if (outputFilename == null) {
             for (int i = 0; i < writers.length; i++) {
                 writers[i] = new ReadsWriter(new FileOutputStream(barcodeIndexToSampleId.get(i).trim() + ".compact-reads"));
@@ -141,22 +138,22 @@ public class BarcodeDecoderMode extends AbstractGobyMode {
             singleWriter = new ReadsWriter(new FileOutputStream(outputFilename));
         }
 
-        String inputReadsFilename = inputFilename;
-        BarcodeMatcher matcher = is3Prime ? new PostBarcodeMatcher(barcodes, minimalMatchLength, maxMismatches) :
+        final String inputReadsFilename = inputFilename;
+        final BarcodeMatcher matcher = is3Prime ? new PostBarcodeMatcher(barcodes, minimalMatchLength, maxMismatches) :
                 new PreBarcodeMatcher(barcodes, minimalMatchLength, maxMismatches);
-        
-        MutableString sequence = new MutableString();
-        MutableString sequenceNoBarcode = new MutableString();
+
+        final MutableString sequence = new MutableString();
+        final MutableString sequenceNoBarcode = new MutableString();
         try {
             int countMatched = 0;
             int countNoMatch = 0;
             int countAmbiguous = 0;
-            for (Reads.ReadEntry readEntry : new ReadsReader(inputReadsFilename)) {
+            for (final Reads.ReadEntry readEntry : new ReadsReader(inputReadsFilename)) {
                 ReadsReader.decodeSequence(readEntry, sequence);
-                BarcodeMatcherResult match = matcher.matchSequence(sequence);
+                final BarcodeMatcherResult match = matcher.matchSequence(sequence);
                 if (match != null) {
                     // remove the barcode from the sequence:
-                    int readIndex = readEntry.getReadIndex();
+                    final int readIndex = readEntry.getReadIndex();
                     sequenceNoBarcode.setLength(0);
                     sequenceNoBarcode.append(sequence.subSequence(0, match.getBarcodeStartPosition() - 1));
                     final int barcodeIndex = match.getBarcodeIndex();
@@ -169,7 +166,7 @@ public class BarcodeDecoderMode extends AbstractGobyMode {
                                    sequence.length()),
                            barcodes[barcodeIndex]);
                     */
-                    ReadsWriter writer = outputFilename == null ? writers[barcodeIndex] : singleWriter;
+                    final ReadsWriter writer = outputFilename == null ? writers[barcodeIndex] : singleWriter;
                     writer.setSequence(sequenceNoBarcode);
                     writer.setBarcodeIndex(barcodeIndex);
 
@@ -207,22 +204,22 @@ public class BarcodeDecoderMode extends AbstractGobyMode {
 
     }
 
-    private double percent(int countMatched, int total) {
+    private double percent(final int countMatched, final int total) {
         return (double) countMatched / (double) total * 100d;
     }
 
     private void loadBarcodeInfo
-            (String
+            (final String
                     barcodeInfoFilename) {
         try {
-            ObjectArrayList<String> barcodes = new ObjectArrayList<String>();
+            final ObjectArrayList<String> barcodes = new ObjectArrayList<String>();
             barcodeIndexToSampleId = new Int2ObjectOpenHashMap<String>();
-            TSVReader reader = new TSVReader(new FileReader(barcodeInfoFilename), '\t');
+            final TSVReader reader = new TSVReader(new FileReader(barcodeInfoFilename), '\t');
             while (reader.hasNext()) {
                 reader.next();
-                String sampleId = reader.getString();
-                int barcodeIndex = reader.getInt();
-                String barcode = reader.getString();
+                final String sampleId = reader.getString();
+                final int barcodeIndex = reader.getInt();
+                final String barcode = reader.getString();
                 barcodes.add(barcode);
                 barcodeIndexToSampleId.put(barcodeIndex, sampleId);
             }

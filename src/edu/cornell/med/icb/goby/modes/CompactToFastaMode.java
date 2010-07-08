@@ -440,12 +440,12 @@ public class CompactToFastaMode extends AbstractGobyMode {
         progress.stop();
     }
 
-    private String getPair2(String outputFilename) {
+    private String getPair2(final String outputFilename) {
         return null;  //To change body of created methods use File | Settings | File Templates.
     }
 
     // determine the values of smallestQueryIndex and largestQueryIndex over the input files.
-    private void observeReadIndex(int readIndex) {
+    private void observeReadIndex(final int readIndex) {
         smallestQueryIndex = Math.min(smallestQueryIndex, readIndex);
         largestQueryIndex = Math.max(largestQueryIndex, readIndex);
     }

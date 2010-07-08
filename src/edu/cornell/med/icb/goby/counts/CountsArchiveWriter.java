@@ -60,7 +60,7 @@ public class CountsArchiveWriter implements Closeable {
      * @throws IOException If an error occurs preparing the packaged counts.
      */
     public CountsArchiveWriter(final String basename, final String countArchiveModifier) throws IOException {
-        final String physicalFilename = basename + "."+countArchiveModifier;
+        final String physicalFilename = basename + "." + countArchiveModifier;
         final File tobedeleted = new File(physicalFilename);
         // delete before writing since the compound file writer supports appending.
         FileUtils.deleteQuietly(tobedeleted);
@@ -79,7 +79,7 @@ public class CountsArchiveWriter implements Closeable {
     public CountsWriter newCountWriter(final int referenceIndex, final String identifier) throws IOException {
         stream = new ByteArrayOutputStream(100000);
         currentCountsWriter = new CountsWriter(stream);
-        currentId = Integer.toString(referenceIndex)+","+identifier;
+        currentId = Integer.toString(referenceIndex) + "," + identifier;
         return currentCountsWriter;
     }
 
@@ -92,7 +92,7 @@ public class CountsArchiveWriter implements Closeable {
      * @throws IOException If an error occurs.
      */
     public CountsWriter newCountWriter(final int countInfoIndex) throws IOException {
-        return newCountWriter(countInfoIndex,String.valueOf(countInfoIndex));
+        return newCountWriter(countInfoIndex, String.valueOf(countInfoIndex));
     }
 
     /**

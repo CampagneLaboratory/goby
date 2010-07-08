@@ -45,11 +45,11 @@ public class TestPostBarcodeMatcher {
 
     private static final Random rnd = new Random(System.currentTimeMillis());
 
-    public static final char[] ACGT = new char[] {'A', 'C', 'G', 'T'};
+    public static final char[] ACGT = {'A', 'C', 'G', 'T'};
 
     public static String SPACES = null;
 
-    public static String[] TEST_BARCODES = new String[] {
+    public static String[] TEST_BARCODES = {
             "TCACTTCGTATGCCGTCTTCTGCTTG",
             "TCATCTCGTATGCCGTCTTCTGCTTG",
             "TCCACTCGTATGCCGTCTTCTGCTTG",

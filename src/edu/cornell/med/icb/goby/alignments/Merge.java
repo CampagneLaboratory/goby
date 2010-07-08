@@ -327,7 +327,7 @@ public class Merge {
                 maxQueryIndex = Math.max(maxQueryIndex, queryIndex);
             }
         }
-        numberOfReads=maxQueryIndex+1;
+        numberOfReads = maxQueryIndex + 1;
         final int[] queryIndex2MaxDepth = new int[numberOfReads];
         Arrays.fill(queryIndex2MaxDepth, -1);
         // calculate maxDepth for each query sequence:

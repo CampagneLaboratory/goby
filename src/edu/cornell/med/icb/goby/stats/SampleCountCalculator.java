@@ -82,7 +82,7 @@ public class SampleCountCalculator extends StatisticCalculator {
         return info;
     }
 
-    private void defineStatisticId(NormalizationMethod method, DifferentialExpressionResults results, String statisticPrefix, String... samples) {
+    private void defineStatisticId(final NormalizationMethod method, final DifferentialExpressionResults results, final String statisticPrefix, final String... samples) {
         for (final String sampleId : samples) {
 
             final MutableString statisticId = method==null? getStatisticId(sampleId, statisticPrefix) :

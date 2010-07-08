@@ -20,11 +20,16 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.alignments.AlignmentPositionComparator;
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
+import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.IterateAlignments;
+import edu.cornell.med.icb.goby.alignments.Merge;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.io.FilenameUtils;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -97,7 +102,7 @@ public class SortMode extends AbstractGobyMode {
         outputFilename = jsapResult.getString("output");
         alignmentIterator = new SortIterateAlignments();
         alignmentIterator.parseIncludeReferenceArgument(jsapResult);
-        endPosition= Long.MAX_VALUE;
+        endPosition = Long.MAX_VALUE;
         if (jsapResult.contains("start-position") || jsapResult.contains("end-position")) {
             hasStartOrEndPosition = true;
             startPosition = jsapResult.getLong("start-position", 0L);
@@ -130,7 +135,7 @@ public class SortMode extends AbstractGobyMode {
     public void execute() throws IOException {
 
 
-        AlignmentWriter writer = new AlignmentWriter(outputFilename);
+        final AlignmentWriter writer = new AlignmentWriter(outputFilename);
 
         // Iterate through each alignment and write sequence variations to output file:
         LOG.info("Loading entries..");
@@ -168,7 +173,7 @@ public class SortMode extends AbstractGobyMode {
         ObjectArrayList<Alignments.AlignmentEntry> entries;
 
         @Override
-        public void prepareDataStructuresForReference(AlignmentReader alignmentReader, int referenceIndex) {
+        public void prepareDataStructuresForReference(final AlignmentReader alignmentReader, final int referenceIndex) {
             if (this.alignmentReader == null) {
                 if (alignmentReader.isSorted()) {
                     LOG.warn("Warning: An input alignment is already sorted.");
@@ -191,7 +196,7 @@ public class SortMode extends AbstractGobyMode {
             Collections.sort(entries, POSITION_ENTRY_COMPARATOR);
         }
 
-        public void write(AlignmentWriter writer) throws IOException {
+        public void write(final AlignmentWriter writer) throws IOException {
             // too many hits is prepared as for Merge:
             try {
                 Merge.prepareMergedTooManyHits(outputFilename, alignmentReader.getNumberOfQueries(), 0, basename);
@@ -199,7 +204,7 @@ public class SortMode extends AbstractGobyMode {
                 writer.setQueryIdentifiers(alignmentReader.getQueryIdentifiers());
                 writer.setTargetLengths(alignmentReader.getTargetLength());
                 writer.setLargestSplitQueryIndex(alignmentReader.getLargestSplitQueryIndex());
-                writer.setSmallestSplitQueryIndex(alignmentReader.getSmallestSplitQueryIndex());                
+                writer.setSmallestSplitQueryIndex(alignmentReader.getSmallestSplitQueryIndex());
                 writer.setSorted(true);
 
                 // Propagate the statistics from the input, but update the basename
@@ -207,7 +212,7 @@ public class SortMode extends AbstractGobyMode {
                 writer.putStatistic("basename", FilenameUtils.getBaseName(basename));
                 writer.putStatistic("basename.full", basename);
 
-                for (Alignments.AlignmentEntry entry : entries) {
+                for (final Alignments.AlignmentEntry entry : entries) {
                     writer.appendEntry(entry);
                 }
             } finally {

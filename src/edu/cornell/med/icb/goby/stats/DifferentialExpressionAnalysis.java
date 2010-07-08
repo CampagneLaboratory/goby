@@ -180,53 +180,64 @@ public class DifferentialExpressionAnalysis {
 
                 // evaluate per-sample statistics:
 
-                if (eval("samples"))
+                if (eval("samples")) {
                     results = deCalculator.compare(results, method, new SampleCountCalculator());
+                }
 
 
                 // evaluate differences between groups:
-                if (eval("fold-change"))
+                if (eval("fold-change")) {
                     results = deCalculator.compare(results, method, new FoldChangeCalculator(), groupComparison);
+                }
                 //results.setOmitNonInformativeColumns(omitNonInformativeColumns);
-                if (eval("fold-change-magnitude"))
+                if (eval("fold-change-magnitude")) {
                     results = deCalculator.compare(results, method, new FoldChangeMagnitudeCalculator(), groupComparison);
-                if (eval("log2-fold-change"))
+                }
+                if (eval("log2-fold-change")) {
                     results = deCalculator.compare(results, method, new Log2FoldChangeCalculator(), groupComparison);
+                }
 
-                if (eval("group-averages"))
+                if (eval("group-averages")) {
                     results = deCalculator.compare(results, method, new AverageCalculator(), groupComparison);
+                }
 
                 ttestflag = checkTtest();
                 if (ttestflag) {
-                    if (eval("t-test"))
+                    if (eval("t-test")) {
                         results = deCalculator.compare(results, method, new TTestCalculator(), groupComparison);
+                    }
                 }
-                if (eval("fisher"))
+                if (eval("fisher")) {
                     results = deCalculator.compare(results, method, new FisherExactTestCalculator(), groupComparison);
-                if (eval("fisher-r"))
+                }
+                if (eval("fisher-r")) {
                     results = deCalculator.compare(results, method, new FisherExactRCalculator(), groupComparison);
-                if (eval("chi-square"))
+                }
+                if (eval("chi-square")) {
                     results = deCalculator.compare(results, method, new ChiSquareTestCalculator(), groupComparison);
+                }
 
                 final BenjaminiHochbergAdjustment benjaminiHochbergAdjustment = new BenjaminiHochbergAdjustment();
                 final BonferroniAdjustment bonferroniAdjustment = new BonferroniAdjustment();
 
-                if (eval("Bonferroni"))
+                if (eval("Bonferroni")) {
                     results = bonferroniAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
-                if (eval("BH"))
+                }
+                if (eval("BH")) {
                     results = benjaminiHochbergAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+                }
             }
         }
         return results;
     }
 
-    private boolean eval(String evalName) {
+    private boolean eval(final String evalName) {
         return evalSet.contains(evalName.toLowerCase());
     }
 
     private ObjectSet<String> evalSet;
 
-    public void setEvalNames(ObjectSet<String> evalSet) {
+    public void setEvalNames(final ObjectSet<String> evalSet) {
         this.evalSet = evalSet;
     }
 }

@@ -189,7 +189,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         final TransferIds transferIds = new TransferIds().invoke();
         final ReadSet readIndexFilter = transferIds.getReadIndexFilter();
         final AlignmentWriter writer = transferIds.getWriter();
-        assert largestQueryIndex>0 : "largestQueryIndex must be set";
+        assert largestQueryIndex > 0 : "largestQueryIndex must be set";
         // This is ugly...
         targetIds.clear();
         targetIds.putAll(transferIds.getTargetIds());
@@ -304,15 +304,15 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         this.thirdPartyInput = thirdPartyInput;
     }
 
-    public void setSmallestQueryIndex(int smallestQueryIndex) {
+    public void setSmallestQueryIndex(final int smallestQueryIndex) {
         this.smallestQueryIndex = smallestQueryIndex;
     }
 
-    public void setLargestQueryIndex(int largestQueryIndex) {
+    public void setLargestQueryIndex(final int largestQueryIndex) {
         this.largestQueryIndex = largestQueryIndex;
     }
 
-    public void setNumberOfQuerySequences(int numberOfReads) {
+    public void setNumberOfQuerySequences(final int numberOfReads) {
         this.numberOfReadsFromCommandLine = numberOfReads;
     }
 

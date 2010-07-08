@@ -18,14 +18,13 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import it.unimi.dsi.fastutil.objects.ObjectHeapPriorityQueue;
-import it.unimi.dsi.fastutil.objects.ObjectArrayPriorityQueue;
 import it.unimi.dsi.fastutil.AbstractPriorityQueue;
+import it.unimi.dsi.fastutil.objects.ObjectArrayPriorityQueue;
+import it.unimi.dsi.fastutil.objects.ObjectHeapPriorityQueue;
 
-import java.util.NoSuchElementException;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.io.IOException;
+import java.util.Comparator;
+import java.util.NoSuchElementException;
 
 /**
  * Concatenates sorted alignments while preserving entry sort order across inputs. The result is a sorted
@@ -42,17 +41,17 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
     private boolean[] nextLoadedForReader;
     private Bucket[] buckets;
 
-    public ConcatSortedAlignmentReader(String... basenames) throws IOException {
+    public ConcatSortedAlignmentReader(final String... basenames) throws IOException {
         super(basenames);
         init(basenames);
     }
 
-    private void init(String... basenames) {
+    private void init(final String... basenames) {
         nextLoadedForReader = new boolean[basenames.length];
 
 
         final Comparator<Bucket> bucketComparator = new Comparator<Bucket>() {
-            public int compare(Bucket bucket, Bucket bucket1) {
+            public int compare(final Bucket bucket, final Bucket bucket1) {
                 return comparator.compare(bucket.entry, bucket1.entry);
             }
         };
@@ -68,7 +67,7 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
         }
     }
 
-    public ConcatSortedAlignmentReader(boolean adjustQueryIndices, String... basenames) throws IOException {
+    public ConcatSortedAlignmentReader(final boolean adjustQueryIndices, final String... basenames) throws IOException {
         super(adjustQueryIndices, basenames);
         init(basenames);
     }
@@ -77,7 +76,7 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
         Alignments.AlignmentEntry entry;
         int readerIndex;
 
-        public Bucket(Alignments.AlignmentEntry alignmentEntry, int index) {
+        public Bucket(final Alignments.AlignmentEntry alignmentEntry, final int index) {
             this.entry = alignmentEntry;
             this.readerIndex = index;
         }
@@ -97,9 +96,12 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
      *
      * @return true if the input has more entries, false otherwise.
      */
+    @Override
     public boolean hasNext() {
-        if (hasNext) return true;
-        for (int readerIndex : readersWithMoreEntries) {
+        if (hasNext) {
+            return true;
+        }
+        for (final int readerIndex : readersWithMoreEntries) {
             if (!nextLoadedForReader[readerIndex]) {
                 // the reader at position readerIndex was used in the previous next
                 activeIndex = readerIndex;
@@ -130,12 +132,13 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
      *
      * @return the alignment read entry from the input stream.
      */
+    @Override
     public Alignments.AlignmentEntry next() {
         if (!hasNext()) {
             throw new NoSuchElementException();
         } else {
 
-            Bucket bucket = entryHeap.dequeue();
+            final Bucket bucket = entryHeap.dequeue();
             nextLoadedForReader[bucket.readerIndex] = false;
 
             //   minEntry = null;

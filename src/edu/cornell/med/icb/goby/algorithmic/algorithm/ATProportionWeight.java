@@ -26,13 +26,13 @@ import it.unimi.dsi.lang.MutableString;
      *         Time: 5:19:54 PM
      */
     public class ATProportionWeight implements WeightCalculator {
-        public ATProportionWeight(boolean colorSpace) {
+        public ATProportionWeight(final boolean colorSpace) {
             if (colorSpace) {
                 throw new UnsupportedOperationException("AT content is not implemented for color-space reads");
             }
         }
 
-        public float weight(MutableString sequence) {
+        public float weight(final MutableString sequence) {
 
             float GC = 0;
             float total = 0;

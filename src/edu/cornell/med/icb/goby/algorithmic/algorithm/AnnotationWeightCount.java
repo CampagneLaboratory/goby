@@ -45,7 +45,7 @@ public class AnnotationWeightCount implements AnnotationCountInterface {
      *
      * @param weights An array whose indices are read indices and elements are weights corresponding to each read.
      */
-    public AnnotationWeightCount(WeightsInfo weights) {
+    public AnnotationWeightCount(final WeightsInfo weights) {
         super();
         baseCounter = new ComputeWeightCount(weights);
         readStart = new IntArrayList();

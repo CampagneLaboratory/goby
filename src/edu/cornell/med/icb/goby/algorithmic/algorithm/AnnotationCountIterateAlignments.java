@@ -18,17 +18,15 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import edu.cornell.med.icb.goby.alignments.IterateAlignments;
+import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.IterateAlignments;
 import edu.cornell.med.icb.goby.modes.WeightParameters;
-import edu.cornell.med.icb.goby.modes.CompactAlignmentToAnnotationCountsMode;
-import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 import java.io.IOException;
-
-import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 
 /**
  * Iterate through an alignment to populate an array of AnnotationCountInterface with read matches.
@@ -52,21 +50,22 @@ public class AnnotationCountIterateAlignments extends IterateAlignments {
 
     private int numAlignedReadsInSample;
 
-    public void setWeightInfo(WeightParameters weightParams, WeightsInfo weights) {
+    public void setWeightInfo(final WeightParameters weightParams, final WeightsInfo weights) {
         this.weightParams = weightParams;
         this.weights = weights;
 
     }
 
     @Override
-    public void processNumberOfReferences(String basename, int numberOfReferences) throws IOException {
+    public void processNumberOfReferences(final String basename, final int numberOfReferences) throws IOException {
         algs = new AnnotationCountInterface[numberOfReferences];
     }
 
     private AnnotationCountInterface[] algs;
 
-    public void processAlignmentEntry(AlignmentReader alignmentReader,
-                                      Alignments.AlignmentEntry alignmentEntry) {
+    @Override
+    public void processAlignmentEntry(final AlignmentReader alignmentReader,
+                                      final Alignments.AlignmentEntry alignmentEntry) {
         final int referenceIndex = alignmentEntry.getTargetIndex();
         final int startPosition = alignmentEntry.getPosition();
 
@@ -81,7 +80,7 @@ public class AnnotationCountIterateAlignments extends IterateAlignments {
 
 
     @Override
-    public void prepareDataStructuresForReference(AlignmentReader alignmentReader, int referenceIndex) {
+    public void prepareDataStructuresForReference(final AlignmentReader alignmentReader, final int referenceIndex) {
         AnnotationCountInterface algo = new AnnotationCount();
 
         algo = chooseAlgorithm(weightParams, weights, algo);
@@ -95,8 +94,8 @@ public class AnnotationCountIterateAlignments extends IterateAlignments {
         return numAlignedReadsInSample;
     }
     // determine which algorithm to use based on weight parameters.
-    private AnnotationCountInterface chooseAlgorithm(WeightParameters params,
-                                                     WeightsInfo weights,
+    private AnnotationCountInterface chooseAlgorithm(final WeightParameters params,
+                                                     final WeightsInfo weights,
                                                      AnnotationCountInterface algo) {
         if (params.useWeights) {
             if (!params.adjustGcBias) {
@@ -104,7 +103,7 @@ public class AnnotationCountIterateAlignments extends IterateAlignments {
                 algo = new AnnotationWeightCount(weights);
             } else {
 
-                FormulaWeightAnnotationCount algo1 = new FormulaWeightAnnotationCount(weights);
+                final FormulaWeightAnnotationCount algo1 = new FormulaWeightAnnotationCount(weights);
 
                 algo1.setFormulaChoice(FormulaWeightAnnotationCount.FormulaChoice.valueOf(params.formulaChoice));
                 algo = algo1;
@@ -112,7 +111,7 @@ public class AnnotationCountIterateAlignments extends IterateAlignments {
         }
         return algo;
     }
-    private IntSet referencesSelected=new IntOpenHashSet();
+    private IntSet referencesSelected = new IntOpenHashSet();
 
      public IntSet getReferencesSelected() {
          return referencesSelected;

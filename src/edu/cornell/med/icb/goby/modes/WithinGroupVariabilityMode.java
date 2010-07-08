@@ -208,14 +208,15 @@ public class WithinGroupVariabilityMode extends AbstractGobyMode {
 
 
             // evaluate differences between samples:
-            int i = 0, j = 0;
+            int i = 0;
+            int j = 0;
             final boolean[][] done = new boolean[basenames.length][basenames.length];
 
             for (i=0;i<basenames.length; i++) {
                 for (j=0; j<basenames.length; j++) {
                     if (i != j && !done[i][j]) {
-                        final String sample1=basenames[i];
-                        final String sample2=basenames[j];
+                        final String sample1 = basenames[i];
+                        final String sample2 = basenames[j];
                         // consider each pair of samples only once:
                         final String basename1 = AlignmentReader.getBasename(FilenameUtils.getBaseName(sample1));
                         final String basename2 = AlignmentReader.getBasename(FilenameUtils.getBaseName(sample2));

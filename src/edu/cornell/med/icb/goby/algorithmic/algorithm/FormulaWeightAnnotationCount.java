@@ -30,7 +30,7 @@ public class FormulaWeightAnnotationCount implements AnnotationCountInterface {
     AnnotationWeightCount weightCounter;
     AnnotationCount regularCounter;
 
-    public FormulaWeightAnnotationCount(WeightsInfo weights) {
+    public FormulaWeightAnnotationCount(final WeightsInfo weights) {
         this.weightCounter = new AnnotationWeightCount(weights);
         this.regularCounter = new AnnotationCount();
     }
@@ -45,7 +45,7 @@ public class FormulaWeightAnnotationCount implements AnnotationCountInterface {
         regularCounter.startPopulating();
     }
 
-    public void populate(int startPosition, int endPosition, int queryIndex) {
+    public void populate(final int startPosition, final int endPosition, final int queryIndex) {
         weightCounter.populate(startPosition, endPosition, queryIndex);
         regularCounter.populate(startPosition, endPosition, queryIndex);
     }
@@ -55,18 +55,18 @@ public class FormulaWeightAnnotationCount implements AnnotationCountInterface {
         regularCounter.sortReads();
     }
 
-    public float averageReadsPerPosition(int geneStart, int geneEnd) {
+    public float averageReadsPerPosition(final int geneStart, final int geneEnd) {
         return (float) evaluateFormula(formulaChoice, weightCounter.averageReadsPerPosition(geneStart, geneEnd),
                 regularCounter.averageReadsPerPosition(geneStart, geneEnd));
     }
 
 
-    public double countReadsPartiallyOverlappingWithInterval(int geneStart, int geneEnd) {
+    public double countReadsPartiallyOverlappingWithInterval(final int geneStart, final int geneEnd) {
         return evaluateFormula(formulaChoice, weightCounter.countReadsPartiallyOverlappingWithInterval(geneStart, geneEnd),
                 regularCounter.countReadsPartiallyOverlappingWithInterval(geneStart, geneEnd));
     }
 
-    public double countReadsStriclyWithinInterval(int geneStart, int geneEnd) {
+    public double countReadsStriclyWithinInterval(final int geneStart, final int geneEnd) {
         return evaluateFormula(formulaChoice, weightCounter.countReadsStriclyWithinInterval(geneStart, geneEnd),
                 regularCounter.countReadsStriclyWithinInterval(geneStart, geneEnd));
     }
@@ -77,49 +77,53 @@ public class FormulaWeightAnnotationCount implements AnnotationCountInterface {
         FORMULA2,
         FORMULA3,
         /**
-         * Fit against both Helicos and SOLID on HBR datasets:
+         * Fit against both Helicos and SOLID on HBR datasets.
          */
         FORMULA4
 
     }
 
-    public void setFormulaChoice(FormulaChoice formulaChoice) {
+    public void setFormulaChoice(final FormulaChoice formulaChoice) {
         this.formulaChoice = formulaChoice;
     }
 
     private FormulaChoice formulaChoice = FormulaChoice.FORMULA2;
 
-    public static double evaluateFormula(FormulaChoice formulaChoice, double sumGamma, double rawCount) {
-        if (rawCount == 0) return 0;
-        if (sumGamma == 0) return rawCount;
+    public static double evaluateFormula(final FormulaChoice formulaChoice, final double sumGamma, final double rawCount) {
+        if (rawCount == 0) {
+            return 0;
+        }
+        if (sumGamma == 0) {
+            return rawCount;
+        }
         double value;
         switch (formulaChoice) {
             case FORMULA1:
                 value = (float) Math.exp(-0.898699452975139d +
                         4.32171188401506d * Math.log(rawCount)
                         - 3.42375631012767d * Math.log(sumGamma));
-                value= Math.max(value, 0);
+                value = Math.max(value, 0);
                 return value;
             case FORMULA2: {
-                double logGC_a = Math.log(sumGamma) - Math.log(rawCount);
+                final double logGC_a = Math.log(sumGamma) - Math.log(rawCount);
                 value = (float) Math.exp(-1.57361718748031d - 3.62887641327823 * logGC_a + Math.log(rawCount));
-                value= Math.max(value, 0);
+                value = Math.max(value, 0);
                 return value;
             }
             case FORMULA3: {
-                double logGC_a_plus1 = Math.log(sumGamma + 1) - Math.log(rawCount + 1);
+                final double logGC_a_plus1 = Math.log(sumGamma + 1) - Math.log(rawCount + 1);
                 value = Math.exp(-0.843924877396631d + 0.887303234304011d * Math.log(rawCount + 1) -
                         3.45874660923795d * logGC_a_plus1);
-                value= Math.max(value, 0);
+                value = Math.max(value, 0);
                 return value;
             }
             case FORMULA4: {
                 // These estimates were obtained by comparing the Bullard Illumina HBR dataset to the SEQC Helicos
                 // and SOLID datasets. A covariate was used to represent the Helicos or SOLID target platform.
 
-                double logGC_a = Math.log(sumGamma) - Math.log(rawCount);
+                final double logGC_a = Math.log(sumGamma) - Math.log(rawCount);
                 value = (float) Math.exp(-1.4050204825287 - 3.5820783386146 * logGC_a + Math.log(rawCount));
-                value= Math.max(value, 0);
+                value = Math.max(value, 0);
                 return value;
             }
             default:
@@ -128,9 +132,9 @@ public class FormulaWeightAnnotationCount implements AnnotationCountInterface {
 
     }
 
-    public double geneExpressionCount(Annotation annot) {
-        double weightExpression = weightCounter.geneExpressionCount(annot);
-        double regularExpression = regularCounter.geneExpressionCount(annot);
+    public double geneExpressionCount(final Annotation annot) {
+        final double weightExpression = weightCounter.geneExpressionCount(annot);
+        final double regularExpression = regularCounter.geneExpressionCount(annot);
         return evaluateFormula(formulaChoice, weightExpression, regularExpression);
     }
 

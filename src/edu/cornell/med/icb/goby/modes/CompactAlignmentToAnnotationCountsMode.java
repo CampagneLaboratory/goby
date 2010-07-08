@@ -21,7 +21,8 @@ package edu.cornell.med.icb.goby.modes;
 import cern.colt.Timer;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.*;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCountInterface;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCountIterateAlignments;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
@@ -35,7 +36,6 @@ import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.rit.pj.IntegerForLoop;
 import edu.rit.pj.ParallelRegion;
 import edu.rit.pj.ParallelTeam;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -179,8 +179,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         return this;
     }
 
-    protected static WeightParameters configureWeights(JSAPResult jsapResult) {
-        WeightParameters params = new WeightParameters();
+    protected static WeightParameters configureWeights(final JSAPResult jsapResult) {
+        final WeightParameters params = new WeightParameters();
         params.weightId = jsapResult.getString("use-weights");
         if (params.weightId == null || params.weightId.equals("false")) {
             params.useWeights = false;
@@ -362,7 +362,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         reader.close();
         System.out.println(String.format("Alignment contains %d reference sequences", numberOfReferences));
 
-        AnnotationCountIterateAlignments iterateAlignment = new AnnotationCountIterateAlignments();
+        final AnnotationCountIterateAlignments iterateAlignment = new AnnotationCountIterateAlignments();
         iterateAlignment.setWeightInfo(weightParams, weights);
         iterateAlignment.parseIncludeReferenceArgument(includeReferenceNameCommas);
 
@@ -374,10 +374,10 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         System.out.println("Loading alignment " + inputBasename + "..");
         iterateAlignment.iterate(inputBasename);
 
-        int numAlignedReadsInSample = iterateAlignment.getNumAlignedReadsInSample();
+        final int numAlignedReadsInSample = iterateAlignment.getNumAlignedReadsInSample();
         final AnnotationCountInterface[] algs = iterateAlignment.getAlgs();
         final IntSet referencesToProcess = iterateAlignment.getReferencesSelected();
-        
+
         final String sampleId = FilenameUtils.getBaseName(inputBasename);
 
         deCalculator.setNumAlignedInSample(sampleId, numAlignedReadsInSample);

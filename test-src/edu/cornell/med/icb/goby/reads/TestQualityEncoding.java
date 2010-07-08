@@ -72,8 +72,8 @@ public class TestQualityEncoding {
 
         final QualityEncoding solexaEncoding = QualityEncoding.ILLUMINA;
         for (byte qPhred = 0; qPhred < 93; qPhred++) {
-            char sanger = solexaEncoding.phredQualityScoreToAsciiEncoding(qPhred);
-            byte roundTrip = solexaEncoding.asciiEncodingToPhredQualityScore(sanger);
+            final char sanger = solexaEncoding.phredQualityScoreToAsciiEncoding(qPhred);
+            final byte roundTrip = solexaEncoding.asciiEncodingToPhredQualityScore(sanger);
             assertEquals(qPhred, roundTrip);
 
         }
@@ -98,8 +98,8 @@ public class TestQualityEncoding {
 
         final QualityEncoding solexaEncoding = QualityEncoding.ILLUMINA;
         for (byte qPhred = 0; qPhred < 62; qPhred++) {
-            char illumina13 = solexaEncoding.phredQualityScoreToAsciiEncoding(qPhred);
-            byte roundTrip = solexaEncoding.asciiEncodingToPhredQualityScore(illumina13);
+            final char illumina13 = solexaEncoding.phredQualityScoreToAsciiEncoding(qPhred);
+            final byte roundTrip = solexaEncoding.asciiEncodingToPhredQualityScore(illumina13);
             assertEquals(qPhred, roundTrip);
 
         }
@@ -115,9 +115,9 @@ public class TestQualityEncoding {
 
         for (byte qPhred = 1; qPhred < 62; qPhred++) {
             System.out.println("qPhred="+qPhred);
-            char solexa = solexaEncoding.phredQualityScoreToAsciiEncoding(qPhred);
+            final char solexa = solexaEncoding.phredQualityScoreToAsciiEncoding(qPhred);
 
-            byte roundTripSolexa = solexaEncoding.asciiEncodingToPhredQualityScore(solexa);
+            final byte roundTripSolexa = solexaEncoding.asciiEncodingToPhredQualityScore(solexa);
 
             assertEquals(qPhred, roundTripSolexa);
 

@@ -28,28 +28,28 @@ import it.unimi.dsi.lang.MutableString;
      */
     public class LogGCCorrectionWeight implements WeightCalculator {
 
-        public LogGCCorrectionWeight(HeptamerInfo heptamers) {
+        public LogGCCorrectionWeight(final HeptamerInfo heptamers) {
             assert !heptamers.colorSpace : "GC content is not implemented for color-space reads";
 
 
         }
 
 
-        public float weight(MutableString sequence) {
+        public float weight(final MutableString sequence) {
 
             float GC = 0;
             float AT = 0;
-            float total=0;
+            float total = 0;
             for (int i = 0; i < sequence.length(); i++) {
 
                 final char c = sequence.charAt(i);
                 GC += (c == 'G' || c == 'C') ? 1 : 0;
-                total+=1;
-                
+                total += 1;
+
                 AT += (c == 'A' || c == 'T') ? 1 : 0;
             }
 
-            float normGC = GC / (AT + GC);
+            final float normGC = GC / (AT + GC);
             return (10.4436f -8.266972f * normGC);
         }
 

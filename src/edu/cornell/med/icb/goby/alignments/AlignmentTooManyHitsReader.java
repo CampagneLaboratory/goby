@@ -83,7 +83,7 @@ public class AlignmentTooManyHitsReader {
 
                 tmhStream = new FileInputStream(optionalFile);
             }
-            tooManyHitsStream=tmhStream;
+            tooManyHitsStream = tmhStream;
             // accept very large too many hits messages, since these may describe more than 60 million reads:
             final CodedInputStream codedInput = CodedInputStream.newInstance(tooManyHitsStream);
             codedInput.setSizeLimit(Integer.MAX_VALUE);

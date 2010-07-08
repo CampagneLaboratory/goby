@@ -18,9 +18,9 @@
 
 package samples;
 
-import edu.cornell.med.icb.goby.alignments.IterateAlignments;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.IterateAlignments;
 
 import java.io.IOException;
 
@@ -33,9 +33,9 @@ public class IterateAlignmentsCodeSample {
     static {
 
         try {
-            IterateAlignments iterator = new IterateAlignments() {
+            final IterateAlignments iterator = new IterateAlignments() {
                 @Override
-                public void processAlignmentEntry(AlignmentReader alignmentReader, Alignments.AlignmentEntry alignmentEntry) {
+                public void processAlignmentEntry(final AlignmentReader alignmentReader, final Alignments.AlignmentEntry alignmentEntry) {
                     System.out.printf("query-index: %d target-index: %d target-identifier: %s score: %f %n",
                             alignmentEntry.getQueryIndex(),
                             alignmentEntry.getTargetIndex(),
@@ -43,7 +43,7 @@ public class IterateAlignmentsCodeSample {
                             alignmentEntry.getScore());
                 }
             };
-            String basenames[] = {"input1.entries", "input2.entries"};
+            final String[] basenames = {"input1.entries", "input2.entries"};
 
             iterator.parseIncludeReferenceArgument("1,2,X");
 

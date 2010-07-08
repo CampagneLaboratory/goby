@@ -41,7 +41,7 @@ public class BarcodeMatcherResult {
     private int sequenceLength = -1;
     private int barcodeStartPosition = -1;
     private int barcodeMatchLength = -1;
-    private boolean ambiguous = false;
+    private boolean ambiguous;
 
     public BarcodeMatcherResult(
             final int barcodeIndex,

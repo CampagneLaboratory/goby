@@ -16,9 +16,9 @@ package samples;/*
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import it.unimi.dsi.lang.MutableString;
-import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.reads.Reads;
+import edu.cornell.med.icb.goby.reads.ReadsReader;
+import it.unimi.dsi.lang.MutableString;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -33,9 +33,9 @@ import java.io.FileNotFoundException;
 public class ParseReadsCodeSample {
     static {
         try {
-            String inputFilename = "input.compact-reads";
-            final MutableString sequence = new MutableString();          
-            ReadsReader reader =  new ReadsReader(new FileInputStream(inputFilename));
+            final String inputFilename = "input.compact-reads";
+            final MutableString sequence = new MutableString();
+            final ReadsReader reader =  new ReadsReader(new FileInputStream(inputFilename));
 
             for (final Reads.ReadEntry readEntry : reader) {
 

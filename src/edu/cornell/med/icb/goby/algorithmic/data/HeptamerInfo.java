@@ -19,18 +19,17 @@
 package edu.cornell.med.icb.goby.algorithmic.data;
 
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
+import it.unimi.dsi.fastutil.io.BinIO;
 import it.unimi.dsi.fastutil.shorts.Short2FloatMap;
 import it.unimi.dsi.fastutil.shorts.Short2FloatOpenHashMap;
-import it.unimi.dsi.fastutil.io.BinIO;
+import org.apache.commons.io.IOUtils;
 
-import java.io.Serializable;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-
-import org.apache.commons.io.IOUtils;
 
 /**
  * @author Fabien Campagne
@@ -38,13 +37,12 @@ import org.apache.commons.io.IOUtils;
  *         Time: 11:24:48 AM
  */
 public class HeptamerInfo implements Serializable {
-    static final long serialVersionUID = -6209837092878262426L;
+    private static final long serialVersionUID = -6209837092878262426L;
 
-        
     public IndexedIdentifier heptamerToIndices = new IndexedIdentifier();
     public Short2FloatMap heptamerIndexToWeight = new Short2FloatOpenHashMap();
     public int heptamerLength = 7;
-    public boolean colorSpace=false;
+    public boolean colorSpace = false;
     /**
      * Load heptamer info from disk.
      *
@@ -53,7 +51,7 @@ public class HeptamerInfo implements Serializable {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public static HeptamerInfo load(String filename) throws IOException, ClassNotFoundException {
+    public static HeptamerInfo load(final String filename) throws IOException, ClassNotFoundException {
         GZIPInputStream inputStream = null;
         try {
             inputStream = new GZIPInputStream(new FileInputStream(filename));
@@ -74,17 +72,14 @@ public class HeptamerInfo implements Serializable {
      * @throws ClassNotFoundException
      */
 
-    public void save(String filename) throws IOException {
-
+    public void save(final String filename) throws IOException {
         GZIPOutputStream gzipOutputStream = null;
 
         try {
             gzipOutputStream = new GZIPOutputStream(new FileOutputStream(filename));
             BinIO.storeObject(this, gzipOutputStream);
-        }
-        finally {
+        } finally {
             IOUtils.closeQuietly(gzipOutputStream);
         }
-
     }
 }

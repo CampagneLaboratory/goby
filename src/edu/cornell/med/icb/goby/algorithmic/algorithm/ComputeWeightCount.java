@@ -21,7 +21,14 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm;
 import edu.cornell.med.icb.goby.algorithmic.data.ReadWithIndex;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.goby.counts.CountsWriter;
-import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
+import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2FloatMap;
+import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -63,7 +70,7 @@ public class ComputeWeightCount implements ComputeCountInterface {
     protected boolean startPopulateInitialized;
     private WeightsInfo weights;
 
-    public ComputeWeightCount(WeightsInfo weights) {
+    public ComputeWeightCount(final WeightsInfo weights) {
         super();
         startKeys = new IntArrayList();
         endKeys = new IntArrayList();
@@ -113,7 +120,7 @@ public class ComputeWeightCount implements ComputeCountInterface {
      * @param readIndex  index of the read for the alignment entry being processed.
      * @return length of the read.
      */
-    public double populate(final int startIndex, final int endIndex, int readIndex) {
+    public double populate(final int startIndex, final int endIndex, final int readIndex) {
         assert startPopulateInitialized : "You must call startPopulating before you can populate.";
 
         double sval = starts.get(startIndex);
@@ -295,7 +302,7 @@ public class ComputeWeightCount implements ComputeCountInterface {
      * @param forwardStrand
      * @param queryIndex
      */
-    public void populate(int startPosition, int endPosition, boolean forwardStrand, int queryIndex) {
+    public void populate(final int startPosition, final int endPosition, final boolean forwardStrand, final int queryIndex) {
         populate(startPosition, endPosition, queryIndex);
     }
 

@@ -19,18 +19,24 @@
 package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import edu.rit.mp.buf.SharedCharacterArrayBuf;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.objects.*;
+import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntRBTreeMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Fabien Campagne
@@ -134,7 +140,7 @@ public class DifferentialExpressionCalculator {
     }
 
     /**
-     * Define an element and it's type
+     * Define an element and it's type.
      *
      * @param label element-id
      * @param type  the type (gene, exon, ...)
@@ -351,7 +357,7 @@ public class DifferentialExpressionCalculator {
     public synchronized int getSumOverlapCounts(final String sample) {
 
 
-        int sumCountsCached = sampleToSumCount.getInt(sample);
+        final int sumCountsCached = sampleToSumCount.getInt(sample);
         if (sumCountsCached != -1) {
             return sumCountsCached;
         }

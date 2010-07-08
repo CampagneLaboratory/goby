@@ -156,10 +156,10 @@ public class FastaToCompactMode extends AbstractGobyMode {
         }
         sequencePerChunk = jsapResult.getInt("sequence-per-chunk");
         processPairs = jsapResult.getBoolean("paired-end");
-        String tokens = jsapResult.getString("pair-indicator");
-        
+        final String tokens = jsapResult.getString("pair-indicator");
+
         if (processPairs && tokens != null) {
-            String tmp[] = tokens.split("[,]");
+            final String[] tmp = tokens.split("[,]");
             if (tmp.length != 2) {
                 System.err.println("Pair indicator argument must have exactly two tokens, separated by coma. Offending syntax: " + tokens);
                 System.exit(1);
@@ -243,7 +243,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
             writer.setNumEntriesPerChunk(sequencePerChunk);
             FastXReader pairReader = null;
             if (processPairs) {
-                String pairInputFilename = inputFilename.replace(pairIndicator1, pairIndicator2);
+                final String pairInputFilename = inputFilename.replace(pairIndicator1, pairIndicator2);
                 LOG.info(String.format("Located paired-end input files (%s,%s)", inputFilename, pairInputFilename));
                 pairReader = new FastXReader(pairInputFilename);
 

@@ -20,16 +20,16 @@ package edu.cornell.med.icb.goby.alignments;
 
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
-import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.ints.IntLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * A helper class to iterate through a set of alignments and process only a subset of
@@ -52,8 +52,8 @@ public abstract class IterateAlignments {
     private DoubleIndexedIdentifier referenceIds;
 
     /**
-     * Parse the string of reference sequences to process during the iteration. The JSAP argument include-reference-names
-     * must be defined.
+     * Parse the string of reference sequences to process during the iteration. The JSAP
+     * argument include-reference-names must be defined.
      *
      * @param jsapResult The jsapResult available to the mode.
      */
@@ -68,7 +68,7 @@ public abstract class IterateAlignments {
      * Parse the string of reference sequences to include the iteration. The string must be a coma
      * separated list of reference identifiers.
      */
-    public void parseIncludeReferenceArgument(String includeReferenceNameCommas) {
+    public void parseIncludeReferenceArgument(final String includeReferenceNameCommas) {
         if (includeReferenceNameCommas != null) {
             includeReferenceNames = new ObjectOpenHashSet<String>();
             includeReferenceNames.addAll(Arrays.asList(includeReferenceNameCommas.split("[,]")));
@@ -83,16 +83,15 @@ public abstract class IterateAlignments {
     /**
      * Iterate through one alignment, restricting the iteration to the alignment records 'within'
      * the bytes startOffset and endOffset. In this context, within is defined by the chunk semantic
-     * of the Goby files. See FastBufferedMessageChunksReader for details about this semantic.
-     * </LI>
-     * </UL>
+     * of the Goby files. See {@link edu.cornell.med.icb.goby.reads.FastBufferedMessageChunksReader}
+     * for details about this semantic.
      *
      * @param startOffset Start of the allowed window, in bytes in the compressed entries file.
      * @param endOffset   End of the allowed window, in bytes in the compressed entries file.
      * @param basename    Basename of the alignment to iterate over.
      * @throws IOException If an error occured reading the input alignment.
      */
-    public void iterate(long startOffset, long endOffset, final String basename) throws IOException {
+    public void iterate(final long startOffset, final long endOffset, final String basename) throws IOException {
         iterateOverOneAlignment(startOffset, endOffset, basename);
     }
 
@@ -113,7 +112,7 @@ public abstract class IterateAlignments {
         }
     }
 
-    private void iterateOverOneAlignment(long startOffset, long endOffset, String basename) throws IOException {
+    private void iterateOverOneAlignment(final long startOffset, final long endOffset, final String basename) throws IOException {
         final AlignmentReader reader = new AlignmentReader(startOffset, endOffset, basename);
         reader.readHeader();
         final int numberOfReferences = reader.getNumberOfTargets();
@@ -143,7 +142,7 @@ public abstract class IterateAlignments {
             }
         }
 
-        final AlignmentReader alignmentReader =new AlignmentReader(startOffset, endOffset, basename);
+        final AlignmentReader alignmentReader = new AlignmentReader(startOffset, endOffset, basename);
         alignmentReader.readHeader();
 
         // Give the client the ability to prepare data structures for each reference that will be processed.
@@ -172,7 +171,7 @@ public abstract class IterateAlignments {
                 if (referenceIndex > currentMinTargetIndex) {
                     // we are past the reference sequence we use to skip to
                     // Check if we are done:
-                    boolean success = referencesToProcess.remove(currentMinTargetIndex);
+                    final boolean success = referencesToProcess.remove(currentMinTargetIndex);
                     assert success : "removing an element from referencesToProcess must succeed. ";
                     if (referencesToProcess.isEmpty()) {
                         // we are done.
@@ -208,7 +207,7 @@ public abstract class IterateAlignments {
      * @param alignmentReader The reader currently being iterated over.
      * @param referenceIndex  The index of the reference sequence for which data structures should be initialized.
      */
-    public void prepareDataStructuresForReference(AlignmentReader alignmentReader, final int referenceIndex) {
+    public void prepareDataStructuresForReference(final AlignmentReader alignmentReader, final int referenceIndex) {
 
     }
 
