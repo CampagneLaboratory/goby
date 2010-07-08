@@ -45,7 +45,6 @@ namespace goby {
     ReadsIterator(const ReadsIterator& that);
     ReadsIterator(const ReadsIterator& that, std::streamoff off, std::ios_base::seekdir dir);
 
-
     // Prefix increment operator
     ReadsIterator& operator++();
 

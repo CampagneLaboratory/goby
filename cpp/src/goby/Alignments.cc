@@ -134,6 +134,10 @@ namespace goby {
     delete messageChunksIterator;
   }
 
+  MessageChunksIterator<AlignmentCollection> AlignmentReader::iterator() {
+    return MessageChunksIterator<AlignmentCollection>(basename + ".entries");
+  }
+
   AlignmentWriter::AlignmentWriter(const string& basename) : Alignment(basename) {
   }
 
@@ -162,6 +166,11 @@ namespace goby {
     gzipHeaderStream.Close();
     // TODO? ::close(fd);
   }
+
+  MessageChunksIterator<AlignmentCollection> AlignmentWriter::iterator() {
+    return MessageChunksIterator<AlignmentCollection>(basename + ".entries");
+  }
+
 
 #ifdef _MSC_VER
 #pragma warning(pop)  // Restores the warning state.

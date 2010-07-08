@@ -63,6 +63,9 @@ namespace goby {
     
     inline const std::map<std::string, unsigned>& getTargetIdentifiers() const { return targetIdentifiers; };
     inline const std::map<std::string, unsigned>& getQueryIdentifiers() const { return queryIdentifiers; };
+
+    // TODO: Wrap the message chunks iterator into a AlignmentEntriesIterator
+    virtual goby::MessageChunksIterator<goby::AlignmentCollection> iterator() = 0;
   };
 
   class LIBGOBY_EXPORT AlignmentReader : public Alignment {
@@ -70,6 +73,8 @@ namespace goby {
   public:
     AlignmentReader(const std::string& basename);
     ~AlignmentReader(void);
+
+    virtual goby::MessageChunksIterator<goby::AlignmentCollection> iterator();
   };
 
   class LIBGOBY_EXPORT AlignmentWriter : public Alignment {
@@ -94,6 +99,8 @@ namespace goby {
     
     // TODO: Target and Query Identifiers
     void write();
+
+    virtual goby::MessageChunksIterator<goby::AlignmentCollection> iterator();
   };
 }
 
