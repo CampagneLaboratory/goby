@@ -1,4 +1,4 @@
-development -> 1.7
+1.7
  - Extended fasta-to-compact and compact-to-fasta to handle paired end runs. See new command
    line arguments --paired-end and pair-indicator arguments in fasta-to-compact and
    --pair-output argument in compact-to-fasta.
@@ -20,7 +20,8 @@ development -> 1.7
    IterateAlignments benefit, including display-sequence-variations, and
    sequence-variation-stats.
  - Index alignments that are sorted upon writing. The skipTo method leverages the index
-   to provide fast semi-random access to entries by genomic location.
+   to provide fast semi-random access to entries by genomic location. This feature is used
+   by the IGV Goby plugin, which requires Goby 1.7+.
  - Concatenate alignment now produces sorted alignments if all the input alignments
    are sorted.
  - Added a mode to sort alignment by reference sequence and then by position
