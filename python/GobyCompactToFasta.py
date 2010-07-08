@@ -26,7 +26,7 @@ import textwrap
 from goby.Reads import ReadsReader
 
 def usage():
-    print "usage:", sys.argv[0], "[-h|--help] [-v|--verbose] [-f|--format <fasta|fastq>] [-o|--output <output-filename>] <fileame>" 
+    print "usage:", sys.argv[0], "[-h|--help] [-v|--verbose] [-f|--format <fasta|fastq>] [-o|--output <output-filename>] <filename>" 
 
 def main():
     verbose = False
