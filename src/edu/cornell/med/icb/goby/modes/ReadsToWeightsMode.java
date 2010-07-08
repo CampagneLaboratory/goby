@@ -187,7 +187,7 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
             // for each reads file:
             LOG.info("Now scanning " + inputFilename);
 
-            if (inputFilenames.length >= 1 && mapFilename == null) {
+            if (inputFilenames.length >= 1) {
                 // if we process one or more reads file, build the map filename dynamically for each input file.
                 mapFilename = FilenameUtils.removeExtension(inputFilename) + "." + calculator.id() + "-weights";
             }
