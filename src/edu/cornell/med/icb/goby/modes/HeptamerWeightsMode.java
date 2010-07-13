@@ -173,9 +173,7 @@ public class HeptamerWeightsMode extends AbstractGobyMode {
                     numberOfReads++;
                 }
                 readIndexToHeptamerIndex.size(numberOfReads);
-            } finally
-
-            {
+            } finally {
                 if (reader != null) {
                     try {
                         reader.close();
@@ -245,10 +243,7 @@ public class HeptamerWeightsMode extends AbstractGobyMode {
             }
 
             weights.save(mapFilename);
-        }
-
-
-        finally {
+        } finally {
             IOUtils.closeQuietly(writer);
             IOUtils.closeQuietly(tabWeightWriter);
 

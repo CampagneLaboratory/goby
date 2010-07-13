@@ -94,7 +94,7 @@
          <switch>
             <id>paired-end</id>
             <longFlag>paired-end</longFlag>
-            <help>Indicates a paired-end run. When this switch is provided, this mode will try to locate a pair input file for each input provided. When a pair input file can be found (see --pair-indicator argument, the pair sequence, and quality scores are loaded in the output compact file. The two paired input files must have exactly the same number of sequnces, and the sequences must appear in the same order.</help>
+            <help>Indicates a paired-end run. When this switch is provided, this mode will try to locate a pair input file for each input provided. When a pair input file can be found (see --pair-indicator argument, the pair sequence, and quality scores are loaded in the output compact file. The two paired input files must have exactly the same number of sequences, and the sequences must appear in the same order.</help>
          </switch>
         <flaggedOption>
             <id>pair-indicator</id>

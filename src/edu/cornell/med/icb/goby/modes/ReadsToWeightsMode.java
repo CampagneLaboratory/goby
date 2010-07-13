@@ -41,10 +41,11 @@ import java.io.IOException;
 
 /**
  * Create the read to weight map. This class scans a compact reads file to determine which heptamer
- * occurs at the beginning of each read. When a heptamer is found that exists in the heptamer to weight
- * data structure provided as input (see heptamer-frequencies mode to generate this data structure),
- * the read is associated to the heptamer weight in a map. This map is written as Java serialized
- * file for use with modes that estimate gene/transcript/exon/other counts.
+ * occurs at the beginning of each read. When a heptamer is found that exists in the heptamer to
+ * weight data structure provided as input
+ * (see {@link edu.cornell.med.icb.goby.modes.HeptamerWeightsMode} mode to generate this data
+ * structure), the read is associated to the heptamer weight in a map. This map is written as
+ * Java serialized file for use with modes that estimate gene/transcript/exon/other counts.
  *
  * @author Fabien Campagne
  *         Date: May 17 2009

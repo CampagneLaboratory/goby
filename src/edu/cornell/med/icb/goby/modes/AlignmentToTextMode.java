@@ -137,7 +137,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
 
                 // Get the length of the reference (if available)
                 final int referenceLength;
-                if (referenceLengths!=null && ArrayUtils.getLength(referenceLengths) >= referenceIndex) {
+                if (referenceLengths != null && ArrayUtils.getLength(referenceLengths) >= referenceIndex) {
                     referenceLength = referenceLengths[referenceIndex];
                 } else {
                     referenceLength = -1;
@@ -173,7 +173,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
 
                         final MutableString readSequence = getReadSequence(alignmentEntry, readLength);
 
-                        final String readQualities = "........";
+                        final String readQualities = "........";  // TODO - should make this the correct length
                         outputStream.printf("%s\t%d\t%s\t%d\t%d\t%s\t%s\t%d\t%d\t%s\t%s\t%s%n",
                                 hasReadIds ? readIds.getId(queryIndex) : queryIndex,
                                 flag,
