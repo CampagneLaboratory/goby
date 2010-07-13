@@ -321,7 +321,7 @@ public class TestSequenceVariations {
                     //         0123456789012
                     "TTCCAGAACTGTAAGATAATAAGTTTGTGTTGTTTT",
                     "CTCCAGAACTGTAAGATAATAAGTTGGTGTTGTTTT"),
-            new Alignment("9_0T24T10_reversed",
+            new Alignment("10_0T24T10_reversed",
                     //1234567891111111111222
                     //         0123456789012
                     StringUtils.reverse("TTCCAGAACTGTAAGATAATAAGTTTGTGTTGTTTT"),
