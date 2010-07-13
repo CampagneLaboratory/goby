@@ -18,10 +18,12 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import com.google.protobuf.TextFormat;
 import edu.cornell.med.icb.goby.modes.AlignMode;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
@@ -60,7 +62,7 @@ public class TestSequenceVariations {
     }
 
     @AfterClass
-    public static void cleanupTestDirectory()  {
+    public static void cleanupTestDirectory() throws IOException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Deleting base test directory: " + BASE_TEST_DIR);
         }
@@ -200,7 +202,14 @@ public class TestSequenceVariations {
                         assertEquals("CC", var.getTo());
 
                         break;
-
+                    case 9:
+                        // TODO: add assertions
+                        System.out.println(TextFormat.printToString(var));
+                        break;
+                    case 10:
+                        // TODO: add assertions
+                        System.out.println(TextFormat.printToString(var));
+                        break;
                 }
             }
         }
@@ -307,5 +316,15 @@ public class TestSequenceVariations {
                     //         0123456789012
                     "NNNN",
                    "TTCCACTATCATTTTAACTACTCATACTATCCCATGTA"),    //   A->G  readIndex=36, position=
+            new Alignment("9_0T24T10",
+                    //1234567891111111111222
+                    //         0123456789012
+                    "TTCCAGAACTGTAAGATAATAAGTTTGTGTTGTTTT",
+                    "CTCCAGAACTGTAAGATAATAAGTTGGTGTTGTTTT"),
+            new Alignment("9_0T24T10_reversed",
+                    //1234567891111111111222
+                    //         0123456789012
+                    StringUtils.reverse("TTCCAGAACTGTAAGATAATAAGTTTGTGTTGTTTT"),
+                    StringUtils.reverse("CTCCAGAACTGTAAGATAATAAGTTGGTGTTGTTTT"))
     };
 }

@@ -127,9 +127,17 @@ public class TestSAMVariationParsing {
         final MutableString readPostInsertions = new MutableString(stringReadSequence);
 
         SAMToCompactMode.produceReferenceSequence(CIGAR, mdAttribute, readSequence, readPostInsertions, referenceSequence);
-
-
     }
 
+    @Test
+    // cigar: 36M mdAttribute: 0T24T10
+    public void testCigar36MmdAttribute0T24T10() {
+        final MutableString referenceSequence = new MutableString();
+        final String stringReadSequence =                                 "CTCCAGAACTGTAAGATAATAAGTTGGTGTTGTTTT";
+        final MutableString expectedReferenceSequence = new MutableString("TTCCAGAACTGTAAGATAATAAGTTTGTGTTGTTTT");
+        testMdAttribute("36M", "0T24T10", stringReadSequence, referenceSequence);
+        display(referenceSequence, stringReadSequence, expectedReferenceSequence);
+        assertEquals("the reconstructed reference sequence should match expected.", expectedReferenceSequence, referenceSequence);
 
+    }
 }
