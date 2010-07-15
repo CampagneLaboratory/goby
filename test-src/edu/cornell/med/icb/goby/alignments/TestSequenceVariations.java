@@ -321,7 +321,7 @@ public class TestSequenceVariations {
                     //         0123456789012
                     "TTCCAGAACTGTAAGATAATAAGTTTGTGTTGTTTT",
                     "CTCCAGAACTGTAAGATAATAAGTTGGTGTTGTTTT"),
-            new Alignment("10_0T24T10",
+            new Alignment("10_0T24T10",          // same as previous but matches reverse strand
                     //1234567891111111111222
                     //         0123456789012
                     "TTCCAGAACTGTAAGATAATAAGTTTGTGTTGTTTT",
