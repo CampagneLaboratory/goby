@@ -275,13 +275,14 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             sumNumVariations += entry.getSequenceVariationsCount();
             alignedQueryIndices.add(entry.getQueryIndex());
 
-            final double queryLength;
+            // check entry then header for the query length
             if (entry.hasQueryLength()) {
-                queryLength = entry.getQueryLength();
-            } else {
-                 queryLength = reader.getQueryLength(entry.getQueryIndex());
+                final double queryLength = entry.getQueryLength();
+                queryLengthStats.addValue(queryLength);
+            } else if (reader.hasQueryLengths() || reader.isConstantQueryLengths()) {
+                final double queryLength = reader.getQueryLength(entry.getQueryIndex());
+                queryLengthStats.addValue(queryLength);                
             }
-            queryLengthStats.addValue(queryLength);
         }
 
         avgScore /= (double) numLogicalAlignmentEntries;
