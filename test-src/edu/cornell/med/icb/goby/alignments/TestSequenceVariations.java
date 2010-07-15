@@ -231,8 +231,8 @@ public class TestSequenceVariations {
         }
         referenceWriter.close();
         queryWriter.close();
-        // align with Lastag:
 
+        // run the alignment process
         lastagAlignmentFilename = alignWith("lastag");
         bwaAlignmentFilename = alignWith("bwa");
     }
@@ -256,10 +256,10 @@ public class TestSequenceVariations {
         return alignmentFilename;
     }
 
-    private class Alignment {
-        private String reference = "";
-        private String read = "";
-        private String description = "";
+    private final class Alignment {
+        private final String reference;
+        private final String read;
+        private final String description;
 
         public Alignment(final String description, final String reference, final String read) {
             this.description = description;
@@ -321,7 +321,12 @@ public class TestSequenceVariations {
                     //         0123456789012
                     "TTCCAGAACTGTAAGATAATAAGTTTGTGTTGTTTT",
                     "CTCCAGAACTGTAAGATAATAAGTTGGTGTTGTTTT"),
-            new Alignment("10_0T24T10_reversed",
+            new Alignment("10_0T24T10",
+                    //1234567891111111111222
+                    //         0123456789012
+                    "TTCCAGAACTGTAAGATAATAAGTTTGTGTTGTTTT",
+                    "AAAACAACACCAACTTATTATCTTACAGTTCTGGAG"),
+            new Alignment("11_10T24T0",
                     //1234567891111111111222
                     //         0123456789012
                     StringUtils.reverse("TTCCAGAACTGTAAGATAATAAGTTTGTGTTGTTTT"),

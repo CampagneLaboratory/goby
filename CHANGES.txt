@@ -1,3 +1,6 @@
+development
+ - Update picard/samtools to version 1.25
+
 1.7
  - Extended fasta-to-compact and compact-to-fasta to handle paired end runs. See new command
    line arguments --paired-end and pair-indicator arguments in fasta-to-compact and
@@ -7,7 +10,7 @@
    it possible to store both paired end runs in a single compact file. This should help
    keep the data together.
  - Implemented translation back and from Solexa quality score encoding in fasta-to-compact
-   and compact-to-fasta. Thanks to Cock PJA et al NAR 2010 for the clear description of the 
+   and compact-to-fasta. Thanks to Cock PJA et al NAR 2010 for the clear description of the
    Solexa base quality scores.
  - The sort mode now supports reading only a slice of an input alignment (see options
    --start-position and --end-position).
