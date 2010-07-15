@@ -40,35 +40,38 @@ namespace goby {
   ReadsIterator::ReadsIterator(const string& filename, const std::streampos position = 0) :
     filename(filename),
     messageChunksIterator(MessageChunksIterator<ReadCollection>(filename, position)),
-    readCollection(*messageChunksIterator),
+    readCollection(new ReadCollection),
     currentReadIndex(0) {
   }
 
   ReadsIterator::ReadsIterator(const ReadsIterator& that) :
     filename(that.filename),
     messageChunksIterator(that.messageChunksIterator),
-    readCollection(that.readCollection),
+    readCollection(new ReadCollection),
     currentReadIndex(that.currentReadIndex) {
   }
 
   ReadsIterator::ReadsIterator(const ReadsIterator& that, const std::streamoff off, const std::ios_base::seekdir dir = std::ios_base::beg) :
     filename(that.filename),
     messageChunksIterator(that.messageChunksIterator, off, dir),
-    readCollection(*messageChunksIterator),
+    readCollection(new ReadCollection),
     currentReadIndex(0) {
   }
 
-    // Prefix increment operator
+  ReadsIterator::~ReadsIterator() {
+    delete readCollection;
+  }
+
+  // Prefix increment operator
   ReadsIterator& ReadsIterator::operator++() {
     ++currentReadIndex;
     // if we're at the end of the current chunk, move on to the next
-    if (currentReadIndex >= readCollection.reads_size()) {
+    if (currentReadIndex >= readCollection->reads_size()) {
       // if there is another chunk, get it otherwise set defaults
       if (messageChunksIterator != messageChunksIterator.end()) {
         messageChunksIterator++;
-        readCollection = *messageChunksIterator;
       } else {
-        readCollection = ReadCollection::default_instance();
+        readCollection->Clear();
       }
       currentReadIndex = 0;
     }
@@ -78,13 +81,12 @@ namespace goby {
   // Postfix increment operator
   ReadsIterator& ReadsIterator::operator++(int) {
     currentReadIndex++;
-    if (currentReadIndex >= readCollection.reads_size()) {
+    if (currentReadIndex >= readCollection->reads_size()) {
       // if there is another chunk, get it otherwise set defaults
       if (messageChunksIterator != messageChunksIterator.end()) {
         messageChunksIterator++;
-        readCollection = *messageChunksIterator;
       } else {
-          readCollection = ReadCollection::default_instance();
+        readCollection->Clear();
       }
       currentReadIndex = 0;
     }
@@ -103,7 +105,16 @@ namespace goby {
 
   // return the parsed results for the current chunk
   const ReadEntry& ReadsIterator::operator*() {
-    return readCollection.reads().Get(currentReadIndex);
+    // if we're at the end of the current chunk or at the beginning of a new one
+    if (currentReadIndex >= readCollection->reads_size() || currentReadIndex == 0) {
+      // if there is another chunk, get it otherwise set defaults
+      if (messageChunksIterator != messageChunksIterator.end()) {
+        *readCollection = *messageChunksIterator;
+      } else {
+        readCollection->Clear();
+      }
+    }
+    return readCollection->reads().Get(currentReadIndex);
   };
 
   ReadEntry* const ReadsIterator::operator->() {

@@ -118,6 +118,9 @@ int main (int argc, const char *const argv[]) {
 
     if (entry.has_sequence() && !entry.sequence().empty()) {
       numberOfSequences++;
+      if (verbose) {
+        cout << "Sequence found: " << entry.sequence() << endl;
+      }
     }
 
     if (entry.has_sequencepair() && !entry.sequencepair().empty()) {

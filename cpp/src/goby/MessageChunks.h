@@ -50,43 +50,53 @@ namespace goby {
     std::streampos current_position;
 
     // the current processed chunk
-    T current_chunk;
+    T *current_chunk;
+
+    // the length of the current raw chunk
+    size_t current_chunk_length;
+
+    // Move the stream poitner to the next chunk boundary or eof
+    void advanceToNextChunk(std::ifstream& stream) {
+      if (current_position != static_cast<std::streampos>(-1) && stream.good()) {
+        // each chunk is delimited by DELIMITER_LENGTH bytes
+        stream.seekg(GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH, std::ios::cur);
+        current_position = stream.tellg();
+
+        // Set up a stream that will only read up the current chunk length
+        current_chunk_length = readInt(stream);
+        current_position = stream.tellg();
+
+#ifdef GOBY_DEBUG
+        //std::cout << "Chunk length: " << current_chunk_length << std::endl;
+#endif
+
+        // the last chunk has a length of zero bytes
+        if (stream.eof() || current_chunk_length == 0) {
+          current_position = static_cast<std::streampos>(-1);
+          current_chunk_length = 0;
+        }
+      } else {
+        current_position = static_cast<std::streampos>(-1);
+        current_chunk_length = 0;
+      }
+    }
 
     // populate T with the data from the given chunk
     // The assumption here is that the stream is positioned at the start of a chunk boundary
-    // The stream will be positioned at the next chunk boundary or eof
-    T populateChunk(std::ifstream& stream, T& chunk) {
-      if (!stream.good()) {
+    T* populateChunk(std::ifstream& stream, T *chunk) {
+      // if the stream is not valid just return an empty chunk
+      if (current_position == static_cast<std::streampos>(-1) || !stream.good()) {
         current_position = static_cast<std::streampos>(-1);
-        chunk.Clear();
-        return chunk;
-      }
-
-      // each chunk is delimited by DELIMITER_LENGTH bytes
-      stream.seekg(GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH, std::ios::cur);
-      current_position = stream.tellg();
-
-      // Set up a stream that will only read up the current chunk length
-      const size_t chunkLength = readInt(stream);
-      current_position = stream.tellg();
-
-#ifdef GOBY_DEBUG
-      std::cout << "Chunk length: " << chunkLength << std::endl;
-#endif
-
-      // the last chunk has a length of zero bytes
-      if (stream.eof() || chunkLength == 0) {
-        current_position = static_cast<std::streampos>(-1);
-        chunk.Clear();
+        chunk->Clear();
         return chunk;
       }
 
       const std::streampos chunkStartPosition = current_position;
-      const std::streampos nextChunkStartPosition = current_position + static_cast<std::streamoff>(chunkLength);
+      const std::streampos nextChunkStartPosition = current_position + static_cast<std::streamoff>(current_chunk_length);
 
       // explicitly set the block size and limit it to the chunk length to prevent "over read"
-      google::protobuf::io::IstreamInputStream istream(&stream, chunkLength);
-      google::protobuf::io::LimitingInputStream rawChunkStream(&istream, chunkLength);
+      google::protobuf::io::IstreamInputStream istream(&stream, current_chunk_length);
+      google::protobuf::io::LimitingInputStream rawChunkStream(&istream, current_chunk_length);
 
       // and handle the fact that each chunk is compressed with gzip
       google::protobuf::io::GzipInputStream gzipChunkStream(&rawChunkStream);
@@ -97,14 +107,14 @@ namespace goby {
       codedStream.SetTotalBytesLimit(INT_MAX, -1);
 
       // populate the current object from the compressed data
-      if (!chunk.ParseFromCodedStream(&codedStream)) {
+      if (!chunk->ParseFromCodedStream(&codedStream)) {
         std::cerr << "Failed to parse message chunk from " << filename << std::endl;
       }
 
       current_position = stream.tellg();
 
       // may need to adjust the position in the stream since the parsing above may have "over-read"
-      // TODO - can probably remove this block since the block size is set above
+      // TODO - we can probably remove this check since the block size is set above
       if (current_position != static_cast<std::streampos>(-1)) {
         const std::streamoff offset = nextChunkStartPosition - current_position;
         if (offset != 0) {
@@ -133,50 +143,57 @@ namespace goby {
     MessageChunksIterator<T>(const std::string& filename, const std::streampos position = 0) :
         filename(filename),
         current_position(position),
-        current_chunk(T::default_instance()) {
+        current_chunk(new T),
+        current_chunk_length(0) {
       stream.open(filename.c_str(), std::ios::in | std::ios::binary);
       stream.seekg(position);
 
-      if (stream.good()) {
-       populateChunk(stream, current_chunk);
-      } else {
+      if (!stream.good()) {
         std::cerr << "Failed to open " << filename << std::endl;
       }
-    };
 
-    virtual ~MessageChunksIterator(void) {
-      stream.close();
+      advanceToNextChunk(stream);
+      current_chunk->Clear();
     };
 
     MessageChunksIterator(const MessageChunksIterator<T>& that) :
         filename(that.filename),
         current_position(that.current_position),
-        current_chunk(that.current_chunk) {
+        current_chunk(new T),
+        current_chunk_length(that.current_chunk_length) {
       // TODO: there is probably a better way to copy the stream
       stream.open(filename.c_str(), std::ios::in | std::ios::binary);
       stream.seekg(current_position);
+
+      current_chunk->Clear();
     }
 
     MessageChunksIterator(const MessageChunksIterator<T>& that, std::streamoff off, std::ios_base::seekdir dir = std::ios_base::beg) :
-      filename(that.filename) {
+      filename(that.filename),
+      current_chunk(new T) {
       // TODO: there is probably a better way to copy the stream
       stream.open(filename.c_str(), std::ios::in | std::ios::binary);
       stream.seekg(off, dir);
       current_position = stream.tellg();
-      populateChunk(stream, current_chunk);
+      advanceToNextChunk(stream);
     }
+
+    virtual ~MessageChunksIterator(void) {
+      stream.close();
+      delete current_chunk;
+    };
 
     // TODO: Prefix and Postfix operators currently do the same thing!
     // Prefix increment operator
     MessageChunksIterator& operator++() {
       std::cout << "Prefix operator++() " << std::endl;
-      populateChunk(stream, current_chunk);
+      advanceToNextChunk(stream);
       return *this;
     };
 
     // Postfix increment operator
     MessageChunksIterator& operator++(int) {
-      populateChunk(stream, current_chunk);
+      advanceToNextChunk(stream);
       return *this;
     };
 
@@ -192,11 +209,13 @@ namespace goby {
 
     // return the parsed results for the current chunk
     const T& operator*() {
-      return current_chunk;
+      populateChunk(stream, current_chunk);
+      return *current_chunk;
     };
 
     T* const operator->() {
-      return &current_chunk;
+      populateChunk(stream, current_chunk);
+      return current_chunk;
     };
 
     // TODO - remove the operator<< - for testing only

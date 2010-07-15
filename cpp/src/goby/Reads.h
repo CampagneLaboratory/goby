@@ -35,7 +35,7 @@ namespace goby {
     MessageChunksIterator<ReadCollection> messageChunksIterator;
 
     // current chunk of read entries
-    ReadCollection readCollection;
+    ReadCollection *readCollection;
 
     // index of the current read entry in the collection
     int currentReadIndex;
@@ -44,6 +44,8 @@ namespace goby {
     ReadsIterator(const std::string& filename, const std::streampos position);
     ReadsIterator(const ReadsIterator& that);
     ReadsIterator(const ReadsIterator& that, std::streamoff off, std::ios_base::seekdir dir);
+
+    virtual ~ReadsIterator();
 
     // Prefix increment operator
     ReadsIterator& operator++();
@@ -59,7 +61,7 @@ namespace goby {
 
     // TODO - remove the operator<< - for testing only
     friend std::ostream &operator<<(std::ostream &out, const ReadsIterator& iter) {
-      out << "ostream &operator<< " << iter.readCollection.reads().Get(iter.currentReadIndex).SerializeToOstream(&out);
+      out << "ostream &operator<< " << iter.readCollection->reads().Get(iter.currentReadIndex).SerializeToOstream(&out);
       return out;
     }
 
