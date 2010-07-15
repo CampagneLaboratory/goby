@@ -128,13 +128,17 @@ int main (int argc, const char *const argv[]) {
   // from describeAmbigousReads - starts the query index set with the data from the tmh reader
   set<unsigned> alignedQueryIndices(queryIndicies.begin(), queryIndicies.end());
 
-  goby::MessageChunksIterator<goby::AlignmentCollection> alignmentEntriesIterator = alignmentReader.iterator();
-  goby::MessageChunksIterator<goby::AlignmentCollection> begin = alignmentEntriesIterator.begin();
-  goby::MessageChunksIterator<goby::AlignmentCollection> end = alignmentEntriesIterator.end();
-  for (goby::MessageChunksIterator<goby::AlignmentCollection> it = begin; it != end; it++) {
-    // cout << "size is " << (*it).alignmententries_size() << endl;
+  goby::MessageChunksIterator<goby::AlignmentCollection> alignmentCollectionIterator = alignmentReader.iterator();
+  goby::MessageChunksIterator<goby::AlignmentCollection> collectionIteratorBegin = alignmentCollectionIterator.begin();
+  goby::MessageChunksIterator<goby::AlignmentCollection> collectionIteratorEnd = alignmentCollectionIterator.end();
+  for (goby::MessageChunksIterator<goby::AlignmentCollection> it = collectionIteratorBegin; it != collectionIteratorEnd; it++) {
+    const goby::AlignmentCollection collection = *it;
+    const google::protobuf::RepeatedPtrField<goby::AlignmentEntry>& entries = collection.alignmententries();
+    //cout << "size is " << collection.alignmententries_size() << endl;
     google::protobuf::RepeatedPtrField<const goby::AlignmentEntry>::const_iterator entryIterator;
-    for (entryIterator = (*it).alignmententries().begin(); entryIterator != (*it).alignmententries().end(); entryIterator++) {
+    google::protobuf::RepeatedPtrField<const goby::AlignmentEntry>::const_iterator entryIteratorBegin = entries.begin();
+    google::protobuf::RepeatedPtrField<const goby::AlignmentEntry>::const_iterator entryIteratorEnd = entries.end();
+    for (entryIterator = entryIteratorBegin; entryIterator != entryIteratorEnd; entryIterator++) {
       const goby::AlignmentEntry entry = *entryIterator;
       numEntries++;          // Across this file
       numLogicalAlignmentEntries += entry.multiplicity();
