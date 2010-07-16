@@ -26,8 +26,8 @@
 
 #include <algorithm>
 #include <fstream>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <limits>
 #include <locale>
 #include <numeric>
