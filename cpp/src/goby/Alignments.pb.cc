@@ -53,7 +53,7 @@ void protobuf_AssignDesc_Alignments_2eproto() {
   GOOGLE_CHECK(file != NULL);
   AlignmentCollection_descriptor_ = file->message_type(0);
   static const int AlignmentCollection_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentCollection, alignmententries_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentCollection, alignment_entries_),
   };
   AlignmentCollection_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -80,7 +80,7 @@ void protobuf_AssignDesc_Alignments_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentEntry, query_aligned_length_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentEntry, target_aligned_length_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentEntry, sequence_variations_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentEntry, querylength_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentEntry, query_length_),
   };
   AlignmentEntry_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -98,7 +98,7 @@ void protobuf_AssignDesc_Alignments_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SequenceVariation, from_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SequenceVariation, to_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SequenceVariation, position_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SequenceVariation, readindex_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SequenceVariation, read_index_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SequenceVariation, to_quality_),
   };
   SequenceVariation_reflection_ =
@@ -114,19 +114,19 @@ void protobuf_AssignDesc_Alignments_2eproto() {
       sizeof(SequenceVariation));
   AlignmentHeader_descriptor_ = file->message_type(3);
   static const int AlignmentHeader_offsets_[13] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, smallestsplitqueryindex_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, largestsplitqueryindex_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, smallest_split_query_index_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, largest_split_query_index_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, query_name_mapping_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, target_name_mapping_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, number_of_queries_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, number_of_targets_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, number_of_aligned_reads_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, query_length_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, constantquerylength_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, constant_query_length_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, target_length_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, sorted_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, indexed_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, querylengthsstoredinentries_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, query_lengths_stored_in_entries_),
   };
   AlignmentHeader_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -172,7 +172,7 @@ void protobuf_AssignDesc_Alignments_2eproto() {
       sizeof(IdentifierInfo));
   AlignmentTooManyHits_descriptor_ = file->message_type(6);
   static const int AlignmentTooManyHits_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentTooManyHits, alignerthreshold_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentTooManyHits, aligner_threshold_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentTooManyHits, hits_),
   };
   AlignmentTooManyHits_reflection_ =
@@ -205,9 +205,9 @@ void protobuf_AssignDesc_Alignments_2eproto() {
       sizeof(AmbiguousLocation));
   AlignmentIndex_descriptor_ = file->message_type(8);
   static const int AlignmentIndex_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentIndex, targetpositionoffsets_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentIndex, target_position_offsets_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentIndex, offsets_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentIndex, absolutepositions_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentIndex, absolute_positions_),
   };
   AlignmentIndex_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -282,42 +282,43 @@ void protobuf_AddDesc_Alignments_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\020Alignments.proto\022\004goby\"E\n\023AlignmentCol"
-    "lection\022.\n\020alignmentEntries\030\001 \003(\0132\024.goby"
-    ".AlignmentEntry\"\353\002\n\016AlignmentEntry\022\024\n\014mu"
-    "ltiplicity\030\007 \001(\r\022\023\n\013query_index\030\001 \002(\r\022\024\n"
-    "\014target_index\030\002 \002(\r\022\020\n\010position\030\003 \002(\r\022\037\n"
-    "\027matching_reverse_strand\030\006 \002(\010\022\026\n\016query_"
-    "position\030\005 \001(\r\022\r\n\005score\030\004 \001(\002\022\034\n\024number_"
-    "of_mismatches\030\010 \001(\r\022\030\n\020number_of_indels\030"
-    "\t \001(\r\022\034\n\024query_aligned_length\030\013 \001(\r\022\035\n\025t"
-    "arget_aligned_length\030\014 \001(\r\0224\n\023sequence_v"
-    "ariations\030\r \003(\0132\027.goby.SequenceVariation"
-    "\022\023\n\013queryLength\030\n \001(\r\"f\n\021SequenceVariati"
-    "on\022\014\n\004from\030\002 \002(\t\022\n\n\002to\030\001 \002(\t\022\020\n\010position"
-    "\030\003 \002(\r\022\021\n\treadIndex\030\005 \002(\r\022\022\n\nto_quality\030"
-    "\004 \001(\014\"\250\003\n\017AlignmentHeader\022\037\n\027smallestSpl"
-    "itQueryIndex\030\t \001(\r\022\036\n\026largestSplitQueryI"
-    "ndex\030\013 \001(\r\0223\n\022query_name_mapping\030\001 \001(\0132\027"
-    ".goby.IdentifierMapping\0224\n\023target_name_m"
-    "apping\030\002 \001(\0132\027.goby.IdentifierMapping\022\031\n"
-    "\021number_of_queries\030\005 \001(\r\022\031\n\021number_of_ta"
-    "rgets\030\006 \001(\r\022\037\n\027number_of_aligned_reads\030\007"
-    " \001(\r\022\030\n\014query_length\030\003 \003(\rB\002\030\001\022\033\n\023consta"
-    "ntQueryLength\030\n \001(\r\022\025\n\rtarget_length\030\010 \003"
-    "(\r\022\016\n\006sorted\030\r \001(\010\022\017\n\007indexed\030\016 \001(\010\022#\n\033q"
-    "ueryLengthsStoredInEntries\030\017 \001(\010\";\n\021Iden"
-    "tifierMapping\022&\n\010mappings\030\001 \003(\0132\024.goby.I"
-    "dentifierInfo\"-\n\016IdentifierInfo\022\014\n\004name\030"
-    "\001 \002(\t\022\r\n\005index\030\002 \002(\r\"W\n\024AlignmentTooMany"
-    "Hits\022\030\n\020alignerThreshold\030\002 \002(\r\022%\n\004hits\030\001"
-    " \003(\0132\027.goby.AmbiguousLocation\"b\n\021Ambiguo"
-    "usLocation\022\023\n\013query_index\030\001 \002(\r\022\037\n\027at_le"
-    "ast_number_of_hits\030\002 \002(\r\022\027\n\017length_of_ma"
-    "tch\030\003 \001(\r\"g\n\016AlignmentIndex\022!\n\025targetPos"
-    "itionOffsets\030\001 \003(\rB\002\020\001\022\023\n\007offsets\030\002 \003(\004B"
-    "\002\020\001\022\035\n\021absolutePositions\030\003 \003(\004B\002\020\001B\'\n#ed"
-    "u.cornell.med.icb.goby.alignmentsH\001", 1435);
+    "\n\020Alignments.proto\022\004goby\"F\n\023AlignmentCol"
+    "lection\022/\n\021alignment_entries\030\001 \003(\0132\024.gob"
+    "y.AlignmentEntry\"\354\002\n\016AlignmentEntry\022\024\n\014m"
+    "ultiplicity\030\007 \001(\r\022\023\n\013query_index\030\001 \002(\r\022\024"
+    "\n\014target_index\030\002 \002(\r\022\020\n\010position\030\003 \002(\r\022\037"
+    "\n\027matching_reverse_strand\030\006 \002(\010\022\026\n\016query"
+    "_position\030\005 \001(\r\022\r\n\005score\030\004 \001(\002\022\034\n\024number"
+    "_of_mismatches\030\010 \001(\r\022\030\n\020number_of_indels"
+    "\030\t \001(\r\022\034\n\024query_aligned_length\030\013 \001(\r\022\035\n\025"
+    "target_aligned_length\030\014 \001(\r\0224\n\023sequence_"
+    "variations\030\r \003(\0132\027.goby.SequenceVariatio"
+    "n\022\024\n\014query_length\030\n \001(\r\"g\n\021SequenceVaria"
+    "tion\022\014\n\004from\030\002 \002(\t\022\n\n\002to\030\001 \002(\t\022\020\n\010positi"
+    "on\030\003 \002(\r\022\022\n\nread_index\030\005 \002(\r\022\022\n\nto_quali"
+    "ty\030\004 \001(\014\"\264\003\n\017AlignmentHeader\022\"\n\032smallest"
+    "_split_query_index\030\t \001(\r\022!\n\031largest_spli"
+    "t_query_index\030\013 \001(\r\0223\n\022query_name_mappin"
+    "g\030\001 \001(\0132\027.goby.IdentifierMapping\0224\n\023targ"
+    "et_name_mapping\030\002 \001(\0132\027.goby.IdentifierM"
+    "apping\022\031\n\021number_of_queries\030\005 \001(\r\022\031\n\021num"
+    "ber_of_targets\030\006 \001(\r\022\037\n\027number_of_aligne"
+    "d_reads\030\007 \001(\r\022\030\n\014query_length\030\003 \003(\rB\002\030\001\022"
+    "\035\n\025constant_query_length\030\n \001(\r\022\025\n\rtarget"
+    "_length\030\010 \003(\r\022\016\n\006sorted\030\r \001(\010\022\017\n\007indexed"
+    "\030\016 \001(\010\022\'\n\037query_lengths_stored_in_entrie"
+    "s\030\017 \001(\010\";\n\021IdentifierMapping\022&\n\010mappings"
+    "\030\001 \003(\0132\024.goby.IdentifierInfo\"-\n\016Identifi"
+    "erInfo\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"X\n\024A"
+    "lignmentTooManyHits\022\031\n\021aligner_threshold"
+    "\030\002 \002(\r\022%\n\004hits\030\001 \003(\0132\027.goby.AmbiguousLoc"
+    "ation\"b\n\021AmbiguousLocation\022\023\n\013query_inde"
+    "x\030\001 \002(\r\022\037\n\027at_least_number_of_hits\030\002 \002(\r"
+    "\022\027\n\017length_of_match\030\003 \001(\r\"j\n\016AlignmentIn"
+    "dex\022#\n\027target_position_offsets\030\001 \003(\rB\002\020\001"
+    "\022\023\n\007offsets\030\002 \003(\004B\002\020\001\022\036\n\022absolute_positi"
+    "ons\030\003 \003(\004B\002\020\001B\'\n#edu.cornell.med.icb.gob"
+    "y.alignmentsH\001", 1454);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "Alignments.proto", &protobuf_RegisterTypes);
   AlignmentCollection::default_instance_ = new AlignmentCollection();
@@ -404,7 +405,7 @@ AlignmentCollection* AlignmentCollection::New() const {
 }
 
 void AlignmentCollection::Clear() {
-  alignmententries_.Clear();
+  alignment_entries_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -415,17 +416,17 @@ bool AlignmentCollection::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated .goby.AlignmentEntry alignmentEntries = 1;
+      // repeated .goby.AlignmentEntry alignment_entries = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_alignmentEntries:
+         parse_alignment_entries:
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-                input, add_alignmententries()));
+                input, add_alignment_entries()));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(10)) goto parse_alignmentEntries;
+        if (input->ExpectTag(10)) goto parse_alignment_entries;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -448,10 +449,10 @@ bool AlignmentCollection::MergePartialFromCodedStream(
 
 void AlignmentCollection::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // repeated .goby.AlignmentEntry alignmentEntries = 1;
-  for (int i = 0; i < this->alignmententries_size(); i++) {
+  // repeated .goby.AlignmentEntry alignment_entries = 1;
+  for (int i = 0; i < this->alignment_entries_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      1, this->alignmententries(i), output);
+      1, this->alignment_entries(i), output);
   }
   
   if (!unknown_fields().empty()) {
@@ -462,11 +463,11 @@ void AlignmentCollection::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* AlignmentCollection::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // repeated .goby.AlignmentEntry alignmentEntries = 1;
-  for (int i = 0; i < this->alignmententries_size(); i++) {
+  // repeated .goby.AlignmentEntry alignment_entries = 1;
+  for (int i = 0; i < this->alignment_entries_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        1, this->alignmententries(i), target);
+        1, this->alignment_entries(i), target);
   }
   
   if (!unknown_fields().empty()) {
@@ -479,12 +480,12 @@ void AlignmentCollection::SerializeWithCachedSizes(
 int AlignmentCollection::ByteSize() const {
   int total_size = 0;
   
-  // repeated .goby.AlignmentEntry alignmentEntries = 1;
-  total_size += 1 * this->alignmententries_size();
-  for (int i = 0; i < this->alignmententries_size(); i++) {
+  // repeated .goby.AlignmentEntry alignment_entries = 1;
+  total_size += 1 * this->alignment_entries_size();
+  for (int i = 0; i < this->alignment_entries_size(); i++) {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-        this->alignmententries(i));
+        this->alignment_entries(i));
   }
   
   if (!unknown_fields().empty()) {
@@ -512,7 +513,7 @@ void AlignmentCollection::MergeFrom(const ::google::protobuf::Message& from) {
 
 void AlignmentCollection::MergeFrom(const AlignmentCollection& from) {
   GOOGLE_CHECK_NE(&from, this);
-  alignmententries_.MergeFrom(from.alignmententries_);
+  alignment_entries_.MergeFrom(from.alignment_entries_);
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
@@ -530,15 +531,15 @@ void AlignmentCollection::CopyFrom(const AlignmentCollection& from) {
 
 bool AlignmentCollection::IsInitialized() const {
   
-  for (int i = 0; i < alignmententries_size(); i++) {
-    if (!this->alignmententries(i).IsInitialized()) return false;
+  for (int i = 0; i < alignment_entries_size(); i++) {
+    if (!this->alignment_entries(i).IsInitialized()) return false;
   }
   return true;
 }
 
 void AlignmentCollection::Swap(AlignmentCollection* other) {
   if (other != this) {
-    alignmententries_.Swap(&other->alignmententries_);
+    alignment_entries_.Swap(&other->alignment_entries_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -599,7 +600,7 @@ void AlignmentEntry::SharedCtor() {
   number_of_indels_ = 0u;
   query_aligned_length_ = 0u;
   target_aligned_length_ = 0u;
-  querylength_ = 0u;
+  query_length_ = 0u;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -647,7 +648,7 @@ void AlignmentEntry::Clear() {
     number_of_indels_ = 0u;
     query_aligned_length_ = 0u;
     target_aligned_length_ = 0u;
-    querylength_ = 0u;
+    query_length_ = 0u;
   }
   sequence_variations_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -799,18 +800,18 @@ bool AlignmentEntry::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(80)) goto parse_queryLength;
+        if (input->ExpectTag(80)) goto parse_query_length;
         break;
       }
       
-      // optional uint32 queryLength = 10;
+      // optional uint32 query_length = 10;
       case 10: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_queryLength:
+         parse_query_length:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 input, &querylength_)));
+                 input, &query_length_)));
           _set_bit(12);
         } else {
           goto handle_uninterpreted;
@@ -929,9 +930,9 @@ void AlignmentEntry::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(9, this->number_of_indels(), output);
   }
   
-  // optional uint32 queryLength = 10;
+  // optional uint32 query_length = 10;
   if (_has_bit(12)) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(10, this->querylength(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(10, this->query_length(), output);
   }
   
   // optional uint32 query_aligned_length = 11;
@@ -1003,9 +1004,9 @@ void AlignmentEntry::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(9, this->number_of_indels(), target);
   }
   
-  // optional uint32 queryLength = 10;
+  // optional uint32 query_length = 10;
   if (_has_bit(12)) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(10, this->querylength(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(10, this->query_length(), target);
   }
   
   // optional uint32 query_aligned_length = 11;
@@ -1111,11 +1112,11 @@ int AlignmentEntry::ByteSize() const {
           this->target_aligned_length());
     }
     
-    // optional uint32 queryLength = 10;
-    if (has_querylength()) {
+    // optional uint32 query_length = 10;
+    if (has_query_length()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->querylength());
+          this->query_length());
     }
     
   }
@@ -1190,7 +1191,7 @@ void AlignmentEntry::MergeFrom(const AlignmentEntry& from) {
       set_target_aligned_length(from.target_aligned_length());
     }
     if (from._has_bit(12)) {
-      set_querylength(from.querylength());
+      set_query_length(from.query_length());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -1231,7 +1232,7 @@ void AlignmentEntry::Swap(AlignmentEntry* other) {
     std::swap(query_aligned_length_, other->query_aligned_length_);
     std::swap(target_aligned_length_, other->target_aligned_length_);
     sequence_variations_.Swap(&other->sequence_variations_);
-    std::swap(querylength_, other->querylength_);
+    std::swap(query_length_, other->query_length_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -1279,7 +1280,7 @@ void SequenceVariation::SharedCtor() {
   from_ = const_cast< ::std::string*>(&_default_from_);
   to_ = const_cast< ::std::string*>(&_default_to_);
   position_ = 0u;
-  readindex_ = 0u;
+  read_index_ = 0u;
   to_quality_ = const_cast< ::std::string*>(&_default_to_quality_);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -1335,7 +1336,7 @@ void SequenceVariation::Clear() {
       }
     }
     position_ = 0u;
-    readindex_ = 0u;
+    read_index_ = 0u;
     if (_has_bit(4)) {
       if (to_quality_ != &_default_to_quality_) {
         to_quality_->clear();
@@ -1411,18 +1412,18 @@ bool SequenceVariation::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(40)) goto parse_readIndex;
+        if (input->ExpectTag(40)) goto parse_read_index;
         break;
       }
       
-      // required uint32 readIndex = 5;
+      // required uint32 read_index = 5;
       case 5: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_readIndex:
+         parse_read_index:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 input, &readindex_)));
+                 input, &read_index_)));
           _set_bit(3);
         } else {
           goto handle_uninterpreted;
@@ -1478,9 +1479,9 @@ void SequenceVariation::SerializeWithCachedSizes(
       4, this->to_quality(), output);
   }
   
-  // required uint32 readIndex = 5;
+  // required uint32 read_index = 5;
   if (_has_bit(3)) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(5, this->readindex(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(5, this->read_index(), output);
   }
   
   if (!unknown_fields().empty()) {
@@ -1523,9 +1524,9 @@ void SequenceVariation::SerializeWithCachedSizes(
         4, this->to_quality(), target);
   }
   
-  // required uint32 readIndex = 5;
+  // required uint32 read_index = 5;
   if (_has_bit(3)) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(5, this->readindex(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(5, this->read_index(), target);
   }
   
   if (!unknown_fields().empty()) {
@@ -1560,11 +1561,11 @@ int SequenceVariation::ByteSize() const {
           this->position());
     }
     
-    // required uint32 readIndex = 5;
-    if (has_readindex()) {
+    // required uint32 read_index = 5;
+    if (has_read_index()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->readindex());
+          this->read_index());
     }
     
     // optional bytes to_quality = 4;
@@ -1611,7 +1612,7 @@ void SequenceVariation::MergeFrom(const SequenceVariation& from) {
       set_position(from.position());
     }
     if (from._has_bit(3)) {
-      set_readindex(from.readindex());
+      set_read_index(from.read_index());
     }
     if (from._has_bit(4)) {
       set_to_quality(from.to_quality());
@@ -1643,7 +1644,7 @@ void SequenceVariation::Swap(SequenceVariation* other) {
     std::swap(from_, other->from_);
     std::swap(to_, other->to_);
     std::swap(position_, other->position_);
-    std::swap(readindex_, other->readindex_);
+    std::swap(read_index_, other->read_index_);
     std::swap(to_quality_, other->to_quality_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
@@ -1696,17 +1697,17 @@ AlignmentHeader::AlignmentHeader(const AlignmentHeader& from)
 
 void AlignmentHeader::SharedCtor() {
   _cached_size_ = 0;
-  smallestsplitqueryindex_ = 0u;
-  largestsplitqueryindex_ = 0u;
+  smallest_split_query_index_ = 0u;
+  largest_split_query_index_ = 0u;
   query_name_mapping_ = NULL;
   target_name_mapping_ = NULL;
   number_of_queries_ = 0u;
   number_of_targets_ = 0u;
   number_of_aligned_reads_ = 0u;
-  constantquerylength_ = 0u;
+  constant_query_length_ = 0u;
   sorted_ = false;
   indexed_ = false;
-  querylengthsstoredinentries_ = false;
+  query_lengths_stored_in_entries_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -1743,8 +1744,8 @@ AlignmentHeader* AlignmentHeader::New() const {
 
 void AlignmentHeader::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    smallestsplitqueryindex_ = 0u;
-    largestsplitqueryindex_ = 0u;
+    smallest_split_query_index_ = 0u;
+    largest_split_query_index_ = 0u;
     if (_has_bit(2)) {
       if (query_name_mapping_ != NULL) query_name_mapping_->::goby::IdentifierMapping::Clear();
     }
@@ -1756,10 +1757,10 @@ void AlignmentHeader::Clear() {
     number_of_aligned_reads_ = 0u;
   }
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
-    constantquerylength_ = 0u;
+    constant_query_length_ = 0u;
     sorted_ = false;
     indexed_ = false;
-    querylengthsstoredinentries_ = false;
+    query_lengths_stored_in_entries_ = false;
   }
   query_length_.Clear();
   target_length_.Clear();
@@ -1888,50 +1889,50 @@ bool AlignmentHeader::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(64)) goto parse_target_length;
-        if (input->ExpectTag(72)) goto parse_smallestSplitQueryIndex;
+        if (input->ExpectTag(72)) goto parse_smallest_split_query_index;
         break;
       }
       
-      // optional uint32 smallestSplitQueryIndex = 9;
+      // optional uint32 smallest_split_query_index = 9;
       case 9: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_smallestSplitQueryIndex:
+         parse_smallest_split_query_index:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 input, &smallestsplitqueryindex_)));
+                 input, &smallest_split_query_index_)));
           _set_bit(0);
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(80)) goto parse_constantQueryLength;
+        if (input->ExpectTag(80)) goto parse_constant_query_length;
         break;
       }
       
-      // optional uint32 constantQueryLength = 10;
+      // optional uint32 constant_query_length = 10;
       case 10: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_constantQueryLength:
+         parse_constant_query_length:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 input, &constantquerylength_)));
+                 input, &constant_query_length_)));
           _set_bit(8);
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(88)) goto parse_largestSplitQueryIndex;
+        if (input->ExpectTag(88)) goto parse_largest_split_query_index;
         break;
       }
       
-      // optional uint32 largestSplitQueryIndex = 11;
+      // optional uint32 largest_split_query_index = 11;
       case 11: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_largestSplitQueryIndex:
+         parse_largest_split_query_index:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 input, &largestsplitqueryindex_)));
+                 input, &largest_split_query_index_)));
           _set_bit(1);
         } else {
           goto handle_uninterpreted;
@@ -1968,18 +1969,18 @@ bool AlignmentHeader::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(120)) goto parse_queryLengthsStoredInEntries;
+        if (input->ExpectTag(120)) goto parse_query_lengths_stored_in_entries;
         break;
       }
       
-      // optional bool queryLengthsStoredInEntries = 15;
+      // optional bool query_lengths_stored_in_entries = 15;
       case 15: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_queryLengthsStoredInEntries:
+         parse_query_lengths_stored_in_entries:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
-                 input, &querylengthsstoredinentries_)));
+                 input, &query_lengths_stored_in_entries_)));
           _set_bit(12);
         } else {
           goto handle_uninterpreted;
@@ -2045,19 +2046,19 @@ void AlignmentHeader::SerializeWithCachedSizes(
       8, this->target_length(i), output);
   }
   
-  // optional uint32 smallestSplitQueryIndex = 9;
+  // optional uint32 smallest_split_query_index = 9;
   if (_has_bit(0)) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(9, this->smallestsplitqueryindex(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(9, this->smallest_split_query_index(), output);
   }
   
-  // optional uint32 constantQueryLength = 10;
+  // optional uint32 constant_query_length = 10;
   if (_has_bit(8)) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(10, this->constantquerylength(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(10, this->constant_query_length(), output);
   }
   
-  // optional uint32 largestSplitQueryIndex = 11;
+  // optional uint32 largest_split_query_index = 11;
   if (_has_bit(1)) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(11, this->largestsplitqueryindex(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(11, this->largest_split_query_index(), output);
   }
   
   // optional bool sorted = 13;
@@ -2070,9 +2071,9 @@ void AlignmentHeader::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(14, this->indexed(), output);
   }
   
-  // optional bool queryLengthsStoredInEntries = 15;
+  // optional bool query_lengths_stored_in_entries = 15;
   if (_has_bit(12)) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(15, this->querylengthsstoredinentries(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteBool(15, this->query_lengths_stored_in_entries(), output);
   }
   
   if (!unknown_fields().empty()) {
@@ -2124,19 +2125,19 @@ void AlignmentHeader::SerializeWithCachedSizes(
       WriteUInt32ToArray(8, this->target_length(i), target);
   }
   
-  // optional uint32 smallestSplitQueryIndex = 9;
+  // optional uint32 smallest_split_query_index = 9;
   if (_has_bit(0)) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(9, this->smallestsplitqueryindex(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(9, this->smallest_split_query_index(), target);
   }
   
-  // optional uint32 constantQueryLength = 10;
+  // optional uint32 constant_query_length = 10;
   if (_has_bit(8)) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(10, this->constantquerylength(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(10, this->constant_query_length(), target);
   }
   
-  // optional uint32 largestSplitQueryIndex = 11;
+  // optional uint32 largest_split_query_index = 11;
   if (_has_bit(1)) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(11, this->largestsplitqueryindex(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(11, this->largest_split_query_index(), target);
   }
   
   // optional bool sorted = 13;
@@ -2149,9 +2150,9 @@ void AlignmentHeader::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(14, this->indexed(), target);
   }
   
-  // optional bool queryLengthsStoredInEntries = 15;
+  // optional bool query_lengths_stored_in_entries = 15;
   if (_has_bit(12)) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(15, this->querylengthsstoredinentries(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(15, this->query_lengths_stored_in_entries(), target);
   }
   
   if (!unknown_fields().empty()) {
@@ -2165,18 +2166,18 @@ int AlignmentHeader::ByteSize() const {
   int total_size = 0;
   
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional uint32 smallestSplitQueryIndex = 9;
-    if (has_smallestsplitqueryindex()) {
+    // optional uint32 smallest_split_query_index = 9;
+    if (has_smallest_split_query_index()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->smallestsplitqueryindex());
+          this->smallest_split_query_index());
     }
     
-    // optional uint32 largestSplitQueryIndex = 11;
-    if (has_largestsplitqueryindex()) {
+    // optional uint32 largest_split_query_index = 11;
+    if (has_largest_split_query_index()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->largestsplitqueryindex());
+          this->largest_split_query_index());
     }
     
     // optional .goby.IdentifierMapping query_name_mapping = 1;
@@ -2216,11 +2217,11 @@ int AlignmentHeader::ByteSize() const {
     
   }
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
-    // optional uint32 constantQueryLength = 10;
-    if (has_constantquerylength()) {
+    // optional uint32 constant_query_length = 10;
+    if (has_constant_query_length()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->constantquerylength());
+          this->constant_query_length());
     }
     
     // optional bool sorted = 13;
@@ -2233,8 +2234,8 @@ int AlignmentHeader::ByteSize() const {
       total_size += 1 + 1;
     }
     
-    // optional bool queryLengthsStoredInEntries = 15;
-    if (has_querylengthsstoredinentries()) {
+    // optional bool query_lengths_stored_in_entries = 15;
+    if (has_query_lengths_stored_in_entries()) {
       total_size += 1 + 1;
     }
     
@@ -2288,10 +2289,10 @@ void AlignmentHeader::MergeFrom(const AlignmentHeader& from) {
   target_length_.MergeFrom(from.target_length_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from._has_bit(0)) {
-      set_smallestsplitqueryindex(from.smallestsplitqueryindex());
+      set_smallest_split_query_index(from.smallest_split_query_index());
     }
     if (from._has_bit(1)) {
-      set_largestsplitqueryindex(from.largestsplitqueryindex());
+      set_largest_split_query_index(from.largest_split_query_index());
     }
     if (from._has_bit(2)) {
       mutable_query_name_mapping()->::goby::IdentifierMapping::MergeFrom(from.query_name_mapping());
@@ -2311,7 +2312,7 @@ void AlignmentHeader::MergeFrom(const AlignmentHeader& from) {
   }
   if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (from._has_bit(8)) {
-      set_constantquerylength(from.constantquerylength());
+      set_constant_query_length(from.constant_query_length());
     }
     if (from._has_bit(10)) {
       set_sorted(from.sorted());
@@ -2320,7 +2321,7 @@ void AlignmentHeader::MergeFrom(const AlignmentHeader& from) {
       set_indexed(from.indexed());
     }
     if (from._has_bit(12)) {
-      set_querylengthsstoredinentries(from.querylengthsstoredinentries());
+      set_query_lengths_stored_in_entries(from.query_lengths_stored_in_entries());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -2351,19 +2352,19 @@ bool AlignmentHeader::IsInitialized() const {
 
 void AlignmentHeader::Swap(AlignmentHeader* other) {
   if (other != this) {
-    std::swap(smallestsplitqueryindex_, other->smallestsplitqueryindex_);
-    std::swap(largestsplitqueryindex_, other->largestsplitqueryindex_);
+    std::swap(smallest_split_query_index_, other->smallest_split_query_index_);
+    std::swap(largest_split_query_index_, other->largest_split_query_index_);
     std::swap(query_name_mapping_, other->query_name_mapping_);
     std::swap(target_name_mapping_, other->target_name_mapping_);
     std::swap(number_of_queries_, other->number_of_queries_);
     std::swap(number_of_targets_, other->number_of_targets_);
     std::swap(number_of_aligned_reads_, other->number_of_aligned_reads_);
     query_length_.Swap(&other->query_length_);
-    std::swap(constantquerylength_, other->constantquerylength_);
+    std::swap(constant_query_length_, other->constant_query_length_);
     target_length_.Swap(&other->target_length_);
     std::swap(sorted_, other->sorted_);
     std::swap(indexed_, other->indexed_);
-    std::swap(querylengthsstoredinentries_, other->querylengthsstoredinentries_);
+    std::swap(query_lengths_stored_in_entries_, other->query_lengths_stored_in_entries_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -2873,7 +2874,7 @@ AlignmentTooManyHits::AlignmentTooManyHits(const AlignmentTooManyHits& from)
 
 void AlignmentTooManyHits::SharedCtor() {
   _cached_size_ = 0;
-  alignerthreshold_ = 0u;
+  aligner_threshold_ = 0u;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -2908,7 +2909,7 @@ AlignmentTooManyHits* AlignmentTooManyHits::New() const {
 
 void AlignmentTooManyHits::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    alignerthreshold_ = 0u;
+    aligner_threshold_ = 0u;
   }
   hits_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -2932,18 +2933,18 @@ bool AlignmentTooManyHits::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(10)) goto parse_hits;
-        if (input->ExpectTag(16)) goto parse_alignerThreshold;
+        if (input->ExpectTag(16)) goto parse_aligner_threshold;
         break;
       }
       
-      // required uint32 alignerThreshold = 2;
+      // required uint32 aligner_threshold = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_alignerThreshold:
+         parse_aligner_threshold:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 input, &alignerthreshold_)));
+                 input, &aligner_threshold_)));
           _set_bit(0);
         } else {
           goto handle_uninterpreted;
@@ -2976,9 +2977,9 @@ void AlignmentTooManyHits::SerializeWithCachedSizes(
       1, this->hits(i), output);
   }
   
-  // required uint32 alignerThreshold = 2;
+  // required uint32 aligner_threshold = 2;
   if (_has_bit(0)) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->alignerthreshold(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->aligner_threshold(), output);
   }
   
   if (!unknown_fields().empty()) {
@@ -2996,9 +2997,9 @@ void AlignmentTooManyHits::SerializeWithCachedSizes(
         1, this->hits(i), target);
   }
   
-  // required uint32 alignerThreshold = 2;
+  // required uint32 aligner_threshold = 2;
   if (_has_bit(0)) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->alignerthreshold(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->aligner_threshold(), target);
   }
   
   if (!unknown_fields().empty()) {
@@ -3012,11 +3013,11 @@ int AlignmentTooManyHits::ByteSize() const {
   int total_size = 0;
   
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required uint32 alignerThreshold = 2;
-    if (has_alignerthreshold()) {
+    // required uint32 aligner_threshold = 2;
+    if (has_aligner_threshold()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->alignerthreshold());
+          this->aligner_threshold());
     }
     
   }
@@ -3056,7 +3057,7 @@ void AlignmentTooManyHits::MergeFrom(const AlignmentTooManyHits& from) {
   hits_.MergeFrom(from.hits_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from._has_bit(0)) {
-      set_alignerthreshold(from.alignerthreshold());
+      set_aligner_threshold(from.aligner_threshold());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -3085,7 +3086,7 @@ bool AlignmentTooManyHits::IsInitialized() const {
 
 void AlignmentTooManyHits::Swap(AlignmentTooManyHits* other) {
   if (other != this) {
-    std::swap(alignerthreshold_, other->alignerthreshold_);
+    std::swap(aligner_threshold_, other->aligner_threshold_);
     hits_.Swap(&other->hits_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
@@ -3447,9 +3448,9 @@ AlignmentIndex* AlignmentIndex::New() const {
 }
 
 void AlignmentIndex::Clear() {
-  targetpositionoffsets_.Clear();
+  target_position_offsets_.Clear();
   offsets_.Clear();
-  absolutepositions_.Clear();
+  absolute_positions_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -3460,19 +3461,19 @@ bool AlignmentIndex::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated uint32 targetPositionOffsets = 1 [packed = true];
+      // repeated uint32 target_position_offsets = 1 [packed = true];
       case 1: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 input, this->mutable_targetpositionoffsets())));
+                 input, this->mutable_target_position_offsets())));
         } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
                    == ::google::protobuf::internal::WireFormatLite::
                       WIRETYPE_VARINT) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 1, 10, input, this->mutable_targetpositionoffsets())));
+                 1, 10, input, this->mutable_target_position_offsets())));
         } else {
           goto handle_uninterpreted;
         }
@@ -3497,24 +3498,24 @@ bool AlignmentIndex::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(26)) goto parse_absolutePositions;
+        if (input->ExpectTag(26)) goto parse_absolute_positions;
         break;
       }
       
-      // repeated uint64 absolutePositions = 3 [packed = true];
+      // repeated uint64 absolute_positions = 3 [packed = true];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_absolutePositions:
+         parse_absolute_positions:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
-                 input, this->mutable_absolutepositions())));
+                 input, this->mutable_absolute_positions())));
         } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
                    == ::google::protobuf::internal::WireFormatLite::
                       WIRETYPE_VARINT) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
                    ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
-                 1, 26, input, this->mutable_absolutepositions())));
+                 1, 26, input, this->mutable_absolute_positions())));
         } else {
           goto handle_uninterpreted;
         }
@@ -3540,14 +3541,14 @@ bool AlignmentIndex::MergePartialFromCodedStream(
 
 void AlignmentIndex::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // repeated uint32 targetPositionOffsets = 1 [packed = true];
-  if (this->targetpositionoffsets_size() > 0) {
+  // repeated uint32 target_position_offsets = 1 [packed = true];
+  if (this->target_position_offsets_size() > 0) {
     ::google::protobuf::internal::WireFormatLite::WriteTag(1, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
-    output->WriteVarint32(_targetpositionoffsets_cached_byte_size_);
+    output->WriteVarint32(_target_position_offsets_cached_byte_size_);
   }
-  for (int i = 0; i < this->targetpositionoffsets_size(); i++) {
+  for (int i = 0; i < this->target_position_offsets_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32NoTag(
-      this->targetpositionoffsets(i), output);
+      this->target_position_offsets(i), output);
   }
   
   // repeated uint64 offsets = 2 [packed = true];
@@ -3560,14 +3561,14 @@ void AlignmentIndex::SerializeWithCachedSizes(
       this->offsets(i), output);
   }
   
-  // repeated uint64 absolutePositions = 3 [packed = true];
-  if (this->absolutepositions_size() > 0) {
+  // repeated uint64 absolute_positions = 3 [packed = true];
+  if (this->absolute_positions_size() > 0) {
     ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
-    output->WriteVarint32(_absolutepositions_cached_byte_size_);
+    output->WriteVarint32(_absolute_positions_cached_byte_size_);
   }
-  for (int i = 0; i < this->absolutepositions_size(); i++) {
+  for (int i = 0; i < this->absolute_positions_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64NoTag(
-      this->absolutepositions(i), output);
+      this->absolute_positions(i), output);
   }
   
   if (!unknown_fields().empty()) {
@@ -3578,18 +3579,18 @@ void AlignmentIndex::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* AlignmentIndex::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // repeated uint32 targetPositionOffsets = 1 [packed = true];
-  if (this->targetpositionoffsets_size() > 0) {
+  // repeated uint32 target_position_offsets = 1 [packed = true];
+  if (this->target_position_offsets_size() > 0) {
     target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
       1,
       ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
       target);
     target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
-      _targetpositionoffsets_cached_byte_size_, target);
+      _target_position_offsets_cached_byte_size_, target);
   }
-  for (int i = 0; i < this->targetpositionoffsets_size(); i++) {
+  for (int i = 0; i < this->target_position_offsets_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteUInt32NoTagToArray(this->targetpositionoffsets(i), target);
+      WriteUInt32NoTagToArray(this->target_position_offsets(i), target);
   }
   
   // repeated uint64 offsets = 2 [packed = true];
@@ -3606,18 +3607,18 @@ void AlignmentIndex::SerializeWithCachedSizes(
       WriteUInt64NoTagToArray(this->offsets(i), target);
   }
   
-  // repeated uint64 absolutePositions = 3 [packed = true];
-  if (this->absolutepositions_size() > 0) {
+  // repeated uint64 absolute_positions = 3 [packed = true];
+  if (this->absolute_positions_size() > 0) {
     target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
       3,
       ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
       target);
     target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
-      _absolutepositions_cached_byte_size_, target);
+      _absolute_positions_cached_byte_size_, target);
   }
-  for (int i = 0; i < this->absolutepositions_size(); i++) {
+  for (int i = 0; i < this->absolute_positions_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteUInt64NoTagToArray(this->absolutepositions(i), target);
+      WriteUInt64NoTagToArray(this->absolute_positions(i), target);
   }
   
   if (!unknown_fields().empty()) {
@@ -3630,18 +3631,18 @@ void AlignmentIndex::SerializeWithCachedSizes(
 int AlignmentIndex::ByteSize() const {
   int total_size = 0;
   
-  // repeated uint32 targetPositionOffsets = 1 [packed = true];
+  // repeated uint32 target_position_offsets = 1 [packed = true];
   {
     int data_size = 0;
-    for (int i = 0; i < this->targetpositionoffsets_size(); i++) {
+    for (int i = 0; i < this->target_position_offsets_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
-        UInt32Size(this->targetpositionoffsets(i));
+        UInt32Size(this->target_position_offsets(i));
     }
     if (data_size > 0) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
     }
-    _targetpositionoffsets_cached_byte_size_ = data_size;
+    _target_position_offsets_cached_byte_size_ = data_size;
     total_size += data_size;
   }
   
@@ -3660,18 +3661,18 @@ int AlignmentIndex::ByteSize() const {
     total_size += data_size;
   }
   
-  // repeated uint64 absolutePositions = 3 [packed = true];
+  // repeated uint64 absolute_positions = 3 [packed = true];
   {
     int data_size = 0;
-    for (int i = 0; i < this->absolutepositions_size(); i++) {
+    for (int i = 0; i < this->absolute_positions_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
-        UInt64Size(this->absolutepositions(i));
+        UInt64Size(this->absolute_positions(i));
     }
     if (data_size > 0) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
     }
-    _absolutepositions_cached_byte_size_ = data_size;
+    _absolute_positions_cached_byte_size_ = data_size;
     total_size += data_size;
   }
   
@@ -3700,9 +3701,9 @@ void AlignmentIndex::MergeFrom(const ::google::protobuf::Message& from) {
 
 void AlignmentIndex::MergeFrom(const AlignmentIndex& from) {
   GOOGLE_CHECK_NE(&from, this);
-  targetpositionoffsets_.MergeFrom(from.targetpositionoffsets_);
+  target_position_offsets_.MergeFrom(from.target_position_offsets_);
   offsets_.MergeFrom(from.offsets_);
-  absolutepositions_.MergeFrom(from.absolutepositions_);
+  absolute_positions_.MergeFrom(from.absolute_positions_);
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
@@ -3725,9 +3726,9 @@ bool AlignmentIndex::IsInitialized() const {
 
 void AlignmentIndex::Swap(AlignmentIndex* other) {
   if (other != this) {
-    targetpositionoffsets_.Swap(&other->targetpositionoffsets_);
+    target_position_offsets_.Swap(&other->target_position_offsets_);
     offsets_.Swap(&other->offsets_);
-    absolutepositions_.Swap(&other->absolutepositions_);
+    absolute_positions_.Swap(&other->absolute_positions_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

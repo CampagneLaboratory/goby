@@ -35,8 +35,8 @@ public final class Alignments {
       return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_AlignmentCollection_fieldAccessorTable;
     }
     
-    // repeated .goby.AlignmentEntry alignmentEntries = 1;
-    public static final int ALIGNMENTENTRIES_FIELD_NUMBER = 1;
+    // repeated .goby.AlignmentEntry alignment_entries = 1;
+    public static final int ALIGNMENT_ENTRIES_FIELD_NUMBER = 1;
     private java.util.List<edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry> alignmentEntries_ =
       java.util.Collections.emptyList();
     public java.util.List<edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry> getAlignmentEntriesList() {
@@ -279,7 +279,7 @@ public final class Alignments {
       }
       
       
-      // repeated .goby.AlignmentEntry alignmentEntries = 1;
+      // repeated .goby.AlignmentEntry alignment_entries = 1;
       public java.util.List<edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry> getAlignmentEntriesList() {
         return java.util.Collections.unmodifiableList(result.alignmentEntries_);
       }
@@ -458,8 +458,8 @@ public final class Alignments {
       return sequenceVariations_.get(index);
     }
     
-    // optional uint32 queryLength = 10;
-    public static final int QUERYLENGTH_FIELD_NUMBER = 10;
+    // optional uint32 query_length = 10;
+    public static final int QUERY_LENGTH_FIELD_NUMBER = 10;
     private boolean hasQueryLength;
     private int queryLength_ = 0;
     public boolean hasQueryLength() { return hasQueryLength; }
@@ -1118,7 +1118,7 @@ public final class Alignments {
         return this;
       }
       
-      // optional uint32 queryLength = 10;
+      // optional uint32 query_length = 10;
       public boolean hasQueryLength() {
         return result.hasQueryLength();
       }
@@ -1196,8 +1196,8 @@ public final class Alignments {
     public boolean hasPosition() { return hasPosition; }
     public int getPosition() { return position_; }
     
-    // required uint32 readIndex = 5;
-    public static final int READINDEX_FIELD_NUMBER = 5;
+    // required uint32 read_index = 5;
+    public static final int READ_INDEX_FIELD_NUMBER = 5;
     private boolean hasReadIndex;
     private int readIndex_ = 0;
     public boolean hasReadIndex() { return hasReadIndex; }
@@ -1550,7 +1550,7 @@ public final class Alignments {
         return this;
       }
       
-      // required uint32 readIndex = 5;
+      // required uint32 read_index = 5;
       public boolean hasReadIndex() {
         return result.hasReadIndex();
       }
@@ -1628,15 +1628,15 @@ public final class Alignments {
       return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_AlignmentHeader_fieldAccessorTable;
     }
     
-    // optional uint32 smallestSplitQueryIndex = 9;
-    public static final int SMALLESTSPLITQUERYINDEX_FIELD_NUMBER = 9;
+    // optional uint32 smallest_split_query_index = 9;
+    public static final int SMALLEST_SPLIT_QUERY_INDEX_FIELD_NUMBER = 9;
     private boolean hasSmallestSplitQueryIndex;
     private int smallestSplitQueryIndex_ = 0;
     public boolean hasSmallestSplitQueryIndex() { return hasSmallestSplitQueryIndex; }
     public int getSmallestSplitQueryIndex() { return smallestSplitQueryIndex_; }
     
-    // optional uint32 largestSplitQueryIndex = 11;
-    public static final int LARGESTSPLITQUERYINDEX_FIELD_NUMBER = 11;
+    // optional uint32 largest_split_query_index = 11;
+    public static final int LARGEST_SPLIT_QUERY_INDEX_FIELD_NUMBER = 11;
     private boolean hasLargestSplitQueryIndex;
     private int largestSplitQueryIndex_ = 0;
     public boolean hasLargestSplitQueryIndex() { return hasLargestSplitQueryIndex; }
@@ -1689,8 +1689,8 @@ public final class Alignments {
       return queryLength_.get(index);
     }
     
-    // optional uint32 constantQueryLength = 10;
-    public static final int CONSTANTQUERYLENGTH_FIELD_NUMBER = 10;
+    // optional uint32 constant_query_length = 10;
+    public static final int CONSTANT_QUERY_LENGTH_FIELD_NUMBER = 10;
     private boolean hasConstantQueryLength;
     private int constantQueryLength_ = 0;
     public boolean hasConstantQueryLength() { return hasConstantQueryLength; }
@@ -1722,8 +1722,8 @@ public final class Alignments {
     public boolean hasIndexed() { return hasIndexed; }
     public boolean getIndexed() { return indexed_; }
     
-    // optional bool queryLengthsStoredInEntries = 15;
-    public static final int QUERYLENGTHSSTOREDINENTRIES_FIELD_NUMBER = 15;
+    // optional bool query_lengths_stored_in_entries = 15;
+    public static final int QUERY_LENGTHS_STORED_IN_ENTRIES_FIELD_NUMBER = 15;
     private boolean hasQueryLengthsStoredInEntries;
     private boolean queryLengthsStoredInEntries_ = false;
     public boolean hasQueryLengthsStoredInEntries() { return hasQueryLengthsStoredInEntries; }
@@ -2177,7 +2177,7 @@ public final class Alignments {
       }
       
       
-      // optional uint32 smallestSplitQueryIndex = 9;
+      // optional uint32 smallest_split_query_index = 9;
       public boolean hasSmallestSplitQueryIndex() {
         return result.hasSmallestSplitQueryIndex();
       }
@@ -2195,7 +2195,7 @@ public final class Alignments {
         return this;
       }
       
-      // optional uint32 largestSplitQueryIndex = 11;
+      // optional uint32 largest_split_query_index = 11;
       public boolean hasLargestSplitQueryIndex() {
         return result.hasLargestSplitQueryIndex();
       }
@@ -2375,7 +2375,7 @@ public final class Alignments {
         return this;
       }
       
-      // optional uint32 constantQueryLength = 10;
+      // optional uint32 constant_query_length = 10;
       public boolean hasConstantQueryLength() {
         return result.hasConstantQueryLength();
       }
@@ -2463,7 +2463,7 @@ public final class Alignments {
         return this;
       }
       
-      // optional bool queryLengthsStoredInEntries = 15;
+      // optional bool query_lengths_stored_in_entries = 15;
       public boolean hasQueryLengthsStoredInEntries() {
         return result.hasQueryLengthsStoredInEntries();
       }
@@ -3182,8 +3182,8 @@ public final class Alignments {
       return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_AlignmentTooManyHits_fieldAccessorTable;
     }
     
-    // required uint32 alignerThreshold = 2;
-    public static final int ALIGNERTHRESHOLD_FIELD_NUMBER = 2;
+    // required uint32 aligner_threshold = 2;
+    public static final int ALIGNER_THRESHOLD_FIELD_NUMBER = 2;
     private boolean hasAlignerThreshold;
     private int alignerThreshold_ = 0;
     public boolean hasAlignerThreshold() { return hasAlignerThreshold; }
@@ -3448,7 +3448,7 @@ public final class Alignments {
       }
       
       
-      // required uint32 alignerThreshold = 2;
+      // required uint32 aligner_threshold = 2;
       public boolean hasAlignerThreshold() {
         return result.hasAlignerThreshold();
       }
@@ -3920,8 +3920,8 @@ public final class Alignments {
       return edu.cornell.med.icb.goby.alignments.Alignments.internal_static_goby_AlignmentIndex_fieldAccessorTable;
     }
     
-    // repeated uint32 targetPositionOffsets = 1 [packed = true];
-    public static final int TARGETPOSITIONOFFSETS_FIELD_NUMBER = 1;
+    // repeated uint32 target_position_offsets = 1 [packed = true];
+    public static final int TARGET_POSITION_OFFSETS_FIELD_NUMBER = 1;
     private java.util.List<java.lang.Integer> targetPositionOffsets_ =
       java.util.Collections.emptyList();
     public java.util.List<java.lang.Integer> getTargetPositionOffsetsList() {
@@ -3946,8 +3946,8 @@ public final class Alignments {
     }
     private int offsetsMemoizedSerializedSize = -1;
     
-    // repeated uint64 absolutePositions = 3 [packed = true];
-    public static final int ABSOLUTEPOSITIONS_FIELD_NUMBER = 3;
+    // repeated uint64 absolute_positions = 3 [packed = true];
+    public static final int ABSOLUTE_POSITIONS_FIELD_NUMBER = 3;
     private java.util.List<java.lang.Long> absolutePositions_ =
       java.util.Collections.emptyList();
     public java.util.List<java.lang.Long> getAbsolutePositionsList() {
@@ -4297,7 +4297,7 @@ public final class Alignments {
       }
       
       
-      // repeated uint32 targetPositionOffsets = 1 [packed = true];
+      // repeated uint32 target_position_offsets = 1 [packed = true];
       public java.util.List<java.lang.Integer> getTargetPositionOffsetsList() {
         return java.util.Collections.unmodifiableList(result.targetPositionOffsets_);
       }
@@ -4365,7 +4365,7 @@ public final class Alignments {
         return this;
       }
       
-      // repeated uint64 absolutePositions = 3 [packed = true];
+      // repeated uint64 absolute_positions = 3 [packed = true];
       public java.util.List<java.lang.Long> getAbsolutePositionsList() {
         return java.util.Collections.unmodifiableList(result.absolutePositions_);
       }
@@ -4465,42 +4465,43 @@ public final class Alignments {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\020Alignments.proto\022\004goby\"E\n\023AlignmentCol" +
-      "lection\022.\n\020alignmentEntries\030\001 \003(\0132\024.goby" +
-      ".AlignmentEntry\"\353\002\n\016AlignmentEntry\022\024\n\014mu" +
-      "ltiplicity\030\007 \001(\r\022\023\n\013query_index\030\001 \002(\r\022\024\n" +
-      "\014target_index\030\002 \002(\r\022\020\n\010position\030\003 \002(\r\022\037\n" +
-      "\027matching_reverse_strand\030\006 \002(\010\022\026\n\016query_" +
-      "position\030\005 \001(\r\022\r\n\005score\030\004 \001(\002\022\034\n\024number_" +
-      "of_mismatches\030\010 \001(\r\022\030\n\020number_of_indels\030" +
-      "\t \001(\r\022\034\n\024query_aligned_length\030\013 \001(\r\022\035\n\025t" +
-      "arget_aligned_length\030\014 \001(\r\0224\n\023sequence_v",
-      "ariations\030\r \003(\0132\027.goby.SequenceVariation" +
-      "\022\023\n\013queryLength\030\n \001(\r\"f\n\021SequenceVariati" +
-      "on\022\014\n\004from\030\002 \002(\t\022\n\n\002to\030\001 \002(\t\022\020\n\010position" +
-      "\030\003 \002(\r\022\021\n\treadIndex\030\005 \002(\r\022\022\n\nto_quality\030" +
-      "\004 \001(\014\"\250\003\n\017AlignmentHeader\022\037\n\027smallestSpl" +
-      "itQueryIndex\030\t \001(\r\022\036\n\026largestSplitQueryI" +
-      "ndex\030\013 \001(\r\0223\n\022query_name_mapping\030\001 \001(\0132\027" +
-      ".goby.IdentifierMapping\0224\n\023target_name_m" +
-      "apping\030\002 \001(\0132\027.goby.IdentifierMapping\022\031\n" +
-      "\021number_of_queries\030\005 \001(\r\022\031\n\021number_of_ta",
-      "rgets\030\006 \001(\r\022\037\n\027number_of_aligned_reads\030\007" +
-      " \001(\r\022\030\n\014query_length\030\003 \003(\rB\002\030\001\022\033\n\023consta" +
-      "ntQueryLength\030\n \001(\r\022\025\n\rtarget_length\030\010 \003" +
-      "(\r\022\016\n\006sorted\030\r \001(\010\022\017\n\007indexed\030\016 \001(\010\022#\n\033q" +
-      "ueryLengthsStoredInEntries\030\017 \001(\010\";\n\021Iden" +
-      "tifierMapping\022&\n\010mappings\030\001 \003(\0132\024.goby.I" +
-      "dentifierInfo\"-\n\016IdentifierInfo\022\014\n\004name\030" +
-      "\001 \002(\t\022\r\n\005index\030\002 \002(\r\"W\n\024AlignmentTooMany" +
-      "Hits\022\030\n\020alignerThreshold\030\002 \002(\r\022%\n\004hits\030\001" +
-      " \003(\0132\027.goby.AmbiguousLocation\"b\n\021Ambiguo",
-      "usLocation\022\023\n\013query_index\030\001 \002(\r\022\037\n\027at_le" +
-      "ast_number_of_hits\030\002 \002(\r\022\027\n\017length_of_ma" +
-      "tch\030\003 \001(\r\"g\n\016AlignmentIndex\022!\n\025targetPos" +
-      "itionOffsets\030\001 \003(\rB\002\020\001\022\023\n\007offsets\030\002 \003(\004B" +
-      "\002\020\001\022\035\n\021absolutePositions\030\003 \003(\004B\002\020\001B\'\n#ed" +
-      "u.cornell.med.icb.goby.alignmentsH\001"
+      "\n\020Alignments.proto\022\004goby\"F\n\023AlignmentCol" +
+      "lection\022/\n\021alignment_entries\030\001 \003(\0132\024.gob" +
+      "y.AlignmentEntry\"\354\002\n\016AlignmentEntry\022\024\n\014m" +
+      "ultiplicity\030\007 \001(\r\022\023\n\013query_index\030\001 \002(\r\022\024" +
+      "\n\014target_index\030\002 \002(\r\022\020\n\010position\030\003 \002(\r\022\037" +
+      "\n\027matching_reverse_strand\030\006 \002(\010\022\026\n\016query" +
+      "_position\030\005 \001(\r\022\r\n\005score\030\004 \001(\002\022\034\n\024number" +
+      "_of_mismatches\030\010 \001(\r\022\030\n\020number_of_indels" +
+      "\030\t \001(\r\022\034\n\024query_aligned_length\030\013 \001(\r\022\035\n\025" +
+      "target_aligned_length\030\014 \001(\r\0224\n\023sequence_",
+      "variations\030\r \003(\0132\027.goby.SequenceVariatio" +
+      "n\022\024\n\014query_length\030\n \001(\r\"g\n\021SequenceVaria" +
+      "tion\022\014\n\004from\030\002 \002(\t\022\n\n\002to\030\001 \002(\t\022\020\n\010positi" +
+      "on\030\003 \002(\r\022\022\n\nread_index\030\005 \002(\r\022\022\n\nto_quali" +
+      "ty\030\004 \001(\014\"\264\003\n\017AlignmentHeader\022\"\n\032smallest" +
+      "_split_query_index\030\t \001(\r\022!\n\031largest_spli" +
+      "t_query_index\030\013 \001(\r\0223\n\022query_name_mappin" +
+      "g\030\001 \001(\0132\027.goby.IdentifierMapping\0224\n\023targ" +
+      "et_name_mapping\030\002 \001(\0132\027.goby.IdentifierM" +
+      "apping\022\031\n\021number_of_queries\030\005 \001(\r\022\031\n\021num",
+      "ber_of_targets\030\006 \001(\r\022\037\n\027number_of_aligne" +
+      "d_reads\030\007 \001(\r\022\030\n\014query_length\030\003 \003(\rB\002\030\001\022" +
+      "\035\n\025constant_query_length\030\n \001(\r\022\025\n\rtarget" +
+      "_length\030\010 \003(\r\022\016\n\006sorted\030\r \001(\010\022\017\n\007indexed" +
+      "\030\016 \001(\010\022\'\n\037query_lengths_stored_in_entrie" +
+      "s\030\017 \001(\010\";\n\021IdentifierMapping\022&\n\010mappings" +
+      "\030\001 \003(\0132\024.goby.IdentifierInfo\"-\n\016Identifi" +
+      "erInfo\022\014\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"X\n\024A" +
+      "lignmentTooManyHits\022\031\n\021aligner_threshold" +
+      "\030\002 \002(\r\022%\n\004hits\030\001 \003(\0132\027.goby.AmbiguousLoc",
+      "ation\"b\n\021AmbiguousLocation\022\023\n\013query_inde" +
+      "x\030\001 \002(\r\022\037\n\027at_least_number_of_hits\030\002 \002(\r" +
+      "\022\027\n\017length_of_match\030\003 \001(\r\"j\n\016AlignmentIn" +
+      "dex\022#\n\027target_position_offsets\030\001 \003(\rB\002\020\001" +
+      "\022\023\n\007offsets\030\002 \003(\004B\002\020\001\022\036\n\022absolute_positi" +
+      "ons\030\003 \003(\004B\002\020\001B\'\n#edu.cornell.med.icb.gob" +
+      "y.alignmentsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

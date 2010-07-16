@@ -50,10 +50,10 @@ namespace goby {
     inline unsigned getNumberOfQueries() const { return pbHeader.number_of_queries(); };
     inline unsigned getNumberOfTargets() const { return pbHeader.number_of_targets(); };
     inline unsigned getNumberOfAlignedReads() const { return pbHeader.number_of_aligned_reads(); };
-    inline bool hasConstantQueryLength() const { return pbHeader.has_constantquerylength(); };
-    inline unsigned getConstantQuerylength() const { return pbHeader.constantquerylength(); };
-    inline unsigned getSmallestSplitQueryIndex() const { return pbHeader.smallestsplitqueryindex(); };
-    inline unsigned getLargestSplitQueryIndex() const { return  pbHeader.largestsplitqueryindex(); };
+    inline bool hasConstantQueryLength() const { return pbHeader.has_constant_query_length(); };
+    inline unsigned getConstantQuerylength() const { return pbHeader.constant_query_length(); };
+    inline unsigned getSmallestSplitQueryIndex() const { return pbHeader.smallest_split_query_index(); };
+    inline unsigned getLargestSplitQueryIndex() const { return  pbHeader.largest_split_query_index(); };
     
     inline bool isSorted() const { return pbHeader.sorted(); };
     inline bool isIndexed() const { return pbHeader.indexed(); };
@@ -86,9 +86,9 @@ namespace goby {
     inline void setNumberOfQueries(unsigned numberOfQueries) { pbHeader.set_number_of_queries(numberOfQueries); };
     inline void setNumberOfTargets(unsigned numberOfTargets) { pbHeader.set_number_of_targets(numberOfTargets); };
     inline void setNumberOfAlignedReads(unsigned numberOfAlignedReads) { pbHeader.set_number_of_aligned_reads(numberOfAlignedReads); };
-    inline void setConstantquerylength(unsigned constantQueryLength) { pbHeader.set_constantquerylength(constantQueryLength); };
-    inline void setSmallestSplitQueryIndex(unsigned smallestSplitQueryIndex) { pbHeader.set_smallestsplitqueryindex(smallestSplitQueryIndex); };
-    inline void setLargestSplitQueryIndex(unsigned largestSplitQueryIndex) { pbHeader.set_largestsplitqueryindex(largestSplitQueryIndex); };
+    inline void setConstantquerylength(unsigned constantQueryLength) { pbHeader.set_constant_query_length(constantQueryLength); };
+    inline void setSmallestSplitQueryIndex(unsigned smallestSplitQueryIndex) { pbHeader.set_smallest_split_query_index(smallestSplitQueryIndex); };
+    inline void setLargestSplitQueryIndex(unsigned largestSplitQueryIndex) { pbHeader.set_largest_split_query_index(largestSplitQueryIndex); };
 
     inline void setSorted(bool sorted) { pbHeader.set_sorted(sorted); };
     inline void setIndexed(bool indexed) { pbHeader.set_indexed(indexed); };

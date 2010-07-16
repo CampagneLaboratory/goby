@@ -70,7 +70,7 @@ int main (int argc, const char *const argv[]) {
   goby::MessageChunksIterator<goby::AlignmentCollection> collectionIteratorEnd = alignmentCollectionIterator.end();
   for (goby::MessageChunksIterator<goby::AlignmentCollection> it = collectionIteratorBegin; it != collectionIteratorEnd; it++) {
     const goby::AlignmentCollection collection = *it;
-    const google::protobuf::RepeatedPtrField<goby::AlignmentEntry>& entries = collection.alignmententries();
+    const google::protobuf::RepeatedPtrField<goby::AlignmentEntry>& entries = collection.alignment_entries();
     google::protobuf::RepeatedPtrField<const goby::AlignmentEntry>::const_iterator entryIterator;
     google::protobuf::RepeatedPtrField<const goby::AlignmentEntry>::const_iterator entryIteratorBegin = entries.begin();
     google::protobuf::RepeatedPtrField<const goby::AlignmentEntry>::const_iterator entryIteratorEnd = entries.end();

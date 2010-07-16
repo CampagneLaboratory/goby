@@ -47,16 +47,16 @@ void protobuf_AssignDesc_Reads_2eproto() {
       sizeof(ReadCollection));
   ReadEntry_descriptor_ = file->message_type(1);
   static const int ReadEntry_offsets_[10] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, readindex_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, barcodeindex_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, readidentifier_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, read_index_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, barcode_index_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, read_identifier_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, description_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, readlength_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, read_length_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, sequence_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, sequencepair_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, readlengthpair_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, qualityscores_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, qualityscorespair_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, sequence_pair_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, read_length_pair_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, quality_scores_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, quality_scores_pair_),
   };
   ReadEntry_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -104,14 +104,14 @@ void protobuf_AddDesc_Reads_2eproto() {
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\013Reads.proto\022\004goby\"0\n\016ReadCollection\022\036\n"
-    "\005reads\030\001 \003(\0132\017.goby.ReadEntry\"\347\001\n\tReadEn"
-    "try\022\021\n\treadIndex\030\001 \002(\r\022\024\n\014barcodeIndex\030\n"
-    " \001(\r\022\026\n\016readIdentifier\030\027 \001(\t\022\023\n\013descript"
-    "ion\030\026 \001(\t\022\022\n\nreadLength\030\002 \002(\r\022\020\n\010sequenc"
-    "e\030\003 \001(\014\022\024\n\014sequencePair\030\005 \001(\014\022\026\n\016readLen"
-    "gthPair\030\006 \001(\r\022\025\n\rqualityScores\030\004 \001(\014\022\031\n\021"
-    "qualityScoresPair\030\007 \001(\014B\"\n\036edu.cornell.m"
-    "ed.icb.goby.readsH\001", 339);
+    "\005reads\030\001 \003(\0132\017.goby.ReadEntry\"\361\001\n\tReadEn"
+    "try\022\022\n\nread_index\030\001 \002(\r\022\025\n\rbarcode_index"
+    "\030\n \001(\r\022\027\n\017read_identifier\030\027 \001(\t\022\023\n\013descr"
+    "iption\030\026 \001(\t\022\023\n\013read_length\030\002 \002(\r\022\020\n\010seq"
+    "uence\030\003 \001(\014\022\025\n\rsequence_pair\030\005 \001(\014\022\030\n\020re"
+    "ad_length_pair\030\006 \001(\r\022\026\n\016quality_scores\030\004"
+    " \001(\014\022\033\n\023quality_scores_pair\030\007 \001(\014B\"\n\036edu"
+    ".cornell.med.icb.goby.readsH\001", 349);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "Reads.proto", &protobuf_RegisterTypes);
   ReadCollection::default_instance_ = new ReadCollection();
@@ -336,12 +336,12 @@ void ReadCollection::Swap(ReadCollection* other) {
 
 // ===================================================================
 
-const ::std::string ReadEntry::_default_readidentifier_;
+const ::std::string ReadEntry::_default_read_identifier_;
 const ::std::string ReadEntry::_default_description_;
 const ::std::string ReadEntry::_default_sequence_;
-const ::std::string ReadEntry::_default_sequencepair_;
-const ::std::string ReadEntry::_default_qualityscores_;
-const ::std::string ReadEntry::_default_qualityscorespair_;
+const ::std::string ReadEntry::_default_sequence_pair_;
+const ::std::string ReadEntry::_default_quality_scores_;
+const ::std::string ReadEntry::_default_quality_scores_pair_;
 #ifndef _MSC_VER
 const int ReadEntry::kReadIndexFieldNumber;
 const int ReadEntry::kBarcodeIndexFieldNumber;
@@ -371,16 +371,16 @@ ReadEntry::ReadEntry(const ReadEntry& from)
 
 void ReadEntry::SharedCtor() {
   _cached_size_ = 0;
-  readindex_ = 0u;
-  barcodeindex_ = 0u;
-  readidentifier_ = const_cast< ::std::string*>(&_default_readidentifier_);
+  read_index_ = 0u;
+  barcode_index_ = 0u;
+  read_identifier_ = const_cast< ::std::string*>(&_default_read_identifier_);
   description_ = const_cast< ::std::string*>(&_default_description_);
-  readlength_ = 0u;
+  read_length_ = 0u;
   sequence_ = const_cast< ::std::string*>(&_default_sequence_);
-  sequencepair_ = const_cast< ::std::string*>(&_default_sequencepair_);
-  readlengthpair_ = 0u;
-  qualityscores_ = const_cast< ::std::string*>(&_default_qualityscores_);
-  qualityscorespair_ = const_cast< ::std::string*>(&_default_qualityscorespair_);
+  sequence_pair_ = const_cast< ::std::string*>(&_default_sequence_pair_);
+  read_length_pair_ = 0u;
+  quality_scores_ = const_cast< ::std::string*>(&_default_quality_scores_);
+  quality_scores_pair_ = const_cast< ::std::string*>(&_default_quality_scores_pair_);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -389,8 +389,8 @@ ReadEntry::~ReadEntry() {
 }
 
 void ReadEntry::SharedDtor() {
-  if (readidentifier_ != &_default_readidentifier_) {
-    delete readidentifier_;
+  if (read_identifier_ != &_default_read_identifier_) {
+    delete read_identifier_;
   }
   if (description_ != &_default_description_) {
     delete description_;
@@ -398,14 +398,14 @@ void ReadEntry::SharedDtor() {
   if (sequence_ != &_default_sequence_) {
     delete sequence_;
   }
-  if (sequencepair_ != &_default_sequencepair_) {
-    delete sequencepair_;
+  if (sequence_pair_ != &_default_sequence_pair_) {
+    delete sequence_pair_;
   }
-  if (qualityscores_ != &_default_qualityscores_) {
-    delete qualityscores_;
+  if (quality_scores_ != &_default_quality_scores_) {
+    delete quality_scores_;
   }
-  if (qualityscorespair_ != &_default_qualityscorespair_) {
-    delete qualityscorespair_;
+  if (quality_scores_pair_ != &_default_quality_scores_pair_) {
+    delete quality_scores_pair_;
   }
   if (this != default_instance_) {
   }
@@ -433,11 +433,11 @@ ReadEntry* ReadEntry::New() const {
 
 void ReadEntry::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    readindex_ = 0u;
-    barcodeindex_ = 0u;
+    read_index_ = 0u;
+    barcode_index_ = 0u;
     if (_has_bit(2)) {
-      if (readidentifier_ != &_default_readidentifier_) {
-        readidentifier_->clear();
+      if (read_identifier_ != &_default_read_identifier_) {
+        read_identifier_->clear();
       }
     }
     if (_has_bit(3)) {
@@ -445,28 +445,28 @@ void ReadEntry::Clear() {
         description_->clear();
       }
     }
-    readlength_ = 0u;
+    read_length_ = 0u;
     if (_has_bit(5)) {
       if (sequence_ != &_default_sequence_) {
         sequence_->clear();
       }
     }
     if (_has_bit(6)) {
-      if (sequencepair_ != &_default_sequencepair_) {
-        sequencepair_->clear();
+      if (sequence_pair_ != &_default_sequence_pair_) {
+        sequence_pair_->clear();
       }
     }
-    readlengthpair_ = 0u;
+    read_length_pair_ = 0u;
   }
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (_has_bit(8)) {
-      if (qualityscores_ != &_default_qualityscores_) {
-        qualityscores_->clear();
+      if (quality_scores_ != &_default_quality_scores_) {
+        quality_scores_->clear();
       }
     }
     if (_has_bit(9)) {
-      if (qualityscorespair_ != &_default_qualityscorespair_) {
-        qualityscorespair_->clear();
+      if (quality_scores_pair_ != &_default_quality_scores_pair_) {
+        quality_scores_pair_->clear();
       }
     }
   }
@@ -480,29 +480,29 @@ bool ReadEntry::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // required uint32 readIndex = 1;
+      // required uint32 read_index = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 input, &readindex_)));
+                 input, &read_index_)));
           _set_bit(0);
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(16)) goto parse_readLength;
+        if (input->ExpectTag(16)) goto parse_read_length;
         break;
       }
       
-      // required uint32 readLength = 2;
+      // required uint32 read_length = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_readLength:
+         parse_read_length:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 input, &readlength_)));
+                 input, &read_length_)));
           _set_bit(4);
         } else {
           goto handle_uninterpreted;
@@ -521,76 +521,76 @@ bool ReadEntry::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(34)) goto parse_qualityScores;
+        if (input->ExpectTag(34)) goto parse_quality_scores;
         break;
       }
       
-      // optional bytes qualityScores = 4;
+      // optional bytes quality_scores = 4;
       case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_qualityScores:
+         parse_quality_scores:
           DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-                input, this->mutable_qualityscores()));
+                input, this->mutable_quality_scores()));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(42)) goto parse_sequencePair;
+        if (input->ExpectTag(42)) goto parse_sequence_pair;
         break;
       }
       
-      // optional bytes sequencePair = 5;
+      // optional bytes sequence_pair = 5;
       case 5: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_sequencePair:
+         parse_sequence_pair:
           DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-                input, this->mutable_sequencepair()));
+                input, this->mutable_sequence_pair()));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(48)) goto parse_readLengthPair;
+        if (input->ExpectTag(48)) goto parse_read_length_pair;
         break;
       }
       
-      // optional uint32 readLengthPair = 6;
+      // optional uint32 read_length_pair = 6;
       case 6: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_readLengthPair:
+         parse_read_length_pair:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 input, &readlengthpair_)));
+                 input, &read_length_pair_)));
           _set_bit(7);
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(58)) goto parse_qualityScoresPair;
+        if (input->ExpectTag(58)) goto parse_quality_scores_pair;
         break;
       }
       
-      // optional bytes qualityScoresPair = 7;
+      // optional bytes quality_scores_pair = 7;
       case 7: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_qualityScoresPair:
+         parse_quality_scores_pair:
           DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-                input, this->mutable_qualityscorespair()));
+                input, this->mutable_quality_scores_pair()));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(80)) goto parse_barcodeIndex;
+        if (input->ExpectTag(80)) goto parse_barcode_index;
         break;
       }
       
-      // optional uint32 barcodeIndex = 10;
+      // optional uint32 barcode_index = 10;
       case 10: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_barcodeIndex:
+         parse_barcode_index:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 input, &barcodeindex_)));
+                 input, &barcode_index_)));
           _set_bit(1);
         } else {
           goto handle_uninterpreted;
@@ -612,19 +612,19 @@ bool ReadEntry::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(186)) goto parse_readIdentifier;
+        if (input->ExpectTag(186)) goto parse_read_identifier;
         break;
       }
       
-      // optional string readIdentifier = 23;
+      // optional string read_identifier = 23;
       case 23: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_readIdentifier:
+         parse_read_identifier:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_readidentifier()));
+                input, this->mutable_read_identifier()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->readidentifier().data(), this->readidentifier().length(),
+            this->read_identifier().data(), this->read_identifier().length(),
             ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
@@ -651,14 +651,14 @@ bool ReadEntry::MergePartialFromCodedStream(
 
 void ReadEntry::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // required uint32 readIndex = 1;
+  // required uint32 read_index = 1;
   if (_has_bit(0)) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->readindex(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->read_index(), output);
   }
   
-  // required uint32 readLength = 2;
+  // required uint32 read_length = 2;
   if (_has_bit(4)) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->readlength(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->read_length(), output);
   }
   
   // optional bytes sequence = 3;
@@ -667,32 +667,32 @@ void ReadEntry::SerializeWithCachedSizes(
       3, this->sequence(), output);
   }
   
-  // optional bytes qualityScores = 4;
+  // optional bytes quality_scores = 4;
   if (_has_bit(8)) {
     ::google::protobuf::internal::WireFormatLite::WriteBytes(
-      4, this->qualityscores(), output);
+      4, this->quality_scores(), output);
   }
   
-  // optional bytes sequencePair = 5;
+  // optional bytes sequence_pair = 5;
   if (_has_bit(6)) {
     ::google::protobuf::internal::WireFormatLite::WriteBytes(
-      5, this->sequencepair(), output);
+      5, this->sequence_pair(), output);
   }
   
-  // optional uint32 readLengthPair = 6;
+  // optional uint32 read_length_pair = 6;
   if (_has_bit(7)) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(6, this->readlengthpair(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(6, this->read_length_pair(), output);
   }
   
-  // optional bytes qualityScoresPair = 7;
+  // optional bytes quality_scores_pair = 7;
   if (_has_bit(9)) {
     ::google::protobuf::internal::WireFormatLite::WriteBytes(
-      7, this->qualityscorespair(), output);
+      7, this->quality_scores_pair(), output);
   }
   
-  // optional uint32 barcodeIndex = 10;
+  // optional uint32 barcode_index = 10;
   if (_has_bit(1)) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(10, this->barcodeindex(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(10, this->barcode_index(), output);
   }
   
   // optional string description = 22;
@@ -704,13 +704,13 @@ void ReadEntry::SerializeWithCachedSizes(
       22, this->description(), output);
   }
   
-  // optional string readIdentifier = 23;
+  // optional string read_identifier = 23;
   if (_has_bit(2)) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->readidentifier().data(), this->readidentifier().length(),
+      this->read_identifier().data(), this->read_identifier().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      23, this->readidentifier(), output);
+      23, this->read_identifier(), output);
   }
   
   if (!unknown_fields().empty()) {
@@ -721,14 +721,14 @@ void ReadEntry::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* ReadEntry::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // required uint32 readIndex = 1;
+  // required uint32 read_index = 1;
   if (_has_bit(0)) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->readindex(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->read_index(), target);
   }
   
-  // required uint32 readLength = 2;
+  // required uint32 read_length = 2;
   if (_has_bit(4)) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->readlength(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->read_length(), target);
   }
   
   // optional bytes sequence = 3;
@@ -738,35 +738,35 @@ void ReadEntry::SerializeWithCachedSizes(
         3, this->sequence(), target);
   }
   
-  // optional bytes qualityScores = 4;
+  // optional bytes quality_scores = 4;
   if (_has_bit(8)) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        4, this->qualityscores(), target);
+        4, this->quality_scores(), target);
   }
   
-  // optional bytes sequencePair = 5;
+  // optional bytes sequence_pair = 5;
   if (_has_bit(6)) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        5, this->sequencepair(), target);
+        5, this->sequence_pair(), target);
   }
   
-  // optional uint32 readLengthPair = 6;
+  // optional uint32 read_length_pair = 6;
   if (_has_bit(7)) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(6, this->readlengthpair(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(6, this->read_length_pair(), target);
   }
   
-  // optional bytes qualityScoresPair = 7;
+  // optional bytes quality_scores_pair = 7;
   if (_has_bit(9)) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        7, this->qualityscorespair(), target);
+        7, this->quality_scores_pair(), target);
   }
   
-  // optional uint32 barcodeIndex = 10;
+  // optional uint32 barcode_index = 10;
   if (_has_bit(1)) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(10, this->barcodeindex(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(10, this->barcode_index(), target);
   }
   
   // optional string description = 22;
@@ -779,14 +779,14 @@ void ReadEntry::SerializeWithCachedSizes(
         22, this->description(), target);
   }
   
-  // optional string readIdentifier = 23;
+  // optional string read_identifier = 23;
   if (_has_bit(2)) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->readidentifier().data(), this->readidentifier().length(),
+      this->read_identifier().data(), this->read_identifier().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        23, this->readidentifier(), target);
+        23, this->read_identifier(), target);
   }
   
   if (!unknown_fields().empty()) {
@@ -800,25 +800,25 @@ int ReadEntry::ByteSize() const {
   int total_size = 0;
   
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required uint32 readIndex = 1;
-    if (has_readindex()) {
+    // required uint32 read_index = 1;
+    if (has_read_index()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->readindex());
+          this->read_index());
     }
     
-    // optional uint32 barcodeIndex = 10;
-    if (has_barcodeindex()) {
+    // optional uint32 barcode_index = 10;
+    if (has_barcode_index()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->barcodeindex());
+          this->barcode_index());
     }
     
-    // optional string readIdentifier = 23;
-    if (has_readidentifier()) {
+    // optional string read_identifier = 23;
+    if (has_read_identifier()) {
       total_size += 2 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->readidentifier());
+          this->read_identifier());
     }
     
     // optional string description = 22;
@@ -828,11 +828,11 @@ int ReadEntry::ByteSize() const {
           this->description());
     }
     
-    // required uint32 readLength = 2;
-    if (has_readlength()) {
+    // required uint32 read_length = 2;
+    if (has_read_length()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->readlength());
+          this->read_length());
     }
     
     // optional bytes sequence = 3;
@@ -842,34 +842,34 @@ int ReadEntry::ByteSize() const {
           this->sequence());
     }
     
-    // optional bytes sequencePair = 5;
-    if (has_sequencepair()) {
+    // optional bytes sequence_pair = 5;
+    if (has_sequence_pair()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->sequencepair());
+          this->sequence_pair());
     }
     
-    // optional uint32 readLengthPair = 6;
-    if (has_readlengthpair()) {
+    // optional uint32 read_length_pair = 6;
+    if (has_read_length_pair()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->readlengthpair());
+          this->read_length_pair());
     }
     
   }
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
-    // optional bytes qualityScores = 4;
-    if (has_qualityscores()) {
+    // optional bytes quality_scores = 4;
+    if (has_quality_scores()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->qualityscores());
+          this->quality_scores());
     }
     
-    // optional bytes qualityScoresPair = 7;
-    if (has_qualityscorespair()) {
+    // optional bytes quality_scores_pair = 7;
+    if (has_quality_scores_pair()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->qualityscorespair());
+          this->quality_scores_pair());
     }
     
   }
@@ -900,36 +900,36 @@ void ReadEntry::MergeFrom(const ReadEntry& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from._has_bit(0)) {
-      set_readindex(from.readindex());
+      set_read_index(from.read_index());
     }
     if (from._has_bit(1)) {
-      set_barcodeindex(from.barcodeindex());
+      set_barcode_index(from.barcode_index());
     }
     if (from._has_bit(2)) {
-      set_readidentifier(from.readidentifier());
+      set_read_identifier(from.read_identifier());
     }
     if (from._has_bit(3)) {
       set_description(from.description());
     }
     if (from._has_bit(4)) {
-      set_readlength(from.readlength());
+      set_read_length(from.read_length());
     }
     if (from._has_bit(5)) {
       set_sequence(from.sequence());
     }
     if (from._has_bit(6)) {
-      set_sequencepair(from.sequencepair());
+      set_sequence_pair(from.sequence_pair());
     }
     if (from._has_bit(7)) {
-      set_readlengthpair(from.readlengthpair());
+      set_read_length_pair(from.read_length_pair());
     }
   }
   if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (from._has_bit(8)) {
-      set_qualityscores(from.qualityscores());
+      set_quality_scores(from.quality_scores());
     }
     if (from._has_bit(9)) {
-      set_qualityscorespair(from.qualityscorespair());
+      set_quality_scores_pair(from.quality_scores_pair());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -955,16 +955,16 @@ bool ReadEntry::IsInitialized() const {
 
 void ReadEntry::Swap(ReadEntry* other) {
   if (other != this) {
-    std::swap(readindex_, other->readindex_);
-    std::swap(barcodeindex_, other->barcodeindex_);
-    std::swap(readidentifier_, other->readidentifier_);
+    std::swap(read_index_, other->read_index_);
+    std::swap(barcode_index_, other->barcode_index_);
+    std::swap(read_identifier_, other->read_identifier_);
     std::swap(description_, other->description_);
-    std::swap(readlength_, other->readlength_);
+    std::swap(read_length_, other->read_length_);
     std::swap(sequence_, other->sequence_);
-    std::swap(sequencepair_, other->sequencepair_);
-    std::swap(readlengthpair_, other->readlengthpair_);
-    std::swap(qualityscores_, other->qualityscores_);
-    std::swap(qualityscorespair_, other->qualityscorespair_);
+    std::swap(sequence_pair_, other->sequence_pair_);
+    std::swap(read_length_pair_, other->read_length_pair_);
+    std::swap(quality_scores_, other->quality_scores_);
+    std::swap(quality_scores_pair_, other->quality_scores_pair_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

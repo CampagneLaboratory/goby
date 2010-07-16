@@ -85,14 +85,14 @@ def main():
     print "Number of query sequences = %s" % commify(header.number_of_queries)
 
     # query length stats
-    has_constant_query_length = header.HasField("constantQueryLength")
+    has_constant_query_length = header.HasField("constant_query_length")
 
     # special case if query lengths are constant to reduce storage
     if has_constant_query_length:
         query_length =  header.number_of_queries
-        min_query_length = header.constantQueryLength
-        max_query_length = header.constantQueryLength
-        mean_query_length = float(header.constantQueryLength)
+        min_query_length = header.constant_query_length
+        max_query_length = header.constant_query_length
+        mean_query_length = float(header.constant_query_length)
     else:
         query_length = len(header.query_length)
         if query_length > 0:
@@ -114,7 +114,7 @@ def main():
     print "Has target identifiers = %s" % (len(header.target_name_mapping.mappings) > 0)
     print
 
-    print "TMH: aligner threshold = %d" % tmh.alignerThreshold
+    print "TMH: aligner threshold = %d" % tmh.aligner_threshold
     print "TMH: number of ambiguous matches = %s" % commify(len(tmh_reader.queryindex_to_numhits))
     print "TMH: %%ambiguous matches = %f %%" % (len(tmh_reader.queryindex_to_numhits) * 100.0 / header.number_of_queries)
 

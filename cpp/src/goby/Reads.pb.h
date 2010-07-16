@@ -185,29 +185,29 @@ class ReadEntry : public ::google::protobuf::Message {
   
   // accessors -------------------------------------------------------
   
-  // required uint32 readIndex = 1;
-  inline bool has_readindex() const;
-  inline void clear_readindex();
+  // required uint32 read_index = 1;
+  inline bool has_read_index() const;
+  inline void clear_read_index();
   static const int kReadIndexFieldNumber = 1;
-  inline ::google::protobuf::uint32 readindex() const;
-  inline void set_readindex(::google::protobuf::uint32 value);
+  inline ::google::protobuf::uint32 read_index() const;
+  inline void set_read_index(::google::protobuf::uint32 value);
   
-  // optional uint32 barcodeIndex = 10;
-  inline bool has_barcodeindex() const;
-  inline void clear_barcodeindex();
+  // optional uint32 barcode_index = 10;
+  inline bool has_barcode_index() const;
+  inline void clear_barcode_index();
   static const int kBarcodeIndexFieldNumber = 10;
-  inline ::google::protobuf::uint32 barcodeindex() const;
-  inline void set_barcodeindex(::google::protobuf::uint32 value);
+  inline ::google::protobuf::uint32 barcode_index() const;
+  inline void set_barcode_index(::google::protobuf::uint32 value);
   
-  // optional string readIdentifier = 23;
-  inline bool has_readidentifier() const;
-  inline void clear_readidentifier();
+  // optional string read_identifier = 23;
+  inline bool has_read_identifier() const;
+  inline void clear_read_identifier();
   static const int kReadIdentifierFieldNumber = 23;
-  inline const ::std::string& readidentifier() const;
-  inline void set_readidentifier(const ::std::string& value);
-  inline void set_readidentifier(const char* value);
-  inline void set_readidentifier(const char* value, size_t size);
-  inline ::std::string* mutable_readidentifier();
+  inline const ::std::string& read_identifier() const;
+  inline void set_read_identifier(const ::std::string& value);
+  inline void set_read_identifier(const char* value);
+  inline void set_read_identifier(const char* value, size_t size);
+  inline ::std::string* mutable_read_identifier();
   
   // optional string description = 22;
   inline bool has_description() const;
@@ -219,12 +219,12 @@ class ReadEntry : public ::google::protobuf::Message {
   inline void set_description(const char* value, size_t size);
   inline ::std::string* mutable_description();
   
-  // required uint32 readLength = 2;
-  inline bool has_readlength() const;
-  inline void clear_readlength();
+  // required uint32 read_length = 2;
+  inline bool has_read_length() const;
+  inline void clear_read_length();
   static const int kReadLengthFieldNumber = 2;
-  inline ::google::protobuf::uint32 readlength() const;
-  inline void set_readlength(::google::protobuf::uint32 value);
+  inline ::google::protobuf::uint32 read_length() const;
+  inline void set_read_length(::google::protobuf::uint32 value);
   
   // optional bytes sequence = 3;
   inline bool has_sequence() const;
@@ -236,64 +236,64 @@ class ReadEntry : public ::google::protobuf::Message {
   inline void set_sequence(const void* value, size_t size);
   inline ::std::string* mutable_sequence();
   
-  // optional bytes sequencePair = 5;
-  inline bool has_sequencepair() const;
-  inline void clear_sequencepair();
+  // optional bytes sequence_pair = 5;
+  inline bool has_sequence_pair() const;
+  inline void clear_sequence_pair();
   static const int kSequencePairFieldNumber = 5;
-  inline const ::std::string& sequencepair() const;
-  inline void set_sequencepair(const ::std::string& value);
-  inline void set_sequencepair(const char* value);
-  inline void set_sequencepair(const void* value, size_t size);
-  inline ::std::string* mutable_sequencepair();
+  inline const ::std::string& sequence_pair() const;
+  inline void set_sequence_pair(const ::std::string& value);
+  inline void set_sequence_pair(const char* value);
+  inline void set_sequence_pair(const void* value, size_t size);
+  inline ::std::string* mutable_sequence_pair();
   
-  // optional uint32 readLengthPair = 6;
-  inline bool has_readlengthpair() const;
-  inline void clear_readlengthpair();
+  // optional uint32 read_length_pair = 6;
+  inline bool has_read_length_pair() const;
+  inline void clear_read_length_pair();
   static const int kReadLengthPairFieldNumber = 6;
-  inline ::google::protobuf::uint32 readlengthpair() const;
-  inline void set_readlengthpair(::google::protobuf::uint32 value);
+  inline ::google::protobuf::uint32 read_length_pair() const;
+  inline void set_read_length_pair(::google::protobuf::uint32 value);
   
-  // optional bytes qualityScores = 4;
-  inline bool has_qualityscores() const;
-  inline void clear_qualityscores();
+  // optional bytes quality_scores = 4;
+  inline bool has_quality_scores() const;
+  inline void clear_quality_scores();
   static const int kQualityScoresFieldNumber = 4;
-  inline const ::std::string& qualityscores() const;
-  inline void set_qualityscores(const ::std::string& value);
-  inline void set_qualityscores(const char* value);
-  inline void set_qualityscores(const void* value, size_t size);
-  inline ::std::string* mutable_qualityscores();
+  inline const ::std::string& quality_scores() const;
+  inline void set_quality_scores(const ::std::string& value);
+  inline void set_quality_scores(const char* value);
+  inline void set_quality_scores(const void* value, size_t size);
+  inline ::std::string* mutable_quality_scores();
   
-  // optional bytes qualityScoresPair = 7;
-  inline bool has_qualityscorespair() const;
-  inline void clear_qualityscorespair();
+  // optional bytes quality_scores_pair = 7;
+  inline bool has_quality_scores_pair() const;
+  inline void clear_quality_scores_pair();
   static const int kQualityScoresPairFieldNumber = 7;
-  inline const ::std::string& qualityscorespair() const;
-  inline void set_qualityscorespair(const ::std::string& value);
-  inline void set_qualityscorespair(const char* value);
-  inline void set_qualityscorespair(const void* value, size_t size);
-  inline ::std::string* mutable_qualityscorespair();
+  inline const ::std::string& quality_scores_pair() const;
+  inline void set_quality_scores_pair(const ::std::string& value);
+  inline void set_quality_scores_pair(const char* value);
+  inline void set_quality_scores_pair(const void* value, size_t size);
+  inline ::std::string* mutable_quality_scores_pair();
   
   // @@protoc_insertion_point(class_scope:goby.ReadEntry)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   mutable int _cached_size_;
   
-  ::google::protobuf::uint32 readindex_;
-  ::google::protobuf::uint32 barcodeindex_;
-  ::std::string* readidentifier_;
-  static const ::std::string _default_readidentifier_;
+  ::google::protobuf::uint32 read_index_;
+  ::google::protobuf::uint32 barcode_index_;
+  ::std::string* read_identifier_;
+  static const ::std::string _default_read_identifier_;
   ::std::string* description_;
   static const ::std::string _default_description_;
-  ::google::protobuf::uint32 readlength_;
+  ::google::protobuf::uint32 read_length_;
   ::std::string* sequence_;
   static const ::std::string _default_sequence_;
-  ::std::string* sequencepair_;
-  static const ::std::string _default_sequencepair_;
-  ::google::protobuf::uint32 readlengthpair_;
-  ::std::string* qualityscores_;
-  static const ::std::string _default_qualityscores_;
-  ::std::string* qualityscorespair_;
-  static const ::std::string _default_qualityscorespair_;
+  ::std::string* sequence_pair_;
+  static const ::std::string _default_sequence_pair_;
+  ::google::protobuf::uint32 read_length_pair_;
+  ::std::string* quality_scores_;
+  static const ::std::string _default_quality_scores_;
+  ::std::string* quality_scores_pair_;
+  static const ::std::string _default_quality_scores_pair_;
   friend void  protobuf_AddDesc_Reads_2eproto();
   friend void protobuf_AssignDesc_Reads_2eproto();
   friend void protobuf_ShutdownFile_Reads_2eproto();
@@ -350,78 +350,78 @@ ReadCollection::mutable_reads() {
 
 // ReadEntry
 
-// required uint32 readIndex = 1;
-inline bool ReadEntry::has_readindex() const {
+// required uint32 read_index = 1;
+inline bool ReadEntry::has_read_index() const {
   return _has_bit(0);
 }
-inline void ReadEntry::clear_readindex() {
-  readindex_ = 0u;
+inline void ReadEntry::clear_read_index() {
+  read_index_ = 0u;
   _clear_bit(0);
 }
-inline ::google::protobuf::uint32 ReadEntry::readindex() const {
-  return readindex_;
+inline ::google::protobuf::uint32 ReadEntry::read_index() const {
+  return read_index_;
 }
-inline void ReadEntry::set_readindex(::google::protobuf::uint32 value) {
+inline void ReadEntry::set_read_index(::google::protobuf::uint32 value) {
   _set_bit(0);
-  readindex_ = value;
+  read_index_ = value;
 }
 
-// optional uint32 barcodeIndex = 10;
-inline bool ReadEntry::has_barcodeindex() const {
+// optional uint32 barcode_index = 10;
+inline bool ReadEntry::has_barcode_index() const {
   return _has_bit(1);
 }
-inline void ReadEntry::clear_barcodeindex() {
-  barcodeindex_ = 0u;
+inline void ReadEntry::clear_barcode_index() {
+  barcode_index_ = 0u;
   _clear_bit(1);
 }
-inline ::google::protobuf::uint32 ReadEntry::barcodeindex() const {
-  return barcodeindex_;
+inline ::google::protobuf::uint32 ReadEntry::barcode_index() const {
+  return barcode_index_;
 }
-inline void ReadEntry::set_barcodeindex(::google::protobuf::uint32 value) {
+inline void ReadEntry::set_barcode_index(::google::protobuf::uint32 value) {
   _set_bit(1);
-  barcodeindex_ = value;
+  barcode_index_ = value;
 }
 
-// optional string readIdentifier = 23;
-inline bool ReadEntry::has_readidentifier() const {
+// optional string read_identifier = 23;
+inline bool ReadEntry::has_read_identifier() const {
   return _has_bit(2);
 }
-inline void ReadEntry::clear_readidentifier() {
-  if (readidentifier_ != &_default_readidentifier_) {
-    readidentifier_->clear();
+inline void ReadEntry::clear_read_identifier() {
+  if (read_identifier_ != &_default_read_identifier_) {
+    read_identifier_->clear();
   }
   _clear_bit(2);
 }
-inline const ::std::string& ReadEntry::readidentifier() const {
-  return *readidentifier_;
+inline const ::std::string& ReadEntry::read_identifier() const {
+  return *read_identifier_;
 }
-inline void ReadEntry::set_readidentifier(const ::std::string& value) {
+inline void ReadEntry::set_read_identifier(const ::std::string& value) {
   _set_bit(2);
-  if (readidentifier_ == &_default_readidentifier_) {
-    readidentifier_ = new ::std::string;
+  if (read_identifier_ == &_default_read_identifier_) {
+    read_identifier_ = new ::std::string;
   }
-  readidentifier_->assign(value);
+  read_identifier_->assign(value);
 }
-inline void ReadEntry::set_readidentifier(const char* value) {
+inline void ReadEntry::set_read_identifier(const char* value) {
   _set_bit(2);
-  if (readidentifier_ == &_default_readidentifier_) {
-    readidentifier_ = new ::std::string;
+  if (read_identifier_ == &_default_read_identifier_) {
+    read_identifier_ = new ::std::string;
   }
-  readidentifier_->assign(value);
+  read_identifier_->assign(value);
 }
-inline void ReadEntry::set_readidentifier(const char* value, size_t size) {
+inline void ReadEntry::set_read_identifier(const char* value, size_t size) {
   _set_bit(2);
-  if (readidentifier_ == &_default_readidentifier_) {
-    readidentifier_ = new ::std::string;
+  if (read_identifier_ == &_default_read_identifier_) {
+    read_identifier_ = new ::std::string;
   }
-  readidentifier_->assign(reinterpret_cast<const char*>(value), size);
+  read_identifier_->assign(reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* ReadEntry::mutable_readidentifier() {
+inline ::std::string* ReadEntry::mutable_read_identifier() {
   _set_bit(2);
-  if (readidentifier_ == &_default_readidentifier_) {
-    readidentifier_ = new ::std::string;
+  if (read_identifier_ == &_default_read_identifier_) {
+    read_identifier_ = new ::std::string;
   }
-  return readidentifier_;
+  return read_identifier_;
 }
 
 // optional string description = 22;
@@ -466,20 +466,20 @@ inline ::std::string* ReadEntry::mutable_description() {
   return description_;
 }
 
-// required uint32 readLength = 2;
-inline bool ReadEntry::has_readlength() const {
+// required uint32 read_length = 2;
+inline bool ReadEntry::has_read_length() const {
   return _has_bit(4);
 }
-inline void ReadEntry::clear_readlength() {
-  readlength_ = 0u;
+inline void ReadEntry::clear_read_length() {
+  read_length_ = 0u;
   _clear_bit(4);
 }
-inline ::google::protobuf::uint32 ReadEntry::readlength() const {
-  return readlength_;
+inline ::google::protobuf::uint32 ReadEntry::read_length() const {
+  return read_length_;
 }
-inline void ReadEntry::set_readlength(::google::protobuf::uint32 value) {
+inline void ReadEntry::set_read_length(::google::protobuf::uint32 value) {
   _set_bit(4);
-  readlength_ = value;
+  read_length_ = value;
 }
 
 // optional bytes sequence = 3;
@@ -524,146 +524,146 @@ inline ::std::string* ReadEntry::mutable_sequence() {
   return sequence_;
 }
 
-// optional bytes sequencePair = 5;
-inline bool ReadEntry::has_sequencepair() const {
+// optional bytes sequence_pair = 5;
+inline bool ReadEntry::has_sequence_pair() const {
   return _has_bit(6);
 }
-inline void ReadEntry::clear_sequencepair() {
-  if (sequencepair_ != &_default_sequencepair_) {
-    sequencepair_->clear();
+inline void ReadEntry::clear_sequence_pair() {
+  if (sequence_pair_ != &_default_sequence_pair_) {
+    sequence_pair_->clear();
   }
   _clear_bit(6);
 }
-inline const ::std::string& ReadEntry::sequencepair() const {
-  return *sequencepair_;
+inline const ::std::string& ReadEntry::sequence_pair() const {
+  return *sequence_pair_;
 }
-inline void ReadEntry::set_sequencepair(const ::std::string& value) {
+inline void ReadEntry::set_sequence_pair(const ::std::string& value) {
   _set_bit(6);
-  if (sequencepair_ == &_default_sequencepair_) {
-    sequencepair_ = new ::std::string;
+  if (sequence_pair_ == &_default_sequence_pair_) {
+    sequence_pair_ = new ::std::string;
   }
-  sequencepair_->assign(value);
+  sequence_pair_->assign(value);
 }
-inline void ReadEntry::set_sequencepair(const char* value) {
+inline void ReadEntry::set_sequence_pair(const char* value) {
   _set_bit(6);
-  if (sequencepair_ == &_default_sequencepair_) {
-    sequencepair_ = new ::std::string;
+  if (sequence_pair_ == &_default_sequence_pair_) {
+    sequence_pair_ = new ::std::string;
   }
-  sequencepair_->assign(value);
+  sequence_pair_->assign(value);
 }
-inline void ReadEntry::set_sequencepair(const void* value, size_t size) {
+inline void ReadEntry::set_sequence_pair(const void* value, size_t size) {
   _set_bit(6);
-  if (sequencepair_ == &_default_sequencepair_) {
-    sequencepair_ = new ::std::string;
+  if (sequence_pair_ == &_default_sequence_pair_) {
+    sequence_pair_ = new ::std::string;
   }
-  sequencepair_->assign(reinterpret_cast<const char*>(value), size);
+  sequence_pair_->assign(reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* ReadEntry::mutable_sequencepair() {
+inline ::std::string* ReadEntry::mutable_sequence_pair() {
   _set_bit(6);
-  if (sequencepair_ == &_default_sequencepair_) {
-    sequencepair_ = new ::std::string;
+  if (sequence_pair_ == &_default_sequence_pair_) {
+    sequence_pair_ = new ::std::string;
   }
-  return sequencepair_;
+  return sequence_pair_;
 }
 
-// optional uint32 readLengthPair = 6;
-inline bool ReadEntry::has_readlengthpair() const {
+// optional uint32 read_length_pair = 6;
+inline bool ReadEntry::has_read_length_pair() const {
   return _has_bit(7);
 }
-inline void ReadEntry::clear_readlengthpair() {
-  readlengthpair_ = 0u;
+inline void ReadEntry::clear_read_length_pair() {
+  read_length_pair_ = 0u;
   _clear_bit(7);
 }
-inline ::google::protobuf::uint32 ReadEntry::readlengthpair() const {
-  return readlengthpair_;
+inline ::google::protobuf::uint32 ReadEntry::read_length_pair() const {
+  return read_length_pair_;
 }
-inline void ReadEntry::set_readlengthpair(::google::protobuf::uint32 value) {
+inline void ReadEntry::set_read_length_pair(::google::protobuf::uint32 value) {
   _set_bit(7);
-  readlengthpair_ = value;
+  read_length_pair_ = value;
 }
 
-// optional bytes qualityScores = 4;
-inline bool ReadEntry::has_qualityscores() const {
+// optional bytes quality_scores = 4;
+inline bool ReadEntry::has_quality_scores() const {
   return _has_bit(8);
 }
-inline void ReadEntry::clear_qualityscores() {
-  if (qualityscores_ != &_default_qualityscores_) {
-    qualityscores_->clear();
+inline void ReadEntry::clear_quality_scores() {
+  if (quality_scores_ != &_default_quality_scores_) {
+    quality_scores_->clear();
   }
   _clear_bit(8);
 }
-inline const ::std::string& ReadEntry::qualityscores() const {
-  return *qualityscores_;
+inline const ::std::string& ReadEntry::quality_scores() const {
+  return *quality_scores_;
 }
-inline void ReadEntry::set_qualityscores(const ::std::string& value) {
+inline void ReadEntry::set_quality_scores(const ::std::string& value) {
   _set_bit(8);
-  if (qualityscores_ == &_default_qualityscores_) {
-    qualityscores_ = new ::std::string;
+  if (quality_scores_ == &_default_quality_scores_) {
+    quality_scores_ = new ::std::string;
   }
-  qualityscores_->assign(value);
+  quality_scores_->assign(value);
 }
-inline void ReadEntry::set_qualityscores(const char* value) {
+inline void ReadEntry::set_quality_scores(const char* value) {
   _set_bit(8);
-  if (qualityscores_ == &_default_qualityscores_) {
-    qualityscores_ = new ::std::string;
+  if (quality_scores_ == &_default_quality_scores_) {
+    quality_scores_ = new ::std::string;
   }
-  qualityscores_->assign(value);
+  quality_scores_->assign(value);
 }
-inline void ReadEntry::set_qualityscores(const void* value, size_t size) {
+inline void ReadEntry::set_quality_scores(const void* value, size_t size) {
   _set_bit(8);
-  if (qualityscores_ == &_default_qualityscores_) {
-    qualityscores_ = new ::std::string;
+  if (quality_scores_ == &_default_quality_scores_) {
+    quality_scores_ = new ::std::string;
   }
-  qualityscores_->assign(reinterpret_cast<const char*>(value), size);
+  quality_scores_->assign(reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* ReadEntry::mutable_qualityscores() {
+inline ::std::string* ReadEntry::mutable_quality_scores() {
   _set_bit(8);
-  if (qualityscores_ == &_default_qualityscores_) {
-    qualityscores_ = new ::std::string;
+  if (quality_scores_ == &_default_quality_scores_) {
+    quality_scores_ = new ::std::string;
   }
-  return qualityscores_;
+  return quality_scores_;
 }
 
-// optional bytes qualityScoresPair = 7;
-inline bool ReadEntry::has_qualityscorespair() const {
+// optional bytes quality_scores_pair = 7;
+inline bool ReadEntry::has_quality_scores_pair() const {
   return _has_bit(9);
 }
-inline void ReadEntry::clear_qualityscorespair() {
-  if (qualityscorespair_ != &_default_qualityscorespair_) {
-    qualityscorespair_->clear();
+inline void ReadEntry::clear_quality_scores_pair() {
+  if (quality_scores_pair_ != &_default_quality_scores_pair_) {
+    quality_scores_pair_->clear();
   }
   _clear_bit(9);
 }
-inline const ::std::string& ReadEntry::qualityscorespair() const {
-  return *qualityscorespair_;
+inline const ::std::string& ReadEntry::quality_scores_pair() const {
+  return *quality_scores_pair_;
 }
-inline void ReadEntry::set_qualityscorespair(const ::std::string& value) {
+inline void ReadEntry::set_quality_scores_pair(const ::std::string& value) {
   _set_bit(9);
-  if (qualityscorespair_ == &_default_qualityscorespair_) {
-    qualityscorespair_ = new ::std::string;
+  if (quality_scores_pair_ == &_default_quality_scores_pair_) {
+    quality_scores_pair_ = new ::std::string;
   }
-  qualityscorespair_->assign(value);
+  quality_scores_pair_->assign(value);
 }
-inline void ReadEntry::set_qualityscorespair(const char* value) {
+inline void ReadEntry::set_quality_scores_pair(const char* value) {
   _set_bit(9);
-  if (qualityscorespair_ == &_default_qualityscorespair_) {
-    qualityscorespair_ = new ::std::string;
+  if (quality_scores_pair_ == &_default_quality_scores_pair_) {
+    quality_scores_pair_ = new ::std::string;
   }
-  qualityscorespair_->assign(value);
+  quality_scores_pair_->assign(value);
 }
-inline void ReadEntry::set_qualityscorespair(const void* value, size_t size) {
+inline void ReadEntry::set_quality_scores_pair(const void* value, size_t size) {
   _set_bit(9);
-  if (qualityscorespair_ == &_default_qualityscorespair_) {
-    qualityscorespair_ = new ::std::string;
+  if (quality_scores_pair_ == &_default_quality_scores_pair_) {
+    quality_scores_pair_ = new ::std::string;
   }
-  qualityscorespair_->assign(reinterpret_cast<const char*>(value), size);
+  quality_scores_pair_->assign(reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* ReadEntry::mutable_qualityscorespair() {
+inline ::std::string* ReadEntry::mutable_quality_scores_pair() {
   _set_bit(9);
-  if (qualityscorespair_ == &_default_qualityscorespair_) {
-    qualityscorespair_ = new ::std::string;
+  if (quality_scores_pair_ == &_default_quality_scores_pair_) {
+    quality_scores_pair_ = new ::std::string;
   }
-  return qualityscorespair_;
+  return quality_scores_pair_;
 }
 
 

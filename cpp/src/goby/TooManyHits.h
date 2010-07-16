@@ -84,7 +84,7 @@ namespace goby {
     TooManyHitsWriter(const TooManyHits& tooManyHits);
     ~TooManyHitsWriter(void);
 
-    inline void setAlignerThreshold(unsigned threshold) { pbTmh.set_alignerthreshold(threshold); };
+    inline void setAlignerThreshold(unsigned threshold) { pbTmh.set_aligner_threshold(threshold); };
 
     void append(unsigned queryIndex, unsigned howManyHits, unsigned lengthOfMatch);
     void write();

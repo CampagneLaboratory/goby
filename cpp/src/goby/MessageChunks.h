@@ -241,6 +241,14 @@ namespace goby {
     };
     */
   };
+
+  template <typename T> class MessageChunksWriter {
+    // the name of the chunked file
+    std::string filename;
+
+    // The underlying stream
+    std::ofstream stream;
+  };
 }
 
 #endif // GOBY_MESSAGE_CHUNKS_H

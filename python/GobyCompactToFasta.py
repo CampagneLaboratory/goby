@@ -78,7 +78,7 @@ def main():
         if (entry.HasField("description")):
             description = entry.description
         else:
-            description = entry.readIndex
+            description = entry.read_index
         print "%c%s" % (new_entry_character, description)
         for line in textwrap.wrap(entry.sequence, 60):
             print line
@@ -87,7 +87,7 @@ def main():
             print "+"
             quality_string = ""
             if entry.HasField("qualityScores"):
-                for quality_score in entry.qualityScores:
+                for quality_score in entry.quality_scores:
                     quality_string += chr(struct.unpack("B", quality_score)[0] + 64)  # Assume Illumina encoding
                 
             else:

@@ -107,7 +107,7 @@ class AlignmentReader(object):
         """
         # is it time to get the next chunk from the entries file?
         if not self.entries or self.current_entry_index >= len(self.entries):
-            self.entries = self.entries_reader.next().alignmentEntries
+            self.entries = self.entries_reader.next().alignment_entries
             self.current_entry_index = 0
 
             # If the entries came back empty, we're done

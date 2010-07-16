@@ -71,21 +71,21 @@ def main():
     reads_reader = ReadsReader(filename, verbose)
     for entry in reads_reader:
         number_of_entries += 1
-        read_length = entry.readLength
+        read_length = entry.read_length
         total_read_length += read_length
-        total_read_length_pair += entry.readLengthPair
+        total_read_length_pair += entry.read_length_pair
 
-        if entry.HasField("readIdentifier"):
+        if entry.HasField("read_identifier"):
             number_of_identifiers += 1
         if entry.HasField("description"):
             number_of_descriptions += 1
         if entry.HasField("sequence"):
             number_of_sequences += 1
-        if entry.HasField("sequencePair"):
+        if entry.HasField("sequence_pair"):
             number_of_sequences_pairs += 1
-        if entry.HasField("qualityScores"):
+        if entry.HasField("quality_scores"):
             number_of_quality_scores += 1
-        if entry.HasField("qualityScoresPair"):
+        if entry.HasField("quality_scores_pair"):
             number_of_quality_score_pairs += 1
 
         min_read_length = min(min_read_length, read_length)

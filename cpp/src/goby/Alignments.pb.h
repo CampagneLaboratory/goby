@@ -98,24 +98,24 @@ class AlignmentCollection : public ::google::protobuf::Message {
   
   // accessors -------------------------------------------------------
   
-  // repeated .goby.AlignmentEntry alignmentEntries = 1;
-  inline int alignmententries_size() const;
-  inline void clear_alignmententries();
+  // repeated .goby.AlignmentEntry alignment_entries = 1;
+  inline int alignment_entries_size() const;
+  inline void clear_alignment_entries();
   static const int kAlignmentEntriesFieldNumber = 1;
-  inline const ::goby::AlignmentEntry& alignmententries(int index) const;
-  inline ::goby::AlignmentEntry* mutable_alignmententries(int index);
-  inline ::goby::AlignmentEntry* add_alignmententries();
+  inline const ::goby::AlignmentEntry& alignment_entries(int index) const;
+  inline ::goby::AlignmentEntry* mutable_alignment_entries(int index);
+  inline ::goby::AlignmentEntry* add_alignment_entries();
   inline const ::google::protobuf::RepeatedPtrField< ::goby::AlignmentEntry >&
-      alignmententries() const;
+      alignment_entries() const;
   inline ::google::protobuf::RepeatedPtrField< ::goby::AlignmentEntry >*
-      mutable_alignmententries();
+      mutable_alignment_entries();
   
   // @@protoc_insertion_point(class_scope:goby.AlignmentCollection)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   mutable int _cached_size_;
   
-  ::google::protobuf::RepeatedPtrField< ::goby::AlignmentEntry > alignmententries_;
+  ::google::protobuf::RepeatedPtrField< ::goby::AlignmentEntry > alignment_entries_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
   friend void protobuf_ShutdownFile_Alignments_2eproto();
@@ -281,12 +281,12 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::goby::SequenceVariation >*
       mutable_sequence_variations();
   
-  // optional uint32 queryLength = 10;
-  inline bool has_querylength() const;
-  inline void clear_querylength();
+  // optional uint32 query_length = 10;
+  inline bool has_query_length() const;
+  inline void clear_query_length();
   static const int kQueryLengthFieldNumber = 10;
-  inline ::google::protobuf::uint32 querylength() const;
-  inline void set_querylength(::google::protobuf::uint32 value);
+  inline ::google::protobuf::uint32 query_length() const;
+  inline void set_query_length(::google::protobuf::uint32 value);
   
   // @@protoc_insertion_point(class_scope:goby.AlignmentEntry)
  private:
@@ -305,7 +305,7 @@ class AlignmentEntry : public ::google::protobuf::Message {
   ::google::protobuf::uint32 query_aligned_length_;
   ::google::protobuf::uint32 target_aligned_length_;
   ::google::protobuf::RepeatedPtrField< ::goby::SequenceVariation > sequence_variations_;
-  ::google::protobuf::uint32 querylength_;
+  ::google::protobuf::uint32 query_length_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
   friend void protobuf_ShutdownFile_Alignments_2eproto();
@@ -409,12 +409,12 @@ class SequenceVariation : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 position() const;
   inline void set_position(::google::protobuf::uint32 value);
   
-  // required uint32 readIndex = 5;
-  inline bool has_readindex() const;
-  inline void clear_readindex();
+  // required uint32 read_index = 5;
+  inline bool has_read_index() const;
+  inline void clear_read_index();
   static const int kReadIndexFieldNumber = 5;
-  inline ::google::protobuf::uint32 readindex() const;
-  inline void set_readindex(::google::protobuf::uint32 value);
+  inline ::google::protobuf::uint32 read_index() const;
+  inline void set_read_index(::google::protobuf::uint32 value);
   
   // optional bytes to_quality = 4;
   inline bool has_to_quality() const;
@@ -436,7 +436,7 @@ class SequenceVariation : public ::google::protobuf::Message {
   ::std::string* to_;
   static const ::std::string _default_to_;
   ::google::protobuf::uint32 position_;
-  ::google::protobuf::uint32 readindex_;
+  ::google::protobuf::uint32 read_index_;
   ::std::string* to_quality_;
   static const ::std::string _default_to_quality_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
@@ -515,19 +515,19 @@ class AlignmentHeader : public ::google::protobuf::Message {
   
   // accessors -------------------------------------------------------
   
-  // optional uint32 smallestSplitQueryIndex = 9;
-  inline bool has_smallestsplitqueryindex() const;
-  inline void clear_smallestsplitqueryindex();
+  // optional uint32 smallest_split_query_index = 9;
+  inline bool has_smallest_split_query_index() const;
+  inline void clear_smallest_split_query_index();
   static const int kSmallestSplitQueryIndexFieldNumber = 9;
-  inline ::google::protobuf::uint32 smallestsplitqueryindex() const;
-  inline void set_smallestsplitqueryindex(::google::protobuf::uint32 value);
+  inline ::google::protobuf::uint32 smallest_split_query_index() const;
+  inline void set_smallest_split_query_index(::google::protobuf::uint32 value);
   
-  // optional uint32 largestSplitQueryIndex = 11;
-  inline bool has_largestsplitqueryindex() const;
-  inline void clear_largestsplitqueryindex();
+  // optional uint32 largest_split_query_index = 11;
+  inline bool has_largest_split_query_index() const;
+  inline void clear_largest_split_query_index();
   static const int kLargestSplitQueryIndexFieldNumber = 11;
-  inline ::google::protobuf::uint32 largestsplitqueryindex() const;
-  inline void set_largestsplitqueryindex(::google::protobuf::uint32 value);
+  inline ::google::protobuf::uint32 largest_split_query_index() const;
+  inline void set_largest_split_query_index(::google::protobuf::uint32 value);
   
   // optional .goby.IdentifierMapping query_name_mapping = 1;
   inline bool has_query_name_mapping() const;
@@ -576,12 +576,12 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
       mutable_query_length() PROTOBUF_DEPRECATED;
   
-  // optional uint32 constantQueryLength = 10;
-  inline bool has_constantquerylength() const;
-  inline void clear_constantquerylength();
+  // optional uint32 constant_query_length = 10;
+  inline bool has_constant_query_length() const;
+  inline void clear_constant_query_length();
   static const int kConstantQueryLengthFieldNumber = 10;
-  inline ::google::protobuf::uint32 constantquerylength() const;
-  inline void set_constantquerylength(::google::protobuf::uint32 value);
+  inline ::google::protobuf::uint32 constant_query_length() const;
+  inline void set_constant_query_length(::google::protobuf::uint32 value);
   
   // repeated uint32 target_length = 8;
   inline int target_length_size() const;
@@ -609,31 +609,31 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline bool indexed() const;
   inline void set_indexed(bool value);
   
-  // optional bool queryLengthsStoredInEntries = 15;
-  inline bool has_querylengthsstoredinentries() const;
-  inline void clear_querylengthsstoredinentries();
+  // optional bool query_lengths_stored_in_entries = 15;
+  inline bool has_query_lengths_stored_in_entries() const;
+  inline void clear_query_lengths_stored_in_entries();
   static const int kQueryLengthsStoredInEntriesFieldNumber = 15;
-  inline bool querylengthsstoredinentries() const;
-  inline void set_querylengthsstoredinentries(bool value);
+  inline bool query_lengths_stored_in_entries() const;
+  inline void set_query_lengths_stored_in_entries(bool value);
   
   // @@protoc_insertion_point(class_scope:goby.AlignmentHeader)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   mutable int _cached_size_;
   
-  ::google::protobuf::uint32 smallestsplitqueryindex_;
-  ::google::protobuf::uint32 largestsplitqueryindex_;
+  ::google::protobuf::uint32 smallest_split_query_index_;
+  ::google::protobuf::uint32 largest_split_query_index_;
   ::goby::IdentifierMapping* query_name_mapping_;
   ::goby::IdentifierMapping* target_name_mapping_;
   ::google::protobuf::uint32 number_of_queries_;
   ::google::protobuf::uint32 number_of_targets_;
   ::google::protobuf::uint32 number_of_aligned_reads_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > query_length_;
-  ::google::protobuf::uint32 constantquerylength_;
+  ::google::protobuf::uint32 constant_query_length_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > target_length_;
   bool sorted_;
   bool indexed_;
-  bool querylengthsstoredinentries_;
+  bool query_lengths_stored_in_entries_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
   friend void protobuf_ShutdownFile_Alignments_2eproto();
@@ -905,12 +905,12 @@ class AlignmentTooManyHits : public ::google::protobuf::Message {
   
   // accessors -------------------------------------------------------
   
-  // required uint32 alignerThreshold = 2;
-  inline bool has_alignerthreshold() const;
-  inline void clear_alignerthreshold();
+  // required uint32 aligner_threshold = 2;
+  inline bool has_aligner_threshold() const;
+  inline void clear_aligner_threshold();
   static const int kAlignerThresholdFieldNumber = 2;
-  inline ::google::protobuf::uint32 alignerthreshold() const;
-  inline void set_alignerthreshold(::google::protobuf::uint32 value);
+  inline ::google::protobuf::uint32 aligner_threshold() const;
+  inline void set_aligner_threshold(::google::protobuf::uint32 value);
   
   // repeated .goby.AmbiguousLocation hits = 1;
   inline int hits_size() const;
@@ -929,7 +929,7 @@ class AlignmentTooManyHits : public ::google::protobuf::Message {
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   mutable int _cached_size_;
   
-  ::google::protobuf::uint32 alignerthreshold_;
+  ::google::protobuf::uint32 aligner_threshold_;
   ::google::protobuf::RepeatedPtrField< ::goby::AmbiguousLocation > hits_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
@@ -1112,17 +1112,17 @@ class AlignmentIndex : public ::google::protobuf::Message {
   
   // accessors -------------------------------------------------------
   
-  // repeated uint32 targetPositionOffsets = 1 [packed = true];
-  inline int targetpositionoffsets_size() const;
-  inline void clear_targetpositionoffsets();
+  // repeated uint32 target_position_offsets = 1 [packed = true];
+  inline int target_position_offsets_size() const;
+  inline void clear_target_position_offsets();
   static const int kTargetPositionOffsetsFieldNumber = 1;
-  inline ::google::protobuf::uint32 targetpositionoffsets(int index) const;
-  inline void set_targetpositionoffsets(int index, ::google::protobuf::uint32 value);
-  inline void add_targetpositionoffsets(::google::protobuf::uint32 value);
+  inline ::google::protobuf::uint32 target_position_offsets(int index) const;
+  inline void set_target_position_offsets(int index, ::google::protobuf::uint32 value);
+  inline void add_target_position_offsets(::google::protobuf::uint32 value);
   inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
-      targetpositionoffsets() const;
+      target_position_offsets() const;
   inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
-      mutable_targetpositionoffsets();
+      mutable_target_position_offsets();
   
   // repeated uint64 offsets = 2 [packed = true];
   inline int offsets_size() const;
@@ -1136,29 +1136,29 @@ class AlignmentIndex : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
       mutable_offsets();
   
-  // repeated uint64 absolutePositions = 3 [packed = true];
-  inline int absolutepositions_size() const;
-  inline void clear_absolutepositions();
+  // repeated uint64 absolute_positions = 3 [packed = true];
+  inline int absolute_positions_size() const;
+  inline void clear_absolute_positions();
   static const int kAbsolutePositionsFieldNumber = 3;
-  inline ::google::protobuf::uint64 absolutepositions(int index) const;
-  inline void set_absolutepositions(int index, ::google::protobuf::uint64 value);
-  inline void add_absolutepositions(::google::protobuf::uint64 value);
+  inline ::google::protobuf::uint64 absolute_positions(int index) const;
+  inline void set_absolute_positions(int index, ::google::protobuf::uint64 value);
+  inline void add_absolute_positions(::google::protobuf::uint64 value);
   inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
-      absolutepositions() const;
+      absolute_positions() const;
   inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
-      mutable_absolutepositions();
+      mutable_absolute_positions();
   
   // @@protoc_insertion_point(class_scope:goby.AlignmentIndex)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   mutable int _cached_size_;
   
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > targetpositionoffsets_;
-  mutable int _targetpositionoffsets_cached_byte_size_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > target_position_offsets_;
+  mutable int _target_position_offsets_cached_byte_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > offsets_;
   mutable int _offsets_cached_byte_size_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > absolutepositions_;
-  mutable int _absolutepositions_cached_byte_size_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > absolute_positions_;
+  mutable int _absolute_positions_cached_byte_size_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
   friend void protobuf_ShutdownFile_Alignments_2eproto();
@@ -1186,29 +1186,29 @@ class AlignmentIndex : public ::google::protobuf::Message {
 
 // AlignmentCollection
 
-// repeated .goby.AlignmentEntry alignmentEntries = 1;
-inline int AlignmentCollection::alignmententries_size() const {
-  return alignmententries_.size();
+// repeated .goby.AlignmentEntry alignment_entries = 1;
+inline int AlignmentCollection::alignment_entries_size() const {
+  return alignment_entries_.size();
 }
-inline void AlignmentCollection::clear_alignmententries() {
-  alignmententries_.Clear();
+inline void AlignmentCollection::clear_alignment_entries() {
+  alignment_entries_.Clear();
 }
-inline const ::goby::AlignmentEntry& AlignmentCollection::alignmententries(int index) const {
-  return alignmententries_.Get(index);
+inline const ::goby::AlignmentEntry& AlignmentCollection::alignment_entries(int index) const {
+  return alignment_entries_.Get(index);
 }
-inline ::goby::AlignmentEntry* AlignmentCollection::mutable_alignmententries(int index) {
-  return alignmententries_.Mutable(index);
+inline ::goby::AlignmentEntry* AlignmentCollection::mutable_alignment_entries(int index) {
+  return alignment_entries_.Mutable(index);
 }
-inline ::goby::AlignmentEntry* AlignmentCollection::add_alignmententries() {
-  return alignmententries_.Add();
+inline ::goby::AlignmentEntry* AlignmentCollection::add_alignment_entries() {
+  return alignment_entries_.Add();
 }
 inline const ::google::protobuf::RepeatedPtrField< ::goby::AlignmentEntry >&
-AlignmentCollection::alignmententries() const {
-  return alignmententries_;
+AlignmentCollection::alignment_entries() const {
+  return alignment_entries_;
 }
 inline ::google::protobuf::RepeatedPtrField< ::goby::AlignmentEntry >*
-AlignmentCollection::mutable_alignmententries() {
-  return &alignmententries_;
+AlignmentCollection::mutable_alignment_entries() {
+  return &alignment_entries_;
 }
 
 // -------------------------------------------------------------------
@@ -1416,20 +1416,20 @@ AlignmentEntry::mutable_sequence_variations() {
   return &sequence_variations_;
 }
 
-// optional uint32 queryLength = 10;
-inline bool AlignmentEntry::has_querylength() const {
+// optional uint32 query_length = 10;
+inline bool AlignmentEntry::has_query_length() const {
   return _has_bit(12);
 }
-inline void AlignmentEntry::clear_querylength() {
-  querylength_ = 0u;
+inline void AlignmentEntry::clear_query_length() {
+  query_length_ = 0u;
   _clear_bit(12);
 }
-inline ::google::protobuf::uint32 AlignmentEntry::querylength() const {
-  return querylength_;
+inline ::google::protobuf::uint32 AlignmentEntry::query_length() const {
+  return query_length_;
 }
-inline void AlignmentEntry::set_querylength(::google::protobuf::uint32 value) {
+inline void AlignmentEntry::set_query_length(::google::protobuf::uint32 value) {
   _set_bit(12);
-  querylength_ = value;
+  query_length_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -1536,20 +1536,20 @@ inline void SequenceVariation::set_position(::google::protobuf::uint32 value) {
   position_ = value;
 }
 
-// required uint32 readIndex = 5;
-inline bool SequenceVariation::has_readindex() const {
+// required uint32 read_index = 5;
+inline bool SequenceVariation::has_read_index() const {
   return _has_bit(3);
 }
-inline void SequenceVariation::clear_readindex() {
-  readindex_ = 0u;
+inline void SequenceVariation::clear_read_index() {
+  read_index_ = 0u;
   _clear_bit(3);
 }
-inline ::google::protobuf::uint32 SequenceVariation::readindex() const {
-  return readindex_;
+inline ::google::protobuf::uint32 SequenceVariation::read_index() const {
+  return read_index_;
 }
-inline void SequenceVariation::set_readindex(::google::protobuf::uint32 value) {
+inline void SequenceVariation::set_read_index(::google::protobuf::uint32 value) {
   _set_bit(3);
-  readindex_ = value;
+  read_index_ = value;
 }
 
 // optional bytes to_quality = 4;
@@ -1598,36 +1598,36 @@ inline ::std::string* SequenceVariation::mutable_to_quality() {
 
 // AlignmentHeader
 
-// optional uint32 smallestSplitQueryIndex = 9;
-inline bool AlignmentHeader::has_smallestsplitqueryindex() const {
+// optional uint32 smallest_split_query_index = 9;
+inline bool AlignmentHeader::has_smallest_split_query_index() const {
   return _has_bit(0);
 }
-inline void AlignmentHeader::clear_smallestsplitqueryindex() {
-  smallestsplitqueryindex_ = 0u;
+inline void AlignmentHeader::clear_smallest_split_query_index() {
+  smallest_split_query_index_ = 0u;
   _clear_bit(0);
 }
-inline ::google::protobuf::uint32 AlignmentHeader::smallestsplitqueryindex() const {
-  return smallestsplitqueryindex_;
+inline ::google::protobuf::uint32 AlignmentHeader::smallest_split_query_index() const {
+  return smallest_split_query_index_;
 }
-inline void AlignmentHeader::set_smallestsplitqueryindex(::google::protobuf::uint32 value) {
+inline void AlignmentHeader::set_smallest_split_query_index(::google::protobuf::uint32 value) {
   _set_bit(0);
-  smallestsplitqueryindex_ = value;
+  smallest_split_query_index_ = value;
 }
 
-// optional uint32 largestSplitQueryIndex = 11;
-inline bool AlignmentHeader::has_largestsplitqueryindex() const {
+// optional uint32 largest_split_query_index = 11;
+inline bool AlignmentHeader::has_largest_split_query_index() const {
   return _has_bit(1);
 }
-inline void AlignmentHeader::clear_largestsplitqueryindex() {
-  largestsplitqueryindex_ = 0u;
+inline void AlignmentHeader::clear_largest_split_query_index() {
+  largest_split_query_index_ = 0u;
   _clear_bit(1);
 }
-inline ::google::protobuf::uint32 AlignmentHeader::largestsplitqueryindex() const {
-  return largestsplitqueryindex_;
+inline ::google::protobuf::uint32 AlignmentHeader::largest_split_query_index() const {
+  return largest_split_query_index_;
 }
-inline void AlignmentHeader::set_largestsplitqueryindex(::google::protobuf::uint32 value) {
+inline void AlignmentHeader::set_largest_split_query_index(::google::protobuf::uint32 value) {
   _set_bit(1);
-  largestsplitqueryindex_ = value;
+  largest_split_query_index_ = value;
 }
 
 // optional .goby.IdentifierMapping query_name_mapping = 1;
@@ -1737,20 +1737,20 @@ AlignmentHeader::mutable_query_length() {
   return &query_length_;
 }
 
-// optional uint32 constantQueryLength = 10;
-inline bool AlignmentHeader::has_constantquerylength() const {
+// optional uint32 constant_query_length = 10;
+inline bool AlignmentHeader::has_constant_query_length() const {
   return _has_bit(8);
 }
-inline void AlignmentHeader::clear_constantquerylength() {
-  constantquerylength_ = 0u;
+inline void AlignmentHeader::clear_constant_query_length() {
+  constant_query_length_ = 0u;
   _clear_bit(8);
 }
-inline ::google::protobuf::uint32 AlignmentHeader::constantquerylength() const {
-  return constantquerylength_;
+inline ::google::protobuf::uint32 AlignmentHeader::constant_query_length() const {
+  return constant_query_length_;
 }
-inline void AlignmentHeader::set_constantquerylength(::google::protobuf::uint32 value) {
+inline void AlignmentHeader::set_constant_query_length(::google::protobuf::uint32 value) {
   _set_bit(8);
-  constantquerylength_ = value;
+  constant_query_length_ = value;
 }
 
 // repeated uint32 target_length = 8;
@@ -1810,20 +1810,20 @@ inline void AlignmentHeader::set_indexed(bool value) {
   indexed_ = value;
 }
 
-// optional bool queryLengthsStoredInEntries = 15;
-inline bool AlignmentHeader::has_querylengthsstoredinentries() const {
+// optional bool query_lengths_stored_in_entries = 15;
+inline bool AlignmentHeader::has_query_lengths_stored_in_entries() const {
   return _has_bit(12);
 }
-inline void AlignmentHeader::clear_querylengthsstoredinentries() {
-  querylengthsstoredinentries_ = false;
+inline void AlignmentHeader::clear_query_lengths_stored_in_entries() {
+  query_lengths_stored_in_entries_ = false;
   _clear_bit(12);
 }
-inline bool AlignmentHeader::querylengthsstoredinentries() const {
-  return querylengthsstoredinentries_;
+inline bool AlignmentHeader::query_lengths_stored_in_entries() const {
+  return query_lengths_stored_in_entries_;
 }
-inline void AlignmentHeader::set_querylengthsstoredinentries(bool value) {
+inline void AlignmentHeader::set_query_lengths_stored_in_entries(bool value) {
   _set_bit(12);
-  querylengthsstoredinentries_ = value;
+  query_lengths_stored_in_entries_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -1921,20 +1921,20 @@ inline void IdentifierInfo::set_index(::google::protobuf::uint32 value) {
 
 // AlignmentTooManyHits
 
-// required uint32 alignerThreshold = 2;
-inline bool AlignmentTooManyHits::has_alignerthreshold() const {
+// required uint32 aligner_threshold = 2;
+inline bool AlignmentTooManyHits::has_aligner_threshold() const {
   return _has_bit(0);
 }
-inline void AlignmentTooManyHits::clear_alignerthreshold() {
-  alignerthreshold_ = 0u;
+inline void AlignmentTooManyHits::clear_aligner_threshold() {
+  aligner_threshold_ = 0u;
   _clear_bit(0);
 }
-inline ::google::protobuf::uint32 AlignmentTooManyHits::alignerthreshold() const {
-  return alignerthreshold_;
+inline ::google::protobuf::uint32 AlignmentTooManyHits::aligner_threshold() const {
+  return aligner_threshold_;
 }
-inline void AlignmentTooManyHits::set_alignerthreshold(::google::protobuf::uint32 value) {
+inline void AlignmentTooManyHits::set_aligner_threshold(::google::protobuf::uint32 value) {
   _set_bit(0);
-  alignerthreshold_ = value;
+  aligner_threshold_ = value;
 }
 
 // repeated .goby.AmbiguousLocation hits = 1;
@@ -2018,29 +2018,29 @@ inline void AmbiguousLocation::set_length_of_match(::google::protobuf::uint32 va
 
 // AlignmentIndex
 
-// repeated uint32 targetPositionOffsets = 1 [packed = true];
-inline int AlignmentIndex::targetpositionoffsets_size() const {
-  return targetpositionoffsets_.size();
+// repeated uint32 target_position_offsets = 1 [packed = true];
+inline int AlignmentIndex::target_position_offsets_size() const {
+  return target_position_offsets_.size();
 }
-inline void AlignmentIndex::clear_targetpositionoffsets() {
-  targetpositionoffsets_.Clear();
+inline void AlignmentIndex::clear_target_position_offsets() {
+  target_position_offsets_.Clear();
 }
-inline ::google::protobuf::uint32 AlignmentIndex::targetpositionoffsets(int index) const {
-  return targetpositionoffsets_.Get(index);
+inline ::google::protobuf::uint32 AlignmentIndex::target_position_offsets(int index) const {
+  return target_position_offsets_.Get(index);
 }
-inline void AlignmentIndex::set_targetpositionoffsets(int index, ::google::protobuf::uint32 value) {
-  targetpositionoffsets_.Set(index, value);
+inline void AlignmentIndex::set_target_position_offsets(int index, ::google::protobuf::uint32 value) {
+  target_position_offsets_.Set(index, value);
 }
-inline void AlignmentIndex::add_targetpositionoffsets(::google::protobuf::uint32 value) {
-  targetpositionoffsets_.Add(value);
+inline void AlignmentIndex::add_target_position_offsets(::google::protobuf::uint32 value) {
+  target_position_offsets_.Add(value);
 }
 inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
-AlignmentIndex::targetpositionoffsets() const {
-  return targetpositionoffsets_;
+AlignmentIndex::target_position_offsets() const {
+  return target_position_offsets_;
 }
 inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
-AlignmentIndex::mutable_targetpositionoffsets() {
-  return &targetpositionoffsets_;
+AlignmentIndex::mutable_target_position_offsets() {
+  return &target_position_offsets_;
 }
 
 // repeated uint64 offsets = 2 [packed = true];
@@ -2068,29 +2068,29 @@ AlignmentIndex::mutable_offsets() {
   return &offsets_;
 }
 
-// repeated uint64 absolutePositions = 3 [packed = true];
-inline int AlignmentIndex::absolutepositions_size() const {
-  return absolutepositions_.size();
+// repeated uint64 absolute_positions = 3 [packed = true];
+inline int AlignmentIndex::absolute_positions_size() const {
+  return absolute_positions_.size();
 }
-inline void AlignmentIndex::clear_absolutepositions() {
-  absolutepositions_.Clear();
+inline void AlignmentIndex::clear_absolute_positions() {
+  absolute_positions_.Clear();
 }
-inline ::google::protobuf::uint64 AlignmentIndex::absolutepositions(int index) const {
-  return absolutepositions_.Get(index);
+inline ::google::protobuf::uint64 AlignmentIndex::absolute_positions(int index) const {
+  return absolute_positions_.Get(index);
 }
-inline void AlignmentIndex::set_absolutepositions(int index, ::google::protobuf::uint64 value) {
-  absolutepositions_.Set(index, value);
+inline void AlignmentIndex::set_absolute_positions(int index, ::google::protobuf::uint64 value) {
+  absolute_positions_.Set(index, value);
 }
-inline void AlignmentIndex::add_absolutepositions(::google::protobuf::uint64 value) {
-  absolutepositions_.Add(value);
+inline void AlignmentIndex::add_absolute_positions(::google::protobuf::uint64 value) {
+  absolute_positions_.Add(value);
 }
 inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
-AlignmentIndex::absolutepositions() const {
-  return absolutepositions_;
+AlignmentIndex::absolute_positions() const {
+  return absolute_positions_;
 }
 inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
-AlignmentIndex::mutable_absolutepositions() {
-  return &absolutepositions_;
+AlignmentIndex::mutable_absolute_positions() {
+  return &absolute_positions_;
 }
 
 

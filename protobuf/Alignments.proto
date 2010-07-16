@@ -7,8 +7,7 @@ option optimize_for = SPEED;
   This message is written to 'basename'.entries as a very large chunked collection.
 */
 message AlignmentCollection {
-
-     repeated AlignmentEntry alignmentEntries =1;
+     repeated AlignmentEntry alignment_entries =1;
 }
 
 message AlignmentEntry {
@@ -72,16 +71,19 @@ message AlignmentEntry {
    */
   optional uint32 query_aligned_length=11;
 
-   /*
-    Number of bases that have been aligned for the target.
-   */
+  /*
+   Number of bases that have been aligned for the target.
+  */
   optional uint32 target_aligned_length=12;
+
   repeated SequenceVariation sequence_variations=13;
-    /*
-     Length of the query sequence.
-    */
-    optional uint32 queryLength=10;
+
+  /*
+   Length of the query sequence.
+  */
+  optional uint32 query_length=10;
 }
+
 /*
    Represents sequence variations between the query and the reference sequences. Many variations can be represented.
    For instance, an insertion at position 5 in the reference would be represented as from="A", to="" position=5.
@@ -133,7 +135,7 @@ message SequenceVariation {
     of the read (inclusive). Use this index if you need to know  how far the variation is observed from the beginning
     of the sequenced read.
     */
-  required uint32 readIndex=5;
+  required uint32 read_index=5;
 
   /**
     The read base quality scores for those bases that are given in the to field. This field
@@ -157,7 +159,7 @@ message AlignmentHeader {
      Such data structures include queryLength and some arrays in the TooManyHits data
      structure.
     */
-   optional uint32 smallestSplitQueryIndex=9;
+   optional uint32 smallest_split_query_index=9;
     /*
      The largest possible query index in this alignment. Data stored as an array where
      queryIndex is the array index will be stored with only the elements in the inclusive
@@ -165,7 +167,7 @@ message AlignmentHeader {
      Such data structures include queryLength and some arrays in the TooManyHits data
      structure.
     */
-   optional uint32 largestSplitQueryIndex=11;
+   optional uint32 largest_split_query_index=11;
 
    /* Mapping from query identifier name to query index (as used in alignment entries).
     */
@@ -197,7 +199,7 @@ message AlignmentHeader {
       If query length is constant across all the queries, this field contains the constant length.
       In such cases, query_length will be empty.
    */
-   optional uint32 constantQueryLength=10;
+   optional uint32 constant_query_length=10;
 
    /*
       Length of the target sequences. One number per target, in the order of increasing target index.
@@ -218,7 +220,7 @@ message AlignmentHeader {
    /*
      True when query lengths are stored in alignment entries (Goby 1.7+).
    */
-   optional bool queryLengthsStoredInEntries=15;
+   optional bool query_lengths_stored_in_entries=15;
 
 }
 
@@ -240,7 +242,7 @@ message AlignmentTooManyHits {
       The threshold used by the aligner to determine that a query is ambiguous and should be dropped.
       Referred to as parameter k below.
       */
-     required uint32 alignerThreshold=2;
+     required uint32 aligner_threshold=2;
      /*
        The hits that are assigned to several (>k) reference location.
       */
@@ -278,7 +280,7 @@ message AlignmentIndex {
    position of a genomic location. Given targetIndex and positionOnReference, the absolute location
    is defined as  targetPositionOffsets[targetIndex]+positionOnReference.
  */
-   repeated uint32 targetPositionOffsets=1 [packed=true];
+   repeated uint32 target_position_offsets=1 [packed=true];
    /*
     The byte offsets into the compressed entries file. Byte offsets are matched with absolute position
     by index. There should be as many elements in offsets as there are in absolutePosition
@@ -289,6 +291,6 @@ message AlignmentIndex {
      The absolute positions of the first entry in the chunk that immediately start at offset. One element
      per chunk in the 'basename'.entries file.
    */
-   repeated uint64 absolutePositions=3[packed=true];
+   repeated uint64 absolute_positions=3[packed=true];
 
 }

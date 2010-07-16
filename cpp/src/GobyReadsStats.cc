@@ -99,7 +99,7 @@ int main (int argc, const char *const argv[]) {
     numberOfReads++;
 
     goby::ReadEntry entry = *it;
-    const unsigned readLength = entry.readlength();
+    const unsigned readLength = entry.read_length();
     totalReadLength += readLength;
 
     if (entry.has_description()) {
@@ -109,10 +109,10 @@ int main (int argc, const char *const argv[]) {
       }
     }
 
-    if (entry.has_readidentifier()) {
+    if (entry.has_read_identifier()) {
       numberOfIdentifiers++;
       if (verbose) {
-        cout << "Identifier found: " << entry.readidentifier() << endl;
+        cout << "Identifier found: " << entry.read_identifier() << endl;
       }
     }
 
@@ -123,15 +123,15 @@ int main (int argc, const char *const argv[]) {
       }
     }
 
-    if (entry.has_sequencepair() && !entry.sequencepair().empty()) {
+    if (entry.has_sequence_pair() && !entry.sequence_pair().empty()) {
       numberOfSequencePairs++;
     }
 
-    if (entry.has_qualityscores() && !entry.qualityscores().empty()) {
+    if (entry.has_quality_scores() && !entry.quality_scores().empty()) {
       numberOfQualityScores++;
     }
 
-    if (entry.has_qualityscorespair() && !entry.qualityscorespair().empty()) {
+    if (entry.has_quality_scores_pair() && !entry.quality_scores_pair().empty()) {
       numberOfQualityScorePairs++;
     }
 

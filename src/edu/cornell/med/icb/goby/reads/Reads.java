@@ -369,22 +369,22 @@ public final class Reads {
       return edu.cornell.med.icb.goby.reads.Reads.internal_static_goby_ReadEntry_fieldAccessorTable;
     }
     
-    // required uint32 readIndex = 1;
-    public static final int READINDEX_FIELD_NUMBER = 1;
+    // required uint32 read_index = 1;
+    public static final int READ_INDEX_FIELD_NUMBER = 1;
     private boolean hasReadIndex;
     private int readIndex_ = 0;
     public boolean hasReadIndex() { return hasReadIndex; }
     public int getReadIndex() { return readIndex_; }
     
-    // optional uint32 barcodeIndex = 10;
-    public static final int BARCODEINDEX_FIELD_NUMBER = 10;
+    // optional uint32 barcode_index = 10;
+    public static final int BARCODE_INDEX_FIELD_NUMBER = 10;
     private boolean hasBarcodeIndex;
     private int barcodeIndex_ = 0;
     public boolean hasBarcodeIndex() { return hasBarcodeIndex; }
     public int getBarcodeIndex() { return barcodeIndex_; }
     
-    // optional string readIdentifier = 23;
-    public static final int READIDENTIFIER_FIELD_NUMBER = 23;
+    // optional string read_identifier = 23;
+    public static final int READ_IDENTIFIER_FIELD_NUMBER = 23;
     private boolean hasReadIdentifier;
     private java.lang.String readIdentifier_ = "";
     public boolean hasReadIdentifier() { return hasReadIdentifier; }
@@ -397,8 +397,8 @@ public final class Reads {
     public boolean hasDescription() { return hasDescription; }
     public java.lang.String getDescription() { return description_; }
     
-    // required uint32 readLength = 2;
-    public static final int READLENGTH_FIELD_NUMBER = 2;
+    // required uint32 read_length = 2;
+    public static final int READ_LENGTH_FIELD_NUMBER = 2;
     private boolean hasReadLength;
     private int readLength_ = 0;
     public boolean hasReadLength() { return hasReadLength; }
@@ -411,29 +411,29 @@ public final class Reads {
     public boolean hasSequence() { return hasSequence; }
     public com.google.protobuf.ByteString getSequence() { return sequence_; }
     
-    // optional bytes sequencePair = 5;
-    public static final int SEQUENCEPAIR_FIELD_NUMBER = 5;
+    // optional bytes sequence_pair = 5;
+    public static final int SEQUENCE_PAIR_FIELD_NUMBER = 5;
     private boolean hasSequencePair;
     private com.google.protobuf.ByteString sequencePair_ = com.google.protobuf.ByteString.EMPTY;
     public boolean hasSequencePair() { return hasSequencePair; }
     public com.google.protobuf.ByteString getSequencePair() { return sequencePair_; }
     
-    // optional uint32 readLengthPair = 6;
-    public static final int READLENGTHPAIR_FIELD_NUMBER = 6;
+    // optional uint32 read_length_pair = 6;
+    public static final int READ_LENGTH_PAIR_FIELD_NUMBER = 6;
     private boolean hasReadLengthPair;
     private int readLengthPair_ = 0;
     public boolean hasReadLengthPair() { return hasReadLengthPair; }
     public int getReadLengthPair() { return readLengthPair_; }
     
-    // optional bytes qualityScores = 4;
-    public static final int QUALITYSCORES_FIELD_NUMBER = 4;
+    // optional bytes quality_scores = 4;
+    public static final int QUALITY_SCORES_FIELD_NUMBER = 4;
     private boolean hasQualityScores;
     private com.google.protobuf.ByteString qualityScores_ = com.google.protobuf.ByteString.EMPTY;
     public boolean hasQualityScores() { return hasQualityScores; }
     public com.google.protobuf.ByteString getQualityScores() { return qualityScores_; }
     
-    // optional bytes qualityScoresPair = 7;
-    public static final int QUALITYSCORESPAIR_FIELD_NUMBER = 7;
+    // optional bytes quality_scores_pair = 7;
+    public static final int QUALITY_SCORES_PAIR_FIELD_NUMBER = 7;
     private boolean hasQualityScoresPair;
     private com.google.protobuf.ByteString qualityScoresPair_ = com.google.protobuf.ByteString.EMPTY;
     public boolean hasQualityScoresPair() { return hasQualityScoresPair; }
@@ -787,7 +787,7 @@ public final class Reads {
       }
       
       
-      // required uint32 readIndex = 1;
+      // required uint32 read_index = 1;
       public boolean hasReadIndex() {
         return result.hasReadIndex();
       }
@@ -805,7 +805,7 @@ public final class Reads {
         return this;
       }
       
-      // optional uint32 barcodeIndex = 10;
+      // optional uint32 barcode_index = 10;
       public boolean hasBarcodeIndex() {
         return result.hasBarcodeIndex();
       }
@@ -823,7 +823,7 @@ public final class Reads {
         return this;
       }
       
-      // optional string readIdentifier = 23;
+      // optional string read_identifier = 23;
       public boolean hasReadIdentifier() {
         return result.hasReadIdentifier();
       }
@@ -865,7 +865,7 @@ public final class Reads {
         return this;
       }
       
-      // required uint32 readLength = 2;
+      // required uint32 read_length = 2;
       public boolean hasReadLength() {
         return result.hasReadLength();
       }
@@ -904,7 +904,7 @@ public final class Reads {
         return this;
       }
       
-      // optional bytes sequencePair = 5;
+      // optional bytes sequence_pair = 5;
       public boolean hasSequencePair() {
         return result.hasSequencePair();
       }
@@ -925,7 +925,7 @@ public final class Reads {
         return this;
       }
       
-      // optional uint32 readLengthPair = 6;
+      // optional uint32 read_length_pair = 6;
       public boolean hasReadLengthPair() {
         return result.hasReadLengthPair();
       }
@@ -943,7 +943,7 @@ public final class Reads {
         return this;
       }
       
-      // optional bytes qualityScores = 4;
+      // optional bytes quality_scores = 4;
       public boolean hasQualityScores() {
         return result.hasQualityScores();
       }
@@ -964,7 +964,7 @@ public final class Reads {
         return this;
       }
       
-      // optional bytes qualityScoresPair = 7;
+      // optional bytes quality_scores_pair = 7;
       public boolean hasQualityScoresPair() {
         return result.hasQualityScoresPair();
       }
@@ -1017,14 +1017,14 @@ public final class Reads {
   static {
     java.lang.String[] descriptorData = {
       "\n\013Reads.proto\022\004goby\"0\n\016ReadCollection\022\036\n" +
-      "\005reads\030\001 \003(\0132\017.goby.ReadEntry\"\347\001\n\tReadEn" +
-      "try\022\021\n\treadIndex\030\001 \002(\r\022\024\n\014barcodeIndex\030\n" +
-      " \001(\r\022\026\n\016readIdentifier\030\027 \001(\t\022\023\n\013descript" +
-      "ion\030\026 \001(\t\022\022\n\nreadLength\030\002 \002(\r\022\020\n\010sequenc" +
-      "e\030\003 \001(\014\022\024\n\014sequencePair\030\005 \001(\014\022\026\n\016readLen" +
-      "gthPair\030\006 \001(\r\022\025\n\rqualityScores\030\004 \001(\014\022\031\n\021" +
-      "qualityScoresPair\030\007 \001(\014B\"\n\036edu.cornell.m" +
-      "ed.icb.goby.readsH\001"
+      "\005reads\030\001 \003(\0132\017.goby.ReadEntry\"\361\001\n\tReadEn" +
+      "try\022\022\n\nread_index\030\001 \002(\r\022\025\n\rbarcode_index" +
+      "\030\n \001(\r\022\027\n\017read_identifier\030\027 \001(\t\022\023\n\013descr" +
+      "iption\030\026 \001(\t\022\023\n\013read_length\030\002 \002(\r\022\020\n\010seq" +
+      "uence\030\003 \001(\014\022\025\n\rsequence_pair\030\005 \001(\014\022\030\n\020re" +
+      "ad_length_pair\030\006 \001(\r\022\026\n\016quality_scores\030\004" +
+      " \001(\014\022\033\n\023quality_scores_pair\030\007 \001(\014B\"\n\036edu" +
+      ".cornell.med.icb.goby.readsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

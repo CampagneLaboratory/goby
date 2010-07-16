@@ -48,7 +48,7 @@ namespace goby {
   }
 
   unsigned TooManyHits::getAlignerThreshold() const {
-    return pbTmh.alignerthreshold();
+    return pbTmh.aligner_threshold();
   }
   
   vector<unsigned> TooManyHits::getQueryIndicies() const {
@@ -171,7 +171,7 @@ namespace goby {
   }
 
   TooManyHitsWriter::TooManyHitsWriter(const std::string& basename, unsigned threshold) : TooManyHits(basename) {
-    pbTmh.set_alignerthreshold(threshold);
+    pbTmh.set_aligner_threshold(threshold);
   }
 
   TooManyHitsWriter::TooManyHitsWriter(const TooManyHits& tooManyHits) : TooManyHits(tooManyHits) {
@@ -183,7 +183,7 @@ namespace goby {
   }
 
   void TooManyHitsWriter::append(unsigned queryIndex, unsigned howManyHits, unsigned lengthOfMatch) {
-    if (howManyHits > pbTmh.alignerthreshold()) {
+    if (howManyHits > pbTmh.aligner_threshold()) {
       AmbiguousLocation *ambiguousLocation = pbTmh.add_hits();
       ambiguousLocation->set_query_index(queryIndex);
       ambiguousLocation->set_at_least_number_of_hits(howManyHits);

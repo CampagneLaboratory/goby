@@ -4,53 +4,48 @@ option java_package = "edu.cornell.med.icb.goby.reads";
 option optimize_for = SPEED;
 
 message ReadCollection {
-
-     repeated ReadEntry reads =1;
-
+     repeated ReadEntry reads = 1;
 }
 
 message ReadEntry {
-
   /*
     Index of a read.
   */
-  required uint32 readIndex =1;
+  required uint32 read_index = 1;
    /*
     Index of the barcode, if any.
   */
-  optional uint32 barcodeIndex =10;
+  optional uint32 barcode_index = 10;
   /*
      Read identifier/name may be present.
   */
-  optional string readIdentifier =23;
+  optional string read_identifier = 23;
   /*
      Additional description about the read (from Fasta/Q format).
    */
-  optional string description =22;
+  optional string description = 22;
   /*
     Length of the sequence.
    */
-  required uint32 readLength=2;
+  required uint32 read_length = 2;
   /*
     Sequence, encoded as ascii characters stored in single bytes.
    */
-  optional bytes sequence =3;
-   /*
-    The second sequence in a pair. Stored the same way as the sequence attribute.
-   */
-  optional bytes sequencePair =5;
+  optional bytes sequence = 3;
+  /*
+   The second sequence in a pair. Stored the same way as the sequence attribute.
+  */
+  optional bytes sequence_pair = 5;
   /*
     Length of the second sequence in a pair.
   */
-  optional uint32 readLengthPair=6;
-
+  optional uint32 read_length_pair = 6;
   /*
     Quality scores in Phred units, stored as single bytes (0-255).
   */
-  optional bytes qualityScores =4;
+  optional bytes quality_scores = 4;
   /*
     Quality scores for the second sequence in a pair. Stored as the 'qualityScores' attribute.
    */
-  optional bytes qualityScoresPair =7;
+  optional bytes quality_scores_pair = 7;
 }
-
