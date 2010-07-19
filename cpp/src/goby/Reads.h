@@ -81,7 +81,6 @@ namespace goby {
     static std::string getBasename(const std::string& filename);
 
     inline std::string getBasename() const { return getBasename(filename); };
-    virtual ReadsIterator iterator() = 0;
   };
 
   class LIBGOBY_EXPORT ReadsReader : public Reads {
@@ -90,17 +89,28 @@ namespace goby {
     ReadsReader(const ReadsReader& reader);
     ~ReadsReader(void);
 
-    virtual ReadsIterator iterator();
+    ReadsIterator iterator();
   };
 
   class LIBGOBY_EXPORT ReadsWriter : public Reads {
+    // the underlying message chunk writer
+    MessageChunksWriter<ReadCollection> *messageChunksWriter;
+
+    // current chunk of read entries
+    ReadCollection readCollection;
+
+    // current read index
+    unsigned readIndex;
+
   public:
     ReadsWriter(const std::string& filename);
     ReadsWriter(const Reads& reads);
     ~ReadsWriter(void);
 
-    virtual ReadsIterator iterator();
-    void write();
+    void appendEntry(const std::string& sequence);
+    void appendEntry(const char* sequence);
+
+    void close();
   };
 }
 

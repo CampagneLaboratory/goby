@@ -28,7 +28,7 @@ nobase_include_HEADERS = \
 	goby/Reads.pb.h \
 	goby/TooManyHits.h
 
-bin_PROGRAMS = GobyAlignmentStats GobyAlignmentToText GobyReadsStats
+bin_PROGRAMS = GobyAlignmentStats GobyAlignmentToText GobyReadsStats GobyFastaToCompact
 
 GobyAlignmentStats_LDADD = $(PTHREAD_LIBS) libgoby.la
 GobyAlignmentStats_SOURCES = \
@@ -41,6 +41,10 @@ GobyAlignmentToText_SOURCES = \
 GobyReadsStats_LDADD = $(PTHREAD_LIBS) libgoby.la
 GobyReadsStats_SOURCES = \
 	GobyReadsStats.cc
+
+GobyFastaToCompact_LDADD = $(PTHREAD_LIBS) libgoby.la
+GobyFastaToCompact_SOURCES = \
+	GobyFastaToCompact.cc
 
 MAINTAINERCLEANFILES = \
 	Makefile.in

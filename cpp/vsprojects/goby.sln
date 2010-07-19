@@ -15,6 +15,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GobyAlignmentToText", "Goby
 		{A6CBA075-D0AB-4A66-893E-9DF35197FB12} = {A6CBA075-D0AB-4A66-893E-9DF35197FB12}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GobyFastaToCompact", "GobyFastaToCompact.vcxproj", "{A20B1FC8-3393-489B-89A1-0C3DEF01DDD5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A6CBA075-D0AB-4A66-893E-9DF35197FB12} = {A6CBA075-D0AB-4A66-893E-9DF35197FB12}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -37,6 +42,10 @@ Global
 		{E788D091-3953-4F57-A118-077B1D76159B}.Debug|Win32.Build.0 = Debug|Win32
 		{E788D091-3953-4F57-A118-077B1D76159B}.Release|Win32.ActiveCfg = Release|Win32
 		{E788D091-3953-4F57-A118-077B1D76159B}.Release|Win32.Build.0 = Release|Win32
+		{A20B1FC8-3393-489B-89A1-0C3DEF01DDD5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A20B1FC8-3393-489B-89A1-0C3DEF01DDD5}.Debug|Win32.Build.0 = Debug|Win32
+		{A20B1FC8-3393-489B-89A1-0C3DEF01DDD5}.Release|Win32.ActiveCfg = Release|Win32
+		{A20B1FC8-3393-489B-89A1-0C3DEF01DDD5}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

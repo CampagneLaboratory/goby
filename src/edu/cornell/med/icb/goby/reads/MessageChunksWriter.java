@@ -118,7 +118,7 @@ public class MessageChunksWriter {
      */
     public void flush(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder)
             throws IOException {
-        // Write the separation between two chunks: eight bytes with value zero.
+        // Write the separation between two chunks: eight bytes with value 0xFF.
         if (LOG.isTraceEnabled()) {
             LOG.trace("writing zero bytes {" + DELIMITER_LENGTH);
         }

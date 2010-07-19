@@ -163,14 +163,17 @@ namespace goby {
   ReadsReader::~ReadsReader(void) {
   }
 
-  ReadsReader::ReadsReader(const string& basename) : Reads(basename) {
+  ReadsReader::ReadsReader(const string& filename) : Reads(filename) {
   }
 
   ReadsIterator ReadsReader::iterator() {
     return ReadsIterator(filename);
   }
 
-  ReadsWriter::ReadsWriter(const string& basename) : Reads(basename) {
+  ReadsWriter::ReadsWriter(const string& filename) : Reads(getBasename(filename)),
+    messageChunksWriter(new MessageChunksWriter<ReadCollection>(filename)),
+    readCollection(ReadCollection::default_instance()),
+    readIndex(0) {
   }
 
   ReadsWriter::ReadsWriter(const Reads& reads) : Reads(reads) {
@@ -179,13 +182,24 @@ namespace goby {
   }
 
   ReadsWriter::~ReadsWriter(void) {
+    readCollection.Clear();
+    delete messageChunksWriter;
   }
 
-  ReadsIterator ReadsWriter::iterator() {
-    return ReadsIterator(filename);
+  void ReadsWriter::appendEntry(const char* sequence) {
+    // set fields in the new read entry
+    goby::ReadEntry *entry = readCollection.add_reads();
+    entry->set_read_index(readIndex++);
+    entry->set_sequence(sequence);
+    entry->set_read_length(strlen(sequence));
+
+    cout << entry->DebugString() << endl;
+
+    // and pass it along to the chunk writer
+    messageChunksWriter->writeAsNeeded(&readCollection);
   }
 
-  void ReadsWriter::write() {
-    // TODO
+  void ReadsWriter::close() {
+    messageChunksWriter->flush(&readCollection);
   }
 }

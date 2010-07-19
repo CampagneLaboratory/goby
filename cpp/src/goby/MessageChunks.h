@@ -28,6 +28,12 @@
 #include <string>
 #include <vector>
 
+#ifdef _MSC_VER
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
+
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/gzip_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
@@ -36,8 +42,16 @@
 #include "common.h"
 #include "Alignments.pb.h"
 
+#ifdef _MSC_VER
+// Disable Microsoft deprecation warnings for POSIX functions called from this class (open, close)
+#pragma warning(push)
+#pragma warning(disable:4996)
+#endif
+
 namespace goby {
-  #define GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH 8      // length of the delimiter tag (in bytes)
+  #define GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH 8         // length of the delimiter tag (in bytes)
+  #define GOBY_MESSAGE_CHUNK_DELIMITER_CONTENT 0xFF     // value of each byte in the delimeter
+
 
   template <typename T> class MessageChunksIterator : public std::iterator<std::input_iterator_tag, T> {
     // the name of the chunked file
@@ -246,9 +260,97 @@ namespace goby {
     // the name of the chunked file
     std::string filename;
 
-    // The underlying stream
-    std::ofstream stream;
+    // the file descriptor for the chunked file
+    int fd;
+
+    // The underlying streams
+    google::protobuf::io::FileOutputStream *file_stream;
+    google::protobuf::io::CodedOutputStream *coded_stream;
+
+    unsigned number_of_entries_per_chunk;
+
+    // The number of messages appended in a chunk.
+    unsigned number_appended;
+
+    // The total number of logical entries written to the output.
+    unsigned long total_entries_written;
+
+  public:
+    MessageChunksWriter(const std::string& filename, unsigned number_of_entries_per_chunk = 10) :
+        filename(filename),
+        number_of_entries_per_chunk(number_of_entries_per_chunk),
+        number_appended(0),
+        total_entries_written(0) {
+      std::cout << "opening: " << filename << std::endl;
+      fd = ::open(filename.c_str(), O_WRONLY | O_CREAT | O_BINARY);
+      file_stream = new google::protobuf::io::FileOutputStream(fd);
+      coded_stream = new google::protobuf::io::CodedOutputStream(file_stream);
+    }
+
+    virtual ~MessageChunksWriter(void) {
+      delete coded_stream;
+      delete file_stream;
+      ::close(fd);
+    }
+
+    void writeAsNeeded(T* const collection, int multiplicity = 1) {
+        total_entries_written += multiplicity;
+        if (++number_appended >= number_of_entries_per_chunk) {
+            flush(collection);
+        }
+        // TODO: return currentChunkStartOffset
+    }
+
+    void flush(T* const collection) {
+      unsigned char delimiter = GOBY_MESSAGE_CHUNK_DELIMITER_CONTENT;
+      // Write the separation between two chunks: eight bytes with value zero.
+      for (int i = 0; i < GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH; i++) {
+        coded_stream->WriteRaw(&delimiter, 1);
+      }
+
+     unsigned char *byteArray = new unsigned char[collection->ByteSize()];
+     google::protobuf::io::ZeroCopyOutputStream *byteArrayOutputStream = new google::protobuf::io::ArrayOutputStream(byteArray, collection->GetCachedSize());
+     google::protobuf::io::GzipOutputStream *compressedStream = new google::protobuf::io::GzipOutputStream(byteArrayOutputStream);
+     collection->SerializeToZeroCopyStream(compressedStream);
+     int serializedSize = compressedStream->ByteCount();
+     std::cout << "serializedSize: " << serializedSize << std::endl;
+
+     coded_stream->WriteLittleEndian32(serializedSize);
+     coded_stream->WriteRaw(byteArray, serializedSize);
+
+     number_appended = 0;
+     collection->Clear();
+
+    /*
+        // compress the read collection:
+        final ByteArrayOutputStream compressedStream = new ByteArrayOutputStream();
+        final OutputStream byteArrayOutputStream = new GZIPOutputStream(compressedStream);
+        readCollection.writeTo(byteArrayOutputStream);
+        byteArrayOutputStream.close();
+
+        final int serializedSize = compressedStream.size();
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("serializedSize: " + serializedSize);
+        }
+
+        // the position just before this chunk is written is recorded:
+        currentChunkStartOffset = out.size();
+        // write the compressed size followed by the compressed stream:
+        out.writeInt(serializedSize);
+        out.write(compressedStream.toByteArray());
+
+        totalBytesWritten += serializedSize + 4 + DELIMITER_LENGTH;
+
+        out.flush();
+        numAppended = 0;
+        collectionBuilder.clear();
+        */
+    }
   };
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)  // Restores the warning state.
+#endif
 
 #endif // GOBY_MESSAGE_CHUNKS_H

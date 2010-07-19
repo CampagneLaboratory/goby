@@ -201,9 +201,8 @@ namespace goby {
     }
     tmhStream.close();
   }
+}
 
 #ifdef _MSC_VER
 #pragma warning(pop)  // Restores the warning state.
 #endif
-
-}
