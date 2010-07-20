@@ -184,6 +184,9 @@ public class DifferentialExpressionAnalysis {
                     results = deCalculator.compare(results, method, new SampleCountCalculator());
                 }
 
+                if (eval("counts")) {
+                    results = deCalculator.compare(results, method, new CountCalculator());
+                }
 
                 // evaluate differences between groups:
                 if (eval("fold-change")) {

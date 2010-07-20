@@ -1,5 +1,9 @@
 development
  - Update picard/samtools to version 1.25
+ - In the mode "alignment-to-annotation-counts" the "--eval" options supports
+   a new value "counts" which will output a format specifically designed
+   for use with R's DESeq and notably for the R script geneDESeqAnalysis.R
+   which is used with GobyWeb.
 
 1.7
  - Extended fasta-to-compact and compact-to-fasta to handle paired end runs. See new command

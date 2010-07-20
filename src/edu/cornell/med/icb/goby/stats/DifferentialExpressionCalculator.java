@@ -255,6 +255,13 @@ public class DifferentialExpressionCalculator {
         return numAlignedInSample.get(sampleId);
     }
 
+    /**
+     * Get the sampleToGroupMap object.
+     * @return map of sample id's to group names.
+     */
+    public Map<String, String> getSampleToGroupMap() {
+        return sampleToGroupMap;
+    }
 
     public DifferentialExpressionResults compare(DifferentialExpressionResults results,
                                                  final NormalizationMethod method,

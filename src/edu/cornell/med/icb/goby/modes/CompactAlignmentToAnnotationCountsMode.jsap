@@ -152,7 +152,7 @@
                 <classname>StringStringParser</classname>
             </stringParser>
              <defaults>
-                <string>samples,fold-change,fold-change-magnitude,log2-fold-change,group-averages,t-test,fisher-r,BH</string>
+                <string>samples,counts,fold-change,fold-change-magnitude,log2-fold-change,group-averages,t-test,fisher-r,BH</string>
             </defaults>
                    <help>Name the statistics to evaluate. The complete list of valid statistics names is "samples,fold-change,fold-change-magnitude,log2-fold-change,group-averages,t-test,fisher,fisher-r,chi-square,Bonferroni,BH". This option is available since Goby 1.7.</help>
         </flaggedOption>
