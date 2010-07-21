@@ -102,14 +102,22 @@ namespace goby {
     // current read index
     unsigned readIndex;
 
+    char const* sequence;
+    char const* description;
+    char const* identifier;
+    char const* qualityScores;
+
   public:
-    ReadsWriter(const std::string& filename);
+    ReadsWriter(const std::string& filename, unsigned numberOfEntriesPerPhunk);
     ReadsWriter(const Reads& reads);
     ~ReadsWriter(void);
 
-    void appendEntry(const std::string& sequence);
-    void appendEntry(const char* sequence);
+    inline void setSequence(char const* sequence) { this->sequence = sequence; };
+    inline void setDescription(char const * description) { this->description = description; };
+    inline void setIdentifier(char const* identifier) { this->identifier = identifier; };
+    inline void setQualityScores(char const* qualityScores) { this->qualityScores = qualityScores; };
 
+    void appendEntry();
     void close();
   };
 }

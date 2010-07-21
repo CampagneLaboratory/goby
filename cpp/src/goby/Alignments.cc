@@ -153,7 +153,7 @@ namespace goby {
     // Write to the "header" file
     const string headerFilename = basename + ".header";
     cout << "Writing file: " << headerFilename << endl;
-    int fd = ::open(headerFilename.c_str(), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, 0644);
+    int fd = ::open(headerFilename.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0644);
 
     // set up a gzip output stream to compress the header
     google::protobuf::io::FileOutputStream headerFileStream(fd);

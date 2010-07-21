@@ -49,21 +49,27 @@ int main (int argc, const char *const argv[]) {
   kseq_t *seq = kseq_init(fastaFp);
 
   // set up a goby writer
-  goby::ReadsWriter writer("foobar.txt");
+  goby::ReadsWriter writer("foobar.txt", 1);
 
-  int l;  
+  int l;
   while ((l = kseq_read(seq)) >= 0) {       // read sequences
-    /* TODO: description
-    cout << "name: " << seq->name.s << endl;
+    // the sequence itself
+    writer.setSequence(seq->seq.s);
+
+    // the description line
+    string description(seq->name.s);
     if (seq->comment.l) {
-      cout << "comment: " << seq->comment.s << endl;  
+      description.append(" ");
+      description.append(seq->comment.s);
+      writer.setDescription(description.c_str());
     }
 
+    // the quality scores
     if (seq->qual.l) {
-      entry->set_quality_scores(seq->qual.s);
+      writer.setQualityScores(seq->qual.s);
     }
-    */
-    writer.appendEntry(seq->seq.s);
+
+    writer.appendEntry();
   }
 
   writer.close();                   // write the any remaining data

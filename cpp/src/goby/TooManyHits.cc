@@ -170,7 +170,7 @@ namespace goby {
     // Write to the "tmh" file
     const string tmhFilename = basename + ".tmh";
     cout << "Writing file: " << tmhFilename << endl;
-    const int fd = ::open(tmhFilename.c_str(), O_WRONLY | O_BINARY | O_CREAT);
+    const int fd = ::open(tmhFilename.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0644);
     if (!pbTmh.SerializeToFileDescriptor(fd)) {
       cerr << "Failed to write too many hits file: " << tmhFilename << endl;
     }

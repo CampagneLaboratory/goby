@@ -49,9 +49,9 @@
 #endif
 
 namespace goby {
-  #define GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH 8         // length of the delimiter tag (in bytes)
-  #define GOBY_MESSAGE_CHUNK_DELIMITER_CONTENT 0xFF     // value of each byte in the delimeter
-
+  #define GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH 8           // length of the delimiter tag (in bytes)
+  #define GOBY_MESSAGE_CHUNK_DELIMITER_CONTENT 0xFF       // value of each byte in the delimeter
+  #define GOBY_DEFAULT_NUMBER_OF_ENTRIES_PER_CHUNK 10000  // default number of entries per chunk
 
   template <typename T> class MessageChunksIterator : public std::iterator<std::input_iterator_tag, T> {
     // the name of the chunked file
@@ -267,6 +267,7 @@ namespace goby {
     google::protobuf::io::FileOutputStream *file_stream;
     google::protobuf::io::CodedOutputStream *coded_stream;
 
+    // number of entries to store before serializing to disk
     unsigned number_of_entries_per_chunk;
 
     // The number of messages appended in a chunk.
@@ -275,14 +276,30 @@ namespace goby {
     // The total number of logical entries written to the output.
     unsigned long total_entries_written;
 
+    // a temporary buffer for processing (class member to avoid creating eveytime)
+    std::string buffer;
+
+    static void writeInt(google::protobuf::io::CodedOutputStream *stream, int v) {
+      unsigned char *buffer = new unsigned char[4];
+      buffer[0] = (v >> 24) & 0xFF;
+      buffer[1] = (v >> 16) & 0xFF;
+      buffer[2] = (v >> 8) & 0xFF;
+      buffer[3] = v & 0xFF;
+      stream->WriteRaw(buffer, 4);
+      delete buffer;
+    }
+
   public:
-    MessageChunksWriter(const std::string& filename, unsigned number_of_entries_per_chunk = 10) :
+    MessageChunksWriter(const std::string& filename, unsigned number_of_entries_per_chunk = GOBY_DEFAULT_NUMBER_OF_ENTRIES_PER_CHUNK) :
         filename(filename),
         number_of_entries_per_chunk(number_of_entries_per_chunk),
         number_appended(0),
         total_entries_written(0) {
       std::cout << "opening: " << filename << std::endl;
-      fd = ::open(filename.c_str(), O_WRONLY | O_CREAT | O_BINARY);
+      fd = ::open(filename.c_str(), O_RDONLY | O_CREAT | O_TRUNC | O_BINARY, 0644);
+      if (fd < 0) {
+        std::cerr << "Error opening file: " << filename << std::endl;
+      }
       file_stream = new google::protobuf::io::FileOutputStream(fd);
       coded_stream = new google::protobuf::io::CodedOutputStream(file_stream);
     }
@@ -308,18 +325,25 @@ namespace goby {
         coded_stream->WriteRaw(&delimiter, 1);
       }
 
-     unsigned char *byteArray = new unsigned char[collection->ByteSize()];
-     google::protobuf::io::ZeroCopyOutputStream *byteArrayOutputStream = new google::protobuf::io::ArrayOutputStream(byteArray, collection->GetCachedSize());
-     google::protobuf::io::GzipOutputStream *compressedStream = new google::protobuf::io::GzipOutputStream(byteArrayOutputStream);
-     collection->SerializeToZeroCopyStream(compressedStream);
-     int serializedSize = compressedStream->ByteCount();
-     std::cout << "serializedSize: " << serializedSize << std::endl;
+      google::protobuf::io::StringOutputStream bufferStream(&buffer);
+      google::protobuf::io::GzipOutputStream compressedStream(&bufferStream);
+      std::cout << collection->DebugString() << std::endl;
 
-     coded_stream->WriteLittleEndian32(serializedSize);
-     coded_stream->WriteRaw(byteArray, serializedSize);
+      if (!collection->SerializeToZeroCopyStream(&compressedStream)) {
+        std::cerr << "There was a problem compressing the collection" << std::endl;
+      }
+      const int bufferSize = buffer.size();
+      const int serializedSize = compressedStream.ByteCount();
+      std::cout << "    bufferSize: " << bufferSize << std::endl;
+      std::cout << "serializedSize: " << serializedSize << std::endl;
 
-     number_appended = 0;
-     collection->Clear();
+      writeInt(coded_stream, serializedSize);
+      coded_stream->WriteString(buffer);
+
+      number_appended = 0;
+      buffer.clear();
+      collection->Clear();
+      // TODO: delete elements of the collection?
 
     /*
         // compress the read collection:

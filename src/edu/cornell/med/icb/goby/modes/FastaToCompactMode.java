@@ -161,7 +161,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
         if (processPairs && tokens != null) {
             final String[] tmp = tokens.split("[,]");
             if (tmp.length != 2) {
-                System.err.println("Pair indicator argument must have exactly two tokens, separated by coma. Offending syntax: " + tokens);
+                System.err.println("Pair indicator argument must have exactly two tokens, separated by comma. Offending syntax: " + tokens);
                 System.exit(1);
             }
             pairIndicator1 = tmp[0];

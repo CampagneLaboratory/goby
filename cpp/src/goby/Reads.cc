@@ -170,10 +170,15 @@ namespace goby {
     return ReadsIterator(filename);
   }
 
-  ReadsWriter::ReadsWriter(const string& filename) : Reads(getBasename(filename)),
-    messageChunksWriter(new MessageChunksWriter<ReadCollection>(filename)),
+  ReadsWriter::ReadsWriter(const string& filename, unsigned numberOfEntriesPerChunk = GOBY_DEFAULT_NUMBER_OF_ENTRIES_PER_CHUNK)
+    : Reads(getBasename(filename)),
+    messageChunksWriter(new MessageChunksWriter<ReadCollection>(filename, numberOfEntriesPerChunk)),
     readCollection(ReadCollection::default_instance()),
-    readIndex(0) {
+    readIndex(0),
+    sequence(NULL),
+    description(NULL),
+    identifier(NULL),
+    qualityScores(NULL) {
   }
 
   ReadsWriter::ReadsWriter(const Reads& reads) : Reads(reads) {
@@ -186,12 +191,32 @@ namespace goby {
     delete messageChunksWriter;
   }
 
-  void ReadsWriter::appendEntry(const char* sequence) {
+  void ReadsWriter::appendEntry() {
     // set fields in the new read entry
     goby::ReadEntry *entry = readCollection.add_reads();
     entry->set_read_index(readIndex++);
-    entry->set_sequence(sequence);
-    entry->set_read_length(strlen(sequence));
+    if (sequence != NULL) {
+      entry->set_sequence(sequence);
+      entry->set_read_length(strlen(sequence));
+      sequence = NULL;
+    } else {
+      entry->set_read_length(0);
+    }
+
+    if (description != NULL) {
+      entry->set_description(description);
+      description = NULL;
+    }
+
+    if (identifier != NULL) {
+      entry->set_read_identifier(identifier);
+      identifier = NULL;
+    }
+
+    if (qualityScores != NULL) {
+      entry->set_quality_scores(qualityScores);
+      qualityScores = NULL;
+    }
 
     cout << entry->DebugString() << endl;
 
