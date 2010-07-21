@@ -217,7 +217,7 @@ namespace goby {
       qualityScores = NULL;
     }
 
-    cout << entry->DebugString() << endl;
+    //cout << entry->DebugString() << endl;
 
     // and pass it along to the chunk writer
     messageChunksWriter->writeAsNeeded(&readCollection);
