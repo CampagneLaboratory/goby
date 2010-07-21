@@ -21,7 +21,6 @@
 #ifndef GOBY_TOO_MANY_HITS_H
 #define GOBY_TOO_MANY_HITS_H
 
-#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
