@@ -17,7 +17,6 @@
  */
 
 #include <fcntl.h>
-#include <fstream>
 #include <iostream>
 #include <map>
 #include <string>
@@ -45,10 +44,6 @@ namespace goby {
    * TooManyHits
    */
   TooManyHits::TooManyHits(const string& basename) : basename(basename), pbTmh(AlignmentTooManyHits::default_instance()) {
-  }
-
-  unsigned TooManyHits::getAlignerThreshold() const {
-    return pbTmh.aligner_threshold();
   }
   
   vector<unsigned> TooManyHits::getQueryIndicies() const {
@@ -108,26 +103,6 @@ namespace goby {
     } else {
       return isQueryAmbiguous(queryIndex, k);
     }
-  }
-
-  ostream& operator<<(ostream& out, const TooManyHits& tmh) {
-    tmh.pbTmh.SerializeToOstream(&out);
-    return out;
-  }
-
-  string& operator<<(string& out, const TooManyHits& tmh) {
-    tmh.pbTmh.SerializeToString(&out);
-    return out;
-  }
-
-  TooManyHits& operator<<(TooManyHits& tmh, istream& in) {
-    tmh.pbTmh.ParseFromIstream(&in);
-    return tmh;
-  }
-
-  TooManyHits& operator<<(TooManyHits& tmh, string& in) {
-    tmh.pbTmh.ParseFromString(in);
-    return tmh;
   }
 
   TooManyHits::~TooManyHits(void) {
@@ -195,11 +170,11 @@ namespace goby {
     // Write to the "tmh" file
     const string tmhFilename = basename + ".tmh";
     cout << "Writing file: " << tmhFilename << endl;
-    ofstream tmhStream(tmhFilename.c_str(), ios::out | ios::trunc | ios::binary);
-    if (!pbTmh.SerializeToOstream(&tmhStream)) {
+    const int fd = ::open(tmhFilename.c_str(), O_WRONLY | O_BINARY | O_CREAT);
+    if (!pbTmh.SerializeToFileDescriptor(fd)) {
       cerr << "Failed to write too many hits file: " << tmhFilename << endl;
     }
-    tmhStream.close();
+    ::close(fd);
   }
 }
 

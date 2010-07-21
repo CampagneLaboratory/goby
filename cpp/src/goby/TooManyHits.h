@@ -43,10 +43,10 @@ namespace goby {
     AlignmentTooManyHits pbTmh;
 
     // A map from query index to the number of hits at that index.
-    std::map<unsigned, unsigned> queryIndex2NumHits;
+    std::map<unsigned, unsigned> queryIndex2NumHits;   // TODO: replace with hash_map
 
     // A map from query index to depth/length of match.
-    std::map<unsigned, unsigned> queryIndex2Depth;
+    std::map<unsigned, unsigned> queryIndex2Depth;     // TODO: replace with hash_map
 
   public:
     TooManyHits(const std::string& basename);
@@ -55,7 +55,7 @@ namespace goby {
     inline const std::string& getBasename() const { return basename; };
 
     // Number of hits that the aligner considered was too many to report.
-    unsigned getAlignerThreshold() const;
+    inline unsigned getAlignerThreshold() const { return pbTmh.aligner_threshold(); };
     std::vector<unsigned> getQueryIndicies() const;
 
     unsigned getNumberOfHits(unsigned queryIndex) const;
@@ -64,11 +64,6 @@ namespace goby {
     bool isQueryAmbiguous(unsigned queryIndex) const;
     bool isQueryAmbiguous(unsigned queryIndex, unsigned k) const;
     bool isQueryAmbiguous(unsigned queryIndex, unsigned k, unsigned matchLength) const;
-
-    friend std::ostream &operator<<(std::ostream &out, const TooManyHits& tmh);
-    friend std::string& operator<<(std::string& out, const TooManyHits& tmh);
-    friend TooManyHits& operator<<(TooManyHits& tmh, std::istream& in);
-    friend TooManyHits& operator<<(TooManyHits& tmh, std::string& in);
   };
 
   class LIBGOBY_EXPORT TooManyHitsReader : public TooManyHits {
