@@ -170,8 +170,7 @@ namespace goby {
     return ReadsIterator(filename);
   }
 
-  ReadsWriter::ReadsWriter(const string& filename, unsigned numberOfEntriesPerChunk = GOBY_DEFAULT_NUMBER_OF_ENTRIES_PER_CHUNK)
-    : Reads(getBasename(filename)),
+  ReadsWriter::ReadsWriter(const string& filename, unsigned numberOfEntriesPerChunk) : Reads(getBasename(filename)),
     messageChunksWriter(new MessageChunksWriter<ReadCollection>(filename, numberOfEntriesPerChunk)),
     readCollection(ReadCollection::default_instance()),
     readIndex(0),

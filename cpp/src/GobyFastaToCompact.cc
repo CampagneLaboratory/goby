@@ -49,7 +49,7 @@ int main (int argc, const char *const argv[]) {
   kseq_t *seq = kseq_init(fastaFp);
 
   // set up a goby writer
-  goby::ReadsWriter writer("foobar.txt", 1);
+  goby::ReadsWriter writer("foobar.txt");
 
   int l;
   while ((l = kseq_read(seq)) >= 0) {       // read sequences

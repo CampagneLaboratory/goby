@@ -108,7 +108,7 @@ namespace goby {
     char const* qualityScores;
 
   public:
-    ReadsWriter(const std::string& filename, unsigned numberOfEntriesPerPhunk);
+    ReadsWriter(const std::string& filename, unsigned numberOfEntriesPerChunk = GOBY_DEFAULT_NUMBER_OF_ENTRIES_PER_CHUNK);
     ReadsWriter(const Reads& reads);
     ~ReadsWriter(void);
 
