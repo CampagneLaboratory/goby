@@ -296,7 +296,7 @@ namespace goby {
         number_appended(0),
         total_entries_written(0) {
       std::cout << "opening: " << filename << std::endl;
-      fd = ::open(filename.c_str(), O_RDONLY | O_CREAT | O_TRUNC | O_BINARY, 0644);
+      fd = ::open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0644);
       if (fd < 0) {
         std::cerr << "Error opening file: " << filename << std::endl;
       }
@@ -327,17 +327,19 @@ namespace goby {
 
       google::protobuf::io::StringOutputStream bufferStream(&buffer);
       google::protobuf::io::GzipOutputStream compressedStream(&bufferStream);
-      std::cout << collection->DebugString() << std::endl;
+      //std::cout << collection->DebugString() << std::endl;
 
       if (!collection->SerializeToZeroCopyStream(&compressedStream)) {
         std::cerr << "There was a problem compressing the collection" << std::endl;
       }
+      compressedStream.Close();
+
       const int bufferSize = buffer.size();
       const int serializedSize = compressedStream.ByteCount();
       std::cout << "    bufferSize: " << bufferSize << std::endl;
       std::cout << "serializedSize: " << serializedSize << std::endl;
 
-      writeInt(coded_stream, serializedSize);
+      writeInt(coded_stream, bufferSize);
       coded_stream->WriteString(buffer);
 
       number_appended = 0;
