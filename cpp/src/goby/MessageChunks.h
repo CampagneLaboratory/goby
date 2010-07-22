@@ -227,7 +227,7 @@ namespace goby {
       return *current_chunk;
     };
 
-    T* const operator->() {
+    const T* const operator->() {
       populateChunk(stream, current_chunk);
       return current_chunk;
     };
@@ -293,25 +293,48 @@ namespace goby {
     // content for delimiter between each chunk
     static std::string delimiter;
 
+    // indicates the writer has been explicitly closed by the user
+    bool closed;
+
+    // write termination record to the file and close all the underlying streams
+    void close() {
+      // Write the final delimiter
+      coded_stream->WriteString(delimiter);
+
+      // and write zero for the final chunk size
+      writeInt(coded_stream, 0);
+
+      // close all the streams
+      delete coded_stream;
+      delete file_stream;
+      ::close(fd);
+
+      closed = true;
+    }
+
   public:
     MessageChunksWriter(const std::string& filename, unsigned number_of_entries_per_chunk = GOBY_DEFAULT_NUMBER_OF_ENTRIES_PER_CHUNK) :
         filename(filename),
         number_of_entries_per_chunk(number_of_entries_per_chunk),
         number_appended(0),
         total_entries_written(0) {
-      std::cout << "opening: " << filename << std::endl;
       fd = ::open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0644);
       if (fd < 0) {
         std::cerr << "Error opening file: " << filename << std::endl;
+        file_stream = NULL;
+        coded_stream = NULL;
+        closed = true;
+      } else {
+        file_stream = new google::protobuf::io::FileOutputStream(fd);
+        coded_stream = new google::protobuf::io::CodedOutputStream(file_stream);
+        closed = false;
       }
-      file_stream = new google::protobuf::io::FileOutputStream(fd);
-      coded_stream = new google::protobuf::io::CodedOutputStream(file_stream);
     }
 
     virtual ~MessageChunksWriter(void) {
-      delete coded_stream;
-      delete file_stream;
-      ::close(fd);
+      if (!closed) {
+        close();
+      }
     }
 
     // Write the collection as needed to the output stream. When the number of entries
@@ -353,24 +376,15 @@ namespace goby {
 
     /*
        totalBytesWritten += serializedSize + 4 + DELIMITER_LENGTH;
-      */
+    */
     }
 
-    // write any remaining items in the collection to disk and terminate the file
+    // write any remaining items in the collection to disk and close up the file
+    // no more data items can be written after this method is called
     void close(T* const collection) {
       // Write any remaining items in the collection
       flush(collection);
-
-      // Write the final delimiter
-      coded_stream->WriteString(delimiter);
-
-      // and write zero for the final chunk size
-      writeInt(coded_stream, 0);
-
-      // TODO? - close all the streams
-//      delete coded_stream;
-//      delete file_stream;
-//      ::close(fd);
+      close();
     }
   };
 
