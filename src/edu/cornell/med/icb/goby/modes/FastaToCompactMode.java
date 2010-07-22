@@ -40,8 +40,8 @@ import java.io.IOException;
 
 /**
  * Converts a <a href="http://en.wikipedia.org/wiki/FASTA_format">FASTA</a>
- * or <a href="http://en.wikipedia.org/wiki/FASTQ_format">FASTQ</a> file to the compact reads format.
- * Compact reads are in the chunked protocol buffer file format described by Reads.proto.
+ * or <a href="http://en.wikipedia.org/wiki/FASTQ_format">FASTQ</a> file to the compact reads
+ * format. Compact reads are in the chunked protocol buffer file format described by Reads.proto.
  * Since Goby 1.7, this mode can load paired-end runs into single compact files.
  *
  * @author Fabien Campagne
@@ -63,8 +63,8 @@ public class FastaToCompactMode extends AbstractGobyMode {
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION = "Converts FASTA/FASTQ files to the "
-            + "Goby \"compact-reads\" file format. Since Goby 1.7, this mode can load paired-end runs " +
-            "into single compact files.";
+            + "Goby \"compact-reads\" file format. Since Goby 1.7, this mode can load paired-end "
+            + "runs into single compact files.";
 
     /**
      * The files to convert to compact reads.
@@ -177,22 +177,13 @@ public class FastaToCompactMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        //    final int numToProcess = inputFilenames.length;
-        //  int numProcessed = 0;
-        //   for (final String inputFilename : inputFilenames) {
-        //       numProcessed = processOneFile(numToProcess, numProcessed, inputFilename);
-        //  }
-
         try {
             final DoInParallel loop = new DoInParallel() {
-
                 @Override
                 public void action(final DoInParallel forDataAccess, final String inputBasename, final int loopIndex) {
-
                     try {
                         debugStart(inputBasename);
                         processOneFile(loopIndex, inputFilenames.length, inputBasename);
-
                         debugEnd(inputBasename);
                     } catch (IOException e) {
                         LOG.error("Error processing index " + loopIndex + ", " + inputBasename, e);
@@ -208,7 +199,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
 
     private void processOneFile(final int loopIndex, final int length, final String inputFilename) throws IOException {
-         String outputFilename;
+        String outputFilename;
         if (loopIndex == 0 && StringUtils.isNotBlank(outputFile)) {
             outputFilename = outputFile;
         } else {
@@ -216,16 +207,18 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
         }
         if (processPairs) {
-                      // remove _1 from the destination compact filename.
+            // remove _1 from the destination compact filename.
             outputFilename = outputFilename.replace(pairIndicator1, "");
         }
-        System.out.println("Creating file " + outputFilename);
+
         final File output = new File(outputFilename);
         final File readsFile = new File(inputFilename);
         if (!output.exists() || FileUtils.isFileNewer(readsFile, output) || output.length() == 0) {
+            System.out.println("Creating file " + outputFilename);
             convert(loopIndex, length, inputFilename, outputFilename);
+        } else {
+            System.out.println("Skipping file" + outputFilename);
         }
-
     }
 
     private void convert(final int loopIndex, final int length, final String inputFilename, final String outputFilename) throws IOException {
@@ -285,7 +278,6 @@ public class FastaToCompactMode extends AbstractGobyMode {
             writer.close();
             writer.printStats(System.out);
         }
-
     }
 
     private byte[] convertQualityScores(final MutableString quality) {
@@ -323,10 +315,6 @@ public class FastaToCompactMode extends AbstractGobyMode {
         }
 
         return qualityScoreBuffer;
-    }
-
-    private void checkRange(final byte qualityDecoded) {
-
     }
 
     /**
