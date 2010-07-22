@@ -31,6 +31,7 @@ AC_CXX_GNUCXX_HASHMAP
 
 # Checks for library functions.
 AC_CHECK_FUNCS([memset])
+
 ACX_PTHREAD
 
 # use pkg-config to make sure that protobuf is available
