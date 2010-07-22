@@ -117,9 +117,17 @@ namespace goby {
     return readCollection->reads().Get(currentReadIndex);
   };
 
-  ReadEntry* const ReadsIterator::operator->() {
-    // TODO
-    return NULL;
+  const ReadEntry* const ReadsIterator::operator->() {
+    // if we're at the end of the current chunk or at the beginning of a new one
+    if (currentReadIndex >= readCollection->reads_size() || currentReadIndex == 0) {
+      // if there is another chunk, get it otherwise set defaults
+      if (messageChunksIterator != messageChunksIterator.end()) {
+        *readCollection = *messageChunksIterator;
+      } else {
+        readCollection->Clear();
+      }
+    }
+    return &readCollection->reads().Get(currentReadIndex);
   };
 
   ReadsIterator ReadsIterator::begin() const {
@@ -223,6 +231,7 @@ namespace goby {
     messageChunksWriter->writeAsNeeded(&readCollection);
   }
 
+  // flush any remaining items to the file and close the underlying streams
   void ReadsWriter::close() {
     messageChunksWriter->close(&readCollection);
   }

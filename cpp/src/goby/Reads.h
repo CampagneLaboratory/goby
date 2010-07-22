@@ -57,7 +57,7 @@ namespace goby {
     bool operator!=(const ReadsIterator& rhs) const;
 
     const ReadEntry& operator*();
-    ReadEntry* const operator->();
+    const ReadEntry* const operator->();
 
     // TODO - remove the operator<< - for testing only
     friend std::ostream &operator<<(std::ostream &out, const ReadsIterator& iter) {
