@@ -161,7 +161,7 @@ public class MessageChunksWriter {
             throws IOException {
         flush(collectionBuilder);
         for (int i = 0; i < DELIMITER_LENGTH; i++) {
-            out.writeByte(0); // last collection is empty
+            out.writeByte(DELIMITER_CONTENT);
         }
         out.writeInt(0); // last collection is empty
         out.flush();

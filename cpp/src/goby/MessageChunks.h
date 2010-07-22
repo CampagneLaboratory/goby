@@ -279,15 +279,19 @@ namespace goby {
     // a temporary buffer for processing (class member to avoid creating eveytime)
     std::string buffer;
 
+    // Java DataOutput.writeInt()
     static void writeInt(google::protobuf::io::CodedOutputStream *stream, int v) {
-      unsigned char *buffer = new unsigned char[4];
-      buffer[0] = (v >> 24) & 0xFF;
-      buffer[1] = (v >> 16) & 0xFF;
-      buffer[2] = (v >> 8) & 0xFF;
-      buffer[3] = v & 0xFF;
-      stream->WriteRaw(buffer, 4);
-      delete buffer;
+      unsigned char *tmp = new unsigned char[4];
+      tmp[0] = (v >> 24) & 0xFF;
+      tmp[1] = (v >> 16) & 0xFF;
+      tmp[2] = (v >> 8) & 0xFF;
+      tmp[3] = v & 0xFF;
+      stream->WriteRaw(tmp, 4);
+      delete tmp;
     }
+
+    // content for delimiter between each chunk
+    static std::string delimiter;
 
   public:
     MessageChunksWriter(const std::string& filename, unsigned number_of_entries_per_chunk = GOBY_DEFAULT_NUMBER_OF_ENTRIES_PER_CHUNK) :
@@ -310,6 +314,9 @@ namespace goby {
       ::close(fd);
     }
 
+    // Write the collection as needed to the output stream. When the number of entries
+    // per chunk is reached, the chunk is written to disk and the collection cleared. Clients
+    // can just keep adding to the collection and call writeAsNeeded for every entry.
     void writeAsNeeded(T* const collection, int multiplicity = 1) {
         total_entries_written += multiplicity;
         if (++number_appended >= number_of_entries_per_chunk) {
@@ -318,12 +325,10 @@ namespace goby {
         // TODO: return currentChunkStartOffset
     }
 
+    // force writing the collection to the output stream.
     void flush(T* const collection) {
-      unsigned char delimiter = GOBY_MESSAGE_CHUNK_DELIMITER_CONTENT;
-      // Write the separation between two chunks: eight bytes with value zero.
-      for (int i = 0; i < GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH; i++) {
-        coded_stream->WriteRaw(&delimiter, 1);
-      }
+      // Write the delimiter between two chunks
+      coded_stream->WriteString(delimiter);
 
       google::protobuf::io::StringOutputStream bufferStream(&buffer);
       google::protobuf::io::GzipOutputStream compressedStream(&bufferStream);
@@ -334,12 +339,11 @@ namespace goby {
       }
       compressedStream.Close();
 
+      // write the length of the compressed chunk to the file
       const int bufferSize = buffer.size();
-      const int serializedSize = compressedStream.ByteCount();
-      std::cout << "    bufferSize: " << bufferSize << std::endl;
-      std::cout << "serializedSize: " << serializedSize << std::endl;
-
       writeInt(coded_stream, bufferSize);
+
+      // then write the actual compressed chunk
       coded_stream->WriteString(buffer);
 
       number_appended = 0;
@@ -348,31 +352,31 @@ namespace goby {
       // TODO: delete elements of the collection?
 
     /*
-        // compress the read collection:
-        final ByteArrayOutputStream compressedStream = new ByteArrayOutputStream();
-        final OutputStream byteArrayOutputStream = new GZIPOutputStream(compressedStream);
-        readCollection.writeTo(byteArrayOutputStream);
-        byteArrayOutputStream.close();
+       totalBytesWritten += serializedSize + 4 + DELIMITER_LENGTH;
+      */
+    }
 
-        final int serializedSize = compressedStream.size();
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("serializedSize: " + serializedSize);
-        }
+    // write any remaining items in the collection to disk and terminate the file
+    void close(T* const collection) {
+      // Write any remaining items in the collection
+      flush(collection);
 
-        // the position just before this chunk is written is recorded:
-        currentChunkStartOffset = out.size();
-        // write the compressed size followed by the compressed stream:
-        out.writeInt(serializedSize);
-        out.write(compressedStream.toByteArray());
+      // Write the final delimiter
+      coded_stream->WriteString(delimiter);
 
-        totalBytesWritten += serializedSize + 4 + DELIMITER_LENGTH;
+      // and write zero for the final chunk size
+      writeInt(coded_stream, 0);
 
-        out.flush();
-        numAppended = 0;
-        collectionBuilder.clear();
-        */
+      // TODO? - close all the streams
+//      delete coded_stream;
+//      delete file_stream;
+//      ::close(fd);
     }
   };
+
+  // initialize string for delimter between chunks
+  template <typename T> std::string MessageChunksWriter<T>::delimiter(GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH, GOBY_MESSAGE_CHUNK_DELIMITER_CONTENT);
+
 }
 
 #ifdef _MSC_VER

@@ -224,6 +224,6 @@ namespace goby {
   }
 
   void ReadsWriter::close() {
-    messageChunksWriter->flush(&readCollection);
+    messageChunksWriter->close(&readCollection);
   }
 }
