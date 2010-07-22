@@ -27,12 +27,11 @@ AC_HEADER_STDBOOL
 AC_HEADER_STDC
 AC_C_INLINE
 AC_TYPE_SIZE_T
+AC_CXX_GNUCXX_HASHMAP
 
 # Checks for library functions.
 AC_CHECK_FUNCS([memset])
-
 ACX_PTHREAD
-#AC_CXX_STL_HASH
 
 # use pkg-config to make sure that protobuf is available
 PKG_CHECK_MODULES([PROTOBUF], [protobuf >= 2.3.0]) 
