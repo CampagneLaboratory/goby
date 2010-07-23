@@ -21,6 +21,10 @@
 #ifndef GOBY_READS_H
 #define GOBY_READS_H
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <string>
 #include "common.h"
 #include "Reads.pb.h"

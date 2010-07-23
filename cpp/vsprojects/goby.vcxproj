@@ -57,6 +57,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions);_USRDLL;LIBGOBY_EXPORTS;ZLIB_WINAPI;GOBY_DEBUG</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalIncludeDirectories>C:\protobuf-2.3.0\src;C:\zlib-1.2.5</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4251;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -85,6 +86,7 @@
     <ClInclude Include="..\src\goby\Alignments.h" />
     <ClInclude Include="..\src\goby\Alignments.pb.h" />
     <ClInclude Include="..\src\goby\common.h" />
+    <ClInclude Include="..\src\goby\hash.h" />
     <ClInclude Include="..\src\goby\MessageChunks.h" />
     <ClInclude Include="..\src\goby\Reads.h" />
     <ClInclude Include="..\src\goby\Reads.pb.h" />

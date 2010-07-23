@@ -18,42 +18,33 @@
 
 #pragma once
 
-#ifndef GOBY_COMMON_H
-#define GOBY_COMMON_H
+#ifndef GOBY_HASH_H
+#define GOBY_HASH_H
 
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
 
-#include <fcntl.h>
-#include <string>
+// modern microsoft compilers define hash_map
+#ifdef _MSC_VER
+#include <hash_map>
+#define LIBGOBY_HASH_MAP ::std::hash_map
 
-namespace goby {
+// if there is support for C++ Technical Report 1
+#elif defined(HAVE_TR1_UNORDERED_MAP)
+#include <tr1/unordered_map>
+#define LIBGOBY_HASH_MAP ::std::tr1::unordered_map
 
-//#define GOBY_DEBUG 1 // TODO - Remove
+// otherwise try for the hash map extension
+#elif defined(HAVE_EXT_HASH_MAP)
+#include <ext/hash_map>
+namespace std { using namespace __gnu_cxx; }
+#define LIBGOBY_HASH_MAP ::std::hash_map
 
-#if defined(_MSC_VER)
-  #ifdef LIBGOBY_EXPORTS
-    #define LIBGOBY_EXPORT __declspec(dllexport)
-    #define LIBGOBY_EXPIMP_TEMPLATE
-  #else
-    #define LIBGOBY_EXPORT __declspec(dllimport)
-    #define LIBGOBY_EXPIMP_TEMPLATE extern
-  #endif
-
-  template class LIBGOBY_EXPORT std::allocator<char>;
-  template class LIBGOBY_EXPORT std::basic_string<char>;
+// otherwise just use plain old map
 #else
-  #define LIBGOBY_EXPORT
+#include <map>
+#define LIBGOBY_HASH_MAP ::std::map
 #endif
 
-#ifndef O_BINARY
-#ifdef _O_BINARY
-#define O_BINARY _O_BINARY
-#else
-#define O_BINARY 0     // If this isn't defined, the platform doesn't need it.
-#endif
-#endif
-}
-
-#endif // GOBY_COMMON_H
+#endif // GOBY_HASH_H

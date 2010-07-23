@@ -23,7 +23,6 @@
 #include <iomanip>
 #include <iostream>
 
-#include "goby/common.h"
 #include "goby/Alignments.pb.h"
 #include "goby/Alignments.h"
 
@@ -50,10 +49,10 @@ int main (int argc, const char *const argv[]) {
   cout << "@PG\tGoby\tVN:cplusplus" << endl;
 
   // write the target identifiers and lengths using the target mapping information
-  const map<string, unsigned>& targetIdentifierToIndex = alignmentReader.getTargetIdentifiers();
-  map<unsigned, string> targetIndexToIdentifier;
+  const LIBGOBY_HASH_MAP<string, unsigned>& targetIdentifierToIndex = alignmentReader.getTargetIdentifiers();
+  LIBGOBY_HASH_MAP<unsigned, string> targetIndexToIdentifier;
   const vector<unsigned> targetLengths = alignmentReader.getTargetLengths();
-  for (map<string, unsigned>::const_iterator iter = targetIdentifierToIndex.begin(); iter != targetIdentifierToIndex.end(); ++iter) {
+  for (LIBGOBY_HASH_MAP<string, unsigned>::const_iterator iter = targetIdentifierToIndex.begin(); iter != targetIdentifierToIndex.end(); ++iter) {
     const string targetId = iter->first;
     const unsigned targetIndex = iter->second;
     targetIndexToIdentifier[targetIndex] = targetId;

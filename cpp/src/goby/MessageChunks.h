@@ -21,6 +21,10 @@
 #ifndef GOBY_MESSAGE_CHUNKS_H
 #define GOBY_MESSAGE_CHUNKS_H
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <fstream>
 #include <iostream>
 #include <iterator>

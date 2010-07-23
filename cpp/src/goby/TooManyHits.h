@@ -21,12 +21,16 @@
 #ifndef GOBY_TOO_MANY_HITS_H
 #define GOBY_TOO_MANY_HITS_H
 
-#include <map>
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <string>
 #include <vector>
 
 #include "Alignments.pb.h"
 #include "common.h"
+#include "hash.h"
 
 namespace goby {
   // Instantiate classes map<unsigned, unsigned>
@@ -42,10 +46,10 @@ namespace goby {
     AlignmentTooManyHits pbTmh;
 
     // A map from query index to the number of hits at that index.
-    std::map<unsigned, unsigned> queryIndex2NumHits;   // TODO: replace with hash_map
+    LIBGOBY_HASH_MAP<unsigned, unsigned> queryIndex2NumHits;
 
     // A map from query index to depth/length of match.
-    std::map<unsigned, unsigned> queryIndex2Depth;     // TODO: replace with hash_map
+    LIBGOBY_HASH_MAP<unsigned, unsigned> queryIndex2Depth;
 
   public:
     TooManyHits(const std::string& basename);

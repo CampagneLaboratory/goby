@@ -16,9 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <fcntl.h>
 #include <iostream>
-#include <map>
 #include <string>
 #include <vector>
 
@@ -30,6 +33,7 @@
 
 #include "Alignments.pb.h"
 #include "TooManyHits.h"
+#include "hash.h"
 
 #ifdef _MSC_VER
 // Disable Microsoft deprecation warnings for POSIX functions called from this class (open, close)
@@ -50,7 +54,7 @@ namespace goby {
     // copy the keys from the queryIndex2NumHits and return as a new vector 
     vector<unsigned> queryIndicies(queryIndex2NumHits.size());
     unsigned i = 0;
-    for (map<unsigned, unsigned>::const_iterator it = queryIndex2NumHits.begin(); it != queryIndex2NumHits.end(); it++) {
+    for (LIBGOBY_HASH_MAP<unsigned, unsigned>::const_iterator it = queryIndex2NumHits.begin(); it != queryIndex2NumHits.end(); it++) {
       queryIndicies[i++] = it->first;
     }
 
@@ -59,7 +63,7 @@ namespace goby {
   
   unsigned TooManyHits::getNumberOfHits(unsigned queryIndex) const {
     unsigned numberOfHits;
-    map<unsigned, unsigned>::const_iterator it = queryIndex2NumHits.find(queryIndex);
+    LIBGOBY_HASH_MAP<unsigned, unsigned>::const_iterator it = queryIndex2NumHits.find(queryIndex);
     if (it != queryIndex2NumHits.end()) {
       numberOfHits = it->second;
     } else {
@@ -70,7 +74,7 @@ namespace goby {
 
   unsigned TooManyHits::getLengthOfMatch(unsigned queryIndex) const {
     unsigned lengthOfMatch;
-    map<unsigned, unsigned>::const_iterator it = queryIndex2Depth.find(queryIndex);
+    LIBGOBY_HASH_MAP<unsigned, unsigned>::const_iterator it = queryIndex2Depth.find(queryIndex);
     if (it != queryIndex2NumHits.end()) {
       lengthOfMatch = it->second;
     } else {
@@ -85,7 +89,7 @@ namespace goby {
   }
 
   bool TooManyHits::isQueryAmbiguous(unsigned queryIndex, unsigned k) const {
-    map<unsigned, unsigned>::const_iterator it = queryIndex2Depth.find(queryIndex);
+    LIBGOBY_HASH_MAP<unsigned, unsigned>::const_iterator it = queryIndex2Depth.find(queryIndex);
     if (it == queryIndex2NumHits.end()) {
       return false;
     } if (k >= getAlignerThreshold()) {

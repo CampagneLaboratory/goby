@@ -21,8 +21,13 @@
 #ifndef GOBY_ALIGNMENTS_H
 #define GOBY_ALIGNMENTS_H
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <string>
 #include "common.h"
+#include "hash.h"
 #include "Alignments.pb.h"
 #include "MessageChunks.h"
 
@@ -34,10 +39,10 @@ namespace goby {
     AlignmentHeader pbHeader;
 
     // A map of target identifiers (name to index)
-    std::map<std::string, unsigned> targetIdentifiers;
+    LIBGOBY_HASH_MAP<std::string, unsigned> targetIdentifiers;
     
     // A map of target identifiers (name to index)
-    std::map<std::string, unsigned> queryIdentifiers;
+    LIBGOBY_HASH_MAP<std::string, unsigned> queryIdentifiers;
 
   public:
     Alignment(const std::string& basename);
@@ -61,8 +66,8 @@ namespace goby {
     std::vector<unsigned> getTargetLengths() const;
     std::vector<unsigned> getQueryLengths() const;   
     
-    inline const std::map<std::string, unsigned>& getTargetIdentifiers() const { return targetIdentifiers; };
-    inline const std::map<std::string, unsigned>& getQueryIdentifiers() const { return queryIdentifiers; };
+    inline const LIBGOBY_HASH_MAP<std::string, unsigned>& getTargetIdentifiers() const { return targetIdentifiers; };
+    inline const LIBGOBY_HASH_MAP<std::string, unsigned>& getQueryIdentifiers() const { return queryIdentifiers; };
 
     // TODO: Wrap the message chunks iterator into a AlignmentEntriesIterator
     virtual goby::MessageChunksIterator<goby::AlignmentCollection> iterator() = 0;
