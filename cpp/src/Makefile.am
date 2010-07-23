@@ -23,6 +23,8 @@ libgoby_la_SOURCES = \
 nobase_include_HEADERS = \
 	goby/Alignments.h \
 	goby/Alignments.pb.h \
+	goby/common.h \
+	goby/hash.h \
 	goby/MessageChunks.h \
 	goby/Reads.h \
 	goby/Reads.pb.h \
