@@ -44,7 +44,6 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
 #include "common.h"
-#include "Alignments.pb.h"
 
 #ifdef _MSC_VER
 // Disable Microsoft deprecation warnings for POSIX functions called from this class (open, close)
