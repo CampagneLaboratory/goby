@@ -27,12 +27,10 @@
 #include <unistd.h>
 #endif
 
-#include <google/protobuf/io/gzip_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-
 #include "common.h"
 #include "MessageChunks.h"
 #include "Reads.h"
+#include "Reads.pb.h"
 
 #ifdef _MSC_VER
 // Disable Microsoft deprecation warnings for POSIX functions called from this class (open, close)
@@ -43,7 +41,7 @@
 using namespace std;
 
 namespace goby {
-  ReadsIterator::ReadsIterator(const int fd, std::streamoff off = 0, std::ios_base::seekdir dir = std::ios_base::beg) :
+  ReadEntryIterator::ReadEntryIterator(const int fd, std::streamoff off = 0, std::ios_base::seekdir dir = std::ios_base::beg) :
     fd(fd),
     message_chunks_iterator(MessageChunksIterator<ReadCollection>(fd, off, dir)),
     message_chunks_iterator_end(MessageChunksIterator<ReadCollection>(fd, 0, std::ios_base::end)),
@@ -51,7 +49,7 @@ namespace goby {
     current_read_index(0) {
   }
 
-  ReadsIterator::ReadsIterator(const ReadsIterator& that) :
+  ReadEntryIterator::ReadEntryIterator(const ReadEntryIterator& that) :
     fd(that.fd),
     message_chunks_iterator(that.message_chunks_iterator),
     message_chunks_iterator_end(that.message_chunks_iterator_end),
@@ -59,12 +57,12 @@ namespace goby {
     current_read_index(that.current_read_index) {
   }
 
-  ReadsIterator::~ReadsIterator() {
+  ReadEntryIterator::~ReadEntryIterator() {
     delete read_collection;
   }
 
   // Prefix increment operator
-  ReadsIterator& ReadsIterator::operator++() {
+  ReadEntryIterator& ReadEntryIterator::operator++() {
     ++current_read_index;
     // if we're at the end of the current chunk, move on to the next
     if (current_read_index >= read_collection->reads_size()) {
@@ -81,7 +79,7 @@ namespace goby {
   };
 
   // Postfix increment operator
-  ReadsIterator& ReadsIterator::operator++(int) {
+  ReadEntryIterator& ReadEntryIterator::operator++(int) {
     current_read_index++;
     if (current_read_index >= read_collection->reads_size()) {
       // if there is another chunk, get it otherwise set defaults
@@ -96,18 +94,18 @@ namespace goby {
     return *this;
   };
 
-  bool ReadsIterator::operator==(const ReadsIterator& rhs) const {
+  bool ReadEntryIterator::operator==(const ReadEntryIterator& rhs) const {
     // the filenames must match and the chunk/read indicies must be the same
     return current_read_index == rhs.current_read_index && message_chunks_iterator == rhs.message_chunks_iterator;
   };
 
-  bool ReadsIterator::operator!=(const ReadsIterator& rhs) const {
+  bool ReadEntryIterator::operator!=(const ReadEntryIterator& rhs) const {
     // if the filenames or the chunk/read indicies don't match, the reader is different.
     return current_read_index != rhs.current_read_index || message_chunks_iterator != rhs.message_chunks_iterator;
   };
 
   // return the parsed results for the current chunk
-  const ReadEntry& ReadsIterator::operator*() {
+  const ReadEntry& ReadEntryIterator::operator*() {
     // if we're at the end of the current chunk or at the beginning of a new one
     if (current_read_index >= read_collection->reads_size() || current_read_index == 0) {
       // if there is another chunk, get it otherwise set defaults
@@ -125,7 +123,7 @@ namespace goby {
     }
   };
 
-  const ReadEntry* const ReadsIterator::operator->() {
+  const ReadEntry* const ReadEntryIterator::operator->() {
     // if we're at the end of the current chunk or at the beginning of a new one
     if (current_read_index >= read_collection->reads_size() || current_read_index == 0) {
       // if there is another chunk, get it otherwise set defaults
@@ -186,12 +184,12 @@ namespace goby {
     }
   }
 
-  ReadsIterator ReadsReader::begin() const {
-    return ReadsIterator(fd);
+  ReadEntryIterator ReadsReader::begin() const {
+    return ReadEntryIterator(fd);
   };
 
-  ReadsIterator ReadsReader::end() const {
-    return ReadsIterator(fd, static_cast<std::streamoff>(0), std::ios_base::end);
+  ReadEntryIterator ReadsReader::end() const {
+    return ReadEntryIterator(fd, static_cast<std::streamoff>(0), std::ios_base::end);
   };
 
   ReadsWriter::ReadsWriter(const string& filename, unsigned number_of_entries_per_chunk) : Reads(getBasename(filename)),

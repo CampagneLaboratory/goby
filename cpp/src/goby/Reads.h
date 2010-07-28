@@ -31,7 +31,7 @@
 #include "MessageChunks.h"
 
 namespace goby {
-  class LIBGOBY_EXPORT ReadsIterator : public std::iterator<std::input_iterator_tag, ReadEntry> {
+  class LIBGOBY_EXPORT ReadEntryIterator : public std::iterator<std::input_iterator_tag, ReadEntry> {
     // the file descriptor for the reads file
     int fd;
 
@@ -48,19 +48,19 @@ namespace goby {
     int current_read_index;
 
   public:
-    ReadsIterator(const int fd, std::streamoff off, std::ios_base::seekdir dir);
-    ReadsIterator(const ReadsIterator& that);
+    ReadEntryIterator(const int fd, std::streamoff off, std::ios_base::seekdir dir);
+    ReadEntryIterator(const ReadEntryIterator& that);
 
-    virtual ~ReadsIterator();
+    virtual ~ReadEntryIterator();
 
     // Prefix increment operator
-    ReadsIterator& operator++();
+    ReadEntryIterator& operator++();
 
     // Postfix increment operator
-    ReadsIterator& operator++(int);
+    ReadEntryIterator& operator++(int);
 
-    bool operator==(const ReadsIterator& rhs) const;
-    bool operator!=(const ReadsIterator& rhs) const;
+    bool operator==(const ReadEntryIterator& rhs) const;
+    bool operator!=(const ReadEntryIterator& rhs) const;
 
     const ReadEntry& operator*();
     const ReadEntry* const operator->();
@@ -90,8 +90,8 @@ namespace goby {
     ReadsReader(const ReadsReader& reader);
     ~ReadsReader(void);
 
-    ReadsIterator begin() const;
-    ReadsIterator end() const;
+    ReadEntryIterator begin() const;
+    ReadEntryIterator end() const;
   };
 
   class LIBGOBY_EXPORT ReadsWriter : public Reads {
