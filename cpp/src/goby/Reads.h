@@ -35,14 +35,11 @@ namespace goby {
     // the file descriptor for the reads file
     int fd;
 
-    // whether or not to close the file descriptor when the object is deleted
-    bool close_on_delete;
-
-    // file name of the goby compact reads file
-    std::string filename;
-
     // iterator over ReadCollections in the compact file
     MessageChunksIterator<ReadCollection> message_chunks_iterator;
+
+    // the "end" iterator for the collections
+    MessageChunksIterator<ReadCollection> message_chunks_iterator_end;
 
     // current chunk of read entries
     ReadCollection *read_collection;
@@ -51,9 +48,7 @@ namespace goby {
     int current_read_index;
 
   public:
-    ReadsIterator(const int fd);
-    ReadsIterator(const int fd, const std::streampos position, std::ios_base::seekdir dir);
-    ReadsIterator(const std::string& filename, const std::streampos position, std::ios_base::seekdir dir);
+    ReadsIterator(const int fd, std::streamoff off, std::ios_base::seekdir dir);
     ReadsIterator(const ReadsIterator& that);
 
     virtual ~ReadsIterator();
@@ -69,12 +64,6 @@ namespace goby {
 
     const ReadEntry& operator*();
     const ReadEntry* const operator->();
-
-    // TODO - remove the operator<< - for testing only
-    friend std::ostream &operator<<(std::ostream &out, const ReadsIterator& iter) {
-      out << "ostream &operator<< " << iter.read_collection->reads().Get(iter.current_read_index).SerializeToOstream(&out);
-      return out;
-    }
   };
 
   class LIBGOBY_EXPORT Reads {

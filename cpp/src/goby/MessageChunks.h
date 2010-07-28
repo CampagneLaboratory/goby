@@ -142,7 +142,7 @@ namespace goby {
     static int readInt(google::protobuf::io::ZeroCopyInputStream *stream) {
       int result;
 
-      unsigned char *ch = new unsigned char[4];
+      unsigned char *ch = new unsigned char[4];  // TODO: probably no need to copy
       const void *buffer;
       int size;
 
@@ -152,11 +152,12 @@ namespace goby {
           result = (ch[0] << 24) + (ch[1] << 16) + (ch[2] << 8) + (ch[3] << 0);
           stream->BackUp(size - 4);
         } else {
+          // TODO: need to handle the case where "next" returns less than 4
           std::cerr << "TODO" << std::endl;
           result = 0;
         }
       } else {
-        // there was an issue reading from the stream
+        // reached eof or there was an issue reading from the stream
         result = 0;
       }
 
@@ -257,12 +258,12 @@ namespace goby {
 
     bool operator==(const MessageChunksIterator<T>& rhs) const {
       // the filenames and the stream positions must match
-      return filename == rhs.filename && current_chunk_index == rhs.current_chunk_index;
+      return fd == rhs.fd && filename == rhs.filename && current_chunk_index == rhs.current_chunk_index;
     };
 
     bool operator!=(const MessageChunksIterator<T>& rhs) const {
       // the filenames and the stream positions must match
-      return filename != rhs.filename || current_chunk_index != rhs.current_chunk_index;
+      return fd != rhs.fd || filename != rhs.filename || current_chunk_index != rhs.current_chunk_index;
     };
 
     // return the parsed results for the current chunk
@@ -276,20 +277,6 @@ namespace goby {
       return current_chunk;
     };
 
-    // TODO - remove the operator<< - for testing only
-    friend std::ostream &operator<<(std::ostream &out, MessageChunksIterator& iterator) {
-      out << "ostream &operator<< " << iterator.current_position;
-      return out;
-    };
-
-    MessageChunksIterator begin() const {
-      return MessageChunksIterator(*this, 0);
-    };
-
-    MessageChunksIterator end() const {
-      return MessageChunksIterator(*this, -1);
-    };
-
     /*
     MessageChunksIterator& operator=(const MessageChunksIterator<T>& that)  {
       if (this != &that) {
@@ -298,6 +285,48 @@ namespace goby {
       return *this;
     };
     */
+  };
+
+  template <typename T> class MessageChunksReader {
+    // the name of the chunked file
+    std::string filename;
+
+    // the file descriptor for the chunked file
+    int fd;
+
+    // whether or not to close the file descriptor when the object is deleted
+    bool close_fd_on_delete;
+
+  public:
+    MessageChunksReader(const std::string& file_name) :
+      filename(file_name),
+      close_fd_on_delete(true) {
+      fd = ::open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0644);
+      if (fd < 0) {
+        std::cerr << "Error opening file: " << filename << std::endl;
+      }
+    }
+
+    MessageChunksReader(const int fd) :
+      filename(""),
+      fd(fd),
+      close_fd_on_delete(false) {
+    }
+
+    ~MessageChunksReader() {
+      if (close_fd_on_delete) {
+        ::close(fd);
+      }
+    }
+
+    MessageChunksIterator<T> begin() const {
+      return MessageChunksIterator<T>(fd);
+    };
+
+    MessageChunksIterator<T> end() const {
+      return MessageChunksIterator<T>(fd, 0, std::ios_base::end);
+    };
+
   };
 
   template <typename T> class MessageChunksWriter {

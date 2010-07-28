@@ -43,51 +43,24 @@
 using namespace std;
 
 namespace goby {
-  ReadsIterator::ReadsIterator(const int fd) :
+  ReadsIterator::ReadsIterator(const int fd, std::streamoff off = 0, std::ios_base::seekdir dir = std::ios_base::beg) :
     fd(fd),
-    filename(""),
-    close_on_delete(false),
-    message_chunks_iterator(MessageChunksIterator<ReadCollection>(fd)),
+    message_chunks_iterator(MessageChunksIterator<ReadCollection>(fd, off, dir)),
+    message_chunks_iterator_end(MessageChunksIterator<ReadCollection>(fd, 0, std::ios_base::end)),
     read_collection(new ReadCollection),
     current_read_index(0) {
-  }
-
-  ReadsIterator::ReadsIterator(const int fd, const std::streampos position, std::ios_base::seekdir dir = std::ios_base::beg) :
-    fd(fd),
-    filename(""),
-    close_on_delete(false),
-    message_chunks_iterator(MessageChunksIterator<ReadCollection>(fd, position, dir)),
-    read_collection(new ReadCollection),
-    current_read_index(-1) {
-  }
-
-  ReadsIterator::ReadsIterator(const string& filename, const std::streampos position = 0, std::ios_base::seekdir dir = std::ios_base::beg) :
-    filename(filename),
-    fd(::open(filename.c_str(), O_RDONLY | O_BINARY)),
-    message_chunks_iterator(MessageChunksIterator<ReadCollection>(fd, position, dir)),
-    close_on_delete(true),
-    read_collection(new ReadCollection),
-    current_read_index(0) {
-
-    if (fd < 0) {
-      std::cerr << "Error opening file: " << filename << std::endl;
-    }
   }
 
   ReadsIterator::ReadsIterator(const ReadsIterator& that) :
-    filename(that.filename),
     fd(that.fd),
-    close_on_delete(false),
     message_chunks_iterator(that.message_chunks_iterator),
+    message_chunks_iterator_end(that.message_chunks_iterator_end),
     read_collection(new ReadCollection),
     current_read_index(that.current_read_index) {
   }
 
   ReadsIterator::~ReadsIterator() {
     delete read_collection;
-    if (close_on_delete) {
-      ::close(fd);
-    }
   }
 
   // Prefix increment operator
@@ -96,7 +69,7 @@ namespace goby {
     // if we're at the end of the current chunk, move on to the next
     if (current_read_index >= read_collection->reads_size()) {
       // if there is another chunk, get it otherwise set defaults
-      if (message_chunks_iterator != message_chunks_iterator.end()) {
+      if (message_chunks_iterator != message_chunks_iterator_end) {
         message_chunks_iterator++;
         current_read_index = 0;
       } else {
@@ -112,7 +85,7 @@ namespace goby {
     current_read_index++;
     if (current_read_index >= read_collection->reads_size()) {
       // if there is another chunk, get it otherwise set defaults
-      if (message_chunks_iterator != message_chunks_iterator.end()) {
+      if (message_chunks_iterator != message_chunks_iterator_end) {
         message_chunks_iterator++;
         current_read_index = 0;
       } else {
@@ -125,12 +98,12 @@ namespace goby {
 
   bool ReadsIterator::operator==(const ReadsIterator& rhs) const {
     // the filenames must match and the chunk/read indicies must be the same
-    return filename == rhs.filename && current_read_index == rhs.current_read_index && message_chunks_iterator == rhs.message_chunks_iterator;
+    return current_read_index == rhs.current_read_index && message_chunks_iterator == rhs.message_chunks_iterator;
   };
 
   bool ReadsIterator::operator!=(const ReadsIterator& rhs) const {
     // if the filenames or the chunk/read indicies don't match, the reader is different.
-    return filename != rhs.filename || current_read_index != rhs.current_read_index || message_chunks_iterator != rhs.message_chunks_iterator;
+    return current_read_index != rhs.current_read_index || message_chunks_iterator != rhs.message_chunks_iterator;
   };
 
   // return the parsed results for the current chunk
@@ -138,7 +111,7 @@ namespace goby {
     // if we're at the end of the current chunk or at the beginning of a new one
     if (current_read_index >= read_collection->reads_size() || current_read_index == 0) {
       // if there is another chunk, get it otherwise set defaults
-      if (message_chunks_iterator != message_chunks_iterator.end()) {
+      if (message_chunks_iterator != message_chunks_iterator_end) {
         *read_collection = *message_chunks_iterator;
       } else {
         read_collection->Clear();
@@ -156,7 +129,7 @@ namespace goby {
     // if we're at the end of the current chunk or at the beginning of a new one
     if (current_read_index >= read_collection->reads_size() || current_read_index == 0) {
       // if there is another chunk, get it otherwise set defaults
-      if (message_chunks_iterator != message_chunks_iterator.end()) {
+      if (message_chunks_iterator != message_chunks_iterator_end) {
         *read_collection = *message_chunks_iterator;
       } else {
         read_collection->Clear();
