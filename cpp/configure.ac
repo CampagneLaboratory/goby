@@ -33,6 +33,10 @@ AC_CHECK_HEADERS([ext/hash_map])
 # Checks for library functions.
 AC_CHECK_FUNCS([memset])
 
+# check for the boost libraries
+AX_BOOST_BASE
+AX_BOOST_PROGRAM_OPTIONS
+
 # use pkg-config to make sure that protobuf is available
 PKG_CHECK_MODULES([PROTOBUF], [protobuf >= 2.3.0]) 
 
