@@ -146,19 +146,17 @@ namespace goby {
   /*
    * TooManyHitsWriter
    */
-  TooManyHitsWriter::TooManyHitsWriter(const string& basename) : TooManyHits(basename) {
+  TooManyHitsWriter::TooManyHitsWriter(const string& basename) : TooManyHits(basename), written(false) {
   }
 
-  TooManyHitsWriter::TooManyHitsWriter(const std::string& basename, unsigned threshold) : TooManyHits(basename) {
+  TooManyHitsWriter::TooManyHitsWriter(const std::string& basename, unsigned threshold) : TooManyHits(basename), written(false) {
     pbTmh.set_aligner_threshold(threshold);
   }
 
-  TooManyHitsWriter::TooManyHitsWriter(const TooManyHits& tooManyHits) : TooManyHits(tooManyHits) {
-    // TODO: testing only
-    this->basename = "foo";
-  }
-
   TooManyHitsWriter::~TooManyHitsWriter(void) {
+    if (!written) {
+      write();
+    }
   }
 
   void TooManyHitsWriter::append(unsigned queryIndex, unsigned howManyHits, unsigned lengthOfMatch) {
@@ -167,6 +165,7 @@ namespace goby {
       ambiguousLocation->set_query_index(queryIndex);
       ambiguousLocation->set_at_least_number_of_hits(howManyHits);
       ambiguousLocation->set_length_of_match(lengthOfMatch);
+      written = false;
     }
   }
 
@@ -179,6 +178,7 @@ namespace goby {
       cerr << "Failed to write too many hits file: " << tmhFilename << endl;
     }
     ::close(fd);
+    written = true;
   }
 }
 

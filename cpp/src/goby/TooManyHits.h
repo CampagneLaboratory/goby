@@ -33,12 +33,6 @@
 #include "hash.h"
 
 namespace goby {
-  // Instantiate classes map<unsigned, unsigned>
-  // This does not create an object. It only forces the generation of all
-  // of the members of classes vector<unsigned> and vector<char>. It exports
-  // them from the DLL and imports them into the .exe file.
-  // LIBGOBY_EXPIMP_TEMPLATE template class LIBGOBY_EXPORT std::map<unsigned, unsigned>;
-
   class LIBGOBY_EXPORT TooManyHits {
   protected:
     std::string basename;
@@ -76,10 +70,10 @@ namespace goby {
   };
 
   class LIBGOBY_EXPORT TooManyHitsWriter : public TooManyHits {
+    bool written;
   public:
     TooManyHitsWriter(const std::string& basename);
     TooManyHitsWriter(const std::string& basename, unsigned threshold);
-    TooManyHitsWriter(const TooManyHits& tooManyHits);
     ~TooManyHitsWriter(void);
 
     inline void setAlignerThreshold(unsigned threshold) { pbTmh.set_aligner_threshold(threshold); };
