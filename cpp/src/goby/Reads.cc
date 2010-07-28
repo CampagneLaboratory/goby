@@ -34,108 +34,140 @@
 #include "MessageChunks.h"
 #include "Reads.h"
 
+#ifdef _MSC_VER
+// Disable Microsoft deprecation warnings for POSIX functions called from this class (open, close)
+#pragma warning(push)
+#pragma warning(disable:4996)
+#endif
+
 using namespace std;
 
 namespace goby {
-  ReadsIterator::ReadsIterator(const string& filename, const std::streampos position = 0) :
+  ReadsIterator::ReadsIterator(const int fd) :
+    fd(fd),
+    filename(""),
+    close_on_delete(false),
+    message_chunks_iterator(MessageChunksIterator<ReadCollection>(fd)),
+    read_collection(new ReadCollection),
+    current_read_index(0) {
+  }
+
+  ReadsIterator::ReadsIterator(const int fd, const std::streampos position, std::ios_base::seekdir dir = std::ios_base::beg) :
+    fd(fd),
+    filename(""),
+    close_on_delete(false),
+    message_chunks_iterator(MessageChunksIterator<ReadCollection>(fd, position, dir)),
+    read_collection(new ReadCollection),
+    current_read_index(-1) {
+  }
+
+  ReadsIterator::ReadsIterator(const string& filename, const std::streampos position = 0, std::ios_base::seekdir dir = std::ios_base::beg) :
     filename(filename),
-    messageChunksIterator(MessageChunksIterator<ReadCollection>(filename, position)),
-    readCollection(new ReadCollection),
-    currentReadIndex(0) {
+    fd(::open(filename.c_str(), O_RDONLY | O_BINARY)),
+    message_chunks_iterator(MessageChunksIterator<ReadCollection>(fd, position, dir)),
+    close_on_delete(true),
+    read_collection(new ReadCollection),
+    current_read_index(0) {
+
+    if (fd < 0) {
+      std::cerr << "Error opening file: " << filename << std::endl;
+    }
   }
 
   ReadsIterator::ReadsIterator(const ReadsIterator& that) :
     filename(that.filename),
-    messageChunksIterator(that.messageChunksIterator),
-    readCollection(new ReadCollection),
-    currentReadIndex(that.currentReadIndex) {
-  }
-
-  ReadsIterator::ReadsIterator(const ReadsIterator& that, const std::streamoff off, const std::ios_base::seekdir dir = std::ios_base::beg) :
-    filename(that.filename),
-    messageChunksIterator(that.messageChunksIterator, off, dir),
-    readCollection(new ReadCollection),
-    currentReadIndex(0) {
+    fd(that.fd),
+    close_on_delete(false),
+    message_chunks_iterator(that.message_chunks_iterator),
+    read_collection(new ReadCollection),
+    current_read_index(that.current_read_index) {
   }
 
   ReadsIterator::~ReadsIterator() {
-    delete readCollection;
+    delete read_collection;
+    if (close_on_delete) {
+      ::close(fd);
+    }
   }
 
   // Prefix increment operator
   ReadsIterator& ReadsIterator::operator++() {
-    ++currentReadIndex;
+    ++current_read_index;
     // if we're at the end of the current chunk, move on to the next
-    if (currentReadIndex >= readCollection->reads_size()) {
+    if (current_read_index >= read_collection->reads_size()) {
       // if there is another chunk, get it otherwise set defaults
-      if (messageChunksIterator != messageChunksIterator.end()) {
-        messageChunksIterator++;
+      if (message_chunks_iterator != message_chunks_iterator.end()) {
+        message_chunks_iterator++;
+        current_read_index = 0;
       } else {
-        readCollection->Clear();
+        read_collection->Clear();
+        current_read_index = -1;
       }
-      currentReadIndex = 0;
     }
     return *this;
   };
 
   // Postfix increment operator
   ReadsIterator& ReadsIterator::operator++(int) {
-    currentReadIndex++;
-    if (currentReadIndex >= readCollection->reads_size()) {
+    current_read_index++;
+    if (current_read_index >= read_collection->reads_size()) {
       // if there is another chunk, get it otherwise set defaults
-      if (messageChunksIterator != messageChunksIterator.end()) {
-        messageChunksIterator++;
+      if (message_chunks_iterator != message_chunks_iterator.end()) {
+        message_chunks_iterator++;
+        current_read_index = 0;
       } else {
-        readCollection->Clear();
+        read_collection->Clear();
+        current_read_index = -1;
       }
-      currentReadIndex = 0;
     }
     return *this;
   };
 
   bool ReadsIterator::operator==(const ReadsIterator& rhs) const {
     // the filenames must match and the chunk/read indicies must be the same
-    return filename == rhs.filename && currentReadIndex == rhs.currentReadIndex && messageChunksIterator == rhs.messageChunksIterator;
+    return filename == rhs.filename && current_read_index == rhs.current_read_index && message_chunks_iterator == rhs.message_chunks_iterator;
   };
 
   bool ReadsIterator::operator!=(const ReadsIterator& rhs) const {
     // if the filenames or the chunk/read indicies don't match, the reader is different.
-    return filename != rhs.filename || currentReadIndex != rhs.currentReadIndex || messageChunksIterator != rhs.messageChunksIterator;
+    return filename != rhs.filename || current_read_index != rhs.current_read_index || message_chunks_iterator != rhs.message_chunks_iterator;
   };
 
   // return the parsed results for the current chunk
   const ReadEntry& ReadsIterator::operator*() {
     // if we're at the end of the current chunk or at the beginning of a new one
-    if (currentReadIndex >= readCollection->reads_size() || currentReadIndex == 0) {
+    if (current_read_index >= read_collection->reads_size() || current_read_index == 0) {
       // if there is another chunk, get it otherwise set defaults
-      if (messageChunksIterator != messageChunksIterator.end()) {
-        *readCollection = *messageChunksIterator;
+      if (message_chunks_iterator != message_chunks_iterator.end()) {
+        *read_collection = *message_chunks_iterator;
       } else {
-        readCollection->Clear();
+        read_collection->Clear();
       }
     }
-    return readCollection->reads().Get(currentReadIndex);
+
+    if (read_collection->reads_size() > current_read_index) {
+      return read_collection->reads().Get(current_read_index);
+    } else {
+      return ReadEntry::default_instance();
+    }
   };
 
   const ReadEntry* const ReadsIterator::operator->() {
     // if we're at the end of the current chunk or at the beginning of a new one
-    if (currentReadIndex >= readCollection->reads_size() || currentReadIndex == 0) {
+    if (current_read_index >= read_collection->reads_size() || current_read_index == 0) {
       // if there is another chunk, get it otherwise set defaults
-      if (messageChunksIterator != messageChunksIterator.end()) {
-        *readCollection = *messageChunksIterator;
+      if (message_chunks_iterator != message_chunks_iterator.end()) {
+        *read_collection = *message_chunks_iterator;
       } else {
-        readCollection->Clear();
+        read_collection->Clear();
       }
     }
-    return &readCollection->reads().Get(currentReadIndex);
-  };
 
-  ReadsIterator ReadsIterator::begin() const {
-    return ReadsIterator(*this);
-  };
-
-  ReadsIterator ReadsIterator::end() const {
-    return ReadsIterator(*this, static_cast<std::streamoff>(0), std::ios_base::end);
+    if (read_collection->reads_size() > current_read_index) {
+      return &read_collection->reads().Get(current_read_index);
+    } else {
+      return &ReadEntry::default_instance();
+    }
   };
 
 
@@ -168,24 +200,35 @@ namespace goby {
     return filename;
   }
 
+  ReadsReader::ReadsReader(const string& filename) : Reads(filename),
+    fd(::open(filename.c_str(), O_RDONLY | O_BINARY)) {
+    if (fd < 0) {
+      std::cerr << "Error opening file: " << filename << std::endl;
+    }
+  }
+
   ReadsReader::~ReadsReader(void) {
+    if (fd >= 0) {
+      ::close(fd);
+    }
   }
 
-  ReadsReader::ReadsReader(const string& filename) : Reads(filename) {
-  }
+  ReadsIterator ReadsReader::begin() const {
+    return ReadsIterator(fd);
+  };
 
-  ReadsIterator ReadsReader::iterator() {
-    return ReadsIterator(filename);
-  }
+  ReadsIterator ReadsReader::end() const {
+    return ReadsIterator(fd, static_cast<std::streamoff>(0), std::ios_base::end);
+  };
 
-  ReadsWriter::ReadsWriter(const string& filename, unsigned numberOfEntriesPerChunk) : Reads(getBasename(filename)),
-    messageChunksWriter(new MessageChunksWriter<ReadCollection>(filename, numberOfEntriesPerChunk)),
-    readCollection(ReadCollection::default_instance()),
-    readIndex(0),
+  ReadsWriter::ReadsWriter(const string& filename, unsigned number_of_entries_per_chunk) : Reads(getBasename(filename)),
+    message_chunks_writer(new MessageChunksWriter<ReadCollection>(filename, number_of_entries_per_chunk)),
+    read_collection(ReadCollection::default_instance()),
+    current_read_index(0),
     sequence(NULL),
     description(NULL),
     identifier(NULL),
-    qualityScores(NULL) {
+    quality_scores(NULL) {
   }
 
   ReadsWriter::ReadsWriter(const Reads& reads) : Reads(reads) {
@@ -194,14 +237,14 @@ namespace goby {
   }
 
   ReadsWriter::~ReadsWriter(void) {
-    readCollection.Clear();
-    delete messageChunksWriter;
+    read_collection.Clear();
+    delete message_chunks_writer;
   }
 
   void ReadsWriter::appendEntry() {
     // set fields in the new read entry
-    goby::ReadEntry *entry = readCollection.add_reads();
-    entry->set_read_index(readIndex++);
+    goby::ReadEntry *entry = read_collection.add_reads();
+    entry->set_read_index(current_read_index++);
     if (sequence != NULL) {
       entry->set_sequence(sequence);
       entry->set_read_length(strlen(sequence));
@@ -220,19 +263,23 @@ namespace goby {
       identifier = NULL;
     }
 
-    if (qualityScores != NULL) {
-      entry->set_quality_scores(qualityScores);
-      qualityScores = NULL;
+    if (quality_scores != NULL) {
+      entry->set_quality_scores(quality_scores);
+      quality_scores = NULL;
     }
 
     //cout << entry->DebugString() << endl;
 
     // and pass it along to the chunk writer
-    messageChunksWriter->writeAsNeeded(&readCollection);
+    message_chunks_writer->writeAsNeeded(&read_collection);
   }
 
   // flush any remaining items to the file and close the underlying streams
   void ReadsWriter::close() {
-    messageChunksWriter->close(&readCollection);
+    message_chunks_writer->close(&read_collection);
   }
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)  // Restores the warning state.
+#endif

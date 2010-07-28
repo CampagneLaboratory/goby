@@ -61,11 +61,23 @@ namespace goby {
     // the name of the chunked file
     std::string filename;
 
-    // The underlying stream
-    std::ifstream stream;
+    // the file descriptor for the chunked file
+    int fd;
 
-    // The current position in the stream (we keep this since "tellg()" is not const)
-    std::streampos current_position;
+    // whether or not to close the file descriptor when the object is deleted
+    bool close_fd_on_delete;
+
+    // The underlying stream
+    google::protobuf::io::ZeroCopyInputStream *input_stream;
+
+    // whether or not this instance created the stream and therefore should delete it
+    bool owns_input_stream;
+
+    // the initial position in the file
+    std::streampos initial_position;
+
+    // The current chunk in the file
+    int current_chunk_index;
 
     // the current processed chunk
     T *current_chunk;
@@ -74,72 +86,52 @@ namespace goby {
     size_t current_chunk_length;
 
     // Move the stream poitner to the next chunk boundary or eof
-    void advanceToNextChunk(std::ifstream& stream) {
-      if (current_position != static_cast<std::streampos>(-1) && stream.good()) {
+    void advanceToNextChunk() {
+      if (current_chunk_index != -1) {
         // each chunk is delimited by DELIMITER_LENGTH bytes
-        stream.seekg(GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH, std::ios::cur);
-        current_position = stream.tellg();
+        const bool result = input_stream->Skip(GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH);
+        if (!result) {
+          current_chunk_index = -1;
+          current_chunk_length = 0;
+        } else {
+          current_chunk_index++;
 
-        // Set up a stream that will only read up the current chunk length
-        current_chunk_length = readInt(stream);
-        current_position = stream.tellg();
+          // Set up a stream that will only read up the current chunk length
+          current_chunk_length = readInt(input_stream);
 
 #ifdef GOBY_DEBUG
-        //std::cout << "Chunk length: " << current_chunk_length << std::endl;
+         std::cout << "Chunk length: " << current_chunk_length << std::endl;
 #endif
 
-        // the last chunk has a length of zero bytes
-        if (stream.eof() || current_chunk_length == 0) {
-          current_position = static_cast<std::streampos>(-1);
-          current_chunk_length = 0;
+          // the last chunk has a length of zero bytes
+          if (current_chunk_length == 0) {
+            current_chunk_index = -1;
+            current_chunk_length = 0;
+          }
         }
       } else {
-        current_position = static_cast<std::streampos>(-1);
         current_chunk_length = 0;
       }
     }
 
     // populate T with the data from the given chunk
     // The assumption here is that the stream is positioned at the start of a chunk boundary
-    T* populateChunk(std::ifstream& stream, T *chunk) {
+    T* populateChunk(T *chunk) {
       // if the stream is not valid just return an empty chunk
-      if (current_position == static_cast<std::streampos>(-1) || !stream.good()) {
-        current_position = static_cast<std::streampos>(-1);
+      if (current_chunk_index == -1) {
         chunk->Clear();
         return chunk;
       }
 
-      const std::streampos chunkStartPosition = current_position;
-      const std::streampos nextChunkStartPosition = current_position + static_cast<std::streamoff>(current_chunk_length);
-
       // explicitly set the block size and limit it to the chunk length to prevent "over read"
-      google::protobuf::io::IstreamInputStream istream(&stream, current_chunk_length);
-      google::protobuf::io::LimitingInputStream rawChunkStream(&istream, current_chunk_length);
+      google::protobuf::io::LimitingInputStream limiting_stream(input_stream, current_chunk_length);
 
       // and handle the fact that each chunk is compressed with gzip
-      google::protobuf::io::GzipInputStream gzipChunkStream(&rawChunkStream);
-
-      // since the chunks may be large, we need to increase the limit
-      // TODO: we may want to be smarter about the actual limit here
-      google::protobuf::io::CodedInputStream codedStream(&gzipChunkStream);
-      codedStream.SetTotalBytesLimit(INT_MAX, -1);
+      google::protobuf::io::GzipInputStream gzip_stream(&limiting_stream);
 
       // populate the current object from the compressed data
-      if (!chunk->ParseFromCodedStream(&codedStream)) {
+      if (!chunk->ParseFromZeroCopyStream(&gzip_stream)) {
         std::cerr << "Failed to parse message chunk from " << filename << std::endl;
-      }
-
-      current_position = stream.tellg();
-
-      // may need to adjust the position in the stream since the parsing above may have "over-read"
-      // TODO - we can probably remove this check since the block size is set above
-      if (current_position != static_cast<std::streampos>(-1)) {
-        const std::streamoff offset = nextChunkStartPosition - current_position;
-        if (offset != 0) {
-          stream.seekg(offset, std::ios::cur);
-          current_position = stream.tellg();
-          std::cerr << "WARNING: Stream position adjuted to: " << current_position << std::endl;
-        }
       }
 
       // and retrun the processed chunk
@@ -147,92 +139,140 @@ namespace goby {
     };
 
     // Java DataInput.readInt()
-    static int readInt(std::istream &stream) {
-      // TODO? Do we need to worry about endian order here?
-      const int ch1 = stream.get();
-      const int ch2 = stream.get();
-      const int ch3 = stream.get();
-      const int ch4 = stream.get();
-      return (ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4 << 0);
+    static int readInt(google::protobuf::io::ZeroCopyInputStream *stream) {
+      int result;
+
+      unsigned char *ch = new unsigned char[4];
+      const void *buffer;
+      int size;
+
+      if (stream->Next(&buffer, &size)) {
+        if (size >= 4) {
+          ::memcpy(ch, buffer, 4);
+          result = (ch[0] << 24) + (ch[1] << 16) + (ch[2] << 8) + (ch[3] << 0);
+          stream->BackUp(size - 4);
+        } else {
+          std::cerr << "TODO" << std::endl;
+          result = 0;
+        }
+      } else {
+        // there was an issue reading from the stream
+        result = 0;
+      }
+
+      delete ch;
+      return result;
     };
 
   public:
     // TOOD: currently assumes that the position is at the start of chunk boundary
-    MessageChunksIterator<T>(const std::string& filename, const std::streampos position = 0) :
-        filename(filename),
-        current_position(position),
+    MessageChunksIterator<T>(const int fd, std::streamoff off = 0, std::ios_base::seekdir dir = std::ios_base::beg) :
+        fd(fd),
+        filename(""),
         current_chunk(new T),
-        current_chunk_length(0) {
-      stream.open(filename.c_str(), std::ios::in | std::ios::binary);
-      stream.seekg(position);
-
-      if (!stream.good()) {
-        std::cerr << "Failed to open " << filename << std::endl;
-      }
-
-      advanceToNextChunk(stream);
+        current_chunk_index(0),
+        current_chunk_length(0),
+        close_fd_on_delete(false),
+        owns_input_stream(true) {
       current_chunk->Clear();
-    };
+      if ((dir == std::ios_base::beg && off < 0) || (dir == std::ios_base::end && off >= 0)) {
+        input_stream = NULL;
+        current_chunk_index = -1;
+      } else {
+        input_stream = new google::protobuf::io::FileInputStream(fd);
+        advanceToNextChunk();
+      }
+    }
+
+    MessageChunksIterator<T>(const std::string& filename, std::streamoff off = 0, std::ios_base::seekdir dir = std::ios_base::beg) :
+        filename(filename),
+        current_chunk(new T),
+        current_chunk_index(0),
+        current_chunk_length(0),
+        close_fd_on_delete(true),
+        owns_input_stream(true) {
+      current_chunk->Clear();
+      if ((dir == std::ios_base::beg && off < 0) || (dir == std::ios_base::end && off >= 0)) {
+        input_stream = NULL;
+        current_chunk_index = -1;
+      } else {
+        fd = ::open(filename.c_str(), O_RDONLY | O_BINARY);
+        if (fd < 0) {
+          std::cerr << "Error opening file: " << filename << std::endl;
+          input_stream = NULL;
+          current_chunk_index = -1;
+        } else {
+          input_stream = new google::protobuf::io::FileInputStream(fd);
+          advanceToNextChunk();
+        }
+      }
+    }
 
     MessageChunksIterator(const MessageChunksIterator<T>& that) :
         filename(that.filename),
-        current_position(that.current_position),
         current_chunk(new T),
-        current_chunk_length(that.current_chunk_length) {
-      // TODO: there is probably a better way to copy the stream
-      stream.open(filename.c_str(), std::ios::in | std::ios::binary);
-      stream.seekg(current_position);
-
+        current_chunk_index(that.current_chunk_index),
+        current_chunk_length(that.current_chunk_length),
+        fd(that.fd), close_fd_on_delete(false),
+        input_stream(that.input_stream), owns_input_stream(false) {
       current_chunk->Clear();
     }
 
     MessageChunksIterator(const MessageChunksIterator<T>& that, std::streamoff off, std::ios_base::seekdir dir = std::ios_base::beg) :
       filename(that.filename),
-      current_chunk(new T) {
-      // TODO: there is probably a better way to copy the stream
-      stream.open(filename.c_str(), std::ios::in | std::ios::binary);
-      stream.seekg(off, dir);
-      current_position = stream.tellg();
-      advanceToNextChunk(stream);
+      current_chunk(new T),
+      current_chunk_index(-1),
+      current_chunk_length(0),
+      input_stream(NULL),
+      fd(0),
+      close_fd_on_delete(false) {
+        // TODO
+        current_chunk->Clear();
     }
 
     virtual ~MessageChunksIterator(void) {
-      stream.close();
       delete current_chunk;
+
+      if (owns_input_stream) {
+        delete input_stream;
+      }
+      if (close_fd_on_delete) {
+        ::close(fd);
+      }
     };
 
     // TODO: Prefix and Postfix operators currently do the same thing!
     // Prefix increment operator
     MessageChunksIterator& operator++() {
       std::cout << "Prefix operator++() " << std::endl;
-      advanceToNextChunk(stream);
+      advanceToNextChunk();
       return *this;
     };
 
     // Postfix increment operator
     MessageChunksIterator& operator++(int) {
-      advanceToNextChunk(stream);
+      advanceToNextChunk();
       return *this;
     };
 
     bool operator==(const MessageChunksIterator<T>& rhs) const {
       // the filenames and the stream positions must match
-      return filename == rhs.filename && current_position == rhs.current_position;
+      return filename == rhs.filename && current_chunk_index == rhs.current_chunk_index;
     };
 
     bool operator!=(const MessageChunksIterator<T>& rhs) const {
       // the filenames and the stream positions must match
-      return filename != rhs.filename || current_position != rhs.current_position;
+      return filename != rhs.filename || current_chunk_index != rhs.current_chunk_index;
     };
 
     // return the parsed results for the current chunk
     const T& operator*() {
-      populateChunk(stream, current_chunk);
+      populateChunk(current_chunk);
       return *current_chunk;
     };
 
     const T* const operator->() {
-      populateChunk(stream, current_chunk);
+      populateChunk(current_chunk);
       return current_chunk;
     };
 
@@ -243,11 +283,11 @@ namespace goby {
     };
 
     MessageChunksIterator begin() const {
-      return MessageChunksIterator(*this, static_cast<std::streamoff>(0), std::ios_base::beg);
+      return MessageChunksIterator(*this, 0);
     };
 
     MessageChunksIterator end() const {
-      return MessageChunksIterator(*this, static_cast<std::streamoff>(0), std::ios_base::end);
+      return MessageChunksIterator(*this, -1);
     };
 
     /*

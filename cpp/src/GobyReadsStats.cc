@@ -60,7 +60,7 @@ int main (int argc, const char *const argv[]) {
     return -1;
   }
 
-  bool verbose = true;
+  bool verbose = false;
   try {
     // this should format the output nicely
     cout.imbue(locale(""));
@@ -92,51 +92,53 @@ int main (int argc, const char *const argv[]) {
   unsigned long long numberOfQualityScores = 0;
   unsigned long long numberOfQualityScorePairs = 0;
 
-  goby::ReadsReader readsReader = goby::ReadsReader(basename);
-  goby::ReadsIterator begin = readsReader.iterator().begin();
-  goby::ReadsIterator end = readsReader.iterator().end();
+  goby::ReadsReader readsReader = goby::ReadsReader(filename);
+  goby::ReadsIterator begin = readsReader.begin();
+  goby::ReadsIterator end = readsReader.end();
   for (goby::ReadsIterator it = begin; it != end; it++) {
-    numberOfReads++;
-
     goby::ReadEntry entry = *it;
     const unsigned readLength = entry.read_length();
-    totalReadLength += readLength;
 
-    if (entry.has_description()) {
-      numberOfDescriptions++;
-      if (verbose) {
-        cout << "Description found: " << entry.description() << endl;
+    if (readLength != 0) {
+      numberOfReads++;
+      totalReadLength += readLength;
+
+      if (entry.has_description()) {
+        numberOfDescriptions++;
+        if (verbose) {
+          cout << "Description found: " << entry.description() << endl;
+        }
       }
-    }
 
-    if (entry.has_read_identifier()) {
-      numberOfIdentifiers++;
-      if (verbose) {
-        cout << "Identifier found: " << entry.read_identifier() << endl;
+      if (entry.has_read_identifier()) {
+        numberOfIdentifiers++;
+        if (verbose) {
+          cout << "Identifier found: " << entry.read_identifier() << endl;
+        }
       }
-    }
 
-    if (entry.has_sequence() && !entry.sequence().empty()) {
-      numberOfSequences++;
-      if (verbose) {
-        cout << "Sequence found: " << entry.sequence() << endl;
+      if (entry.has_sequence() && !entry.sequence().empty()) {
+        numberOfSequences++;
+        if (verbose) {
+          cout << "Sequence found: " << entry.sequence() << endl;
+        }
       }
-    }
 
-    if (entry.has_sequence_pair() && !entry.sequence_pair().empty()) {
-      numberOfSequencePairs++;
-    }
+      if (entry.has_sequence_pair() && !entry.sequence_pair().empty()) {
+        numberOfSequencePairs++;
+      }
 
-    if (entry.has_quality_scores() && !entry.quality_scores().empty()) {
-      numberOfQualityScores++;
-    }
+      if (entry.has_quality_scores() && !entry.quality_scores().empty()) {
+        numberOfQualityScores++;
+      }
 
-    if (entry.has_quality_scores_pair() && !entry.quality_scores_pair().empty()) {
-      numberOfQualityScorePairs++;
-    }
+      if (entry.has_quality_scores_pair() && !entry.quality_scores_pair().empty()) {
+        numberOfQualityScorePairs++;
+      }
 
-    minReadLength = min(minReadLength, readLength);
-    maxReadLength = max(maxReadLength, readLength);
+      minReadLength = min(minReadLength, readLength);
+      maxReadLength = max(maxReadLength, readLength);
+    }
   }
 
   cout << "Average bytes per entry: " << filesize / double(numberOfReads) << endl;

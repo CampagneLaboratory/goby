@@ -32,22 +32,29 @@
 
 namespace goby {
   class LIBGOBY_EXPORT ReadsIterator : public std::iterator<std::input_iterator_tag, ReadEntry> {
+    // the file descriptor for the reads file
+    int fd;
+
+    // whether or not to close the file descriptor when the object is deleted
+    bool close_on_delete;
+
     // file name of the goby compact reads file
     std::string filename;
 
     // iterator over ReadCollections in the compact file
-    MessageChunksIterator<ReadCollection> messageChunksIterator;
+    MessageChunksIterator<ReadCollection> message_chunks_iterator;
 
     // current chunk of read entries
-    ReadCollection *readCollection;
+    ReadCollection *read_collection;
 
     // index of the current read entry in the collection
-    int currentReadIndex;
+    int current_read_index;
 
   public:
-    ReadsIterator(const std::string& filename, const std::streampos position);
+    ReadsIterator(const int fd);
+    ReadsIterator(const int fd, const std::streampos position, std::ios_base::seekdir dir);
+    ReadsIterator(const std::string& filename, const std::streampos position, std::ios_base::seekdir dir);
     ReadsIterator(const ReadsIterator& that);
-    ReadsIterator(const ReadsIterator& that, std::streamoff off, std::ios_base::seekdir dir);
 
     virtual ~ReadsIterator();
 
@@ -65,16 +72,14 @@ namespace goby {
 
     // TODO - remove the operator<< - for testing only
     friend std::ostream &operator<<(std::ostream &out, const ReadsIterator& iter) {
-      out << "ostream &operator<< " << iter.readCollection->reads().Get(iter.currentReadIndex).SerializeToOstream(&out);
+      out << "ostream &operator<< " << iter.read_collection->reads().Get(iter.current_read_index).SerializeToOstream(&out);
       return out;
     }
-
-    ReadsIterator begin() const;
-    ReadsIterator end() const;
   };
 
   class LIBGOBY_EXPORT Reads {
   protected:
+    // the file name of the reads file
     std::string filename;
 
   public:
@@ -88,38 +93,42 @@ namespace goby {
   };
 
   class LIBGOBY_EXPORT ReadsReader : public Reads {
+    // the file descriptor for the reads file
+    int fd;
+
   public:
     ReadsReader(const std::string& filename);
     ReadsReader(const ReadsReader& reader);
     ~ReadsReader(void);
 
-    ReadsIterator iterator();
+    ReadsIterator begin() const;
+    ReadsIterator end() const;
   };
 
   class LIBGOBY_EXPORT ReadsWriter : public Reads {
     // the underlying message chunk writer
-    MessageChunksWriter<ReadCollection> *messageChunksWriter;
+    MessageChunksWriter<ReadCollection> *message_chunks_writer;
 
     // current chunk of read entries
-    ReadCollection readCollection;
+    ReadCollection read_collection;
 
     // current read index
-    unsigned readIndex;
+    unsigned current_read_index;
 
     char const* sequence;
     char const* description;
     char const* identifier;
-    char const* qualityScores;
+    char const* quality_scores;
 
   public:
-    ReadsWriter(const std::string& filename, unsigned numberOfEntriesPerChunk = GOBY_DEFAULT_NUMBER_OF_ENTRIES_PER_CHUNK);
+    ReadsWriter(const std::string& filename, unsigned number_of_entries_per_chunk = GOBY_DEFAULT_NUMBER_OF_ENTRIES_PER_CHUNK);
     ReadsWriter(const Reads& reads);
     ~ReadsWriter(void);
 
     inline void setSequence(char const* sequence) { this->sequence = sequence; };
     inline void setDescription(char const * description) { this->description = description; };
     inline void setIdentifier(char const* identifier) { this->identifier = identifier; };
-    inline void setQualityScores(char const* qualityScores) { this->qualityScores = qualityScores; };
+    inline void setQualityScores(char const* quality_scores) { this->quality_scores = quality_scores; };
 
     void appendEntry();
     void close();
