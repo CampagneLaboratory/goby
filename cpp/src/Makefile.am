@@ -5,7 +5,7 @@ lib_LTLIBRARIES = libgoby.la
 AM_CXXFLAGS = @PROTOBUF_CFLAGS@
 
 libgoby_la_LIBADD = @PROTOBUF_LIBS@
-libgoby_la_LDFLAGS = -version-info @version_info@ -export-dynamic -no-undefined
+libgoby_la_LDFLAGS = -version-info @version_info@ -export-dynamic # -no-undefined
 libgoby_la_SOURCES = \
 	goby/Alignments.cc \
 	goby/Alignments.h \
@@ -43,7 +43,8 @@ GobyReadsStats_LDADD = libgoby.la
 GobyReadsStats_SOURCES = \
 	GobyReadsStats.cc
 
-GobyFastaToCompact_LDADD = libgoby.la
+GobyFastaToCompact_CXXFLAGS = ${BOOST_CPPFLAGS}
+GobyFastaToCompact_LDADD = libgoby.la ${BOOST_LDFLAGS} ${BOOST_PROGRAM_OPTIONS_LIB}
 GobyFastaToCompact_SOURCES = \
 	GobyFastaToCompact.cc
 
