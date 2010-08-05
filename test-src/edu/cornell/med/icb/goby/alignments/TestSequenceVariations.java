@@ -23,7 +23,6 @@ import edu.cornell.med.icb.goby.modes.AlignMode;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
@@ -49,8 +48,14 @@ public class TestSequenceVariations {
             FilenameUtils.concat(BASE_TEST_DIR, "reference-sequence-vars.compact-reads");
     private final String readsFilename =
             FilenameUtils.concat(BASE_TEST_DIR, "query-sequence-vars.compact-reads");
+    private final String referenceFilename2 =
+            FilenameUtils.concat(BASE_TEST_DIR, "reference-sequence-vars-bug.compact-reads");
+    private final String readsFilename2 =
+            FilenameUtils.concat(BASE_TEST_DIR, "query-sequence-vars-bug.compact-reads");
     private String lastagAlignmentFilename;
     private String bwaAlignmentFilename;
+    private String bwaAlignmentFilename2;
+
 
     @BeforeClass
     public static void initializeTestDirectory() throws IOException {
@@ -84,7 +89,7 @@ public class TestSequenceVariations {
                         alignmentEntry.getQueryIndex(),
                         alignmentEntry.getTargetIndex(),
                         var.toString()));
-                assertLength(alignmentEntry, var);
+                assertLength(alignmentEntry, var, alignments);
 
                 switch (alignmentEntry.getQueryIndex()) {
                     case 7:
@@ -144,11 +149,11 @@ public class TestSequenceVariations {
         }
     }
 
-    private void assertLength(final Alignments.AlignmentEntry alignmentEntry, final Alignments.SequenceVariation var) {
+    private void assertLength(final Alignments.AlignmentEntry alignmentEntry, final Alignments.SequenceVariation var, Alignment[] alignments) {
         final String readRaw = alignments[alignmentEntry.getQueryIndex()].read;
         final String readProcessed = readRaw.replaceAll("-", "");
         assertTrue(String.format("read index %d must be less than read length %d.", var.getReadIndex(), readProcessed.length()),
-                var.getReadIndex() < readProcessed.length());
+                var.getReadIndex() <= readProcessed.length());
     }
 
 
@@ -166,7 +171,7 @@ public class TestSequenceVariations {
                         alignmentEntry.getQueryIndex(),
                         alignmentEntry.getTargetIndex(),
                         var.toString()));
-                assertLength(alignmentEntry, var);
+                assertLength(alignmentEntry, var, alignments);
                 switch (alignmentEntry.getQueryIndex()) {
 
                     case 5:
@@ -215,10 +220,55 @@ public class TestSequenceVariations {
         }
     }
 
+    @Test
+    public void testBwaSequenceVariationParsingBug() throws IOException {
+
+        ReadsWriter referenceWriter = new ReadsWriter(new FileOutputStream(referenceFilename2));
+        ReadsWriter queryWriter = new ReadsWriter(new FileOutputStream(readsFilename2));
+        for (final Alignment entry : alignmentsBug) {
+            referenceWriter.setDescription("reference:" + entry.description);
+            referenceWriter.setIdentifier("reference:" + entry.description);
+            referenceWriter.setSequence(entry.reference.replaceAll("-", ""));
+            referenceWriter.appendEntry();
+            queryWriter.setDescription("read:" + entry.description);
+            queryWriter.setSequence(entry.read.replaceAll("-", ""));
+            queryWriter.appendEntry();
+
+        }
+        referenceWriter.close();
+        queryWriter.close();
+
+        // run the alignment process
+        bwaAlignmentFilename2 = alignWith("bwa", readsFilename2, referenceFilename2, "bug");
+        final AlignmentReader reader = new AlignmentReader(bwaAlignmentFilename2);
+        while (reader.hasNext()) {
+            final Alignments.AlignmentEntry alignmentEntry = reader.next();
+
+            assertTrue("alignment must have variation", alignmentEntry.getSequenceVariationsCount() > 0);
+
+            for (final Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
+                System.out.println(String.format("bwa entry score=%f referenceIndex=%d  queryIndex=%d variation: %s",
+                        alignmentEntry.getScore(),
+                        alignmentEntry.getQueryIndex(),
+                        alignmentEntry.getTargetIndex(),
+                        var.toString()));
+                assertLength(alignmentEntry, var, alignmentsBug);
+                switch (alignmentEntry.getQueryIndex()) {
+
+
+                    case 0:
+                        // TODO: add assertions
+                        System.out.println(TextFormat.printToString(var));
+                        break;
+                }
+            }
+        }
+    }
+
     @Before
     public void setUp() throws IOException {
-        final ReadsWriter referenceWriter = new ReadsWriter(new FileOutputStream(referenceFilename));
-        final ReadsWriter queryWriter = new ReadsWriter(new FileOutputStream(readsFilename));
+        ReadsWriter referenceWriter = new ReadsWriter(new FileOutputStream(referenceFilename));
+        ReadsWriter queryWriter = new ReadsWriter(new FileOutputStream(readsFilename));
         for (final Alignment entry : alignments) {
             referenceWriter.setDescription("reference:" + entry.description);
             referenceWriter.setIdentifier("reference:" + entry.description);
@@ -233,12 +283,13 @@ public class TestSequenceVariations {
         queryWriter.close();
 
         // run the alignment process
-        lastagAlignmentFilename = alignWith("lastag");
-        bwaAlignmentFilename = alignWith("bwa");
+        lastagAlignmentFilename = alignWith("lastag", readsFilename, referenceFilename, "1");
+        bwaAlignmentFilename = alignWith("bwa", readsFilename, referenceFilename, "1");
+
     }
 
-    private String alignWith(final String alignerName) throws IOException {
-        final String alignmentFilename = FilenameUtils.concat(BASE_TEST_DIR, alignerName + "-alignment");
+    private String alignWith(final String alignerName, String readsFilename, String referenceFilename, String suffix) throws IOException {
+        final String alignmentFilename = FilenameUtils.concat(BASE_TEST_DIR, alignerName + "-alignment-" + suffix);
         final AlignMode aligner = new AlignMode();
         aligner.setWorkDirectory(new File(BASE_TEST_DIR));
         aligner.setAlignerName(alignerName);
@@ -311,11 +362,11 @@ public class TestSequenceVariations {
                     //         0123456789012
                     "--CCTTCCTTCCTTCCTTCCACTATCATTTTAACTACTCATACTATCCCATATA",
                     "AACCTTCCTTCCTTCCTTCCTCTATCATTTTAACTACTCATACTATCCCATATA"),
-             new Alignment("8_read_padding",
+            new Alignment("8_read_padding",
                     //1234567891111111111222
                     //         0123456789012
                     "NNNN",
-                   "TTCCACTATCATTTTAACTACTCATACTATCCCATGTA"),    //   A->G  readIndex=36, position=
+                    "TTCCACTATCATTTTAACTACTCATACTATCCCATGTA"),    //   A->G  readIndex=36, position=
             new Alignment("9_0T24T10",
                     //1234567891111111111222
                     //         0123456789012
@@ -326,10 +377,15 @@ public class TestSequenceVariations {
                     //         0123456789012
                     "TTCCAGAACTGTAAGATAATAAGTTTGTGTTGTTTT",
                     "AAAACAACACCAACTTATTATCTTACAGTTCTGGAG"),
-            new Alignment("11_10T24T0",
+
+    };
+    private final Alignment[] alignmentsBug = {
+
+            new Alignment("0_0T24T10",          // same as previous but matches reverse strand
                     //1234567891111111111222
                     //         0123456789012
-                    StringUtils.reverse("TTCCAGAACTGTAAGATAATAAGTTTGTGTTGTTTT"),
-                    StringUtils.reverse("CTCCAGAACTGTAAGATAATAAGTTGGTGTTGTTTT"))
+                    "TTCCAGAACTGTAAGATAATAAGTTTGTGTTGTTTT",
+                    "AAAACAACACCAACTTATTATCTTACAGTTCTGGAG"),
+
     };
 }

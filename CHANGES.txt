@@ -4,6 +4,8 @@ development
    a new value "counts" which will output a format specifically designed
    for use with R's DESeq and notably for the R script geneDESeqAnalysis.R
    which is used with GobyWeb.
+ - Fix bug in extract sequence variations for SAM format, where matches on the
+   reverse strand got a read-index larger than one from the correct value.
 
 1.7
  - Extended fasta-to-compact and compact-to-fasta to handle paired end runs. See new command

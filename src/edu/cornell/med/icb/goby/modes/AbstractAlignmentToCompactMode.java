@@ -126,7 +126,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
      */
     protected boolean thirdPartyInput = true;
     protected int smallestQueryIndex;
-    protected int largestQueryIndex;
+    protected int largestQueryIndex=-1;
 
     protected int[] createReadLengthArray() {
         return new int[largestQueryIndex - smallestQueryIndex + 1];
@@ -189,7 +189,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         final TransferIds transferIds = new TransferIds().invoke();
         final ReadSet readIndexFilter = transferIds.getReadIndexFilter();
         final AlignmentWriter writer = transferIds.getWriter();
-        assert largestQueryIndex > 0 : "largestQueryIndex must be set";
+        assert largestQueryIndex > -1 : "largestQueryIndex must be set";
         // This is ugly...
         targetIds.clear();
         targetIds.putAll(transferIds.getTargetIds());
@@ -424,7 +424,8 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
                 //System.exit(1);
                 return;
             }
-            sequenceVariation.setReadIndex(readIndex + 1);    // positions start at 1
+            sequenceVariation.setReadIndex(readIndex + (reverseStrand?0 : 1));    // positions start at 1
+            // do not offset if the match is in the reverse strand, since subtracting from the length takes care of offseting already.
             //        System.out.printf("Appending variation: %d %s/%s ", variationPosition, from, to);
             currentEntry.addSequenceVariations(sequenceVariation);
             // reset since they are used:
