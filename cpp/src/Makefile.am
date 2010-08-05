@@ -43,7 +43,7 @@ GobyReadsStats_LDADD = libgoby.la
 GobyReadsStats_SOURCES = \
 	GobyReadsStats.cc
 
-GobyFastaToCompact_CXXFLAGS = ${BOOST_CPPFLAGS}
+GobyFastaToCompact_CXXFLAGS = ${BOOST_CPPFLAGS} ${AM_CXXFLAGS}
 GobyFastaToCompact_LDADD = libgoby.la ${BOOST_LDFLAGS} ${BOOST_PROGRAM_OPTIONS_LIB}
 GobyFastaToCompact_SOURCES = \
 	GobyFastaToCompact.cc

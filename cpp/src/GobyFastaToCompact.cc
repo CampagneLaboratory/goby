@@ -84,6 +84,6 @@ int main (int argc, const char *const argv[]) {
   // Delete all global objects allocated by libprotobuf.
   google::protobuf::ShutdownProtobufLibrary();
 
-	return 0;
+  return 0;
 }
 
