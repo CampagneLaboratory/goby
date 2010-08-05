@@ -38,10 +38,8 @@
 #include <unistd.h>
 #endif
 
-#include "goby/common.h"
 #include "goby/Alignments.pb.h"
 #include "goby/Alignments.h"
-#include "goby/MessageChunks.h"
 #include "goby/TooManyHits.h"
 
 using namespace std;
@@ -128,28 +126,19 @@ int main (int argc, const char *const argv[]) {
   // from describeAmbigousReads - starts the query index set with the data from the tmh reader
   set<unsigned> alignedQueryIndices(queryIndicies.begin(), queryIndicies.end());
 
-  goby::MessageChunksIterator<goby::AlignmentCollection> alignmentCollectionIterator = alignmentReader.iterator();
-  goby::MessageChunksIterator<goby::AlignmentCollection> collectionIteratorBegin = alignmentCollectionIterator.begin();
-  goby::MessageChunksIterator<goby::AlignmentCollection> collectionIteratorEnd = alignmentCollectionIterator.end();
-  for (goby::MessageChunksIterator<goby::AlignmentCollection> it = collectionIteratorBegin; it != collectionIteratorEnd; it++) {
-    const goby::AlignmentCollection collection = *it;
-    const google::protobuf::RepeatedPtrField<goby::AlignmentEntry>& entries = collection.alignment_entries();
-    //cout << "size is " << collection.alignmententries_size() << endl;
-    google::protobuf::RepeatedPtrField<const goby::AlignmentEntry>::const_iterator entryIterator;
-    google::protobuf::RepeatedPtrField<const goby::AlignmentEntry>::const_iterator entryIteratorBegin = entries.begin();
-    google::protobuf::RepeatedPtrField<const goby::AlignmentEntry>::const_iterator entryIteratorEnd = entries.end();
-    for (entryIterator = entryIteratorBegin; entryIterator != entryIteratorEnd; entryIterator++) {
-      const goby::AlignmentEntry entry = *entryIterator;
-      numEntries++;          // Across this file
-      numLogicalAlignmentEntries += entry.multiplicity();
-      total += entry.query_aligned_length();
-      avgScore += entry.score();
-      maxQueryIndex = max(maxQueryIndex, entry.query_index());
-      maxTargetIndex = max(maxTargetIndex, entry.target_index());
-      sumNumVariations += entry.sequence_variations_size();
-      alignedQueryIndices.insert(entry.query_index());
-    }
+  /* TODO
+  for (goby::AlignmentEntryIterator iter = alignmentReader.begin(); iter != alignmentReader.end(); iter++) {
+    const goby::AlignmentEntry entry = *iter;
+    numEntries++;          // Across this file
+    numLogicalAlignmentEntries += entry.multiplicity();
+    total += entry.query_aligned_length();
+    avgScore += entry.score();
+    maxQueryIndex = max(maxQueryIndex, entry.query_index());
+    maxTargetIndex = max(maxTargetIndex, entry.target_index());
+    sumNumVariations += entry.sequence_variations_size();
+    alignedQueryIndices.insert(entry.query_index());
   }
+  */
 
   avgScore /= static_cast<double>(numLogicalAlignmentEntries);
 

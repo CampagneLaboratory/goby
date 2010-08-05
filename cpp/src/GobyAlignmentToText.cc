@@ -62,40 +62,31 @@ int main (int argc, const char *const argv[]) {
     }
     cout << endl;
   }
-  
+
   // write the actual alignment information
-  goby::MessageChunksIterator<goby::AlignmentCollection> alignmentCollectionIterator = alignmentReader.iterator();
-  goby::MessageChunksIterator<goby::AlignmentCollection> collectionIteratorBegin = alignmentCollectionIterator.begin();
-  goby::MessageChunksIterator<goby::AlignmentCollection> collectionIteratorEnd = alignmentCollectionIterator.end();
-  for (goby::MessageChunksIterator<goby::AlignmentCollection> it = collectionIteratorBegin; it != collectionIteratorEnd; it++) {
-    const goby::AlignmentCollection collection = *it;
-    const google::protobuf::RepeatedPtrField<goby::AlignmentEntry>& entries = collection.alignment_entries();
-    google::protobuf::RepeatedPtrField<const goby::AlignmentEntry>::const_iterator entryIterator;
-    google::protobuf::RepeatedPtrField<const goby::AlignmentEntry>::const_iterator entryIteratorBegin = entries.begin();
-    google::protobuf::RepeatedPtrField<const goby::AlignmentEntry>::const_iterator entryIteratorEnd = entries.end();
-    for (entryIterator = entryIteratorBegin; entryIterator != entryIteratorEnd; entryIterator++) {
-      const goby::AlignmentEntry entry = *entryIterator;
-      unsigned targetIndex = entry.target_index();
-      int targetLength;
-      if (!targetLengths.empty()) {
-        targetLength = targetLengths.at(targetIndex);
-      } else {
-        targetLength = -1;
-      }
-
-      cout << entry.query_index()                                      // queryId
-        << "\t" << targetIndexToIdentifier.find(targetIndex)->second   // referenceId
-        << "\t" << targetLength                                        // referenceLength
-        << "\t" << entry.number_of_indels()                            // numberOfIndels
-        << "\t" << entry.number_of_mismatches()                        // numberOfMismatches
-        << "\t" << entry.score()                                       // score
-        << "\t" << entry.position()                                    // startPosition
-        << "\t" << entry.query_aligned_length()                        // alignmentLength 
-        << "\t" << entry.matching_reverse_strand()                     // matchesReverseStrand
-        << endl;
+  /* TODO
+  for (goby::AlignmentEntryIterator iter = alignmentReader.begin(); iter != alignmentReader.end(); iter++) {
+    const goby::AlignmentEntry entry = *iter;
+    unsigned targetIndex = entry.target_index();
+    int targetLength;
+    if (!targetLengths.empty()) {
+      targetLength = targetLengths.at(targetIndex);
+    } else {
+      targetLength = -1;
     }
-  }
 
+    cout << entry.query_index()                                      // queryId
+      << "\t" << targetIndexToIdentifier.find(targetIndex)->second   // referenceId
+      << "\t" << targetLength                                        // referenceLength
+      << "\t" << entry.number_of_indels()                            // numberOfIndels
+      << "\t" << entry.number_of_mismatches()                        // numberOfMismatches
+      << "\t" << entry.score()                                       // score
+      << "\t" << entry.position()                                    // startPosition
+      << "\t" << entry.query_aligned_length()                        // alignmentLength 
+      << "\t" << entry.matching_reverse_strand()                     // matchesReverseStrand
+      << endl;
+  }
+  */
   // Delete all global objects allocated by libprotobuf.
   google::protobuf::ShutdownProtobufLibrary();
 
