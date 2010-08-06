@@ -44,7 +44,7 @@ using namespace std;
 namespace goby {
   Alignment::Alignment(const std::string& basename) {
     this->basename = basename;
-    this->pbHeader = AlignmentHeader::default_instance();
+    this->header = AlignmentHeader::default_instance();
   }
 
   Alignment::~Alignment(void) {
@@ -56,7 +56,7 @@ namespace goby {
 
   string Alignment::getBasename(const string& filename) {
     const string COMPACT_ALIGNMENT_FILE_EXTS[] = {
-      ".entries", ".header", ".tmh", ".stats", ".counts"
+      ".entries", ".header", ".tmh", ".stats", ".counts", ".index"
     };
 
     const size_t len = sizeof(COMPACT_ALIGNMENT_FILE_EXTS) / sizeof(COMPACT_ALIGNMENT_FILE_EXTS[0]);
@@ -74,19 +74,19 @@ namespace goby {
   }
 
   vector<unsigned> Alignment::getQueryLengths() const {
-    vector<unsigned> queryLengths(pbHeader.number_of_queries());
+    vector<unsigned> queryLengths(header.number_of_queries());
     if (hasConstantQueryLength()) {
       // The alignment has constant query lengths
-      queryLengths.assign(pbHeader.number_of_queries(), getConstantQuerylength());
+      queryLengths.assign(header.number_of_queries(), getConstantQuerylength());
     } else {
-      queryLengths.assign(pbHeader.query_length().begin(), pbHeader.query_length().end());
+      queryLengths.assign(header.query_length().begin(), header.query_length().end());
     }
   
     return queryLengths;
   }
 
   vector<unsigned> Alignment::getTargetLengths() const {
-    vector<unsigned> targetLengths(pbHeader.target_length().begin(), pbHeader.target_length().end());
+    vector<unsigned> targetLengths(header.target_length().begin(), header.target_length().end());
     return targetLengths;
   }
   
@@ -101,7 +101,7 @@ namespace goby {
       google::protobuf::io::GzipInputStream gzipHeaderStream(&headerFileStream);
 
       // populate the alignment header object from the uncompressed data
-      if (!pbHeader.ParseFromZeroCopyStream(&gzipHeaderStream)) {
+      if (!header.ParseFromZeroCopyStream(&gzipHeaderStream)) {
         cerr << "Failed to parse alignment header file: " << headerFilename << endl;
       }
 
@@ -113,29 +113,22 @@ namespace goby {
 
     // populate the target identifiers
     google::protobuf::RepeatedPtrField<const goby::IdentifierInfo>::const_iterator targetMappingIterator;
-    for (targetMappingIterator = pbHeader.target_name_mapping().mappings().begin(); targetMappingIterator != pbHeader.target_name_mapping().mappings().end(); targetMappingIterator++) {
+    for (targetMappingIterator = header.target_name_mapping().mappings().begin(); targetMappingIterator != header.target_name_mapping().mappings().end(); targetMappingIterator++) {
       const string targetName = targetMappingIterator->name();
       const unsigned targetIndex = targetMappingIterator->index();
-      targetIdentifiers.insert(pair<string,unsigned>(targetName, targetIndex));
+      target_identifiers.insert(pair<string,unsigned>(targetName, targetIndex));
     }
 
     // populate the query identifiers
     google::protobuf::RepeatedPtrField<const goby::IdentifierInfo>::const_iterator queryMappingIterator;
-    for (queryMappingIterator = pbHeader.query_name_mapping().mappings().begin(); queryMappingIterator != pbHeader.query_name_mapping().mappings().end(); queryMappingIterator++) {
+    for (queryMappingIterator = header.query_name_mapping().mappings().begin(); queryMappingIterator != header.query_name_mapping().mappings().end(); queryMappingIterator++) {
       string queryName = queryMappingIterator->name();
       const unsigned queryIndex = queryMappingIterator->index();
-      queryIdentifiers.insert(pair<string,unsigned>(queryName, queryIndex));
+      query_identifiers.insert(pair<string,unsigned>(queryName, queryIndex));
     }
-    
-    this->messageChunksIterator = new MessageChunksIterator<AlignmentCollection>(basename + ".entries");
   }
 
   AlignmentReader::~AlignmentReader(void) {
-    delete messageChunksIterator;
-  }
-
-  MessageChunksIterator<AlignmentCollection> AlignmentReader::iterator() {
-    return MessageChunksIterator<AlignmentCollection>(basename + ".entries");
   }
 
   AlignmentWriter::AlignmentWriter(const string& basename) : Alignment(basename) {
@@ -159,18 +152,13 @@ namespace goby {
     google::protobuf::io::FileOutputStream headerFileStream(fd);
     google::protobuf::io::GzipOutputStream gzipHeaderStream(&headerFileStream);
 
-    if (!pbHeader.SerializeToZeroCopyStream(&gzipHeaderStream)) {
+    if (!header.SerializeToZeroCopyStream(&gzipHeaderStream)) {
       cerr << "Failed to write alignment header file: " << headerFilename << endl;
     }
 
     gzipHeaderStream.Close();
     // TODO? ::close(fd);
   }
-
-  MessageChunksIterator<AlignmentCollection> AlignmentWriter::iterator() {
-    return MessageChunksIterator<AlignmentCollection>(basename + ".entries");
-  }
-
 
 #ifdef _MSC_VER
 #pragma warning(pop)  // Restores the warning state.

@@ -43,14 +43,12 @@
 #include <unistd.h>
 #endif
 
-#include "goby/common.h"
 #include "goby/Reads.pb.h"
 #include "goby/Reads.h"
-#include "goby/MessageChunks.h"
 
 using namespace std;
 
-int main (int argc, const char *const argv[]) {
+int main(int argc, const char *const argv[]) {
   // Verify that the version of the library that we linked against is
   // compatible with the version of the headers we compiled against.
   GOOGLE_PROTOBUF_VERIFY_VERSION;

@@ -31,6 +31,8 @@
 #include "MessageChunks.h"
 
 namespace goby {
+  template class LIBGOBY_EXPORT MessageChunksIterator<ReadCollection>;
+
   class LIBGOBY_EXPORT ReadEntryIterator : public std::iterator<std::input_iterator_tag, ReadEntry> {
     // the file descriptor for the reads file
     int fd;
@@ -39,7 +41,7 @@ namespace goby {
     MessageChunksIterator<ReadCollection> message_chunks_iterator;
 
     // the "end" iterator for the collections
-    MessageChunksIterator<ReadCollection> message_chunks_iterator_end;
+    const MessageChunksIterator<ReadCollection> message_chunks_iterator_end;
 
     // current chunk of read entries
     ReadCollection *read_collection;

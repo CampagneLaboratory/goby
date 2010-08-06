@@ -62,12 +62,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);ZLIB_WINAPI;HAVE_ZLIB</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\protobuf-2.3.0\src;C:\zlib-1.2.5</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\protobuf-2.3.0\src;C:\zlib-1.2.5;C:\boost_1_43_0</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\protobuf-2.3.0\vsprojects\Debug;C:\zlib-1.2.5\dll32</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\protobuf-2.3.0\vsprojects\Debug;C:\zlib-1.2.5\dll32;C:\boost_1_43_0\stage\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>libprotobuf.lib;zlibwapi.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
