@@ -84,7 +84,7 @@
             <stringParser>
                 <classname>StringStringParser</classname>
             </stringParser>
-            <required>true</required>
+            <required>false</required>
             <help>Name of the pair output file (where paired sequence will be written).</help>
         </flaggedOption>
         <flaggedOption>
