@@ -225,17 +225,23 @@ namespace goby {
     }
 
     if (description != NULL) {
-      entry->set_description(description);
+      if (strlen(description) > 0) {
+        entry->set_description(description);
+      }
       description = NULL;
     }
 
     if (identifier != NULL) {
-      entry->set_read_identifier(identifier);
+      if (strlen(identifier) > 0) {
+        entry->set_read_identifier(identifier);
+      }
       identifier = NULL;
     }
 
     if (quality_scores != NULL) {
-      entry->set_quality_scores(quality_scores);
+      if (strlen(quality_scores) > 0) {
+        entry->set_quality_scores(quality_scores);
+      }
       quality_scores = NULL;
     }
 
