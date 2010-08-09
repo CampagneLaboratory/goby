@@ -162,7 +162,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
 
             final AlignmentStats stats = new AlignmentStats();
             //      final int[] readLengths = createReadLengthArray();
-
+            int targetLengths[]=new int[targetIds.size()];
             // first pass: collect minimum score to keep each queryEntry
             // second pass: write to compact alignment file for those entries with score above threshold
             for (final boolean writeAlignment : new boolean[]{false, true}) {
@@ -215,6 +215,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     currentEntry.setQueryIndex(queryIndex);
                     currentEntry.setScore(score);
                     currentEntry.setTargetAlignedLength(reference.alignedLength);
+                    targetLengths[targetIndex]=reference.sequenceLength;
                     currentEntry.setTargetIndex(targetIndex);
                     final int queryLength = query.sequenceLength;
                     currentEntry.setQueryLength(queryLength);
@@ -261,6 +262,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                 }
                 parser.close();
                 if (writeAlignment) {
+                    writer.setTargetLengths(targetLengths);
                     if (readIndexFilter != null) {
                         writer.putStatistic("keep-filter-filename", readIndexFilterFile.getName());
                     }

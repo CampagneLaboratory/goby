@@ -240,8 +240,8 @@ public abstract class AbstractAlignmentReader implements Closeable,
     }
 
     /**
-     * Returns target lengths. An array of size the number of query sequences, where each element
-     * indicates the length of the query sequence.
+     * Returns target lengths. An array of size the number of target sequences, where each element
+     * indicates the length of the target sequence.
      * @return an array containing the lengths of all the targets represented in the alignment
      */
     public final int[] getTargetLength() {
