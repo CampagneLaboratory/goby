@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
     ("exclude-sequences", "When this switch is provided, exclude sequences. This results in not writing sequences to the compact file. This can be useful to keep only an association between sequence index and identifier.")
     ("exclude-quality", "When this switch is provided, exclude quality scores. This results in not writing quality scores to the compact file.")
     ("sequence-per-chunk,n", boost::program_options::value<unsigned>()->default_value(GOBY_DEFAULT_NUMBER_OF_ENTRIES_PER_CHUNK), "The number of sequences that will be written in each compressed chunk. Default is suitable for very many short sequences. Reduce to a few sequences per chunk if each sequence is very large.")
-    ("output,o", "If there is only one read file, this will force the output file to this specific filename. If there is more than one input file, the output filename will always be the input filename without the .fasta, .gz, etc.  extensions with an extension of .compact-reads. You should generally use an extension of .compact-reads when writing a compact reads file.")
+    ("output,o", boost::program_options::value<string>(), "If there is only one read file, this will force the output file to this specific filename. If there is more than one input file, the output filename will always be the input filename without the .fasta, .gz, etc.  extensions with an extension of .compact-reads. You should generally use an extension of .compact-reads when writing a compact reads file.")
     ("verbose-quality-scores", "Print quality scores to the console as they are read and converted to Phred score. Useful for testing with a small number of reads.");
     
   // it's ok to specify the input files as the last argument
@@ -115,6 +115,8 @@ int main(int argc, char **argv) {
       // create the output file name based on the input file name
       output_filename = stripExtension(input_filename) + ".compact-reads";
     }
+
+    cout << "Creating file " << output_filename << endl;
 
     // open the fasta file handler and initialize kseq
     gzFile input_fp = gzopen(input_filename.c_str(), "r");
@@ -160,7 +162,7 @@ int main(int argc, char **argv) {
 
     writer.close();                   // write the any remaining data
     kseq_destroy(seq);                // destroy seq
-    gzclose(input_fp);                 // close the fasta file handler
+    gzclose(input_fp);                // close the fasta file handler
   }
 
   // Delete all global objects allocated by libprotobuf.
