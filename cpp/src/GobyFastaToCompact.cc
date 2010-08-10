@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
   boost::program_options::options_description desc("Converts FASTA/FASTQ files to the Goby \"compact-reads\" file format");
   desc.add_options()
     ("help,h", "Displays usage help information")
-    ("input", boost::program_options::value< vector<string> >()->required(), "The input fasta files to convert to compact reads. The output files will have the same filename but end in .compact-reads. If the input file ends in .gz it will be decompressed on the fly.")
+    ("input", boost::program_options::value< vector<string> >(), "The input fasta files to convert to compact reads. The output files will have the same filename but end in .compact-reads. If the input file ends in .gz it will be decompressed on the fly.")
     ("include-descriptions,d", "When this switch is provided, include description lines into the compact output. By default, ignore description lines.")
     ("include-identifiers,x", "When this switch is provided, include identifiers into the compact output. By default, ignore identifiers. Identifiers are parsed out of description lines as the token before the first space or tab character.")
     ("exclude-sequences", "When this switch is provided, exclude sequences. This results in not writing sequences to the compact file. This can be useful to keep only an association between sequence index and identifier.")
@@ -91,6 +91,13 @@ int main(int argc, char **argv) {
     cout << "Usage: " << argv[0] << " input1 input2 ... inputN" << endl;
     cout << desc;
     return 0;
+  }
+
+  if (!vm.count("input")) {
+    cerr << "Error: Parameter 'input' is required." << endl;
+    cout << "Usage: " << argv[0] << " input1 input2 ... inputN" << endl;
+    cout << desc;
+    return -1;
   }
 
   // get options from command line
