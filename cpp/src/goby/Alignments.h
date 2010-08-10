@@ -45,8 +45,8 @@ namespace goby {
     // current chunk of alignement entries
     AlignmentCollection *alignment_collection;
 
-    // index of the current read entry in the collection
-    int current_read_index;
+    // index of the current alignment entry in the collection
+    int current_alignment_entry_index;
 
   public:
     AlignmentEntryIterator(const int fd, std::streamoff off, std::ios_base::seekdir dir);
@@ -106,7 +106,7 @@ namespace goby {
 
   class LIBGOBY_EXPORT AlignmentReader : public Alignment {
     // the file descriptor for the alignment entries file
-    int fd;
+    int entries_fd;
 
   public:
     AlignmentReader(const std::string& basename);
@@ -126,7 +126,7 @@ namespace goby {
     inline void setNumberOfQueries(unsigned number_of_queries) { header.set_number_of_queries(number_of_queries); };
     inline void setNumberOfTargets(unsigned number_of_targets) { header.set_number_of_targets(number_of_targets); };
     inline void setNumberOfAlignedReads(unsigned number_of_aligned_reads) { header.set_number_of_aligned_reads(number_of_aligned_reads); };
-    inline void setConstantquerylength(unsigned constant_query_length) { header.set_constant_query_length(constant_query_length); };
+    inline void setConstantQuerylength(unsigned constant_query_length) { header.set_constant_query_length(constant_query_length); };
     inline void setSmallestSplitQueryIndex(unsigned smallest_split_query_index) { header.set_smallest_split_query_index(smallest_split_query_index); };
     inline void setLargestSplitQueryIndex(unsigned largest_split_query_index) { header.set_largest_split_query_index(largest_split_query_index); };
 

@@ -126,7 +126,6 @@ int main(int argc, const char *const argv[]) {
   // from describeAmbigousReads - starts the query index set with the data from the tmh reader
   set<unsigned> alignedQueryIndices(queryIndicies.begin(), queryIndicies.end());
 
-  /* TODO
   for (goby::AlignmentEntryIterator iter = alignmentReader.begin(); iter != alignmentReader.end(); iter++) {
     const goby::AlignmentEntry entry = *iter;
     numEntries++;          // Across this file
@@ -138,7 +137,6 @@ int main(int argc, const char *const argv[]) {
     sumNumVariations += entry.sequence_variations_size();
     alignedQueryIndices.insert(entry.query_index());
   }
-  */
 
   avgScore /= static_cast<double>(numLogicalAlignmentEntries);
 
@@ -164,15 +162,6 @@ int main(int argc, const char *const argv[]) {
   const off_t filesize = filestatus.st_size;
 
   cout << "Average bytes per entry = " << filesize / static_cast<double>(numLogicalAlignmentEntries) << endl;
-
-  // TODO : testing
-  /*
-  goby::AlignmentWriter alignmentWriter = goby::AlignmentWriter(alignmentReader);
-  alignmentWriter.write();
-
-  goby::TooManyHitsWriter tmhWriter = goby::TooManyHitsWriter(tmhReader);
-  tmhWriter.write();
-  */
 
   // Delete all global objects allocated by libprotobuf.
   google::protobuf::ShutdownProtobufLibrary();

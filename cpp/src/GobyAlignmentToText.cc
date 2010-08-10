@@ -64,7 +64,6 @@ int main(int argc, const char *const argv[]) {
   }
 
   // write the actual alignment information
-  /* TODO
   for (goby::AlignmentEntryIterator iter = alignmentReader.begin(); iter != alignmentReader.end(); iter++) {
     const goby::AlignmentEntry entry = *iter;
     unsigned targetIndex = entry.target_index();
@@ -86,7 +85,7 @@ int main(int argc, const char *const argv[]) {
       << "\t" << entry.matching_reverse_strand()                     // matchesReverseStrand
       << endl;
   }
-  */
+
   // Delete all global objects allocated by libprotobuf.
   google::protobuf::ShutdownProtobufLibrary();
 

@@ -149,7 +149,7 @@ namespace goby {
   TooManyHitsWriter::TooManyHitsWriter(const string& basename) : TooManyHits(basename), written(false) {
   }
 
-  TooManyHitsWriter::TooManyHitsWriter(const std::string& basename, unsigned threshold) : TooManyHits(basename), written(false) {
+  TooManyHitsWriter::TooManyHitsWriter(const string& basename, unsigned threshold) : TooManyHits(basename), written(false) {
     pbTmh.set_aligner_threshold(threshold);
   }
 

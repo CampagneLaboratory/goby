@@ -41,10 +41,10 @@
 using namespace std;
 
 namespace goby {
-  ReadEntryIterator::ReadEntryIterator(const int fd, std::streamoff off = 0, std::ios_base::seekdir dir = std::ios_base::beg) :
+  ReadEntryIterator::ReadEntryIterator(const int fd, streamoff off = 0, ios_base::seekdir dir = ios_base::beg) :
     fd(fd),
     message_chunks_iterator(MessageChunksIterator<ReadCollection>(fd, off, dir)),
-    message_chunks_iterator_end(MessageChunksIterator<ReadCollection>(fd, 0, std::ios_base::end)),
+    message_chunks_iterator_end(MessageChunksIterator<ReadCollection>(fd, 0, ios_base::end)),
     read_collection(new ReadCollection),
     current_read_index(0) {
   }
@@ -142,7 +142,7 @@ namespace goby {
   };
 
 
-  Reads::Reads(const std::string& basename) : filename(getBasename(basename) + ".compact-reads") {
+  Reads::Reads(const string& basename) : filename(getBasename(basename) + ".compact-reads") {
   }
 
   Reads::~Reads(void) {
@@ -174,7 +174,7 @@ namespace goby {
   ReadsReader::ReadsReader(const string& filename) : Reads(filename),
     fd(::open(filename.c_str(), O_RDONLY | O_BINARY)) {
     if (fd < 0) {
-      std::cerr << "Error opening file: " << filename << std::endl;
+      cerr << "Error opening file: " << filename << endl;
     }
   }
 
@@ -189,7 +189,7 @@ namespace goby {
   };
 
   ReadEntryIterator ReadsReader::end() const {
-    return ReadEntryIterator(fd, static_cast<std::streamoff>(0), std::ios_base::end);
+    return ReadEntryIterator(fd, static_cast<streamoff>(0), ios_base::end);
   };
 
   ReadsWriter::ReadsWriter(const string& filename, unsigned number_of_entries_per_chunk) : Reads(getBasename(filename)),
