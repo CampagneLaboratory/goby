@@ -23,6 +23,7 @@
 #include <iomanip>
 #include <iostream>
 
+#include "goby/hash.h"
 #include "goby/Alignments.pb.h"
 #include "goby/Alignments.h"
 
@@ -66,7 +67,7 @@ int main(int argc, const char *const argv[]) {
   // write the actual alignment information
   for (goby::AlignmentEntryIterator iter = alignmentReader.begin(); iter != alignmentReader.end(); iter++) {
     const goby::AlignmentEntry entry = *iter;
-    unsigned targetIndex = entry.target_index();
+    const unsigned targetIndex = entry.target_index();
     int targetLength;
     if (!targetLengths.empty()) {
       targetLength = targetLengths.at(targetIndex);

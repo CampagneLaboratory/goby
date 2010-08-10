@@ -28,7 +28,9 @@ AC_HEADER_STDC
 AC_C_INLINE
 AC_TYPE_SIZE_T
 AC_CHECK_HEADERS([tr1/unordered_map])
-AC_CHECK_HEADERS([ext/hash_map]) 
+AC_CHECK_HEADERS([tr1/unordered_set])
+AC_CHECK_HEADERS([ext/hash_map])
+AC_CHECK_HEADERS([ext/hash_set])
 
 # Checks for library functions.
 AC_CHECK_FUNCS([memset])

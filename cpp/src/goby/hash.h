@@ -47,4 +47,26 @@ namespace std { using namespace __gnu_cxx; }
 #define LIBGOBY_HASH_MAP ::std::map
 #endif
 
+// modern microsoft compilers define hash_set
+#ifdef _MSC_VER
+#include <hash_set>
+#define LIBGOBY_HASH_SET ::std::hash_set
+
+// if there is support for C++ Technical Report 1
+#elif defined(HAVE_TR1_UNORDERED_SET)
+#include <tr1/unordered_set>
+#define LIBGOBY_HASH_SET ::std::tr1::unordered_set
+
+// otherwise try for the hash set extension
+#elif defined(HAVE_EXT_HASH_SET)
+#include <ext/hash_map>
+namespace std { using namespace __gnu_cxx; }
+#define LIBGOBY_HASH_SET ::std::hash_set
+
+// otherwise just use plain old set
+#else
+#include <map>
+#define LIBGOBY_HASH_SET ::std::set
+#endif
+
 #endif // GOBY_HASH_H

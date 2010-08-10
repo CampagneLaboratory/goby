@@ -25,7 +25,6 @@
 #include <iostream>
 #include <locale>
 #include <numeric>
-#include <set>
 #include <stdexcept>
 #include <vector>
 
@@ -38,6 +37,7 @@
 #include <unistd.h>
 #endif
 
+#include "goby/hash.h"
 #include "goby/Alignments.pb.h"
 #include "goby/Alignments.h"
 #include "goby/TooManyHits.h"
@@ -124,7 +124,7 @@ int main(int argc, const char *const argv[]) {
   unsigned sumNumVariations = 0;
 
   // from describeAmbigousReads - starts the query index set with the data from the tmh reader
-  set<unsigned> alignedQueryIndices(queryIndicies.begin(), queryIndicies.end());
+  LIBGOBY_HASH_SET<unsigned> alignedQueryIndices(queryIndicies.begin(), queryIndicies.end());
 
   for (goby::AlignmentEntryIterator iter = alignmentReader.begin(); iter != alignmentReader.end(); iter++) {
     const goby::AlignmentEntry entry = *iter;
