@@ -64,33 +64,41 @@ namespace goby {
 
   // Prefix increment operator
   AlignmentEntryIterator& AlignmentEntryIterator::operator++() {
-    ++current_alignment_entry_index;
-    // if we're at the end of the current chunk, move on to the next
-    if (current_alignment_entry_index >= alignment_collection->alignment_entries_size()) {
-      // if there is another chunk, get it otherwise set defaults
-      if (message_chunks_iterator != message_chunks_iterator_end) {
-        message_chunks_iterator++;
-        current_alignment_entry_index = 0;
-      } else {
-        alignment_collection->Clear();
-        current_alignment_entry_index = -1;
+    if (current_alignment_entry_index != -1) {
+      ++current_alignment_entry_index;
+      // if we're at the end of the current chunk, move on to the next
+      if (current_alignment_entry_index >= alignment_collection->alignment_entries_size()) {
+        // if there is another chunk, get it otherwise set defaults
+        if (message_chunks_iterator != message_chunks_iterator_end) {
+          message_chunks_iterator++;
+          current_alignment_entry_index = 0;
+        } else {
+          alignment_collection->Clear();
+          current_alignment_entry_index = -1;
+        }
       }
+    } else {
+        std::cerr << __FILE__ ":" << __LINE__ << " - Attempt to advance past end of fd " << fd << std::endl;
     }
     return *this;
   };
 
   // Postfix increment operator
   AlignmentEntryIterator& AlignmentEntryIterator::operator++(int) {
-    current_alignment_entry_index++;
-    if (current_alignment_entry_index >= alignment_collection->alignment_entries_size()) {
-      // if there is another chunk, get it otherwise set defaults
-      if (message_chunks_iterator != message_chunks_iterator_end) {
-        message_chunks_iterator++;
-        current_alignment_entry_index = 0;
-      } else {
-        alignment_collection->Clear();
-        current_alignment_entry_index = -1;
+    if (current_alignment_entry_index != -1) {
+      current_alignment_entry_index++;
+      if (current_alignment_entry_index >= alignment_collection->alignment_entries_size()) {
+        // if there is another chunk, get it otherwise set defaults
+        if (message_chunks_iterator != message_chunks_iterator_end) {
+          message_chunks_iterator++;
+          current_alignment_entry_index = 0;
+        } else {
+          alignment_collection->Clear();
+          current_alignment_entry_index = -1;
+        }
       }
+    } else {
+        std::cerr << __FILE__ ":" << __LINE__ << " - Attempt to advance past end of fd " << fd << std::endl;
     }
     return *this;
   };
@@ -190,7 +198,7 @@ namespace goby {
     return target_lengths;
   }
   
-  AlignmentReader::AlignmentReader(const string& basename) : Alignment(basename) {
+  AlignmentReader::AlignmentReader(const string& basename) : Alignment(basename), alignment_entry_iterator_end(NULL) {
     // open the "header" file
     const string header_filename = basename + ".header";
     const int fd = ::open(header_filename.c_str(), O_RDONLY | O_BINARY);
@@ -234,9 +242,11 @@ namespace goby {
       cerr << "Error opening file: " << entries_filename << endl;
     }
 
+    alignment_entry_iterator_end = new AlignmentEntryIterator(entries_fd, static_cast<streamoff>(0), ios_base::end);
   }
 
   AlignmentReader::~AlignmentReader(void) {
+    delete alignment_entry_iterator_end;
   }
 
   AlignmentEntryIterator AlignmentReader::begin() const {
@@ -244,7 +254,7 @@ namespace goby {
   };
 
   AlignmentEntryIterator AlignmentReader::end() const {
-    return AlignmentEntryIterator(entries_fd, static_cast<streamoff>(0), ios_base::end);
+    return *alignment_entry_iterator_end;
   };
 
   AlignmentWriter::AlignmentWriter(const string& basename) : Alignment(basename) {

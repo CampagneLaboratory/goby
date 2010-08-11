@@ -108,6 +108,9 @@ namespace goby {
     // the file descriptor for the alignment entries file
     int entries_fd;
 
+    // the "end" iterator for the alignment entries
+    AlignmentEntryIterator *alignment_entry_iterator_end;
+
   public:
     AlignmentReader(const std::string& basename);
     AlignmentReader(const Alignment& alignment);

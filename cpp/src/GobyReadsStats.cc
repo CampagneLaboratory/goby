@@ -91,9 +91,7 @@ int main(int argc, const char *const argv[]) {
   unsigned long long numberOfQualityScorePairs = 0;
 
   goby::ReadsReader readsReader = goby::ReadsReader(filename);
-  goby::ReadEntryIterator begin = readsReader.begin();
-  goby::ReadEntryIterator end = readsReader.end();
-  for (goby::ReadEntryIterator it = begin; it != end; it++) {
+  for (goby::ReadEntryIterator it = readsReader.begin(); it != readsReader.end(); it++) {
     goby::ReadEntry entry = *it;
     const unsigned readLength = entry.read_length();
 

@@ -99,7 +99,7 @@ namespace goby {
           current_chunk_length = readInt(input_stream);
 
 #ifdef GOBY_DEBUG
-         std::cout << "Chunk length: " << current_chunk_length << std::endl;
+          std::cout << "Chunk length: " << current_chunk_length << std::endl;
 #endif
 
           // the last chunk has a length of zero bytes
@@ -110,6 +110,7 @@ namespace goby {
         }
       } else {
         current_chunk_length = 0;
+        std::cerr << __FILE__ ":" << __LINE__ << " - Attempt to advance past end of " << filename << std::endl;
       }
     }
 

@@ -63,33 +63,41 @@ namespace goby {
 
   // Prefix increment operator
   ReadEntryIterator& ReadEntryIterator::operator++() {
-    ++current_read_index;
-    // if we're at the end of the current chunk, move on to the next
-    if (current_read_index >= read_collection->reads_size()) {
-      // if there is another chunk, get it otherwise set defaults
-      if (message_chunks_iterator != message_chunks_iterator_end) {
-        message_chunks_iterator++;
-        current_read_index = 0;
-      } else {
-        read_collection->Clear();
-        current_read_index = -1;
+    if (current_read_index != -1) {
+      ++current_read_index;
+      // if we're at the end of the current chunk, move on to the next
+      if (current_read_index >= read_collection->reads_size()) {
+        // if there is another chunk, get it otherwise set defaults
+        if (message_chunks_iterator != message_chunks_iterator_end) {
+          message_chunks_iterator++;
+          current_read_index = 0;
+        } else {
+          read_collection->Clear();
+          current_read_index = -1;
+        }
       }
+    } else {
+        std::cerr << __FILE__ ":" << __LINE__ << " - Attempt to advance past end of fd " << fd << std::endl;
     }
     return *this;
   };
 
   // Postfix increment operator
   ReadEntryIterator& ReadEntryIterator::operator++(int) {
-    current_read_index++;
-    if (current_read_index >= read_collection->reads_size()) {
-      // if there is another chunk, get it otherwise set defaults
-      if (message_chunks_iterator != message_chunks_iterator_end) {
-        message_chunks_iterator++;
-        current_read_index = 0;
-      } else {
-        read_collection->Clear();
-        current_read_index = -1;
+    if (current_read_index != -1) {
+      current_read_index++;
+      if (current_read_index >= read_collection->reads_size()) {
+        // if there is another chunk, get it otherwise set defaults
+        if (message_chunks_iterator != message_chunks_iterator_end) {
+          message_chunks_iterator++;
+          current_read_index = 0;
+        } else {
+          read_collection->Clear();
+          current_read_index = -1;
+        }
       }
+    } else {
+        std::cerr << __FILE__ ":" << __LINE__ << " - Attempt to advance past end of fd " << fd << std::endl;
     }
     return *this;
   };
@@ -172,13 +180,15 @@ namespace goby {
   }
 
   ReadsReader::ReadsReader(const string& filename) : Reads(filename),
-    fd(::open(filename.c_str(), O_RDONLY | O_BINARY)) {
+    fd(::open(filename.c_str(), O_RDONLY | O_BINARY)),
+    read_entry_iterator_end(new ReadEntryIterator(fd, static_cast<std::streamoff>(0), ios_base::end)) {
     if (fd < 0) {
       cerr << "Error opening file: " << filename << endl;
     }
   }
 
   ReadsReader::~ReadsReader(void) {
+    delete read_entry_iterator_end;
     if (fd >= 0) {
       ::close(fd);
     }
@@ -189,7 +199,7 @@ namespace goby {
   };
 
   ReadEntryIterator ReadsReader::end() const {
-    return ReadEntryIterator(fd, static_cast<streamoff>(0), ios_base::end);
+    return *read_entry_iterator_end;
   };
 
   ReadsWriter::ReadsWriter(const string& filename, unsigned number_of_entries_per_chunk) : Reads(getBasename(filename)),

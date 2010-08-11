@@ -87,6 +87,9 @@ namespace goby {
     // the file descriptor for the reads file
     int fd;
 
+    // the "end" iterator for the read entries
+    const ReadEntryIterator *read_entry_iterator_end;
+
   public:
     ReadsReader(const std::string& filename);
     ReadsReader(const ReadsReader& reader);
