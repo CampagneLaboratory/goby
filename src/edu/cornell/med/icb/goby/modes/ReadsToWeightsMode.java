@@ -38,6 +38,8 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
+import java.util.LinkedList;
 
 /**
  * Create the read to weight map. This class scans a compact reads file to determine which heptamer
@@ -67,12 +69,12 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
     private static final Log LOG = LogFactory.getLog(ReadsToWeightsMode.class);
 
 
-    private String[] inputFilenames;
+    private List<String> inputFilenames;
 
     private String mapFilename;
     private String heptamerInfoFilename;
     private String estimationMethod;
-
+    boolean colorSpace;
 
     @Override
     public String getModeName() {
@@ -98,7 +100,9 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
             throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
-        inputFilenames = jsapResult.getStringArray("input");
+        for (String inputFilename : jsapResult.getStringArray("input")) {
+            addInputFilename(inputFilename);
+        }
         heptamerInfoFilename = jsapResult.getString("heptamer-info");
         mapFilename = jsapResult.getString("map");
         estimationMethod = jsapResult.getString("method");
@@ -106,8 +110,6 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
 
         return this;
     }
-
-    boolean colorSpace;
 
     enum WeightCalculationMethod {
         HEPTAMERS,
@@ -118,6 +120,50 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
         GC,
         AT,
         ATGC
+    }
+
+    public synchronized void addInputFilename(final String inputFilename) {
+        if (inputFilenames == null) {
+            inputFilenames = new LinkedList<String>();
+        }
+        inputFilenames.add(inputFilename);
+    }
+
+
+    public List<String> getInputFilenames() {
+        return inputFilenames;
+    }
+
+    public boolean getColorSpace() {
+        return colorSpace;
+    }
+
+    public void setColorSpace(final boolean colorSpace) {
+        this.colorSpace = colorSpace;
+    }
+
+    public String getMapFilename() {
+        return mapFilename;
+    }
+
+    public void setMapFilename(final String mapFilename) {
+        this.mapFilename = mapFilename;
+    }
+
+    public String getHeptamerInfoFilename() {
+        return heptamerInfoFilename;
+    }
+
+    public void setHeptamerInfoFilename(final String heptamerInfoFilename) {
+        this.heptamerInfoFilename = heptamerInfoFilename;
+    }
+
+    public String getEstimationMethod() {
+        return estimationMethod;
+    }
+
+    public void setEstimationMethod(final String estimationMethod) {
+        this.estimationMethod = estimationMethod;
     }
 
     @Override
@@ -196,7 +242,7 @@ public class ReadsToWeightsMode extends AbstractGobyMode {
             // for each reads file:
             LOG.info("Now scanning " + inputFilename);
 
-            if (inputFilenames.length >= 1) {
+            if (inputFilenames.size() >= 1) {
                 // if we process one or more reads file, build the map filename dynamically for each input file.
                 mapFilename = FilenameUtils.removeExtension(inputFilename) + "." + calculator.id() + "-weights";
             }
