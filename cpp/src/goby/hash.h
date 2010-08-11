@@ -59,13 +59,13 @@ namespace std { using namespace __gnu_cxx; }
 
 // otherwise try for the hash set extension
 #elif defined(HAVE_EXT_HASH_SET)
-#include <ext/hash_map>
+#include <ext/hash_set>
 namespace std { using namespace __gnu_cxx; }
 #define LIBGOBY_HASH_SET ::std::hash_set
 
 // otherwise just use plain old set
 #else
-#include <map>
+#include <set>
 #define LIBGOBY_HASH_SET ::std::set
 #endif
 
