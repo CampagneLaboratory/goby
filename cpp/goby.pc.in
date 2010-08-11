@@ -6,5 +6,5 @@ includedir=@includedir@
 Name: Goby
 Description: API for reading binary data files created using the Goby next-gen data management framework
 Version: @VERSION@
-Libs: -L${libdir} -lgoby -lz @PTHREAD_CFLAGS@ @PTHREAD_LIBS@
-Cflags: -I${includedir} @PTHREAD_CFLAGS@
+Libs: -L${libdir} -lgoby @PROTOBUF_LIBS@
+Cflags: -I${includedir} @PROTOBUF_CFLAGS@
