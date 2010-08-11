@@ -25,6 +25,7 @@
 #include <config.h>
 #endif
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -49,8 +50,6 @@
 // Disable Microsoft deprecation warnings for POSIX functions called from this class (open, close)
 #pragma warning(push)
 #pragma warning(disable:4996)
-
-#define NOMINMAX   // avoid clashing with std::numeric_limits
 #endif  // _MSC_VER
 
 namespace goby {
@@ -155,7 +154,7 @@ namespace goby {
           // the stream may return less than we need (including zero) and still have more data
           if (size > 0) {
             // only use what is needed (which may be less than what we got)
-            const int bytes_used = min(bytes_needed, size);
+            const int bytes_used = std::min<int>(bytes_needed, size);
 
             // copy the data from the buffer to the local copy 
             ::memcpy(cp, buffer, bytes_used);
