@@ -49,7 +49,9 @@
 // Disable Microsoft deprecation warnings for POSIX functions called from this class (open, close)
 #pragma warning(push)
 #pragma warning(disable:4996)
-#endif
+
+#define NOMINMAX   // avoid clashing with std::numeric_limits
+#endif  // _MSC_VER
 
 namespace goby {
   #define GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH 8           // length of the delimiter tag (in bytes)
@@ -131,7 +133,7 @@ namespace goby {
 
       // populate the current object from the compressed data
       if (!chunk->ParseFromZeroCopyStream(&gzip_stream)) {
-        std::cerr << "Failed to parse message chunk from " << filename << std::endl;
+        std::cerr << __FILE__ ":" << __LINE__ << "Failed to parse message chunk from " << filename << "(" << fd << ")" << std::endl;
       }
 
       // and retrun the processed chunk
@@ -140,29 +142,39 @@ namespace goby {
 
     // Java DataInput.readInt()
     static int readInt(google::protobuf::io::ZeroCopyInputStream *stream) {
-      int result;
+      int bytes_needed = 4;           // the number of bytes needed to read an int value
+      unsigned char ch[4];            // raw bytes (4) that represent the int value
+      unsigned char *cp = &ch[0];
 
-      unsigned char *ch = new unsigned char[4];  // TODO: probably no need to copy
-      const void *buffer;
-      int size;
+      const void *buffer;             // buffer from the input stream
+      int size;                       // size of the buffer returned from the input stream
 
-      if (stream->Next(&buffer, &size)) {
-        if (size >= 4) {
-          ::memcpy(ch, buffer, 4);
-          result = (ch[0] << 24) + (ch[1] << 16) + (ch[2] << 8) + (ch[3] << 0);
-          stream->BackUp(size - 4);
+      // need to loop in case the stream does not return the number of bytes needed in a single pass
+      while (bytes_needed > 0) {
+        if (stream->Next(&buffer, &size)) {
+          // the stream may return less than we need (including zero) and still have more data
+          if (size > 0) {
+            // only use what is needed (which may be less than what we got)
+            const int bytes_used = min(bytes_needed, size);
+
+            // copy the data from the buffer to the local copy 
+            ::memcpy(cp, buffer, bytes_used);
+
+            // reset the stream and local buffer pointers to just after the data read
+            stream->BackUp(size - bytes_used);
+            cp += bytes_used;
+
+            // and update the number of bytes still needed
+            bytes_needed -= bytes_used;
+          }
         } else {
-          // TODO: need to handle the case where "next" returns less than 4
-          std::cerr << "TODO" << std::endl;
-          result = 0;
+          // reached eof or there was an issue reading from the stream
+          std::cerr << __FILE__ ":" << __LINE__ << "ZeroCopyInputStream::Next() returned false" << std::endl;
+          return 0;
         }
-      } else {
-        // reached eof or there was an issue reading from the stream
-        result = 0;
-      }
+      };
 
-      delete ch;
-      return result;
+      return (ch[0] << 24) + (ch[1] << 16) + (ch[2] << 8) + (ch[3] << 0);
     };
 
   public:
@@ -245,7 +257,6 @@ namespace goby {
     // TODO: Prefix and Postfix operators currently do the same thing!
     // Prefix increment operator
     MessageChunksIterator& operator++() {
-      std::cout << "Prefix operator++() " << std::endl;
       advanceToNextChunk();
       return *this;
     };
@@ -276,15 +287,6 @@ namespace goby {
       populateChunk(current_chunk);
       return current_chunk;
     };
-
-    /*
-    MessageChunksIterator& operator=(const MessageChunksIterator<T>& that)  {
-      if (this != &that) {
-        // TODO
-      }
-      return *this;
-    };
-    */
   };
 
   template <typename T> class MessageChunksReader {
