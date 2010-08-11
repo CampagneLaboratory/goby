@@ -132,7 +132,7 @@ namespace goby {
 
       // populate the current object from the compressed data
       if (!chunk->ParseFromZeroCopyStream(&gzip_stream)) {
-        std::cerr << __FILE__ ":" << __LINE__ << "Failed to parse message chunk from " << filename << "(" << fd << ")" << std::endl;
+        std::cerr << __FILE__ ":" << __LINE__ << " Failed to parse message chunk from " << filename << "(" << fd << ")" << std::endl;
       }
 
       // and retrun the processed chunk
@@ -168,7 +168,7 @@ namespace goby {
           }
         } else {
           // reached eof or there was an issue reading from the stream
-          std::cerr << __FILE__ ":" << __LINE__ << "ZeroCopyInputStream::Next() returned false" << std::endl;
+          std::cerr << __FILE__ ":" << __LINE__ << " ZeroCopyInputStream::Next() returned false" << std::endl;
           return 0;
         }
       };
