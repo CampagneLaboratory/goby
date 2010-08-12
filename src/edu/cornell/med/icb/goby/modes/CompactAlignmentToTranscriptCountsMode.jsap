@@ -71,7 +71,7 @@
              <longFlag>use-weights</longFlag>
              <required>false</required>
              <stringParser>
-                <classname>BooleanStringParser</classname>
+                <classname>StringStringParser</classname>
              </stringParser>
              <defaults>
                 <string>false</string>
