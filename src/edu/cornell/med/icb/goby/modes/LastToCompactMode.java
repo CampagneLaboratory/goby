@@ -31,6 +31,8 @@ import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.iterators.TsvLineIterator;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
@@ -162,14 +164,13 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
 
             final AlignmentStats stats = new AlignmentStats();
             //      final int[] readLengths = createReadLengthArray();
-            int targetLengths[]=new int[targetIds.size()];
+            final IntList targetLengths = new IntArrayList(targetIds.size());
             // first pass: collect minimum score to keep each queryEntry
             // second pass: write to compact alignment file for those entries with score above threshold
             for (final boolean writeAlignment : new boolean[]{false, true}) {
                 assert new File(mafInputFile).exists() : "Missing MAF file: " + mafInputFile;
                 final LastParser parser = new LastParser(new FileReader(mafInputFile));
 
-                //
                 final ProgressLogger progress = new ProgressLogger(LOG);
                 progress.start();
                 numAligns = 0;
@@ -215,7 +216,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     currentEntry.setQueryIndex(queryIndex);
                     currentEntry.setScore(score);
                     currentEntry.setTargetAlignedLength(reference.alignedLength);
-                    targetLengths[targetIndex]=reference.sequenceLength;
+                    targetLengths.add(targetIndex, reference.sequenceLength);
                     currentEntry.setTargetIndex(targetIndex);
                     final int queryLength = query.sequenceLength;
                     currentEntry.setQueryLength(queryLength);
@@ -251,7 +252,6 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                                 // TMH writer adds the alignment entry only if hits > thresh
                             } else {
                                 notBestScore++;
-                        //        System.out.println("Excluding entry "+alignmentEntry);
                             }
                         }
                     } else {
@@ -262,7 +262,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                 }
                 parser.close();
                 if (writeAlignment) {
-                    writer.setTargetLengths(targetLengths);
+                    writer.setTargetLengths(targetLengths.toIntArray());
                     if (readIndexFilter != null) {
                         writer.putStatistic("keep-filter-filename", readIndexFilterFile.getName());
                     }

@@ -190,7 +190,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         final ReadSet readIndexFilter = transferIds.getReadIndexFilter();
         final AlignmentWriter writer = transferIds.getWriter();
         assert largestQueryIndex > -1 : "largestQueryIndex must be set";
-        // This is ugly...
+
         targetIds.clear();
         targetIds.putAll(transferIds.getTargetIds());
 
