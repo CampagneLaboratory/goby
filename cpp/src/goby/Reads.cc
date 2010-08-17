@@ -77,7 +77,7 @@ namespace goby {
         }
       }
     } else {
-        std::cerr << __FILE__ ":" << __LINE__ << " - Attempt to advance past end of fd " << fd << std::endl;
+        cerr << __FILE__ ":" << __LINE__ << " - Attempt to advance past end of fd " << fd << endl;
     }
     return *this;
   };
@@ -97,7 +97,7 @@ namespace goby {
         }
       }
     } else {
-        std::cerr << __FILE__ ":" << __LINE__ << " - Attempt to advance past end of fd " << fd << std::endl;
+        cerr << __FILE__ ":" << __LINE__ << " - Attempt to advance past end of fd " << fd << endl;
     }
     return *this;
   };
@@ -181,7 +181,7 @@ namespace goby {
 
   ReadsReader::ReadsReader(const string& filename) : Reads(filename),
     fd(::open(filename.c_str(), O_RDONLY | O_BINARY)),
-    read_entry_iterator_end(new ReadEntryIterator(fd, static_cast<std::streamoff>(0), ios_base::end)) {
+    read_entry_iterator_end(new ReadEntryIterator(fd, static_cast<streamoff>(0), ios_base::end)) {
     if (fd < 0) {
       cerr << "Error opening file: " << filename << endl;
     }
@@ -224,7 +224,7 @@ namespace goby {
 
   void ReadsWriter::appendEntry() {
     // set fields in the new read entry
-    goby::ReadEntry *entry = read_collection.add_reads();
+    ReadEntry *entry = read_collection.add_reads();
     entry->set_read_index(current_read_index++);
     if (sequence != NULL) {
       entry->set_sequence(sequence);

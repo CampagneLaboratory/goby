@@ -78,7 +78,7 @@ namespace goby {
         }
       }
     } else {
-        std::cerr << __FILE__ ":" << __LINE__ << " - Attempt to advance past end of fd " << fd << std::endl;
+        cerr << __FILE__ ":" << __LINE__ << " - Attempt to advance past end of fd " << fd << endl;
     }
     return *this;
   };
@@ -98,7 +98,7 @@ namespace goby {
         }
       }
     } else {
-        std::cerr << __FILE__ ":" << __LINE__ << " - Attempt to advance past end of fd " << fd << std::endl;
+        cerr << __FILE__ ":" << __LINE__ << " - Attempt to advance past end of fd " << fd << endl;
     }
     return *this;
   };
@@ -150,9 +150,7 @@ namespace goby {
     }
   };
 
-  Alignment::Alignment(const string& basename) {
-    this->basename = basename;
-    this->header = AlignmentHeader::default_instance();
+  Alignment::Alignment(const string& basename) : basename(basename), header(AlignmentHeader::default_instance()) {
   }
 
   Alignment::~Alignment(void) {
@@ -181,23 +179,6 @@ namespace goby {
     return filename;
   }
 
-  vector<unsigned> Alignment::getQueryLengths() const {
-    vector<unsigned> query_lengths(header.number_of_queries());
-    if (hasConstantQueryLength()) {
-      // The alignment has constant query lengths
-      query_lengths.assign(header.number_of_queries(), getConstantQuerylength());
-    } else {
-      query_lengths.assign(header.query_length().begin(), header.query_length().end());
-    }
-  
-    return query_lengths;
-  }
-
-  vector<unsigned> Alignment::getTargetLengths() const {
-    vector<unsigned> target_lengths(header.target_length().begin(), header.target_length().end());
-    return target_lengths;
-  }
-  
   AlignmentReader::AlignmentReader(const string& basename) : Alignment(basename), alignment_entry_iterator_end(NULL) {
     // open the "header" file
     const string header_filename = basename + ".header";
@@ -220,7 +201,7 @@ namespace goby {
     }
 
     // populate the target identifiers
-    google::protobuf::RepeatedPtrField<const goby::IdentifierInfo>::const_iterator target_mapping_iterator;
+    google::protobuf::RepeatedPtrField<const IdentifierInfo>::const_iterator target_mapping_iterator;
     for (target_mapping_iterator = header.target_name_mapping().mappings().begin(); target_mapping_iterator != header.target_name_mapping().mappings().end(); target_mapping_iterator++) {
       const string target_name = target_mapping_iterator->name();
       const unsigned target_index = target_mapping_iterator->index();
@@ -228,12 +209,23 @@ namespace goby {
     }
 
     // populate the query identifiers
-    google::protobuf::RepeatedPtrField<const goby::IdentifierInfo>::const_iterator query_mapping_iterator;
+    google::protobuf::RepeatedPtrField<const IdentifierInfo>::const_iterator query_mapping_iterator;
     for (query_mapping_iterator = header.query_name_mapping().mappings().begin(); query_mapping_iterator != header.query_name_mapping().mappings().end(); query_mapping_iterator++) {
       string query_name = query_mapping_iterator->name();
       const unsigned query_index = query_mapping_iterator->index();
       query_identifiers.insert(pair<string,unsigned>(query_name, query_index));
     }
+
+    // populate the query lengths
+    if (hasConstantQueryLength()) {
+      // The alignment has constant query lengths
+      query_lengths.assign(header.number_of_queries(), getConstantQuerylength());
+    } else {
+      query_lengths.assign(header.query_length().begin(), header.query_length().end());
+    }
+
+    // populate the target lengths
+    target_lengths.assign(header.target_length().begin(), header.target_length().end());
 
     // open the "entries" file
     const string entries_filename = basename + ".entries";
@@ -260,12 +252,31 @@ namespace goby {
   AlignmentWriter::AlignmentWriter(const string& basename) : Alignment(basename) {
   }
 
-  AlignmentWriter::AlignmentWriter(const Alignment& alignment) : Alignment(alignment) {
-    // TODO: testing only
-    this->basename = "foo";
+  AlignmentWriter::~AlignmentWriter(void) {
+  }
+  
+  void AlignmentWriter::setTargetLengths(const vector<unsigned>& target_lengths) {
+    this->target_lengths = target_lengths;
+
+    // update the header
+    header.clear_target_length();
+    for (vector<unsigned>::const_iterator it = this->target_lengths.begin(); it < this->target_lengths.end(); it++) {
+      header.add_target_length(*it);
+    }
   }
 
-  AlignmentWriter::~AlignmentWriter(void) {
+  void AlignmentWriter::setTargetLengths(const unsigned* target_lengths) {
+    int num_elements = sizeof(target_lengths) / sizeof(target_lengths[0]);
+    this->target_lengths.resize(num_elements);
+    if (num_elements > 0) {
+      copy(&target_lengths[0], &target_lengths[num_elements - 1], this->target_lengths.begin());
+    }
+
+    // update the header
+    header.clear_target_length();
+    for (vector<unsigned>::const_iterator it = this->target_lengths.begin(); it < this->target_lengths.end(); it++) {
+      header.add_target_length(*it);
+    }
   }
 
   void AlignmentWriter::write() {

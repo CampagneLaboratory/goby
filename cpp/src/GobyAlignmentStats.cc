@@ -73,7 +73,7 @@ int main(int argc, const char *const argv[]) {
 
   cout << "Number of target sequences = " << alignmentReader.getNumberOfTargets() << endl;
   
-  const vector<unsigned> targetLengths = alignmentReader.getTargetLengths();
+  const vector<unsigned>& targetLengths = alignmentReader.getTargetLengths();
   cout << "Number of target length entries = " << targetLengths.size() << endl;
   cout << "smallestSplitQueryIndex = " <<  alignmentReader.getSmallestSplitQueryIndex() << endl;
   cout << "largestSplitQueryIndex = " << alignmentReader.getLargestSplitQueryIndex() << endl;
@@ -91,7 +91,7 @@ int main(int argc, const char *const argv[]) {
 
   cout << "Number of query sequences = " << alignmentReader.getNumberOfQueries() << endl;
 
-  const vector<unsigned> queryLengths = alignmentReader.getQueryLengths();
+  const vector<unsigned>& queryLengths = alignmentReader.getQueryLengths();
   cout << "Number of query length entries = " << queryLengths.size() << endl;
   if (!queryLengths.empty()) {
     cout << "Min query length = "  << *min_element(queryLengths.begin(), queryLengths.end()) << endl;

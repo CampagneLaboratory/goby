@@ -117,26 +117,22 @@ namespace goby {
 
     // populate T with the data from the given chunk
     // The assumption here is that the stream is positioned at the start of a chunk boundary
-    T* populateChunk(T *chunk) {
-      // if the stream is not valid just return an empty chunk
+    void populateChunk(T *chunk) const {
+      // if the stream is not valid just clear out the chunk
       if (current_chunk_index == -1) {
         chunk->Clear();
-        return chunk;
+      } else {
+        // explicitly set the block size and limit it to the chunk length to prevent "over read"
+        google::protobuf::io::LimitingInputStream limiting_stream(input_stream, current_chunk_length);
+
+        // and handle the fact that each chunk is compressed with gzip
+        google::protobuf::io::GzipInputStream gzip_stream(&limiting_stream);
+
+        // populate the current object from the compressed data
+        if (!chunk->ParseFromZeroCopyStream(&gzip_stream)) {
+          std::cerr << __FILE__ ":" << __LINE__ << " ParseFromZeroCopyStream() returned false " << filename << "(" << fd << ")" << std::endl;
+        }
       }
-
-      // explicitly set the block size and limit it to the chunk length to prevent "over read"
-      google::protobuf::io::LimitingInputStream limiting_stream(input_stream, current_chunk_length);
-
-      // and handle the fact that each chunk is compressed with gzip
-      google::protobuf::io::GzipInputStream gzip_stream(&limiting_stream);
-
-      // populate the current object from the compressed data
-      if (!chunk->ParseFromZeroCopyStream(&gzip_stream)) {
-        std::cerr << __FILE__ ":" << __LINE__ << " Failed to parse message chunk from " << filename << "(" << fd << ")" << std::endl;
-      }
-
-      // and retrun the processed chunk
-      return chunk;
     };
 
     // Java DataInput.readInt()
@@ -277,12 +273,12 @@ namespace goby {
     };
 
     // return the parsed results for the current chunk
-    const T& operator*() {
+    const T& operator*() const {
       populateChunk(current_chunk);
       return *current_chunk;
     };
 
-    const T* const operator->() {
+    const T* const operator->() const {
       populateChunk(current_chunk);
       return current_chunk;
     };

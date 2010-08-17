@@ -78,6 +78,9 @@ namespace goby {
     // A map of target identifiers (name to index)
     LIBGOBY_HASH_MAP<std::string, unsigned> query_identifiers;
 
+    std::vector<unsigned> target_lengths;
+    std::vector<unsigned> query_lengths;   
+
   public:
     Alignment(const std::string& basename);
     virtual ~Alignment(void);
@@ -97,8 +100,8 @@ namespace goby {
     inline bool isSorted() const { return header.sorted(); };
     inline bool isIndexed() const { return header.indexed(); };
 
-    std::vector<unsigned> getTargetLengths() const;
-    std::vector<unsigned> getQueryLengths() const;   
+    inline const std::vector<unsigned>& getTargetLengths() const { return target_lengths; };
+    inline const std::vector<unsigned>& getQueryLengths() const { return query_lengths; };
     
     inline const LIBGOBY_HASH_MAP<std::string, unsigned>& getTargetIdentifiers() const { return target_identifiers; };
     inline const LIBGOBY_HASH_MAP<std::string, unsigned>& getQueryIdentifiers() const { return query_identifiers; };

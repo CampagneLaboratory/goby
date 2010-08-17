@@ -130,7 +130,7 @@ namespace goby {
     }
 
     // populate the query index to number of hits and depth maps
-    google::protobuf::RepeatedPtrField<const goby::AmbiguousLocation>::const_iterator hitsIterator;
+    google::protobuf::RepeatedPtrField<const AmbiguousLocation>::const_iterator hitsIterator;
     for (hitsIterator = pbTmh.hits().begin(); hitsIterator != pbTmh.hits().end(); hitsIterator++) {
       unsigned queryIndex = hitsIterator->query_index();
       queryIndex2NumHits[queryIndex] = hitsIterator->at_least_number_of_hits();
