@@ -1,4 +1,4 @@
-#                                               -*- Autoconf -*-
+slib#                                               -*- Autoconf -*-
 # Goby C++ libraries
 # Process this file with autoconf to produce a configure script.
 # In general, the safest way to proceed is to run ./autogen.sh
@@ -21,11 +21,11 @@ AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
-AC_PROG_RANLIB
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
 AC_HEADER_STDC
+AC_C_CONST
 AC_C_INLINE
 AC_TYPE_OFF_T
 AC_TYPE_SIZE_T
@@ -48,6 +48,7 @@ AC_CHECK_FUNCS([strerror])
 
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
+AC_FUNC_STAT
 
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 
