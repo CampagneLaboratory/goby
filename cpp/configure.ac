@@ -21,19 +21,35 @@ AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
+AC_PROG_RANLIB
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
 AC_HEADER_STDC
 AC_C_INLINE
+AC_TYPE_OFF_T
 AC_TYPE_SIZE_T
+
 AC_CHECK_HEADERS([tr1/unordered_map])
 AC_CHECK_HEADERS([tr1/unordered_set])
 AC_CHECK_HEADERS([ext/hash_map])
 AC_CHECK_HEADERS([ext/hash_set])
 
+AC_CHECK_HEADERS([fcntl.h])
+AC_CHECK_HEADERS([malloc.h])
+
 # Checks for library functions.
+AC_CHECK_FUNCS([getcwd])
 AC_CHECK_FUNCS([memset])
+AC_CHECK_FUNCS([putenv])
+AC_CHECK_FUNCS([realpath])
+AC_CHECK_FUNCS([setenv])
+AC_CHECK_FUNCS([strerror])
+
+AC_FUNC_MALLOC
+AC_FUNC_REALLOC
+
+AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 
 # check for the boost libraries
 AX_BOOST_BASE
