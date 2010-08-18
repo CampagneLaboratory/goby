@@ -20,9 +20,11 @@ package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import org.apache.commons.io.FileUtils;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,6 +45,7 @@ public class TestLastToCompact {
         processor.setAmbiguityThreshold(LAST_TO_COMPACT_M_PARAM);
         processor.setInputFile("test-results/alignments/last-to-compact/last-101.maf");
         processor.setOutputFile("test-results/alignments/last-to-compact/last-101.compact");
+        processor.setTargetReferenceIdsFilename("test-results/alignments/last-to-compact/last-reference.compact-reads");
         processor.setOnlyMafFile(true);
         processor.setNumberOfReads(2857819);
         processor.setLargestQueryIndex(2857819);
@@ -147,6 +150,7 @@ public class TestLastToCompact {
         processor.setAmbiguityThreshold(LAST_TO_COMPACT_M_PARAM);
         processor.setInputFile("test-results/alignments/last-to-compact/last-102.maf");
         processor.setOutputFile("test-results/alignments/last-to-compact/last-102.compact");
+        processor.setTargetReferenceIdsFilename("test-results/alignments/last-to-compact/last-reference.compact-reads");
         processor.setOnlyMafFile(true);
         processor.setNumberOfReads(3538282);
         processor.setLargestQueryIndex(3538282);
@@ -431,6 +435,11 @@ public class TestLastToCompact {
         writer3.write(getMafInput3Variations());
         writer3.close();
 
+        final ReadsWriter referenceWriter = new ReadsWriter(FileUtils.openOutputStream(
+                new File("test-results/alignments/last-to-compact/last-reference.compact-reads")));
+        referenceWriter.setIdentifier("0");
+        referenceWriter.appendEntry();
+        referenceWriter.close();
     }
 
     private String getMafInput1() {
@@ -624,6 +633,7 @@ public class TestLastToCompact {
         processor.setAmbiguityThreshold(LAST_TO_COMPACT_M_PARAM);
         processor.setInputFile("test-results/alignments/last-to-compact/last-103-variations.maf");
         processor.setOutputFile("test-results/alignments/last-to-compact/last-103-variations");
+        processor.setTargetReferenceIdsFilename("test-results/alignments/last-to-compact/last-reference.compact-reads");
         processor.setOnlyMafFile(true);
         processor.setNumberOfReads(2857822);
         processor.setLargestQueryIndex(2857822);
