@@ -52,6 +52,9 @@ public class FoldChangeForExonPairs {
         String pairsFilename = CLI.getOption(args, "--pairs", "pairs.tsv");
         String log2AverageId = CLI.getOption(args, "--group", "average log2_RPKM group UHR(BUQ)");
         String outputFilename = CLI.getOption(args, "--output", "/data/gc-weights/exons/out.tsv");
+        String averageCountId = CLI.getOption(args, "--threshold-id", "average count group Brain");
+        int thresholdValue = CLI.getIntOption(args, "--threshold-value", 20);
+
         //  String groupB= CLI.getOption(args,"-2","average RPKM group UHR(BUQ)");
         int log2AverageColumnIndex = -1;
         Object2DoubleMap<MutableString> exonExpressionData;
@@ -63,7 +66,7 @@ public class FoldChangeForExonPairs {
         for (String inputFilename : inputFilenames.split("[,]")) {
 
             System.out.println("Processing " + inputFilename);
-            exonExpressionData = loadData(inputFilename, log2AverageId, log2AverageColumnIndex);
+            exonExpressionData = loadData(inputFilename, log2AverageId, averageCountId, thresholdValue);
             System.out.println("Size: " + exonExpressionData.size());
             System.out.println("Writing data..");
             for (Pair pair : pairs) {
@@ -93,7 +96,10 @@ public class FoldChangeForExonPairs {
         return pairs;
     }
 
-    private Object2DoubleMap<MutableString> loadData(String inputFilename, String log2AverageId, int log2AverageColumnIndex) {
+    private Object2DoubleMap<MutableString> loadData(String inputFilename, String log2AverageId, String thresholdId,
+                                                     int thresholdValue) {
+        int log2AverageColumnIndex = -1;
+        int thresholdColumnIndex = -1;
         Object2DoubleMap<MutableString> exonExpressionData = null;
         try {
             // load log2 RPKM expression values from the data table:
@@ -108,10 +114,17 @@ public class FoldChangeForExonPairs {
                     if (log2AverageId.equals(columnId)) {
                         log2AverageColumnIndex = i;
                     }
+                    if (thresholdId.equals(columnId)) {
+                        thresholdColumnIndex = i;
+                    }
                 }
 
                 if (log2AverageColumnIndex == -1) {
                     System.err.printf("Could not find the group log2 average column. Aborting.", log2AverageId);
+                    System.exit(1);
+                }
+                if (thresholdColumnIndex == -1) {
+                    System.err.printf("Could not find the threshold column. Aborting.", thresholdId);
                     System.exit(1);
                 }
 
@@ -123,15 +136,24 @@ public class FoldChangeForExonPairs {
             while (reader.hasNext()) {
                 reader.next();
                 String elementId = reader.getString();
+                double log2Rpkm = 0;
+                double averageCount = 0;
+
                 for (int i = 1; i < numCols; i++) {
 
                     if (i == log2AverageColumnIndex) {
-                        double log2Rpkm = reader.getDouble();
-                        exonExpressionData.put(new MutableString(elementId), log2Rpkm);
+                        log2Rpkm = reader.getDouble();
+
+                    } else if (i == thresholdColumnIndex) {
+                        averageCount = reader.getDouble();
+
                     } else {
                         reader.getString();
                     }
 
+                }
+                if (averageCount >= thresholdValue) {
+                    exonExpressionData.put(new MutableString(elementId), log2Rpkm);
                 }
 
             }

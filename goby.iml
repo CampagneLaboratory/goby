@@ -246,17 +246,6 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/sam-1.16.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="file://$MODULE_DIR$/../../java/picard-src-1.16/src/java" />
-        </SOURCES>
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/commons-lang-2.5.jar!/" />
         </CLASSES>
         <JAVADOC />
@@ -276,6 +265,15 @@
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/goby-spi.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/sam-1.25.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
