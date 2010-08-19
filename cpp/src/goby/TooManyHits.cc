@@ -31,6 +31,9 @@
 #include <unistd.h>
 #endif
 
+#include <google/protobuf/io/gzip_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+
 #include "Alignments.pb.h"
 #include "TooManyHits.h"
 #include "hash.h"
@@ -123,10 +126,16 @@ namespace goby {
       pbTmh = AlignmentTooManyHits::default_instance();
       cerr << "Failed to open too many hits file: " << tmhFilename << endl;
     } else {
-      if (!pbTmh.ParseFromFileDescriptor(fd)) {
+      // uncompress file into memory so that it can be parsed
+      google::protobuf::io::FileInputStream tmh_file_stream(fd);
+      google::protobuf::io::GzipInputStream gzip_tmh_stream(&tmh_file_stream);
+
+      if (!pbTmh.ParseFromZeroCopyStream(&gzip_tmh_stream)) {
         cerr << "Failed to parse too many hits file: " << tmhFilename << endl;
       }
-      ::close(fd);
+
+      // close the streams and files
+      tmh_file_stream.Close();  // this call closes the file descriptor as well
     }
 
     // populate the query index to number of hits and depth maps

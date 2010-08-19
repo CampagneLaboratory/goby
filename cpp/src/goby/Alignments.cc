@@ -293,8 +293,9 @@ namespace goby {
       cerr << "Failed to write alignment header file: " << headerFilename << endl;
     }
 
+    // close the streams and files
     gzipHeaderStream.Close();
-    // TODO? ::close(fd);
+    headerFileStream.Close();    // this call closes the file descriptor as well
   }
 
 #ifdef _MSC_VER
