@@ -10,6 +10,7 @@ development
  - API interface for ReadsToWeightsMode
  - LastToCompactMode wasn't writing target lengths. Fixed.
  - Read TMH in Python using Gzip
+ - Fixed Python utilies so -o actually writes to a file
 1.7
  - Extended fasta-to-compact and compact-to-fasta to handle paired end runs. See new command
    line arguments --paired-end and pair-indicator arguments in fasta-to-compact and

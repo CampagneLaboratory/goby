@@ -55,7 +55,7 @@ def main():
             output = open(arg, "w")
 
     if format != "fasta" and format != "fastq":
-        print "Format", format, "is not supported"
+        print >> sys.stderr, "Format", format, "is not supported"
         usage()
         sys.exit(3)
 
@@ -79,12 +79,12 @@ def main():
             description = entry.description
         else:
             description = entry.read_index
-        print "%c%s" % (new_entry_character, description)
+        print >> output, "%c%s" % (new_entry_character, description)
         for line in textwrap.wrap(entry.sequence, 60):
-            print line
+            print >> output, line
 
         if format == "fastq":
-            print "+"
+            print >> output, "+"
             quality_string = ""
             if entry.HasField("qualityScores"):
                 for quality_score in entry.quality_scores:
@@ -95,7 +95,7 @@ def main():
                 quality_string = quality_string.ljust(len(entry.sequence), chr(fake_quality_score + 64))
 
             for line in textwrap.wrap(quality_string, 60):
-                print line
+                print >> output, line
                 
 if __name__ == "__main__":
     main()
