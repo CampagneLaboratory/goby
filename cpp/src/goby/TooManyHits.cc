@@ -183,10 +183,19 @@ namespace goby {
     const string tmhFilename = basename + ".tmh";
     cout << "Writing file: " << tmhFilename << endl;
     const int fd = ::open(tmhFilename.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0644);
-    if (!pbTmh.SerializeToFileDescriptor(fd)) {
+
+    // set up a gzip output stream to compress the data
+    google::protobuf::io::FileOutputStream tmhFileStream(fd);
+    google::protobuf::io::GzipOutputStream gzipTmhStream(&tmhFileStream);
+
+    if (!pbTmh.SerializeToZeroCopyStream(&gzipTmhStream)) {
       cerr << "Failed to write too many hits file: " << tmhFilename << endl;
     }
-    ::close(fd);
+
+    // close the streams and files
+    gzipTmhStream.Close();
+    tmhFileStream.Close();    // this call closes the file descriptor as well
+
     written = true;
   }
 }
