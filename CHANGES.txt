@@ -8,7 +8,8 @@ development
    reverse strand got a read-index larger than one from the correct value.
  - By default, don't use "counts" in DiffExp as it is a specialized output for preparing for DESeq
  - API interface for ReadsToWeightsMode
- - LastToCompactMode wasn't writing target lengths. Fixed. 
+ - LastToCompactMode wasn't writing target lengths. Fixed.
+ - Read TMH in Python using Gzip
 1.7
  - Extended fasta-to-compact and compact-to-fasta to handle paired end runs. See new command
    line arguments --paired-end and pair-indicator arguments in fasta-to-compact and

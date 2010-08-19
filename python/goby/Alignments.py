@@ -155,7 +155,7 @@ class TooManyHitsReader(object):
             print "Reading too many hits info from", tmh_filename
 
         try:
-            f = open(tmh_filename, "rb")
+            f = gzip.open(tmh_filename, "rb")
             self.tmh.ParseFromString(f.read())
             f.close()
             for hit in self.tmh.hits:
