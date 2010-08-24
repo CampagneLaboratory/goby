@@ -1,21 +1,22 @@
-/**
- * Copyright (C) 2010 Institute for Computational Biomedicine,
- *                    Weill Medical College of Cornell University
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+//
+// Copyright (C) 2010 Institute for Computational Biomedicine,
+//                    Weill Medical College of Cornell University
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 
+#include <exception>
 #include <fcntl.h>
 #include <fstream>
 #include <iostream>
@@ -31,6 +32,7 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
 #include "common.h"
+#include "propertyutil.h"
 #include "Alignments.h"
 
 #ifdef _MSC_VER
@@ -150,7 +152,7 @@ namespace goby {
     }
   };
 
-  Alignment::Alignment(const string& basename) : basename(basename), header(AlignmentHeader::default_instance()) {
+  Alignment::Alignment(const string& basename) : basename(basename), header(AlignmentHeader::default_instance()), stats(PropertyUtil::PropertyMapT()) {
   }
 
   Alignment::~Alignment(void) {
@@ -231,7 +233,16 @@ namespace goby {
     const string entries_filename = basename + ".entries";
     entries_fd = ::open(entries_filename.c_str(), O_RDONLY | O_BINARY);
     if (entries_fd < 0) {
-      cerr << "Error opening file: " << entries_filename << endl;
+      cerr << "Error opening entries file: " << entries_filename << endl;
+    }
+
+    // open the "stats" file
+    const string stats_filename = basename + ".stats";
+    try {
+      PropertyUtil::read(stats_filename.c_str(), stats);
+    } catch (exception& e) {
+      cerr << "Error opening stats file: " << stats_filename << endl;
+      cerr << e.what() << endl;
     }
 
     alignment_entry_iterator_end = new AlignmentEntryIterator(entries_fd, static_cast<streamoff>(0), ios_base::end);
@@ -296,6 +307,18 @@ namespace goby {
     // close the streams and files
     gzipHeaderStream.Close();
     headerFileStream.Close();    // this call closes the file descriptor as well
+
+    const string statsFilename = basename + ".stats";
+    cout << "Writing file: " << statsFilename << endl;
+
+    // write the "stats" file
+    stats["basename"] = basename;  // TODO: just the name
+    stats["basename.full"] = basename;
+    //stats["min.query.index"] = t_to_string(minQueryIndex);
+    //stats["max.query.index"] = t_to_string(maxQueryIndex);
+    stats["number.of.queries"] = t_to_string(getNumberOfQueries());
+    stats["number.aligned.reads"], t_to_string(getNumberOfAlignedReads());
+    PropertyUtil::write(statsFilename.c_str(), stats, "Statistics for merged alignment.");
   }
 
 #ifdef _MSC_VER

@@ -12,6 +12,7 @@ libgoby_la_SOURCES = \
 	goby/Alignments.pb.cc \
 	goby/Alignments.pb.h \
 	goby/MessageChunks.h \
+	goby/propertyutil.cc \
 	goby/Reads.cc \
 	goby/Reads.h \
 	goby/Reads.pb.cc \
@@ -25,6 +26,7 @@ nobase_include_HEADERS = \
 	goby/common.h \
 	goby/hash.h \
 	goby/MessageChunks.h \
+	goby/propertyutil.h \
 	goby/Reads.h \
 	goby/Reads.pb.h \
 	goby/TooManyHits.h

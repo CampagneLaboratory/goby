@@ -1,20 +1,20 @@
-/**
- * Copyright (C) 2010 Institute for Computational Biomedicine,
- *                    Weill Medical College of Cornell University
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+//
+// Copyright (C) 2010 Institute for Computational Biomedicine,
+//                    Weill Medical College of Cornell University
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 
 #pragma once
 
@@ -28,6 +28,7 @@
 #include <string>
 #include "common.h"
 #include "hash.h"
+#include "propertyutil.h"
 #include "Alignments.pb.h"
 #include "MessageChunks.h"
 
@@ -81,6 +82,8 @@ namespace goby {
     std::vector<unsigned> target_lengths;
     std::vector<unsigned> query_lengths;   
 
+    PropertyUtil::PropertyMapT stats;
+
   public:
     Alignment(const std::string& basename);
     virtual ~Alignment(void);
@@ -105,6 +108,8 @@ namespace goby {
     
     inline const LIBGOBY_HASH_MAP<std::string, unsigned>& getTargetIdentifiers() const { return target_identifiers; };
     inline const LIBGOBY_HASH_MAP<std::string, unsigned>& getQueryIdentifiers() const { return query_identifiers; };
+
+    inline const PropertyUtil::PropertyMapT& getStats() const { return stats; };
   };
 
   class LIBGOBY_EXPORT AlignmentReader : public Alignment {

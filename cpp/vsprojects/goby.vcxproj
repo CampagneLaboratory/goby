@@ -88,6 +88,7 @@
     <ClInclude Include="..\src\goby\common.h" />
     <ClInclude Include="..\src\goby\hash.h" />
     <ClInclude Include="..\src\goby\MessageChunks.h" />
+    <ClInclude Include="..\src\goby\propertyutil.h" />
     <ClInclude Include="..\src\goby\Reads.h" />
     <ClInclude Include="..\src\goby\Reads.pb.h" />
     <ClInclude Include="..\src\goby\TooManyHits.h" />
@@ -95,6 +96,7 @@
   <ItemGroup>
     <ClCompile Include="..\src\goby\Alignments.cc" />
     <ClCompile Include="..\src\goby\Alignments.pb.cc" />
+    <ClCompile Include="..\src\goby\propertyutil.cc" />
     <ClCompile Include="..\src\goby\Reads.cc" />
     <ClCompile Include="..\src\goby\Reads.pb.cc" />
     <ClCompile Include="..\src\goby\TooManyHits.cc" />
