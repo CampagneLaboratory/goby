@@ -163,6 +163,10 @@ int main(int argc, const char *const argv[]) {
 
   cout << "Average bytes per entry = " << filesize / static_cast<double>(numLogicalAlignmentEntries) << endl;
 
+  // TODO
+  goby::AlignmentWriter w = goby::AlignmentWriter("foow");
+  w.write();
+
   // Delete all global objects allocated by libprotobuf.
   google::protobuf::ShutdownProtobufLibrary();
 

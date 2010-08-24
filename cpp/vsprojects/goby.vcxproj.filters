@@ -39,9 +39,6 @@
     <ClInclude Include="..\src\goby\hash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\goby\propertyutil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\goby\TooManyHits.cc">
@@ -59,7 +56,7 @@
     <ClCompile Include="..\src\goby\Reads.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\goby\propertyutil.cc">
+    <ClCompile Include="..\src\goby\common.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

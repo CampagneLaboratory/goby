@@ -54,6 +54,8 @@ AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 
 # check for the boost libraries
 AX_BOOST_BASE
+AX_BOOST_DATE_TIME
+AX_BOOST_FILESYSTEM
 AX_BOOST_PROGRAM_OPTIONS
 
 # use pkg-config to make sure that protobuf is available

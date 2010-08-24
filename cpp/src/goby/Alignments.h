@@ -28,7 +28,6 @@
 #include <string>
 #include "common.h"
 #include "hash.h"
-#include "propertyutil.h"
 #include "Alignments.pb.h"
 #include "MessageChunks.h"
 
@@ -82,7 +81,7 @@ namespace goby {
     std::vector<unsigned> target_lengths;
     std::vector<unsigned> query_lengths;   
 
-    PropertyUtil::PropertyMapT stats;
+    LIBGOBY_HASH_MAP<std::string, std::string> stats;
 
   public:
     Alignment(const std::string& basename);
@@ -109,7 +108,7 @@ namespace goby {
     inline const LIBGOBY_HASH_MAP<std::string, unsigned>& getTargetIdentifiers() const { return target_identifiers; };
     inline const LIBGOBY_HASH_MAP<std::string, unsigned>& getQueryIdentifiers() const { return query_identifiers; };
 
-    inline const PropertyUtil::PropertyMapT& getStats() const { return stats; };
+    inline const LIBGOBY_HASH_MAP<std::string, std::string> getStats() const { return stats; };
   };
 
   class LIBGOBY_EXPORT AlignmentReader : public Alignment {

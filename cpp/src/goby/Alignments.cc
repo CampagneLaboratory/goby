@@ -31,8 +31,11 @@
 #include <google/protobuf/io/gzip_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/filesystem.hpp>
+
 #include "common.h"
-#include "propertyutil.h"
+#include "hash.h"
 #include "Alignments.h"
 
 #ifdef _MSC_VER
@@ -152,7 +155,7 @@ namespace goby {
     }
   };
 
-  Alignment::Alignment(const string& basename) : basename(basename), header(AlignmentHeader::default_instance()), stats(PropertyUtil::PropertyMapT()) {
+  Alignment::Alignment(const string& basename) : basename(basename), header(AlignmentHeader::default_instance()), stats(LIBGOBY_HASH_MAP<string, string>()) {
   }
 
   Alignment::~Alignment(void) {
@@ -236,14 +239,9 @@ namespace goby {
       cerr << "Error opening entries file: " << entries_filename << endl;
     }
 
-    // open the "stats" file
+    // load the "stats" file
     const string stats_filename = basename + ".stats";
-    try {
-      PropertyUtil::read(stats_filename.c_str(), stats);
-    } catch (exception& e) {
-      cerr << "Error opening stats file: " << stats_filename << endl;
-      cerr << e.what() << endl;
-    }
+    load_properties(stats_filename, stats);
 
     alignment_entry_iterator_end = new AlignmentEntryIterator(entries_fd, static_cast<streamoff>(0), ios_base::end);
   }
@@ -293,7 +291,6 @@ namespace goby {
   void AlignmentWriter::write() {
     // Write to the "header" file
     const string headerFilename = basename + ".header";
-    cout << "Writing file: " << headerFilename << endl;
     int fd = ::open(headerFilename.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0644);
 
     // set up a gzip output stream to compress the header
@@ -308,17 +305,25 @@ namespace goby {
     gzipHeaderStream.Close();
     headerFileStream.Close();    // this call closes the file descriptor as well
 
-    const string statsFilename = basename + ".stats";
-    cout << "Writing file: " << statsFilename << endl;
-
     // write the "stats" file
     stats["basename"] = basename;  // TODO: just the name
-    stats["basename.full"] = basename;
-    //stats["min.query.index"] = t_to_string(minQueryIndex);
-    //stats["max.query.index"] = t_to_string(maxQueryIndex);
+    stats["basename.full"] = boost::filesystem::complete(boost::filesystem::path(basename)).string();
+    stats["min.query.index"] = t_to_string(getSmallestSplitQueryIndex());
+    stats["max.query.index"] = t_to_string(getLargestSplitQueryIndex());
     stats["number.of.queries"] = t_to_string(getNumberOfQueries());
-    stats["number.aligned.reads"], t_to_string(getNumberOfAlignedReads());
-    PropertyUtil::write(statsFilename.c_str(), stats, "Statistics for merged alignment.");
+    stats["number.aligned.reads"] = t_to_string(getNumberOfAlignedReads());
+
+    const string stats_filename = basename + ".stats";
+    ofstream stats_file(stats_filename.c_str(), ios::out | ios::trunc);
+
+    stats_file << "# Statistics for merged alignment." << endl;
+    boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
+    stats_file << "# " << boost::posix_time::to_simple_string(now).c_str() << endl;
+
+    for (LIBGOBY_HASH_MAP<string, string>::const_iterator it = stats.begin(); it != stats.end(); it++) {
+      stats_file << (*it).first << "=" << (*it).second << endl;
+    }
+    stats_file.close();
   }
 
 #ifdef _MSC_VER

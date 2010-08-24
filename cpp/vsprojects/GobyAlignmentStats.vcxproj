@@ -56,7 +56,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libprotobuf.lib;zlibwapi.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\protobuf-2.3.0\vsprojects\Debug;C:\zlib-1.2.5\dll32</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\protobuf-2.3.0\vsprojects\Debug;C:\zlib-1.2.5\dll32;C:\boost_1_43_0\stage\lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
