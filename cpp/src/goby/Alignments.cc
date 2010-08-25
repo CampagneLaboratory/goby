@@ -31,8 +31,17 @@
 #include <google/protobuf/io/gzip_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#ifdef HAVE_BOOST_DATE_TIME
 #include <boost/date_time/posix_time/posix_time.hpp>
+#endif
+
+#ifdef HAVE_BOOST_FILESYSTEM
 #include <boost/filesystem.hpp>
+#endif
 
 #include "common.h"
 #include "hash.h"
@@ -306,8 +315,10 @@ namespace goby {
     headerFileStream.Close();    // this call closes the file descriptor as well
 
     // write the "stats" file
-    stats["basename"] = basename;  // TODO: just the name
+    stats["basename"] = basename;
+#ifdef HAVE_BOOST_FILESYSTEM
     stats["basename.full"] = boost::filesystem::complete(boost::filesystem::path(basename)).string();
+#endif
     stats["min.query.index"] = t_to_string(getSmallestSplitQueryIndex());
     stats["max.query.index"] = t_to_string(getLargestSplitQueryIndex());
     stats["number.of.queries"] = t_to_string(getNumberOfQueries());
@@ -317,8 +328,11 @@ namespace goby {
     ofstream stats_file(stats_filename.c_str(), ios::out | ios::trunc);
 
     stats_file << "# Statistics for merged alignment." << endl;
+
+#ifdef HAVE_BOOST_DATE_TIME
     boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
     stats_file << "# " << boost::posix_time::to_simple_string(now).c_str() << endl;
+#endif
 
     for (LIBGOBY_HASH_MAP<string, string>::const_iterator it = stats.begin(); it != stats.end(); it++) {
       stats_file << (*it).first << "=" << (*it).second << endl;

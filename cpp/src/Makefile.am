@@ -4,7 +4,7 @@ lib_LTLIBRARIES = libgoby.la
 
 AM_CXXFLAGS = @PROTOBUF_CFLAGS@ ${BOOST_CPPFLAGS}
 
-libgoby_la_LIBADD = @PROTOBUF_LIBS@ ${BOOST_LDFLAGS}
+libgoby_la_LIBADD = @PROTOBUF_LIBS@
 libgoby_la_LDFLAGS = -version-info @version_info@ -export-dynamic # -no-undefined
 libgoby_la_SOURCES = \
 	goby/Alignments.cc \
@@ -32,11 +32,11 @@ nobase_include_HEADERS = \
 
 bin_PROGRAMS = GobyAlignmentStats GobyAlignmentToText GobyReadsStats GobyFastaToCompact
 
-GobyAlignmentStats_LDADD = libgoby.la
+GobyAlignmentStats_LDADD = libgoby.la ${BOOST_LDFLAGS} ${BOOST_SYSTEM_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_FILESYSTEM_LIB}
 GobyAlignmentStats_SOURCES = \
 	GobyAlignmentStats.cc
 
-GobyAlignmentToText_LDADD = libgoby.la
+GobyAlignmentToText_LDADD = libgoby.la ${BOOST_LDFLAGS} ${BOOST_SYSTEM_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_FILESYSTEM_LIB}
 GobyAlignmentToText_SOURCES = \
 	GobyAlignmentToText.cc
 
