@@ -108,7 +108,7 @@ namespace goby {
     inline const LIBGOBY_HASH_MAP<std::string, unsigned>& getTargetIdentifiers() const { return target_identifiers; };
     inline const LIBGOBY_HASH_MAP<std::string, unsigned>& getQueryIdentifiers() const { return query_identifiers; };
 
-    inline const LIBGOBY_HASH_MAP<std::string, std::string> getStats() const { return stats; };
+    inline const LIBGOBY_HASH_MAP<std::string, std::string> getStatistics() const { return stats; };
   };
 
   class LIBGOBY_EXPORT AlignmentReader : public Alignment {
@@ -146,8 +146,17 @@ namespace goby {
     void setTargetLengths(const std::vector<unsigned>& target_lengths);
     void setTargetLengths(const unsigned* target_lengths);
     // NOTE: Query Length setters are not provided - this information is no longer in the header
-    
+
     // TODO: Target and Query Identifiers
+
+    // add the description/value to the overall alignment stats
+    inline void addStatistic(const std::string& description, const std::string& value) { stats[description] = value; };
+    inline void addStatistic(const std::string& description, const int value) { stats[description] = t_to_string(value); };
+    inline void addStatistic(const std::string& description, const double value) { stats[description] = t_to_string(value); };
+
+    // add/replace statistics for the alignment
+    inline void addStatistics(LIBGOBY_HASH_MAP<std::string, std::string>& statistics) { stats.insert(statistics.begin(), statistics.end()); };
+
     void write();
   };
 }
