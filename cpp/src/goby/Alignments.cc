@@ -40,7 +40,7 @@
 #endif
 
 #ifdef HAVE_BOOST_FILESYSTEM
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/operations.hpp>
 #endif
 
 #include "common.h"

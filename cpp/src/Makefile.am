@@ -40,11 +40,11 @@ GobyAlignmentToText_LDADD = libgoby.la ${BOOST_LDFLAGS} ${BOOST_SYSTEM_LIB} ${BO
 GobyAlignmentToText_SOURCES = \
 	GobyAlignmentToText.cc
 
-GobyReadsStats_LDADD = libgoby.la
+GobyReadsStats_LDADD = libgoby.la ${BOOST_LDFLAGS} ${BOOST_SYSTEM_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_FILESYSTEM_LIB}
 GobyReadsStats_SOURCES = \
 	GobyReadsStats.cc
 
-GobyFastaToCompact_LDADD = libgoby.la ${BOOST_PROGRAM_OPTIONS_LIB}
+GobyFastaToCompact_LDADD = libgoby.la ${BOOST_LDFLAGS} ${BOOST_SYSTEM_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_FILESYSTEM_LIB} ${BOOST_PROGRAM_OPTIONS_LIB}
 GobyFastaToCompact_SOURCES = \
 	GobyFastaToCompact.cc
 
