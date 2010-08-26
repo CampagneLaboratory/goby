@@ -128,8 +128,14 @@ namespace goby {
   };
 
   class LIBGOBY_EXPORT AlignmentWriter : public Alignment {
+    // the underlying message chunk writer
+    MessageChunksWriter<AlignmentCollection> *entries_chunks_writer;
+
+    // current chunk of alignment entries
+    AlignmentCollection alignment_collection;
+
   public:
-    AlignmentWriter(const std::string& basename);
+    AlignmentWriter(const std::string& basename, unsigned number_of_entries_per_chunk = GOBY_DEFAULT_NUMBER_OF_ENTRIES_PER_CHUNK);
     AlignmentWriter(const Alignment& alignment);
     ~AlignmentWriter(void);
 
@@ -157,7 +163,9 @@ namespace goby {
     // add/replace statistics for the alignment
     inline void addStatistics(LIBGOBY_HASH_MAP<std::string, std::string>& statistics) { stats.insert(statistics.begin(), statistics.end()); };
 
-    void write();
+    // get an empty alignment entry to populate
+    AlignmentEntry* appendEntry();
+    void close();
   };
 }
 

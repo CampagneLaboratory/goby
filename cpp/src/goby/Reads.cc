@@ -212,11 +212,6 @@ namespace goby {
     quality_scores(NULL) {
   }
 
-  ReadsWriter::ReadsWriter(const Reads& reads) : Reads(reads) {
-    // TODO: testing only
-    this->filename = "foo.compact-reads";
-  }
-
   ReadsWriter::~ReadsWriter(void) {
     read_collection.Clear();
     delete message_chunks_writer;

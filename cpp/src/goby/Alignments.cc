@@ -164,7 +164,8 @@ namespace goby {
     }
   };
 
-  Alignment::Alignment(const string& basename) : basename(basename), header(AlignmentHeader::default_instance()), stats(LIBGOBY_HASH_MAP<string, string>()) {
+  Alignment::Alignment(const string& basename) : basename(basename),
+    header(AlignmentHeader::default_instance()), stats(LIBGOBY_HASH_MAP<string, string>()) {
   }
 
   Alignment::~Alignment(void) {
@@ -267,10 +268,15 @@ namespace goby {
     return *alignment_entry_iterator_end;
   };
 
-  AlignmentWriter::AlignmentWriter(const string& basename) : Alignment(basename) {
+  AlignmentWriter::AlignmentWriter(const string& basename, unsigned number_of_entries_per_chunk) : Alignment(basename),
+    entries_chunks_writer(new MessageChunksWriter<AlignmentCollection>(getBasename(basename) + ".entries", number_of_entries_per_chunk)),
+    alignment_collection(AlignmentCollection::default_instance()) {
   }
 
   AlignmentWriter::~AlignmentWriter(void) {
+    alignment_collection.Clear();
+    delete entries_chunks_writer;
+
   }
   
   void AlignmentWriter::setTargetLengths(const vector<unsigned>& target_lengths) {
@@ -297,7 +303,13 @@ namespace goby {
     }
   }
 
-  void AlignmentWriter::write() {
+  AlignmentEntry* AlignmentWriter::appendEntry() {
+    // unlike the reads writer, write any the previous chunks and then return a new entry for the user to populate
+    entries_chunks_writer->writeAsNeeded(&alignment_collection);
+    return alignment_collection.add_alignment_entries();
+  }
+
+  void AlignmentWriter::close() {
     // Write to the "header" file
     const string headerFilename = basename + ".header";
     int fd = ::open(headerFilename.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0644);
@@ -315,9 +327,11 @@ namespace goby {
     headerFileStream.Close();    // this call closes the file descriptor as well
 
     // write the "stats" file
-    stats["basename"] = basename;
+    stats["basename"] = getBasename(basename);
 #ifdef HAVE_BOOST_FILESYSTEM
     stats["basename.full"] = boost::filesystem::complete(boost::filesystem::path(basename)).string();
+#else
+    stats["basename.full"] = basename;
 #endif
     stats["min.query.index"] = t_to_string(getSmallestSplitQueryIndex());
     stats["max.query.index"] = t_to_string(getLargestSplitQueryIndex());
@@ -338,6 +352,9 @@ namespace goby {
       stats_file << (*it).first << "=" << (*it).second << endl;
     }
     stats_file.close();
+
+    // write any remaining alignment entries
+    entries_chunks_writer->close(&alignment_collection);
   }
 
 #ifdef _MSC_VER
