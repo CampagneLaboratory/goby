@@ -25,7 +25,9 @@
 #include <vector>
 #include <zlib.h>
 
+#ifdef HAVE_BOOST_PROGRAM_OPTIONS
 #include <boost/program_options.hpp>
+#endif
 
 #include "goby/Reads.pb.h"
 #include "goby/Reads.h"
@@ -66,6 +68,7 @@ int main(int argc, char **argv) {
   // compatible with the version of the headers we compiled against.
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
+#ifdef HAVE_BOOST_PROGRAM_OPTIONS
   // Declare the supported options.
   boost::program_options::options_description desc("Converts FASTA/FASTQ files to the Goby \"compact-reads\" file format");
   desc.add_options()
@@ -110,18 +113,41 @@ int main(int argc, char **argv) {
 
   // iterate over the input filenames
   const vector<string> input_filenames = vm["input"].as< vector<string> >();
+#else
+  // not using boost program options so get filename from command line and default everything else
+  if (argc != 2) {
+    cerr << "usage: " << argv[0] << " <filename>" << endl;
+    return -1;
+  }
+
+  // use default option values
+  const bool include_descriptions = false;
+  const bool include_identifiers = false;
+  const bool exclude_sequences = false;
+  const bool exclude_quality = false;
+  const bool verbose_quality_scores = false;
+  const unsigned sequence_per_chunk = GOBY_DEFAULT_NUMBER_OF_ENTRIES_PER_CHUNK;
+
+  // iterate over the input filenames
+  const vector<string> input_filenames(1, argv[1]);
+#endif // HAVE_BOOST_PROGRAM_OPTIONS
+
   for (vector<string>::const_iterator it = input_filenames.begin() ; it != input_filenames.end(); it++) {
     const string input_filename = *it;
 
     string output_filename;
+#ifdef HAVE_BOOST_PROGRAM_OPTIONS
     // if there is only one file to process and the user specified an output file
     if (input_filenames.size() == 1 && vm.count("output")) {
       // use the output file name
       output_filename = vm["output"].as<string>();
     } else {
       // create the output file name based on the input file name
+#endif // HAVE_BOOST_PROGRAM_OPTIONS
       output_filename = stripExtension(input_filename) + ".compact-reads";
+#ifdef HAVE_BOOST_PROGRAM_OPTIONS
     }
+#endif // HAVE_BOOST_PROGRAM_OPTIONS
 
     cout << "Creating file " << output_filename << endl;
 

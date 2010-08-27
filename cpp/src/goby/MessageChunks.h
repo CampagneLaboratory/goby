@@ -147,7 +147,7 @@ namespace goby {
       // need to loop in case the stream does not return the number of bytes needed in a single pass
       while (bytes_needed > 0) {
         if (stream->Next(&buffer, &size)) {
-          // the stream may return less than we need (including zero) and still have more data
+          // the stream may return a size less than we need (including zero) and still have more data
           if (size > 0) {
             // only use what is needed (which may be less than what we got)
             const int bytes_used = std::min<int>(bytes_needed, size);

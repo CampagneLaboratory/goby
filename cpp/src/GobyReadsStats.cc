@@ -132,8 +132,8 @@ int main(int argc, const char *const argv[]) {
         numberOfQualityScorePairs++;
       }
 
-      minReadLength = min(minReadLength, readLength);
-      maxReadLength = max(maxReadLength, readLength);
+      minReadLength = std::min<unsigned>(minReadLength, readLength);
+      maxReadLength = std::max<unsigned>(maxReadLength, readLength);
     }
   }
 
