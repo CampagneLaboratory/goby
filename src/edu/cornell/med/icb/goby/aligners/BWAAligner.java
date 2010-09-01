@@ -167,6 +167,7 @@ public class BWAAligner extends AbstractAligner {
         alignerOptions += (CLI.isKeywordGiven(opts, "i")) ? " -i " + CLI.getIntOption(opts, "i", -999) : "";
         alignerOptions += (CLI.isKeywordGiven(opts, "k")) ? " -k " + CLI.getIntOption(opts, "k", -999) : "";
         //alignerOptions += (CLI.isKeywordGiven(opts, "l")) ? " -l " + CLI.getIntOption(opts, "l", -999) : ""; // seedLength
+    
         alignerOptions += (CLI.isKeywordGiven(opts, "t")) ? " -t " + CLI.getIntOption(opts, "t", -999) : "";
         alignerOptions += (CLI.isKeywordGiven(opts, "M")) ? " -M " + CLI.getIntOption(opts, "M", -999) : "";
         alignerOptions += (CLI.isKeywordGiven(opts, "O")) ? " -O " + CLI.getIntOption(opts, "O", -999) : "";
