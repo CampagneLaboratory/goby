@@ -314,7 +314,7 @@ public final class FisherExact {
      * Performs Fisher's exact test for testing the null of independence of rows and columns
      * in a contingency table with fixed marginals.
      * <p/>
-     * The paramters to this method create a matrix of the following form.
+     * The parameters to this method create a matrix of the following form.
      * <pre>
      *        C1    C2
      *  R1  r1c1  r1c2

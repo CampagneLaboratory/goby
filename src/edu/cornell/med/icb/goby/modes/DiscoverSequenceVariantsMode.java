@@ -40,11 +40,10 @@ import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.lang.MutableString;
 import org.rosuda.JRI.Rengine;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.logging.Log;
 import org.apache.log4j.Logger;
 
 /**
- * This mode discovers sequence variations within groups of samples or between groups of samples.
+ * This mode discovers sequence variants within groups of samples or between groups of samples.
  * Within mode discovery is useful to identify sequence variations that cannot be explained by
  * sequencing error in a given sample. Between mode discovery identify those variants that are found
  * more often in one group versus another.
@@ -53,20 +52,21 @@ import org.apache.log4j.Logger;
  *         Date: Aug 30, 2010
  *         Time: 12:04:59 PM
  */
-public class CompareSequenceVariationsMode extends AbstractGobyMode {
+public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     /**
      * The mode name.
      */
-    private static final String MODE_NAME = "compare-sequence-variations";
+    private static final String MODE_NAME = "discover-sequence-variants";
     /**
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION =
-            "Compare sequence variations across groups of samples. Identify variations significantly enriched" +
-                    "in one group or the other. The mode will also discover variations within groups when " +
-                    "--eval within-group option is active.";
+            "Discover sequence variants within and across groups of samples. Identify variations significantly enriched" +
+                    "in one group or the other. This mode will either (i) identify sequence variants within a group of sample\n" +
+                    "  or (ii) identify variants whose frequency is significantly enriched in one of two groups. \n" +
+                    "  This mode requires sorted/indexed alignments as input. (Since Goby 1.8) ";
 
-    private static final Logger LOG = Logger.getLogger(CompareSequenceVariationsMode.class);
+    private static final Logger LOG = Logger.getLogger(DiscoverSequenceVariantsMode.class);
     private String[] inputFilenames;
     private String outputFile;
     private int[] readerIndexToGroupIndex;
@@ -146,13 +146,22 @@ public class CompareSequenceVariationsMode extends AbstractGobyMode {
         File statFile = jsapResult.getFile("variation-stats");
         if (statFile != null) {
             loadStatFile(statFile);
+        } else {
+            if (deAnalyzer.eval("within-groups")) {
+                System.err.println("To evaluate statistics within-groups you must provide a --variation-stats argument.");
+                System.exit(1);
+            }
+
         }
 
         refCount = new int[numberOfGroups];
         variantsCount = new int[numberOfGroups];
         distinctReadIndexCount = new int[numberOfGroups];
-        final Rengine rEngine = GobyRengine.getInstance().getRengine();
-        fisherRInstalled = rEngine != null && rEngine.isAlive();
+        if (deAnalyzer.eval("within-groups") || deAnalyzer.eval("between-groups")) {
+            //activate R only if we need it:
+            final Rengine rEngine = GobyRengine.getInstance().getRengine();
+            fisherRInstalled = rEngine != null && rEngine.isAlive();
+        }
 
         return this;
     }
@@ -292,12 +301,23 @@ public class CompareSequenceVariationsMode extends AbstractGobyMode {
 
         DoubleIndexedIdentifier targetIds = new DoubleIndexedIdentifier(sortedReaders.getTargetIdentifiers());
         //sortedReaders.skipTo(0,209849405);
-        outWriter.printf("referenceId\tposition\tOdds-ratio[%s/%s]\tFisher-Exact-P-value[%s/%s]", groups[0], groups[1], groups[0], groups[1]);
-        for (String group : groups) {
-            outWriter.printf("\trefCount[%s]\tvarCount[%s]\tdistinct-read-index-count[%s]\taverage-variant-quality-scores[%s]" +
-                    "\twithin-group-p-value[%s]",
-                    group, group, group, group, group);
+        outWriter.printf("referenceId\tposition\t");
+        if (deAnalyzer.eval("between-groups")) {
+            outWriter.printf("Odds-ratio[%s/%s]\tFisher-Exact-P-value[%s/%s]", groups[0], groups[1],
+                    groups[0], groups[1]);
         }
+
+
+        for (String group : groups) {
+            outWriter.printf("\trefCount[%s]\tvarCount[%s]\tdistinct-read-index-count[%s]\taverage-variant-quality-scores[%s]",
+                    group, group, group, group);
+            
+            if (deAnalyzer.eval("within-groups")) {
+                outWriter.printf("\twithin-group-p-value[%s]", group);
+            }
+
+        }
+
         outWriter.printf("\tobserved variations at position ([frequency:from/to,]+)%n");
 
 
@@ -372,39 +392,50 @@ public class CompareSequenceVariationsMode extends AbstractGobyMode {
                 int groupIndexA = 0;
                 int groupIndexB = 1;
 
-                final double denominator = (double) refCount[groupIndexA] * (double) variantsCount[groupIndexB];
-                double oddsRatio = denominator == 0 ? 1 :
-                        ((double) refCount[groupIndexB] *
-                                (double) variantsCount[groupIndexA]) / denominator;
-                double fisherP = Double.NaN;
 
-                boolean ok = checkCounts();
-                if (ok) {
-                    fisherP = fisherRInstalled ? FisherExactRCalculator.getFisherPValue(
-                            refCount[groupIndexB], variantsCount[groupIndexB],
-                            refCount[groupIndexA], variantsCount[groupIndexA]) : Double.NaN;
-                } else {
-                    System.err.printf("An exception was caught evaluating the Fisher Exact test P-value. Details are provided below%n" +
-                            "referenceId=%s referenceIndex=%d position=%d %n" +
-                            "refCount[1]=%d variantsCount[1]=%d%n" +
-                            "refCount[0]=%d, variantsCount[0]=%d",
-                            currentReferenceId, currentReferenceIndex,
-                            position,
-                            refCount[groupIndexB], variantsCount[groupIndexB],
-                            refCount[groupIndexA], variantsCount[groupIndexA]
-                    );
+                outWriter.printf("%s\t%d\t", currentReferenceId, position);
+                if (deAnalyzer.eval("between-groups")) {
+                    final double denominator = (double) refCount[groupIndexA] * (double) variantsCount[groupIndexB];
+                    double oddsRatio = denominator == 0 ? 1 :
+                            ((double) refCount[groupIndexB] *
+                                    (double) variantsCount[groupIndexA]) / denominator;
+                    double fisherP = Double.NaN;
 
+                    boolean ok = checkCounts();
+                    if (ok) {
+                        fisherP = fisherRInstalled ? FisherExactRCalculator.getFisherPValue(
+                                refCount[groupIndexB], variantsCount[groupIndexB],
+                                refCount[groupIndexA], variantsCount[groupIndexA]) : Double.NaN;
+                    } else {
+                        System.err.printf("An exception was caught evaluating the Fisher Exact test P-value. Details are provided below%n" +
+                                "referenceId=%s referenceIndex=%d position=%d %n" +
+                                "refCount[1]=%d variantsCount[1]=%d%n" +
+                                "refCount[0]=%d, variantsCount[0]=%d",
+                                currentReferenceId, currentReferenceIndex,
+                                position,
+                                refCount[groupIndexB], variantsCount[groupIndexB],
+                                refCount[groupIndexA], variantsCount[groupIndexA]
+                        );
+
+                    }
+                    outWriter.printf("%f\t%f\t", oddsRatio, fisherP);
                 }
 
-                outWriter.printf("%s\t%d\t%f\t%f\t", currentReferenceId, position, oddsRatio, fisherP);
                 for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
-                    outWriter.printf("%d\t%d\t%d\t%g\t%g\t",
+
+
+                    outWriter.printf("%d\t%d\t%d\t%g\t",
                             refCount[groupIndex],
                             variantsCount[groupIndex],
                             distinctReadIndexCount[groupIndex],
-                            variationPool.getAverageVariantQualityScore(position, groupIndex),
-                            estimateWithinGroupDiscoveryPalue(position, groupIndex, list, variantsCount));
+                            variationPool.getAverageVariantQualityScore(position, groupIndex)
+                    );
+
+                    if (deAnalyzer.eval("within-groups")) {
+                        outWriter.printf("%g\t", estimateWithinGroupDiscoveryPalue(position, groupIndex, list, variantsCount));
+                    }
                 }
+
                 summarizeVariations(outWriter, list);
 
                 outWriter.println();
@@ -419,6 +450,7 @@ public class CompareSequenceVariationsMode extends AbstractGobyMode {
                                                      ObjectArrayList<SequenceVariationPool.Variation> list,
                                                      int[] variantsCount) {
         double pValue = 1;
+        if (!deAnalyzer.eval("within-groups")) return Double.NaN;
         ObjectArrayList<SequenceVariationPool.ReadIndexInfo> readIndicesAtPosition = variationPool.getReadIndicesAt(position, groupIndex);
         int observedReferenceCount = 0;
         double expectedVariationRate = 0;
@@ -434,7 +466,7 @@ public class CompareSequenceVariationsMode extends AbstractGobyMode {
         long sum = 0;
         if (readIndicesAtPosition == null) return 1;
         for (SequenceVariationPool.ReadIndexInfo readIndexInfo : readIndicesAtPosition) {
-            final CompareSequenceVariationsMode.ReadIndexStats stats = readIndexStats.get(readIndexInfo.alignmnentReaderIndex);
+            final DiscoverSequenceVariantsMode.ReadIndexStats stats = readIndexStats.get(readIndexInfo.alignmnentReaderIndex);
             final int readIndex = readIndexInfo.readIndex;
             if (readIndex < 0 || readIndex >= stats.countVariationBases.length || readIndex >= stats.countReferenceBases.length) {
                 // TODO this test is a kludge: readIndex should always be within the bounds of countVariationBases or countReferenceBases
@@ -537,7 +569,7 @@ public class CompareSequenceVariationsMode extends AbstractGobyMode {
      * @throws java.io.IOException error parsing or executing.
      */
     public static void main(final String[] args) throws JSAPException, IOException {
-        new CompareSequenceVariationsMode().configure(args).execute();
+        new DiscoverSequenceVariantsMode().configure(args).execute();
     }
 
 }
