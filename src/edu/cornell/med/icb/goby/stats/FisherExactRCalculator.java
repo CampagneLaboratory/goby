@@ -116,4 +116,48 @@ public class FisherExactRCalculator extends StatisticCalculator {
         }
         return info;
     }
+
+    /**
+     * Estimate the Fisher P-value given the contingency table:
+     *      //               group0       group1
+     *      // condition0   count00      count01
+     *      // condition1   count10      count11
+     *
+     * @param count00
+     * @param count10
+     * @param count01
+     * @param count11
+     * @return P-value of observing a contingency table that extreme by random distribution among the cells.
+     */
+    public static double getFisherPValue(int count00, int count10, int count01, int count11) {
+        final FisherExact.Result result =
+                FisherExact.fexact(count00, count10, count01, count11);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(result);
+        }
+        final double pValue = result.getPValue();
+        return pValue;
+    }
+     /**
+     * Estimate the Fisher one-tailed lesser P-value given the contingency table:
+     *      //               group0       group1
+     *      // condition0   count00      count01
+     *      // condition1   count10      count11
+     *
+     * @param count00
+     * @param count10
+     * @param count01
+     * @param count11
+     * @return P-value of observing a contingency table that extreme by random distribution among the cells.
+     */
+    public static double getFisherOneTailedLesserPValue(int count00, int count10, int count01, int count11) {
+         final FisherExact.Result result =
+                FisherExact.fexactLesser(count00, count10, count01, count11);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(result);
+        }
+        final double pValue = result.getPValue();
+        return pValue;
+
+    }
 }

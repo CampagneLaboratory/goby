@@ -65,6 +65,7 @@ public class CountsArchiveWriter implements Closeable {
         // delete before writing since the compound file writer supports appending.
         FileUtils.deleteQuietly(tobedeleted);
         compoundWriter = new CompoundFileWriter(physicalFilename);
+
     }
 
     /**

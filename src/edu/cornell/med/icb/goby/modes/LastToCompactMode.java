@@ -304,7 +304,8 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
         final MutableString referenceSequence = reference.alignment;
         final MutableString querySequence = query.alignment;
 
-        extractSequenceVariations(currentEntry, alignmentLength, referenceSequence, querySequence, readStartPosition, queryLength, reverseStrand);
+        extractSequenceVariations(currentEntry, alignmentLength, referenceSequence, querySequence, readStartPosition,
+                queryLength, reverseStrand, null);
     }
 
     /**

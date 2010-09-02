@@ -30,6 +30,8 @@ import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -453,19 +455,27 @@ public class AlignmentReader extends AbstractAlignmentReader {
     /**
      * Return the basenames corresponding to the input filenames. Less basename than filenames
      * may be returned (if several filenames reduce to the same baseline after removing
-     * the extension).
+     * the extension). This method returns the unique set of basenames in the same order they are
+     * provided as argument.
      *
      * @param filenames The names of the files to get the basnames for
      * @return An array of basenames
      */
     public static String[] getBasenames(final String... filenames) {
         final ObjectSet<String> result = new ObjectArraySet<String>();
+        final ObjectList<String> unique = new ObjectArrayList<String>();
         if (filenames != null) {
             for (final String filename : filenames) {
-                result.add(getBasename(filename));
+
+
+                final String newBasename = getBasename(filename);
+                if (!result.contains(newBasename)) {
+                    unique.add(newBasename);
+                    result.add(getBasename(filename));
+                }
             }
         }
-        return result.toArray(new String[result.size()]);
+        return unique.toArray(new String[unique.size()]);
     }
 
     public Iterator<Alignments.AlignmentEntry> iterator() {

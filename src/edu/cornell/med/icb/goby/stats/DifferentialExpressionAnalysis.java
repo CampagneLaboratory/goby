@@ -93,13 +93,13 @@ public class DifferentialExpressionAnalysis {
             groups.add(groupId);
             for (final String groupString : groupBasenames.split(",")) {
 
-                final String groupBasename = FilenameUtils.getBaseName(AlignmentReader.getBasename(groupString));
-                if (!isInputBasename(groupBasename, inputFilenames)) {
-                    System.err.printf("The group basename %s is not a valid input basename.%n", groupBasename);
+                final String sampleBasename = FilenameUtils.getBaseName(AlignmentReader.getBasename(groupString));
+                if (!isInputBasename(sampleBasename, inputFilenames)) {
+                    System.err.printf("The group basename %s is not a valid input basename.%n", sampleBasename);
                     System.exit(1);
                 }
-                System.out.println("Associating basename: " + groupBasename + " to group: " + groupId);
-                deCalculator.associateSampleToGroup(groupBasename, groupId);
+                System.out.println("Associating basename: " + sampleBasename + " to group: " + groupId);
+                deCalculator.associateSampleToGroup(sampleBasename, groupId);
             }
             final int groupSize = (groupBasenames.split(",")).length;
             groupSizes.put(groupId, groupSize);
@@ -234,7 +234,7 @@ public class DifferentialExpressionAnalysis {
         return results;
     }
 
-    private boolean eval(final String evalName) {
+    public boolean eval(final String evalName) {
         return evalSet.contains(evalName.toLowerCase());
     }
 

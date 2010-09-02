@@ -263,6 +263,15 @@ public class DifferentialExpressionCalculator {
         return sampleToGroupMap;
     }
 
+    /**
+     * Get the group that the sample belongs to.
+     * @param sampleId Id of the sample.
+     * @return group id to which this sample belongs to.
+     */
+    public String getGroup(String sampleId) {
+      return sampleToGroupMap.get(sampleId);
+    }
+    
     public DifferentialExpressionResults compare(DifferentialExpressionResults results,
                                                  final NormalizationMethod method,
                                                  final StatisticCalculator tester,
@@ -309,10 +318,15 @@ public class DifferentialExpressionCalculator {
         lengths.size(elementsPerSample);
     }
 
-    public ObjectArraySet<String> getSamples(final String groupA) {
+    /**
+     * Returns the sample ids that belong to a group.
+     * @param groupId Id of the group.
+     * @return The set of samples that belong to group
+     */
+    public ObjectArraySet<String> getSamples(final String groupId) {
         final ObjectArraySet<String> samples = new ObjectArraySet<String>();
         for (final String sampleId : sampleToGroupMap.keySet()) {
-            if (sampleToGroupMap.get(sampleId).equals(groupA)) {
+            if (sampleToGroupMap.get(sampleId).equals(groupId)) {
                 samples.add(sampleId);
             }
         }

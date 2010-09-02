@@ -1,0 +1,111 @@
+<!--
+  - Copyright (C) 2010 Institute for Computational Biomedicine,
+  -                         Weill Medical College of Cornell University
+  -
+  -  This program is free software; you can redistribute it and/or modify
+  -  it under the terms of the GNU General Public License as published by
+  -  the Free Software Foundation; either version 3 of the License, or
+  -  (at your option) any later version.
+  -
+  -  This program is distributed in the hope that it will be useful,
+  -  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  -  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  -  GNU General Public License for more details.
+  -
+  -  You should have received a copy of the GNU General Public License
+  -  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -
+  -->
+
+<jsap>
+    <parameters>
+
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>false</required>
+               <defaults>
+                <string>-</string>
+            </defaults>
+            <help>The name of the output file.</help>
+        </flaggedOption>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The basenames of the input alignments</help>
+        </unflaggedOption>
+        <flaggedOption>
+                   <id>include-reference-names</id>
+                   <shortFlag>r</shortFlag>
+                   <longFlag>include-reference-names</longFlag>
+                   <required>false</required>
+                   <help>When provided, process only reference identifiers listed in this comma separated list. To process only chromosome 19 and 1, if sequences are identified by 1 and 19, use: --include-reference-names 1,19</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>groups</id>
+            <shortFlag>g</shortFlag>
+            <longFlag>groups</longFlag>
+            <required>true</required>
+            <help>Define groups for multi-group comparisons. The syntax of the groups arguments is id-1=basename1,basename2/id-2=basename4,basename5 Where id-1 is the id of the first group, defined to consist of samples basename1 and basename2. basename1 must refer to a basename provided as input on the command line (see input). Multiple groups are separated by forward slashes (/).</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>compare</id>
+            <longFlag>compare</longFlag>
+            <required>true</required>
+            <help>Compare sequence variations across groups of samples. The compare flag must be followed by group ids separated by slashes. For instance, if groups group-A and group-B have been defined (see --groups option), --compare group-A/group-B will evaluate statistical tests between sequence variation in groups A and B.</help>
+        </flaggedOption>
+        <flaggedOption>
+             <id>eval</id>
+
+             <longFlag>eval</longFlag>
+             <required>false</required>
+
+             <stringParser>
+                <classname>StringStringParser</classname>
+
+            </stringParser>
+             <defaults>
+                <string>within-groups,between-groups</string>
+            </defaults>
+                   <help>Name the statistics tests to perform. The option 'within-group' will test for sequence variation discovered within samples of each group. The option 'between-groups' will test for sequence variations that are found with different frequency between groups (odds-ratio and fisher exact test statistics are reported). </help>
+        </flaggedOption>
+         <flaggedOption>
+             <id>variation-stats</id>
+             <shortFlag>v</shortFlag>
+             <longFlag>variation-stats</longFlag>
+             <required>false</required>
+             <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
+            <help>Path to a variation stastistics file produced with --mode sequence-variations-stats over the same set of alignments. This file provides variation counts for specific read indices which are used in calculating the within group P-values for variation discovery.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>minimum-variation-support</id>
+            <shortFlag>n</shortFlag>
+            <longFlag>minimum-variation-support</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>10</string>
+            </defaults>
+            <help>The minimum number of times a variation must be seen across all alignments to be considered for statistical test. </help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>threshold-distinct-read-indices</id>
+            <shortFlag>t</shortFlag>
+            <longFlag>threshold-distinct-read-indices</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>3</string>
+            </defaults>
+            <help>The minimum number of distinct read indices that support a variation for this variation to be considered for statistical test. </help>
+        </flaggedOption>
+    </parameters>
+</jsap>

@@ -241,7 +241,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             final int queryLength = samRecord.getReadLength();
 
             extractSequenceVariations(cigar, attributeMD, readSequence, readPostInsertions,
-                    referenceSequence, currentEntry, queryLength, reverseStrand);
+                    referenceSequence, currentEntry, queryLength, reverseStrand,samRecord.getBaseQualities());
             final Alignments.AlignmentEntry alignmentEntry = currentEntry.build();
 
             final Object xoString = samRecord.getAttribute("X0");
@@ -325,13 +325,15 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         attributeMD_pattern = Pattern.compile("([0-9]+)(([ACGTN]|\\^[ACGTN])+)?");
         attributeCIGAR_insertions_pattern = Pattern.compile("([0-9]+)([MID])");
     }
-
+    /*
+    @param baseQualities are ascii encoded, remove 33 to get Phred quality score.
+     */
     private void extractSequenceVariations(final String cigar, final String attributeMD, final MutableString readSequence,
                                            final MutableString readPostInsertions,
                                            final MutableString referenceSequence,
                                            final Alignments.AlignmentEntry.Builder currentEntry,
                                            final int queryLength,
-                                           final boolean reverseStrand) {
+                                           final boolean reverseStrand, byte[] baseQualities) {
         /* From the SAM specification document, see http://samtools.sourceforge.net/SAM1.pdf
          MD Z String for mismatching positions in the format of [0-9]+(([ACGTN]|\^[ACGTN]+)[0-9]+)* 2,3
 
@@ -350,7 +352,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
         final int alignmentLength = readSequence.length();
         extractSequenceVariations(currentEntry, alignmentLength,
-                referenceSequence, readSequence, readStartPosition, queryLength, reverseStrand);
+                referenceSequence, readSequence, readStartPosition, queryLength, reverseStrand, baseQualities);
 
     }
 

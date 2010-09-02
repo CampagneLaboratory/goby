@@ -72,6 +72,72 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
         init(basenames);
     }
 
+    /**
+     * Skip all entries that have position before (targetIndex,position). This method will use the alignment index
+     * to skip directly to the closest chunk start before the entry identified by targetIndex and position.
+     *
+     * @param targetIndex The index of the target sequence to skip to.
+     * @param position    The position on the target sequence.
+     * @return The next entry, at position or past position (if not entry at position is found).
+     * @throws IOException If an error occurs reading the alignment header. The header is accessed to check that the alignment is sorted.
+     */
+    public final Alignments.AlignmentEntry skipTo(final int targetIndex, final int position) throws IOException {
+        // remove entries from heap if they are located before the skipTo location:
+        {
+            Bucket bucket;
+            while (!entryHeap.isEmpty()) {
+                bucket = entryHeap.first();
+                if (bucket.entry.getTargetIndex() < targetIndex || bucket.entry.getPosition() < position) {
+                    // the first entry in the heap has locaton before the skip to location. We remove it.
+                    Bucket removed=entryHeap.dequeue();
+                    nextLoadedForReader[removed.readerIndex]=false;
+                } else {
+                    // the first entry in the heap is at or after the skipTo location. We are done cleaning up the heap.
+                    break;
+                }
+            }
+        }
+        // populate the heap with the next entry at or past the skipTo position:
+        for (final int readerIndex : readersWithMoreEntries) {
+            if (!nextLoadedForReader[readerIndex]) {
+                // the reader at position readerIndex was used in the previous next
+                activeIndex = readerIndex;
+
+                final AlignmentReader reader = readers[activeIndex];
+                final Alignments.AlignmentEntry alignmentEntry = reader.skipTo(targetIndex, position);
+                if (alignmentEntry == null) {
+                    // reader has no more entries. Remove from further consideration
+                    readersWithMoreEntries.remove(activeIndex);
+
+                } else {
+
+
+                    nextLoadedForReader[readerIndex] = true;
+                    final Bucket bucket = buckets[readerIndex];
+                    bucket.entry = alignmentEntry;
+                    bucket.readerIndex=readerIndex;
+                    entryHeap.enqueue(bucket);
+                    //    System.out.println("entryHeap.size()" + entryHeap.size());
+                }
+            }
+        }
+        // return the next entry from the heap:
+        if (entryHeap.isEmpty()) return null;
+        
+        final Bucket bucket = entryHeap.dequeue();
+        nextLoadedForReader[bucket.readerIndex] = false;
+
+        //   minEntry = null;
+        hasNext = false;
+        final Alignments.AlignmentEntry alignmentEntry = bucket.entry;
+        final int newQueryIndex = mergedQueryIndex(alignmentEntry.getQueryIndex());
+        if (adjustQueryIndices) {
+            return alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry).setQueryIndex(newQueryIndex).build();
+        } else {
+            return alignmentEntry;
+        }
+    }
+
     class Bucket {
         Alignments.AlignmentEntry entry;
         int readerIndex;
@@ -125,6 +191,16 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
         }
         return (hasNext = (!entryHeap.isEmpty()));
 
+    }
+
+    /**
+     * Get the index of the alignmnet reader that provided the entry. The entry returned by the previous call to next()
+     * originated from the AlignmentReader at index 'readerIndex' in the list provided to the constructor.
+     *
+     * @return readerIndex.
+     */
+    public int getReaderIndex() {
+        return activeIndex;
     }
 
     /**

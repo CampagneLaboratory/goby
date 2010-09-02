@@ -176,7 +176,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         System.out.printf("Wrote a total of %d alignment entries.%n", entriesInOutputFile);
     }
 
-    private boolean isAllSorted(final String[] basenames) throws IOException {
+    public static boolean isAllSorted(final String[] basenames) throws IOException {
         boolean sorted = true;
         for (final String basename : basenames) {
             final AlignmentReader reader = new AlignmentReader(basename);

@@ -1,4 +1,6 @@
 development
+ - New mode compare-sequence-variations will identify sequence variations that differ between
+   groups of samples. This mode requires sorted/indexed alignments as input.
  - SamToCompact mode now populates the read quality scores for sequence variations (toQuality field).
  - Update picard/samtools to version 1.25
  - In the mode "alignment-to-annotation-counts" the "--eval" options supports

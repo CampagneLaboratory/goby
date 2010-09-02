@@ -43,7 +43,7 @@ import java.util.Locale;
  * Unix, add the R and JRI paths to the <em>LD_LIBRARY_PATH</em> environment variable.
  *
  * @see <a href="http://portal.acm.org/citation.cfm?id=214326">
- * http://portal.acm.org/citation.cfm?id=214326</a>
+ *      http://portal.acm.org/citation.cfm?id=214326</a>
  * @see <a href="http://www.r-project.org/">The R Project for Statistical Computing</a>
  * @see <a href="http://www.rforge.net/rJava/">rJava</a>
  */
@@ -68,7 +68,7 @@ public final class FisherExact {
     /**
      * Performs Fisher's exact test for testing the null of independence of rows and columns
      * in a contingency table with fixed marginals.
-     * <p>
+     * <p/>
      * The order of the values in the table are "by column" so that if the array contains
      * (1,2,3,11,12,13) and nrows = 3, ncols = 2, the following matrix is created:<br/>
      * <pre>
@@ -78,12 +78,12 @@ public final class FisherExact {
      *  R3   3  13
      * </pre>
      *
-     * @param vector An array of integer values used to populate the matrtix to be evaluated.
-     * @param nrows The number of rows in the resulting martrix
-     * @param ncols The number of columns in the resulting matrix
+     * @param vector                An array of integer values used to populate the matrtix to be evaluated.
+     * @param nrows                 The number of rows in the resulting martrix
+     * @param ncols                 The number of columns in the resulting matrix
      * @param alternativeHypothesis The alternative hypothesis to use for the calculation
-     * @param hybrid Whether exact probabilities are computed (false) or a hybrid approximation
-     * (true) is made (only used if the data is larger than a 2 by 2 table)
+     * @param hybrid                Whether exact probabilities are computed (false) or a hybrid approximation
+     *                              (true) is made (only used if the data is larger than a 2 by 2 table)
      * @return The result from the fisher test (should never be null)
      */
     public static Result fexact(final int[] vector, final int nrows, final int ncols,
@@ -98,7 +98,7 @@ public final class FisherExact {
         if (rengine != null && rengine.isAlive()) {
             final boolean vectorAssignResult = rengine.assign("vector", vector);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Vector assigned: " +  vectorAssignResult);
+                LOG.debug("Vector assigned: " + vectorAssignResult);
                 final REXP vectorExpression = rengine.eval("vector");
                 LOG.debug("Vector: " + vectorExpression);
             }
@@ -126,7 +126,7 @@ public final class FisherExact {
     /**
      * Performs Fisher's exact test for testing the null of independence of rows and columns
      * in a contingency table with fixed marginals.
-     * <p>
+     * <p/>
      * The order of the values in the table are "by column" so that if the array contains
      * (1,2,3,11,12,13) and nrows = 3, ncols = 2, the following matrix is created:<br/>
      * <pre>
@@ -136,9 +136,9 @@ public final class FisherExact {
      *  R3   3  13
      * </pre>
      *
-     * @param vector An array of integer values used to populate the matrtix to be evaluated.
-     * @param nrows The number of rows in the resulting martrix
-     * @param ncols The number of columns in the resulting matrix
+     * @param vector                An array of integer values used to populate the matrtix to be evaluated.
+     * @param nrows                 The number of rows in the resulting martrix
+     * @param ncols                 The number of columns in the resulting matrix
      * @param alternativeHypothesis The alternative hypothesis to use for the calculation
      * @return The result from the fisher test (should never be null)
      */
@@ -149,11 +149,12 @@ public final class FisherExact {
 
     /**
      * Performs Fisher's exact test using two input vectors.
+     *
      * @param factor1
      * @param factor2
      * @param alternativeHypothesis The alternative hypothesis to use for the calculation
-     * @param hybrid Wheter exact probabilities are computed (false) or a hybrid approximation
-     * (true) is made
+     * @param hybrid                Wheter exact probabilities are computed (false) or a hybrid approximation
+     *                              (true) is made
      * @return The result from the fisher test (should never be null)
      */
     public static Result fexact(final int[] factor1, final int[] factor2,
@@ -167,14 +168,14 @@ public final class FisherExact {
         if (rengine != null && rengine.isAlive()) {
             final boolean xAssignResult = rengine.assign("x", factor1);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("X assigned: " +  xAssignResult);
+                LOG.debug("X assigned: " + xAssignResult);
                 final REXP xExpression = rengine.eval("x");
                 LOG.debug("X: " + xExpression);
             }
 
             final boolean yAssignResult = rengine.assign("y", factor2);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Y assigned: " +  yAssignResult);
+                LOG.debug("Y assigned: " + yAssignResult);
                 final REXP yExpression = rengine.eval("y");
                 LOG.debug("Y: " + yExpression);
             }
@@ -198,9 +199,10 @@ public final class FisherExact {
 
     /**
      * Pass the fisher expression to R for computation.
-     * @param rengine The R engine to use to calcuate the results.
+     *
+     * @param rengine          The R engine to use to calcuate the results.
      * @param fisherExpression The string representing the expression to evaluate.
-     * @param is2x2matrix Whether or not the data being evaluated represents a 2x2 matrix
+     * @param is2x2matrix      Whether or not the data being evaluated represents a 2x2 matrix
      * @return The results of the evaluation (should never be null)
      */
     private static Result evaluteFisherExpression(final Rengine rengine,
@@ -290,7 +292,7 @@ public final class FisherExact {
     /**
      * Performs Fisher's exact test for testing the null of independence of rows and columns
      * in a contingency table with fixed marginals.
-     * <p>
+     * <p/>
      * The order of the values in the table are "by row" so that if the array contains
      * (1,2,3,11,12,13) and nrows = 2, ncols = 3, the following matrix is created:<br/>
      * <pre>
@@ -300,8 +302,8 @@ public final class FisherExact {
      * </pre>
      *
      * @param vector An array of integer values used to populate the matrtix to be evaluated.
-     * @param nrows The number of rows in the resulting martrix
-     * @param ncols The number of columns in the resulting matrix
+     * @param nrows  The number of rows in the resulting martrix
+     * @param ncols  The number of columns in the resulting matrix
      * @return The result from the fisher test (should never be null)
      */
     public static Result fexact(final int[] vector, final int nrows, final int ncols) {
@@ -311,7 +313,7 @@ public final class FisherExact {
     /**
      * Performs Fisher's exact test for testing the null of independence of rows and columns
      * in a contingency table with fixed marginals.
-     * <p>
+     * <p/>
      * The paramters to this method create a matrix of the following form.
      * <pre>
      *        C1    C2
@@ -326,17 +328,19 @@ public final class FisherExact {
      * @return The result from the fisher test (should never be null)
      */
     public static Result fexact(final int r1c1, final int r2c1, final int r1c2, final int r2c2) {
-        return fexact(new int[] {r1c1, r2c1, r1c2, r2c2}, 2, 2);
+        return fexact(new int[]{r1c1, r2c1, r1c2, r2c2}, 2, 2);
     }
-
+     public static Result fexactLesser(final int r1c1, final int r2c1, final int r1c2, final int r2c2) {
+        return fexact(new int[]{r1c1, r2c1, r1c2, r2c2}, 2, 2,AlternativeHypothesis.less,false);
+    }
     /**
      * Calculates the 2-tailed p-value, using the the same input data parameters as
      * {@link gominer.Fisher#fisher(int, int, int, int)}.
      *
-     * @param totalChanged The number of genes changed in the experiment N1
+     * @param totalChanged  The number of genes changed in the experiment N1
      * @param changedInNode The number of genes changed in a particular node x
-     * @param total The total number of genes in the experiment (changed and unchanged) N1+N2
-     * @param inNode The number of genes in the node (changed and unchanged) x+y
+     * @param total         The total number of genes in the experiment (changed and unchanged) N1+N2
+     * @param inNode        The number of genes in the node (changed and unchanged) x+y
      * @return The computed 2-tailed p-value
      */
     public static double twoTailed(final int totalChanged, final int changedInNode,
@@ -346,7 +350,55 @@ public final class FisherExact {
         vector[1] = totalChanged - changedInNode;
         vector[2] = inNode - changedInNode;
         vector[3] = (total - inNode) - (totalChanged - changedInNode);
-        final Result result = fexact(vector, 2, 2);
+        final Result result = fexact(vector, 2, 2, AlternativeHypothesis.twosided,false);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(result);
+        }
+        return result.getPValue();
+    }
+
+    /**
+     * Calculates the 1-tailed greater p-value, using the the same input data parameters as
+     * {@link gominer.Fisher#fisher(int, int, int, int)}.
+     *
+     * @param totalChanged  The number of genes changed in the experiment N1
+     * @param changedInNode The number of genes changed in a particular node x
+     * @param total         The total number of genes in the experiment (changed and unchanged) N1+N2
+     * @param inNode        The number of genes in the node (changed and unchanged) x+y
+     * @return The computed one-tailed p-value
+     */
+    public static double greater(final int totalChanged, final int changedInNode,
+                                 final int total, final int inNode) {
+        final int[] vector = new int[4];
+        vector[0] = changedInNode;
+        vector[1] = totalChanged - changedInNode;
+        vector[2] = inNode - changedInNode;
+        vector[3] = (total - inNode) - (totalChanged - changedInNode);
+        final Result result = fexact(vector, 2, 2, AlternativeHypothesis.greater, false);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(result);
+        }
+        return result.getPValue();
+    }
+
+    /**
+     * Calculates the 1-tailed lesser p-value, using the the same input data parameters as
+     * {@link gominer.Fisher#fisher(int, int, int, int)}.
+     *
+     * @param totalChanged  The number of genes changed in the experiment N1
+     * @param changedInNode The number of genes changed in a particular node x
+     * @param total         The total number of genes in the experiment (changed and unchanged) N1+N2
+     * @param inNode        The number of genes in the node (changed and unchanged) x+y
+     * @return The computed one-tailed p-value
+     */
+    public static double lesser(final int totalChanged, final int changedInNode,
+                                final int total, final int inNode) {
+        final int[] vector = new int[4];
+        vector[0] = changedInNode;
+        vector[1] = totalChanged - changedInNode;
+        vector[2] = inNode - changedInNode;
+        vector[3] = (total - inNode) - (totalChanged - changedInNode);
+        final Result result = fexact(vector, 2, 2, AlternativeHypothesis.less,false);
         if (LOG.isDebugEnabled()) {
             LOG.debug(result);
         }
@@ -380,7 +432,7 @@ public final class FisherExact {
          * of the contingency table has a non-central hypergeometric distribution with
          * non-centrality parameter given by the odds ratio (Fisher, 1935). The alternative
          * for a one-sided test is based on the odds ratio, so alternative = "greater"
-         * is a test of the odds ratio being bigger than the odds ratio.
+         * is a test of the odds ratio being bigger than 1.
          */
         greater,
 
@@ -391,7 +443,7 @@ public final class FisherExact {
          * of the contingency table has a non-central hypergeometric distribution with
          * non-centrality parameter given by the odds ratio (Fisher, 1935). The alternative
          * for a one-sided test is based on the odds ratio, so alternative = "less"
-         * is a test of the odds ratio being smaller than the odds ratio.
+         * is a test of the odds ratio being smaller than 1.
          */
         less
     }
@@ -446,6 +498,7 @@ public final class FisherExact {
         /**
          * Used to create a result containing only pValues.  All other fields are
          * set to default values.
+         *
          * @param pValue The pValue of the result.
          */
         public Result(final double pValue) {
@@ -455,10 +508,11 @@ public final class FisherExact {
 
         /**
          * Used to create a result containing values returned by the R fisher exact method.
-         * @param pValue The pValue of the result.
-         * @param confidenceInterval The confidence interval for the odds ratio.
-         * @param estimate The estimate of the odds ratio
-         * @param oddsRatio The odds ratio
+         *
+         * @param pValue                The pValue of the result.
+         * @param confidenceInterval    The confidence interval for the odds ratio.
+         * @param estimate              The estimate of the odds ratio
+         * @param oddsRatio             The odds ratio
          * @param alternativeHypothesis The alternative hypothesis used to compute the result
          */
         public Result(final double pValue, final double[] confidenceInterval,
@@ -476,6 +530,7 @@ public final class FisherExact {
 
         /**
          * Indicates that R did in fact return the results contained in this object.
+         *
          * @return whether or not values were actually computed or an error occurred
          */
         public boolean isValid() {
@@ -484,6 +539,7 @@ public final class FisherExact {
 
         /**
          * Get the p-value returned by the test or {@link Double#NaN} if R was not avaialble.
+         *
          * @return The p-value
          */
         public double getPValue() {
@@ -493,6 +549,7 @@ public final class FisherExact {
         /**
          * Get a confidence interval for the odds ratio. Will be an empty array if the input
          * was not a 2 by 2 matrix or R was not avaialble.
+         *
          * @return A confidence interval for the odds ratio
          */
         public double[] getConfidenceInterval() {
@@ -502,6 +559,7 @@ public final class FisherExact {
         /**
          * Get an estimate of the odds ratio.  Will be {@link Double#NaN} if the input
          * was not a 2 by 2 matrix or R was not avaialble.
+         *
          * @return An estimate of the odds ratio
          */
         public double getEstimate() {
@@ -511,6 +569,7 @@ public final class FisherExact {
         /**
          * Get the odds ratio. Will be {@link Double#NaN} if the input
          * was not a 2 by 2 matrix or R was not avaialble.
+         *
          * @return The odds ratio
          */
         public double getOddsRatio() {
@@ -521,6 +580,7 @@ public final class FisherExact {
          * Get the alternative hypothesis used to compute the result.  Will be
          * {@link edu.cornell.med.icb.goby.R.FisherExact.AlternativeHypothesis#twosided} if
          * the input was not a 2 by 2 matrix or R was not avaialble.
+         *
          * @return the alternative hypothesis used to compute the result
          */
         public AlternativeHypothesis getAlternativeHypothesis() {
