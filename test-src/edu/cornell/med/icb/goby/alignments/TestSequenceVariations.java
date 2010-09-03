@@ -166,7 +166,8 @@ public class TestSequenceVariations {
             assertTrue("alignment must have variation", alignmentEntry.getSequenceVariationsCount() > 0);
 
             for (final Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
-                System.out.println(String.format("bwa entry score=%f referenceIndex=%d  queryIndex=%d variation: %s",
+                System.out.println(String.format("bwa entry reverseStrand=%b score=%f referenceIndex=%d  queryIndex=%d variation: %s",
+                       alignmentEntry.getMatchingReverseStrand(),
                         alignmentEntry.getScore(),
                         alignmentEntry.getQueryIndex(),
                         alignmentEntry.getTargetIndex(),
@@ -205,6 +206,60 @@ public class TestSequenceVariations {
                         assertEquals(8, var.getReadIndex());
                         assertEquals("--", var.getFrom());
                         assertEquals("CC", var.getTo());
+
+                        break;
+                    case 2:
+
+                        if (alignmentEntry.getMatchingReverseStrand()) {
+                             assertEquals(6,alignmentEntry.getTargetIndex());
+                            // in the forward strand:
+                            assertEquals(alignmentEntry.getQueryLength() - var.getReadIndex(), var.getPosition());
+                        } else {
+                            // in the forward strand:
+                            assertEquals(var.getReadIndex(), var.getPosition());
+                        }
+                        // last finds this alignment. We test mutation from A to C at position 8 or 14
+                        //  and T to C at position 21
+                        switch (var.getPosition()) {
+                            case 8:
+                            case 14:
+                                assertEquals("A", var.getFrom());
+                                assertEquals("C", var.getTo());
+
+                                break;
+                            case 21:
+                                assertEquals("T", var.getFrom());
+                                assertEquals("C", var.getTo());
+
+                                break;
+                            default:
+                                assertTrue("Invalid mutation detected.", false);
+                        }
+
+
+                        break;
+
+                    case 6:
+
+                        
+                        // last finds this alignment. We test mutation from A to C at position 8 or 14
+                        //  and T to C at position 21
+                        switch (var.getPosition()) {
+                            case 8:
+                            case 14:
+                                assertEquals("A", var.getFrom());
+                                assertEquals("C", var.getTo());
+
+                                break;
+                            case 21:
+                                assertEquals("T", var.getFrom());
+                                assertEquals("C", var.getTo());
+
+                                break;
+                            default:
+                                assertTrue("Invalid mutation detected.", false);
+                        }
+
 
                         break;
                     case 9:
@@ -247,7 +302,8 @@ public class TestSequenceVariations {
             assertTrue("alignment must have variation", alignmentEntry.getSequenceVariationsCount() > 0);
 
             for (final Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
-                System.out.println(String.format("bwa entry score=%f referenceIndex=%d  queryIndex=%d variation: %s",
+                System.out.println(String.format("bwa entry reverseStrand=%b score=%f referenceIndex=%d  queryIndex=%d variation: %s",
+                        alignmentEntry.getMatchingReverseStrand(),
                         alignmentEntry.getScore(),
                         alignmentEntry.getQueryIndex(),
                         alignmentEntry.getTargetIndex(),
@@ -332,8 +388,8 @@ public class TestSequenceVariations {
                     "CCAAAAAAAAAAATCCAAAAAAAAAACCCAAAAAAAAAA",
                     "CCAAAAAAAAAAA---AAAAAAAAAACCCAAAAAAAAAA"),
             new Alignment("2_mutations",
-                    //1234567891111111111222
-                    //         0123456789012
+                   //1234567891111111111222
+                   //         0123456789012
                     "TTTCCCAAATTTCACATCACTACTACTACGGATACAGAACGGGG",
                     "TTTCCCACATTTCCCATCACCACTACTACGGATACAGAACGGGG"),
             //.......M.....M......M.......................
