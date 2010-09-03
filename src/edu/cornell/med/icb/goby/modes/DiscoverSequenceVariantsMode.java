@@ -79,9 +79,9 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     private int currentReferenceIndex;
     private String[] groups;
     /**
-     * The maximum value of read index.
+     * The maximum value of read index, indexed by readerIndex;
      */
-    private int numberOfReadIndices = Integer.MIN_VALUE;
+    private int numberOfReadIndices[];
 
     @Override
     public String getModeName() {
@@ -162,7 +162,10 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             final Rengine rEngine = GobyRengine.getInstance().getRengine();
             fisherRInstalled = rEngine != null && rEngine.isAlive();
         }
-
+        if (deAnalyzer.eval("between-groups") && groups.length != 2) {
+            System.err.println("--eval between-groups requires exactly two groups.");
+            System.exit(1);
+        }
         return this;
     }
 
@@ -171,7 +174,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         /**
          * The index of the alignment reader that is reading over this basename, will be populated when we know.
          */
-        public int readerIndex;
+        public int readerIndex = -1;
         /**
          * Indexed by readIndex
          */
@@ -233,7 +236,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             readIndexStats.add(stat);
 
         } catch (FileNotFoundException e) {
-            throw new InternalError("This should never happen.");
+            System.err.printf("Error. The -v file argument cannot be found (%s)%n", statFile);
+            System.exit(1);
         }
 
         catch (IOException e) {
@@ -243,9 +247,6 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             System.exit(1);
         }
 
-        for (ReadIndexStats stat : readIndexStats) {
-            numberOfReadIndices = Math.max(numberOfReadIndices, stat.countReferenceBases.length);
-        }
     }
 
     /**
@@ -284,11 +285,27 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                     return readIndexStats.readerIndex - readIndexStatsFirst.readerIndex;
                 }
             });
+            // Determine the maximum read length for each input sample (fill numberOfReadIndices)
+            numberOfReadIndices = new int[this.deCalculator.getSampleToGroupMap().keySet().size()];
+            ObjectSet<ReadIndexStats> toRemove = new ObjectArraySet<ReadIndexStats>();
+
+            for (ReadIndexStats stat : readIndexStats) {
+                if (stat.readerIndex == -1) {
+                    // this sample was not loaded, remove it from consideration
+                    toRemove.add(stat);
+                    continue;
+                }
+                numberOfReadIndices[stat.readerIndex] = Math.max(numberOfReadIndices[stat.readerIndex], stat.countReferenceBases.length);
+            }
+
+            readIndexStats.removeAll(toRemove);
+
             // TODO incorrect, but useful for now. We assume the count of reference bases is uniform over the read indices.
             // TODO remove after mode sequence-variation-stats has been updated to estimate these quantities per read index.
             for (ReadIndexStats stat : readIndexStats) {
-                for (int readIndex = 0; readIndex < numberOfReadIndices; readIndex++) {
-                    stat.countReferenceBases[readIndex] /= numberOfReadIndices;
+                for (int readIndex = 0; readIndex < numberOfReadIndices[stat.readerIndex]; readIndex++) {
+
+                    stat.countReferenceBases[readIndex] /= numberOfReadIndices[stat.readerIndex];
                 }
             }
 
@@ -311,7 +328,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         for (String group : groups) {
             outWriter.printf("\trefCount[%s]\tvarCount[%s]\tdistinct-read-index-count[%s]\taverage-variant-quality-scores[%s]",
                     group, group, group, group);
-            
+
             if (deAnalyzer.eval("within-groups")) {
                 outWriter.printf("\twithin-group-p-value[%s]", group);
             }
