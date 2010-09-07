@@ -121,8 +121,10 @@
         	<fileset dir="${exportdir}">
                 <exclude name="${tag}/lib/**"/>
                 <exclude name="${tag}/data/**"/>
-                <exclude name="${tag}/scripts/**"/>
-                <include name="${tag}/distrib/**"/>
+                <exclude name="${tag}/scripts/pbs/**"/>
+                <exclude name="${tag}/scripts/sge/**"/>
+                <exclude name="${tag}/scripts/swift/**"/>
+                <exclude name="${tag}/scripts/util/**"/>
 			</fileset>
        	</zip>
 	</target>
