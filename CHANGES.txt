@@ -3,18 +3,19 @@ development -> 1.8
    or (ii) identify variants whose frequency is significantly enriched in one of two groups.
    This mode requires sorted/indexed alignments as input.
  - SamToCompact mode now populates the read quality scores for sequence variations (toQuality field).
- - Update picard/samtools to version 1.25
+ - Update picard/samtools to version 1.25.
  - In the mode "alignment-to-annotation-counts" the "--eval" options supports
    a new value "counts" which will output a format specifically designed
    for use with R's DESeq and notably for the R script geneDESeqAnalysis.R
    which is used with GobyWeb.
  - Fix bug in extract sequence variations for SAM format, where matches on the
    reverse strand got a read-index larger than one from the correct value.
- - By default, don't use "counts" in DiffExp as it is a specialized output for preparing for DESeq
- - API interface for ReadsToWeightsMode
+ - By default, don't use "counts" in DiffExp as it is a specialized output for preparing for DESeq.
+ - API interface for ReadsToWeightsMode.
  - LastToCompactMode wasn't writing target lengths. Fixed.
- - Read TMH in Python using Gzip
- - Fixed Python utilies so -o actually writes to a file
+ - Read TMH in Python using Gzip.
+ - Fixed Python utilies so -o actually writes to a file.
+ - Added transcript-align.sh script to assist with aligning via transcripts.
 1.7
  - Extended fasta-to-compact and compact-to-fasta to handle paired end runs. See new command
    line arguments --paired-end and pair-indicator arguments in fasta-to-compact and
