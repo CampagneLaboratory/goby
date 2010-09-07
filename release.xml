@@ -122,6 +122,7 @@
                 <exclude name="${tag}/lib/**"/>
                 <exclude name="${tag}/data/**"/>
                 <exclude name="${tag}/scripts/**"/>
+                <include name="${tag}/scripts/distrib/**"/>
 			</fileset>
        	</zip>
 	</target>
