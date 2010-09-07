@@ -56,7 +56,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions);_USRDLL;LIBGOBY_EXPORTS;ZLIB_WINAPI;GOBY_DEBUG</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>C:\protobuf-2.3.0\src;C:\zlib-1.2.5;C:\boost_1_43_0</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\save\cpp\protobuf-2.3.0\src;C:\save\cpp\zlib-1.2.5;C:\save\cpp\boost_1_44_0</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4251;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
