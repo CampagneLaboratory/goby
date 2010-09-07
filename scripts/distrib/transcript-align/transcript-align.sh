@@ -30,8 +30,8 @@
 # NOTE:
 # The transcript-ids and gene-ids need to be embedded into the Fasta reference
 # in the header/comment lines. It is assumed that the comment / header line for
-# each sequence will be in the format ">TRANSCRIPT_ID IGNORED_DATA gene:GENE_ID"
-# for Fasta and "@TRANSCRIPT_ID IGNORED_DATA gene:GENE_ID" for Fastq. For example,
+# each sequence will be in the format ">TRANSCRIPT_ID IGNORED_DATA gene:GENE_ID".
+# For example,
 # ">ENST00000400845 cdna:known supercontig::GL000222.1:11792:16670:1 gene:ENSG00000215756"
 # speciefies a transcript-id of "ENST00000400845" and a gene-id of "ENSG00000215756".
 #
