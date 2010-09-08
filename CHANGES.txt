@@ -1,4 +1,10 @@
 development -> 1.8
+ - Draft helper to iterate through individual reference positions of a sorted set of alignments
+   (see IterateSortedAlignments).
+ - Alternative implementation of sequence-variation-stats mode (called sequence-variation-stats2)
+   that determines the number of reference bases matched at a given read index. This info is needed
+   to call sequence variants, but slows down the stats. The initial implementation is preserved for
+   compatibility.
  - New mode discover-sequence-variants will either (i) identify sequence variants within a group of sample
    or (ii) identify variants whose frequency is significantly enriched in one of two groups.
    This mode requires sorted/indexed alignments as input.
