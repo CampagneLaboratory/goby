@@ -14,11 +14,10 @@
 #include "GsnapSequence.h"
 extern "C" {
 #endif
-	CReadsHelper *openReadsReader(char *filename);
-	int hasNext(CReadsHelper *readsHelper);
-	// Sequence_T* next(CReadsHelper *readsHelper);
-	void next(CReadsHelper *readsHelper);
-	void finished();
+	CReadsHelper *gobyReads_openReadsReader(char *filename);
+	int gobyReads_hasNext(CReadsHelper *readsHelper);
+	Sequence_T gobyReads_next(CReadsHelper *readsHelper);
+	void gobyReads_finished(CReadsHelper *readsHelper);
 #ifdef __cplusplus
 }
 #endif

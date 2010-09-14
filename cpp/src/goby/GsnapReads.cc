@@ -13,7 +13,7 @@ extern "C" {
 	/**
 	 * Open the .compact-reads file to read from.
 	 */
-	CReadsHelper* openReadsReader(char *filename) {
+	CReadsHelper* gobyReads_openReadsReader(char *filename) {
 		string strFilename (filename);
 		cout << "Opening file " << strFilename << endl;
 		CReadsHelper *readsHelper = new CReadsHelper;
@@ -27,11 +27,8 @@ extern "C" {
 	 * This should be called ONCE per read.
 	 * Return values, 0 == false,  1 == true
 	 */
-	int hasNext(CReadsHelper *readsHelper) {
+	int gobyReads_hasNext(CReadsHelper *readsHelper) {
 		if (*(readsHelper->it) != readsHelper->readsReader->end()) {
-			if (readsHelper->numRead != 0) {
-				(*(readsHelper->it))++;
-			}
 			return 1;
 		} else {
 			return 0;
@@ -41,16 +38,27 @@ extern "C" {
 	/**
 	 * This should be called ONCE per read AFTER hasNext(...) has been called and returned TRUE.
 	 */
-//	Sequence_T* next(goby::ReadEntryIterator it) {
-	void next(CReadsHelper *readsHelper) {
-	    goby::ReadEntry entry = *(*(readsHelper->it));
+	Sequence_T gobyReads_next(CReadsHelper *readsHelper) {
 		readsHelper->numRead++;
+	    goby::ReadEntry entry = *(*(readsHelper->it));
+	    Sequence_T query;
+
+	    if (entry.has_sequence()) {
+		    query.contents = new char[entry.sequence().size()+1];
+		    strcpy (query.contents, entry.sequence().c_str());
+	    } else {
+		    query.contents = (char *) NULL;
+	    }
+
+	    // Increment to the next ReadsEntry
+		(*(readsHelper->it))++;
+	    return query;
 	}
 
 	/**
 	 * Call after you are _completely_ done reading Goby Reads.
 	 */
-	void finished() {
+	void gobyReads_finished(CReadsHelper *readsHelper) {
 		  google::protobuf::ShutdownProtobufLibrary();
 	}
 }

@@ -15,7 +15,13 @@
  * The following definition comes from GMap/GSnap Sequence.c.
  */
 #define T Sequence_T
-struct T {
+
+#ifdef __cplusplus
+struct Sequence_T {
+#else
+typedef struct {
+#endif
+
     char *acc; /* Accession */
     char *restofheader; /* Rest of header */
     char *contents; /* Original sequence, ends with '\0' */
@@ -38,6 +44,11 @@ struct T {
 #endif
     int subseq_offset; /* Used only for subsequences */
     int skiplength; /* Used only for sequences longer than MAXSEQLEN */
+
+#ifdef __cplusplus
 };
+#else
+} Sequence_T;
+#endif
 
 #endif /* GSNAPSEQUENCE_H_ */
