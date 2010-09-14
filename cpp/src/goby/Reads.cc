@@ -198,6 +198,10 @@ namespace goby {
     return ReadEntryIterator(fd);
   };
 
+  ReadEntryIterator* ReadsReader::beginPointer() const {
+    return new ReadEntryIterator(fd);
+  };
+
   ReadEntryIterator ReadsReader::end() const {
     return *read_entry_iterator_end;
   };

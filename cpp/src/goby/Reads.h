@@ -96,6 +96,7 @@ namespace goby {
     ~ReadsReader(void);
 
     ReadEntryIterator begin() const;
+    ReadEntryIterator* beginPointer() const;
     ReadEntryIterator end() const;
   };
 
