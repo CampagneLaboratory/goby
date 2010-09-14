@@ -18,7 +18,10 @@ libgoby_la_SOURCES = \
 	goby/Reads.pb.cc \
 	goby/Reads.pb.h \
 	goby/TooManyHits.cc \
-	goby/TooManyHits.h
+	goby/TooManyHits.h \
+	goby/GsnapReads.cc \
+	goby/GsnapReads.h \
+	goby/GsnapSequence.h
 
 nobase_include_HEADERS = \
 	goby/Alignments.h \
