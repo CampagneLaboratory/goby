@@ -13,27 +13,24 @@ extern "C" {
 	/**
 	 * Open the .compact-reads file to read from.
 	 */
-	goby::ReadsReader* openReadsReader(char *filename) {
+	CReadsHelper* openReadsReader(char *filename) {
 		string strFilename (filename);
 		cout << "Opening file " << strFilename << endl;
-		return new goby::ReadsReader(strFilename);
-	}
-
-	/**
-	 * Obtain an iterator to read entries from the already open .compact-reads file.
-	 */
-	goby::ReadEntryIterator* getReadsIterator(goby::ReadsReader *readerReader) {
-		return readerReader->beginPointer();
+		CReadsHelper *readsHelper = new CReadsHelper;
+		readsHelper->readsReader = new goby::ReadsReader(strFilename);
+		readsHelper->it = readsHelper->readsReader->beginPointer();
+		readsHelper->numRead = 0;
+		return readsHelper;
 	}
 
 	/**
 	 * This should be called ONCE per read.
 	 * Return values, 0 == false,  1 == true
 	 */
-	int hasNext(goby::ReadsReader *readsReader, goby::ReadEntryIterator *it, int numRead) {
-		if ((*it) != readsReader->end()) {
-			if (numRead != 0) {
-				(*it)++;
+	int hasNext(CReadsHelper *readsHelper) {
+		if (*(readsHelper->it) != readsHelper->readsReader->end()) {
+			if (readsHelper->numRead != 0) {
+				(*(readsHelper->it))++;
 			}
 			return 1;
 		} else {
@@ -45,8 +42,9 @@ extern "C" {
 	 * This should be called ONCE per read AFTER hasNext(...) has been called and returned TRUE.
 	 */
 //	Sequence_T* next(goby::ReadEntryIterator it) {
-	void next(goby::ReadEntryIterator *it) {
-	    goby::ReadEntry entry = *(*it);
+	void next(CReadsHelper *readsHelper) {
+	    goby::ReadEntry entry = *(*(readsHelper->it));
+		readsHelper->numRead++;
 	}
 
 	/**
@@ -54,9 +52,5 @@ extern "C" {
 	 */
 	void finished() {
 		  google::protobuf::ShutdownProtobufLibrary();
-	}
-
-	int testReturnsTen() {
-		return 10;
 	}
 }

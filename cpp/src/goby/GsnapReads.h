@@ -8,27 +8,19 @@
 #ifndef GSNAPREADS_H_
 #define GSNAPREADS_H_
 
+#include "CReadsHelper.h"
 
 #ifdef __cplusplus
+#include "GsnapSequence.h"
 extern "C" {
-	#include "Reads.h"
-	#include "GsnapSequence.h"
-	goby::ReadsReader* openReadsReader(char *filename);
-	goby::ReadEntryIterator* getReadsIterator(goby::ReadsReader *readerReader);
-	int hasNext(goby::ReadsReader *readerReaderP, goby::ReadEntryIterator *itP, int numRead);
-	// Sequence_T* next(goby::ReadEntryIterator *itP);
-	void next(goby::ReadEntryIterator *itP);
+#endif
+	CReadsHelper *openReadsReader(char *filename);
+	int hasNext(CReadsHelper *readsHelper);
+	// Sequence_T* next(CReadsHelper *readsHelper);
+	void next(CReadsHelper *readsHelper);
 	void finished();
-	int testReturnsTen();
+#ifdef __cplusplus
 }
-#else
-	void* openReadsReader(char *filename);
-	void* getReadsIterator(void *reader);
-	int hasNext(void *reader, void *iterator, int numRead);
-	// Sequence_T* next(void *iterator);
-	void next(void *iterator);
-	void finished();
-	int testReturnsTen();
 #endif
 
 #endif /* GSNAPREADS_H_ */

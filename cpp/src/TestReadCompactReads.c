@@ -12,14 +12,14 @@ int main(int argc, char **argv) {
 	// char *filename = "/desktop/NGA/small.compact-reads";
 	char *filename = "C:\\Users\\kdorff\\Desktop\\NGA\\color-HBR.73_20080930_1_Ambion_HBR_HBR_F3-1.compact-reads";
 	printf("Calling openReadsReader with %s\n", filename);
-	void *reader = openReadsReader(filename);
-	void *it = getReadsIterator(reader);
+	CReadsHelper *readsHelper = openReadsReader(filename);
 	int i = 0;
-	while (hasNext(reader, it, i) == 1) {
-		next(it);
+	while (hasNext(readsHelper) == 1) {
+		next(readsHelper);
 		i++;
 	}
-	printf("Iterated %d times\n", i);
+	printf("Iterated %d/%d times\n", i, readsHelper->numRead);
 	printf("Calling finished\n");
-	void finished();
+	finished();
+	return 0;
 }
