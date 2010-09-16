@@ -1,8 +1,8 @@
 #include <string>
 #include <iostream>
 #include "Reads.h"
-#include "GSnapSequence.h"
-#include "GSnapReads.h"
+#include "GsnapSequence.h"
+#include "GsnapReads.h"
 
 using namespace std;
 /**
