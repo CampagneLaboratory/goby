@@ -31,7 +31,9 @@ nobase_include_HEADERS = \
 	goby/MessageChunks.h \
 	goby/Reads.h \
 	goby/Reads.pb.h \
-	goby/TooManyHits.h
+	goby/TooManyHits.h \
+	goby/GsnapReads.h \
+    goby/CReadsHelper.h
 
 bin_PROGRAMS = GobyAlignmentStats GobyAlignmentToText GobyReadsStats GobyFastaToCompact
 

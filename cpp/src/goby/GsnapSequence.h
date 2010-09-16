@@ -9,7 +9,7 @@
 #define GSNAPSEQUENCE_H_
 
 #define GSNAP
-#define PMAP
+#undef PMAP
 
 /**
  * The following definition comes from GMap/GSnap Sequence.c.
