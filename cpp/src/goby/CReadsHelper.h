@@ -9,11 +9,15 @@
 #define CREADSHELPER_H_
 
 #ifdef __cplusplus
+	#include <queue>
+	#include <string>
 	#include "Reads.h"
 	// More complex structure for C++
 	struct CReadsHelper {
 		goby::ReadsReader *readsReader;
 		goby::ReadEntryIterator *it;
+		std::queue<std::string> *unopenedFiles;
+		unsigned char circular;
 		unsigned int numRead;
 	};
 #else
@@ -21,6 +25,8 @@
 	typedef struct {
 		void *readsReader;
 		void *it;
+		void *unopenedFiles;
+		unsigned char circular;
 		unsigned int numRead;
 	} CReadsHelper;
 #endif
