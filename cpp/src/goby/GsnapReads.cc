@@ -45,7 +45,7 @@ extern "C" {
 		readsHelper->unopenedFiles->pop();
 		cout << "Opening file " << filename << endl;
 		readsHelper->readsReader = new goby::ReadsReader(filename);
-		printf("Making iterator\n");
+		printf("Making begin\n");
 		readsHelper->it = readsHelper->readsReader->beginPointer();
 		printf("... done\n");
 		return readsHelper;
@@ -61,7 +61,8 @@ extern "C" {
 	 */
 	int gobyReads_hasNext(CReadsHelper *readsHelper) {
 		printf("Has next? ");
-		if (*(readsHelper->it) != readsHelper->readsReader->end()) {
+		goby::ReadEntryIterator end = (*readsHelper).readsReader->end();
+        if (*((*readsHelper).it) != end) {
 			printf(" Yes\n");
 			return 1;
 		} else {
@@ -79,12 +80,12 @@ extern "C" {
 	Sequence_T gobyReads_next(CReadsHelper *readsHelper) {
 	    Sequence_T queryseq1;
 		// Not supporting paired reads yet
-		printf("Next... last # read was %d\n", readsHelper->numRead);
+		printf("Next... last # read was %d\n", (*readsHelper).numRead);
 		printf("Getting entry\n");
-	    goby::ReadEntry entry = *(*(readsHelper->it));
+	    goby::ReadEntry entry = *(*(*readsHelper).it);
 	    printf("Got entry\n");
-		(readsHelper->numRead)++;
-		printf("Incremented newval=%d\n", readsHelper->numRead);
+		(*readsHelper).numRead++;
+		printf("Incremented newval=%d\n", (*readsHelper).numRead);
 
 	    int fullLength = 0;
 	    if (entry.has_sequence()) {
@@ -138,7 +139,7 @@ extern "C" {
 
 	    // Increment to the next ReadsEntry
 		printf("Incrementing to next entry\n");
-		(*(readsHelper->it))++;
+		(*(*readsHelper).it)++;
 		printf("Done with next\n");
 	    return queryseq1;
 	}
