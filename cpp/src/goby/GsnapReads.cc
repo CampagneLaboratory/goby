@@ -1,6 +1,6 @@
 #include <string>
 #include <iostream>
-#include <vector>
+#include <queue>
 
 #include "Reads.h"
 #include "GsnapSequence.h"
@@ -18,17 +18,26 @@ extern "C" {
 	CReadsHelper* gobyReads_openReadsReader(
 			char **unopenedFiles, int numUnopenedFiles,
 			unsigned char circular) {
+
+		printf("Adding %d files to the queue\n", numUnopenedFiles);
 		if (numUnopenedFiles == 0) {
-            fprintf(stderr,"No input files to process.\n");
-            exit(9);
+			fprintf(stderr,"No input files to process.\n");
+			exit(9);
 		}
+		printf("First item should be %s\n", unopenedFiles[0]);
+		printf("Making CReadsHelper\n");
 		CReadsHelper *readsHelper = new CReadsHelper;
-		readsHelper->it = readsHelper->readsReader->beginPointer();
+		printf("... done\n");
 		readsHelper->numRead = 0;
 		readsHelper->circular = circular;
+		printf("Making queue\n");
 		readsHelper->unopenedFiles = new queue<string>;
-		for (int i = numUnopenedFiles; i < numUnopenedFiles; i--) {
+		printf("... done\n");
+		for (int i = 0; i < numUnopenedFiles; i++) {
+			printf("Grabbing queue item # %d\n", i);
+			printf("Grabbing for queue the filename %s\n", unopenedFiles[0]);
 			string unopenedFile(unopenedFiles[0]);
+			cout << "... adding to the queue: " << unopenedFile << endl;
 			readsHelper->unopenedFiles->push(unopenedFile);
 			unopenedFiles++;
 		}
@@ -36,6 +45,9 @@ extern "C" {
 		readsHelper->unopenedFiles->pop();
 		cout << "Opening file " << filename << endl;
 		readsHelper->readsReader = new goby::ReadsReader(filename);
+		printf("Making iterator\n");
+		readsHelper->it = readsHelper->readsReader->beginPointer();
+		printf("... done\n");
 		return readsHelper;
 	}
 
@@ -43,14 +55,17 @@ extern "C" {
 	 * This should be called ONCE per read.
 	 * Return values, 0 == false,  1 == true
 	 *
-	 * TODO: * We have a vector of unopenedFile but it isn't currently
+	 * TODO: * We have a queue of unopenedFile but it isn't currently
 	 * TODO:   switching to the next file when we've finished reading
 	 * TODO:   the first.
 	 */
 	int gobyReads_hasNext(CReadsHelper *readsHelper) {
+		printf("Has next? ");
 		if (*(readsHelper->it) != readsHelper->readsReader->end()) {
+			printf(" Yes\n");
 			return 1;
 		} else {
+			printf(" No\n");
 			return 0;
 		}
 	}
@@ -62,20 +77,26 @@ extern "C" {
 	 * TODO:   file but I'm not reading it at this moment.
 	 */
 	Sequence_T gobyReads_next(CReadsHelper *readsHelper) {
-		// Not supporting paired reads yet
-
-		readsHelper->numRead++;
-	    goby::ReadEntry entry = *(*(readsHelper->it));
-
 	    Sequence_T queryseq1;
+		// Not supporting paired reads yet
+		printf("Next... last # read was %d\n", readsHelper->numRead);
+		printf("Getting entry\n");
+	    goby::ReadEntry entry = *(*(readsHelper->it));
+	    printf("Got entry\n");
+		(readsHelper->numRead)++;
+		printf("Incremented newval=%d\n", readsHelper->numRead);
+
 	    int fullLength = 0;
 	    if (entry.has_sequence()) {
+	    	printf("Populating contents\n");
 	    	fullLength = entry.sequence().size();
 	    	queryseq1.contents_alloc = new char[fullLength + 1];
 		    strcpy(queryseq1.contents_alloc, entry.sequence().c_str());
 	    	queryseq1.contents_uc_alloc = new char[fullLength + 1];
 		    strcpy(queryseq1.contents_uc_alloc, entry.sequence().c_str());
+		    printf("Done\n");
 	    } else {
+	    	printf("No contents\n");
 	    	queryseq1.contents_alloc = (char *) NULL;
 	    	queryseq1.contents_uc_alloc = (char *) NULL;
 	    }
@@ -89,24 +110,36 @@ extern "C" {
 	    queryseq1.trimend = 0;
 	    queryseq1.subseq_offset = 0;
 
+	    printf("populating acc from read index\n");
+	    queryseq1.acc = new char[50];
 	    sprintf(queryseq1.acc, "%d", entry.read_index());
+    	printf("... done\n");
 	    if (entry.has_description()) {
+	    	printf("Populating description\n");
 	    	queryseq1.restofheader = new char[entry.description().size() + 1];
 	    	strcpy(queryseq1.restofheader, entry.description().c_str());
 	    } else {
+	    	printf("No description\n");
 	    	queryseq1.restofheader = (char *) NULL;
 	    }
 
-	    if (entry.has_quality_scores()) {
+	    /**
+	     * TODO: Goby is storing Quality Scores modified. I need a decode function.
+	     */
+	    if (false && entry.has_quality_scores()) {
+	    	printf("Populating quality\n");
 	    	queryseq1.quality_alloc = new char[entry.quality_scores().size() + 1];
 		    strcpy(queryseq1.quality_alloc, entry.quality_scores().c_str());
 	    } else {
+	    	printf("No quality\n");
 	    	queryseq1.quality_alloc = (char *) NULL;
 	    }
-	    queryseq1.quality = queryseq1.quality_alloc;
+    	queryseq1.quality = queryseq1.quality_alloc;
 
 	    // Increment to the next ReadsEntry
+		printf("Incrementing to next entry\n");
 		(*(readsHelper->it))++;
+		printf("Done with next\n");
 	    return queryseq1;
 	}
 
