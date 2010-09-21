@@ -63,8 +63,8 @@ extern "C" {
 		printf("Has next? ");
 		goby::ReadEntryIterator end = (*readsHelper).readsReader->end();
         if (*((*readsHelper).it) != end) {
-			printf(" Yes\n");
-			return 1;
+			printf(" Yes 33\n");
+			return 33;
 		} else {
 			printf(" No\n");
 			return 0;
@@ -77,9 +77,9 @@ extern "C" {
 	 * TODO: * We aren't supporting paired or circular here. That data should be in the compact-reads
 	 * TODO:   file but I'm not reading it at this moment.
 	 */
-	Sequence_T gobyReads_next(CReadsHelper *readsHelper) {
-	    Sequence_T queryseq1;
+	Sequence_T *gobyReads_next(CReadsHelper *readsHelper) {
 		// Not supporting paired reads yet
+        printf("Starting next\n");
 		printf("Next... last # read was %d\n", (*readsHelper).numRead);
 		printf("Getting entry\n");
 	    goby::ReadEntry entry = *(*(*readsHelper).it);
@@ -87,41 +87,43 @@ extern "C" {
 		(*readsHelper).numRead++;
 		printf("Incremented newval=%d\n", (*readsHelper).numRead);
 
+	    Sequence_T* queryseq1 = new Sequence_T;
+	    // queryseq1 = (Sequence_T) malloc(sizeof(Sequence_T));
 	    int fullLength = 0;
 	    if (entry.has_sequence()) {
 	    	printf("Populating contents\n");
 	    	fullLength = entry.sequence().size();
-	    	queryseq1.contents_alloc = new char[fullLength + 1];
-		    strcpy(queryseq1.contents_alloc, entry.sequence().c_str());
-	    	queryseq1.contents_uc_alloc = new char[fullLength + 1];
-		    strcpy(queryseq1.contents_uc_alloc, entry.sequence().c_str());
+	    	queryseq1->contents_alloc = new char[fullLength + 1];
+		    strcpy(queryseq1->contents_alloc, entry.sequence().c_str());
+	    	queryseq1->contents_uc_alloc = new char[fullLength + 1];
+		    strcpy(queryseq1->contents_uc_alloc, entry.sequence().c_str());
 		    printf("Done\n");
 	    } else {
 	    	printf("No contents\n");
-	    	queryseq1.contents_alloc = (char *) NULL;
-	    	queryseq1.contents_uc_alloc = (char *) NULL;
+	    	queryseq1->contents_alloc = (char *) NULL;
+	    	queryseq1->contents_uc_alloc = (char *) NULL;
 	    }
-	    queryseq1.contents = queryseq1.contents_alloc;
-	    queryseq1.contents_uc = queryseq1.contents_uc_alloc;
-	    queryseq1.fulllength = fullLength;
-	    queryseq1.chop = (char *) NULL;
-	    queryseq1.choplength = 0;
-	    queryseq1.skiplength = 0;
-	    queryseq1.trimstart = 0;
-	    queryseq1.trimend = 0;
-	    queryseq1.subseq_offset = 0;
+	    queryseq1->contents = queryseq1->contents_alloc;
+	    queryseq1->contents_uc = queryseq1->contents_uc_alloc;
+	    queryseq1->fulllength = fullLength;
+	    queryseq1->chop = (char *) NULL;
+	    queryseq1->choplength = 0;
+	    queryseq1->skiplength = 0;
+	    queryseq1->trimstart = 0;
+	    queryseq1->trimend = 0;
+	    queryseq1->subseq_offset = 0;
 
 	    printf("populating acc from read index\n");
-	    queryseq1.acc = new char[50];
-	    sprintf(queryseq1.acc, "%d", entry.read_index());
+	    queryseq1->acc = new char[50];
+	    sprintf(queryseq1->acc, "%d", entry.read_index());
     	printf("... done\n");
 	    if (entry.has_description()) {
 	    	printf("Populating description\n");
-	    	queryseq1.restofheader = new char[entry.description().size() + 1];
-	    	strcpy(queryseq1.restofheader, entry.description().c_str());
+	    	queryseq1->restofheader = new char[entry.description().size() + 1];
+	    	strcpy(queryseq1->restofheader, entry.description().c_str());
 	    } else {
 	    	printf("No description\n");
-	    	queryseq1.restofheader = (char *) NULL;
+	    	queryseq1->restofheader = (char *) NULL;
 	    }
 
 	    /**
@@ -129,13 +131,13 @@ extern "C" {
 	     */
 	    if (false && entry.has_quality_scores()) {
 	    	printf("Populating quality\n");
-	    	queryseq1.quality_alloc = new char[entry.quality_scores().size() + 1];
-		    strcpy(queryseq1.quality_alloc, entry.quality_scores().c_str());
+	    	queryseq1->quality_alloc = new char[entry.quality_scores().size() + 1];
+		    strcpy(queryseq1->quality_alloc, entry.quality_scores().c_str());
 	    } else {
 	    	printf("No quality\n");
-	    	queryseq1.quality_alloc = (char *) NULL;
+	    	queryseq1->quality_alloc = (char *) NULL;
 	    }
-    	queryseq1.quality = queryseq1.quality_alloc;
+    	queryseq1->quality = queryseq1->quality_alloc;
 
 	    // Increment to the next ReadsEntry
 		printf("Incrementing to next entry\n");

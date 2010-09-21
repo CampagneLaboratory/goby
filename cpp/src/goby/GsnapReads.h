@@ -16,7 +16,7 @@ extern "C" {
 #endif
 	CReadsHelper *gobyReads_openReadsReader(char **unopenedFiles, int numUnopenedFiles, unsigned char circular);
 	int gobyReads_hasNext(CReadsHelper *readsHelper);
-	Sequence_T gobyReads_next(CReadsHelper *readsHelper);
+	Sequence_T *gobyReads_next(CReadsHelper *readsHelper);
 	void gobyReads_finished(CReadsHelper *readsHelper);
 #ifdef __cplusplus
 }
