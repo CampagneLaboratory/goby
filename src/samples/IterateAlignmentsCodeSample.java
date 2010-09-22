@@ -35,8 +35,11 @@ public class IterateAlignmentsCodeSample {
         try {
             final IterateAlignments iterator = new IterateAlignments() {
                 @Override
-                public void processAlignmentEntry(final AlignmentReader alignmentReader, final Alignments.AlignmentEntry alignmentEntry) {
-                    System.out.printf("query-index: %d target-index: %d target-identifier: %s score: %f %n",
+                public void processAlignmentEntry(final AlignmentReader alignmentReader,
+                                                  final Alignments.AlignmentEntry alignmentEntry) {
+
+                    System.out.printf("query-index: %d target-index: %d target-identifier: %s " +
+                            "score: %f %n",
                             alignmentEntry.getQueryIndex(),
                             alignmentEntry.getTargetIndex(),
                             getReferenceId(alignmentEntry.getTargetIndex()),

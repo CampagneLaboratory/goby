@@ -226,6 +226,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                     assert readIndex == countVariationBases.size();
                     reader.getFloat(); // ignore
                     reader.getFloat(); // ignore
+                    reader.getInt(); // ignore
                     countReferenceBases.add(reader.getInt());
                     lastBasename = basename;
                 }
@@ -300,13 +301,13 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
             readIndexStats.removeAll(toRemove);
 
-            // TODO incorrect, but useful for now. We assume the count of reference bases is uniform over the read indices.
-            // TODO remove after mode sequence-variation-stats has been updated to estimate these quantities per read index.
             for (ReadIndexStats stat : readIndexStats) {
-                for (int readIndex = 0; readIndex < numberOfReadIndices[stat.readerIndex]; readIndex++) {
-
-                    stat.countReferenceBases[readIndex] /= numberOfReadIndices[stat.readerIndex];
+                for (int i = 0; i < stat.countReferenceBases.length; i++) {
+                    System.out.printf("basename %s readIndex %d numberOfReferenceBases %d%n",
+                            stat.basename,
+                            i+1, stat.countReferenceBases[i]);
                 }
+
             }
 
         }

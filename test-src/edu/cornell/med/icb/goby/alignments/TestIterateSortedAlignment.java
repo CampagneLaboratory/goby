@@ -26,13 +26,13 @@ import org.junit.Test;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.File;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.*;
 
 /**
  * @author Fabien Campagne
@@ -137,11 +137,135 @@ public class TestIterateSortedAlignment {
         }
     }
 
+    @Test
+    public void testIterateSortedTwoMutations() throws IOException {
+
+
+        final String basename = "align-skip-to-1-concat-two-mutations";
+        final String basenamePath = FilenameUtils.concat(BASE_TEST_DIR, basename);
+        final AlignmentWriter writer =
+                new AlignmentWriter(basenamePath);
+        writer.setNumAlignmentEntriesPerChunk(1);
+
+        final int numTargets = 3;
+        final int[] targetLengths = new int[numTargets];
+
+        for (int referenceIndex = 0; referenceIndex < numTargets; referenceIndex++) {
+            targetLengths[referenceIndex] = 1000;
+        }
+        writer.setTargetLengths(targetLengths);
+        // we write this alignment sorted:
+
+        writer.setSorted(true);
+        Alignments.AlignmentEntry.Builder newEntry;
+
+
+        newEntry = prepareAlignmentEntry(0, 1, 100, 3, true, new int[]{2, 31, 34}, 35);
+        writer.appendEntry(newEntry.build());
+
+        writer.close();
+        writer.printStats(System.out);
+
+        final IntSet variantReadIndices = new IntOpenHashSet();
+        final IntSet variantPositionOnRef = new IntOpenHashSet();
+        IterateSortedAlignmentsListImpl iterator = new IterateSortedAlignmentsListImpl() {
+
+            public void processPositions(int position, ObjectArrayList<PositionBaseInfo> positionBaseInfos) {
+
+            }
+
+            @Override
+            public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
+                                           Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
+                                           Alignments.SequenceVariation var, char toChar, char fromChar,
+                                           int currentRefPosition, int currentReadIndex) {
+                variantReadIndices.add(currentReadIndex);
+                variantPositionOnRef.add(currentRefPosition);
+            }
+
+
+        };
+        iterator.iterate(basenamePath);
+
+        assertTrue(variantReadIndices.contains(34));
+        assertTrue(variantReadIndices.contains(2));
+        assertTrue(variantReadIndices.contains(5));
+        assertTrue(variantPositionOnRef.contains(101));
+        assertTrue(variantPositionOnRef.contains(130));
+        assertTrue(variantPositionOnRef.contains(133));
+
+    }
+
+    @Test
+    public void testIterateSortedTwoMutationsSmall() throws IOException {
+
+
+        final String basename = "align-skip-to-1-concat-two-mutations-small";
+        final String basenamePath = FilenameUtils.concat(BASE_TEST_DIR, basename);
+        final AlignmentWriter writer =
+                new AlignmentWriter(basenamePath);
+        writer.setNumAlignmentEntriesPerChunk(1);
+
+        final int numTargets = 3;
+        final int[] targetLengths = new int[numTargets];
+
+        for (int referenceIndex = 0; referenceIndex < numTargets; referenceIndex++) {
+            targetLengths[referenceIndex] = 1000;
+        }
+        writer.setTargetLengths(targetLengths);
+        // we write this alignment sorted:
+
+        writer.setSorted(true);
+        Alignments.AlignmentEntry.Builder newEntry;
+
+
+        newEntry = prepareAlignmentEntry(0, 1, 100, 3, true, new int[]{2, 4}, 5);
+        writer.appendEntry(newEntry.build());
+
+        writer.close();
+        writer.printStats(System.out);
+
+        final IntSet variantReadIndices = new IntOpenHashSet();
+        final IntSet variantPositionOnRef = new IntOpenHashSet();
+        IterateSortedAlignmentsListImpl iterator = new IterateSortedAlignmentsListImpl() {
+
+            public void processPositions(int position, ObjectArrayList<PositionBaseInfo> positionBaseInfos) {
+
+            }
+
+            @Override
+            public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
+                                           Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
+                                           Alignments.SequenceVariation var, char toChar, char fromChar,
+                                           int currentRefPosition, int currentReadIndex) {
+                variantReadIndices.add(currentReadIndex);
+                variantPositionOnRef.add(currentRefPosition);
+            }
+
+
+        };
+        iterator.iterate(basenamePath);
+
+
+        assertTrue(variantReadIndices.contains(2));
+        assertTrue(variantReadIndices.contains(4));
+        assertTrue(variantPositionOnRef.contains(101));
+        assertTrue(variantPositionOnRef.contains(103));
+
+
+    }
 
     private Alignments.AlignmentEntry.Builder prepareAlignmentEntry(final int queryIndex, final int targetIndex,
                                                                     final int position,
                                                                     final float score, final boolean matchesReverseStrand,
                                                                     int[] variationIndices) {
+        return prepareAlignmentEntry(queryIndex, targetIndex, position, score, matchesReverseStrand, variationIndices, 35);
+    }
+
+    private Alignments.AlignmentEntry.Builder prepareAlignmentEntry(final int queryIndex, final int targetIndex,
+                                                                    final int position,
+                                                                    final float score, final boolean matchesReverseStrand,
+                                                                    int[] variationIndices, int queryLength) {
         Alignments.AlignmentEntry.Builder newEntry = Alignments.AlignmentEntry.newBuilder();
         newEntry.setQueryIndex(queryIndex);
         newEntry.setTargetIndex(targetIndex);
@@ -149,7 +273,7 @@ public class TestIterateSortedAlignment {
         newEntry.setPosition(position);
         newEntry.setMatchingReverseStrand(matchesReverseStrand);
         newEntry.setMultiplicity(1);
-        newEntry.setQueryLength(35);
+        newEntry.setQueryLength(queryLength);
 
         for (int variaIndex : variationIndices) {
             Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder();
@@ -163,10 +287,13 @@ public class TestIterateSortedAlignment {
         return newEntry;
     }
 
-    private Alignments.AlignmentEntry.Builder prepareAlignmentEntryWithReferenceInsertion(final int queryIndex, final int targetIndex,
+    private Alignments.AlignmentEntry.Builder prepareAlignmentEntryWithReferenceInsertion(final int queryIndex,
+                                                                                          final int targetIndex,
                                                                                           final int position,
-                                                                                          final float score, final boolean matchesReverseStrand,
+                                                                                          final float score,
+                                                                                          final boolean matchesReverseStrand,
                                                                                           int[] variationIndices) {
+        
         Alignments.AlignmentEntry.Builder newEntry = Alignments.AlignmentEntry.newBuilder();
         newEntry.setQueryIndex(queryIndex);
         newEntry.setTargetIndex(targetIndex);
@@ -263,9 +390,13 @@ public class TestIterateSortedAlignment {
         writer.printStats(System.out);
 
         final Int2IntMap positionMap = new Int2IntOpenHashMap();
+        final IntSet variantReadIndices = new IntOpenHashSet();
 
         IterateSortedAlignmentsListImpl iterator = new IterateSortedAlignmentsListImpl() {
-
+            @Override
+            public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders, Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases, Alignments.SequenceVariation var, char toChar, char fromChar, int currentRefPosition, int currentReadIndex) {
+                variantReadIndices.add(currentReadIndex);
+            }
 
             @Override
             public void processPositions(int position, ObjectArrayList<PositionBaseInfo> positionBaseInfos) {
@@ -282,13 +413,13 @@ public class TestIterateSortedAlignment {
         for (int i = 0; i < 100; i++) {
             assertEquals("position " + i, 0, positionMap.get(i));
         }
-        for (int i = 100; i < 104; i++) {
+        for (int i = 100; i < 103; i++) {
             assertEquals("position " + i, 1, positionMap.get(i));
         }
-        for (int i = 104; i < 107; i++) {
+        for (int i = 103; i < 106; i++) {
             assertEquals("position " + i, 0, positionMap.get(i));
         }
-        for (int i = 107; i < 137; i++) {
+        for (int i = 106; i < 137; i++) {
             assertEquals("position " + i, 1, positionMap.get(i));
         }
         for (int i = 138; i < 150; i++) {

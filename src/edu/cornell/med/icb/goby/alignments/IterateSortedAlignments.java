@@ -169,13 +169,13 @@ public abstract class IterateSortedAlignments<T> {
             }
             {
                 first = false;
-                               int currentReadIndex = forwardStrand ? 0 : queryLength + 1;
+                int currentReadIndex = forwardStrand ? 0 : queryLength + 1;
                 int currentRefPosition = alignmentEntry.getPosition() - 1;
                 int lastMatchIndex = 0;
 
                 // add to the list at this position:
                 for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
-                    for (int i = lastMatchIndex; i < var.getPosition(); i++) {
+                    for (int i = lastMatchIndex; i < var.getPosition() - 1; i++) {
                         // match stretch before variation:
                         currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
                         currentRefPosition = advanceReference(currentRefPosition);
@@ -191,34 +191,39 @@ public abstract class IterateSortedAlignments<T> {
 
                     lastMatchIndex = var.getPosition() + length - 1;
 
-
                     for (int i = 0; i < length; i++) {
 
-                        final char toChar = i>=toLength? '-': to.charAt(i);
-                        final char fromChar = i>=fromLength? '-':from.charAt(i);
+                        final char toChar = i >= toLength ? '-' : to.charAt(i);
+                        final char fromChar = i >= fromLength ? '-' : from.charAt(i);
                         if (toChar != '-') {
                             currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
                         }
-                        if (fromChar != '-') currentRefPosition = advanceReference(currentRefPosition);
+                        if (fromChar != '-') {
+                            currentRefPosition = advanceReference(currentRefPosition);
 
-                        observeVariantBase(sortedReaders, positionToBases, var, toChar, fromChar,
+                        }
+
+                        observeVariantBase(sortedReaders, positionToBases,
+                                var,
+                                toChar, fromChar,
                                 currentRefPosition, currentReadIndex);
 
                         lastMatchIndex = i + var.getPosition();
+
                     }
 
 
                 }
-                while (forwardStrand? currentReadIndex < queryLength :
-                        currentReadIndex>1) {
+                while (forwardStrand ? currentReadIndex < queryLength :
+                        currentReadIndex > 1) {
 
                     // match stretch before variation:
                     currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
                     currentRefPosition = advanceReference(currentRefPosition);
 
 
-                    assert currentReadIndex >= 1 && currentReadIndex < queryLength+1 :
-                            String.format("currentReadIndex %d is out of range.",currentReadIndex);
+                    assert currentReadIndex >= 1 && currentReadIndex < queryLength + 1 :
+                            String.format("currentReadIndex %d is out of range.", currentReadIndex);
 
                     observeReferenceBase(sortedReaders, alignmentEntry, positionToBases,
                             currentRefPosition, currentReadIndex);
@@ -262,14 +267,14 @@ public abstract class IterateSortedAlignments<T> {
 
     private int advanceReadIndex(boolean forwardStrand, int currentReadIndex) {
         currentReadIndex += forwardStrand ? 1 : -1;
-       // System.out.printf(" read-index=%d ", currentReadIndex);
+        // System.out.printf(" read-index=%d ", currentReadIndex);
 
         return currentReadIndex;
     }
 
     private int advanceReference(int currentRefPosition) {
         currentRefPosition += 1;
-     //   System.out.printf(" ref-pos=%d %n", currentRefPosition);
+        //   System.out.printf(" ref-pos=%d %n", currentRefPosition);
 
         return currentRefPosition;
     }

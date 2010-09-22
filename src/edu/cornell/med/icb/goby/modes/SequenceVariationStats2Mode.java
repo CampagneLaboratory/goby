@@ -146,7 +146,7 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
             switch (outputFormat) {
                 case TAB_DELIMITED:
                 case TSV:
-                    stream.println("basename\tread-index\tcount-variation-bases\tbases-at-index/all-variations-bases\tbases-at-index/all-reference-bases\tcount-reference-bases");
+                    stream.println("basename\tread-index\tcount-variation-bases\tbases-at-index/all-variations-bases\tbases-at-index/all-reference-bases\tcount-reference-bases\tcount-reference-bases-at-index");
                     break;
             }
 
@@ -233,7 +233,9 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
 
         }
 
-        public void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders, Alignments.AlignmentEntry alignmentEntry, Int2ObjectMap<CountsAtPosition> positionToBases, int currentRefPosition, int readIndex) {
+        public void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders, Alignments.AlignmentEntry alignmentEntry,
+                                         Int2ObjectMap<CountsAtPosition> positionToBases,
+                                         int currentRefPosition, int readIndex) {
             if (readIndex >= 1) {
          //       assert readIndex > 0 : String.format("positionInMatch=%d %s %n", positionInMatch, alignmentEntry);
                 maxReadIndex = Math.max(maxReadIndex, readIndex);
@@ -247,10 +249,10 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
                                        Int2ObjectMap<CountsAtPosition> positionToBases,
                                        Alignments.SequenceVariation var,
                                        char toChar, char fromChar, int currentRefPosition, int currentReadIndex) {
-            final int readIndex = var.getReadIndex();
-            maxReadIndex = Math.max(maxReadIndex, readIndex);
-            int count = readIndexVariationTally[readIndex];
-            readIndexVariationTally[readIndex] = count + 1;
+
+            maxReadIndex = Math.max(maxReadIndex, currentReadIndex);
+            int count = readIndexVariationTally[currentReadIndex];
+            readIndexVariationTally[currentReadIndex] = count + 1;
         }
 
         public void processPositions(int position, CountsAtPosition positionBaseInfos) {
