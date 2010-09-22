@@ -79,27 +79,28 @@ extern "C" {
 	 */
 	Sequence_T *gobyReads_next(CReadsHelper *readsHelper) {
 		// Not supporting paired reads yet
-        printf("Starting next\n");
+     /*   printf("Starting next\n");
 		printf("Next... last # read was %d\n", (*readsHelper).numRead);
 		printf("Getting entry\n");
-	    goby::ReadEntry entry = *(*(*readsHelper).it);
-	    printf("Got entry\n");
+	    */
+	     goby::ReadEntry entry = *(*(*readsHelper).it);
+	  //  printf("Got entry\n");
 		(*readsHelper).numRead++;
-		printf("Incremented newval=%d\n", (*readsHelper).numRead);
+		//printf("Incremented newval=%d\n", (*readsHelper).numRead);
 
 	    Sequence_T* queryseq1 = new Sequence_T;
-	    // queryseq1 = (Sequence_T) malloc(sizeof(Sequence_T));
+
 	    int fullLength = 0;
 	    if (entry.has_sequence()) {
-	    	printf("Populating contents\n");
+	//    	printf("Populating contents\n");
 	    	fullLength = entry.sequence().size();
 	    	queryseq1->contents_alloc = new char[fullLength + 1];
 		    strcpy(queryseq1->contents_alloc, entry.sequence().c_str());
 	    	queryseq1->contents_uc_alloc = new char[fullLength + 1];
 		    strcpy(queryseq1->contents_uc_alloc, entry.sequence().c_str());
-		    printf("Done\n");
+		//    printf("Done\n");
 	    } else {
-	    	printf("No contents\n");
+	    //	printf("No contents\n");
 	    	queryseq1->contents_alloc = (char *) NULL;
 	    	queryseq1->contents_uc_alloc = (char *) NULL;
 	    }
@@ -112,7 +113,7 @@ extern "C" {
 	    queryseq1->trimstart = 0;
 	    queryseq1->trimend = 0;
 	    queryseq1->subseq_offset = 0;
-
+     //TODO introduce a read index and preserve read id in acc?
 	    printf("populating acc from read index\n");
 	    queryseq1->acc = new char[50];
 	    sprintf(queryseq1->acc, "%d", entry.read_index());
@@ -127,7 +128,8 @@ extern "C" {
 	    }
 
 	    /**
-	     * TODO: Goby is storing Quality Scores modified. I need a decode function.
+	     * TODO: Goby is storing Quality Scores in Phred units. What encoding does GSnap require?
+	     * We need to convert quality score appropriately here.
 	     */
 	    if (false && entry.has_quality_scores()) {
 	    	printf("Populating quality\n");
