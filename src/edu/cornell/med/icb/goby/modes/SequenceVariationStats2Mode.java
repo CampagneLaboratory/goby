@@ -235,7 +235,7 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
 
         public void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders, Alignments.AlignmentEntry alignmentEntry,
                                          Int2ObjectMap<CountsAtPosition> positionToBases,
-                                         int currentRefPosition, int readIndex) {
+                                         int currentReferenceIndex, int currentRefPosition, int readIndex) {
             if (readIndex >= 1) {
          //       assert readIndex > 0 : String.format("positionInMatch=%d %s %n", positionInMatch, alignmentEntry);
                 maxReadIndex = Math.max(maxReadIndex, readIndex);
@@ -248,14 +248,14 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
         public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
                                        Int2ObjectMap<CountsAtPosition> positionToBases,
                                        Alignments.SequenceVariation var,
-                                       char toChar, char fromChar, int currentRefPosition, int currentReadIndex) {
+                                       char toChar, char fromChar, int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
 
             maxReadIndex = Math.max(maxReadIndex, currentReadIndex);
             int count = readIndexVariationTally[currentReadIndex];
             readIndexVariationTally[currentReadIndex] = count + 1;
         }
 
-        public void processPositions(int position, CountsAtPosition positionBaseInfos) {
+        public void processPositions(int referenceIndex, int intermediatePosition, CountsAtPosition positionBaseInfos) {
 
         }
 

@@ -162,7 +162,7 @@ public abstract class IterateSortedAlignments<T> {
                 // we process the list of PositionBaseInfo that map to the previously visited position:
                 //      processPositions(lastPosition, positionToBases.get(lastPosition));
 
-                processAndCleanup(lastPosition, positionToBases);
+                processAndCleanup(referenceIndex, lastPosition, positionToBases);
 
                 lastPosition = currentPosition;
 
@@ -180,7 +180,8 @@ public abstract class IterateSortedAlignments<T> {
                         currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
                         currentRefPosition = advanceReference(currentRefPosition);
                         observeReferenceBase(sortedReaders, alignmentEntry, positionToBases,
-                                currentRefPosition, currentReadIndex);
+
+                                referenceIndex, currentRefPosition, currentReadIndex);
                     }
 
                     final String to = var.getTo();
@@ -206,7 +207,7 @@ public abstract class IterateSortedAlignments<T> {
                         observeVariantBase(sortedReaders, positionToBases,
                                 var,
                                 toChar, fromChar,
-                                currentRefPosition, currentReadIndex);
+                                referenceIndex, currentRefPosition, currentReadIndex);
 
                         lastMatchIndex = i + var.getPosition();
 
@@ -226,7 +227,7 @@ public abstract class IterateSortedAlignments<T> {
                             String.format("currentReadIndex %d is out of range.", currentReadIndex);
 
                     observeReferenceBase(sortedReaders, alignmentEntry, positionToBases,
-                            currentRefPosition, currentReadIndex);
+                            referenceIndex, currentRefPosition, currentReadIndex);
                 }
             }
 
@@ -258,7 +259,7 @@ public abstract class IterateSortedAlignments<T> {
             maxPos = Math.max(pos, maxPos);
         }
         for (int position = minPos; position <= maxPos; position++) {
-            processAndCleanup(position, positionToBases);
+            processAndCleanup(lastTarget, lastPosition, positionToBases);
         }
 
         sortedReaders.close();
@@ -279,10 +280,10 @@ public abstract class IterateSortedAlignments<T> {
         return currentRefPosition;
     }
 
-    private void processAndCleanup(int lastPosition, Int2ObjectMap<T> positionToBases) {
+    private void processAndCleanup(int lastReferenceIndex, int lastPosition, Int2ObjectMap<T> positionToBases) {
         for (int intermediatePosition = lastRemovedPosition + 1; intermediatePosition <= lastPosition; intermediatePosition++) {
             if (positionToBases.containsKey(intermediatePosition)) {
-                processPositions(intermediatePosition, positionToBases.get(intermediatePosition));
+                processPositions(lastReferenceIndex, intermediatePosition, positionToBases.get(intermediatePosition));
                 positionToBases.remove(intermediatePosition);
             }
 
@@ -294,15 +295,16 @@ public abstract class IterateSortedAlignments<T> {
     public abstract void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders,
                                               Alignments.AlignmentEntry alignmentEntry,
                                               Int2ObjectMap<T> positionToBases,
-                                              int currentRefPosition, int currentReadIndex);
+                                              int currentReferenceIndex, int currentRefPosition, int currentReadIndex);
 
     public abstract void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
                                             Int2ObjectMap<T> positionToBases,
                                             Alignments.SequenceVariation var,
-                                            char toChar, char fromChar, int currentRefPosition, int currentReadIndex);
+                                            char toChar, char fromChar,
+                                            int currentReferenceIndex, int currentRefPosition, int currentReadIndex);
 
 
-    public abstract void processPositions(int position, T positionBaseInfos);
+    public abstract void processPositions(int referenceIndex, int intermediatePosition, T positionBaseInfos);
 
 
     /**
@@ -321,7 +323,7 @@ public abstract class IterateSortedAlignments<T> {
      * @param targetIndex The index of the desired reference sequence
      * @return The id of the reference sequence
      */
-    protected CharSequence getReferenceId(final int targetIndex) {
+    public CharSequence getReferenceId(final int targetIndex) {
         return referenceIds.getId(targetIndex);
     }
 

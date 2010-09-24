@@ -175,9 +175,9 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
                     }
                 }
 
-                // Reads in all the files and defines one iterator over all input files
+                // Reads in all the files and defines one sortedPositionIterator over all input files
                 final AnyTransitionCountsIterator iterator = new AnyTransitionCountsIterator(readers);
-                // Given all input files and one iterator over them, start collecting (possibly overlapping)
+                // Given all input files and one sortedPositionIterator over them, start collecting (possibly overlapping)
                 // peaks across all input files
                 final PeakAggregator peakAggregator = new PeakAggregator(iterator);
                 peakAggregator.setPeakDetectionThreshold(detectionThreshold);

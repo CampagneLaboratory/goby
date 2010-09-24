@@ -149,7 +149,7 @@ public class AnnotationPenaltyMode extends AbstractGobyMode {
                 if ((geneAnnot != null) && (propAnnot != null)) {
                     //check to see if they overlap
                     if (!geneAnnot.overlap(propAnnot)) {
-                        //determine which iterator to increment
+                        //determine which sortedPositionIterator to increment
                         if (geneAnnot.getStart() > propAnnot.getStart()) {
                             addPenalty(propAnnot);
                             propAnnot = getNextAnnotation(propAnnotIt);
@@ -159,7 +159,7 @@ public class AnnotationPenaltyMode extends AbstractGobyMode {
                         }
                     } else {
                         //They do overlap
-                        //Need to determine which annotation is the shorter sequence and advance it's iterator
+                        //Need to determine which annotation is the shorter sequence and advance it's sortedPositionIterator
                         addPenalty(geneAnnot, propAnnot);
                         if (geneAnnot.getEnd() < propAnnot.getEnd()) {
                             geneAnnot = getNextAnnotation(geneAnnotIt);
@@ -225,7 +225,7 @@ public class AnnotationPenaltyMode extends AbstractGobyMode {
             if ((geneSeg != null) && (propSeg != null)) {
                 //check to see if they overlap
                 if (!geneSeg.overlap(propSeg)) {
-                    //determine which iterator to increment
+                    //determine which sortedPositionIterator to increment
                     if (geneSeg.getStart() > propSeg.getStart()) {
                         addPenalty(propSeg);
                         propSeg = getNextSegment(propSegIt);
@@ -235,7 +235,7 @@ public class AnnotationPenaltyMode extends AbstractGobyMode {
                     }
                 } else {
                     //They do overlap
-                    //Need to determine which annotation is the shorter sequence and advance it's iterator
+                    //Need to determine which annotation is the shorter sequence and advance it's sortedPositionIterator
                     addPenalty(geneSeg, propSeg);
                     if (geneSeg.getEnd() < propSeg.getEnd()) {
                         geneSeg = getNextSegment(geneSegIt);

@@ -33,7 +33,6 @@ import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.SequenceVariationPool;
 import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.io.TSVReader;
 import it.unimi.dsi.fastutil.objects.*;
 import it.unimi.dsi.fastutil.ints.*;
@@ -71,7 +70,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     private String outputFile;
     private int[] readerIndexToGroupIndex;
     private int numberOfGroups;
-    private MutableString currentReferenceId;
+    private CharSequence currentReferenceId;
     private int thresholdDistinctReadIndices = 3;
     private int minimumVariationSupport = 10;
     private PrintWriter outWriter;
@@ -157,19 +156,18 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         refCount = new int[numberOfGroups];
         variantsCount = new int[numberOfGroups];
         distinctReadIndexCount = new int[numberOfGroups];
-        if (deAnalyzer.eval("within-groups") || deAnalyzer.eval("between-groups")) {
-            //activate R only if we need it:
-            final Rengine rEngine = GobyRengine.getInstance().getRengine();
-            fisherRInstalled = rEngine != null && rEngine.isAlive();
-        }
-        if (deAnalyzer.eval("between-groups") && groups.length != 2) {
-            System.err.println("--eval between-groups requires exactly two groups.");
-            System.exit(1);
-        }
+
+        sortedPositionIterator = new DiscoverVariantIterateSortedAlignments();
+        sortedPositionIterator.parseIncludeReferenceArgument(jsapResult);
+        sortedPositionIterator.setReaderIndexToGroupIndex(readerIndexToGroupIndex);
+        sortedPositionIterator.setMinimumVariationSupport(minimumVariationSupport);
+        sortedPositionIterator.setThresholdDistinctReadIndices(thresholdDistinctReadIndices);
         return this;
     }
 
-    class ReadIndexStats {
+    DiscoverVariantIterateSortedAlignments sortedPositionIterator;
+
+    public class ReadIndexStats {
         public String basename;
         /**
          * The index of the alignment reader that is reading over this basename, will be populated when we know.
@@ -300,80 +298,12 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             }
 
             readIndexStats.removeAll(toRemove);
-
-            for (ReadIndexStats stat : readIndexStats) {
-                for (int i = 0; i < stat.countReferenceBases.length; i++) {
-                    System.out.printf("basename %s readIndex %d numberOfReferenceBases %d%n",
-                            stat.basename,
-                            i+1, stat.countReferenceBases[i]);
-                }
-
-            }
-
-        }
-        ConcatSortedAlignmentReader sortedReaders = new ConcatSortedAlignmentReader(basenames);
-        int lastPosition = -1;
-        int lastTargetIndex = -1;
-        ObjectArrayList<Alignments.AlignmentEntry> entriesAtPosition = new ObjectArrayList<Alignments.AlignmentEntry>();
-        IntArrayList readerIndices = new IntArrayList();
-
-        DoubleIndexedIdentifier targetIds = new DoubleIndexedIdentifier(sortedReaders.getTargetIdentifiers());
-        //sortedReaders.skipTo(0,209849405);
-        outWriter.printf("referenceId\tposition\t");
-        if (deAnalyzer.eval("between-groups")) {
-            outWriter.printf("Odds-ratio[%s/%s]\tFisher-Exact-P-value[%s/%s]", groups[0], groups[1],
-                    groups[0], groups[1]);
         }
 
+        sortedPositionIterator.initialize(deAnalyzer,deCalculator, groups, readIndexStats, outWriter);
+        sortedPositionIterator.iterate(basenames);
+        sortedPositionIterator.finish();
 
-        for (String group : groups) {
-            outWriter.printf("\trefCount[%s]\tvarCount[%s]\tdistinct-read-index-count[%s]\taverage-variant-quality-scores[%s]",
-                    group, group, group, group);
-
-            if (deAnalyzer.eval("within-groups")) {
-                outWriter.printf("\twithin-group-p-value[%s]", group);
-            }
-
-        }
-
-        outWriter.printf("\tobserved variations at position ([frequency:from/to,]+)%n");
-
-
-        for (Alignments.AlignmentEntry entry : sortedReaders) {
-            if (currentReferenceId == null) {
-                currentReferenceId = targetIds.getId(entry.getTargetIndex());
-                currentReferenceIndex = entry.getTargetIndex();
-            }
-            final int position = entry.getPosition();
-            final int targetIndex = entry.getTargetIndex();
-
-            if (targetIndex != lastTargetIndex || position != lastPosition) {
-
-                if (entriesAtPosition.size() != 0) {
-                    pushVariations(entriesAtPosition, readerIndices);
-                }
-                processVariations(lastPosition);
-                if (targetIndex != lastTargetIndex) {
-                    // new reference: clear completely the previous sequence variations.
-                    variationPool.reset();
-                    currentReferenceId = targetIds.getId(entry.getTargetIndex());
-                }
-                // clear the variations at the previous position:
-                variationPool.removePosition(lastPosition);
-
-                // remove all the entries and readIndices that we have already scanned:
-                entriesAtPosition.clear();
-                readerIndices.clear();
-
-                lastPosition = position;
-                lastTargetIndex = targetIndex;
-
-            }
-            entriesAtPosition.add(entry);
-            readerIndices.add(sortedReaders.getReaderIndex());
-
-        }
-        outWriter.flush();
 
     }
 
@@ -381,185 +311,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     int[] variantsCount;
     int[] distinctReadIndexCount;
 
-    private void processVariations(int position) {
-        //     System.out.printf("Processing position %d %d %n", lastTargetIndex, position);
-        ObjectArrayList<SequenceVariationPool.Variation> list = variationPool.getAtPosition(position);
-        int sumVariantCounts = 0;
-        for (int i = 0; i < numberOfGroups; i++) {
-            refCount[i] = 0;
-            variantsCount[i] = 0;
-            distinctReadIndexCount[i] = 0;
-        }
-        if (list != null) {
-
-            int sumDistintReadIndices = 0;
-            for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
-                refCount[groupIndex] += variationPool.getReferenceAlleleCount(position, groupIndex);
-
-            }
-            for (SequenceVariationPool.Variation var : list) {
-                variantsCount[var.groupIndex] += 1;
-                sumVariantCounts += 1;
-            }
-            for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
-                distinctReadIndexCount[groupIndex] = variationPool.getNumDistinctReadIndices(position, groupIndex);
-
-                sumDistintReadIndices += distinctReadIndexCount[groupIndex];
-            }
-            if (sumDistintReadIndices >= thresholdDistinctReadIndices && sumVariantCounts > minimumVariationSupport) {
-                int groupIndexA = 0;
-                int groupIndexB = 1;
 
 
-                outWriter.printf("%s\t%d\t", currentReferenceId, position);
-                if (deAnalyzer.eval("between-groups")) {
-                    final double denominator = (double) refCount[groupIndexA] * (double) variantsCount[groupIndexB];
-                    double oddsRatio = denominator == 0 ? 1 :
-                            ((double) refCount[groupIndexB] *
-                                    (double) variantsCount[groupIndexA]) / denominator;
-                    double fisherP = Double.NaN;
-
-                    boolean ok = checkCounts();
-                    if (ok) {
-                        fisherP = fisherRInstalled ? FisherExactRCalculator.getFisherPValue(
-                                refCount[groupIndexB], variantsCount[groupIndexB],
-                                refCount[groupIndexA], variantsCount[groupIndexA]) : Double.NaN;
-                    } else {
-                        System.err.printf("An exception was caught evaluating the Fisher Exact test P-value. Details are provided below%n" +
-                                "referenceId=%s referenceIndex=%d position=%d %n" +
-                                "refCount[1]=%d variantsCount[1]=%d%n" +
-                                "refCount[0]=%d, variantsCount[0]=%d",
-                                currentReferenceId, currentReferenceIndex,
-                                position,
-                                refCount[groupIndexB], variantsCount[groupIndexB],
-                                refCount[groupIndexA], variantsCount[groupIndexA]
-                        );
-
-                    }
-                    outWriter.printf("%f\t%f\t", oddsRatio, fisherP);
-                }
-
-                for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
-
-
-                    outWriter.printf("%d\t%d\t%d\t%g\t",
-                            refCount[groupIndex],
-                            variantsCount[groupIndex],
-                            distinctReadIndexCount[groupIndex],
-                            variationPool.getAverageVariantQualityScore(position, groupIndex)
-                    );
-
-                    if (deAnalyzer.eval("within-groups")) {
-                        outWriter.printf("%g\t", estimateWithinGroupDiscoveryPalue(position, groupIndex, list, variantsCount));
-                    }
-                }
-
-                summarizeVariations(outWriter, list);
-
-                outWriter.println();
-            }
-
-
-        }
-
-    }
-
-    private double estimateWithinGroupDiscoveryPalue(int position, int groupIndex,
-                                                     ObjectArrayList<SequenceVariationPool.Variation> list,
-                                                     int[] variantsCount) {
-        double pValue = 1;
-        if (!deAnalyzer.eval("within-groups")) return Double.NaN;
-        ObjectArrayList<SequenceVariationPool.ReadIndexInfo> readIndicesAtPosition = variationPool.getReadIndicesAt(position, groupIndex);
-        int observedReferenceCount = 0;
-        double expectedVariationRate = 0;
-        int expectedVariationCount = 0;
-        int expectedReferenceCount = 0;
-        int observedVariationCount = 0;
-        observedReferenceCount = variationPool.getReferenceAlleleCount(position, groupIndex);
-        observedVariationCount = variantsCount[groupIndex];
-        if (observedReferenceCount + observedVariationCount == 0) {
-            // cannot call a variant if we do not observe this position in this group at all.
-            return 1;
-        }
-        long sum = 0;
-        if (readIndicesAtPosition == null) return 1;
-        for (SequenceVariationPool.ReadIndexInfo readIndexInfo : readIndicesAtPosition) {
-            final DiscoverSequenceVariantsMode.ReadIndexStats stats = readIndexStats.get(readIndexInfo.alignmnentReaderIndex);
-            final int readIndex = readIndexInfo.readIndex;
-            if (readIndex < 0 || readIndex >= stats.countVariationBases.length || readIndex >= stats.countReferenceBases.length) {
-                // TODO this test is a kludge: readIndex should always be within the bounds of countVariationBases or countReferenceBases
-                // the fact that we need this test indicates that there is a bug in the calculation of readIndex, probably when read insertions or deletions are present.
-                continue;
-            }
-            int variationBases = stats.countVariationBases[readIndex];
-            int referenceBases = stats.countReferenceBases[readIndex];
-            //  System.out.printf("readIndex=%d variationBases=%d referenceBases=%d %n",readIndexInfo.readIndex, variationBases, referenceBases);
-            expectedVariationRate += variationBases;
-            sum += variationBases + referenceBases;
-            //   refBaseCountAnyPosition += referenceBases;
-        }
-        expectedVariationRate /= sum;
-        //   System.out.printf("Expected variation rate: %f%n", expectedVariationRate);
-        expectedVariationCount = (int) Math.round(expectedVariationRate * (double) (observedVariationCount + observedReferenceCount));
-        expectedReferenceCount = (int) Math.round((1 - expectedVariationRate) * (double) (observedVariationCount + observedReferenceCount));
-        if (LOG.isTraceEnabled()) {
-            LOG.trace(String.format("contingency position=%d: %n" +
-                    "    [  exp    obs ]%n" +
-                    "ref [ %d       %d ]%n" +
-                    "var [ %d       %d ] %n",
-                    position,
-                    expectedVariationCount, observedVariationCount,
-                    expectedReferenceCount, observedReferenceCount));
-        }
-        pValue = fisherRInstalled ? FisherExactRCalculator.getFisherOneTailedLesserPValue(
-                expectedVariationCount, observedVariationCount,
-                expectedReferenceCount, observedReferenceCount
-        ) : Double.NaN;
-        //  System.out.printf("position=%d P-Value=%f%n", position, pValue);
-        return pValue;
-
-
-    }
-
-    private boolean checkCounts() {
-        boolean ok = true;
-        // detect if any count is negative (that's a bug)
-        for (int count : refCount) {
-
-            if (count < 0) ok = false;
-        }
-        for (int count : variantsCount) {
-            if (count < 0) ok = false;
-        }
-        return ok;
-    }
-
-    private void summarizeVariations(PrintWriter outWriter, ObjectArrayList<SequenceVariationPool.Variation> list) {
-        final Object2IntMap<MutableString> tally = new Object2IntArrayMap<MutableString>();
-        tally.defaultReturnValue(0);
-        for (SequenceVariationPool.Variation var : list) {
-            MutableString variation = new MutableString(var.from);
-            variation.append('/');
-            variation.append(var.to);
-            int count = tally.getInt(variation);
-            tally.put(variation, count + 1);
-
-        }
-        // sort variations by decreasing tally:
-        ObjectSet<MutableString> varSet = (tally.keySet());
-        ObjectList<MutableString> varList = new ObjectArrayList<MutableString>();
-        varList.addAll(varSet);
-        Collections.sort(varList, new Comparator<MutableString>() {
-            public int compare(MutableString variationA, MutableString variationB) {
-                // sort by decreasing tally:
-                return tally.getInt(variationB) - tally.getInt(variationA);
-            }
-        });
-
-        for (MutableString variation : varList) {
-            outWriter.printf("%d:%s,", tally.getInt(variation), variation);
-        }
-    }
 
     SequenceVariationPool variationPool;
 

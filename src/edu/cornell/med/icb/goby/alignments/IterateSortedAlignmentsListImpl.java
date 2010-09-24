@@ -26,13 +26,15 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
  *         Date: Sep 7, 2010
  *         Time: 2:14:38 PM
  */
-public abstract class IterateSortedAlignmentsListImpl extends IterateSortedAlignments<ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo>> {
+public abstract class IterateSortedAlignmentsListImpl
+        extends IterateSortedAlignments<ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo>> {
 
-    public abstract void processPositions(int position, ObjectArrayList<PositionBaseInfo> positionBaseInfos);
+    public abstract void processPositions(int referenceIndex, int intermediatePosition, ObjectArrayList<PositionBaseInfo> positionBaseInfos);
 
-    public void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders, Alignments.AlignmentEntry alignmentEntry,
+    public void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders,
+                                     Alignments.AlignmentEntry alignmentEntry,
                                      Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
-                                     int currentRefPosition, int currentReadIndex) {
+                                     int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
         PositionBaseInfo info = new PositionBaseInfo();
         info.readerIndex = sortedReaders.activeIndex;
         info.readIndex = currentReadIndex;
@@ -49,7 +51,7 @@ public abstract class IterateSortedAlignmentsListImpl extends IterateSortedAlign
     public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
                                    Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
                                    Alignments.SequenceVariation var,
-                                   char toChar, char fromChar, int currentRefPosition, int currentReadIndex) {
+                                   char toChar, char fromChar, int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
 
         PositionBaseInfo info = new PositionBaseInfo();
         info.readerIndex = sortedReaders.activeIndex;
@@ -57,7 +59,7 @@ public abstract class IterateSortedAlignmentsListImpl extends IterateSortedAlign
         info.from = fromChar;
         info.to = toChar;
         info.matchesReference = false;
-        info.position =  currentRefPosition;
+        info.position = currentRefPosition;
 
 
         addToFuture(positionToBases, info);
