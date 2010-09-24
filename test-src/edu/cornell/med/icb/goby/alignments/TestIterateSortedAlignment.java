@@ -111,7 +111,7 @@ public class TestIterateSortedAlignment {
 
             @Override
             public void processPositions(int referenceIndex, int intermediatePosition, ObjectArrayList<PositionBaseInfo> positionBaseInfos) {
-                positionMap.put(referenceIndex, positionBaseInfos.size());
+                positionMap.put(intermediatePosition, positionBaseInfos.size());
                 System.out.printf("position: %d listSize: %d%n", referenceIndex, positionBaseInfos.size());
             }
         };
@@ -404,7 +404,7 @@ public class TestIterateSortedAlignment {
                 for (PositionBaseInfo info : positionBaseInfos) {
                     coverage += info.to != '-' ? 1 : 0;
                 }
-                positionMap.put(referenceIndex, coverage);
+                positionMap.put(intermediatePosition, coverage);
                 System.out.printf("position: %d listSize: %d%n", referenceIndex, coverage);
             }
         };
@@ -470,7 +470,7 @@ public class TestIterateSortedAlignment {
                     coverage += info.from != '-' ? 1 : 0;
                     readIndexMap.put(info.readIndex, readIndexMap.get(info.readIndex) + 1);
                 }
-                positionMap.put(referenceIndex, coverage);
+                positionMap.put(intermediatePosition, coverage);
                 //    System.out.printf("position: %d listSize: %d%n", position, coverage);
             }
         };
