@@ -131,7 +131,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
         numberOfGroups = deAnalyzer.getGroups().length;
         groups = deAnalyzer.getGroups();
-        variationPool = new SequenceVariationPool(numberOfGroups);
+
         for (String sample : sampleToGroupMap.keySet()) {
             final String group = sampleToGroupMap.get(sample);
             System.out.printf("sample: %s group %s%n", sample, group);
@@ -153,10 +153,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
         }
 
-        refCount = new int[numberOfGroups];
-        variantsCount = new int[numberOfGroups];
-        distinctReadIndexCount = new int[numberOfGroups];
-
+      
         sortedPositionIterator = new DiscoverVariantIterateSortedAlignments();
         sortedPositionIterator.parseIncludeReferenceArgument(jsapResult);
         sortedPositionIterator.setReaderIndexToGroupIndex(readerIndexToGroupIndex);
@@ -307,28 +304,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
     }
 
-    int[] refCount;
-    int[] variantsCount;
-    int[] distinctReadIndexCount;
 
-
-
-
-    SequenceVariationPool variationPool;
-
-    private void pushVariations(ObjectArrayList<Alignments.AlignmentEntry> entriesAtPosition,
-                                IntArrayList readerIndices) {
-
-        int alignmentReaderIndex = 0;
-        // organize all variations found in these entries by their  position on the reference sequence:
-        for (Alignments.AlignmentEntry entry : entriesAtPosition) {
-            final int groupIndex = readerIndexToGroupIndex[readerIndices.get(alignmentReaderIndex)];
-
-            variationPool.store(entry, groupIndex, alignmentReaderIndex);
-
-        }
-        alignmentReaderIndex += 1;
-    }
 
 
     /**

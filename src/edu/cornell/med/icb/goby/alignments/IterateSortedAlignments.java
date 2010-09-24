@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * A helper class to iterate through a set of sorted alignments in position order. The class supports processing
@@ -151,6 +152,10 @@ public abstract class IterateSortedAlignments<T> {
         while ((alignmentEntry = sortedReaders.skipTo(currentMinTargetIndex, 0)) != null) {
             numAlignmentEntries = advanceReference(numAlignmentEntries);
             final int referenceIndex = alignmentEntry.getTargetIndex();
+            if (lastTarget != -1 && referenceIndex != lastTarget) {
+                // we switch to a new reference. Cleanup any previous
+                processAllPreviousPositions(lastTarget, positionToBases);
+            }
             int queryLength = alignmentEntry.getQueryLength();
 
             currentPosition = alignmentEntry.getPosition();
@@ -258,8 +263,9 @@ public abstract class IterateSortedAlignments<T> {
             minPos = Math.min(pos, minPos);
             maxPos = Math.max(pos, maxPos);
         }
+
         for (int position = minPos; position <= maxPos; position++) {
-            processAndCleanup(lastTarget, lastPosition, positionToBases);
+            processAndCleanup(lastTarget, position, positionToBases);
         }
 
         sortedReaders.close();
@@ -291,6 +297,28 @@ public abstract class IterateSortedAlignments<T> {
         lastRemovedPosition = lastPosition;
     }
 
+    /**
+     * Process positions on the previous target, which may still be in positionToBases.
+     *
+     * @param lastReferenceIndex
+     * @param positionToBases
+     */
+    private void processAllPreviousPositions(int lastReferenceIndex, Int2ObjectMap<T> positionToBases) {
+        IntArrayList positions = new IntArrayList();
+        positions.addAll(positionToBases.keySet());
+        Collections.sort(positions);
+
+
+        for (int intermediatePosition : positions) {
+            if (positionToBases.containsKey(intermediatePosition)) {
+
+                processPositions(lastReferenceIndex, intermediatePosition, positionToBases.get(intermediatePosition));
+                positionToBases.remove(intermediatePosition);
+                lastRemovedPosition = intermediatePosition;
+            }
+        }
+        positionToBases.clear();
+    }
 
     public abstract void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders,
                                               Alignments.AlignmentEntry alignmentEntry,

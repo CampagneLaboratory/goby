@@ -27,7 +27,6 @@ import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.SequenceVariationPool;
 import edu.cornell.med.icb.goby.R.GobyRengine;
 
 import java.io.PrintWriter;
@@ -178,8 +177,11 @@ public class DiscoverVariantIterateSortedAlignments
                 }
                 distinctReadIndices.add(info.readIndex);
             }
+
             for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
+
                 averageVariantQualityScore[groupIndex] /= variantsCount[groupIndex];
+                distinctReadIndexCount[groupIndex]=distinctReadIndices.size();
             }
 
             if (distinctReadIndices.size() >= thresholdDistinctReadIndices && sumVariantCounts > minimumVariationSupport) {

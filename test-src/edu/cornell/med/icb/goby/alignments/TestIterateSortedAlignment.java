@@ -293,7 +293,7 @@ public class TestIterateSortedAlignment {
                                                                                           final float score,
                                                                                           final boolean matchesReverseStrand,
                                                                                           int[] variationIndices) {
-        
+
         Alignments.AlignmentEntry.Builder newEntry = Alignments.AlignmentEntry.newBuilder();
         newEntry.setQueryIndex(queryIndex);
         newEntry.setTargetIndex(targetIndex);
@@ -490,4 +490,80 @@ public class TestIterateSortedAlignment {
         }
 
     }
+
+
+    @Test
+    public void testIterateSortedTwoTargetSequences() throws IOException {
+
+
+        final String basename = "align-skip-to-1-contact-two-targets";
+        final String basenamePath = FilenameUtils.concat(BASE_TEST_DIR, basename);
+        final AlignmentWriter writer =
+                new AlignmentWriter(basenamePath);
+        writer.setNumAlignmentEntriesPerChunk(1);
+
+        final int numTargets = 3;
+        final int[] targetLengths = new int[numTargets];
+
+        for (int referenceIndex = 0; referenceIndex < numTargets; referenceIndex++) {
+            targetLengths[referenceIndex] = 1000;
+        }
+        writer.setTargetLengths(targetLengths);
+        // we write this alignment sorted:
+
+        writer.setSorted(true);
+        Alignments.AlignmentEntry.Builder newEntry;
+
+        newEntry = prepareAlignmentEntry(0, 1, 1, 30, false, new int[0]);
+        writer.appendEntry(newEntry.build());
+
+        newEntry = prepareAlignmentEntry(0, 1, 130, 30, false, new int[]{11, 12});
+        writer.appendEntry(newEntry.build());
+
+        newEntry = prepareAlignmentEntry(0, 1, 135, 35, false, new int[]{6});
+        writer.appendEntry(newEntry.build());
+
+        newEntry = prepareAlignmentEntry(0, 2, 1, 30, false, new int[0]);
+        writer.appendEntry(newEntry.build());
+
+
+        newEntry = prepareAlignmentEntry(0, 2, 130, 30, false, new int[0]);
+        writer.appendEntry(newEntry.build());
+
+
+        writer.close();
+        writer.printStats(System.out);
+
+        final Int2IntMap positionMap = new Int2IntOpenHashMap();
+
+        IterateSortedAlignmentsListImpl iterator = new IterateSortedAlignmentsListImpl() {
+
+
+            @Override
+            public void processPositions(int referenceIndex, int intermediatePosition, ObjectArrayList<PositionBaseInfo> positionBaseInfos) {
+                if (referenceIndex == 1) {
+             // record only reference 1 matches. 
+                    positionMap.put(intermediatePosition, positionBaseInfos.size());
+                }
+                System.out.printf("position: %d listSize: %d%n", referenceIndex, positionBaseInfos.size());
+
+            }
+        };
+        iterator.iterate(basenamePath);
+
+        for (int i = 1; i < 35; i++) {
+            assertEquals("position " + i, 1, positionMap.get(i));
+        }
+        for (int i = 130; i < 135; i++) {
+            assertEquals("position " + i, 1, positionMap.get(i));
+        }
+        for (int i = 135; i < 165; i++) {
+            assertEquals("position " + i, 2, positionMap.get(i));
+        }
+        for (int i = 165; i < 170; i++) {
+            assertEquals("position " + i, 1, positionMap.get(i));
+        }
+
+    }
+
 }
