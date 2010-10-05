@@ -29,13 +29,11 @@ extern "C" {
 		readsHelper->unopenedFiles = new queue<string>;
 		for (int i = 0; i < numUnopenedFiles; i++) {
 			string unopenedFile(unopenedFiles[0]);
-			cout << "... adding to the queue: " << unopenedFile << endl;
 			readsHelper->unopenedFiles->push(unopenedFile);
 			unopenedFiles++;
 		}
 		string filename = readsHelper->unopenedFiles->front();
 		readsHelper->unopenedFiles->pop();
-		cout << "Opening file " << filename << endl;
 		readsHelper->readsReader = new goby::ReadsReader(filename);
 		readsHelper->it = readsHelper->readsReader->beginPointer();
 		return readsHelper;
