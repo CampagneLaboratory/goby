@@ -52,7 +52,7 @@ extern "C" {
 	int gobyReads_hasNext(CReadsHelper *readsHelper) {
 		goby::ReadEntryIterator end = (*readsHelper).readsReader->end();
         if (*((*readsHelper).it) != end) {
-			return 33;
+			return 1;
 		} else {
 			return 0;
 		}
