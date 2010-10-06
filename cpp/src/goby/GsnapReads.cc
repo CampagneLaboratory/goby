@@ -67,7 +67,8 @@ extern "C" {
 	     goby::ReadEntry entry = *(*(*readsHelper).it);
 		(*readsHelper).numRead++;
 
-	    Sequence_T* queryseq1 = new Sequence_T;
+	    // Sequence_T* queryseq1 = new Sequence_T;
+	    Sequence_T* queryseq1 = (Sequence_T*) malloc(sizeof(Sequence_T));
 
 	    int fullLength = 0;
 	    if (entry.has_sequence()) {
