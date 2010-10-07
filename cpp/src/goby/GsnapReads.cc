@@ -49,7 +49,7 @@ extern "C" {
 	 * TODO:   the first.
 	 */
 	int gobyReads_hasNext(CReadsHelper *readsHelper) {
-        if (*((*readsHelper).it) != (*((*readsHelper).end))) {
+        if (*((*readsHelper).it) != *(readsHelper->end)) {
 			return 1;
 		} else {
 			return 0;
