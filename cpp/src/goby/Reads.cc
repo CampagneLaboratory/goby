@@ -206,6 +206,10 @@ namespace goby {
     return *read_entry_iterator_end;
   };
 
+  const ReadEntryIterator* ReadsReader::endPointer() const {
+    return read_entry_iterator_end;
+  };
+
   ReadsWriter::ReadsWriter(const string& filename, unsigned number_of_entries_per_chunk) : Reads(getBasename(filename)),
     message_chunks_writer(new MessageChunksWriter<ReadCollection>(filename, number_of_entries_per_chunk)),
     read_collection(ReadCollection::default_instance()),

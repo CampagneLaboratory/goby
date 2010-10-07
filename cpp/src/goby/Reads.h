@@ -98,6 +98,7 @@ namespace goby {
     ReadEntryIterator begin() const;
     ReadEntryIterator* beginPointer() const;
     ReadEntryIterator end() const;
+    const ReadEntryIterator* endPointer() const;
   };
 
   class LIBGOBY_EXPORT ReadsWriter : public Reads {
