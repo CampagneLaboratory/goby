@@ -36,6 +36,7 @@ extern "C" {
 		readsHelper->unopenedFiles->pop();
 		readsHelper->readsReader = new goby::ReadsReader(filename);
 		readsHelper->it = readsHelper->readsReader->beginPointer();
+		readsHelper->end = &readsHelper->readsReader->end();
 		return readsHelper;
 	}
 
@@ -48,8 +49,7 @@ extern "C" {
 	 * TODO:   the first.
 	 */
 	int gobyReads_hasNext(CReadsHelper *readsHelper) {
-		goby::ReadEntryIterator end = (*readsHelper).readsReader->end();
-        if (*((*readsHelper).it) != end) {
+        if (*((*readsHelper).it) != (*((*readsHelper).end))) {
 			return 1;
 		} else {
 			return 0;
@@ -121,15 +121,16 @@ extern "C" {
 	 * Call after you are _completely_ done reading Goby Reads.
 	 */
 	void gobyReads_finished(CReadsHelper *readsHelper) {
-	    while (!readsHelper->unopenedFiles->empty()) {
-	        string unopenedFile = readsHelper->unopenedFiles->front();
-	        readsHelper->unopenedFiles->pop();
-	    }
-		delete readsHelper->unopenedFiles;
-		delete readsHelper->readsReader;
-	    delete readsHelper;
-
-
+	    if (readsHelper != NULL) {
+            while (!readsHelper->unopenedFiles->empty()) {
+                string unopenedFile = readsHelper->unopenedFiles->front();
+                readsHelper->unopenedFiles->pop();
+            }
+            delete readsHelper->unopenedFiles;
+            delete readsHelper->readsReader;
+            delete readsHelper->it;
+            delete readsHelper;
+        }
 
         google::protobuf::ShutdownProtobufLibrary();
 	}

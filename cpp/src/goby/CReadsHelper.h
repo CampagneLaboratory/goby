@@ -16,6 +16,7 @@
 	struct CReadsHelper {
 		goby::ReadsReader *readsReader;
 		goby::ReadEntryIterator *it;
+		goby::ReadEntryIterator *end;
 		std::queue<std::string> *unopenedFiles;
 		unsigned char circular;
 		unsigned int numRead;
@@ -25,6 +26,7 @@
 	typedef struct {
 		void *readsReader;
 		void *it;
+		void *end;
 		void *unopenedFiles;
 		unsigned char circular;
 		unsigned int numRead;
