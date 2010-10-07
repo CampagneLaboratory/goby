@@ -73,9 +73,9 @@ extern "C" {
 	    int fullLength = 0;
 	    if (entry.has_sequence()) {
 	    	fullLength = entry.sequence().size();
-	    	queryseq1->contents_alloc = new char[fullLength + 1];
+	    	queryseq1->contents_alloc = (char *) calloc(fullLength + 1, sizeof(char));
 		    strcpy(queryseq1->contents_alloc, entry.sequence().c_str());
-	    	queryseq1->contents_uc_alloc = new char[fullLength + 1];
+	    	queryseq1->contents_uc_alloc = (char *) calloc(fullLength + 1, sizeof(char));
 		    strcpy(queryseq1->contents_uc_alloc, entry.sequence().c_str());
 	    } else {
 	    	queryseq1->contents_alloc = (char *) NULL;
@@ -90,11 +90,11 @@ extern "C" {
 	    queryseq1->trimstart = 0;
 	    queryseq1->trimend = 0;
 	    queryseq1->subseq_offset = 0;
-     //TODO introduce a read index and preserve read id in acc?
-	    queryseq1->acc = new char[50];
+        //TODO introduce a read index and preserve read id in acc?
+	    queryseq1->acc = (char *) calloc(50, sizeof(char));
 	    sprintf(queryseq1->acc, "%d", entry.read_index());
 	    if (entry.has_description()) {
-	    	queryseq1->restofheader = new char[entry.description().size() + 1];
+	    	queryseq1->restofheader = (char *) calloc(entry.description().size() + 1, sizeof(char));
 	    	strcpy(queryseq1->restofheader, entry.description().c_str());
 	    } else {
 	    	queryseq1->restofheader = (char *) NULL;
@@ -105,7 +105,7 @@ extern "C" {
 	     * We need to convert quality score appropriately here.
 	     */
 	    if (false && entry.has_quality_scores()) {
-	    	queryseq1->quality_alloc = new char[entry.quality_scores().size() + 1];
+	    	queryseq1->quality_alloc = (char *) calloc(entry.quality_scores().size() + 1, sizeof(char));
 		    strcpy(queryseq1->quality_alloc, entry.quality_scores().c_str());
 	    } else {
 	    	queryseq1->quality_alloc = (char *) NULL;
@@ -121,6 +121,16 @@ extern "C" {
 	 * Call after you are _completely_ done reading Goby Reads.
 	 */
 	void gobyReads_finished(CReadsHelper *readsHelper) {
-		  google::protobuf::ShutdownProtobufLibrary();
+	    while (!readsHelper->unopenedFiles->empty()) {
+	        string unopenedFile = readsHelper->unopenedFiles->front();
+	        readsHelper->unopenedFiles->pop();
+	    }
+		delete readsHelper->unopenedFiles;
+		delete readsHelper->readsReader;
+	    delete readsHelper;
+
+
+
+        google::protobuf::ShutdownProtobufLibrary();
 	}
 }
