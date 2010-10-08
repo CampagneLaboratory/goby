@@ -3,12 +3,13 @@
 #include <queue>
 
 #include "Reads.h"
-#include "GsnapSequence.h"
+#include "GsnapStructs.h"
 #include "GsnapReads.h"
 
 using namespace std;
+
 /**
- * This class is a C interface so GSnap can reads from a Goby ReadsReader.
+ * This class is a C interface so Gsnap can read Goby compact-reads.
  */
 extern "C" {
 
@@ -131,7 +132,9 @@ extern "C" {
             delete readsHelper->it;
             delete readsHelper;
         }
-
-        google::protobuf::ShutdownProtobufLibrary();
 	}
+
+	void goby_shutdownProtobuf() {
+        google::protobuf::ShutdownProtobufLibrary();
+    }
 }

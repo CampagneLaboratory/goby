@@ -5,23 +5,18 @@
  *      Author: kdorff
  */
 
-#ifndef GSNAPSEQUENCE_H_
-#define GSNAPSEQUENCE_H_
+#ifndef GSNAPSTRUCTS_H_
+#define GSNAPSTRUCTS_H_
 
 #define GSNAP
 #undef PMAP
 
 /**
- * The following definition comes from GMap/GSnap Sequence.c.
+ * The following definition comes from GMap/GSnap Sequence.c. They are ONLY
+ * used by the C++ code as the C code will use the standard definitions in GMap/GSnap.
  */
-#define T Sequence_T
 
-#ifdef __cplusplus
 struct Sequence_T {
-#else
-typedef struct {
-#endif
-
     char *acc; /* Accession */
     char *restofheader; /* Rest of header */
     char *contents; /* Original sequence, ends with '\0' */
@@ -44,11 +39,6 @@ typedef struct {
 #endif
     int subseq_offset; /* Used only for subsequences */
     int skiplength; /* Used only for sequences longer than MAXSEQLEN */
-
-#ifdef __cplusplus
 };
-#else
-} Sequence_T;
-#endif
 
-#endif /* GSNAPSEQUENCE_H_ */
+#endif /* GSNAPSTRUCTS_H_ */

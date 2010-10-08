@@ -19,9 +19,12 @@ libgoby_la_SOURCES = \
 	goby/Reads.pb.h \
 	goby/TooManyHits.cc \
 	goby/TooManyHits.h \
+	goby/GsnapSequence.h \
 	goby/GsnapReads.cc \
 	goby/GsnapReads.h \
-	goby/GsnapSequence.h
+        goby/GsnapAlignments.cc \
+        goby/GsnapAlignments.h \
+        goby/CompactFormatsHelpers.h
 
 nobase_include_HEADERS = \
 	goby/Alignments.h \
@@ -32,8 +35,10 @@ nobase_include_HEADERS = \
 	goby/Reads.h \
 	goby/Reads.pb.h \
 	goby/TooManyHits.h \
+	goby/GsnapSequence.h \
 	goby/GsnapReads.h \
-    goby/CReadsHelper.h
+        goby/GsnapAlignments.h \
+        goby/CompactFormatsHelpers.h
 
 bin_PROGRAMS = GobyAlignmentStats GobyAlignmentToText GobyReadsStats GobyFastaToCompact
 

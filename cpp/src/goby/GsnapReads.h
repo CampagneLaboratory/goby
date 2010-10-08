@@ -8,16 +8,17 @@
 #ifndef GSNAPREADS_H_
 #define GSNAPREADS_H_
 
-#include "CReadsHelper.h"
+#include "CompactFormatsHelpers.h"
 
 #ifdef __cplusplus
-#include "GsnapSequence.h"
+#include "GsnapStructs.h"
 extern "C" {
 #endif
 	CReadsHelper *gobyReads_openReadsReader(char **unopenedFiles, int numUnopenedFiles, unsigned char circular);
 	int gobyReads_hasNext(CReadsHelper *readsHelper);
 	Sequence_T *gobyReads_next(CReadsHelper *readsHelper);
 	void gobyReads_finished(CReadsHelper *readsHelper);
+	void goby_shutdownProtobuf();
 #ifdef __cplusplus
 }
 #endif
