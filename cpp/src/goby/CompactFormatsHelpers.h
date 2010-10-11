@@ -44,13 +44,17 @@
 	#include "Alignments.h"
 	// More complex structure for C++
 	struct CAlignmentsWriterHelper {
-	    goby::ReadsReader *alignmentWriter;
+	    goby::AlignmentWriter *alignmentWriter;
+	    goby::AlignmentEntry *alignmentEntry;
+	    goby::SequenceVariation *sequenceVariation;
 		unsigned int numRead;
 	};
 #else
 	// Opaque structure for C
 	typedef CAlignmentsWriterHelper {
 	    void *alignmentWriter;
+	    void *alignmentEntry;
+	    void *sequenceVariation;
 		unsigned int numRead;
 	} CAlignmentsWriterHelper;
 #endif
