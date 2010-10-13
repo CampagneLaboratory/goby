@@ -51,7 +51,7 @@ extern "C" {
     void gobyAlEntry_setNumberOfMismatches(CAlignmentsWriterHelper *writerHelper, uint32_t value);
     void gobyAlEntry_setNumberOfIndels(CAlignmentsWriterHelper *writerHelper, uint32_t value);
     void gobyAlEntry_setQueryAlignedLength(CAlignmentsWriterHelper *writerHelper, uint32_t value);
-    void gobyAlEntry_setTargetAligned_length(CAlignmentsWriterHelper *writerHelper, uint32_t value);
+    void gobyAlEntry_setTargetAlignedLength(CAlignmentsWriterHelper *writerHelper, uint32_t value);
     void gobyAlEntry_setQueryLength(CAlignmentsWriterHelper *writerHelper, uint32_t value);
 
     void gobyAlEntry_addSequenceVariations(CAlignmentsWriterHelper *writerHelper); // ::goby::SequenceVariation*
