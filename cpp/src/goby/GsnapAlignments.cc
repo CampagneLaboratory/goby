@@ -24,7 +24,7 @@ extern "C" {
         writerHelper->alignmentWriter = new goby::AlignmentWriter(basenameStr, number_of_entries_per_chunk);
 	    writerHelper->alignmentEntry = NULL;
 	    writerHelper->sequenceVariation = NULL;
-		writerHelper->numRead = 0;
+		writerHelper->numWritten = 0;
 
         return writerHelper;
 	}
@@ -72,6 +72,7 @@ extern "C" {
 
     // get an empty alignment entry to populate
     void gobyAlignments_appendEntry(CAlignmentsWriterHelper *writerHelper) {
+        writerHelper->numWritten++;
         writerHelper->alignmentEntry = writerHelper->alignmentWriter->appendEntry();
     }
     void gobyAlEntry_setMultiplicity(CAlignmentsWriterHelper *writerHelper, uint32_t value) {

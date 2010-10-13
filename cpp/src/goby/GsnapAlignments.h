@@ -34,6 +34,11 @@ extern "C" {
     void gobyAlignments_addStatisticInt(CAlignmentsWriterHelper *writerHelper, const char *description, const int value);
     void gobyAlignments_addStatisticDouble(CAlignmentsWriterHelper *writerHelper, const char *description, const double value);
 
+
+    // IdentifierMapping :: mutable_target_name_mapping  map of int -> string for chromosome
+    // Fill this before writing any entries OR do an int comparison for entries
+
+
     // get an empty alignment entry to populate
     void gobyAlignments_appendEntry(CAlignmentsWriterHelper *writerHelper); // ::goby::AlignmentEntry*
     void gobyAlEntry_setMultiplicity(CAlignmentsWriterHelper *writerHelper, uint32_t value);

@@ -47,15 +47,15 @@
 	    goby::AlignmentWriter *alignmentWriter;
 	    goby::AlignmentEntry *alignmentEntry;
 	    goby::SequenceVariation *sequenceVariation;
-		unsigned int numRead;
+		unsigned int numWritten;
 	};
 #else
 	// Opaque structure for C
-	typedef CAlignmentsWriterHelper {
+	typedef struct {
 	    void *alignmentWriter;
 	    void *alignmentEntry;
 	    void *sequenceVariation;
-		unsigned int numRead;
+		unsigned int numWritten;
 	} CAlignmentsWriterHelper;
 #endif
 
