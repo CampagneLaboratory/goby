@@ -132,7 +132,10 @@ extern "C" {
     }
 
 	void gobyAlignments_finished(CAlignmentsWriterHelper *writerHelper) {
+
         if (writerHelper != NULL) {
+            // TODO: Write the stats ... # of entries, etc.
+
             writerHelper->alignmentWriter->close();
             delete writerHelper->alignmentWriter;
             delete writerHelper;
