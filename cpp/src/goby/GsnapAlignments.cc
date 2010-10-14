@@ -69,46 +69,49 @@ extern "C" {
         string descriptionStr(description);
         writerHelper->alignmentWriter->addStatistic(descriptionStr, value);
     }
+    void gobyAlignments_addTargetIdentifier(CAlignmentsWriterHelper *writerHelper, const UINT4 targetIndex, const char *targetName) {
+        writerHelper->alignmentWriter->addTargetIdentifier(targetName, targetIndex);
+    }
 
     // get an empty alignment entry to populate
     void gobyAlignments_appendEntry(CAlignmentsWriterHelper *writerHelper) {
         writerHelper->numWritten++;
         writerHelper->alignmentEntry = writerHelper->alignmentWriter->appendEntry();
     }
-    void gobyAlEntry_setMultiplicity(CAlignmentsWriterHelper *writerHelper, uint32_t value) {
+    void gobyAlEntry_setMultiplicity(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
         writerHelper->alignmentEntry->set_multiplicity(value);
     }
-    void gobyAlEntry_setQueryIndex(CAlignmentsWriterHelper *writerHelper, uint32_t value) {
+    void gobyAlEntry_setQueryIndex(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
         writerHelper->alignmentEntry->set_query_index(value);
     }
-    void gobyAlEntry_setTargetIndex(CAlignmentsWriterHelper *writerHelper, uint32_t value) {
+    void gobyAlEntry_setTargetIndex(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
         writerHelper->alignmentEntry->set_target_index(value);
     }
-    void gobyAlEntry_setPosition(CAlignmentsWriterHelper *writerHelper, uint32_t value) {
+    void gobyAlEntry_setPosition(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
         writerHelper->alignmentEntry->set_position(value);
     }
     void gobyAlEntry_setMatchingReverseStrand(CAlignmentsWriterHelper *writerHelper, int value /* bool */) {
         writerHelper->alignmentEntry->set_matching_reverse_strand(intToBool(value));
     }
-    void gobyAlEntry_setQueryPosition(CAlignmentsWriterHelper *writerHelper, uint32_t value) {
+    void gobyAlEntry_setQueryPosition(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
         writerHelper->alignmentEntry->set_query_position(value);
     }
     void gobyAlEntry_setScore(CAlignmentsWriterHelper *writerHelper, float value) {
         writerHelper->alignmentEntry->set_score(value);
     }
-    void gobyAlEntry_setNumberOfMismatches(CAlignmentsWriterHelper *writerHelper, uint32_t value) {
+    void gobyAlEntry_setNumberOfMismatches(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
         writerHelper->alignmentEntry->set_number_of_mismatches(value);
     }
-    void gobyAlEntry_setNumberOfIndels(CAlignmentsWriterHelper *writerHelper, uint32_t value) {
+    void gobyAlEntry_setNumberOfIndels(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
         writerHelper->alignmentEntry->set_number_of_indels(value);
     }
-    void gobyAlEntry_setQueryAlignedLength(CAlignmentsWriterHelper *writerHelper, uint32_t value) {
+    void gobyAlEntry_setQueryAlignedLength(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
         writerHelper->alignmentEntry->set_query_aligned_length(value);
     }
-    void gobyAlEntry_setTargetAlignedLength(CAlignmentsWriterHelper *writerHelper, uint32_t value) {
+    void gobyAlEntry_setTargetAlignedLength(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
         writerHelper->alignmentEntry->set_target_aligned_length(value);
     }
-    void gobyAlEntry_setQueryLength(CAlignmentsWriterHelper *writerHelper, uint32_t value) {
+    void gobyAlEntry_setQueryLength(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
         writerHelper->alignmentEntry->set_query_length(value);
     }
 
@@ -121,10 +124,10 @@ extern "C" {
     void gobyAlSeqVar_setTo(CAlignmentsWriterHelper *writerHelper, const char* value) {
         writerHelper->sequenceVariation->set_to(value);
     }
-    void gobyAlSeqVar_setPosition(CAlignmentsWriterHelper *writerHelper, uint32_t value) {
+    void gobyAlSeqVar_setPosition(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
         writerHelper->sequenceVariation->set_position(value);
     }
-    void gobyAlSeqVar_setReadIndex(CAlignmentsWriterHelper *writerHelper, uint32_t value) {
+    void gobyAlSeqVar_setReadIndex(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
         writerHelper->sequenceVariation->set_read_index(value);
     }
     void gobyAlSeqVar_setToQuality(CAlignmentsWriterHelper *writerHelper, const char* value) {

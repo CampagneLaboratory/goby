@@ -134,6 +134,9 @@ namespace goby {
     // current chunk of alignment entries
     AlignmentCollection alignment_collection;
 
+    // Vector containing indexes we've already seen for target_name_mapping
+    std::vector<google::protobuf::uint32> target_name_indexes;
+
   public:
     AlignmentWriter(const std::string& basename, unsigned number_of_entries_per_chunk = GOBY_DEFAULT_NUMBER_OF_ENTRIES_PER_CHUNK);
     AlignmentWriter(const Alignment& alignment);
@@ -154,6 +157,7 @@ namespace goby {
     // NOTE: Query Length setters are not provided - this information is no longer in the header
 
     // TODO: Target and Query Identifiers
+    void addTargetIdentifier(const char *targetName, const google::protobuf::uint32 targetIndex);
 
     // add the description/value to the overall alignment stats
     inline void addStatistic(const std::string& description, const std::string& value) { stats[description] = value; };

@@ -309,6 +309,18 @@ namespace goby {
     return alignment_collection.add_alignment_entries();
   }
 
+  void AlignmentWriter::addTargetIdentifier(const char *targetName, const google::protobuf::uint32 targetIndex) {
+    vector<google::protobuf::uint32>::iterator found = find(target_name_indexes.begin(), target_name_indexes.end(), targetIndex);
+    if (found == target_name_indexes.end()) {
+      target_identifiers.insert(pair<string,unsigned>(targetName, targetIndex));
+      target_name_indexes.push_back(targetIndex);
+      goby::IdentifierMapping *targetNameMapping = header.mutable_target_name_mapping();
+      goby::IdentifierInfo *newMapping = targetNameMapping->add_mappings();
+      newMapping->set_name(targetName);
+      newMapping->set_index(targetIndex);
+    }
+  }
+
   void AlignmentWriter::close() {
     // Write to the "header" file
     const string headerFilename = basename + ".header";
