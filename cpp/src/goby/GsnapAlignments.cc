@@ -163,7 +163,7 @@ extern "C" {
     }
     void gobyAlEntry_setScore(CAlignmentsWriterHelper *writerHelper, float value) {
 #ifdef DEBUG
-        fprintf(stderr,"gobyAlEntry_setScore=%d\n", value);
+        fprintf(stderr,"gobyAlEntry_setScore=%f\n", value);
 #endif
         writerHelper->alignmentEntry->set_score(value);
     }
