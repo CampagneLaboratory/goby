@@ -4,7 +4,7 @@
 #$ -q *@@rascals.h
 
 # Name of the job
-#$ -N %SGE_JOB_NAME%-de
+#$ -N bz2compact
 
 # Execute the script from the current directory
 #$ -cwd
@@ -13,11 +13,16 @@
 #$ -j y
 
 # Memory resource requirements
-#$ -l h_vmem=%SGE_MEMORY%
+#$ -l h_vmem=2g
 
 # Number of threads/cpus
-#$ -pe smp 4
+#$ -pe smp 1
+env 
 
-bzcat $1.bz2 >$1.fastq
-goby 1g fasta-to-compact $1.fastq
-rm $1.fastq
+cd $TMP
+bzcat -f ${SGE_CWD_PATH}/${BASENAME}.fastq.bz2 >${BASENAME}.fastq
+$GOBY 1g fasta-to-compact ${BASENAME}.fastq
+cp ${BASENAME}.compact-reads ${SGE_O_WORKDIR}/
+
+
+
