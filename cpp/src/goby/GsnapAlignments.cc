@@ -161,11 +161,12 @@ extern "C" {
 #endif
         writerHelper->alignmentEntry->set_query_position(value);
     }
-    void gobyAlEntry_setScore(CAlignmentsWriterHelper *writerHelper, float value) {
+    void gobyAlEntry_setScoreInt(CAlignmentsWriterHelper *writerHelper, int value) {
+        float fValue = (float) value;
 #ifdef DEBUG
-        fprintf(stderr,"gobyAlEntry_setScore=%f\n", value);
+        fprintf(stderr,"gobyAlEntry_setScore=%d,%f\n", value, fValue);
 #endif
-        writerHelper->alignmentEntry->set_score(value);
+        writerHelper->alignmentEntry->set_score(fValue);
     }
     void gobyAlEntry_setNumberOfMismatches(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
 #ifdef DEBUG

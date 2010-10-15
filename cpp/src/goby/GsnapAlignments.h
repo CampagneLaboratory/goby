@@ -40,7 +40,7 @@ extern "C" {
     void gobyAlEntry_setPosition(CAlignmentsWriterHelper *writerHelper, UINT4 value);
     void gobyAlEntry_setMatchingReverseStrand(CAlignmentsWriterHelper *writerHelper, int value /* bool */);
     void gobyAlEntry_setQueryPosition(CAlignmentsWriterHelper *writerHelper, UINT4 value);
-    void gobyAlEntry_setScore(CAlignmentsWriterHelper *writerHelper, float value);
+    void gobyAlEntry_setScoreInt(CAlignmentsWriterHelper *writerHelper, int value);
     void gobyAlEntry_setNumberOfMismatches(CAlignmentsWriterHelper *writerHelper, UINT4 value);
     void gobyAlEntry_setNumberOfIndels(CAlignmentsWriterHelper *writerHelper, UINT4 value);
     void gobyAlEntry_setQueryAlignedLength(CAlignmentsWriterHelper *writerHelper, UINT4 value);
