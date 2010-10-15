@@ -124,6 +124,7 @@ extern "C" {
 #endif
         writerHelper->numWritten++;
         writerHelper->alignmentEntry = writerHelper->alignmentWriter->appendEntry();
+        writerHelper->sequenceVariation = NULL;
     }
     void gobyAlEntry_setMultiplicity(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
 #ifdef DEBUG
@@ -199,41 +200,22 @@ extern "C" {
         writerHelper->alignmentEntry->set_query_length(value);
     }
 
-    void gobyAlEntry_addSequenceVariations(CAlignmentsWriterHelper *writerHelper) {
+    /**
+     * This method will accumulate sequence variations. If > 1 are registered at readIndex positions next to
+     * each other, they will be put into the SAME sequence variation. If a gap of great than one in readIndex
+     * is found an additional SeqVar will be created.
+     * This will also take "reverse" and "position" into account, which should already have been defined for
+     * writerHelper->alignmentEntry.
+     */
+    void gobyAlEntry_addSequenceVariation(CAlignmentsWriterHelper *writerHelper, int readIndex, char refChar, char readChar, int hasQualCharInt /* bool */, char readQualChar) {
 #ifdef DEBUG
-        fprintf(stderr,"gobyAlEntry_addSequenceVariations\n");
+        fprintf(stderr,"gobyAlEntry_addSequenceVariation readIndex=%d ref=%c read=%c hasQualChar=%d\n", readIndex, refChar, readChar, hasQualCharInt);
 #endif
-        writerHelper->sequenceVariation = writerHelper->alignmentEntry->add_sequence_variations();
-    }
-    void gobyAlSeqVar_setFrom(CAlignmentsWriterHelper *writerHelper, const char* value) {
-#ifdef DEBUG
-        fprintf(stderr,"gobyAlSeqVar_setFrom=%s\n", value);
-#endif
-        writerHelper->sequenceVariation->set_from(value);
-    }
-    void gobyAlSeqVar_setTo(CAlignmentsWriterHelper *writerHelper, const char* value) {
-#ifdef DEBUG
-        fprintf(stderr,"gobyAlSeqVar_setTo=%s\n", value);
-#endif
-        writerHelper->sequenceVariation->set_to(value);
-    }
-    void gobyAlSeqVar_setPosition(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
-#ifdef DEBUG
-        fprintf(stderr,"gobyAlSeqVar_setPosition=%d\n", value);
-#endif
-        writerHelper->sequenceVariation->set_position(value);
-    }
-    void gobyAlSeqVar_setReadIndex(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
-#ifdef DEBUG
-        fprintf(stderr,"gobyAlSeqVar_setReadIndex=%d\n", value);
-#endif
-        writerHelper->sequenceVariation->set_read_index(value);
-    }
-    void gobyAlSeqVar_setToQuality(CAlignmentsWriterHelper *writerHelper, const char* value) {
-#ifdef DEBUG
-        fprintf(stderr,"gobyAlSeqVar_setToQuality=%s\n", value);
-#endif
-        writerHelper->sequenceVariation->set_to_quality(value);
+        bool hasQualChar = intToBool(int hasQualCharInt);
+        if (writerHelper->sequenceVariation == NULL) {
+            // writerHelper->sequenceVariation = writerHelper->alignmentEntry->add_sequence_variations();
+            // ...
+        }
     }
 
 	void gobyAlignments_finished(CAlignmentsWriterHelper *writerHelper) {

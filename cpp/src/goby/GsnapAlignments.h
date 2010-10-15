@@ -46,13 +46,7 @@ extern "C" {
     void gobyAlEntry_setQueryAlignedLength(CAlignmentsWriterHelper *writerHelper, UINT4 value);
     void gobyAlEntry_setTargetAlignedLength(CAlignmentsWriterHelper *writerHelper, UINT4 value);
     void gobyAlEntry_setQueryLength(CAlignmentsWriterHelper *writerHelper, UINT4 value);
-
-    void gobyAlEntry_addSequenceVariations(CAlignmentsWriterHelper *writerHelper); // ::goby::SequenceVariation*
-    void gobyAlSeqVar_setFrom(CAlignmentsWriterHelper *writerHelper, const char* value);
-    void gobyAlSeqVar_setTo(CAlignmentsWriterHelper *writerHelper, const char* value);
-    void gobyAlSeqVar_setPosition(CAlignmentsWriterHelper *writerHelper, UINT4 value);
-    void gobyAlSeqVar_setReadIndex(CAlignmentsWriterHelper *writerHelper, UINT4 value);
-    void gobyAlSeqVar_setToQuality(CAlignmentsWriterHelper *writerHelper, const char* value);
+    void gobyAlEntry_addSequenceVariation(CAlignmentsWriterHelper *writerHelper, int readIndex, char refChar, char readChar, int hasQualCharInt /* bool */, char readQualChar);
 
 	void gobyAlignments_finished(CAlignmentsWriterHelper *alWriterHelper);
 #ifdef __cplusplus
