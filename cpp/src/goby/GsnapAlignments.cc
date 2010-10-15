@@ -211,7 +211,7 @@ extern "C" {
 #ifdef DEBUG
         fprintf(stderr,"gobyAlEntry_addSequenceVariation readIndex=%d ref=%c read=%c hasQualChar=%d\n", readIndex, refChar, readChar, hasQualCharInt);
 #endif
-        bool hasQualChar = intToBool(int hasQualCharInt);
+        bool hasQualChar = intToBool(hasQualCharInt);
         if (writerHelper->sequenceVariation == NULL) {
             // writerHelper->sequenceVariation = writerHelper->alignmentEntry->add_sequence_variations();
             // ...
