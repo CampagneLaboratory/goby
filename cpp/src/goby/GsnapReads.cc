@@ -105,7 +105,7 @@ extern "C" {
 	     * TODO: Goby is storing Quality Scores in Phred units. What encoding does GSnap require?
 	     * We need to convert quality score appropriately here.
 	     */
-	    if (false && entry.has_quality_scores()) {
+	    if (true && entry.has_quality_scores()) {
 	    	queryseq1->quality_alloc = (char *) calloc(entry.quality_scores().size() + 1, sizeof(char));
 		    strcpy(queryseq1->quality_alloc, entry.quality_scores().c_str());
 	    } else {
