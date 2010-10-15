@@ -1,7 +1,14 @@
 #!/bin/sh
 
 #
-# Script to submit a SGE job that will run a differential expression analysis using Goby
+# Script to convert a fastq.bz2 file to compact format.
+# Example of use:
+# foreach file (*.fastq.bz2)
+#  bz2compact.sh `pwd`/$file
+# end
+# The previous lines will convert each file with extension .fastq.bz2 to the compact-reads format, running
+# in parallel on an SGE grid. The file bz2compact.sh must be on the path.
+
 #
 
 # Run the aligner
