@@ -16,11 +16,11 @@
 #$ -l h_vmem=2g
 
 # Number of threads/cpus
-#$ -pe smp 1
-env 
+#$ -pe smp 2
+
 
 cd $TMP
-bzcat -f ${SGE_CWD_PATH}/${BASENAME}.fastq.bz2 >${BASENAME}.fastq
+bzcat -f ${DATA_DIR}/${BASENAME}.fastq.bz2 >${BASENAME}.fastq
 $GOBY 1g fasta-to-compact ${BASENAME}.fastq
 cp ${BASENAME}.compact-reads ${SGE_O_WORKDIR}/
 
