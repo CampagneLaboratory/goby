@@ -206,7 +206,7 @@ extern "C" {
         writerHelper->sequenceVariation = writerHelper->alignmentEntry->add_sequence_variations();
         writerHelper->sequenceVariation->set_read_index(readIndex);
         writerHelper->sequenceVariation->set_position(readIndex + 1);
-        if (!writerHelper->alignmentEntry->get_matching_reverse_strand()) {
+        if (!writerHelper->alignmentEntry->matching_reverse_strand()) {
             // This will be correct for NOT-reverse... for reverse we'll set this later
             writerHelper->sequenceVariation->set_read_index(readIndex + 1);
         }
@@ -220,6 +220,7 @@ extern "C" {
      * writerHelper->alignmentEntry.
      * @param readIndex coming in, readIndex is >0< based. When string position and readIndex into the SeqVar
      *        position and readIndex are >1< based.
+     * For contiguous sequence variations, this assumes readIndex will increment by one each time.
      */
     void gobyAlEntry_addSequenceVariation(CAlignmentsWriterHelper *writerHelper, int readIndex, char refChar, char readChar, int hasQualCharInt /* bool */, char readQualChar) {
 #ifdef DEBUG
@@ -235,7 +236,7 @@ extern "C" {
             // Not contiguous to previous SeqVar
             startNewSequenceVariation(writerHelper, readIndex);
         }
-        if (writerHelper->alignmentEntry->get_matching_reverse_strand()) {
+        if (writerHelper->alignmentEntry->matching_reverse_strand()) {
             // For reverse, update read_index as we accumulate characters for this SeqVar
             google::protobuf::uint32 readLength = writerHelper->alignmentEntry->get_query_length();
             writerHelper->sequenceVariation->set_read_index(readLength - readIndex);
