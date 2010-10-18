@@ -238,7 +238,7 @@ extern "C" {
         }
         if (writerHelper->alignmentEntry->matching_reverse_strand()) {
             // For reverse, update read_index as we accumulate characters for this SeqVar
-            google::protobuf::uint32 readLength = writerHelper->alignmentEntry->get_query_length();
+            google::protobuf::uint32 readLength = writerHelper->alignmentEntry->query_length();
             writerHelper->sequenceVariation->set_read_index(readLength - readIndex);
         }
         writerHelper->lastSeqVarReadIndex = readIndex;
