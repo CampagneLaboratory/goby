@@ -47,6 +47,7 @@
 	    goby::AlignmentWriter *alignmentWriter;
 	    goby::AlignmentEntry *alignmentEntry;
 	    goby::SequenceVariation *sequenceVariation;
+	    int lastSeqVarReadIndex;
 		unsigned int numWritten;
 	};
 #else
@@ -55,6 +56,7 @@
 	    void *alignmentWriter;
 	    void *alignmentEntry;
 	    void *sequenceVariation;
+	    int lastSeqVarReadIndex;
 		unsigned int numWritten;
 	} CAlignmentsWriterHelper;
 #endif

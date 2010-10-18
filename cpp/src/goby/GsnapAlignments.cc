@@ -29,6 +29,7 @@ extern "C" {
         writerHelper->alignmentWriter = new goby::AlignmentWriter(basenameStr, number_of_entries_per_chunk);
 	    writerHelper->alignmentEntry = NULL;
 	    writerHelper->sequenceVariation = NULL;
+	    writerHelper->lastSeqVarReadIndex = -1;
 		writerHelper->numWritten = 0;
 
         return writerHelper;
@@ -125,6 +126,7 @@ extern "C" {
         writerHelper->numWritten++;
         writerHelper->alignmentEntry = writerHelper->alignmentWriter->appendEntry();
         writerHelper->sequenceVariation = NULL;
+	    writerHelper->lastSeqVarReadIndex = -1;
     }
     void gobyAlEntry_setMultiplicity(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
 #ifdef DEBUG
@@ -200,21 +202,53 @@ extern "C" {
         writerHelper->alignmentEntry->set_query_length(value);
     }
 
+    void startNewSequenceVariation(CAlignmentsWriterHelper *writerHelper, int readIndex) {
+        writerHelper->sequenceVariation = writerHelper->alignmentEntry->add_sequence_variations();
+        writerHelper->sequenceVariation->set_read_index(readIndex);
+        writerHelper->sequenceVariation->set_position(readIndex + 1);
+        if (!writerHelper->alignmentEntry->get_matching_reverse_strand()) {
+            // This will be correct for NOT-reverse... for reverse we'll set this later
+            writerHelper->sequenceVariation->set_read_index(readIndex + 1);
+        }
+    }
+
     /**
      * This method will accumulate sequence variations. If > 1 are registered at readIndex positions next to
      * each other, they will be put into the SAME sequence variation. If a gap of great than one in readIndex
      * is found an additional SeqVar will be created.
      * This will also take "reverse" and "position" into account, which should already have been defined for
      * writerHelper->alignmentEntry.
+     * @param readIndex coming in, readIndex is >0< based. When string position and readIndex into the SeqVar
+     *        position and readIndex are >1< based.
      */
     void gobyAlEntry_addSequenceVariation(CAlignmentsWriterHelper *writerHelper, int readIndex, char refChar, char readChar, int hasQualCharInt /* bool */, char readQualChar) {
 #ifdef DEBUG
         fprintf(stderr,"gobyAlEntry_addSequenceVariation readIndex=%d ref=%c read=%c hasQualChar=%d\n", readIndex, refChar, readChar, hasQualCharInt);
 #endif
         bool hasQualChar = intToBool(hasQualCharInt);
-        if (writerHelper->sequenceVariation == NULL) {
-            // writerHelper->sequenceVariation = writerHelper->alignmentEntry->add_sequence_variations();
-            // ...
+        if (writerHelper->sequenceVariation == NULL || writerHelper->lastSeqVarReadIndex == -1) {
+            // New sequence variation
+            startNewSequenceVariation(writerHelper, readIndex);
+        } else if (writerHelper->lastSeqVarReadIndex + 1 == readIndex) {
+            // Append to prev SequenceVar entry
+        } else {
+            // Not contiguous to previous SeqVar
+            startNewSequenceVariation(writerHelper, readIndex);
+        }
+        if (writerHelper->alignmentEntry->get_matching_reverse_strand()) {
+            // For reverse, update read_index as we accumulate characters for this SeqVar
+            google::protobuf::uint32 readLength = writerHelper->alignmentEntry->get_query_length();
+            writerHelper->sequenceVariation->set_read_index(readLength - readIndex);
+        }
+        writerHelper->lastSeqVarReadIndex = readIndex;
+        string *from = writerHelper->sequenceVariation->mutable_from();
+        string *to = writerHelper->sequenceVariation->mutable_to();
+        (*from) += refChar;
+        (*to) += readChar;
+
+        if (hasQualChar) {
+            string *toQuality = writerHelper->sequenceVariation->mutable_to_quality();
+            (*toQuality) += readQualChar;
         }
     }
 
