@@ -204,7 +204,7 @@ extern "C" {
 
     void startNewSequenceVariation(CAlignmentsWriterHelper *writerHelper, int readIndex) {
 #ifdef DEBUG
-        fprintf(stderr,"... startNewSequenceVariation\n",);
+        fprintf(stderr,"... startNewSequenceVariation\n");
 #endif
         writerHelper->sequenceVariation = writerHelper->alignmentEntry->add_sequence_variations();
         writerHelper->sequenceVariation->set_read_index(readIndex);
@@ -235,7 +235,7 @@ extern "C" {
             startNewSequenceVariation(writerHelper, readIndex);
         } else if (writerHelper->lastSeqVarReadIndex + 1 == readIndex) {
             // Append to prev SequenceVar entry
-            fprintf(stderr,"... appending to previous seqVar\n",);
+            fprintf(stderr,"... appending to previous seqVar\n");
         } else {
             // Not contiguous to previous SeqVar
             startNewSequenceVariation(writerHelper, readIndex);
