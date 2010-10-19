@@ -153,7 +153,12 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
                     readIndexFilter.load(filterFile);
                     LOG.info(String.format("Loaded optional filter %s with %d elements. ",
                             filterFile, readIndexFilter.size()));
+                } else{
+                    if (optionalFilterExtension!=null) {
+                        LOG.info("Could not locate filter for filename "+filterFilename);
+                    }
                 }
+
                 for (final Reads.ReadEntry readEntry : readsReader) {
                     // only concatenate if (1) there is no filter or (2) the read index is in the filter.
                     if (readIndexFilter == null || readIndexFilter.contains(readEntry.getReadIndex())) {
