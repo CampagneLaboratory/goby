@@ -4,7 +4,7 @@
 # Script to create a uniqueset file for a compact-reads file.
 # Example of use:
 # foreach file (full-path/*.compact-reads)
-#  bz2compact.sh $file
+#  keep-unique-reads.sh $file
 # end
 # The previous lines will analyze each file with extension .compact-reads to create a uniqset (indices of reads that
 # are unique and should be kept when removing duplicate reads), running in parallel on an SGE grid.
