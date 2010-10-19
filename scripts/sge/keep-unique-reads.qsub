@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# Submit to the rascals queue
+#$ -q *@@rascals.h
+
+# Name of the job
+#$ -N bz2compact
+
+# Execute the script from the current directory
+#$ -cwd
+
+# Combine SGE error and output files.
+#$ -j y
+
+# Memory resource requirements
+#$ -l h_vmem=3.2g
+
+# Number of threads/cpus
+#$ -pe smp 1
+
+cd ${DATA_DIR}/
+$GOBY 3g tally-reads -i ${BASENAME}.compact-reads -f ${BASENAME}.uniqset
+

@@ -3,15 +3,12 @@
 #
 # Script to convert a fastq.bz2 file to compact format.
 # Example of use:
-# foreach file (*.fastq.bz2)
-#  bz2compact.sh `pwd`/$file
+# foreach file (full-path/*.fastq.bz2)
+#  bz2compact.sh $file
 # end
 # The previous lines will convert each file with extension .fastq.bz2 to the compact-reads format, running
 # in parallel on an SGE grid. The file bz2compact.sh must be on the path.
 
-#
-
-# Run the aligner
 
 export WORKING_DIR=`dirname "$0"`
 export GOBY=`which goby`
