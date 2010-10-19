@@ -18,6 +18,6 @@
 # Number of threads/cpus
 #$ -pe smp 1
 
-cd ${DATA_DIR}/
-$GOBY 3g tally-reads -i ${BASENAME}.compact-reads -o ${BASENAME}.uniqset
+cd ${TMP}/
+$GOBY 3g tally-reads -i ${DATA_DIR}/${BASENAME}.compact-reads -o ${DATA_DIR}/${BASENAME}.uniqset
 
