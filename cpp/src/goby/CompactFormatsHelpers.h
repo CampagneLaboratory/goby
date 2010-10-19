@@ -15,6 +15,7 @@
 	#include <queue>
 	#include <string>
 	#include "Reads.h"
+	#include "GsnapStructs.h"
 	// More complex structure for C++
 	struct CReadsHelper {
 		goby::ReadsReader *readsReader;
@@ -22,7 +23,7 @@
 		const goby::ReadEntryIterator *end;
 		std::queue<std::string> *unopenedFiles;
 		unsigned char circular;
-		unsigned int numRead;
+		unsigned int numberOfReads;
 	};
 #else
 	// Opaque structure for C
@@ -32,7 +33,7 @@
 		void *end;
 		void *unopenedFiles;
 		unsigned char circular;
-		unsigned int numRead;
+		unsigned int numberOfReads;
 	} CReadsHelper;
 #endif
 
@@ -43,6 +44,7 @@
 #ifdef __cplusplus
 	#include "Alignments.h"
 	#include "TooManyHits.h"
+	#include "GsnapStructs.h"
 	// More complex structure for C++
 	struct CAlignmentsWriterHelper {
 	    goby::AlignmentWriter *alignmentWriter;
@@ -50,7 +52,9 @@
 	    goby::AlignmentEntry *alignmentEntry;
 	    goby::SequenceVariation *sequenceVariation;
 	    int lastSeqVarReadIndex;
-		unsigned int numWritten;
+	    unsigned int smallestQueryIndex;
+	    unsigned int largestQueryIndex;
+	    unsigned int numberOfAlignedReads;
 	};
 #else
 	// Opaque structure for C
@@ -60,7 +64,9 @@
 	    void *alignmentEntry;
 	    void *sequenceVariation;
 	    int lastSeqVarReadIndex;
-		unsigned int numWritten;
+	    unsigned int smallestQueryIndex;
+	    unsigned int largestQueryIndex;
+	    unsigned int numberOfAlignedReads;
 	} CAlignmentsWriterHelper;
 #endif
 

@@ -31,47 +31,12 @@ extern "C" {
 	    writerHelper->alignmentEntry = NULL;
 	    writerHelper->sequenceVariation = NULL;
 	    writerHelper->lastSeqVarReadIndex = -1;
-		writerHelper->numWritten = 0;
+	    writerHelper->smallestQueryIndex = -1;
+	    writerHelper->largestQueryIndex = -1;
 
         return writerHelper;
 	}
 
-    void gobyAlignments_setNumberOfQueries(CAlignmentsWriterHelper *writerHelper, unsigned number_of_queries) {
-#ifdef DEBUG
-        fprintf(stderr,"gobyAlignments_setNumberOfQueries=%d\n", number_of_queries);
-#endif
-        writerHelper->alignmentWriter->setNumberOfQueries(number_of_queries);
-    }
-    void gobyAlignments_setNumberOfTargets(CAlignmentsWriterHelper *writerHelper, unsigned number_of_targets) {
-#ifdef DEBUG
-        fprintf(stderr,"gobyAlignments_setNumberOfTargets=%d\n", number_of_targets);
-#endif
-        writerHelper->alignmentWriter->setNumberOfTargets(number_of_targets);
-    }
-    void gobyAlignments_setNumberOfAlignedReads(CAlignmentsWriterHelper *writerHelper, unsigned number_of_aligned_reads) {
-#ifdef DEBUG
-        fprintf(stderr,"gobyAlignments_setNumberOfAlignedReads=%d\n", number_of_aligned_reads);
-#endif
-        writerHelper->alignmentWriter->setNumberOfAlignedReads(number_of_aligned_reads);
-    }
-    void gobyAlignments_setConstantQuerylength(CAlignmentsWriterHelper *writerHelper, unsigned constant_query_length) {
-#ifdef DEBUG
-        fprintf(stderr,"gobyAlignments_setConstantQuerylength=%d\n", constant_query_length);
-#endif
-        writerHelper->alignmentWriter->setConstantQuerylength(constant_query_length);
-    }
-    void gobyAlignments_setSmallestSplitQueryIndex(CAlignmentsWriterHelper *writerHelper, unsigned smallest_split_query_index) {
-#ifdef DEBUG
-        fprintf(stderr,"gobyAlignments_setSmallestSplitQueryIndex=%d\n", smallest_split_query_index);
-#endif
-        writerHelper->alignmentWriter->setSmallestSplitQueryIndex(smallest_split_query_index);
-    }
-    void gobyAlignments_setLargestSplitQueryIndex(CAlignmentsWriterHelper *writerHelper, unsigned largest_split_query_index) {
-#ifdef DEBUG
-        fprintf(stderr,"gobyAlignments_setLargestSplitQueryIndex=%d\n", largest_split_query_index);
-#endif
-        writerHelper->alignmentWriter->setLargestSplitQueryIndex(largest_split_query_index);
-    }
     void gobyAlignments_setSorted(CAlignmentsWriterHelper *writerHelper, int sorted /* bool */) {
 #ifdef DEBUG
         fprintf(stderr,"gobyAlignments_setSorted=%d\n", sorted);
@@ -124,7 +89,6 @@ extern "C" {
 #ifdef DEBUG
         fprintf(stderr,"gobyAlignments_appendEntry\n");
 #endif
-        writerHelper->numWritten++;
         writerHelper->alignmentEntry = writerHelper->alignmentWriter->appendEntry();
         writerHelper->sequenceVariation = NULL;
 	    writerHelper->lastSeqVarReadIndex = -1;
@@ -138,6 +102,14 @@ extern "C" {
     void gobyAlEntry_setQueryIndex(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
 #ifdef DEBUG
         fprintf(stderr,"gobyAlEntry_setQueryIndex=%d\n", value);
+
+        if (writerHelper->smallestQueryIndex == -1) {
+            writerHelper->smallestQueryIndex = value;
+            writerHelper->largestQueryIndex = value;
+        } else {
+            writerHelper->smallestQueryIndex = min(value, writerHelper->smallestQueryIndex);
+            writerHelper->largestQueryIndex = max(value, writerHelper->smallestQueryIndex);
+        }
 #endif
         writerHelper->alignmentEntry->set_query_index(value);
     }
@@ -274,12 +246,18 @@ extern "C" {
         writerHelper->tmhWriter->append(queryIndex, numberOfHits, alignedLength);
     }
 
-	void gobyAlignments_finished(CAlignmentsWriterHelper *writerHelper) {
+	void gobyAlignments_finished(CAlignmentsWriterHelper *writerHelper, unsigned int numberOfReads) {
 #ifdef DEBUG
         fprintf(stderr,"gobyAlignments_finished\n");
 #endif
         if (writerHelper != NULL) {
-            // TODO: Write the stats ... # of entries, etc.
+            // Stats for the alignment
+            writerHelper->alignmentWriter->setNumberOfQueries(numberOfReads);
+            writerHelper->alignmentWriter->setSmallestSplitQueryIndex(writerHelper->smallestQueryIndex);
+            writerHelper->alignmentWriter->setLargestSplitQueryIndex(writerHelper->largestQueryIndex);
+            writerHelper->alignmentWriter->setNumberOfAlignedReads(writerHelper->numberOfAlignedReads);
+
+            // Close and delete
             writerHelper->alignmentWriter->close();
             delete writerHelper->alignmentWriter;
             writerHelper->tmhWriter->write();

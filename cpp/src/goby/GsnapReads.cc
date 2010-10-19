@@ -27,7 +27,7 @@ extern "C" {
 			exit(9);
 		}
 		CReadsHelper *readsHelper = new CReadsHelper;
-		readsHelper->numRead = 0;
+		readsHelper->numberOfReads = 0;
 		readsHelper->circular = circular;
 		readsHelper->unopenedFiles = new queue<string>;
 		for (int i = 0; i < numUnopenedFiles; i++) {
@@ -68,7 +68,7 @@ extern "C" {
 	Sequence_T *gobyReads_next(CReadsHelper *readsHelper) {
 		// Not supporting paired reads yet
 	     goby::ReadEntry entry = *(*(*readsHelper).it);
-		(*readsHelper).numRead++;
+		(*readsHelper).numberOfReads++;
 
 	    // Sequence_T* queryseq1 = new Sequence_T;
 	    Sequence_T* queryseq1 = (Sequence_T*) malloc(sizeof(Sequence_T));

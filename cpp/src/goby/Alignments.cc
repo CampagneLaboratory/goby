@@ -314,6 +314,7 @@ namespace goby {
     if (found == target_name_indexes.end()) {
       target_identifiers.insert(pair<string,unsigned>(targetName, targetIndex));
       target_name_indexes.push_back(targetIndex);
+      setNumberOfTargets(target_name_indexes.size());
       goby::IdentifierMapping *targetNameMapping = header.mutable_target_name_mapping();
       goby::IdentifierInfo *newMapping = targetNameMapping->add_mappings();
       newMapping->set_name(targetName);
