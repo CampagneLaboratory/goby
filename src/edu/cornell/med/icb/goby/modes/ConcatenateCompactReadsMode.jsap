@@ -50,7 +50,7 @@
             <shortFlag>f</shortFlag>
             <longFlag>optional-filter-extension</longFlag>
             <stringParser>
-                <classname>FileStringParser</classname>
+                <classname>StringStringParser</classname>
             </stringParser>
             <required>false</required>
             <help>Extension of an optional read index filter. When provided, and when a file named input - '.compact-reads' + filter-extension is found, only reads provided in the filter are concatenated to the output. </help>
