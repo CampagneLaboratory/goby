@@ -33,6 +33,7 @@ extern "C" {
 	    writerHelper->lastSeqVarReadIndex = -1;
 	    writerHelper->smallestQueryIndex = -1;
 	    writerHelper->largestQueryIndex = -1;
+	    writerHelper->numberOfAlignedReads = 0;
 
         return writerHelper;
 	}
@@ -102,7 +103,7 @@ extern "C" {
     void gobyAlEntry_setQueryIndex(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
 #ifdef DEBUG
         fprintf(stderr,"gobyAlEntry_setQueryIndex=%d\n", value);
-
+#endif
         if (writerHelper->smallestQueryIndex == -1) {
             writerHelper->smallestQueryIndex = value;
             writerHelper->largestQueryIndex = value;
@@ -110,7 +111,6 @@ extern "C" {
             writerHelper->smallestQueryIndex = min(value, writerHelper->smallestQueryIndex);
             writerHelper->largestQueryIndex = max(value, writerHelper->smallestQueryIndex);
         }
-#endif
         writerHelper->alignmentEntry->set_query_index(value);
     }
     void gobyAlEntry_setTargetIndex(CAlignmentsWriterHelper *writerHelper, UINT4 value) {

@@ -40,6 +40,7 @@ extern "C" {
 		readsHelper->readsReader = new goby::ReadsReader(filename);
 		readsHelper->it = readsHelper->readsReader->beginPointer();
 		readsHelper->end = readsHelper->readsReader->endPointer();
+		readsHelper->numberOfReads = 0;
 		return readsHelper;
 	}
 
