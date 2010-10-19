@@ -12,8 +12,8 @@
 # Combine SGE error and output files.
 #$ -j y
 
-# Memory resource requirements
-#$ -l h_vmem=2g
+# Memory resource requirements (2Gb more than what Java heap is set to below is strongly advised)
+#$ -l h_vmem=3g
 
 # Number of threads/cpus
 #$ -pe smp 2

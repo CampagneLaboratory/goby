@@ -1,4 +1,10 @@
 development -> 1.8
+ - SGE helper scripts bz2compact.sh and keep-unique-reads.sh help process hundred of lanes in
+   parallel on an SGE grid. bz2compact extracts fastq files compressed with BZip2 and converts
+   them to compact-reads format. keep-unique-reads.sh determines the set of reads that are unique
+   in each input <file>.compact-reads and writes this information to a <file>.uniqset-keep.filter 
+ - Mode concatenate-compact-reads now supports read index filters. This makes it possible to
+   concatenate and keep only reads that are unique within each file. 
  - Draft helper to iterate through individual reference positions of a sorted set of alignments
    (see IterateSortedAlignments).
  - Alternative implementation of sequence-variation-stats mode (called sequence-variation-stats2)

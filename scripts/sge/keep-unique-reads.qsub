@@ -12,12 +12,12 @@
 # Combine SGE error and output files.
 #$ -j y
 
-# Memory resource requirements
+# Memory resource requirements (2Gb more than what Java heap is set to below is strongly advised)
 #$ -l h_vmem=4g
 
 # Number of threads/cpus
 #$ -pe smp 1
 
 cd ${TMP}/
-$GOBY 3g tally-reads -i ${DATA_DIR}/${BASENAME}.compact-reads -o ${DATA_DIR}/${BASENAME}.uniqset
+$GOBY 2g tally-reads -i ${DATA_DIR}/${BASENAME}.compact-reads -o ${DATA_DIR}/${BASENAME}.uniqset
 
