@@ -25,6 +25,7 @@ import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import it.unimi.dsi.lang.MutableString;
+import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.FileUtils;
@@ -135,7 +136,13 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
         maxReadLength = Integer.MIN_VALUE;
         int removedByFilterCount = 0;
         try {
+            final ProgressLogger progress = new ProgressLogger();
+            progress.start("concatenating files");
+            progress.displayFreeMemory = true;
+            progress.expectedUpdates = inputFiles.size();
+            progress.start();
             for (final File inputFile : inputFiles) {
+
                 readsReader = new ReadsReader(inputFile);
                 String basename = FilenameUtils.removeExtension(inputFile.getPath());
                 String filterFilename = FilenameUtils.concat(basename, optionalFilterExtension);
@@ -176,11 +183,13 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
                     } else {
                         removedByFilterCount++;
                     }
+                    progress.update();
                 }
                 readsReader.close();
                 readsReader = null;
 
             }
+            progress.stop();
         } finally {
             writer.printStats(System.out);
             System.out.println("Number of reads=" + numberOfReads);
