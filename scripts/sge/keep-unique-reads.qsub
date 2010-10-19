@@ -4,7 +4,7 @@
 #$ -q *@@rascals.h
 
 # Name of the job
-#$ -N bz2compact
+#$ -N keep-unique-reads
 
 # Execute the script from the current directory
 #$ -cwd
@@ -13,7 +13,7 @@
 #$ -j y
 
 # Memory resource requirements
-#$ -l h_vmem=3.2g
+#$ -l h_vmem=3.5g
 
 # Number of threads/cpus
 #$ -pe smp 1
