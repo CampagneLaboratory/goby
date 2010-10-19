@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define DEBUG
+#undef DEBUG
 
 /**
  * This class is a C interface so Gsnap can write Goby compact-alignments.
@@ -236,7 +236,9 @@ extern "C" {
             startNewSequenceVariation(writerHelper, readIndex);
         } else if (writerHelper->lastSeqVarReadIndex + 1 == readIndex) {
             // Append to prev SequenceVar entry
+#ifdef DEBUG
             fprintf(stderr,"... appending to previous seqVar\n");
+#endif
         } else {
             // Not contiguous to previous SeqVar
             startNewSequenceVariation(writerHelper, readIndex);
