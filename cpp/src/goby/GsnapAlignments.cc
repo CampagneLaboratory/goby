@@ -280,9 +280,9 @@ extern "C" {
             // TODO: Write the stats ... # of entries, etc.
             writerHelper->alignmentWriter->close();
             delete writerHelper->alignmentWriter;
-            delete writerHelper;
             writerHelper->tmhWriter->write();
             delete writerHelper->tmhWriter;
+            delete writerHelper;
         }
 	}
 }
