@@ -13,7 +13,7 @@
 #$ -j y
 
 # Memory resource requirements (2Gb more than what Java heap is set to below is strongly advised)
-#$ -l h_vmem=6g
+#$ -l vf=4g
 
 # Number of threads/cpus
 #$ -pe smp 1
