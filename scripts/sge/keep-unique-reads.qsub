@@ -13,7 +13,7 @@
 #$ -j y
 
 # Memory resource requirements
-#$ -l h_vmem=3.5g
+#$ -l h_vmem=4g
 
 # Number of threads/cpus
 #$ -pe smp 1
