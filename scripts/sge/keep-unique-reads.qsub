@@ -18,6 +18,7 @@
 # Number of threads/cpus
 #$ -pe smp 1
 
+limit
 cd ${TMP}/
 $GOBY 2g tally-reads -i ${DATA_DIR}/${BASENAME}.compact-reads -o ${DATA_DIR}/${BASENAME}.uniqset
 
