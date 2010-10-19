@@ -19,5 +19,5 @@
 #$ -pe smp 1
 
 cd ${DATA_DIR}/
-$GOBY 3g tally-reads -i ${BASENAME}.compact-reads -f ${BASENAME}.uniqset
+$GOBY 3g tally-reads -i ${BASENAME}.compact-reads -o ${BASENAME}.uniqset
 
