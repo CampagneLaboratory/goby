@@ -45,5 +45,15 @@
             </defaults>
             <help>The number of sequences that will be written in each compressed chunk. Default is suitable for very many short sequences. Reduce to a few sequences per chunk if each sequence is very large.  </help>
         </flaggedOption>
+        <flaggedOption>
+            <id>optional-filter-extension</id>
+            <shortFlag>f</shortFlag>
+            <longFlag>optional-filter-extension</longFlag>
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>Extension of an optional read index filter. When provided, and when a file named input - '.compact-reads' + filter-extension is found, only reads provided in the filter are concatenated to the output. </help>
+        </flaggedOption>
     </parameters>
 </jsap>

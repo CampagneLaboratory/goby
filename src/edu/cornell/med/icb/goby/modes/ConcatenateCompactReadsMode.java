@@ -23,8 +23,13 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
+import edu.cornell.med.icb.goby.reads.ReadSet;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,17 +44,29 @@ import java.util.List;
  * @author Kevin Dorff
  */
 public class ConcatenateCompactReadsMode extends AbstractGobyMode {
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(ConcatenateCompactReadsMode.class);
 
-    /** The input files. */
+    /**
+     * The input files.
+     */
     private List<File> inputFiles;
 
-    /** The output filename. */
+    /**
+     * The output filename.
+     */
     private String outputFilename;
 
-    /** sequences per chunck in the written file. */
+    /**
+     * sequences per chunck in the written file.
+     */
     private int sequencePerChunk = 10000;
 
-    /** The mode name. */
+    /**
+     * The mode name.
+     */
     private static final String MODE_NAME = "concatenate-compact-reads";
 
     /**
@@ -61,6 +78,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
     private long numberOfReads;
     private int minReadLength = Integer.MAX_VALUE;
     private int maxReadLength = Integer.MIN_VALUE;
+    private String optionalFilterExtension;
 
     @Override
     public String getModeName() {
@@ -77,7 +95,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws IOException error parsing
+     * @throws IOException   error parsing
      * @throws JSAPException error parsing
      */
     @Override
@@ -87,6 +105,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
 
         setInputFilenames(jsapResult.getStringArray("input"));
         outputFilename = jsapResult.getString("output");
+        optionalFilterExtension = jsapResult.getString("optional-filter-extension");
         sequencePerChunk = jsapResult.getInt("sequence-per-chunk");
         return this;
     }
@@ -94,6 +113,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
     /**
      * Actually perform the split of the compact reads file between
      * start and end position to the new compact reads file.
+     *
      * @throws java.io.IOException
      */
     @Override
@@ -113,42 +133,60 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
         numberOfReads = 0;
         minReadLength = Integer.MAX_VALUE;
         maxReadLength = Integer.MIN_VALUE;
+        int removedByFilterCount = 0;
         try {
             for (final File inputFile : inputFiles) {
                 readsReader = new ReadsReader(inputFile);
-
+                String basename = FilenameUtils.removeExtension(inputFile.getPath());
+                String filterFilename = FilenameUtils.concat(basename, optionalFilterExtension);
+                File filterFile = new File(filterFilename);
+                ReadSet readIndexFilter = null;
+                if (filterFile.exists() && filterFile.canRead()) {
+                    readIndexFilter = new ReadSet();
+                    readIndexFilter.load(filterFile);
+                    LOG.info(String.format("Loaded optional filter %s with %d elements. ",
+                            filterFile, readIndexFilter.size()));
+                }
                 for (final Reads.ReadEntry readEntry : readsReader) {
-                    numberOfReads++;
-                    if (readEntry.hasDescription()) {
-                        writer.setDescription(readEntry.getDescription());
-                    }
-                    if (readEntry.hasReadIdentifier()) {
-                        writer.setIdentifier(readEntry.getReadIdentifier());
-                    }
-                    if (readEntry.hasQualityScores()) {
-                        final byte[] scores = ReadsReader.decodeQualityScores(readEntry);
-                        if (scores != null) {
-                            writer.setQualityScores(scores);
+                    // only concatenate if (1) there is no filter or (2) the read index is in the filter.
+                    if (readIndexFilter == null || readIndexFilter.contains(readEntry.getReadIndex())) {
+
+                        numberOfReads++;
+                        if (readEntry.hasDescription()) {
+                            writer.setDescription(readEntry.getDescription());
                         }
-                    }
-                    minReadLength = Math.min(minReadLength, readEntry.getReadLength());
-                    maxReadLength = Math.max(maxReadLength, readEntry.getReadLength());
-                    if (readEntry.hasSequence()) {
-                        ReadsReader.decodeSequence(readEntry, sequence);
-                        writer.setSequence(sequence);
+                        if (readEntry.hasReadIdentifier()) {
+                            writer.setIdentifier(readEntry.getReadIdentifier());
+                        }
+                        if (readEntry.hasQualityScores()) {
+                            final byte[] scores = ReadsReader.decodeQualityScores(readEntry);
+                            if (scores != null) {
+                                writer.setQualityScores(scores);
+                            }
+                        }
+                        minReadLength = Math.min(minReadLength, readEntry.getReadLength());
+                        maxReadLength = Math.max(maxReadLength, readEntry.getReadLength());
+                        if (readEntry.hasSequence()) {
+                            ReadsReader.decodeSequence(readEntry, sequence);
+                            writer.setSequence(sequence);
+                        } else {
+                            writer.setSequence("");
+                        }
+                        writer.appendEntry();
                     } else {
-                        writer.setSequence("");
+                        removedByFilterCount++;
                     }
-                    writer.appendEntry();
                 }
                 readsReader.close();
                 readsReader = null;
+
             }
         } finally {
             writer.printStats(System.out);
             System.out.println("Number of reads=" + numberOfReads);
             System.out.println("Minimum Read Length=" + minReadLength);
             System.out.println("Maximum Read Length=" + maxReadLength);
+            System.out.println("Reads removed by filter=" + removedByFilterCount);
             writer.close();
             if (readsReader != null) {
                 readsReader.close();
@@ -158,6 +196,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
 
     /**
      * Add an input file.
+     *
      * @param inputFile the input file to add.
      */
     public synchronized void addInputFile(final File inputFile) {
@@ -178,6 +217,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
 
     /**
      * Set the input filenames.
+     *
      * @param inputFilenames the input filename
      */
     public synchronized void setInputFilenames(final String[] inputFilenames) {
@@ -189,6 +229,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
 
     /**
      * Get the input filenames.
+     *
      * @return the input filenames
      */
     public synchronized String[] getInputFilenames() {
@@ -205,6 +246,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
 
     /**
      * Set the output filename.
+     *
      * @param outputFilename the output filename
      */
     public void setOutputFilename(final String outputFilename) {
@@ -213,6 +255,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
 
     /**
      * Get the output filename.
+     *
      * @return the output filename
      */
     public String getOutputFilename() {
@@ -221,6 +264,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
 
     /**
      * The number of reads after the concatenate.
+     *
      * @return number of reads
      */
     public long getNumberOfReads() {
@@ -229,6 +273,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
 
     /**
      * The minimum sequence length of all of the reads.
+     *
      * @return minimum sequence length
      */
     public int getMinReadLength() {
@@ -237,6 +282,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
 
     /**
      * The maximum sequence length of all of the reads.
+     *
      * @return maximum sequence length
      */
     public int getMaxReadLength() {
@@ -246,9 +292,11 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
     /**
      * Main mode for splitting compact reads files from a start position
      * to and end position.
+     *
      * @param args command line arguments
      * @throws java.io.IOException IO error
-     * @throws com.martiansoftware.jsap.JSAPException command line parsing error.
+     * @throws com.martiansoftware.jsap.JSAPException
+     *                             command line parsing error.
      */
     public static void main(final String[] args) throws IOException, JSAPException {
         new ConcatenateCompactReadsMode().configure(args).execute();
