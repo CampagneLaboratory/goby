@@ -27,6 +27,7 @@ extern "C" {
         string basenameStr(basename);
 
         writerHelper->alignmentWriter = new goby::AlignmentWriter(basenameStr, number_of_entries_per_chunk);
+	    writerHelper->tmhWriter = new goby::TooManyHitsWriter(basenameStr, 1);
 	    writerHelper->alignmentEntry = NULL;
 	    writerHelper->sequenceVariation = NULL;
 	    writerHelper->lastSeqVarReadIndex = -1;
@@ -257,16 +258,31 @@ extern "C" {
         }
     }
 
+    /**
+     * This method should be called once AFTER you call
+     *    gobyAlEntry_setQueryIndex(...)
+     *    gobyAlEntry_setQueryAlignedLength(...)
+     */
+    void gobyAlEntry_appendTooManyHits(CAlignmentsWriterHelper *writerHelper, int numberOfHits) {
+        google::protobuf::uint32 queryIndex = writerHelper->alignmentEntry->query_index();
+        google::protobuf::uint32 alignedLength = writerHelper->alignmentEntry->query_aligned_length();
+#ifdef DEBUG
+        fprintf(stderr,"gobyAlEntry_appendTooManyHits queryIndex=%d numberOfHits=%d alignedLength=%d\n", queryIndex, numberOfHits, alignedLength);
+#endif
+        writerHelper->tmhWriter->append(queryIndex, numberOfHits, alignedLength);
+    }
+
 	void gobyAlignments_finished(CAlignmentsWriterHelper *writerHelper) {
 #ifdef DEBUG
         fprintf(stderr,"gobyAlignments_finished\n");
 #endif
         if (writerHelper != NULL) {
             // TODO: Write the stats ... # of entries, etc.
-
             writerHelper->alignmentWriter->close();
             delete writerHelper->alignmentWriter;
             delete writerHelper;
+            writerHelper->tmhWriter->write();
+            delete writerHelper->tmhWriter;
         }
 	}
 }

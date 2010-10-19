@@ -42,9 +42,11 @@
 
 #ifdef __cplusplus
 	#include "Alignments.h"
+	#include "TooManyHits.h"
 	// More complex structure for C++
 	struct CAlignmentsWriterHelper {
 	    goby::AlignmentWriter *alignmentWriter;
+	    goby::TooManyHitsWriter *tmhWriter;
 	    goby::AlignmentEntry *alignmentEntry;
 	    goby::SequenceVariation *sequenceVariation;
 	    int lastSeqVarReadIndex;
@@ -54,6 +56,7 @@
 	// Opaque structure for C
 	typedef struct {
 	    void *alignmentWriter;
+	    void *tmhWriter;
 	    void *alignmentEntry;
 	    void *sequenceVariation;
 	    int lastSeqVarReadIndex;

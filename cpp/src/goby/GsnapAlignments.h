@@ -46,6 +46,7 @@ extern "C" {
     void gobyAlEntry_setQueryAlignedLength(CAlignmentsWriterHelper *writerHelper, UINT4 value);
     void gobyAlEntry_setTargetAlignedLength(CAlignmentsWriterHelper *writerHelper, UINT4 value);
     void gobyAlEntry_setQueryLength(CAlignmentsWriterHelper *writerHelper, UINT4 value);
+    void gobyAlEntry_appendTooManyHits(CAlignmentsWriterHelper *writerHelper, int numberOfHits);
     void gobyAlEntry_addSequenceVariation(CAlignmentsWriterHelper *writerHelper, int readIndex, char refChar, char readChar, int hasQualCharInt /* bool */, char readQualChar);
 
 	void gobyAlignments_finished(CAlignmentsWriterHelper *alWriterHelper);
