@@ -19,7 +19,7 @@
 #$ -pe smp 1
 
 echo 'Running on '`hostname`'with limits'
-limit
+ulimit -a
 cd ${TMP}/
 $GOBY 2g tally-reads -i ${DATA_DIR}/${BASENAME}.compact-reads -o ${DATA_DIR}/${BASENAME}.uniqset
 
