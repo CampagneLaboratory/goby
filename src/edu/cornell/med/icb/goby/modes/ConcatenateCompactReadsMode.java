@@ -145,7 +145,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
 
                 readsReader = new ReadsReader(inputFile);
                 String basename = FilenameUtils.removeExtension(inputFile.getPath());
-                String filterFilename = FilenameUtils.concat(basename, optionalFilterExtension);
+                String filterFilename = basename + optionalFilterExtension;
                 File filterFile = new File(filterFilename);
                 ReadSet readIndexFilter = null;
                 if (filterFile.exists() && filterFile.canRead()) {
