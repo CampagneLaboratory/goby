@@ -183,11 +183,11 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
                     } else {
                         removedByFilterCount++;
                     }
-                    progress.update();
+
                 }
                 readsReader.close();
                 readsReader = null;
-
+                progress.update();
             }
             progress.stop();
         } finally {
