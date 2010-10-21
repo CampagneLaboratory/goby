@@ -94,6 +94,12 @@ public class ReadsWriter implements Closeable {
         appendEntry();
     }
 
+    public synchronized void appendEntry(final Reads.ReadEntry.Builder entryBuilder) throws IOException {
+        collectionBuilder.addReads(entryBuilder.build());
+        messageChunkWriter.writeAsNeeded(collectionBuilder);
+        barcodeIndex = -1;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -163,6 +169,22 @@ public class ReadsWriter implements Closeable {
         barcodeIndex = -1;
     }
 
+    public static ByteString encodeSequence(final CharSequence sequence, byte[] byteBuffer) {
+
+        final int length = sequence.length();
+        if (length > byteBuffer.length) {
+            byteBuffer = new byte[length];
+        }
+
+        final byte[] bytes = byteBuffer;
+        for (int i = 0; i < length; i++) {
+            bytes[i] = (byte) sequence.charAt(i);
+
+        }
+
+        return ByteString.copyFrom(bytes, 0, length);
+    }
+
     private synchronized ByteString encodeSequence(final CharSequence sequence) {
 
         final int length = sequence.length();
@@ -203,9 +225,10 @@ public class ReadsWriter implements Closeable {
 
     /**
      * Set quality scores for the second sequence in a pair.
+     *
      * @param qualityScores quality Scores in Phred scale.
      */
     public void setQualityScoresPair(final byte[] qualityScores) {
-        this.qualityScoresPair=qualityScores;
+        this.qualityScoresPair = qualityScores;
     }
 }
