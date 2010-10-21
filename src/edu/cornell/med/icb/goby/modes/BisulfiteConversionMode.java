@@ -138,13 +138,7 @@ public class BisulfiteConversionMode extends AbstractGobyMode {
 
                 progress.lightUpdate();
             }
-            writer.close();
-            reader.close();
-        }
-
-        finally
-
-        {
+        } finally {
 
             if (writer != null) {
                 try {
