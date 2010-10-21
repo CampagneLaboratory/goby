@@ -217,7 +217,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
             System.out.println("Creating file " + outputFilename);
             convert(loopIndex, length, inputFilename, outputFilename);
         } else {
-            System.out.println("Skipping file" + outputFilename);
+            System.out.printf("Skipping file that already exists %s%n", outputFilename);
         }
     }
 

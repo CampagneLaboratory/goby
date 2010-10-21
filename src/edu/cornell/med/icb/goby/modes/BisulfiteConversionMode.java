@@ -122,7 +122,7 @@ public class BisulfiteConversionMode extends AbstractGobyMode {
             final MutableString sequencePair = new MutableString();
             byte[] byteBuffer = new byte[0];
 
-            reader = new ReadsReader(new FastBufferedInputStream(new FileInputStream(inputFilename)));
+            reader = new ReadsReader(new FileInputStream(inputFilename));
             for (final Reads.ReadEntry readEntry : reader) {
                 Reads.ReadEntry.Builder builder = readEntry.toBuilder();
                 ReadsReader.decodeSequence(readEntry, sequence, false);
