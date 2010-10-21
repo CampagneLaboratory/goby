@@ -20,23 +20,18 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.reads.*;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
+import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ArrayUtils;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.Locale;
+
+import edu.cornell.med.icb.goby.reads.ReadsWriter;
+import edu.cornell.med.icb.goby.reads.ReadsReader;
+import edu.cornell.med.icb.goby.reads.Reads;
 
 /**
  * Convert sequences to mimick bisulfite conversion. Every cytosine is assumed to be unmethylated and is therefore
@@ -62,6 +57,12 @@ public class BisulfiteConversionMode extends AbstractGobyMode {
     private String inputFilename;
     private String outputFilename;
 
+    /**
+     * The number of sequences that will be written in each compressed chunk. Th default is
+     * suitable for very many short sequences but should be reduced to a few sequences per
+     * chunk if each sequence is very large.
+     */
+    private int sequencePerChunk = 10000;
 
     /**
      * {@inheritDoc}
@@ -96,6 +97,7 @@ public class BisulfiteConversionMode extends AbstractGobyMode {
 
         inputFilename = jsapResult.getString("input");
         outputFilename = jsapResult.getString("output");
+        sequencePerChunk = jsapResult.getInt("sequence-per-chunk");
 
         return this;
     }
@@ -103,6 +105,8 @@ public class BisulfiteConversionMode extends AbstractGobyMode {
     @Override
     public void execute() throws IOException {
 
+        System.out.printf("Converting %s to %s, sequences per chuck=%d%n",
+                inputFilename, outputFilename, sequencePerChunk);
 
         final ProgressLogger progress = new ProgressLogger();
         progress.start();
@@ -110,12 +114,15 @@ public class BisulfiteConversionMode extends AbstractGobyMode {
         ReadsWriter writer = null;
         ReadsReader reader = null;
         try {
-            writer = new ReadsWriter(new FileOutputStream(outputFilename));
+
+            writer = new ReadsWriter(new FastBufferedOutputStream(new FileOutputStream(outputFilename)));
+            writer.setNumEntriesPerChunk(sequencePerChunk);
 
             final MutableString sequence = new MutableString();
             final MutableString sequencePair = new MutableString();
             byte[] byteBuffer = new byte[0];
-            reader = new ReadsReader(new FileInputStream(inputFilename));
+
+            reader = new ReadsReader(new FastBufferedInputStream(new FileInputStream(inputFilename)));
             for (final Reads.ReadEntry readEntry : reader) {
                 Reads.ReadEntry.Builder builder = readEntry.toBuilder();
                 ReadsReader.decodeSequence(readEntry, sequence, false);

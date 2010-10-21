@@ -39,6 +39,18 @@
             <required>true</required>
             <help>Name of the compact reads output file. Sequences will be written to this output after bisulfite conversion (C->T).</help>
         </flaggedOption>
-
+        <flaggedOption>
+            <id>sequence-per-chunk</id>
+            <shortFlag>n</shortFlag>
+            <longFlag>sequence-per-chunk</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>10000</string>
+            </defaults>
+            <help>The number of sequences that will be written in each compressed chunk. Default is suitable for very many short sequences. Reduce to a few sequences per chunk if each sequence is very large.</help>
+        </flaggedOption>
     </parameters>
 </jsap>
