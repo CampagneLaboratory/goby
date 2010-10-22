@@ -183,8 +183,9 @@ extern "C" {
         string *to = writerHelper->sequenceVariation->mutable_to();
         (*from) += refChar;
         (*to) += readChar;
-        debug(fprintf(stderr,"... sv->read_index=%d sv->position=%d\n",
-            writerHelper->sequenceVariation->read_index(), writerHelper->sequenceVariation->position()));
+        debug(fprintf(stderr,"... sv->read_index=%d sv->position=%d from=%s to=%s\n",
+            writerHelper->sequenceVariation->read_index(), writerHelper->sequenceVariation->position(),
+            from->c_str(), to->c_str()));
         if (hasQualChar) {
             string *toQuality = writerHelper->sequenceVariation->mutable_to_quality();
             (*toQuality) += readQualChar;
@@ -223,20 +224,24 @@ extern "C" {
 
     char* hitTypes[] = { "EXACT", "SUB", "INS", "DEL", "SPLICE", "TERMINAL" };
 
-    void gobyAlignments_debugSequences(int hitType, char *refSequence, char *readSequence, int startPos, int length) {
+    void gobyAlignments_debugSequences(CAlignmentsWriterHelper *writerHelper, int hitType, char *refSequence, char *readSequence, int startPos) {
         debug(
             fprintf(stderr,":: type=%s\n", hitTypes[hitType]);
             string prefix;
-            string suffix;
-            int i;
-            for (i = 0; i < startPos; i++) {
+            prefix.reserve(startPos);
+            for (int i = 0; i < startPos; i++) {
                 prefix += "_";
             }
-            for (i = 0; i < length - strlen(refSequence); i++) {
+
+            int suffixLength = writerHelper->alignmentEntry->query_length() - strlen(refSequence) - startPos;
+            string suffix;
+            suffix.reserve(suffixLength);
+            for (int i = 0; i < suffixLength; i++) {
                 suffix += "_";
             }
-            fprintf(stderr,":: ref =%s%s%s\n", prefix, refSequence, suffix);
-            fprintf(stderr,":: read=%s%s%s\n", prefix, readSequence, suffix);
+
+            fprintf(stderr,":: ref =%s%s%s\n", prefix.c_str(), refSequence, suffix.c_str());
+            fprintf(stderr,":: read=%s%s%s\n", prefix.c_str(), readSequence, suffix.c_str());
         )
     }
 }
