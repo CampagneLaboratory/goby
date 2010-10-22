@@ -223,11 +223,20 @@ extern "C" {
 
     char* hitTypes[] = { "EXACT", "SUB", "INS", "DEL", "SPLICE", "TERMINAL" };
 
-    void gobyAlignments_debugSequences(int hitType, char *refSequence, char *readSequence) {
+    void gobyAlignments_debugSequences(int hitType, char *refSequence, char *readSequence, int startPos, int length) {
         debug(
             fprintf(stderr,":: type=%s\n", hitTypes[hitType]);
-            fprintf(stderr,":: ref =%s\n", refSequence);
-            fprintf(stderr,":: read=%s\n", readSequence);
+            string prefix;
+            string suffix;
+            int i;
+            for (int i = 0; i < startPos; i++) {
+                prefix += "_";
+            }
+            for (int i = 0; i < length - strlen(refSequence); i++) {
+                suffix += "_";
+            }
+            fprintf(stderr,":: ref =%s%s%s\n", prefix, refSequence, suffix);
+            fprintf(stderr,":: read=%s%s%s\n", prefix, readSequence, suffix);
         )
     }
 }

@@ -28,7 +28,7 @@ extern "C" {
 
     // get an empty alignment entry to populate
     void gobyAlignments_appendEntry(CAlignmentsWriterHelper *writerHelper);
-    void gobyAlignments_debugSequences(int hitType, char *refSequences, char *readSequence);
+    void gobyAlignments_debugSequences(int hitType, char *refSequences, char *readSequence, int startPos, int length);
     void gobyAlEntry_setMultiplicity(CAlignmentsWriterHelper *writerHelper, UINT4 value);
     void gobyAlEntry_setQueryIndex(CAlignmentsWriterHelper *writerHelper, UINT4 value);
     void gobyAlEntry_setTargetIndex(CAlignmentsWriterHelper *writerHelper, UINT4 value);
