@@ -161,8 +161,8 @@ extern "C" {
      * For contiguous sequence variations, this assumes readIndex will increment by one each time.
      */
     void gobyAlEntry_addSequenceVariation(CAlignmentsWriterHelper *writerHelper, int readIndex, char refChar, char readChar, int hasQualCharInt /* bool */, char readQualChar) {
-        debug(fprintf(stderr,"gobyAlEntry_addSequenceVariation readIndex=%d ref=%c read=%c hasQualChar=%d\n", readIndex, refChar, readChar, hasQualCharInt));
         bool hasQualChar = hasQualCharInt == 0 ? false : true;
+        debug(fprintf(stderr,"gobyAlEntry_addSequenceVariation readIndex=%d ref=%c read=%c hasQualChar=%s\n", readIndex, refChar, readChar, hasQualChar ? "true" : "false"));
         if (writerHelper->sequenceVariation == NULL || writerHelper->lastSeqVarReadIndex == -1) {
             // New sequence variation
             startNewSequenceVariation(writerHelper, readIndex);
@@ -183,7 +183,8 @@ extern "C" {
         string *to = writerHelper->sequenceVariation->mutable_to();
         (*from) += refChar;
         (*to) += readChar;
-
+        debug(fprintf(stderr,"... sv->read_index=%d sv->position=%d\n",
+            writerHelper->sequenceVariation->read_index(), writerHelper->sequenceVariation->position()));
         if (hasQualChar) {
             string *toQuality = writerHelper->sequenceVariation->mutable_to_quality();
             (*toQuality) += readQualChar;
