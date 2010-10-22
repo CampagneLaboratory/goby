@@ -76,6 +76,7 @@ extern "C" {
 
     // get an empty alignment entry to populate
     void gobyAlignments_appendEntry(CAlignmentsWriterHelper *writerHelper) {
+        debug(fprintf(stderr,"---------------------------------------\n"));
         debug(fprintf(stderr,"gobyAlignments_appendEntry\n"));
         writerHelper->alignmentEntry = writerHelper->alignmentWriter->appendEntry();
         writerHelper->sequenceVariation = NULL;
