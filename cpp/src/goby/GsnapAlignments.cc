@@ -43,11 +43,11 @@ extern "C" {
 
     void gobyAlignments_setSorted(CAlignmentsWriterHelper *writerHelper, int sorted /* bool */) {
         debug(fprintf(stderr,"gobyAlignments_setSorted=%d\n", sorted));
-        writerHelper->alignmentWriter->setSorted(intToBool(sorted));
+        writerHelper->alignmentWriter->setSorted(sorted == 0 ? false : true);
     }
     void gobyAlignments_setIndexed(CAlignmentsWriterHelper *writerHelper, int indexed /* bool */) {
         debug(fprintf(stderr,"gobyAlignments_setIndexed=%d\n", indexed));
-        writerHelper->alignmentWriter->setIndexed(intToBool(indexed));
+        writerHelper->alignmentWriter->setIndexed(indexed == 0 ? false : true);
     }
     void gobyAlignments_setTargetLengths(CAlignmentsWriterHelper *writerHelper, const unsigned int* target_lengths) {
         debug(fprintf(stderr,"gobyAlignments_setTargetLengths=...\n"));
@@ -107,7 +107,7 @@ extern "C" {
     }
     void gobyAlEntry_setMatchingReverseStrand(CAlignmentsWriterHelper *writerHelper, int value /* bool */) {
         debug(fprintf(stderr,"gobyAlEntry_setMatchingReverseStrand=%d\n", value));
-        writerHelper->alignmentEntry->set_matching_reverse_strand(intToBool(value));
+        writerHelper->alignmentEntry->set_matching_reverse_strand(value == 0 ? false : true);
     }
     void gobyAlEntry_setQueryPosition(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
         debug(fprintf(stderr,"gobyAlEntry_setQueryPosition=%d\n", value));
@@ -162,7 +162,7 @@ extern "C" {
      */
     void gobyAlEntry_addSequenceVariation(CAlignmentsWriterHelper *writerHelper, int readIndex, char refChar, char readChar, int hasQualCharInt /* bool */, char readQualChar) {
         debug(fprintf(stderr,"gobyAlEntry_addSequenceVariation readIndex=%d ref=%c read=%c hasQualChar=%d\n", readIndex, refChar, readChar, hasQualCharInt));
-        bool hasQualChar = intToBool(hasQualCharInt);
+        bool hasQualChar = hasQualCharInt == 0 ? false : true;
         if (writerHelper->sequenceVariation == NULL || writerHelper->lastSeqVarReadIndex == -1) {
             // New sequence variation
             startNewSequenceVariation(writerHelper, readIndex);
@@ -231,12 +231,3 @@ extern "C" {
     }
 }
 
-
-/** Convert int to bool. NOT extern'd to C. **/
-bool intToBool(int value) {
-    if (value == 0) {
-        return false;
-    } else {
-        return true;
-    }
-}
