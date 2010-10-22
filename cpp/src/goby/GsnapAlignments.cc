@@ -115,7 +115,7 @@ extern "C" {
     }
     void gobyAlEntry_setScoreInt(CAlignmentsWriterHelper *writerHelper, int value) {
         float fValue = (float) value;
-        debug(fprintf(stderr,"gobyAlEntry_setScore=%d,%f\n", value, fValue));
+        debug(fprintf(stderr,"gobyAlEntry_setScore=%f\n", fValue));
         writerHelper->alignmentEntry->set_score(fValue);
     }
     void gobyAlEntry_setNumberOfMismatches(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
