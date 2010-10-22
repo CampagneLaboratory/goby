@@ -219,7 +219,18 @@ extern "C" {
             delete writerHelper;
         }
 	}
+
+    char* hitTypes[] = { "EXACT", "SUB", "INS", "DEL", "SPLICE", "TERMINAL" };
+
+    void gobyAlignments_debugSequences(int hitType, char *refSequence, char *readSequence) {
+        debug(
+            fprintf(stderr,":: type=%s\n", hitTypes[hitType]);
+            fprintf(stderr,":: ref =%s\n", refSequence);
+            fprintf(stderr,":: read=%s\n", readSequence);
+        )
+    }
 }
+
 
 /** Convert int to bool. NOT extern'd to C. **/
 bool intToBool(int value) {
