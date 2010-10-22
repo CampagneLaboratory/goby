@@ -229,10 +229,10 @@ extern "C" {
             string prefix;
             string suffix;
             int i;
-            for (int i = 0; i < startPos; i++) {
+            for (i = 0; i < startPos; i++) {
                 prefix += "_";
             }
-            for (int i = 0; i < length - strlen(refSequence); i++) {
+            for (i = 0; i < length - strlen(refSequence); i++) {
                 suffix += "_";
             }
             fprintf(stderr,":: ref =%s%s%s\n", prefix, refSequence, suffix);
