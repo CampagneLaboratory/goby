@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.util;
 import it.unimi.dsi.fastutil.objects.ObjectHeapPriorityQueue;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import edu.cornell.med.icb.goby.methylation.MethylationSimilarityMatch;
 
 
 /**
@@ -67,7 +68,7 @@ public class HitBoundedPriorityQueue {
      *         #enqueue(int,float)}.
      */
 
-    public boolean wouldEnqueue(final int targetPosition, final double score) {
+    public boolean wouldEnqueue(final int targetPosition, final int chromosome, final float score) {
         if (queue.size() < maxSize && !targetPositions.contains(targetPosition)) {
             return true;
         }
@@ -86,7 +87,11 @@ public class HitBoundedPriorityQueue {
      * @return true if the document has been actually enqueued.
      */
 
-    public boolean enqueue(final int targetPosition, final float score) {
+    public boolean enqueue(final int chromosome, final int targetPosition, final float score,
+                           final int startForward,final int  endForward,final int  startReverse,
+                           final int  endReverse,
+                           final int windowLength,final float sumForwardStrand,
+                           float sumReverseStrand) {
 
         if (maxSize == 0 || targetPositions.contains(targetPosition)) {
             return false;
@@ -95,7 +100,7 @@ public class HitBoundedPriorityQueue {
             if (targetPositions.contains(targetPosition)) {
                 return false;
             }
-            queue.enqueue(new MethylationSimilarityMatch(score, targetPosition));
+            queue.enqueue(new MethylationSimilarityMatch(score, chromosome,  targetPosition));
             return true;
         } else {
             final MethylationSimilarityMatch dsi = queue.first();
@@ -103,8 +108,15 @@ public class HitBoundedPriorityQueue {
             if (score > dsi.score) {
                 targetPositions.remove(dsi.targetPosition);
                 dsi.targetPosition = targetPosition;
+                dsi.chromosome=chromosome;
                 dsi.score = score;
-
+                dsi.windowLength=windowLength;
+                dsi.sumForwardStrand=sumForwardStrand;
+                dsi.sumReverseStrand=sumReverseStrand;
+                dsi.startForward = startForward;
+                dsi.endForward = endForward;
+                dsi.startReverse = startReverse;
+                dsi.endReverse = endReverse;
                 queue.changed();
                 targetPositions.add(targetPosition);
 
@@ -113,33 +125,6 @@ public class HitBoundedPriorityQueue {
             return false;
         }
     }
-
-    public boolean enqueue(final MethylationSimilarityMatch hit) {
-        if (maxSize == 0) {
-            return false;
-        }
-        if (queue.size() < maxSize) {
-            if (targetPositions.contains(hit.targetPosition)) {
-                return false;
-            }
-            queue.enqueue(hit);
-            return true;
-        } else {
-            final MethylationSimilarityMatch dsi = queue.first();
-
-            if (hit.score > dsi.score) {
-                // remove previous target position
-                targetPositions.remove(dsi.targetPosition);
-                dsi.targetPosition = hit.targetPosition;
-                dsi.score = hit.score;
-                targetPositions.add(hit.targetPosition);
-                queue.changed();
-                return true;
-            }
-            return false;
-        }
-    }
-
     public boolean isEmpty() {
         return queue.isEmpty();
     }

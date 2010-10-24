@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.cornell.med.icb.goby.util;
+package edu.cornell.med.icb.goby.methylation;
 
 import java.util.Comparator;
 
@@ -28,9 +28,18 @@ import java.util.Comparator;
 public class MethylationSimilarityMatch {
     public float score;
     public int targetPosition;
+    public int chromosome;
+    public int windowLength;
+    public float sumReverseStrand;
+    public float sumForwardStrand;
+    public int startForward;
+    public int endForward;
+    public int startReverse;
+    public int endReverse;
 
-    public MethylationSimilarityMatch(float score, int targetPosition) {
+    public MethylationSimilarityMatch(float score, int chromosome, int targetPosition) {
         this.score = score;
+        this.chromosome=chromosome;
         this.targetPosition = targetPosition;
     }
 
