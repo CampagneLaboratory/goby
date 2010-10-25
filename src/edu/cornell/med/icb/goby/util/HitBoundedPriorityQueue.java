@@ -87,7 +87,7 @@ public class HitBoundedPriorityQueue {
      * @return true if the document has been actually enqueued.
      */
 
-    public boolean enqueue(final int chromosome, final int targetPosition, final float score,
+    public synchronized boolean enqueue(final int chromosome, final int targetPosition, final float score,
                            final int startForward,final int  endForward,final int  startReverse,
                            final int  endReverse,
                            final int windowLength,final float sumForwardStrand,

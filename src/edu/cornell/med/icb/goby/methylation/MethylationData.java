@@ -14,8 +14,8 @@ import java.io.Serializable;
  *         Time: 11:39:23 AM
  */
 public class MethylationData implements Serializable {
-     public static final long serialVersionUID = 5664745795898488209L;
-    
+    public static final long serialVersionUID = 5664745795898488209L;
+
     IndexedIdentifier chromosomes;
     ObjectArrayList<MethylationSite> sites;
     private DoubleIndexedIdentifier chromosomeIndexToId;
@@ -68,9 +68,23 @@ public class MethylationData implements Serializable {
     }
 
     public MutableString getChromosomeId(int chromosome) {
-        if (chromosomeIndexToId==null) {
-            chromosomeIndexToId=new   DoubleIndexedIdentifier(chromosomes);
-        }
+        prepareIds();
         return chromosomeIndexToId.getId(chromosome);
+    }
+
+    private void prepareIds() {
+        if (chromosomeIndexToId == null) {
+            chromosomeIndexToId = new DoubleIndexedIdentifier(chromosomes);
+        }
+    }
+
+    public String[] getChromosomeStrings() {
+        prepareIds();
+        String[] result = new String[getChromosomes().size()];
+        for (int chromosome = 0; chromosome < chromosomeIndexToId.size(); chromosome++) {
+            result[chromosome] = chromosomeIndexToId.getId(chromosome).toString();
+        }
+        
+        return result;
     }
 }

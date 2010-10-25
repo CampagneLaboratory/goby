@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.methylation;
 
 import edu.cornell.med.icb.goby.util.HitBoundedPriorityQueue;
+import edu.cornell.med.icb.goby.util.DoInParallel;
 import edu.cornell.med.icb.io.TSVReader;
 import edu.mssm.crover.cli.CLI;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
@@ -68,7 +69,7 @@ public class MethylSimilarityScan {
         this.windowWidth = CLI.getIntOption(args, "-w", 10);
         this.maxBestHits = CLI.getIntOption(args, "-h", 100);
         String outputFilename = CLI.getOption(args, "-o", "out.tsv");
-        MethylationData data = load(inputFilename);
+        final MethylationData data = load(inputFilename);
         File outputFile = new File(outputFilename);
         boolean outputFileExists = outputFile.exists();
 // append:
@@ -78,10 +79,21 @@ public class MethylSimilarityScan {
         if (!outputFileExists) {
             output.write("windowSize\tlocation\tchromosome\tforward strand start\tforward strand end\treverse strand start\treverse strand end\teffective window size\tstatistic\n");
         }
-        HitBoundedPriorityQueue hits = new HitBoundedPriorityQueue(maxBestHits);
-        for (MutableString chromosome : data.getChromosomes()) {
-            compareStrands(hits, data, chromosome);
+
+
+       final HitBoundedPriorityQueue hits = new HitBoundedPriorityQueue(maxBestHits);
+        DoInParallel scan=new DoInParallel() {
+            @Override
+            public void action(DoInParallel forDataAccess, String chromosome, int loopIndex) {
+                compareStrands(hits, data, new MutableString(chromosome));
+            }
+        };
+        try {
+            scan.execute(true, data.getChromosomeStrings() );
+        } catch (Exception e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
+
         printResults(hits, data, output);
     }
 
