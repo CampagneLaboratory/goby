@@ -90,6 +90,9 @@ namespace goby {
     // the length of the current raw chunk
     size_t current_chunk_length;
 
+    // True if the message chunks delimiter has already been read
+    bool delimiterAlreadySkipped;
+
     /**
      * Move to startOffset and then to the start of the next chunk.
      */
@@ -97,8 +100,10 @@ namespace goby {
       if (startOffset == 0) {
         return;
       }
+      std::cerr << "skipping " << startOffset << " bytes in input file" << std::endl;
       const bool result = input_stream->Skip(startOffset);
       if (!result) {
+        std::cerr << "failed to skip bytes." << std::endl;
         current_chunk_index = -1;
         current_chunk_length = 0;
         return;
@@ -111,7 +116,7 @@ namespace goby {
 
       // search though the input stream until a delimiter chunk or end of stream is reached
       while (true) {
-        if (position >= endOffset) {
+        if ((endOffset != 0) && (position >= endOffset)) {
             break;
         }
         int b = readByte(input_stream);
@@ -126,15 +131,12 @@ namespace goby {
         }
         ++skipped;
         if (contiguousZeroBytes == GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH) {
-          // a delimiter was found, start reading data from here
-          // Note that advanceToNextChunk() is going to skip
-          // GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH bytes, so we need to rewind
-          // that many bytes.
-          input_stream->BackUp(GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH);
+          delimiterAlreadySkipped = true;
           break;
         }
         position = startOffset + skipped;
       }
+      std::cerr << "New chunk at position " << input_stream->ByteCount() << std::endl;
     }
 
     // Move the stream poitner to the next chunk boundary or eof
@@ -145,7 +147,13 @@ namespace goby {
             current_chunk_length = 0;
         } else {
           // each chunk is delimited by DELIMITER_LENGTH bytes
-          const bool result = input_stream->Skip(GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH);
+          bool result;
+          if (delimiterAlreadySkipped) {
+              delimiterAlreadySkipped = false;
+              result = true;
+          } else {
+              result = input_stream->Skip(GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH);
+          }
           if (!result) {
             current_chunk_index = -1;
             current_chunk_length = 0;
@@ -275,9 +283,10 @@ namespace goby {
         current_chunk_index(0),
         current_chunk_length(0),
         close_fd_on_delete(false),
+        delimiterAlreadySkipped(false),
         owns_input_stream(true) {
 
-      if (endOffset < startOffset) {
+      if ((endOffset != 0) && (endOffset < startOffset)) {
         // Swap start and end
         std::streamoff tempOffset = startOffset;
         startOffset = endOffset;
@@ -305,6 +314,7 @@ namespace goby {
         current_chunk_index(0),
         current_chunk_length(0),
         close_fd_on_delete(true),
+        delimiterAlreadySkipped(false),
         owns_input_stream(true) {
 
       if (endOffset < startOffset) {
