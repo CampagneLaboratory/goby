@@ -306,7 +306,7 @@ public class MethylSimilarityScan {
                     System.out.printf("index %d forward: %d-%d reverse: %d-%d %f%n ", index,
                             startForward, endForward, startReverse, endReverse, score);
                 }
-                results.enqueue(chromosomeIndex, index, score, startForward, endForward, startReverse, endReverse,
+                results.enqueue(chromosomeIndex, startForward, score, startForward, endForward, startReverse, endReverse,
                         Math.min(endForward - startForward, endReverse - startReverse), sumForwardStrand, sumReverseStrand);
             }
             pg.lightUpdate();
