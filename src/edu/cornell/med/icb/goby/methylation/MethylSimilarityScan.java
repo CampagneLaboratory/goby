@@ -43,7 +43,9 @@ import org.apache.commons.io.FilenameUtils;
  *         Time: 3:54:56 PM
  */
 public class MethylSimilarityScan {
-    private int scoreComparator;
+
+    private int windowWidth;
+    private int maxBestHits;
 
     public static void main(String args[]) throws IOException {
         MethylSimilarityScan scanner = new MethylSimilarityScan();
@@ -64,43 +66,16 @@ public class MethylSimilarityScan {
 
     private void process(String[] args) throws IOException {
         String inputFilename = CLI.getOption(args, "-i", "/data/lister/mc_h1.tsv");
-        String chromosomeSelected = CLI.getOption(args, "-c", "1");
-        char strandSelected = CLI.getOption(args, "-s", "-").charAt(0);
-        int queryStartPosition = CLI.getIntOption(args, "-qs", -1);
-        int queryEndPosition = CLI.getIntOption(args, "-qe", -1);
-
+        this.windowWidth=CLI.getIntOption(args, "-w",10);
+        this.maxBestHits=CLI.getIntOption(args, "-h",100);
         MethylationData data = load(inputFilename);
-        Query query = null;
-
-        if (queryStartPosition == -1 || queryEndPosition == -1) {
-
-            int minSites = 50;
-            int windowWidth = 200;
-            System.out.printf("minSites=%d windowWidth=%d %n", minSites, windowWidth);
-            //    query = findQuery(data, chromosomeSelected, strandSelected, windowWidth, minSites);
-            //  System.out.println("You must specify query start (-qs) and query end positions (-qe).");
-            //  System.exit(1);
-        } else {
-            query = new Query();
-            query.positionEnd = queryEndPosition;
-            query.positionStart = queryStartPosition;
-            query.chromosomeIndex = data.getChromosomeIndex(chromosomeSelected);
-            query.strand = strandSelected;
-
-        }
 
 
-/*        for (int position = 0; position < query.methylationRates.size(); position++) {
-            System.out.printf("position %d rate: %f %n", query.positionStart + position, query.methylationRates.get(position));
-
-        }
-  */
-        int maxBestHits = 10;
         HitBoundedPriorityQueue hits = new HitBoundedPriorityQueue(maxBestHits);
         for (MutableString chromosome : data.getChromosomes()) {
-            compareStrands(hits, query, data, chromosome);
+            compareStrands(hits,  data, chromosome);
         }
-        printResults(chromosomeSelected, strandSelected, hits, query, data);
+        printResults(hits,  data);
     }
 
 
@@ -174,8 +149,8 @@ public class MethylSimilarityScan {
     }
 
 
-    private void printResults(String chromosome, char strand, HitBoundedPriorityQueue results,
-                              MethylSimilarityScan.Query query, MethylationData data) {
+    private void printResults(HitBoundedPriorityQueue results,
+                              MethylationData data) {
         ObjectArrayList<MethylationSimilarityMatch> sortedHits = new ObjectArrayList();
         sortedHits.size(results.size());
 
@@ -187,8 +162,9 @@ public class MethylSimilarityScan {
         }
 
         for (MethylationSimilarityMatch hit : sortedHits) {
-            System.out.printf("%s [ %d-%d %d-%d %d %f]%n",
-                    data.getChromosomeId(hit.chromosome),
+            System.out.printf("%d %s %d [ %d-%d %d-%d %d ] %f %n",
+                    windowWidth,
+                    data.getChromosomeId(hit.chromosome), hit.startForward,
                     hit.startForward, hit.endForward,
                     hit.startReverse, hit.endReverse,
                     hit.windowLength, hit.score);
@@ -213,7 +189,7 @@ public class MethylSimilarityScan {
 
     }
 
-    private HitBoundedPriorityQueue compareStrands(HitBoundedPriorityQueue results, Query query, MethylationData data,
+    private HitBoundedPriorityQueue compareStrands(HitBoundedPriorityQueue results, MethylationData data,
                                                    MutableString chromosome) {
 //        int queryLength = query.methylationRates.size();
         int chromosomeIndex = data.getChromosomeIndex(chromosome);
@@ -241,10 +217,10 @@ public class MethylSimilarityScan {
             final float lastStartValue = startTallyForward.get(lastStartPosition);
 
             final float newStartValue = lastStartValue + site.getMethylationRate();
-            if (site.position >= 245682713 && site.position <= 245682825) {
+            /*if (site.position >= 245682713 && site.position <= 245682825) {
                 System.out.printf("site.position %d lastStartValue: %f newStartValue %f delta: %f%n", site.position,
                         lastStartValue, newStartValue, site.getMethylationRate());
-            }
+            } */
             startTallyForward.put(site.position, newStartValue);
             endTallyForward.put(site.position + 1, endTallyForward.get(lastEndPosition) + site.getMethylationRate());
             lastStartPosition = site.position;
@@ -272,9 +248,9 @@ public class MethylSimilarityScan {
 
         Collections.sort(uniqueIndices);
 
-        int windowWidth = 10;
+
         pg.expectedUpdates = uniqueIndices.size();
-        pg.start("compare strands chromosome " + chromosome);
+        pg.start("comparing strands on chromosome " + chromosome);
 
         for (int index : uniqueIndices) {
 
@@ -331,7 +307,7 @@ public class MethylSimilarityScan {
             pg.lightUpdate();
         }
 
-        pg.stop("compare strands");
+        pg.stop("done");
         return results;
 
     }
@@ -343,7 +319,7 @@ public class MethylSimilarityScan {
         File cacheFile = new File(cacheFilename);
         if (cacheFile.canRead()) {
             try {
-                System.err.println("Trying to load cache " + cacheFilename);
+                System.out.println("Trying to load cache " + cacheFilename);
                 System.out.flush();
                 return (MethylationData) BinIO.loadObject(cacheFilename);
             } catch (ClassNotFoundException e) {

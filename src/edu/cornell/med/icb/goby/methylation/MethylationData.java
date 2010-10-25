@@ -14,7 +14,8 @@ import java.io.Serializable;
  *         Time: 11:39:23 AM
  */
 public class MethylationData implements Serializable {
-
+     public static final long serialVersionUID = 5664745795898488209L;
+    
     IndexedIdentifier chromosomes;
     ObjectArrayList<MethylationSite> sites;
     private DoubleIndexedIdentifier chromosomeIndexToId;

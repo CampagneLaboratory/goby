@@ -18,4 +18,6 @@ public class MethylationSite implements Serializable {
     public float getMethylationRate() {
         return ((float)methylatedReadCount/ (float)totalCount);
     }
+   // public static final long serialVersionUID = 5664745795898488209L;
+
 }
