@@ -76,7 +76,7 @@ public class MethylSimilarityScan {
 
 
         if (!outputFileExists) {
-            output.write("windowSize\tchromosome\tposition\t\tforward strand\treverse strand\teffective window size\t\tstatistic");
+            output.write("windowSize\tlocation\tchromosome\tforward strand start\tforward strand end\treverse strand start\treverse strand end\teffective window size\tstatistic\n");
         }
         HitBoundedPriorityQueue hits = new HitBoundedPriorityQueue(maxBestHits);
         for (MutableString chromosome : data.getChromosomes()) {
@@ -169,9 +169,10 @@ public class MethylSimilarityScan {
         }
 
         for (MethylationSimilarityMatch hit : sortedHits) {
-            output.printf("%d\t%s\t%d\t%d-%d\t%d-%d\t%d\t%f%n",
+            output.printf("%d\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%f%n",
                     windowWidth,
-                    data.getChromosomeId(hit.chromosome), hit.startForward,
+                    data.getChromosomeId(hit.chromosome)+":"+hit.startForward+":"+hit.endForward+":1",
+                    data.getChromosomeId(hit.chromosome),
                     hit.startForward, hit.endForward,
                     hit.startReverse, hit.endReverse,
                     hit.windowLength, hit.score);
