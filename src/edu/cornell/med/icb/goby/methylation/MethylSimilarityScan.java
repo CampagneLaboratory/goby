@@ -31,6 +31,7 @@ import it.unimi.dsi.logging.ProgressLogger;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -46,6 +47,7 @@ public class MethylSimilarityScan {
 
     private int windowWidth;
     private int maxBestHits;
+
 
     public static void main(String args[]) throws IOException {
         MethylSimilarityScan scanner = new MethylSimilarityScan();
@@ -68,14 +70,16 @@ public class MethylSimilarityScan {
         String inputFilename = CLI.getOption(args, "-i", "/data/lister/mc_h1.tsv");
         this.windowWidth=CLI.getIntOption(args, "-w",10);
         this.maxBestHits=CLI.getIntOption(args, "-h",100);
+        String outputFilename=CLI.getOption(args, "-o", "out.tsv");
         MethylationData data = load(inputFilename);
 
-
+        PrintWriter output=new PrintWriter(outputFilename);
+        output.write("windowSize\tchromosome\tposition\t\tforward strand\treverse strand\teffective window size\t\tstatistic");
         HitBoundedPriorityQueue hits = new HitBoundedPriorityQueue(maxBestHits);
         for (MutableString chromosome : data.getChromosomes()) {
             compareStrands(hits,  data, chromosome);
         }
-        printResults(hits,  data);
+        printResults(hits,  data, output);
     }
 
 
@@ -150,7 +154,7 @@ public class MethylSimilarityScan {
 
 
     private void printResults(HitBoundedPriorityQueue results,
-                              MethylationData data) {
+                              MethylationData data, PrintWriter output) {
         ObjectArrayList<MethylationSimilarityMatch> sortedHits = new ObjectArrayList();
         sortedHits.size(results.size());
 
@@ -162,36 +166,21 @@ public class MethylSimilarityScan {
         }
 
         for (MethylationSimilarityMatch hit : sortedHits) {
-            System.out.printf("%d %s %d [ %d-%d %d-%d %d ] %f %n",
+            output.printf("%d\t%s\t%d\t%d-%d\t%d-%d\t%d\t%f%n",
                     windowWidth,
                     data.getChromosomeId(hit.chromosome), hit.startForward,
                     hit.startForward, hit.endForward,
                     hit.startReverse, hit.endReverse,
                     hit.windowLength, hit.score);
         }
-        /*  for (MethylationSimilarityMatch hit : sortedHits) {
-          System.out.printf("chr\tstrand\tstart-end\tquery-position\tquery\ttarget%n");
-          for (int queryPosition = 0; queryPosition < queryLength; queryPosition++) {
-              final float queryRate = query.methylationRates.getFloat(queryPosition);
-              final float targetRate = hit.targetPosition + queryPosition < target.size() ?
-                      target.getFloat(hit.targetPosition + queryPosition) :
-                      Float.NaN;
-              if (queryRate == queryRate && targetRate == targetRate) {
-                  // print only matching positions:
-                  System.out.printf("%s\t%c\t%d-%d\t%d\t%f\t%f%n", chromosome, strand,
-                          query.positionStart, query.positionEnd, queryPosition,
-                          queryRate,
-                          targetRate);
-              }
-
-          }
-      }  */
+        output.flush();
+        output.close();
 
     }
 
     private HitBoundedPriorityQueue compareStrands(HitBoundedPriorityQueue results, MethylationData data,
                                                    MutableString chromosome) {
-//        int queryLength = query.methylationRates.size();
+
         int chromosomeIndex = data.getChromosomeIndex(chromosome);
         MethylationSiteIterator itForward = data.iterator('+');
         itForward.skipTo(chromosome);
