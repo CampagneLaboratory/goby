@@ -50,7 +50,7 @@ namespace goby {
     int current_read_index;
 
   public:
-    ReadEntryIterator(const int fd, std::streamoff off, std::ios_base::seekdir dir);
+    ReadEntryIterator(const int fd, std::streamoff startOffset, std::streamoff endOffset, std::ios_base::seekdir dir);
     ReadEntryIterator(const ReadEntryIterator& that);
 
     virtual ~ReadEntryIterator();
@@ -96,7 +96,8 @@ namespace goby {
     ~ReadsReader(void);
 
     ReadEntryIterator begin() const;
-    ReadEntryIterator* beginPointer() const;
+    ReadEntryIterator begin(std::streamoff startOffset, std::streamoff endOffset) const;
+    ReadEntryIterator* beginPointer(std::streamoff startOffset, std::streamoff endOffset) const;
     ReadEntryIterator end() const;
     const ReadEntryIterator* endPointer() const;
   };

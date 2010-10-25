@@ -58,8 +58,8 @@ using namespace std;
 namespace goby {
   AlignmentEntryIterator::AlignmentEntryIterator(const int fd, streamoff off = 0, ios_base::seekdir dir = ios_base::beg) :
     fd(fd),
-    message_chunks_iterator(MessageChunksIterator<AlignmentCollection>(fd, off, dir)),
-    message_chunks_iterator_end(MessageChunksIterator<AlignmentCollection>(fd, 0, ::ios_base::end)),
+    message_chunks_iterator(MessageChunksIterator<AlignmentCollection>(fd, off, 0, dir)),
+    message_chunks_iterator_end(MessageChunksIterator<AlignmentCollection>(fd, 0, 0, ::ios_base::end)),
     alignment_collection(new AlignmentCollection),
     current_alignment_entry_index(0) {
   }

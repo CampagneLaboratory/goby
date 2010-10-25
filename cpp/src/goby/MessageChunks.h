@@ -64,6 +64,11 @@ namespace goby {
     // the file descriptor for the chunked file
     int fd;
 
+    // Start offset
+    std::streamoff startOffset;
+    // End offset
+    std::streamoff endOffset;
+
     // whether or not to close the file descriptor when the object is deleted
     bool close_fd_on_delete;
 
@@ -85,28 +90,80 @@ namespace goby {
     // the length of the current raw chunk
     size_t current_chunk_length;
 
+    /**
+     * Move to startOffset and then to the start of the next chunk.
+     */
+    void initializePosition() {
+      if (startOffset == 0) {
+        return;
+      }
+      const bool result = input_stream->Skip(startOffset);
+      if (!result) {
+        current_chunk_index = -1;
+        current_chunk_length = 0;
+        return;
+      }
+      // advance to the next chunk
+      int b;
+      int contiguousZeroBytes = 0;
+      int skipped = 0;
+      std::streamoff position = 0;
+
+      // search though the input stream until a delimiter chunk or end of stream is reached
+      while (true) {
+        if (position >= endOffset) {
+            break;
+        }
+        int b = readByte(input_stream);
+        if (b < 0) {
+          break; // end of file
+        }
+
+        if (b == GOBY_MESSAGE_CHUNK_DELIMITER_CONTENT) {
+          contiguousZeroBytes++;
+        } else {
+          contiguousZeroBytes = 0;
+        }
+        ++skipped;
+        if (contiguousZeroBytes == GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH) {
+          // a delimiter was found, start reading data from here
+          // Note that advanceToNextChunk() is going to skip
+          // GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH bytes, so we need to rewind
+          // that many bytes.
+          input_stream->BackUp(GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH);
+          break;
+        }
+        position = startOffset + skipped;
+      }
+    }
+
     // Move the stream poitner to the next chunk boundary or eof
     void advanceToNextChunk() {
       if (current_chunk_index != -1) {
-        // each chunk is delimited by DELIMITER_LENGTH bytes
-        const bool result = input_stream->Skip(GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH);
-        if (!result) {
-          current_chunk_index = -1;
-          current_chunk_length = 0;
-        } else {
-          current_chunk_index++;
-
-          // Set up a stream that will only read up the current chunk length
-          current_chunk_length = readInt(input_stream);
-
-#ifdef GOBY_DEBUG
-          std::cout << "Chunk length: " << current_chunk_length << std::endl;
-#endif
-
-          // the last chunk has a length of zero bytes
-          if (current_chunk_length == 0) {
+        if (endOffset != 0 && input_stream->ByteCount() >= endOffset) {
             current_chunk_index = -1;
             current_chunk_length = 0;
+        } else {
+          // each chunk is delimited by DELIMITER_LENGTH bytes
+          const bool result = input_stream->Skip(GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH);
+          if (!result) {
+            current_chunk_index = -1;
+            current_chunk_length = 0;
+          } else {
+            current_chunk_index++;
+
+            // Set up a stream that will only read up the current chunk length
+            current_chunk_length = readInt(input_stream);
+
+#ifdef GOBY_DEBUG
+            std::cout << "Chunk length: " << current_chunk_length << std::endl;
+#endif
+
+            // the last chunk has a length of zero bytes
+            if (current_chunk_length == 0) {
+              current_chunk_index = -1;
+              current_chunk_length = 0;
+            }
           }
         }
       } else {
@@ -172,35 +229,93 @@ namespace goby {
       return (ch[0] << 24) + (ch[1] << 16) + (ch[2] << 8) + (ch[3] << 0);
     };
 
+    // Reads an unsigned byte from the file
+    // Returns -1 at end of file (or error)
+    static int readByte(google::protobuf::io::ZeroCopyInputStream *stream) {
+      int bytes_needed = 1;           // the number of bytes needed to read an int value
+      unsigned char ch[1];            // data read from the stream
+      unsigned char *cp = &ch[0];
+
+      const void *buffer;             // buffer from the input stream
+      int size;                       // size of the buffer returned from the input stream
+
+      // need to loop in case the stream does not return the number of bytes needed in a single pass
+      while (bytes_needed > 0) {
+        if (stream->Next(&buffer, &size)) {
+          // the stream may return a size less than we need (including zero) and still have more data
+          if (size > 0) {
+            // only use what is needed (which may be less than what we got)
+            const int bytes_used = std::min<int>(bytes_needed, size);
+
+            // reset the stream and local buffer pointers to just after the data read
+            stream->BackUp(size - bytes_used);
+
+            // copy the data from the buffer to the local copy
+            ::memcpy(cp, buffer, bytes_used);
+
+            bytes_needed -= bytes_used;
+          }
+        } else {
+          // reached eof or there was an issue reading from the stream
+          return -1;
+        }
+      }
+
+      return ch[0];
+    }
+
   public:
     // TOOD: currently assumes that the position is at the start of chunk boundary
-    MessageChunksIterator<T>(const int fd, std::streamoff off = 0, std::ios_base::seekdir dir = std::ios_base::beg) :
+    MessageChunksIterator<T>(const int fd, std::streamoff startOffsetVal=0, std::streamoff endOffsetVal=0, std::ios_base::seekdir dir = std::ios_base::beg) :
         fd(fd),
+        startOffset(startOffsetVal),
+        endOffset(endOffsetVal),
         filename(""),
         current_chunk(new T),
         current_chunk_index(0),
         current_chunk_length(0),
         close_fd_on_delete(false),
         owns_input_stream(true) {
+
+      if (endOffset < startOffset) {
+        // Swap start and end
+        std::streamoff tempOffset = startOffset;
+        startOffset = endOffset;
+        endOffset = tempOffset;
+      }
+
       current_chunk->Clear();
-      if ((dir == std::ios_base::beg && off < 0) || (dir == std::ios_base::end && off >= 0)) {
+      if ((dir == std::ios_base::beg && startOffset < 0) || (dir == std::ios_base::end && startOffset >= 0)) {
         input_stream = NULL;
         current_chunk_index = -1;
       } else {
         input_stream = new google::protobuf::io::FileInputStream(fd);
+        if (startOffset != 0) {
+          initializePosition();
+        }
         advanceToNextChunk();
       }
     }
 
-    MessageChunksIterator<T>(const std::string& filename, std::streamoff off = 0, std::ios_base::seekdir dir = std::ios_base::beg) :
+    MessageChunksIterator<T>(const std::string& filename, std::streamoff startOffsetVal=0, std::streamoff endOffsetVal=0, std::ios_base::seekdir dir = std::ios_base::beg) :
         filename(filename),
+        startOffset(startOffsetVal),
+        endOffset(endOffsetVal),
         current_chunk(new T),
         current_chunk_index(0),
         current_chunk_length(0),
         close_fd_on_delete(true),
         owns_input_stream(true) {
+
+      if (endOffset < startOffset) {
+        // Swap start and end
+        std::streamoff tempOffset = startOffset;
+        startOffset = endOffset;
+        endOffset = tempOffset;
+      }
+
       current_chunk->Clear();
-      if ((dir == std::ios_base::beg && off < 0) || (dir == std::ios_base::end && off >= 0)) {
+      if ((dir == std::ios_base::beg && startOffset < 0) || (dir == std::ios_base::end && startOffset >= 0)) {
         input_stream = NULL;
         current_chunk_index = -1;
       } else {
@@ -211,6 +326,9 @@ namespace goby {
           current_chunk_index = -1;
         } else {
           input_stream = new google::protobuf::io::FileInputStream(fd);
+          if (startOffset != 0) {
+            initializePosition();
+          }
           advanceToNextChunk();
         }
       }
@@ -218,6 +336,8 @@ namespace goby {
 
     MessageChunksIterator(const MessageChunksIterator<T>& that) :
         filename(that.filename),
+        startOffset(that.startOffset),
+        endOffset(that.endOffset),
         current_chunk(new T),
         current_chunk_index(that.current_chunk_index),
         current_chunk_length(that.current_chunk_length),
@@ -226,6 +346,8 @@ namespace goby {
       current_chunk->Clear();
     }
 
+/*
+REMOVE?
     MessageChunksIterator(const MessageChunksIterator<T>& that, std::streamoff off, std::ios_base::seekdir dir = std::ios_base::beg) :
       filename(that.filename),
       current_chunk(new T),
@@ -237,6 +359,7 @@ namespace goby {
         // TODO
         current_chunk->Clear();
     }
+*/
 
     virtual ~MessageChunksIterator(void) {
       delete current_chunk;

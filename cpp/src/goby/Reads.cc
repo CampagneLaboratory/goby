@@ -41,10 +41,10 @@
 using namespace std;
 
 namespace goby {
-  ReadEntryIterator::ReadEntryIterator(const int fd, streamoff off = 0, ios_base::seekdir dir = ios_base::beg) :
+  ReadEntryIterator::ReadEntryIterator(const int fd, std::streamoff startOffset=0, std::streamoff endOffset=0, ios_base::seekdir dir=ios_base::beg) :
     fd(fd),
-    message_chunks_iterator(MessageChunksIterator<ReadCollection>(fd, off, dir)),
-    message_chunks_iterator_end(MessageChunksIterator<ReadCollection>(fd, 0, ios_base::end)),
+    message_chunks_iterator(MessageChunksIterator<ReadCollection>(fd, startOffset, endOffset, dir)),
+    message_chunks_iterator_end(MessageChunksIterator<ReadCollection>(fd, static_cast<std::streamoff>(0), static_cast<std::streamoff>(0), ios_base::end)),
     read_collection(new ReadCollection),
     current_read_index(0) {
   }
@@ -181,7 +181,7 @@ namespace goby {
 
   ReadsReader::ReadsReader(const string& filename) : Reads(filename),
     fd(::open(filename.c_str(), O_RDONLY | O_BINARY)),
-    read_entry_iterator_end(new ReadEntryIterator(fd, static_cast<streamoff>(0), ios_base::end)) {
+    read_entry_iterator_end(new ReadEntryIterator(fd, static_cast<std::streamoff>(0), static_cast<std::streamoff>(0), ios_base::end)) {
     if (fd < 0) {
       cerr << "Error opening file: " << filename << endl;
     }
@@ -195,11 +195,15 @@ namespace goby {
   }
 
   ReadEntryIterator ReadsReader::begin() const {
-    return ReadEntryIterator(fd);
+    return ReadEntryIterator(fd, static_cast<std::streamoff>(0), static_cast<std::streamoff>(0));
+  }
+
+  ReadEntryIterator ReadsReader::begin(std::streamoff startPosition=0, std::streamoff endPosition=0) const {
+    return ReadEntryIterator(fd, startPosition, endPosition);
   };
 
-  ReadEntryIterator* ReadsReader::beginPointer() const {
-    return new ReadEntryIterator(fd);
+  ReadEntryIterator* ReadsReader::beginPointer(std::streamoff startPosition=0, std::streamoff endPosition=0) const {
+    return new ReadEntryIterator(fd, startPosition, endPosition);
   };
 
   ReadEntryIterator ReadsReader::end() const {

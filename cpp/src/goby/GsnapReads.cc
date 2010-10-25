@@ -38,7 +38,7 @@ extern "C" {
 		string filename = readsHelper->unopenedFiles->front();
 		readsHelper->unopenedFiles->pop();
 		readsHelper->readsReader = new goby::ReadsReader(filename);
-		readsHelper->it = readsHelper->readsReader->beginPointer();
+		readsHelper->it = readsHelper->readsReader->beginPointer(0, 0);
 		readsHelper->end = readsHelper->readsReader->endPointer();
 		readsHelper->numberOfReads = 0;
 		return readsHelper;
