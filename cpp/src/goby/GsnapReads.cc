@@ -15,12 +15,20 @@ using namespace std;
  */
 extern "C" {
 
-	/**
-	 * Open the .compact-reads file to read from.
-	 */
 	CReadsHelper* gobyReads_openReadsReader(
 			char **unopenedFiles, int numUnopenedFiles,
 			unsigned char circular) {
+	    return gobyReads_openReadsReaderWindowed(unopenedFiles, numUnopenedFiles, circular, 0, 0);
+    }
+
+	/**
+	 * Open the .compact-reads file to read from.
+	 */
+	CReadsHelper* gobyReads_openReadsReaderWindowed(
+			char **unopenedFiles, int numUnopenedFiles,
+			unsigned char circular,
+			unsigned long startOffset,
+			unsigned long endOffset) {
 
 		if (numUnopenedFiles == 0) {
 			fprintf(stderr,"No input files to process.\n");
@@ -38,7 +46,7 @@ extern "C" {
 		string filename = readsHelper->unopenedFiles->front();
 		readsHelper->unopenedFiles->pop();
 		readsHelper->readsReader = new goby::ReadsReader(filename);
-		readsHelper->it = readsHelper->readsReader->beginPointer(0, 0);
+		readsHelper->it = readsHelper->readsReader->beginPointer(startOffset, endOffset);
 		readsHelper->end = readsHelper->readsReader->endPointer();
 		readsHelper->numberOfReads = 0;
 		return readsHelper;
