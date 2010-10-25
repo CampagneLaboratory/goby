@@ -28,10 +28,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Collections;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -68,18 +65,24 @@ public class MethylSimilarityScan {
 
     private void process(String[] args) throws IOException {
         String inputFilename = CLI.getOption(args, "-i", "/data/lister/mc_h1.tsv");
-        this.windowWidth=CLI.getIntOption(args, "-w",10);
-        this.maxBestHits=CLI.getIntOption(args, "-h",100);
-        String outputFilename=CLI.getOption(args, "-o", "out.tsv");
+        this.windowWidth = CLI.getIntOption(args, "-w", 10);
+        this.maxBestHits = CLI.getIntOption(args, "-h", 100);
+        String outputFilename = CLI.getOption(args, "-o", "out.tsv");
         MethylationData data = load(inputFilename);
+        File outputFile = new File(outputFilename);
+        boolean outputFileExists = outputFile.exists();
+// append:
+        PrintWriter output = new PrintWriter(new FileWriter(outputFilename, true));
 
-        PrintWriter output=new PrintWriter(outputFilename);
-        output.write("windowSize\tchromosome\tposition\t\tforward strand\treverse strand\teffective window size\t\tstatistic");
+
+        if (!outputFileExists) {
+            output.write("windowSize\tchromosome\tposition\t\tforward strand\treverse strand\teffective window size\t\tstatistic");
+        }
         HitBoundedPriorityQueue hits = new HitBoundedPriorityQueue(maxBestHits);
         for (MutableString chromosome : data.getChromosomes()) {
-            compareStrands(hits,  data, chromosome);
+            compareStrands(hits, data, chromosome);
         }
-        printResults(hits,  data, output);
+        printResults(hits, data, output);
     }
 
 
@@ -264,20 +267,20 @@ public class MethylSimilarityScan {
                     break;
                 }
             }
-            int endForward = index + windowWidth;
+            int endForward = startForward + windowWidth;
             while (!endTallyForward.containsKey(endForward)) {
                 // reduce window size until we find a position where a site ended.
                 endForward++;
-                if (endForward > index + windowWidth * 2) {
+                if (endForward > startForward + windowWidth * 2) {
                     forwardOutOfWindow = true;
                     break;
                 }
             }
-            int endReverse = index + windowWidth;
+            int endReverse = startReverse + windowWidth;
             while (!endTallyReverse.containsKey(endReverse)) {
                 // reduce window size until we find a position where a site ended.
                 endReverse++;
-                if (endReverse > index + windowWidth * 2) {
+                if (endReverse > startReverse + windowWidth * 2) {
                     reverseOutOfWindow = true;
                     break;
                 }
