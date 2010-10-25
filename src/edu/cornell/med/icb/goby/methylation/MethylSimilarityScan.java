@@ -32,6 +32,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Arrays;
+import java.util.Comparator;
+
+import org.apache.commons.io.FilenameUtils;
 
 /**
  * @author Fabien Campagne
@@ -181,9 +185,10 @@ public class MethylSimilarityScan {
             MethylationSimilarityMatch hit = results.dequeue();
             sortedHits.set(--i, hit);
         }
+
         for (MethylationSimilarityMatch hit : sortedHits) {
-            System.out.printf("query %s %c [ %d-%d %d-%d %d %f]%n",
-                    chromosome, strand,
+            System.out.printf("%s [ %d-%d %d-%d %d %f]%n",
+                    data.getChromosomeId(hit.chromosome),
                     hit.startForward, hit.endForward,
                     hit.startReverse, hit.endReverse,
                     hit.windowLength, hit.score);
@@ -233,11 +238,19 @@ public class MethylSimilarityScan {
 
             MethylationSite site = itForward.nextSite();
 
-            startTallyForward.put(site.position, startTallyForward.get(lastStartPosition) + site.getMethylationRate());
+            final float lastStartValue = startTallyForward.get(lastStartPosition);
+
+            final float newStartValue = lastStartValue + site.getMethylationRate();
+            if (site.position >= 245682713 && site.position <= 245682825) {
+                System.out.printf("site.position %d lastStartValue: %f newStartValue %f delta: %f%n", site.position,
+                        lastStartValue, newStartValue, site.getMethylationRate());
+            }
+            startTallyForward.put(site.position, newStartValue);
             endTallyForward.put(site.position + 1, endTallyForward.get(lastEndPosition) + site.getMethylationRate());
             lastStartPosition = site.position;
             lastEndPosition = site.position + 1;
         }
+
         lastStartPosition = 0;
         lastEndPosition = 0;
 
@@ -253,50 +266,68 @@ public class MethylSimilarityScan {
 
         IntSet indices = new IntOpenHashSet();
         indices.addAll(startTallyForward.keySet());
-        indices.addAll(endTallyForward.keySet());
         indices.addAll(startTallyReverse.keySet());
-        indices.addAll(endTallyReverse.keySet());
         IntList uniqueIndices = new IntArrayList();
         uniqueIndices.addAll(indices);
 
         Collections.sort(uniqueIndices);
+
         int windowWidth = 10;
         pg.expectedUpdates = uniqueIndices.size();
         pg.start("compare strands chromosome " + chromosome);
 
         for (int index : uniqueIndices) {
 
+
             int startForward = index;
             int startReverse = index;
-
+            boolean forwardOutOfWindow = false;
+            boolean reverseOutOfWindow = false;
             while (!startTallyForward.containsKey(startForward)) {
                 // reduce window size until we find a position where a site ended.
                 startForward++;
-                if (startForward > index + windowWidth) break;
+                if (startForward > index + windowWidth) {
+                    forwardOutOfWindow = true;
+                    break;
+                }
             }
             while (!startTallyReverse.containsKey(startReverse)) {
                 // reduce window size until we find a position where a site ended.
                 startReverse++;
-                if (startReverse > index + windowWidth) break;
+                if (startReverse > index + windowWidth) {
+                    reverseOutOfWindow = true;
+                    break;
+                }
             }
             int endForward = index + windowWidth;
             while (!endTallyForward.containsKey(endForward)) {
                 // reduce window size until we find a position where a site ended.
                 endForward++;
-                if (endForward > index + windowWidth * 2) break;
+                if (endForward > index + windowWidth * 2) {
+                    forwardOutOfWindow = true;
+                    break;
+                }
             }
             int endReverse = index + windowWidth;
             while (!endTallyReverse.containsKey(endReverse)) {
                 // reduce window size until we find a position where a site ended.
                 endReverse++;
-                if (endReverse > index + windowWidth * 2) break;
+                if (endReverse > index + windowWidth * 2) {
+                    reverseOutOfWindow = true;
+                    break;
+                }
             }
-            final float sumForwardStrand = endTallyForward.get(endForward) - startTallyForward.get(startForward);
-            final float sumReverseStrand = endTallyReverse.get(endReverse) - startTallyReverse.get(startReverse);
-            final float score = Math.abs(sumForwardStrand - sumReverseStrand);
-            System.out.println("score "+score);
-            results.enqueue(chromosomeIndex, index, score, startForward, endForward, startReverse, endReverse,
-                    endForward - endReverse, sumForwardStrand, sumReverseStrand);
+            if (endForward > startForward && endReverse > startReverse) {
+                final float sumForwardStrand = forwardOutOfWindow ? 0 : (endTallyForward.get(endForward) - startTallyForward.get(startForward)) / (endForward - startForward);
+                final float sumReverseStrand = reverseOutOfWindow ? 0 : (endTallyReverse.get(endReverse) - startTallyReverse.get(startReverse)) / (endReverse - startReverse);
+                final float score = Math.abs(sumForwardStrand - sumReverseStrand);
+                if (score > 3) {
+                    System.out.printf("index %d forward: %d-%d reverse: %d-%d %f%n ", index,
+                            startForward, endForward, startReverse, endReverse, score);
+                }
+                results.enqueue(chromosomeIndex, index, score, startForward, endForward, startReverse, endReverse,
+                        Math.min(endForward - startForward, endReverse - startReverse), sumForwardStrand, sumReverseStrand);
+            }
             pg.lightUpdate();
         }
 
@@ -308,7 +339,7 @@ public class MethylSimilarityScan {
 
     private MethylationData load(String inputFilename) throws IOException {
         System.out.println("Loading..");
-        final String cacheFilename = "methylation-data.cache";
+        final String cacheFilename = FilenameUtils.removeExtension(inputFilename) + ".cache";
         File cacheFile = new File(cacheFilename);
         if (cacheFile.canRead()) {
             try {
@@ -347,8 +378,18 @@ public class MethylSimilarityScan {
             }
         }
         System.out.println("done");
+
+        System.out.println("Sorting..");
+        // sort the sites by position:
+        Collections.sort(data.sites, new Comparator<MethylationSite>() {
+            public int compare(MethylationSite site1, MethylationSite site2) {
+                if (site1.chromosome != site2.chromosome) return site1.chromosome - site2.chromosome;
+                else return site1.position - site2.position;
+            }
+        });
         System.out.println("Saving cache..");
         System.out.flush();
+
         BinIO.storeObject(data, cacheFilename);
         return data;
 

@@ -1,6 +1,7 @@
 package edu.cornell.med.icb.goby.methylation;
 
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
+import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
@@ -16,6 +17,7 @@ public class MethylationData implements Serializable {
 
     IndexedIdentifier chromosomes;
     ObjectArrayList<MethylationSite> sites;
+    private DoubleIndexedIdentifier chromosomeIndexToId;
 
 
     public MethylationData() {
@@ -62,5 +64,12 @@ public class MethylationData implements Serializable {
     public ObjectSet<MutableString> getChromosomes() {
 
         return chromosomes.keySet();
+    }
+
+    public MutableString getChromosomeId(int chromosome) {
+        if (chromosomeIndexToId==null) {
+            chromosomeIndexToId=new   DoubleIndexedIdentifier(chromosomes);
+        }
+        return chromosomeIndexToId.getId(chromosome);
     }
 }
