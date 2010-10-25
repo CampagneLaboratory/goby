@@ -268,20 +268,20 @@ public class MethylSimilarityScan {
                     break;
                 }
             }
-            int endForward = startForward + windowWidth;
+            int endForward = startForward + windowWidth*2+1;
             while (!endTallyForward.containsKey(endForward)) {
                 // reduce window size until we find a position where a site ended.
-                endForward++;
-                if (endForward > startForward + windowWidth * 2) {
+                endForward--;
+                if (endForward == startForward+windowWidth) {
                     forwardOutOfWindow = true;
                     break;
                 }
             }
-            int endReverse = startReverse + windowWidth;
+            int endReverse = startReverse + windowWidth*2+1;
             while (!endTallyReverse.containsKey(endReverse)) {
                 // reduce window size until we find a position where a site ended.
-                endReverse++;
-                if (endReverse > startReverse + windowWidth * 2) {
+                endReverse--;
+                if (endReverse ==startReverse+windowWidth) {
                     reverseOutOfWindow = true;
                     break;
                 }
