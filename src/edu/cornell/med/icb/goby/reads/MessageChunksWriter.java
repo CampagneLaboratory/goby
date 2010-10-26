@@ -119,36 +119,39 @@ public class MessageChunksWriter {
     public void flush(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder)
             throws IOException {
         // Write the separation between two chunks: eight bytes with value 0xFF.
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("writing zero bytes {" + DELIMITER_LENGTH);
+        if (numAppended > 0) {
+
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("writing zero bytes {" + DELIMITER_LENGTH);
+            }
+            for (int i = 0; i < DELIMITER_LENGTH; i++) {
+                out.writeByte(DELIMITER_CONTENT);
+            }
+            final com.google.protobuf.Message readCollection = collectionBuilder.clone().build();
+
+            // compress the read collection:
+            final ByteArrayOutputStream compressedStream = new ByteArrayOutputStream();
+            final OutputStream byteArrayOutputStream = new GZIPOutputStream(compressedStream);
+            readCollection.writeTo(byteArrayOutputStream);
+            byteArrayOutputStream.close();
+
+            final int serializedSize = compressedStream.size();
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("serializedSize: " + serializedSize);
+            }
+
+            // the position just before this chunk is written is recorded:
+            currentChunkStartOffset = out.size();
+            // write the compressed size followed by the compressed stream:
+            out.writeInt(serializedSize);
+            out.write(compressedStream.toByteArray());
+
+            totalBytesWritten += serializedSize + 4 + DELIMITER_LENGTH;
+    
+            out.flush();
+            numAppended = 0;
+            collectionBuilder.clear();
         }
-        for (int i = 0; i < DELIMITER_LENGTH; i++) {
-            out.writeByte(DELIMITER_CONTENT);
-        }
-        final com.google.protobuf.Message readCollection = collectionBuilder.clone().build();
-
-        // compress the read collection:
-        final ByteArrayOutputStream compressedStream = new ByteArrayOutputStream();
-        final OutputStream byteArrayOutputStream = new GZIPOutputStream(compressedStream);
-        readCollection.writeTo(byteArrayOutputStream);
-        byteArrayOutputStream.close();
-
-        final int serializedSize = compressedStream.size();
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("serializedSize: " + serializedSize);
-        }
-
-        // the position just before this chunk is written is recorded:
-        currentChunkStartOffset = out.size();
-        // write the compressed size followed by the compressed stream:
-        out.writeInt(serializedSize);
-        out.write(compressedStream.toByteArray());
-
-        totalBytesWritten += serializedSize + 4 + DELIMITER_LENGTH;
-
-        out.flush();
-        numAppended = 0;
-        collectionBuilder.clear();
     }
 
     /**
