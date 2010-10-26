@@ -18,8 +18,8 @@
 
 package edu.cornell.med.icb.goby.methylation;
 
-import edu.cornell.med.icb.goby.util.HitBoundedPriorityQueue;
 import edu.cornell.med.icb.goby.util.DoInParallel;
+import edu.cornell.med.icb.goby.util.HitBoundedPriorityQueue;
 import edu.cornell.med.icb.io.TSVReader;
 import edu.mssm.crover.cli.CLI;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
@@ -28,13 +28,11 @@ import it.unimi.dsi.fastutil.io.BinIO;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.*;
 import java.util.Collections;
-import java.util.Arrays;
 import java.util.Comparator;
-
-import org.apache.commons.io.FilenameUtils;
 
 /**
  * @author Fabien Campagne
@@ -81,15 +79,15 @@ public class MethylSimilarityScan {
         }
 
 
-       final HitBoundedPriorityQueue hits = new HitBoundedPriorityQueue(maxBestHits);
-        DoInParallel scan=new DoInParallel() {
+        final HitBoundedPriorityQueue hits = new HitBoundedPriorityQueue(maxBestHits);
+        DoInParallel scan = new DoInParallel() {
             @Override
             public void action(DoInParallel forDataAccess, String chromosome, int loopIndex) {
                 compareStrands(hits, data, new MutableString(chromosome));
             }
         };
         try {
-            scan.execute(true, data.getChromosomeStrings() );
+            scan.execute(true, data.getChromosomeStrings());
         } catch (Exception e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
@@ -183,7 +181,7 @@ public class MethylSimilarityScan {
         for (MethylationSimilarityMatch hit : sortedHits) {
             output.printf("%d\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%f%n",
                     windowWidth,
-                    data.getChromosomeId(hit.chromosome)+":"+hit.startForward+":"+hit.endForward+":1",
+                    data.getChromosomeId(hit.chromosome) + ":" + hit.startForward + ":" + hit.endForward + ":1",
                     data.getChromosomeId(hit.chromosome),
                     hit.startForward, hit.endForward,
                     hit.startReverse, hit.endReverse,
@@ -256,9 +254,9 @@ public class MethylSimilarityScan {
 
         pg.expectedUpdates = uniqueIndices.size();
         pg.start("comparing strands on chromosome " + chromosome);
-
+        int skipToIndex=0;
         for (int index : uniqueIndices) {
-
+            if (index<skipToIndex) continue;
 
             int startForward = index;
             int startReverse = index;
@@ -280,20 +278,20 @@ public class MethylSimilarityScan {
                     break;
                 }
             }
-            int endForward = startForward + windowWidth*2+1;
+            int endForward = startForward + windowWidth * 2 + 1;
             while (!endTallyForward.containsKey(endForward)) {
                 // reduce window size until we find a position where a site ended.
                 endForward--;
-                if (endForward == startForward+windowWidth) {
+                if (endForward == startForward + windowWidth) {
                     forwardOutOfWindow = true;
                     break;
                 }
             }
-            int endReverse = startReverse + windowWidth*2+1;
+            int endReverse = startReverse + windowWidth * 2 + 1;
             while (!endTallyReverse.containsKey(endReverse)) {
                 // reduce window size until we find a position where a site ended.
                 endReverse--;
-                if (endReverse ==startReverse+windowWidth) {
+                if (endReverse == startReverse + windowWidth) {
                     reverseOutOfWindow = true;
                     break;
                 }
@@ -306,8 +304,11 @@ public class MethylSimilarityScan {
                     System.out.printf("index %d forward: %d-%d reverse: %d-%d %f%n ", index,
                             startForward, endForward, startReverse, endReverse, score);
                 }
-                results.enqueue(chromosomeIndex, startForward, score, startForward, endForward, startReverse, endReverse,
+                boolean wasEnqueued = results.enqueue(chromosomeIndex, startForward, score, startForward, endForward, startReverse, endReverse,
                         Math.min(endForward - startForward, endReverse - startReverse), sumForwardStrand, sumReverseStrand);
+                if (wasEnqueued) {
+                    skipToIndex=index+windowWidth;
+                }
             }
             pg.lightUpdate();
         }
