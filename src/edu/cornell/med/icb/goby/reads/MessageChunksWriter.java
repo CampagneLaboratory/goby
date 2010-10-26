@@ -119,7 +119,10 @@ public class MessageChunksWriter {
     public void flush(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder)
             throws IOException {
         // Write the separation between two chunks: eight bytes with value 0xFF.
-        if (numAppended > 0) {
+
+        // If we are flushing a completely empty file, that's OK, the flush() should occur.
+        // Otherwise, only flush if we've appended entries.
+        if (totalEntriesWritten == 0 || numAppended > 0) {
 
             if (LOG.isTraceEnabled()) {
                 LOG.trace("writing zero bytes {" + DELIMITER_LENGTH);
