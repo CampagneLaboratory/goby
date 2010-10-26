@@ -115,11 +115,12 @@ namespace goby {
       std::streamoff position = 0;
 
       // search though the input stream until a delimiter chunk or end of stream is reached
+      int b;
       while (true) {
         if ((endOffset != 0) && (position >= endOffset)) {
             break;
         }
-        int b = readByte(input_stream);
+        b = readByte(input_stream);
         if (b < 0) {
           break; // end of file
         }
@@ -217,7 +218,7 @@ namespace goby {
             // only use what is needed (which may be less than what we got)
             const int bytes_used = std::min<int>(bytes_needed, size);
 
-            // copy the data from the buffer to the local copy 
+            // copy the data from the buffer to the local copy
             ::memcpy(cp, buffer, bytes_used);
 
             // reset the stream and local buffer pointers to just after the data read

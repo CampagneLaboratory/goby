@@ -61,11 +61,18 @@ extern "C" {
 	 * TODO:   the first.
 	 */
 	int gobyReads_hasNext(CReadsHelper *readsHelper) {
-        if (*((*readsHelper).it) != *(readsHelper->end)) {
-			return 1;
-		} else {
-			return 0;
-		}
+	    while (true) {
+            if (*((*readsHelper).it) == *(readsHelper->end)) {
+                return 0;
+            }
+            goby::ReadEntry entry = *(*(*readsHelper).it);
+            if (entry.read_length() != 0) {
+                return 1;
+            }
+            // Move to the next entry. It will either exist
+            // OR we will be at the end of the stream
+		    (*(*readsHelper).it)++;
+	    }
 	}
 
 	/**
@@ -76,7 +83,7 @@ extern "C" {
 	 */
 	Sequence_T *gobyReads_next(CReadsHelper *readsHelper) {
 		// Not supporting paired reads yet
-	     goby::ReadEntry entry = *(*(*readsHelper).it);
+        goby::ReadEntry entry = *(*(*readsHelper).it);
 		(*readsHelper).numberOfReads++;
 
 	    // Sequence_T* queryseq1 = new Sequence_T;
