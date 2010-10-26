@@ -61,22 +61,15 @@ extern "C" {
 	 * TODO:   the first.
 	 */
 	int gobyReads_hasNext(CReadsHelper *readsHelper) {
-	    while (true) {
-            if (*((*readsHelper).it) == *(readsHelper->end)) {
-                return 0;
-            }
-            goby::ReadEntry entry = *(*(*readsHelper).it);
-            if (entry.read_length() != 0) {
-                return 1;
-            }
-            // Move to the next entry. It will either exist
-            // OR we will be at the end of the stream
-		    (*(*readsHelper).it)++;
-	    }
+        if (*((*readsHelper).it) != *(readsHelper->end)) {
+			return 1;
+		} else {
+			return 0;
+		}
 	}
 
 	/**
-	 * This should be called ONCE per read AFTER hasNext(...) has been called and returned TRUE.
+    	 * This should be called ONCE per read AFTER hasNext(...) has been called and returned TRUE.
 	 *
 	 * TODO: * We aren't supporting paired or circular here. That data should be in the compact-reads
 	 * TODO:   file but I'm not reading it at this moment.

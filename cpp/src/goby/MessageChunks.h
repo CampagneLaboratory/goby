@@ -115,7 +115,6 @@ namespace goby {
       std::streamoff position = 0;
 
       // search though the input stream until a delimiter chunk or end of stream is reached
-      int b;
       while (true) {
         if ((endOffset != 0) && (position >= endOffset)) {
             break;
@@ -554,33 +553,36 @@ REMOVE?
 
     // force writing the collection to the output stream.
     void flush(T* const collection) {
-      // Write the delimiter between two chunks
-      coded_stream->WriteString(delimiter);
 
-      google::protobuf::io::StringOutputStream bufferStream(&buffer);
-      google::protobuf::io::GzipOutputStream compressedStream(&bufferStream);
-      //std::cout << collection->DebugString() << std::endl;
+      if (number_appended > 0) {
+          // Write the delimiter between two chunks
+          coded_stream->WriteString(delimiter);
 
-      if (!collection->SerializeToZeroCopyStream(&compressedStream)) {
-        std::cerr << "There was a problem compressing the collection" << std::endl;
+          google::protobuf::io::StringOutputStream bufferStream(&buffer);
+          google::protobuf::io::GzipOutputStream compressedStream(&bufferStream);
+          //std::cout << collection->DebugString() << std::endl;
+
+          if (!collection->SerializeToZeroCopyStream(&compressedStream)) {
+            std::cerr << "There was a problem compressing the collection" << std::endl;
+          }
+          compressedStream.Close();
+
+          // write the length of the compressed chunk to the file
+          const int bufferSize = buffer.size();
+          writeInt(coded_stream, bufferSize);
+
+          // then write the actual compressed chunk
+          coded_stream->WriteString(buffer);
+
+          number_appended = 0;
+          buffer.clear();
+          collection->Clear();
+          // TODO: delete elements of the collection?
+
+        /*
+           totalBytesWritten += serializedSize + 4 + DELIMITER_LENGTH;
+        */
       }
-      compressedStream.Close();
-
-      // write the length of the compressed chunk to the file
-      const int bufferSize = buffer.size();
-      writeInt(coded_stream, bufferSize);
-
-      // then write the actual compressed chunk
-      coded_stream->WriteString(buffer);
-
-      number_appended = 0;
-      buffer.clear();
-      collection->Clear();
-      // TODO: delete elements of the collection?
-
-    /*
-       totalBytesWritten += serializedSize + 4 + DELIMITER_LENGTH;
-    */
     }
 
     // write any remaining items in the collection to disk and close up the file
