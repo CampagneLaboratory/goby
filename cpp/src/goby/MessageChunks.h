@@ -554,7 +554,7 @@ REMOVE?
     // force writing the collection to the output stream.
     void flush(T* const collection) {
 
-      if (number_appended > 0) {
+      if (total_entries_written == 0 || number_appended > 0) {
           // Write the delimiter between two chunks
           coded_stream->WriteString(delimiter);
 
