@@ -28,7 +28,8 @@ development -> 1.8
  - Read TMH in Python using Gzip.
  - Fixed Python utilies so -o actually writes to a file.
  - Added transcript-align.sh script to assist with aligning via transcripts.
- - In MessageChunksWriter, don't write in flush() when no additional items have been added since the last flush()
+ - In MessageChunksWriter, flush logic should occure on a COMPLETELY empty file, but otherwise it
+   should only occure if entries have been added since the last flush(). In both C++ and Java.
 1.7
  - Extended fasta-to-compact and compact-to-fasta to handle paired end runs. See new command
    line arguments --paired-end and pair-indicator arguments in fasta-to-compact and
