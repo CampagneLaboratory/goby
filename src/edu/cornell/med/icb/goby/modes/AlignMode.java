@@ -20,10 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.aligners.Aligner;
-import edu.cornell.med.icb.goby.aligners.BWAAligner;
-import edu.cornell.med.icb.goby.aligners.LastAligner;
-import edu.cornell.med.icb.goby.aligners.LastagAligner;
+import edu.cornell.med.icb.goby.aligners.*;
 import edu.cornell.med.icb.goby.config.GobyConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.ArrayUtils;
@@ -49,6 +46,7 @@ public class AlignMode extends AbstractGobyMode {
      * Used to log debug and informational messages.
      */
     private static final Log LOG = LogFactory.getLog(AlignMode.class);
+
 
     public void setKeepTemporaryFiles(final boolean keepTemporaryFiles) {
         this.keepTemporaryFiles = keepTemporaryFiles;
@@ -92,7 +90,14 @@ public class AlignMode extends AbstractGobyMode {
          *
          * @see edu.cornell.med.icb.goby.aligners.LastagAligner
          */
-        lastag
+        lastag,
+        /**
+         * GSNAP.
+         *
+         * @see edu.cornell.med.icb.goby.aligners.GSnapAligner
+         * @see <a href="http://research-pub.gene.com/gmap/">http://research-pub.gene.com/gmap//</a>
+         */
+        gsnap
     }
 
     /**
@@ -276,6 +281,10 @@ public class AlignMode extends AbstractGobyMode {
                 break;
             case bwa:
                 aligner = new BWAAligner();
+                break;
+
+            case gsnap:
+                aligner = new GSnapAligner();
                 break;
             default:
                 System.err.println("Unsupported aligner: " + alignerType);

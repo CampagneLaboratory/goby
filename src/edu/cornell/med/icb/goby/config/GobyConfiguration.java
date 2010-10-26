@@ -68,12 +68,14 @@ public final class GobyConfiguration {
 
     /**
      * Path to the directory that contains the lastag executables (lastdb, lastag).
+     *
      * @see edu.cornell.med.icb.goby.aligners.LastagAligner
      */
     public static final String EXECUTABLE_PATH_LASTAG = "executables.path.lastag";
 
     /**
      * Path to the directory that contains the last executables (lastdb, lastal).
+     *
      * @see edu.cornell.med.icb.goby.aligners.LastAligner
      * @see <a href="http://last.cbrc.jp/">http://last.cbrc.jp/</a>
      */
@@ -81,10 +83,19 @@ public final class GobyConfiguration {
 
     /**
      * Path to the directory that contains the BWA executable.
+     *
      * @see edu.cornell.med.icb.goby.aligners.BWAAligner
      * @see <a href="http://bio-bwa.sourceforge.net/">http://bio-bwa.sourceforge.net/</a>
      */
     public static final String EXECUTABLE_PATH_BWA = "executables.path.bwa";
+
+    /**
+     * Path to the directory that contains the GSNAP executable.
+     *
+     * @see edu.cornell.med.icb.goby.aligners.GSnapAligner
+     * @see <a href="http://research-pub.gene.com/gmap/">http://research-pub.gene.com/gmap//</a>
+     */
+    public static final String EXECUTABLE_PATH_GSNAP = "executables.path.gsnap";
 
     /**
      * Path to the work directory. This should be a large scratch location, where results of
@@ -100,8 +111,9 @@ public final class GobyConfiguration {
 
     /**
      * Load the Goby configuration.
+     *
      * @param defaultConfigFileLocations locations for configurations to check if one
-     * was not explicitly defined in a system property.
+     *                                   was not explicitly defined in a system property.
      */
     private GobyConfiguration(final String... defaultConfigFileLocations) {
         super();
@@ -161,6 +173,7 @@ public final class GobyConfiguration {
 
     /**
      * Any default configuration item values if required should defined here.
+     *
      * @return The default configuration to use.
      */
     private Configuration getDefaultConfiguration() {
@@ -168,6 +181,7 @@ public final class GobyConfiguration {
         defaultConfiguration.addProperty(EXECUTABLE_PATH_LASTAG, "");
         defaultConfiguration.addProperty(EXECUTABLE_PATH_LAST, "");
         defaultConfiguration.addProperty(EXECUTABLE_PATH_BWA, "");
+        defaultConfiguration.addProperty(EXECUTABLE_PATH_GSNAP, "");
         defaultConfiguration.addProperty(DATABASE_DIRECTORY, ".");
         defaultConfiguration.addProperty(WORK_DIRECTORY, SystemUtils.getJavaIoTmpDir().toString());
         return defaultConfiguration;
@@ -175,6 +189,7 @@ public final class GobyConfiguration {
 
     /**
      * The configuration items for Goby.
+     *
      * @return The configuration needed for goby operations.
      */
     public static Configuration getConfiguration() {
