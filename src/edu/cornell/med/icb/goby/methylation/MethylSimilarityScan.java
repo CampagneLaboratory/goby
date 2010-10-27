@@ -41,8 +41,9 @@ import java.util.Comparator;
  */
 public class MethylSimilarityScan {
 
-    private int windowWidth;
+
     private int maxBestHits;
+    private String windowWidths;
 
 
     public static void main(String args[]) throws IOException {
@@ -64,7 +65,7 @@ public class MethylSimilarityScan {
 
     private void process(String[] args) throws IOException {
         String inputFilename = CLI.getOption(args, "-i", "/data/lister/mc_h1.tsv");
-        this.windowWidth = CLI.getIntOption(args, "-w", 10);
+        this.windowWidths = CLI.getOption(args, "-w", "10");
         this.maxBestHits = CLI.getIntOption(args, "-h", 100);
         String outputFilename = CLI.getOption(args, "-o", "out.tsv");
         final MethylationData data = load(inputFilename);
@@ -77,22 +78,26 @@ public class MethylSimilarityScan {
         if (!outputFileExists) {
             output.write("windowSize\tlocation\tchromosome\tforward strand start\tforward strand end\treverse strand start\treverse strand end\teffective window size\tstatistic\n");
         }
+        for (String windowWidthString : windowWidths.split("[,]")) {
+            final int windowWidth = Integer.parseInt(windowWidthString);
+            System.out.println("Processing window size=" + windowWidth);
+            final HitBoundedPriorityQueue hits = new HitBoundedPriorityQueue(maxBestHits);
+            DoInParallel scan = new DoInParallel() {
+                @Override
+                public void action(DoInParallel forDataAccess, String chromosome, int loopIndex) {
+                    compareStrands(hits, data, windowWidth, new MutableString(chromosome));
+                }
+            };
 
-
-        final HitBoundedPriorityQueue hits = new HitBoundedPriorityQueue(maxBestHits);
-        DoInParallel scan = new DoInParallel() {
-            @Override
-            public void action(DoInParallel forDataAccess, String chromosome, int loopIndex) {
-                compareStrands(hits, data, new MutableString(chromosome));
+            try {
+                scan.execute(true, data.getChromosomeStrings());
+            } catch (Exception e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
-        };
-        try {
-            scan.execute(true, data.getChromosomeStrings());
-        } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
 
-        printResults(hits, data, output);
+            printResults(hits, windowWidth, data, output);
+        }
+        output.close();
     }
 
 
@@ -167,7 +172,7 @@ public class MethylSimilarityScan {
 
 
     private void printResults(HitBoundedPriorityQueue results,
-                              MethylationData data, PrintWriter output) {
+                              int windowWidth, MethylationData data, PrintWriter output) {
         ObjectArrayList<MethylationSimilarityMatch> sortedHits = new ObjectArrayList();
         sortedHits.size(results.size());
 
@@ -177,7 +182,7 @@ public class MethylSimilarityScan {
             MethylationSimilarityMatch hit = results.dequeue();
             sortedHits.set(--i, hit);
         }
-
+        System.out.println("windowWidth=" + windowWidth);
         for (MethylationSimilarityMatch hit : sortedHits) {
             output.printf("%d\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%f%n",
                     windowWidth,
@@ -188,12 +193,12 @@ public class MethylSimilarityScan {
                     hit.windowLength, hit.score);
         }
         output.flush();
-        output.close();
+
 
     }
 
     private HitBoundedPriorityQueue compareStrands(HitBoundedPriorityQueue results, MethylationData data,
-                                                   MutableString chromosome) {
+                                                   int windowWidth, MutableString chromosome) {
 
         int chromosomeIndex = data.getChromosomeIndex(chromosome);
         MethylationSiteIterator itForward = data.iterator('+');
@@ -254,9 +259,9 @@ public class MethylSimilarityScan {
 
         pg.expectedUpdates = uniqueIndices.size();
         pg.start("comparing strands on chromosome " + chromosome);
-        int skipToIndex=0;
+        int skipToIndex = 0;
         for (int index : uniqueIndices) {
-            if (index<skipToIndex) continue;
+            if (index < skipToIndex) continue;
 
             int startForward = index;
             int startReverse = index;
@@ -297,8 +302,10 @@ public class MethylSimilarityScan {
                 }
             }
             if (endForward > startForward && endReverse > startReverse) {
-                final float sumForwardStrand = forwardOutOfWindow ? 0 : (endTallyForward.get(endForward) - startTallyForward.get(startForward)) / (endForward - startForward);
-                final float sumReverseStrand = reverseOutOfWindow ? 0 : (endTallyReverse.get(endReverse) - startTallyReverse.get(startReverse)) / (endReverse - startReverse);
+
+                final float denominator = Math.max((endForward - startForward), (endReverse - startReverse));
+                final float sumForwardStrand = forwardOutOfWindow ? 0 : (endTallyForward.get(endForward) - startTallyForward.get(startForward)) / denominator;
+                final float sumReverseStrand = reverseOutOfWindow ? 0 : (endTallyReverse.get(endReverse) - startTallyReverse.get(startReverse)) / denominator;
                 final float score = Math.abs(sumForwardStrand - sumReverseStrand);
                 if (score > 3) {
                     System.out.printf("index %d forward: %d-%d reverse: %d-%d %f%n ", index,
@@ -307,7 +314,7 @@ public class MethylSimilarityScan {
                 boolean wasEnqueued = results.enqueue(chromosomeIndex, startForward, score, startForward, endForward, startReverse, endReverse,
                         Math.min(endForward - startForward, endReverse - startReverse), sumForwardStrand, sumReverseStrand);
                 if (wasEnqueued) {
-                    skipToIndex=index+windowWidth;
+                    skipToIndex = index + windowWidth;
                 }
             }
             pg.lightUpdate();
