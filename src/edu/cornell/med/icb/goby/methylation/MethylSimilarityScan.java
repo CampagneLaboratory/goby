@@ -215,6 +215,10 @@ public class MethylSimilarityScan {
         Int2FloatMap endTallyForward = new Int2FloatOpenHashMap();
         Int2FloatMap startTallyReverse = new Int2FloatOpenHashMap();
         Int2FloatMap endTallyReverse = new Int2FloatOpenHashMap();
+
+        Int2IntMap forwardStrandSiteCount = new Int2IntOpenHashMap();
+        Int2IntMap reverseStrandSiteCount = new Int2IntOpenHashMap();
+
         int lastStartPosition = 0;
         int lastEndPosition = 0;
 
@@ -225,12 +229,16 @@ public class MethylSimilarityScan {
             final float lastStartValue = startTallyForward.get(lastStartPosition);
 
             final float newStartValue = lastStartValue + site.getMethylationRate();
-            /*if (site.position >= 245682713 && site.position <= 245682825) {
-                System.out.printf("site.position %d lastStartValue: %f newStartValue %f delta: %f%n", site.position,
-                        lastStartValue, newStartValue, site.getMethylationRate());
-            } */
+
             startTallyForward.put(site.position, newStartValue);
             endTallyForward.put(site.position + 1, endTallyForward.get(lastEndPosition) + site.getMethylationRate());
+            forwardStrandSiteCount.put(site.position, forwardStrandSiteCount.get(lastStartPosition) + 1);
+
+            //      if (site.position >= 500 && site.position <= 1500000) {
+            //        System.out.printf("site.position %d numberOfSiteUpToPosition %d lastStartValue: %f newStartValue %f delta: %f%n",
+            //              site.position, forwardStrandSiteCount.get(site.position),
+            //            lastStartValue, newStartValue, site.getMethylationRate());
+            // }
             lastStartPosition = site.position;
             lastEndPosition = site.position + 1;
         }
@@ -244,6 +252,7 @@ public class MethylSimilarityScan {
 
             startTallyReverse.put(site.position, startTallyReverse.get(lastStartPosition) + site.getMethylationRate());
             endTallyReverse.put(site.position + 1, endTallyReverse.get(lastEndPosition) + site.getMethylationRate());
+            reverseStrandSiteCount.put(site.position, reverseStrandSiteCount.get(lastStartPosition) + 1);
             lastStartPosition = site.position;
             lastEndPosition = site.position + 1;
         }
@@ -302,21 +311,25 @@ public class MethylSimilarityScan {
                 }
             }
             if (endForward > startForward && endReverse > startReverse) {
-
-                final float denominator = Math.max((endForward - startForward), (endReverse - startReverse));
-                final float sumForwardStrand = forwardOutOfWindow ? 0 : (endTallyForward.get(endForward) - startTallyForward.get(startForward)) / denominator;
-                final float sumReverseStrand = reverseOutOfWindow ? 0 : (endTallyReverse.get(endReverse) - startTallyReverse.get(startReverse)) / denominator;
-                final float score = Math.abs(sumForwardStrand - sumReverseStrand);
-                if (score > 3) {
-                    System.out.printf("index %d forward: %d-%d reverse: %d-%d %f%n ", index,
-                            startForward, endForward, startReverse, endReverse, score);
-                }
-                boolean wasEnqueued = results.enqueue(chromosomeIndex, startForward, score, startForward, endForward, startReverse, endReverse,
-                        Math.min(endForward - startForward, endReverse - startReverse), sumForwardStrand, sumReverseStrand);
-                if (wasEnqueued) {
-                    skipToIndex = index + windowWidth;
+                final int forwardSiteCountOverWindow = forwardStrandSiteCount.get(startForward) - forwardStrandSiteCount.get(endForward);
+                final int reverseSiteCountOverWindow = reverseStrandSiteCount.get(startReverse) - reverseStrandSiteCount.get(endReverse);
+                final float denominator = Math.max(forwardSiteCountOverWindow, reverseSiteCountOverWindow);
+                final float sumForwardStrand = forwardOutOfWindow ? 0 : startTallyForward.get(startForward) - (endTallyForward.get(endForward));
+                final float sumReverseStrand = reverseOutOfWindow ? 0 : startTallyReverse.get(startReverse) - (endTallyReverse.get(endReverse));
+                final float score = Math.abs(sumForwardStrand - sumReverseStrand) / denominator;
+                if (denominator != 0) {
+                    if (score > 3) {
+                        System.out.printf("index %d forward: %d-%d reverse: %d-%d %f%n ", index,
+                                startForward, endForward, startReverse, endReverse, score);
+                    }
+                    boolean wasEnqueued = results.enqueue(chromosomeIndex, startForward, score, startForward, endForward, startReverse, endReverse,
+                            Math.min(endForward - startForward, endReverse - startReverse), sumForwardStrand, sumReverseStrand);
+                    if (wasEnqueued) {
+                        skipToIndex = index + windowWidth;
+                    }
                 }
             }
+
             pg.lightUpdate();
         }
 

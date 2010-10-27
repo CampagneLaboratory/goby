@@ -56,27 +56,6 @@ public class HitBoundedPriorityQueue {
     }
 
 
-    /**
-     * Checks whether a document with given score would be enqueued. <p/> <p>If
-     * this methods returns true, an immediately following call to {@link
-     * #enqueue(int,float)} with the same score would cause the document to be
-     * enqueued.
-     *
-     * @param targetPosition position on the target
-     * @param score          its score.
-     * @return true if the match would have been enqueued by {@link
-     *         #enqueue(int,float)}.
-     */
-
-    public boolean wouldEnqueue(final int targetPosition, final int chromosome, final float score) {
-        if (queue.size() < maxSize && !targetPositions.contains(targetPosition)) {
-            return true;
-        }
-        final MethylationSimilarityMatch dsi = queue.first();
-
-        return score > dsi.score;
-    }
-
     IntOpenHashSet targetPositions = new IntOpenHashSet();
 
     /**
@@ -88,10 +67,10 @@ public class HitBoundedPriorityQueue {
      */
 
     public synchronized boolean enqueue(final int chromosome, final int targetPosition, final float score,
-                           final int startForward,final int  endForward,final int  startReverse,
-                           final int  endReverse,
-                           final int windowLength,final float sumForwardStrand,
-                           float sumReverseStrand) {
+                                        final int startForward, final int endForward, final int startReverse,
+                                        final int endReverse,
+                                        final int windowLength, final float sumForwardStrand,
+                                        float sumReverseStrand) {
 
         if (maxSize == 0 || targetPositions.contains(targetPosition)) {
             return false;
@@ -100,7 +79,18 @@ public class HitBoundedPriorityQueue {
             if (targetPositions.contains(targetPosition)) {
                 return false;
             }
-            queue.enqueue(new MethylationSimilarityMatch(score, chromosome,  targetPosition));
+            final MethylationSimilarityMatch dsi = new MethylationSimilarityMatch(score, chromosome, targetPosition);
+            dsi.targetPosition = targetPosition;
+            dsi.chromosome = chromosome;
+            dsi.score = score;
+            dsi.windowLength = windowLength;
+            dsi.sumForwardStrand = sumForwardStrand;
+            dsi.sumReverseStrand = sumReverseStrand;
+            dsi.startForward = startForward;
+            dsi.endForward = endForward;
+            dsi.startReverse = startReverse;
+            dsi.endReverse = endReverse;
+            queue.enqueue(dsi);
             return true;
         } else {
             final MethylationSimilarityMatch dsi = queue.first();
@@ -108,11 +98,11 @@ public class HitBoundedPriorityQueue {
             if (score > dsi.score) {
                 targetPositions.remove(dsi.targetPosition);
                 dsi.targetPosition = targetPosition;
-                dsi.chromosome=chromosome;
+                dsi.chromosome = chromosome;
                 dsi.score = score;
-                dsi.windowLength=windowLength;
-                dsi.sumForwardStrand=sumForwardStrand;
-                dsi.sumReverseStrand=sumReverseStrand;
+                dsi.windowLength = windowLength;
+                dsi.sumForwardStrand = sumForwardStrand;
+                dsi.sumReverseStrand = sumReverseStrand;
                 dsi.startForward = startForward;
                 dsi.endForward = endForward;
                 dsi.startReverse = startReverse;
@@ -125,6 +115,7 @@ public class HitBoundedPriorityQueue {
             return false;
         }
     }
+
     public boolean isEmpty() {
         return queue.isEmpty();
     }
