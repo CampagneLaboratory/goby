@@ -101,6 +101,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
     private String outputFilename;
     private String outputPairFilename;
     private boolean indexToHeader;
+    private boolean identifierToHeader;
     private boolean referenceConversion;
     private String alphabet;
     private File readIndexFilterFile;
@@ -212,6 +213,7 @@ public class CompactToFastaMode extends AbstractGobyMode {
         outputFormat = OutputFormat.valueOf(jsapResult.getString("output-format").toUpperCase(Locale.getDefault()));
         alphabet = jsapResult.getString("alphabet");
         indexToHeader = jsapResult.getBoolean("index-to-header");
+        identifierToHeader = jsapResult.getBoolean("identifier-to-header");
         outputColorMode = jsapResult.getBoolean("output-color-space");
         outputFakeNtMode = jsapResult.getBoolean("output-fake-nt");
         trimAdaptorLength = jsapResult.getInt("trim-adaptor-length");
@@ -323,10 +325,14 @@ public class CompactToFastaMode extends AbstractGobyMode {
                 if (readIndexFilter == null || readIndexFilter.contains(readEntry.getReadIndex())) {
                     final String description;
 
-                    if (indexToHeader || !readEntry.hasDescription()) {
+                    if (indexToHeader) {
                         description = Integer.toString(readEntry.getReadIndex());
-                    } else {
+                    } else if (identifierToHeader && readEntry.hasReadIdentifier()) {
+                        description = readEntry.getReadIdentifier();
+                    } else if (readEntry.hasDescription()) {
                         description = readEntry.getDescription();
+                    } else {
+                        description = Integer.toString(readEntry.getReadIndex());
                     }
 
                     writer.write(newEntryCharacter);

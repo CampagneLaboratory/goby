@@ -23,7 +23,13 @@
             <id>index-to-header</id>
             <longFlag>index-to-header</longFlag>
             <defaults>false</defaults>
-            <help>When this switch is provided, ignore the sequence description line and write the sequence index as a string in place of the fasta sequence header.</help>
+            <help>When this switch is provided, ignore the sequence description line and write the sequence index, if available, as a string in place of the fasta sequence header.</help>
+        </switch>
+        <switch>
+            <id>identifier-to-header</id>
+            <longFlag>identifier-to-header</longFlag>
+            <defaults>false</defaults>
+            <help>When this switch is provided, ignore the sequence description line and write the sequence identifier, if available, as a string in place of the fasta sequence header.</help>
         </switch>
         <switch>
             <id>output-color-space</id>
