@@ -11,6 +11,7 @@
     <property name="goby-jarfile" location="${goby-jarfile-name}"/>
     <property name="goby-api-jarfile" location="goby-api.jar"/>
     <property name="goby-spi-jarfile" location="goby-spi.jar"/>
+    <property name="goby-io-jarfile" location="goby-io.jar"/>
 
     <property name="label" value="development"/>
 
@@ -80,7 +81,6 @@
             </fileset>
             <zipgroupfileset dir="${lib}">
                 <include name="bdval-api.jar"/>
-                <include name="colt.jar"/>
                 <include name="commons-collections-3.2.1.jar"/>
                 <include name="commons-configuration-1.6.jar"/>
                 <include name="commons-exec-1.0.1.jar"/>
@@ -137,7 +137,7 @@
             <manifest>
                 <attribute name="Specification-Title" value="Goby API"/>
                 <attribute name="Specification-Vendor"
-                           value="Institute for Computational Biomedicine (ICB), Weill Medical College of Cornell University"/>
+                           value="Campagne Laboratory, Institute for Computational Biomedicine, Weill Medical College of Cornell University"/>
                 <attribute name="Implementation-Version" value="${label} (${buildstamp})"/>
                 <attribute name="Implementation-Vendor"
                            value="Institute for Computational Biomedicine (ICB), Weill Medical College of Cornell University"/>
@@ -156,7 +156,7 @@
             <manifest>
                 <attribute name="Specification-Title" value="Goby"/>
                 <attribute name="Specification-Vendor"
-                           value="Institute for Computational Biomedicine (ICB), Weill Medical College of Cornell University"/>
+                           value="Campagne Laboratory, Institute for Computational Biomedicine, Weill Medical College of Cornell University"/>
                 <attribute name="Implementation-Version" value="${label} (${buildstamp})"/>
                 <attribute name="Implementation-Vendor"
                            value="Institute for Computational Biomedicine (ICB), Weill Medical College of Cornell University"/>
@@ -170,6 +170,44 @@
         </jar>
     </target>
 
+    <target name="jar-goby-io" depends="compile" description="Create the goby-io.jar file (LGPL code only)">
+        <!-- Standalone jar file. -->
+        <jar jarfile="${goby-io-jarfile}">
+            <fileset dir="${classes}">
+                <include name="edu/cornell/med/icb/goby/reads/**"/>
+                <include name="edu/cornell/med/icb/goby/alignments/**"/>
+                <include name="edu/cornell/med/icb/goby/util/**"/>
+                <include name="edu/cornell/med/icb/goby/exception/**"/>
+                <include name="edu/cornell/med/icb/goby/identifier/**"/>
+                <include name="edu/cornell/med/icb/goby/counts/**"/>
+            </fileset>
+            <zipgroupfileset dir="${lib}">
+
+
+                <include name="fastutil-5.1.5.jar"/>
+                <include name="dsiutils-1.0.10.jar"/>
+                <include name="icb-utils.jar"/>
+                <include name="protobuf-java-2.3.0.jar"/>
+                <include name="commons-io-1.4.jar"/>
+                <include name="commons-lang-2.5.jar"/>
+                <include name="commons-logging-1.1.1.jar"/>
+            </zipgroupfileset>
+            <manifest>
+                <attribute name="Specification-Title" value="Goby IO (LGPL compatible)"/>
+                <attribute name="Specification-Vendor"
+                           value="Campagne Laboratory, Institute for Computational Biomedicine, Weill Medical College of Cornell University"/>
+                <attribute name="Implementation-Version" value="${label} (${buildstamp})"/>
+                <attribute name="Implementation-Vendor"
+                           value="Institute for Computational Biomedicine (ICB), Weill Medical College of Cornell University"/>
+                <attribute name="Built-By" value="${user.name}"/>
+            </manifest>
+            <!-- define the implementation of NormalizationMethods as Java ServiceProviders: -->
+            <service type="edu.cornell.med.icb.goby.stats.NormalizationMethod">
+                <provider classname="edu.cornell.med.icb.goby.stats.BullardUpperQuartileNormalization"/>
+                <provider classname="edu.cornell.med.icb.goby.stats.AlignedCountNormalization"/>
+            </service>
+        </jar>
+    </target>
     <target name="cruisecontrol"
             depends="clean, cobertura-setup, findbugs, test, jar, javadocs, pmd, cpd, cobertura-report"
             description="Run CruiseControl Build and Tests"/>
