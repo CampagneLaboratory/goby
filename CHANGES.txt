@@ -1,4 +1,9 @@
 development -> 1.8
+ - Fixed a bug that prevented Goby opening large alignment files (>3Gb).
+ - Fixed a bug in AlignmentIterator triggered when reading alignment files with targetIndices starting at
+   numbers larger than zero.
+ - Removed dependency on colt (because it is not a pure LGPL license by adding restriction in military
+   applications)
  - SGE helper scripts bz2compact.sh and keep-unique-reads.sh help process hundred of lanes in
    parallel on an SGE grid. bz2compact extracts fastq files compressed with BZip2 and converts
    them to compact-reads format. keep-unique-reads.sh determines the set of reads that are unique

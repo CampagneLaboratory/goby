@@ -18,7 +18,7 @@
 
 package edu.cornell.med.icb.goby.modes;
 
-import cern.colt.Timer;
+
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
@@ -111,8 +111,7 @@ public class AggregatePeaksByPeakDistanceMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        final Timer timer = new Timer();
-        timer.start();
+
 
         System.out.println("Reading union of peaks from: " + inputFile);
         final Object2ObjectMap<String, ObjectList<Annotation>> unionAnnots = readAnnotations(inputFile);
@@ -164,8 +163,7 @@ public class AggregatePeaksByPeakDistanceMode extends AbstractGobyMode {
             System.out.println(String.format("Reference %s: Finished with %d annotations.", chromsome, annotationList.size()));
             writeAnnotations(outputFile, annotationList, true /* append */);
         }
-        //DONE
-        System.out.println("time spent  " + timer.toString());
+       
     }
 
     public static void writeAnnotations(final String outputFileName, final ObjectList<Annotation> annotationList, final boolean append) {

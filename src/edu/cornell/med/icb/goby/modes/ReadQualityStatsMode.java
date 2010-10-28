@@ -18,8 +18,6 @@
 
 package edu.cornell.med.icb.goby.modes;
 
-import cern.jet.random.engine.MersenneTwister;
-import cern.jet.random.engine.RandomEngine;
 import com.google.protobuf.ByteString;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
@@ -34,10 +32,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Evaluate statistics for read qualities.
@@ -205,7 +200,7 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
     }
 
     private static class ReadQualityStats {
-        private final RandomEngine random = new MersenneTwister();
+        private final Random random = new Random();
         private int readIndex;
         // byte minValue;
         // byte maxValue;

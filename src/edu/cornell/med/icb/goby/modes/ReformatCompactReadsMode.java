@@ -18,7 +18,6 @@
 
 package edu.cornell.med.icb.goby.modes;
 
-import cern.jet.random.engine.MersenneTwister;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.reads.Reads;
@@ -42,6 +41,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Random;
 
 /**
  * Reformat a compact file, possibly dropping identifiers, or descriptions, or splitting the file.
@@ -304,22 +304,31 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
             return;
         }
         final IntSet alreadyMutated = new IntArraySet();
-        final RandomAdapter random = new RandomAdapter(new MersenneTwister(new Date()));
+        final Random random = new Random(new Date().getTime());
         for (int i = 0; i < numberOfMismatches; i++) {
             int mutationPosition;
             do {
-                mutationPosition = random.choose(0, sequence.length() - 1);
+                mutationPosition = chooseRandom(random,0, sequence.length() - 1);
             }
             while (alreadyMutated.contains(mutationPosition));
             char newBase;
             final char oldBase = sequence.charAt(mutationPosition);
             do {
-                newBase = bases.toCharArray()[random.choose(0, bases.size() - 1)];
+                newBase = bases.toCharArray()[chooseRandom(random, 0, bases.size() - 1)];
                 // introduce the mutation:
                 sequence.charAt(mutationPosition, newBase);
             } while (newBase == oldBase);
             alreadyMutated.add(mutationPosition);
         }
+    }
+      /**
+     * @param lo lower limit of range
+     * @param hi upper limit of range
+     * @return a random integer in the range <STRONG>lo</STRONG>,
+     *         <STRONG>lo</STRONG>+1, ... ,<STRONG>hi</STRONG>
+     */
+    private int chooseRandom(Random random,final int lo, final int hi) {
+        return (int) ((long) lo + (long) ((1L + (long) hi - (long) lo) * random.nextLong()));
     }
 
     private String getOutputFilename(final String outputBasename, final int splitIndex) {

@@ -18,7 +18,6 @@
 
 package edu.cornell.med.icb.goby.modes;
 
-import cern.colt.Timer;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeCount;
@@ -32,6 +31,7 @@ import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.counts.CountsArchiveWriter;
 import edu.cornell.med.icb.goby.counts.CountsWriter;
+import edu.cornell.med.icb.goby.util.Timer;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;

@@ -18,7 +18,6 @@
 
 package edu.cornell.med.icb.goby.modes;
 
-import cern.jet.random.engine.MersenneTwister;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
@@ -27,7 +26,6 @@ import edu.cornell.med.icb.goby.counts.CountsArchiveReader;
 import edu.cornell.med.icb.goby.counts.CountsReader;
 import edu.cornell.med.icb.goby.counts.OffsetCountsReader;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
-import edu.cornell.med.icb.util.RandomAdapter;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
@@ -42,6 +40,7 @@ import java.io.PrintStream;
 import java.io.Reader;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Random;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -191,7 +190,7 @@ public class TallyBasesMode extends AbstractGobyMode {
 
         System.out.println("Will use genome cache basename: " + genomeCacheFilename);
         cache.save(genomeCacheFilename);
-        final RandomAdapter random = new RandomAdapter(new MersenneTwister(new Date()));
+        final Random random = new Random(new Date().getTime());
 
         final double delta = cutoff;
         final int countThreshold = 30;

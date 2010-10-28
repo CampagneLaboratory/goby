@@ -18,7 +18,6 @@
 
 package edu.cornell.med.icb.goby.modes;
 
-import cern.colt.Timer;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCountInterface;
@@ -32,6 +31,7 @@ import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionResults;
 import edu.cornell.med.icb.goby.stats.NormalizationMethod;
+import edu.cornell.med.icb.goby.util.Timer;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.rit.pj.IntegerForLoop;
 import edu.rit.pj.ParallelRegion;
