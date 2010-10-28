@@ -125,8 +125,7 @@ public abstract class IterateAlignments {
         referencesToProcess = new IntLinkedOpenHashSet();
 
         // setup referencesToProcess data structure according to the command line (filterByReferenceNames and includeReferenceNames)
-        for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
-
+        for (int referenceIndex : reader.getTargetIdentifiers().values()) {
 
             final MutableString referenceId = referenceIds.getId(referenceIndex);
             assert referenceId != null : "reference id cannot be null for reference index=" + referenceIndex;

@@ -26,15 +26,18 @@ import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
+import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math.stat.descriptive.rank.Percentile;
 
+import javax.swing.text.MutableAttributeSet;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -42,6 +45,7 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Display some basic statistics on file in compact reads format.
@@ -245,8 +249,14 @@ public class CompactFileStatsMode extends AbstractGobyMode {
 
         stream.printf("Has query identifiers = %s%n",
                 reader.getQueryIdentifiers() != null && !reader.getQueryIdentifiers().isEmpty());
-        stream.printf("Has target identifiers = %s%n",
-                reader.getTargetIdentifiers() != null && !reader.getTargetIdentifiers().isEmpty());
+        final IndexedIdentifier targetIdentifiers = reader.getTargetIdentifiers();
+        final boolean hasTargetIdentifiers = targetIdentifiers != null && !targetIdentifiers.isEmpty();
+        stream.printf("Has target identifiers = %s%n", hasTargetIdentifiers);
+        if (hasTargetIdentifiers && verbose) {
+            for (Map.Entry<MutableString, Integer> entry : targetIdentifiers.entrySet()) {
+                stream.printf("  Target[%d]=%s%n", entry.getValue(), entry.getKey());
+            }
+        }
         stream.println();
 
         // the query indices that aligned. Includes those
