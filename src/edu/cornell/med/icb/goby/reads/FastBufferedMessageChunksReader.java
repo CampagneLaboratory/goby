@@ -79,7 +79,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
 
         int b;
         int contiguousZeroBytes = 0;
-        int skipped = 0;
+        long skipped = 0;
         long position = 0;
 
         // search though the input stream until a delimiter chunk or end of stream is reached
