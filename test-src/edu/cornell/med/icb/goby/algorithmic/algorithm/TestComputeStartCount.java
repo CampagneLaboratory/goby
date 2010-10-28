@@ -18,7 +18,6 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import cern.jet.random.engine.MersenneTwister;
 import edu.cornell.med.icb.goby.counts.CountsReader;
 import edu.cornell.med.icb.goby.counts.CountsWriter;
 import edu.cornell.med.icb.util.RandomAdapter;
@@ -36,6 +35,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Random;
 
 /**
  * @author Fabien Campagne
@@ -199,15 +199,25 @@ public class TestComputeStartCount {
         reader.close();
     }
 
+    /**
+     * @param lo lower limit of range
+     * @param hi upper limit of range
+     * @return a random integer in the range <STRONG>lo</STRONG>,
+     *         <STRONG>lo</STRONG>+1, ... ,<STRONG>hi</STRONG>
+     */
+    private int chooseRandom(Random random, final int lo, final int hi) {
+        return (int) ((long) lo + (long) ((1L + (long) hi - (long) lo) * random.nextLong()));
+    }
+
     @Test
     public void testComputeStarts5() throws IOException {
         initializeTestDirectory();
-        final RandomAdapter random = new RandomAdapter(new MersenneTwister());
+        final Random random = new Random();
         final ComputeStartCount computer = new ComputeStartCount(ComputeStartCount.POSITIVE_STRAND_ONLY);
         for (int i = 0; i < 100000; i++) {
-            final int start = random.choose(1, 10000);
+            final int start = chooseRandom(random, 1, 10000);
 
-            final int length = random.choose(10, 100);
+            final int length = chooseRandom(random, 10, 100);
             computer.populate(start, start + length, true);
 
         }
