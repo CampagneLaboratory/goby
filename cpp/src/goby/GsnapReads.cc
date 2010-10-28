@@ -10,31 +10,40 @@ using namespace std;
 
 #define READ_QUAL_SCORES true
 
+#ifdef GSNAP_READ_COMPACT_DEBUG
+#define debug(x) x
+#else
+#define debug(x)
+#endif
+
 /**
  * This class is a C interface so Gsnap can read Goby compact-reads.
  */
 extern "C" {
 
-	CReadsHelper* gobyReads_openReadsReader(
+	void gobyReads_openReadsReader(
 			char **unopenedFiles, int numUnopenedFiles,
-			unsigned char circular) {
-	    return gobyReads_openReadsReaderWindowed(unopenedFiles, numUnopenedFiles, circular, 0, 0);
+			unsigned char circular,
+			CReadsHelper **readsHelperpp) {
+	    gobyReads_openReadsReaderWindowed(unopenedFiles, numUnopenedFiles, circular, 0, 0, readsHelperpp);
     }
 
 	/**
 	 * Open the .compact-reads file to read from.
 	 */
-	CReadsHelper* gobyReads_openReadsReaderWindowed(
+	void gobyReads_openReadsReaderWindowed(
 			char **unopenedFiles, int numUnopenedFiles,
 			unsigned char circular,
 			unsigned long startOffset,
-			unsigned long endOffset) {
+			unsigned long endOffset,
+			CReadsHelper **readsHelperpp) {
 
 		if (numUnopenedFiles == 0) {
 			fprintf(stderr,"No input files to process.\n");
 			exit(9);
 		}
-		CReadsHelper *readsHelper = new CReadsHelper;
+        *readsHelperpp = new CReadsHelper;
+		CReadsHelper *readsHelper = *readsHelperpp;
 		readsHelper->numberOfReads = 0;
 		readsHelper->circular = circular;
 		readsHelper->unopenedFiles = new queue<string>;
@@ -49,7 +58,6 @@ extern "C" {
 		readsHelper->it = readsHelper->readsReader->beginPointer(startOffset, endOffset);
 		readsHelper->end = readsHelper->readsReader->endPointer();
 		readsHelper->numberOfReads = 0;
-		return readsHelper;
 	}
 
 	/**
@@ -74,13 +82,14 @@ extern "C" {
 	 * TODO: * We aren't supporting paired or circular here. That data should be in the compact-reads
 	 * TODO:   file but I'm not reading it at this moment.
 	 */
-	Sequence_T *gobyReads_next(CReadsHelper *readsHelper) {
+	void gobyReads_next(CReadsHelper *readsHelper, Sequence_T **queryseq1pp, Sequence_T **queryseq2pp) {
 		// Not supporting paired reads yet
         goby::ReadEntry entry = *(*(*readsHelper).it);
 		(*readsHelper).numberOfReads++;
 
-	    // Sequence_T* queryseq1 = new Sequence_T;
-	    Sequence_T* queryseq1 = (Sequence_T*) malloc(sizeof(Sequence_T));
+	    *queryseq2pp = NULL;
+	    *queryseq1pp = (Sequence_T*) malloc(sizeof(Sequence_T));
+        Sequence_T *queryseq1 = *queryseq1pp;
 
 	    int fullLength = 0;
 	    if (entry.has_sequence()) {
@@ -103,7 +112,7 @@ extern "C" {
 	    queryseq1->trimend = 0;
 	    queryseq1->subseq_offset = 0;
         //TODO introduce a read index and preserve read id in acc?
-	    queryseq1->acc = (char *) calloc(50, sizeof(char));
+	    queryseq1->acc = (char *) malloc(50);
 	    sprintf(queryseq1->acc, "%d", entry.read_index());
 	    if (entry.has_description()) {
 	    	queryseq1->restofheader = (char *) calloc(entry.description().size() + 1, sizeof(char));
@@ -117,8 +126,10 @@ extern "C" {
 	     * We need to convert quality score appropriately here.
 	     */
 	    if (READ_QUAL_SCORES && entry.has_quality_scores()) {
-	    	queryseq1->quality_alloc = (char *) calloc(entry.quality_scores().size() + 1, sizeof(char));
-		    strcpy(queryseq1->quality_alloc, entry.quality_scores().c_str());
+	        int qualSize = entry.quality_scores().size();
+	    	queryseq1->quality_alloc = (char *) malloc(qualSize + 1);
+		    memcpy(queryseq1->quality_alloc, entry.quality_scores().c_str(), qualSize);
+		    queryseq1->quality_alloc[qualSize] = '\0';
 	    } else {
 	    	queryseq1->quality_alloc = (char *) NULL;
 	    }
@@ -126,7 +137,7 @@ extern "C" {
 
 	    // Increment to the next ReadsEntry
 		(*(*readsHelper).it)++;
-	    return queryseq1;
+		debug(printf("Read query->fulllength=%d\n", queryseq1->fulllength);)
 	}
 
 	/**

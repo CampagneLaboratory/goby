@@ -484,13 +484,12 @@ REMOVE?
 
     // Java DataOutput.writeInt()
     static void writeInt(google::protobuf::io::CodedOutputStream *stream, int v) {
-      unsigned char *tmp = new unsigned char[4];
+      unsigned char tmp[4];
       tmp[0] = (v >> 24) & 0xFF;
       tmp[1] = (v >> 16) & 0xFF;
       tmp[2] = (v >> 8) & 0xFF;
       tmp[3] = v & 0xFF;
       stream->WriteRaw(tmp, 4);
-      delete tmp;
     }
 
     // content for delimiter between each chunk

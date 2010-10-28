@@ -8,7 +8,6 @@
 
 using namespace std;
 
-#define GSNAP_WRITE_ALIGNMENT_DEBUG
 #ifdef GSNAP_WRITE_ALIGNMENT_DEBUG
 #define debug(x) x
 #else
@@ -20,13 +19,14 @@ using namespace std;
  */
 extern "C" {
 
-	CAlignmentsWriterHelper *gobyAlignments_openAlignmentsWriterDefaultEntriesPerChunk(char *basename) {
-	    return gobyAlignments_openAlignmentsWriter(basename, GOBY_DEFAULT_NUMBER_OF_ENTRIES_PER_CHUNK);
+	void gobyAlignments_openAlignmentsWriterDefaultEntriesPerChunk(char *basename, CAlignmentsWriterHelper **writerHelperpp) {
+	    gobyAlignments_openAlignmentsWriter(basename, GOBY_DEFAULT_NUMBER_OF_ENTRIES_PER_CHUNK, writerHelperpp);
 	}
 
-	CAlignmentsWriterHelper *gobyAlignments_openAlignmentsWriter(char *basename, unsigned number_of_entries_per_chunk) {
+	void gobyAlignments_openAlignmentsWriter(char *basename, unsigned number_of_entries_per_chunk, CAlignmentsWriterHelper **writerHelperpp) {
         debug(fprintf(stderr,"Writing alignment to basename, entries per chunk=%d\n", basename, number_of_entries_per_chunk));
-		CAlignmentsWriterHelper *writerHelper = new CAlignmentsWriterHelper;
+        *writerHelperpp = new CAlignmentsWriterHelper;
+		CAlignmentsWriterHelper *writerHelper = *writerHelperpp;
         string basenameStr(basename);
 
         writerHelper->alignmentWriter = new goby::AlignmentWriter(basenameStr, number_of_entries_per_chunk);
@@ -37,8 +37,6 @@ extern "C" {
 	    writerHelper->smallestQueryIndex = -1;
 	    writerHelper->largestQueryIndex = -1;
 	    writerHelper->numberOfAlignedReads = 0;
-
-        return writerHelper;
 	}
 
     void gobyAlignments_setSorted(CAlignmentsWriterHelper *writerHelper, int sorted /* bool */) {
@@ -197,9 +195,7 @@ extern "C" {
      *    gobyAlEntry_setQueryIndex(...)
      *    gobyAlEntry_setQueryAlignedLength(...)
      */
-    void gobyAlEntry_appendTooManyHits(CAlignmentsWriterHelper *writerHelper, int numberOfHits) {
-        google::protobuf::uint32 queryIndex = writerHelper->alignmentEntry->query_index();
-        google::protobuf::uint32 alignedLength = writerHelper->alignmentEntry->query_aligned_length();
+    void gobyAlEntry_appendTooManyHits(CAlignmentsWriterHelper *writerHelper, UINT4 queryIndex, UINT4 alignedLength, int numberOfHits) {
         debug(fprintf(stderr,"gobyAlEntry_appendTooManyHits queryIndex=%d numberOfHits=%d alignedLength=%d\n", queryIndex, numberOfHits, alignedLength));
         writerHelper->tmhWriter->append(queryIndex, numberOfHits, alignedLength);
     }
