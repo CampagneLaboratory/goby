@@ -30,11 +30,7 @@ import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
-import java.io.Closeable;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.Map;
 import java.util.Properties;
 import java.util.zip.GZIPOutputStream;

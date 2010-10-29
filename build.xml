@@ -67,7 +67,7 @@
         </javac>
     </target>
 
-    <target name="jar" depends="jar-goby, jar-goby-api, jar-goby-spi" description="Create project jarfiles"/>
+    <target name="jar" depends="jar-goby, jar-goby-api, jar-goby-spi, jar-goby-io" description="Create project jarfiles"/>
 
     <target name="jar-goby" depends="compile"
             description="Create the goby.jar file. Gobies are a large species of fish that include some of the smallest fish. Now, isn't that fitting?">
@@ -184,13 +184,13 @@
             <zipgroupfileset dir="${lib}">
 
 
-                <include name="fastutil-5.1.5.jar"/>
-                <include name="dsiutils-1.0.10.jar"/>
-                <include name="icb-utils.jar"/>
-                <include name="protobuf-java-2.3.0.jar"/>
-                <include name="commons-io-1.4.jar"/>
-                <include name="commons-lang-2.5.jar"/>
-                <include name="commons-logging-1.1.1.jar"/>
+                <include name="fastutil-5.1.5.jar"/>     <!-- LGPL -->
+                <include name="dsiutils-1.0.10.jar"/>    <!-- LGPL -->
+                <include name="icb-utils.jar"/>           <!-- LGPL -->
+                <include name="protobuf-java-2.3.0.jar"/> <!-- new BSD license, compatible with LGPL? -->
+                <include name="commons-io-1.4.jar"/>         <!-- Apache version 2 license -->
+                <include name="commons-lang-2.5.jar"/>       <!-- Apache version 2 license -->
+                <include name="commons-logging-1.1.1.jar"/>  <!-- Apache version 2 license -->
             </zipgroupfileset>
             <manifest>
                 <attribute name="Specification-Title" value="Goby IO (LGPL compatible)"/>

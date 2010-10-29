@@ -12,7 +12,6 @@
       <executeOn event="beforeRun" target="compile" />
       <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="MethylSimilarityScan" />
       <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="annotation counts" />
-      <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="counts" />
       <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestReadWriteAlignments.readWriteHeader103" />
       <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="edu.cornell.med.icb.goby in goby" />
     </buildFile>
@@ -102,7 +101,7 @@
       <element module="All" copyright="ICB GPL3" />
     </module2copyright>
   </component>
-  <component name="CppTools.Loader" reportImplicitCastToBool="false" reportNameReferencedOnce="false" warnedAboutFileOutOfSourceRoot="true" version="2" compilerSelect="AUTO" />
+  <component name="CppTools.Loader" reportImplicitCastToBool="false" reportNameReferencedOnce="false" warnedAboutFileOutOfSourceRoot="true" version="2" currentProject="$PROJECT_DIR$/cpp/src/Makefile" compilerSelect="AUTO" />
   <component name="DependencyValidationManager">
     <scope name="Goby" pattern="(file[goby]:src//*||file[goby]:test-src//*)&amp;&amp;!file[goby]:src/edu/cornell/med/icb/goby/alignments/Alignments.java&amp;&amp;!file[goby]:src/edu/cornell/med/icb/goby/reads/Reads.java" />
     <option name="SKIP_IMPORT_STATEMENTS" value="false" />
@@ -656,6 +655,88 @@
     <output url="file://$PROJECT_DIR$/classes" />
   </component>
   <component name="ProjectRunConfigurationManager">
+    <configuration default="false" name="edu.cornell.med.icb.goby in goby" type="JUnit" factoryName="JUnit" enabled="false" merge="false" sample_coverage="true" runner="emma">
+      <module name="goby" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="PACKAGE_NAME" value="edu.cornell.med.icb.goby" />
+      <option name="MAIN_CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="TEST_OBJECT" value="package" />
+      <option name="VM_PARAMETERS" value="-ea" />
+      <option name="PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="ADDITIONAL_CLASS_PATH" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="moduleWithDependencies" />
+      </option>
+      <envs>
+        <env name="R_HOME" value="/Library/Frameworks/R.framework/Resources " />
+      </envs>
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="2630" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="JProfiler">
+        <option name="WINDOW" value="false" />
+        <option name="JVMPI" value="false" />
+        <option name="INTERPRETED" value="false" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method>
+        <option name="Run Ant target" value="true" />
+      </method>
+    </configuration>
+    <configuration default="false" name="Unnamed" type="Application" factoryName="Application" enabled="false" merge="false" runner="emma">
+      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.CompactFileStatsMode" />
+      <option name="VM_PARAMETERS" value="-Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties" />
+      <option name="PROGRAM_PARAMETERS" value=" --mode compact-file-stats Q:\SEQC\Brain\LifeTech\compact\HBR.73_20080930_1_Ambion_HBR_HBR_F3.compact-reads" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="goby" />
+      <envs />
+      <method>
+        <option name="Run Ant target" value="true" />
+      </method>
+    </configuration>
+    <configuration default="false" name="annotation counts" type="Application" factoryName="Application" enabled="false" merge="false" sample_coverage="true" runner="emma">
+      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.GobyDriver" />
+      <option name="VM_PARAMETERS" value="-Xmx3g -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties" />
+      <option name="PROGRAM_PARAMETERS" value="-m alignment-to-annotation-counts -a data/biomart_human_transcript-exon_ensembl54_NCBI36.txt  HHNVSNR-Bullard-HBR-SRR037440-all-files/HHNVSNR-Bullard-HBR-SRR037440 DLTTEJH-Bullard-HBR-SRR037439-all-files/DLTTEJH-Bullard-HBR-SRR037439 -r 2 --compare A/B --groups A=DLTTEJH-Bullard-HBR-SRR037439/B=HHNVSNR-Bullard-HBR-SRR037440 --write-annotation-counts  false  --parallel --eval group-averages,log2-fold-change" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="goby" />
+      <envs />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="54802" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="JProfiler">
+        <option name="WINDOW" value="false" />
+        <option name="JVMPI" value="false" />
+        <option name="INTERPRETED" value="false" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method>
+        <option name="Run Ant target" value="true" />
+      </method>
+    </configuration>
     <configuration default="false" name="TMH info" type="Application" factoryName="Application" enabled="false" merge="false" runner="emma">
       <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.GobyDriver" />
       <option name="VM_PARAMETERS" value="-ea -Xmx4g -Dlog4j.debug=true -Dlog4j.configuration=file:$PROJECT_DIR$/config/log4j.properties" />
@@ -679,11 +760,11 @@
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
-    <configuration default="false" name="display sam" type="Application" factoryName="Application" enabled="false" merge="false" runner="emma">
+    <configuration default="false" name="LastToCompact" type="Application" factoryName="Application" enabled="false" merge="false" runner="emma">
       <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.GobyDriver" />
-      <option name="VM_PARAMETERS" value="-ea -Xmx4g -Dlog4j.debug=true -Dlog4j.configuration=file:$PROJECT_DIR$/config/log4j.properties" />
-      <option name="PROGRAM_PARAMETERS" value="/data/SEQC/RNHIWVU-CALHM1s3_313_WT-all-files/RNHIWVU-CALHM1s3_313_WT.entries -m alignment-to-text -f sam -l 42 " />
-      <option name="WORKING_DIRECTORY" value="file:///data/SEQC/MEQYEXX-short-solid-all-files" />
+      <option name="VM_PARAMETERS" value="-Xmx4g -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties" />
+      <option name="PROGRAM_PARAMETERS" value="-m last-to-compact -i lastag-sample.maf -o basename -q data/reads/goby-mouse-reads-sample.compact-reads -g lastag-genome " />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
       <option name="ENABLE_SWING_INSPECTOR" value="false" />
@@ -692,7 +773,7 @@
       <module name="goby" />
       <envs />
       <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="52562" />
+        <option name="DEBUG_PORT" value="56581" />
         <option name="TRANSPORT" value="0" />
         <option name="LOCAL" value="true" />
       </RunnerSettings>
@@ -766,20 +847,20 @@
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
-    <configuration default="false" name="annotation counts" type="Application" factoryName="Application" enabled="false" merge="false" sample_coverage="true" runner="emma">
-      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.GobyDriver" />
-      <option name="VM_PARAMETERS" value="-Xmx3g -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties" />
-      <option name="PROGRAM_PARAMETERS" value="-m alignment-to-annotation-counts -a data/biomart_human_transcript-exon_ensembl54_NCBI36.txt  HHNVSNR-Bullard-HBR-SRR037440-all-files/HHNVSNR-Bullard-HBR-SRR037440 DLTTEJH-Bullard-HBR-SRR037439-all-files/DLTTEJH-Bullard-HBR-SRR037439 -r 2 --compare A/B --groups A=DLTTEJH-Bullard-HBR-SRR037439/B=HHNVSNR-Bullard-HBR-SRR037440 --write-annotation-counts  false  --parallel --eval group-averages,log2-fold-change" />
+    <configuration default="false" name="FisherExact" type="Application" factoryName="Application" enabled="false" merge="false" runner="emma">
+      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.R.FisherExact" />
+      <option name="VM_PARAMETERS" value="-Djava.library.path=&quot;C:\Program Files (x86)\R\R-2.10.1\library\rJava\jri&quot; -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties" />
+      <option name="PROGRAM_PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <option name="ALTERNATIVE_JRE_PATH" value="/../java/jre6-x86" />
       <option name="ENABLE_SWING_INSPECTOR" value="false" />
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
       <module name="goby" />
       <envs />
       <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="54802" />
+        <option name="DEBUG_PORT" value="47129" />
         <option name="TRANSPORT" value="0" />
         <option name="LOCAL" value="true" />
       </RunnerSettings>
@@ -824,56 +905,11 @@
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
-    <configuration default="false" name="FisherExact" type="Application" factoryName="Application" enabled="false" merge="false" runner="emma">
-      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.R.FisherExact" />
-      <option name="VM_PARAMETERS" value="-Djava.library.path=&quot;C:\Program Files (x86)\R\R-2.10.1\library\rJava\jri&quot; -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties" />
-      <option name="PROGRAM_PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
-      <option name="ALTERNATIVE_JRE_PATH" value="/../java/jre6-x86" />
-      <option name="ENABLE_SWING_INSPECTOR" value="false" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <module name="goby" />
-      <envs />
-      <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="47129" />
-        <option name="TRANSPORT" value="0" />
-        <option name="LOCAL" value="true" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="JProfiler">
-        <option name="WINDOW" value="false" />
-        <option name="JVMPI" value="false" />
-        <option name="INTERPRETED" value="false" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Debug" />
-      <ConfigurationWrapper RunnerId="Run" />
-      <method>
-        <option name="Run Ant target" value="true" />
-      </method>
-    </configuration>
-    <configuration default="false" name="Unnamed" type="Application" factoryName="Application" enabled="false" merge="false" runner="emma">
-      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.CompactFileStatsMode" />
-      <option name="VM_PARAMETERS" value="-Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties" />
-      <option name="PROGRAM_PARAMETERS" value=" --mode compact-file-stats Q:\SEQC\Brain\LifeTech\compact\HBR.73_20080930_1_Ambion_HBR_HBR_F3.compact-reads" />
-      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="ENABLE_SWING_INSPECTOR" value="false" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <module name="goby" />
-      <envs />
-      <method>
-        <option name="Run Ant target" value="true" />
-      </method>
-    </configuration>
-    <configuration default="false" name="LastToCompact" type="Application" factoryName="Application" enabled="false" merge="false" runner="emma">
+    <configuration default="false" name="display sam" type="Application" factoryName="Application" enabled="false" merge="false" runner="emma">
       <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.GobyDriver" />
-      <option name="VM_PARAMETERS" value="-Xmx4g -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties" />
-      <option name="PROGRAM_PARAMETERS" value="-m last-to-compact -i lastag-sample.maf -o basename -q data/reads/goby-mouse-reads-sample.compact-reads -g lastag-genome " />
-      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="VM_PARAMETERS" value="-ea -Xmx4g -Dlog4j.debug=true -Dlog4j.configuration=file:$PROJECT_DIR$/config/log4j.properties" />
+      <option name="PROGRAM_PARAMETERS" value="/data/SEQC/RNHIWVU-CALHM1s3_313_WT-all-files/RNHIWVU-CALHM1s3_313_WT.entries -m alignment-to-text -f sam -l 42 " />
+      <option name="WORKING_DIRECTORY" value="file:///data/SEQC/MEQYEXX-short-solid-all-files" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
       <option name="ENABLE_SWING_INSPECTOR" value="false" />
@@ -882,81 +918,7 @@
       <module name="goby" />
       <envs />
       <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="56581" />
-        <option name="TRANSPORT" value="0" />
-        <option name="LOCAL" value="true" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="JProfiler">
-        <option name="WINDOW" value="false" />
-        <option name="JVMPI" value="false" />
-        <option name="INTERPRETED" value="false" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Debug" />
-      <ConfigurationWrapper RunnerId="Run" />
-      <method>
-        <option name="Run Ant target" value="true" />
-      </method>
-    </configuration>
-    <configuration default="false" name="TestFisherExact" type="JUnit" factoryName="JUnit" enabled="false" merge="false" runner="emma">
-      <module name="goby" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
-      <option name="ALTERNATIVE_JRE_PATH" value="/../java/jre6-x86" />
-      <option name="PACKAGE_NAME" value="edu.cornell.med.icb.goby.R" />
-      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.R.TestFisherExact" />
-      <option name="METHOD_NAME" value="chiSquaredUConn" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" value="-Djava.library.path=&quot;C:\Program Files (x86)\R\R-2.10.1\library\rJava\jri&quot; -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties" />
-      <option name="PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="ADDITIONAL_CLASS_PATH" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="moduleWithDependencies" />
-      </option>
-      <envs>
-        <env name="R_HOME" value="/Library/Frameworks/R.framework/Resources " />
-      </envs>
-      <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="47054" />
-        <option name="TRANSPORT" value="0" />
-        <option name="LOCAL" value="true" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="JProfiler">
-        <option name="WINDOW" value="false" />
-        <option name="JVMPI" value="false" />
-        <option name="INTERPRETED" value="false" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Debug" />
-      <ConfigurationWrapper RunnerId="Run" />
-      <method>
-        <option name="Run Ant target" value="true" />
-      </method>
-    </configuration>
-    <configuration default="false" name="edu.cornell.med.icb.goby in goby" type="JUnit" factoryName="JUnit" enabled="false" merge="false" sample_coverage="true" runner="emma">
-      <module name="goby" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="edu.cornell.med.icb.goby" />
-      <option name="MAIN_CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="" />
-      <option name="TEST_OBJECT" value="package" />
-      <option name="VM_PARAMETERS" value="-ea" />
-      <option name="PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="ADDITIONAL_CLASS_PATH" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="moduleWithDependencies" />
-      </option>
-      <envs>
-        <env name="R_HOME" value="/Library/Frameworks/R.framework/Resources " />
-      </envs>
-      <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="2630" />
+        <option name="DEBUG_PORT" value="52562" />
         <option name="TRANSPORT" value="0" />
         <option name="LOCAL" value="true" />
       </RunnerSettings>
@@ -1009,14 +971,14 @@
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
-    <configuration default="false" name="TestStatistics.testFisherExact" type="JUnit" factoryName="JUnit" enabled="false" merge="false" runner="emma">
+    <configuration default="false" name="TestFisherExact" type="JUnit" factoryName="JUnit" enabled="false" merge="false" runner="emma">
       <module name="goby" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
       <option name="ALTERNATIVE_JRE_PATH" value="/../java/jre6-x86" />
-      <option name="PACKAGE_NAME" value="edu.cornell.med.icb.goby.stats" />
-      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.stats.TestStatistics" />
-      <option name="METHOD_NAME" value="testFisherExact" />
-      <option name="TEST_OBJECT" value="method" />
+      <option name="PACKAGE_NAME" value="edu.cornell.med.icb.goby.R" />
+      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.R.TestFisherExact" />
+      <option name="METHOD_NAME" value="chiSquaredUConn" />
+      <option name="TEST_OBJECT" value="class" />
       <option name="VM_PARAMETERS" value="-Djava.library.path=&quot;C:\Program Files (x86)\R\R-2.10.1\library\rJava\jri&quot; -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties" />
       <option name="PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
@@ -1030,7 +992,7 @@
         <env name="R_HOME" value="/Library/Frameworks/R.framework/Resources " />
       </envs>
       <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="5226" />
+        <option name="DEBUG_PORT" value="47054" />
         <option name="TRANSPORT" value="0" />
         <option name="LOCAL" value="true" />
       </RunnerSettings>
@@ -1039,7 +1001,9 @@
         <option name="JVMPI" value="false" />
         <option name="INTERPRETED" value="false" />
       </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
       <method>
         <option name="Run Ant target" value="true" />
       </method>
@@ -1077,6 +1041,41 @@
       <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
+      <method>
+        <option name="Run Ant target" value="true" />
+      </method>
+    </configuration>
+    <configuration default="false" name="TestStatistics.testFisherExact" type="JUnit" factoryName="JUnit" enabled="false" merge="false" runner="emma">
+      <module name="goby" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <option name="ALTERNATIVE_JRE_PATH" value="/../java/jre6-x86" />
+      <option name="PACKAGE_NAME" value="edu.cornell.med.icb.goby.stats" />
+      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.stats.TestStatistics" />
+      <option name="METHOD_NAME" value="testFisherExact" />
+      <option name="TEST_OBJECT" value="method" />
+      <option name="VM_PARAMETERS" value="-Djava.library.path=&quot;C:\Program Files (x86)\R\R-2.10.1\library\rJava\jri&quot; -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties" />
+      <option name="PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="ADDITIONAL_CLASS_PATH" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="moduleWithDependencies" />
+      </option>
+      <envs>
+        <env name="R_HOME" value="/Library/Frameworks/R.framework/Resources " />
+      </envs>
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="5226" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="JProfiler">
+        <option name="WINDOW" value="false" />
+        <option name="JVMPI" value="false" />
+        <option name="INTERPRETED" value="false" />
+      </RunnerSettings>
+      <ConfigurationWrapper RunnerId="Debug" />
       <method>
         <option name="Run Ant target" value="true" />
       </method>

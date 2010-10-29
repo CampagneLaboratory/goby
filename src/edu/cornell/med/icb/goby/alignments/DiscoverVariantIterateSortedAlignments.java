@@ -18,24 +18,23 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import it.unimi.dsi.fastutil.objects.*;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
-import it.unimi.dsi.lang.MutableString;
-import edu.cornell.med.icb.goby.stats.StatisticsWriter;
-import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
-import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
-import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
-import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.R.GobyRengine;
+import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
+import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
+import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
+import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
+import edu.cornell.med.icb.goby.stats.StatisticsWriter;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.*;
+import it.unimi.dsi.lang.MutableString;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.rosuda.JRI.Rengine;
 
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Comparator;
-
-import org.rosuda.JRI.Rengine;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Fabien Campagne
