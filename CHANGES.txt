@@ -1,4 +1,7 @@
 development -> 1.8
+ - We now distribute a subset of Goby as the Goby IO API. This subset is packaged in the goby-io.jar
+   file and released under the LGPL3 license. This was done to make it possible to include Goby format
+   input output code directly into other software licensed under the LGPL3.
  - Fixed a bug that prevented Goby opening large alignment files (>3Gb).
  - Fixed a bug in AlignmentIterator triggered when reading alignment files with targetIndices starting at
    numbers larger than zero.
