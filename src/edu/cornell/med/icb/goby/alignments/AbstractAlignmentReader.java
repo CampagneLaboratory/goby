@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009-2010 Institute for Computational Biomedicine,
- *                         Weill Medical College of Cornell University
+ *                    Weill Medical College of Cornell University
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -122,6 +122,7 @@ public abstract class AbstractAlignmentReader implements Closeable,
 
     /**
      * Get the number of query sequences represented in this alignment.
+     *
      * @return the number of query sequences represented in this alignment.
      */
     public int getNumberOfQueries() {
@@ -131,6 +132,7 @@ public abstract class AbstractAlignmentReader implements Closeable,
 
     /**
      * Has the alignment header has been processed?
+     *
      * @return true if the reader has loaded the header
      */
     protected boolean isHeaderLoaded() {
@@ -139,6 +141,7 @@ public abstract class AbstractAlignmentReader implements Closeable,
 
     /**
      * Indicate that the alignment header has been processed.
+     *
      * @param headerLoaded whether or not the reader has loaded the header
      */
     protected void setHeaderLoaded(final boolean headerLoaded) {
@@ -176,6 +179,7 @@ public abstract class AbstractAlignmentReader implements Closeable,
 
     /**
      * Get the number of target sequences represented in this alignment.
+     *
      * @return the number of target sequences represented in this alignment.
      */
     public int getNumberOfTargets() {
@@ -186,10 +190,11 @@ public abstract class AbstractAlignmentReader implements Closeable,
     /**
      * Returns query lengths. An array of size the number of query sequences, where each element
      * indicates the length of the query sequence.
+     *
      * @return an array containing the lengths of all the queries represented in the alignment
      * @deprecated Query lengths are now stored as part of the individual alignment entry and
-     * can be retrieved with
-     * {@link edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry#getQueryLength()}
+     *             can be retrieved with
+     *             {@link edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry#getQueryLength()}
      */
     @Deprecated
     public final int[] getQueryLengths() {
@@ -209,11 +214,12 @@ public abstract class AbstractAlignmentReader implements Closeable,
      * Returns the length of a query. NB this method is only available for backward compatibility.
      * It will be removed in a future release of Goby. Do not write new code that depends on it.
      * Instead, store query lengths in alignment entries.
+     *
      * @param queryIndex The index of the query to get the length for
      * @return the length of the specified query entry
      * @deprecated Query lengths are now stored as part of the individual alignment entry and
-     * can be retrieved with
-     * {@link edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry#getQueryLength()}
+     *             can be retrieved with
+     *             {@link edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry#getQueryLength()}
      */
     @Deprecated
     public final int getQueryLength(final int queryIndex) {
@@ -242,6 +248,7 @@ public abstract class AbstractAlignmentReader implements Closeable,
     /**
      * Returns target lengths. An array of size the number of target sequences, where each element
      * indicates the length of the target sequence.
+     *
      * @return an array containing the lengths of all the targets represented in the alignment
      */
     public final int[] getTargetLength() {

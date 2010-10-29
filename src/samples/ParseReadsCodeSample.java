@@ -1,5 +1,5 @@
-package samples;/*
- * Copyright (C) 2010 Institute for Computational Biomedicine,
+/*
+ * Copyright (C) 2009-2010 Institute for Computational Biomedicine,
  *                    Weill Medical College of Cornell University
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,7 @@ package samples;/*
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import edu.cornell.med.icb.goby.reads.Reads;
+package samples;import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import it.unimi.dsi.lang.MutableString;
 
