@@ -35,6 +35,10 @@ development -> 1.8
  - Added transcript-align.sh script to assist with aligning via transcripts.
  - In MessageChunksWriter, flush logic should occure on a COMPLETELY empty file, but otherwise it
    should only occure if entries have been added since the last flush(). In both C++ and Java.
+ - DiffAlignmentMode can better compare differences when alignments were done by two different
+   aligners and the Target Indexes are the same in label but not the same TargetIndex
+   by building a master TargetIndex and translation maps for the two different alignments.
+   Targets are now shown by label name instead of TargetIndex.
 1.7
  - Extended fasta-to-compact and compact-to-fasta to handle paired end runs. See new command
    line arguments --paired-end and pair-indicator arguments in fasta-to-compact and
