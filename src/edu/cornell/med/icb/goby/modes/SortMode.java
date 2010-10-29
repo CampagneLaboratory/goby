@@ -202,7 +202,10 @@ public class SortMode extends AbstractGobyMode {
                 Merge.prepareMergedTooManyHits(outputFilename, alignmentReader.getNumberOfQueries(), 0, basename);
                 writer.setTargetIdentifiers(alignmentReader.getTargetIdentifiers());
                 writer.setQueryIdentifiers(alignmentReader.getQueryIdentifiers());
-                writer.setTargetLengths(alignmentReader.getTargetLength());
+                final int[] targetLengths = alignmentReader.getTargetLength();
+                if (targetLengths != null) {
+                    writer.setTargetLengths(targetLengths);
+                }
                 writer.setLargestSplitQueryIndex(alignmentReader.getLargestSplitQueryIndex());
                 writer.setSmallestSplitQueryIndex(alignmentReader.getSmallestSplitQueryIndex());
                 writer.setSorted(true);
