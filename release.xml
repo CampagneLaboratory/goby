@@ -181,8 +181,12 @@
                 <include name="${tag}/README-Goby.txt"/>
                 <include name="${tag}/CHANGES.txt"/>
                 <include name="${tag}/VERSION.txt"/>
+                <include name="${tag}/COPYING"/>
+                <include name="${tag}/GPL3.license"/>
+                <include name="${tag}/LGPL3.license"/>
                 <include name="${tag}/data/**"/>
                 <include name="${tag}/goby.jar"/>
+                <include name="${tag}/goby-io.jar"/>
                 <include name="${tag}/config/**"/>
                 <include name="${tag}/scripts/distrib/**"/>
             </fileset>
