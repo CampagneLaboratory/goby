@@ -206,7 +206,10 @@ public class TestComputeStartCount {
      *         <STRONG>lo</STRONG>+1, ... ,<STRONG>hi</STRONG>
      */
     private int chooseRandom(Random random, final int lo, final int hi) {
-        return (int) ((long) lo + (long) ((1L + (long) hi - (long) lo) * random.nextLong()));
+        final double r = random.nextDouble();
+        int result = (int) ((long) lo + (long) ((1L + (long) hi - (long) lo) * r));
+        assert result >= lo && result <= hi;
+        return result;
     }
 
     @Test
