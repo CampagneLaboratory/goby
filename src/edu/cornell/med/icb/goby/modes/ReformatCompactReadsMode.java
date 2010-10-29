@@ -308,7 +308,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
         for (int i = 0; i < numberOfMismatches; i++) {
             int mutationPosition;
             do {
-                mutationPosition = chooseRandom(random,0, sequence.length() - 1);
+                mutationPosition = chooseRandom(random, 0, sequence.length() - 1);
             }
             while (alreadyMutated.contains(mutationPosition));
             char newBase;
@@ -321,14 +321,18 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
             alreadyMutated.add(mutationPosition);
         }
     }
-      /**
+
+    /**
      * @param lo lower limit of range
      * @param hi upper limit of range
      * @return a random integer in the range <STRONG>lo</STRONG>,
      *         <STRONG>lo</STRONG>+1, ... ,<STRONG>hi</STRONG>
      */
-    private int chooseRandom(Random random,final int lo, final int hi) {
-        return (int) ((long) lo + (long) ((1L + (long) hi - (long) lo) * random.nextLong()));
+    private int chooseRandom(Random random, final int lo, final int hi) {
+        final double r = random.nextDouble();
+        int result = (int) ((long) lo + (long) ((1L + (long) hi - (long) lo) * r));
+        assert result >= lo && result <= hi;
+        return result;
     }
 
     private String getOutputFilename(final String outputBasename, final int splitIndex) {
