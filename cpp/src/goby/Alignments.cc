@@ -289,6 +289,10 @@ namespace goby {
     }
   }
 
+  void AlignmentWriter::addTargetLength(const google::protobuf::uint32 targetLength) {
+    header.add_target_length(targetLength);
+  }
+
   void AlignmentWriter::setTargetLengths(const unsigned* target_lengths) {
     int num_elements = sizeof(target_lengths) / sizeof(target_lengths[0]);
     this->target_lengths.resize(num_elements);

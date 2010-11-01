@@ -47,10 +47,6 @@ extern "C" {
         debug(fprintf(stderr,"gobyAlignments_setIndexed=%d\n", indexed));
         writerHelper->alignmentWriter->setIndexed(indexed == 0 ? false : true);
     }
-    void gobyAlignments_setTargetLengths(CAlignmentsWriterHelper *writerHelper, const unsigned int* target_lengths) {
-        debug(fprintf(stderr,"gobyAlignments_setTargetLengths=...\n"));
-        writerHelper->alignmentWriter->setTargetLengths(target_lengths);
-    }
     void gobyAlignments_addStatisticStr(CAlignmentsWriterHelper *writerHelper, const char *description, const char *value) {
         debug(fprintf(stderr,"gobyAlignments_addStatisticStr %s=%s\n", description, value));
         string descriptionStr(description);
@@ -67,11 +63,17 @@ extern "C" {
         string descriptionStr(description);
         writerHelper->alignmentWriter->addStatistic(descriptionStr, value);
     }
-    void gobyAlignments_addTargetIdentifier(CAlignmentsWriterHelper *writerHelper, const UINT4 targetIndex, const char *targetName) {
+
+    /**
+     * This should be called once for each target, targetIndex should start at 0
+     * on the first call and increment by one on each following call.
+     */
+    void gobyAlignments_addTarget(CAlignmentsWriterHelper *writerHelper, const UINT4 targetIndex, const char *targetName, const UINT4 targetLength) {
         debug(fprintf(stderr,"gobyAlignments_addTargetIdentifier %s=%d\n", targetName, targetIndex));
         writerHelper->alignmentWriter->addTargetIdentifier(targetName, targetIndex);
+        writerHelper->alignmentWriter->addTargetLength(targetLength);
     }
-
+    
     // get an empty alignment entry to populate
     void gobyAlignments_appendEntry(CAlignmentsWriterHelper *writerHelper) {
         debug(fprintf(stderr,"---------------------------------------\n"));
@@ -95,6 +97,9 @@ extern "C" {
         }
         writerHelper->alignmentEntry->set_query_index(value);
     }
+    /**
+     * Target index should be 0 based.
+     */
     void gobyAlEntry_setTargetIndex(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
         debug(fprintf(stderr,"gobyAlEntry_setTargetIndex=%d\n", value));
         writerHelper->alignmentEntry->set_target_index(value);

@@ -154,6 +154,7 @@ namespace goby {
 
     void setTargetLengths(const std::vector<unsigned>& target_lengths);
     void setTargetLengths(const unsigned* target_lengths);
+    void addTargetLength(const google::protobuf::uint32 targetLength);
     // NOTE: Query Length setters are not provided - this information is no longer in the header
 
     // TODO: Target and Query Identifiers
