@@ -252,9 +252,15 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         final IndexedIdentifier targetIdentifiers = reader.getTargetIdentifiers();
         final boolean hasTargetIdentifiers = targetIdentifiers != null && !targetIdentifiers.isEmpty();
         stream.printf("Has target identifiers = %s%n", hasTargetIdentifiers);
-        if (hasTargetIdentifiers && verbose) {
-            for (Map.Entry<MutableString, Integer> entry : targetIdentifiers.entrySet()) {
-                stream.printf("  Target[%d]=%s%n", entry.getValue(), entry.getKey());
+        if (verbose) {
+            if (hasTargetIdentifiers) {
+                for (Map.Entry<MutableString, Integer> entry : targetIdentifiers.entrySet()) {
+                    stream.printf("  Target %s=%d with a length of %d%n", entry.getKey(), entry.getValue(), targetLengthsFromHeader[entry.getValue()]);
+                }
+            } else {
+                for (Map.Entry<MutableString, Integer> entry : targetIdentifiers.entrySet()) {
+                    stream.printf("  Target %d with a length of %d%n", entry.getValue(), targetLengthsFromHeader[entry.getValue()]);
+                }
             }
         }
         stream.println();

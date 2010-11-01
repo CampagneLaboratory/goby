@@ -42,6 +42,8 @@ development -> 1.8
    aligners and the Target Indexes are the same in label but not the same TargetIndex
    by building a master TargetIndex and translation maps for the two different alignments.
    Targets are now shown by label name instead of TargetIndex.
+ - CompactFileStats --verbose on a compact alignment shows the targetIndex -> targetIdentifier
+   map and also displays the targetLength for that targetIndex.
 1.7
  - Extended fasta-to-compact and compact-to-fasta to handle paired end runs. See new command
    line arguments --paired-end and pair-indicator arguments in fasta-to-compact and
