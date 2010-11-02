@@ -203,6 +203,7 @@ message AlignmentHeader {
 
    /*
       Length of the target sequences. One number per target, in the order of increasing target index.
+      The target indexes must be 0..(number of targets - 1).
     */
    repeated uint32 target_length=8;
    /*
