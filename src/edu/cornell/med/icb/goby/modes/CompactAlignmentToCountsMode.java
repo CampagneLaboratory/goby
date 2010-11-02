@@ -245,7 +245,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         }
         countArchive.close();
         timer.stop();
-        System.out.println(String.format("time spent  %d ms %g secs %g mins",
+        System.out.println(String.format("time spent  %d ms %d secs %d mins",
                 timer.millis(), timer.seconds(),
                 timer.minutes()));
     }
