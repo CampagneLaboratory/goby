@@ -192,7 +192,7 @@ public class DiscoverVariantIterateSortedAlignments
                 CharSequence currentReferenceId = this.getReferenceId(referenceIndex);
 
                 statWriter.setValue(refIdColumnIndex, currentReferenceId);
-                statWriter.setValue(positionColumnIndex, position);
+                statWriter.setValue(positionColumnIndex, position+1);
 
 
                 if (deAnalyzer.eval("between-groups")) {
