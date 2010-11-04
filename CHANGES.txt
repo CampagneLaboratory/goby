@@ -1,4 +1,5 @@
-development -> 1.8
+1.8
+ - C API introduced to support native Goby support in GSNAP.
  - We now distribute a subset of Goby as the Goby IO API. This subset is packaged in the goby-io.jar
    file and released under the LGPL3 license. This was done to make it possible to include Goby format
    input output code directly into other software licensed under the LGPL3.

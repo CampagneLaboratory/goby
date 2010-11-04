@@ -213,7 +213,7 @@ public class DiscoverVariantIterateSortedAlignments
                                 "refCounts[1]=%d variantsCount[1]=%d%n" +
                                 "refCounts[0]=%d, variantsCount[0]=%d",
                                 currentReferenceId, referenceIndex,
-                                position,
+                                position+1,
                                 refCounts[groupIndexB], variantsCount[groupIndexB],
                                 refCounts[groupIndexA], variantsCount[groupIndexA]
                         );

@@ -26,12 +26,14 @@ import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import it.unimi.dsi.logging.ProgressLogger;
+
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+
+import org.apache.log4j.Logger;
 
 /**
  * A helper class to iterate through a set of sorted alignments in position order. The class supports processing
@@ -44,7 +46,7 @@ public abstract class IterateSortedAlignments<T> {
     /**
      * Used to log debug and informational messages.
      */
-    private static final Log LOG = LogFactory.getLog(IterateSortedAlignments.class);
+    private static final Logger LOG = Logger.getLogger(IterateSortedAlignments.class);
 
     private boolean filterByReferenceNames;
     private ObjectSet<String> includeReferenceNames = new ObjectOpenHashSet<String>();
@@ -150,8 +152,10 @@ public abstract class IterateSortedAlignments<T> {
 
         int currentPosition;
         boolean first = true;
-
+        ProgressLogger pg = new ProgressLogger(LOG);
+        pg.start();
         while ((alignmentEntry = sortedReaders.skipTo(currentMinTargetIndex, 0)) != null) {
+            pg.lightUpdate();
             numAlignmentEntries = advanceReference(numAlignmentEntries);
             final int referenceIndex = alignmentEntry.getTargetIndex();
             if (lastTarget != -1 && referenceIndex != lastTarget) {
@@ -271,6 +275,7 @@ public abstract class IterateSortedAlignments<T> {
         }
 
         sortedReaders.close();
+        pg.stop();
     }
 
 

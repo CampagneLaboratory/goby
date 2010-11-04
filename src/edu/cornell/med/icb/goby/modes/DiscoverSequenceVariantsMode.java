@@ -153,7 +153,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
         }
 
-      
+
         sortedPositionIterator = new DiscoverVariantIterateSortedAlignments();
         sortedPositionIterator.parseIncludeReferenceArgument(jsapResult);
         sortedPositionIterator.setReaderIndexToGroupIndex(readerIndexToGroupIndex);
@@ -297,14 +297,10 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             readIndexStats.removeAll(toRemove);
         }
 
-        sortedPositionIterator.initialize(deAnalyzer,deCalculator, groups, readIndexStats, outWriter);
+        sortedPositionIterator.initialize(deAnalyzer, deCalculator, groups, readIndexStats, outWriter);
         sortedPositionIterator.iterate(basenames);
         sortedPositionIterator.finish();
-
-
     }
-
-
 
 
     /**
