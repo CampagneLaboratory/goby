@@ -176,6 +176,7 @@
 	</target>
 
     <target name="goby" description="Create the binary distribtion for Goby">
+        <chmod file="${tag}/goby" perm="+x"/>
         <zip destfile="${gobyfile}" comment="Goby version: ${tag}">
         	<fileset dir="${exportdir}">
                 <include name="${tag}/README-Goby.txt"/>
