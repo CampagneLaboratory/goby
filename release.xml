@@ -187,8 +187,10 @@
                 <include name="${tag}/data/**"/>
                 <include name="${tag}/goby.jar"/>
                 <include name="${tag}/goby-io.jar"/>
+                <include name="${tag}/goby-spi.jar"/>
                 <include name="${tag}/config/**"/>
                 <include name="${tag}/scripts/distrib/**"/>
+                <include name="${tag}/goby"/>
             </fileset>
         </zip>
     </target>
