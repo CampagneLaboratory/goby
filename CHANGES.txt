@@ -1,3 +1,6 @@
+1.8 ->development
+ - Provide Building/Installation instructions for the Goby C++/C API.
+ 
 1.8
  - C API introduced to support native Goby support in GSNAP.
  - We now distribute a subset of Goby as the Goby IO API. This subset is packaged in the goby-io.jar

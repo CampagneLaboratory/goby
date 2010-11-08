@@ -1,1 +1,42 @@
-TODO
+The following steps describe how to build the Goby C++/C API.
+
+1. On UNIX/Linux systems (not necessary for Cygiwn), assuming you are using
+   the BASH shell, make the "local-lib" directory to store local libraries:
+
+      mkdir -p /home/YOUR_USERNAME/local-lib/lib/pkgconfig/
+
+   Edit the .bash_profile file so that pkgconfig will find libs/includes
+   installed "locally"
+
+      export PKG_CONFIG_PATH=/usr/lib/pkgconfig:/home/YOUR_USERNAME/local-lib/lib/pkgconfig
+
+2. Download, build, and install Protobuf (2.3.0 or later) from
+   http://code.google.com/p/protobuf/
+
+      wget http://protobuf.googlecode.com/files/protobuf-2.3.0.tar.gz
+      tar zxvf protobuf-2.3.0.tar.gz
+      cd protobuf-2.3.0
+      ./configure --prefix=/home/YOUR_USERNAME/local-lib   # for root or cygwin, don't use the --prefix command
+      make
+      make install
+
+3. Portions of the Goby C++ API library currently use the Boost library.
+   If you don't already have this, you probably want to install it
+
+      wget http://downloads.sourceforge.net/project/boost/boost/1.44.0/boost_1_44_0.tar.gz
+      tar zxvf boost_1_44_0.tar.gz
+      cd boost_1_44_0
+      ./bootstrap.sh --prefix=/home/YOUR_USERNAME/local-lib   # for root or cygwin, don't use the --prefix command
+      ./bjam install
+
+4. Build the Goby C++ API library, requires the Goby source distribution. The
+   following steps install this library:
+
+      wget http://chagall.med.cornell.edu/goby/releases/goby_latest-src.zip
+      unzip goby_latest-src.zip
+      cd goby_1.8/cpp/
+      chmod +x autogen.sh
+      ./autogen.sh
+      ./configure --prefix=/home/YOUR_USERNAME/local-lib   # for root or cygwin, don't use the --prefix command
+      make
+      make install
