@@ -54,5 +54,11 @@
             <required>false</required>
             <help>Extension of an optional read index filter. When provided, and when a file named input - '.compact-reads' + filter-extension is found, only reads provided in the filter are concatenated to the output. </help>
         </flaggedOption>
+        <switch>
+            <id>quick-concat</id>
+            <shortFlag>q</shortFlag>
+            <longFlag>quick-concat</longFlag>
+            <help>Does a "quick" concatenation. Does not filter or display statistics.</help>
+        </switch>
     </parameters>
 </jsap>

@@ -44,8 +44,9 @@ import java.util.zip.GZIPOutputStream;
 public class MessageChunksWriter {
     private static final Log LOG = LogFactory.getLog(MessageChunksWriter.class);
 
-    protected static final int DELIMITER_CONTENT = 0xFF;
-    protected static final int DELIMITER_LENGTH = 8;
+    public static final int DELIMITER_CONTENT = 0xFF;
+    public static final int DELIMITER_LENGTH = 8;
+    public static final int SIZE_OF_MESSAGE_LENGTH =4;
 
     /**
      * Default number of entries per chunk.

@@ -24,19 +24,21 @@ import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.reads.ReadSet;
+import edu.cornell.med.icb.goby.reads.MessageChunksWriter;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.FileInputStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.nio.channels.FileChannel;
 
 /**
  * Concatenate compact reads files, count the number of reads, and
@@ -81,6 +83,11 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
     private int maxReadLength = Integer.MIN_VALUE;
     private String optionalFilterExtension;
 
+    /**
+     * Display verbose output.
+     */
+    private boolean quickConcat;
+
     @Override
     public String getModeName() {
         return MODE_NAME;
@@ -108,6 +115,7 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
         outputFilename = jsapResult.getString("output");
         optionalFilterExtension = jsapResult.getString("optional-filter-extension");
         sequencePerChunk = jsapResult.getInt("sequence-per-chunk");
+        quickConcat = jsapResult.getBoolean("quick-concat", false);
         return this;
     }
 
@@ -126,84 +134,151 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
             throw new IOException("--output not specified");
         }
 
-        final ReadsWriter writer = new ReadsWriter(new FileOutputStream(outputFilename));
-        writer.setNumEntriesPerChunk(sequencePerChunk);
-        final MutableString sequence = new MutableString();
+        if (quickConcat) {
+            performQuickConcat();
+        } else {
 
-        ReadsReader readsReader = null;
-        numberOfReads = 0;
-        minReadLength = Integer.MAX_VALUE;
-        maxReadLength = Integer.MIN_VALUE;
-        int removedByFilterCount = 0;
-        try {
-            final ProgressLogger progress = new ProgressLogger();
-            progress.start("concatenating files");
-            progress.displayFreeMemory = true;
-            progress.expectedUpdates = inputFiles.size();
-            progress.start();
-            for (final File inputFile : inputFiles) {
+            final ReadsWriter writer = new ReadsWriter(new FileOutputStream(outputFilename));
+            writer.setNumEntriesPerChunk(sequencePerChunk);
+            final MutableString sequence = new MutableString();
 
-                readsReader = new ReadsReader(inputFile);
-                String basename = FilenameUtils.removeExtension(inputFile.getPath());
-                String filterFilename = basename + optionalFilterExtension;
-                File filterFile = new File(filterFilename);
-                ReadSet readIndexFilter = null;
-                if (filterFile.exists() && filterFile.canRead()) {
-                    readIndexFilter = new ReadSet();
-                    readIndexFilter.load(filterFile);
-                    LOG.info(String.format("Loaded optional filter %s with %d elements. ",
-                            filterFile, readIndexFilter.size()));
-                } else{
-                    if (optionalFilterExtension!=null) {
-                        LOG.info("Could not locate filter for filename "+filterFilename);
+            ReadsReader readsReader = null;
+            numberOfReads = 0;
+            minReadLength = Integer.MAX_VALUE;
+            maxReadLength = Integer.MIN_VALUE;
+            int removedByFilterCount = 0;
+            try {
+                final ProgressLogger progress = new ProgressLogger();
+                progress.start("concatenating files");
+                progress.displayFreeMemory = true;
+                progress.expectedUpdates = inputFiles.size();
+                progress.start();
+                for (final File inputFile : inputFiles) {
+
+                    readsReader = new ReadsReader(inputFile);
+                    String basename = FilenameUtils.removeExtension(inputFile.getPath());
+                    String filterFilename = basename + optionalFilterExtension;
+                    File filterFile = new File(filterFilename);
+                    ReadSet readIndexFilter = null;
+                    if (filterFile.exists() && filterFile.canRead()) {
+                        readIndexFilter = new ReadSet();
+                        readIndexFilter.load(filterFile);
+                        LOG.info(String.format("Loaded optional filter %s with %d elements. ",
+                                filterFile, readIndexFilter.size()));
+                    } else{
+                        if (optionalFilterExtension!=null) {
+                            LOG.info("Could not locate filter for filename "+filterFilename);
+                        }
                     }
-                }
 
-                for (final Reads.ReadEntry readEntry : readsReader) {
-                    // only concatenate if (1) there is no filter or (2) the read index is in the filter.
-                    if (readIndexFilter == null || readIndexFilter.contains(readEntry.getReadIndex())) {
+                    for (final Reads.ReadEntry readEntry : readsReader) {
+                        // only concatenate if (1) there is no filter or (2) the read index is in the filter.
+                        if (readIndexFilter == null || readIndexFilter.contains(readEntry.getReadIndex())) {
 
-                        numberOfReads++;
-                        if (readEntry.hasDescription()) {
-                            writer.setDescription(readEntry.getDescription());
-                        }
-                        if (readEntry.hasReadIdentifier()) {
-                            writer.setIdentifier(readEntry.getReadIdentifier());
-                        }
-                        if (readEntry.hasQualityScores()) {
-                            final byte[] scores = ReadsReader.decodeQualityScores(readEntry);
-                            if (scores != null) {
-                                writer.setQualityScores(scores);
+                            numberOfReads++;
+                            if (readEntry.hasDescription()) {
+                                writer.setDescription(readEntry.getDescription());
                             }
-                        }
-                        minReadLength = Math.min(minReadLength, readEntry.getReadLength());
-                        maxReadLength = Math.max(maxReadLength, readEntry.getReadLength());
-                        if (readEntry.hasSequence()) {
-                            ReadsReader.decodeSequence(readEntry, sequence);
-                            writer.setSequence(sequence);
+                            if (readEntry.hasReadIdentifier()) {
+                                writer.setIdentifier(readEntry.getReadIdentifier());
+                            }
+                            if (readEntry.hasQualityScores()) {
+                                final byte[] scores = ReadsReader.decodeQualityScores(readEntry);
+                                if (scores != null) {
+                                    writer.setQualityScores(scores);
+                                }
+                            }
+                            minReadLength = Math.min(minReadLength, readEntry.getReadLength());
+                            maxReadLength = Math.max(maxReadLength, readEntry.getReadLength());
+                            if (readEntry.hasSequence()) {
+                                ReadsReader.decodeSequence(readEntry, sequence);
+                                writer.setSequence(sequence);
+                            } else {
+                                writer.setSequence("");
+                            }
+                            writer.appendEntry();
                         } else {
-                            writer.setSequence("");
+                            removedByFilterCount++;
                         }
-                        writer.appendEntry();
-                    } else {
-                        removedByFilterCount++;
-                    }
 
+                    }
+                    readsReader.close();
+                    readsReader = null;
+                    progress.update();
                 }
-                readsReader.close();
-                readsReader = null;
-                progress.update();
+                progress.stop();
+            } finally {
+                writer.printStats(System.out);
+                System.out.println("Number of reads=" + numberOfReads);
+                System.out.println("Minimum Read Length=" + minReadLength);
+                System.out.println("Maximum Read Length=" + maxReadLength);
+                System.out.println("Reads removed by filter=" + removedByFilterCount);
+                writer.close();
+                if (readsReader != null) {
+                    readsReader.close();
+                }
             }
-            progress.stop();
+        }
+    }
+
+    /**
+     * This version does a quick concat. It does NO filtering. It gathers no stats,
+     * but, will quickly concat multiple compact-reads files together using NIO.
+     * It should be noted that this method is >MUCH< faster.
+     * Copy all of the input files except the last MessageChunksWriter.DELIMITER_LENGTH
+     * bytes of the first n-1 input files and the entire last input file
+     * to the output file.
+     * @throws IOException
+     */
+    private void performQuickConcat() throws IOException {
+        System.out.println("quick concatenating files");
+        File outputFile = new File(outputFilename);
+        if (outputFile.exists()) {
+            System.err.println("The output file already exists. Please delete it before running concat.");
+            return;
+        }
+        outputFile.createNewFile();
+
+        FileChannel input = null;
+        FileChannel output = null;
+        long maxChunkSize = 10*1024*1024; // 10 megabytes at a chunk
+        try {
+            output = new FileOutputStream(outputFile).getChannel();
+            int lastFileNumToCopy = inputFiles.size() - 1;
+            int curFileNum = 0;
+            for (final File inputFile : inputFiles) {
+                System.out.printf("Reading from %s%n", inputFile);
+                input = new FileInputStream(inputFile).getChannel();
+                long bytesToCopy = input.size();
+                if (curFileNum++ < lastFileNumToCopy) {
+                    // Compact-reads files end with a delimiter (8 x 0xff)
+                    // followed by a 4 byte int 0 (4 x 0x00). Strip
+                    // these on all but the last file.
+                    bytesToCopy -= (MessageChunksWriter.DELIMITER_LENGTH + MessageChunksWriter.SIZE_OF_MESSAGE_LENGTH);
+                }
+
+                // Copy the file about 10 megabytes at a time. It would probably
+                // be marginally faster to just tell NIO to copy the ENTIRE file
+                // in one go, but with very large files Java will freeze until the
+                // entire chunck is copied so this makes for a more responsive program
+                // should you want to ^C in the middle of the copy. Also, with the single
+                // transferTo() you might not see any file size changes in the output file
+                // until the entire copy is complete.
+                long position = 0;
+                while (position < bytesToCopy) {
+                    long bytesToCopyThisTime = Math.min(maxChunkSize, bytesToCopy - position);
+                    position += input.transferTo(position, bytesToCopyThisTime, output);
+                }
+                input.close();
+                input = null;
+            }
+            System.out.printf("Concatenated %d files.%n", lastFileNumToCopy + 1);
         } finally {
-            writer.printStats(System.out);
-            System.out.println("Number of reads=" + numberOfReads);
-            System.out.println("Minimum Read Length=" + minReadLength);
-            System.out.println("Maximum Read Length=" + maxReadLength);
-            System.out.println("Reads removed by filter=" + removedByFilterCount);
-            writer.close();
-            if (readsReader != null) {
-                readsReader.close();
+            if (input != null) {
+                input.close();
+            }
+            if (output != null) {
+                output.close();
             }
         }
     }
@@ -227,6 +302,14 @@ public class ConcatenateCompactReadsMode extends AbstractGobyMode {
         if (inputFiles != null) {
             inputFiles.clear();
         }
+    }
+
+    public boolean isQuickConcat() {
+        return quickConcat;
+    }
+
+    public void setQuickConcat(boolean quickConcat) {
+        this.quickConcat = quickConcat;
     }
 
     /**
