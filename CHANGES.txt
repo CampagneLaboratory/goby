@@ -1,5 +1,8 @@
 1.8 ->development
  - Provide Building/Installation instructions for the Goby C++/C API.
+ - Implemented a fast concatenation operation for read files. The new -q flag in ConcatenateCompactReadsMode
+   activates the fast concatenation. Chunks of compressed data are appended without requiring decompression and
+   compression of the entries. This results in much faster concatenation that are bounded only by available IO.
  
 1.8
  - C API introduced to support native Goby support in GSNAP.
