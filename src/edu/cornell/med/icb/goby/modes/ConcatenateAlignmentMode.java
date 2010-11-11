@@ -139,7 +139,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         writer.setSorted(allSorted);
         for (final Alignments.AlignmentEntry entry : alignmentReader) {
             if (queryLengths != null) {
-                writer.appendEntryWithLength(entry, queryLengths[entry.getQueryIndex()]);
+                writer.appendEntryWithLength(entry, entry.getQueryLength());
             } else {
                 writer.appendEntry(entry);
             }
