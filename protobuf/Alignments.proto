@@ -82,6 +82,27 @@ message AlignmentEntry {
    Length of the query sequence.
   */
   optional uint32 query_length=10;
+  /*
+    Mapping Quality (phred-scaled posterior probability that the mapping
+    position of this read is incorrect). Please note that different aligners
+    may estimate mapping quality with different approaches, resulting in aligner
+    specific differences in the distribution of mapping quality. It is recommended
+    to condition mapping quality on the aligner that produced the specific alignment
+    being processed. See aligner info in the header.
+
+    The following description is provided by Thomas Wu, author of GSNAP:
+
+    Essentially, the mapping quality is proportional to the
+    log of the probability that the given mapping is the "correct" one.
+    So if there are five equally good mappings of a read to the genome,
+    the probability of each would be 0.2, and the mapping quality would be
+    something like -10*log10(1-0.2) = 1.  If a mapping is highly likely,
+    say a 1e-4 of it being wrong, then the mapping quality would be
+    -10*log10(1e-4) = 40.
+
+
+  */
+  optional int32 mapping_quality=14;
 }
 
 /*
@@ -222,7 +243,14 @@ message AlignmentHeader {
      True when query lengths are stored in alignment entries (Goby 1.7+).
    */
    optional bool query_lengths_stored_in_entries=15;
-
+   /*
+     Name of the aligner that produced this alignment.
+   */
+   optional string aligner_name=17;
+   /*
+     Version number for the aligner implementation that produced this alignment.
+   */
+   optional string aligner_version=18;
 }
 
 message IdentifierMapping {

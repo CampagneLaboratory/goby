@@ -288,6 +288,13 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 query_length() const;
   inline void set_query_length(::google::protobuf::uint32 value);
   
+  // optional int32 mapping_quality = 14;
+  inline bool has_mapping_quality() const;
+  inline void clear_mapping_quality();
+  static const int kMappingQualityFieldNumber = 14;
+  inline ::google::protobuf::int32 mapping_quality() const;
+  inline void set_mapping_quality(::google::protobuf::int32 value);
+  
   // @@protoc_insertion_point(class_scope:goby.AlignmentEntry)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
@@ -306,11 +313,12 @@ class AlignmentEntry : public ::google::protobuf::Message {
   ::google::protobuf::uint32 target_aligned_length_;
   ::google::protobuf::RepeatedPtrField< ::goby::SequenceVariation > sequence_variations_;
   ::google::protobuf::uint32 query_length_;
+  ::google::protobuf::int32 mapping_quality_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
   friend void protobuf_ShutdownFile_Alignments_2eproto();
   
-  ::google::protobuf::uint32 _has_bits_[(13 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(14 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
   inline bool _has_bit(int index) const {
@@ -616,6 +624,26 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline bool query_lengths_stored_in_entries() const;
   inline void set_query_lengths_stored_in_entries(bool value);
   
+  // optional string aligner_name = 17;
+  inline bool has_aligner_name() const;
+  inline void clear_aligner_name();
+  static const int kAlignerNameFieldNumber = 17;
+  inline const ::std::string& aligner_name() const;
+  inline void set_aligner_name(const ::std::string& value);
+  inline void set_aligner_name(const char* value);
+  inline void set_aligner_name(const char* value, size_t size);
+  inline ::std::string* mutable_aligner_name();
+  
+  // optional string aligner_version = 18;
+  inline bool has_aligner_version() const;
+  inline void clear_aligner_version();
+  static const int kAlignerVersionFieldNumber = 18;
+  inline const ::std::string& aligner_version() const;
+  inline void set_aligner_version(const ::std::string& value);
+  inline void set_aligner_version(const char* value);
+  inline void set_aligner_version(const char* value, size_t size);
+  inline ::std::string* mutable_aligner_version();
+  
   // @@protoc_insertion_point(class_scope:goby.AlignmentHeader)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
@@ -634,11 +662,15 @@ class AlignmentHeader : public ::google::protobuf::Message {
   bool sorted_;
   bool indexed_;
   bool query_lengths_stored_in_entries_;
+  ::std::string* aligner_name_;
+  static const ::std::string _default_aligner_name_;
+  ::std::string* aligner_version_;
+  static const ::std::string _default_aligner_version_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
   friend void protobuf_ShutdownFile_Alignments_2eproto();
   
-  ::google::protobuf::uint32 _has_bits_[(13 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(15 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
   inline bool _has_bit(int index) const {
@@ -1432,6 +1464,22 @@ inline void AlignmentEntry::set_query_length(::google::protobuf::uint32 value) {
   query_length_ = value;
 }
 
+// optional int32 mapping_quality = 14;
+inline bool AlignmentEntry::has_mapping_quality() const {
+  return _has_bit(13);
+}
+inline void AlignmentEntry::clear_mapping_quality() {
+  mapping_quality_ = 0;
+  _clear_bit(13);
+}
+inline ::google::protobuf::int32 AlignmentEntry::mapping_quality() const {
+  return mapping_quality_;
+}
+inline void AlignmentEntry::set_mapping_quality(::google::protobuf::int32 value) {
+  _set_bit(13);
+  mapping_quality_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // SequenceVariation
@@ -1824,6 +1872,90 @@ inline bool AlignmentHeader::query_lengths_stored_in_entries() const {
 inline void AlignmentHeader::set_query_lengths_stored_in_entries(bool value) {
   _set_bit(12);
   query_lengths_stored_in_entries_ = value;
+}
+
+// optional string aligner_name = 17;
+inline bool AlignmentHeader::has_aligner_name() const {
+  return _has_bit(13);
+}
+inline void AlignmentHeader::clear_aligner_name() {
+  if (aligner_name_ != &_default_aligner_name_) {
+    aligner_name_->clear();
+  }
+  _clear_bit(13);
+}
+inline const ::std::string& AlignmentHeader::aligner_name() const {
+  return *aligner_name_;
+}
+inline void AlignmentHeader::set_aligner_name(const ::std::string& value) {
+  _set_bit(13);
+  if (aligner_name_ == &_default_aligner_name_) {
+    aligner_name_ = new ::std::string;
+  }
+  aligner_name_->assign(value);
+}
+inline void AlignmentHeader::set_aligner_name(const char* value) {
+  _set_bit(13);
+  if (aligner_name_ == &_default_aligner_name_) {
+    aligner_name_ = new ::std::string;
+  }
+  aligner_name_->assign(value);
+}
+inline void AlignmentHeader::set_aligner_name(const char* value, size_t size) {
+  _set_bit(13);
+  if (aligner_name_ == &_default_aligner_name_) {
+    aligner_name_ = new ::std::string;
+  }
+  aligner_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* AlignmentHeader::mutable_aligner_name() {
+  _set_bit(13);
+  if (aligner_name_ == &_default_aligner_name_) {
+    aligner_name_ = new ::std::string;
+  }
+  return aligner_name_;
+}
+
+// optional string aligner_version = 18;
+inline bool AlignmentHeader::has_aligner_version() const {
+  return _has_bit(14);
+}
+inline void AlignmentHeader::clear_aligner_version() {
+  if (aligner_version_ != &_default_aligner_version_) {
+    aligner_version_->clear();
+  }
+  _clear_bit(14);
+}
+inline const ::std::string& AlignmentHeader::aligner_version() const {
+  return *aligner_version_;
+}
+inline void AlignmentHeader::set_aligner_version(const ::std::string& value) {
+  _set_bit(14);
+  if (aligner_version_ == &_default_aligner_version_) {
+    aligner_version_ = new ::std::string;
+  }
+  aligner_version_->assign(value);
+}
+inline void AlignmentHeader::set_aligner_version(const char* value) {
+  _set_bit(14);
+  if (aligner_version_ == &_default_aligner_version_) {
+    aligner_version_ = new ::std::string;
+  }
+  aligner_version_->assign(value);
+}
+inline void AlignmentHeader::set_aligner_version(const char* value, size_t size) {
+  _set_bit(14);
+  if (aligner_version_ == &_default_aligner_version_) {
+    aligner_version_ = new ::std::string;
+  }
+  aligner_version_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* AlignmentHeader::mutable_aligner_version() {
+  _set_bit(14);
+  if (aligner_version_ == &_default_aligner_version_) {
+    aligner_version_ = new ::std::string;
+  }
+  return aligner_version_;
 }
 
 // -------------------------------------------------------------------
