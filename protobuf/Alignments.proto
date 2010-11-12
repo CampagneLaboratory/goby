@@ -88,7 +88,7 @@ message AlignmentEntry {
     may estimate mapping quality with different approaches, resulting in aligner
     specific differences in the distribution of mapping quality. It is recommended
     to condition mapping quality on the aligner that produced the specific alignment
-    being processed. See aligner info in the header.
+    being processed. See aligner name and version in the header.
 
     The following description is provided by Thomas Wu, author of GSNAP:
 
