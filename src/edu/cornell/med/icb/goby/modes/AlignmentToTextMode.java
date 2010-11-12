@@ -144,7 +144,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 }
                 switch (outputFormat) {
                     case PLAIN:
-                        outputStream.printf("%s\t%s\t%d\t%d\t%d\t%g\t%d\t%d\t%b%n",
+                        outputStream.printf("%s\t%s\t%d\t%d\t%d\t%g\t%d\t%d\t%b\t%d%n",
                                 hasReadIds ? readIds.getId(queryIndex) : queryIndex,
                                 getReferenceId(alignmentEntry.getTargetIndex()),
                                 referenceLength,
@@ -153,7 +153,8 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                                 alignmentEntry.getScore(),
                                 startPosition,
                                 alignmentLength,
-                                alignmentEntry.getMatchingReverseStrand());
+                                alignmentEntry.getMatchingReverseStrand(),
+                                alignmentEntry.hasMappingQuality() ? alignmentEntry.getMappingQuality() : 255);
                         break;
                     case SAM:
                         final int flag = (alignmentEntry.getMatchingReverseStrand() ? 1 : 0) << 4;   // strand is encoded in 0x10, shift left by 4 bits.
