@@ -89,10 +89,9 @@ message AlignmentEntry {
     specific differences in the distribution of mapping quality. It is recommended
     to condition mapping quality on the aligner that produced the specific alignment
     being processed. See aligner name and version in the header.
-
-    The following description is provided by Thomas Wu, author of GSNAP:
-
-    Essentially, the mapping quality is proportional to the
+    Note that the following description is preliminary. A clear specification is
+    needed:
+    The mapping quality should be proportional to the
     log of the probability that the given mapping is the "correct" one.
     So if there are five equally good mappings of a read to the genome,
     the probability of each would be 0.2, and the mapping quality would be
