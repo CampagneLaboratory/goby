@@ -24,6 +24,14 @@
 		std::queue<std::string> *unopenedFiles;
 		unsigned char circular;
 		unsigned int numberOfReads;
+		// We will reuse the same memory while reading CR data.
+		// If the calling app needs to malloc() and free() every time, they can.
+	    char *lastReadIdentifier; int lastReadIdentifier_m;
+	    char *lastDescription; int lastDescription_m;
+	    char *lastSequence; int lastSequence_m;
+	    char *lastQuality; int lastQuality_m;
+	    char *lastPairSequence; int lastPairSequence_m;
+	    char *lastPairQuality; int lastPairQuality_m;
 	};
 #else
 	// Opaque structure for C
@@ -34,6 +42,14 @@
 		void *unopenedFiles;
 		unsigned char circular;
 		unsigned int numberOfReads;
+		// We will reuse the same memory while reading CR data.
+		// If the calling app needs to malloc() and free() every time, they can.
+	    char *lastReadIdentifier; int lastReadIdentifier_m;
+	    char *lastDescription; int lastDescription_m;
+	    char *lastSequence; int lastSequence_m;
+	    char *lastQuality; int lastQuality_m;
+	    char *lastPairSequence; int lastPairSequence_m;
+	    char *lastPairQuality; int lastPairQuality_m;
 	} CReadsHelper;
 #endif
 

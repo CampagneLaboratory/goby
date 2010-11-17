@@ -56,6 +56,13 @@ extern "C" {
 		readsHelper->it = readsHelper->readsReader->beginPointer(startOffset, endOffset);
 		readsHelper->end = readsHelper->readsReader->endPointer();
 		readsHelper->numberOfReads = 0;
+
+        readsHelper->lastReadIdentifier_m = 0; readsHelper->lastReadIdentifier = NULL;
+        readsHelper->lastDescription_m = 0; readsHelper->lastDescription = NULL;
+        readsHelper->lastSequence_m = 0; readsHelper->lastSequence = NULL;
+        readsHelper->lastQuality_m = 0; readsHelper->lastQuality = NULL;
+        readsHelper->lastPairSequence_m = 0; readsHelper->lastPairSequence = NULL;
+        readsHelper->lastPairQuality_m = 0; readsHelper->lastPairQuality = NULL;
 	}
 
 	/**
@@ -187,16 +194,37 @@ extern "C" {
 		(*(*readsHelper).it)++;
 	}
 
-	void transferString(string src, char **dest) {
+	void transferString(string src, char **dest, int *prevMallocSize) {
         int size = src.size();
-        *dest = (char *) malloc(size + 1);
+        if (size + 1 > *prevMallocSize) {
+            // we must realloc the memory we are using over and over to accomodate a new size
+            *dest = (char *) realloc(*dest, size + 1);
+            *prevMallocSize = size + 1;
+        }
         memcpy(*dest, src.c_str(), size);
         (*dest)[size] = '\0';
 	}
 
+    void initializeHelperLastField(char **field) {
+        if (*field != NULL) {
+            // Field was previous allocated, make it an empty string
+            (*field)[0] = '\0';
+        }
+    }
+
+    void initializeHelperLastFields(CReadsHelper *readsHelper) {
+        // Initialize non-NULL incoming strings to empty string in case the value isn't set this time around.
+        initializeHelperLastField(&(readsHelper->lastReadIdentifier));
+        initializeHelperLastField(&(readsHelper->lastDescription));
+        initializeHelperLastField(&(readsHelper->lastSequence));
+        initializeHelperLastField(&(readsHelper->lastQuality));
+        initializeHelperLastField(&(readsHelper->lastPairSequence));
+        initializeHelperLastField(&(readsHelper->lastPairQuality));
+    }
+
     /**
      * For implementations OTHER than GSnap. Read the sequence but ignore the pair even if it exists.
-     * It is important that each of thes char ** parameters are free()'d in the calling code.
+     * Do NOT free the char *'s you send to this method. If you need to keep a copy, MAKE A COPY.
      * @return the Goby read index
      */
 	unsigned long gobyReads_nextSequence(
@@ -206,32 +234,34 @@ extern "C" {
 	    char **qualitypp, int *qualityLength) {
 
         /** Default is nothing populated. */
-	    *readIdentifierpp = NULL;
-	    *descriptionpp = NULL;
-	    *sequencepp = NULL;
 	    *sequenceLength = 0;
-	    *qualitypp = NULL;
 	    *qualityLength = 0;
+        initializeHelperLastFields(readsHelper);
 
         goby::ReadEntry entry = *(*(*readsHelper).it);
 		(*readsHelper).numberOfReads++;
 
 	    if (entry.has_read_identifier()) {
-	        transferString(entry.read_identifier(), readIdentifierpp);
+	        transferString(entry.read_identifier(), &(readsHelper->lastReadIdentifier), &(readsHelper->lastReadIdentifier_m));
 	    }
 
 	    if (entry.has_description()) {
-	        transferString(entry.description(), descriptionpp);
+	        transferString(entry.description(), &(readsHelper->lastDescription), &(readsHelper->lastDescription_m));
 	    }
 
 	    if (entry.has_sequence()) {
-	        transferString(entry.sequence(), sequencepp);
+	        transferString(entry.sequence(), &(readsHelper->lastSequence), &(readsHelper->lastSequence_m));
 	        *sequenceLength = entry.sequence().size();
 	        if (entry.has_quality_scores()) {
-	            transferString(entry.quality_scores(), qualitypp);
+	            transferString(entry.quality_scores(), &(readsHelper->lastQuality), &(readsHelper->lastQuality_m));
 	            *qualityLength = entry.quality_scores().size();
             }
 	    }
+
+	    *readIdentifierpp = readsHelper->lastReadIdentifier;
+	    *descriptionpp = readsHelper->lastDescription;
+	    *sequencepp = readsHelper->lastSequence;
+	    *qualitypp = readsHelper->lastQuality;
 
 	    // Increment to the next ReadsEntry
 		(*(*readsHelper).it)++;
@@ -241,7 +271,7 @@ extern "C" {
 
     /**
      * For implementations OTHER than GSnap. Read the sequence WITH pair if applicable.
-     * It is important that each of thes char ** parameters are free()'d in the calling code.
+     * Do NOT free the char *'s you send to this method. If you need to keep a copy, MAKE A COPY.
      * @return the Goby read index
      */
 	unsigned long gobyReads_nextSequencePair(
@@ -253,43 +283,47 @@ extern "C" {
 	    char **pairQualitypp, int *pairQualityLength) {
 
         /** Default is nothing populated. */
-	    *readIdentifierpp = NULL;
-	    *descriptionpp = NULL;
-	    *sequencepp = NULL;
-	    *qualitypp = NULL;
+	    *sequenceLength = 0;
 	    *qualityLength = 0;
-	    *pairSequencepp = NULL;
-	    *pairQualitypp = NULL;
+	    *pairSequenceLength = 0;
 	    *pairQualityLength = 0;
+        initializeHelperLastFields(readsHelper);
 
         goby::ReadEntry entry = *(*(*readsHelper).it);
 		(*readsHelper).numberOfReads++;
 
 	    if (entry.has_read_identifier()) {
-	        transferString(entry.read_identifier(), readIdentifierpp);
+	        transferString(entry.read_identifier(), &(readsHelper->lastReadIdentifier), &(readsHelper->lastReadIdentifier_m));
 	    }
 
 	    if (entry.has_description()) {
-	        transferString(entry.description(), descriptionpp);
+	        transferString(entry.description(), &(readsHelper->lastDescription), &(readsHelper->lastDescription_m));
 	    }
 
 	    if (entry.has_sequence()) {
-	        transferString(entry.sequence(), sequencepp);
+	        transferString(entry.sequence(), &(readsHelper->lastSequence), &(readsHelper->lastSequence_m));
 	        *sequenceLength = entry.sequence().size();
 	        if (entry.has_quality_scores()) {
-	            transferString(entry.quality_scores(), qualitypp);
+	            transferString(entry.quality_scores(), &(readsHelper->lastQuality), &(readsHelper->lastQuality_m));
 	            *qualityLength = entry.quality_scores().size();
             }
 	    }
 
 	    if (entry.has_sequence_pair()) {
-	        transferString(entry.sequence_pair(), pairSequencepp);
+	        transferString(entry.sequence_pair(), &(readsHelper->lastPairSequence), &(readsHelper->lastPairSequence_m));
 	        *pairSequenceLength = entry.sequence_pair().size();
 	        if (entry.has_quality_scores_pair()) {
-	            transferString(entry.quality_scores_pair(), pairQualitypp);
+	            transferString(entry.quality_scores_pair(), &(readsHelper->lastPairQuality), &(readsHelper->lastPairQuality_m));
 	            *pairQualityLength = entry.quality_scores_pair().size();
 	        }
 	    }
+
+	    *readIdentifierpp = readsHelper->lastReadIdentifier;
+	    *descriptionpp = readsHelper->lastDescription;
+	    *sequencepp = readsHelper->lastSequence;
+	    *qualitypp = readsHelper->lastQuality;
+	    *pairSequencepp = readsHelper->lastPairSequence;
+	    *pairQualitypp = readsHelper->lastPairQuality;
 
 	    // Increment to the next ReadsEntry
 		(*(*readsHelper).it)++;
@@ -310,6 +344,13 @@ extern "C" {
             delete readsHelper->readsReader;
             delete readsHelper->it;
             delete readsHelper;
+
+            free(readsHelper->lastReadIdentifier); readsHelper->lastReadIdentifier_m = 0; readsHelper->lastReadIdentifier = NULL;
+            free(readsHelper->lastDescription); readsHelper->lastDescription_m = 0; readsHelper->lastDescription = NULL;
+            free(readsHelper->lastSequence); readsHelper->lastSequence_m = 0; readsHelper->lastSequence = NULL;
+            free(readsHelper->lastQuality), readsHelper->lastQuality_m = 0; readsHelper->lastQuality = NULL;
+            free(readsHelper->lastPairSequence), readsHelper->lastPairSequence_m = 0; readsHelper->lastPairSequence = NULL;
+            free(readsHelper->lastPairQuality), readsHelper->lastPairQuality_m = 0; readsHelper->lastPairQuality = NULL;
         }
 	}
 
