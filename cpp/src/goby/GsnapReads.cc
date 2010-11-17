@@ -8,8 +8,6 @@
 
 using namespace std;
 
-#define READ_QUAL_SCORES true
-
 #ifdef GSNAP_READ_COMPACT_DEBUG
 #define debug(x) x
 #else
@@ -22,21 +20,21 @@ using namespace std;
 extern "C" {
 
 	void gobyReads_openReadsReader(
-			char **unopenedFiles, int numUnopenedFiles,
-			unsigned char circular,
-			CReadsHelper **readsHelperpp) {
+			char **unopenedFiles, int numUnopenedFiles, unsigned char circular, CReadsHelper **readsHelperpp) {
 	    gobyReads_openReadsReaderWindowed(unopenedFiles, numUnopenedFiles, circular, 0, 0, readsHelperpp);
+    }
+
+	void gobyReads_openReadsReaderSingleWindowed(
+			char *filename,  unsigned long startOffset, unsigned long endOffset, CReadsHelper **readsHelperpp) {
+	    gobyReads_openReadsReaderWindowed(&filename, 1, 0, startOffset, endOffset, readsHelperpp);
     }
 
 	/**
 	 * Open the .compact-reads file to read from.
 	 */
 	void gobyReads_openReadsReaderWindowed(
-			char **unopenedFiles, int numUnopenedFiles,
-			unsigned char circular,
-			unsigned long startOffset,
-			unsigned long endOffset,
-			CReadsHelper **readsHelperpp) {
+			char **unopenedFiles, int numUnopenedFiles, unsigned char circular,
+			unsigned long startOffset, unsigned long endOffset, CReadsHelper **readsHelperpp) {
 
 		if (numUnopenedFiles == 0) {
 			fprintf(stderr,"No input files to process.\n");
@@ -77,13 +75,16 @@ extern "C" {
 	}
 
 	/**
-    	 * This should be called ONCE per read AFTER hasNext(...) has been called and returned TRUE.
+     * This should be called ONCE per read AFTER hasNext(...) has been called and returned TRUE.
+     * This is specicially for Gsnap. It is important that the _alloc portions of queryseq1, queryseq2
+     * are free'd by the calling code.
+     * See the more generic gobyReads_nextSequence(), gobyReads_nextSequencePair()
+     * for non-GSnap implementations.
 	 *
 	 * TODO: * We aren't supporting paired or circular here. That data should be in the compact-reads
 	 * TODO:   file but I'm not reading it at this moment.
 	 */
 	void gobyReads_next(CReadsHelper *readsHelper, Sequence_T **queryseq1pp, Sequence_T **queryseq2pp) {
-		// Not supporting paired reads yet
         goby::ReadEntry entry = *(*(*readsHelper).it);
 		(*readsHelper).numberOfReads++;
 
@@ -124,7 +125,7 @@ extern "C" {
 	     * TODO: Goby is storing Quality Scores in Phred units. What encoding does GSnap require?
 	     * We need to convert quality score appropriately here.
 	     */
-	    if (READ_QUAL_SCORES && entry.has_quality_scores()) {
+	    if (entry.has_quality_scores()) {
 	        int qualSize = entry.quality_scores().size();
 	    	queryseq1->quality_alloc = (char *) malloc(qualSize + 1);
 		    memcpy(queryseq1->quality_alloc, entry.quality_scores().c_str(), qualSize);
@@ -170,7 +171,7 @@ extern "C" {
                  * TODO: Goby is storing Quality Scores in Phred units. What encoding does GSnap require?
                  * We need to convert quality score appropriately here.
                  */
-                if (READ_QUAL_SCORES && entry.has_quality_scores_pair()) {
+                if (entry.has_quality_scores_pair()) {
                     int qualSize = entry.quality_scores_pair().size();
                     queryseq2->quality_alloc = (char *) malloc(qualSize + 1);
                     memcpy(queryseq2->quality_alloc, entry.quality_scores_pair().c_str(), qualSize);
@@ -184,6 +185,116 @@ extern "C" {
 
 	    // Increment to the next ReadsEntry
 		(*(*readsHelper).it)++;
+	}
+
+	void transferString(string src, char **dest) {
+        int size = src.size();
+        *dest = (char *) malloc(size + 1);
+        memcpy(*dest, src.c_str(), size);
+        (*dest)[size] = '\0';
+	}
+
+    /**
+     * For implementations OTHER than GSnap. Read the sequence but ignore the pair even if it exists.
+     * It is important that each of thes char ** parameters are free()'d in the calling code.
+     * @return the Goby read index
+     */
+	unsigned long gobyReads_nextSequence(
+	    CReadsHelper *readsHelper,
+	    char **readIdentifierpp, char **descriptionpp,
+	    char **sequencepp, int *sequenceLength,
+	    char **qualitypp, int *qualityLength) {
+
+        /** Default is nothing populated. */
+	    *readIdentifierpp = NULL;
+	    *descriptionpp = NULL;
+	    *sequencepp = NULL;
+	    *sequenceLength = 0;
+	    *qualitypp = NULL;
+	    *qualityLength = 0;
+
+        goby::ReadEntry entry = *(*(*readsHelper).it);
+		(*readsHelper).numberOfReads++;
+
+	    if (entry.has_read_identifier()) {
+	        transferString(entry.read_identifier(), readIdentifierpp);
+	    }
+
+	    if (entry.has_description()) {
+	        transferString(entry.description(), descriptionpp);
+	    }
+
+	    if (entry.has_sequence()) {
+	        transferString(entry.sequence(), sequencepp);
+	        *sequenceLength = entry.sequence().size();
+	        if (entry.has_quality_scores()) {
+	            transferString(entry.quality_scores(), qualitypp);
+	            *qualityLength = entry.quality_scores().size();
+            }
+	    }
+
+	    // Increment to the next ReadsEntry
+		(*(*readsHelper).it)++;
+
+	    return entry.read_index();
+    }
+
+    /**
+     * For implementations OTHER than GSnap. Read the sequence WITH pair if applicable.
+     * It is important that each of thes char ** parameters are free()'d in the calling code.
+     * @return the Goby read index
+     */
+	unsigned long gobyReads_nextSequencePair(
+	    CReadsHelper *readsHelper,
+	    char **readIdentifierpp, char **descriptionpp,
+	    char **sequencepp, int *sequenceLength,
+	    char **qualitypp, int *qualityLength,
+	    char **pairSequencepp, int *pairSequenceLength,
+	    char **pairQualitypp, int *pairQualityLength) {
+
+        /** Default is nothing populated. */
+	    *readIdentifierpp = NULL;
+	    *descriptionpp = NULL;
+	    *sequencepp = NULL;
+	    *qualitypp = NULL;
+	    *qualityLength = 0;
+	    *pairSequencepp = NULL;
+	    *pairQualitypp = NULL;
+	    *pairQualityLength = 0;
+
+        goby::ReadEntry entry = *(*(*readsHelper).it);
+		(*readsHelper).numberOfReads++;
+
+	    if (entry.has_read_identifier()) {
+	        transferString(entry.read_identifier(), readIdentifierpp);
+	    }
+
+	    if (entry.has_description()) {
+	        transferString(entry.description(), descriptionpp);
+	    }
+
+	    if (entry.has_sequence()) {
+	        transferString(entry.sequence(), sequencepp);
+	        *sequenceLength = entry.sequence().size();
+	        if (entry.has_quality_scores()) {
+	            transferString(entry.quality_scores(), qualitypp);
+	            *qualityLength = entry.quality_scores().size();
+            }
+	    }
+
+	    if (entry.has_sequence_pair()) {
+	        transferString(entry.sequence_pair(), pairSequencepp);
+	        *pairSequenceLength = entry.sequence_pair().size();
+	        if (entry.has_quality_scores_pair()) {
+	            transferString(entry.quality_scores_pair(), pairQualitypp);
+	            *pairQualityLength = entry.quality_scores_pair().size();
+	        }
+	    }
+
+	    // Increment to the next ReadsEntry
+		(*(*readsHelper).it)++;
+
+	    return entry.read_index();
 	}
 
 	/**

@@ -1,4 +1,4 @@
-slib#                                               -*- Autoconf -*-
+#                                               -*- Autoconf -*-
 # Goby C++ libraries
 # Process this file with autoconf to produce a configure script.
 # In general, the safest way to proceed is to run ./autogen.sh
@@ -55,11 +55,15 @@ AC_FUNC_STAT
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 
 # check for the boost libraries
-AX_BOOST_BASE
-AX_BOOST_DATE_TIME
-AX_BOOST_FILESYSTEM
-AX_BOOST_PROGRAM_OPTIONS
-AX_BOOST_SYSTEM
+#
+# Boost is OPTIONAL and will likely be removed in the near future
+# For GMAP, you should make sure boost is NOT included
+#
+#AX_BOOST_BASE
+#AX_BOOST_DATE_TIME
+#AX_BOOST_FILESYSTEM
+#AX_BOOST_PROGRAM_OPTIONS
+#AX_BOOST_SYSTEM
 
 # use pkg-config to make sure that protobuf is available
 PKG_CHECK_MODULES([PROTOBUF], [protobuf >= 2.3.0]) 
