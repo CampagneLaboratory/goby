@@ -222,6 +222,21 @@ extern "C" {
         initializeHelperLastField(&(readsHelper->lastPairQuality));
     }
 
+    void clearHelperLastField(char **field, int *length) {
+        free(*field);
+        *field = (char *) NULL;
+        *length = 0;
+    }
+
+    void clearHelperLastFields(CReadsHelper *readsHelper) {
+        clearHelperLastField(readsHelper->lastReadIdentifier, readsHelper->lastReadIdentifier_m);
+        clearHelperLastField(readsHelper->lastDescription, readsHelper->lastDescription_m);
+        clearHelperLastField(readsHelper->lastSequence, readsHelper->lastSequence_m);
+        clearHelperLastField(readsHelper->lastQuality, readsHelper->lastQuality_m);
+        clearHelperLastField(readsHelper->lastPairSequence, readsHelper->lastPairSequence_m);
+        clearHelperLastField(readsHelper->lastPairQuality, readsHelper->lastPairQuality_m);
+    }
+
     /**
      * For implementations OTHER than GSnap. Read the sequence but ignore the pair even if it exists.
      * Do NOT free the char *'s you send to this method. If you need to keep a copy, MAKE A COPY.
@@ -345,12 +360,7 @@ extern "C" {
             delete readsHelper->it;
             delete readsHelper;
 
-            free(readsHelper->lastReadIdentifier); readsHelper->lastReadIdentifier_m = 0; readsHelper->lastReadIdentifier = NULL;
-            free(readsHelper->lastDescription); readsHelper->lastDescription_m = 0; readsHelper->lastDescription = NULL;
-            free(readsHelper->lastSequence); readsHelper->lastSequence_m = 0; readsHelper->lastSequence = NULL;
-            free(readsHelper->lastQuality), readsHelper->lastQuality_m = 0; readsHelper->lastQuality = NULL;
-            free(readsHelper->lastPairSequence), readsHelper->lastPairSequence_m = 0; readsHelper->lastPairSequence = NULL;
-            free(readsHelper->lastPairQuality), readsHelper->lastPairQuality_m = 0; readsHelper->lastPairQuality = NULL;
+            clearHelperLastFields(readsHelper);
         }
 	}
 
