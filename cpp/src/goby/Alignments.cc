@@ -313,7 +313,7 @@ namespace goby {
     return alignment_collection.add_alignment_entries();
   }
 
-  void AlignmentWriter::addTargetIdentifier(const char *targetName, const google::protobuf::uint32 targetIndex) {
+  void AlignmentWriter::addTargetIdentifier(const std::string& targetName, const google::protobuf::uint32 targetIndex) {
     vector<google::protobuf::uint32>::iterator found = find(target_name_indexes.begin(), target_name_indexes.end(), targetIndex);
     if (found == target_name_indexes.end()) {
       target_identifiers.insert(pair<string,unsigned>(targetName, targetIndex));

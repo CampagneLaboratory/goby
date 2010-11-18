@@ -39,6 +39,14 @@ extern "C" {
 	    writerHelper->numberOfAlignedReads = 0;
 	}
 
+    void gobyAlignments_setAlignerName(CAlignmentsWriterHelper *writerHelper, char *value) {
+        string valueStr(value);
+        writerHelper->alignmentWriter->setAlignerName(valueStr);
+    }
+    void gobyAlignments_setAlignerVersion(CAlignmentsWriterHelper *writerHelper, char *value) {
+        string valueStr(value);
+        writerHelper->alignmentWriter->setAlignerVersion(valueStr);
+    }
     void gobyAlignments_setSorted(CAlignmentsWriterHelper *writerHelper, int sorted /* bool */) {
         debug(fprintf(stderr,"gobyAlignments_setSorted=%d\n", sorted));
         writerHelper->alignmentWriter->setSorted(sorted == 0 ? false : true);
@@ -70,7 +78,8 @@ extern "C" {
      */
     void gobyAlignments_addTarget(CAlignmentsWriterHelper *writerHelper, const UINT4 targetIndex, const char *targetName, const UINT4 targetLength) {
         debug(fprintf(stderr,"gobyAlignments_addTargetIdentifier %s=%d\n", targetName, targetIndex));
-        writerHelper->alignmentWriter->addTargetIdentifier(targetName, targetIndex);
+        string targetNameStr(targetName);
+        writerHelper->alignmentWriter->addTargetIdentifier(targetNameStr, targetIndex);
         writerHelper->alignmentWriter->addTargetLength(targetLength);
     }
     
@@ -140,6 +149,9 @@ extern "C" {
     void gobyAlEntry_setQueryLength(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
         debug(fprintf(stderr,"gobyAlEntry_setQueryLength=%d\n", value));
         writerHelper->alignmentEntry->set_query_length(value);
+    }
+    void gobyAlEntry_setMappingQuality(CAlignmentsWriterHelper *writerHelper, UINT4 value) {
+        writerHelper->alignmentEntry->set_mapping_quality(value);
     }
 
     void startNewSequenceVariation(CAlignmentsWriterHelper *writerHelper, int readIndex) {

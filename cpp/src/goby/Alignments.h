@@ -148,6 +148,8 @@ namespace goby {
     inline void setConstantQuerylength(unsigned constant_query_length) { header.set_constant_query_length(constant_query_length); };
     inline void setSmallestSplitQueryIndex(unsigned smallest_split_query_index) { header.set_smallest_split_query_index(smallest_split_query_index); };
     inline void setLargestSplitQueryIndex(unsigned largest_split_query_index) { header.set_largest_split_query_index(largest_split_query_index); };
+    inline void setAlignerName(const std::string& aligner_name) { header.set_aligner_name(aligner_name); };
+    inline void setAlignerVersion(const std::string& aligner_version) { header.set_aligner_version(aligner_version); };
 
     inline void setSorted(bool sorted) { header.set_sorted(sorted); };
     inline void setIndexed(bool indexed) { header.set_indexed(indexed); };
@@ -157,8 +159,7 @@ namespace goby {
     void addTargetLength(const google::protobuf::uint32 targetLength);
     // NOTE: Query Length setters are not provided - this information is no longer in the header
 
-    // TODO: Target and Query Identifiers
-    void addTargetIdentifier(const char *targetName, const google::protobuf::uint32 targetIndex);
+    void addTargetIdentifier(const std::string& targetName, const google::protobuf::uint32 targetIndex);
 
     // add the description/value to the overall alignment stats
     inline void addStatistic(const std::string& description, const std::string& value) { stats[description] = value; };
