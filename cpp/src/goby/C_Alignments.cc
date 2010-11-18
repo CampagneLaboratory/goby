@@ -2,20 +2,19 @@
 #include <iostream>
 
 #include "Reads.h"
-#include "GsnapAlignments.h"
-#include "GsnapStructs.h"
+#include "C_Alignments.h"
 #include "MessageChunks.h"
 
 using namespace std;
 
-#ifdef GSNAP_WRITE_ALIGNMENT_DEBUG
+#ifdef C_WRITE_API_WRITE_ALIGNMENT_DEBUG
 #define debug(x) x
 #else
 #define debug(x)
 #endif
 
 /**
- * This class is a C interface so Gsnap can write Goby compact-alignments.
+ * C API to enable writing Goby compact-alignments in C.
  */
 extern "C" {
 

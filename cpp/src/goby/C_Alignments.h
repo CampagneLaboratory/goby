@@ -1,18 +1,29 @@
 /*
- * GsnapReads.h
- *
- *  Created on: Sep 13, 2010
- *      Author: kdorff
+ * Helper structs to assist with read / writing the Goby compact formats using the C API.
  */
 
-#ifndef GSNAPALIGNMENTS_H_
-#define GSNAPALIGNMENTS_H_
+#ifndef C_ALIGNMENTS_H_
+#define C_ALIGNMENTS_H_
 
-#include "CompactFormatsHelpers.h"
+#include "C_CompactHelpers.h"
 
 #ifdef __cplusplus
-#include "GsnapStructs.h"
-bool intToBool(int value);   // This function is NOT extern'd to C
+
+/* The following types (UINT2, UINT4, UINT8) come from GMap types.h. */
+/** 2- and 4-byte words */
+typedef unsigned short UINT2;
+typedef unsigned int UINT4;
+typedef int INT4;
+
+/* An 8-byte word */
+#if (SIZEOF_UNSIGNED_LONG == 8)
+#define HAVE_64_BIT
+typedef unsigned long UINT8;
+#elif (SIZEOF_UNSIGNED_LONG_LONG == 8)
+#define HAVE_64_BIT
+typedef unsigned long long UINT8;
+#endif
+
 extern "C" {
 #endif
 	void gobyAlignments_openAlignmentsWriterDefaultEntriesPerChunk(char *basename, CAlignmentsWriterHelper **writerHelperpp);
@@ -54,4 +65,4 @@ extern "C" {
 #endif
 
 
-#endif /* GSNAPALIGNMENTS_H_ */
+#endif /* C_ALIGNMENTS_H_ */

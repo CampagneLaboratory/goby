@@ -5,8 +5,8 @@
  *      Author: kdorff
  */
 
-#ifndef COMPACTFORMATSHELPERS_H_
-#define COMPACTFORMATSHELPERS_H_
+#ifndef C_COMPACTHELPERS_H_
+#define C_COMPACTHELPERS_H_
 
 /**************************************************************
  * Helper for reading Compact-Reads format.
@@ -15,7 +15,6 @@
 	#include <queue>
 	#include <string>
 	#include "Reads.h"
-	#include "GsnapStructs.h"
 	// More complex structure for C++
 	struct CReadsHelper {
 		goby::ReadsReader *readsReader;
@@ -60,7 +59,6 @@
 #ifdef __cplusplus
 	#include "Alignments.h"
 	#include "TooManyHits.h"
-	#include "GsnapStructs.h"
 	// More complex structure for C++
 	struct CAlignmentsWriterHelper {
 	    goby::AlignmentWriter *alignmentWriter;
@@ -86,4 +84,4 @@
 	} CAlignmentsWriterHelper;
 #endif
 
-#endif /* COMPACTFORMATSHELPERS_H_ */
+#endif /* C_COMPACTHELPERS_H_ */

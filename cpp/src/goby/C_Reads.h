@@ -1,17 +1,13 @@
 /*
- * GsnapReads.h
- *
- *  Created on: Sep 13, 2010
- *      Author: kdorff
+ * Definition of functions to enable reading Goby compact-reads in C.
  */
 
-#ifndef GSNAPREADS_H_
-#define GSNAPREADS_H_
+#ifndef C_READS_H_
+#define C_READS_H_
 
-#include "CompactFormatsHelpers.h"
+#include "C_CompactHelpers.h"
 
 #ifdef __cplusplus
-#include "GsnapStructs.h"
 extern "C" {
 #endif
 	void gobyReads_openReadsReader(
@@ -23,7 +19,6 @@ extern "C" {
 			unsigned long startOffset, unsigned long endOffset, CReadsHelper **readsHelperpp);
 
 	int gobyReads_hasNext(CReadsHelper *readsHelper);
-	void gobyReads_next(CReadsHelper *readsHelper, Sequence_T **queryseq1pp, Sequence_T **queryseq2pp);
 	unsigned long gobyReads_nextSequence(
 	    CReadsHelper *readsHelper,
 	    char **readIdentifierpp, char **descriptionpp,
@@ -42,4 +37,4 @@ extern "C" {
 }
 #endif
 
-#endif /* GSNAPREADS_H_ */
+#endif /* C_READS_H_ */
