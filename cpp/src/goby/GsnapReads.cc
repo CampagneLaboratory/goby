@@ -229,12 +229,12 @@ extern "C" {
     }
 
     void clearHelperLastFields(CReadsHelper *readsHelper) {
-        clearHelperLastField(readsHelper->lastReadIdentifier, readsHelper->lastReadIdentifier_m);
-        clearHelperLastField(readsHelper->lastDescription, readsHelper->lastDescription_m);
-        clearHelperLastField(readsHelper->lastSequence, readsHelper->lastSequence_m);
-        clearHelperLastField(readsHelper->lastQuality, readsHelper->lastQuality_m);
-        clearHelperLastField(readsHelper->lastPairSequence, readsHelper->lastPairSequence_m);
-        clearHelperLastField(readsHelper->lastPairQuality, readsHelper->lastPairQuality_m);
+        clearHelperLastField(&(readsHelper->lastReadIdentifier), &(readsHelper->lastReadIdentifier_m));
+        clearHelperLastField(&(readsHelper->lastDescription), &(readsHelper->lastDescription_m));
+        clearHelperLastField(&(readsHelper->lastSequence), &(readsHelper->lastSequence_m));
+        clearHelperLastField(&(readsHelper->lastQuality), &(readsHelper->lastQuality_m));
+        clearHelperLastField(&(readsHelper->lastPairSequence), &(readsHelper->lastPairSequence_m));
+        clearHelperLastField(&(readsHelper->lastPairQuality), &(readsHelper->lastPairQuality_m));
     }
 
     /**
