@@ -3,9 +3,13 @@
  - Implemented a fast concatenation operation for read files. The new -q flag in ConcatenateCompactReadsMode
    activates the fast concatenation. Chunks of compressed data are appended without requiring decompression and
    compression of the entries. This results in much faster concatenation that are bounded only by available IO.
- - Add mapping_quality filed to AlignmentEntry protobuf schema.
+ - Add mapping_quality field to AlignmentEntry protobuf schema.
  - Add aligner name and version in AlignmentHeader protobuf schema.
- 
+ - Added C/C++ api methods to set aligner name and version, and alignment entry mapping quality.
+ - Updated the C API to be more generic, less oriented toward any one
+   particular 3rd party tool. The read-API is now more generic, the write-API
+   hasn't changed. The C API files, including the .h header files, have been renamed.
+
 1.8
  - C API introduced to support native Goby support in GSNAP.
  - We now distribute a subset of Goby as the Goby IO API. This subset is packaged in the goby-io.jar
