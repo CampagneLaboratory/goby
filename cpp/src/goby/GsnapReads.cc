@@ -355,12 +355,11 @@ extern "C" {
                 string unopenedFile = readsHelper->unopenedFiles->front();
                 readsHelper->unopenedFiles->pop();
             }
+            clearHelperLastFields(readsHelper);
             delete readsHelper->unopenedFiles;
             delete readsHelper->readsReader;
             delete readsHelper->it;
             delete readsHelper;
-
-            clearHelperLastFields(readsHelper);
         }
 	}
 
