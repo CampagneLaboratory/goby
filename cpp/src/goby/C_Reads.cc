@@ -67,10 +67,10 @@ extern "C" {
         readsHelper->lastSequence = (char *) malloc(defaultSize);
 
         readsHelper->lastQuality_m = defaultSize;;
-        readsHelper->lastQuality = (char *) malloc(defaultSize;);
+        readsHelper->lastQuality = (char *) malloc(defaultSize);
 
         readsHelper->lastPairSequence_m = defaultSize;;
-        readsHelper->lastPairSequence = (char *) malloc(defaultSize;);
+        readsHelper->lastPairSequence = (char *) malloc(defaultSize);
 
         readsHelper->lastPairQuality_m = defaultSize;
         readsHelper->lastPairQuality = (char *) malloc(defaultSize);
