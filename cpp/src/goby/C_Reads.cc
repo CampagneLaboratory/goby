@@ -56,12 +56,24 @@ extern "C" {
 		readsHelper->end = readsHelper->readsReader->endPointer();
 		readsHelper->numberOfReads = 0;
 
-        readsHelper->lastReadIdentifier_m = 0; readsHelper->lastReadIdentifier = NULL;
-        readsHelper->lastDescription_m = 0; readsHelper->lastDescription = NULL;
-        readsHelper->lastSequence_m = 0; readsHelper->lastSequence = NULL;
-        readsHelper->lastQuality_m = 0; readsHelper->lastQuality = NULL;
-        readsHelper->lastPairSequence_m = 0; readsHelper->lastPairSequence = NULL;
-        readsHelper->lastPairQuality_m = 0; readsHelper->lastPairQuality = NULL;
+        int defaultSize = 50;
+        readsHelper->lastReadIdentifier_m = defaultSize;
+        readsHelper->lastReadIdentifier = (char *) malloc(defaultSize);
+
+        readsHelper->lastDescription_m = defaultSize;
+        readsHelper->lastDescription = (char *) malloc(defaultSize);
+
+        readsHelper->lastSequence_m = defaultSize;
+        readsHelper->lastSequence = (char *) malloc(defaultSize);
+
+        readsHelper->lastQuality_m = defaultSize;;
+        readsHelper->lastQuality = (char *) malloc(defaultSize;);
+
+        readsHelper->lastPairSequence_m = defaultSize;;
+        readsHelper->lastPairSequence = (char *) malloc(defaultSize;);
+
+        readsHelper->lastPairQuality_m = defaultSize;
+        readsHelper->lastPairQuality = (char *) malloc(defaultSize);
 	}
 
 	/**
@@ -91,21 +103,14 @@ extern "C" {
         (*dest)[size] = '\0';
 	}
 
-    void initializeHelperLastField(char **field) {
-        if (*field != NULL) {
-            // Field was previous allocated, make it an empty string
-            (*field)[0] = '\0';
-        }
-    }
-
     void initializeHelperLastFields(CReadsHelper *readsHelper) {
         // Initialize non-NULL incoming strings to empty string in case the value isn't set this time around.
-        initializeHelperLastField(&(readsHelper->lastReadIdentifier));
-        initializeHelperLastField(&(readsHelper->lastDescription));
-        initializeHelperLastField(&(readsHelper->lastSequence));
-        initializeHelperLastField(&(readsHelper->lastQuality));
-        initializeHelperLastField(&(readsHelper->lastPairSequence));
-        initializeHelperLastField(&(readsHelper->lastPairQuality));
+        (readsHelper->lastReadIdentifier)[0] = '\0';
+        (readsHelper->lastDescription)[0] = '\0';
+        (readsHelper->lastSequence)[0] = '\0';
+        (readsHelper->lastQuality)[0] = '\0';
+        (readsHelper->lastPairSequence)[0] = '\0';
+        (readsHelper->lastPairQuality)[0] = '\0';
     }
 
     void clearHelperLastField(char **field, int *length) {
