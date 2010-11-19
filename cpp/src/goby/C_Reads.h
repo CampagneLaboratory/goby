@@ -18,6 +18,8 @@ extern "C" {
 			char **unopenedFiles, int numUnopenedFiles, unsigned char circular,
 			unsigned long startOffset, unsigned long endOffset, CReadsHelper **readsHelperpp);
 
+	int gobyReads_getQualityAdjustment(CReadsHelper *readsHelper);
+	void gobyReads_setQualityAdjustment(CReadsHelper *readsHelper, int value);
 	int gobyReads_hasNext(CReadsHelper *readsHelper);
 	unsigned long gobyReads_nextSequence(
 	    CReadsHelper *readsHelper,

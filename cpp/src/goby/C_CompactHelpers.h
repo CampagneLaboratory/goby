@@ -31,6 +31,7 @@
 	    char *lastQuality; int lastQuality_m;
 	    char *lastPairSequence; int lastPairSequence_m;
 	    char *lastPairQuality; int lastPairQuality_m;
+	    int qualityAdjustment;
 	};
 #else
 	// Opaque structure for C
@@ -49,6 +50,7 @@
 	    char *lastQuality; int lastQuality_m;
 	    char *lastPairSequence; int lastPairSequence_m;
 	    char *lastPairQuality; int lastPairQuality_m;
+	    int qualityAdjustment;
 	} CReadsHelper;
 #endif
 

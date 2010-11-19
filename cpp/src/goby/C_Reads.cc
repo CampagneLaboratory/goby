@@ -74,6 +74,17 @@ extern "C" {
 
         readsHelper->lastPairQuality_m = defaultSize;
         readsHelper->lastPairQuality = (char *) malloc(defaultSize);
+
+        // By default, make the reads look like ILLUMINA
+        readsHelper->qualityAdjustment = 64;
+	}
+
+	int gobyReads_getQualityAdjustment(CReadsHelper *readsHelper) {
+	    return readsHelper->qualityAdjustment;
+	}
+
+	void gobyReads_setQualityAdjustment(CReadsHelper *readsHelper, int value) {
+	    readsHelper->qualityAdjustment = value;
 	}
 
 	/**
@@ -128,6 +139,18 @@ extern "C" {
         clearHelperLastField(&(readsHelper->lastPairQuality), &(readsHelper->lastPairQuality_m));
     }
 
+	char *adjustQuality(char *qual, int length, int delta) {
+	    if (delta != 0) {
+            if (qual != NULL && length > 0) {
+                int i;
+                for (i = 0; i < length; i++) {
+                    qual[i] += delta;
+                }
+            }
+        }
+        return qual;
+	}
+
     /**
      * Read the sequence but ignore the pair even if it exists.
      * Do NOT free the char *'s you send to this method. If you need to keep a copy, MAKE A COPY.
@@ -161,6 +184,7 @@ extern "C" {
 	        if (entry.has_quality_scores()) {
 	            transferString(entry.quality_scores(), &(readsHelper->lastQuality), &(readsHelper->lastQuality_m));
 	            *qualityLength = entry.quality_scores().size();
+	            adjustQuality(readsHelper->lastQuality, *qualityLength, readsHelper->qualityAdjustment);
             }
 	    }
 
@@ -212,6 +236,7 @@ extern "C" {
 	        if (entry.has_quality_scores()) {
 	            transferString(entry.quality_scores(), &(readsHelper->lastQuality), &(readsHelper->lastQuality_m));
 	            *qualityLength = entry.quality_scores().size();
+	            adjustQuality(readsHelper->lastQuality, *qualityLength, readsHelper->qualityAdjustment);
             }
 	    }
 
@@ -221,6 +246,7 @@ extern "C" {
 	        if (entry.has_quality_scores_pair()) {
 	            transferString(entry.quality_scores_pair(), &(readsHelper->lastPairQuality), &(readsHelper->lastPairQuality_m));
 	            *pairQualityLength = entry.quality_scores_pair().size();
+	            adjustQuality(readsHelper->lastPairQuality, *pairQualityLength, readsHelper->qualityAdjustment);
 	        }
 	    }
 
