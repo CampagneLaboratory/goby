@@ -76,7 +76,7 @@ extern "C" {
         readsHelper->lastPairQuality = (char *) malloc(defaultSize);
 
         // By default, make the reads look like ILLUMINA
-        readsHelper->qualityAdjustment = 64;
+        readsHelper->qualityAdjustment = 0;
 	}
 
 	int gobyReads_getQualityAdjustment(CReadsHelper *readsHelper) {
