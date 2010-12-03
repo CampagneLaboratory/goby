@@ -63,7 +63,7 @@
     #include "TooManyHits.h"
     // More complex structure for C++
     struct CSamHelper {
-        int goby_qualityAdjustment;
+        int minQualValue;
         std::string *cpp_cigar;
         std::string *cpp_md;
         std::string *cpp_sourceQuery;
