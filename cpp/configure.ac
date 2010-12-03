@@ -66,7 +66,11 @@ AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 #AX_BOOST_SYSTEM
 
 # use pkg-config to make sure that protobuf is available
+# see http://code.google.com/p/protobuf/
 PKG_CHECK_MODULES([PROTOBUF], [protobuf >= 2.3.0]) 
+# use pkg-config to make sure that PCRE is available
+# see http://www.pcre.org/
+PKG_CHECK_MODULES([LIBPCRECPP], [libpcrecpp >= 8.10]) 
 
 AC_CONFIG_FILES([Makefile src/Makefile goby.pc])
 AC_OUTPUT

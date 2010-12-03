@@ -71,6 +71,18 @@
 	    unsigned int smallestQueryIndex;
 	    unsigned int largestQueryIndex;
 	    unsigned int numberOfAlignedReads;
+	    std::string *currentCigar;
+	    std::string *currentMd;
+	    std::string *currentSourceQuery;
+	    std::string *currentSourceQual;
+	    std::string *currentQuery;
+	    std::string *currentQual;
+	    std::string *currentRef;
+	    int currentAlignedLength;
+	    int currentStartPosition;
+	    int currentNumIndels;
+	    int currentMisMatches;
+	    int currentScore;
 	};
 #else
 	// Opaque structure for C
@@ -83,6 +95,18 @@
 	    unsigned int smallestQueryIndex;
 	    unsigned int largestQueryIndex;
 	    unsigned int numberOfAlignedReads;
+	    void *currentCigar;
+	    void *currentMd;
+	    void *currentSourceQuery;
+	    void *currentSourceQual;
+	    void *currentQuery;
+	    void *currentQual;
+	    void *currentRef;
+	    int currentAlignedLength;
+	    int currentStartPosition;
+	    int currentNumIndels;
+	    int currentMisMatches;
+	    int currentScore;
 	} CAlignmentsWriterHelper;
 #endif
 

@@ -9,21 +9,6 @@
 
 #ifdef __cplusplus
 
-/* The following types (UINT2, UINT4, UINT8) come from GMap types.h. */
-/** 2- and 4-byte words */
-typedef unsigned short UINT2;
-typedef unsigned int UINT4;
-typedef int INT4;
-
-/* An 8-byte word */
-#if (SIZEOF_UNSIGNED_LONG == 8)
-#define HAVE_64_BIT
-typedef unsigned long UINT8;
-#elif (SIZEOF_UNSIGNED_LONG_LONG == 8)
-#define HAVE_64_BIT
-typedef unsigned long long UINT8;
-#endif
-
 extern "C" {
 #endif
 	void gobyAlignments_openAlignmentsWriterDefaultEntriesPerChunk(char *basename, CAlignmentsWriterHelper **writerHelperpp);
@@ -37,27 +22,36 @@ extern "C" {
     void gobyAlignments_addStatisticStr(CAlignmentsWriterHelper *writerHelper, const char *description, const char *value);
     void gobyAlignments_addStatisticInt(CAlignmentsWriterHelper *writerHelper, const char *description, const int value);
     void gobyAlignments_addStatisticDouble(CAlignmentsWriterHelper *writerHelper, const char *description, const double value);
-    void gobyAlignments_addTarget(CAlignmentsWriterHelper *writerHelper, const UINT4 targetIndex, const char *targetName, UINT4 targetLength);
+    void gobyAlignments_addTarget(CAlignmentsWriterHelper *writerHelper, const unsigned int targetIndex, const char *targetName, unsigned int targetLength);
 
     // get an empty alignment entry to populate
     void gobyAlignments_appendEntry(CAlignmentsWriterHelper *writerHelper);
     void gobyAlignments_debugSequences(CAlignmentsWriterHelper *writerHelper, int hitType, char *refSequence, char *readSequence, int startPos);
-    void gobyAlEntry_setMultiplicity(CAlignmentsWriterHelper *writerHelper, UINT4 value);
-    void gobyAlEntry_setQueryIndex(CAlignmentsWriterHelper *writerHelper, UINT4 value);
-    void gobyAlEntry_setTargetIndex(CAlignmentsWriterHelper *writerHelper, UINT4 value);
-    void gobyAlEntry_setPosition(CAlignmentsWriterHelper *writerHelper, UINT4 value);
+    void gobyAlEntry_setMultiplicity(CAlignmentsWriterHelper *writerHelper, unsigned int value);
+    void gobyAlEntry_setQueryIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value);
+    void gobyAlEntry_setTargetIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value);
+    void gobyAlEntry_setPosition(CAlignmentsWriterHelper *writerHelper, unsigned int value);
     void gobyAlEntry_setMatchingReverseStrand(CAlignmentsWriterHelper *writerHelper, int value /* bool */);
-    void gobyAlEntry_setQueryPosition(CAlignmentsWriterHelper *writerHelper, UINT4 value);
+    void gobyAlEntry_setQueryPosition(CAlignmentsWriterHelper *writerHelper, unsigned int value);
     void gobyAlEntry_setScoreInt(CAlignmentsWriterHelper *writerHelper, int value);
-    void gobyAlEntry_setNumberOfMismatches(CAlignmentsWriterHelper *writerHelper, UINT4 value);
-    void gobyAlEntry_setNumberOfIndels(CAlignmentsWriterHelper *writerHelper, UINT4 value);
-    void gobyAlEntry_setQueryAlignedLength(CAlignmentsWriterHelper *writerHelper, UINT4 value);
-    void gobyAlEntry_setTargetAlignedLength(CAlignmentsWriterHelper *writerHelper, UINT4 value);
-    void gobyAlEntry_setQueryLength(CAlignmentsWriterHelper *writerHelper, UINT4 value);
-    void gobyAlEntry_setMappingQuality(CAlignmentsWriterHelper *writerHelper, UINT4 value);
+    void gobyAlEntry_setNumberOfMismatches(CAlignmentsWriterHelper *writerHelper, unsigned int value);
+    void gobyAlEntry_setNumberOfIndels(CAlignmentsWriterHelper *writerHelper, unsigned int value);
+    void gobyAlEntry_setQueryAlignedLength(CAlignmentsWriterHelper *writerHelper, unsigned int value);
+    void gobyAlEntry_setTargetAlignedLength(CAlignmentsWriterHelper *writerHelper, unsigned int value);
+    void gobyAlEntry_setQueryLength(CAlignmentsWriterHelper *writerHelper, unsigned int value);
+    void gobyAlEntry_setMappingQuality(CAlignmentsWriterHelper *writerHelper, unsigned int value);
 
-    void gobyAlEntry_appendTooManyHits(CAlignmentsWriterHelper *writerHelper, UINT4 queryIndex, UINT4 alignedLength, int numberOfHits);
+    void gobyAlEntry_appendTooManyHits(CAlignmentsWriterHelper *writerHelper, unsigned int queryIndex, unsigned int alignedLength, int numberOfHits);
     void gobyAlEntry_addSequenceVariation(CAlignmentsWriterHelper *writerHelper, int readIndex, char refChar, char readChar, int hasQualCharInt /* bool */, char readQualChar);
+
+    void samHelper_reset(CAlignmentsWriterHelper *writerHelper);
+    void samHelper_addCigarItem(CAlignmentsWriterHelper *writerHelper, int length, char op);
+    const char *samHelper_getCigarStr(CAlignmentsWriterHelper *writerHelper);
+    void samHelper_setMd(CAlignmentsWriterHelper *writerHelper, char *md);
+    void samHelper_setQueryTranslate(CAlignmentsWriterHelper *writerHelper, char *reads, char *qual, int length, int reverseStrand);
+    void samHelper_constructRefAndQuery(CAlignmentsWriterHelper *writerHelper);
+    const char *samHelper_constructedRef(CAlignmentsWriterHelper *writerHelper);
+    const char *samHelper_constructedQuery(CAlignmentsWriterHelper *writerHelper);
 
 	void gobyAlignments_finished(CAlignmentsWriterHelper *alWriterHelper, unsigned int numberOfReads);
 #ifdef __cplusplus

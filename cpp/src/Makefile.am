@@ -2,9 +2,9 @@
 
 lib_LTLIBRARIES = libgoby.la
 
-AM_CXXFLAGS = @PROTOBUF_CFLAGS@ ${BOOST_CPPFLAGS}
+AM_CXXFLAGS = @PROTOBUF_CFLAGS@ @LIBPCRECPP_CFLAGS@ ${BOOST_CPPFLAGS}
 
-libgoby_la_LIBADD = @PROTOBUF_LIBS@
+libgoby_la_LIBADD = @PROTOBUF_LIBS@ @LIBPCRECPP_LIBS@
 libgoby_la_LDFLAGS = -version-info @version_info@ -export-dynamic # -no-undefined
 libgoby_la_SOURCES = \
 	goby/Alignments.cc \
