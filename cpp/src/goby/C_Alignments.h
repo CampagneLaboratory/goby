@@ -46,6 +46,11 @@ extern "C" {
     void gobyAlEntry_appendTooManyHits(CAlignmentsWriterHelper *writerHelper, unsigned int queryIndex, unsigned int alignedLength, int numberOfHits);
     void gobyAlEntry_addSequenceVariation(CAlignmentsWriterHelper *writerHelper, int readIndex, char refChar, char readChar, int hasQualCharInt /* bool */, char readQualChar);
 
+    /**
+     * Methods to assist reconstructing query and reference for SAM data.
+     * Reconstructed query and ref strings will have '-' in the appropriate
+     * sequence to denote insertions and deletions.
+     */
     CSamHelper *samHelper_getResetSamHelper(CAlignmentsWriterHelper *writerHelper);
     void samHelper_addCigarItem(CSamHelper *samHelper, int length, char op);
     const char *samHelper_getCigarStr(CSamHelper *samHelper);
