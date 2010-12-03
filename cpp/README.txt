@@ -20,8 +20,18 @@ The following steps describe how to build the Goby C++/C API.
       make
       make install
 
-3. Portions of the Goby C++ API library currently use the Boost library.
-   If you don't already have this, you probably want to install it
+3. Download, build, and install the PCRE (Perl Compatible Regular Expressions)
+   library (8.10 or later) from http://pcre.org
+
+      wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.10.tar.gz
+      tar zxvf pcre-8.10.tar.gz
+      cd pcre-8.10
+      ./configure --prefix=/home/YOUR_USERNAME/local-lib   # for root or cygwin, don't use the --prefix command
+      make
+      make install
+
+4. Portions of the Goby C++ API library OPTIONALLY use the Boost library.
+   If you choose to use this, first download and install Boost:
 
       wget http://downloads.sourceforge.net/project/boost/boost/1.44.0/boost_1_44_0.tar.gz
       tar zxvf boost_1_44_0.tar.gz
@@ -29,7 +39,9 @@ The following steps describe how to build the Goby C++/C API.
       ./bootstrap.sh --prefix=/home/YOUR_USERNAME/local-lib   # for root or cygwin, don't use the --prefix command
       ./bjam install
 
-4. Build the Goby C++ API library, requires the Goby source distribution. The
+   Edit the "configure.ac" file to uncomment the AX_BOOST_ lines.
+
+5. Build the Goby C++ API library, requires the Goby source distribution. The
    following steps install this library:
 
       wget http://chagall.med.cornell.edu/goby/releases/goby_latest-src.zip
