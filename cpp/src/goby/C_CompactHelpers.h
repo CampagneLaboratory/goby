@@ -59,33 +59,50 @@
  **************************************************************/
 
 #ifdef __cplusplus
-	#include "Alignments.h"
-	#include "TooManyHits.h"
-	// More complex structure for C++
-	struct CAlignmentsWriterHelper {
-	    goby::AlignmentWriter *alignmentWriter;
-	    goby::TooManyHitsWriter *tmhWriter;
-	    goby::AlignmentEntry *alignmentEntry;
-	    goby::SequenceVariation *sequenceVariation;
-	    int lastSeqVarReadIndex;
-	    unsigned int smallestQueryIndex;
-	    unsigned int largestQueryIndex;
-	    unsigned int numberOfAlignedReads;
-	    std::string *currentCigar;
-	    std::string *currentMd;
-	    std::string *currentSourceQuery;
-	    std::string *currentSourceQual;
-	    std::string *currentQuery;
-	    std::string *currentQual;
-	    std::string *currentRef;
-	    int currentAlignedLength;
-	    int currentStartPosition;
-	    int currentNumIndels;
-	    int currentMisMatches;
-	    int currentScore;
-	};
+    #include "Alignments.h"
+    #include "TooManyHits.h"
+    // More complex structure for C++
+    struct CSamHelper {
+        std::string *cpp_cigar;
+        std::string *cpp_md;
+        std::string *cpp_sourceQuery;
+        std::string *cpp_sourceQual;
+        std::string *cpp_query;
+        std::string *cpp_qual;
+        std::string *cpp_ref;
+        int alignedLength;
+        int startPosition;
+        int numIndels;
+        int numMisMatches;
+        int score;
+    };
+    struct CAlignmentsWriterHelper {
+        goby::AlignmentWriter *alignmentWriter;
+        goby::TooManyHitsWriter *tmhWriter;
+        goby::AlignmentEntry *alignmentEntry;
+        goby::SequenceVariation *sequenceVariation;
+        int lastSeqVarReadIndex;
+        unsigned int smallestQueryIndex;
+        unsigned int largestQueryIndex;
+        unsigned int numberOfAlignedReads;
+        CSamHelper *samHelper;
+    };
 #else
 	// Opaque structure for C
+	typedef struct {
+	    void *cpp_cigar;
+	    void *cpp_md;
+	    void *cpp_sourceQuery;
+	    void *cpp_sourceQual;
+	    void *cpp_query;
+	    void *cpp_qual;
+	    void *cpp_ref;
+	    int alignedLength;
+	    int startPosition;
+	    int numIndels;
+	    int numMisMatches;
+	    int score;
+	} CSamHelper;
 	typedef struct {
 	    void *alignmentWriter;
 	    void *tmhWriter;
@@ -95,18 +112,7 @@
 	    unsigned int smallestQueryIndex;
 	    unsigned int largestQueryIndex;
 	    unsigned int numberOfAlignedReads;
-	    void *currentCigar;
-	    void *currentMd;
-	    void *currentSourceQuery;
-	    void *currentSourceQual;
-	    void *currentQuery;
-	    void *currentQual;
-	    void *currentRef;
-	    int currentAlignedLength;
-	    int currentStartPosition;
-	    int currentNumIndels;
-	    int currentMisMatches;
-	    int currentScore;
+	    void *samHelper;
 	} CAlignmentsWriterHelper;
 #endif
 

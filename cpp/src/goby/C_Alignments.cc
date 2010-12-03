@@ -37,18 +37,7 @@ extern "C" {
 	    writerHelper->smallestQueryIndex = -1;
 	    writerHelper->largestQueryIndex = -1;
 	    writerHelper->numberOfAlignedReads = 0;
-	    writerHelper->currentCigar = new string();
-	    writerHelper->currentMd = new string();
-	    writerHelper->currentSourceQuery = new string();
-	    writerHelper->currentSourceQual = new string();
-	    writerHelper->currentRef = new string();
-	    writerHelper->currentQuery = new string();
-	    writerHelper->currentQual = new string();
-	    writerHelper->currentAlignedLength = 0;
-	    writerHelper->currentStartPosition = 0;
-	    writerHelper->currentNumIndels = 0;
-	    writerHelper->currentMisMatches = 0;
-	    writerHelper->currentScore = 0;
+        writerHelper->samHelper = NULL;
 	}
 
     void gobyAlignments_setAlignerName(CAlignmentsWriterHelper *writerHelper, char *value) {
@@ -229,52 +218,65 @@ extern "C" {
         writerHelper->tmhWriter->append(queryIndex, numberOfHits, alignedLength);
     }
 
-    void samHelper_reset(CAlignmentsWriterHelper *writerHelper) {
-	    writerHelper->currentCigar->clear();
-	    writerHelper->currentMd->clear();
-	    writerHelper->currentSourceQuery->clear();
-	    writerHelper->currentSourceQual->clear();
-	    writerHelper->currentRef->clear();
-	    writerHelper->currentQuery->clear();
-	    writerHelper->currentQual->clear();
-	    writerHelper->currentAlignedLength = 0;
-	    writerHelper->currentStartPosition = 0;
-	    writerHelper->currentNumIndels = 0;
-	    writerHelper->currentMisMatches = 0;
-	    writerHelper->currentScore = 0;
+    CSamHelper *samHelper_getResetSamHelper(CAlignmentsWriterHelper *writerHelper) {
+        CSamHelper *samHelper = writerHelper->samHelper;
+        if (samHelper == NULL) {
+            writerHelper->samHelper = new CSamHelper;
+            samHelper = writerHelper->samHelper;           
+            samHelper->cpp_cigar = new string();
+            samHelper->cpp_md = new string();
+            samHelper->cpp_sourceQuery = new string();
+            samHelper->cpp_sourceQual = new string();
+            samHelper->cpp_query = new string();
+            samHelper->cpp_qual = new string();
+            samHelper->cpp_ref = new string();
+        } else {
+            samHelper->cpp_cigar->clear();
+            samHelper->cpp_md->clear();
+            samHelper->cpp_sourceQuery->clear();
+            samHelper->cpp_sourceQual->clear();
+            samHelper->cpp_ref->clear();
+            samHelper->cpp_query->clear();
+            samHelper->cpp_qual->clear();
+        }
+        samHelper->alignedLength = 0;
+        samHelper->startPosition = 0;
+        samHelper->numIndels = 0;
+        samHelper->numMisMatches = 0;
+        samHelper->score = 0;
     }
 
-    void samHelper_addCigarItem(CAlignmentsWriterHelper *writerHelper, int length, char op) {
+    void samHelper_addCigarItem(CSamHelper *samHelper, int length, char op) {
         std:stringstream lengthStream;
         lengthStream << length;
-        (*writerHelper->currentCigar) += lengthStream.str();
-        (*writerHelper->currentCigar) += op;
+        (*samHelper->cpp_cigar) += lengthStream.str();
+        (*samHelper->cpp_cigar) += op;
     }
 
-    void samHelper_setMd(CAlignmentsWriterHelper *writerHelper, char *md) {
+    void samHelper_setMd(CSamHelper *samHelper, char *md) {
         if (md) {
-            (*writerHelper->currentMd) += md;
+            (*samHelper->cpp_md) += md;
         }
     }
 
-    void samHelper_setQueryTranslate(CAlignmentsWriterHelper *writerHelper, char *reads, char *qual, int length, int reverseStrand) {
+    void samHelper_setQueryTranslate(CSamHelper *samHelper, char *reads, char *qual, int length, int reverseStrand) {
         int pos;
         for (pos = 0; pos < length; pos++) {
             if (reverseStrand) {
-                (*writerHelper->currentSourceQuery) += "TGCAN"[(int)(reads[length - 1 - pos])];
+                (*samHelper->cpp_sourceQuery) += "TGCAN"[(int)(reads[length - 1 - pos])];
             } else {
-                (*writerHelper->currentSourceQuery) += "ACGTN"[(int)(reads[pos])];
+                (*samHelper->cpp_sourceQuery) += "ACGTN"[(int)(reads[pos])];
             }
         }
     }
 
-    const char *samHelper_getCigarStr(CAlignmentsWriterHelper *writerHelper) {
-        return writerHelper->currentCigar->c_str();
+    const char *samHelper_getCigarStr(CSamHelper *samHelper) {
+        return samHelper->cpp_cigar->c_str();
     }
 
-    void applyCigar(CAlignmentsWriterHelper *writerHelper) {
+    void applyCigar(CSamHelper *samHelper) {
         pcrecpp::RE re("([0-9]+)([MID])");
-        pcrecpp::StringPiece input(writerHelper->currentCigar->c_str());
+        pcrecpp::StringPiece input(samHelper->cpp_cigar->c_str());
         int length;
         char op;
         int posInReads = 0;
@@ -283,33 +285,33 @@ extern "C" {
             switch(op) {
                 case 'M':
                     // Any mis-matches will be fixed in applyMd()
-                    (*writerHelper->currentQuery) += writerHelper->currentSourceQuery->substr(posInReads, length);
-                    (*writerHelper->currentRef) += writerHelper->currentSourceQuery->substr(posInReads, length);
+                    (*samHelper->cpp_query) += samHelper->cpp_sourceQuery->substr(posInReads, length);
+                    (*samHelper->cpp_ref) += samHelper->cpp_sourceQuery->substr(posInReads, length);
                     posInReads += length;
                     break;
                 case 'I':
-                    (*writerHelper->currentQuery) += writerHelper->currentSourceQuery->substr(posInReads, length);
+                    (*samHelper->cpp_query) += samHelper->cpp_sourceQuery->substr(posInReads, length);
                     for (i = 0; i < length; i++) {
-                        (*writerHelper->currentRef) += '-';
+                        (*samHelper->cpp_ref) += '-';
                     }
                     posInReads += length;
                     break;
                 case 'D':
                     for (i = 0; i < length; i++) {
-                        (*writerHelper->currentQuery) += '-';
-                        (*writerHelper->currentRef) += '?';  // provided in applyMd()
+                        (*samHelper->cpp_query) += '-';
+                        (*samHelper->cpp_ref) += '?';  // provided in applyMd()
                     }
                     break;
             }
         }
     }
 
-    void applyMd(CAlignmentsWriterHelper *writerHelper) {
+    void applyMd(CSamHelper *samHelper) {
         // My RE is simplified from the SAM spec but performs the same task
         // the major difference being mine would allow 5ACG where the current
         // spec would require 5A0C0G0 (which mine will still work with just fine).
         pcrecpp::RE re("([0-9]+|[ACGTN]|\\^[ACGTN]+)");
-        pcrecpp::StringPiece input(writerHelper->currentMd->c_str());
+        pcrecpp::StringPiece input(samHelper->cpp_md->c_str());
         string mdPart;
         int position = 0;
         int i;
@@ -320,40 +322,40 @@ extern "C" {
             } else if (mdPart[0] == '^') {
                 // Adjust the ref with these characters, ignoring the ^ character so start at 1
                 for(i = 1; i < mdPart.size(); i++) {
-                    (*writerHelper->currentRef)[position++] = mdPart[i];
+                    (*samHelper->cpp_ref)[position++] = mdPart[i];
                 }
             } else {
                 // The regex should only allow a single character here, but we'll accept multiple
                 for(i = 0; i < mdPart.size(); i++) {
-                    (*writerHelper->currentRef)[position++] = mdPart[i];
+                    (*samHelper->cpp_ref)[position++] = mdPart[i];
                 }
             }
         }
     }
 
-    void samHelper_constructRefAndQuery(CAlignmentsWriterHelper *writerHelper) {
-        writerHelper->currentRef->clear();
-        writerHelper->currentQuery->clear();
-        writerHelper->currentStartPosition = 0;
+    void samHelper_constructRefAndQuery(CSamHelper *samHelper) {
+        samHelper->cpp_ref->clear();
+        samHelper->cpp_query->clear();
+        samHelper->startPosition = 0;
 
-        applyCigar(writerHelper);
-        applyMd(writerHelper);
-        writerHelper->currentAlignedLength = writerHelper->currentQuery->size();
+        applyCigar(samHelper);
+        applyMd(samHelper);
+        samHelper->alignedLength = samHelper->cpp_query->size();
         
         // Figure out start of alignment and alignment length, by observing mismatches at head and tail
-        if (writerHelper->currentQuery->size() != writerHelper->currentRef->size()) {
+        if (samHelper->cpp_query->size() != samHelper->cpp_ref->size()) {
             printf("ERROR! reconstructed reads and refs don't match in size!!\n");
             return;
         }
         int i;
         bool startOfAlignmentFound = false;
-        for (i = 0; i < writerHelper->currentQuery->size(); i++) {
-            char readChar = (*writerHelper->currentQuery)[i];
-            char refChar = (*writerHelper->currentRef)[i];
+        for (i = 0; i < samHelper->cpp_query->size(); i++) {
+            char readChar = (*samHelper->cpp_query)[i];
+            char refChar = (*samHelper->cpp_ref)[i];
             if (readChar == refChar) {
                 // Matching character, we know we've found the start of the alignment
                 startOfAlignmentFound = true;
-                writerHelper->currentScore++;
+                samHelper->score++;
             }
             if (!startOfAlignmentFound && (readChar == '-' ||  refChar == '-')) {
                 // Found an indel, start of the alignment
@@ -361,22 +363,22 @@ extern "C" {
             }
             if (startOfAlignmentFound) {
                 if (readChar == '-' || refChar == '-') {
-                    writerHelper->currentNumIndels++;
+                    samHelper->numIndels++;
                 } else if (readChar != refChar) {
-                    writerHelper->currentMisMatches++;
+                    samHelper->numMisMatches++;
                 }
             } else {
                 // Only mismatches so far on the left, we increase the start position
                 // and decrease the aligned length.
-                writerHelper->currentAlignedLength--;
-                writerHelper->currentStartPosition++;
+                samHelper->alignedLength--;
+                samHelper->startPosition++;
             }
         }
         // If the right side doesn't match, don't count as a mismatch,
         // just shorted the aligned length
-        for (i = writerHelper->currentQuery->size() - 1; i >= 0; i--) {
-            char readChar = (*writerHelper->currentQuery)[i];
-            char refChar = (*writerHelper->currentRef)[i];
+        for (i = samHelper->cpp_query->size() - 1; i >= 0; i--) {
+            char readChar = (*samHelper->cpp_query)[i];
+            char refChar = (*samHelper->cpp_ref)[i];
             if (readChar == refChar) {
                 // Same character at end, no change of align length
                 break;
@@ -387,22 +389,28 @@ extern "C" {
             }
             // We know we have a mismatch and not an indel shorten the align length
             // and don't count it as a mismatch
-            writerHelper->currentAlignedLength--;
-            writerHelper->currentMisMatches--;
+            samHelper->alignedLength--;
+            samHelper->numMisMatches--;
         }
     }
 
     /**
      * Depends on samHelper_constructRefAndQuery() being called.
      */
-    const char *samHelper_constructedRef(CAlignmentsWriterHelper *writerHelper) {
-        return writerHelper->currentRef->c_str();
+    const char *samHelper_constructedRef(CSamHelper *samHelper) {
+        return samHelper->cpp_ref->c_str();
     }
     /**
      * Depends on samHelper_constructRefAndQuery() being called.
      */
-    const char *samHelper_constructedQuery(CAlignmentsWriterHelper *writerHelper) {
-        return writerHelper->currentQuery->c_str();
+    const char *samHelper_constructedQuery(CSamHelper *samHelper) {
+        return samHelper->cpp_query->c_str();
+    }
+    /**
+     * Depends on samHelper_constructRefAndQuery() being called.
+     */
+    const char *samHelper_constructedQual(CSamHelper *samHelper) {
+        return samHelper->cpp_qual->c_str();
     }
 
 	void gobyAlignments_finished(CAlignmentsWriterHelper *writerHelper, unsigned int numberOfReads) {
@@ -419,13 +427,16 @@ extern "C" {
             delete writerHelper->alignmentWriter;
             writerHelper->tmhWriter->write();
             delete writerHelper->tmhWriter;
-            delete writerHelper->currentCigar;
-            delete writerHelper->currentMd;
-            delete writerHelper->currentSourceQuery;
-            delete writerHelper->currentSourceQual;
-            delete writerHelper->currentRef;
-	        delete writerHelper->currentQuery;
-	        delete writerHelper->currentQual;
+            if (writerHelper->samHelper != NULL) {
+                delete writerHelper->samHelper->cpp_cigar;
+                delete writerHelper->samHelper->cpp_md;
+                delete writerHelper->samHelper->cpp_sourceQuery;
+                delete writerHelper->samHelper->cpp_sourceQual;
+                delete writerHelper->samHelper->cpp_ref;
+                delete writerHelper->samHelper->cpp_query;
+                delete writerHelper->samHelper->cpp_qual;
+                delete writerHelper->samHelper;
+            }
             delete writerHelper;
         }
 	}

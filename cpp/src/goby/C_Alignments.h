@@ -44,14 +44,15 @@ extern "C" {
     void gobyAlEntry_appendTooManyHits(CAlignmentsWriterHelper *writerHelper, unsigned int queryIndex, unsigned int alignedLength, int numberOfHits);
     void gobyAlEntry_addSequenceVariation(CAlignmentsWriterHelper *writerHelper, int readIndex, char refChar, char readChar, int hasQualCharInt /* bool */, char readQualChar);
 
-    void samHelper_reset(CAlignmentsWriterHelper *writerHelper);
-    void samHelper_addCigarItem(CAlignmentsWriterHelper *writerHelper, int length, char op);
-    const char *samHelper_getCigarStr(CAlignmentsWriterHelper *writerHelper);
-    void samHelper_setMd(CAlignmentsWriterHelper *writerHelper, char *md);
-    void samHelper_setQueryTranslate(CAlignmentsWriterHelper *writerHelper, char *reads, char *qual, int length, int reverseStrand);
-    void samHelper_constructRefAndQuery(CAlignmentsWriterHelper *writerHelper);
-    const char *samHelper_constructedRef(CAlignmentsWriterHelper *writerHelper);
-    const char *samHelper_constructedQuery(CAlignmentsWriterHelper *writerHelper);
+    CSamHelper *samHelper_getResetSamHelper(CAlignmentsWriterHelper *writerHelper);
+    void samHelper_addCigarItem(CSamHelper *samHelper, int length, char op);
+    const char *samHelper_getCigarStr(CSamHelper *samHelper);
+    void samHelper_setMd(CSamHelper *samHelper, char *md);
+    void samHelper_setQueryTranslate(CSamHelper *samHelper, char *reads, char *qual, int length, int reverseStrand);
+    void samHelper_constructRefAndQuery(CSamHelper *samHelper);
+    const char *samHelper_constructedRef(CSamHelper *samHelper);
+    const char *samHelper_constructedQuery(CSamHelper *samHelper);
+    const char *samHelper_constructedQual(CSamHelper *samHelper);
 
 	void gobyAlignments_finished(CAlignmentsWriterHelper *alWriterHelper, unsigned int numberOfReads);
 #ifdef __cplusplus
