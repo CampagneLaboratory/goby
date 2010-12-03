@@ -252,6 +252,7 @@ extern "C" {
         samHelper->numIndels = 0;
         samHelper->numMisMatches = 0;
         samHelper->score = 0;
+        return samHelper;
     }
 
     void samHelper_addCigarItem(CSamHelper *samHelper, int length, char op) {
@@ -377,6 +378,22 @@ extern "C" {
         }
     }
 
+    /**
+     * Depends on samHelper_setQueryTranslate() being called.
+     */
+    const char *samHelper_sourceQuery(CSamHelper *samHelper) {
+        return samHelper->cpp_sourceQuery->c_str();
+    }
+    /**
+     * Depends on samHelper_setQueryTranslate() being called.
+     */
+    const char *samHelper_sourceQual(CSamHelper *samHelper) {
+        if (samHelper->cpp_sourceQual->size() == 0) {
+            return NULL;
+        } else {
+            return samHelper->cpp_sourceQual->c_str();
+        }
+    }
     /**
      * Depends on samHelper_constructRefAndQuery() being called.
      */

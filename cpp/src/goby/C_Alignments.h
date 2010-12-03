@@ -52,9 +52,11 @@ extern "C" {
     void samHelper_setMd(CSamHelper *samHelper, char *md);
     void samHelper_setQueryTranslate(CSamHelper *samHelper, char *reads, char *qual, int length, int reverseStrand);
     void samHelper_constructRefAndQuery(CSamHelper *samHelper);
-    const char *samHelper_constructedRef(CSamHelper *samHelper);
+    const char *samHelper_sourceQuery(CSamHelper *samHelper);
     const char *samHelper_constructedQuery(CSamHelper *samHelper);
+    const char *samHelper_sourceQual(CSamHelper *samHelper);
     const char *samHelper_constructedQual(CSamHelper *samHelper);
+    const char *samHelper_constructedRef(CSamHelper *samHelper);
 
 	void gobyAlignments_finished(CAlignmentsWriterHelper *alWriterHelper, unsigned int numberOfReads);
 #ifdef __cplusplus
