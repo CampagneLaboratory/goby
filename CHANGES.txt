@@ -9,7 +9,11 @@
  - Updated the C API to be more generic, less oriented toward any one
    particular 3rd party tool. The read-API is now more generic, the write-API
    hasn't changed. The C API files, including the .h header files, have been renamed.
-
+ - In C_Alignments.c/.h & C_CompactHelpers.h added CSamHelper and samHelper_* methods to assist
+   with conversion of BWA to support CompactAlignments as the data stored in BWA just prior
+   to writing alignments is effectively already in SAM format. These methods make it possible
+   to reconstruct the aligned query and reference so data can be written in compact alignment.
+ - Goby C/C++ API now requires the pcre (regex) >=8.10 library. See http://www.pcre.org/
 1.8
  - C API introduced to support native Goby support in GSNAP.
  - We now distribute a subset of Goby as the Goby IO API. This subset is packaged in the goby-io.jar
