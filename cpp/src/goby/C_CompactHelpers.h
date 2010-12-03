@@ -63,6 +63,7 @@
     #include "TooManyHits.h"
     // More complex structure for C++
     struct CSamHelper {
+        int goby_qualityAdjustment;
         std::string *cpp_cigar;
         std::string *cpp_md;
         std::string *cpp_sourceQuery;
@@ -86,10 +87,12 @@
         unsigned int largestQueryIndex;
         unsigned int numberOfAlignedReads;
         CSamHelper *samHelper;
+        int qualityAdjustment;
     };
 #else
 	// Opaque structure for C
 	typedef struct {
+        int minQualValue;
 	    void *cpp_cigar;
 	    void *cpp_md;
 	    void *cpp_sourceQuery;
@@ -113,6 +116,7 @@
 	    unsigned int largestQueryIndex;
 	    unsigned int numberOfAlignedReads;
 	    void *samHelper;
+        int qualityAdjustment;
 	} CAlignmentsWriterHelper;
 #endif
 

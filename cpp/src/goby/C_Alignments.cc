@@ -26,20 +26,27 @@ extern "C" {
 	void gobyAlignments_openAlignmentsWriter(char *basename, unsigned number_of_entries_per_chunk, CAlignmentsWriterHelper **writerHelperpp) {
         debug(fprintf(stderr,"Writing alignment to basename, entries per chunk=%d\n", basename, number_of_entries_per_chunk));
         *writerHelperpp = new CAlignmentsWriterHelper;
-		CAlignmentsWriterHelper *writerHelper = *writerHelperpp;
+        CAlignmentsWriterHelper *writerHelper = *writerHelperpp;
         string basenameStr(basename);
-
+        
         writerHelper->alignmentWriter = new goby::AlignmentWriter(basenameStr, number_of_entries_per_chunk);
-	    writerHelper->tmhWriter = new goby::TooManyHitsWriter(basenameStr, 1);
-	    writerHelper->alignmentEntry = NULL;
-	    writerHelper->sequenceVariation = NULL;
-	    writerHelper->lastSeqVarReadIndex = -1;
-	    writerHelper->smallestQueryIndex = -1;
-	    writerHelper->largestQueryIndex = -1;
-	    writerHelper->numberOfAlignedReads = 0;
+        writerHelper->tmhWriter = new goby::TooManyHitsWriter(basenameStr, 1);
+        writerHelper->alignmentEntry = NULL;
+        writerHelper->sequenceVariation = NULL;
+        writerHelper->lastSeqVarReadIndex = -1;
+        writerHelper->smallestQueryIndex = -1;
+        writerHelper->largestQueryIndex = -1;
+        writerHelper->numberOfAlignedReads = 0;
+        writerHelper->qualityAdjustment = 0;
         writerHelper->samHelper = NULL;
 	}
 
+    int gobyAlignments_getQualityAdjustment(CAlignmentsWriterHelper *writerHelper) {
+        return writerHelper->qualityAdjustment;
+    }
+    void gobyAlignments_setQualityAdjustment(CAlignmentsWriterHelper *writerHelper, int value) {
+        writerHelper->qualityAdjustment = value;
+    }
     void gobyAlignments_setAlignerName(CAlignmentsWriterHelper *writerHelper, char *value) {
         string valueStr(value);
         writerHelper->alignmentWriter->setAlignerName(valueStr);
@@ -230,14 +237,15 @@ extern "C" {
             samHelper->cpp_query = new string();
             samHelper->cpp_qual = new string();
             samHelper->cpp_ref = new string();
+            samHelper->minQualValue = writerHelper->qualityAdjustment;
         } else {
             samHelper->cpp_cigar->clear();
             samHelper->cpp_md->clear();
             samHelper->cpp_sourceQuery->clear();
             samHelper->cpp_sourceQual->clear();
-            samHelper->cpp_ref->clear();
             samHelper->cpp_query->clear();
             samHelper->cpp_qual->clear();
+            samHelper->cpp_ref->clear();
         }
         samHelper->alignedLength = 0;
         samHelper->startPosition = 0;
@@ -260,12 +268,18 @@ extern "C" {
     }
 
     void samHelper_setQueryTranslate(CSamHelper *samHelper, char *reads, char *qual, int length, int reverseStrand) {
-        int pos;
-        for (pos = 0; pos < length; pos++) {
+        if (!reverseStrand && qual) {
+            (*samHelper->cpp_sourceQual) += qual;
+        }
+        int i;
+        for (i = 0; i < length; i++) {
             if (reverseStrand) {
-                (*samHelper->cpp_sourceQuery) += "TGCAN"[(int)(reads[length - 1 - pos])];
+                (*samHelper->cpp_sourceQuery) += "TGCAN"[(int)(reads[length - 1 - i])];
+                if (qual) {
+                    (*samHelper->cpp_sourceQual) += (qual[length - 1 - i]);
+                }
             } else {
-                (*samHelper->cpp_sourceQuery) += "ACGTN"[(int)(reads[pos])];
+                (*samHelper->cpp_sourceQuery) += "ACGTN"[(int)(reads[i])];
             }
         }
     }
@@ -286,11 +300,17 @@ extern "C" {
                 case 'M':
                     // Any mis-matches will be fixed in applyMd()
                     (*samHelper->cpp_query) += samHelper->cpp_sourceQuery->substr(posInReads, length);
+                    if (samHelper->cpp_sourceQual->size() != 0) {
+                        (*samHelper->cpp_qual) += samHelper->cpp_sourceQual->substr(posInReads, length);
+                    }
                     (*samHelper->cpp_ref) += samHelper->cpp_sourceQuery->substr(posInReads, length);
                     posInReads += length;
                     break;
                 case 'I':
                     (*samHelper->cpp_query) += samHelper->cpp_sourceQuery->substr(posInReads, length);
+                    if (samHelper->cpp_sourceQual->size() != 0) {
+                        (*samHelper->cpp_qual) += samHelper->cpp_sourceQual->substr(posInReads, length);
+                    }
                     for (i = 0; i < length; i++) {
                         (*samHelper->cpp_ref) += '-';
                     }
@@ -299,6 +319,10 @@ extern "C" {
                 case 'D':
                     for (i = 0; i < length; i++) {
                         (*samHelper->cpp_query) += '-';
+                        if (samHelper->cpp_sourceQual->size() != 0) {
+                            // Minimum qual
+                            (*samHelper->cpp_qual) += ((char) samHelper->minQualValue); // min quality
+                        }
                         (*samHelper->cpp_ref) += '?';  // provided in applyMd()
                     }
                     break;
@@ -334,9 +358,14 @@ extern "C" {
     }
 
     void samHelper_constructRefAndQuery(CSamHelper *samHelper) {
-        samHelper->cpp_ref->clear();
         samHelper->cpp_query->clear();
+        samHelper->cpp_qual->clear();
+        samHelper->cpp_ref->clear();
+        samHelper->alignedLength = 0;
         samHelper->startPosition = 0;
+        samHelper->numIndels = 0;
+        samHelper->numMisMatches = 0;
+        samHelper->score = 0;
 
         applyCigar(samHelper);
         applyMd(samHelper);
@@ -345,61 +374,9 @@ extern "C" {
         // Figure out start of alignment and alignment length, by observing mismatches at head and tail
         if (samHelper->cpp_query->size() != samHelper->cpp_ref->size()) {
             printf("ERROR! reconstructed reads and refs don't match in size!!\n");
-            return;
-        }
-        int i;
-        bool startOfAlignmentFound = false;
-        for (i = 0; i < samHelper->cpp_query->size(); i++) {
-            char readChar = (*samHelper->cpp_query)[i];
-            char refChar = (*samHelper->cpp_ref)[i];
-            if (readChar == refChar) {
-                // Matching character, we know we've found the start of the alignment
-                startOfAlignmentFound = true;
-                samHelper->score++;
-            }
-            if (!startOfAlignmentFound && (readChar == '-' ||  refChar == '-')) {
-                // Found an indel, start of the alignment
-                startOfAlignmentFound = true;
-            }
-            if (startOfAlignmentFound) {
-                if (readChar == '-' || refChar == '-') {
-                    samHelper->numIndels++;
-                } else if (readChar != refChar) {
-                    samHelper->numMisMatches++;
-                }
-            } else {
-                // Only mismatches so far on the left, we increase the start position
-                // and decrease the aligned length.
-                samHelper->alignedLength--;
-                samHelper->startPosition++;
-            }
-        }
-        // If the right side doesn't match, don't count as a mismatch,
-        // just shorted the aligned length
-        for (i = samHelper->cpp_query->size() - 1; i >= 0; i--) {
-            char readChar = (*samHelper->cpp_query)[i];
-            char refChar = (*samHelper->cpp_ref)[i];
-            if (readChar == refChar) {
-                // Same character at end, no change of align length
-                break;
-            }
-            if (readChar == '-' || refChar == '-') {
-                // Indel at at, no change of align length
-                break;
-            }
-            // We know we have a mismatch and not an indel shorten the align length
-            // and don't count it as a mismatch
-            samHelper->alignedLength--;
-            samHelper->numMisMatches--;
         }
     }
 
-    /**
-     * Depends on samHelper_constructRefAndQuery() being called.
-     */
-    const char *samHelper_constructedRef(CSamHelper *samHelper) {
-        return samHelper->cpp_ref->c_str();
-    }
     /**
      * Depends on samHelper_constructRefAndQuery() being called.
      */
@@ -410,7 +387,18 @@ extern "C" {
      * Depends on samHelper_constructRefAndQuery() being called.
      */
     const char *samHelper_constructedQual(CSamHelper *samHelper) {
-        return samHelper->cpp_qual->c_str();
+        if (samHelper->cpp_qual->size() == 0) {
+            return NULL;
+        } else {
+            return samHelper->cpp_qual->c_str();
+        }
+    }
+
+    /**
+     * Depends on samHelper_constructRefAndQuery() being called.
+     */
+    const char *samHelper_constructedRef(CSamHelper *samHelper) {
+        return samHelper->cpp_ref->c_str();
     }
 
 	void gobyAlignments_finished(CAlignmentsWriterHelper *writerHelper, unsigned int numberOfReads) {
@@ -432,9 +420,9 @@ extern "C" {
                 delete writerHelper->samHelper->cpp_md;
                 delete writerHelper->samHelper->cpp_sourceQuery;
                 delete writerHelper->samHelper->cpp_sourceQual;
-                delete writerHelper->samHelper->cpp_ref;
                 delete writerHelper->samHelper->cpp_query;
                 delete writerHelper->samHelper->cpp_qual;
+                delete writerHelper->samHelper->cpp_ref;
                 delete writerHelper->samHelper;
             }
             delete writerHelper;

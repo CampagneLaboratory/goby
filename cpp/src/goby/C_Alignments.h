@@ -16,6 +16,8 @@ extern "C" {
 
     void gobyAlignments_setAlignerName(CAlignmentsWriterHelper *writerHelper, char *value);
     void gobyAlignments_setAlignerVersion(CAlignmentsWriterHelper *writerHelper, char *value);
+    int  gobyAlignments_getQualityAdjustment(CAlignmentsWriterHelper *writerHelper);
+    void gobyAlignments_setQualityAdjustment(CAlignmentsWriterHelper *writerHelper, int value);
     void gobyAlignments_setSorted(CAlignmentsWriterHelper *writerHelper, int sorted /* bool */);
     void gobyAlignments_setIndexed(CAlignmentsWriterHelper *writerHelper, int indexed /* bool */);
     void gobyAlignments_setTargetLengths(CAlignmentsWriterHelper *writerHelper, const unsigned int* target_lengths);

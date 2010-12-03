@@ -79,13 +79,13 @@ extern "C" {
         readsHelper->qualityAdjustment = 0;
 	}
 
-	int gobyReads_getQualityAdjustment(CReadsHelper *readsHelper) {
-	    return readsHelper->qualityAdjustment;
-	}
-
-	void gobyReads_setQualityAdjustment(CReadsHelper *readsHelper, int value) {
-	    readsHelper->qualityAdjustment = value;
-	}
+    int gobyReads_getQualityAdjustment(CReadsHelper *readsHelper) {
+        return readsHelper->qualityAdjustment;
+    }
+    
+    void gobyReads_setQualityAdjustment(CReadsHelper *readsHelper, int value) {
+        readsHelper->qualityAdjustment = value;
+    }
 
 	/**
 	 * This should be called ONCE per read.
