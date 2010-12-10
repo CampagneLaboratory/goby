@@ -72,6 +72,9 @@ public class AlignmentReader extends AbstractAlignmentReader {
     private boolean indexLoaded;
     private int[] targetPositionOffsets;
 
+    private int endReferenceIndex;
+    private int endPosition;
+
     /**
      * Required file extension for alignment data in "compact reads" format. Basename + extension
      * must exist and be readable for each extension in this set for an alignment to be
@@ -80,6 +83,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
     public static final String[] COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS = {
             ".entries", ".header"
     };
+    private Alignments.AlignmentEntry nextEntry;
 
     /**
      * Returns whether this alignment is sorted. Entries in a sorted alignment appear in order of
@@ -130,6 +134,74 @@ public class AlignmentReader extends AbstractAlignmentReader {
         return count == COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS.length;
     }
 
+    /**
+     * A constructor that allows reading a slice of an alignment file contained exactly between a start
+     * and an end location. Start and end locations are genomic/reference positions. Entries will be returned
+     * that occur after the start position and before the end position.
+     *
+     * @param basename            Basename for the alignemnt.
+     * @param startReferenceIndex Index of the reference for the start position.
+     * @param startPosition       Position on the reference for the start position.
+     * @param endReferenceIndex   Index of the reference for the end position.
+     * @param endPosition         Position on the reference for the end position.
+     * @throws IOException Thrown if an error occurs opening or reading the alignment file.
+     */
+    public AlignmentReader(final String basename,
+                           final int startReferenceIndex,
+                           final int startPosition,
+                           final int endReferenceIndex,
+                           final int endPosition)
+            throws IOException {
+
+        super();
+        this.basename = basename;
+
+        try {
+            headerStream = new GZIPInputStream(new FileInputStream(basename + ".header"));
+        } catch (IOException e) {
+            // try not compressed for compatibility with 1.4-:
+            LOG.trace("falling back to legacy 1.4- uncompressed header.");
+
+            headerStream = new FileInputStream(basename + ".header");
+        }
+
+        readHeader();
+        if (!indexed)
+            throw new UnsupportedOperationException("The alignment must be sorted and indexed to read slices of data by reference position.");
+        readIndex();
+        final FileInputStream stream = new FileInputStream(basename + ".entries");
+        final long startOffset = getByteOffset(startReferenceIndex, startPosition, 0);
+        final long endOffset = getByteOffset(endReferenceIndex, endPosition, 1);
+        this.endPosition = endPosition;
+        this.endReferenceIndex = endReferenceIndex;
+
+        alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset, endOffset, new FastBufferedInputStream(stream));
+        LOG.trace("start offset :" + startOffset + " end offset " + endOffset);
+
+        stats = new Properties();
+        final File statsFile = new File(basename + ".stats");
+        if (statsFile.exists()) {
+            Reader statsFileReader = null;
+            try {
+                statsFileReader = new FileReader(statsFile);
+                stats.load(statsFileReader);
+            } catch (IOException e) {
+                LOG.warn("cannot load properties for basename: " + basename, e);
+            } finally {
+                IOUtils.closeQuietly(statsFileReader);
+            }
+        }
+    }
+
+
+    /**
+     * Open a Goby alignment file for reading between the byte positions startOffset and endOffset.
+     *
+     * @param startOffset Position in the file where reading will start (in bytes).
+     * @param endOffset   Position in the file where reading will end (in bytes).
+     * @param basename    Basename of the alignment to read.
+     * @throws IOException If an error occurs opening or reading the file.
+     */
     public AlignmentReader(final long startOffset, final long endOffset, final String basename) throws IOException {
         super();
         this.basename = basename;
@@ -157,10 +229,13 @@ public class AlignmentReader extends AbstractAlignmentReader {
                 IOUtils.closeQuietly(statsFileReader);
             }
         }
+        endReferenceIndex = Integer.MAX_VALUE;
+        endPosition = Integer.MAX_VALUE;
     }
 
     public AlignmentReader(final String basename) throws IOException {
         this(0, Long.MAX_VALUE, getBasename(basename));
+
     }
 
     /**
@@ -204,6 +279,9 @@ public class AlignmentReader extends AbstractAlignmentReader {
      * @return true if the input has more entries, false otherwise.
      */
     public boolean hasNext() {
+        if (nextEntry!=null) {
+            return true;
+        }
 
         final boolean hasNext = alignmentEntryReader.hasNext(collection, numberOfEntries());
         if (!hasNext) {
@@ -220,6 +298,17 @@ public class AlignmentReader extends AbstractAlignmentReader {
         } catch (IOException e) {
             throw new GobyRuntimeException(e);
         }
+        if (collection==null) return false;
+        nextEntry = collection.getAlignmentEntries(alignmentEntryReader.getEntryIndex());
+      //  if (nextEntry == null) return false
+        final int entryTargetIndex = nextEntry.getTargetIndex();
+
+        // Early stop if we are past the end location:
+        if (entryTargetIndex > endReferenceIndex ||
+                (entryTargetIndex == endReferenceIndex && nextEntry.getPosition() > endPosition)) {
+            nextEntry = null;
+            return false;
+        }
         return hasNext;
     }
 
@@ -230,10 +319,17 @@ public class AlignmentReader extends AbstractAlignmentReader {
      */
     public Alignments.AlignmentEntry next() {
 
-        if (!alignmentEntryReader.hasNext(collection, numberOfEntries())) {
+        if (!hasNext()) {
             throw new NoSuchElementException();
         }
-        return collection.getAlignmentEntries(alignmentEntryReader.incrementEntryIndex());
+        try {
+            return nextEntry;
+
+        } finally {
+            alignmentEntryReader.incrementEntryIndex();
+            nextEntry = null;
+        }
+
     }
 
     /**
@@ -288,7 +384,10 @@ public class AlignmentReader extends AbstractAlignmentReader {
         final int absolutePosition = recodePosition(targetIndex, position);
         int offsetIndex = Arrays.binarySearch(indexAbsolutePositions.elements(), absolutePosition);
         offsetIndex = offsetIndex < 0 ? -1 - offsetIndex : offsetIndex;
-        offsetIndex = offsetIndex >= indexOffsets.size() ? indexOffsets.size() - 1 : offsetIndex;
+        // NB offsetIndex contains absolutePosition in the first entry, but the chunk before it also likely
+        // contains entries with this absolute position. We therefore substract one to position on the chunk
+        // before. 
+        offsetIndex = offsetIndex >= indexOffsets.size() ? indexOffsets.size() - 1 : offsetIndex -1;
         if (offsetIndex < 0) {
             // empty alignment.
             return;
@@ -300,6 +399,48 @@ public class AlignmentReader extends AbstractAlignmentReader {
 
             alignmentEntryReader.seek(newPosition);
         }
+    }
+
+    /**
+     * Calculate the offset (in bytes) in the compact entries file for a specific targetIndex and position.
+     * Entries that can be read after this position are garanteed to have targetIndex larger or equal to targetIndex
+     * and positions larger or equal to position.
+     * The parameter chunkOffset can be used to iterate through successive protocol buffer compressed chunks.
+     * A typical usage is to call getByteOffset with startReference and startPosition. A second call to getByteOffset
+     * with endReference and endPosition with chunkOffset=0 will return an end position. If the end and start positions
+     * are the same, both start and end locations are in the same chunk. In this case, it is necessary to extend the end
+     * byte position to include the entire chunk. This can be achieved by calling getByteOffset with  endReference and endPosition
+     * and a chunkOffset of 1. Because it is possible that the next chunk also contains only entries with the same position,
+     * one must
+     * use 0, 1,2, etc until the returned offset differs allows to make sure the indexed position is at the start of a new chunk.
+     *
+     * @param targetIndex Index of a reference sequence.
+     * @param position    Position along the reference sequence.
+     * @param chunkOffset Offset used to iterate through successive PB chunks.
+     * @return the largest position in byte in the entries file that occur before the location (targetIndex, position) or
+     *         Long.MIN_VALUE if the offset cannot be determined (e.g., alignment is empty).
+     */
+    private long getByteOffset(final int targetIndex, final int position, final int chunkOffset) {
+
+        if (targetIndex > targetPositionOffsets.length) return Long.MAX_VALUE;
+
+        final int absolutePosition = recodePosition(targetIndex, position);
+        int offsetIndex = Arrays.binarySearch(indexAbsolutePositions.elements(), absolutePosition);
+        offsetIndex = offsetIndex < 0 ? -1 - offsetIndex : offsetIndex;
+        offsetIndex = offsetIndex >= indexOffsets.size() ? indexOffsets.size() - 1 : offsetIndex;
+        if (offsetIndex < 0) {
+            // empty alignment.
+            return Long.MIN_VALUE;
+        }
+
+        if (offsetIndex + chunkOffset < indexOffsets.size()) {
+            final long byteOffset = indexOffsets.getLong(offsetIndex + chunkOffset);
+            return byteOffset;
+        } else {
+            // return an end-offset past the beginning of the last chunk:
+            return indexOffsets.getLong(offsetIndex) + 10;
+        }
+
     }
 
     protected int recodePosition(final int firstTargetIndexInChunk, final int firstPositionInChunk) {

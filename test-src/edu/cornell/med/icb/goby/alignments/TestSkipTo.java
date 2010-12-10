@@ -44,6 +44,7 @@ public class TestSkipTo {
      */
     private static final Log LOG = LogFactory.getLog(TestSkipTo.class);
     private static final String BASE_TEST_DIR = "test-results/alignments-skip-to";
+    private int numEntriesPerChunk=2;
 
     @BeforeClass
     public static void initializeTestDirectory() throws IOException {
@@ -66,7 +67,7 @@ public class TestSkipTo {
         final String basename = "align-skip-to-1";
         final AlignmentWriter writer =
                 new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, basename));
-        writer.setNumAlignmentEntriesPerChunk(1);
+        writer.setNumAlignmentEntriesPerChunk(numEntriesPerChunk);
 
         final int numTargets = 3;
         final int[] targetLengths = new int[numTargets];
@@ -129,7 +130,7 @@ public class TestSkipTo {
         final String basename = "align-skip-to-1-concat";
         final AlignmentWriter writer =
                 new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, basename));
-        writer.setNumAlignmentEntriesPerChunk(1);
+        writer.setNumAlignmentEntriesPerChunk(numEntriesPerChunk);
 
         final int numTargets = 3;
         final int[] targetLengths = new int[numTargets];
@@ -214,7 +215,7 @@ public class TestSkipTo {
         final String basename = "align-skip-to-2";
         final AlignmentWriter writer =
                 new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, basename));
-        writer.setNumAlignmentEntriesPerChunk(1);
+        writer.setNumAlignmentEntriesPerChunk(numEntriesPerChunk);
 
         final int numTargets = 3;
         final int[] targetLengths = new int[numTargets];
@@ -271,7 +272,7 @@ public class TestSkipTo {
         final String basename = "align-skip-to-3";
         final AlignmentWriter writer =
                 new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, basename));
-        writer.setNumAlignmentEntriesPerChunk(1);
+        writer.setNumAlignmentEntriesPerChunk(numEntriesPerChunk);
 
         final int numTargets = 3;
         final int[] targetLengths = new int[numTargets];
@@ -298,4 +299,63 @@ public class TestSkipTo {
 
 
     }
+
+
+    @Test
+    public void testFewSkips4() throws IOException {
+        final String basename = "align-skip-to-2";
+        final AlignmentWriter writer =
+                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, basename));
+        writer.setNumAlignmentEntriesPerChunk(numEntriesPerChunk);
+
+        final int numTargets = 3;
+        final int[] targetLengths = new int[numTargets];
+
+        for (int referenceIndex = 0; referenceIndex < numTargets; referenceIndex++) {
+            targetLengths[referenceIndex] = 1000;
+        }
+        writer.setTargetLengths(targetLengths);
+        // we write this alignment sorted:
+
+        writer.setSorted(true);
+
+        writer.setAlignmentEntry(0, 1, 12, 30, false);
+        writer.appendEntry();
+
+        writer.setAlignmentEntry(0, 1, 13, 30, false);
+        writer.appendEntry();
+
+        writer.setAlignmentEntry(0, 1, 13, 30, false);
+        writer.appendEntry();
+
+        writer.setAlignmentEntry(0, 2, 123, 30, false);
+        writer.appendEntry();
+        writer.setAlignmentEntry(0, 2, 300, 30, false);
+        writer.appendEntry();
+        writer.setAlignmentEntry(0, 2, 300, 30, false);
+        writer.appendEntry();
+        writer.close();
+        writer.printStats(System.out);
+
+        final AlignmentReader reader =
+                new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, basename));
+
+
+        final Alignments.AlignmentEntry c = reader.skipTo(1, 13);
+        assertEquals(1, c.getTargetIndex());
+        assertEquals(13, c.getPosition());
+
+
+        final Alignments.AlignmentEntry d = reader.next();
+        assertEquals(1, d.getTargetIndex());
+        assertEquals(13, d.getPosition());
+
+        final Alignments.AlignmentEntry e = reader.next();
+               assertEquals(2, e.getTargetIndex());
+               assertEquals(123, e.getPosition());
+
+
+
+    }
+
 }

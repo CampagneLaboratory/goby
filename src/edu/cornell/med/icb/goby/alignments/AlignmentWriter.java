@@ -189,7 +189,8 @@ public class AlignmentWriter implements Closeable {
     @Deprecated
     public final void setAlignmentEntry(final int queryIndex, final int targetIndex,
                                         final int position,
-                                        final float score, final boolean matchesReverseStrand) {
+                                        final float score,
+                                        final boolean matchesReverseStrand) {
         newEntry.setQueryIndex(queryIndex);
         newEntry.setTargetIndex(targetIndex);
         newEntry.setScore(score);

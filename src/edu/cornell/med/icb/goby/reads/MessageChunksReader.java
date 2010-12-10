@@ -126,6 +126,15 @@ public class MessageChunksReader implements Closeable {
     }
 
     /**
+     * Returns the current entry index.
+     *
+     * @return The current entry index.
+     */
+    public int getEntryIndex() {
+        return entryIndex;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public void close() {
