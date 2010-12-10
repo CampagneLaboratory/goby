@@ -74,7 +74,8 @@ public class AlignmentReader extends AbstractAlignmentReader {
 
     private int endReferenceIndex;
     private int endPosition;
-
+    private int startPosition;
+    private int startReferenceIndex;
     /**
      * Required file extension for alignment data in "compact reads" format. Basename + extension
      * must exist and be readable for each extension in this set for an alignment to be
@@ -84,6 +85,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
             ".entries", ".header"
     };
     private Alignments.AlignmentEntry nextEntry;
+
 
     /**
      * Returns whether this alignment is sorted. Entries in a sorted alignment appear in order of
@@ -171,11 +173,12 @@ public class AlignmentReader extends AbstractAlignmentReader {
         readIndex();
         final FileInputStream stream = new FileInputStream(basename + ".entries");
         final long startOffset = getByteOffset(startReferenceIndex, startPosition, 0);
-        final long endOffset = getByteOffset(endReferenceIndex, endPosition, 1);
+        final long endOffset = getByteOffset(endReferenceIndex, endPosition +1, 1);
         this.endPosition = endPosition;
         this.endReferenceIndex = endReferenceIndex;
-
-        alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset, endOffset, new FastBufferedInputStream(stream));
+        this.startPosition = startPosition;
+        this.startReferenceIndex = startReferenceIndex;
+        alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset>0?startOffset:0, endOffset, new FastBufferedInputStream(stream));
         LOG.trace("start offset :" + startOffset + " end offset " + endOffset);
 
         stats = new Properties();
@@ -229,6 +232,8 @@ public class AlignmentReader extends AbstractAlignmentReader {
                 IOUtils.closeQuietly(statsFileReader);
             }
         }
+        startReferenceIndex = 0;
+        startPosition = 0;
         endReferenceIndex = Integer.MAX_VALUE;
         endPosition = Integer.MAX_VALUE;
     }
@@ -279,7 +284,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
      * @return true if the input has more entries, false otherwise.
      */
     public boolean hasNext() {
-        if (nextEntry!=null) {
+        if (nextEntry != null) {
             return true;
         }
 
@@ -298,10 +303,16 @@ public class AlignmentReader extends AbstractAlignmentReader {
         } catch (IOException e) {
             throw new GobyRuntimeException(e);
         }
-        if (collection==null) return false;
-        nextEntry = collection.getAlignmentEntries(alignmentEntryReader.getEntryIndex());
-      //  if (nextEntry == null) return false
-        final int entryTargetIndex = nextEntry.getTargetIndex();
+        if (collection == null) return false;
+        int entryTargetIndex = -1;
+        do {
+            nextEntry = collection.getAlignmentEntries(alignmentEntryReader.getEntryIndex());
+
+            //  if (nextEntry == null) return false
+            entryTargetIndex = nextEntry.getTargetIndex();
+            alignmentEntryReader.incrementEntryIndex();
+        } while (entryTargetIndex < startReferenceIndex ||
+                (entryTargetIndex == startReferenceIndex && nextEntry.getPosition() < startPosition));
 
         // Early stop if we are past the end location:
         if (entryTargetIndex > endReferenceIndex ||
@@ -326,7 +337,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
             return nextEntry;
 
         } finally {
-            alignmentEntryReader.incrementEntryIndex();
+
             nextEntry = null;
         }
 
@@ -387,7 +398,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
         // NB offsetIndex contains absolutePosition in the first entry, but the chunk before it also likely
         // contains entries with this absolute position. We therefore substract one to position on the chunk
         // before. 
-        offsetIndex = offsetIndex >= indexOffsets.size() ? indexOffsets.size() - 1 : offsetIndex -1;
+        offsetIndex = offsetIndex >= indexOffsets.size() ? indexOffsets.size() - 1 : offsetIndex - 1;
         if (offsetIndex < 0) {
             // empty alignment.
             return;
@@ -427,7 +438,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
         final int absolutePosition = recodePosition(targetIndex, position);
         int offsetIndex = Arrays.binarySearch(indexAbsolutePositions.elements(), absolutePosition);
         offsetIndex = offsetIndex < 0 ? -1 - offsetIndex : offsetIndex;
-        offsetIndex = offsetIndex >= indexOffsets.size() ? indexOffsets.size() - 1 : offsetIndex;
+        offsetIndex = offsetIndex >= indexOffsets.size() ? indexOffsets.size() - 1 : offsetIndex - 1;
         if (offsetIndex < 0) {
             // empty alignment.
             return Long.MIN_VALUE;

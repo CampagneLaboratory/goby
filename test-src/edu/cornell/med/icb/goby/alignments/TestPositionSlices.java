@@ -121,6 +121,7 @@ public class TestPositionSlices {
         }
     }
  //TODO Enable this test
+   @Test
     public void testThreeSlice() throws IOException {
         final String basename = "align-position-slices-3";
         buildAlignment(basename);
