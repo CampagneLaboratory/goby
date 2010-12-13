@@ -128,7 +128,7 @@ public class MessageChunksWriter {
         if (totalEntriesWritten == 0 || numAppended > 0) {
 
             if (LOG.isTraceEnabled()) {
-                LOG.trace("writing zero bytes {" + DELIMITER_LENGTH);
+                LOG.trace("writing zero bytes length=" + DELIMITER_LENGTH);
             }
             for (int i = 0; i < DELIMITER_LENGTH; i++) {
                 out.writeByte(DELIMITER_CONTENT);
@@ -143,7 +143,8 @@ public class MessageChunksWriter {
 
             final int serializedSize = compressedStream.size();
             if (LOG.isTraceEnabled()) {
-                LOG.trace("serializedSize: " + serializedSize);
+                LOG.trace("serialized compressed size: " + serializedSize);
+
             }
 
             // the position just before this chunk is written is recorded:
@@ -153,7 +154,10 @@ public class MessageChunksWriter {
             out.write(compressedStream.toByteArray());
 
             totalBytesWritten += serializedSize + 4 + DELIMITER_LENGTH;
-    
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("current offset: "+totalBytesWritten);
+
+            }
             out.flush();
             numAppended = 0;
             collectionBuilder.clear();

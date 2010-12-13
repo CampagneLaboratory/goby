@@ -283,6 +283,7 @@ public class AlignmentWriter implements Closeable {
     }
 
     protected long recodePosition(final int firstTargetIndexInChunk, final int firstPositionInChunk) {
+        assert   firstTargetIndexInChunk < targetPositionOffsets.length : "Target length array must have enough elements to store each possible target index.";
         return targetPositionOffsets[firstTargetIndexInChunk] + firstPositionInChunk;
     }
 
