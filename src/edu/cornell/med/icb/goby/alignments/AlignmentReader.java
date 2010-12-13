@@ -431,7 +431,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
      * @return the largest position in byte in the entries file that occur before the location (targetIndex, position) or
      *         Long.MIN_VALUE if the offset cannot be determined (e.g., alignment is empty).
      */
-    private long getByteOffset(final int targetIndex, final int position, final int chunkOffset) {
+    protected long getByteOffset(final int targetIndex, final int position, final int chunkOffset) {
 
         if (targetIndex > targetPositionOffsets.length) return Long.MAX_VALUE;
 
