@@ -353,6 +353,9 @@ public class AlignmentWriter implements Closeable {
 
     private void writeIndex() throws IOException {
         if (!indexWritten) {
+            // Push the last chunkoffset:
+            pushIndex(previousChunkOffset, firstTargetIndexInChunk, firstPositionInChunk);
+
             final GZIPOutputStream indexOutput = new GZIPOutputStream(new FileOutputStream(basename + ".index"));
             final Alignments.AlignmentIndex.Builder indexBuilder = Alignments.AlignmentIndex.newBuilder();
             assert (indexOffsets.size() == indexAbsolutePositions.size()) : "index sizes must be consistent.";
@@ -384,9 +387,9 @@ public class AlignmentWriter implements Closeable {
             // determine query lengths are constant (regardless of where they came from)
             if (uniqueQueryLengths.size() == 1) {
                 // detected constant read length.
-                 constantQueryLength = uniqueQueryLengths.iterator().nextInt();
-                 headerBuilder.setConstantQueryLength(constantQueryLength);
-                 isConstantQueryLength = true;
+                constantQueryLength = uniqueQueryLengths.iterator().nextInt();
+                headerBuilder.setConstantQueryLength(constantQueryLength);
+                isConstantQueryLength = true;
             } else {
                 constantQueryLength = 0;
                 isConstantQueryLength = false;

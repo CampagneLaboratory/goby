@@ -121,7 +121,7 @@ public class TestPositionSlices {
         }
     }
  //TODO Enable this test
-  
+   @Test
     public void testThreeSlice() throws IOException {
         final String basename = "align-position-slices-3";
         buildAlignment(basename);
@@ -132,7 +132,6 @@ public class TestPositionSlices {
                     new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, basename),
                             1, 13, 2, 123);
 
-
             check(reader, 1, 13);
             check(reader, 1, 13);
             check(reader, 1, 13);
@@ -142,6 +141,7 @@ public class TestPositionSlices {
         }
     }
   //TODO Enable this test
+    @Test
      public void testFourSlice() throws IOException {
         final String basename = "align-position-slices-4";
         buildAlignment(basename);
@@ -180,21 +180,21 @@ public class TestPositionSlices {
         writer.setAlignmentEntry(0, 1, 12, 30, false);
         writer.appendEntry();
 
-        writer.setAlignmentEntry(0, 1, 13, 30, false);
+        writer.setAlignmentEntry(0, 1, 13, 1, false);
         writer.appendEntry();
         // chunk 2:
-        writer.setAlignmentEntry(0, 1, 13, 30, false);
+        writer.setAlignmentEntry(0, 1, 13, 2, false);
         writer.appendEntry();
 
-        writer.setAlignmentEntry(0, 1, 13, 30, false);
+        writer.setAlignmentEntry(0, 1, 13, 3, false);
         writer.appendEntry();
         // chunk 3:
         writer.setAlignmentEntry(0, 2, 123, 30, false);
         writer.appendEntry();
-        writer.setAlignmentEntry(0, 2, 300, 30, false);
+        writer.setAlignmentEntry(0, 2, 300, 1, false);
         writer.appendEntry();
         // chunk 4:
-        writer.setAlignmentEntry(0, 2, 300, 30, false);
+        writer.setAlignmentEntry(0, 2, 300, 2, false);
         writer.appendEntry();
         writer.close();
         writer.printStats(System.out);
