@@ -70,7 +70,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
     private Properties stats;
     private String basename;
     private boolean indexLoaded;
-    private int[] targetPositionOffsets;
+    private long[] targetPositionOffsets;
 
     private int endReferenceIndex;
     private int endPosition;
@@ -173,12 +173,12 @@ public class AlignmentReader extends AbstractAlignmentReader {
         readIndex();
         final FileInputStream stream = new FileInputStream(basename + ".entries");
         final long startOffset = getByteOffset(startReferenceIndex, startPosition, 0);
-        final long endOffset = getByteOffset(endReferenceIndex, endPosition +1, 1);
+        final long endOffset = getByteOffset(endReferenceIndex, endPosition + 1, 1);
         this.endPosition = endPosition;
         this.endReferenceIndex = endReferenceIndex;
         this.startPosition = startPosition;
         this.startReferenceIndex = startReferenceIndex;
-        alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset>0?startOffset:0, endOffset, new FastBufferedInputStream(stream));
+        alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset > 0 ? startOffset : 0, endOffset, new FastBufferedInputStream(stream));
         LOG.trace("start offset :" + startOffset + " end offset " + endOffset);
 
         stats = new Properties();
@@ -306,6 +306,10 @@ public class AlignmentReader extends AbstractAlignmentReader {
         if (collection == null) return false;
         int entryTargetIndex = -1;
         do {
+            if (!alignmentEntryReader.hasNext(collection, numberOfEntries())) {
+                nextEntry = null;
+                return false;
+            }
             nextEntry = collection.getAlignmentEntries(alignmentEntryReader.getEntryIndex());
 
             //  if (nextEntry == null) return false
@@ -392,7 +396,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
         if (!indexLoaded) {
             return;
         }
-        final int absolutePosition = recodePosition(targetIndex, position);
+        final long absolutePosition = recodePosition(targetIndex, position);
         int offsetIndex = Arrays.binarySearch(indexAbsolutePositions.elements(), absolutePosition);
         offsetIndex = offsetIndex < 0 ? -1 - offsetIndex : offsetIndex;
         // NB offsetIndex contains absolutePosition in the first entry, but the chunk before it also likely
@@ -435,7 +439,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
 
         if (targetIndex > targetPositionOffsets.length) return Long.MAX_VALUE;
 
-        final int absolutePosition = recodePosition(targetIndex, position);
+        final long absolutePosition = recodePosition(targetIndex, position);
         int offsetIndex = Arrays.binarySearch(indexAbsolutePositions.elements(), absolutePosition);
         offsetIndex = offsetIndex < 0 ? -1 - offsetIndex : offsetIndex;
         offsetIndex = offsetIndex >= indexOffsets.size() ? indexOffsets.size() - 1 : offsetIndex - 1;
@@ -454,7 +458,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
 
     }
 
-    protected int recodePosition(final int firstTargetIndexInChunk, final int firstPositionInChunk) {
+    protected long recodePosition(final int firstTargetIndexInChunk, final int firstPositionInChunk) {
         return targetPositionOffsets[firstTargetIndexInChunk] + firstPositionInChunk;
     }
 
@@ -541,7 +545,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
             indexAbsolutePositions.trim();
             indexOffsets.trim();
 // calculate the coding offset for each target index. This information will be used by recode
-            targetPositionOffsets = new int[targetLengths.length];
+            targetPositionOffsets = new long[targetLengths.length];
             for (int targetIndex = 0; targetIndex < targetLengths.length; targetIndex++) {
                 targetPositionOffsets[targetIndex] += targetLengths[targetIndex];
                 targetPositionOffsets[targetIndex] += targetIndex < 1 ? 0 : targetPositionOffsets[targetIndex - 1];
