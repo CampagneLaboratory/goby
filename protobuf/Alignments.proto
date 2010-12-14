@@ -10,6 +10,16 @@ message AlignmentCollection {
      repeated AlignmentEntry alignment_entries =1;
 }
 
+/* A related alignment entry such as a Pair.
+      Relationship types:
+          1  : Pair
+ */
+message RelatedAlignmentEntry {
+  required uint32 target_index=3;
+  required uint32 query_index=4;
+  required uint32 position=5;
+}
+
 message AlignmentEntry {
  /* Multiplicity of this entry. The number of times this  alignment entry would be repeated exactly the same if
   query redundancy had not been removed by read factorization.
@@ -98,10 +108,25 @@ message AlignmentEntry {
     something like -10*log10(1-0.2) = 1.  If a mapping is highly likely,
     say a 1e-4 of it being wrong, then the mapping quality would be
     -10*log10(1e-4) = 40.
-
-
   */
   optional int32 mapping_quality=14;
+
+  /* If this read was aligned with a pair, the flags for the pair alignment (based on SAM):
+          1    paired
+          2    properly paired
+          4    read unmapped
+          8    mate unmapped
+         16    read reverse strand
+         32    mate reverse strand
+         64    first in pair
+        128    second in pair
+        256    not primary alignment
+   */
+  optional uint32 pair_flags=15;
+
+  /* If there is a paired alignment entry, a reference to it will be found here.
+   */
+  optional RelatedAlignmentEntry pair_alignment_entry=16;
 }
 
 /*
