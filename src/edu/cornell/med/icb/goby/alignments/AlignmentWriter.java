@@ -283,7 +283,7 @@ public class AlignmentWriter implements Closeable {
     }
 
     protected long recodePosition(final int firstTargetIndexInChunk, final int firstPositionInChunk) {
-        assert   firstTargetIndexInChunk < targetPositionOffsets.length : "Target length array must have enough elements to store each possible target index.";
+        assert firstTargetIndexInChunk < targetPositionOffsets.length : "Target length array must have enough elements to store each possible target index.";
         return targetPositionOffsets[firstTargetIndexInChunk] + firstPositionInChunk;
     }
 
@@ -356,15 +356,19 @@ public class AlignmentWriter implements Closeable {
         if (!indexWritten) {
             // Push the last chunkoffset:
             pushIndex(previousChunkOffset, firstTargetIndexInChunk, firstPositionInChunk);
-
-            final GZIPOutputStream indexOutput = new GZIPOutputStream(new FileOutputStream(basename + ".index"));
-            final Alignments.AlignmentIndex.Builder indexBuilder = Alignments.AlignmentIndex.newBuilder();
-            assert (indexOffsets.size() == indexAbsolutePositions.size()) : "index sizes must be consistent.";
-            indexBuilder.addAllOffsets(indexOffsets);
-            indexBuilder.addAllAbsolutePositions(indexAbsolutePositions);
-            indexBuilder.build().writeTo(indexOutput);
-            indexOutput.close();
-            indexWritten = true;
+            GZIPOutputStream indexOutput = null;
+            try {
+                indexOutput = new GZIPOutputStream(new FileOutputStream(basename + ".index"));
+                final Alignments.AlignmentIndex.Builder indexBuilder = Alignments.AlignmentIndex.newBuilder();
+                assert (indexOffsets.size() == indexAbsolutePositions.size()) : "index sizes must be consistent.";
+                indexBuilder.addAllOffsets(indexOffsets);
+                indexBuilder.addAllAbsolutePositions(indexAbsolutePositions);
+                indexBuilder.build().writeTo(indexOutput);
+            }
+            finally {
+               if (indexOutput!=null) indexOutput.close();
+                indexWritten = true;
+            }
         }
     }
 
