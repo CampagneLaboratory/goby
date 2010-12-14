@@ -372,7 +372,7 @@ public class AlignmentWriter implements Closeable {
         }
     }
 
-    private void writeHeader() throws IOException {
+    private synchronized void writeHeader() throws IOException {
         if (!headerWritten) {
 
             final Alignments.AlignmentHeader.Builder headerBuilder = Alignments.AlignmentHeader.newBuilder();
@@ -420,7 +420,7 @@ public class AlignmentWriter implements Closeable {
         }
     }
 
-    private void writeStats() throws IOException {
+    private synchronized void writeStats() throws IOException {
         if (!statsWritten) {
             stats.put("basename", FilenameUtils.getBaseName(basename));
             stats.put("min.query.index", Integer.toString(minQueryIndex));

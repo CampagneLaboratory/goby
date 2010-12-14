@@ -125,7 +125,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
 
         final String filenameNoExtension = FilenameUtils.removeExtension(filename);
         int count = 0;
-        for (final String extension : COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS) {
+        for (final String extension : AlignmentReader.COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS) {
             final File fileComponent = new File(filenameNoExtension + extension);
 
             if (fileComponent.canRead()) {
@@ -133,7 +133,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
                 count++;
             }
         }
-        return count == COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS.length;
+        return count == AlignmentReader.COMPACT_ALIGNMENT_FILE_REQUIRED_EXTS.length;
     }
 
     /**

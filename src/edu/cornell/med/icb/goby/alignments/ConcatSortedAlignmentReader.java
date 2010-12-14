@@ -151,10 +151,6 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
     }
 
     /**
-     * The minimum entry, according to position sort order.
-     */
-    Alignments.AlignmentEntry minEntry = null;
-    /**
      * The index of the reader that provided minEntry.
      */
     int minReaderIndex;
