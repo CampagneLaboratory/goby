@@ -33,8 +33,8 @@ void protobuf_AssignDesc_Alignments_2eproto();
 void protobuf_ShutdownFile_Alignments_2eproto();
 
 class AlignmentCollection;
-class RelatedAlignmentEntry;
 class AlignmentEntry;
+class RelatedAlignmentEntry;
 class SequenceVariation;
 class AlignmentHeader;
 class IdentifierMapping;
@@ -136,111 +136,6 @@ class AlignmentCollection : public ::google::protobuf::Message {
   
   void InitAsDefaultInstance();
   static AlignmentCollection* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class RelatedAlignmentEntry : public ::google::protobuf::Message {
- public:
-  RelatedAlignmentEntry();
-  virtual ~RelatedAlignmentEntry();
-  
-  RelatedAlignmentEntry(const RelatedAlignmentEntry& from);
-  
-  inline RelatedAlignmentEntry& operator=(const RelatedAlignmentEntry& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-  
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-  
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const RelatedAlignmentEntry& default_instance();
-  
-  void Swap(RelatedAlignmentEntry* other);
-  
-  // implements Message ----------------------------------------------
-  
-  RelatedAlignmentEntry* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const RelatedAlignmentEntry& from);
-  void MergeFrom(const RelatedAlignmentEntry& from);
-  void Clear();
-  bool IsInitialized() const;
-  
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-  
-  ::google::protobuf::Metadata GetMetadata() const;
-  
-  // nested types ----------------------------------------------------
-  
-  // accessors -------------------------------------------------------
-  
-  // required uint32 target_index = 3;
-  inline bool has_target_index() const;
-  inline void clear_target_index();
-  static const int kTargetIndexFieldNumber = 3;
-  inline ::google::protobuf::uint32 target_index() const;
-  inline void set_target_index(::google::protobuf::uint32 value);
-  
-  // required uint32 query_index = 4;
-  inline bool has_query_index() const;
-  inline void clear_query_index();
-  static const int kQueryIndexFieldNumber = 4;
-  inline ::google::protobuf::uint32 query_index() const;
-  inline void set_query_index(::google::protobuf::uint32 value);
-  
-  // required uint32 position = 5;
-  inline bool has_position() const;
-  inline void clear_position();
-  static const int kPositionFieldNumber = 5;
-  inline ::google::protobuf::uint32 position() const;
-  inline void set_position(::google::protobuf::uint32 value);
-  
-  // @@protoc_insertion_point(class_scope:goby.RelatedAlignmentEntry)
- private:
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-  mutable int _cached_size_;
-  
-  ::google::protobuf::uint32 target_index_;
-  ::google::protobuf::uint32 query_index_;
-  ::google::protobuf::uint32 position_;
-  friend void  protobuf_AddDesc_Alignments_2eproto();
-  friend void protobuf_AssignDesc_Alignments_2eproto();
-  friend void protobuf_ShutdownFile_Alignments_2eproto();
-  
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
-  
-  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
-  inline bool _has_bit(int index) const {
-    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
-  }
-  inline void _set_bit(int index) {
-    _has_bits_[index / 32] |= (1u << (index % 32));
-  }
-  inline void _clear_bit(int index) {
-    _has_bits_[index / 32] &= ~(1u << (index % 32));
-  }
-  
-  void InitAsDefaultInstance();
-  static RelatedAlignmentEntry* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -408,12 +303,19 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 pair_flags() const;
   inline void set_pair_flags(::google::protobuf::uint32 value);
   
-  // optional .goby.RelatedAlignmentEntry pair_alignment_entry = 16;
-  inline bool has_pair_alignment_entry() const;
-  inline void clear_pair_alignment_entry();
-  static const int kPairAlignmentEntryFieldNumber = 16;
-  inline const ::goby::RelatedAlignmentEntry& pair_alignment_entry() const;
-  inline ::goby::RelatedAlignmentEntry* mutable_pair_alignment_entry();
+  // optional .goby.RelatedAlignmentEntry pair_alignment_link = 16;
+  inline bool has_pair_alignment_link() const;
+  inline void clear_pair_alignment_link();
+  static const int kPairAlignmentLinkFieldNumber = 16;
+  inline const ::goby::RelatedAlignmentEntry& pair_alignment_link() const;
+  inline ::goby::RelatedAlignmentEntry* mutable_pair_alignment_link();
+  
+  // optional uint32 fragment_index = 17;
+  inline bool has_fragment_index() const;
+  inline void clear_fragment_index();
+  static const int kFragmentIndexFieldNumber = 17;
+  inline ::google::protobuf::uint32 fragment_index() const;
+  inline void set_fragment_index(::google::protobuf::uint32 value);
   
   // @@protoc_insertion_point(class_scope:goby.AlignmentEntry)
  private:
@@ -435,12 +337,13 @@ class AlignmentEntry : public ::google::protobuf::Message {
   ::google::protobuf::uint32 query_length_;
   ::google::protobuf::int32 mapping_quality_;
   ::google::protobuf::uint32 pair_flags_;
-  ::goby::RelatedAlignmentEntry* pair_alignment_entry_;
+  ::goby::RelatedAlignmentEntry* pair_alignment_link_;
+  ::google::protobuf::uint32 fragment_index_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
   friend void protobuf_ShutdownFile_Alignments_2eproto();
   
-  ::google::protobuf::uint32 _has_bits_[(16 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(17 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
   inline bool _has_bit(int index) const {
@@ -455,6 +358,111 @@ class AlignmentEntry : public ::google::protobuf::Message {
   
   void InitAsDefaultInstance();
   static AlignmentEntry* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class RelatedAlignmentEntry : public ::google::protobuf::Message {
+ public:
+  RelatedAlignmentEntry();
+  virtual ~RelatedAlignmentEntry();
+  
+  RelatedAlignmentEntry(const RelatedAlignmentEntry& from);
+  
+  inline RelatedAlignmentEntry& operator=(const RelatedAlignmentEntry& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+  
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+  
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const RelatedAlignmentEntry& default_instance();
+  
+  void Swap(RelatedAlignmentEntry* other);
+  
+  // implements Message ----------------------------------------------
+  
+  RelatedAlignmentEntry* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const RelatedAlignmentEntry& from);
+  void MergeFrom(const RelatedAlignmentEntry& from);
+  void Clear();
+  bool IsInitialized() const;
+  
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  
+  ::google::protobuf::Metadata GetMetadata() const;
+  
+  // nested types ----------------------------------------------------
+  
+  // accessors -------------------------------------------------------
+  
+  // required uint32 target_index = 1;
+  inline bool has_target_index() const;
+  inline void clear_target_index();
+  static const int kTargetIndexFieldNumber = 1;
+  inline ::google::protobuf::uint32 target_index() const;
+  inline void set_target_index(::google::protobuf::uint32 value);
+  
+  // required uint32 position = 2;
+  inline bool has_position() const;
+  inline void clear_position();
+  static const int kPositionFieldNumber = 2;
+  inline ::google::protobuf::uint32 position() const;
+  inline void set_position(::google::protobuf::uint32 value);
+  
+  // required uint32 fragment_index = 3;
+  inline bool has_fragment_index() const;
+  inline void clear_fragment_index();
+  static const int kFragmentIndexFieldNumber = 3;
+  inline ::google::protobuf::uint32 fragment_index() const;
+  inline void set_fragment_index(::google::protobuf::uint32 value);
+  
+  // @@protoc_insertion_point(class_scope:goby.RelatedAlignmentEntry)
+ private:
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+  mutable int _cached_size_;
+  
+  ::google::protobuf::uint32 target_index_;
+  ::google::protobuf::uint32 position_;
+  ::google::protobuf::uint32 fragment_index_;
+  friend void  protobuf_AddDesc_Alignments_2eproto();
+  friend void protobuf_AssignDesc_Alignments_2eproto();
+  friend void protobuf_ShutdownFile_Alignments_2eproto();
+  
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  
+  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
+  inline bool _has_bit(int index) const {
+    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
+  }
+  inline void _set_bit(int index) {
+    _has_bits_[index / 32] |= (1u << (index % 32));
+  }
+  inline void _clear_bit(int index) {
+    _has_bits_[index / 32] &= ~(1u << (index % 32));
+  }
+  
+  void InitAsDefaultInstance();
+  static RelatedAlignmentEntry* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -1367,58 +1375,6 @@ AlignmentCollection::mutable_alignment_entries() {
 
 // -------------------------------------------------------------------
 
-// RelatedAlignmentEntry
-
-// required uint32 target_index = 3;
-inline bool RelatedAlignmentEntry::has_target_index() const {
-  return _has_bit(0);
-}
-inline void RelatedAlignmentEntry::clear_target_index() {
-  target_index_ = 0u;
-  _clear_bit(0);
-}
-inline ::google::protobuf::uint32 RelatedAlignmentEntry::target_index() const {
-  return target_index_;
-}
-inline void RelatedAlignmentEntry::set_target_index(::google::protobuf::uint32 value) {
-  _set_bit(0);
-  target_index_ = value;
-}
-
-// required uint32 query_index = 4;
-inline bool RelatedAlignmentEntry::has_query_index() const {
-  return _has_bit(1);
-}
-inline void RelatedAlignmentEntry::clear_query_index() {
-  query_index_ = 0u;
-  _clear_bit(1);
-}
-inline ::google::protobuf::uint32 RelatedAlignmentEntry::query_index() const {
-  return query_index_;
-}
-inline void RelatedAlignmentEntry::set_query_index(::google::protobuf::uint32 value) {
-  _set_bit(1);
-  query_index_ = value;
-}
-
-// required uint32 position = 5;
-inline bool RelatedAlignmentEntry::has_position() const {
-  return _has_bit(2);
-}
-inline void RelatedAlignmentEntry::clear_position() {
-  position_ = 0u;
-  _clear_bit(2);
-}
-inline ::google::protobuf::uint32 RelatedAlignmentEntry::position() const {
-  return position_;
-}
-inline void RelatedAlignmentEntry::set_position(::google::protobuf::uint32 value) {
-  _set_bit(2);
-  position_ = value;
-}
-
-// -------------------------------------------------------------------
-
 // AlignmentEntry
 
 // optional uint32 multiplicity = 7;
@@ -1670,21 +1626,89 @@ inline void AlignmentEntry::set_pair_flags(::google::protobuf::uint32 value) {
   pair_flags_ = value;
 }
 
-// optional .goby.RelatedAlignmentEntry pair_alignment_entry = 16;
-inline bool AlignmentEntry::has_pair_alignment_entry() const {
+// optional .goby.RelatedAlignmentEntry pair_alignment_link = 16;
+inline bool AlignmentEntry::has_pair_alignment_link() const {
   return _has_bit(15);
 }
-inline void AlignmentEntry::clear_pair_alignment_entry() {
-  if (pair_alignment_entry_ != NULL) pair_alignment_entry_->::goby::RelatedAlignmentEntry::Clear();
+inline void AlignmentEntry::clear_pair_alignment_link() {
+  if (pair_alignment_link_ != NULL) pair_alignment_link_->::goby::RelatedAlignmentEntry::Clear();
   _clear_bit(15);
 }
-inline const ::goby::RelatedAlignmentEntry& AlignmentEntry::pair_alignment_entry() const {
-  return pair_alignment_entry_ != NULL ? *pair_alignment_entry_ : *default_instance_->pair_alignment_entry_;
+inline const ::goby::RelatedAlignmentEntry& AlignmentEntry::pair_alignment_link() const {
+  return pair_alignment_link_ != NULL ? *pair_alignment_link_ : *default_instance_->pair_alignment_link_;
 }
-inline ::goby::RelatedAlignmentEntry* AlignmentEntry::mutable_pair_alignment_entry() {
+inline ::goby::RelatedAlignmentEntry* AlignmentEntry::mutable_pair_alignment_link() {
   _set_bit(15);
-  if (pair_alignment_entry_ == NULL) pair_alignment_entry_ = new ::goby::RelatedAlignmentEntry;
-  return pair_alignment_entry_;
+  if (pair_alignment_link_ == NULL) pair_alignment_link_ = new ::goby::RelatedAlignmentEntry;
+  return pair_alignment_link_;
+}
+
+// optional uint32 fragment_index = 17;
+inline bool AlignmentEntry::has_fragment_index() const {
+  return _has_bit(16);
+}
+inline void AlignmentEntry::clear_fragment_index() {
+  fragment_index_ = 0u;
+  _clear_bit(16);
+}
+inline ::google::protobuf::uint32 AlignmentEntry::fragment_index() const {
+  return fragment_index_;
+}
+inline void AlignmentEntry::set_fragment_index(::google::protobuf::uint32 value) {
+  _set_bit(16);
+  fragment_index_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// RelatedAlignmentEntry
+
+// required uint32 target_index = 1;
+inline bool RelatedAlignmentEntry::has_target_index() const {
+  return _has_bit(0);
+}
+inline void RelatedAlignmentEntry::clear_target_index() {
+  target_index_ = 0u;
+  _clear_bit(0);
+}
+inline ::google::protobuf::uint32 RelatedAlignmentEntry::target_index() const {
+  return target_index_;
+}
+inline void RelatedAlignmentEntry::set_target_index(::google::protobuf::uint32 value) {
+  _set_bit(0);
+  target_index_ = value;
+}
+
+// required uint32 position = 2;
+inline bool RelatedAlignmentEntry::has_position() const {
+  return _has_bit(1);
+}
+inline void RelatedAlignmentEntry::clear_position() {
+  position_ = 0u;
+  _clear_bit(1);
+}
+inline ::google::protobuf::uint32 RelatedAlignmentEntry::position() const {
+  return position_;
+}
+inline void RelatedAlignmentEntry::set_position(::google::protobuf::uint32 value) {
+  _set_bit(1);
+  position_ = value;
+}
+
+// required uint32 fragment_index = 3;
+inline bool RelatedAlignmentEntry::has_fragment_index() const {
+  return _has_bit(2);
+}
+inline void RelatedAlignmentEntry::clear_fragment_index() {
+  fragment_index_ = 0u;
+  _clear_bit(2);
+}
+inline ::google::protobuf::uint32 RelatedAlignmentEntry::fragment_index() const {
+  return fragment_index_;
+}
+inline void RelatedAlignmentEntry::set_fragment_index(::google::protobuf::uint32 value) {
+  _set_bit(2);
+  fragment_index_ = value;
 }
 
 // -------------------------------------------------------------------
