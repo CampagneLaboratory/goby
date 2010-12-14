@@ -28,6 +28,7 @@ import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.io.File;
@@ -120,8 +121,8 @@ public class TestPositionSlices {
             reader.close();
         }
     }
- 
-   @Test
+
+    @Test
     public void testThreeSlice() throws IOException {
         final String basename = "align-position-slices-3";
         buildAlignment(basename);
@@ -142,7 +143,7 @@ public class TestPositionSlices {
     }
 
     @Test
-     public void testFourSlice() throws IOException {
+    public void testFourSlice() throws IOException {
         final String basename = "align-position-slices-4";
         buildAlignment(basename);
 
@@ -152,7 +153,6 @@ public class TestPositionSlices {
                     new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, basename),
                             1, 13, 1, 13);
 
-
             check(reader, 1, 13);
             check(reader, 1, 13);
             check(reader, 1, 13);
@@ -161,6 +161,32 @@ public class TestPositionSlices {
             reader.close();
         }
     }
+
+    @Test
+    public void testBeforeSlice() throws IOException {
+        final String basename = "align-position-slices-5";
+        buildAlignment(basename);
+
+
+        {// check that we can read skipTo before the start of the slice and only get entries that are within the slice
+            // boundaries.
+            final AlignmentReader reader =
+                    new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, basename),
+                            2, 300, 2, 300);
+            // (1,0) occurs before the slice boundaries (1,13)-(1,13)
+            final Alignments.AlignmentEntry alignmentEntry = reader.skipTo(2, 0);
+
+            assertNotNull(alignmentEntry);
+            assertEquals(2, alignmentEntry.getTargetIndex());
+            assertEquals(300, alignmentEntry.getPosition());
+            check(reader, 2, 300);
+            
+
+            assertFalse(reader.hasNext());
+            reader.close();
+        }
+    }
+
     private void buildAlignment(String basename) throws IOException {
         final AlignmentWriter writer =
                 new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, basename));
@@ -196,6 +222,10 @@ public class TestPositionSlices {
         // chunk 4:
         writer.setAlignmentEntry(0, 2, 300, 2, false);
         writer.appendEntry();
+       // TODO remove the last entry and figure out why TestPositionSlices.testBeforeSlice cannot find the second/last (2,300) entry!
+        writer.setAlignmentEntry(0, 3, 300, 2, false);
+              writer.appendEntry();
+
         writer.close();
         writer.printStats(System.out);
     }

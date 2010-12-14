@@ -31,6 +31,8 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
 import java.util.Map;
@@ -46,6 +48,11 @@ import java.util.zip.GZIPOutputStream;
  *         Time: 5:53:50 PM
  */
 public class AlignmentWriter implements Closeable {
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(AlignmentWriter.class);
+
     private final Alignments.AlignmentCollection.Builder collectionBuilder;
     private final MessageChunksWriter entriesChunkWriter;
     private IndexedIdentifier queryIdentifiers;
@@ -257,6 +264,8 @@ public class AlignmentWriter implements Closeable {
             firstEntryInChunk = false;
         }
         final int currentChunkOffset = entriesChunkWriter.writeAsNeeded(collectionBuilder, builtEntry.getMultiplicity());
+        //     LOG.warn(String.format("#entriesWritten: %d currentChunkOffset: %d previousChunkOffset: %d",
+        //            entriesChunkWriter.getTotalEntriesWritten(), currentChunkOffset, previousChunkOffset));
         if (sortedState && currentChunkOffset != previousChunkOffset) {
             // we have just written a new chunk.
             pushIndex(previousChunkOffset, firstTargetIndexInChunk, firstPositionInChunk);
@@ -269,15 +278,16 @@ public class AlignmentWriter implements Closeable {
     }
 
     private void pushIndex(final int previousChunkOffset, final int firstTargetIndexInChunk, final int firstPositionInChunk) {
-        final int newOffset = Math.max(previousChunkOffset - 8, 0);
+        final int newOffset = Math.max(previousChunkOffset, 0);
         final int size = indexOffsets.size();
         // remove duplicates because the behavior of binary search is undefined for duplicates:
+        //   LOG.warn(String.format("INDEX attempting to push offset %d %d %n", firstTargetIndexInChunk, firstPositionInChunk));
         if (size == 0 || newOffset != indexOffsets.get(size - 1)) {
 
             indexOffsets.add(newOffset);
             final long codedPosition = recodePosition(firstTargetIndexInChunk, firstPositionInChunk);
             indexAbsolutePositions.add(codedPosition);
-            //    System.out.printf("INDEX Pushing offset %d %d ", newOffset, codedPosition);
+            // LOG.warn(String.format("INDEX Pushing offset %d %d %n", newOffset, codedPosition));
         }
 
     }
@@ -339,15 +349,16 @@ public class AlignmentWriter implements Closeable {
      * {@inheritDoc}
      */
     public void close() throws IOException {
-        if (sortedState) {
-            writeIndex();
-        }
 
         writeHeader();
 
         writeStats();
         IOUtils.closeQuietly(headerOutput);
         entriesChunkWriter.close(collectionBuilder);
+        if (sortedState) {
+            writeIndex();
+        }
+
         IOUtils.closeQuietly(alignmentEntries);
         IOUtils.closeQuietly(statsWriter);
     }
@@ -366,7 +377,7 @@ public class AlignmentWriter implements Closeable {
                 indexBuilder.build().writeTo(indexOutput);
             }
             finally {
-               if (indexOutput!=null) indexOutput.close();
+                if (indexOutput != null) indexOutput.close();
                 indexWritten = true;
             }
         }

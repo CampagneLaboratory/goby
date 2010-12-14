@@ -70,6 +70,26 @@
             </defaults>
                    <help>Name the statistics tests to perform. The option 'within-group' will test for sequence variation discovered within samples of each group. The option 'between-groups' will test for sequence variations that are found with different frequency between groups (odds-ratio and fisher exact test statistics are reported). </help>
         </flaggedOption>
+       <flaggedOption>
+            <id>start-position</id>
+            <shortFlag>s</shortFlag>
+            <longFlag>start-position</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The start position within the file, which should be number of bytes into the file to start reading from, or a string in the format ref-id,ref-position. Only entries that have a position after the start position are considered.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>end-position</id>
+            <shortFlag>e</shortFlag>
+            <longFlag>end-position</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The end position within the file, which should be number of bytes into the file to end reading from, or a string in the format ref-id,ref-position. Only entries that occur before the specified position are analyzed.</help>
+        </flaggedOption>
          <flaggedOption>
              <id>variation-stats</id>
              <shortFlag>v</shortFlag>

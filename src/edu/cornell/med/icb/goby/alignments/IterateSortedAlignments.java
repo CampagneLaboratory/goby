@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import org.apache.log4j.Logger;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * A helper class to iterate through a set of sorted alignments in position order. The class supports processing
@@ -55,6 +56,8 @@ public abstract class IterateSortedAlignments<T> {
     protected int lastRemovedPosition = -1;
     private Int2IntMap readIndexVariationTally;
     private int numAlignmentEntries;
+    private String startOffsetArgument;
+    private String endOffsetArgument;
 
     /**
      * Parse the string of reference sequences to process during the iteration. The JSAP
@@ -66,7 +69,8 @@ public abstract class IterateSortedAlignments<T> {
 
         final String includeReferenceNameCommas = jsapResult.getString("include-reference-names");
         parseIncludeReferenceArgument(includeReferenceNameCommas);
-
+        startOffsetArgument = jsapResult.getString("start-position");
+        endOffsetArgument = jsapResult.getString("end-position");
     }
 
     /**
@@ -137,9 +141,39 @@ public abstract class IterateSortedAlignments<T> {
                 // process each sequence:
                 referencesToProcess.add(referenceIndex);
             }
-
         }
-        sortedReaders = new ConcatSortedAlignmentReader(basenames);
+        int startPosition;
+        int endPosition;
+        int startReferenceIndex;
+        int endReferenceIndex;
+        sortedReaders = null;
+        try {
+            if (StringUtils.isEmpty(startOffsetArgument) && StringUtils.isEmpty(endOffsetArgument)) {
+                sortedReaders = new ConcatSortedAlignmentReader(basenames);
+            } else {
+                final String[] startTokens = startOffsetArgument.split("[,]");
+                final String[] endTokens = endOffsetArgument.split("[,]");
+                startPosition = Integer.parseInt(startTokens[1]);
+                endPosition = Integer.parseInt(endTokens[1]);
+                startReferenceIndex = referenceIds.getIndex(startTokens[0]);
+                endReferenceIndex = referenceIds.getIndex(endTokens[0]);
+                sortedReaders = new ConcatSortedAlignmentReader(basenames, startReferenceIndex, startPosition,
+                        endReferenceIndex,
+                        endPosition);
+                // adjust referenceIndex to contain only integers between start and end (inclusive):
+                for (int referenceIndex=0; referenceIndex<referencesToProcess.size(); referenceIndex++) {
+                    if (referenceIndex<startReferenceIndex || referenceIndex>endReferenceIndex) {
+                        referencesToProcess.rem(referenceIndex);
+                    }
+                }
+            }
+        } catch (NumberFormatException e) {
+            System.err.println("An error occured parsing --start-position or --end-position. These arguments expect \n" +
+                    "a string in the format ref-id,ref-position, where ref-id is a reference identifier \n" +
+                    "string and ref-position in an integer that encodes a position within the reference sequence.");
+            System.exit(1);
+        }
+
 
         Alignments.AlignmentEntry alignmentEntry = null;
         // the first reference that we should skip to:

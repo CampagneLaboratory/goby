@@ -48,6 +48,26 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
         init(basenames);
     }
 
+    /**
+     * Restricts the concatenation to the slice of the alignments between  (startReferenceIndex,startPosition)
+     * and (endReferenceIndex, endPosition)
+
+     * @param startReferenceIndex Index of the reference for the start position.
+     * @param startPosition       Position on the reference for the start position.
+     * @param endReferenceIndex   Index of the reference for the end position.
+     * @param endPosition         Position on the reference for the end position.
+     * @param basenames Set of alignments to concatenate.
+     * @throws IOException If an error occurs opening or reading the alignment files.
+     */
+    public ConcatSortedAlignmentReader(String[] basenames, int startReferenceIndex, int startPosition, int endReferenceIndex, int endPosition) throws IOException {
+           super(true,
+                   startReferenceIndex,
+                   startPosition,
+                   endReferenceIndex,
+                   endPosition,
+                   basenames);
+        init(basenames);
+    }
     private void init(final String... basenames) {
         nextLoadedForReader = new boolean[basenames.length];
 

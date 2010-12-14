@@ -105,6 +105,40 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
     }
 
     /**
+     * Construct an alignment reader over a set of alignments.
+     * Please note that the constructor access the header of each individual alignment to
+     * check reference sequence identity and obtain the number of queries in each input alignment.
+     *
+     * @param adjustQueryIndices if we need to adjustQueryIndices
+     * @param startReferenceIndex Index of the reference for the start position.
+     * @param startPosition       Position on the reference for the start position.
+     * @param endReferenceIndex   Index of the reference for the end position.
+     * @param endPosition         Position on the reference for the end position.
+     * @param basenames          Basenames of the individual alignemnts to combine.
+     * @throws IOException If an error occurs reading the header of the alignments.
+     */
+    public ConcatAlignmentReader(final boolean adjustQueryIndices,
+                                 final int startReferenceIndex,
+                                 final int startPosition,
+                                 final int endReferenceIndex,
+                                 final int endPosition,
+                                 final String... basenames) throws IOException {
+        super();
+        this.adjustQueryIndices = adjustQueryIndices;
+        readers = new AlignmentReader[basenames.length];
+        readersWithMoreEntries = new IntArraySet();
+        int readerIndex = 0;
+        for (final String basename : basenames) {
+            readers[readerIndex] = new AlignmentReader(basename, startReferenceIndex, startPosition, endReferenceIndex,  endPosition);
+            readersWithMoreEntries.add(readerIndex);
+            readerIndex++;
+        }
+        numQueriesPerReader = new int[basenames.length];
+        queryIndexOffset = new int[basenames.length];
+        readHeader();
+    }
+
+    /**
      * Read the header of this alignment.
      *
      * @throws java.io.IOException If an error occurs.

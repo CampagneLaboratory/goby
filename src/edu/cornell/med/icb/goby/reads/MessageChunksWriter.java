@@ -46,7 +46,7 @@ public class MessageChunksWriter {
 
     public static final int DELIMITER_CONTENT = 0xFF;
     public static final int DELIMITER_LENGTH = 8;
-    public static final int SIZE_OF_MESSAGE_LENGTH =4;
+    public static final int SIZE_OF_MESSAGE_LENGTH = 4;
 
     /**
      * Default number of entries per chunk.
@@ -126,10 +126,14 @@ public class MessageChunksWriter {
         // If we are flushing a completely empty file, that's OK, the flush() should occur.
         // Otherwise, only flush if we've appended entries.
         if (totalEntriesWritten == 0 || numAppended > 0) {
+            // the position just before this chunk is written is recorded:
+            currentChunkStartOffset = out.size();
 
             if (LOG.isTraceEnabled()) {
                 LOG.trace("writing zero bytes length=" + DELIMITER_LENGTH);
             }
+
+
             for (int i = 0; i < DELIMITER_LENGTH; i++) {
                 out.writeByte(DELIMITER_CONTENT);
             }
@@ -147,15 +151,13 @@ public class MessageChunksWriter {
 
             }
 
-            // the position just before this chunk is written is recorded:
-            currentChunkStartOffset = out.size();
             // write the compressed size followed by the compressed stream:
             out.writeInt(serializedSize);
             out.write(compressedStream.toByteArray());
 
             totalBytesWritten += serializedSize + 4 + DELIMITER_LENGTH;
             if (LOG.isTraceEnabled()) {
-                LOG.trace("current offset: "+totalBytesWritten);
+                LOG.trace("current offset: " + totalBytesWritten);
 
             }
             out.flush();

@@ -85,6 +85,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
             ".entries", ".header"
     };
     private Alignments.AlignmentEntry nextEntry;
+    private Alignments.AlignmentEntry nextEntryNoFilter;
 
 
     /**
@@ -284,47 +285,32 @@ public class AlignmentReader extends AbstractAlignmentReader {
      * @return true if the input has more entries, false otherwise.
      */
     public boolean hasNext() {
-        if (nextEntry != null) {
-            return true;
-        }
+        //   System.out.println("hasNext");
+        if (nextEntry != null) return true;
 
-        final boolean hasNext = alignmentEntryReader.hasNext(collection, numberOfEntries());
-        if (!hasNext) {
-            collection = null;
-        }
-        final GZIPInputStream uncompressStream = alignmentEntryReader.getUncompressStream();
-        try {
-            if (uncompressStream != null) {
-                collection = Alignments.AlignmentCollection.parseFrom(uncompressStream);
-                if (collection.getAlignmentEntriesCount() == 0) {
-                    return false;
-                }
-            }
-        } catch (IOException e) {
-            throw new GobyRuntimeException(e);
-        }
-        if (collection == null) return false;
-        int entryTargetIndex = -1;
+        int entryTargetIndex;
+        int position;
         do {
-            if (!alignmentEntryReader.hasNext(collection, numberOfEntries())) {
+
+            if (!hasNextEntry()) {
                 nextEntry = null;
                 return false;
             }
-            nextEntry = collection.getAlignmentEntries(alignmentEntryReader.getEntryIndex());
 
-            //  if (nextEntry == null) return false
+            nextEntry = nextEntry();
             entryTargetIndex = nextEntry.getTargetIndex();
-            alignmentEntryReader.incrementEntryIndex();
+            // Early stop if we are past the end location:
+            position = nextEntry.getPosition();
+            if (entryTargetIndex > endReferenceIndex ||
+                    (entryTargetIndex == endReferenceIndex && position > endPosition)) {
+                nextEntry = null;
+                return false;
+            }
         } while (entryTargetIndex < startReferenceIndex ||
-                (entryTargetIndex == startReferenceIndex && nextEntry.getPosition() < startPosition));
+                (entryTargetIndex == startReferenceIndex && position < startPosition));
 
-        // Early stop if we are past the end location:
-        if (entryTargetIndex > endReferenceIndex ||
-                (entryTargetIndex == endReferenceIndex && nextEntry.getPosition() > endPosition)) {
-            nextEntry = null;
-            return false;
-        }
-        return hasNext;
+
+        return true;
     }
 
     /**
@@ -333,11 +319,14 @@ public class AlignmentReader extends AbstractAlignmentReader {
      * @return the alignment read entry from the input stream.
      */
     public Alignments.AlignmentEntry next() {
-
+        // System.out.println("next");
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
         try {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(String.format("Returning next entry at position %s/%d%n", getTargetIdentifiers().get(new MutableString(nextEntry.getTargetIndex())), nextEntry.getPosition()));
+            }
             return nextEntry;
 
         } finally {
@@ -346,6 +335,58 @@ public class AlignmentReader extends AbstractAlignmentReader {
         }
 
     }
+
+    /**
+     * Returns true if the input has more entries.
+     *
+     * @return true if the input has more entries, false otherwise.
+     */
+    private boolean hasNextEntry() {
+        //    System.out.println("hasNextEntry");
+        if (nextEntryNoFilter != null) return true;
+
+        if (collection != null && alignmentEntryReader.getEntryIndex() < collection.getAlignmentEntriesCount()) {
+            nextEntryNoFilter = collection.getAlignmentEntries(alignmentEntryReader.getEntryIndex());
+            alignmentEntryReader.incrementEntryIndex();
+            return true;
+        } else {
+            collection = null;
+            final boolean hasNext = alignmentEntryReader.hasNext(collection, numberOfEntries());
+
+            final GZIPInputStream uncompressStream = alignmentEntryReader.getUncompressStream();
+            try {
+                if (uncompressStream != null) {
+                    collection = Alignments.AlignmentCollection.parseFrom(uncompressStream);
+                    if (collection.getAlignmentEntriesCount() == 0) {
+                        return false;
+                    }
+                }
+            } catch (IOException e) {
+                throw new GobyRuntimeException(e);
+            }
+            if (hasNext) {
+                nextEntryNoFilter = collection.getAlignmentEntries(alignmentEntryReader.getEntryIndex());
+                alignmentEntryReader.incrementEntryIndex();
+                return true;
+            } else return false;
+        }
+
+
+    }
+
+    private Alignments.AlignmentEntry nextEntry() {
+        //      System.out.println("nextEntry");
+        if (!hasNextEntry()) {
+            throw new NoSuchElementException();
+        }
+        try {
+            return nextEntryNoFilter;
+        } finally {
+            nextEntryNoFilter = null;
+        }
+        //    LOG.warn(String.format("returning entry %d/%d%n", entry.getTargetIndex(), entry.getPosition()));
+    }
+
 
     /**
      * Skip all entries that have position before (targetIndex,position). This method will use the alignment index
@@ -358,14 +399,27 @@ public class AlignmentReader extends AbstractAlignmentReader {
      * @throws IOException If an error occurs reading the alignment header. The header is accessed to check that the alignment is sorted.
      */
     public final Alignments.AlignmentEntry skipTo(final int targetIndex, final int position) throws IOException {
-
-        reposition(targetIndex, position);
+        /*
+        If the skipTo requested position is out of the position window provided to the constructor, return
+        no result. Otherwise, adjust the position to be within the window.
+         */
+        if (targetIndex < this.startReferenceIndex || targetIndex > this.endReferenceIndex) {
+            return null;
+        }
+        int positionChanged = position;
+        if (targetIndex == this.startReferenceIndex) {
+            positionChanged = Math.max(this.startPosition, position);
+        }
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(String.format("skipTo %d/%d%n", targetIndex, positionChanged));
+        }
+        reposition(targetIndex, positionChanged);
         Alignments.AlignmentEntry entry = null;
         boolean hasNext = false;
         while ((hasNext = hasNext()) &&
-                (entry = next()) != null &&
+                ((entry = next()) != null) &&
                 (entry.getTargetIndex() < targetIndex ||
-                        (entry.getTargetIndex() == targetIndex && entry.getPosition() < position))) {
+                        (entry.getTargetIndex() == targetIndex && entry.getPosition() < positionChanged))) {
         }
 
         if (!hasNext) {
@@ -403,11 +457,17 @@ public class AlignmentReader extends AbstractAlignmentReader {
         // contains entries with this absolute position. We therefore substract one to position on the chunk
         // before. 
         offsetIndex = offsetIndex >= indexOffsets.size() ? indexOffsets.size() - 1 : offsetIndex - 1;
+
         if (offsetIndex < 0) {
             // empty alignment.
             return;
         }
-
+        // if (indexAbsolutePositions.getLong(offsetIndex)<absolutePosition) {
+        // the offset was not found, indicating that the chunk starts before (targetIndex,position) location.
+        // This means that we must scan the chunk immediately before to check for entries that can be at this
+        // position as well.
+        //    --offsetIndex;
+        //   }
         final long newPosition = indexOffsets.getLong(offsetIndex);
         final long currentPosition = alignmentEntryReader.position();
         if (newPosition > currentPosition) {
