@@ -118,23 +118,25 @@ message AlignmentEntry {
   /* If there is an alignment entry for the paired read (the paired read was mapped), a link to the entry is given.
    */
   optional RelatedAlignmentEntry pair_alignment_link=16;
+  /* Index of the read fragment from which this alignment was obtained. */
+  optional uint32 fragment_index=17;
 }
 
 /* A link to another alignment entry. This message type is used to represent relations
-   between alignments, such as the relation between the two reads in a paired-end protocol,
-   or the relation between parts of reads that align through exon exon junction and map in
+   between alignments, such as the relation between the two read fragments in a paired-end protocol,
+   or the relation between parts of reads that align through an exon exon junction and map in
    different locations of the genome.
   */
  message RelatedAlignmentEntry {
   /* Target index of the location where the other alignment entry is mapped. */
-   required uint32 target_index=3;
+   required uint32 target_index=1;
    /* Position on the reference where the other alignment entry is mapped. */
-   required uint32 position=5;
-   /* Index of the read/query sequence for the related alignment entry. This index
-      makes it possible to identify which of the reads that mapped to the given
-      location is related to a given alignment.
+   required uint32 position=2;
+   /* Index of the fragment for the related alignment entry. This index
+      makes it possible to identify which of the read fragments mapped to the given
+      location is related to the source alignment entry.
    */
-   required uint32 query_index=4;
+   required uint32 fragment_index=3;
  }
 
 /*
