@@ -22,14 +22,13 @@ package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Read over a set of alignments. This aligner concatenates entries from the input alignment.
@@ -109,12 +108,12 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
      * Please note that the constructor access the header of each individual alignment to
      * check reference sequence identity and obtain the number of queries in each input alignment.
      *
-     * @param adjustQueryIndices if we need to adjustQueryIndices
+     * @param adjustQueryIndices  if we need to adjustQueryIndices
      * @param startReferenceIndex Index of the reference for the start position.
      * @param startPosition       Position on the reference for the start position.
      * @param endReferenceIndex   Index of the reference for the end position.
      * @param endPosition         Position on the reference for the end position.
-     * @param basenames          Basenames of the individual alignemnts to combine.
+     * @param basenames           Basenames of the individual alignemnts to combine.
      * @throws IOException If an error occurs reading the header of the alignments.
      */
     public ConcatAlignmentReader(final boolean adjustQueryIndices,
@@ -129,7 +128,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
         readersWithMoreEntries = new IntArraySet();
         int readerIndex = 0;
         for (final String basename : basenames) {
-            readers[readerIndex] = new AlignmentReader(basename, startReferenceIndex, startPosition, endReferenceIndex,  endPosition);
+            readers[readerIndex] = new AlignmentReader(basename, startReferenceIndex, startPosition, endReferenceIndex, endPosition);
             readersWithMoreEntries.add(readerIndex);
             readerIndex++;
         }
@@ -299,5 +298,17 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
             reader.close();
         }
     }
+
+    public ObjectList<ReferenceLocation> getLocations(int modulo) throws IOException {
+        readHeader();
+        ObjectList<ReferenceLocation> result = new ObjectArrayList<ReferenceLocation>();
+
+        for (AlignmentReader reader : this.readers) {
+            result.addAll(reader.getLocations(modulo));
+        }
+        Collections.sort(result);
+        return result;
+    }
+
 
 }

@@ -44,10 +44,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.ArrayUtils;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Properties;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -711,5 +708,35 @@ public class AlignmentReader extends AbstractAlignmentReader {
      */
     public boolean hasQueryLengths() {
         return ArrayUtils.isNotEmpty(queryLengths);
+    }
+
+    /**
+     * Returns a sample of locations covered by this alignment.
+     * @param modulo Modulo to avoid sampling every position in the genome.
+     * @return  A set of positions that do occur in the genome, rounded to the specified modulo value (absoluteLocation-(absoluteLocation % modulo)).
+     *  * @throws IOException
+     */
+    public ObjectList<ReferenceLocation> getLocations(int modulo) throws IOException {
+        if (!isIndexed()) throw new RuntimeException("Alignment must be sorted and indexed to obtain locations.");
+        readIndex();
+        ObjectList<ReferenceLocation> result = new ObjectArrayList<ReferenceLocation>();
+        for (long absoluteLocation : indexAbsolutePositions) {
+            final ReferenceLocation location = decodeAbsoluteLocation(absoluteLocation-(absoluteLocation % modulo));
+            result.add(location);
+
+        }
+        return result;
+    }
+    private  ReferenceLocation decodeAbsoluteLocation(long absoluteLocation) {
+        int referenceIndex;
+        for ( referenceIndex=this.targetPositionOffsets.length-1; referenceIndex>=0; referenceIndex--) {
+            final long offset = this.targetPositionOffsets[referenceIndex];
+            if (absoluteLocation> offset) {
+                absoluteLocation-=offset;
+                break;
+            }                                                       
+        }
+        
+        return new ReferenceLocation(referenceIndex+1, (int)absoluteLocation);
     }
 }
