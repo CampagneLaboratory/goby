@@ -72,7 +72,6 @@
         std::string *cpp_qual;
         std::string *cpp_ref;
         int alignedLength;
-        int startPosition;
         int numIndels;
         int numMisMatches;
         int score;
@@ -101,7 +100,6 @@
 	    void *cpp_qual;
 	    void *cpp_ref;
 	    int alignedLength;
-	    int startPosition;
 	    int numIndels;
 	    int numMisMatches;
 	    int score;

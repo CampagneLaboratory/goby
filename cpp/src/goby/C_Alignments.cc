@@ -225,6 +225,24 @@ extern "C" {
         writerHelper->tmhWriter->append(queryIndex, numberOfHits, alignedLength);
     }
 
+    void gobyAlEntry_setFragmentIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        writerHelper->alignmentEntry->set_fragment_index(value);
+    }
+
+    // These are only used when dealing with a Query Pair
+    void gobyAlEntry_setPairFlags(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        writerHelper->alignmentEntry->set_pair_flags(value);
+    }
+    void gobyAlEntry_setPairTargetIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        writerHelper->alignmentEntry->mutable_pair_alignment_link()->set_target_index(value);
+    }
+    void gobyAlEntry_setPairFragmentIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        writerHelper->alignmentEntry->mutable_pair_alignment_link()->set_fragment_index(value);
+    }
+    void gobyAlEntry_setPairPosition(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        writerHelper->alignmentEntry->mutable_pair_alignment_link()->set_position(value);
+    }
+
     CSamHelper *samHelper_getResetSamHelper(CAlignmentsWriterHelper *writerHelper) {
         CSamHelper *samHelper = writerHelper->samHelper;
         if (samHelper == NULL) {
@@ -248,7 +266,6 @@ extern "C" {
             samHelper->cpp_ref->clear();
         }
         samHelper->alignedLength = 0;
-        samHelper->startPosition = 0;
         samHelper->numIndels = 0;
         samHelper->numMisMatches = 0;
         samHelper->score = 0;
@@ -296,10 +313,12 @@ extern "C" {
         char op;
         int posInReads = 0;
         int i;
+        samHelper->numIndels = 0;
+        samHelper->numMisMatches = 0;
         while (re.Consume(&input, &length, &op)) {
             switch(op) {
                 case 'M':
-                    // Any mis-matches will be fixed in applyMd()
+                    // Account for matches AND mismatches. Any mis-matches will be fixed in applyMd()
                     (*samHelper->cpp_query) += samHelper->cpp_sourceQuery->substr(posInReads, length);
                     if (samHelper->cpp_sourceQual->size() != 0) {
                         (*samHelper->cpp_qual) += samHelper->cpp_sourceQual->substr(posInReads, length);
@@ -315,17 +334,20 @@ extern "C" {
                     for (i = 0; i < length; i++) {
                         (*samHelper->cpp_ref) += '-';
                     }
+                    samHelper->numIndels += length;
                     posInReads += length;
                     break;
                 case 'D':
                     for (i = 0; i < length; i++) {
                         (*samHelper->cpp_query) += '-';
                         if (samHelper->cpp_sourceQual->size() != 0) {
-                            // Minimum qual
+                            // Minimum qual, placing min value here but it shouldn't get written to
+                            // sequence variations
                             (*samHelper->cpp_qual) += ((char) samHelper->minQualValue); // min quality
                         }
                         (*samHelper->cpp_ref) += '?';  // provided in applyMd()
                     }
+                    samHelper->numIndels += length;
                     break;
             }
         }
@@ -353,6 +375,7 @@ extern "C" {
                 // The regex should only allow a single character here, but we'll accept multiple
                 for(i = 0; i < mdPart.size(); i++) {
                     (*samHelper->cpp_ref)[position++] = mdPart[i];
+                    samHelper->numMisMatches++;
                 }
             }
         }
@@ -363,7 +386,6 @@ extern "C" {
         samHelper->cpp_qual->clear();
         samHelper->cpp_ref->clear();
         samHelper->alignedLength = 0;
-        samHelper->startPosition = 0;
         samHelper->numIndels = 0;
         samHelper->numMisMatches = 0;
         samHelper->score = 0;
@@ -371,6 +393,7 @@ extern "C" {
         applyCigar(samHelper);
         applyMd(samHelper);
         samHelper->alignedLength = samHelper->cpp_query->size();
+        samHelper->score = samHelper->alignedLength - samHelper->numIndels - samHelper->numMisMatches;
         
         // Figure out start of alignment and alignment length, by observing mismatches at head and tail
         if (samHelper->cpp_query->size() != samHelper->cpp_ref->size()) {
