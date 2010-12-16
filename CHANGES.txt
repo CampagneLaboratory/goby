@@ -1,4 +1,8 @@
 1.8 ->development
+ - New fdr mode provides a tool to combine tab delimited file where some columns contain P-values and
+   adjust selected P-values for multiple testing with the Benjamini Hochberg method. The tool is efficient
+   in that it only keep P-values that need to be adjusted in memory, but otherwise keeps other column on disk.
+   This strategy is expected to scale to hundreds of millions of lines of information. 
  - Add a way to open only a slice of an indexed alignment file by position. This feature makes it possible
    to retrieve all alignment entries that start between specific position boundaries. See new constructor
    in AlignmentReader.
