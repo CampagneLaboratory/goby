@@ -5,7 +5,9 @@
    This strategy is expected to scale to hundreds of millions of lines of information. 
  - Add a way to open only a slice of an indexed alignment file by position. This feature makes it possible
    to retrieve all alignment entries that start between specific position boundaries. See new constructor
-   in AlignmentReader.
+   in AlignmentReader and ConcatSortedAlignmentReader.
+ - The mode discover-sequence-variant has been updated to take advantage of the alignment position slicing
+   feature introduced in Goby 1.9. See the new arguments --start-position and --end-position.    
  - Fix a bug in skipTo that caused some alignment entries to fail to be returned (skipTo previoulsy ignored
    entries that occured in the chunk just before where the index points). This behaviour is incorrect because
    the chunk just before where the index points may contain entries with positions equal to the skipTo requested
