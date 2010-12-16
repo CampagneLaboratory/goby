@@ -66,7 +66,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
      */
     private int defaultReadLength;
 
-    /** If header is written, used in PLAIN output (not SAM).
+    /** If header is written, used in PLAIN output (not SAM). */
     private boolean headerWritten = false;
 
     @Override
@@ -141,7 +141,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
 
             if (!headerWritten) {
                 headerWritten = true;
-                outputStream.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n",
+                outputStream.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n",
                         "queryIndex",
                         "queryFragmentIndex",
                         "pairFlags",
@@ -155,8 +155,8 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                         "score",
                         "position",
                         "alignmentLength",
-                        "reverseStrand",
-                        "MappingQuality");
+                        "strand",
+                        "mappingQuality");
             }
 
 
@@ -172,10 +172,10 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 }
                 switch (outputFormat) {
                     case PLAIN:
-                        outputStream.printf("%s\t%d\t%d\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%g\t%d\t%d\t%b\t%d%n",
+                        outputStream.printf("%s\t%d\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%g\t%d\t%d\t%s\t%d%n",
                                 hasReadIds ? readIds.getId(queryIndex) : queryIndex,
                                 alignmentEntry.hasFragmentIndex() ? alignmentEntry.getFragmentIndex() : 0,
-                                alignmentEntry.hasPairFlags() ? alignmentEntry.getPairFlags() : 0,
+                                alignmentEntry.hasPairFlags() ? zeroPad(Integer.toBinaryString(alignmentEntry.getPairFlags()), 9) : 0,
                                 alignmentEntry.hasPairAlignmentLink() ? alignmentEntry.getPairAlignmentLink().getFragmentIndex() : "",
                                 alignmentEntry.hasPairAlignmentLink() ? getReferenceId(alignmentEntry.getPairAlignmentLink().getTargetIndex()) : "",
                                 alignmentEntry.hasPairAlignmentLink() ? alignmentEntry.getPairAlignmentLink().getPosition() : "",
@@ -186,7 +186,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                                 alignmentEntry.getScore(),
                                 startPosition,
                                 alignmentLength,
-                                alignmentEntry.getMatchingReverseStrand(),
+                                alignmentEntry.getMatchingReverseStrand() ? "-" : "+",
                                 alignmentEntry.hasMappingQuality() ? alignmentEntry.getMappingQuality() : 255);
                         break;
                     case SAM:
@@ -214,9 +214,6 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                             mPos = alignmentEntry.getPairAlignmentLink().getPosition() + 1;
                             if (pairTargetIndex != targetIndex) {
                                 MRNM = getReferenceId(pairTargetIndex).toString();
-                            } else {
-                                // TODO: it seems that inferredSize should take into account +/- strand?
-                                inferredInsertSize = mPos - startPosition;
                             }
                         }
 
@@ -250,6 +247,15 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 }
             }
         }
+    }
+
+    private String zeroPad(final String val, final int length) {
+        int addZeros = length - val.length();
+        if (addZeros <= 0) {
+            return val;
+        }
+        String format = String.format("%%0%dd%%s", addZeros);
+        return String.format(format, 0, val);            
     }
 
     private MutableString getReadSequence(final Alignments.AlignmentEntry alignmentEntry, final int readLength) {

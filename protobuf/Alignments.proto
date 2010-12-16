@@ -103,15 +103,15 @@ message AlignmentEntry {
   optional int32 mapping_quality=14;
 
   /* If this read was aligned with a pair, the flags for the pair alignment (based on SAM):
-          1    paired
-          2    properly paired
-          4    read unmapped
-          8    mate unmapped
-         16    read reverse strand
-         32    mate reverse strand
-         64    first in pair
-        128    second in pair
-        256    not primary alignment
+      000000001    paired
+      000000010    properly paired
+      000000100    read unmapped
+      000001000    mate unmapped
+      000010000    read reverse strand
+      000100000    mate reverse strand
+      001000000    first in pair
+      010000000    second in pair
+      100000000    not primary alignment
    */
   optional uint32 pair_flags=15;
 
