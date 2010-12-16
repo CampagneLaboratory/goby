@@ -115,6 +115,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
         private boolean hasReadIds;
         private DoubleIndexedIdentifier readIds;
         private int[] referenceLengths;
+        private boolean headerWritten = false;
 
         public void setOutputWriter(final PrintStream outputStreawm, final OutputFormat outputFormat) {
             this.outputStream = outputStreawm;
@@ -132,6 +133,27 @@ public class AlignmentToTextMode extends AbstractGobyMode {
 
             final int startPosition = alignmentEntry.getPosition();
             final int alignmentLength = alignmentEntry.getQueryAlignedLength();
+
+            if (!headerWritten) {
+                headerWritten = true;
+                outputStream.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n",
+                        "queryIndex",
+                        "queryFragmentIndex",
+                        "pairFragmentIndex",
+                        "pairTarget",
+                        "pairPosition",
+                        "targetIndex",
+                        "referenceLength",
+                        "numIndels",
+                        "numMismatches",
+                        "score",
+                        "position",
+                        "alignmentLength",
+                        "reverseStrand",
+                        "MappingQuality");
+            }
+
+
             for (int i = 0; i < alignmentEntry.getMultiplicity(); ++i) {
                 final int queryIndex = alignmentEntry.getQueryIndex();
 
@@ -144,8 +166,12 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 }
                 switch (outputFormat) {
                     case PLAIN:
-                        outputStream.printf("%s\t%s\t%d\t%d\t%d\t%g\t%d\t%d\t%b\t%d%n",
+                        outputStream.printf("%s\t%d\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%g\t%d\t%d\t%b\t%d%n",
                                 hasReadIds ? readIds.getId(queryIndex) : queryIndex,
+                                alignmentEntry.hasFragmentIndex() ? alignmentEntry.getFragmentIndex() : 0,
+                                alignmentEntry.hasPairAlignmentLink() ? alignmentEntry.getPairAlignmentLink().getFragmentIndex() : "",
+                                alignmentEntry.hasPairAlignmentLink() ? getReferenceId(alignmentEntry.getPairAlignmentLink().getTargetIndex()) : "",
+                                alignmentEntry.hasPairAlignmentLink() ? alignmentEntry.getPairAlignmentLink().getPosition() : "",
                                 getReferenceId(alignmentEntry.getTargetIndex()),
                                 referenceLength,
                                 alignmentEntry.getNumberOfIndels(),
