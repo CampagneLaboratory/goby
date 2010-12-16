@@ -20,12 +20,15 @@ package edu.cornell.med.icb.goby.stats;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.objects.Object2BooleanOpenCustomHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 
 import java.io.IOException;
 import java.io.Writer;
 
 /**
+ * Represents a line of double information about a DE element.
  * @author Fabien Campagne
  *         Date: Jan 11, 2010
  *         Time: 6:57:49 PM
@@ -33,6 +36,7 @@ import java.io.Writer;
 public class DifferentialExpressionInfo {
     private final MutableString elementId;
     final DoubleArrayList statistics = new DoubleArrayList();
+   
     private final InformativeDouble informativeDouble = new InformativeNonZeroNonNaN();
 
     public DifferentialExpressionInfo(final String elementId) {
@@ -119,5 +123,9 @@ public class DifferentialExpressionInfo {
             }
         }
         return informative;
+    }
+
+    public DoubleArrayList statistics() {
+        return statistics;
     }
 }

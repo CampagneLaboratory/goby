@@ -45,8 +45,8 @@ public class StatisticComparator implements Comparator<DifferentialExpressionInf
 
     public int compare(final DifferentialExpressionInfo info1,
                        final DifferentialExpressionInfo info2) {
-        final Double statisticValue1 = info1.statistics.getDouble(statisticIndex);
-        final Double statisticValue2 = info2.statistics.getDouble(statisticIndex);
+        final double statisticValue1 = info1.statistics.getDouble(statisticIndex);
+        final double statisticValue2 = info2.statistics.getDouble(statisticIndex);
         return Double.compare(statisticValue1, statisticValue2);
     }
 }
