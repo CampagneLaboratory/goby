@@ -353,7 +353,7 @@ namespace goby {
     stats["min.query.index"] = t_to_string(getSmallestSplitQueryIndex());
     stats["max.query.index"] = t_to_string(getLargestSplitQueryIndex());
     stats["number.of.queries"] = t_to_string(getNumberOfQueries());
-    stats["number.aligned.reads"] = t_to_string(getNumberOfAlignedReads());
+    stats["number.alignment.entries"] = t_to_string(getNumberOfAlignedReads());
 
     const string stats_filename = basename + ".stats";
     ofstream stats_file(stats_filename.c_str(), ios::out | ios::trunc);

@@ -439,7 +439,7 @@ public class AlignmentWriter implements Closeable {
             stats.put("number.of.queries", Integer.toString(getNumQueries()));
 
             stats.put("basename.full", basename);
-            stats.put("number.aligned.reads", Integer.toString(numberOfAlignedReads));
+            stats.put("number.alignment.entries", Integer.toString(numberOfAlignedReads));
             stats.store(statsWriter, "Statistics for merged alignment. ");
 
             statsWritten = true;
