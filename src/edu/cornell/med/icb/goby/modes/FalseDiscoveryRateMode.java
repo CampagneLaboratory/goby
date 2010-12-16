@@ -44,7 +44,6 @@ import java.util.Collections;
  *
  * @author Fabien Campagne
  * @since Goby 1.9
- *
  */
 public class FalseDiscoveryRateMode extends AbstractGobyMode {
     /**
@@ -121,7 +120,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
             ObjectList<String> columnIdList = getColumns(inputFiles);
             for (String col : columnIdList) {
                 System.out.println("column: " + col);
-  }
+            }
             DifferentialExpressionCalculator deCalculator = new DifferentialExpressionCalculator();
 
             load(inputFiles, data, deCalculator, columnIdList);
@@ -253,6 +252,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                         if (column.equalsIgnoreCase(selectedColumn)) {
 
                             final String statName = column.toLowerCase();
+
                             if (!data.isStatisticDefined(new MutableString(statName))) {
                                 data.declareStatistic(statName);
                             }
@@ -269,47 +269,66 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                     if (!reader.isCommentLine()) {
                         reader.next();
                         final String elementId = Integer.toString(elementIndex);
-
-                        int index = 0;
-                        final DifferentialExpressionInfo info = data.get(elementIndex);
-                        assert info.getElementId().equals(elementId) : " elementId must match";
-                        for (int j = 0; j < reader.numTokens(); j++) {
-                            if (doubleColumnIndices.contains(j)) {
-                                reader.getString();
-
-                                out.print(info.statistics().get(index));
-                                out.print('\t');
-                                index++;
-                            } else {
-                                out.print(reader.getString());
-                                out.print('\t');
-                            }
-
-                        }
-                        first = true;
+                        boolean keepThisLine = false;
                         for (String adjustedColumn : adjustedColumnIds) {
                             int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
                             final DoubleArrayList list = data.get(elementIndex).statistics();
 
-                            if (!first) {
-                                out.write('\t');
+                            double adjustedPValue = list.get(adjustedColumnIndex);
+                            if (adjustedPValue < qValueThreshold) {
+                                keepThisLine = true;
+
                             }
-                            out.print(list.get(adjustedColumnIndex));
-                            first = false;
                         }
+                        if (!keepThisLine) {
+                       //     System.out.println("skipping elementId since the adjusted P-values do not make the q-value threshold." + elementId);
+                        }
+                        if (keepThisLine) {
+                            int index = 0;
+                            final DifferentialExpressionInfo info = data.get(elementIndex);
+                            assert info.getElementId().equals(elementId) : " elementId must match";
+                            for (int j = 0; j < reader.numTokens(); j++) {
+                                if (doubleColumnIndices.contains(j)) {
+                                    reader.getString();
+
+                                    out.print(info.statistics().get(index));
+                                    out.print('\t');
+                                    index++;
+                                } else {
+                                    out.print(reader.getString());
+                                    out.print('\t');
+                                }
+
+                            }
+                            first = true;
+                            for (String adjustedColumn : adjustedColumnIds) {
+                                int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
+                                final DoubleArrayList list = data.get(elementIndex).statistics();
+
+                                if (!first) {
+                                    out.write('\t');
+                                }
+                                out.print(list.get(adjustedColumnIndex));
+                                first = false;
+                            }
+                            out.printf("%n");
+                        }
+
                         elementIndex++;
-                        out.printf("%n");
+
                     } else {
                         reader.skip();
                     }
                 }
-            } catch (IOException e) {
+            } catch (IOException
+                    e) {
                 e.printStackTrace();
                 System.exit(1);
             } finally {
                 reader.close();
             }
         }
+
         out.flush();
     }
 
