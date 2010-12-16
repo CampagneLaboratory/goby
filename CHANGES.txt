@@ -30,6 +30,10 @@
    to writing alignments is effectively already in SAM format. These methods make it possible
    to reconstruct the aligned query and reference so data can be written in compact alignment.
  - Goby C/C++ API now requires the pcre (regex) >=8.10 library. See http://www.pcre.org/
+ - Compact alignments now support paried-end alignments in Java / C++ / C APIs.
+ - In alignment-to-text mode, output support in PLAIN and SAM for Paired End alignments
+ - in alignemt .stats file rename the stat "number.aligned.reads" to the more accurate name
+   of "number.alignment.entries" for both the Java API and the C++ api.
 1.8
  - C API introduced to support native Goby support in GSNAP.
  - We now distribute a subset of Goby as the Goby IO API. This subset is packaged in the goby-io.jar
