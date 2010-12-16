@@ -66,6 +66,8 @@ public class AlignmentToTextMode extends AbstractGobyMode {
      */
     private int defaultReadLength;
 
+    /** If header is written, used in PLAIN output (not SAM).
+    private boolean headerWritten = false;
 
     @Override
     public String getModeName() {
@@ -101,6 +103,10 @@ public class AlignmentToTextMode extends AbstractGobyMode {
         basenames = AlignmentReader.getBasenames(inputFiles);
         outputFilename = jsapResult.getString("output");
         outputFormat = OutputFormat.valueOf(jsapResult.getString("format").toUpperCase());
+        if (outputFormat == OutputFormat.SAM) {
+            // No output header for SAM format
+            headerWritten = true;
+        }
         defaultReadLength = jsapResult.getInt("constant-read-length");
         alignmentIterator = new AlignmentToTextIterateAlignments();
         alignmentIterator.parseIncludeReferenceArgument(jsapResult);
@@ -115,7 +121,6 @@ public class AlignmentToTextMode extends AbstractGobyMode {
         private boolean hasReadIds;
         private DoubleIndexedIdentifier readIds;
         private int[] referenceLengths;
-        private boolean headerWritten = false;
 
         public void setOutputWriter(final PrintStream outputStreawm, final OutputFormat outputFormat) {
             this.outputStream = outputStreawm;
@@ -131,7 +136,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 referenceLengths = alignmentReader.getTargetLength();
             }
 
-            final int startPosition = alignmentEntry.getPosition();
+            int startPosition = alignmentEntry.getPosition();
             final int alignmentLength = alignmentEntry.getQueryAlignedLength();
 
             if (!headerWritten) {
@@ -139,6 +144,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 outputStream.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n",
                         "queryIndex",
                         "queryFragmentIndex",
+                        "pairFlags",
                         "pairFragmentIndex",
                         "pairTarget",
                         "pairPosition",
@@ -166,9 +172,10 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 }
                 switch (outputFormat) {
                     case PLAIN:
-                        outputStream.printf("%s\t%d\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%g\t%d\t%d\t%b\t%d%n",
+                        outputStream.printf("%s\t%d\t%d\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%g\t%d\t%d\t%b\t%d%n",
                                 hasReadIds ? readIds.getId(queryIndex) : queryIndex,
                                 alignmentEntry.hasFragmentIndex() ? alignmentEntry.getFragmentIndex() : 0,
+                                alignmentEntry.hasPairFlags() ? alignmentEntry.getPairFlags() : 0,
                                 alignmentEntry.hasPairAlignmentLink() ? alignmentEntry.getPairAlignmentLink().getFragmentIndex() : "",
                                 alignmentEntry.hasPairAlignmentLink() ? getReferenceId(alignmentEntry.getPairAlignmentLink().getTargetIndex()) : "",
                                 alignmentEntry.hasPairAlignmentLink() ? alignmentEntry.getPairAlignmentLink().getPosition() : "",
@@ -183,11 +190,36 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                                 alignmentEntry.hasMappingQuality() ? alignmentEntry.getMappingQuality() : 255);
                         break;
                     case SAM:
-                        final int flag = (alignmentEntry.getMatchingReverseStrand() ? 1 : 0) << 4;   // strand is encoded in 0x10, shift left by 4 bits.
-                        final int mappingQuality = 255;
+                        final int flag;
+                        startPosition++;  // SAM is 1-based
+                        if (alignmentEntry.hasPairFlags()) {
+                            flag = alignmentEntry.getPairFlags();
+                        } else {
+                            flag = (alignmentEntry.getMatchingReverseStrand() ? 1 : 0) << 4;   // strand is encoded in 0x10, shift left by 4 bits.
+                        }
+                        final int mappingQuality;
+                        if (alignmentEntry.hasMappingQuality()) {
+                            mappingQuality = alignmentEntry.getMappingQuality();
+                        } else {
+                            mappingQuality = 255;
+                        }
                         final String cigar = calculateCigar(alignmentEntry);
-                        final String MRNM = "=";
-                        final int inferredInsertSize = 0;
+                        final int targetIndex = alignmentEntry.getTargetIndex();
+
+                        String MRNM = "=";
+                        int mPos = startPosition;
+                        int inferredInsertSize = 0;
+                        if (alignmentEntry.hasPairAlignmentLink()) {
+                            final int pairTargetIndex = alignmentEntry.getPairAlignmentLink().getTargetIndex();
+                            mPos = alignmentEntry.getPairAlignmentLink().getPosition() + 1;
+                            if (pairTargetIndex != targetIndex) {
+                                MRNM = getReferenceId(pairTargetIndex).toString();
+                            } else {
+                                // TODO: it seems that inferredSize should take into account +/- strand?
+                                inferredInsertSize = mPos - startPosition;
+                            }
+                        }
+
                         final int readLength;
                         // check entry then header for the query/read length otherwise use default
                         if (alignmentEntry.hasQueryLength()) {
@@ -204,12 +236,12 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                         outputStream.printf("%s\t%d\t%s\t%d\t%d\t%s\t%s\t%d\t%d\t%s\t%s\t%s%n",
                                 hasReadIds ? readIds.getId(queryIndex) : queryIndex,
                                 flag,
-                                getReferenceId(alignmentEntry.getTargetIndex()),
+                                getReferenceId(targetIndex),
                                 startPosition,
                                 mappingQuality,
                                 cigar,
                                 MRNM,
-                                startPosition,
+                                mPos,
                                 inferredInsertSize,
                                 readSequence,
                                 readQualities,
