@@ -1,7 +1,6 @@
-The following steps describe how to build the Goby C++/C API.
-
-1. On UNIX/Linux systems (not necessary for Cygiwn), assuming you are using
-   the BASH shell, make the "local-lib" directory to store local libraries:
+1. On UNIX/Linux systems (not necessary for Cygiwn), assuming you are
+    using the BASH shell, make the "local-lib" directory to store local
+    libraries:
 
       mkdir -p /home/YOUR_USERNAME/local-lib/lib/pkgconfig/
 
@@ -11,44 +10,48 @@ The following steps describe how to build the Goby C++/C API.
       export PKG_CONFIG_PATH=/usr/lib/pkgconfig:/home/YOUR_USERNAME/local-lib/lib/pkgconfig
 
 2. Download, build, and install Protobuf (2.3.0 or later) from
-   http://code.google.com/p/protobuf/
+    http://code.google.com/p/protobuf/
 
       wget http://protobuf.googlecode.com/files/protobuf-2.3.0.tar.gz
       tar zxvf protobuf-2.3.0.tar.gz
       cd protobuf-2.3.0
-      ./configure --prefix=/home/YOUR_USERNAME/local-lib   # for root or cygwin, don't use the --prefix command
+      # for root or cygwin, don't use the --prefix command
+      ./configure --prefix=/home/YOUR_USERNAME/local-lib   
       make
       make install
 
-3. Download, build, and install the PCRE (Perl Compatible Regular Expressions)
-   library (8.10 or later) from http://pcre.org
+3. Download, build, and install the PCRE (Perl Compatible Regular
+   Expressions) library (8.10 or later) from http://pcre.org
 
       wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.10.tar.gz
       tar zxvf pcre-8.10.tar.gz
       cd pcre-8.10
-      ./configure --prefix=/home/YOUR_USERNAME/local-lib   # for root or cygwin, don't use the --prefix command
+      # for root or cygwin, don't use the --prefix command
+      ./configure --prefix=/home/YOUR_USERNAME/local-lib   
       make
       make install
 
-4. Portions of the Goby C++ API library OPTIONALLY use the Boost library.
-   If you choose to use this, first download and install Boost:
+4. Portions of the Goby C++ API library OPTIONALLY use the Boost
+   library. If you choose to use this, first download and install Boost:
 
       wget http://downloads.sourceforge.net/project/boost/boost/1.44.0/boost_1_44_0.tar.gz
       tar zxvf boost_1_44_0.tar.gz
       cd boost_1_44_0
-      ./bootstrap.sh --prefix=/home/YOUR_USERNAME/local-lib   # for root or cygwin, don't use the --prefix command
+      # for root or cygwin, don't use the --prefix command
+      ./bootstrap.sh --prefix=/home/YOUR_USERNAME/local-lib   
       ./bjam install
 
    Edit the "configure.ac" file to uncomment the AX_BOOST_ lines.
 
-5. Build the Goby C++ API library, requires the Goby source distribution. The
-   following steps install this library:
+5. Build the Goby C++ API library, requires the Goby source distribution.
+   The following steps install this library:
 
       wget http://chagall.med.cornell.edu/goby/releases/goby_latest-src.zip
       unzip goby_latest-src.zip
       cd goby_1.8/cpp/
       chmod +x autogen.sh
       ./autogen.sh
-      ./configure --prefix=/home/YOUR_USERNAME/local-lib   # for root or cygwin, don't use the --prefix command
+      # for root or cygwin, don't use the --prefix command
+      ./configure --prefix=/home/YOUR_USERNAME/local-lib   
       make
       make install
