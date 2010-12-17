@@ -3,6 +3,7 @@
 lib_LTLIBRARIES = libgoby.la
 
 AM_CXXFLAGS = @PROTOBUF_CFLAGS@ @LIBPCRECPP_CFLAGS@ ${BOOST_CPPFLAGS}
+AM_CFLAGS = @PROTOBUF_CFLAGS@ @LIBPCRECPP_CFLAGS@ ${BOOST_CPPFLAGS}
 
 libgoby_la_LIBADD = @PROTOBUF_LIBS@ @LIBPCRECPP_LIBS@
 libgoby_la_LDFLAGS = -version-info @version_info@ -export-dynamic # -no-undefined
@@ -38,7 +39,7 @@ nobase_include_HEADERS = \
     goby/C_Alignments.h \
     goby/C_CompactHelpers.h
 
-bin_PROGRAMS = GobyAlignmentStats GobyAlignmentToText GobyReadsStats GobyFastaToCompact
+bin_PROGRAMS = GobyAlignmentStats GobyAlignmentToText GobyReadsStats GobyFastaToCompact C_Sample_CompactReads
 
 GobyAlignmentStats_LDADD = libgoby.la ${BOOST_LDFLAGS} ${BOOST_SYSTEM_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_FILESYSTEM_LIB}
 GobyAlignmentStats_SOURCES = \
@@ -55,6 +56,10 @@ GobyReadsStats_SOURCES = \
 GobyFastaToCompact_LDADD = libgoby.la ${BOOST_LDFLAGS} ${BOOST_SYSTEM_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_FILESYSTEM_LIB} ${BOOST_PROGRAM_OPTIONS_LIB}
 GobyFastaToCompact_SOURCES = \
 	GobyFastaToCompact.cc
+
+C_Sample_CompactReads_LDADD = libgoby.la ${BOOST_LDFLAGS} ${BOOST_SYSTEM_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_FILESYSTEM_LIB} ${BOOST_PROGRAM_OPTIONS_LIB}
+C_Sample_CompactReads_SOURCES = \
+	C_Sample_CompactReads.c
 
 MAINTAINERCLEANFILES = \
 	Makefile.in

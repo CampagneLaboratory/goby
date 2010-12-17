@@ -62,7 +62,7 @@ extern "C" {
     void samHelper_addCigarItem(CSamHelper *samHelper, int length, char op);
     const char *samHelper_getCigarStr(CSamHelper *samHelper);
     void samHelper_setMd(CSamHelper *samHelper, char *md);
-    void samHelper_setQueryTranslate(CSamHelper *samHelper, char *reads, char *qual, int length, int reverseStrand);
+    void samHelper_setQueryTranslate(CSamHelper *samHelper, char *reads, char *qual, unsigned int length, unsigned int reverseStrand);
     void samHelper_constructRefAndQuery(CSamHelper *samHelper);
     const char *samHelper_sourceQuery(CSamHelper *samHelper);
     const char *samHelper_constructedQuery(CSamHelper *samHelper);

@@ -285,7 +285,8 @@ extern "C" {
         }
     }
 
-    void samHelper_setQueryTranslate(CSamHelper *samHelper, char *reads, char *qual, int length, int reverseStrand) {
+    void samHelper_setQueryTranslate(CSamHelper *samHelper, char *reads, char *qual, 
+            unsigned int length, unsigned int reverseStrand) {
         if (!reverseStrand && qual) {
             (*samHelper->cpp_sourceQual) += qual;
         }
