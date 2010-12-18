@@ -78,7 +78,7 @@
                 <classname>StringStringParser</classname>
             </stringParser>
             <required>false</required>
-            <help>The start position within the file, which should be number of bytes into the file to start reading from, or a string in the format ref-id,ref-position. Only entries that have a position after the start position are considered.</help>
+            <help>The start position within the file, which should be number of bytes into the file to start reading from, or a string in the format ref-id,ref-position (since Goby 1.9). Only entries that have a position after the start position are considered.</help>
         </flaggedOption>
         <flaggedOption>
             <id>end-position</id>
@@ -88,7 +88,7 @@
                 <classname>StringStringParser</classname>
             </stringParser>
             <required>false</required>
-            <help>The end position within the file, which should be number of bytes into the file to end reading from, or a string in the format ref-id,ref-position. Only entries that occur before the specified position are analyzed.</help>
+            <help>The end position within the file, which should be number of bytes into the file to end reading from, or a string in the format ref-id,ref-position (since Goby 1.9). Only entries that occur before the specified position are analyzed.</help>
         </flaggedOption>
          <flaggedOption>
              <id>variation-stats</id>
