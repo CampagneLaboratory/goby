@@ -60,8 +60,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION =
-            "Discover sequence variants within and across groups of samples. Identify variations significantly enriched" +
-                    "in one group or the other. This mode will either (i) identify sequence variants within a group of sample\n" +
+            "Discover sequence variants within and across groups of samples. This mode will either (i) identify sequence variants within a group of sample\n" +
                     "  or (ii) identify variants whose frequency is significantly enriched in one of two groups. \n" +
                     "  This mode requires sorted/indexed alignments as input. (Since Goby 1.8) ";
 
