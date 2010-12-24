@@ -326,6 +326,43 @@ namespace goby {
     }
   }
 
+  /**
+   * If you wish to provide the identifier and have the queryIndex generated
+   * automatically. If the identifier has already been registered, you'll get
+   * back the same queryIndex as before.
+   */
+  unsigned AlignmentWriter::addQueryIdentifier(const std::string& queryIdentifier) {
+    if (query_identifiers.find(queryIdentifier) == query_identifiers.end()) {
+        // New identifier, register it in the local map
+        const unsigned newQueryIndex = query_identifiers.size();
+        query_identifiers[queryIdentifier] = newQueryIndex;
+        // And in the Protobuf map
+        goby::IdentifierMapping *queryNameMapping = header.mutable_query_name_mapping();
+        goby::IdentifierInfo *newMapping = queryNameMapping->add_mappings();
+        newMapping->set_name(queryIdentifier);
+        newMapping->set_index(newQueryIndex);
+        return newQueryIndex;
+    } else {
+        // identifier already registered
+        return query_identifiers[queryIdentifier];
+    }
+  }
+
+  /**
+   * If you wish to provide the identifier AND the queryIndex. If the 
+   * identifier has already been registered, nothing new will happen.
+   */
+  void AlignmentWriter::addQueryIdentifierWithIndex(const std::string& queryIdentifier, unsigned newQueryIndex) {
+    if (query_identifiers.find(queryIdentifier) == query_identifiers.end()) {
+        query_identifiers[queryIdentifier] = newQueryIndex;
+        // And in the Protobuf map
+        goby::IdentifierMapping *queryNameMapping = header.mutable_query_name_mapping();
+        goby::IdentifierInfo *newMapping = queryNameMapping->add_mappings();
+        newMapping->set_name(queryIdentifier);
+        newMapping->set_index(newQueryIndex);
+    }
+  }
+
   void AlignmentWriter::close() {
     // Write to the "header" file
     const string headerFilename = basename + ".header";

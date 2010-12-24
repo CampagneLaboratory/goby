@@ -160,6 +160,8 @@ namespace goby {
     // NOTE: Query Length setters are not provided - this information is no longer in the header
 
     void addTargetIdentifier(const std::string& targetName, const google::protobuf::uint32 targetIndex);
+    unsigned addQueryIdentifier(const std::string& queryIdentifier);
+    void addQueryIdentifierWithIndex(const std::string& queryIdentifier, unsigned newQueryIndex);
 
     // add the description/value to the overall alignment stats
     inline void addStatistic(const std::string& description, const std::string& value) { stats[description] = value; };

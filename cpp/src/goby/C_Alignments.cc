@@ -14,6 +14,14 @@ using namespace std;
 #define debug(x)
 #endif
 
+// TODO: When reading from COMPACT-READS, one should call
+// TODO: addQueryIdentifierWithInt() but ONLY if there is a text
+// TODO: identifier for the read in question, otherwise just
+// TODO: use the actual queryIndex that comes from CompactReads
+// TODO: as the query index and don't bother with addQueryIdentifier*
+// TODO: the addQueryIdentifier() should only be used when reading
+// TODO: from FA/FQ and what you have is a real string identifier.
+
 /**
  * C API to enable writing Goby compact-alignments in C.
  */
@@ -89,6 +97,34 @@ extern "C" {
         string targetNameStr(targetName);
         writerHelper->alignmentWriter->addTargetIdentifier(targetNameStr, targetIndex);
         writerHelper->alignmentWriter->addTargetLength(targetLength);
+    }
+
+    /**
+     * If you wish to provide the identifier and have the queryIndex generated
+     * automatically. If the identifier has already been registered, you'll get
+     * back the same queryIndex as before. This should be called if your INPUT
+     * is Fasta or Fastq and your query identifier is a real string and you need
+     * to gernate a queryIndex automatically.
+     */
+    unsigned gobyAlignments_addQueryIdentifier(CAlignmentsWriterHelper *writerHelper, const char *queryIdentifier) {
+        string queryIdentifierStr(queryIdentifier);
+        unsigned queryIndex = writerHelper->alignmentWriter->addQueryIdentifier(queryIdentifierStr);
+        debug(fprintf(stderr,"gobyAlignments_addQueryIdentifier %s=%d\n", queryIdentifier, queryIndex));
+        return queryIndex;
+    }
+
+    /**
+     * If you wish to provide the identifier AND the queryIndex. If the 
+     * identifier has already been registered, nothing new will happen.
+     * This should be called if your input is compact-reads and you HAVE
+     * query-identifier strings for your queries. If you don't have query
+     * identifiers, don't bother to call this, you know the queryIndex and
+     * that's good enough.
+     */
+    void gobyAlignments_addQueryIdentifierWithIndex(CAlignmentsWriterHelper *writerHelper, const char *queryIdentifier, unsigned int newQueryIndex) {
+        debug(fprintf(stderr,"gobyAlignments_addQueryIdentifierWithIndex %s=%d\n", queryIdentifier, newQueryIndex));
+        string queryIdentifierStr(queryIdentifier);
+        writerHelper->alignmentWriter->addQueryIdentifierWithIndex(queryIdentifierStr, newQueryIndex);
     }
     
     // get an empty alignment entry to populate
