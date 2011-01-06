@@ -66,7 +66,9 @@ public class AlignmentToTextMode extends AbstractGobyMode {
      */
     private int defaultReadLength;
 
-    /** If header is written, used in PLAIN output (not SAM). */
+    /**
+     * If header is written, used in PLAIN output (not SAM).
+     */
     private boolean headerWritten = false;
 
     @Override
@@ -140,23 +142,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
             final int alignmentLength = alignmentEntry.getQueryAlignedLength();
 
             if (!headerWritten) {
-                headerWritten = true;
-                outputStream.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n",
-                        "queryIndex",
-                        "queryFragmentIndex",
-                        "pairFlags",
-                        "pairFragmentIndex",
-                        "pairTarget",
-                        "pairPosition",
-                        "targetIndex",
-                        "referenceLength",
-                        "numIndels",
-                        "numMismatches",
-                        "score",
-                        "position",
-                        "alignmentLength",
-                        "strand",
-                        "mappingQuality");
+                printHeader(outputStream);
             }
 
 
@@ -247,6 +233,28 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 }
             }
         }
+
+
+    }
+
+    private void printHeader(PrintStream outputStream) {
+        headerWritten = true;
+        outputStream.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n",
+                "queryIndex",
+                "queryFragmentIndex",
+                "pairFlags",
+                "pairFragmentIndex",
+                "pairTarget",
+                "pairPosition",
+                "targetIndex",
+                "referenceLength",
+                "numIndels",
+                "numMismatches",
+                "score",
+                "position",
+                "alignmentLength",
+                "strand",
+                "mappingQuality");
     }
 
     private String zeroPad(final String val, final int length) {
@@ -255,7 +263,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
             return val;
         }
         String format = String.format("%%0%dd%%s", addZeros);
-        return String.format(format, 0, val);            
+        return String.format(format, 0, val);
     }
 
     private MutableString getReadSequence(final Alignments.AlignmentEntry alignmentEntry, final int readLength) {
@@ -348,7 +356,8 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                     : new PrintStream(new FileOutputStream(outputFilename));
             switch (outputFormat) {
                 case PLAIN:
-                    stream.printf("queryId\treferenceId\treferenceLength\tnumberOfIndels\tnumberOfMismatches\tscore\tstartPosition\talignmentLength\tmatchesReverseStrand%n");
+                    printHeader(stream);
+                    break;
                 case SAM:
                     stream.printf("@HD\tVN:1.0%n" + "@PG\tGoby\tVN:"
                             + VersionUtils.getImplementationVersion(GobyDriver.class) + "%n");
