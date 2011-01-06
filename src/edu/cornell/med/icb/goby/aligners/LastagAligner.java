@@ -204,8 +204,8 @@ public class LastagAligner extends LastAligner {
      * Used to log debug and informational messages.
      */
     private static final Log LOG = LogFactory.getLog(LastagAligner.class);
-
     private static final String LASTAG_EXEC = SystemUtils.IS_OS_WINDOWS ? "lastag.exe" : "lastag";
+    private static final boolean NATIVE_GOBY_SUPPORTED = false;
 
     public LastagAligner() {
         super();
@@ -295,5 +295,9 @@ public class LastagAligner extends LastAligner {
         // also delete the colorSpaceMatrix file, if created
         FileUtils.deleteQuietly(new File(matrixFilename));
         return buildResults;
+    }
+
+    public boolean isNativeGobySupported() {
+        return NATIVE_GOBY_SUPPORTED;
     }
 }

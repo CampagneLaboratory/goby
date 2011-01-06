@@ -64,6 +64,11 @@ public abstract class AbstractAligner implements Aligner {
     protected boolean keepTemporaryFiles;
     private int smallestQueryIndex;
     private int largestQueryIndex;
+    protected long splitStartPosition = 0;
+    protected long splitEndPosition = 0;
+    protected boolean pairedEndCompactInput = false;
+    protected String pairedEndDirections = "FR";
+    protected boolean bisulfiteInput = false;
 
     /**
      * When true, will not delete the native aligner files generated during alignment. These files are deleted by default.
@@ -89,6 +94,8 @@ public abstract class AbstractAligner implements Aligner {
      */
     public abstract AbstractAlignmentToCompactMode getNativeAlignmentToCompactMode(final String outputBasename);
 
+
+    public abstract boolean isNativeGobySupported();
 
     /**
      * Parse and validate aligner specific options.
@@ -140,6 +147,102 @@ public abstract class AbstractAligner implements Aligner {
 
     public void setWorkDirectory(final String path) {
         workDirectory = path;
+    }
+
+    /**
+     * If the aligner directly supports reading Goby Compact-Reads (check the aligners isNativeGobySupport()),
+     * this sets the start position when reading from the input file. The default, 0, indicates start of file.
+     * @return the split start position
+     */
+    public long getSplitStartPosition() {
+        return splitStartPosition;
+    }
+
+    /**
+     * If the aligner directly supports reading Goby Compact-Reads (check the aligners isNativeGobySupport()),
+     * this sets the start position when reading from the input file. The default, 0, indicates start of file.
+     * @param splitStartPosition the split start position
+     */
+    public void setSplitStartPosition(long splitStartPosition) {
+        this.splitStartPosition = splitStartPosition;
+    }
+
+    /**
+     * If the aligner directly supports reading Goby Compact-Reads (check the aligners isNativeGobySupport()),
+     * this sets the end position when reading from the input file. The default, 0, indicates end of file.
+     * @return the split end position
+     */
+    public long getSplitEndPosition() {
+        return splitEndPosition;
+    }
+
+    /**
+     * If the aligner directly supports reading Goby Compact-Reads (check the aligners isNativeGobySupport()),
+     * this sets the end position when reading from the input file. The default, 0, indicates end of file.
+     * @param splitEndPosition the split end position
+     */
+    public void setSplitEndPosition(long splitEndPosition) {
+        this.splitEndPosition = splitEndPosition;
+    }
+
+    /**
+     * If the aligner directly supports reading Goby Compact-Reads, this sets if the input Goby compact-reads
+     * file is paired-end and should be processed as such, if the aligners supports it.
+     * @return if the input is paired end Goby compact-reads
+     */
+    public boolean isPairedEndCompactInput() {
+        return pairedEndCompactInput;
+    }
+
+    /**
+     * If the aligner directly supports reading Goby Compact-Reads, this sets if the input Goby compact-reads
+     * file is paired-end and should be processed as such, if the aligners supports it.
+     * @param pairedEndCompactInput if the input is paired end Goby compact-reads
+     */
+    public void setPairedEndCompactInput(boolean pairedEndCompactInput) {
+        this.pairedEndCompactInput = pairedEndCompactInput;
+    }
+
+    /**
+     * If pairedEndCompactInput is set to true, this specifies the directions for the sequence pair.
+     * "FF", "FR", "RF", "RR" and valid values. Default is FR.
+     * @return the paired end directions if the input is paired end Goby compact-reads
+     */
+    public String getPairedEndDirections() {
+        return pairedEndDirections;
+    }
+
+    /**
+     * If pairedEndCompactInput is set to true, this specifies the directions for the sequence pair.
+     * "FF", "FR", "RF", "RR" and valid values. If you try to set to a value other than these four
+     * nothing will happen. Default is "FR".
+     * @param pairedEndDirections the paired end directions if the input is paired end Goby compact-reads
+     */
+    public void setPairedEndDirections(String pairedEndDirections) throws IllegalArgumentException {
+        if (pairedEndDirections.equals("FF") ||
+                pairedEndDirections.equals("FR") ||
+                pairedEndDirections.equals("RF") ||
+                pairedEndDirections.equals("RR")) {
+            this.pairedEndDirections = pairedEndDirections;
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    /**
+     * If the input has be bisulfite processed (currently only supported by gsnap and requires a bisulfite reference).
+     * @return if Bisulfite Input
+     */
+    public boolean isBisulfiteInput() {
+        return bisulfiteInput;
+    }
+
+    /**
+     * If the input has be bisulfite processed (currently only supported by gsnap and requires a bisulfite reference).
+     * @param bisulfiteInput if Bisulfite Input
+     */
+    public void setBisulfiteInput(boolean bisulfiteInput) {
+        this.bisulfiteInput = bisulfiteInput;
     }
 
     /**

@@ -205,6 +205,8 @@ public class LastAligner extends AbstractAligner {
     protected static final int DEFAULT_MATCH_TO_MISMATCH_RATIO_NT = 1;
     protected static final int DEFAULT_MATCH_TO_MISMATCH_RATIO_CS = 2;
 
+    private static final boolean NATIVE_GOBY_SUPPORTED = false;
+
     // parameters to resolve Lastal command-line options
     protected int maxGapsAllowed = DEFAULT_MAX_GAPS_ALLOWED;
     protected int gapOpeningCost = DEFAULT_GAP_OPENING_COST;
@@ -772,5 +774,9 @@ public class LastAligner extends AbstractAligner {
         countLine.append("\t");
         countLine.append(count);
         return countLine.toString();
+    }
+
+    public boolean isNativeGobySupported() {
+        return NATIVE_GOBY_SUPPORTED;
     }
 }

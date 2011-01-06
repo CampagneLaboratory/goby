@@ -176,4 +176,26 @@ public interface Aligner {
     String getAlphabet();
 
     void setKeepTemporaryFiles(boolean keepTemporaryFiles);
+
+    long getSplitStartPosition();
+
+    void setSplitStartPosition(long splitStartPosition);
+
+    long getSplitEndPosition();
+
+    void setSplitEndPosition(long splitEndPosition);
+
+    boolean isPairedEndCompactInput();
+
+    void setPairedEndCompactInput(boolean pairedEndCompactInput);
+
+    String getPairedEndDirections();
+
+    void setPairedEndDirections(String pairedEndDirections);
+
+    boolean isBisulfiteInput();
+
+    void setBisulfiteInput(boolean bisulfiteInput);
+
+    boolean isNativeGobySupported();
 }

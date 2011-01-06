@@ -64,6 +64,7 @@ public class BWAAligner extends AbstractAligner {
     private static final String BWA_ALIGN_ARG = "aln";
     private static final String BWA_SAMSE_ARG = "samse";
     private static final int DEFAULT_SEED_LENGTH = 35;
+    private static final boolean NATIVE_GOBY_SUPPORTED = false;
 
     private String databasePrefix;
     private String saiBinaryFilename = "";
@@ -334,4 +335,9 @@ public class BWAAligner extends AbstractAligner {
         }
         return buildResults;
     }
+
+    public boolean isNativeGobySupported() {
+        return NATIVE_GOBY_SUPPORTED;
+    }
+
 }

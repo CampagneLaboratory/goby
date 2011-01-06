@@ -52,6 +52,8 @@ public class GSnapAligner extends AbstractAligner {
      * Used to log debug and informational messages.
      */
     private static final Log LOG = LogFactory.getLog(BWAAligner.class);
+    private static final boolean NATIVE_GOBY_SUPPORTED = false;
+
     private int numThreads;
 
     public CompactToFastaMode getReferenceCompactToFastaConverter() {
@@ -141,5 +143,7 @@ public class GSnapAligner extends AbstractAligner {
         return buildResults(outputBasename);
     }
 
-
+    public boolean isNativeGobySupported() {
+        return NATIVE_GOBY_SUPPORTED;
+    }
 }
