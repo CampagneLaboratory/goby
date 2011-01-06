@@ -19,12 +19,14 @@
 package edu.cornell.med.icb.goby.alignments;
 
 /**
+ * Class to decode paired end and splice flags from an alignment entry.
+ *
  * @author Fabien Campagne
  *         Date: Jan 6, 2011
  *         Time: 5:02:53 PM
  */
 public class EntryFlagHelper {
-    /*
+    /* paired end flags:
       000000001    paired
       000000010    properly paired
       000000100    read unmapped
@@ -56,30 +58,76 @@ public class EntryFlagHelper {
         return (entry.getPairFlags() & (0x1L << 1)) != 0;
     }
 
+    /**
+     * If the read was not mapped. This method will return true, if we are processing
+     * an entry that is a mate, for which the read was not mapped.
+     *
+     * @param entry The entry.
+     * @return True if the read of a pair was not mapped (and we are looking at the mate).
+     */
     public static boolean isReadUnmapped(final Alignments.AlignmentEntry entry) {
         return (entry.getPairFlags() & (0x1L << 2)) != 0;
     }
 
+    /**
+     * If the mate was not mapped. This method will return true, if we are processing
+     * an entry that is a read, for which the corresponding mate could not be mapped.
+     *
+     * @param entry The entry.
+     * @return True if the mate of a pair was not mapped (and we are looking at the primary read).
+     */
     public static boolean isMateUnmapped(final Alignments.AlignmentEntry entry) {
         return (entry.getPairFlags() & (0x1L << 3)) != 0;
     }
 
+    /**
+     * Returns whether the pair read was matching the reverse strand. Equivalent to looking
+     * at matchingReverseStrand if we are processing entry for the primary read.
+     *
+     * @param entry The entry.
+     * @return True or False.
+     */
     public static boolean isReadReverseStrand(final Alignments.AlignmentEntry entry) {
         return (entry.getPairFlags() & (0x1L << 4)) != 0;
     }
 
+    /**
+     * Returns whether the pair mate was matching the reverse strand. Equivalent to looking
+     * at matchingReverseStrand if we are processing entry for the mate.
+     *
+     * @param entry The entry.
+     * @return True or False.
+     */
     public static boolean isMateReverseStrand(final Alignments.AlignmentEntry entry) {
         return (entry.getPairFlags() & (0x1L << 5)) != 0;
     }
 
+    /**
+     * Returns true if the entry corresponds to the first/primary read in a pair.
+     *
+     * @param entry The entry.
+     * @return True or False.
+     */
     public static boolean isFirstInPair(final Alignments.AlignmentEntry entry) {
         return (entry.getPairFlags() & (0x1L << 6)) != 0;
     }
 
+    /**
+     * Returns true if the entry corresponds to the mate/second read in a pair.
+     *
+     * @param entry The entry.
+     * @return True or False.
+     */
     public static boolean isSecondInPair(final Alignments.AlignmentEntry entry) {
         return (entry.getPairFlags() & (0x1L << 7)) != 0;
     }
 
+    /**
+     * Returns true if another entry had a better alignment score across the reference.
+     *
+     * @param entry The entry.
+     * @return True or False.
+     */
     public static boolean isNotPrimaryAlignment(final Alignments.AlignmentEntry entry) {
         return (entry.getPairFlags() & (0x1L << 8)) != 0;
     }
