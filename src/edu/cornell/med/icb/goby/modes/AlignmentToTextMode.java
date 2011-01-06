@@ -181,7 +181,8 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                         if (alignmentEntry.hasPairFlags()) {
                             flag = alignmentEntry.getPairFlags();
                         } else {
-                            flag = (alignmentEntry.getMatchingReverseStrand() ? 1 : 0) << 4;   // strand is encoded in 0x10, shift left by 4 bits.
+                            // strand is encoded in 000010000 (binary), shift left by 4 bits.
+                            flag = (alignmentEntry.getMatchingReverseStrand() ? 1 : 0) << 4;
                         }
                         final int mappingQuality;
                         if (alignmentEntry.hasMappingQuality()) {
