@@ -23,6 +23,7 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.EntryFlagHelper;
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
@@ -276,6 +277,10 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         long total = 0;
         double avgScore = 0;
         int sumNumVariations = 0;
+        int numPaired = 0;
+        int numProperlyPaired = 0;
+        int numFirstInPair=0;
+        int numSecondInPair=0;
 
         for (final Alignments.AlignmentEntry entry : reader) {
             numberOfReads++;   // Across all files
@@ -297,9 +302,13 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 queryLengthStats.addValue(queryLength);
             } else if (reader.hasQueryLengths() || reader.isConstantQueryLengths()) {
                 final double queryLength = reader.getQueryLength(entry.getQueryIndex());
-                queryLengthStats.addValue(queryLength);                
+                queryLengthStats.addValue(queryLength);
             }
-        }
+            numPaired += EntryFlagHelper.isPaired(entry) ? 1 : 0;
+            numProperlyPaired += EntryFlagHelper.isProperlyPaired(entry) ? 1 : 0;
+            numFirstInPair +=EntryFlagHelper.isFirstInPair(entry) ? 1:0;
+            numSecondInPair +=EntryFlagHelper.isSecondInPair(entry) ? 1:0;
+        }   
 
         avgScore /= (double) numLogicalAlignmentEntries;
 
@@ -324,6 +333,10 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         stream.printf("Min query length = %,d%n", (int) queryLengthStats.getMin());
         stream.printf("Max query length = %,d%n", (int) queryLengthStats.getMax());
         stream.printf("Mean query length = %,.2f%n", queryLengthStats.getMean());
+        stream.printf("Percent paired reads = %,.2f %% %n", divide(numPaired, numQuerySequences*2) * 100d);
+        stream.printf("Percent properly paired reads = %,.2f %% %n", divide(numProperlyPaired, numQuerySequences*2) * 100d);
+        stream.printf("Percent first in pair = %,.2f %% %n", divide(numFirstInPair, numEntries) * 100d);
+        stream.printf("Percent second in pair = %,.2f %% %n", divide(numSecondInPair, numEntries) * 100d);
     }
 
     private double divide(final long a, final long b) {
