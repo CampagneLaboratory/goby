@@ -1,4 +1,5 @@
 1.9 -> Development
+ - Mode compact-alignment-stats now prints statistics about paired-end reads.
  - Removed spurious SAM header when writing alignemnts in plain text format.
  - Aligners publish if they support goby formats natively
  - AlignMode / Aligner Support for command line options targeting native goby support such as
