@@ -120,6 +120,12 @@ message AlignmentEntry {
   optional RelatedAlignmentEntry pair_alignment_link=16;
   /* Index of the read fragment from which this alignment was obtained. */
   optional uint32 fragment_index=17;
+  /* The size of the insert used when making the sequence library. This is the total size of the DNA
+  fragment to sequence, without the adapters. This is not the length of sequence that separates the reads.
+  See http://seqanswers.com/forums/showthread.php?t=8730 for details. Insert size is inferred for each pair
+  of reads by the aligner and is recorded here if was estimated (i.e., for paired-end reads).
+  */
+  optional uint32 insert_size;
 }
 
 /* A link to another alignment entry. This message type is used to represent relations
