@@ -38,15 +38,11 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math.stat.descriptive.rank.Percentile;
 
-import javax.swing.text.MutableAttributeSet;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Display some basic statistics on file in compact reads format.
@@ -109,6 +105,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
      */
     private String outputFilename;
 
+    List<Boolean> pairedSamples = null;
+
     /**
      * The actual writer to use to write the output.
      */
@@ -169,6 +167,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             stream = outputFilename == null ? System.out :
                     new PrintStream(new FileOutputStream(outputFilename));
             int numberOfFilesProcessed = 0;
+            pairedSamples = new ArrayList<Boolean>(inputFiles.size());
             for (final File file : inputFiles) {
                 if (file.exists() && file.canRead()) {
                     switch (FileExtensionHelper.determineCompactFileType(file)) {
@@ -192,6 +191,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
 
             stream.println();
             stream.printf("Total number of files processed = %,d\n", numberOfFilesProcessed);
+            stream.printf("All Compact-Reads files were paired-end = %s\n", isAllPairedSamples());
             stream.println();
         } finally {
             if (stream != System.out) {
@@ -382,6 +382,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         long totalReadLengthPair = 0;
 
         ReadsReader reader = null;
+        boolean checkedForPaired = false;
 
         try {
             final long size = file.length();
@@ -407,7 +408,15 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                     stream.println("Identifier found: " + entry.getReadIdentifier());
                 }
                 numberOfSequences += entry.hasSequence() && !entry.getSequence().isEmpty() ? 1 : 0;
-                numberOfSequencePairs += entry.hasSequencePair() && !entry.getSequencePair().isEmpty() ? 1 : 0;
+                final boolean samplePaired = entry.hasSequencePair() && !entry.getSequencePair().isEmpty();
+                if (samplePaired) {
+                    numberOfSequencePairs += 1;
+                }
+                if (!checkedForPaired) {
+                    // Check only the very first entry.
+                    checkedForPaired = true;
+                    pairedSamples.add(samplePaired);
+                }
                 numberOfQualityScores +=
                         entry.hasQualityScores() && !entry.getQualityScores().isEmpty() ? 1 : 0;
 
@@ -476,6 +485,35 @@ public class CompactFileStatsMode extends AbstractGobyMode {
      */
     public int getMinReadLength() {
         return minReadLength;
+    }
+
+    /**
+     * Get if all the files scanned contains paired samples (only checks the FIRST sample in each file).
+     *
+     * @return if all the files contained paired samples
+     */
+    public boolean isAllPairedSamples() {
+        boolean allPairedSamples = true;
+        if (pairedSamples == null || pairedSamples.size() == 0) {
+            allPairedSamples = false;
+        } else {
+            for (boolean pairedSample : pairedSamples) {
+                if (!pairedSample) {
+                    allPairedSamples = false;
+                    break;
+                }
+            }
+        }
+        return allPairedSamples;
+    }
+
+    /**
+     * A list if which of the scanned samples were paired and which weren't. Note that
+     * the pairing scan only checks the FIRST sample in the reads file.
+     * @return the list of which scanned samples were paired (one per file scanned).
+     */
+    public List<Boolean> getPairedSamples() {
+        return pairedSamples;
     }
 
     /**
