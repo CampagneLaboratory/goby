@@ -1,4 +1,9 @@
 1.9 -> Development
+ - Introduced meta-data in compact-reads files. Meta-data provide a way to document how the sample
+   was opbtained. Suggested information to be recorded includes when the library was sequenced (useful
+   to detect batch-effect, as suggested by a participant to the SEQC meeting at the NIH Bethesda campus),
+   as well as sequencing instrument. Modes fasta-to-compact, compact-file-stats and reformat-compact-reads
+   have been updated to define, transfer or display meta-data when appropriate.
  - Mode compact-alignment-stats now prints statistics about paired-end reads.
  - Removed spurious SAM header when writing alignemnts in plain text format.
  - Aligners publish if they support goby formats natively

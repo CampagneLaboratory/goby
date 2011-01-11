@@ -107,6 +107,37 @@
             </defaults>
             <help>Pair indicators are used to locate paired sequence input files. The indicator must be two string tokens separated by one coma. The first token should appear in the first input filename of a pair, while the second token should appear in the second filename of a pair. This mode will substitute the first token by the second to transform an input filename into a paired input filename.</help>
         </flaggedOption>
+        <flaggedOption>
+            <id>key</id>
+            <longFlag>key</longFlag>
+             <shortFlag>k</shortFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <allowMultipleDeclarations>true</allowMultipleDeclarations>
+            <help>Provide the key for key/value pairs of meta data. Meta data will be stored in the first entry of the read file.</help>
+        </flaggedOption>
+          <flaggedOption>
+            <id>value</id>
+            <longFlag>value</longFlag>
+             <shortFlag>v</shortFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <allowMultipleDeclarations>true</allowMultipleDeclarations>
+            <help>Provide the value for key/value pairs of meta data. Meta data will be stored in the first entry of the read file. Values are matched to keys according to the order in which key value pairs appear in the argument list. For instance, -k 1 -v 2 -k a -v b will associate key 1 to value 2 and key a to value b.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>key-value-pairs</id>
+            <longFlag>key-value-pairs</longFlag>
 
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>A file with key-value pairs, in the Java property format. (key=value, one per line). Any key/value pairs defined in this file will be overriden by key/value pairs defined on the command line when the same key is used.</help>
+        </flaggedOption>
     </parameters>
 </jsap>

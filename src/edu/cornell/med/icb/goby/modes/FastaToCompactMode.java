@@ -37,6 +37,8 @@ import org.apache.commons.logging.LogFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.FileReader;
+import java.util.Properties;
 
 /**
  * Converts a <a href="http://en.wikipedia.org/wiki/FASTA_format">FASTA</a>
@@ -110,6 +112,8 @@ public class FastaToCompactMode extends AbstractGobyMode {
     private boolean processPairs;
     private String pairIndicator1;
     private String pairIndicator2;
+    private File keyValuePairsFilename;
+    private Properties keyValueProps;
 
     /**
      * Returns the mode name defined by subclasses.
@@ -167,6 +171,33 @@ public class FastaToCompactMode extends AbstractGobyMode {
             pairIndicator1 = tmp[0];
             pairIndicator2 = tmp[1];
         }
+        keyValueProps = new Properties();
+        keyValuePairsFilename = jsapResult.getFile("key-value-pairs");
+
+        if (keyValuePairsFilename != null) {
+            if (!keyValuePairsFilename.exists()) {
+                System.err.println("Key value pair file cannot be found. Please check filename and try again.");
+                System.exit(1);
+            } else {
+
+                keyValueProps.load(new FileReader(keyValuePairsFilename));
+
+            }
+        }
+        String keys[] = jsapResult.getStringArray("key");
+        String values[] = jsapResult.getStringArray("value");
+        if (keys.length != values.length) {
+            System.out.println("Key and value arguments must be paired.");
+            System.exit(1);
+        }
+        int length = keys.length;
+        for (int i = 0; i < length; i++) {
+            String key = keys[i];
+            String value = values[i];
+            // override same keys with the command line values:
+            keyValueProps.put(key, value);
+            System.out.printf("defining or overriding key=%s value=%s %n", key, value);
+        }
         return this;
     }
 
@@ -177,13 +208,15 @@ public class FastaToCompactMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
+
+
         try {
             final DoInParallel loop = new DoInParallel() {
                 @Override
                 public void action(final DoInParallel forDataAccess, final String inputBasename, final int loopIndex) {
                     try {
                         debugStart(inputBasename);
-                        processOneFile(loopIndex, inputFilenames.length, inputBasename);
+                        processOneFile(loopIndex, inputFilenames.length, inputBasename, keyValueProps);
                         debugEnd(inputBasename);
                     } catch (IOException e) {
                         LOG.error("Error processing index " + loopIndex + ", " + inputBasename, e);
@@ -198,7 +231,8 @@ public class FastaToCompactMode extends AbstractGobyMode {
     }
 
 
-    private void processOneFile(final int loopIndex, final int length, final String inputFilename) throws IOException {
+    private void processOneFile(final int loopIndex, final int length, final String inputFilename,
+                                Properties keyValueProps) throws IOException {
         String outputFilename;
         if (loopIndex == 0 && StringUtils.isNotBlank(outputFile)) {
             outputFilename = outputFile;
@@ -215,13 +249,13 @@ public class FastaToCompactMode extends AbstractGobyMode {
         final File readsFile = new File(inputFilename);
         if (!output.exists() || FileUtils.isFileNewer(readsFile, output) || output.length() == 0) {
             System.out.println("Creating file " + outputFilename);
-            convert(loopIndex, length, inputFilename, outputFilename);
+            convert(loopIndex, length, inputFilename, outputFilename, keyValueProps);
         } else {
             System.out.printf("Skipping file that already exists %s%n", outputFilename);
         }
     }
 
-    private void convert(final int loopIndex, final int length, final String inputFilename, final String outputFilename) throws IOException {
+    private void convert(final int loopIndex, final int length, final String inputFilename, final String outputFilename, Properties keyValueProps) throws IOException {
         System.out.printf("Converting [%d/%d] %s to %s%n",
                 loopIndex + 1, length, inputFilename, outputFilename);
 
@@ -242,6 +276,8 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
             }
             FastXEntry pairEntry = null;
+            int entryIndex = 0;
+            writer.setMetaData(keyValueProps);
 
             for (final FastXEntry entry : new FastXReader(inputFilename)) {
                 if (pairReader != null) {
@@ -272,7 +308,9 @@ public class FastaToCompactMode extends AbstractGobyMode {
                         writer.setQualityScoresPair(convertQualityScores(pairEntry.getQuality()));
                     }
                 }
+
                 writer.appendEntry();
+                entryIndex++;
             }
         } finally {
             writer.close();

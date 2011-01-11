@@ -279,8 +279,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         int sumNumVariations = 0;
         int numPaired = 0;
         int numProperlyPaired = 0;
-        int numFirstInPair=0;
-        int numSecondInPair=0;
+        int numFirstInPair = 0;
+        int numSecondInPair = 0;
 
         for (final Alignments.AlignmentEntry entry : reader) {
             numberOfReads++;   // Across all files
@@ -306,9 +306,9 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             }
             numPaired += EntryFlagHelper.isPaired(entry) ? 1 : 0;
             numProperlyPaired += EntryFlagHelper.isProperlyPaired(entry) ? 1 : 0;
-            numFirstInPair +=EntryFlagHelper.isFirstInPair(entry) ? 1:0;
-            numSecondInPair +=EntryFlagHelper.isSecondInPair(entry) ? 1:0;
-        }   
+            numFirstInPair += EntryFlagHelper.isFirstInPair(entry) ? 1 : 0;
+            numSecondInPair += EntryFlagHelper.isSecondInPair(entry) ? 1 : 0;
+        }
 
         avgScore /= (double) numLogicalAlignmentEntries;
 
@@ -333,8 +333,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         stream.printf("Min query length = %,d%n", (int) queryLengthStats.getMin());
         stream.printf("Max query length = %,d%n", (int) queryLengthStats.getMax());
         stream.printf("Mean query length = %,.2f%n", queryLengthStats.getMean());
-        stream.printf("Percent paired reads = %,.2f %% %n", divide(numPaired, numQuerySequences*2) * 100d);
-        stream.printf("Percent properly paired reads = %,.2f %% %n", divide(numProperlyPaired, numQuerySequences*2) * 100d);
+        stream.printf("Percent paired reads = %,.2f %% %n", divide(numPaired, numQuerySequences * 2) * 100d);
+        stream.printf("Percent properly paired reads = %,.2f %% %n", divide(numProperlyPaired, numQuerySequences * 2) * 100d);
         stream.printf("Percent first in pair = %,.2f %% %n", divide(numFirstInPair, numEntries) * 100d);
         stream.printf("Percent second in pair = %,.2f %% %n", divide(numSecondInPair, numEntries) * 100d);
     }
@@ -389,6 +389,14 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             reader = new ReadsReader(FileUtils.openInputStream(file));
             for (final Reads.ReadEntry entry : reader) {
                 final int readLength = entry.getReadLength();
+
+                for (int i = 0; i < entry.getMetaDataCount(); i++) {
+                    Reads.MetaData metaData = entry.getMetaData(i);
+                    stream.printf("meta-data key=%s value=%s%n",
+                            metaData.getKey(),
+                            metaData.getValue());
+                    
+                }
 
                 // across this file
                 numReadEntries++;

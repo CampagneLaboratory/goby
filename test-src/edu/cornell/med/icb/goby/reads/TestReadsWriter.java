@@ -44,6 +44,12 @@ public class TestReadsWriter {
 
     @Test
     public void testReadWriteSequences() throws IOException {
+        testReadWriteSequences(false);
+        testReadWriteSequences(true);
+    }
+
+
+    public void testReadWriteSequences(boolean writeMetaData) throws IOException {
         final String[] sequences = {
                 "ACTGCGCGCG",
                 "AAAAATTTTGGGGGCCCCCCC",
@@ -65,11 +71,16 @@ public class TestReadsWriter {
             for (final String sequence : sequences) {
                 writer.setSequence(sequence);
                 writer.setDescription(descriptions[j]);
+                if (writeMetaData) {
+                    writer.appendMetaData("key1", "value1");
+                    writer.appendMetaData("key2", "value2");
+                }
                 writer.appendEntry();
                 ++j;
                 expectedCount++;
             }
         }
+
         writer.close();
         writer.printStats(System.out);
 

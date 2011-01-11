@@ -236,7 +236,11 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
                 if (readLength < minReadLength || readLength > maxReadLength) {
                     continue;
                 }
-
+                //transfer meta-data:
+                for (int i = 0; i < entry.getMetaDataCount(); i++) {
+                    Reads.MetaData metaData = entry.getMetaData(i);
+                    writer.appendMetaData(metaData.getKey(), metaData.getValue());
+                }
                 if (pushDescription && entry.hasDescription()) {
                     writer.setDescription(entry.getDescription());
                 }

@@ -73,8 +73,16 @@ message ReadEntry {
   repeated MetaData meta_data = 25;
 
 }
-/*  A message to store a key/value pair to represent metadata about the sample. */
+/*
+ A message to store a key/value pair and represent metadata about reads. 
+ */
 message MetaData {
+ /*
+   Provides the key. See examples in the documentation of meta_data for ReadEntry.
+ */
  required string key=1;
+ /*
+   Describes the value associated with the key. See examples in the documentation of meta_data for ReadEntry.
+ */
  required string value=2;
 }

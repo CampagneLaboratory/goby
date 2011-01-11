@@ -26,6 +26,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.Properties;
 
 /**
  * Write reads to the compact format.
@@ -119,6 +120,8 @@ public class ReadsWriter implements Closeable {
         readIndex++;
     }
 
+    boolean firstRead = true;
+
     /**
      * Append an entry with a specific read index.
      *
@@ -166,6 +169,16 @@ public class ReadsWriter implements Closeable {
             qualityScoresPair = null;
         }
 
+        if (firstRead == true && keyValuePairs!=null) {
+            // Append meta data on the very first read of each file. This is used instead of a separate header file. 
+            for (Object keyObject : keyValuePairs.keySet()) {
+                String key = keyObject.toString();
+                String value = keyValuePairs.get(key).toString();
+                entryBuilder.addMetaData(Reads.MetaData.newBuilder().setKey(key).setValue(value));
+            }
+            firstRead = false;
+
+        }
         collectionBuilder.addReads(entryBuilder.build());
         messageChunkWriter.writeAsNeeded(collectionBuilder);
         barcodeIndex = -1;
@@ -232,5 +245,21 @@ public class ReadsWriter implements Closeable {
      */
     public void setQualityScoresPair(final byte[] qualityScores) {
         this.qualityScoresPair = qualityScores;
+    }
+
+    Properties keyValuePairs = new Properties();
+
+    /**
+     * Append meta data to this read.
+     *
+     * @param key
+     * @param value
+     */
+    public void appendMetaData(String key, String value) {
+        keyValuePairs.put(key, value);
+    }
+
+    public void setMetaData(Properties keyValuePairs) {
+        this.keyValuePairs = keyValuePairs;
     }
 }
