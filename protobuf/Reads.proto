@@ -48,4 +48,33 @@ message ReadEntry {
     Quality scores for the second sequence in a pair. Stored as the 'qualityScores' attribute.
    */
   optional bytes quality_scores_pair = 7;
+
+  /*
+     Stores meta-data about the reads. Typically meta-data is stored in the very first read of a
+     read collection, with the understanding that the meta-data applies to all the reads in the
+     collection. Meta-data can be used to store information about when the sample was sequenced,
+     or other information of interest. The key-value pair format is sufficiently flexible to
+     accomodate a variety of needs. The following keys are pre-defined. Please use pre-defined
+     keys so that automated tools can use metadata in relatively standard way. Please note that
+     some keys provide a format for the value. This format should also be followed to garantee
+     that meta data can be used computationally in fully automatic manner.
+
+     key="sequencing-run-start-date" value="MM/DD/YYYY" Used to record when the sequencing run
+     was initiated on the instrument. Can be used to detect batch effect in a large set of samples.
+     key="platform" value="<free-text>". Value is free text, but the following terms are pre-defined.
+      Illumina GaIIx
+      Illumina HiSeq 1000
+      Illumina HiSeq 2000
+      Helicos Heliscope
+      LifeTech 5500 SOLiD
+      LifeTech 5500xl SOLiD
+      Roche 454 GS FLX Ti
+  */
+  repeated MetaData meta_data = 25;
+
+}
+/*  A message to store a key/value pair to represent metadata about the sample. */
+message MetaData {
+ required string key=1;
+ required string value=2;
 }

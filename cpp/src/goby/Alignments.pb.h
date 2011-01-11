@@ -317,6 +317,13 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 fragment_index() const;
   inline void set_fragment_index(::google::protobuf::uint32 value);
   
+  // optional uint32 insert_size = 20;
+  inline bool has_insert_size() const;
+  inline void clear_insert_size();
+  static const int kInsertSizeFieldNumber = 20;
+  inline ::google::protobuf::uint32 insert_size() const;
+  inline void set_insert_size(::google::protobuf::uint32 value);
+  
   // @@protoc_insertion_point(class_scope:goby.AlignmentEntry)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
@@ -339,11 +346,12 @@ class AlignmentEntry : public ::google::protobuf::Message {
   ::google::protobuf::uint32 pair_flags_;
   ::goby::RelatedAlignmentEntry* pair_alignment_link_;
   ::google::protobuf::uint32 fragment_index_;
+  ::google::protobuf::uint32 insert_size_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
   friend void protobuf_ShutdownFile_Alignments_2eproto();
   
-  ::google::protobuf::uint32 _has_bits_[(17 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(18 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
   inline bool _has_bit(int index) const {
@@ -1657,6 +1665,22 @@ inline ::google::protobuf::uint32 AlignmentEntry::fragment_index() const {
 inline void AlignmentEntry::set_fragment_index(::google::protobuf::uint32 value) {
   _set_bit(16);
   fragment_index_ = value;
+}
+
+// optional uint32 insert_size = 20;
+inline bool AlignmentEntry::has_insert_size() const {
+  return _has_bit(17);
+}
+inline void AlignmentEntry::clear_insert_size() {
+  insert_size_ = 0u;
+  _clear_bit(17);
+}
+inline ::google::protobuf::uint32 AlignmentEntry::insert_size() const {
+  return insert_size_;
+}
+inline void AlignmentEntry::set_insert_size(::google::protobuf::uint32 value) {
+  _set_bit(17);
+  insert_size_ = value;
 }
 
 // -------------------------------------------------------------------

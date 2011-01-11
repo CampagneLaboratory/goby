@@ -207,6 +207,7 @@
                 <provider classname="edu.cornell.med.icb.goby.stats.AlignedCountNormalization"/>
             </service>
         </jar>
+      
     </target>
     <target name="cruisecontrol"
             depends="clean, cobertura-setup, findbugs, test, jar, javadocs, pmd, cpd, cobertura-report"

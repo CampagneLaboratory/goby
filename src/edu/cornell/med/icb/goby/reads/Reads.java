@@ -439,11 +439,26 @@ public final class Reads {
     public boolean hasQualityScoresPair() { return hasQualityScoresPair; }
     public com.google.protobuf.ByteString getQualityScoresPair() { return qualityScoresPair_; }
     
+    // repeated .goby.MetaData meta_data = 25;
+    public static final int META_DATA_FIELD_NUMBER = 25;
+    private java.util.List<edu.cornell.med.icb.goby.reads.Reads.MetaData> metaData_ =
+      java.util.Collections.emptyList();
+    public java.util.List<edu.cornell.med.icb.goby.reads.Reads.MetaData> getMetaDataList() {
+      return metaData_;
+    }
+    public int getMetaDataCount() { return metaData_.size(); }
+    public edu.cornell.med.icb.goby.reads.Reads.MetaData getMetaData(int index) {
+      return metaData_.get(index);
+    }
+    
     private void initFields() {
     }
     public final boolean isInitialized() {
       if (!hasReadIndex) return false;
       if (!hasReadLength) return false;
+      for (edu.cornell.med.icb.goby.reads.Reads.MetaData element : getMetaDataList()) {
+        if (!element.isInitialized()) return false;
+      }
       return true;
     }
     
@@ -479,6 +494,9 @@ public final class Reads {
       }
       if (hasReadIdentifier()) {
         output.writeString(23, getReadIdentifier());
+      }
+      for (edu.cornell.med.icb.goby.reads.Reads.MetaData element : getMetaDataList()) {
+        output.writeMessage(25, element);
       }
       getUnknownFields().writeTo(output);
     }
@@ -528,6 +546,10 @@ public final class Reads {
       if (hasReadIdentifier()) {
         size += com.google.protobuf.CodedOutputStream
           .computeStringSize(23, getReadIdentifier());
+      }
+      for (edu.cornell.med.icb.goby.reads.Reads.MetaData element : getMetaDataList()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(25, element);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -671,6 +693,10 @@ public final class Reads {
           throw new IllegalStateException(
             "build() has already been called on this Builder.");
         }
+        if (result.metaData_ != java.util.Collections.EMPTY_LIST) {
+          result.metaData_ =
+            java.util.Collections.unmodifiableList(result.metaData_);
+        }
         edu.cornell.med.icb.goby.reads.Reads.ReadEntry returnMe = result;
         result = null;
         return returnMe;
@@ -716,6 +742,12 @@ public final class Reads {
         }
         if (other.hasQualityScoresPair()) {
           setQualityScoresPair(other.getQualityScoresPair());
+        }
+        if (!other.metaData_.isEmpty()) {
+          if (result.metaData_.isEmpty()) {
+            result.metaData_ = new java.util.ArrayList<edu.cornell.med.icb.goby.reads.Reads.MetaData>();
+          }
+          result.metaData_.addAll(other.metaData_);
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -780,6 +812,12 @@ public final class Reads {
             }
             case 186: {
               setReadIdentifier(input.readString());
+              break;
+            }
+            case 202: {
+              edu.cornell.med.icb.goby.reads.Reads.MetaData.Builder subBuilder = edu.cornell.med.icb.goby.reads.Reads.MetaData.newBuilder();
+              input.readMessage(subBuilder, extensionRegistry);
+              addMetaData(subBuilder.buildPartial());
               break;
             }
           }
@@ -985,6 +1023,57 @@ public final class Reads {
         return this;
       }
       
+      // repeated .goby.MetaData meta_data = 25;
+      public java.util.List<edu.cornell.med.icb.goby.reads.Reads.MetaData> getMetaDataList() {
+        return java.util.Collections.unmodifiableList(result.metaData_);
+      }
+      public int getMetaDataCount() {
+        return result.getMetaDataCount();
+      }
+      public edu.cornell.med.icb.goby.reads.Reads.MetaData getMetaData(int index) {
+        return result.getMetaData(index);
+      }
+      public Builder setMetaData(int index, edu.cornell.med.icb.goby.reads.Reads.MetaData value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.metaData_.set(index, value);
+        return this;
+      }
+      public Builder setMetaData(int index, edu.cornell.med.icb.goby.reads.Reads.MetaData.Builder builderForValue) {
+        result.metaData_.set(index, builderForValue.build());
+        return this;
+      }
+      public Builder addMetaData(edu.cornell.med.icb.goby.reads.Reads.MetaData value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        if (result.metaData_.isEmpty()) {
+          result.metaData_ = new java.util.ArrayList<edu.cornell.med.icb.goby.reads.Reads.MetaData>();
+        }
+        result.metaData_.add(value);
+        return this;
+      }
+      public Builder addMetaData(edu.cornell.med.icb.goby.reads.Reads.MetaData.Builder builderForValue) {
+        if (result.metaData_.isEmpty()) {
+          result.metaData_ = new java.util.ArrayList<edu.cornell.med.icb.goby.reads.Reads.MetaData>();
+        }
+        result.metaData_.add(builderForValue.build());
+        return this;
+      }
+      public Builder addAllMetaData(
+          java.lang.Iterable<? extends edu.cornell.med.icb.goby.reads.Reads.MetaData> values) {
+        if (result.metaData_.isEmpty()) {
+          result.metaData_ = new java.util.ArrayList<edu.cornell.med.icb.goby.reads.Reads.MetaData>();
+        }
+        super.addAll(values, result.metaData_);
+        return this;
+      }
+      public Builder clearMetaData() {
+        result.metaData_ = java.util.Collections.emptyList();
+        return this;
+      }
+      
       // @@protoc_insertion_point(builder_scope:goby.ReadEntry)
     }
     
@@ -997,6 +1086,337 @@ public final class Reads {
     // @@protoc_insertion_point(class_scope:goby.ReadEntry)
   }
   
+  public static final class MetaData extends
+      com.google.protobuf.GeneratedMessage {
+    // Use MetaData.newBuilder() to construct.
+    private MetaData() {
+      initFields();
+    }
+    private MetaData(boolean noInit) {}
+    
+    private static final MetaData defaultInstance;
+    public static MetaData getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public MetaData getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return edu.cornell.med.icb.goby.reads.Reads.internal_static_goby_MetaData_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return edu.cornell.med.icb.goby.reads.Reads.internal_static_goby_MetaData_fieldAccessorTable;
+    }
+    
+    // required string key = 1;
+    public static final int KEY_FIELD_NUMBER = 1;
+    private boolean hasKey;
+    private java.lang.String key_ = "";
+    public boolean hasKey() { return hasKey; }
+    public java.lang.String getKey() { return key_; }
+    
+    // required string value = 2;
+    public static final int VALUE_FIELD_NUMBER = 2;
+    private boolean hasValue;
+    private java.lang.String value_ = "";
+    public boolean hasValue() { return hasValue; }
+    public java.lang.String getValue() { return value_; }
+    
+    private void initFields() {
+    }
+    public final boolean isInitialized() {
+      if (!hasKey) return false;
+      if (!hasValue) return false;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (hasKey()) {
+        output.writeString(1, getKey());
+      }
+      if (hasValue()) {
+        output.writeString(2, getValue());
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (hasKey()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeStringSize(1, getKey());
+      }
+      if (hasValue()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeStringSize(2, getValue());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    public static edu.cornell.med.icb.goby.reads.Reads.MetaData parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static edu.cornell.med.icb.goby.reads.Reads.MetaData parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static edu.cornell.med.icb.goby.reads.Reads.MetaData parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static edu.cornell.med.icb.goby.reads.Reads.MetaData parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static edu.cornell.med.icb.goby.reads.Reads.MetaData parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static edu.cornell.med.icb.goby.reads.Reads.MetaData parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static edu.cornell.med.icb.goby.reads.Reads.MetaData parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static edu.cornell.med.icb.goby.reads.Reads.MetaData parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static edu.cornell.med.icb.goby.reads.Reads.MetaData parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static edu.cornell.med.icb.goby.reads.Reads.MetaData parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(edu.cornell.med.icb.goby.reads.Reads.MetaData prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private edu.cornell.med.icb.goby.reads.Reads.MetaData result;
+      
+      // Construct using edu.cornell.med.icb.goby.reads.Reads.MetaData.newBuilder()
+      private Builder() {}
+      
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new edu.cornell.med.icb.goby.reads.Reads.MetaData();
+        return builder;
+      }
+      
+      protected edu.cornell.med.icb.goby.reads.Reads.MetaData internalGetResult() {
+        return result;
+      }
+      
+      public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
+        result = new edu.cornell.med.icb.goby.reads.Reads.MetaData();
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(result);
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return edu.cornell.med.icb.goby.reads.Reads.MetaData.getDescriptor();
+      }
+      
+      public edu.cornell.med.icb.goby.reads.Reads.MetaData getDefaultInstanceForType() {
+        return edu.cornell.med.icb.goby.reads.Reads.MetaData.getDefaultInstance();
+      }
+      
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
+      public edu.cornell.med.icb.goby.reads.Reads.MetaData build() {
+        if (result != null && !isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return buildPartial();
+      }
+      
+      private edu.cornell.med.icb.goby.reads.Reads.MetaData buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        if (!isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return buildPartial();
+      }
+      
+      public edu.cornell.med.icb.goby.reads.Reads.MetaData buildPartial() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "build() has already been called on this Builder.");
+        }
+        edu.cornell.med.icb.goby.reads.Reads.MetaData returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof edu.cornell.med.icb.goby.reads.Reads.MetaData) {
+          return mergeFrom((edu.cornell.med.icb.goby.reads.Reads.MetaData)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(edu.cornell.med.icb.goby.reads.Reads.MetaData other) {
+        if (other == edu.cornell.med.icb.goby.reads.Reads.MetaData.getDefaultInstance()) return this;
+        if (other.hasKey()) {
+          setKey(other.getKey());
+        }
+        if (other.hasValue()) {
+          setValue(other.getValue());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                return this;
+              }
+              break;
+            }
+            case 10: {
+              setKey(input.readString());
+              break;
+            }
+            case 18: {
+              setValue(input.readString());
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      // required string key = 1;
+      public boolean hasKey() {
+        return result.hasKey();
+      }
+      public java.lang.String getKey() {
+        return result.getKey();
+      }
+      public Builder setKey(java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasKey = true;
+        result.key_ = value;
+        return this;
+      }
+      public Builder clearKey() {
+        result.hasKey = false;
+        result.key_ = getDefaultInstance().getKey();
+        return this;
+      }
+      
+      // required string value = 2;
+      public boolean hasValue() {
+        return result.hasValue();
+      }
+      public java.lang.String getValue() {
+        return result.getValue();
+      }
+      public Builder setValue(java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasValue = true;
+        result.value_ = value;
+        return this;
+      }
+      public Builder clearValue() {
+        result.hasValue = false;
+        result.value_ = getDefaultInstance().getValue();
+        return this;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:goby.MetaData)
+    }
+    
+    static {
+      defaultInstance = new MetaData(true);
+      edu.cornell.med.icb.goby.reads.Reads.internalForceInit();
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:goby.MetaData)
+  }
+  
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_goby_ReadCollection_descriptor;
   private static
@@ -1007,6 +1427,11 @@ public final class Reads {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_goby_ReadEntry_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_goby_MetaData_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_goby_MetaData_fieldAccessorTable;
   
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -1017,14 +1442,16 @@ public final class Reads {
   static {
     java.lang.String[] descriptorData = {
       "\n\013Reads.proto\022\004goby\"0\n\016ReadCollection\022\036\n" +
-      "\005reads\030\001 \003(\0132\017.goby.ReadEntry\"\361\001\n\tReadEn" +
+      "\005reads\030\001 \003(\0132\017.goby.ReadEntry\"\224\002\n\tReadEn" +
       "try\022\022\n\nread_index\030\001 \002(\r\022\025\n\rbarcode_index" +
       "\030\n \001(\r\022\027\n\017read_identifier\030\027 \001(\t\022\023\n\013descr" +
       "iption\030\026 \001(\t\022\023\n\013read_length\030\002 \002(\r\022\020\n\010seq" +
       "uence\030\003 \001(\014\022\025\n\rsequence_pair\030\005 \001(\014\022\030\n\020re" +
       "ad_length_pair\030\006 \001(\r\022\026\n\016quality_scores\030\004" +
-      " \001(\014\022\033\n\023quality_scores_pair\030\007 \001(\014B\"\n\036edu" +
-      ".cornell.med.icb.goby.readsH\001"
+      " \001(\014\022\033\n\023quality_scores_pair\030\007 \001(\014\022!\n\tmet" +
+      "a_data\030\031 \003(\0132\016.goby.MetaData\"&\n\010MetaData" +
+      "\022\013\n\003key\030\001 \002(\t\022\r\n\005value\030\002 \002(\tB\"\n\036edu.corn",
+      "ell.med.icb.goby.readsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -1044,9 +1471,17 @@ public final class Reads {
           internal_static_goby_ReadEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_goby_ReadEntry_descriptor,
-              new java.lang.String[] { "ReadIndex", "BarcodeIndex", "ReadIdentifier", "Description", "ReadLength", "Sequence", "SequencePair", "ReadLengthPair", "QualityScores", "QualityScoresPair", },
+              new java.lang.String[] { "ReadIndex", "BarcodeIndex", "ReadIdentifier", "Description", "ReadLength", "Sequence", "SequencePair", "ReadLengthPair", "QualityScores", "QualityScoresPair", "MetaData", },
               edu.cornell.med.icb.goby.reads.Reads.ReadEntry.class,
               edu.cornell.med.icb.goby.reads.Reads.ReadEntry.Builder.class);
+          internal_static_goby_MetaData_descriptor =
+            getDescriptor().getMessageTypes().get(2);
+          internal_static_goby_MetaData_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_goby_MetaData_descriptor,
+              new java.lang.String[] { "Key", "Value", },
+              edu.cornell.med.icb.goby.reads.Reads.MetaData.class,
+              edu.cornell.med.icb.goby.reads.Reads.MetaData.Builder.class);
           return null;
         }
       };

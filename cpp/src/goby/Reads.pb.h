@@ -34,6 +34,7 @@ void protobuf_ShutdownFile_Reads_2eproto();
 
 class ReadCollection;
 class ReadEntry;
+class MetaData;
 
 // ===================================================================
 
@@ -273,6 +274,18 @@ class ReadEntry : public ::google::protobuf::Message {
   inline void set_quality_scores_pair(const void* value, size_t size);
   inline ::std::string* mutable_quality_scores_pair();
   
+  // repeated .goby.MetaData meta_data = 25;
+  inline int meta_data_size() const;
+  inline void clear_meta_data();
+  static const int kMetaDataFieldNumber = 25;
+  inline const ::goby::MetaData& meta_data(int index) const;
+  inline ::goby::MetaData* mutable_meta_data(int index);
+  inline ::goby::MetaData* add_meta_data();
+  inline const ::google::protobuf::RepeatedPtrField< ::goby::MetaData >&
+      meta_data() const;
+  inline ::google::protobuf::RepeatedPtrField< ::goby::MetaData >*
+      mutable_meta_data();
+  
   // @@protoc_insertion_point(class_scope:goby.ReadEntry)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
@@ -294,11 +307,12 @@ class ReadEntry : public ::google::protobuf::Message {
   static const ::std::string _default_quality_scores_;
   ::std::string* quality_scores_pair_;
   static const ::std::string _default_quality_scores_pair_;
+  ::google::protobuf::RepeatedPtrField< ::goby::MetaData > meta_data_;
   friend void  protobuf_AddDesc_Reads_2eproto();
   friend void protobuf_AssignDesc_Reads_2eproto();
   friend void protobuf_ShutdownFile_Reads_2eproto();
   
-  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(11 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
   inline bool _has_bit(int index) const {
@@ -313,6 +327,111 @@ class ReadEntry : public ::google::protobuf::Message {
   
   void InitAsDefaultInstance();
   static ReadEntry* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class MetaData : public ::google::protobuf::Message {
+ public:
+  MetaData();
+  virtual ~MetaData();
+  
+  MetaData(const MetaData& from);
+  
+  inline MetaData& operator=(const MetaData& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+  
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+  
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const MetaData& default_instance();
+  
+  void Swap(MetaData* other);
+  
+  // implements Message ----------------------------------------------
+  
+  MetaData* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const MetaData& from);
+  void MergeFrom(const MetaData& from);
+  void Clear();
+  bool IsInitialized() const;
+  
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  
+  ::google::protobuf::Metadata GetMetadata() const;
+  
+  // nested types ----------------------------------------------------
+  
+  // accessors -------------------------------------------------------
+  
+  // required string key = 1;
+  inline bool has_key() const;
+  inline void clear_key();
+  static const int kKeyFieldNumber = 1;
+  inline const ::std::string& key() const;
+  inline void set_key(const ::std::string& value);
+  inline void set_key(const char* value);
+  inline void set_key(const char* value, size_t size);
+  inline ::std::string* mutable_key();
+  
+  // required string value = 2;
+  inline bool has_value() const;
+  inline void clear_value();
+  static const int kValueFieldNumber = 2;
+  inline const ::std::string& value() const;
+  inline void set_value(const ::std::string& value);
+  inline void set_value(const char* value);
+  inline void set_value(const char* value, size_t size);
+  inline ::std::string* mutable_value();
+  
+  // @@protoc_insertion_point(class_scope:goby.MetaData)
+ private:
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+  mutable int _cached_size_;
+  
+  ::std::string* key_;
+  static const ::std::string _default_key_;
+  ::std::string* value_;
+  static const ::std::string _default_value_;
+  friend void  protobuf_AddDesc_Reads_2eproto();
+  friend void protobuf_AssignDesc_Reads_2eproto();
+  friend void protobuf_ShutdownFile_Reads_2eproto();
+  
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  
+  // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
+  inline bool _has_bit(int index) const {
+    return (_has_bits_[index / 32] & (1u << (index % 32))) != 0;
+  }
+  inline void _set_bit(int index) {
+    _has_bits_[index / 32] |= (1u << (index % 32));
+  }
+  inline void _clear_bit(int index) {
+    _has_bits_[index / 32] &= ~(1u << (index % 32));
+  }
+  
+  void InitAsDefaultInstance();
+  static MetaData* default_instance_;
 };
 // ===================================================================
 
@@ -664,6 +783,119 @@ inline ::std::string* ReadEntry::mutable_quality_scores_pair() {
     quality_scores_pair_ = new ::std::string;
   }
   return quality_scores_pair_;
+}
+
+// repeated .goby.MetaData meta_data = 25;
+inline int ReadEntry::meta_data_size() const {
+  return meta_data_.size();
+}
+inline void ReadEntry::clear_meta_data() {
+  meta_data_.Clear();
+}
+inline const ::goby::MetaData& ReadEntry::meta_data(int index) const {
+  return meta_data_.Get(index);
+}
+inline ::goby::MetaData* ReadEntry::mutable_meta_data(int index) {
+  return meta_data_.Mutable(index);
+}
+inline ::goby::MetaData* ReadEntry::add_meta_data() {
+  return meta_data_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::goby::MetaData >&
+ReadEntry::meta_data() const {
+  return meta_data_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::goby::MetaData >*
+ReadEntry::mutable_meta_data() {
+  return &meta_data_;
+}
+
+// -------------------------------------------------------------------
+
+// MetaData
+
+// required string key = 1;
+inline bool MetaData::has_key() const {
+  return _has_bit(0);
+}
+inline void MetaData::clear_key() {
+  if (key_ != &_default_key_) {
+    key_->clear();
+  }
+  _clear_bit(0);
+}
+inline const ::std::string& MetaData::key() const {
+  return *key_;
+}
+inline void MetaData::set_key(const ::std::string& value) {
+  _set_bit(0);
+  if (key_ == &_default_key_) {
+    key_ = new ::std::string;
+  }
+  key_->assign(value);
+}
+inline void MetaData::set_key(const char* value) {
+  _set_bit(0);
+  if (key_ == &_default_key_) {
+    key_ = new ::std::string;
+  }
+  key_->assign(value);
+}
+inline void MetaData::set_key(const char* value, size_t size) {
+  _set_bit(0);
+  if (key_ == &_default_key_) {
+    key_ = new ::std::string;
+  }
+  key_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* MetaData::mutable_key() {
+  _set_bit(0);
+  if (key_ == &_default_key_) {
+    key_ = new ::std::string;
+  }
+  return key_;
+}
+
+// required string value = 2;
+inline bool MetaData::has_value() const {
+  return _has_bit(1);
+}
+inline void MetaData::clear_value() {
+  if (value_ != &_default_value_) {
+    value_->clear();
+  }
+  _clear_bit(1);
+}
+inline const ::std::string& MetaData::value() const {
+  return *value_;
+}
+inline void MetaData::set_value(const ::std::string& value) {
+  _set_bit(1);
+  if (value_ == &_default_value_) {
+    value_ = new ::std::string;
+  }
+  value_->assign(value);
+}
+inline void MetaData::set_value(const char* value) {
+  _set_bit(1);
+  if (value_ == &_default_value_) {
+    value_ = new ::std::string;
+  }
+  value_->assign(value);
+}
+inline void MetaData::set_value(const char* value, size_t size) {
+  _set_bit(1);
+  if (value_ == &_default_value_) {
+    value_ = new ::std::string;
+  }
+  value_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* MetaData::mutable_value() {
+  _set_bit(1);
+  if (value_ == &_default_value_) {
+    value_ = new ::std::string;
+  }
+  return value_;
 }
 
 

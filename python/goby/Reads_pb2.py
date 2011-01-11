@@ -10,7 +10,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = descriptor.FileDescriptor(
   name='Reads.proto',
   package='goby',
-  serialized_pb='\n\x0bReads.proto\x12\x04goby\"0\n\x0eReadCollection\x12\x1e\n\x05reads\x18\x01 \x03(\x0b\x32\x0f.goby.ReadEntry\"\xf1\x01\n\tReadEntry\x12\x12\n\nread_index\x18\x01 \x02(\r\x12\x15\n\rbarcode_index\x18\n \x01(\r\x12\x17\n\x0fread_identifier\x18\x17 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x16 \x01(\t\x12\x13\n\x0bread_length\x18\x02 \x02(\r\x12\x10\n\x08sequence\x18\x03 \x01(\x0c\x12\x15\n\rsequence_pair\x18\x05 \x01(\x0c\x12\x18\n\x10read_length_pair\x18\x06 \x01(\r\x12\x16\n\x0equality_scores\x18\x04 \x01(\x0c\x12\x1b\n\x13quality_scores_pair\x18\x07 \x01(\x0c\x42\"\n\x1e\x65\x64u.cornell.med.icb.goby.readsH\x01')
+  serialized_pb='\n\x0bReads.proto\x12\x04goby\"0\n\x0eReadCollection\x12\x1e\n\x05reads\x18\x01 \x03(\x0b\x32\x0f.goby.ReadEntry\"\x94\x02\n\tReadEntry\x12\x12\n\nread_index\x18\x01 \x02(\r\x12\x15\n\rbarcode_index\x18\n \x01(\r\x12\x17\n\x0fread_identifier\x18\x17 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x16 \x01(\t\x12\x13\n\x0bread_length\x18\x02 \x02(\r\x12\x10\n\x08sequence\x18\x03 \x01(\x0c\x12\x15\n\rsequence_pair\x18\x05 \x01(\x0c\x12\x18\n\x10read_length_pair\x18\x06 \x01(\r\x12\x16\n\x0equality_scores\x18\x04 \x01(\x0c\x12\x1b\n\x13quality_scores_pair\x18\x07 \x01(\x0c\x12!\n\tmeta_data\x18\x19 \x03(\x0b\x32\x0e.goby.MetaData\"&\n\x08MetaData\x12\x0b\n\x03key\x18\x01 \x02(\t\x12\r\n\x05value\x18\x02 \x02(\tB\"\n\x1e\x65\x64u.cornell.med.icb.goby.readsH\x01')
 
 
 
@@ -120,6 +120,13 @@ _READENTRY = descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    descriptor.FieldDescriptor(
+      name='meta_data', full_name='goby.ReadEntry.meta_data', index=10,
+      number=25, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -130,11 +137,47 @@ _READENTRY = descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=72,
-  serialized_end=313,
+  serialized_end=348,
+)
+
+
+_METADATA = descriptor.Descriptor(
+  name='MetaData',
+  full_name='goby.MetaData',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    descriptor.FieldDescriptor(
+      name='key', full_name='goby.MetaData.key', index=0,
+      number=1, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='value', full_name='goby.MetaData.value', index=1,
+      number=2, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=350,
+  serialized_end=388,
 )
 
 
 _READCOLLECTION.fields_by_name['reads'].message_type = _READENTRY
+_READENTRY.fields_by_name['meta_data'].message_type = _METADATA
 
 class ReadCollection(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
@@ -147,5 +190,11 @@ class ReadEntry(message.Message):
   DESCRIPTOR = _READENTRY
   
   # @@protoc_insertion_point(class_scope:goby.ReadEntry)
+
+class MetaData(message.Message):
+  __metaclass__ = reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _METADATA
+  
+  # @@protoc_insertion_point(class_scope:goby.MetaData)
 
 # @@protoc_insertion_point(module_scope)
