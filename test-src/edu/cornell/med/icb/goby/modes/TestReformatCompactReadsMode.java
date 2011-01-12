@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Validates the functionality of {@link edu.cornell.med.icb.goby.modes.ReformatCompactReadsMode}.
@@ -39,6 +40,7 @@ import java.util.List;
 public class TestReformatCompactReadsMode {
     /**
      * Validates that the reformat compact reads mode is capable of writing the same contents.
+     *
      * @throws IOException if there is a problem reading or writing to the files
      */
     @Test
@@ -58,6 +60,7 @@ public class TestReformatCompactReadsMode {
     /**
      * Validates that the reformat compact reads mode is capable of reformatting when
      * given positions at the extreme minimum and maximum values.
+     *
      * @throws IOException if there is a problem reading or writing to the files
      */
     @Test
@@ -78,6 +81,7 @@ public class TestReformatCompactReadsMode {
     /**
      * Validates that the reformat compact reads mode is capable of reformatting when
      * given positions that exactly match the length of the file.
+     *
      * @throws IOException if there is a problem reading or writing to the files
      */
     @Test
@@ -97,6 +101,7 @@ public class TestReformatCompactReadsMode {
 
     /**
      * Validates that the reformat compact reads mode is capable of writing the same contents.
+     *
      * @throws IOException if there is a problem reading or writing to the files
      */
     @Test
@@ -122,6 +127,7 @@ public class TestReformatCompactReadsMode {
 
     /**
      * Validates that a file can be reformatted to change the chunk size.
+     *
      * @throws IOException if there is a problem reading or writing to the files
      */
     @Test
@@ -161,6 +167,7 @@ public class TestReformatCompactReadsMode {
 
     /**
      * Validates that a subset of a compact reads file can be written.
+     *
      * @throws IOException if there is a problem reading or writing to the files
      */
     @Test
@@ -193,6 +200,7 @@ public class TestReformatCompactReadsMode {
 
     /**
      * Validates that a subset of a compact reads file can be written.
+     *
      * @throws IOException if there is a problem reading or writing to the files
      */
     @Test
@@ -228,6 +236,7 @@ public class TestReformatCompactReadsMode {
     /**
      * Validates that setting a maximum read length will propertly exclude reads from
      * being written to the output.
+     *
      * @throws IOException if there is a problem reading or writing to the files
      */
     @Test
@@ -257,6 +266,7 @@ public class TestReformatCompactReadsMode {
     /**
      * Validates that setting a maximum read length will not exclude reads that are
      * within the limit from being written to the output.
+     *
      * @throws IOException if there is a problem reading or writing to the files
      */
     @Test
@@ -278,6 +288,7 @@ public class TestReformatCompactReadsMode {
     /**
      * Validates that setting a read length trim value will not exclude reads that are
      * within the limit from being written to the output.
+     *
      * @throws IOException if there is a problem reading or writing to the files
      */
     @Test
@@ -299,12 +310,13 @@ public class TestReformatCompactReadsMode {
     /**
      * Validates that setting a read length trim value will write the trimmed reads to
      * the output properly.
+     *
      * @throws IOException if there is a problem reading or writing to the files
      */
     public void trimReadLengthsAt23() throws IOException {
         final ReformatCompactReadsMode reformat = new ReformatCompactReadsMode();
 
-        final String inputFilename ="test-data/compact-reads/s_1_sequence_short.compact-reads";
+        final String inputFilename = "test-data/compact-reads/s_1_sequence_short.compact-reads";
         reformat.setInputFilenames(inputFilename);
         final String outputFilename = "test-results/reformat-test-start.compact-reads";
         reformat.setOutputFile(outputFilename);
@@ -330,5 +342,41 @@ public class TestReformatCompactReadsMode {
             assertEquals("Entry ", readCount + " was not trimmed", entry.getReadLength());
         }
         assertEquals("There should have been 73 entries in the reformatted file", 73, readCount);
+    }
+
+    /**
+     * Validates that meta data are transfered by reformat.
+     * The input file to this test was created with the following command:
+     *  goby 1g fasta-to-compact  -k key1 -v value1 -k key2 -v value2 test-data/fastx-test-data/test-fastq-1.fq -o test-data/compact-reads/with-meta-data-input.compact-reads
+
+     * @throws IOException if there is a problem reading or writing to the files
+     */
+    @Test
+    public void reformatTransferMetaData() throws IOException {
+        final ReformatCompactReadsMode reformat = new ReformatCompactReadsMode();
+
+        final String inputFilename =
+                "test-data/compact-reads/with-meta-data-input.compact-reads";
+        reformat.setInputFilenames(inputFilename);
+
+        final String outputFilename = "test-results/with-meta-data-output.compact-reads";
+        reformat.setOutputFile(outputFilename);
+        reformat.execute();
+
+        assertTrue(FileUtils.contentEquals(new File(inputFilename), new File(outputFilename)));
+
+        final ReadsReader reader = new ReadsReader(FileUtils.openInputStream(new File(outputFilename)));
+        assertTrue("There should be reads in this file", reader.hasNext());
+        final Reads.ReadEntry entry = reader.next();
+        assertNotNull("Entry should not be null", entry);
+        Properties keyValuePairs = reader.getMetaData();
+
+        assertEquals("key/value pairs must match",
+                "value1",
+                keyValuePairs.get("key1"));
+        assertEquals("key/value pairs must match",
+                "value2",
+                keyValuePairs.get("key2"));
+
     }
 }

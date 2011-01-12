@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -51,6 +52,7 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
         Closeable {
     private final MessageChunksReader reader;
     private Reads.ReadCollection collection;
+    private final Properties metaData = new Properties();
 
     /**
      * Initialize the reader.
@@ -148,8 +150,20 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
         if (!reader.hasNext(collection, collection.getReadsCount())) {
             throw new NoSuchElementException();
         }
-        return collection.getReads(reader.incrementEntryIndex());
+        final Reads.ReadEntry readEntry = collection.getReads(reader.incrementEntryIndex());
+        if (first) {
+
+            for (int i = 0; i < readEntry.getMetaDataCount(); i++) {
+                final Reads.MetaData md = readEntry.getMetaData(i);
+                metaData.put(md.getKey(), md.getValue());
+            }
+            first = false;
+        }
+
+        return readEntry;
     }
+
+    boolean first = true;
 
     /**
      * This operation is not supported.
@@ -157,6 +171,7 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
     public void remove() {
         throw new UnsupportedOperationException("Cannot remove from a reader.");
     }
+
     /**
      * Decode the sequence in this entry to the sequence MutableString.
      *
@@ -166,16 +181,17 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
     public static void decodeSequence(final Reads.ReadEntry entry, final MutableString sequence) {
         decodeSequence(entry, sequence, false);
     }
+
     /**
      * Decode the sequence in this entry to the sequence MutableString.
      *
-     * @param entry    The entry which provides the sequence in encoded format.
-     * @param sequence Where to write the decoded sequence.
+     * @param entry      The entry which provides the sequence in encoded format.
+     * @param sequence   Where to write the decoded sequence.
      * @param decodePair True: decodes the pair sequence. False: decodes the primary sequence.
      */
     public static void decodeSequence(final Reads.ReadEntry entry, final MutableString sequence, final boolean decodePair) {
         final ByteString seq = decodePair ? entry.getSequencePair() : entry.getSequence();
-        final int length =decodePair ? entry.getReadLengthPair(): entry.getReadLength();
+        final int length = decodePair ? entry.getReadLengthPair() : entry.getReadLength();
         sequence.setLength(length);
         for (int i = 0; i < length; ++i) {
             sequence.setCharAt(i, (char) seq.byteAt(i));
@@ -255,5 +271,13 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
         return result.toArray(new String[result.size()]);
     }
 
-
+    /**
+     * After reading the first entry, this getter will return the meta-data associated with
+     * this read collection.
+     *
+     * @return Jave properties encoding meta-data about the compact reads.
+     */
+    public Properties getMetaData() {
+        return metaData;
+    }
 }
