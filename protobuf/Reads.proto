@@ -69,12 +69,15 @@ message ReadEntry {
       LifeTech 5500 SOLiD
       LifeTech 5500xl SOLiD
       Roche 454 GS FLX Ti
+
+      Since Goby 1.9.1
   */
   repeated MetaData meta_data = 25;
 
 }
 /*
- A message to store a key/value pair and represent metadata about reads. 
+ A message to store a key/value pair and represent metadata about reads.
+ Since Goby 1.9.1
  */
 message MetaData {
  /*
