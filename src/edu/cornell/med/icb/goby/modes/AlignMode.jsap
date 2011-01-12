@@ -162,66 +162,6 @@
             <help>Maximum number of locations that a read can match to be included in the alignment entries. ["quality-filter-parameters" and "ambiguity-threshold" may eventually be condensed into "filterOptions"]</help>
         </flaggedOption>
         <flaggedOption>
-            <id>split-start-position</id>
-            <longFlag>split-start-position</longFlag>
-            <stringParser>
-                <classname>LongStringParser</classname>
-            </stringParser>
-            <defaults>
-                <string>0</string>
-            </defaults>
-            <required>false</required>
-            <help>If the aligner directly supports reading Goby Compact-Reads, this sets the start position when reading from the input file.</help>
-        </flaggedOption>
-        <flaggedOption>
-            <id>split-end-position</id>
-            <longFlag>split-end-position</longFlag>
-            <stringParser>
-                <classname>LongStringParser</classname>
-            </stringParser>
-            <defaults>
-                <string>0</string>
-            </defaults>
-            <required>false</required>
-            <help>If the aligner directly supports reading Goby Compact-Reads, this sets the end position when reading from the input file.</help>
-        </flaggedOption>
-        <flaggedOption>
-            <id>paired-end-compact-input</id>
-            <longFlag>paired-end-compact-input</longFlag>
-            <stringParser>
-                <classname>BooleanStringParser</classname>
-            </stringParser>
-            <defaults>
-                <string>false</string>
-            </defaults>
-            <required>false</required>
-            <help>If the aligner directly supports reading Goby Compact-Reads, this sets if the input Goby compact-reads file is paired-end and should be processed as such, if the aligners supports it.</help>
-        </flaggedOption>
-        <flaggedOption>
-            <id>paired-end-directions</id>
-            <longFlag>paired-end-directions</longFlag>
-            <stringParser>
-                <classname>StringStringParser</classname>
-            </stringParser>
-            <defaults>
-                <string>FR</string>
-            </defaults>
-            <required>false</required>
-            <help>If --paired-end-compact-input is set to true, this specifies the directions for the sequence pair. FF, FR, RF, RR and valid values. Default is FR.</help>
-        </flaggedOption>
-        <flaggedOption>
-            <id>bisulfite-input</id>
-            <longFlag>bisulfite-input</longFlag>
-            <stringParser>
-                <classname>BooleanStringParser</classname>
-            </stringParser>
-            <defaults>
-                <string>false</string>
-            </defaults>
-            <required>false</required>
-            <help>If the input has be bisulfite processed (currently only supported by gsnap and requires a bisulfite reference).</help>
-        </flaggedOption>
-        <flaggedOption>
             <id>basename</id>
             <shortFlag>b</shortFlag>
             <longFlag>basename</longFlag>

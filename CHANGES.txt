@@ -6,13 +6,6 @@
    have been updated to define, transfer or display meta-data when appropriate.
  - Mode compact-alignment-stats now prints statistics about paired-end reads.
  - Removed spurious SAM header when writing alignemnts in plain text format.
- - Aligners publish if they support goby formats natively
- - AlignMode / Aligner Support for command line options targeting native goby support such as
-   * Compact-reads input start and end
- - AlignMode / Aligner Support for command line options targeting paired-end support such as
-   * If the input is paired-end
-   * The paired-end directions (FF/FR/RF/RR)
- - AlignMode / Aligner Support for specifying if the input is bisulfite processed
 1.9
  - New fdr mode provides a tool to combine tab delimited file where some columns contain P-values and
    adjust selected P-values for multiple testing with the Benjamini Hochberg method. The tool is efficient

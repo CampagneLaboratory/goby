@@ -52,7 +52,6 @@ public class GSnapAligner extends AbstractAligner {
      * Used to log debug and informational messages.
      */
     private static final Log LOG = LogFactory.getLog(BWAAligner.class);
-    private static final boolean NATIVE_GOBY_SUPPORTED = false;
 
     private int numThreads;
 
@@ -141,9 +140,5 @@ public class GSnapAligner extends AbstractAligner {
         LOG.info("Command executed in: " + timer.toString());
 
         return buildResults(outputBasename);
-    }
-
-    public boolean isNativeGobySupported() {
-        return NATIVE_GOBY_SUPPORTED;
     }
 }

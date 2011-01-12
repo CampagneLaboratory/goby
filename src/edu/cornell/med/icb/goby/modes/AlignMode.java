@@ -137,12 +137,6 @@ public class AlignMode extends AbstractGobyMode {
     private int mParameter = DEFAULT_M_PARAMETER;
     private String outputBasename;
 
-    private long splitStartPosition = 0;
-    private long splitEndPosition = 0;
-    private boolean pairedEndCompactInput = false;
-    private String pairedEndDirections = "FR";
-    private boolean bisulfiteInput = false;
-
     private File[] alignmentFiles;
 
     @Override
@@ -217,102 +211,6 @@ public class AlignMode extends AbstractGobyMode {
     }
 
     /**
-     * If the aligner directly supports reading Goby Compact-Reads (check the aligners isNativeGobySupport()),
-     * this sets the start position when reading from the input file. The default, 0, indicates start of file.
-     * @return the split start position
-     */
-    public long getSplitStartPosition() {
-        return splitStartPosition;
-    }
-
-    /**
-     * If the aligner directly supports reading Goby Compact-Reads (check the aligners isNativeGobySupport()),
-     * this sets the start position when reading from the input file. The default, 0, indicates start of file.
-     * @param splitStartPosition the split start position
-     */
-    public void setSplitStartPosition(long splitStartPosition) {
-        this.splitStartPosition = splitStartPosition;
-    }
-
-    /**
-     * If the aligner directly supports reading Goby Compact-Reads (check the aligners isNativeGobySupport()),
-     * this sets the end position when reading from the input file. The default, 0, indicates end of file.
-     * @return the split end position
-     */
-    public long getSplitEndPosition() {
-        return splitEndPosition;
-    }
-
-    /**
-     * If the aligner directly supports reading Goby Compact-Reads (check the aligners isNativeGobySupport()),
-     * this sets the end position when reading from the input file. The default, 0, indicates end of file.
-     * @param splitEndPosition the split end position
-     */
-    public void setSplitEndPosition(long splitEndPosition) {
-        this.splitEndPosition = splitEndPosition;
-    }
-
-    /**
-     * If the aligner directly supports reading Goby Compact-Reads, this sets if the input Goby compact-reads
-     * file is paired-end and should be processed as such, if the aligners supports it.
-     * @return if the input is paired end Goby compact-reads
-     */
-    public boolean isPairedEndCompactInput() {
-        return pairedEndCompactInput;
-    }
-
-    /**
-     * If the aligner directly supports reading Goby Compact-Reads, this sets if the input Goby compact-reads
-     * file is paired-end and should be processed as such, if the aligners supports it.
-     * @param pairedEndCompactInput if the input is paired end Goby compact-reads
-     */
-    public void setPairedEndCompactInput(boolean pairedEndCompactInput) {
-        this.pairedEndCompactInput = pairedEndCompactInput;
-    }
-
-    /**
-     * If pairedEndCompactInput is set to true, this specifies the directions for the sequence pair.
-     * "FF", "FR", "RF", "RR" and valid values. Default is FR.
-     * @return the paired end directions if the input is paired end Goby compact-reads
-     */
-    public String getPairedEndDirections() {
-        return pairedEndDirections;
-    }
-
-    /**
-     * If pairedEndCompactInput is set to true, this specifies the directions for the sequence pair.
-     * "FF", "FR", "RF", "RR" and valid values. If you try to set to a value other than these four
-     * nothing will happen. Default is "FR".
-     * @param pairedEndDirections the paired end directions if the input is paired end Goby compact-reads
-     */
-    public void setPairedEndDirections(String pairedEndDirections) throws IllegalArgumentException {
-        if (pairedEndDirections.equals("FF") ||
-                pairedEndDirections.equals("FR") ||
-                pairedEndDirections.equals("RF") ||
-                pairedEndDirections.equals("RR")) {
-            this.pairedEndDirections = pairedEndDirections;
-        } else {
-            throw new IllegalArgumentException();
-        }
-    }
-
-    /**
-     * If the input has be bisulfite processed (currently only supported by gsnap and requires a bisulfite reference).
-     * @return if Bisulfite Input
-     */
-    public boolean isBisulfiteInput() {
-        return bisulfiteInput;
-    }
-
-    /**
-     * If the input has be bisulfite processed (currently only supported by gsnap and requires a bisulfite reference).
-     * @param bisulfiteInput if Bisulfite Input
-     */
-    public void setBisulfiteInput(boolean bisulfiteInput) {
-        this.bisulfiteInput = bisulfiteInput;
-    }
-
-    /**
      * Configure.
      *
      * @param args command line arguments
@@ -348,21 +246,6 @@ public class AlignMode extends AbstractGobyMode {
         // TODO 090909 replace with setFilterOptions()
         qualityFilterParameters = jsapResult.getString("quality-filter-parameters");
         mParameter = jsapResult.getInt("ambiguity-threshold");
-
-        // Zero should indicate start of file
-        splitStartPosition = jsapResult.getLong("split-start-position");
-        // Zero should indicate end of file
-        splitEndPosition = jsapResult.getLong("split-end-position");
-        pairedEndCompactInput = jsapResult.getBoolean("paired-end-compact-input");
-        try {
-            setPairedEndDirections(jsapResult.getString("paired-end-directions"));
-        } catch (IllegalArgumentException e) {
-            System.err.println("--paired-end-directions value supported: " +
-                    jsapResult.getString("paired-end-directions"));
-            System.exit(1);
-        }
-        bisulfiteInput = jsapResult.getBoolean("bisulfite-input");
-
         outputBasename = jsapResult.getString("basename");
 
         try {
@@ -429,11 +312,6 @@ public class AlignMode extends AbstractGobyMode {
             aligner.setQualityFilterParameters(qualityFilterParameters);
             aligner.setAmbiguityThreshold(mParameter);
             aligner.setKeepTemporaryFiles(keepTemporaryFiles);
-            aligner.setSplitStartPosition(splitStartPosition);
-            aligner.setSplitEndPosition(splitEndPosition);
-            aligner.setPairedEndCompactInput(pairedEndCompactInput);
-            aligner.setPairedEndDirections(pairedEndDirections);
-            aligner.setBisulfiteInput(bisulfiteInput);
 
             if (indexFlag) {
                 aligner.indexReference(referenceFile);
