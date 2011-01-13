@@ -265,6 +265,10 @@ extern "C" {
         writerHelper->alignmentEntry->set_fragment_index(value);
     }
 
+    void gobyAlEntry_setInsertSize(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        writerHelper->alignmentEntry->set_insert_size(value);
+    }
+
     // These are only used when dealing with a Query Pair
     void gobyAlEntry_setPairFlags(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
         writerHelper->alignmentEntry->set_pair_flags(value);
@@ -277,6 +281,20 @@ extern "C" {
     }
     void gobyAlEntry_setPairPosition(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
         writerHelper->alignmentEntry->mutable_pair_alignment_link()->set_position(value);
+    }
+
+    // These are only used when dealing with a Splice
+    void gobyAlEntry_setSplicedFlags(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        writerHelper->alignmentEntry->set_spliced_flags(value);
+    }
+    void gobyAlEntry_setSplicedTargetIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        writerHelper->alignmentEntry->mutable_spliced_alignment_link()->set_target_index(value);
+    }
+    void gobyAlEntry_setSplicedFragmentIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        writerHelper->alignmentEntry->mutable_spliced_alignment_link()->set_fragment_index(value);
+    }
+    void gobyAlEntry_setSplicedPosition(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        writerHelper->alignmentEntry->mutable_spliced_alignment_link()->set_position(value);
     }
 
     CSamHelper *samHelper_getResetSamHelper(CAlignmentsWriterHelper *writerHelper) {

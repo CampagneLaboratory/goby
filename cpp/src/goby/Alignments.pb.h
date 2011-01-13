@@ -317,6 +317,20 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 fragment_index() const;
   inline void set_fragment_index(::google::protobuf::uint32 value);
   
+  // optional .goby.RelatedAlignmentEntry spliced_alignment_link = 18;
+  inline bool has_spliced_alignment_link() const;
+  inline void clear_spliced_alignment_link();
+  static const int kSplicedAlignmentLinkFieldNumber = 18;
+  inline const ::goby::RelatedAlignmentEntry& spliced_alignment_link() const;
+  inline ::goby::RelatedAlignmentEntry* mutable_spliced_alignment_link();
+  
+  // optional uint32 spliced_flags = 19;
+  inline bool has_spliced_flags() const;
+  inline void clear_spliced_flags();
+  static const int kSplicedFlagsFieldNumber = 19;
+  inline ::google::protobuf::uint32 spliced_flags() const;
+  inline void set_spliced_flags(::google::protobuf::uint32 value);
+  
   // optional uint32 insert_size = 20;
   inline bool has_insert_size() const;
   inline void clear_insert_size();
@@ -346,12 +360,14 @@ class AlignmentEntry : public ::google::protobuf::Message {
   ::google::protobuf::uint32 pair_flags_;
   ::goby::RelatedAlignmentEntry* pair_alignment_link_;
   ::google::protobuf::uint32 fragment_index_;
+  ::goby::RelatedAlignmentEntry* spliced_alignment_link_;
+  ::google::protobuf::uint32 spliced_flags_;
   ::google::protobuf::uint32 insert_size_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
   friend void protobuf_ShutdownFile_Alignments_2eproto();
   
-  ::google::protobuf::uint32 _has_bits_[(18 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(20 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
   inline bool _has_bit(int index) const {
@@ -1667,19 +1683,52 @@ inline void AlignmentEntry::set_fragment_index(::google::protobuf::uint32 value)
   fragment_index_ = value;
 }
 
+// optional .goby.RelatedAlignmentEntry spliced_alignment_link = 18;
+inline bool AlignmentEntry::has_spliced_alignment_link() const {
+  return _has_bit(17);
+}
+inline void AlignmentEntry::clear_spliced_alignment_link() {
+  if (spliced_alignment_link_ != NULL) spliced_alignment_link_->::goby::RelatedAlignmentEntry::Clear();
+  _clear_bit(17);
+}
+inline const ::goby::RelatedAlignmentEntry& AlignmentEntry::spliced_alignment_link() const {
+  return spliced_alignment_link_ != NULL ? *spliced_alignment_link_ : *default_instance_->spliced_alignment_link_;
+}
+inline ::goby::RelatedAlignmentEntry* AlignmentEntry::mutable_spliced_alignment_link() {
+  _set_bit(17);
+  if (spliced_alignment_link_ == NULL) spliced_alignment_link_ = new ::goby::RelatedAlignmentEntry;
+  return spliced_alignment_link_;
+}
+
+// optional uint32 spliced_flags = 19;
+inline bool AlignmentEntry::has_spliced_flags() const {
+  return _has_bit(18);
+}
+inline void AlignmentEntry::clear_spliced_flags() {
+  spliced_flags_ = 0u;
+  _clear_bit(18);
+}
+inline ::google::protobuf::uint32 AlignmentEntry::spliced_flags() const {
+  return spliced_flags_;
+}
+inline void AlignmentEntry::set_spliced_flags(::google::protobuf::uint32 value) {
+  _set_bit(18);
+  spliced_flags_ = value;
+}
+
 // optional uint32 insert_size = 20;
 inline bool AlignmentEntry::has_insert_size() const {
-  return _has_bit(17);
+  return _has_bit(19);
 }
 inline void AlignmentEntry::clear_insert_size() {
   insert_size_ = 0u;
-  _clear_bit(17);
+  _clear_bit(19);
 }
 inline ::google::protobuf::uint32 AlignmentEntry::insert_size() const {
   return insert_size_;
 }
 inline void AlignmentEntry::set_insert_size(::google::protobuf::uint32 value) {
-  _set_bit(17);
+  _set_bit(19);
   insert_size_ = value;
 }
 

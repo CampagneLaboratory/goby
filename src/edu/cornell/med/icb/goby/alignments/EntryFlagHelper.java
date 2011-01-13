@@ -26,16 +26,17 @@ package edu.cornell.med.icb.goby.alignments;
  *         Time: 5:02:53 PM
  */
 public class EntryFlagHelper {
-    /* paired end flags:
-      000000001    paired
-      000000010    properly paired
-      000000100    read unmapped
-      000001000    mate unmapped
-      000010000    read reverse strand
-      000100000    mate reverse strand
-      001000000    first in pair
-      010000000    second in pair
-      100000000    not primary alignment
+    /*
+       paired end flags (based on SAM):
+         000000001    paired
+         000000010    properly paired
+         000000100    read unmapped
+         000001000    mate unmapped
+         000010000    read reverse strand
+         000100000    mate reverse strand
+         001000000    first in pair
+         010000000    second in pair
+         100000000    not primary alignment
      */
     /**
      * If this alignment entry is part of a pair.
@@ -131,5 +132,30 @@ public class EntryFlagHelper {
     public static boolean isNotPrimaryAlignment(final Alignments.AlignmentEntry entry) {
         return (entry.getPairFlags() & (0x1L << 8)) != 0;
     }
-}
 
+    /*
+       spliced flags:
+         000000001    normal
+         000000010    novel
+     */
+    /**
+     * If this alignment is a "normal" splice
+     *
+     * @param entry The entry.
+     * @return True if the entry is a "normal" splice.
+     */
+    public static boolean isNormalSplice(final Alignments.AlignmentEntry entry) {
+        return (entry.getSplicedFlags() & 0x1L) != 0;
+    }
+
+    /**
+     * If this alignment is a "novel" splice
+     *
+     * @param entry The entry.
+     * @return True if the entry is a "normal" splice.
+     */
+    public static boolean isNovelSplice(final Alignments.AlignmentEntry entry) {
+        return (entry.getSplicedFlags() & (0x1L << 1)) != 0;
+    }
+
+}

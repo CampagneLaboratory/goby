@@ -1,6 +1,8 @@
 1.9 -> Development
- - Introduced a field spliced_alignment_link in AlignmentEntry to represent relation between parts of reads
-   that span exon-exon junctions. 
+ - Introduced a field spliced_alignment_link and spliced_flags in AlignmentEntry to represent relation
+   between parts of reads that span exon-exon junctions.
+ - Introduced insert_size in Alignment entry to represent the size of the insert used when making
+   the sequence library.
  - Introduced meta-data in compact-reads files. Meta-data provide a way to document how the sample
    was opbtained. Suggested information to be recorded includes when the library was sequenced (useful
    to detect batch-effect, as suggested by a participant to the SEQC meeting at the NIH Bethesda campus),

@@ -9,10 +9,11 @@
       <maximumHeapSize value="128" />
       <maximumStackSize value="32" />
       <properties />
-      <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="MethylSimilarityScan" />
+      <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="Display-Seq-Var" />
+      <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="Read-qual-stats" />
       <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="annotation counts" />
+      <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="sam-to-compact" />
       <executeOn event="beforeRun" target="compile-tests" />
-      <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestComputeStartCount.testComputeStarts5" />
       <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestReadWriteAlignments.readWriteHeader103" />
       <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="edu.cornell.med.icb.goby in goby" />
     </buildFile>
@@ -68,7 +69,37 @@
     </option>
   </component>
   <component name="CodeStyleSettingsManager">
-    <option name="PER_PROJECT_SETTINGS" />
+    <option name="PER_PROJECT_SETTINGS">
+      <value>
+        <ADDITIONAL_INDENT_OPTIONS fileType="java">
+          <option name="INDENT_SIZE" value="4" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+        <ADDITIONAL_INDENT_OPTIONS fileType="jsp">
+          <option name="INDENT_SIZE" value="4" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+        <ADDITIONAL_INDENT_OPTIONS fileType="xml">
+          <option name="INDENT_SIZE" value="4" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+      </value>
+    </option>
     <option name="USE_PER_PROJECT_SETTINGS" value="false" />
   </component>
   <component name="CompilerConfiguration">
@@ -108,7 +139,7 @@
       <element module="All" copyright="ICB GPL3" />
     </module2copyright>
   </component>
-  <component name="CppTools.Loader" reportImplicitCastToBool="false" reportNameReferencedOnce="false" warnedAboutFileOutOfSourceRoot="true" version="2" currentProject="$PROJECT_DIR$/cpp/src/Makefile" compilerSelect="AUTO" />
+  <component name="CppTools.Loader" reportImplicitCastToBool="false" reportNameReferencedOnce="false" warnedAboutFileOutOfSourceRoot="true" version="3" currentProject="$PROJECT_DIR$/cpp/src/Makefile" compilerSelect="AUTO" />
   <component name="DependencyValidationManager">
     <scope name="Goby" pattern="(file[goby]:src//*||file[goby]:test-src//*)&amp;&amp;!file[goby]:src/edu/cornell/med/icb/goby/alignments/Alignments.java&amp;&amp;!file[goby]:src/edu/cornell/med/icb/goby/reads/Reads.java" />
     <option name="SKIP_IMPORT_STATEMENTS" value="false" />
@@ -662,22 +693,6 @@
     <output url="file://$PROJECT_DIR$/classes" />
   </component>
   <component name="ProjectRunConfigurationManager">
-    <configuration default="false" name="Unnamed" type="Application" factoryName="Application" enabled="false" merge="false" runner="emma">
-      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.CompactFileStatsMode" />
-      <option name="VM_PARAMETERS" value="-Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties" />
-      <option name="PROGRAM_PARAMETERS" value=" --mode compact-file-stats Q:\SEQC\Brain\LifeTech\compact\HBR.73_20080930_1_Ambion_HBR_HBR_F3.compact-reads" />
-      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="ENABLE_SWING_INSPECTOR" value="false" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <module name="goby" />
-      <envs />
-      <method>
-        <option name="Run Ant target" value="true" />
-      </method>
-    </configuration>
     <configuration default="false" name="annotation counts" type="Application" factoryName="Application" enabled="false" merge="false" sample_coverage="true" runner="emma">
       <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.GobyDriver" />
       <option name="VM_PARAMETERS" value="-Xmx3g -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties" />
@@ -871,6 +886,22 @@
       <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
+      <method>
+        <option name="Run Ant target" value="true" />
+      </method>
+    </configuration>
+    <configuration default="false" name="Unnamed" type="Application" factoryName="Application" enabled="false" merge="false" runner="emma">
+      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.CompactFileStatsMode" />
+      <option name="VM_PARAMETERS" value="-Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties" />
+      <option name="PROGRAM_PARAMETERS" value=" --mode compact-file-stats Q:\SEQC\Brain\LifeTech\compact\HBR.73_20080930_1_Ambion_HBR_HBR_F3.compact-reads" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="goby" />
+      <envs />
       <method>
         <option name="Run Ant target" value="true" />
       </method>
