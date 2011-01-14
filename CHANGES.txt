@@ -2,8 +2,7 @@
  - fasta-to-compact mode: fix bug that prevented checking that quality encoding are in the allowed range.
    quality score must now be converted within the correct score range before the compact-reads file can
    be written successfully.
- - Paralellize the estimation of statistics. This can speed up mode alignment-to-annotation-counts and
-   is especially useful when estimating the fisher exact test statistic across exon annotations.
+ - Paralellize the estimation of statistics. This can speed up mode alignment-to-annotation-counts.
  - Introduced a field spliced_alignment_link and spliced_flags in AlignmentEntry to represent relation
    between parts of reads that span exon-exon junctions.
  - Introduced insert_size in Alignment entry to represent the size of the insert used when making
