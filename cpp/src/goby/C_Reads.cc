@@ -140,11 +140,14 @@ extern "C" {
     }
 
 	char *adjustQuality(char *qual, int length, int delta) {
-	    if (delta != 0) {
-            if (qual != NULL && length > 0) {
-                int i;
-                for (i = 0; i < length; i++) {
-                    qual[i] += delta;
+        if (qual != NULL && length > 0) {
+            int i;
+            for (i = 0; i < length; i++) {
+                qual[i] += delta;
+                if (qual[i] == 0) {
+                    // For gsnap, at least for now, change 0 qual scores 1
+                    // because Bisulfate alignment (gsnap -C) doesn't like 0 values
+                    qual[i] += 1;
                 }
             }
         }
