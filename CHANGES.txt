@@ -1,4 +1,6 @@
-1.9 -> Development
+1.9.1 -> Development
+ - [NEW ITEMS HERE]
+1.9.1
  - fasta-to-compact mode: fix bug that prevented checking that quality encoding are in the allowed range.
    quality score must now be converted within the correct score range before the compact-reads file can
    be written successfully.
