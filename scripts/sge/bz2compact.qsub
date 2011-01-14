@@ -21,7 +21,7 @@
 
 cd $TMP
 bzcat -f ${DATA_DIR}/${BASENAME}.fastq.bz2 >${BASENAME}.fastq
-$GOBY 1g fasta-to-compact ${BASENAME}.fastq
+$GOBY 1g fasta-to-compact --quality-encoding ${QUALITY_ENCODING} ${BASENAME}.fastq
 cp ${BASENAME}.compact-reads ${DATA_DIR}/
 
 
