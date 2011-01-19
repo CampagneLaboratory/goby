@@ -43,7 +43,7 @@
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
             <required>false</required>
-            <help>If there is only one read file, this will force the output file to this specific filename. If there is more than one input file, the output filename will always be the input filename appended with some string and a .compact-reads suffix. You should generally use an extension of .compact-reads when writing a compact reads file.  </help>
+            <help>If there is only one read file, this will force the output file to this specific filename. Please note that the --ouptut argument is required when a single input file is provided on the command line. If there is more than one input file, the output filename will always be the input filename appended with some string and a .compact-reads suffix. You should generally use an extension of .compact-reads when writing a compact reads file.  </help>
         </flaggedOption>
         <flaggedOption>
             <id>sequence-per-chunk</id>
