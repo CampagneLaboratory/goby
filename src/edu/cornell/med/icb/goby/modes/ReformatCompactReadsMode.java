@@ -24,7 +24,6 @@ import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
-import edu.cornell.med.icb.util.RandomAdapter;
 import it.unimi.dsi.fastutil.chars.CharArraySet;
 import it.unimi.dsi.fastutil.chars.CharSet;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
@@ -300,11 +299,11 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
     }
 
     private byte[] trimQualityScores(byte[] qualityScores, int trimReadStartLength, int trimReadLength, int initialLength) {
-
+       if (qualityScores==null) return null;
         byte[] trimmedScores = new byte[Math.min(initialLength, trimReadLength) - trimReadStartLength];
         int trimmedIndex = 0;
         for (int i = 0; i < Math.min(initialLength, trimReadLength) ; i++) {
-            if (i > trimReadStartLength) {
+            if (i >= trimReadStartLength) {
                 trimmedScores[trimmedIndex] = qualityScores[i];
             } else {
                 if (i > trimReadLength) return trimmedScores;
