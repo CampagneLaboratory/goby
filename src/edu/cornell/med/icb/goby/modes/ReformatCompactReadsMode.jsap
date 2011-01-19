@@ -113,7 +113,7 @@
             <id>input</id>
             <required>true</required>
             <greedy>true</greedy>
-            <help>The input fasta files to convert to compact reads. The output files will have the same filename but end in .compact-reads. If the input file ends in .gz it will be decompressed on the fly.  </help>
+            <help>The compact reads files provided as input to reformat.   </help>
         </unflaggedOption>
         <flaggedOption>
             <id>start-position</id>
