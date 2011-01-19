@@ -1,5 +1,6 @@
-1.9.1 -> Development
- - [NEW ITEMS HERE]
+1.9.1 -> development
+ - reformat-compact-reads must trim quality scores in the same way that it trims the sequence. Quality scores
+   were not trimmed in previous versions. This is now fixed.
 1.9.1
  - fasta-to-compact mode: fix bug that prevented checking that quality encoding are in the allowed range.
    quality score must now be converted within the correct score range before the compact-reads file can

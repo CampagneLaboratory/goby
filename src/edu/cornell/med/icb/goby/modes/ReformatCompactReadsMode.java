@@ -247,12 +247,19 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
                 if (pushIdentifier && entry.hasReadIdentifier()) {
                     writer.setIdentifier(entry.getReadIdentifier());
                 }
+                byte[] qualityScores = null;
+                if (entry.hasQualityScores()) {
+                    qualityScores = entry.getQualityScores().toByteArray();
+
+                }
+                final byte[] trimmedScores = trimQualityScores(qualityScores, trimReadStartLength,
+                        trimReadLength, entry.getReadLength());
 
                 if (!excludeSequences) {
                     ReadsReader.decodeSequence(entry, sequence);
                     // trim the read length down to size
                     if (sequence.length() > trimReadLength) {
-                        sequence.length(trimReadLength);
+                        sequence.length(trimReadLength);                        
                     }
                     if (trimReadStartLength > 0) {
                         sequence.delete(0, trimReadStartLength);
@@ -267,7 +274,8 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
                 }
 
                 if (entry.hasQualityScores()) {
-                    writer.setQualityScores(entry.getQualityScores().toByteArray());
+
+                    writer.setQualityScores(trimmedScores);
                 }
                 // Important: preserve the read index in the input entry:
                 writer.appendEntry(entry.getReadIndex());
@@ -291,12 +299,30 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
         }
     }
 
+    private byte[] trimQualityScores(byte[] qualityScores, int trimReadStartLength, int trimReadLength, int initialLength) {
+
+        byte[] trimmedScores = new byte[Math.min(initialLength, trimReadLength) - trimReadStartLength];
+        int trimmedIndex = 0;
+        for (int i = 0; i < Math.min(initialLength, trimReadLength) ; i++) {
+            if (i > trimReadStartLength) {
+                trimmedScores[trimmedIndex] = qualityScores[i];
+            } else {
+                if (i > trimReadLength) return trimmedScores;
+            }
+            trimmedIndex++;
+
+        }
+        return trimmedScores;
+
+    }
+
     /**
      * Introduce the given number of point mutations in the given sequence.
      *
      * @param sequence
      * @param numberOfMismatches
      */
+
     private void mutate(final MutableString sequence, final int numberOfMismatches) {
         for (final char base : sequence.toCharArray()) {
             bases.add(base);
