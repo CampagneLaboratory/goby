@@ -59,7 +59,7 @@ public class SimulateBisulfiteReads {
 
         String fastaReference = CLI.getOption(args, "-r", null);
         String outputFilename = CLI.getOption(args, "-o", "out.fa");
-        String regionTrueRates = CLI.getOption(args, "-m", "true-methylation.tsv");
+        String regionTrueRates = CLI.getOption(args, "-t", "true-methylation.tsv");
         // reference sequence to use
         String refChoice = CLI.getOption(args, "-c", "22");
         int from = CLI.getIntOption(args, "-s", 0);
@@ -117,14 +117,14 @@ public class SimulateBisulfiteReads {
         }
         it = methylationRates.iterator();
         CharSequence reverseStrandSegment = reverseComplement(segmentBases);
-        for (int i = 0; i < reverseStrandSegment.length(); i++) {
+        for (int i = reverseStrandSegment.length()-1; i >=0; i--) {
             if (reverseStrandSegment.charAt(i) == 'C') {
                 if (!it.hasNext()) {
                     it = methylationRates.iterator();
                 }
-                final int positionInSegment = segmentLength - i;
+                final int positionInSegment =  i;
                 methylationReverse.put(positionInSegment, it.nextDouble());
-                trueRateWriter.printf("%d\t%g\t-1%n", i, methylationReverse.get(positionInSegment));
+                trueRateWriter.printf("%d\t%g\t-1%n", positionInSegment, methylationReverse.get(positionInSegment));
             }
         }
         for (int repeatCount = 0; repeatCount < 10000; repeatCount++) {
@@ -145,8 +145,13 @@ public class SimulateBisulfiteReads {
                     boolean isBaseMethylated = random.nextDouble() < getMethylationRateAtPosition(segmentLength,
                             matchedReverseStrand,
                             i, startReadPosition);
-                    if (isBaseMethylated) {
-                        base = 'm';
+                    if (!isBaseMethylated) {
+                        // bases that are not methylated are changed to T through the bisulfite and PCR conversion steps
+                        base = 'T';
+
+                    } else {
+                        // bases that are methylated are protected and stay C on the forward strand. They would also
+                        // be seen as G on the opposite strand if the sequencing protocol did not respect strandness
                         log.append("met:");
                         log.append(i + startReadPosition);
                         log.append(' ');
