@@ -35,6 +35,7 @@ import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 import it.unimi.dsi.io.LineIterator;
 import it.unimi.dsi.io.FastBufferedReader;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  * @author Fabien Campagne
@@ -98,8 +99,9 @@ public class SimulateBisulfiteReads {
 
     private void process(DoubleList methylationRates, CharSequence segmentBases) throws IOException {
         PrintWriter writer = new PrintWriter(new FileWriter(outputFilename));
-        PrintWriter trueRateWriter = new PrintWriter(new FileWriter(regionTrueRates));
-        System.out.printf("segmentBases.length: %d %n", segmentBases.length());
+        final String trueRateFilenam = FilenameUtils.removeExtension(outputFilename) + "-true-methylation.tsv";
+        PrintWriter trueRateWriter = new PrintWriter(new FileWriter(trueRateFilenam));
+       // System.out.printf("segmentBases.length: %d %n", segmentBases.length());
         methylationForward = new Int2DoubleOpenHashMap();
         methylationReverse = new Int2DoubleOpenHashMap();
 
@@ -134,12 +136,14 @@ public class SimulateBisulfiteReads {
             CharSequence readBases = matchedReverseStrand ? reverseComplement(selectedReadRegion) : selectedReadRegion;
 
 
-            MutableString sequence = new MutableString();
+            MutableString sequenceInitial = new MutableString();
+            MutableString sequenceTreated = new MutableString();
             MutableString log = new MutableString();
 
             for (int i = 0; i < readLength; i++) {
                 final int basePositionInSegment = i;
                 char base = readBases.charAt(basePositionInSegment);
+              sequenceInitial.append(base);
                 if (base == 'C') {
 
                     boolean isBaseMethylated = random.nextDouble() < getMethylationRateAtPosition(segmentLength,
@@ -156,13 +160,11 @@ public class SimulateBisulfiteReads {
                         log.append(i + startReadPosition);
                         log.append(' ');
                     }
-
-
                 }
-                sequence.append(base);
+                sequenceTreated.append(base);
             }
             writer.printf(">%d reference: %s startPosition: %d strand: %s %s%n%s%n", repeatCount, refChoice,
-                    startReadPosition, matchedReverseStrand ? "-1" : "+1", log, sequence);
+                    startReadPosition, matchedReverseStrand ? "-1" : "+1", log, sequenceTreated);
 
 
         }

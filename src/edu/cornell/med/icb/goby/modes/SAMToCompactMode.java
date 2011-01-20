@@ -111,6 +111,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
         skipMissingMdAttribute = jsapResult.getBoolean("allow-missing-attributes");
         numberOfReadsFromCommandLine = jsapResult.getInt("number-of-reads");
+        this.largestQueryIndex=numberOfReadsFromCommandLine;
+        this.smallestQueryIndex=0;
         return this;
     }
 

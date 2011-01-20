@@ -174,7 +174,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         mParameter = jsapResult.getInt("ambiguity-threshold");
         qualityFilterParameters = jsapResult.getString("quality-filter-parameters");
         thirdPartyInput = jsapResult.getBoolean("third-party-input");
-
+      
         return this;
     }
 
@@ -190,7 +190,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         final TransferIds transferIds = new TransferIds().invoke();
         final ReadSet readIndexFilter = transferIds.getReadIndexFilter();
         final AlignmentWriter writer = transferIds.getWriter();
-        assert largestQueryIndex > -1 : "largestQueryIndex must be set";
+        assert largestQueryIndex > -1 : "largestQueryIndex must be set (set with --number-of-reads when running from command line).";
 
         targetIds.clear();
         targetIds.putAll(transferIds.getTargetIds());

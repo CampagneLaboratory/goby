@@ -1,4 +1,7 @@
 1.9.1 -> development
+ - fixed a bug that prevented running sam-to-compact mode from command line. An assertion prevented the code
+   from running from the command line. Clarified the text of the assertion error and read the required parameter
+   from the command line argument so that the mode will run again on SAM files generated outside of Goby.
  - reformat-compact-reads must trim quality scores in the same way that it trims the sequence. Quality scores
    were not trimmed in previous versions. This is now fixed.
  - reformat-compact-reads now correctly processes sequence pairs. Sequence pairs and quality scores can now
