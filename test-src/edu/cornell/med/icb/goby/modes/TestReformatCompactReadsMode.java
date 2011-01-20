@@ -263,6 +263,42 @@ public class TestReformatCompactReadsMode {
         assertFalse("There should be no reads in this file", reader.hasNext());
     }
 
+
+    /**
+     * Validates that setting a maximum read length will propertly exclude reads from
+     * being written to the output.
+     *
+     * @throws IOException if there is a problem reading or writing to the files
+     */
+    @Test
+    public void trimPairedReadsAt10() throws IOException {
+        final ReformatCompactReadsMode reformat = new ReformatCompactReadsMode();
+
+        final String inputFilename =
+                "test-data/compact-reads/small-paired.compact-reads";
+        reformat.setInputFilenames(inputFilename);
+
+        // there are no reads in the input file longer than 23
+        reformat.setTrimReadLength(10);
+        final String outputFilename =
+                "test-results/reformat-test-trim-paired.compact-reads";
+        reformat.setOutputFile(outputFilename);
+        reformat.execute();
+
+        final File inputFile = new File(inputFilename);
+        final File outputFile = new File(outputFilename);
+        assertFalse("The reformatted file should not be the same as the original",
+                FileUtils.contentEquals(inputFile, outputFile));
+
+        ReadsReader reader = new ReadsReader(outputFilename);
+        for (Reads.ReadEntry it : reader) {
+            assertEquals(10, it.getSequence().size());
+            assertEquals(10, it.getSequencePair().size());
+            assertEquals(10, it.getQualityScores().size());
+            assertEquals(10, it.getQualityScoresPair().size());
+        }
+    }
+
     /**
      * Validates that setting a maximum read length will not exclude reads that are
      * within the limit from being written to the output.
@@ -347,8 +383,8 @@ public class TestReformatCompactReadsMode {
     /**
      * Validates that meta data are transfered by reformat.
      * The input file to this test was created with the following command:
-     *  goby 1g fasta-to-compact  -k key1 -v value1 -k key2 -v value2 test-data/fastx-test-data/test-fastq-1.fq -o test-data/compact-reads/with-meta-data-input.compact-reads
-
+     * goby 1g fasta-to-compact  -k key1 -v value1 -k key2 -v value2 test-data/fastx-test-data/test-fastq-1.fq -o test-data/compact-reads/with-meta-data-input.compact-reads
+     *
      * @throws IOException if there is a problem reading or writing to the files
      */
     @Test
@@ -362,6 +398,18 @@ public class TestReformatCompactReadsMode {
         final String outputFilename = "test-results/with-meta-data-output.compact-reads";
         reformat.setOutputFile(outputFilename);
         reformat.execute();
+
+        ReadsReader reader1 = new ReadsReader(inputFilename);
+        for (Reads.ReadEntry it : reader1) {
+            System.out.println(it.toString());
+            System.out.println();
+        }
+
+        ReadsReader reader2 = new ReadsReader(outputFilename);
+        for (Reads.ReadEntry it : reader2) {
+            System.out.println(it.toString());
+            System.out.println();
+        }
 
         assertTrue(FileUtils.contentEquals(new File(inputFilename), new File(outputFilename)));
 
