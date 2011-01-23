@@ -98,7 +98,7 @@
              <stringParser>
                 <classname>FileStringParser</classname>
             </stringParser>
-            <help>Path to a variation stastistics file produced with --mode sequence-variations-stats over the same set of alignments. This file provides variation counts for specific read indices which are used in calculating the within group P-values for variation discovery.</help>
+            <help>Path to a variation stastistics file produced with --mode sequence-variations-stats2 over the same set of alignments. This file provides variation counts for specific read indices which are used in calculating the within group P-values for variation discovery.</help>
         </flaggedOption>
         <flaggedOption>
             <id>minimum-variation-support</id>
