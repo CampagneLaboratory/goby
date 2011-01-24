@@ -27,6 +27,9 @@ import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.Arrays;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import net.sf.samtools.AlignmentBlock;
@@ -74,6 +77,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
     private boolean skipMissingMdAttribute = true;
     private int dummyQueryIndex;
+    private ObjectSet<String> parseAttributeNames;
 
 
     public String getSamBinaryFilename() {
@@ -111,8 +115,14 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
         skipMissingMdAttribute = jsapResult.getBoolean("allow-missing-attributes");
         numberOfReadsFromCommandLine = jsapResult.getInt("number-of-reads");
-        this.largestQueryIndex=numberOfReadsFromCommandLine;
-        this.smallestQueryIndex=0;
+        final String[] strings = jsapResult.getStringArray("parse");
+        parseAttributeNames = new ObjectArraySet<String>();
+        for (String name: strings) {
+            parseAttributeNames.add(name.intern());
+        }
+
+        this.largestQueryIndex = numberOfReadsFromCommandLine;
+        this.smallestQueryIndex = 0;
         return this;
     }
 
@@ -137,13 +147,13 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         // shared buffer for extract sequence variation work. We allocate here to avoid repetitive memory allocations.
         final MutableString readPostInsertions = new MutableString();
 
-       // int stopEarly = 0;
+        // int stopEarly = 0;
         while (recordCloseableIterator.hasNext()) {
             final SAMRecord samRecord = recordCloseableIterator.next();
             final int queryIndex = getQueryIndex(samRecord);
 
-        //    stopEarly++;
-         //   if (stopEarly > 10000) break;
+            //    stopEarly++;
+            //   if (stopEarly > 10000) break;
             final int readLength = samRecord.getReadLength();
 
             // if SAM reports read is unmapped (we don't know how or why), skip record
@@ -241,9 +251,23 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             readSequence.append(sequence);
 
             final int queryLength = samRecord.getReadLength();
+            if (parseAttribute("BSMAP:XR")) {
 
-            extractSequenceVariations(cigar, attributeMD, readSequence, readPostInsertions,
-                    referenceSequence, currentEntry, queryLength, reverseStrand,samRecord.getBaseQualities());
+                // reference is provided in attribute XR
+                final String attributeXR_Z = (String) samRecord.getAttribute("XR");
+                System.out.println(attributeXR_Z);
+                referenceSequence.setLength(0);
+                referenceSequence.append(attributeXR_Z);
+                final int alignmentLength = readSequence.length();
+                interpretBisulfiteConversion(readSequence, referenceSequence);
+                extractSequenceVariations(currentEntry, alignmentLength,
+                        referenceSequence, readSequence, 0, queryLength, reverseStrand, samRecord.getBaseQualities());
+
+            } else {
+            // variations are encoded in attribute MD
+                extractSequenceVariations(cigar, attributeMD, readSequence, readPostInsertions,
+                        referenceSequence, currentEntry, queryLength, reverseStrand, samRecord.getBaseQualities());
+            }
             final Alignments.AlignmentEntry alignmentEntry = currentEntry.build();
 
             final Object xoString = samRecord.getAttribute("X0");
@@ -275,7 +299,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             writer.putStatistic("keep-filter-filename", readIndexFilterFile.getName());
         }
         writer.putStatistic("number-of-entries-written", numAligns);
-             writer.printStats(System.out);
+        writer.printStats(System.out);
 
         // write information from SAM file header
         final SAMFileHeader samHeader = parser.getFileHeader();
@@ -302,6 +326,19 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         return numAligns;
     }
 
+    private void interpretBisulfiteConversion(MutableString readSequence, MutableString referenceSequence) {
+        int length=Math.min(readSequence.length(), referenceSequence.length());
+        for (int i=0;i<length; i++) {
+            final char readBase=readSequence.charAt(i);
+            final char referenceBase=referenceSequence.charAt(i);
+            if (readBase=='C' && referenceBase=='C') readSequence.charAt(i,'m');
+            if (readBase=='T' && referenceBase=='C') readSequence.charAt(i,'C');
+        }
+    }
+
+    private boolean parseAttribute(String attributeId) {
+        return parseAttributeNames.contains(attributeId);
+    }
 
 
     private int getQueryIndex(final SAMRecord samRecord) {
@@ -327,9 +364,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         attributeMD_pattern = Pattern.compile("([0-9]+)(([ACGTN]|\\^[ACGTN])+)?");
         attributeCIGAR_insertions_pattern = Pattern.compile("([0-9]+)([MID])");
     }
+
     /*
-    @param baseQualities are ascii encoded, remove 33 to get Phred quality score.
-     */
+   @param baseQualities are ascii encoded, remove 33 to get Phred quality score.
+    */
     private void extractSequenceVariations(final String cigar, final String attributeMD, final MutableString readSequence,
                                            final MutableString readPostInsertions,
                                            final MutableString referenceSequence,

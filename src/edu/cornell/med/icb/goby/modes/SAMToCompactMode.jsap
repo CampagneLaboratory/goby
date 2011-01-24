@@ -122,5 +122,15 @@
             </stringParser>
             <help>Use to import files not produced by Goby.</help>
         </flaggedOption>
+
+        <flaggedOption>
+            <id>parse</id>
+            <longFlag>parse</longFlag>
+             <allowMultipleDeclarations>true</allowMultipleDeclarations>
+             <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <help>Requests parsing of a specific SAM/BAM attribute. Supported attribute include: bsmap:XR</help>
+        </flaggedOption>
     </parameters>
 </jsap>
