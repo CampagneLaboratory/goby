@@ -77,7 +77,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
     private boolean skipMissingMdAttribute = true;
     private int dummyQueryIndex;
-    private ObjectSet<String> parseAttributeNames;
+    private ObjectSet<String> parseAttributeNames= new ObjectArraySet<String>();
 
 
     public String getSamBinaryFilename() {
@@ -117,7 +117,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         numberOfReadsFromCommandLine = jsapResult.getInt("number-of-reads");
         final String[] strings = jsapResult.getStringArray("parse");
         parseAttributeNames = new ObjectArraySet<String>();
-        for (String name: strings) {
+        for (String name : strings) {
             parseAttributeNames.add(name.intern());
         }
 
@@ -228,6 +228,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                   aligned, these are recorded multiplicity times. */
                 multiplicity = readIndexFilter.getMultiplicity(queryIndex);
             }
+            largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
 
             // the record represents a mapped read..
             final Alignments.AlignmentEntry.Builder currentEntry = Alignments.AlignmentEntry.newBuilder();
@@ -264,7 +265,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                         referenceSequence, readSequence, 0, queryLength, reverseStrand, samRecord.getBaseQualities());
 
             } else {
-            // variations are encoded in attribute MD
+                // variations are encoded in attribute MD
                 extractSequenceVariations(cigar, attributeMD, readSequence, readPostInsertions,
                         referenceSequence, currentEntry, queryLength, reverseStrand, samRecord.getBaseQualities());
             }
@@ -327,12 +328,12 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     }
 
     private void interpretBisulfiteConversion(MutableString readSequence, MutableString referenceSequence) {
-        int length=Math.min(readSequence.length(), referenceSequence.length());
-        for (int i=0;i<length; i++) {
-            final char readBase=readSequence.charAt(i);
-            final char referenceBase=referenceSequence.charAt(i);
-            if (readBase=='C' && referenceBase=='C') readSequence.charAt(i,'m');
-            if (readBase=='T' && referenceBase=='C') readSequence.charAt(i,'C');
+        int length = Math.min(readSequence.length(), referenceSequence.length());
+        for (int i = 0; i < length; i++) {
+            final char readBase = readSequence.charAt(i);
+            final char referenceBase = referenceSequence.charAt(i);
+            if (readBase == 'C' && referenceBase == 'C') readSequence.charAt(i, 'm');
+            if (readBase == 'T' && referenceBase == 'C') readSequence.charAt(i, 'C');
         }
     }
 
