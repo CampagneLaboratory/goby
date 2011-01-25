@@ -125,7 +125,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
 
             load(inputFiles, data, deCalculator, columnIdList);
 
-            data.write(new PrintWriter(System.out), '\t', deCalculator);
+        //    data.write(new PrintWriter(System.out), '\t', deCalculator);
             BenjaminiHochbergAdjustment fdr = new BenjaminiHochbergAdjustment();
             for (String column : selectedPValueColumns) {
 
