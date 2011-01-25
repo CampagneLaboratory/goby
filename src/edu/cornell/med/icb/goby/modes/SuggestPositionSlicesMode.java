@@ -122,7 +122,8 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
             }
             breakpoints[0]=new ReferenceLocation(0,0);
             // largest position in the last reference sequence:
-             breakpoints[breakpoints.length-1]=new ReferenceLocation(ids.size()-1,Integer.MAX_VALUE);
+            final int lastTargetIndex = ids.size() - 1;
+            breakpoints[breakpoints.length-1]=new ReferenceLocation(lastTargetIndex,input.getTargetLength(lastTargetIndex));
 
             for (int i = 0; i < numberOfSlices ; i++) {
 
