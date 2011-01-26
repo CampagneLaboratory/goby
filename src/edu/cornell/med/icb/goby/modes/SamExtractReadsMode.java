@@ -112,7 +112,7 @@ public class SamExtractReadsMode extends AbstractGobyMode {
                 writer.setIdentifier(readId);
                 writer.setSequence(byteToString(samRecord.getReadBases()));
                 // How are quality scores encoded in a SAM file?
-                writer.setQualityScores(remove33(samRecord.getReadBases()));
+                writer.setQualityScores(remove33(samRecord.getBaseQualities()));
                 writer.appendEntry();
                 progress.lightUpdate();
             }
@@ -131,7 +131,8 @@ public class SamExtractReadsMode extends AbstractGobyMode {
 
     private CharSequence byteToString(final byte[] input) {
         final MutableString buffer = new MutableString();
-        for (int i = 0; i < buffer.length(); i++) {
+        buffer.setLength(input.length);
+        for (int i = 0; i < input.length; i++) {
             buffer.setCharAt(i, (char) input[i]);
 
         }
