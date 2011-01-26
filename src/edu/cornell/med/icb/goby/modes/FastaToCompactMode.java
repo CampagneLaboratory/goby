@@ -303,9 +303,9 @@ public class FastaToCompactMode extends AbstractGobyMode {
                     writer.setSequence("");
                 }
                 if (!excludeQuality) {
-                    writer.setQualityScores(convertQualityScores(entry.getQuality()));
+                    writer.setQualityScores(convertQualityScores(qualityEncoding, entry.getQuality(),verboseQualityScores));
                     if (pairEntry != null) {
-                        writer.setQualityScoresPair(convertQualityScores(pairEntry.getQuality()));
+                        writer.setQualityScoresPair(convertQualityScores(qualityEncoding,pairEntry.getQuality(), verboseQualityScores));
                     }
                 }
 
@@ -318,13 +318,9 @@ public class FastaToCompactMode extends AbstractGobyMode {
         }
     }
 
-    private byte[] convertQualityScores(final MutableString quality) {
+   static  public byte[] convertQualityScores(QualityEncoding qualityEncoding, final CharSequence quality, boolean verboseQualityScores) {
         // Only Solexa, Sanger and Illumina encoding are supported at this time
-        if (qualityEncoding != QualityEncoding.SANGER
-                && qualityEncoding != QualityEncoding.ILLUMINA
-                && qualityEncoding != QualityEncoding.SOLEXA) {
-            throw new UnsupportedOperationException("Unknown encoding: " + qualityEncoding);
-        }
+     
 
         final int size = quality.length();
         final byte[] qualityScoreBuffer = new byte[size];
