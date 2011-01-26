@@ -83,6 +83,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
     };
     private Alignments.AlignmentEntry nextEntry;
     private Alignments.AlignmentEntry nextEntryNoFilter;
+    private boolean queryLengthStoredInEntries;
 
 
     /**
@@ -176,7 +177,8 @@ public class AlignmentReader extends AbstractAlignmentReader {
         this.endReferenceIndex = endReferenceIndex;
         this.startPosition = startPosition;
         this.startReferenceIndex = startReferenceIndex;
-        alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset > 0 ? startOffset : 0, endOffset, new FastBufferedInputStream(stream));
+        alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset > 0 ? startOffset : 0, endOffset,
+                new FastBufferedInputStream(stream));
         LOG.trace("start offset :" + startOffset + " end offset " + endOffset);
 
         stats = new Properties();
@@ -188,6 +190,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
                 stats.load(statsFileReader);
             } catch (IOException e) {
                 LOG.warn("cannot load properties for basename: " + basename, e);
+                throw e;
             } finally {
                 IOUtils.closeQuietly(statsFileReader);
             }
@@ -547,6 +550,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
                 this.constantQueryLengths = true;
                 this.constantLength = header.getConstantQueryLength();
             }
+            queryLengthStoredInEntries= header.getQueryLengthsStoredInEntries();
 
             if (!header.getQueryLengthsStoredInEntries()) {
                 if (this.constantQueryLengths) {
@@ -738,5 +742,9 @@ public class AlignmentReader extends AbstractAlignmentReader {
         }
         
         return new ReferenceLocation(referenceIndex+1, (int)absoluteLocation);
+    }
+
+    public boolean isQueryLengthStoredInEntries() {
+        return queryLengthStoredInEntries;
     }
 }

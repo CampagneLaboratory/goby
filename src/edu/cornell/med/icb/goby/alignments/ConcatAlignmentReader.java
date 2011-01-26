@@ -24,11 +24,14 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.util.*;
+
+import edu.cornell.med.icb.identifier.IndexedIdentifier;
 
 /**
  * Read over a set of alignments. This aligner concatenates entries from the input alignment.
@@ -169,28 +172,54 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
             } else {
                 this.numberOfTargets = targetNumbers.iterator().nextInt();
             }
+            targetIdentifiers = new IndexedIdentifier();
+            // target information may have more or less targets depending on the reader, but indices must match across
+            // all readers:
+            for (final AlignmentReader reader : readers) {
+                IndexedIdentifier targetIds = reader.getTargetIdentifiers();
+                for (MutableString key : targetIds.keySet()) {
+                    if (!targetIdentifiers.containsKey(key)) {
+                        targetIdentifiers.put(key, targetIds.getInt(key));
+                    } else {
+                        final int globalValue = targetIdentifiers.getInt(key);
+                        final int localValue = targetIds.getInt(key);
+                        if (globalValue != localValue) {
+                            throw new RuntimeException(
+                                    String.format("target indices must match across input alignments. Key was found with the distinct values %d %d",
+                                            globalValue, localValue));
+                        }
+                    }
+                }
+            }
 
-            // target information is all the same across each alignment so just use the first one
-            targetIdentifiers = readers[0].getTargetIdentifiers();
             targetLengths = readers[0].getTargetLength();
 
-            queryLengths = new int[largestQueryIndex - smallestQueryIndex + 1];
+            boolean queryLengthStoredInEntries = true;
+            for (AlignmentReader reader : readers) {
+                if (!reader.isQueryLengthStoredInEntries()) queryLengthStoredInEntries = false;
+            }
+            queryLengths = queryLengthStoredInEntries ? null : new int[largestQueryIndex - smallestQueryIndex + 1];
+
             int offset = 0;
             for (int i = 0; i < queryIndexOffset.length; i++) {
 
                 offset = readers[i].getSmallestSplitQueryIndex();
 
                 queryIndexOffset[i] = adjustQueryIndices ? i == 0 ? 0 : readers[i - 1].getLargestSplitQueryIndex() + 1 : 0;
-                final int[] localQueryLenths = readers[i].getQueryLengths();
-                if (localQueryLenths != null) {
-                    if (localQueryLenths.length + offset <= queryLengths.length) {
-                        System.arraycopy(localQueryLenths, 0, queryLengths,
-                                offset, localQueryLenths.length);
-                    } else {
-                        LOG.error("Cannot copy query lengths to destination array. Skipping this step.");
+                if (!queryLengthStoredInEntries) {
+                    final int[] localQueryLenths = readers[i].getQueryLengths();
+                    if (localQueryLenths != null) {
+                        if (localQueryLenths.length + offset <= queryLengths.length) {
+                            System.arraycopy(localQueryLenths, 0, queryLengths,
+                                    offset, localQueryLenths.length);
+                        } else {
+                            LOG.error("Cannot copy query lengths to destination array. Skipping this step.");
+                        }
                     }
                 }
             }
+
+
         }
 
 

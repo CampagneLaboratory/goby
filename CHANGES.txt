@@ -1,4 +1,9 @@
 1.9.1 -> development
+ - ConcatenateAlignmentReader would cause OutOfMemory exceptions when several (e.g., 4) alignments
+   with >100 million reads were concatenated. The reader was trying to allocate very large queryLength
+   arrays, even though each underlying reader indicated that it its entries carried the queryLength.
+   The fix consists in detecting that all the concatenated readers support queryLength in entries, and
+   not allocating these large arrays. 
  - Mode sam-extract-reads now supports an optional --quality-encoding argument. Default is BAM encoding.
  - QualityEncoding now supports BAM encoding (no offset or adjustment, the value of the character in
    ascii is the Phred score).
