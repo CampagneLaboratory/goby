@@ -1,4 +1,10 @@
 1.9.1 -> development
+ - Mode sam-extract-reads now supports an optional --quality-encoding argument. Default is BAM encoding.
+ - QualityEncoding now supports BAM encoding (no offset or adjustment, the value of the character in
+   ascii is the Phred score).
+ - Fixed sam-extract-reads. Was not extracting sequences from BAM files. 
+ - compact-to-fasta mode: now supports reading an arbitrary slice of input.
+ - sam-to-compact mode: draft support for importing SAM files produced by BSMAP.
  - fixed a bug that prevented running sam-to-compact mode from command line. An assertion prevented the code
    from running from the command line. Clarified the text of the assertion error and read the required parameter
    from the command line argument so that the mode will run again on SAM files generated outside of Goby.

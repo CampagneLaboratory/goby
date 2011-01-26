@@ -49,6 +49,10 @@ package edu.cornell.med.icb.goby.reads;
  */
 public enum QualityEncoding {
     /**
+     * BAM encoding.
+     */
+    BAM(0, false, 0, 93),
+    /**
      * Sanger encoding.
      */
     SANGER(33, false, 0, 93),
@@ -120,12 +124,14 @@ public enum QualityEncoding {
     public byte asciiEncodingToPhredQualityScore(final char asciiCharacter) {
         if (solexaEncoding) {
             final int qSolexa = (asciiCharacter - asciiOffset);
-            System.out.printf("qSolexa=%d%n", qSolexa);
+            // System.out.printf("qSolexa=%d%n", qSolexa);
             // convert Qsolexa to Qphred:
-            return (byte) Math.round((10 * Math.log10(
+            final byte qPhredScore = (byte) Math.round((10 * Math.log10(
                     Math.pow(10d, (((double) qSolexa) / 10d))
                             + 1)
             ));
+            System.out.printf("qPhredScore=%d%n", qPhredScore);
+            return qPhredScore;
 
         } else {
             return (byte) (asciiCharacter - asciiOffset);

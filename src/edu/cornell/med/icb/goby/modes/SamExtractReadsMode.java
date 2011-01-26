@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
+import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import net.sf.samtools.SAMFileReader;
@@ -89,8 +90,11 @@ public class SamExtractReadsMode extends AbstractGobyMode {
 
         inputFilename = jsapResult.getString("input");
         outputFilename = jsapResult.getString("output");
+        qualityEncoding = QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
         return this;
     }
+
+    private QualityEncoding qualityEncoding;
 
     /**
      * Display sequence variations.
@@ -111,21 +115,16 @@ public class SamExtractReadsMode extends AbstractGobyMode {
                 final String readId = samRecord.getReadName();
                 writer.setIdentifier(readId);
                 writer.setSequence(byteToString(samRecord.getReadBases()));
-                // How are quality scores encoded in a SAM file?
-                writer.setQualityScores(remove33(samRecord.getBaseQualities()));
+
+                writer.setQualityScores(FastaToCompactMode.convertQualityScores(qualityEncoding,
+                        byteToString(samRecord.getBaseQualities()),
+                        false));
                 writer.appendEntry();
                 progress.lightUpdate();
             }
         } finally {
             writer.close();
         }
-    }
-
-    private byte[] remove33(final byte[] input) {
-        for (int i = 0; i < input.length; i++) {
-            input[i] -= 33;
-        }
-        return input;
     }
 
 

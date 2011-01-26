@@ -30,5 +30,14 @@
             <required>true</required>
             <help>The SAM input file.</help>
         </unflaggedOption>
+        <flaggedOption>
+            <id>quality-encoding</id>
+            <longFlag>quality-encoding</longFlag>
+            <required>false</required>
+              <defaults>
+                <string>BAM</string>
+            </defaults>
+            <help>The encoding for quality scores. The default quality encoding is to not convert the characters (BAM encoding). Valid encodings include BAM, Illumina, Sanger and Solexa.</help>
+         </flaggedOption>
     </parameters>
 </jsap>
