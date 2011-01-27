@@ -134,7 +134,7 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
                 final double totalNumberOfVariationBases = sum(readIndexTallies.values());
                 final double numberOfAlignmentEntries = alignmentIterator.getNumAlignmentEntries();
 
-                final int countReferenceBases = alignmentIterator.getReferenceBaseCount();
+                final long countReferenceBases = alignmentIterator.getReferenceBaseCount();
                 for (final int readIndex : readIndexTallies.keySet()) {
                     final int countVariationBasesAtReadIndex = readIndexTallies.get(readIndex);
                     final double frequency = ((double) countVariationBasesAtReadIndex) / totalNumberOfVariationBases;
@@ -200,6 +200,9 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
             for (final Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
                 int toLength = var.getTo().length();
                 for (int i = 0; i < toLength; i++) {
+                    if (var.getReadIndex() < 0) {
+                        System.out.printf("readIndex: %d %n", var.getReadIndex());
+                    }
                     final int readIndex = var.getReadIndex() + (alignmentEntry.getMatchingReverseStrand() ? 0 : 1) * i;
                     final int value = readIndexVariationTally.get(readIndex);
                     final int changedBases = alignmentEntry.getMultiplicity();
