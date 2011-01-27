@@ -144,7 +144,7 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
                 final double totalNumberOfVariationBases = sum(readIndexVariationTallies);
                 final double numberOfAlignmentEntries = iterator.getNumAlignmentEntries();
 
-                final int countReferenceBases = iterator.getReferenceBaseCount();
+                final long countReferenceBases = iterator.getReferenceBaseCount();
                 int maxReadIndex = iterator.getMaxReadIndex();
                 for (int readIndex = 1; readIndex < maxReadIndex + 1; readIndex++) {
                     final int countVariationBasesAtReadIndex = readIndexVariationTallies[readIndex];
