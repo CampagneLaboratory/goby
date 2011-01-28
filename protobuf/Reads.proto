@@ -70,6 +70,7 @@ message ReadEntry {
       LifeTech 5500xl SOLiD
       Roche 454 GS FLX Ti
 
+      key="organism" value="species name"
       Since Goby 1.9.1
   */
   repeated MetaData meta_data = 25;

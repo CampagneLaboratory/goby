@@ -116,16 +116,17 @@ message AlignmentEntry {
    */
   optional uint32 pair_flags=15;
 
-  /* If there is an alignment entry for the paired read (the paired read was mapped), a link to the entry is given. */
+  /*
+    If there is an alignment entry for the paired read (the paired read was mapped), a link to the entry is given.
+   */
   optional RelatedAlignmentEntry pair_alignment_link=16;
 
   /* Index of the read fragment from which this alignment was obtained. */
   optional uint32 fragment_index=17;
 
-   /*
-      If a read spans exon-exon junctions some aligners (e.g., GSNAP) will output two alignment entries, one for each
+   /* If a read spans exon-exon junctions some aligners (e.g., GSNAP) will output two alignment entries, one for each
       matching part of the read, and link these entries with spliced_alignment_links (bi-directional).
-   */
+    */
   optional RelatedAlignmentEntry spliced_alignment_link=18;
 
   /*
@@ -137,11 +138,10 @@ message AlignmentEntry {
    */
   optional uint32 spliced_flags=19;
 
-  /*
-     The size of the insert used when making the sequence library. This is the total size of the DNA
-     fragment to sequence, without the adapters. This is not the length of sequence that separates the reads.
-     See http://seqanswers.com/forums/showthread.php?t=8730 for details. Insert size is inferred for each pair
-     of reads by the aligner and is recorded here if was estimated (i.e., for paired-end reads).
+  /* The size of the insert used when making the sequence library. This is the total size of the DNA
+  fragment to sequence, without the adapters. This is not the length of sequence that separates the reads.
+  See http://seqanswers.com/forums/showthread.php?t=8730 for details. Insert size is inferred for each pair
+  of reads by the aligner and is recorded here if was estimated (i.e., for paired-end reads).
   */
   optional uint32 insert_size=20;
 }
