@@ -185,6 +185,148 @@ public class TestStatistics {
     }
 
     @Test
+    public void testParalell() {
+        final Random randomEngine = new Random();
+        final DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator() {
+
+            @Override
+            public double getNormalizedExpressionValue(final String sample, final NormalizationMethod method, final MutableString elementId) {
+                if (sample.startsWith("A")) {
+                    return 2 * Math.abs(randomEngine.nextGaussian());
+                } else {
+                    return Math.abs(randomEngine.nextGaussian());
+                }
+
+                // fold change A/B = 2
+            }
+
+            @Override
+            public int getOverlapCount(final String sample, final MutableString elementId) {
+                final NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+                return (int) (getNormalizedExpressionValue(sample, normalizationMethod, elementId) * 100);
+            }
+        };
+        deCalc.setRunInParallel(true);
+        deCalc.defineElement("id-1");
+        deCalc.defineElement("id-2");
+        deCalc.defineGroup("A");
+        deCalc.defineGroup("B");
+        final int numReplicates = 2000;
+        deCalc.reserve(2, numReplicates * 2);
+
+        for (int i = 0; i < numReplicates; i++) {
+            deCalc.associateSampleToGroup("A-" + i, "A");
+            deCalc.associateSampleToGroup("B-" + i, "B");
+        }
+
+        // observe the counts to populate internal data structures:
+        for (final String sampleId : deCalc.samples()) {
+            final MutableString id1 = new MutableString("id-1");
+            final MutableString id2 = new MutableString("id-2");
+            deCalc.observe(sampleId, "id-1",
+                    deCalc.getOverlapCount(sampleId, id1)
+            );
+            deCalc.observe(sampleId, "id-2",
+                    deCalc.getOverlapCount(sampleId, id2)
+            );
+        }
+        //deCalc.associateSampleToGroup("A-", "A");
+        //deCalc.associateSampleToGroup("B-1", "B");
+        DifferentialExpressionResults list = new DifferentialExpressionResults();
+
+        DifferentialExpressionInfo info1 = new DifferentialExpressionInfo("id-1");
+        DifferentialExpressionInfo info2 = new DifferentialExpressionInfo("id-2");
+        final FoldChangeCalculator foldChange = new FoldChangeCalculator(list);
+        final AverageCalculator average = new AverageCalculator(list);
+        final TTestCalculator tTest = new TTestCalculator(list);
+        final FisherExactRCalculator fisher = new FisherExactRCalculator(list);
+        final NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+
+        list.add(info1);
+        list.add(info2);
+
+        list = foldChange.evaluate(deCalc, normalizationMethod, list, "A", "B");
+        list = average.evaluate(deCalc, normalizationMethod, list, "A", "B");
+        list = tTest.evaluate(deCalc, normalizationMethod, list, "A", "B");
+        list = fisher.evaluate(deCalc, normalizationMethod, list, "A", "B");
+
+        final MutableString foldChangeIndex = foldChange.statisticIds.get(0);
+        final DifferentialExpressionInfo info = list.get(0);
+        assertEquals("fold-change must match", 1.4139327824612316d,
+                list.getStatistic(info, foldChangeIndex), .1);
+        assertTrue("T-test must be significant",
+                list.getStatistic(info1, tTest.statisticIds.get(0)) < 0.01);
+        assertTrue("fisher test must not be significant",
+                list.getStatistic(info1, fisher.statisticIds.get(0)) > 0.05);
+    }
+
+    @Test
+    public void testParalellLarge() {
+        final Random randomEngine = new Random();
+
+        final DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator() {
+
+            @Override
+            public double getNormalizedExpressionValue(final String sample, final NormalizationMethod method, final MutableString elementId) {
+                if (sample.startsWith("A")) {
+                    return 2 * Math.abs(randomEngine.nextGaussian()+3);
+                } else {
+                    return Math.abs(randomEngine.nextGaussian()+20);
+                }
+
+                // fold change A/B = 2
+            }
+
+            @Override
+            public int getOverlapCount(final String sample, final MutableString elementId) {
+                final NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+                return (int) (getNormalizedExpressionValue(sample, normalizationMethod, elementId) * 100);
+            }
+        };
+        deCalc.setRunInParallel(true);
+        int elementsPerSample = 1000000;
+        for (int i = 0; i < elementsPerSample; i++) {
+            deCalc.defineElement("id-" + i);
+        }
+
+        deCalc.defineGroup("A");
+        deCalc.defineGroup("B");
+        final int numReplicates = 2;
+        deCalc.reserve(elementsPerSample, numReplicates * 2);
+
+        for (int i = 0; i < numReplicates; i++) {
+            deCalc.associateSampleToGroup("A-" + i, "A");
+            deCalc.associateSampleToGroup("B-" + i, "B");
+        }
+
+        // observe the counts to populate internal data structures:
+        for (int i = 0; i < numReplicates; i++) {
+            for (final String sampleId : deCalc.samples()) {
+
+                MutableString elementId = new MutableString("id-" + i);
+                deCalc.observe(sampleId, "id-" + i,
+                        deCalc.getOverlapCount(sampleId, elementId));
+
+            }
+        }
+
+        DifferentialExpressionResults list = new DifferentialExpressionResults();
+
+        final FoldChangeCalculator foldChange = new FoldChangeCalculator(list);
+        final AverageCalculator average = new AverageCalculator(list);
+        final TTestCalculator tTest = new TTestCalculator(list);
+        final FisherExactRCalculator fisher = new FisherExactRCalculator(list);
+        final NormalizationMethod normalizationMethod = new AlignedCountNormalization();
+
+        list = foldChange.evaluate(deCalc, normalizationMethod, list, "A", "B");
+        list = average.evaluate(deCalc, normalizationMethod, list, "A", "B");
+        list = tTest.evaluate(deCalc, normalizationMethod, list, "A", "B");
+        list = fisher.evaluate(deCalc, normalizationMethod, list, "A", "B");
+
+        assertTrue(list != null);
+    }
+
+    @Test
     public void testFisher() throws MathException {
         final DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator();
         final int numReplicates = 2;

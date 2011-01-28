@@ -90,5 +90,10 @@
             </defaults>
                    <help>Name the statistics to evaluate. The complete list of valid statistics names is "samples,fold-change,fold-change-magnitude,log2-fold-change,group-averages,t-test,fisher,fisher-r,chi-square,Bonferroni,BH". This option is available since Goby 1.7.</help>
         </flaggedOption>
+        <switch>
+            <id>parallel</id>
+            <longFlag>parallel</longFlag>
+            <help>Run some computations in parallel. You can tune the number of processors used by setting the property pj.nt. For instance, -Dpj.nt=5 will use 5 parallel threads. When --parallel is specified, one thread per processing core of the machine will be used unless specified otherwise (with pj.nt).</help>
+        </switch>
     </parameters>
 </jsap>

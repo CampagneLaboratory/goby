@@ -42,6 +42,8 @@ public class FisherExactRCalculator extends StatisticCalculator {
     public FisherExactRCalculator(final DifferentialExpressionResults results) {
         this();
         setResults(results);
+        rEngine = GobyRengine.getInstance().getRengine();
+        installed = rEngine != null && rEngine.isAlive();
     }
 
     public FisherExactRCalculator() {
@@ -53,75 +55,81 @@ public class FisherExactRCalculator extends StatisticCalculator {
         return group.length == 2;
     }
 
+    boolean installed;
+
     @Override
     public boolean installed() {
-        final Rengine rEngine = GobyRengine.getInstance().getRengine();
-        return rEngine != null && rEngine.isAlive();
 
+        // we can only perform the evaluation if R is running and alive.
+
+        return installed;
     }
+
+    Rengine rEngine;
 
     @Override
     public DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
                                                final NormalizationMethod method, final DifferentialExpressionResults results,
                                                final DifferentialExpressionInfo info,
                                                final String... group) {
-        // we can only perform the evaluation if R is running and alive.
-        final Rengine rengine = GobyRengine.getInstance().getRengine();
-        if (rengine != null && rengine.isAlive()) {
-            final String groupA = group[0];
-            final String groupB = group[1];
+        synchronized (this) {
+            if (installed) {
+                final String groupA = group[0];
+                final String groupB = group[1];
 
-            // TODO correct sumCountIn? with normalization method.
-            final int statIndex = defineStatisticId(results, "fisher-exact-R", method, group);
+                // TODO correct sumCountIn? with normalization method.
+                final int statIndex = defineStatisticId(results, "fisher-exact-R", method, group);
 
-            final ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
-            final ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);
+                final ObjectArraySet<String> samplesA = differentialExpressionCalculator.getSamples(groupA);
+                final ObjectArraySet<String> samplesB = differentialExpressionCalculator.getSamples(groupB);
 
-            int sumCountInA = 0;
-            int sumCountInB = 0;
-            // TODO correct sumCountIn? with normalization method.
-            for (final String sample : samplesA) {
-                sumCountInA += differentialExpressionCalculator.getOverlapCount(sample, info.getElementId());
+                int sumCountInA = 0;
+                int sumCountInB = 0;
+                // TODO correct sumCountIn? with normalization method.
+                for (final String sample : samplesA) {
+                    sumCountInA += differentialExpressionCalculator.getOverlapCount(sample, info.getElementId());
+                }
+                // TODO correct sumCountIn? with normalization method.
+                for (final String sample : samplesB) {
+                    sumCountInB += differentialExpressionCalculator.getOverlapCount(sample, info.getElementId());
+                }
+                int totalCountInA = 0;
+                int totalCountInB = 0;
+
+
+                for (final String sample : samplesA) {
+                    totalCountInA += differentialExpressionCalculator.getSumOverlapCounts(sample);
+                }
+                for (final String sample : samplesB) {
+                    totalCountInB += differentialExpressionCalculator.getSumOverlapCounts(sample);
+                }
+
+                final int sumCountNotInA = totalCountInA - sumCountInA;
+                final int sumCountNotInB = totalCountInB - sumCountInB;
+
+                // Build a contingency matrix as follows:
+                //                  groupA            groupB
+                // hasCounts    sumCountInA        sumCountInB
+                // noCounts     sumCountNotInA     sumCountNotInB
+                final FisherExact.Result result =
+                        FisherExact.fexact(sumCountInA, sumCountNotInA, sumCountInB, sumCountNotInB);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(result);
+                }
+                final double pValue = result.getPValue();
+                info.statistics.size(results.getNumberOfStatistics());
+                info.statistics.set(statIndex, pValue);
             }
-            // TODO correct sumCountIn? with normalization method.
-            for (final String sample : samplesB) {
-                sumCountInB += differentialExpressionCalculator.getOverlapCount(sample, info.getElementId());
-            }
-            int totalCountInA = 0;
-            int totalCountInB = 0;
-
-
-            for (final String sample : samplesA) {
-                totalCountInA += differentialExpressionCalculator.getSumOverlapCounts(sample);
-            }
-            for (final String sample : samplesB) {
-                totalCountInB += differentialExpressionCalculator.getSumOverlapCounts(sample);
-            }
-
-            final int sumCountNotInA = totalCountInA - sumCountInA;
-            final int sumCountNotInB = totalCountInB - sumCountInB;
-
-            // Build a contingency matrix as follows:
-            //                  groupA            groupB
-            // hasCounts    sumCountInA        sumCountInB
-            // noCounts     sumCountNotInA     sumCountNotInB
-            final FisherExact.Result result =
-                    FisherExact.fexact(sumCountInA, sumCountNotInA, sumCountInB, sumCountNotInB);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(result);
-            }
-            final double pValue = result.getPValue();
-            info.statistics.size(results.getNumberOfStatistics());
-            info.statistics.set(statIndex, pValue);
         }
+
         return info;
     }
 
     /**
      * Estimate the Fisher P-value given the contingency table:
-     *      //               group0       group1
-     *      // condition0   count00      count01
-     *      // condition1   count10      count11
+     * //               group0       group1
+     * // condition0   count00      count01
+     * // condition1   count10      count11
      *
      * @param count00
      * @param count10
@@ -138,11 +146,12 @@ public class FisherExactRCalculator extends StatisticCalculator {
         final double pValue = result.getPValue();
         return pValue;
     }
-     /**
+
+    /**
      * Estimate the Fisher one-tailed lesser P-value given the contingency table:
-     *      //               group0       group1
-     *      // condition0   count00      count01
-     *      // condition1   count10      count11
+     * //               group0       group1
+     * // condition0   count00      count01
+     * // condition1   count10      count11
      *
      * @param count00
      * @param count10
@@ -151,7 +160,7 @@ public class FisherExactRCalculator extends StatisticCalculator {
      * @return P-value of observing a contingency table that extreme by random distribution among the cells.
      */
     public static double getFisherOneTailedLesserPValue(int count00, int count10, int count01, int count11) {
-         final FisherExact.Result result =
+        final FisherExact.Result result =
                 FisherExact.fexactLesser(count00, count10, count01, count11);
         if (LOG.isDebugEnabled()) {
             LOG.debug(result);

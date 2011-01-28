@@ -97,6 +97,9 @@ public class AverageCalculator extends StatisticCalculator {
             averageNormalizedExpressionValue /= (double) samplesA.size();
             averageCount /= (double) samplesA.size();
 
+            if (results.getNumberOfStatistics()<countStatIndex) {
+                System.out.printf("countStatIndex > results.getNumberOfStatistics() %d %d",countStatIndex,results.getNumberOfStatistics() );
+            }
             info.statistics.size(results.getNumberOfStatistics());
             info.statistics.set(rpkmStatIndex, averageNormalizedExpressionValue);
             info.statistics.set(log2RpkmStatIndex, Math.log(averageNormalizedExpressionValue) / Math.log(2));

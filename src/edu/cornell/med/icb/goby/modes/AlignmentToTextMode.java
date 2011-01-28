@@ -247,7 +247,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 "pairFragmentIndex",
                 "pairTarget",
                 "pairPosition",
-                "targetIndex",
+                "targetIdentifier",
                 "referenceLength",
                 "numIndels",
                 "numMismatches",

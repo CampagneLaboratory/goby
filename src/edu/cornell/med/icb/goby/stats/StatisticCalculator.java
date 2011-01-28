@@ -22,6 +22,9 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
+import edu.cornell.med.icb.goby.util.DoInParallel;
+
+import java.util.Arrays;
 
 /**
  * Calculate differential expression statistics for lists of elements under study
@@ -42,10 +45,16 @@ public abstract class StatisticCalculator {
      * @return The index of the defined statistic.
      */
     public int defineStatisticId(final DifferentialExpressionResults results, final MutableString statisticId) {
+
         if (!results.isStatisticDefined(statisticId)) {
-            final int index = results.declareStatistic(statisticId);
-            statisticIds.add(statisticId);
-            return index;
+            synchronized (results) {
+                // we test again now that we have synchronized:
+                if (!results.isStatisticDefined(statisticId)) {
+                    final int index = results.declareStatistic(statisticId);
+                    statisticIds.add(statisticId);
+                    return index;
+                }
+           }
         }
         return results.getStatisticIndex(statisticId);
     }
@@ -54,10 +63,10 @@ public abstract class StatisticCalculator {
      * Define the name of a statistic if the name was not previously defined. Use the abbreviation of the normalization method
      * to indicate which method was used during the calculation of this statistic.
      *
-     * @param results DifferentialExpressionResults instance
+     * @param results     DifferentialExpressionResults instance
      * @param statisticId name of the statistic
-     * @param method Normalization method
-     * @param group the groups in question
+     * @param method      Normalization method
+     * @param group       the groups in question
      * @return The index of the defined statistic.
      */
     public int defineStatisticId(final DifferentialExpressionResults results, final String statisticId,
@@ -136,6 +145,7 @@ public abstract class StatisticCalculator {
         this.results = results;
         for (final MutableString id : statisticIds) {
             results.declareStatistic(id);
+
         }
     }
 
@@ -150,6 +160,7 @@ public abstract class StatisticCalculator {
     /**
      * Some implementations may not be installed on the local machine. In such cases, this method will return false and
      * client code should not call evaluate.
+     *
      * @return True when the implementation is installed on the machine.
      */
     public boolean installed() {
@@ -157,10 +168,10 @@ public abstract class StatisticCalculator {
     }
 
     public abstract DifferentialExpressionInfo evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
-                                                 final NormalizationMethod method,
-                                                 final DifferentialExpressionResults results,
-                                                 final DifferentialExpressionInfo info,
-                                                 final String... group);
+                                                        final NormalizationMethod method,
+                                                        final DifferentialExpressionResults results,
+                                                        final DifferentialExpressionInfo info,
+                                                        final String... group);
 
     /**
      * Evaluate a statistic on all the elements described in a differentialExpressionCalculator.
@@ -172,9 +183,9 @@ public abstract class StatisticCalculator {
      * @param group  The set of groups for which the comparison is sought.  @return list of DifferentialExpressionInfo, one per element processed.
      */
     public DifferentialExpressionResults evaluate(final DifferentialExpressionCalculator differentialExpressionCalculator,
-                                           final NormalizationMethod method,
-                                           final DifferentialExpressionResults inputList,
-                                           final String... group) {
+                                                  final NormalizationMethod method,
+                                                  final DifferentialExpressionResults inputList,
+                                                  final String... group) {
         if (inputList.size() == 0) {
             // define an info elements for each element ids defined by the calculator:
             final ObjectSet<MutableString> elementIds = differentialExpressionCalculator.getElementIds();
@@ -182,12 +193,28 @@ public abstract class StatisticCalculator {
                 final DifferentialExpressionInfo info = new DifferentialExpressionInfo(elementId);
                 results.add(info);
             }
-        }
+        } else results = inputList;
 
-        for (final DifferentialExpressionInfo info : inputList) {
-            evaluate(differentialExpressionCalculator, method, results, info, group);
+        DoInParallel loop = new DoInParallel() {
+            @Override
+            public void action(DoInParallel forDataAccess, String inputBasename, int loopIndex) {
+                if (loopIndex >= results.size()) {
+                    System.out.printf("Error: loopIndex>=results.size() %d >=%d inputSize: %d", loopIndex, results.size(),
+                            inputList.size());
+                } else {
+                    evaluate(differentialExpressionCalculator, method, results, results.get(loopIndex), group);
+                }
+            }
+        };
+        try {
+            final String[] strings = new String[results.size()];
+            Arrays.fill(strings, "basename");
+            loop.execute(differentialExpressionCalculator.isRunInParallel(), strings);
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("Error executing parallel loop for statistic %s evaluation",
+                    this.statisticIds.toString()));
         }
-        return inputList;
+        return results;
     }
 
     /**

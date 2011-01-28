@@ -66,6 +66,7 @@ public class DifferentialExpressionAnalysis {
 
     private static final ServiceLoader<NormalizationMethod> normalizationMethodLoader
             = ServiceLoader.load(NormalizationMethod.class);
+    private boolean runInParalell;
 
     public DifferentialExpressionAnalysis() {
         super();
@@ -174,6 +175,7 @@ public class DifferentialExpressionAnalysis {
         DifferentialExpressionResults results = null;
         if (doComparison) {
             results = null;
+            deCalculator.setRunInParallel(runInParalell);
             LOG.info("Evaluating statistics..");
             for (final NormalizationMethod method : normalizationMethods) {
                 method.normalize(deCalculator, groupComparison);
@@ -242,6 +244,10 @@ public class DifferentialExpressionAnalysis {
 
     public void setEvalNames(final ObjectSet<String> evalSet) {
         this.evalSet = evalSet;
+    }
+
+    public void setRunInParallel(boolean parallel) {
+        this.runInParalell=parallel;
     }
 }
 

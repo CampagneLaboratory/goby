@@ -159,7 +159,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         if (doComparison) {
             deAnalyzer.parseCompare(compare);
         }
-
+        deAnalyzer.setRunInParallel(parallel);
         includeReferenceNameCommas = jsapResult.getString("include-reference-names");
         includeReferenceNames = new ObjectOpenHashSet<String>();
         if (includeReferenceNameCommas != null) {

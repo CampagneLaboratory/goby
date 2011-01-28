@@ -54,6 +54,16 @@ public class DifferentialExpressionCalculator {
     private final IntArrayList lengths;
     private final Int2IntMap elementLabelToElementType;
     private Object2IntMap<String> sampleToSumCount;
+    private boolean runInParallel;
+
+    public boolean isRunInParallel() {
+        return runInParallel;
+    }
+
+    public void setRunInParallel(boolean runInParallel) {
+        this.runInParallel = runInParallel;
+    }
+
     /**
      * Used to log debug and informational messages.
      */
@@ -257,6 +267,7 @@ public class DifferentialExpressionCalculator {
 
     /**
      * Get the sampleToGroupMap object.
+     *
      * @return map of sample id's to group names.
      */
     public Map<String, String> getSampleToGroupMap() {
@@ -265,13 +276,14 @@ public class DifferentialExpressionCalculator {
 
     /**
      * Get the group that the sample belongs to.
+     *
      * @param sampleId Id of the sample.
      * @return group id to which this sample belongs to.
      */
     public String getGroup(String sampleId) {
-      return sampleToGroupMap.get(sampleId);
+        return sampleToGroupMap.get(sampleId);
     }
-    
+
     public DifferentialExpressionResults compare(DifferentialExpressionResults results,
                                                  final NormalizationMethod method,
                                                  final StatisticCalculator tester,
@@ -320,6 +332,7 @@ public class DifferentialExpressionCalculator {
 
     /**
      * Returns the sample ids that belong to a group.
+     *
      * @param groupId Id of the group.
      * @return The set of samples that belong to group
      */

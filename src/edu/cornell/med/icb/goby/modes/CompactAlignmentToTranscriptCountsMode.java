@@ -135,6 +135,8 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
         if (doComparison) {
             deAnalyzer.parseCompare(compare);
         }
+        boolean parallel = jsapResult.getBoolean("parallel", false);
+        deAnalyzer.setRunInParallel(parallel);
         normalizationMethods = deAnalyzer.parseNormalization(jsapResult);
         CompactAlignmentToAnnotationCountsMode.parseEval(jsapResult, deAnalyzer);
         return this;
