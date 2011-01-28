@@ -38,13 +38,17 @@ public class IterateSortedAlignmentsToPileup extends IterateSortedAlignmentsList
     private ObjectList<Sequence> sequenceBuffers = new ObjectArrayList<Sequence>();
     private IntArrayList alignmentQueryIndices = new IntArrayList();
     private int priorPosition;
-    private int flapStartSize;
+    private int startFlapStart;
+    // set isPrintIds to facilitate debugging and visual comparisons of sequences in an IDE. 
+    private boolean isPrintIds = true;
 
     private class Sequence {
         String basename;
         int alignmentQueryIndex;
         MutableString bases = new MutableString();
     }
+
+    int maxVariationLength = -1;
 
     public void processPositions(int referenceIndex, int position, ObjectArrayList<PositionBaseInfo2> positionBaseInfos) {
 
@@ -56,6 +60,7 @@ public class IterateSortedAlignmentsToPileup extends IterateSortedAlignmentsList
                 sequenceBuffers.get(bufferIndex).bases.append(//info.position + ":" +
                         ".");
             } else {
+            maxVariationLength=Math.max(info.variationLength, maxVariationLength);
                 sequenceBuffers.get(bufferIndex).bases.append(//info.position + ":" +
                         info.to
                         //                + " "
@@ -85,8 +90,8 @@ public class IterateSortedAlignmentsToPileup extends IterateSortedAlignmentsList
     public void initialize(PrintWriter outWriter, String basenameIds[], int flapStartSize) {
         this.outWriter = outWriter;
         this.basenameIds = basenameIds;
-        this.flapStartSize = flapStartSize;
-
+        this.startFlapStart = flapStartSize;
+        maxVariationLength = -1;
     }
 
     public void finish() {
@@ -97,11 +102,16 @@ public class IterateSortedAlignmentsToPileup extends IterateSortedAlignmentsList
             for (Sequence seq : sequenceBuffers) {
                 if (seq.basename.equals(basename)) {
                     final MutableString bases = sequenceBuffers.get(i).bases;
-                    if (bases.length() > flapStartSize) {
-                        outWriter.print(String.format(">%s read %d\n%s%n",
-                                AlignmentReader.getBasename(seq.basename), seq.alignmentQueryIndex,
-
-                                bases.substring(flapStartSize)));
+                    if (bases.length() > startFlapStart) {
+                        String id = String.format(">%s read %d\n",
+                                AlignmentReader.getBasename(seq.basename),
+                                seq.alignmentQueryIndex);
+                        // we remove the bases from 0 to the end of the flap, just before the longest
+                        // variation we have seen in this window. This will always include the variation of
+                        // interest in the printed window, and will make sure we show all the bases of the
+                        // variations that overlap this window.
+                        outWriter.print(String.format("%s%s%n", isPrintIds ? id : "",
+                                bases.substring(startFlapStart - maxVariationLength)));
                     }
                 }
                 i++;

@@ -62,7 +62,7 @@ public abstract class IterateSortedAlignmentsListImpl2
         info.matchesReference = false;
         info.position = currentRefPosition;
         info.alignmentEntryQueryIndex = alignmentEntry.getQueryIndex();
-
+        info.variationLength=Math.max(var.getFrom().length(), var.getTo().length());
         addToFuture(positionToBases, info);
     }
 
@@ -87,6 +87,7 @@ public abstract class IterateSortedAlignmentsListImpl2
         public char to;
         public int position;
         public int alignmentEntryQueryIndex;
+        public int variationLength;
     }
 
 }

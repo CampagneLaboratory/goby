@@ -1,4 +1,7 @@
 1.9.1 -> development
+ - Added a mode to display aligned reads for a region of the reference sequences. The reads are written
+   in fasta format, suitable for viewing with a sequence alignment viewer such as JalView, CINEMA, etc.
+   The mode is called alignment-to-pileup.
  - ConcatenateAlignmentReader would consume excessive amounts of memory when several large alignments
    (e.g., with >100 million reads) were concatenated. The reader was trying to allocate very large queryLength
    arrays, even though each underlying reader indicated that it its entries carried the queryLength.
