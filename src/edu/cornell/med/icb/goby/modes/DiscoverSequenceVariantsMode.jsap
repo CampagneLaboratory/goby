@@ -36,11 +36,11 @@
             <help>The basenames of the input alignments</help>
         </unflaggedOption>
         <flaggedOption>
-                   <id>include-reference-names</id>
-                   <shortFlag>r</shortFlag>
-                   <longFlag>include-reference-names</longFlag>
-                   <required>false</required>
-                   <help>When provided, process only reference identifiers listed in this comma separated list. To process only chromosome 19 and 1, if sequences are identified by 1 and 19, use: --include-reference-names 1,19</help>
+            <id>include-reference-names</id>
+            <shortFlag>r</shortFlag>
+            <longFlag>include-reference-names</longFlag>
+            <required>false</required>
+            <help>When provided, process only reference identifiers listed in this comma separated list. To process only chromosome 19 and 1, if sequences are identified by 1 and 19, use: --include-reference-names 1,19</help>
         </flaggedOption>
         <flaggedOption>
             <id>groups</id>
@@ -90,6 +90,16 @@
             <required>false</required>
             <help>The end position within the file, which should be number of bytes into the file to end reading from, or a string in the format ref-id,ref-position (since Goby 1.9). Only entries that occur before the specified position are analyzed.</help>
         </flaggedOption>
+        <flaggedOption>
+            <id>start-flap-size</id>
+
+            <longFlag>start-flap-size</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>Size of the flap to consider before start-position (in bp). Reads that start within start-flap and start are used to accumulate base counts. Base counts are used to emit statistics between start and end, but not between start-flap and start. This strategy makes is possible to concatenate results from distinct windows without reporting redundant results.</help>
+        </flaggedOption>
          <flaggedOption>
              <id>variation-stats</id>
              <shortFlag>v</shortFlag>
@@ -126,5 +136,10 @@
             </defaults>
             <help>The minimum number of distinct read indices that support a variation for this variation to be considered for statistical test. </help>
         </flaggedOption>
+         <switch>
+            <id>parallel</id>
+            <longFlag>parallel</longFlag>
+            <help>Run some computations in parallel. You can tune the number of processors used by setting the property pj.nt. For instance, -Dpj.nt=5 will use 5 parallel threads. When --parallel is specified, one thread per processing core of the machine will be used unless specified otherwise (with pj.nt).</help>
+        </switch>
     </parameters>
 </jsap>

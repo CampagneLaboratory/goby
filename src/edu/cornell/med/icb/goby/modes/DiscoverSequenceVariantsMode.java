@@ -73,8 +73,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     private int thresholdDistinctReadIndices = 3;
     private int minimumVariationSupport = 10;
     private PrintWriter outWriter;
-    private boolean fisherRInstalled;
-    private int currentReferenceIndex;
+
     private String[] groups;
     /**
      * The maximum value of read index, indexed by readerIndex;
@@ -117,6 +116,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         final String compare = jsapResult.getString("compare");
 
         deAnalyzer.parseCompare(compare);
+        boolean parallel = jsapResult.getBoolean("parallel", false);
+        deAnalyzer.setRunInParallel(parallel);
         Map<String, String> sampleToGroupMap = deCalculator.getSampleToGroupMap();
         readerIndexToGroupIndex = new int[inputFilenames.length];
 
@@ -154,6 +155,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
 
         sortedPositionIterator = new DiscoverVariantIterateSortedAlignments();
+        int startFlapSize = jsapResult.getInt("start-flap-size");;
+        sortedPositionIterator.setStartFlapLength(startFlapSize);
         sortedPositionIterator.parseIncludeReferenceArgument(jsapResult);
         sortedPositionIterator.setReaderIndexToGroupIndex(readerIndexToGroupIndex);
         sortedPositionIterator.setMinimumVariationSupport(minimumVariationSupport);
@@ -311,7 +314,9 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
      * @throws java.io.IOException error parsing or executing.
      */
     public static void main(final String[] args) throws JSAPException, IOException {
+
         new DiscoverSequenceVariantsMode().configure(args).execute();
+        System.exit(0);
     }
 
 }
