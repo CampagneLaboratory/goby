@@ -25,6 +25,9 @@ import it.unimi.dsi.lang.MutableString;
 
 import java.io.PrintWriter;
 
+import edu.cornell.med.icb.goby.modes.AlignmentToPileupMode;
+import org.apache.commons.io.FilenameUtils;
+
 /**
  * @author Fabien Campagne
  *         Date: Jan 28, 2011
@@ -60,7 +63,7 @@ public class IterateSortedAlignmentsToPileup extends IterateSortedAlignmentsList
                 sequenceBuffers.get(bufferIndex).bases.append(//info.position + ":" +
                         ".");
             } else {
-            maxVariationLength=Math.max(info.variationLength, maxVariationLength);
+                maxVariationLength = Math.max(info.variationLength, maxVariationLength);
                 sequenceBuffers.get(bufferIndex).bases.append(//info.position + ":" +
                         info.to
                         //                + " "
@@ -94,7 +97,7 @@ public class IterateSortedAlignmentsToPileup extends IterateSortedAlignmentsList
         maxVariationLength = -1;
     }
 
-    public void finish() {
+    public void finish(AlignmentToPileupMode.OutputFormat outputFormat) {
         // write alignment to output, reads are grouped by basename.
 
         for (String basename : basenameIds) {
@@ -103,15 +106,34 @@ public class IterateSortedAlignmentsToPileup extends IterateSortedAlignmentsList
                 if (seq.basename.equals(basename)) {
                     final MutableString bases = sequenceBuffers.get(i).bases;
                     if (bases.length() > startFlapStart) {
-                        String id = String.format(">%s read %d\n",
-                                AlignmentReader.getBasename(seq.basename),
-                                seq.alignmentQueryIndex);
+
                         // we remove the bases from 0 to the end of the flap, just before the longest
                         // variation we have seen in this window. This will always include the variation of
                         // interest in the printed window, and will make sure we show all the bases of the
                         // variations that overlap this window.
-                        outWriter.print(String.format("%s%s%n", isPrintIds ? id : "",
-                                bases.substring(startFlapStart - maxVariationLength)));
+                        final String shortBasename = FilenameUtils.getBaseName(AlignmentReader.getBasename(seq.basename));
+                        final MutableString clippedBases = bases.substring(startFlapStart - maxVariationLength);
+                        switch (outputFormat) {
+                            case FASTA: {
+                                String id = String.format(">%s read %d\n",
+                                        shortBasename,
+                                        seq.alignmentQueryIndex);
+                                outWriter.print(String.format("%s%s%n", isPrintIds ? id : "",
+                                        clippedBases));
+                                break;
+                            }
+                            case ONE_PER_LINE: {
+                                String id = String.format("%s/%d",
+                                        shortBasename,
+                                        seq.alignmentQueryIndex);
+                                outWriter.print(String.format("%#50s %s%n",
+                                        id, clippedBases));
+                                break;
+                            }
+                            default:
+                                System.err.println("unsupported format" + outputFormat);
+                                System.exit(1);
+                        }
                     }
                 }
                 i++;

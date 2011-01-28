@@ -22,23 +22,8 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 
 import java.io.*;
-import java.util.Map;
-import java.util.Collections;
-import java.util.Comparator;
 
 import edu.cornell.med.icb.goby.alignments.*;
-import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
-import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
-import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.SequenceVariationPool;
-import edu.cornell.med.icb.goby.R.GobyRengine;
-import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import edu.cornell.med.icb.io.TSVReader;
-import it.unimi.dsi.fastutil.objects.*;
-import it.unimi.dsi.fastutil.ints.*;
-import it.unimi.dsi.lang.MutableString;
-import org.rosuda.JRI.Rengine;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -56,7 +41,7 @@ public class AlignmentToPileupMode extends AbstractGobyMode {
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION =
-            "This mode writes a region of an alignment as a sequence alignemnt in FASTA or other format. (Since Goby 1.9.2).";
+            "This mode writes a region of an alignment as a sequence alignemnt in FASTA or other outputFormat. (Since Goby 1.9.2).";
 
     private static final Logger LOG = Logger.getLogger(AlignmentToPileupMode.class);
     private String[] inputFilenames;
@@ -85,6 +70,12 @@ public class AlignmentToPileupMode extends AbstractGobyMode {
         return MODE_DESCRIPTION;
     }
 
+    OutputFormat outputFormat;
+
+    public enum OutputFormat {
+        FASTA,
+        ONE_PER_LINE
+    }
 
     /**
      * Configure.
@@ -102,7 +93,7 @@ public class AlignmentToPileupMode extends AbstractGobyMode {
 
         outputFile = jsapResult.getString("output");
         outWriter = "-".equals(outputFile) ? new PrintWriter(System.out) : new PrintWriter(outputFile);
-
+        outputFormat = OutputFormat.valueOf(jsapResult.getString("format").toUpperCase());
         readerIndexToGroupIndex = new int[inputFilenames.length];
 
         sortedPositionIterator = new IterateSortedAlignmentsToPileup();
@@ -114,7 +105,6 @@ public class AlignmentToPileupMode extends AbstractGobyMode {
     }
 
     IterateSortedAlignmentsToPileup sortedPositionIterator;
-
 
 
     /**
@@ -135,8 +125,9 @@ public class AlignmentToPileupMode extends AbstractGobyMode {
 
 
         sortedPositionIterator.initialize(outWriter, inputFilenames, startFlapSize);
+
         sortedPositionIterator.iterate(basenames);
-        sortedPositionIterator.finish();
+        sortedPositionIterator.finish(outputFormat);
         outWriter.close();
     }
 

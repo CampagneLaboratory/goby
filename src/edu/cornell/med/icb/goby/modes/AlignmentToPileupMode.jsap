@@ -24,7 +24,7 @@
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
             <required>false</required>
-               <defaults>
+            <defaults>
                 <string>-</string>
             </defaults>
             <help>The name of the output file.</help>
@@ -41,6 +41,16 @@
             <longFlag>include-reference-names</longFlag>
             <required>false</required>
             <help>When provided, process only reference identifiers listed in this comma separated list. To process only chromosome 19 and 1, if sequences are identified by 1 and 19, use: --include-reference-names 1,19</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>format</id>
+            <shortFlag>t</shortFlag>
+            <longFlag>format</longFlag>
+            <required>false</required>
+            <defaults>
+                <string>Fasta</string>
+            </defaults>
+            <help>Alignment format to write. Can be one of fasta, one_per_line</help>
         </flaggedOption>
       <flaggedOption>
             <id>start-position</id>
@@ -64,7 +74,6 @@
         </flaggedOption>
         <flaggedOption>
             <id>start-flap-size</id>
-
             <longFlag>start-flap-size</longFlag>
             <stringParser>
                 <classname>IntegerStringParser</classname>
