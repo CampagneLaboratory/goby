@@ -190,7 +190,6 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         final TransferIds transferIds = new TransferIds().invoke();
         final ReadSet readIndexFilter = transferIds.getReadIndexFilter();
         final AlignmentWriter writer = transferIds.getWriter();
-        assert largestQueryIndex > -1 : "largestQueryIndex must be set (set with --number-of-reads when running from command line).";
 
         targetIds.clear();
         targetIds.putAll(transferIds.getTargetIds());
@@ -218,10 +217,8 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
             qualityFilter = new PercentMismatchesQualityFilter();
             qualityFilter.setParameters(qualityFilterParameters);
 
-            writer.setSmallestSplitQueryIndex(smallestQueryIndex);
-            writer.setLargestSplitQueryIndex(largestQueryIndex);
-
             final int numAligns = scan(readIndexFilter, targetIds, writer, tmhWriter);
+
             System.out.println("Number of alignments written: " + numAligns);
             if (propagateQueryIds && !queryIds.isEmpty()) {
                 // we collected query ids, let's write them to the header:
@@ -231,6 +228,12 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
                 // we collected target ids, let's write them to the header:
                 writer.setTargetIdentifiers(targetIds);
             }
+
+
+            writer.setSmallestSplitQueryIndex(smallestQueryIndex);
+            assert largestQueryIndex > -1 : "largestQueryIndex must be set (set with --number-of-reads when running from command line).";
+
+            writer.setLargestSplitQueryIndex(largestQueryIndex);
 
 
         } finally {

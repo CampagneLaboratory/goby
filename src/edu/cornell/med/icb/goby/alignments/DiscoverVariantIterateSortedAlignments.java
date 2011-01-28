@@ -61,7 +61,7 @@ public class DiscoverVariantIterateSortedAlignments
     private DifferentialExpressionCalculator deCalculator;
     private int thresholdDistinctReadIndices = 10;
     private int[] readerIndexToGroupIndex;
-    private int minimumVariationSupport=3;
+    private int minimumVariationSupport = 3;
     private boolean fisherRInstalled;
 
     public void setMinimumVariationSupport(int minimumVariationSupport) {
@@ -89,6 +89,7 @@ public class DiscoverVariantIterateSortedAlignments
             //activate R only if we need it:
             final Rengine rEngine = GobyRengine.getInstance().getRengine();
             fisherRInstalled = rEngine != null && rEngine.isAlive();
+
         }
         if (deAnalyzer.eval("between-groups") && groups.length != 2) {
             System.err.println("--eval between-groups requires exactly two groups.");
@@ -182,64 +183,66 @@ public class DiscoverVariantIterateSortedAlignments
             for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
 
                 averageVariantQualityScore[groupIndex] /= variantsCount[groupIndex];
-                distinctReadIndexCount[groupIndex]=distinctReadIndices.size();
+                distinctReadIndexCount[groupIndex] = distinctReadIndices.size();
             }
 
             if (distinctReadIndices.size() >= thresholdDistinctReadIndices && sumVariantCounts > minimumVariationSupport) {
                 int groupIndexA = 0;
                 int groupIndexB = 1;
+                // Do not write statistics for positions in the start flap. The flap start is used to accumulate
+                // base counts for reads that can overlap with the window under consideration.
 
-                CharSequence currentReferenceId = this.getReferenceId(referenceIndex);
+                if (!isWithinStartFlap(referenceIndex, position)) {
+                    CharSequence currentReferenceId = this.getReferenceId(referenceIndex);
 
-                statWriter.setValue(refIdColumnIndex, currentReferenceId);
-                statWriter.setValue(positionColumnIndex, position+1);
+                    statWriter.setValue(refIdColumnIndex, currentReferenceId);
+                    statWriter.setValue(positionColumnIndex, position + 1);
 
+                    if (deAnalyzer.eval("between-groups")) {
+                        final double denominator = (double) refCounts[groupIndexA] * (double) variantsCount[groupIndexB];
+                        double oddsRatio = denominator == 0 ? 1 :
+                                ((double) refCounts[groupIndexB] *
+                                        (double) variantsCount[groupIndexA]) / denominator;
+                        double fisherP = Double.NaN;
 
-                if (deAnalyzer.eval("between-groups")) {
-                    final double denominator = (double) refCounts[groupIndexA] * (double) variantsCount[groupIndexB];
-                    double oddsRatio = denominator == 0 ? 1 :
-                            ((double) refCounts[groupIndexB] *
-                                    (double) variantsCount[groupIndexA]) / denominator;
-                    double fisherP = Double.NaN;
+                        boolean ok = checkCounts();
+                        if (ok) {
+                            fisherP = fisherRInstalled ? FisherExactRCalculator.getFisherPValue(
+                                    refCounts[groupIndexB], variantsCount[groupIndexB],
+                                    refCounts[groupIndexA], variantsCount[groupIndexA]) : Double.NaN;
+                        } else {
+                            System.err.printf("An exception was caught evaluating the Fisher Exact test P-value. Details are provided below%n" +
+                                    "referenceId=%s referenceIndex=%d position=%d %n" +
+                                    "refCounts[1]=%d variantsCount[1]=%d%n" +
+                                    "refCounts[0]=%d, variantsCount[0]=%d",
+                                    currentReferenceId, referenceIndex,
+                                    position + 1,
+                                    refCounts[groupIndexB], variantsCount[groupIndexB],
+                                    refCounts[groupIndexA], variantsCount[groupIndexA]
+                            );
 
-                    boolean ok = checkCounts();
-                    if (ok) {
-                        fisherP = fisherRInstalled ? FisherExactRCalculator.getFisherPValue(
-                                refCounts[groupIndexB], variantsCount[groupIndexB],
-                                refCounts[groupIndexA], variantsCount[groupIndexA]) : Double.NaN;
-                    } else {
-                        System.err.printf("An exception was caught evaluating the Fisher Exact test P-value. Details are provided below%n" +
-                                "referenceId=%s referenceIndex=%d position=%d %n" +
-                                "refCounts[1]=%d variantsCount[1]=%d%n" +
-                                "refCounts[0]=%d, variantsCount[0]=%d",
-                                currentReferenceId, referenceIndex,
-                                position+1,
-                                refCounts[groupIndexB], variantsCount[groupIndexB],
-                                refCounts[groupIndexA], variantsCount[groupIndexA]
-                        );
+                        }
+                        statWriter.setValue(oddsRatioColumnIndex, oddsRatio);
+                        statWriter.setValue(fisherExactPValueColumnIndex, fisherP);
 
                     }
-                    statWriter.setValue(oddsRatioColumnIndex, oddsRatio);
-                    statWriter.setValue(fisherExactPValueColumnIndex, fisherP);
 
-                }
+                    for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
+                        statWriter.setValue(refCounts[groupIndex], "refCounts[%s]", groups[groupIndex]);
+                        statWriter.setValue(variantsCount[groupIndex], "varCount[%s]", groups[groupIndex]);
+                        statWriter.setValue(distinctReadIndexCount[groupIndex], "distinct-read-index-count[%s]", groups[groupIndex]);
+                        statWriter.setValue(averageVariantQualityScore[groupIndex], "average-variant-quality-scores[%s]", groups[groupIndex]);
 
-                for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
-                    statWriter.setValue(refCounts[groupIndex], "refCounts[%s]", groups[groupIndex]);
-                    statWriter.setValue(variantsCount[groupIndex], "varCount[%s]", groups[groupIndex]);
-                    statWriter.setValue(distinctReadIndexCount[groupIndex], "distinct-read-index-count[%s]", groups[groupIndex]);
-                    statWriter.setValue(averageVariantQualityScore[groupIndex], "average-variant-quality-scores[%s]", groups[groupIndex]);
-
-                    if (deAnalyzer.eval("within-groups")) {
-                        statWriter.setValue(estimateWithinGroupDiscoveryPalue(position, groupIndex, list, variantsCount, refCounts),
-                                "within-group-p-value[%s]", groups[groupIndex]);
+                        if (deAnalyzer.eval("within-groups")) {
+                            statWriter.setValue(estimateWithinGroupDiscoveryPalue(position, groupIndex, list, variantsCount, refCounts),
+                                    "within-group-p-value[%s]", groups[groupIndex]);
+                        }
+                        summarizeVariations(statWriter, list, groupIndex);
                     }
-                    summarizeVariations(statWriter, list, groupIndex);
-                }
 
 
-                statWriter.writeRecord();
-
+                    statWriter.writeRecord();
+                } 
             }
 
 

@@ -226,7 +226,7 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
         }
 
         public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
-                                       Int2ObjectMap<CountsAtPosition> positionToBases,
+                                       Alignments.AlignmentEntry alignmentEntry, Int2ObjectMap<CountsAtPosition> positionToBases,
                                        Alignments.SequenceVariation var,
                                        char toChar, char fromChar, int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
 

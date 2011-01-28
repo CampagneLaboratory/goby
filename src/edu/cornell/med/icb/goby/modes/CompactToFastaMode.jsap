@@ -134,5 +134,26 @@
             </defaults>
             <help>The encoding for quality scores. The default quality encoding is that used by the Illumina pipeline 1.3+</help>
         </flaggedOption>
+        <flaggedOption>
+            <id>start-position</id>
+            <shortFlag>s</shortFlag>
+            <longFlag>start-position</longFlag>
+            <stringParser>
+                <classname>LongStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The start position within the file, which should be number of bytes into the file to start reading from. The read will actually start at the first record on or after start-position.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>end-position</id>
+            <shortFlag>e</shortFlag>
+            <longFlag>end-position</longFlag>
+            <stringParser>
+                <classname>LongStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The end position within the file, which should be number of bytes into the file to end reading from. The read will actually end at the end of the record on or after end-position.</help>
+        </flaggedOption>
+        
     </parameters>
 </jsap>

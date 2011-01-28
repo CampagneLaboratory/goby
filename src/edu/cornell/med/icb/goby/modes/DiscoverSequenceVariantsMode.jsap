@@ -95,7 +95,7 @@
 
             <longFlag>start-flap-size</longFlag>
             <stringParser>
-                <classname>StringStringParser</classname>
+                <classname>IntegerStringParser</classname>
             </stringParser>
             <required>false</required>
             <help>Size of the flap to consider before start-position (in bp). Reads that start within start-flap and start are used to accumulate base counts. Base counts are used to emit statistics between start and end, but not between start-flap and start. This strategy makes is possible to concatenate results from distinct windows without reporting redundant results.</help>

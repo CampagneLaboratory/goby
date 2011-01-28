@@ -74,6 +74,9 @@ public class CompactToFastaMode extends AbstractGobyMode {
 
     private int largestQueryIndex = Integer.MIN_VALUE;
     private boolean processPairs;
+    private boolean hasStartOrEndPosition;
+    private long startPosition;
+    private long endPosition;
 
     public int getSmallestQueryIndex() {
         return smallestQueryIndex;
@@ -223,6 +226,16 @@ public class CompactToFastaMode extends AbstractGobyMode {
         qualityEncoding =
                 QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase(Locale.getDefault()));
 
+        if (jsapResult.contains("start-position") || jsapResult.contains("end-position")) {
+            hasStartOrEndPosition = true;
+            startPosition = jsapResult.getLong("start-position", 0L);
+            endPosition = jsapResult.getLong("end-position", Long.MAX_VALUE);
+            if (startPosition==0 && endPosition==0) {
+                // whole file.
+                hasStartOrEndPosition=false;
+            }
+        }
+
         return this;
     }
 
@@ -320,7 +333,12 @@ public class CompactToFastaMode extends AbstractGobyMode {
             final MutableString sequence = new MutableString();
             final MutableString sequencePair = new MutableString();
 
-            reader = new ReadsReader(new FileInputStream(inputFilename));
+            if (hasStartOrEndPosition) {
+                reader = new ReadsReader(startPosition, endPosition, inputFilename);
+            } else {
+                reader = new ReadsReader(inputFilename);
+            }
+
             for (final Reads.ReadEntry readEntry : reader) {
                 if (readIndexFilter == null || readIndexFilter.contains(readEntry.getReadIndex())) {
                     final String description;

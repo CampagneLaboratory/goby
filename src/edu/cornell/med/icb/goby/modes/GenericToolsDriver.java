@@ -120,7 +120,7 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
      *
      * @param argsVal the arguments
      * @return this object for chaining
-     * @throws IOException error parsing arguments
+     * @throws IOException   error parsing arguments
      * @throws JSAPException error parsing arguments
      */
     @Override
@@ -140,6 +140,7 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
     /**
      * Removes any "special" options from being displayed.  In this case,
      * these are help strings that are only useful with modes.
+     *
      * @param jsapVal the JSAP as configured
      */
     private void unregisterFormattedHelp(final JSAP jsapVal) {
@@ -176,6 +177,7 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
         } catch (InstantiationException e) {
             caught = e;
         } catch (OutOfMemoryError e) {
+            e.printStackTrace();
             System.err.println(
                     "\n!!\n"
                             + "!! An out of memory exception was thrown."

@@ -58,6 +58,17 @@ public abstract class IterateSortedAlignments<T> {
     private int numAlignmentEntries;
     private String startOffsetArgument;
     private String endOffsetArgument;
+    private int startFlapLength;
+
+    /**
+     * Set the length of the start flap. If length is larger than zero, the iterator will start reading at position
+     * start - length.
+     *
+     * @param length Length of the start flap.
+     */
+    public void setStartFlapLength(int length) {
+        this.startFlapLength = length;
+    }
 
     /**
      * Parse the string of reference sequences to process during the iteration. The JSAP
@@ -93,6 +104,27 @@ public abstract class IterateSortedAlignments<T> {
         return numAlignmentEntries;
     }
 
+    protected int startPosition;
+    protected int endPosition;
+    protected int startReferenceIndex;
+    protected int endReferenceIndex;
+
+    /**
+     * Determine if a position is within the start flap (defined by startFlapLength and the slice start position).
+     * @param referenceIndex  Index of the reference sequence for the position.
+     * @param position Position within the sequence identified by referenceIndex
+     * @return True if a position is in the flap, false otherwise.
+     */
+    public boolean isWithinStartFlap(int referenceIndex, int position) {
+        if (referenceIndex == startReferenceIndex) {
+            if (position < startPosition - startFlapLength) {
+                System.out.println("returning flap true");
+                System.out.println("returning flap true");
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Iterate through a set of alignments. Iterations are performed through these steps:
@@ -142,10 +174,7 @@ public abstract class IterateSortedAlignments<T> {
                 referencesToProcess.add(referenceIndex);
             }
         }
-        int startPosition;
-        int endPosition;
-        int startReferenceIndex;
-        int endReferenceIndex;
+
         sortedReaders = null;
         try {
             if (StringUtils.isEmpty(startOffsetArgument) && StringUtils.isEmpty(endOffsetArgument)) {
@@ -155,14 +184,16 @@ public abstract class IterateSortedAlignments<T> {
                 final String[] endTokens = endOffsetArgument.split("[,]");
                 startPosition = Integer.parseInt(startTokens[1]);
                 endPosition = Integer.parseInt(endTokens[1]);
+
                 startReferenceIndex = referenceIds.getIndex(startTokens[0]);
                 endReferenceIndex = referenceIds.getIndex(endTokens[0]);
-                sortedReaders = new ConcatSortedAlignmentReader(basenames, startReferenceIndex, startPosition,
+                sortedReaders = new ConcatSortedAlignmentReader(basenames, startReferenceIndex,
+                        Math.max(0, startPosition - startFlapLength),
                         endReferenceIndex,
                         endPosition);
                 // adjust referenceIndex to contain only integers between start and end (inclusive):
-                for (int referenceIndex=0; referenceIndex<referencesToProcess.size(); referenceIndex++) {
-                    if (referenceIndex<startReferenceIndex || referenceIndex>endReferenceIndex) {
+                for (int referenceIndex = 0; referenceIndex < referencesToProcess.size(); referenceIndex++) {
+                    if (referenceIndex < startReferenceIndex || referenceIndex > endReferenceIndex) {
                         referencesToProcess.rem(referenceIndex);
                     }
                 }
@@ -171,7 +202,7 @@ public abstract class IterateSortedAlignments<T> {
             System.err.println("An error occured parsing --start-position or --end-position. These arguments expect \n" +
                     "a string in the format ref-id,ref-position, where ref-id is a reference identifier \n" +
                     "string and ref-position in an integer that encodes a position within the reference sequence.");
-            System.exit(1);
+            throw e;
         }
 
 
@@ -249,7 +280,7 @@ public abstract class IterateSortedAlignments<T> {
 
                         }
 
-                        observeVariantBase(sortedReaders, positionToBases,
+                        observeVariantBase(sortedReaders, alignmentEntry, positionToBases,
                                 var,
                                 toChar, fromChar,
                                 referenceIndex, currentRefPosition, currentReadIndex);
@@ -367,7 +398,7 @@ public abstract class IterateSortedAlignments<T> {
                                               int currentReferenceIndex, int currentRefPosition, int currentReadIndex);
 
     public abstract void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
-                                            Int2ObjectMap<T> positionToBases,
+                                            Alignments.AlignmentEntry alignmentEntry, Int2ObjectMap<T> positionToBases,
                                             Alignments.SequenceVariation var,
                                             char toChar, char fromChar,
                                             int currentReferenceIndex, int currentRefPosition, int currentReadIndex);

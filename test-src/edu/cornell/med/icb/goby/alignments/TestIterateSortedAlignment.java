@@ -176,7 +176,7 @@ public class TestIterateSortedAlignment {
 
             @Override
             public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
-                                           Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
+                                           Alignments.AlignmentEntry alignmentEntry, Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
                                            Alignments.SequenceVariation var, char toChar, char fromChar,
                                            int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
                 variantReadIndices.add(currentReadIndex);
@@ -235,7 +235,7 @@ public class TestIterateSortedAlignment {
 
             @Override
             public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
-                                           Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
+                                           Alignments.AlignmentEntry alignmentEntry, Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
                                            Alignments.SequenceVariation var, char toChar, char fromChar,
                                            int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
                 variantReadIndices.add(currentReadIndex);
@@ -394,7 +394,7 @@ public class TestIterateSortedAlignment {
 
         IterateSortedAlignmentsListImpl iterator = new IterateSortedAlignmentsListImpl() {
             @Override
-            public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders, Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases, Alignments.SequenceVariation var, char toChar, char fromChar, int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
+            public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders, Alignments.AlignmentEntry alignmentEntry, Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases, Alignments.SequenceVariation var, char toChar, char fromChar, int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
                 variantReadIndices.add(currentReadIndex);
             }
 

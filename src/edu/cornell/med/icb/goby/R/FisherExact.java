@@ -54,7 +54,7 @@ public final class FisherExact {
     private static final Log LOG = LogFactory.getLog(FisherExact.class);
 
     /**
-     * Error string indicating R was able to execute the fisher test.
+     * Error string indicating R was not able to execute the fisher test.
      */
     private static final String R_NOT_AVAILABLE = "R is not available.";
 

@@ -51,7 +51,7 @@ public abstract class IterateSortedAlignmentsListImpl
 
 
     public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
-                                   Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
+                                   Alignments.AlignmentEntry alignmentEntry, Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
                                    Alignments.SequenceVariation var,
                                    char toChar, char fromChar, int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
 

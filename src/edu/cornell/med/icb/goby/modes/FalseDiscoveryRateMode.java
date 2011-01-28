@@ -106,7 +106,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
 
 
     /**
-     * Suggests slices to process a large alignment file in parallel.
+     * Combine tab delimited files and adjusts P-values for multiple testing. 
      *
      * @throws java.io.IOException error reading / writing
      */

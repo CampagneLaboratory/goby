@@ -27,8 +27,8 @@ import java.io.IOException;
 
 /**
  * @author Fabien Campagne
- * Date: Apr 7, 2009
- * Time: 5:18:28 PM
+ *         Date: Apr 7, 2009
+ *         Time: 5:18:28 PM
  */
 public class GobyDriver extends GenericToolsDriver {
     /**
@@ -49,8 +49,16 @@ public class GobyDriver extends GenericToolsDriver {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Running with: " + ArrayUtils.toString(args));
         }
+        int status = 0;
+        try {
+            new GobyDriver().configure(args).execute();
+            status = 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            status = 1;
+        } finally {
+            System.exit(status);
+        }
 
-        new GobyDriver().configure(args).execute();
-        System.exit(0);
     }
 }
