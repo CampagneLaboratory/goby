@@ -1,9 +1,11 @@
 1.9.1 -> development
- - ConcatenateAlignmentReader would cause OutOfMemory exceptions when several (e.g., 4) alignments
-   with >100 million reads were concatenated. The reader was trying to allocate very large queryLength
+ - ConcatenateAlignmentReader would consume excessive amounts of memory when several large alignments
+   (e.g., with >100 million reads) were concatenated. The reader was trying to allocate very large queryLength
    arrays, even though each underlying reader indicated that it its entries carried the queryLength.
    The fix consists in detecting that all the concatenated readers support queryLength in entries, and
-   not allocating these large arrays. 
+   not allocating these arrays at all. This is a major bug fix that makes makes it possible to run more
+   instances of goby modes on the same server (i.e., differential expression and sequence variant discovery
+   modes have significantly improved memory usage).
  - Mode sam-extract-reads now supports an optional --quality-encoding argument. Default is BAM encoding.
  - QualityEncoding now supports BAM encoding (no offset or adjustment, the value of the character in
    ascii is the Phred score).
