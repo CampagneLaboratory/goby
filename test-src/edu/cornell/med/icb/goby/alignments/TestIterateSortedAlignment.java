@@ -18,21 +18,20 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import org.apache.commons.io.FilenameUtils;
+import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.Test;
-import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import java.io.IOException;
 import java.io.File;
-
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.ints.*;
+import java.io.IOException;
 
 /**
  * @author Fabien Campagne
@@ -176,9 +175,13 @@ public class TestIterateSortedAlignment {
 
             @Override
             public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
-                                           Alignments.AlignmentEntry alignmentEntry, Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
-                                           Alignments.SequenceVariation var, char toChar, char fromChar,
-                                           int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
+                                           Alignments.AlignmentEntry alignmentEntry,
+                                           Int2ObjectMap<ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo>> positionToBases,
+                                           Alignments.SequenceVariation var,
+                                           char toChar, char fromChar,
+                                           int currentReferenceIndex,
+                                           int currentRefPosition,
+                                           int currentReadIndex) {
                 variantReadIndices.add(currentReadIndex);
                 variantPositionOnRef.add(currentRefPosition);
             }
@@ -235,7 +238,8 @@ public class TestIterateSortedAlignment {
 
             @Override
             public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
-                                           Alignments.AlignmentEntry alignmentEntry, Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
+                                           Alignments.AlignmentEntry alignmentEntry,
+                                           Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
                                            Alignments.SequenceVariation var, char toChar, char fromChar,
                                            int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
                 variantReadIndices.add(currentReadIndex);
@@ -394,7 +398,15 @@ public class TestIterateSortedAlignment {
 
         IterateSortedAlignmentsListImpl iterator = new IterateSortedAlignmentsListImpl() {
             @Override
-            public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders, Alignments.AlignmentEntry alignmentEntry, Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases, Alignments.SequenceVariation var, char toChar, char fromChar, int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
+            public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
+                                           Alignments.AlignmentEntry alignmentEntry,
+                                           Int2ObjectMap<ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo>> positionToBases,
+                                           Alignments.SequenceVariation var,
+                                           char toChar, char fromChar,
+                                           int currentReferenceIndex,
+                                           int currentRefPosition,
+                                           int currentReadIndex) {
+
                 variantReadIndices.add(currentReadIndex);
             }
 
@@ -542,7 +554,7 @@ public class TestIterateSortedAlignment {
             @Override
             public void processPositions(int referenceIndex, int intermediatePosition, ObjectArrayList<PositionBaseInfo> positionBaseInfos) {
                 if (referenceIndex == 1) {
-             // record only reference 1 matches. 
+                    // record only reference 1 matches.
                     positionMap.put(intermediatePosition, positionBaseInfos.size());
                 }
                 System.out.printf("position: %d listSize: %d%n", referenceIndex, positionBaseInfos.size());

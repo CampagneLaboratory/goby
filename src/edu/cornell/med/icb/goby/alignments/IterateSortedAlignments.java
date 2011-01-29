@@ -392,16 +392,43 @@ public abstract class IterateSortedAlignments<T> {
         positionToBases.clear();
     }
 
+    /**
+     * Implement this call-back method to observe reference bases.
+     * @param sortedReaders The concat read that contains the variation.
+     * @param alignmentEntry The alignment entry that contains the variation
+     * @param positionToBases Map keyed by reference position, used to accumulate information for each position.
+     * @param currentReferenceIndex Index of the reference sequence where the variant occurs.
+     * @param currentRefPosition Position where the variant occurs in the reference.
+     * @param currentReadIndex Index in the read where the variant occurs.
+
+     */
     public abstract void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders,
                                               Alignments.AlignmentEntry alignmentEntry,
                                               Int2ObjectMap<T> positionToBases,
-                                              int currentReferenceIndex, int currentRefPosition, int currentReadIndex);
+                                              int currentReferenceIndex,
+                                              int currentRefPosition,
+                                              int currentReadIndex);
 
+    /**
+     * Implement this call-back method to observe variant bases.
+     * @param sortedReaders The concat read that contains the variation.
+     * @param alignmentEntry The alignment entry that contains the variation
+     * @param positionToBases Map keyed by reference position, used to accumulate information for each position.
+     * @param var The sequence variation from the alignment entry that triggered emiting this observation.
+     * @param toChar The base character in the read
+     * @param fromChar The base character in the reference.
+     * @param currentReferenceIndex Index of the reference sequence where the variant occurs.
+     * @param currentRefPosition Position where the variant occurs in the reference.
+     * @param currentReadIndex Index in the read where the variant occurs.
+     */
     public abstract void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
-                                            Alignments.AlignmentEntry alignmentEntry, Int2ObjectMap<T> positionToBases,
+                                            Alignments.AlignmentEntry alignmentEntry,
+                                            Int2ObjectMap<T> positionToBases,
                                             Alignments.SequenceVariation var,
                                             char toChar, char fromChar,
-                                            int currentReferenceIndex, int currentRefPosition, int currentReadIndex);
+                                            int currentReferenceIndex,
+                                            int currentRefPosition,
+                                            int currentReadIndex);
 
 
     public abstract void processPositions(int referenceIndex, int intermediatePosition, T positionBaseInfos);

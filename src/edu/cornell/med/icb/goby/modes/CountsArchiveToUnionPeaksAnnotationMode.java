@@ -66,7 +66,7 @@ public class CountsArchiveToUnionPeaksAnnotationMode extends AbstractGobyMode {
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION = "Write annotations corresponding "
-            + "to a consolidation of peaks accross each sequence in the count archives.";
+            + "to the union of peaks accross each sequence in the count archives.";
 
     /**
      * The input files. Must reduce to alignment basenames.

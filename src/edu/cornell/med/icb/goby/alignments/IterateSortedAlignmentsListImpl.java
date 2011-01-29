@@ -35,7 +35,7 @@ public abstract class IterateSortedAlignmentsListImpl
 
     public void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders,
                                      Alignments.AlignmentEntry alignmentEntry,
-                                     Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
+                                     Int2ObjectMap<ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo>> positionToBases,
                                      int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
         PositionBaseInfo info = new PositionBaseInfo();
         info.readerIndex = sortedReaders.activeIndex;
@@ -51,9 +51,13 @@ public abstract class IterateSortedAlignmentsListImpl
 
 
     public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
-                                   Alignments.AlignmentEntry alignmentEntry, Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
+                                   Alignments.AlignmentEntry alignmentEntry,
+                                   Int2ObjectMap<ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo>> positionToBases,
                                    Alignments.SequenceVariation var,
-                                   char toChar, char fromChar, int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
+                                   char toChar, char fromChar,
+                                   int currentReferenceIndex,
+                                   int currentRefPosition,
+                                   int currentReadIndex) {
 
         PositionBaseInfo info = new PositionBaseInfo();
         info.readerIndex = sortedReaders.activeIndex;
