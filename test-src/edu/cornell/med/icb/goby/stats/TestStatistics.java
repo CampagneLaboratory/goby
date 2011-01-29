@@ -256,8 +256,7 @@ public class TestStatistics {
                 list.getStatistic(info, foldChangeIndex), .1);
         assertTrue("T-test must be significant",
                 list.getStatistic(info1, tTest.statisticIds.get(0)) < 0.01);
-        assertTrue("fisher test must not be significant",
-                list.getStatistic(info1, fisher.statisticIds.get(0)) > 0.05);
+
     }
 
     @Test
