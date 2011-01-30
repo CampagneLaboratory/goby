@@ -27,14 +27,12 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
-
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-
-import org.apache.log4j.Logger;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * A helper class to iterate through a set of sorted alignments in position order. The class supports processing
@@ -85,6 +83,26 @@ public abstract class IterateSortedAlignments<T> {
     }
 
     /**
+     * Set the start position argument. The iterator will start iterating at the specified position.
+     * Format is either abolute byte position or ref-id,position-in-ref
+     *
+     * @param arg start position argument
+     */
+    public void setStartPositionArgument(String arg) {
+        startOffsetArgument = arg;
+    }
+
+    /**
+     * Set the end position argument. The iterator will stop iterating after the specified position.
+     * Format is either abolute byte position or ref-id,position-in-ref
+     *
+     * @param arg end position argument
+     */
+    public void setEndPositionArgument(String arg) {
+        endOffsetArgument = arg;
+    }
+
+    /**
      * Parse the string of reference sequences to include the iteration. The string must be a coma
      * separated list of reference identifiers.
      */
@@ -111,8 +129,9 @@ public abstract class IterateSortedAlignments<T> {
 
     /**
      * Determine if a position is within the start flap (defined by startFlapLength and the slice start position).
-     * @param referenceIndex  Index of the reference sequence for the position.
-     * @param position Position within the sequence identified by referenceIndex
+     *
+     * @param referenceIndex Index of the reference sequence for the position.
+     * @param position       Position within the sequence identified by referenceIndex
      * @return True if a position is in the flap, false otherwise.
      */
     public boolean isWithinStartFlap(int referenceIndex, int position) {
@@ -394,13 +413,13 @@ public abstract class IterateSortedAlignments<T> {
 
     /**
      * Implement this call-back method to observe reference bases.
-     * @param sortedReaders The concat read that contains the variation.
-     * @param alignmentEntry The alignment entry that contains the variation
-     * @param positionToBases Map keyed by reference position, used to accumulate information for each position.
+     *
+     * @param sortedReaders         The concat read that contains the variation.
+     * @param alignmentEntry        The alignment entry that contains the variation
+     * @param positionToBases       Map keyed by reference position, used to accumulate information for each position.
      * @param currentReferenceIndex Index of the reference sequence where the variant occurs.
-     * @param currentRefPosition Position where the variant occurs in the reference.
-     * @param currentReadIndex Index in the read where the variant occurs.
-
+     * @param currentRefPosition    Position where the variant occurs in the reference.
+     * @param currentReadIndex      Index in the read where the variant occurs.
      */
     public abstract void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders,
                                               Alignments.AlignmentEntry alignmentEntry,
@@ -411,15 +430,16 @@ public abstract class IterateSortedAlignments<T> {
 
     /**
      * Implement this call-back method to observe variant bases.
-     * @param sortedReaders The concat read that contains the variation.
-     * @param alignmentEntry The alignment entry that contains the variation
-     * @param positionToBases Map keyed by reference position, used to accumulate information for each position.
-     * @param var The sequence variation from the alignment entry that triggered emiting this observation.
-     * @param toChar The base character in the read
-     * @param fromChar The base character in the reference.
+     *
+     * @param sortedReaders         The concat read that contains the variation.
+     * @param alignmentEntry        The alignment entry that contains the variation
+     * @param positionToBases       Map keyed by reference position, used to accumulate information for each position.
+     * @param var                   The sequence variation from the alignment entry that triggered emiting this observation.
+     * @param toChar                The base character in the read
+     * @param fromChar              The base character in the reference.
      * @param currentReferenceIndex Index of the reference sequence where the variant occurs.
-     * @param currentRefPosition Position where the variant occurs in the reference.
-     * @param currentReadIndex Index in the read where the variant occurs.
+     * @param currentRefPosition    Position where the variant occurs in the reference.
+     * @param currentReadIndex      Index in the read where the variant occurs.
      */
     public abstract void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
                                             Alignments.AlignmentEntry alignmentEntry,

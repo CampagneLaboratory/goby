@@ -20,11 +20,12 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-
-import java.io.*;
-
-import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.IterateSortedAlignmentsToPileup;
 import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * This mode writes a region of an alignment as a sequence alignemnt in FASTA or other format.
@@ -72,6 +73,20 @@ public class AlignmentToPileupMode extends AbstractGobyMode {
 
     OutputFormat outputFormat;
 
+    public void setInputFilename(String basename1) {
+        inputFilenames = new String[]{basename1};
+    }
+
+    public void setOutputWriter(PrintWriter outWriter) {
+        this.outWriter = outWriter;
+    }
+
+    public void setFormat(OutputFormat format) {
+        outputFormat = format;
+    }
+
+    
+
     public enum OutputFormat {
         FASTA,
         ONE_PER_LINE
@@ -96,12 +111,20 @@ public class AlignmentToPileupMode extends AbstractGobyMode {
         outputFormat = OutputFormat.valueOf(jsapResult.getString("format").toUpperCase());
         readerIndexToGroupIndex = new int[inputFilenames.length];
 
-        sortedPositionIterator = new IterateSortedAlignmentsToPileup();
         startFlapSize = jsapResult.getInt("start-flap-size");
+        sortedPositionIterator = new IterateSortedAlignmentsToPileup();
         sortedPositionIterator.setStartFlapLength(startFlapSize);
         sortedPositionIterator.parseIncludeReferenceArgument(jsapResult);
 
         return this;
+    }
+
+    public void initializeIterator(String startPositionDefinition,String endPositionDefinition) {
+        sortedPositionIterator = new IterateSortedAlignmentsToPileup();
+        sortedPositionIterator.setStartFlapLength(startFlapSize);
+        sortedPositionIterator.setStartPositionArgument(startPositionDefinition);
+        sortedPositionIterator.setEndPositionArgument(endPositionDefinition);
+
     }
 
     IterateSortedAlignmentsToPileup sortedPositionIterator;
