@@ -155,7 +155,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
 
         sortedPositionIterator = new DiscoverVariantIterateSortedAlignments();
-        int startFlapSize = jsapResult.getInt("start-flap-size");;
+        int startFlapSize = jsapResult.getInt("start-flap-size",100);
         sortedPositionIterator.setStartFlapLength(startFlapSize);
         sortedPositionIterator.parseIncludeReferenceArgument(jsapResult);
         sortedPositionIterator.setReaderIndexToGroupIndex(readerIndexToGroupIndex);

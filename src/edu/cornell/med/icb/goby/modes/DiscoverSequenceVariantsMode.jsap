@@ -92,8 +92,10 @@
         </flaggedOption>
         <flaggedOption>
             <id>start-flap-size</id>
-
             <longFlag>start-flap-size</longFlag>
+            <defaults>
+                <string>1000</string>
+            </defaults>
             <stringParser>
                 <classname>IntegerStringParser</classname>
             </stringParser>
