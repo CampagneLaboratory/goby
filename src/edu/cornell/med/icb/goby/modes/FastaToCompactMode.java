@@ -39,6 +39,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.FileReader;
 import java.util.Properties;
+import java.util.List;
+import java.util.LinkedList;
 
 /**
  * Converts a <a href="http://en.wikipedia.org/wiki/FASTA_format">FASTA</a>
@@ -72,21 +74,23 @@ public class FastaToCompactMode extends AbstractGobyMode {
      * The files to convert to compact reads.
      */
     private String[] inputFilenames;
+    // The list version is used by the API with addInputFilename()
+    private List<String> inputFilenamesList = null;
 
     /**
      * The output file or basename of the output files if there is more than one input file.
      */
-    private String outputFile;
+    private String outputFilename;
 
     /**
      * Include descriptions in the compact output.
      */
-    private boolean includeDescriptions;
+    private boolean includeDescriptions = false;
 
     /**
      * Include identifiers in the compact output.
      */
-    private boolean includeIdentifiers;
+    private boolean includeIdentifiers = false;
 
     /**
      * The number of sequences that will be written in each compressed chunk. Th default is
@@ -98,20 +102,20 @@ public class FastaToCompactMode extends AbstractGobyMode {
     /**
      * Exclude sequence data from the compact output.
      */
-    private boolean excludeSequences;
+    private boolean excludeSequences = false;
 
     /**
      * Exclude quality scores from the compact output.
      */
-    private boolean excludeQuality;
-    private boolean verboseQualityScores;
+    private boolean excludeQuality = false;
+    private boolean verboseQualityScores = false;
 
-    private boolean parallel = true;
+    private boolean parallel = false;
 
-    private QualityEncoding qualityEncoding;
-    private boolean processPairs;
-    private String pairIndicator1;
-    private String pairIndicator2;
+    private QualityEncoding qualityEncoding = QualityEncoding.ILLUMINA;
+    private boolean processPairs = false;
+    private String pairIndicator1 = null;
+    private String pairIndicator2 = null;
     private File keyValuePairsFilename;
     private Properties keyValueProps;
 
@@ -136,6 +140,79 @@ public class FastaToCompactMode extends AbstractGobyMode {
     }
 
     /**
+     * Get the list of files (reads/alignments) to process.
+     *
+     * @return The list of files.
+     */
+    public String[] getInputFilenames() {
+        return inputFilenames;
+    }
+
+    /**
+     * Add the specified filename to the list of files to process.
+     *
+     * @param inputFilename The file to process
+     */
+    public synchronized void addInputFilename(final String inputFilename) {
+        if (inputFilenamesList == null) {
+            inputFilenamesList = new LinkedList<String>();
+        }
+        inputFilenamesList.add(inputFilename);
+        inputFilenames = inputFilenamesList.toArray(new String[inputFilenamesList.size()]);
+    }
+
+    public synchronized void clearInputFilenames() {
+        if (inputFilenamesList == null) {
+            inputFilenamesList = new LinkedList<String>();
+        } else {
+            inputFilenamesList.clear();
+        }
+        inputFilenames = new String[0];
+    }
+
+    /**
+     * Get the output filename. Only used when inputFilenames.length == 1.
+     * @return the output filename
+     */
+    public String getOutputFilename() {
+        return outputFilename;
+    }
+
+    /**
+     * Set the output filename. Only used when inputFilenames.length == 1.
+     * @param outputFilename the output filename
+     */
+    public void setOutputFilename(final String outputFilename) {
+        this.outputFilename = outputFilename;
+    }
+
+    /**
+     * Get the quality encoding scale used for the input fastq file.
+     * @return the quality encoding scale used for the input fastq file
+     */
+    public QualityEncoding getQualityEncoding() {
+        return qualityEncoding;
+    }
+
+    /**
+     * Set the quality encoding scale to be used for the input fastq file.
+     * Acceptable values are "Illumina", "Sanger", and "Solexa".
+     * @param qualityEncoding the quality encoding scale to be used for the input fastq file
+     */
+    public void setQualityEncoding(final QualityEncoding qualityEncoding) {
+        this.qualityEncoding = qualityEncoding;
+    }
+
+    /**
+     * Set the quality encoding scale to be used for the input fastq file.
+     * Acceptable values are "Illumina", "Sanger", and "Solexa".
+     * @param qualityEncoding the quality encoding scale to be used for the input fastq file
+     */
+    public void setQualityEncoding(final String qualityEncoding) {
+        this.qualityEncoding = QualityEncoding.valueOf(qualityEncoding.toUpperCase());
+    }
+
+    /**
      * Configure.
      *
      * @param args command line arguments
@@ -148,7 +225,6 @@ public class FastaToCompactMode extends AbstractGobyMode {
         final JSAPResult jsapResult = parseJsapArguments(args);
         parallel = jsapResult.getBoolean("parallel", false);
         inputFilenames = jsapResult.getStringArray("input");
-
         includeDescriptions = jsapResult.getBoolean("include-descriptions");
         includeIdentifiers = jsapResult.getBoolean("include-identifiers");
         excludeSequences = jsapResult.getBoolean("exclude-sequences");
@@ -156,7 +232,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
         verboseQualityScores = jsapResult.getBoolean("verbose-quality-scores");
         qualityEncoding = QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
         if (inputFilenames.length == 1) {
-            outputFile = jsapResult.getString("output");
+            outputFilename = jsapResult.getString("output");
         }
         sequencePerChunk = jsapResult.getInt("sequence-per-chunk");
         processPairs = jsapResult.getBoolean("paired-end");
@@ -234,8 +310,8 @@ public class FastaToCompactMode extends AbstractGobyMode {
     private void processOneFile(final int loopIndex, final int length, final String inputFilename,
                                 Properties keyValueProps) throws IOException {
         String outputFilename;
-        if (loopIndex == 0 && StringUtils.isNotBlank(outputFile)) {
-            outputFilename = outputFile;
+        if (loopIndex == 0 && StringUtils.isNotBlank(this.outputFilename)) {
+            outputFilename = this.outputFilename;
         } else {
             outputFilename = stripFastxExtensions(inputFilename) + ".compact-reads";
 
