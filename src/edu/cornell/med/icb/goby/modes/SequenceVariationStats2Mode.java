@@ -31,6 +31,7 @@ import edu.cornell.med.icb.goby.alignments.ConcatSortedAlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 
 /**
@@ -38,6 +39,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
  *         Date: Sep 8, 2010
  *         Time: 12:42:59 PM
  */
+
 /**
  * Evaluate statistics for sequence variations found in alignments. Alternative implementation with the IterateSortedAlignmentsHelper.
  *
@@ -53,6 +55,13 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION = "Evaluate statistics for sequence variations found in alignments. (alternative implementation.)";
+
+
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Logger LOG = Logger.getLogger(SequenceVariationStats2Mode.class);
+
 
     /**
      * The input filenames.
@@ -139,16 +148,16 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
                 // Iterate through each alignment and write sequence variations to output file:
                 iterator.iterate(singleBasename);
 
-                final int[] readIndexVariationTallies = iterator.getReadIndexVariationTally();
-                final int[] readIndexReferenceTallies = iterator.getReadIndexReferenceTally();
+                final long[] readIndexVariationTallies = iterator.getReadIndexVariationTally();
+                final long[] readIndexReferenceTallies = iterator.getReadIndexReferenceTally();
                 final double totalNumberOfVariationBases = sum(readIndexVariationTallies);
                 final double numberOfAlignmentEntries = iterator.getNumAlignmentEntries();
 
                 final long countReferenceBases = iterator.getReferenceBaseCount();
                 int maxReadIndex = iterator.getMaxReadIndex();
                 for (int readIndex = 1; readIndex < maxReadIndex + 1; readIndex++) {
-                    final int countVariationBasesAtReadIndex = readIndexVariationTallies[readIndex];
-                    final int countReferenceBasesAtReadIndex = readIndexReferenceTallies[readIndex];
+                    final long countVariationBasesAtReadIndex = readIndexVariationTallies[readIndex];
+                    final long countReferenceBasesAtReadIndex = readIndexReferenceTallies[readIndex];
                     final double frequency = ((double) countVariationBasesAtReadIndex) / totalNumberOfVariationBases;
                     final double alignFrequency = ((double) countVariationBasesAtReadIndex) / countReferenceBases;
 
@@ -170,9 +179,9 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
         }
     }
 
-    private double sum(final int[] intCollection) {
+    private double sum(final long[] intCollection) {
         double sum = 0;
-        for (final int value : intCollection) {
+        for (final long value : intCollection) {
             sum += value;
         }
         return sum;
@@ -195,14 +204,14 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
     }
 
     private class MyIterateSortedAlignments extends IterateSortedAlignments<CountsAtPosition> {
-        private int[] readIndexVariationTally;
-        private int[] readIndexReferenceTally;
-        private int referenceBaseCount;
+        private long[] readIndexVariationTally;
+        private long[] readIndexReferenceTally;
+        private long referenceBaseCount;
         private int maxReadIndex = -1;
 
         private MyIterateSortedAlignments() {
-            readIndexReferenceTally = new int[100000];
-            readIndexVariationTally = new int[100000];
+            readIndexReferenceTally = new long[100000];
+            readIndexVariationTally = new long[100000];
         }
 
         public void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders,
@@ -217,13 +226,14 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
                                          Int2ObjectMap<CountsAtPosition> positionToBases,
                                          int currentReferenceIndex, int currentRefPosition, int readIndex) {
             if (readIndex >= 1) {
-         //       assert readIndex > 0 : String.format("positionInMatch=%d %s %n", positionInMatch, alignmentEntry);
+                //       assert readIndex > 0 : String.format("positionInMatch=%d %s %n", positionInMatch, alignmentEntry);
                 maxReadIndex = Math.max(maxReadIndex, readIndex);
-                int count = readIndexReferenceTally[readIndex];
+                long count = readIndexReferenceTally[readIndex];
                 readIndexReferenceTally[readIndex] = count + 1;
                 referenceBaseCount += 1;
             }
         }
+
 
         public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
                                        Alignments.AlignmentEntry alignmentEntry, Int2ObjectMap<CountsAtPosition> positionToBases,
@@ -231,23 +241,27 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
                                        char toChar, char fromChar, int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
 
             maxReadIndex = Math.max(maxReadIndex, currentReadIndex);
-            int count = readIndexVariationTally[currentReadIndex];
-            readIndexVariationTally[currentReadIndex] = count + 1;
+            if (currentReadIndex < 1) {
+                LOG.warn("Detected and ignoring negative read index " + currentReadIndex);
+            } else {
+                long count = readIndexVariationTally[currentReadIndex];
+                readIndexVariationTally[currentReadIndex] = count + 1;
+            }
         }
 
         public void processPositions(int referenceIndex, int intermediatePosition, CountsAtPosition positionBaseInfos) {
 
         }
 
-        public int getReferenceBaseCount() {
+        public long getReferenceBaseCount() {
             return referenceBaseCount;
         }
 
-        public int[] getReadIndexVariationTally() {
+        public long[] getReadIndexVariationTally() {
             return readIndexVariationTally;
         }
 
-        public int[] getReadIndexReferenceTally() {
+        public long[] getReadIndexReferenceTally() {
             return readIndexReferenceTally;
         }
 
