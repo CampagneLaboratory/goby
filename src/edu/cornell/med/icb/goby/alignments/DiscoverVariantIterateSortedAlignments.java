@@ -278,8 +278,8 @@ public class DiscoverVariantIterateSortedAlignments
                 //                     readIndex);
                 continue;
             }
-            int variationBases = stats.countVariationBases[readIndex - 1];
-            int referenceBases = stats.countReferenceBases[readIndex - 1];
+            long variationBases = stats.countVariationBases[readIndex - 1];
+            long referenceBases = stats.countReferenceBases[readIndex - 1];
             //  System.out.printf("readIndex=%d variationBases=%d referenceBases=%d %n",readIndexInfo.readIndex, variationBases, referenceBases);
             expectedVariationRate += variationBases;
             sum += variationBases + referenceBases;

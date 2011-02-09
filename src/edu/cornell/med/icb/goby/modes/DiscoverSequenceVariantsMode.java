@@ -36,6 +36,7 @@ import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.io.TSVReader;
 import it.unimi.dsi.fastutil.objects.*;
 import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.lang.MutableString;
 import org.rosuda.JRI.Rengine;
 import org.apache.commons.io.FilenameUtils;
@@ -175,11 +176,11 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         /**
          * Indexed by readIndex
          */
-        public int[] countVariationBases;
+        public long[] countVariationBases;
         /**
          * Indexed by readIndex
          */
-        public int[] countReferenceBases;
+        public long[] countReferenceBases;
     }
 
     ObjectArrayList<ReadIndexStats> readIndexStats;
@@ -191,8 +192,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             readIndexStats = new ObjectArrayList<ReadIndexStats>();
             ReadIndexStats stat = new ReadIndexStats();
             String lastBasename = null;
-            IntArrayList countVariationBases = new IntArrayList();
-            IntArrayList countReferenceBases = new IntArrayList();
+            LongArrayList countVariationBases = new LongArrayList();
+            LongArrayList countReferenceBases = new LongArrayList();
 
             String basename = null;
             while (reader.hasNext()) {
@@ -207,8 +208,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                     if (lastBasename != null && !lastBasename.equals(basename)) {
                         //we are now processing a new basename. Save the previous stat and start a new one.
                         stat.basename = lastBasename;
-                        stat.countVariationBases = countVariationBases.toIntArray();
-                        stat.countReferenceBases = countReferenceBases.toIntArray();
+                        stat.countVariationBases = countVariationBases.toLongArray();
+                        stat.countReferenceBases = countReferenceBases.toLongArray();
                         readIndexStats.add(stat);
 
                         stat = new ReadIndexStats();
@@ -223,14 +224,14 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                     assert readIndex == countVariationBases.size();
                     reader.getFloat(); // ignore
                     reader.getFloat(); // ignore
-                    reader.getInt(); // ignore
-                    countReferenceBases.add(reader.getInt());
+                    reader.getLong(); // ignore
+                    countReferenceBases.add(reader.getLong());
                     lastBasename = basename;
                 }
             }
             stat.basename = basename;
-            stat.countVariationBases = countVariationBases.toIntArray();
-            stat.countReferenceBases = countReferenceBases.toIntArray();
+            stat.countVariationBases = countVariationBases.toLongArray();
+            stat.countReferenceBases = countReferenceBases.toLongArray();
             readIndexStats.add(stat);
 
         } catch (FileNotFoundException e) {
