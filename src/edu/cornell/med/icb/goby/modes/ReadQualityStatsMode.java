@@ -60,8 +60,7 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
      * The basename of the compact read files.
      */
     private final List<File> inputFiles = new LinkedList<File>();
-    private final double sampleFraction = .01;
-
+    private double sampleFraction = 0.01;
 
     @Override
     public String getModeName() {
@@ -97,7 +96,30 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
         inputFiles.addAll(Arrays.asList(inputFilesArray));
         outputFile = jsapResult.getFile("output");
         outputFormat = OutputFormat.valueOf(jsapResult.getString("format").toUpperCase());
+        sampleFraction = jsapResult.getDouble("sample-fraction");
         return this;
+    }
+
+    /**
+     * The precentage of reads to process. 0.01 means 1% of reads,
+     * 1.0 means 100% of reads. The default of 0.01 should work fine
+     * for most files but if you are dealing with a very small file
+     * you should set this to 1.0.
+     * @return The precentage of reads to process
+     */
+    public double getSampleFraction() {
+        return sampleFraction;
+    }
+
+    /**
+     * The precentage of reads to process. 0.01 means 1% of reads,
+     * 1.0 means 100% of reads. The default of 0.01 should work fine
+     * for most files but if you are dealing with a very small file
+     * you should set this to 1.0.
+     * @return The precentage of reads to process
+     */
+    public void setSampleFraction(double sampleFraction) {
+        this.sampleFraction = sampleFraction;
     }
 
     /**

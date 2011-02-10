@@ -48,6 +48,23 @@
             </defaults>
             <help>Format of the output file (tsv).</help>
         </flaggedOption>
+        <flaggedOption>
+            <id>sample-fraction</id>
+            <shortFlag>f</shortFlag>
+            <longFlag>sample-fraction</longFlag>
+            <required>false</required>
+            <defaults>
+                <string>0.01</string>
+            </defaults>
+            <help>The precentage of reads to process. 0.01 means 1% of reads,
+                  1.0 means 100% of reads. The default of 0.01 should work fine
+                  for most files but if you are dealing with a very small file
+                  you should set this to 1.0.</help>
+            <stringParser>
+                <classname>DoubleStringParser</classname>
+            </stringParser>
+        </flaggedOption>
+
 
     </parameters>
 </jsap>
