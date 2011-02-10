@@ -22,6 +22,8 @@
    were not trimmed in previous versions. This is now fixed.
  - reformat-compact-reads now correctly processes sequence pairs. Sequence pairs and quality scores can now
    be trimmed in the same way as the primary sequence.
+ - Expose sampleFraction via API and command line for read-quality-stats mode
+ - Make fasta-to-compact mode more callable via API
 1.9.1
  - fasta-to-compact mode: fix bug that prevented checking that quality encoding are in the allowed range.
    quality score must now be converted within the correct score range before the compact-reads file can
