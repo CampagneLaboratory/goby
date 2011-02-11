@@ -1,4 +1,5 @@
 1.9.1 -> development
+ - sam-to-extract mode: append ".compact-reads" to output filename when the extension is missing.
  - Added a mode to display aligned reads for a region of the reference sequences. The reads are written
    in fasta format, suitable for viewing with a sequence alignment viewer such as JalView, CINEMA, etc.
    The mode is called alignment-to-pileup.
@@ -12,7 +13,7 @@
  - Mode sam-extract-reads now supports an optional --quality-encoding argument. Default is BAM encoding.
  - QualityEncoding now supports BAM encoding (no offset or adjustment, the value of the character in
    ascii is the Phred score).
- - Fixed sam-extract-reads. Was not extracting sequences from BAM files. 
+ - Fixed sam-extract-reads. Was not extracting sequences from BAM files.
  - compact-to-fasta mode: now supports reading an arbitrary slice of input.
  - sam-to-compact mode: draft support for importing SAM files produced by BSMAP.
  - fixed a bug that prevented running sam-to-compact mode from command line. An assertion prevented the code

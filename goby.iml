@@ -56,7 +56,9 @@
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/fastutil-5.1.5.jar!/" />
         </CLASSES>
-        <JAVADOC />
+        <JAVADOC>
+          <root url="http://fastutil.dsi.unimi.it/docs" />
+        </JAVADOC>
         <SOURCES>
           <root url="file://$MODULE_DIR$/../../java/fastutil-5.1.5/java" />
         </SOURCES>

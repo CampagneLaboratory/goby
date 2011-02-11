@@ -90,6 +90,9 @@ public class SamExtractReadsMode extends AbstractGobyMode {
 
         inputFilename = jsapResult.getString("input");
         outputFilename = jsapResult.getString("output");
+        if (!outputFilename.endsWith(".compact-reads")) {
+            outputFilename = outputFilename + ".compact-reads";
+        }
         qualityEncoding = QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
         return this;
     }
