@@ -1,4 +1,4 @@
-1.9.1 -> development
+1.9.2
  - sam-to-extract mode: append ".compact-reads" to output filename when the extension is missing.
  - Added a mode to display aligned reads for a region of the reference sequences. The reads are written
    in fasta format, suitable for viewing with a sequence alignment viewer such as JalView, CINEMA, etc.
