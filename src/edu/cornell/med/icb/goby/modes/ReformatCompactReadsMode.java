@@ -250,8 +250,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
                 }
 
                 processSequenceAndQualityScores(entry, sequence, sequencePair, writer, false);
-                processSequenceAndQualityScores(entry, sequence, sequencePair,
-                        writer, true);
+                processSequenceAndQualityScores(entry, sequence, sequencePair, writer, true);
 
                 // Important: preserve the read index in the input entry:
                 writer.appendEntry(entry.getReadIndex());
@@ -275,7 +274,8 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
         }
     }
 
-    private void processSequenceAndQualityScores(Reads.ReadEntry entry, MutableString sequence, MutableString sequencePair,
+    private void processSequenceAndQualityScores(Reads.ReadEntry entry,
+                                                 MutableString sequence, MutableString sequencePair,
                                                  ReadsWriter writer, boolean processPair) {
         byte[] qualityScores = null;
         if (!processPair && entry.hasQualityScores()) {
@@ -362,12 +362,18 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
      */
 
     private void mutate(final MutableString sequence, final int numberOfMismatches) {
+        int sequenceLength = sequence.length();
+        if (sequenceLength == 0) {
+            // When there is no sequence, there is nothing to mutate. This is most notably true for
+            // when there is no PAIR sequence.
+            return;
+        }
         for (final char base : sequence.toCharArray()) {
             bases.add(base);
         }
-        if (sequence.length() < numberOfMismatches) {
+        if (sequenceLength < numberOfMismatches) {
             System.err.printf("Cannot introduce %d mismatches in a sequence that has only %d "
-                    + "residues. Skipping this sequence.", numberOfMismatches, sequence.length());
+                    + "residues. Skipping this sequence.\n", numberOfMismatches, sequenceLength);
             return;
         }
         final IntSet alreadyMutated = new IntArraySet();
@@ -375,7 +381,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
         for (int i = 0; i < numberOfMismatches; i++) {
             int mutationPosition;
             do {
-                mutationPosition = chooseRandom(random, 0, sequence.length() - 1);
+                mutationPosition = chooseRandom(random, 0, sequenceLength - 1);
             }
             while (alreadyMutated.contains(mutationPosition));
             char newBase;
