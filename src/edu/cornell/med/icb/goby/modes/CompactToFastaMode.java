@@ -530,11 +530,12 @@ public class CompactToFastaMode extends AbstractGobyMode {
                                     final byte[] qualityScores, final boolean fakeQualityScores,
                                     final int readLength) throws IOException {
         // in theory the quality length and the read length should be equal
-        // however in practice this may not be the case
-        final int length = Math.max(qualityScores.length, readLength);
+        // however in practice this may not be the case. Either way, we should
+        // write readLength number of quality scores to the output. Writing too
+        // many or too few seems to confuse some aligners.
         writer.write('+');
         writer.write('\n');
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < readLength; i++) {
             if (i != 0 && (i % FASTA_LINE_LENGTH == 0)) {
                 writer.write('\n');
             }

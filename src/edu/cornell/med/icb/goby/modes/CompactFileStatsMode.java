@@ -76,6 +76,16 @@ public class CompactFileStatsMode extends AbstractGobyMode {
     private int maxReadLength = Integer.MIN_VALUE;
 
     /**
+     * The minimum quality length across all files.
+     */
+    private int minQualityLength = Integer.MAX_VALUE;
+
+    /**
+     * The maximum quality length across all files.
+     */
+    private int maxQualityLength = Integer.MIN_VALUE;
+
+    /**
      * The cumulative read length across all files.
      */
     private long cumulativeReadLength;
@@ -425,8 +435,12 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                     checkedForPaired = true;
                     pairedSamples.add(samplePaired);
                 }
-                numberOfQualityScores +=
-                        entry.hasQualityScores() && !entry.getQualityScores().isEmpty() ? 1 : 0;
+                if (entry.hasQualityScores() && !entry.getQualityScores().isEmpty()) {
+                    numberOfQualityScores += 1;
+                    final int qualityLength = entry.getQualityScores().size();
+                    minQualityLength = Math.min(minQualityLength, qualityLength);
+                    maxQualityLength = Math.max(maxQualityLength, qualityLength);
+                }
 
                 numberOfQualityScorePairs +=
                         entry.hasQualityScoresPair() && !entry.getQualityScoresPair().isEmpty() ? 1 : 0;
@@ -461,6 +475,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         stream.printf("Number of entries = %,d%n", numReadEntries);
         stream.printf("Min read length = %,d%n", numReadEntries > 0 ? minLength : 0);
         stream.printf("Max read length = %,d%n", numReadEntries > 0 ? maxLength : 0);
+        stream.printf("Min quality length = %,d%n", numberOfQualityScores > 0 ? minQualityLength : 0);
+        stream.printf("Max quality length = %,d%n", numberOfQualityScores > 0 ? maxQualityLength : 0);
         stream.printf("Avg read length = %,d%n", numReadEntries > 0 ? totalReadLength / numReadEntries : 0);
         stream.printf("Avg read pair length = %,d%n", numReadEntries > 0 ? totalReadLengthPair / numReadEntries : 0);
 
