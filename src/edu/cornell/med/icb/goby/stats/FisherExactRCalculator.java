@@ -42,12 +42,12 @@ public class FisherExactRCalculator extends StatisticCalculator {
     public FisherExactRCalculator(final DifferentialExpressionResults results) {
         this();
         setResults(results);
-        rEngine = GobyRengine.getInstance().getRengine();
-        installed = rEngine != null && rEngine.isAlive();
     }
 
     public FisherExactRCalculator() {
         super();
+        rEngine = GobyRengine.getInstance().getRengine();
+        installed = rEngine != null && rEngine.isAlive();
     }
 
     @Override

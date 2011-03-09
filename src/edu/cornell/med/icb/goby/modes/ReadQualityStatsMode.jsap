@@ -50,7 +50,7 @@
         </flaggedOption>
         <flaggedOption>
             <id>sample-fraction</id>
-            <shortFlag>f</shortFlag>
+            <shortFlag>p</shortFlag>
             <longFlag>sample-fraction</longFlag>
             <required>false</required>
             <defaults>

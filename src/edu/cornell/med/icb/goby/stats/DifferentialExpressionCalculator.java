@@ -300,6 +300,7 @@ public class DifferentialExpressionCalculator {
                 return results;
             }
         } else {
+            LOG.warn("Diffexp test=" + tester.getClass().getName() + " is not 'installed' and will not be run.");
             return results;
         }
     }
