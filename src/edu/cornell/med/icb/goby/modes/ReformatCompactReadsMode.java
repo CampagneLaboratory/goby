@@ -20,10 +20,10 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import com.google.protobuf.ByteString;
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
+import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import it.unimi.dsi.fastutil.chars.CharArraySet;
 import it.unimi.dsi.fastutil.chars.CharSet;
@@ -62,6 +62,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
     private boolean mutateSequences;
     private int numberOfMismatches;
     private CharSet bases;
+    private File readIndexFilterFile;
 
     /**
      * The mode name.
@@ -147,6 +148,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
         trimReadStartLength = jsapResult.getInt("trim-read-start", trimReadLength);
         mutateSequences = jsapResult.getBoolean("mutate-sequences");
         numberOfMismatches = jsapResult.getInt("mismatch-number");
+        readIndexFilterFile = jsapResult.getFile("read-index-filter");
 
         if (jsapResult.contains("start-position") || jsapResult.contains("end-position")) {
             hasStartOrEndPosition = true;
@@ -168,6 +170,11 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
         return this;
     }
 
+
+    public void setReadIndexFilterFile(final File readIndexFilterFile) {
+        this.readIndexFilterFile = readIndexFilterFile;
+    }
+
     /**
      * Reformat compact reads.
      *
@@ -179,6 +186,13 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
         int numProcessed = 0;
         final MutableString sequence = new MutableString();
         final MutableString sequencePair = new MutableString();
+        ReadSet readIndexFilter = new ReadSet();
+               if (readIndexFilterFile == null) {
+                   readIndexFilter = null;
+               } else {
+                   readIndexFilter.load(readIndexFilterFile);
+               }
+
         for (final String inputFilename : inputFilenames) {
             int splitIndex = 0;
             final String outputBasename;
@@ -232,6 +246,8 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
 
             int entriesInOutputFile = 0;
             for (final Reads.ReadEntry entry : readsReader) {
+                if (readIndexFilter == null || readIndexFilter.contains(entry.getReadIndex())) {
+
                 final int readLength = entry.getReadLength();
                 if (readLength < minReadLength || readLength > maxReadLength) {
                     continue;
@@ -268,7 +284,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
                     entriesInOutputFile = 0;
                 }
             }
-
+            }
             writer.close();
             writer.printStats(System.out);
         }

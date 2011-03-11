@@ -161,5 +161,15 @@
             </defaults>
             <help>When this option is present read lengths will be start trimmed by the specified number of characters.</help>
         </flaggedOption>
+        <flaggedOption>
+            <id>read-index-filter</id>
+            <shortFlag>f</shortFlag>
+            <longFlag>read-index-filter</longFlag>
+            <stringParser>
+                <classname>FileStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The name of a read index filter. When provided, compact-to-fasta will only write reads to the output if their index is contained in the filter.</help>
+        </flaggedOption>
     </parameters>
 </jsap>
