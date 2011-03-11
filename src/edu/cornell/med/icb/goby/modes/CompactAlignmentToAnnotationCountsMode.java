@@ -267,6 +267,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                             final String inputBasename = AlignmentReader.getBasename(inputFiles[i]);
                             try {
                                 processOneBasename(allAnnots, writer, inputFiles[i], inputBasename);
+                                Runtime.getRuntime().gc();
                             } catch (IOException e) {
                                 throw new GobyRuntimeException(e);
                             } finally {
@@ -321,7 +322,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             } catch (Exception e) {
                 LOG.error("An exception occurred.", e);
             }
-
+            Runtime.getRuntime().gc();
+            Runtime.getRuntime().gc();
             if (doComparison) {
                 final DifferentialExpressionResults results =
                         deAnalyzer.evaluateDifferentialExpressionStatistics(deCalculator, doComparison, normalizationMethods);
@@ -397,8 +399,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             // output filename was not provided on the command line. We close each basename output.
             IOUtils.closeQuietly(writer);
         }
-    }
 
+    }
 
 
     public static WeightsInfo loadWeights(final String inputBasename, final boolean useWeights, final String id) {
