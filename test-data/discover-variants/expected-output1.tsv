@@ -1,0 +1,11 @@
+referenceId	position	Odds-ratio[A/B]	Fisher-Exact-P-value[A/B]	refCounts[A]	varCount[A]	distinct-read-index-count[A]	average-variant-quality-scores[A]	within-group-p-value[A]	observed variations at position ([frequency:from/to,]+) group A	refCounts[B]	varCount[B]	distinct-read-index-count[B]	average-variant-quality-scores[B]	within-group-p-value[B]	observed variations at position ([frequency:from/to,]+) group B
+target1	126	1.00000	NaN	45	5	1	0.00000	NaN	5:A/G,	45	5	1	0.00000	NaN	5:A/G,
+target1	127	1.00000	NaN	45	5	1	0.00000	NaN	5:A/G,	45	5	1	0.00000	NaN	5:A/G,
+target1	128	1.00000	NaN	45	5	1	0.00000	NaN	5:A/G,	45	5	1	0.00000	NaN	5:A/G,
+target1	129	1.00000	NaN	45	5	1	0.00000	NaN	5:A/G,	45	5	1	0.00000	NaN	5:A/G,
+target1	130	1.00000	NaN	45	5	1	0.00000	NaN	5:A/G,	45	5	1	0.00000	NaN	5:A/G,
+target1	131	1.00000	NaN	45	5	1	0.00000	NaN	5:A/G,	45	5	1	0.00000	NaN	5:A/G,
+target1	132	1.00000	NaN	45	5	1	0.00000	NaN	5:A/G,	45	5	1	0.00000	NaN	5:A/G,
+target1	133	1.00000	NaN	45	5	1	0.00000	NaN	5:A/G,	45	5	1	0.00000	NaN	5:A/G,
+target1	134	1.00000	NaN	45	5	1	0.00000	NaN	5:A/G,	45	5	1	0.00000	NaN	5:A/G,
+target1	135	1.00000	NaN	45	5	1	0.00000	NaN	5:A/G,	45	5	1	0.00000	NaN	5:A/G,
