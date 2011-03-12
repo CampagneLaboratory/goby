@@ -170,14 +170,15 @@ public class DiscoverVariantIterateSortedAlignments
             for (IterateSortedAlignmentsListImpl.PositionBaseInfo info : list) {
                 final int groupIndex = readerIndexToGroupIndex[info.readerIndex];
 
-
                 refCounts[groupIndex] += info.matchesReference ? 1 : 0;
                 variantsCount[groupIndex] += info.matchesReference ? 0 : 1;
                 if (!info.matchesReference) {
                     sumVariantCounts += 1;
                     averageVariantQualityScore[groupIndex] += info.qualityScore;
+                    distinctReadIndices.add(info.readIndex);
                 }
-                distinctReadIndices.add(info.readIndex);
+                // TODO should the next add statement be within the previous if conditional?
+
             }
 
             for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
@@ -242,7 +243,7 @@ public class DiscoverVariantIterateSortedAlignments
 
 
                     statWriter.writeRecord();
-                } 
+                }
             }
 
 

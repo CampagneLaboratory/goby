@@ -121,10 +121,11 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
         }
         // populate the heap with the next entry at or past the skipTo position:
         for (final int readerIndex : readersWithMoreEntries) {
+
             if (!nextLoadedForReader[readerIndex]) {
                 // the reader at position readerIndex was used in the previous next
                 activeIndex = readerIndex;
-
+           //     System.out.println("Setting activeIndex to "+readerIndex + " "+ readersWithMoreEntries);
                 final AlignmentReader reader = readers[activeIndex];
                 final Alignments.AlignmentEntry alignmentEntry = reader.skipTo(targetIndex, position);
                 if (alignmentEntry == null) {
@@ -152,6 +153,12 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
         //   minEntry = null;
         hasNext = false;
         final Alignments.AlignmentEntry alignmentEntry = bucket.entry;
+
+        // the reader at position readerIndex was used in the previous next
+                       activeIndex = bucket.readerIndex;
+          //             System.out.println("Setting activeIndex to "+activeIndex + " "+ readersWithMoreEntries);
+
+
         final int newQueryIndex = mergedQueryIndex(alignmentEntry.getQueryIndex());
         if (adjustQueryIndices) {
             return alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry).setQueryIndex(newQueryIndex).build();

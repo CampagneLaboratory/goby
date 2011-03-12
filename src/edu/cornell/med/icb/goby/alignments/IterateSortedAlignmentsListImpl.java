@@ -38,7 +38,9 @@ public abstract class IterateSortedAlignmentsListImpl
                                      Int2ObjectMap<ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo>> positionToBases,
                                      int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
         PositionBaseInfo info = new PositionBaseInfo();
+
         info.readerIndex = sortedReaders.activeIndex;
+   //     System.out.printf("observing ref readerIndex=%d%n",info.readerIndex);
         info.readIndex = currentReadIndex;
         info.from = '\0';
         info.to = '\0';
@@ -61,6 +63,8 @@ public abstract class IterateSortedAlignmentsListImpl
 
         PositionBaseInfo info = new PositionBaseInfo();
         info.readerIndex = sortedReaders.activeIndex;
+    //    System.out.printf("observing var readerIndex=%d%n",info.readerIndex);
+
         info.readIndex = currentReadIndex;
         info.from = fromChar;
         info.to = toChar;
