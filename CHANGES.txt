@@ -1,5 +1,5 @@
 1.9.2
- - Fixed a major in discover-sequence-variants that sometimes could cause confusion in the group of origin of a
+ - Fixed a major bug in discover-sequence-variants that sometimes could cause confusion in the group of origin of a
    variation. This bug could affect between group p-values. A Junit test now checks for the error condition and
    is part of regression testing.
  - sam-to-extract mode: append ".compact-reads" to output filename when the extension is missing.
