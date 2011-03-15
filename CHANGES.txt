@@ -1,5 +1,7 @@
 1.9.3
-
+ - Fix reformat-compact-reads bug where quality scores where longer by 1 than the sequence.
+ - Reduce the memory needed by compact-file-stats to determine the number of reads in a compact reads file.
+ 
 1.9.2
  - Fixed a major bug in discover-sequence-variants that sometimes could cause confusion in the group of origin of a
    variation. This bug could affect between group p-values. A Junit test now checks for the error condition and

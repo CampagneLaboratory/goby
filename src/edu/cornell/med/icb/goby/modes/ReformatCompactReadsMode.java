@@ -25,7 +25,7 @@ import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
-import edu.cornell.med.icb.goby.algorithmic.data.DistinctIntValueCounter;
+import edu.cornell.med.icb.goby.algorithmic.data.DistinctIntValueCounterBitSet;
 import it.unimi.dsi.fastutil.chars.CharArraySet;
 import it.unimi.dsi.fastutil.chars.CharSet;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
@@ -246,7 +246,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
             }
 
             int entriesInOutputFile = 0;
-            DistinctIntValueCounter allEntries = new DistinctIntValueCounter();
+            DistinctIntValueCounterBitSet allEntries = new DistinctIntValueCounterBitSet();
             int numReadsKept = 0;
             for (final Reads.ReadEntry entry : readsReader) {
                 allEntries.observe(entry.getReadIndex());

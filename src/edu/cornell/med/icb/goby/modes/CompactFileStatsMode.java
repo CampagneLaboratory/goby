@@ -27,11 +27,9 @@ import edu.cornell.med.icb.goby.alignments.EntryFlagHelper;
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
-import edu.cornell.med.icb.goby.algorithmic.data.DistinctIntValueCounter;
+import edu.cornell.med.icb.goby.algorithmic.data.DistinctIntValueCounterBitSet;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -278,7 +276,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         stream.println();
 
         // the query indices that aligned. Includes those
-        final DistinctIntValueCounter alignedQueryIndices = new DistinctIntValueCounter();
+        final DistinctIntValueCounterBitSet alignedQueryIndices = new DistinctIntValueCounterBitSet();
 
         describeAmbigousReads(basename, reader.getNumberOfQueries(), alignedQueryIndices);
 
@@ -355,7 +353,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         return ((double) a) / (double) b;
     }
 
-    private void describeAmbigousReads(final String basename, final double numReads, final DistinctIntValueCounter queryIndices) {
+    private void describeAmbigousReads(final String basename, final double numReads, final DistinctIntValueCounterBitSet queryIndices) {
         try {
             final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
             queryIndices.observe(tmhReader.getQueryIndices());
@@ -392,7 +390,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
 
         long totalReadLength = 0;
         long totalReadLengthPair = 0;
-        final DistinctIntValueCounter allQueryIndices = new DistinctIntValueCounter();
+        final DistinctIntValueCounterBitSet allQueryIndices = new DistinctIntValueCounterBitSet();
 
         ReadsReader reader = null;
         boolean checkedForPaired = false;
