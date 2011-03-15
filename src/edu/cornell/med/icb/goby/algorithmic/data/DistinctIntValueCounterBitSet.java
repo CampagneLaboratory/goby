@@ -27,36 +27,15 @@ import java.util.BitSet;
 /**
  * Counts the number of distinct integers observed. A naive implementation would store n distinct integers
  * in a set and return the size of this set. This does not scale when the number of integers observed grows very large.
- * This implementation is memory efficient because it stores only missing values. The number of distinct integers can
- * be calculated knowing the minimum value observed, the maximum and the number of missing values in the sequence.
+ * This implementation uses a BitSet and requires one bit per query index.
  *
  * @author Fabien Campagne
  *         Date: Mar 15, 2011
  *         Time: 12:35:03 PM
  */
-public class DistinctIntValueCounter {
-    private class MissingValues {
-        BitSet missingValues = new BitSet();
-      
-        public void add(int value) {
-            missingValues.set(value);
-        }
+public class DistinctIntValueCounterBitSet implements DistinctIntValueCounterInterface {
 
-        public void remove(int value) {
-            missingValues.clear(value);
-
-        }
-
-        public int size() {
-            return missingValues.cardinality();
-        }
-    }
-
-    MissingValues missingValues = new MissingValues();
-
-    //IntSet missingValues = new IntOpenHashSet();
-    int minValue = Integer.MAX_VALUE;
-    int maxValue = Integer.MIN_VALUE;
+    BitSet values = new BitSet();
 
     public void observe(IntCollection values) {
         for (int i : values) observe(i);
@@ -67,21 +46,7 @@ public class DistinctIntValueCounter {
     }
 
     public void observe(int value) {
-        if (value < maxValue) {
-            // consider value could have been missing in previous observations:
-
-        }
-        int previousMax = maxValue;
-        minValue = Math.min(value, minValue);
-        maxValue = Math.max(value, maxValue);
-        if (value == maxValue && previousMax != Integer.MIN_VALUE) {
-            // value is the new max. Determine which missing values
-            for (int i = previousMax + 1; i < value; i++) {
-                missingValues.add(i);
-
-                //  missingValues.add(i);
-            }
-        }
+        values.set(value);
     }
 
     /**
@@ -90,6 +55,6 @@ public class DistinctIntValueCounter {
      * @return
      */
     public int count() {
-        return maxValue - minValue - missingValues.size() + (minValue == 0 ? 1 : 0);
+        return values.cardinality();
     }
 }

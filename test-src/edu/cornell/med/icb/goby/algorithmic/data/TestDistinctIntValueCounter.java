@@ -21,6 +21,8 @@ package edu.cornell.med.icb.goby.algorithmic.data;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
+import java.util.Random;
+
 /**
  * @author Fabien Campagne
  *         Date: Mar 15, 2011
@@ -29,7 +31,7 @@ import static org.junit.Assert.assertEquals;
 public class TestDistinctIntValueCounter {
     @Test
     public void testCount1() {
-        DistinctIntValueCounter counter = new DistinctIntValueCounter();
+        DistinctIntValueCounterBitSet counter = new DistinctIntValueCounterBitSet();
         counter.observe(0);
         counter.observe(1);
         counter.observe(2);
@@ -42,12 +44,13 @@ public class TestDistinctIntValueCounter {
         counter.observe(6);
         assertEquals(6, counter.count());
         // missing values: 7, 8, 9
-         counter.observe(10);
+        counter.observe(10);
         assertEquals(7, counter.count());
     }
-      @Test
+
+    @Test
     public void testCountNoZero() {
-        DistinctIntValueCounter counter = new DistinctIntValueCounter();
+        DistinctIntValueCounterBitSet counter = new DistinctIntValueCounterBitSet();
 
         counter.observe(1);
         counter.observe(2);
@@ -60,7 +63,11 @@ public class TestDistinctIntValueCounter {
         counter.observe(6);
         assertEquals(5, counter.count());
         // missing values: 7, 8, 9
-         counter.observe(10);
+        counter.observe(10);
         assertEquals(6, counter.count());
     }
+
 }
+
+
+
