@@ -427,4 +427,42 @@ public class TestReformatCompactReadsMode {
                 keyValuePairs.get("key2"));
 
     }
+
+
+     /**
+     * Validates that reformating does not change quality score length by default.
+     * @throws IOException if there is a problem reading or writing to the files
+     */
+    @Test
+    public void reformatQualityScoreLength() throws IOException {
+        final ReformatCompactReadsMode reformat = new ReformatCompactReadsMode();
+
+        final String inputFilename =
+                "test-data/compact-reads/with-meta-data-input.compact-reads";
+        reformat.setInputFilenames(inputFilename);
+
+        final String outputFilename = "test-results/with-meta-data-output-same.compact-reads";
+        reformat.setOutputFile(outputFilename);
+        reformat.execute();
+
+        ReadsReader reader1 = new ReadsReader(inputFilename);
+        for (Reads.ReadEntry it : reader1) {
+            System.out.println(it.toString());
+            System.out.println();
+        }
+
+        ReadsReader reader2 = new ReadsReader(outputFilename);
+        for (Reads.ReadEntry it : reader2) {
+            System.out.println(it.toString());
+            System.out.println();
+        }
+
+    //    assertTrue(FileUtils.contentEquals(new File(inputFilename), new File(outputFilename)));
+
+        final ReadsReader reader = new ReadsReader(FileUtils.openInputStream(new File(outputFilename)));
+        assertTrue("There should be reads in this file", reader.hasNext());
+        final Reads.ReadEntry entry = reader.next();
+        assertEquals(12, entry.getQualityScores().size());
+
+    }
 }

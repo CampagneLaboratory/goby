@@ -25,6 +25,7 @@ import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
+import edu.cornell.med.icb.goby.algorithmic.data.DistinctIntValueCounter;
 import it.unimi.dsi.fastutil.chars.CharArraySet;
 import it.unimi.dsi.fastutil.chars.CharSet;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
@@ -112,7 +113,7 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
     /**
      * The number of bases to trim at the start of the sequence.
      */
-    private int trimReadStartLength;
+    private int trimReadStartLength=-1;
 
     @Override
     public String getModeName() {
@@ -187,11 +188,11 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
         final MutableString sequence = new MutableString();
         final MutableString sequencePair = new MutableString();
         ReadSet readIndexFilter = new ReadSet();
-               if (readIndexFilterFile == null) {
-                   readIndexFilter = null;
-               } else {
-                   readIndexFilter.load(readIndexFilterFile);
-               }
+        if (readIndexFilterFile == null) {
+            readIndexFilter = null;
+        } else {
+            readIndexFilter.load(readIndexFilterFile);
+        }
 
         for (final String inputFilename : inputFilenames) {
             int splitIndex = 0;
@@ -245,46 +246,54 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
             }
 
             int entriesInOutputFile = 0;
+            DistinctIntValueCounter allEntries = new DistinctIntValueCounter();
+            int numReadsKept = 0;
             for (final Reads.ReadEntry entry : readsReader) {
+                allEntries.observe(entry.getReadIndex());
                 if (readIndexFilter == null || readIndexFilter.contains(entry.getReadIndex())) {
 
-                final int readLength = entry.getReadLength();
-                if (readLength < minReadLength || readLength > maxReadLength) {
-                    continue;
-                }
-                //transfer meta-data:
-                for (int i = 0; i < entry.getMetaDataCount(); i++) {
-                    Reads.MetaData metaData = entry.getMetaData(i);
-                    writer.appendMetaData(metaData.getKey(), metaData.getValue());
-                }
-                if (pushDescription && entry.hasDescription()) {
-                    writer.setDescription(entry.getDescription());
-                }
+                    final int readLength = entry.getReadLength();
+                    if (readLength < minReadLength || readLength > maxReadLength) {
+                        continue;
+                    }
+                    //transfer meta-data:
+                    for (int i = 0; i < entry.getMetaDataCount(); i++) {
+                        Reads.MetaData metaData = entry.getMetaData(i);
+                        writer.appendMetaData(metaData.getKey(), metaData.getValue());
+                    }
+                    if (pushDescription && entry.hasDescription()) {
+                        writer.setDescription(entry.getDescription());
+                    }
 
-                if (pushIdentifier && entry.hasReadIdentifier()) {
-                    writer.setIdentifier(entry.getReadIdentifier());
-                }
+                    if (pushIdentifier && entry.hasReadIdentifier()) {
+                        writer.setIdentifier(entry.getReadIdentifier());
+                    }
 
-                processSequenceAndQualityScores(entry, sequence, sequencePair, writer, false);
-                processSequenceAndQualityScores(entry, sequence, sequencePair, writer, true);
+                    processSequenceAndQualityScores(entry, sequence, sequencePair, writer, false);
+                    processSequenceAndQualityScores(entry, sequence, sequencePair, writer, true);
 
-                // Important: preserve the read index in the input entry:
-                writer.appendEntry(entry.getReadIndex());
-                //writer.appendEntry();
-                entriesInOutputFile++;
+                    // Important: preserve the read index in the input entry:
+                    writer.appendEntry(entry.getReadIndex());
+                    numReadsKept++;
+                    //writer.appendEntry();
+                    entriesInOutputFile++;
 
-                if (entriesInOutputFile > sequencePerOutput) {
-                    writer.close();
+                    if (entriesInOutputFile > sequencePerOutput) {
+                        writer.close();
 
-                    final String newOutputFilename = getOutputFilename(outputBasename, ++splitIndex);
-                    outputFilenames.add(newOutputFilename);
-                    System.out.printf("Splitting into %s%n", newOutputFilename);
-                    writer = new ReadsWriter(new FileOutputStream(newOutputFilename));
-                    writer.setNumEntriesPerChunk(sequencePerChunk);
-                    entriesInOutputFile = 0;
+                        final String newOutputFilename = getOutputFilename(outputBasename, ++splitIndex);
+                        outputFilenames.add(newOutputFilename);
+                        System.out.printf("Splitting into %s%n", newOutputFilename);
+                        writer = new ReadsWriter(new FileOutputStream(newOutputFilename));
+                        writer.setNumEntriesPerChunk(sequencePerChunk);
+                        entriesInOutputFile = 0;
+                    }
                 }
             }
-            }
+            float rate = allEntries.count();
+            rate -= numReadsKept;
+            rate /= allEntries.count();
+            if (readIndexFilter != null) System.out.printf("Percent reads redundant= %f3.2%% %n", rate);
             writer.close();
             writer.printStats(System.out);
         }
@@ -355,7 +364,9 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
 
     private byte[] trimQualityScores(byte[] qualityScores, int trimReadStartLength, int trimReadLength, int initialLength) {
         if (qualityScores == null) return null;
-        byte[] trimmedScores = new byte[Math.min(initialLength, trimReadLength) - trimReadStartLength];
+        int offset=trimReadStartLength;
+        if (offset<0) offset=0;
+        byte[] trimmedScores = new byte[Math.min(initialLength, trimReadLength) - offset];
         int trimmedIndex = 0;
         for (int i = 0; i < Math.min(initialLength, trimReadLength); i++) {
             if (i >= trimReadStartLength) {
