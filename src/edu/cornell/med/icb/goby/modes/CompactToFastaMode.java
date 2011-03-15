@@ -230,9 +230,9 @@ public class CompactToFastaMode extends AbstractGobyMode {
             hasStartOrEndPosition = true;
             startPosition = jsapResult.getLong("start-position", 0L);
             endPosition = jsapResult.getLong("end-position", Long.MAX_VALUE);
-            if (startPosition==0 && endPosition==0) {
+            if (startPosition == 0 && endPosition == 0) {
                 // whole file.
-                hasStartOrEndPosition=false;
+                hasStartOrEndPosition = false;
             }
         }
 
@@ -444,8 +444,9 @@ public class CompactToFastaMode extends AbstractGobyMode {
                     ++numberOfFilteredSequences;
 
                     progress.lightUpdate();
+                    ++numberOfSequences;
                 }
-                ++numberOfSequences;
+
             }
         } finally {
             IOUtils.closeQuietly(writer);
