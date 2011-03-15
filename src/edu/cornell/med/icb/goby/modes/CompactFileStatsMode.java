@@ -27,6 +27,7 @@ import edu.cornell.med.icb.goby.alignments.EntryFlagHelper;
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
+import edu.cornell.med.icb.goby.algorithmic.data.DistinctIntValueCounter;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -277,7 +278,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         stream.println();
 
         // the query indices that aligned. Includes those
-        final IntSet alignedQueryIndices = new IntOpenHashSet();
+        final DistinctIntValueCounter alignedQueryIndices = new DistinctIntValueCounter();
+
         describeAmbigousReads(basename, reader.getNumberOfQueries(), alignedQueryIndices);
 
         int maxQueryIndex = -1;
@@ -304,7 +306,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             minReadLength = Math.min(minReadLength, entry.getQueryAlignedLength());
             maxReadLength = Math.max(maxReadLength, entry.getQueryAlignedLength());
             sumNumVariations += entry.getSequenceVariationsCount();
-            alignedQueryIndices.add(entry.getQueryIndex());
+            alignedQueryIndices.observe(entry.getQueryIndex());
 
             // check entry then header for the query length
             if (entry.hasQueryLength()) {
@@ -322,16 +324,16 @@ public class CompactFileStatsMode extends AbstractGobyMode {
 
         avgScore /= (double) numLogicalAlignmentEntries;
 
-        final int numQuerySequences = maxQueryIndex + 1;
+        final int numQuerySequences = reader.getNumberOfQueries();
         stream.printf("num query indices = %,d%n", numQuerySequences);
         final int numTargetSequences = maxTargetIndex + 1;
         final double avgNumVariationsPerQuery =
                 ((double) sumNumVariations) / (double) numQuerySequences;
         stream.printf("num target indices = %,d%n", numTargetSequences);
         stream.printf("Number of alignment entries = %,d%n", numLogicalAlignmentEntries);
-        stream.printf("Number of query indices that matched = %,d%n", alignedQueryIndices.size());
+        stream.printf("Number of query indices that matched = %,d%n", alignedQueryIndices.count());
         stream.printf("Percent matched = %4.1f %% %n",
-                (double) alignedQueryIndices.size() / (double) (long) numQuerySequences * 100.0d);
+                (double) alignedQueryIndices.count() / (double) ((long) numQuerySequences) * 100.0d);
         stream.printf("Avg query alignment length = %,f%n",
                 numEntries > 0 ? divide(total, numEntries) : -1);
         stream.printf("Avg score alignment = %f%n", avgScore);
@@ -353,10 +355,10 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         return ((double) a) / (double) b;
     }
 
-    private void describeAmbigousReads(final String basename, final double numReads, final IntSet queryIndices) {
+    private void describeAmbigousReads(final String basename, final double numReads, final DistinctIntValueCounter queryIndices) {
         try {
             final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
-            queryIndices.addAll(tmhReader.getQueryIndices());
+            queryIndices.observe(tmhReader.getQueryIndices());
             stream.printf("TMH: aligner threshold = %,d%n", tmhReader.getAlignerThreshold());
             stream.printf("TMH: number of ambiguous matches = %,d%n", tmhReader.getQueryIndices().size());
             stream.printf("TMH: %%ambiguous matches = %f %%%n", (tmhReader.getQueryIndices().size() * 100f) / numReads);
@@ -387,9 +389,10 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         int numberOfQualityScores = 0;
         int numberOfQualityScorePairs = 0;
 
-        long numReadEntries = 0;
+
         long totalReadLength = 0;
         long totalReadLengthPair = 0;
+        final DistinctIntValueCounter allQueryIndices = new DistinctIntValueCounter();
 
         ReadsReader reader = null;
         boolean checkedForPaired = false;
@@ -405,11 +408,11 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                     stream.printf("meta-data key=%s value=%s%n",
                             metaData.getKey(),
                             metaData.getValue());
-                    
+
                 }
 
                 // across this file
-                numReadEntries++;
+                allQueryIndices.observe(entry.getReadIndex());
                 totalReadLength += readLength;
                 totalReadLengthPair += entry.getReadLengthPair();
 
@@ -457,14 +460,15 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 maxReadLength = Math.max(maxReadLength, readLength);
             }
 
-            stream.printf("Average bytes per entry: %f%n", divide(size, numReadEntries));
+
+            stream.printf("Average bytes per entry: %f%n", divide(size, allQueryIndices.count()));
             stream.printf("Average bytes per base: %f%n", divide(size, cumulativeReadLength));
         } finally {
             if (reader != null) {
                 reader.close();
             }
         }
-
+        final int numReadEntries = allQueryIndices.count();
         stream.printf("Has identifiers = %s (%,d) %n", numberOfIdentifiers > 0, numberOfIdentifiers);
         stream.printf("Has descriptions = %s (%,d) %n", numberOfDescriptions > 0, numberOfDescriptions);
         stream.printf("Has sequences = %s (%,d) %n", numberOfSequences > 0, numberOfSequences);
@@ -534,6 +538,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
     /**
      * A list if which of the scanned samples were paired and which weren't. Note that
      * the pairing scan only checks the FIRST sample in the reads file.
+     *
      * @return the list of which scanned samples were paired (one per file scanned).
      */
     public List<Boolean> getPairedSamples() {

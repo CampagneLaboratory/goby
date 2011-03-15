@@ -58,6 +58,7 @@ public class RandomAccessSequenceCache {
     private ObjectArrayList<byte[]> compressedData;
     private IntList sizes;
     private static final Logger LOG = Logger.getLogger(RandomAccessSequenceCache.class);
+    private String basename;
 
     public RandomAccessSequenceCache() {
         super();
@@ -306,5 +307,13 @@ public class RandomAccessSequenceCache {
 
     public int getSequenceSize(final int referenceIndex) {
         return size(referenceIndex);
+    }
+
+    public String getBasename() {
+        return basename;
+    }
+
+    public void setBasename(String basename) {
+        this.basename = basename;
     }
 }
