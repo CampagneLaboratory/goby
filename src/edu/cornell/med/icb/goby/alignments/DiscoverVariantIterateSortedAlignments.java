@@ -63,6 +63,8 @@ public class DiscoverVariantIterateSortedAlignments
     private int[] readerIndexToGroupIndex;
     private int minimumVariationSupport = 3;
     private boolean fisherRInstalled;
+    private int log2OddsRatioStandardErrorColumnIndex;
+    private int log2OddsRatioZColumnIndex;
 
     public void setMinimumVariationSupport(int minimumVariationSupport) {
         this.minimumVariationSupport = minimumVariationSupport;
@@ -78,7 +80,7 @@ public class DiscoverVariantIterateSortedAlignments
 
     int refIdColumnIndex;
     int positionColumnIndex;
-    int oddsRatioColumnIndex;
+    int log2OddsRatioColumnIndex;
     int fisherExactPValueColumnIndex;
     int observedVariationsAtPositionColumnIndex;
     StatisticsWriter statWriter;
@@ -100,7 +102,7 @@ public class DiscoverVariantIterateSortedAlignments
         this.readIndexStats = readIndexStats;
         refIdColumnIndex = statWriter.defineColumn("referenceId");
         positionColumnIndex = statWriter.defineColumn("position");
-        oddsRatioColumnIndex = StatisticsWriter.COLUMN_NOT_DEFINED;
+        log2OddsRatioColumnIndex = StatisticsWriter.COLUMN_NOT_DEFINED;
         fisherExactPValueColumnIndex = -1;
         numberOfGroups = groups.length;
 
@@ -112,7 +114,9 @@ public class DiscoverVariantIterateSortedAlignments
         this.deAnalyzer = deAnalyzer;
         this.deCalculator = deCalculator;
         if (this.deAnalyzer.eval("between-groups")) {
-            oddsRatioColumnIndex = statWriter.defineColumn("Odds-ratio[%s/%s]", groups[0], groups[1]);
+            log2OddsRatioColumnIndex = statWriter.defineColumn("log2(Odds-ratio[%s/%s])", groups[0], groups[1]);
+            log2OddsRatioStandardErrorColumnIndex = statWriter.defineColumn("log2_odds-ratio_standard_error)");
+            log2OddsRatioZColumnIndex = statWriter.defineColumn("log2_odds-ratioZ)");
             fisherExactPValueColumnIndex = statWriter.defineColumn("Fisher-Exact-P-value[%s/%s]", groups[0], groups[1]);
         }
 
@@ -201,9 +205,25 @@ public class DiscoverVariantIterateSortedAlignments
 
                     if (deAnalyzer.eval("between-groups")) {
                         final double denominator = (double) refCounts[groupIndexA] * (double) variantsCount[groupIndexB];
-                        double oddsRatio = denominator == 0 ? 1 :
-                                ((double) refCounts[groupIndexB] *
-                                        (double) variantsCount[groupIndexA]) / denominator;
+                        double oddsRatio = denominator == 0 ? Double.NaN :
+                                ((double) refCounts[groupIndexB] * (double) variantsCount[groupIndexA]) /
+                                        denominator;
+                        double logOddsRatioSE;
+                        if (    variantsCount[groupIndexA] < 10 ||
+                                variantsCount[groupIndexB] < 10 ||
+                                refCounts[groupIndexA] < 10 ||
+                                refCounts[groupIndexB] < 10) {
+                            // standard error estimation is unreliable when any of the counts are less than 10.
+                            logOddsRatioSE = Double.NaN;
+                        } else {
+                            logOddsRatioSE = Math.sqrt(1d / refCounts[groupIndexB] +
+                                    1d / variantsCount[groupIndexA] +
+                                    1d / variantsCount[groupIndexB] +
+                                    1d / refCounts[groupIndexA]);
+                        }
+                        double log2OddsRatio = Math.log(oddsRatio) / Math.log(2);
+                        double log2OddsRatioZValue=  log2OddsRatio/logOddsRatioSE;
+
                         double fisherP = Double.NaN;
 
                         boolean ok = checkCounts();
@@ -223,7 +243,9 @@ public class DiscoverVariantIterateSortedAlignments
                             );
 
                         }
-                        statWriter.setValue(oddsRatioColumnIndex, oddsRatio);
+                        statWriter.setValue(log2OddsRatioColumnIndex, log2OddsRatio);
+                        statWriter.setValue(log2OddsRatioStandardErrorColumnIndex, logOddsRatioSE);
+                        statWriter.setValue(log2OddsRatioZColumnIndex, log2OddsRatioZValue);
                         statWriter.setValue(fisherExactPValueColumnIndex, fisherP);
 
                     }
