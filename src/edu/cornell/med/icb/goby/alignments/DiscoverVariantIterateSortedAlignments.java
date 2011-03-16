@@ -39,6 +39,10 @@ import java.util.Collections;
 import java.util.Comparator;
 
 /**
+ * Helper class to implement the logic of discovering sequence variations in and across groups of samples.
+ * Implements most of the work done by DiscoverSequenceVariantsMode
+ * @see edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode
+ *
  * @author Fabien Campagne
  *         Date: Sep 7, 2010
  *         Time: 2:14:38 PM
