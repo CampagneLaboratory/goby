@@ -119,8 +119,8 @@ public class DiscoverVariantIterateSortedAlignments
         this.deCalculator = deCalculator;
         if (this.deAnalyzer.eval("between-groups")) {
             log2OddsRatioColumnIndex = statWriter.defineColumn("log2(Odds-ratio[%s/%s])", groups[0], groups[1]);
-            log2OddsRatioStandardErrorColumnIndex = statWriter.defineColumn("log2_odds-ratio_standard_error)");
-            log2OddsRatioZColumnIndex = statWriter.defineColumn("log2_odds-ratioZ)");
+            log2OddsRatioStandardErrorColumnIndex = statWriter.defineColumn("log2_odds-ratio_standard_error");
+            log2OddsRatioZColumnIndex = statWriter.defineColumn("log2_odds-ratio-Z");
             fisherExactPValueColumnIndex = statWriter.defineColumn("Fisher-Exact-P-value[%s/%s]", groups[0], groups[1]);
         }
 
