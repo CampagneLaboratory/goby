@@ -164,13 +164,13 @@ public class ComputeWeightCount implements ComputeCountInterface {
      * // TODO evaluate and if no performance advantage, refactor to separate cumulative starts, ends and clear the input data structures.
      */
     public void accumulate() {
-        LOG.debug("accumulating starts");
+        LOG.trace("accumulating starts");
         startKeys.addAll(starts.keySet());
         Collections.sort(startKeys);
         endKeys.addAll(ends.keySet());
         Collections.sort(endKeys);
         accumulateOneMap(starts, startKeys);
-        LOG.debug("accumulating ends");
+        LOG.trace("accumulating ends");
         accumulateOneMap(ends, endKeys);
     }
 
@@ -198,11 +198,13 @@ public class ComputeWeightCount implements ComputeCountInterface {
         final IntSortedSet joints = new IntAVLTreeSet();
         joints.addAll(starts.keySet());
         joints.addAll(ends.keySet());
-        LOG.debug("joints  " + joints);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("joints  " + joints);
+        }
         final int[] jointsArray = joints.toArray(new int[joints.size()]);
         double prevCount = 0;
         double count;
-        LOG.debug("counting");
+        LOG.trace("counting");
         double startValue = starts.get(0);
         double endValue = ends.get(0);
         for (int i = 1; i < jointsArray.length; i++) {
