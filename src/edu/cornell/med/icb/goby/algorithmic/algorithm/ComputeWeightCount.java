@@ -242,8 +242,10 @@ public class ComputeWeightCount implements ComputeCountInterface {
         double startValue = starts.get(0);
         double endValue = ends.get(0);
         for (int i = 1; i < jointsArray.length; i++) {
-            if (line % 1000000 == 0) {
-                LOG.debug("line " + line);
+            if (LOG.isTraceEnabled()) {
+                if (line % 1000000 == 0) {
+                    LOG.trace("line " + line);
+                }
             }
             line++;
             final int curKey = jointsArray[i];
