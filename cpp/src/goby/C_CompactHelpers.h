@@ -87,6 +87,12 @@
         unsigned int numberOfAlignedReads;
         CSamHelper *samHelper;
         int qualityAdjustment;
+	    FILE *intermediateOutputFile;
+	    char *intermediateOutputBuffer;
+	    size_t  intermediateOutputBufferSize;
+	    FILE *intermediateIgnoredOutputFile;
+	    char *intermediateIgnoredOutputBuffer;
+	    size_t intermediateIgnoredOutputBufferSize;
     };
 #else
 	// Opaque structure for C
@@ -115,6 +121,12 @@
 	    unsigned int numberOfAlignedReads;
 	    void *samHelper;
         int qualityAdjustment;
+	    FILE *intermediateOutputFile;
+	    char *intermediateOutputBuffer;
+	    size_t  intermediateOutputBufferSize;
+	    FILE *intermediateIgnoredOutputFile;
+	    char *intermediateIgnoredOutputBuffer;
+	    size_t intermediateIgnoredOutputBufferSize;
 	} CAlignmentsWriterHelper;
 #endif
 

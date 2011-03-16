@@ -11,8 +11,22 @@
 
 extern "C" {
 #endif
-	void gobyAlignments_openAlignmentsWriterDefaultEntriesPerChunk(char *basename, CAlignmentsWriterHelper **writerHelperpp);
-	void gobyAlignments_openAlignmentsWriter(char *basename, unsigned int number_of_entries_per_chunk, CAlignmentsWriterHelper **writerHelperpp);
+    void gobyAlignments_openAlignmentsWriterDefaultEntriesPerChunk(char *basename, CAlignmentsWriterHelper **writerHelperpp);
+    void gobyAlignments_openAlignmentsWriter(char *basename, unsigned int number_of_entries_per_chunk, CAlignmentsWriterHelper **writerHelperpp);
+
+    /**
+     * Provides a way to write data to a temporary file (or memory stream) for programs that,
+     * for instance, write SAM data to a file. Use this to capture the SAM data for processing
+     * by gobyAlignments_processSAM(...).
+     */
+    void gobyAlignments_openIntermediateOutputFiles(CAlignmentsWriterHelper *writerHelper, int openIgnoredOutputFile);
+    FILE *gobyAlignments_intermediateOutputFileHandle(CAlignmentsWriterHelper *writerHelper);
+    FILE *gobyAlignments_intermediateIgnoredOutputFileHandle(CAlignmentsWriterHelper *writerHelper);
+    void gobyAlignments_intermediateOutputStartNew(CAlignmentsWriterHelper *writerHelper);
+    void gobyAlignments_intermediateOutputFlush(CAlignmentsWriterHelper *writerHelper);
+    char *gobyAlignments_intermediateOutputData(CAlignmentsWriterHelper *writerHelper);
+    char *gobyAlignments_intermediateOutputIgnoredData(CAlignmentsWriterHelper *writerHelper);
+    void gobyAlignments_closeIntermediateOutputFiles(CAlignmentsWriterHelper *writerHelper);
 
     void gobyAlignments_setAlignerName(CAlignmentsWriterHelper *writerHelper, char *value);
     void gobyAlignments_setAlignerVersion(CAlignmentsWriterHelper *writerHelper, char *value);
@@ -27,6 +41,9 @@ extern "C" {
     void gobyAlignments_addTarget(CAlignmentsWriterHelper *writerHelper, const unsigned int targetIndex, const char *targetName, unsigned int targetLength);
     unsigned gobyAlignments_addQueryIdentifier(CAlignmentsWriterHelper *writerHelper, const char *queryIdentifier);
     void gobyAlignments_addQueryIdentifierWithIndex(CAlignmentsWriterHelper *writerHelper, const char *queryIdentifier, unsigned int newQueryIndex);
+
+    /** Create entries from from line/lines of SAM. */
+    void gobyAlignments_processSAM(CAlignmentsWriterHelper *writerHelper, char *samLine, int npaths, int maxpaths);
 
     // get an empty alignment entry to populate
     void gobyAlignments_appendEntry(CAlignmentsWriterHelper *writerHelper);
@@ -69,9 +86,11 @@ extern "C" {
      */
     CSamHelper *samHelper_getResetSamHelper(CAlignmentsWriterHelper *writerHelper);
     void samHelper_addCigarItem(CSamHelper *samHelper, int length, char op);
+    void samHelper_setCigar(CSamHelper *samHelper, const char *cigar);
     const char *samHelper_getCigarStr(CSamHelper *samHelper);
-    void samHelper_setMd(CSamHelper *samHelper, char *md);
+    void samHelper_setMd(CSamHelper *samHelper, const char *md);
     void samHelper_setQueryTranslate(CSamHelper *samHelper, char *reads, char *qual, unsigned int length, unsigned int reverseStrand);
+    void samHelper_setQuery(CSamHelper *samHelper, const char *reads, const char *qual, unsigned int length, bool reverseStrand);
     void samHelper_constructRefAndQuery(CSamHelper *samHelper);
     const char *samHelper_sourceQuery(CSamHelper *samHelper);
     const char *samHelper_constructedQuery(CSamHelper *samHelper);

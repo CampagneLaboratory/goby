@@ -1,18 +1,26 @@
 #include <string>
 #include <iostream>
 #include <pcrecpp.h>
+#include <stdio.h>
 
 #include "Reads.h"
 #include "C_Alignments.h"
 #include "MessageChunks.h"
+#include "SamFlags.h"
 
 using namespace std;
 
+#define C_WRITE_API_WRITE_ALIGNMENT_DEBUG
 #ifdef C_WRITE_API_WRITE_ALIGNMENT_DEBUG
 #define debug(x) x
 #else
 #define debug(x)
 #endif
+
+#ifdef __GNUC__
+#define INTERMEDIATE_OUTPUT_VIA_OPEN_MEMSTREAM
+#endif
+
 
 // TODO: When reading from COMPACT-READS, one should call
 // TODO: addQueryIdentifierWithInt() but ONLY if there is a text
@@ -47,7 +55,122 @@ extern "C" {
         writerHelper->numberOfAlignedReads = 0;
         writerHelper->qualityAdjustment = 0;
         writerHelper->samHelper = NULL;
+        writerHelper->intermediateOutputFile = NULL;
+        writerHelper->intermediateOutputBuffer = NULL;
+        writerHelper->intermediateOutputBufferSize = 0;
+        writerHelper->intermediateIgnoredOutputFile = NULL;
+        writerHelper->intermediateIgnoredOutputBuffer = NULL;
+        writerHelper->intermediateIgnoredOutputBufferSize = 0;
 	}
+
+    void gobyAlignments_openIntermediateOutputFiles(CAlignmentsWriterHelper *writerHelper, int openIgnoredOutputFile) {
+        gobyAlignments_closeIntermediateOutputFiles(writerHelper);
+#ifdef INTERMEDIATE_OUTPUT_VIA_OPEN_MEMSTREAM
+        fprintf(stderr, "Opening intermediate output via open_memstream()\n");
+#else
+        fprintf(stderr, "Opening intermediate output via temporary files, slower but non-gcc compatible.\n");
+#endif
+#ifdef INTERMEDIATE_OUTPUT_VIA_OPEN_MEMSTREAM
+        writerHelper->intermediateOutputFile = open_memstream(&writerHelper->intermediateOutputBuffer, &writerHelper->intermediateOutputBufferSize);
+        if (openIgnoredOutputFile) {
+            writerHelper->intermediateIgnoredOutputFile = open_memstream(&writerHelper->intermediateIgnoredOutputBuffer, &writerHelper->intermediateIgnoredOutputBufferSize);
+        }
+#else
+        writerHelper->intermediateOutputFile = tmpfile();
+        if (openIgnoredOutputFile) {
+            writerHelper->intermediateIgnoredOutputFile = tmpfile();
+        }
+#endif
+    }
+
+    FILE *gobyAlignments_intermediateOutputFileHandle(CAlignmentsWriterHelper *writerHelper) {
+        return writerHelper->intermediateOutputFile;
+    }
+    FILE *gobyAlignments_intermediateIgnoredOutputFileHandle(CAlignmentsWriterHelper *writerHelper) {
+        return writerHelper->intermediateIgnoredOutputFile;
+    }
+
+    /**
+     * Start a new section of output.
+     */
+	void gobyAlignments_intermediateOutputStartNew(CAlignmentsWriterHelper *writerHelper) {
+        if (writerHelper->intermediateOutputFile) {
+            rewind(writerHelper->intermediateOutputFile);
+        }
+        if (writerHelper->intermediateIgnoredOutputFile) {
+            rewind(writerHelper->intermediateIgnoredOutputFile);
+        }
+	}
+
+    char *gobyAlignments_intermediateOutputData(CAlignmentsWriterHelper *writerHelper) {
+        return writerHelper->intermediateOutputBuffer;
+    }
+
+    char *gobyAlignments_intermediateOutputIgnoredData(CAlignmentsWriterHelper *writerHelper) {
+        return writerHelper->intermediateIgnoredOutputBuffer;
+    }
+
+    /**
+     * A section of output is complete. Populate what was written to the files into
+     * writerHelper->intermediateOutputBuffer / writerHelper->intermediateIgnoredOutputBuffer.
+     * The output should be processed. After you're done processing the output,
+     * when you're ready to start writing new output call gobyAlignments_intermediateOutputStartNew.
+     */
+	void gobyAlignments_intermediateOutputFlush(CAlignmentsWriterHelper *writerHelper) {
+	    if (writerHelper->intermediateOutputFile) {
+            fflush(writerHelper->intermediateOutputFile);
+        }
+        if (writerHelper->intermediateIgnoredOutputFile) {
+            fflush(writerHelper->intermediateIgnoredOutputFile);
+        }
+#ifndef INTERMEDIATE_OUTPUT_VIA_OPEN_MEMSTREAM
+        size_t fileSize;
+        if (writerHelper->intermediateOutputFile) {
+            fileSize = ftell(writerHelper->intermediateOutputFile);
+            if (fileSize + 1 > writerHelper->intermediateOutputBufferSize) {
+                writerHelper->intermediateOutputBufferSize = fileSize + 1;
+                writerHelper->intermediateOutputBuffer = (char *) realloc(writerHelper->intermediateOutputBuffer, writerHelper->intermediateOutputBufferSize);
+            }
+            rewind(writerHelper->intermediateOutputFile);
+            fread(writerHelper->intermediateOutputBuffer, 1, fileSize, writerHelper->intermediateOutputFile);
+            writerHelper->intermediateOutputBuffer[fileSize] = '\0';
+        }
+        if (writerHelper->intermediateIgnoredOutputFile) {
+            fileSize = ftell(writerHelper->intermediateIgnoredOutputFile);
+            if (fileSize + 1 > writerHelper->intermediateIgnoredOutputBufferSize) {
+                writerHelper->intermediateIgnoredOutputBufferSize = fileSize + 1;
+                writerHelper->intermediateIgnoredOutputBuffer = (char *) realloc(writerHelper->intermediateIgnoredOutputBuffer, writerHelper->intermediateIgnoredOutputBufferSize);
+            }
+            rewind(writerHelper->intermediateIgnoredOutputFile);
+            fread(writerHelper->intermediateIgnoredOutputBuffer, 1, fileSize, writerHelper->intermediateIgnoredOutputFile);
+            writerHelper->intermediateIgnoredOutputBuffer[fileSize] = '\0';
+        }
+#endif
+    }
+
+	void gobyAlignments_closeIntermediateOutputFiles(CAlignmentsWriterHelper *writerHelper) {
+	    if (writerHelper->intermediateOutputFile || writerHelper->intermediateIgnoredOutputFile) {
+#ifdef INTERMEDIATE_OUTPUT_VIA_OPEN_MEMSTREAM
+            fprintf(stderr, "Closing intermediate output via open_memstream()\n");
+#else
+            fprintf(stderr, "Closing intermediate output via temporary files\n");
+#endif
+        }
+        if (writerHelper->intermediateOutputFile) {
+            fclose(writerHelper->intermediateOutputFile);
+            writerHelper->intermediateOutputFile = NULL;
+            free(writerHelper->intermediateOutputBuffer);
+            writerHelper->intermediateOutputBuffer = NULL;
+            writerHelper->intermediateOutputBufferSize = 0;
+        }
+        if (writerHelper->intermediateIgnoredOutputFile) {
+            fclose(writerHelper->intermediateIgnoredOutputFile);
+            writerHelper->intermediateIgnoredOutputFile = NULL;
+            free(writerHelper->intermediateIgnoredOutputBuffer);
+            writerHelper->intermediateIgnoredOutputBuffer = NULL;
+            writerHelper->intermediateIgnoredOutputBufferSize = 0;
+        }
+    }
 
     int gobyAlignments_getQualityAdjustment(CAlignmentsWriterHelper *writerHelper) {
         return writerHelper->qualityAdjustment;
@@ -93,7 +216,7 @@ extern "C" {
      * on the first call and increment by one on each following call.
      */
     void gobyAlignments_addTarget(CAlignmentsWriterHelper *writerHelper, const unsigned int targetIndex, const char *targetName, const unsigned int targetLength) {
-        debug(fprintf(stderr,"gobyAlignments_addTargetIdentifier %s=%d\n", targetName, targetIndex));
+        debug(fprintf(stderr,"gobyAlignments_addTargetIdentifier %s=%d length=%u\n", targetName, targetIndex, targetLength));
         string targetNameStr(targetName);
         writerHelper->alignmentWriter->addTargetIdentifier(targetNameStr, targetIndex);
         writerHelper->alignmentWriter->addTargetLength(targetLength);
@@ -297,6 +420,134 @@ extern "C" {
         writerHelper->alignmentEntry->mutable_spliced_alignment_link()->set_position(value);
     }
 
+    /**
+     * Split a string into a vector.
+     */
+    std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
+        std::stringstream ss(s);
+        std::string item;
+        while(std::getline(ss, item, delim)) {
+            elems.push_back(item);
+        }
+        return elems;
+    }
+
+    /**
+     * Input is SAM, ready to be converted to Compact-Alignment. The queryName [col=0] and
+     * targetName [col=3] should already be zero based integers.
+     * the samInput may contain multiple lines separated by '\n', if multiple lines of input
+     * exist, the queryName (first column) should be the same for each of the lines.
+     *
+     * This is not fully tested or debugged.
+     */
+    void gobyAlignments_processSAM(CAlignmentsWriterHelper *writerHelper, char *samInput, int npaths, int maxpaths) {
+        string samInputStr(samInput);
+
+        std::vector<std::string> samLines;
+        std::vector<std::string> samCols;
+        split(samInputStr, '\n', samLines);
+        
+        int sameLineNo;
+        for (sameLineNo = 0; sameLineNo < samLines.size(); sameLineNo++) {
+            samCols.clear();
+            split(samLines[sameLineNo], '\t', samCols);
+            
+            unsigned int queryIndex = strtoul(samCols[0].c_str(), NULL, 10);
+            unsigned int pairFlags = strtoul(samCols[1].c_str(), NULL, 10);
+            unsigned int fragmentIndex = 0;
+            unsigned int mateFragmentIndex = 0;
+            if (pairFlags & SAM_FLAGS_FIRST_READ_P) {
+                fragmentIndex = 0;
+                mateFragmentIndex = 1;
+            } else if (pairFlags & SAM_FLAGS_SECOND_READ_P) {
+                fragmentIndex = 1;
+                mateFragmentIndex = 0;
+            }
+            bool matchingReverseStrand = ((pairFlags & SAM_FLAGS_QUERY_MINUSP) > 0);
+            
+            unsigned int targetIndex = strtoul(samCols[2].c_str(), NULL, 10);
+            unsigned int position = strtoul(samCols[3].c_str(), NULL, 10);
+            int score = strtol(samCols[4].c_str(), NULL, 10);
+            string cigar = samCols[5];
+            unsigned int mateTargetIndex;
+            bool hasMate;
+            if (samCols[6].length() == 0) {
+                // No data in mateTargetIndex column
+                mateTargetIndex = 0;
+                hasMate = false;
+            } else if (samCols[6].compare(0, 1, "=") == 0) {
+                // Mate on same targetIndex
+                mateTargetIndex = targetIndex;
+                hasMate = true;
+            } else if (samCols[6].compare(0, 1, "*") == 0) {
+                // No mate, this value shouldn't be used.
+                mateTargetIndex = 0;
+                hasMate = false;
+            } else {
+                // Mate on different targetIndex
+                mateTargetIndex = strtoul(samCols[6].c_str(), NULL, 10);
+                hasMate = true;
+            }
+            unsigned int matePosition = strtoul(samCols[7].c_str(), NULL, 10);
+            int templateLength = strtol(samCols[8].c_str(), NULL, 10);
+            string query = samCols[9];
+            string quality;
+            if (samCols[10].length() > 0 && samCols[10].compare(0, 1, "*") != 0) {
+                quality = samCols[10];
+            }
+            string md;
+            int nm = -1;
+            int sm = -1;
+            for (int i = 11; i < samCols.size(); i++) {
+                if (samCols[i].compare(0, 5, "MD:Z:") == 0) {
+                    md = samCols[i].substr(5);
+                }
+                if (samCols[i].compare(0, 5, "NM:i:") == 0) {
+                    nm = strtol(samCols[i].substr(5).c_str(), NULL, 10);
+                }
+                if (samCols[i].compare(0, 5, "SM:i:") == 0) {
+                    sm = strtol(samCols[i].substr(5).c_str(), NULL, 10);
+                }
+            }
+            debug(fprintf(stderr,"%u:%u:%u:%u:%d:%s:%u:%u:%d:%s:%s:%s:%d:%d   ",
+                queryIndex,
+                pairFlags,
+                targetIndex,
+                position,
+                score,
+                cigar.c_str(),
+                mateTargetIndex,
+                matePosition,
+                templateLength,
+                query.c_str(),
+                quality.c_str(),
+                md.c_str(),
+                nm,
+                sm);)
+            debug(fprintf(stderr,"hasMate=%s, fragmentIndex=%u, mateFragmentIndex=%u, matchingReverseStrand=%s\n",
+                hasMate?"yes":"no", fragmentIndex, mateFragmentIndex,
+                matchingReverseStrand?"yes":"no");)
+            CSamHelper *samHelper = samHelper_getResetSamHelper(writerHelper);
+            samHelper_setCigar(samHelper, cigar.c_str());
+            samHelper_setMd(samHelper, md.c_str());
+            samHelper_setQuery(samHelper, query.c_str(), quality.c_str(), query.length(), matchingReverseStrand);
+            debug(fprintf(stderr,"cpp_cigar=%s, cpp_md=%s, cpp_query=%s, cpp_qual=%s\n",
+                samHelper->cpp_cigar->c_str(),
+                samHelper->cpp_md->c_str(),
+                samHelper->cpp_sourceQuery->c_str(),
+                samHelper->cpp_sourceQual->c_str());)
+            samHelper_constructRefAndQuery(samHelper);
+            
+            debug(fprintf(stderr,"  score=%d,   qual=%s\n  query=%s\n    ref=%s\n",
+                samHelper->score,
+                samHelper->cpp_qual->c_str(),
+                samHelper->cpp_query->c_str(),
+                samHelper->cpp_ref->c_str());)
+            debug(fprintf(stderr, "----------------------------------------\n");)
+            
+        }
+    }
+
     CSamHelper *samHelper_getResetSamHelper(CAlignmentsWriterHelper *writerHelper) {
         CSamHelper *samHelper = writerHelper->samHelper;
         if (samHelper == NULL) {
@@ -326,6 +577,12 @@ extern "C" {
         return samHelper;
     }
 
+    void samHelper_setCigar(CSamHelper *samHelper, const char *cigar) {
+        if (cigar) {
+            (*samHelper->cpp_cigar) += cigar;
+        }
+    }
+
     void samHelper_addCigarItem(CSamHelper *samHelper, int length, char op) {
         std:stringstream lengthStream;
         lengthStream << length;
@@ -333,7 +590,7 @@ extern "C" {
         (*samHelper->cpp_cigar) += op;
     }
 
-    void samHelper_setMd(CSamHelper *samHelper, char *md) {
+    void samHelper_setMd(CSamHelper *samHelper, const char *md) {
         if (md) {
             (*samHelper->cpp_md) += md;
         }
@@ -357,12 +614,23 @@ extern "C" {
         }
     }
 
+    void samHelper_setQuery(CSamHelper *samHelper, const char *reads, const char *qual,
+            unsigned int length, bool reverseStrand) {
+        // TODO: Do we need to reverse this if reverse query?
+        if (reads && strlen(reads) > 0) {
+            (*samHelper->cpp_sourceQuery) += reads;
+        }
+        if (qual && strlen(qual) > 0) {
+            (*samHelper->cpp_sourceQual) += qual;
+        }
+    }
+
     const char *samHelper_getCigarStr(CSamHelper *samHelper) {
         return samHelper->cpp_cigar->c_str();
     }
 
     void applyCigar(CSamHelper *samHelper) {
-        pcrecpp::RE re("([0-9]+)([MID])");
+        pcrecpp::RE re("([0-9]+)([SMID])");
         pcrecpp::StringPiece input(samHelper->cpp_cigar->c_str());
         int length;
         char op;
@@ -372,6 +640,15 @@ extern "C" {
         samHelper->numMisMatches = 0;
         while (re.Consume(&input, &length, &op)) {
             switch(op) {
+                case 'S':
+                    // Soft clipping
+                    for (i = 0; i < length; i++) {
+                        (*samHelper->cpp_ref) += '-';
+                        (*samHelper->cpp_query) += '-';
+                        (*samHelper->cpp_qual) += ((char) samHelper->minQualValue); // min quality
+                    }
+                    posInReads += length;
+                    break;
                 case 'M':
                     // Account for matches AND mismatches. Any mis-matches will be fixed in applyMd()
                     (*samHelper->cpp_query) += samHelper->cpp_sourceQuery->substr(posInReads, length);
