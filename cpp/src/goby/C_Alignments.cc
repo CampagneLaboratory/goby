@@ -530,7 +530,7 @@ extern "C" {
             CSamHelper *samHelper = samHelper_getResetSamHelper(writerHelper);
             samHelper_setCigar(samHelper, cigar.c_str());
             samHelper_setMd(samHelper, md.c_str());
-            samHelper_setQuery(samHelper, query.c_str(), quality.c_str(), query.length(), matchingReverseStrand);
+            samHelper_setQuery(samHelper, query.c_str(), quality.c_str(), query.length(), matchingReverseStrand == true ? 1 : 0);
             debug(fprintf(stderr,"cpp_cigar=%s, cpp_md=%s, cpp_query=%s, cpp_qual=%s\n",
                 samHelper->cpp_cigar->c_str(),
                 samHelper->cpp_md->c_str(),
@@ -615,7 +615,7 @@ extern "C" {
     }
 
     void samHelper_setQuery(CSamHelper *samHelper, const char *reads, const char *qual,
-            unsigned int length, bool reverseStrand) {
+            unsigned int length, unsigned int reverseStrand) {
         // TODO: Do we need to reverse this if reverse query?
         if (reads && strlen(reads) > 0) {
             (*samHelper->cpp_sourceQuery) += reads;
