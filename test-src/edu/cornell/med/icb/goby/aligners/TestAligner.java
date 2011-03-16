@@ -22,6 +22,7 @@ import edu.cornell.med.icb.goby.config.GobyConfiguration;
 import edu.cornell.med.icb.goby.readers.FastXEntry;
 import edu.cornell.med.icb.goby.readers.FastXReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -34,9 +35,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Arrays;
 
 /**
@@ -195,6 +194,43 @@ public class TestAligner {
             IOUtils.closeQuietly(compactFileStream);
         }
     }
+
+    @Test
+    public void testAlignWithMissingReadsBWA() throws IOException, InterruptedException {
+        final BWAAligner aligner = new BWAAligner();
+        final String databaseDirectory = FilenameUtils.concat(BASE_TEST_DIR, "db-bwa-missing-reads");
+        FileUtils.forceMkdir(new File(databaseDirectory));
+        aligner.setConfiguration(GobyConfiguration.getConfiguration());
+
+        aligner.setDatabaseDirectory(databaseDirectory);
+        aligner.setWorkDirectory(databaseDirectory);
+        final File compactReads =
+                    new File(FilenameUtils.concat(BASE_TEST_DIR, "bwa-input-reads.compact-reads"));
+
+        ReadsWriter writer=new ReadsWriter(new FileOutputStream(compactReads.getPath()));
+        writer.setIdentifier("1");
+        writer.setSequence("ACATACATCACCACTACTACGGATACAGAACGGGG");
+        writer.appendEntry(1);
+        writer.setIdentifier("10000");
+        writer.setSequence("ACATACATCACCACTACTACGGATACAGAACGGGG");
+        writer.appendEntry(10000);
+        writer.close();
+        final File compactReference =
+                new File(FilenameUtils.concat(BASE_TEST_DIR, "bwa-input-reference.compact-reads"));
+
+  
+        writeCompact(compactReference, references, false);  // Different from reads
+
+        aligner.setDatabaseName(aligner.getDefaultDbNameForReferenceFile(compactReference));
+        final String basename = FilenameUtils.concat(BASE_TEST_DIR, "bwa-output-missing-reads");
+        aligner.align(compactReference, compactReads, basename);
+        AlignmentReader reader=new AlignmentReader(basename);
+        reader.readHeader();
+        assertEquals("The number of queries must be 2",2,reader.getNumberOfQueries() );
+        assertEquals("The lagest query index must be 10000",10000,reader.getLargestSplitQueryIndex() );
+      
+    }
+
 
     @BeforeClass
     public static void initializeTestDirectory() throws IOException {

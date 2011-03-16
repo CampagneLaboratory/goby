@@ -73,7 +73,7 @@ public class TestStatistics {
         final FoldChangeCalculator foldChange = new FoldChangeCalculator(results);
         final NormalizationMethod normalizationMethod = new AlignedCountNormalization();
         foldChange.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
-        assertEquals("fold-change does not match", 1.3371121385291218,
+        assertEquals("fold-change does not match", 2d,
                 results.getStatistic(info, foldChange.statisticIds.get(0)), .1);
     }
 
@@ -176,7 +176,7 @@ public class TestStatistics {
         foldChange.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
         tTest.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
         fisher.evaluate(deCalc, normalizationMethod, results, info, "A", "B");
-        assertEquals("fold-change does not match", 1.4139327824612316d,
+        assertEquals("fold-change does not match", 2d,
                 results.getStatistic(info, foldChange.statisticIds.get(0)), .1);
         assertTrue("T-test must be significant",
                 results.getStatistic(info, tTest.statisticIds.get(0)) < 0.01);
@@ -252,8 +252,8 @@ public class TestStatistics {
 
         final MutableString foldChangeIndex = foldChange.statisticIds.get(0);
         final DifferentialExpressionInfo info = list.get(0);
-        assertEquals("fold-change must match", 1.4139327824612316d,
-                list.getStatistic(info, foldChangeIndex), .1);
+        assertEquals("fold-change must match", 2d,
+                list.getStatistic(info, foldChangeIndex), .2);
         assertTrue("T-test must be significant",
                 list.getStatistic(info1, tTest.statisticIds.get(0)) < 0.01);
 
@@ -283,7 +283,7 @@ public class TestStatistics {
             }
         };
         deCalc.setRunInParallel(true);
-        int elementsPerSample = 1000000;
+        int elementsPerSample = 1000;
         for (int i = 0; i < elementsPerSample; i++) {
             deCalc.defineElement("id-" + i);
         }

@@ -72,7 +72,7 @@ public class Log2FoldChangeCalculator extends StatisticCalculator {
         }
         averageA /= samplesA.size();
         averageB /= samplesB.size();
-        final double foldChangeStatistic = log2((averageA + 1) / (averageB + 1));
+        final double foldChangeStatistic = log2(averageA) - log2(averageB);
         info.statistics.size(results.getNumberOfStatistics());
         info.statistics.set(foldChangeStatIndex, foldChangeStatistic);
 

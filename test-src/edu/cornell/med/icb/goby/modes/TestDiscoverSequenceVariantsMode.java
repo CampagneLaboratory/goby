@@ -60,8 +60,8 @@ public class TestDiscoverSequenceVariantsMode {
             mode.configure(args);
             mode.execute();
             assertTrue(String.format("output file %s must match expected result", BASE_TEST_DIR + "/" + outputFilename)
-                    , FileUtils.contentEquals(new File(BASE_TEST_DIR + "/" + outputFilename), 
-                    new File("test-data/discover-variants/expected-output1.tsv") ));
+                    , FileUtils.contentEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
+                            new File("test-data/discover-variants/expected-output1.tsv")));
         }
     }
 
@@ -242,13 +242,14 @@ public class TestDiscoverSequenceVariantsMode {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Deleting base test directory: " + BASE_TEST_DIR);
         }
-        // FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
+        FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
     }
 
     @Before
     public void setUp
             () throws IOException {
-        final File dir = new File("test-results/variants/");
+
+        final File dir = new File(BASE_TEST_DIR);
         dir.mkdirs();
 
 
@@ -257,5 +258,7 @@ public class TestDiscoverSequenceVariantsMode {
         referenceWriter.setIdentifier("0");
         referenceWriter.appendEntry();
         referenceWriter.close();
+
+
     }
 }

@@ -216,6 +216,7 @@ public class TestComputeStartCount {
     public void testComputeStarts5() throws IOException {
         initializeTestDirectory();
         final Random random = new Random();
+        random.setSeed(023);
         final ComputeStartCount computer = new ComputeStartCount(ComputeStartCount.POSITIVE_STRAND_ONLY);
         for (int i = 0; i < 100000; i++) {
             final int start = chooseRandom(random, 1, 10000);

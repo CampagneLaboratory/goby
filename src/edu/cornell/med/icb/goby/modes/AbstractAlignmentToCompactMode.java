@@ -578,7 +578,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
                 System.out.println("Scanning query file..");
                 final ObjectArrayList<String> ids = processIds(queryReadIdsFilename);
                 this.numberOfReads = ids.size();
-                System.out.println("Query file had " + this.numberOfReads + " entries.");
+             //   System.out.println("Query file had " + this.numberOfReads + " entries.");
                 for (final String id : ids) {
                     if (id != null) {
                         queryIds.registerIdentifier(new MutableString(id));

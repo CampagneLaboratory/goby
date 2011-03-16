@@ -77,7 +77,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
     private boolean skipMissingMdAttribute = true;
     private int dummyQueryIndex;
-    private ObjectSet<String> parseAttributeNames= new ObjectArraySet<String>();
+    private ObjectSet<String> parseAttributeNames = new ObjectArraySet<String>();
 
 
     public String getSamBinaryFilename() {
@@ -146,9 +146,11 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         final MutableString referenceSequence = new MutableString();
         // shared buffer for extract sequence variation work. We allocate here to avoid repetitive memory allocations.
         final MutableString readPostInsertions = new MutableString();
+        numberOfReads = 0;
 
         // int stopEarly = 0;
         while (recordCloseableIterator.hasNext()) {
+            numberOfReads++;
             final SAMRecord samRecord = recordCloseableIterator.next();
             final int queryIndex = getQueryIndex(samRecord);
 
@@ -300,6 +302,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             writer.putStatistic("keep-filter-filename", readIndexFilterFile.getName());
         }
         writer.putStatistic("number-of-entries-written", numAligns);
+        writer.setNumQueries(numberOfReads);
         writer.printStats(System.out);
 
         // write information from SAM file header

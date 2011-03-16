@@ -40,6 +40,6 @@ public abstract class RpkmLikeNormalizationMethod implements NormalizationMethod
         final int elementLength = deCalc.getElementLength(elementId);
 
         final double normalizationFactor = getDenominator(deCalc, sampleId); // in reads
-        return (double) count / ((double) elementLength / 1000.0d) / (normalizationFactor / 1E6d);
+        return (double) (count+1) / ((double) elementLength / 1000.0d) / (normalizationFactor / 1E6d);
     }
 }

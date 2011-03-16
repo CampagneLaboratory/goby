@@ -270,6 +270,7 @@ public class TestIterateSortedAlignment {
                                                                     final int position,
                                                                     final float score, final boolean matchesReverseStrand,
                                                                     int[] variationIndices, int queryLength) {
+
         Alignments.AlignmentEntry.Builder newEntry = Alignments.AlignmentEntry.newBuilder();
         newEntry.setQueryIndex(queryIndex);
         newEntry.setTargetIndex(targetIndex);
@@ -280,6 +281,7 @@ public class TestIterateSortedAlignment {
         newEntry.setQueryLength(queryLength);
 
         for (int variaIndex : variationIndices) {
+            
             Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder();
             varBuilder.setFrom("A");
             varBuilder.setTo("C");

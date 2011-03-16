@@ -265,7 +265,7 @@ public abstract class IterateSortedAlignments<T> {
             {
                 first = false;
                 assert queryLength!=0 : "queryLength cannot be zero to iterate sorted alignments.";
-                int currentReadIndex = forwardStrand ? 0 : queryLength ;
+                int currentReadIndex = forwardStrand ? 0 : queryLength +1;
                 int currentRefPosition = alignmentEntry.getPosition() - 1;
                 int lastMatchIndex = 0;
 
