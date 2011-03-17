@@ -12,7 +12,8 @@
    before calculating RPKMs and taking the log. Similar changes were done to the fold-change. RPKM columns now return
    PRKM of (count+1).
  - Mode reformat-compact-reads now takes an optional -f argument to filter reads. This option can be used to
-   remove redundant reads from a compact-reads file (see tally-reads mode to produce the read filter).  
+   remove redundant reads from a compact-reads file (see tally-reads mode to produce the read filter). It is no longer
+   necessary to do round-trips to fastq to remove redundant reads.
 1.9.2
  - Fixed a major bug in discover-sequence-variants that sometimes could cause confusion in the group of origin of a
    variation. This bug could affect between group p-values. A Junit test now checks for the error condition and
