@@ -65,6 +65,11 @@
         <javac srcdir="${src}" destdir="${classes}" debug="${debug}" deprecation="${deprecation}">
             <classpath refid="compile.classpath"/>
         </javac>
+        <copy todir="${classes}">
+            <fileset dir="${src}">
+                <include name="**/*.jsap"/>
+            </fileset>
+        </copy>
     </target>
 
     <target name="jar" depends="jar-goby, jar-goby-api, jar-goby-spi, jar-goby-io" description="Create project jarfiles"/>
@@ -76,9 +81,6 @@
               failonerror="true"/>
         <jar jarfile="${goby-jarfile}">
             <fileset dir="${classes}"/>
-            <fileset dir="${src}">
-                <include name="**/*.jsap"/>
-            </fileset>
             <zipgroupfileset dir="${lib}">
                 <include name="bdval-api.jar"/>
                 <include name="commons-collections-3.2.1.jar"/>
@@ -130,10 +132,6 @@
         <!-- Standalone jar file. -->
         <jar jarfile="${goby-api-jarfile}">
             <fileset dir="${classes}"/>
-            <fileset dir="${src}">
-                <include name="**/*.jsap"/>
-            </fileset>
-
             <manifest>
                 <attribute name="Specification-Title" value="Goby API"/>
                 <attribute name="Specification-Vendor"
