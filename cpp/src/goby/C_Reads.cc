@@ -7,6 +7,7 @@
 
 using namespace std;
 
+#undef C_READ_API_WRITE_ALIGNMENT_DEBUG
 #ifdef C_READ_API_WRITE_ALIGNMENT_DEBUG
 #define debug(x) x
 #else
