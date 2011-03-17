@@ -1,3 +1,4 @@
+1.9.4
 1.9.3
  - Add new statistics for discover-sequence variants. Notably, we now record the log odds ratio,
    the estimated standard error of the log odds ratio, as well as a Z-score for the log odds.

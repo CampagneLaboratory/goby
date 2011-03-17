@@ -11,9 +11,11 @@
       <properties />
       <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="Display-Seq-Var" />
       <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="Read-qual-stats" />
+      <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="Seq-Var-Stats" />
       <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="annotation counts" />
       <executeOn event="beforeRun" target="compile" runConfigurationType="Application" runConfigurationName="sam-to-compact" />
       <executeOn event="beforeRun" target="compile-tests" />
+      <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestDiscoverSequenceVariantsMode.testDiscover" />
       <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="TestReadWriteAlignments.readWriteHeader103" />
       <executeOn event="beforeRun" target="compile-tests" runConfigurationType="JUnit" runConfigurationName="edu.cornell.med.icb.goby in goby" />
     </buildFile>
@@ -159,6 +161,11 @@
   </component>
   <component name="FacetAutodetectingManager">
     <autodetection-disabled>
+      <facet-type id="Grails">
+        <modules>
+          <module name="goby" />
+        </modules>
+      </facet-type>
       <facet-type id="ejb">
         <modules>
           <module name="goby" />
@@ -1178,6 +1185,16 @@
     <Base>
       <setting name="state" value="2" />
     </Base>
+  </component>
+  <component name="libraryTable">
+    <library name="Grails">
+      <CLASSES>
+        <root url="file://C:/java/grails-1.3.4/lib" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+      <jarDirectory url="file://C:/java/grails-1.3.4/lib" recursive="false" />
+    </library>
   </component>
   <component name="org.twodividedbyzero.idea.findbugs">
     <option name="_basePreferences">
