@@ -7,6 +7,8 @@
    Also added the proportion of reference allele (refCount / (refCount+varCount).
  - Fix reformat-compact-reads bug where quality scores where longer by 1 than the sequence.
  - Reduce the memory needed by compact-file-stats to determine the number of reads in a compact reads file.
+ - Changed how the number of reads in an alignment file is determined by compact-file-stats. We now report the number
+   stored in the alignment header.
  - Change how log2 fold change was estimated. We used to estimate as ((log2_rpkm_group_a+1)/ (log2_rpkm_group_b+1)).
    This can cause problems when log2 rpkm are negative in one group and positive in the other. We now add 1 to counts
    before calculating RPKMs and taking the log. Similar changes were done to the fold-change. RPKM columns now return
