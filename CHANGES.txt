@@ -1,5 +1,6 @@
-1.9.4
 1.9.3
+ - This release has a C API compatible with our development version of GSNAP. A version of GSNAP released
+   2011-03-11 should compile with Goby 1.9.3.
  - Add new statistics for discover-sequence variants. Notably, we now record the log odds ratio,
    the estimated standard error of the log odds ratio, as well as a Z-score for the log odds.
    Standard error and Z-score are only estimated if more than 10 counts exist in each cell of the contingency table.
@@ -10,6 +11,8 @@
    This can cause problems when log2 rpkm are negative in one group and positive in the other. We now add 1 to counts
    before calculating RPKMs and taking the log. Similar changes were done to the fold-change. RPKM columns now return
    PRKM of (count+1).
+ - Mode reformat-compact-reads now takes an optional -f argument to filter reads. This option can be used to
+   remove redundant reads from a compact-reads file (see tally-reads mode to produce the read filter).  
 1.9.2
  - Fixed a major bug in discover-sequence-variants that sometimes could cause confusion in the group of origin of a
    variation. This bug could affect between group p-values. A Junit test now checks for the error condition and
