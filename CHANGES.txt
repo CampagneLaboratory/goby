@@ -2,6 +2,7 @@
  - Add new statistics for discover-sequence variants. Notably, we now record the log odds ratio,
    the estimated standard error of the log odds ratio, as well as a Z-score for the log odds.
    Standard error and Z-score are only estimated if more than 10 counts exist in each cell of the contingency table.
+   Also added the proportion of reference allele (refCount / (refCount+varCount).
  - Fix reformat-compact-reads bug where quality scores where longer by 1 than the sequence.
  - Reduce the memory needed by compact-file-stats to determine the number of reads in a compact reads file.
  - Change how log2 fold change was estimated. We used to estimate as ((log2_rpkm_group_a+1)/ (log2_rpkm_group_b+1)).
