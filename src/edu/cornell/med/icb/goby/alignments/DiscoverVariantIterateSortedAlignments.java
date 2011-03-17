@@ -41,11 +41,11 @@ import java.util.Comparator;
 /**
  * Helper class to implement the logic of discovering sequence variations in and across groups of samples.
  * Implements most of the work done by DiscoverSequenceVariantsMode
- * @see edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode
  *
  * @author Fabien Campagne
  *         Date: Sep 7, 2010
  *         Time: 2:14:38 PM
+ * @see edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode
  */
 public class DiscoverVariantIterateSortedAlignments
         extends IterateSortedAlignmentsListImpl {
@@ -57,10 +57,10 @@ public class DiscoverVariantIterateSortedAlignments
     private String[] groups;
     private ObjectArrayList<DiscoverSequenceVariantsMode.ReadIndexStats> readIndexStats;
     private int numberOfGroups;
-    private int[] refCounts;
-    private int[] variantsCount;
-    private int[] distinctReadIndexCount;
-    private float[] averageVariantQualityScore;
+    private int[] refCountsPerGroup;
+    private int[] variantsCountPerGroup;
+    private int[] distinctReadIndexCountPerGroup;
+    private float[] averageVariantQualityScorePerGroup;
     private DifferentialExpressionAnalysis deAnalyzer;
     private DifferentialExpressionCalculator deCalculator;
     private int thresholdDistinctReadIndices = 10;
@@ -69,6 +69,10 @@ public class DiscoverVariantIterateSortedAlignments
     private boolean fisherRInstalled;
     private int log2OddsRatioStandardErrorColumnIndex;
     private int log2OddsRatioZColumnIndex;
+    private int numberOfSamples;
+
+    private int[] refCountsPerSample;
+    private int[] variantsCountPerSample;
 
     public void setMinimumVariationSupport(int minimumVariationSupport) {
         this.minimumVariationSupport = minimumVariationSupport;
@@ -88,8 +92,13 @@ public class DiscoverVariantIterateSortedAlignments
     int fisherExactPValueColumnIndex;
     int observedVariationsAtPositionColumnIndex;
     StatisticsWriter statWriter;
+    String[] samples;
 
-    public void initialize(DifferentialExpressionAnalysis deAnalyzer, DifferentialExpressionCalculator deCalculator, String[] groups, ObjectArrayList<DiscoverSequenceVariantsMode.ReadIndexStats> readIndexStats, PrintWriter outWriter) {
+    public void initialize(DifferentialExpressionAnalysis deAnalyzer,
+                           DifferentialExpressionCalculator deCalculator,
+                           String[] groups,
+                           ObjectArrayList<DiscoverSequenceVariantsMode.ReadIndexStats> readIndexStats,
+                           PrintWriter outWriter) {
 
         if (deAnalyzer.eval("within-groups") || deAnalyzer.eval("between-groups")) {
             //activate R only if we need it:
@@ -110,10 +119,16 @@ public class DiscoverVariantIterateSortedAlignments
         fisherExactPValueColumnIndex = -1;
         numberOfGroups = groups.length;
 
-        refCounts = new int[numberOfGroups];
-        variantsCount = new int[numberOfGroups];
-        distinctReadIndexCount = new int[numberOfGroups];
-        averageVariantQualityScore = new float[numberOfGroups];
+        samples = deCalculator.samples();
+        numberOfSamples = samples.length;
+
+        refCountsPerGroup = new int[numberOfGroups];
+        variantsCountPerGroup = new int[numberOfGroups];
+        distinctReadIndexCountPerGroup = new int[numberOfGroups];
+        averageVariantQualityScorePerGroup = new float[numberOfGroups];
+
+        refCountsPerSample = new int[numberOfSamples];
+        variantsCountPerSample = new int[numberOfSamples];
 
         this.deAnalyzer = deAnalyzer;
         this.deCalculator = deCalculator;
@@ -124,9 +139,12 @@ public class DiscoverVariantIterateSortedAlignments
             fisherExactPValueColumnIndex = statWriter.defineColumn("Fisher-Exact-P-value[%s/%s]", groups[0], groups[1]);
         }
 
+
         for (String group : groups) {
-            statWriter.defineColumn("refCounts[%s]", group);
-            statWriter.defineColumn("varCount[%s]", group);
+
+            statWriter.defineColumn("refProportion[%s]", group);
+            statWriter.defineColumn("refCountsPerGroup[%s]", group);
+            statWriter.defineColumn("varCountPerGroup[%s]", group);
             statWriter.defineColumn("distinct-read-index-count[%s]", group);
             statWriter.defineColumn("average-variant-quality-scores[%s]", group);
 
@@ -138,6 +156,14 @@ public class DiscoverVariantIterateSortedAlignments
             statWriter.defineColumn("observed variations at position ([frequency:from/to,]+) group %s", group);
 
         }
+       /*
+        TODO uncomment to enable per sample stats.
+       for (String sample : deCalculator.samples()) {
+
+            statWriter.defineColumn("refProportion[%s]", sample);
+            statWriter.defineColumn("refCountsInSample[%s]", sample);
+            statWriter.defineColumn("varCountInSample[%s]", sample);
+        }     */
         statWriter.writeHeader();
     }
 
@@ -167,32 +193,43 @@ public class DiscoverVariantIterateSortedAlignments
         int sumVariantCounts = 0;
 
         for (int i = 0; i < numberOfGroups; i++) {
-            refCounts[i] = 0;
-            variantsCount[i] = 0;
-            distinctReadIndexCount[i] = 0;
-            averageVariantQualityScore[i] = 0;
+            refCountsPerGroup[i] = 0;
+            variantsCountPerGroup[i] = 0;
+            distinctReadIndexCountPerGroup[i] = 0;
+            averageVariantQualityScorePerGroup[i] = 0;
+        }
+        for (int j = 0; j < numberOfSamples; j++) {
+            refCountsPerSample[j] = 0;
+            variantsCountPerSample[j] = 0;
 
         }
         if (list != null) {
             IntSet distinctReadIndices = new IntArraySet();
             for (IterateSortedAlignmentsListImpl.PositionBaseInfo info : list) {
+                //TODO make sure readerIndex matches the index of the sample name in deCalculator.samples().
+                final int sampleIndex = info.readerIndex;
+
                 final int groupIndex = readerIndexToGroupIndex[info.readerIndex];
 
-                refCounts[groupIndex] += info.matchesReference ? 1 : 0;
-                variantsCount[groupIndex] += info.matchesReference ? 0 : 1;
+                refCountsPerGroup[groupIndex] += info.matchesReference ? 1 : 0;
+                variantsCountPerGroup[groupIndex] += info.matchesReference ? 0 : 1;
+
+                refCountsPerSample[sampleIndex] += info.matchesReference ? 1 : 0;
+                variantsCountPerSample[sampleIndex] += info.matchesReference ? 0 : 1;
+
                 if (!info.matchesReference) {
                     sumVariantCounts += 1;
-                    averageVariantQualityScore[groupIndex] += info.qualityScore;
+                    averageVariantQualityScorePerGroup[groupIndex] += info.qualityScore;
                     distinctReadIndices.add(info.readIndex);
                 }
-                // TODO should the next add statement be within the previous if conditional?
 
             }
 
+
             for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
 
-                averageVariantQualityScore[groupIndex] /= variantsCount[groupIndex];
-                distinctReadIndexCount[groupIndex] = distinctReadIndices.size();
+                averageVariantQualityScorePerGroup[groupIndex] /= variantsCountPerGroup[groupIndex];
+                distinctReadIndexCountPerGroup[groupIndex] = distinctReadIndices.size();
             }
 
             if (distinctReadIndices.size() >= thresholdDistinctReadIndices && sumVariantCounts > minimumVariationSupport) {
@@ -208,42 +245,42 @@ public class DiscoverVariantIterateSortedAlignments
                     statWriter.setValue(positionColumnIndex, position + 1);
 
                     if (deAnalyzer.eval("between-groups")) {
-                        final double denominator = (double) refCounts[groupIndexA] * (double) variantsCount[groupIndexB];
+                        final double denominator = (double) refCountsPerGroup[groupIndexA] * (double) variantsCountPerGroup[groupIndexB];
                         double oddsRatio = denominator == 0 ? Double.NaN :
-                                ((double) refCounts[groupIndexB] * (double) variantsCount[groupIndexA]) /
+                                ((double) refCountsPerGroup[groupIndexB] * (double) variantsCountPerGroup[groupIndexA]) /
                                         denominator;
                         double logOddsRatioSE;
-                        if (    variantsCount[groupIndexA] < 10 ||
-                                variantsCount[groupIndexB] < 10 ||
-                                refCounts[groupIndexA] < 10 ||
-                                refCounts[groupIndexB] < 10) {
+                        if (variantsCountPerGroup[groupIndexA] < 10 ||
+                                variantsCountPerGroup[groupIndexB] < 10 ||
+                                refCountsPerGroup[groupIndexA] < 10 ||
+                                refCountsPerGroup[groupIndexB] < 10) {
                             // standard error estimation is unreliable when any of the counts are less than 10.
                             logOddsRatioSE = Double.NaN;
                         } else {
-                            logOddsRatioSE = Math.sqrt(1d / refCounts[groupIndexB] +
-                                    1d / variantsCount[groupIndexA] +
-                                    1d / variantsCount[groupIndexB] +
-                                    1d / refCounts[groupIndexA]);
+                            logOddsRatioSE = Math.sqrt(1d / refCountsPerGroup[groupIndexB] +
+                                    1d / variantsCountPerGroup[groupIndexA] +
+                                    1d / variantsCountPerGroup[groupIndexB] +
+                                    1d / refCountsPerGroup[groupIndexA]);
                         }
                         double log2OddsRatio = Math.log(oddsRatio) / Math.log(2);
-                        double log2OddsRatioZValue=  log2OddsRatio/logOddsRatioSE;
+                        double log2OddsRatioZValue = log2OddsRatio / logOddsRatioSE;
 
                         double fisherP = Double.NaN;
 
                         boolean ok = checkCounts();
                         if (ok) {
                             fisherP = fisherRInstalled ? FisherExactRCalculator.getFisherPValue(
-                                    refCounts[groupIndexB], variantsCount[groupIndexB],
-                                    refCounts[groupIndexA], variantsCount[groupIndexA]) : Double.NaN;
+                                    refCountsPerGroup[groupIndexB], variantsCountPerGroup[groupIndexB],
+                                    refCountsPerGroup[groupIndexA], variantsCountPerGroup[groupIndexA]) : Double.NaN;
                         } else {
                             System.err.printf("An exception was caught evaluating the Fisher Exact test P-value. Details are provided below%n" +
                                     "referenceId=%s referenceIndex=%d position=%d %n" +
-                                    "refCounts[1]=%d variantsCount[1]=%d%n" +
-                                    "refCounts[0]=%d, variantsCount[0]=%d",
+                                    "refCountsPerGroup[1]=%d variantsCountPerGroup[1]=%d%n" +
+                                    "refCountsPerGroup[0]=%d, variantsCountPerGroup[0]=%d",
                                     currentReferenceId, referenceIndex,
                                     position + 1,
-                                    refCounts[groupIndexB], variantsCount[groupIndexB],
-                                    refCounts[groupIndexA], variantsCount[groupIndexA]
+                                    refCountsPerGroup[groupIndexB], variantsCountPerGroup[groupIndexB],
+                                    refCountsPerGroup[groupIndexA], variantsCountPerGroup[groupIndexA]
                             );
 
                         }
@@ -253,15 +290,32 @@ public class DiscoverVariantIterateSortedAlignments
                         statWriter.setValue(fisherExactPValueColumnIndex, fisherP);
 
                     }
+                    // output reference proportion, refCounts and varCounts for each sample:
+                 /*
+                  TODO uncomment to enable per sample stats.
+                  for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
+                        double refProportion = (double) refCountsPerSample[sampleIndex];
+                        refProportion /= refCountsPerSample[sampleIndex] + variantsCountPerSample[sampleIndex];
+                        statWriter.setValue(refProportion,
+                                "refProportion[%s]", samples[sampleIndex]);
+                        statWriter.setValue(refCountsPerSample[sampleIndex], "refCountsInSample[%s]", samples[sampleIndex]);
+                        statWriter.setValue(variantsCountPerSample[sampleIndex], "varCountInSample[%s]", samples[sampleIndex]);
 
+                    }  */
+                    // output group information:
                     for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
-                        statWriter.setValue(refCounts[groupIndex], "refCounts[%s]", groups[groupIndex]);
-                        statWriter.setValue(variantsCount[groupIndex], "varCount[%s]", groups[groupIndex]);
-                        statWriter.setValue(distinctReadIndexCount[groupIndex], "distinct-read-index-count[%s]", groups[groupIndex]);
-                        statWriter.setValue(averageVariantQualityScore[groupIndex], "average-variant-quality-scores[%s]", groups[groupIndex]);
+                         double refProportion = (double) refCountsPerSample[groupIndex];
+                        refProportion /= refCountsPerSample[groupIndex] + variantsCountPerSample[groupIndex];
+                        
+                        statWriter.setValue(refProportion, "refProportion[%s]", groups[groupIndex]);
+                        statWriter.setValue(refCountsPerGroup[groupIndex], "refCountsPerGroup[%s]", groups[groupIndex]);
+                        statWriter.setValue(variantsCountPerGroup[groupIndex], "varCountPerGroup[%s]", groups[groupIndex]);
+
+                        statWriter.setValue(distinctReadIndexCountPerGroup[groupIndex], "distinct-read-index-count[%s]", groups[groupIndex]);
+                        statWriter.setValue(averageVariantQualityScorePerGroup[groupIndex], "average-variant-quality-scores[%s]", groups[groupIndex]);
 
                         if (deAnalyzer.eval("within-groups")) {
-                            statWriter.setValue(estimateWithinGroupDiscoveryPalue(position, groupIndex, list, variantsCount, refCounts),
+                            statWriter.setValue(estimateWithinGroupDiscoveryPalue(position, groupIndex, list, variantsCountPerGroup, refCountsPerGroup),
                                     "within-group-p-value[%s]", groups[groupIndex]);
                         }
                         summarizeVariations(statWriter, list, groupIndex);
@@ -338,11 +392,11 @@ public class DiscoverVariantIterateSortedAlignments
     private boolean checkCounts() {
         boolean ok = true;
         // detect if any count is negative (that's a bug)
-        for (int count : refCounts) {
+        for (int count : refCountsPerGroup) {
 
             if (count < 0) ok = false;
         }
-        for (int count : variantsCount) {
+        for (int count : variantsCountPerGroup) {
             if (count < 0) ok = false;
         }
         return ok;
