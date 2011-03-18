@@ -53,6 +53,7 @@ public class TestDiscoverSequenceVariantsMode {
     private static final int NUM_TRIALS = 10;
     private static String statsFilename = BASE_TEST_DIR + "/variations-stats2.tsv";
 
+    //TODO check that basename order on the command line does not affect the result produced! This will check that the sample order matches the readerIndex order in DiscoverSequenceVariantsMode
 
     @Test
     public void testDiscoverGroupsOnly() throws IOException, JSAPException {

@@ -119,8 +119,15 @@ public class DiscoverVariantIterateSortedAlignments
         fisherExactPValueColumnIndex = -1;
         numberOfGroups = groups.length;
 
-        samples = deCalculator.samples();
-        numberOfSamples = samples.length;
+        // use deCalculator.samples to figure out how many samples we need, but do not rely on the sample id order, it
+        // is not consistent with the readerIndex order.
+        String []deCalcSamples = deCalculator.samples();
+        // build a samples array with the correct order:
+        numberOfSamples = deCalcSamples.length;
+        samples=new String[numberOfSamples];
+        for (DiscoverSequenceVariantsMode.ReadIndexStats stat: readIndexStats) {
+            samples[stat.readerIndex]=stat.basename;
+        }
 
         refCountsPerGroup = new int[numberOfGroups];
         variantsCountPerGroup = new int[numberOfGroups];
