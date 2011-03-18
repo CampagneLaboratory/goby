@@ -31,6 +31,8 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.ints.IntCollection;
 
 /**
+ * Helper class to write tab delimited statistic result files.
+ *
  * @author Fabien Campagne
  *         Date: Sep 23, 2010
  *         Time: 1:26:56 PM
@@ -46,11 +48,38 @@ public class StatisticsWriter {
     IndexedIdentifier columnIds = new IndexedIdentifier();
     Formatter formatter;
 
+    /**
+     * Define a new column, built with String.format and optional parameters.
+     *
+     * @param columnId
+     * @param option
+     * @return
+     */
     public int defineColumn(String columnId, String... option) {
         String id = String.format(columnId, option);
         final int index = columnIds.registerIdentifier(new MutableString(id));
         values = new CharSequence[columnIds.size()];
         return index;
+    }
+
+    /**
+     * Define new columns, built with String.format and optional parameters.
+     * Columns are defined in groups of ids with different options for the same id following each other.
+     * @param options set of String.format ids parameters (exactly one per id)
+     * @param ids Set of identifier format to create new column identifiers.
+  
+     */
+    public void defineColumnSet(String[] options, String... ids) {
+
+        for (String columnId : ids) {   //define groups of columns, grouped by option format
+            for (String option : options) {
+                String id = String.format(columnId, option);
+                columnIds.registerIdentifier(new MutableString(id));
+                values = new CharSequence[columnIds.size()];
+            }
+        }
+
+
     }
 
     public static int COLUMN_NOT_DEFINED = -1;

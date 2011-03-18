@@ -139,15 +139,14 @@ public class DiscoverVariantIterateSortedAlignments
             fisherExactPValueColumnIndex = statWriter.defineColumn("Fisher-Exact-P-value[%s/%s]", groups[0], groups[1]);
         }
 
+        statWriter.defineColumnSet(groups,
+                "refProportion[%s]",
+                "refCountsPerGroup[%s]",
+                "varCountPerGroup[%s]",
+                "distinct-read-index-count[%s]",
+                "average-variant-quality-scores[%s]");
 
         for (String group : groups) {
-
-            statWriter.defineColumn("refProportion[%s]", group);
-            statWriter.defineColumn("refCountsPerGroup[%s]", group);
-            statWriter.defineColumn("varCountPerGroup[%s]", group);
-            statWriter.defineColumn("distinct-read-index-count[%s]", group);
-            statWriter.defineColumn("average-variant-quality-scores[%s]", group);
-
 
             if (deAnalyzer.eval("within-groups")) {
                 statWriter.defineColumn("within-group-p-value[%s]", group);
@@ -158,12 +157,11 @@ public class DiscoverVariantIterateSortedAlignments
         }
         if (deAnalyzer.eval("samples")) {
 
-            for (String sample : deCalculator.samples()) {
+            statWriter.defineColumnSet(deCalculator.samples(),
+                    "refProportion[%s]",
+                    "refCountsInSample[%s]",
+                    "varCountInSample[%s]");
 
-                statWriter.defineColumn("refProportion[%s]", sample);
-                statWriter.defineColumn("refCountsInSample[%s]", sample);
-                statWriter.defineColumn("varCountInSample[%s]", sample);
-            }
         }
         statWriter.writeHeader();
     }
@@ -299,7 +297,11 @@ public class DiscoverVariantIterateSortedAlignments
                             refProportion /= refCountsPerSample[sampleIndex] + variantsCountPerSample[sampleIndex];
                             statWriter.setValue(refProportion,
                                     "refProportion[%s]", samples[sampleIndex]);
+                        }
+                        for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
                             statWriter.setValue(refCountsPerSample[sampleIndex], "refCountsInSample[%s]", samples[sampleIndex]);
+                        }
+                        for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
                             statWriter.setValue(variantsCountPerSample[sampleIndex], "varCountInSample[%s]", samples[sampleIndex]);
 
                         }
@@ -310,6 +312,7 @@ public class DiscoverVariantIterateSortedAlignments
                         refProportion /= refCountsPerSample[groupIndex] + variantsCountPerSample[groupIndex];
 
                         statWriter.setValue(refProportion, "refProportion[%s]", groups[groupIndex]);
+
                         statWriter.setValue(refCountsPerGroup[groupIndex], "refCountsPerGroup[%s]", groups[groupIndex]);
                         statWriter.setValue(variantsCountPerGroup[groupIndex], "varCountPerGroup[%s]", groups[groupIndex]);
 
