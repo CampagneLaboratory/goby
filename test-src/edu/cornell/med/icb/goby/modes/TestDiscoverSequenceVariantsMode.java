@@ -29,9 +29,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import junitx.framework.FileAssert;
+import static junitx.framework.FileAssert.assertBinaryEquals;
+import static junitx.framework.FileAssert.assertEquals;
 
 import java.io.*;
 
@@ -51,21 +55,68 @@ public class TestDiscoverSequenceVariantsMode {
 
 
     @Test
-    public void testDiscover() throws IOException, JSAPException {
+    public void testDiscoverGroupsOnly() throws IOException, JSAPException {
 
         DiscoverSequenceVariantsMode mode = new DiscoverSequenceVariantsMode();
+        // loop to check that results are reproducible and do not change from execution to execution..
         for (int i = 0; i < NUM_TRIALS; i++) {
             String outputFilename = "out" + i + ".tsv";
-            String[] args = constructArgumentString(basenames, BASE_TEST_DIR + "/" + outputFilename).split("[\\s]");
+            String[] args = constructArgumentString(
+                    basenames, BASE_TEST_DIR + "/" + outputFilename, "within-groups,between-groups").split("[\\s]");
             mode.configure(args);
             mode.execute();
-            assertTrue(String.format("output file %s must match expected result", BASE_TEST_DIR + "/" + outputFilename)
-                    , FileUtils.contentEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
-                            new File("test-data/discover-variants/expected-output1.tsv")));
+
+            assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
+                new File("test-data/discover-variants/expected-output1.tsv"));
+            
         }
     }
 
-    private static String constructArgumentString(String[] basenames, Object outputfilename) {
+    @Test
+    public void testDiscoverWithSamples() throws IOException, JSAPException {
+
+        DiscoverSequenceVariantsMode mode = new DiscoverSequenceVariantsMode();
+        int i = 1;
+        String outputFilename = "out-samples-" + i + ".tsv";
+        String[] args = constructArgumentString(
+                basenames, BASE_TEST_DIR + "/" + outputFilename, "samples,within-groups,between-groups").split("[\\s]");
+        mode.configure(args);
+        mode.execute();
+        assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
+                new File("test-data/discover-variants/expected-output-samples.tsv"));
+
+   }
+
+
+
+
+    @AfterClass
+    public static void cleanupTestDirectory
+            () throws IOException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Deleting base test directory: " + BASE_TEST_DIR);
+        }
+    //    FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
+    }
+
+    @Before
+    public void setUp
+            () throws IOException {
+
+        final File dir = new File(BASE_TEST_DIR);
+        dir.mkdirs();
+
+
+        final ReadsWriter referenceWriter = new ReadsWriter(FileUtils.openOutputStream(
+                new File("test-results/alignments/last-to-compact/last-reference.compact-reads")));
+        referenceWriter.setIdentifier("0");
+        referenceWriter.appendEntry();
+        referenceWriter.close();
+
+
+    }
+
+    private static String constructArgumentString(String[] basenames, Object outputfilename, Object evalString) {
         MutableString basenamesString = new MutableString();
         for (String basename : basenames) {
             basenamesString.append(basename).append(" ");
@@ -91,11 +142,11 @@ public class TestDiscoverSequenceVariantsMode {
                 "--variation-stats %s " +
                 "--groups %s " +
                 "--compare A/B " +
-                "--eval within-groups,between-groups " +
+                "--eval %s " +
                 "--minimum-variation-support 1 " +
                 "--threshold-distinct-read-indices 1 " +
                 "--output %s " +
-                "%s", statsFilename, groups, outputfilename, basenamesString);
+                "%s", statsFilename, groups, evalString, outputfilename, basenamesString);
     }
 
     @BeforeClass
@@ -236,29 +287,5 @@ public class TestDiscoverSequenceVariantsMode {
         writer.close();
     }
 
-    @AfterClass
-    public static void cleanupTestDirectory
-            () throws IOException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Deleting base test directory: " + BASE_TEST_DIR);
-        }
-        FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
-    }
 
-    @Before
-    public void setUp
-            () throws IOException {
-
-        final File dir = new File(BASE_TEST_DIR);
-        dir.mkdirs();
-
-
-        final ReadsWriter referenceWriter = new ReadsWriter(FileUtils.openOutputStream(
-                new File("test-results/alignments/last-to-compact/last-reference.compact-reads")));
-        referenceWriter.setIdentifier("0");
-        referenceWriter.appendEntry();
-        referenceWriter.close();
-
-
-    }
 }

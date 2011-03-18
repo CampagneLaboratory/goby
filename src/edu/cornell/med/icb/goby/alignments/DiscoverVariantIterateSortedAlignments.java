@@ -156,14 +156,15 @@ public class DiscoverVariantIterateSortedAlignments
             statWriter.defineColumn("observed variations at position ([frequency:from/to,]+) group %s", group);
 
         }
-       /*
-        TODO uncomment to enable per sample stats.
-       for (String sample : deCalculator.samples()) {
+        if (deAnalyzer.eval("samples")) {
 
-            statWriter.defineColumn("refProportion[%s]", sample);
-            statWriter.defineColumn("refCountsInSample[%s]", sample);
-            statWriter.defineColumn("varCountInSample[%s]", sample);
-        }     */
+            for (String sample : deCalculator.samples()) {
+
+                statWriter.defineColumn("refProportion[%s]", sample);
+                statWriter.defineColumn("refCountsInSample[%s]", sample);
+                statWriter.defineColumn("varCountInSample[%s]", sample);
+            }
+        }
         statWriter.writeHeader();
     }
 
@@ -291,22 +292,23 @@ public class DiscoverVariantIterateSortedAlignments
 
                     }
                     // output reference proportion, refCounts and varCounts for each sample:
-                 /*
-                  TODO uncomment to enable per sample stats.
-                  for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
-                        double refProportion = (double) refCountsPerSample[sampleIndex];
-                        refProportion /= refCountsPerSample[sampleIndex] + variantsCountPerSample[sampleIndex];
-                        statWriter.setValue(refProportion,
-                                "refProportion[%s]", samples[sampleIndex]);
-                        statWriter.setValue(refCountsPerSample[sampleIndex], "refCountsInSample[%s]", samples[sampleIndex]);
-                        statWriter.setValue(variantsCountPerSample[sampleIndex], "varCountInSample[%s]", samples[sampleIndex]);
 
-                    }  */
+                    if (deAnalyzer.eval("samples")) {
+                        for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
+                            double refProportion = (double) refCountsPerSample[sampleIndex];
+                            refProportion /= refCountsPerSample[sampleIndex] + variantsCountPerSample[sampleIndex];
+                            statWriter.setValue(refProportion,
+                                    "refProportion[%s]", samples[sampleIndex]);
+                            statWriter.setValue(refCountsPerSample[sampleIndex], "refCountsInSample[%s]", samples[sampleIndex]);
+                            statWriter.setValue(variantsCountPerSample[sampleIndex], "varCountInSample[%s]", samples[sampleIndex]);
+
+                        }
+                    }
                     // output group information:
                     for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
-                         double refProportion = (double) refCountsPerSample[groupIndex];
+                        double refProportion = (double) refCountsPerSample[groupIndex];
                         refProportion /= refCountsPerSample[groupIndex] + variantsCountPerSample[groupIndex];
-                        
+
                         statWriter.setValue(refProportion, "refProportion[%s]", groups[groupIndex]);
                         statWriter.setValue(refCountsPerGroup[groupIndex], "refCountsPerGroup[%s]", groups[groupIndex]);
                         statWriter.setValue(variantsCountPerGroup[groupIndex], "varCountPerGroup[%s]", groups[groupIndex]);
@@ -330,9 +332,13 @@ public class DiscoverVariantIterateSortedAlignments
         }
     }
 
-    private double estimateWithinGroupDiscoveryPalue(int position, int groupIndex,
-                                                     ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo> list,
-                                                     int[] variantsCount, int[] refCounts) {
+    private double estimateWithinGroupDiscoveryPalue
+            (
+                    int position,
+                    int groupIndex,
+                    ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo> list,
+                    int[] variantsCount,
+                    int[] refCounts) {
         double pValue = 1;
         if (!deAnalyzer.eval("within-groups")) return Double.NaN;
         int observedReferenceCount = 0;
@@ -389,7 +395,8 @@ public class DiscoverVariantIterateSortedAlignments
 
     }
 
-    private boolean checkCounts() {
+    private boolean checkCounts
+            () {
         boolean ok = true;
         // detect if any count is negative (that's a bug)
         for (int count : refCountsPerGroup) {
@@ -402,8 +409,10 @@ public class DiscoverVariantIterateSortedAlignments
         return ok;
     }
 
-    private void summarizeVariations(StatisticsWriter statWriter, ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo> list,
-                                     int groupIndex) {
+    private void summarizeVariations
+            (StatisticsWriter
+                    statWriter, ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo> list,
+             int groupIndex) {
         final Object2IntMap<MutableString> tally = new Object2IntArrayMap<MutableString>();
         tally.defaultReturnValue(0);
         for (IterateSortedAlignmentsListImpl.PositionBaseInfo info : list) {

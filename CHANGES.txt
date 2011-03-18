@@ -1,6 +1,9 @@
+1.9.3->development
+ - Mode discover-sequence-variants now can evaluate counts and allelic proportion for each sample. See the --eval
+   flag to enable these calculations.
 1.9.3
  - This release has a C API compatible with our development version of GSNAP. A version of GSNAP released
-   2011-03-11 should compile with Goby 1.9.3.
+   after 2011-03-11 should compile with Goby 1.9.3.
  - Add new statistics for discover-sequence variants. Notably, we now record the log odds ratio,
    the estimated standard error of the log odds ratio, as well as a Z-score for the log odds.
    Standard error and Z-score are only estimated if more than 10 counts exist in each cell of the contingency table.
