@@ -212,7 +212,6 @@ public class DiscoverVariantIterateSortedAlignments
         if (list != null) {
             IntSet distinctReadIndices = new IntArraySet();
             for (IterateSortedAlignmentsListImpl.PositionBaseInfo info : list) {
-                //TODO make sure readerIndex matches the index of the sample name in deCalculator.samples().
                 final int sampleIndex = info.readerIndex;
 
                 final int groupIndex = readerIndexToGroupIndex[info.readerIndex];
