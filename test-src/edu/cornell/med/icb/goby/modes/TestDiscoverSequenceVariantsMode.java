@@ -47,26 +47,6 @@ import java.io.*;
 public class TestDiscoverSequenceVariantsMode {
 
 
-    /**
-     * If R libraries are not set up properly these tests cannot be run.
-
-    @BeforeClass
-    public static void assertRAvailable() {
-        final Rengine rengine = GobyRengine.getInstance().getRengine();
-        assertNotNull("R engine is not available", rengine);
-        assertTrue("R is not null but is not alive either", rengine.isAlive());
-    }
-
-    /**
-     * Notify {@link org.rosuda.JRI.Rengine} that the thread can be safely terminated.
-
-    @AfterClass
-    public static void terminateRThread() {
-        final Rengine rengine = GobyRengine.getInstance().getRengine();
-        if (rengine != null) {
-            rengine.end();
-        }
-    } */
 
     private static final Log LOG = LogFactory.getLog(TestDiscoverSequenceVariantsMode.class);
     private static final String BASE_TEST_DIR = "test-results/discover-variants";
