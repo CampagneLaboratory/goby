@@ -22,20 +22,20 @@ import com.martiansoftware.jsap.JSAPException;
 import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
+import edu.cornell.med.icb.goby.R.GobyRengine;
 import it.unimi.dsi.lang.MutableString;
+import static junitx.framework.FileAssert.assertEquals;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import junitx.framework.FileAssert;
-import static junitx.framework.FileAssert.assertBinaryEquals;
-import static junitx.framework.FileAssert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import org.rosuda.JRI.Rengine;
 
 import java.io.*;
 
@@ -46,12 +46,37 @@ import java.io.*;
  */
 public class TestDiscoverSequenceVariantsMode {
 
+
+    /**
+     * If R libraries are not set up properly these tests cannot be run.
+
+    @BeforeClass
+    public static void assertRAvailable() {
+        final Rengine rengine = GobyRengine.getInstance().getRengine();
+        assertNotNull("R engine is not available", rengine);
+        assertTrue("R is not null but is not alive either", rengine.isAlive());
+    }
+
+    /**
+     * Notify {@link org.rosuda.JRI.Rengine} that the thread can be safely terminated.
+
+    @AfterClass
+    public static void terminateRThread() {
+        final Rengine rengine = GobyRengine.getInstance().getRengine();
+        if (rengine != null) {
+            rengine.end();
+        }
+    } */
+
     private static final Log LOG = LogFactory.getLog(TestDiscoverSequenceVariantsMode.class);
     private static final String BASE_TEST_DIR = "test-results/discover-variants";
     private static final int NUM_BASENAME_PER_GROUP = 5;
     private static final String[] basenames = new String[NUM_BASENAME_PER_GROUP * 2];
     private static final int NUM_TRIALS = 10;
     private static String statsFilename = BASE_TEST_DIR + "/variations-stats2.tsv";
+    private static String[] specificAlignments;
+    private static String specificSampleAlignment;
+
 
     //TODO check that basename order on the command line does not affect the result produced! This will check that the sample order matches the readerIndex order in DiscoverSequenceVariantsMode
 
@@ -63,13 +88,13 @@ public class TestDiscoverSequenceVariantsMode {
         for (int i = 0; i < NUM_TRIALS; i++) {
             String outputFilename = "out" + i + ".tsv";
             String[] args = constructArgumentString(
-                    basenames, BASE_TEST_DIR + "/" + outputFilename, "within-groups,between-groups").split("[\\s]");
+                    basenames, BASE_TEST_DIR + "/" + outputFilename, "none").split("[\\s]");
             mode.configure(args);
             mode.execute();
 
             assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
-                new File("test-data/discover-variants/expected-output1.tsv"));
-            
+                    new File("test-data/discover-variants/expected-output1.tsv"));
+
         }
     }
 
@@ -80,15 +105,13 @@ public class TestDiscoverSequenceVariantsMode {
         int i = 1;
         String outputFilename = "out-samples-" + i + ".tsv";
         String[] args = constructArgumentString(
-                basenames, BASE_TEST_DIR + "/" + outputFilename, "samples,within-groups,between-groups").split("[\\s]");
+                basenames, BASE_TEST_DIR + "/" + outputFilename, "samples").split("[\\s]");
         mode.configure(args);
         mode.execute();
         assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
                 new File("test-data/discover-variants/expected-output-samples.tsv"));
 
-   }
-
-
+    }
 
 
     @AfterClass
@@ -97,7 +120,7 @@ public class TestDiscoverSequenceVariantsMode {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Deleting base test directory: " + BASE_TEST_DIR);
         }
-    //    FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
+        //    FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
     }
 
     @Before
@@ -161,14 +184,20 @@ public class TestDiscoverSequenceVariantsMode {
         outTSV.println("basename\tread-index\tcount-variation-bases\tbases-at-index/all-variations-bases\tbases-at-index/all-reference-bases\tcount-reference-bases\tcount-reference-bases-at-index");
         for (int i = 0; i < NUM_BASENAME_PER_GROUP * 2; i++) {
             basenames[i] = BASE_TEST_DIR + "/basen" + i;
-            writeAlignment(i);
-            appendToStats(i, outTSV);
+            writeAlignment(basenames, i, 'G');
+            appendToStats(basenames, i, outTSV);
         }
+        specificAlignments=new String[1];
+        // write a new alignment that is different from all others:
+        specificSampleAlignment = BASE_TEST_DIR + "/align-specific-sample";
+        writeAlignment(specificAlignments, 0, 'C');
+        appendToStats(specificAlignments, 0, outTSV);
+
         outTSV.close();
 
     }
 
-    private static void appendToStats(int basenameIndex, PrintWriter outTSV) throws IOException {
+    private static void appendToStats(String[] basenames, int basenameIndex, PrintWriter outTSV) throws IOException {
         String tokens = "basename\tread-index\tcount-variation-bases\tbases-at-index/all-variations-bases\tbases-at-index/all-reference-bases\tcount-reference-bases\tcount-reference-bases-at-index\n" +
                 "basename0\t1\t2924830\t0.097711641\t-0.004026\t-726568406\t68804818\n" +
                 "basename0\t2\t1683737\t0.056249664\t-0.002317\t-726568406\t70050107\n" +
@@ -245,7 +274,7 @@ public class TestDiscoverSequenceVariantsMode {
 
     }
 
-    private static void writeAlignment(int basenameIndex) throws IOException {
+    private static void writeAlignment(String[] basenames, int basenameIndex, char toBase) throws IOException {
 
         AlignmentWriter writer = new AlignmentWriter(basenames[basenameIndex]);
         writer.setTargetLengths(new int[]{10000});
@@ -276,7 +305,7 @@ public class TestDiscoverSequenceVariantsMode {
             builder.setMultiplicity(multiplicity);
             Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder();
             varBuilder.setFrom("A");
-            varBuilder.setTo("G");
+            varBuilder.setTo(Character.toString(toBase));
             varBuilder.setPosition(25);
             varBuilder.setReadIndex(25);
             System.out.printf("%s j=%d var A/G at %d%n", basenames[basenameIndex], j, 25 + referencePosition + positionStart - 1);
