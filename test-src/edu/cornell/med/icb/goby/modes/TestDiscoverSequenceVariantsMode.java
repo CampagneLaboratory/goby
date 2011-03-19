@@ -22,7 +22,8 @@ import com.martiansoftware.jsap.JSAPException;
 import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
-import edu.cornell.med.icb.goby.R.GobyRengine;
+import edu.cornell.med.icb.io.TSVReader;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import static junitx.framework.FileAssert.assertEquals;
 import org.apache.commons.io.FileUtils;
@@ -33,11 +34,10 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import org.rosuda.JRI.Rengine;
+
 
 import java.io.*;
+import java.util.Collections;
 
 /**
  * @author Fabien Campagne
@@ -47,7 +47,6 @@ import java.io.*;
 public class TestDiscoverSequenceVariantsMode {
 
 
-
     private static final Log LOG = LogFactory.getLog(TestDiscoverSequenceVariantsMode.class);
     private static final String BASE_TEST_DIR = "test-results/discover-variants";
     private static final int NUM_BASENAME_PER_GROUP = 5;
@@ -55,7 +54,6 @@ public class TestDiscoverSequenceVariantsMode {
     private static final int NUM_TRIALS = 10;
     private static String statsFilename = BASE_TEST_DIR + "/variations-stats2.tsv";
     private static String[] specificAlignments;
-    private static String specificSampleAlignment;
 
 
     //TODO check that basename order on the command line does not affect the result produced! This will check that the sample order matches the readerIndex order in DiscoverSequenceVariantsMode
@@ -93,6 +91,69 @@ public class TestDiscoverSequenceVariantsMode {
 
     }
 
+    @Test
+    public void testDiscoverCheckSampleCountAssociation() throws IOException, JSAPException {
+
+        DiscoverSequenceVariantsMode mode = new DiscoverSequenceVariantsMode();
+        // loop to check that results are reproducible and do not change from execution to execution..
+        for (int i = 0; i < NUM_TRIALS; i++) {
+            String outputFilename = "out" + i + ".tsv";
+            final String[] basenameArray = shuffle(add(basenames, specificAlignments));
+            final String output = BASE_TEST_DIR + "/" + outputFilename;
+            String[] args = constructArgumentString(
+                    basenameArray, output, "samples").split("[\\s]");
+            mode.configure(args);
+            mode.execute();
+
+            TSVReader reader = new TSVReader(new FileReader(output));
+            int columnIndex = -1;
+            if (reader.hasNext()) {
+                reader.next();
+                for (int c = 0; c < reader.numTokens(); c++) {
+                    String value = reader.getString();
+                    if ("varCountInSample[align-specific-sample]".equals(value)) {
+                        columnIndex = c;
+
+                    }
+                }
+            }
+            while (reader.hasNext()) {
+                reader.next();
+                for (int c = 0; c < reader.numTokens(); c++) {
+                    String value = reader.getString();
+                    if (c== columnIndex) {
+                        org.junit.Assert.assertEquals("variant count must be 2 in the specific alignment sample","2", value);
+
+                    }
+                }
+
+            }
+            
+
+        }
+
+    }
+
+    private String[] shuffle
+            (String[] strings) {
+
+        final ObjectArrayList<String> list = ObjectArrayList.wrap(strings);
+        Collections.shuffle(list);
+        return list.toArray(new String[list.size()]);
+    }
+
+    private String[] add
+            (String[] basenames, String[] specificAlignments) {
+        String result[] = new String[basenames.length + specificAlignments.length];
+        int i = 0;
+        for (String s : basenames) {
+            result[i++] = s;
+        }
+        for (String s : specificAlignments) {
+            result[i++] = s;
+        }
+        return result;
+    }
 
     @AfterClass
     public static void cleanupTestDirectory
@@ -167,9 +228,9 @@ public class TestDiscoverSequenceVariantsMode {
             writeAlignment(basenames, i, 'G');
             appendToStats(basenames, i, outTSV);
         }
-        specificAlignments=new String[1];
+        specificAlignments = new String[1];
         // write a new alignment that is different from all others:
-        specificSampleAlignment = BASE_TEST_DIR + "/align-specific-sample";
+        specificAlignments[0] = BASE_TEST_DIR + "/align-specific-sample";
         writeAlignment(specificAlignments, 0, 'C');
         appendToStats(specificAlignments, 0, outTSV);
 
@@ -265,6 +326,15 @@ public class TestDiscoverSequenceVariantsMode {
         int readIndex = 0;
         int referencePosition = 1;
         int positionStart = 100;
+        writeAlignmentEntries(toBase, writer, numAlignmentEntries, readIndex, referencePosition, positionStart);
+        if (toBase == 'C') {
+            referencePosition = 1;
+            writeAlignmentEntries(toBase, writer, numAlignmentEntries, readIndex, referencePosition, positionStart);
+        }
+        writer.close();
+    }
+
+    private static void writeAlignmentEntries(char toBase, AlignmentWriter writer, int numAlignmentEntries, int readIndex, int referencePosition, int positionStart) throws IOException {
         for (int j = 0; j < numAlignmentEntries; j++) {
             final Alignments.AlignmentEntry.Builder builder =
                     Alignments.AlignmentEntry.newBuilder();
@@ -288,13 +358,12 @@ public class TestDiscoverSequenceVariantsMode {
             varBuilder.setTo(Character.toString(toBase));
             varBuilder.setPosition(25);
             varBuilder.setReadIndex(25);
-            System.out.printf("%s j=%d var A/G at %d%n", basenames[basenameIndex], j, 25 + referencePosition + positionStart - 1);
+            //   System.out.printf("%s j=%d var A/G at %d%n", basenames[basenameIndex], j, 25 + referencePosition + positionStart - 1);
             builder.addSequenceVariations(varBuilder);
             final Alignments.AlignmentEntry entry = builder.build();
             writer.appendEntry(entry);
 
         }
-        writer.close();
     }
 
 

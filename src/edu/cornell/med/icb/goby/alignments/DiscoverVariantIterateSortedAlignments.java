@@ -121,9 +121,9 @@ public class DiscoverVariantIterateSortedAlignments
 
         // use deCalculator.samples to figure out how many samples we need, but do not rely on the sample id order, it
         // is not consistent with the readerIndex order.
-        String []deCalcSamples = deCalculator.samples();
+
         // build a samples array with the correct order:
-        numberOfSamples = deCalcSamples.length;
+        numberOfSamples = readIndexStats.size();
         samples=new String[numberOfSamples];
         for (DiscoverSequenceVariantsMode.ReadIndexStats stat: readIndexStats) {
             samples[stat.readerIndex]=stat.basename;
@@ -164,7 +164,7 @@ public class DiscoverVariantIterateSortedAlignments
         }
         if (deAnalyzer.eval("samples")) {
 
-            statWriter.defineColumnSet(deCalculator.samples(),
+            statWriter.defineColumnSet(samples,
                     "refProportion[%s]",
                     "refCountsInSample[%s]",
                     "varCountInSample[%s]");
@@ -299,6 +299,7 @@ public class DiscoverVariantIterateSortedAlignments
                     // output reference proportion, refCounts and varCounts for each sample:
 
                     if (deAnalyzer.eval("samples")) {
+                        assert numberOfSamples==samples.length;
                         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
                             double refProportion = (double) refCountsPerSample[sampleIndex];
                             refProportion /= refCountsPerSample[sampleIndex] + variantsCountPerSample[sampleIndex];

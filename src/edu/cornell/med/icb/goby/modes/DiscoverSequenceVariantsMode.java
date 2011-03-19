@@ -20,27 +20,24 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-
-import java.io.*;
-import java.util.Map;
-import java.util.Collections;
-import java.util.Comparator;
-
-import edu.cornell.med.icb.goby.alignments.*;
-import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.DiscoverVariantIterateSortedAlignments;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
-import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.SequenceVariationPool;
-import edu.cornell.med.icb.goby.R.GobyRengine;
+import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.io.TSVReader;
-import it.unimi.dsi.fastutil.objects.*;
-import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
-import org.rosuda.JRI.Rengine;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
+
+import java.io.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Map;
 
 /**
  * This mode discovers sequence variants within groups of samples or between groups of samples.
@@ -156,7 +153,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
 
         sortedPositionIterator = new DiscoverVariantIterateSortedAlignments();
-        int startFlapSize = jsapResult.getInt("start-flap-size",100);
+        int startFlapSize = jsapResult.getInt("start-flap-size", 100);
         sortedPositionIterator.setStartFlapLength(startFlapSize);
         sortedPositionIterator.parseIncludeReferenceArgument(jsapResult);
         sortedPositionIterator.setReaderIndexToGroupIndex(readerIndexToGroupIndex);
@@ -284,8 +281,14 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                     return readIndexStats.readerIndex - readIndexStatsFirst.readerIndex;
                 }
             });
+
             // Determine the maximum read length for each input sample (fill numberOfReadIndices)
-            numberOfReadIndices = new int[this.deCalculator.getSampleToGroupMap().keySet().size()];
+
+            final int sampleToGroupAssociationNumber = this.deCalculator.getSampleToGroupMap().keySet().size();
+            // some samples provided on the input may not be associated with groups. Use the number of input filenames
+            // to allocate the size of ths array.
+            numberOfReadIndices = new int[inputFilenames.length];
+
             ObjectSet<ReadIndexStats> toRemove = new ObjectArraySet<ReadIndexStats>();
 
             for (ReadIndexStats stat : readIndexStats) {

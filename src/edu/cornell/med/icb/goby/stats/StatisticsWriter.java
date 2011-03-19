@@ -42,6 +42,8 @@ public class StatisticsWriter {
 
     public StatisticsWriter(PrintWriter outWriter) {
         this.outWriter = outWriter;
+        columnIds=new  IndexedIdentifier();
+        columnIds.defaultReturnValue(COLUMN_NOT_DEFINED);
 
     }
 
@@ -97,8 +99,11 @@ public class StatisticsWriter {
 
     public void setValue(String value, String id, String... option) {
         MutableString idMut = new MutableString(String.format(id, option));
-        int columnIndex = this.columnIds.get(idMut);
-        if (columnIndex == COLUMN_NOT_DEFINED) return;
+        int columnIndex = this.columnIds.getInt(idMut);
+        if (columnIndex == COLUMN_NOT_DEFINED) {
+            System.out.println("col not found: "+idMut);
+            return;
+        }
         values[columnIndex] = value;
     }
 
