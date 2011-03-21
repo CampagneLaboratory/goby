@@ -53,6 +53,7 @@ public class DiscoverVariantIterateSortedAlignments
     private SequenceVariationOutputFormat format;
     private int numberOfGroups;
     private int[] readerIndexToGroupIndex;
+    private CountAdjuster adjuster;
 
     public void setMinimumVariationSupport(int minimumVariationSupport) {
         this.minimumVariationSupport = minimumVariationSupport;
@@ -75,7 +76,7 @@ public class DiscoverVariantIterateSortedAlignments
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         statWriter = new StatisticsWriter(outWriter);
         format.defineColumns(statWriter, mode);
-
+        adjuster=new CountAdjuster(mode.getReadIndexStats());
     }
 
     public void finish() {
@@ -103,35 +104,22 @@ public class DiscoverVariantIterateSortedAlignments
         format.allocateStorage(numberOfSamples, numberOfGroups);
     }
 
-    public class SampleCountInfo {
-        public int countBaseA;
-        public int countBaseT;
-        public int countBaseC;
-        public int countBaseG;
-        public int countBaseOther;
-        public char referenceBase;
-        public IntSet distinctReadIndices = new IntArraySet();
-        public int sampleIndex;
-        public int varCount;
-        public int refCount;
-    }
-
     private SampleCountInfo[] sampleCounts;
 
     private int numberOfSamples;
 
 
     public void processPositions(int referenceIndex, int position,
-                                 ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo> list) {
+                                 ObjectArrayList<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> list) {
         int sumVariantCounts = 0;
 
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
-            sampleCounts[sampleIndex].countBaseA = 0;
-            sampleCounts[sampleIndex].countBaseT = 0;
-            sampleCounts[sampleIndex].countBaseC = 0;
-            sampleCounts[sampleIndex].countBaseG = 0;
-            sampleCounts[sampleIndex].countBaseOther = 0;
+            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_A_INDEX] = 0;
+            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_T_INDEX] = 0;
+            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_C_INDEX] = 0;
+            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_G_INDEX] = 0;
+            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_OTHER_INDEX] = 0;
             sampleCounts[sampleIndex].referenceBase = '?';
             sampleCounts[sampleIndex].distinctReadIndices.clear();
             sampleCounts[sampleIndex].sampleIndex = sampleIndex;
@@ -141,7 +129,7 @@ public class DiscoverVariantIterateSortedAlignments
 
         if (list != null) {
             IntSet distinctReadIndices = new IntArraySet();
-            for (IterateSortedAlignmentsListImpl.PositionBaseInfo info : list) {
+            for (edu.cornell.med.icb.goby.alignments.PositionBaseInfo info : list) {
                 final int sampleIndex = info.readerIndex;
                 distinctReadIndices.add(info.readIndex);
                 if (info.matchesReference) {
@@ -156,19 +144,19 @@ public class DiscoverVariantIterateSortedAlignments
                     sampleCounts[sampleIndex].distinctReadIndices.add(info.readIndex);
                     switch (info.to) {
                         case 'A':
-                            sampleCounts[sampleIndex].countBaseA += 1;
+                            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_A_INDEX] += 1;
                             break;
                         case 'T':
-                            sampleCounts[sampleIndex].countBaseT += 1;
+                            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_T_INDEX] += 1;
                             break;
                         case 'C':
-                            sampleCounts[sampleIndex].countBaseC += 1;
+                            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_C_INDEX] += 1;
                             break;
                         case 'G':
-                            sampleCounts[sampleIndex].countBaseG += 1;
+                            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_G_INDEX] += 1;
                             break;
                         default:
-                            sampleCounts[sampleIndex].countBaseOther += 1;
+                            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_OTHER_INDEX] += 1;
                             break;
                     }
                 }
@@ -181,9 +169,14 @@ public class DiscoverVariantIterateSortedAlignments
                 // base counts for reads that can overlap with the window under consideration.
 
                 if (!isWithinStartFlap(referenceIndex, position)) {
+                    if (adjuster!=null) {
+                        adjuster.adjustCounts(list, sampleCounts);
+                    }
                     format.writeRecord(this, sampleCounts, referenceIndex, position, list, groupIndexA, groupIndexB);
                 }
             }
         }
     }
+
+
 }

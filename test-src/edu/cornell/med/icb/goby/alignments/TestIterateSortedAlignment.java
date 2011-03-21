@@ -176,7 +176,7 @@ public class TestIterateSortedAlignment {
             @Override
             public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
                                            Alignments.AlignmentEntry alignmentEntry,
-                                           Int2ObjectMap<ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo>> positionToBases,
+                                           Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
                                            Alignments.SequenceVariation var,
                                            char toChar, char fromChar,
                                            int currentReferenceIndex,
@@ -402,7 +402,7 @@ public class TestIterateSortedAlignment {
             @Override
             public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
                                            Alignments.AlignmentEntry alignmentEntry,
-                                           Int2ObjectMap<ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo>> positionToBases,
+                                           Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
                                            Alignments.SequenceVariation var,
                                            char toChar, char fromChar,
                                            int currentReferenceIndex,

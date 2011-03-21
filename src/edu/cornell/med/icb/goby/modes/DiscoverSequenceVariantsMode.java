@@ -20,8 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.DiscoverVariantIterateSortedAlignments;
+import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
@@ -152,9 +151,28 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             }
 
         }
+        final String formatSring = jsapResult.getString("format");
 
-        SequenceVariationOutputFormat format = new BetweenGroupSequenceVariationOutputFormat();
-        sortedPositionIterator = new DiscoverVariantIterateSortedAlignments(format);
+        OutputFormat format=OutputFormat.valueOf(formatSring.toUpperCase());
+
+        SequenceVariationOutputFormat formatter=null;
+        switch (format) {
+            case VARIANT_DISCOVERY:
+                formatter=new BetweenGroupSequenceVariationOutputFormat();
+                break;
+            case ALLELE_FREQUENCY:
+                formatter=new AlleleFrequencyOutputFormat();
+                break;
+       //      case GENOTYPES:
+         //       formatter=new GenotypesOutputFormat();
+         //       break;
+            default:
+                ObjectArrayList<OutputFormat> values = ObjectArrayList.wrap(OutputFormat.values());
+                System.err.printf("The format argument is not recognized. Allowed values include %s",
+                        values.toString());
+                System.exit(1);
+        };
+        sortedPositionIterator = new DiscoverVariantIterateSortedAlignments(formatter);
         int startFlapSize = jsapResult.getInt("start-flap-size", 100);
         sortedPositionIterator.setStartFlapLength(startFlapSize);
         sortedPositionIterator.parseIncludeReferenceArgument(jsapResult);
@@ -162,7 +180,11 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         sortedPositionIterator.setThresholdDistinctReadIndices(thresholdDistinctReadIndices);
         return this;
     }
-
+    enum OutputFormat {
+        VARIANT_DISCOVERY,
+        ALLELE_FREQUENCY,
+        GENOTYPES
+    }
     DiscoverVariantIterateSortedAlignments sortedPositionIterator;
 
     public DifferentialExpressionAnalysis getDiffExpAnalyzer() {
@@ -185,7 +207,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         // build a samples array with the correct order:
         int numberOfSamples = readIndexStats.size();
         samples = new String[numberOfSamples];
-        for (DiscoverSequenceVariantsMode.ReadIndexStats stat : readIndexStats) {
+        for (ReadIndexStats stat : readIndexStats) {
             samples[stat.readerIndex] = stat.basename;
         }
         return samples;
@@ -193,22 +215,6 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
     public int[] getReaderIndexToGroupIndex() {
         return readerIndexToGroupIndex;
-    }
-
-    public class ReadIndexStats {
-        public String basename;
-        /**
-         * The index of the alignment reader that is reading over this basename, will be populated when we know.
-         */
-        public int readerIndex = -1;
-        /**
-         * Indexed by readIndex
-         */
-        public long[] countVariationBases;
-        /**
-         * Indexed by readIndex
-         */
-        public long[] countReferenceBases;
     }
 
     ObjectArrayList<ReadIndexStats> readIndexStats;

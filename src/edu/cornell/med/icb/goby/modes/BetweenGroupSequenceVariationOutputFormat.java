@@ -19,8 +19,7 @@
 package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.R.GobyRengine;
-import edu.cornell.med.icb.goby.alignments.DiscoverVariantIterateSortedAlignments;
-import edu.cornell.med.icb.goby.alignments.IterateSortedAlignmentsListImpl;
+import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
@@ -57,7 +56,7 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
     private boolean fisherRInstalled;
     private String[] groups;
     private String[] samples;
-    private ObjectArrayList<DiscoverSequenceVariantsMode.ReadIndexStats> readIndexStats;
+    private ObjectArrayList<ReadIndexStats> readIndexStats;
     private int log2OddsRatioColumnIndex;
     private int fisherExactPValueColumnIndex;
     private int numberOfGroups;
@@ -83,7 +82,7 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
         groups = mode.getGroups();
         samples = mode.getSamples();
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
-        ObjectArrayList<DiscoverSequenceVariantsMode.ReadIndexStats> readIndexStats = mode.getReadIndexStats();
+        ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
         this.statWriter = statWriter;
 
         if (deAnalyzer.eval("within-groups") || deAnalyzer.eval("between-groups")) {
@@ -157,10 +156,10 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
     }
 
     public void writeRecord(DiscoverVariantIterateSortedAlignments iterator,
-                            DiscoverVariantIterateSortedAlignments.SampleCountInfo[] sampleCounts,
+                            SampleCountInfo[] sampleCounts,
                             int referenceIndex,
                             int position,
-                            ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo> list,
+                            ObjectArrayList<PositionBaseInfo> list,
                             int groupIndexA,
                             int groupIndexB) {
 
@@ -256,7 +255,7 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
         statWriter.writeRecord();
     }
 
-    private void fillVariantCountArrays(DiscoverVariantIterateSortedAlignments.SampleCountInfo[] sampleCounts) {
+    private void fillVariantCountArrays(SampleCountInfo[] sampleCounts) {
 
         Arrays.fill(variantsCountPerGroup, 0);
         Arrays.fill(refCountsPerGroup, 0);
@@ -265,7 +264,7 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
         for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
             distinctReadIndicesCountPerGroup[groupIndex].clear();
         }
-        for (DiscoverVariantIterateSortedAlignments.SampleCountInfo csi : sampleCounts) {
+        for (SampleCountInfo csi : sampleCounts) {
             final int sampleIndex = csi.sampleIndex;
             variantsCountPerSample[sampleIndex] = csi.varCount;
             refCountsPerSample[sampleIndex] = csi.refCount;
@@ -296,11 +295,12 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
 
     private void summarizeVariations
             (StatisticsWriter
-                    statWriter, ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo> list,
+                    statWriter, ObjectArrayList<PositionBaseInfo> list,
              int groupIndex) {
+
         final Object2IntMap<MutableString> tally = new Object2IntArrayMap<MutableString>();
         tally.defaultReturnValue(0);
-        for (IterateSortedAlignmentsListImpl.PositionBaseInfo info : list) {
+        for (PositionBaseInfo info : list) {
             final int varGroupIndex = readerIndexToGroupIndex[info.readerIndex];
 
             if (!info.matchesReference && varGroupIndex == groupIndex) {
@@ -335,7 +335,7 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
             (
                     int position,
                     int groupIndex,
-                    ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo> list,
+                    ObjectArrayList<PositionBaseInfo> list,
                     int[] variantsCount,
                     int[] refCounts) {
         double pValue = 1;
@@ -352,8 +352,8 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
             return 1;
         }
         long sum = 0;
-        for (IterateSortedAlignmentsListImpl.PositionBaseInfo info : list) {
-            final DiscoverSequenceVariantsMode.ReadIndexStats stats = readIndexStats.get(info.readerIndex);
+        for (PositionBaseInfo info : list) {
+            final ReadIndexStats stats = readIndexStats.get(info.readerIndex);
             final int readIndex = info.readIndex;
             if (readIndex < 1 ||
                     readIndex > stats.countVariationBases.length ||

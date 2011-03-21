@@ -19,13 +19,17 @@
 package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
-import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
-import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.io.TSVReader;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.chars.CharSet;
+import it.unimi.dsi.fastutil.chars.CharArraySet;
 import it.unimi.dsi.lang.MutableString;
 import static junitx.framework.FileAssert.assertEquals;
+import static junitx.framework.Assert.assertFalse;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
@@ -89,6 +93,23 @@ public class TestDiscoverSequenceVariantsMode {
     }
 
     @Test
+    public void testDiscoverAlleleImbalance() throws IOException, JSAPException {
+
+        DiscoverSequenceVariantsMode mode = new DiscoverSequenceVariantsMode();
+        int i = 1;
+        String outputFilename = "out-allele-" + i + ".tsv";
+        String[] args = constructArgumentString(
+                basenames, BASE_TEST_DIR + "/" + outputFilename, "samples").split("[\\s]");
+        args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.ALLELE_FREQUENCY.toString()});
+
+        mode.configure(args);
+        mode.execute();
+        assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
+                new File("test-data/discover-variants/expected-output-alleles.tsv"));
+
+    }
+
+    @Test
     public void testDiscoverCheckSampleCountAssociation() throws IOException, JSAPException {
 
         DiscoverSequenceVariantsMode mode = new DiscoverSequenceVariantsMode();
@@ -110,7 +131,6 @@ public class TestDiscoverSequenceVariantsMode {
                     String value = reader.getString();
                     if ("varCountInSample[align-specific-sample]".equals(value)) {
                         columnIndex = c;
-
                     }
                 }
             }
@@ -118,17 +138,83 @@ public class TestDiscoverSequenceVariantsMode {
                 reader.next();
                 for (int c = 0; c < reader.numTokens(); c++) {
                     String value = reader.getString();
-                    if (c== columnIndex) {
-                        org.junit.Assert.assertEquals("variant count must be 2 in the specific alignment sample","2", value);
+                    if (c == columnIndex) {
+                        org.junit.Assert.assertEquals("variant count must be 2 in the specific alignment sample", "2", value);
 
                     }
                 }
+            }
+        }
+    }
+
+    @Test
+    public void testAdjuster() {
+        ObjectArrayList<ReadIndexStats> readIndexStats = new ObjectArrayList<ReadIndexStats>();
+        ReadIndexStats stat = new ReadIndexStats();
+
+        stat.basename = "basename1";
+        stat.readerIndex = 0;
+        stat.countReferenceBases = new long[]{1000, 1000, 1000};
+        stat.countVariationBases = new long[]{100, 500, 900};
+        readIndexStats.add(stat);
+
+        stat = new ReadIndexStats();
+        stat.basename = "basename2";
+        stat.readerIndex = 0;
+        stat.countReferenceBases = new long[]{1000, 1000, 1000};
+        stat.countVariationBases = new long[]{400, 400, 400};
+        readIndexStats.add(stat);
+
+        CountAdjuster adjuster = new CountAdjuster(readIndexStats);
+        SampleCountInfo[] sampleCounts = new SampleCountInfo[1];
+        sampleCounts[0] = new SampleCountInfo();
+
+        sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX] = 5;
+        sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX] = 9;
+        sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX] = 1;
+
+        ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
+        PositionBaseInfo info = new PositionBaseInfo();
+        list.add(info);
+        IntArrayList readIndices = IntArrayList.wrap(new int[]{1, 1, 1, 1, 2, 2, 2, 2, 3});
+
+        list = makeList(sampleCounts, readIndices);
+        adjuster.adjustCounts(list, sampleCounts);
+        System.out.println("list: " + list);
+        CharSet toBases = new CharArraySet();
+        for (PositionBaseInfo i : list) {
+            toBases.add(i.to);
+        }
+        assertFalse("Adjustment must remove T", toBases.contains('T'));
+    }
+
+    private ObjectArrayList<PositionBaseInfo> makeList(SampleCountInfo[] sampleCounts, IntArrayList readIndices) {
+        IntIterator nextReadIndexIterator = readIndices.iterator();
+        ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
+        for (SampleCountInfo sampleInfo : sampleCounts) {
+            for (int baseIndex = 0; baseIndex < SampleCountInfo.BASE_MAX_INDEX; baseIndex++) {
+
+                for (int i = 0; i < sampleInfo.counts[baseIndex]; i++) {
+
+                    PositionBaseInfo info = new PositionBaseInfo();
+                    info.to = sampleInfo.base(baseIndex);
+                    info.readerIndex = sampleInfo.sampleIndex;
+                    if (!nextReadIndexIterator.hasNext()) {
+
+                        // wrap back to the start of read indices:
+                        nextReadIndexIterator = readIndices.iterator();
+                    }
+                    info.readIndex = nextReadIndexIterator.nextInt();
+                    list.add(info);
+                }
 
             }
-            
-
         }
+        return list;
+    }
 
+    private int nextReadIndex() {
+        return 0;  //To change body of created methods use File | Settings | File Templates.
     }
 
     private String[] shuffle

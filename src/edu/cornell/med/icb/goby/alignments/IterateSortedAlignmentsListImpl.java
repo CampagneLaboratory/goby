@@ -29,13 +29,13 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
  *         Time: 2:14:38 PM
  */
 public abstract class IterateSortedAlignmentsListImpl
-        extends IterateSortedAlignments<ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo>> {
+        extends IterateSortedAlignments<ObjectArrayList<PositionBaseInfo>> {
 
     public abstract void processPositions(int referenceIndex, int intermediatePosition, ObjectArrayList<PositionBaseInfo> positionBaseInfos);
 
     public void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders,
                                      Alignments.AlignmentEntry alignmentEntry,
-                                     Int2ObjectMap<ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo>> positionToBases,
+                                     Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
                                      int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
         PositionBaseInfo info = new PositionBaseInfo();
 
@@ -54,7 +54,7 @@ public abstract class IterateSortedAlignmentsListImpl
 
     public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
                                    Alignments.AlignmentEntry alignmentEntry,
-                                   Int2ObjectMap<ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo>> positionToBases,
+                                   Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
                                    Alignments.SequenceVariation var,
                                    char toChar, char fromChar,
                                    int currentReferenceIndex,
@@ -87,14 +87,5 @@ public abstract class IterateSortedAlignmentsListImpl
         list.add(info);
     }
 
-    public class PositionBaseInfo {
-        public int readIndex;
-        public int readerIndex;
-        public byte qualityScore;
-        public boolean matchesReference;
-        public char from;
-        public char to;
-        public int position;
-    }
 
 }

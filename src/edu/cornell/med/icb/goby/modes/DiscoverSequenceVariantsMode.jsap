@@ -143,5 +143,15 @@
             <longFlag>parallel</longFlag>
             <help>Run some computations in parallel. You can tune the number of processors used by setting the property pj.nt. For instance, -Dpj.nt=5 will use 5 parallel threads. When --parallel is specified, one thread per processing core of the machine will be used unless specified otherwise (with pj.nt).</help>
         </switch>
+         <flaggedOption>
+            <id>format</id>
+            <shortFlag>f</shortFlag>
+            <longFlag>format</longFlag>
+            <required>false</required>
+               <defaults>
+                <string>variant_discovery</string>
+            </defaults>
+            <help>The name of the output format. Possible choices are variant_discovery, allele_frequencies.</help>
+        </flaggedOption>
     </parameters>
 </jsap>

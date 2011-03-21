@@ -19,7 +19,8 @@
 package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.alignments.DiscoverVariantIterateSortedAlignments;
-import edu.cornell.med.icb.goby.alignments.IterateSortedAlignmentsListImpl;
+import edu.cornell.med.icb.goby.alignments.SampleCountInfo;
+import edu.cornell.med.icb.goby.alignments.PositionBaseInfo;
 import edu.cornell.med.icb.goby.stats.StatisticsWriter;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
@@ -55,9 +56,9 @@ public interface SequenceVariationOutputFormat {
      * @param groupIndexB
      */
     public void writeRecord(DiscoverVariantIterateSortedAlignments iterator,
-                            DiscoverVariantIterateSortedAlignments.SampleCountInfo[] sampleCounts, int referenceIndex,
+                            SampleCountInfo[] sampleCounts, int referenceIndex,
                             int position,
-                            ObjectArrayList<IterateSortedAlignmentsListImpl.PositionBaseInfo> list,
+                            ObjectArrayList<PositionBaseInfo> list,
                             int groupIndexA, int groupIndexB);
 
 
