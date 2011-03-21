@@ -77,6 +77,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
      * The maximum value of read index, indexed by readerIndex;
      */
     private int numberOfReadIndices[];
+    private DifferentialExpressionCalculator diffExpCalculator;
+    private String[] samples;
 
     @Override
     public String getModeName() {
@@ -151,18 +153,47 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
         }
 
-
-        sortedPositionIterator = new DiscoverVariantIterateSortedAlignments();
+        SequenceVariationOutputFormat format = new BetweenGroupSequenceVariationOutputFormat();
+        sortedPositionIterator = new DiscoverVariantIterateSortedAlignments(format);
         int startFlapSize = jsapResult.getInt("start-flap-size", 100);
         sortedPositionIterator.setStartFlapLength(startFlapSize);
         sortedPositionIterator.parseIncludeReferenceArgument(jsapResult);
-        sortedPositionIterator.setReaderIndexToGroupIndex(readerIndexToGroupIndex);
         sortedPositionIterator.setMinimumVariationSupport(minimumVariationSupport);
         sortedPositionIterator.setThresholdDistinctReadIndices(thresholdDistinctReadIndices);
         return this;
     }
 
     DiscoverVariantIterateSortedAlignments sortedPositionIterator;
+
+    public DifferentialExpressionAnalysis getDiffExpAnalyzer() {
+        return deAnalyzer;
+    }
+
+    public DifferentialExpressionCalculator getDiffExpCalculator() {
+        return diffExpCalculator;
+    }
+
+    public String[] getGroups() {
+        return groups;
+    }
+
+    public ObjectArrayList<ReadIndexStats> getReadIndexStats() {
+        return readIndexStats;
+    }
+
+    public String[] getSamples() {
+        // build a samples array with the correct order:
+        int numberOfSamples = readIndexStats.size();
+        samples = new String[numberOfSamples];
+        for (DiscoverSequenceVariantsMode.ReadIndexStats stat : readIndexStats) {
+            samples[stat.readerIndex] = stat.basename;
+        }
+        return samples;
+    }
+
+    public int[] getReaderIndexToGroupIndex() {
+        return readerIndexToGroupIndex;
+    }
 
     public class ReadIndexStats {
         public String basename;
@@ -252,8 +283,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        final String outputFilename = outputFile;
-
+       
         final String[] basenames = AlignmentReader.getBasenames(inputFilenames);
         final boolean allSorted = ConcatenateAlignmentMode.isAllSorted(basenames);
         if (!allSorted) {
@@ -302,8 +332,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
             readIndexStats.removeAll(toRemove);
         }
-
-        sortedPositionIterator.initialize(deAnalyzer, deCalculator, groups, readIndexStats, outWriter);
+        sortedPositionIterator.allocateStorage(basenames.length, numberOfGroups);
+        sortedPositionIterator.initialize(this, outWriter);
         sortedPositionIterator.iterate(basenames);
         sortedPositionIterator.finish();
     }

@@ -1,6 +1,7 @@
-1.9.3->development
+under development:
  - Mode discover-sequence-variants now can evaluate counts and allelic proportion for each sample. See the --eval
    flag to enable these calculations.
+   
 1.9.3
  - This release has a C API compatible with our development version of GSNAP. A version of GSNAP released
    after 2011-03-11 should compile with Goby 1.9.3.
