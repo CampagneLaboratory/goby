@@ -28,7 +28,6 @@ import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.chars.CharSet;
 import it.unimi.dsi.fastutil.chars.CharArraySet;
 import it.unimi.dsi.lang.MutableString;
-import static junitx.framework.FileAssert.assertEquals;
 import static junitx.framework.Assert.assertFalse;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -38,6 +37,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 
 import java.io.*;
@@ -71,7 +72,7 @@ public class TestDiscoverSequenceVariantsMode {
             mode.configure(args);
             mode.execute();
 
-            assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
+            junitx.framework.FileAssert.assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
                     new File("test-data/discover-variants/expected-output1.tsv"));
 
         }
@@ -87,7 +88,7 @@ public class TestDiscoverSequenceVariantsMode {
                 basenames, BASE_TEST_DIR + "/" + outputFilename, "samples").split("[\\s]");
         mode.configure(args);
         mode.execute();
-        assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
+        junitx.framework.FileAssert.assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
                 new File("test-data/discover-variants/expected-output-samples.tsv"));
 
     }
@@ -104,7 +105,7 @@ public class TestDiscoverSequenceVariantsMode {
 
         mode.configure(args);
         mode.execute();
-        assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
+        junitx.framework.FileAssert.assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
                 new File("test-data/discover-variants/expected-output-alleles.tsv"));
 
     }
@@ -149,21 +150,8 @@ public class TestDiscoverSequenceVariantsMode {
 
     @Test
     public void testAdjuster() {
-        ObjectArrayList<ReadIndexStats> readIndexStats = new ObjectArrayList<ReadIndexStats>();
-        ReadIndexStats stat = new ReadIndexStats();
-
-        stat.basename = "basename1";
-        stat.readerIndex = 0;
-        stat.countReferenceBases = new long[]{1000, 1000, 1000};
-        stat.countVariationBases = new long[]{100, 500, 900};
-        readIndexStats.add(stat);
-
-        stat = new ReadIndexStats();
-        stat.basename = "basename2";
-        stat.readerIndex = 0;
-        stat.countReferenceBases = new long[]{1000, 1000, 1000};
-        stat.countVariationBases = new long[]{400, 400, 400};
-        readIndexStats.add(stat);
+        ObjectArrayList<ReadIndexStats> readIndexStats = makeReadIndexStats();
+       ;
 
         CountAdjuster adjuster = new CountAdjuster(readIndexStats);
         SampleCountInfo[] sampleCounts = new SampleCountInfo[1];
@@ -172,6 +160,7 @@ public class TestDiscoverSequenceVariantsMode {
         sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX] = 5;
         sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX] = 9;
         sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX] = 1;
+        sampleCounts[0].counts[SampleCountInfo.BASE_OTHER_INDEX] = 1;
 
         ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
         PositionBaseInfo info = new PositionBaseInfo();
@@ -179,6 +168,7 @@ public class TestDiscoverSequenceVariantsMode {
         IntArrayList readIndices = IntArrayList.wrap(new int[]{1, 1, 1, 1, 2, 2, 2, 2, 3});
 
         list = makeList(sampleCounts, readIndices);
+
         adjuster.adjustCounts(list, sampleCounts);
         System.out.println("list: " + list);
         CharSet toBases = new CharArraySet();
@@ -186,7 +176,32 @@ public class TestDiscoverSequenceVariantsMode {
             toBases.add(i.to);
         }
         assertFalse("Adjustment must remove T", toBases.contains('T'));
+        assertFalse("Adjustment must remove other bases", toBases.contains('N'));
+        assertEquals(5, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
+        assertEquals(9, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
+        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
+        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_OTHER_INDEX]);
     }
+
+    private ObjectArrayList<ReadIndexStats> makeReadIndexStats() {
+        ObjectArrayList<ReadIndexStats> result=new ObjectArrayList<ReadIndexStats>();
+        ReadIndexStats stat = new ReadIndexStats();
+
+        stat.basename = "basename1";
+        stat.readerIndex = 0;
+        stat.countReferenceBases = new long[]{1000, 1000, 1000};
+        stat.countVariationBases = new long[]{100, 500, 900};
+        result.add(stat);
+
+        stat = new ReadIndexStats();
+        stat.basename = "basename2";
+        stat.readerIndex = 0;
+        stat.countReferenceBases = new long[]{1000, 1000, 1000};
+        stat.countVariationBases = new long[]{10, 10, 10};
+        result.add(stat);
+        return result;
+    }
+
 
     private ObjectArrayList<PositionBaseInfo> makeList(SampleCountInfo[] sampleCounts, IntArrayList readIndices) {
         IntIterator nextReadIndexIterator = readIndices.iterator();
@@ -197,7 +212,12 @@ public class TestDiscoverSequenceVariantsMode {
                 for (int i = 0; i < sampleInfo.counts[baseIndex]; i++) {
 
                     PositionBaseInfo info = new PositionBaseInfo();
-                    info.to = sampleInfo.base(baseIndex);
+                    final char base = sampleInfo.base(baseIndex);
+                    info.to = base;
+                    if (base == 'A') {
+                        info.matchesReference = true;
+                        info.from = base;
+                    }
                     info.readerIndex = sampleInfo.sampleIndex;
                     if (!nextReadIndexIterator.hasNext()) {
 
@@ -206,11 +226,25 @@ public class TestDiscoverSequenceVariantsMode {
                     }
                     info.readIndex = nextReadIndexIterator.nextInt();
                     list.add(info);
+                    System.out.println("info: " + info);
                 }
 
             }
         }
         return list;
+    }
+
+    @Test
+    public void testEstimatePValue() {
+       CountAdjuster adjuster=new CountAdjuster(makeReadIndexStats());
+        int count00 = 1; // observedVariationCount;
+        int count10 = 10; // expectedVariationCount;
+        int count01 = 20; // observedTotalCount;
+        int count11 = 20; // expectedReferenceCount;
+      for (int i=0; i<30; i++) {
+        Double pValue = adjuster.estimatePValue(count00+i, count10, count01, count11  );
+        System.out.println("pvalue less variations than expected by errors: "+pValue);
+      }
     }
 
     private int nextReadIndex() {

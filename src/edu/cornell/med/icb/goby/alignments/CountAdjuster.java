@@ -54,6 +54,7 @@ public class CountAdjuster {
         //activate R only if we need it:
         final Rengine rEngine = GobyRengine.getInstance().getRengine();
         fisherRInstalled = rEngine != null && rEngine.isAlive();
+        System.out.println("Using adjust..");
     }
 
     public void adjustCounts(ObjectArrayList<PositionBaseInfo> list,
@@ -69,6 +70,7 @@ public class CountAdjuster {
 
         for (SampleCountInfo sci : sampleCounts) {
             final ReadIndexStats stats = readIndexStats.get(sci.sampleIndex);
+
             for (int baseIndex = SampleCountInfo.BASE_A_INDEX;
                  baseIndex < SampleCountInfo.BASE_MAX_INDEX;
                  baseIndex++) {
@@ -78,18 +80,17 @@ public class CountAdjuster {
                 int expectedVariationCount = 0;
                 int expectedReferenceCount = 0;
                 int observedVariationCount = 0;
-                observedReferenceCount = sci.counts[baseIndex];
-                if (observedReferenceCount==0) {
+                int totalCount = 0;
+                for (int count : sci.counts) {
+                    totalCount += count;
+                }
+
+                observedVariationCount = sci.counts[baseIndex];
+                if (observedVariationCount == 0) {
                     // no filtering needed for this base.
                     continue;
                 }
-                observedVariationCount = 0;
-                for (int anotherBaseIndex = SampleCountInfo.BASE_A_INDEX; anotherBaseIndex < SampleCountInfo.BASE_OTHER_INDEX; anotherBaseIndex++) {
-                    if (baseIndex != anotherBaseIndex) {
-                        observedVariationCount += sci.counts[anotherBaseIndex];
-
-                    }
-                }
+                // determine if the count for this allele is the likely result of sequencing errors.
 
                 long sum = 0;
                 ObjectList<PositionBaseInfo> considered = new ObjectArrayList<PositionBaseInfo>();
@@ -120,44 +121,60 @@ public class CountAdjuster {
                 }
                 expectedVariationRate /= sum;
                 //   System.out.printf("Expected variation rate: %f%n", expectedVariationRate);
-                expectedVariationCount = (int) Math.round(expectedVariationRate * (double) (observedVariationCount + observedReferenceCount));
-                expectedReferenceCount = (int) Math.round((1 - expectedVariationRate) * (double) (observedVariationCount + observedReferenceCount));
-                contingencyValue value = new contingencyValue(expectedVariationCount, observedVariationCount,
-                        expectedReferenceCount, observedReferenceCount);
-                Double pValue = (Double) fisherPCache.get(value);
-                if (pValue == null) {
-                    if (LOG.isTraceEnabled()) {
-                        LOG.trace(String.format("contingency : %n" +
-                                "    [  exp    obs ]%n" +
-                                "ref [ %d       %d ]%n" +
-                                "var [ %d       %d ] %n",
+                expectedVariationCount = (int) Math.round(expectedVariationRate * (double) (totalCount));
+                expectedReferenceCount = (int) Math.round((1 - expectedVariationRate) * (double) (totalCount));
 
-                                expectedVariationCount, observedVariationCount,
-                                expectedReferenceCount, observedReferenceCount));
+                // if the allele is observed with more counts than expected from sequencing errors, we keep this allele count.
+                int count00 = expectedVariationCount;
+                int count10 = observedVariationCount;
+                int count01 = totalCount-count00;
+                int count11 = totalCount-count01;
+                Double pValue;
+                {
+                    contingencyValue value = new contingencyValue(count00, count10, count01, count11);
+                    pValue = (Double) fisherPCache.get(value);
+                    if (pValue == null) {
+                        // if (LOG.isTraceEnabled()) {
+                        pValue = estimatePValue(count00, count10, count01, count11);
+
+                        fisherPCache.put(value, pValue);
                     }
-
-                    pValue = fisherRInstalled ? FisherExactRCalculator.getFisherOneTailedLesserPValue(
-                            expectedVariationCount, observedVariationCount,
-                            expectedReferenceCount, observedReferenceCount
-                    ) : Double.NaN;
-
-                    fisherPCache.put(value, pValue);
                 }
 
-                if (pValue < 0.05) {
+                if (pValue > 0.05) {
                     int numErroneouslyCalledBases = sci.counts[baseIndex];
                     // filter out:
                     sci.counts[baseIndex] = 0;
                     //   System.out.printf("filtering out %d counts %n", numErroneouslyCalledBases);
-                 /*   System.out.printf("filtering out <%d> %d %d %d %d %n", numErroneouslyCalledBases,
+                  /*  System.out.printf("p=%f filtering out <%d> %d %d %d %d %n", pValue,  numErroneouslyCalledBases,
                             expectedVariationCount, observedVariationCount,
                             expectedReferenceCount, observedReferenceCount);
-                  */
+                    */
                     adjust(list, considered);
+
                 }
             }
         }
 
+    }
+
+    public  final Double estimatePValue(int count00, int count10, int count01, int count11) {
+        Double pValue;
+
+        //  }
+
+        pValue = fisherRInstalled ? FisherExactRCalculator.getFisherOneTailedLesserPValue(
+                count00, count10,
+                count01, count11
+        ) : Double.NaN;
+        /* System.out.println(String.format("contingency : %n" +
+                "    [  exp    obs ]%n" +
+                "ref [ %d       %d ]%n" +
+                "var [ %d       %d ]%n" +
+                 "P=%f",
+                count00, count10, count01, count11,pValue));
+                */
+        return pValue;
     }
 
     private class contingencyValue {

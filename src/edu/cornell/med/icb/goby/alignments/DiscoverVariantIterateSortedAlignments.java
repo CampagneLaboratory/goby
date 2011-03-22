@@ -76,7 +76,10 @@ public class DiscoverVariantIterateSortedAlignments
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         statWriter = new StatisticsWriter(outWriter);
         format.defineColumns(statWriter, mode);
-        adjuster=new CountAdjuster(mode.getReadIndexStats());
+        if (mode.getDiffExpAnalyzer().eval("adjust")) {
+
+            adjuster = new CountAdjuster(mode.getReadIndexStats());
+        }
     }
 
     public void finish() {
@@ -169,7 +172,7 @@ public class DiscoverVariantIterateSortedAlignments
                 // base counts for reads that can overlap with the window under consideration.
 
                 if (!isWithinStartFlap(referenceIndex, position)) {
-                    if (adjuster!=null) {
+                    if (adjuster != null) {
                         adjuster.adjustCounts(list, sampleCounts);
                     }
                     format.writeRecord(this, sampleCounts, referenceIndex, position, list, groupIndexA, groupIndexB);

@@ -30,7 +30,12 @@ public class PositionBaseInfo {
     public int readerIndex;
     public byte qualityScore;
     public boolean matchesReference;
-    public char from;
-    public char to;
+    public char from=' ';
+    public char to=' ';
     public int position;
+
+    @Override
+    public String toString() {
+        return matchesReference?"ref:"+from: from+"/"+to;
+    }
 }

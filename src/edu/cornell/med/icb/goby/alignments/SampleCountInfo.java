@@ -32,7 +32,7 @@ public class SampleCountInfo {
     static final public int BASE_C_INDEX = 2;
     static final public int BASE_G_INDEX = 3;
     static final public int BASE_OTHER_INDEX = 4;
-    static final public int BASE_MAX_INDEX = BASE_OTHER_INDEX;
+    static final public int BASE_MAX_INDEX = BASE_OTHER_INDEX+1;
 
     public char referenceBase;
     public IntSet distinctReadIndices = new IntArraySet();
