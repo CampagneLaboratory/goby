@@ -67,7 +67,7 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 
         final int positionString = position + 1;
-        statWriter.setValue(refIdColumnIndex, String.format("%s:%d:%s:%d",currentReferenceId,positionString,currentReferenceId,positionString));
+        statWriter.setValue(refIdColumnIndex, String.format("%s:%d:%s:%d", currentReferenceId, positionString, currentReferenceId, positionString));
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             double refProportion = (double) refCountsPerSample[sampleIndex];
@@ -75,7 +75,7 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
             statWriter.setValue(refProportion,
                     "refProportion[%s]", samples[sampleIndex]);
         }
-            statWriter.writeRecord();
+        statWriter.writeRecord();
     }
 
     private void fillVariantCountArrays(SampleCountInfo[] sampleCounts) {

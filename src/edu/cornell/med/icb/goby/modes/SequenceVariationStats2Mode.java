@@ -29,6 +29,7 @@ import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.IterateSortedAlignments;
 import edu.cornell.med.icb.goby.alignments.ConcatSortedAlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.util.DoInParallel;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -128,10 +129,10 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        PrintStream stream = null;
+        final PrintStream stream = outputFilename == null ? System.out :
+                new PrintStream(new FileOutputStream(outputFilename));
         try {
-            stream = outputFilename == null ? System.out :
-                    new PrintStream(new FileOutputStream(outputFilename));
+
             switch (outputFormat) {
                 case TAB_DELIMITED:
                 case TSV:
@@ -139,40 +140,64 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
                     break;
             }
 
+            DoInParallel loop = new DoInParallel() {
+                @Override
+                public void action(DoInParallel forDataAccess, String inputBasename, int loopIndex) {
+                    //To change body of implemented methods use File | Settings | File Templates.
+                    try {
+                        MyIterateSortedAlignments iterator = new MyIterateSortedAlignments();
+                        iterator.parseIncludeReferenceArgument(jsapResult);
 
-            for (final String basename : basenames) {
-                MyIterateSortedAlignments iterator = new MyIterateSortedAlignments();
-                iterator.parseIncludeReferenceArgument(jsapResult);
+                        final String[] singleBasename = {inputBasename};
 
-                final String[] singleBasename = {basename};
-                // Iterate through each alignment and write sequence variations to output file:
-                iterator.iterate(singleBasename);
+                        // Iterate through each alignment and write sequence variations to output file:
 
-                final long[] readIndexVariationTallies = iterator.getReadIndexVariationTally();
-                final long[] readIndexReferenceTallies = iterator.getReadIndexReferenceTally();
-                final double totalNumberOfVariationBases = sum(readIndexVariationTallies);
-                final double numberOfAlignmentEntries = iterator.getNumAlignmentEntries();
+                        iterator.iterate(singleBasename);
 
-                final long countReferenceBases = iterator.getReferenceBaseCount();
-                int maxReadIndex = iterator.getMaxReadIndex();
-                for (int readIndex = 1; readIndex < maxReadIndex + 1; readIndex++) {
-                    final long countVariationBasesAtReadIndex = readIndexVariationTallies[readIndex];
-                    final long countReferenceBasesAtReadIndex = readIndexReferenceTallies[readIndex];
-                    final double frequency = ((double) countVariationBasesAtReadIndex) / totalNumberOfVariationBases;
-                    final double alignFrequency = ((double) countVariationBasesAtReadIndex) / countReferenceBases;
+                        final long[] readIndexVariationTallies = iterator.getReadIndexVariationTally();
+                        final long[] readIndexReferenceTallies = iterator.getReadIndexReferenceTally();
+                        final double totalNumberOfVariationBases = sum(readIndexVariationTallies);
+                        final double numberOfAlignmentEntries = iterator.getNumAlignmentEntries();
 
-                    stream.printf("%s\t%d\t%d\t%s\t%f\t%d\t%d%n",
-                            FilenameUtils.getBaseName(basename),
-                            readIndex,
-                            countVariationBasesAtReadIndex,
-                            frequency,
-                            alignFrequency,
-                            countReferenceBases,
-                            countReferenceBasesAtReadIndex);
+                        final long countReferenceBases = iterator.getReferenceBaseCount();
+                        int maxReadIndex = iterator.getMaxReadIndex();
+                        synchronized (this) {
+                            for (int readIndex = 1; readIndex < maxReadIndex + 1; readIndex++) {
+                                final long countVariationBasesAtReadIndex = readIndexVariationTallies[readIndex];
+                                final long countReferenceBasesAtReadIndex = readIndexReferenceTallies[readIndex];
+                                final double frequency = ((double) countVariationBasesAtReadIndex) / totalNumberOfVariationBases;
+                                final double alignFrequency = ((double) countVariationBasesAtReadIndex) / countReferenceBases;
+
+                                stream.printf("%s\t%d\t%d\t%s\t%f\t%d\t%d%n",
+                                        FilenameUtils.getBaseName(inputBasename),
+                                        readIndex,
+                                        countVariationBasesAtReadIndex,
+                                        frequency,
+                                        alignFrequency,
+                                        countReferenceBases,
+                                        countReferenceBasesAtReadIndex);
+                            }
+                        }
+                        stream.flush();
+                    } catch (IOException e) {
+                        System.err.println(e);
+                        e.printStackTrace();
+
+                    }
                 }
-                stream.flush();
+
+
+            };
+            try {
+                loop.execute(true, basenames);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } finally {
+        }
+
+        finally
+
+        {
             if (stream != System.out) {
                 IOUtils.closeQuietly(stream);
             }

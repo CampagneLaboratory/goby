@@ -185,7 +185,8 @@ public class TestDiscoverSequenceVariantsMode {
 
 
     @Test
-    public void testGenotypes() throws IOException, JSAPException {
+    public
+    void testGenotypes() throws IOException, JSAPException {
         DiscoverSequenceVariantsMode mode = new DiscoverSequenceVariantsMode();
         int i = 1;
         String outputFilename = "out-genotypes-" + i + ".tsv";

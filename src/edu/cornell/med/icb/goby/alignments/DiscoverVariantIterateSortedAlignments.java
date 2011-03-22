@@ -133,7 +133,7 @@ public class DiscoverVariantIterateSortedAlignments
 
         if (list != null) {
             IntSet distinctReadIndices = new IntArraySet();
-            setReferenceAllele(list);
+           char refBase= setReferenceAllele(list);
             for (edu.cornell.med.icb.goby.alignments.PositionBaseInfo info : list) {
                 final int sampleIndex = info.readerIndex;
                 distinctReadIndices.add(info.readIndex);
@@ -142,10 +142,11 @@ public class DiscoverVariantIterateSortedAlignments
                     sampleCounts[sampleIndex].referenceBase = info.from;
                     sampleCounts[sampleIndex].refCount++;
                     incrementBaseCounter(info.from, sampleIndex);
+
                 } else {
                     sampleCounts[sampleIndex].varCount++;
                     sumVariantCounts++;
-
+                    sampleCounts[sampleIndex].referenceBase =refBase;
                     sampleCounts[sampleIndex].distinctReadIndices.add(info.readIndex);
                     incrementBaseCounter(info.to, sampleIndex);
                 }
@@ -167,7 +168,7 @@ public class DiscoverVariantIterateSortedAlignments
         }
     }
 
-    private void setReferenceAllele(ObjectArrayList<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> list) {
+    private char setReferenceAllele(ObjectArrayList<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> list) {
         final ObjectIterator<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> iterator = list.iterator();
         char refBase = '\0';
         // find the reference base from any variant:
@@ -184,6 +185,7 @@ public class DiscoverVariantIterateSortedAlignments
                 elem.from = refBase;
             }
         }
+        return refBase;
     }
 
     private void incrementBaseCounter(char base, int sampleIndex) {

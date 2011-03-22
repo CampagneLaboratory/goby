@@ -22,14 +22,11 @@ import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.stats.StatisticsWriter;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.chars.CharArrayList;
 import it.unimi.dsi.fastutil.chars.CharArraySet;
 import it.unimi.dsi.lang.MutableString;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -70,12 +67,12 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     }
 
     IntArrayList decreasingCounts = new IntArrayList();
-    CharArraySet baseIndicesByDecreasingCounts = new CharArraySet();
+    CharArraySet alleleSet = new CharArraySet();
     MutableString genotypeBuffer = new MutableString();
 
     public void writeRecord(DiscoverVariantIterateSortedAlignments iterator, SampleCountInfo[] sampleCounts,
                             int referenceIndex, int position, ObjectArrayList<PositionBaseInfo> list, int groupIndexA, int groupIndexB) {
-     
+
         fillVariantCountArrays(sampleCounts);
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 
@@ -83,55 +80,60 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
         statWriter.setValue(refIdColumnIndex, String.format("%s:%d:%s:%d", currentReferenceId, positionString, currentReferenceId, positionString));
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
-            decreasingCounts.size(0);
-            baseIndicesByDecreasingCounts.clear();
-            
+            alleleSet.clear();
             SampleCountInfo sci = sampleCounts[sampleIndex];
-            boolean hasMoreCounts = true;
-            while (hasMoreCounts) {
-                int maxCount = 0;
-                int maxCountIndex = -1;
-                for (int baseIndex = 0; baseIndex < SampleCountInfo.BASE_MAX_INDEX; baseIndex++) {
-                    final int count = sci.counts[baseIndex];
-                    if (count > maxCount) {
-                        maxCount = count;
-                        maxCountIndex = baseIndex;
+            int baseIndex = 0;
+            int genotypeCount = 0;
+            genotypeBuffer.setLength(0);
+            char refBase = '.';
+            for (int count : sci.counts) {
+                final char base = sci.base(baseIndex);
+                if (count > 0) {
+                    alleleSet.add(base);
+                    if (base != sci.referenceBase) {
+                        genotypeBuffer.append(String.format("%c/%c,", sci.referenceBase, base));
+                        genotypeCount++;
                     }
                 }
-                if (maxCount != 0) {
-                    decreasingCounts.add(maxCount);
-                    baseIndicesByDecreasingCounts.add(sci.base(maxCountIndex));
-                    sci.counts[maxCountIndex] = 0;
-                } else {
-                    hasMoreCounts = false;
-                }
+                baseIndex++;
             }
+            if (genotypeBuffer.length() > 1) {
+                // trim the trailing coma:
+                genotypeBuffer.setLength(genotypeBuffer.length() - 1);
+            }
+
+
             String zygozity;
-            if (decreasingCounts.size() == 1) {
-                zygozity = "Homozygous";
-            } else if (decreasingCounts.size() == 2) {
-                zygozity = "Heterozygous";
-            } else {
-                zygozity = "Mixture";
+            switch (alleleSet.size()) {
+                case 0:
+                    zygozity = "not-typed";
+                    break;
+                case 1:
+                    zygozity = "homozygous";
+                    genotypeBuffer.setLength(0);
+                    genotypeBuffer.append(String.format("%c/%c", sci.referenceBase, sci.referenceBase));
+                    break;
+                case 2:
+                    zygozity = "heterozygous";
+                    break;
+                default:
+               /*     zygozity = String.format("mixture:%d:%d:%d:%d:%d",
+                            sci.counts[SampleCountInfo.BASE_A_INDEX],
+                            sci.counts[SampleCountInfo.BASE_T_INDEX],
+                            sci.counts[SampleCountInfo.BASE_C_INDEX],
+                            sci.counts[SampleCountInfo.BASE_G_INDEX],
+                            sci.counts[SampleCountInfo.BASE_OTHER_INDEX])
+                            ;*/
+                      zygozity = "Mixture";
+                    break;
             }
+
             statWriter.setValue(zygozity,
                     "Zygosity[%s]", samples[sampleIndex]);
 
-            final CharArrayList charArrayList = CharArrayList.wrap(baseIndicesByDecreasingCounts.toCharArray());
-            Collections.sort(charArrayList);
-
-            genotypeBuffer.setLength(0);
-            int i = 0;
-            int max = baseIndicesByDecreasingCounts.size()-1;
-            for (char base : charArrayList) {
-                genotypeBuffer.append(base);
-                if (i++ < max) {
-                    genotypeBuffer.append('/');
-                }
-            }
-
             statWriter.setValue(genotypeBuffer.toString(),
                     "Genotype[%s]", samples[sampleIndex]);
+
         }
 
         statWriter.writeRecord();
