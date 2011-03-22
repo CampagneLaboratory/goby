@@ -46,6 +46,11 @@ public class CountAdjuster {
     private boolean firstReport = true;
     private ObjectArrayList<ReadIndexStats> readIndexStats;
     private LRUMap fisherPCache;
+    private Double pValueThreshold=0.05;
+
+    public void setPValueThreshold(Double pValueThreshold) {
+        this.pValueThreshold = pValueThreshold;
+    }
 
     public CountAdjuster(ObjectArrayList<ReadIndexStats> readIndexStats) {
         fisherPCache = new LRUMap(10000);
@@ -127,8 +132,8 @@ public class CountAdjuster {
                 // if the allele is observed with more counts than expected from sequencing errors, we keep this allele count.
                 int count00 = expectedVariationCount;
                 int count10 = observedVariationCount;
-                int count01 = totalCount-count00;
-                int count11 = totalCount-count01;
+                int count01 = totalCount - count00;
+                int count11 = totalCount - count01;
                 Double pValue;
                 {
                     contingencyValue value = new contingencyValue(count00, count10, count01, count11);
@@ -141,12 +146,12 @@ public class CountAdjuster {
                     }
                 }
 
-                if (pValue > 0.05) {
+                if (pValue > pValueThreshold) {
                     int numErroneouslyCalledBases = sci.counts[baseIndex];
                     // filter out:
                     sci.counts[baseIndex] = 0;
                     //   System.out.printf("filtering out %d counts %n", numErroneouslyCalledBases);
-                  /*  System.out.printf("p=%f filtering out <%d> %d %d %d %d %n", pValue,  numErroneouslyCalledBases,
+                    /*  System.out.printf("p=%f filtering out <%d> %d %d %d %d %n", pValue,  numErroneouslyCalledBases,
                             expectedVariationCount, observedVariationCount,
                             expectedReferenceCount, observedReferenceCount);
                     */
@@ -158,10 +163,8 @@ public class CountAdjuster {
 
     }
 
-    public  final Double estimatePValue(int count00, int count10, int count01, int count11) {
+    public final Double estimatePValue(int count00, int count10, int count01, int count11) {
         Double pValue;
-
-        //  }
 
         pValue = fisherRInstalled ? FisherExactRCalculator.getFisherOneTailedLesserPValue(
                 count00, count10,

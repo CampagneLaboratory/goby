@@ -153,25 +153,26 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         }
         final String formatSring = jsapResult.getString("format");
 
-        OutputFormat format=OutputFormat.valueOf(formatSring.toUpperCase());
+        OutputFormat format = OutputFormat.valueOf(formatSring.toUpperCase());
 
-        SequenceVariationOutputFormat formatter=null;
+        SequenceVariationOutputFormat formatter = null;
         switch (format) {
             case VARIANT_DISCOVERY:
-                formatter=new BetweenGroupSequenceVariationOutputFormat();
+                formatter = new BetweenGroupSequenceVariationOutputFormat();
                 break;
             case ALLELE_FREQUENCY:
-                formatter=new AlleleFrequencyOutputFormat();
+                formatter = new AlleleFrequencyOutputFormat();
                 break;
-       //      case GENOTYPES:
-         //       formatter=new GenotypesOutputFormat();
-         //       break;
+            case GENOTYPES:
+                formatter = new GenotypesOutputFormat();
+                break;
             default:
                 ObjectArrayList<OutputFormat> values = ObjectArrayList.wrap(OutputFormat.values());
                 System.err.printf("The format argument is not recognized. Allowed values include %s",
                         values.toString());
                 System.exit(1);
-        };
+        }
+        ;
         sortedPositionIterator = new DiscoverVariantIterateSortedAlignments(formatter);
         int startFlapSize = jsapResult.getInt("start-flap-size", 100);
         sortedPositionIterator.setStartFlapLength(startFlapSize);
@@ -180,11 +181,13 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         sortedPositionIterator.setThresholdDistinctReadIndices(thresholdDistinctReadIndices);
         return this;
     }
+
     enum OutputFormat {
         VARIANT_DISCOVERY,
         ALLELE_FREQUENCY,
         GENOTYPES
     }
+
     DiscoverVariantIterateSortedAlignments sortedPositionIterator;
 
     public DifferentialExpressionAnalysis getDiffExpAnalyzer() {
@@ -279,9 +282,9 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             e.printStackTrace(System.err);
             System.exit(1);
         }
-        if (readIndexStats.size()<inputFilenames.length) {
+        if (readIndexStats.size() < inputFilenames.length) {
             System.err.printf("The stats file seems incompleted. Expected to find statistics for %d samples, but found only %d %n",
-                    inputFilenames.length,readIndexStats.size() );
+                    inputFilenames.length, readIndexStats.size());
             System.exit(1);
         }
     }
@@ -293,7 +296,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-       
+
         final String[] basenames = AlignmentReader.getBasenames(inputFilenames);
         final boolean allSorted = ConcatenateAlignmentMode.isAllSorted(basenames);
         if (!allSorted) {

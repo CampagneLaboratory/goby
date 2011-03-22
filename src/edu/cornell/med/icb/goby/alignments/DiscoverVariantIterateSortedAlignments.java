@@ -26,6 +26,7 @@ import edu.cornell.med.icb.goby.stats.StatisticsWriter;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -132,6 +133,7 @@ public class DiscoverVariantIterateSortedAlignments
 
         if (list != null) {
             IntSet distinctReadIndices = new IntArraySet();
+            setReferenceAllele(list);
             for (edu.cornell.med.icb.goby.alignments.PositionBaseInfo info : list) {
                 final int sampleIndex = info.readerIndex;
                 distinctReadIndices.add(info.readIndex);
@@ -139,29 +141,13 @@ public class DiscoverVariantIterateSortedAlignments
 
                     sampleCounts[sampleIndex].referenceBase = info.from;
                     sampleCounts[sampleIndex].refCount++;
-
+                    incrementBaseCounter(info.from, sampleIndex);
                 } else {
                     sampleCounts[sampleIndex].varCount++;
                     sumVariantCounts++;
 
                     sampleCounts[sampleIndex].distinctReadIndices.add(info.readIndex);
-                    switch (info.to) {
-                        case 'A':
-                            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_A_INDEX] += 1;
-                            break;
-                        case 'T':
-                            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_T_INDEX] += 1;
-                            break;
-                        case 'C':
-                            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_C_INDEX] += 1;
-                            break;
-                        case 'G':
-                            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_G_INDEX] += 1;
-                            break;
-                        default:
-                            sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_OTHER_INDEX] += 1;
-                            break;
-                    }
+                    incrementBaseCounter(info.to, sampleIndex);
                 }
             }
 
@@ -178,6 +164,45 @@ public class DiscoverVariantIterateSortedAlignments
                     format.writeRecord(this, sampleCounts, referenceIndex, position, list, groupIndexA, groupIndexB);
                 }
             }
+        }
+    }
+
+    private void setReferenceAllele(ObjectArrayList<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> list) {
+        final ObjectIterator<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> iterator = list.iterator();
+        char refBase = '\0';
+        // find the reference base from any variant:
+        while (iterator.hasNext()) {
+            edu.cornell.med.icb.goby.alignments.PositionBaseInfo positionBaseInfo = iterator.next();
+            if (!positionBaseInfo.matchesReference) {
+                refBase = positionBaseInfo.from;
+                break;
+            }
+        }
+        // set on elements that match the reference:
+        for (edu.cornell.med.icb.goby.alignments.PositionBaseInfo elem : list) {
+            if (elem.matchesReference) {
+                elem.from = refBase;
+            }
+        }
+    }
+
+    private void incrementBaseCounter(char base, int sampleIndex) {
+        switch (base) {
+            case 'A':
+                sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_A_INDEX] += 1;
+                break;
+            case 'T':
+                sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_T_INDEX] += 1;
+                break;
+            case 'C':
+                sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_C_INDEX] += 1;
+                break;
+            case 'G':
+                sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_G_INDEX] += 1;
+                break;
+            default:
+                sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_OTHER_INDEX] += 1;
+                break;
         }
     }
 

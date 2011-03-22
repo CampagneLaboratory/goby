@@ -151,7 +151,7 @@ public class TestDiscoverSequenceVariantsMode {
     @Test
     public void testAdjuster() {
         ObjectArrayList<ReadIndexStats> readIndexStats = makeReadIndexStats();
-       ;
+
 
         CountAdjuster adjuster = new CountAdjuster(readIndexStats);
         SampleCountInfo[] sampleCounts = new SampleCountInfo[1];
@@ -168,7 +168,7 @@ public class TestDiscoverSequenceVariantsMode {
         IntArrayList readIndices = IntArrayList.wrap(new int[]{1, 1, 1, 1, 2, 2, 2, 2, 3});
 
         list = makeList(sampleCounts, readIndices);
-
+        adjuster.setPValueThreshold(0.5);
         adjuster.adjustCounts(list, sampleCounts);
         System.out.println("list: " + list);
         CharSet toBases = new CharArraySet();
@@ -183,8 +183,25 @@ public class TestDiscoverSequenceVariantsMode {
         assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_OTHER_INDEX]);
     }
 
+
+    @Test
+    public void testGenotypes() throws IOException, JSAPException {
+        DiscoverSequenceVariantsMode mode = new DiscoverSequenceVariantsMode();
+        int i = 1;
+        String outputFilename = "out-genotypes-" + i + ".tsv";
+        String[] args = constructArgumentString(
+                basenames, BASE_TEST_DIR + "/" + outputFilename, "samples").split("[\\s]");
+        args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.GENOTYPES.toString()});
+
+        mode.configure(args);
+        mode.execute();
+        junitx.framework.FileAssert.assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
+                new File("test-data/discover-variants/expected-output-genotypes.tsv"));
+
+    }
+
     private ObjectArrayList<ReadIndexStats> makeReadIndexStats() {
-        ObjectArrayList<ReadIndexStats> result=new ObjectArrayList<ReadIndexStats>();
+        ObjectArrayList<ReadIndexStats> result = new ObjectArrayList<ReadIndexStats>();
         ReadIndexStats stat = new ReadIndexStats();
 
         stat.basename = "basename1";
@@ -236,15 +253,15 @@ public class TestDiscoverSequenceVariantsMode {
 
     @Test
     public void testEstimatePValue() {
-       CountAdjuster adjuster=new CountAdjuster(makeReadIndexStats());
+        CountAdjuster adjuster = new CountAdjuster(makeReadIndexStats());
         int count00 = 1; // observedVariationCount;
         int count10 = 10; // expectedVariationCount;
         int count01 = 20; // observedTotalCount;
         int count11 = 20; // expectedReferenceCount;
-      for (int i=0; i<30; i++) {
-        Double pValue = adjuster.estimatePValue(count00+i, count10, count01, count11  );
-        System.out.println("pvalue less variations than expected by errors: "+pValue);
-      }
+        for (int i = 0; i < 30; i++) {
+            Double pValue = adjuster.estimatePValue(count00 + i, count10, count01, count11);
+            System.out.println("pvalue less variations than expected by errors: " + pValue);
+        }
     }
 
     private int nextReadIndex() {
