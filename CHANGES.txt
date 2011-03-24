@@ -1,6 +1,12 @@
-under development:
- - Mode discover-sequence-variants now can evaluate counts and allelic proportion for each sample. See the --eval
-   flag to enable these calculations.
+1.9.4
+ - Kevin, please describe changes to C++ API. A link to the sequence variation document should be posted here.
+ - Mode discover-sequence-variants has been extended to support multiple types of outputs (see --format flag).
+   One output format prints genotypes, while another estimates the proportion of the reference allele in each sample.
+ - Added a mechanism to support base filters in discover-sequence-variants. To activate these filters, you must provide
+   the --eval option with the filter option. Two filters are currently active when --eval filter is used: one
+   filters variant bases by quality score (keeping only bases with q-phred>=30) and another is a simple and efficient
+   strategy to remove bases that do not quite agree across all the observations.
+   Future  versions will make it possible to customize the set of filters and their options. 
  - sequence-variation-stats2 now runs in parallel up to the available number of threads when multiple alignments are
    given as input.
 
