@@ -212,7 +212,10 @@ message SequenceVariation {
     /*
     The position of the variation, starting from the beginning of the aligned read (position 1), and up to the length
     of the read (inclusive). Use this index if you need to know  how far the variation is observed from the beginning
-    of the sequenced read.
+    of the sequenced read. When the read has an insertion, this index records the position immediately before the base
+    where the bases are inserted (these bases are in the to field).
+    When the read has a deletion, read_index records the position in the read after which the bases that would align
+    in the reference are missing (these bases are in the from field).
     */
   required uint32 read_index=5;
 
