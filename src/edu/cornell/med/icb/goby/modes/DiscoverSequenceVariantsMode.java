@@ -160,7 +160,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             case VARIANT_DISCOVERY:
                 formatter = new BetweenGroupSequenceVariationOutputFormat();
                 break;
-            case ALLELE_FREQUENCY:
+            case ALLELE_FREQUENCIES:
                 formatter = new AlleleFrequencyOutputFormat();
                 break;
             case GENOTYPES:
@@ -184,7 +184,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
     enum OutputFormat {
         VARIANT_DISCOVERY,
-        ALLELE_FREQUENCY,
+        ALLELE_FREQUENCIES,
         GENOTYPES
     }
 

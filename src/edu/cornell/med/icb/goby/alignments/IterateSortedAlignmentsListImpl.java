@@ -57,7 +57,7 @@ public abstract class IterateSortedAlignmentsListImpl
                                    Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
                                    Alignments.SequenceVariation var,
                                    char toChar, char fromChar,
-                                   int currentReferenceIndex,
+                                   byte toQual, int currentReferenceIndex,
                                    int currentRefPosition,
                                    int currentReadIndex) {
 
@@ -70,7 +70,7 @@ public abstract class IterateSortedAlignmentsListImpl
         info.to = toChar;
         info.matchesReference = false;
         info.position = currentRefPosition;
-
+        info.qualityScore=toQual;
 
         addToFuture(positionToBases, info);
     }

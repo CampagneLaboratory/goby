@@ -54,7 +54,8 @@ public class DiscoverVariantIterateSortedAlignments
     private SequenceVariationOutputFormat format;
     private int numberOfGroups;
     private int[] readerIndexToGroupIndex;
-    private CountAdjuster adjuster;
+
+    private BaseFilter[] baseFilters;
 
     public void setMinimumVariationSupport(int minimumVariationSupport) {
         this.minimumVariationSupport = minimumVariationSupport;
@@ -77,9 +78,21 @@ public class DiscoverVariantIterateSortedAlignments
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         statWriter = new StatisticsWriter(outWriter);
         format.defineColumns(statWriter, mode);
-        if (mode.getDiffExpAnalyzer().eval("adjust")) {
+        if (mode.getDiffExpAnalyzer().eval("filter")) {
+            baseFilters = new BaseFilter[]{
 
-            adjuster = new CountAdjuster(mode.getReadIndexStats());
+                    new QualityScoreFilter(),
+               //     new FisherBaseFilter(mode.getReadIndexStats()),
+                    new LeftOverFilter()
+            };
+            System.out.println("Filtering reads that have these criteria:");
+            for (BaseFilter filter : baseFilters) {
+
+                System.out.println(filter.describe());
+            }
+
+        } else {
+            baseFilters = new BaseFilter[0];
         }
     }
 
@@ -133,7 +146,7 @@ public class DiscoverVariantIterateSortedAlignments
 
         if (list != null) {
             IntSet distinctReadIndices = new IntArraySet();
-           char refBase= setReferenceAllele(list);
+            char refBase = setReferenceAllele(list);
             for (edu.cornell.med.icb.goby.alignments.PositionBaseInfo info : list) {
                 final int sampleIndex = info.readerIndex;
                 distinctReadIndices.add(info.readIndex);
@@ -146,7 +159,7 @@ public class DiscoverVariantIterateSortedAlignments
                 } else {
                     sampleCounts[sampleIndex].varCount++;
                     sumVariantCounts++;
-                    sampleCounts[sampleIndex].referenceBase =refBase;
+                    sampleCounts[sampleIndex].referenceBase = refBase;
                     sampleCounts[sampleIndex].distinctReadIndices.add(info.readIndex);
                     incrementBaseCounter(info.to, sampleIndex);
                 }
@@ -159,11 +172,19 @@ public class DiscoverVariantIterateSortedAlignments
                 // base counts for reads that can overlap with the window under consideration.
 
                 if (!isWithinStartFlap(referenceIndex, position)) {
-                    if (adjuster != null) {
-                        adjuster.adjustCounts(list, sampleCounts);
+
+                    if (baseFilters.length != 0) {
+                        ObjectArrayList<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> filteredList =
+                                new ObjectArrayList<edu.cornell.med.icb.goby.alignments.PositionBaseInfo>();
+                        for (BaseFilter filter : baseFilters) {
+                            filter.filterBases(list, sampleCounts, filteredList);
+                            //       System.out.printf("filter %s removed %3g %% %n", filter.getName(), filter.getPercentFilteredOut());
+                        }
+                        CountFixer fixer = new CountFixer();
+                        fixer.fix(list, sampleCounts, filteredList);
                     }
-                    format.writeRecord(this, sampleCounts, referenceIndex, position, list, groupIndexA, groupIndexB);
                 }
+                format.writeRecord(this, sampleCounts, referenceIndex, position, list, groupIndexA, groupIndexB);
             }
         }
     }

@@ -70,6 +70,13 @@ public class CountsWriter implements Closeable {
         previousCount = count;
         bitsWritten += out.writeDelta(previousCount + 1);  // Delta cannot be zero, so add 1.
     }
+    public long getNumberOfBitsWritten() {
+        return bitsWritten;
+
+    }
+    public int getNumberOfTransitions() {
+        return numberOfCountsWritten;
+    }
 
     public void appendCount(final int count, final int lengthConstant) throws IOException {
         assert lengthConstant > 0 : "length must be greater than zero.";
@@ -116,6 +123,7 @@ public class CountsWriter implements Closeable {
             if (LOG.isInfoEnabled()) {
                 LOG.info("bits written: " + bitsWritten);
                 LOG.info("bytes written: " + bitsWritten / 8);
+                LOG.info("number of transitions: " + numberOfCountsWritten);
                 LOG.info("bits/count_transition (average): " + (float) bitsWritten / (float) numberOfCountsWritten);
             }
         }

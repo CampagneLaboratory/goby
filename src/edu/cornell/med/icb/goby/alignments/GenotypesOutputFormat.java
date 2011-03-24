@@ -44,6 +44,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     private StatisticsWriter statWriter;
     String[] samples;
 
+    
     public void defineColumns(StatisticsWriter statsWriter, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
         refIdColumnIndex = statsWriter.defineColumn("chr:position:chr:position");
@@ -74,6 +75,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                             int referenceIndex, int position, ObjectArrayList<PositionBaseInfo> list, int groupIndexA, int groupIndexB) {
 
         fillVariantCountArrays(sampleCounts);
+
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 
         final int positionString = position + 1;
@@ -82,6 +84,11 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             alleleSet.clear();
             SampleCountInfo sci = sampleCounts[sampleIndex];
+            int totalCount = 0;
+            for (int sampleCount : sci.counts) {
+                totalCount += sampleCount;
+            }
+
             int baseIndex = 0;
             int genotypeCount = 0;
             genotypeBuffer.setLength(0);
@@ -117,14 +124,14 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                     zygozity = "heterozygous";
                     break;
                 default:
-               /*     zygozity = String.format("mixture:%d:%d:%d:%d:%d",
-                            sci.counts[SampleCountInfo.BASE_A_INDEX],
-                            sci.counts[SampleCountInfo.BASE_T_INDEX],
-                            sci.counts[SampleCountInfo.BASE_C_INDEX],
-                            sci.counts[SampleCountInfo.BASE_G_INDEX],
-                            sci.counts[SampleCountInfo.BASE_OTHER_INDEX])
-                            ;*/
-                      zygozity = "Mixture";
+                    /*     zygozity = String.format("mixture:%d:%d:%d:%d:%d",
+                    sci.counts[SampleCountInfo.BASE_A_INDEX],
+                    sci.counts[SampleCountInfo.BASE_T_INDEX],
+                    sci.counts[SampleCountInfo.BASE_C_INDEX],
+                    sci.counts[SampleCountInfo.BASE_G_INDEX],
+                    sci.counts[SampleCountInfo.BASE_OTHER_INDEX])
+                    ;*/
+                    zygozity = "Mixture";
                     break;
             }
 

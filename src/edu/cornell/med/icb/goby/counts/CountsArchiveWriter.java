@@ -44,6 +44,8 @@ public class CountsArchiveWriter implements Closeable {
     private String currentId;
 
     private ByteArrayOutputStream stream;
+    private long totalBitsWritten;
+    private int totalTransitions;
 
     /**
      * Initialize with a basename. Count information will be written to a file basename+".counts"
@@ -108,6 +110,8 @@ public class CountsArchiveWriter implements Closeable {
     public void returnWriter(final CountsWriter writer) throws IOException {
         assert writer == currentCountsWriter : "You must return the current counts writter.";
         writer.close();
+        totalBitsWritten+=writer.getNumberOfBitsWritten();
+        totalTransitions+=writer.getNumberOfTransitions();
         final byte[] bytes = stream.toByteArray();
 
         final DataOutput part = compoundWriter.addFile(currentId);
@@ -125,5 +129,9 @@ public class CountsArchiveWriter implements Closeable {
      */
     public void close() throws IOException {
         compoundWriter.close();
+        System.out.println("Global statististics:");
+        System.out.printf("Bits written: %d ", totalBitsWritten);
+        System.out.printf("Number of transitions: %d ", totalTransitions);
+        System.out.printf("Bits per transitions: %2.2g ", ((double)(totalBitsWritten) / (double) totalTransitions));
     }
 }

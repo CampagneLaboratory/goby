@@ -1,0 +1,75 @@
+/*
+ * Copyright (C) 2009-2011 Institute for Computational Biomedicine,
+ *                    Weill Medical College of Cornell University
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package edu.cornell.med.icb.goby.alignments;
+
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
+/**
+ * This filter considers whether the remaining base calls of each allele (left-over)
+ * have a count larger than the number of call corrections done by previous filters.
+ * If this is not the case, the allele is considered mis-called and its observations
+ * filtered out. This is a simple and efficient base call correction strategy that
+ * improves agreement between genotypes in technical replicates.
+ *
+ * @author Fabien Campagne
+ *         Date: Mar 24, 2011
+ *         Time: 11:42:42 AM
+ */
+public class LeftOverFilter extends BaseFilter {
+    private static final int MULTIPLIER = 2;
+
+    public void filterBases(ObjectArrayList<PositionBaseInfo> list,
+                            SampleCountInfo[] sampleCounts,
+                            ObjectArrayList<PositionBaseInfo> filteredList) {
+        resetCounters();
+        int removedBaseCount = filteredList.size() / sampleCounts.length;
+        int removedBaseCountThreshold = removedBaseCount * MULTIPLIER;
+
+        for (PositionBaseInfo positionBaseInfo : list) {
+            numScreened++;
+            final int sampleIndex = positionBaseInfo.readerIndex;
+            char base = positionBaseInfo.matchesReference ? positionBaseInfo.from : positionBaseInfo.to;
+
+            final SampleCountInfo sampleCountInfo = sampleCounts[sampleIndex];
+            // how many of this base have we seen in this sample?
+            final int baseIndex = sampleCountInfo.baseIndex(base);
+            final int count = sampleCountInfo.counts[baseIndex];
+            if (count == 0) continue;
+            if (count < removedBaseCountThreshold) {
+
+                /*   System.out.printf("Filtering out allele %c %d < %d %s from sample %d %n",
+           base, count, removedBaseCountThreshold, filteredList.toString(), positionBaseInfo.readerIndex); */
+
+                // less counts remaining for this allele than were removed on average by previous filters, still likely
+                // an error.
+                // We remove this call
+                sampleCountInfo.counts[baseIndex] = 0;
+                filteredList.add(positionBaseInfo);
+                numFiltered++;
+            }
+        }
+
+    }
+
+    @Override
+    public String describe() {
+        return String.format("#count(allele) < (%d *#filtered)", MULTIPLIER);
+    }
+
+}

@@ -21,10 +21,12 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import com.martiansoftware.jsap.JSAPResult;
+import com.google.protobuf.ByteString;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.lang.StringUtils;
@@ -282,8 +284,11 @@ public abstract class IterateSortedAlignments<T> {
 
                     final String to = var.getTo();
                     final String from = var.getFrom();
+                    final ByteString qualityScores= var.getToQuality();
+
                     final int fromLength = from.length();
                     final int toLength = to.length();
+                    final int qualLength=qualityScores.size();
                     int length = Math.max(fromLength, toLength);
 
                     lastMatchIndex = var.getPosition() + length - 1;
@@ -292,6 +297,8 @@ public abstract class IterateSortedAlignments<T> {
 
                         final char toChar = i >= toLength ? '-' : to.charAt(i);
                         final char fromChar = i >= fromLength ? '-' : from.charAt(i);
+                    //    System.out.printf("tL: %d qualScores: %s%n", toLength, ByteArrayList.wrap(qualityScores.toByteArray()));
+                        final byte toQual= i >= qualLength ? 0 : qualityScores.byteAt(i);
                         if (toChar != '-') {
                             currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
                         }
@@ -302,7 +309,7 @@ public abstract class IterateSortedAlignments<T> {
 
                         observeVariantBase(sortedReaders, alignmentEntry, positionToBases,
                                 var,
-                                toChar, fromChar,
+                                toChar, fromChar, toQual,
                                 referenceIndex, currentRefPosition, currentReadIndex);
 
                         lastMatchIndex = i + var.getPosition();
@@ -438,6 +445,7 @@ public abstract class IterateSortedAlignments<T> {
      * @param var                   The sequence variation from the alignment entry that triggered emiting this observation.
      * @param toChar                The base character in the read
      * @param fromChar              The base character in the reference.
+     * @param toQual
      * @param currentReferenceIndex Index of the reference sequence where the variant occurs.
      * @param currentRefPosition    Position where the variant occurs in the reference.
      * @param currentReadIndex      Index in the read where the variant occurs.
@@ -447,7 +455,7 @@ public abstract class IterateSortedAlignments<T> {
                                             Int2ObjectMap<T> positionToBases,
                                             Alignments.SequenceVariation var,
                                             char toChar, char fromChar,
-                                            int currentReferenceIndex,
+                                            byte toQual, int currentReferenceIndex,
                                             int currentRefPosition,
                                             int currentReadIndex);
 

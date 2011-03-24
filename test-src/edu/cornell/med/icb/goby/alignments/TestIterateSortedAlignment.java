@@ -179,7 +179,7 @@ public class TestIterateSortedAlignment {
                                            Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
                                            Alignments.SequenceVariation var,
                                            char toChar, char fromChar,
-                                           int currentReferenceIndex,
+                                           byte toQual, int currentReferenceIndex,
                                            int currentRefPosition,
                                            int currentReadIndex) {
                 variantReadIndices.add(currentReadIndex);
@@ -241,7 +241,7 @@ public class TestIterateSortedAlignment {
                                            Alignments.AlignmentEntry alignmentEntry,
                                            Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
                                            Alignments.SequenceVariation var, char toChar, char fromChar,
-                                           int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
+                                           byte toQual, int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
                 variantReadIndices.add(currentReadIndex);
                 variantPositionOnRef.add(currentRefPosition);
             }
@@ -405,7 +405,7 @@ public class TestIterateSortedAlignment {
                                            Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
                                            Alignments.SequenceVariation var,
                                            char toChar, char fromChar,
-                                           int currentReferenceIndex,
+                                           byte toQual, int currentReferenceIndex,
                                            int currentRefPosition,
                                            int currentReadIndex) {
 

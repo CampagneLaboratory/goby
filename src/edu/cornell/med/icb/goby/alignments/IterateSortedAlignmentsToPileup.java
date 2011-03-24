@@ -26,6 +26,7 @@ import it.unimi.dsi.lang.MutableString;
 import java.io.PrintWriter;
 
 import edu.cornell.med.icb.goby.modes.AlignmentToPileupMode;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 import org.apache.commons.io.FilenameUtils;
 
 /**
@@ -97,7 +98,22 @@ public class IterateSortedAlignmentsToPileup extends IterateSortedAlignmentsList
         maxVariationLength = -1;
     }
 
-    public void finish(AlignmentToPileupMode.OutputFormat outputFormat) {
+    public void finish(RandomAccessSequenceCache randomAccessGenome, AlignmentToPileupMode.OutputFormat outputFormat) {
+        // write reference if we have a genome:
+
+        if (randomAccessGenome != null) {
+            Sequence seq = new Sequence();
+            MutableString clippedBases = new MutableString();
+            for (int position = startPosition - maxVariationLength; position <= endPosition+50; position++) {
+                // do not assume target indices match between alignment and the reference genome, convert to string:
+                final String targetId = getReferenceId(startReferenceIndex).toString();
+                clippedBases.append(randomAccessGenome.get(targetId, position));
+            }
+            seq.basename = "reference (" + randomAccessGenome.getBasename() + ")";
+
+            writeSequence(outputFormat, seq, seq.basename, clippedBases);
+        }
+
         // write alignment to output, reads are grouped by basename.
 
         for (String basename : basenameIds) {
@@ -113,31 +129,35 @@ public class IterateSortedAlignmentsToPileup extends IterateSortedAlignmentsList
                         // variations that overlap this window.
                         final String shortBasename = FilenameUtils.getBaseName(AlignmentReader.getBasename(seq.basename));
                         final MutableString clippedBases = bases.substring(Math.max(0,startFlapStart - maxVariationLength));
-                        switch (outputFormat) {
-                            case FASTA: {
-                                String id = String.format(">%s read %d\n",
-                                        shortBasename,
-                                        seq.alignmentQueryIndex);
-                                outWriter.print(String.format("%s%s%n", isPrintIds ? id : "",
-                                        clippedBases));
-                                break;
-                            }
-                            case ONE_PER_LINE: {
-                                String id = String.format("%s/%d",
-                                        shortBasename,
-                                        seq.alignmentQueryIndex);
-                                outWriter.print(String.format("%#50s %s%n",
-                                        id, clippedBases));
-                                break;
-                            }
-                            default:
-                                System.err.println("unsupported format" + outputFormat);
-                                System.exit(1);
-                        }
+                        writeSequence(outputFormat, seq, shortBasename, clippedBases);
                     }
                 }
                 i++;
             }
+        }
+    }
+
+    private void writeSequence(AlignmentToPileupMode.OutputFormat outputFormat, Sequence seq, String shortBasename, MutableString clippedBases) {
+        switch (outputFormat) {
+            case FASTA: {
+                String id = String.format(">%s read %d\n",
+                        shortBasename,
+                        seq.alignmentQueryIndex);
+                outWriter.print(String.format("%s%s%n", isPrintIds ? id : "",
+                        clippedBases));
+                break;
+            }
+            case ONE_PER_LINE: {
+                String id = String.format("%s/%d",
+                        shortBasename,
+                        seq.alignmentQueryIndex);
+                outWriter.print(String.format("%#50s %s%n",
+                        id, clippedBases));
+                break;
+            }
+            default:
+                System.err.println("unsupported format" + outputFormat);
+                System.exit(1);
         }
     }
 }

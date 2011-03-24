@@ -18,24 +18,24 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+
 /**
- * Base info for class IterateSortedAlignmentsListImpl.
-
+ * Implementations of this interface provide strategies to eliminate or correct likely errors.
+ *
  * @author Fabien Campagne
- *         Date: Mar 21, 2011
- *         Time: 1:53:47 PM
+ *         Date: Mar 23, 2011
+ *         Time: 11:09:25 AM
  */
-public class PositionBaseInfo {
-    public int readIndex;
-    public int readerIndex;
-    public byte qualityScore;
-    public boolean matchesReference;
-    public char from=' ';
-    public char to=' ';
-    public int position;
-
-    @Override
-    public String toString() {
-        return matchesReference?"ref:"+from: from+"/"+to+" q="+qualityScore;
-    }
+public interface CountFixerInterface {
+    /**
+     * Implementations of this method decide how to fix list to eliminate or correct likely errors.
+     *
+     * @param list         List of variations or reference bases.
+     * @param sampleCounts allele frequencies per sample
+     * @param likelyErrors List of suspicious variations or reference bases.
+     */
+    void fix(ObjectArrayList<PositionBaseInfo> list, SampleCountInfo[] sampleCounts,
+             ObjectList<PositionBaseInfo> likelyErrors);
 }

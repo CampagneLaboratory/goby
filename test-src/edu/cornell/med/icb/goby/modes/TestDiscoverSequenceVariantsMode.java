@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
+import com.google.protobuf.ByteString;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.io.TSVReader;
@@ -101,7 +102,7 @@ public class TestDiscoverSequenceVariantsMode {
         String outputFilename = "out-allele-" + i + ".tsv";
         String[] args = constructArgumentString(
                 basenames, BASE_TEST_DIR + "/" + outputFilename, "samples").split("[\\s]");
-        args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.ALLELE_FREQUENCY.toString()});
+        args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.ALLELE_FREQUENCIES.toString()});
 
         mode.configure(args);
         mode.execute();
@@ -153,14 +154,9 @@ public class TestDiscoverSequenceVariantsMode {
         ObjectArrayList<ReadIndexStats> readIndexStats = makeReadIndexStats();
 
 
-        CountAdjuster adjuster = new CountAdjuster(readIndexStats);
-        SampleCountInfo[] sampleCounts = new SampleCountInfo[1];
-        sampleCounts[0] = new SampleCountInfo();
+        FisherBaseFilter adjuster = new FisherBaseFilter(readIndexStats);
 
-        sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX] = 5;
-        sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX] = 9;
-        sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX] = 1;
-        sampleCounts[0].counts[SampleCountInfo.BASE_OTHER_INDEX] = 1;
+        SampleCountInfo[] sampleCounts = makeSampleCounts();
 
         ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
         PositionBaseInfo info = new PositionBaseInfo();
@@ -169,24 +165,41 @@ public class TestDiscoverSequenceVariantsMode {
 
         list = makeList(sampleCounts, readIndices);
         adjuster.setPValueThreshold(0.5);
-        adjuster.adjustCounts(list, sampleCounts);
+        ObjectArrayList<PositionBaseInfo> filteredList=new ObjectArrayList<PositionBaseInfo>();
+        adjuster.filterBases(list, sampleCounts, filteredList);
+
         System.out.println("list: " + list);
+
         CharSet toBases = new CharArraySet();
-        for (PositionBaseInfo i : list) {
+        for (PositionBaseInfo i : filteredList) {
             toBases.add(i.to);
         }
-        assertFalse("Adjustment must remove T", toBases.contains('T'));
-        assertFalse("Adjustment must remove other bases", toBases.contains('N'));
+        assertTrue("Adjustment must remove T", toBases.contains('T'));
+        assertTrue("Adjustment must remove other bases", toBases.contains('N'));
+
+        CountFixer fixer=new CountFixer();
+        fixer.fix(list, sampleCounts, filteredList);
+
         assertEquals(5, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
         assertEquals(9, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
         assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
         assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_OTHER_INDEX]);
     }
 
+    private SampleCountInfo[] makeSampleCounts() {
+        SampleCountInfo[] sampleCounts = new SampleCountInfo[1];
+        sampleCounts[0] = new SampleCountInfo();
+
+        sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX] = 5;
+        sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX] = 9;
+        sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX] = 1;
+        sampleCounts[0].counts[SampleCountInfo.BASE_OTHER_INDEX] = 1;
+        return sampleCounts;
+    }
+
 
     @Test
-    public
-    void testGenotypes() throws IOException, JSAPException {
+    public void testGenotypes() throws IOException, JSAPException {
         DiscoverSequenceVariantsMode mode = new DiscoverSequenceVariantsMode();
         int i = 1;
         String outputFilename = "out-genotypes-" + i + ".tsv";
@@ -199,6 +212,22 @@ public class TestDiscoverSequenceVariantsMode {
         junitx.framework.FileAssert.assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
                 new File("test-data/discover-variants/expected-output-genotypes.tsv"));
 
+    }
+
+    @Test
+    public void testQualityScoreAdjuster() {
+        QualityScoreFilter adjuster = new QualityScoreFilter();
+        SampleCountInfo[] sampleCounts = makeSampleCounts();
+        IntArrayList scores = IntArrayList.wrap(new int[]{10, 20, 30, 40, 40, 40, 40});
+
+        final ObjectArrayList<PositionBaseInfo> list = makeListWithScores(sampleCounts, scores);
+        assertEquals(16, list.size());
+        ObjectArrayList<PositionBaseInfo> filteredList=new ObjectArrayList<PositionBaseInfo>();
+        adjuster.filterBases(list, sampleCounts,filteredList);
+
+        System.out.println("list: " + list);
+        assertEquals(16, list.size());
+        assertEquals(4, filteredList.size());
     }
 
     private ObjectArrayList<ReadIndexStats> makeReadIndexStats() {
@@ -252,9 +281,42 @@ public class TestDiscoverSequenceVariantsMode {
         return list;
     }
 
+    private ObjectArrayList<PositionBaseInfo> makeListWithScores(SampleCountInfo[] sampleCounts, IntArrayList qualityScores) {
+        IntIterator nextQualityIterator = qualityScores.iterator();
+        ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
+        for (SampleCountInfo sampleInfo : sampleCounts) {
+            for (int baseIndex = 0; baseIndex < SampleCountInfo.BASE_MAX_INDEX; baseIndex++) {
+
+                for (int i = 0; i < sampleInfo.counts[baseIndex]; i++) {
+
+                    PositionBaseInfo info = new PositionBaseInfo();
+
+                    final char base = sampleInfo.base(baseIndex);
+                    info.to = base;
+                    if (base == 'A') {
+                        info.matchesReference = true;
+                        info.from = base;
+                    }
+                    info.readerIndex = sampleInfo.sampleIndex;
+                    if (!nextQualityIterator.hasNext()) {
+
+                        // wrap back to the start of read indices:
+                        nextQualityIterator = qualityScores.iterator();
+                    }
+                    info.readIndex = 1;
+                    info.qualityScore = (byte) nextQualityIterator.nextInt();
+                    list.add(info);
+                    System.out.println("info: " + info);
+                }
+
+            }
+        }
+        return list;
+    }
+
     @Test
     public void testEstimatePValue() {
-        CountAdjuster adjuster = new CountAdjuster(makeReadIndexStats());
+        FisherBaseFilter adjuster = new FisherBaseFilter(makeReadIndexStats());
         int count00 = 1; // observedVariationCount;
         int count10 = 10; // expectedVariationCount;
         int count01 = 20; // observedTotalCount;
@@ -490,7 +552,9 @@ public class TestDiscoverSequenceVariantsMode {
             builder.setMultiplicity(multiplicity);
             Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder();
             varBuilder.setFrom("A");
-            varBuilder.setTo(Character.toString(toBase));
+            varBuilder.setTo(Character.toString(toBase));                          
+
+            varBuilder.setToQuality(ByteString.copyFrom(new byte[]{40}));
             varBuilder.setPosition(25);
             varBuilder.setReadIndex(25);
             //   System.out.printf("%s j=%d var A/G at %d%n", basenames[basenameIndex], j, 25 + referencePosition + positionStart - 1);

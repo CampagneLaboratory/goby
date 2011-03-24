@@ -19,7 +19,6 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectList;
 import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
 import edu.cornell.med.icb.goby.R.GobyRengine;
 import org.rosuda.JRI.Rengine;
@@ -35,35 +34,42 @@ import org.apache.commons.collections.map.LRUMap;
  *         Date: Mar 21, 2011
  *         Time: 11:39:40 AM
  */
-public class CountAdjuster {
+public class FisherBaseFilter extends BaseFilter {
 
     /**
      * Used to log debug and informational messages.
      */
-    private static final Log LOG = LogFactory.getLog(CountAdjuster.class);
+    private static final Log LOG = LogFactory.getLog(FisherBaseFilter.class);
 
     private boolean fisherRInstalled;
     private boolean firstReport = true;
     private ObjectArrayList<ReadIndexStats> readIndexStats;
     private LRUMap fisherPCache;
-    private Double pValueThreshold=0.05;
+    private Double pValueThreshold = 0.05;
+
+    @Override
+    public String describe() {
+        return "fisher p>" + pValueThreshold;
+    }
 
     public void setPValueThreshold(Double pValueThreshold) {
         this.pValueThreshold = pValueThreshold;
     }
 
-    public CountAdjuster(ObjectArrayList<ReadIndexStats> readIndexStats) {
+    public FisherBaseFilter(ObjectArrayList<ReadIndexStats> readIndexStats) {
         fisherPCache = new LRUMap(10000);
 
         this.readIndexStats = readIndexStats;
         //activate R only if we need it:
         final Rengine rEngine = GobyRengine.getInstance().getRengine();
         fisherRInstalled = rEngine != null && rEngine.isAlive();
-        System.out.println("Using adjust..");
+
     }
 
-    public void adjustCounts(ObjectArrayList<PositionBaseInfo> list,
-                             SampleCountInfo[] sampleCounts) {
+    public void filterBases(ObjectArrayList<PositionBaseInfo> list,
+                            SampleCountInfo[] sampleCounts,
+                            ObjectArrayList<PositionBaseInfo> filteredList) {
+
 
         if (!fisherRInstalled) {
             if (firstReport) {
@@ -75,11 +81,11 @@ public class CountAdjuster {
 
         for (SampleCountInfo sci : sampleCounts) {
             final ReadIndexStats stats = readIndexStats.get(sci.sampleIndex);
-
+            ObjectArrayList<PositionBaseInfo> considered = new ObjectArrayList<PositionBaseInfo>();
             for (int baseIndex = SampleCountInfo.BASE_A_INDEX;
                  baseIndex < SampleCountInfo.BASE_MAX_INDEX;
                  baseIndex++) {
-
+                considered.clear();
                 int observedReferenceCount = 0;
                 double expectedVariationRate = 0;
                 int expectedVariationCount = 0;
@@ -98,7 +104,7 @@ public class CountAdjuster {
                 // determine if the count for this allele is the likely result of sequencing errors.
 
                 long sum = 0;
-                ObjectList<PositionBaseInfo> considered = new ObjectArrayList<PositionBaseInfo>();
+
                 for (PositionBaseInfo info : list) {
                     if (info.readerIndex != sci.sampleIndex) continue;
 
@@ -148,20 +154,21 @@ public class CountAdjuster {
 
                 if (pValue > pValueThreshold) {
                     int numErroneouslyCalledBases = sci.counts[baseIndex];
-                    // filter out:
-                    sci.counts[baseIndex] = 0;
+
                     //   System.out.printf("filtering out %d counts %n", numErroneouslyCalledBases);
                     /*  System.out.printf("p=%f filtering out <%d> %d %d %d %d %n", pValue,  numErroneouslyCalledBases,
                             expectedVariationCount, observedVariationCount,
                             expectedReferenceCount, observedReferenceCount);
                     */
-                    adjust(list, considered);
+                    filteredList.addAll(considered);
 
                 }
             }
         }
-
+        numScreened += list.size();
+        numFiltered += filteredList.size();
     }
+
 
     public final Double estimatePValue(int count00, int count10, int count01, int count11) {
         Double pValue;
@@ -180,6 +187,7 @@ public class CountAdjuster {
         return pValue;
     }
 
+
     private class contingencyValue {
         int count00;
         int count10;
@@ -193,17 +201,6 @@ public class CountAdjuster {
         }
 
         int count11;
-    }
-
-    /**
-     * The default implementation removes the likely errors from list. Override this method to implement alternative
-     * treatment of errors (e.g., patching of the base to one of the types already detected without errors).
-     *
-     * @param list
-     * @param likelyErrors
-     */
-    public void adjust(ObjectArrayList<PositionBaseInfo> list, ObjectList<PositionBaseInfo> likelyErrors) {
-        list.removeAll(likelyErrors);
     }
 
 

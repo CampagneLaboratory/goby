@@ -240,6 +240,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                             boolean keepVar = true;
                             keepVar = determineKeepVariation(positionOnReference, referenceIndex, keepVar);
                             if (keepVar) {
+                                
                                 outputStream.print(String.format("%d:%d:%s/%s,",
 
 

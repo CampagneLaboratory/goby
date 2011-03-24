@@ -32,7 +32,7 @@ public class SampleCountInfo {
     static final public int BASE_C_INDEX = 2;
     static final public int BASE_G_INDEX = 3;
     static final public int BASE_OTHER_INDEX = 4;
-    static final public int BASE_MAX_INDEX = BASE_OTHER_INDEX+1;
+    static final public int BASE_MAX_INDEX = BASE_OTHER_INDEX + 1;
 
     public char referenceBase;
     public IntSet distinctReadIndices = new IntArraySet();
@@ -53,6 +53,21 @@ public class SampleCountInfo {
                 return 'G';
             default:
                 return 'N';
+        }
+    }
+
+    public final int baseIndex(char to) {
+        switch (to) {
+            case 'A':
+                return BASE_A_INDEX;
+            case 'C':
+                return BASE_C_INDEX;
+            case 'T':
+                return BASE_T_INDEX;
+            case 'G':
+                return BASE_G_INDEX;
+            default:
+                return BASE_OTHER_INDEX;
         }
     }
 }

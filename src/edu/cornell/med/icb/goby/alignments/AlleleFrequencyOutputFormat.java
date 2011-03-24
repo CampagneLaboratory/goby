@@ -49,6 +49,9 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         statsWriter.defineColumnSet(samples,
                 "refProportion[%s]"
         );
+        statsWriter.defineColumnSet(samples,
+                "count[%s]"
+        );
         this.statWriter = statsWriter;
         statsWriter.writeHeader();
     }
@@ -64,16 +67,32 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
     public void writeRecord(DiscoverVariantIterateSortedAlignments iterator, SampleCountInfo[] sampleCounts,
                             int referenceIndex, int position, ObjectArrayList<PositionBaseInfo> list, int groupIndexA, int groupIndexB) {
         fillVariantCountArrays(sampleCounts);
+
+
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 
         final int positionString = position + 1;
         statWriter.setValue(refIdColumnIndex, String.format("%s:%d:%s:%d", currentReferenceId, positionString, currentReferenceId, positionString));
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
-            double refProportion = (double) refCountsPerSample[sampleIndex];
-            refProportion /= refCountsPerSample[sampleIndex] + variantsCountPerSample[sampleIndex];
-            statWriter.setValue(refProportion,
-                    "refProportion[%s]", samples[sampleIndex]);
+            int numAlleles = 0;
+            int totalCount=0;
+            for (int count : sampleCounts[sampleIndex].counts) {
+                if (count > 0) numAlleles++;
+                totalCount+=count;
+            }
+            if (numAlleles == 2) {
+                // need exactly two alleles to estimate reference allele imbalance:
+                double refProportion = (double) refCountsPerSample[sampleIndex];
+                refProportion /= refCountsPerSample[sampleIndex] + variantsCountPerSample[sampleIndex];
+                statWriter.setValue(refProportion,
+                        "refProportion[%s]", samples[sampleIndex]);
+            } else {
+                statWriter.setValue("",
+                        "refProportion[%s]", samples[sampleIndex]);
+            }
+            statWriter.setValue(totalCount,
+                        "count[%s]", samples[sampleIndex]);
         }
         statWriter.writeRecord();
     }
