@@ -61,6 +61,7 @@
 #ifdef __cplusplus
     #include "Alignments.h"
     #include "TooManyHits.h"
+	#include <map>
     // More complex structure for C++
     struct CSamHelper {
         int minQualValue;
@@ -75,6 +76,7 @@
         int numIndels;
         int numMisMatches;
         int score;
+        int numLeftClipped;
     };
     struct CAlignmentsWriterHelper {
         goby::AlignmentWriter *alignmentWriter;
@@ -82,6 +84,8 @@
         goby::AlignmentEntry *alignmentEntry;
         goby::SequenceVariation *sequenceVariation;
         int lastSeqVarReadIndex;
+        char lastSeqVarReadChar;
+        char lastSeqVarRefChar;
         unsigned int smallestQueryIndex;
         unsigned int largestQueryIndex;
         unsigned int numberOfAlignedReads;
@@ -93,6 +97,7 @@
 	    FILE *intermediateIgnoredOutputFile;
 	    char *intermediateIgnoredOutputBuffer;
 	    size_t intermediateIgnoredOutputBufferSize;
+		std::map<unsigned int, unsigned int> *alignerToGobyTargetIndexMap;
     };
 #else
 	// Opaque structure for C
@@ -109,6 +114,7 @@
 	    int numIndels;
 	    int numMisMatches;
 	    int score;
+        int numLeftClipped;
 	} CSamHelper;
 	typedef struct {
 	    void *alignmentWriter;
@@ -116,6 +122,8 @@
 	    void *alignmentEntry;
 	    void *sequenceVariation;
 	    int lastSeqVarReadIndex;
+        char lastSeqVarReadChar;
+        char lastSeqVarRefChar;
 	    unsigned int smallestQueryIndex;
 	    unsigned int largestQueryIndex;
 	    unsigned int numberOfAlignedReads;
@@ -127,6 +135,7 @@
 	    FILE *intermediateIgnoredOutputFile;
 	    char *intermediateIgnoredOutputBuffer;
 	    size_t intermediateIgnoredOutputBufferSize;
+		void *alignerToGobyTargetIndexMap;
 	} CAlignmentsWriterHelper;
 #endif
 

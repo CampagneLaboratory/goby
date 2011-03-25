@@ -39,8 +39,8 @@ extern "C" {
 	    gobyAlignments_openAlignmentsWriter(basename, GOBY_DEFAULT_NUMBER_OF_ENTRIES_PER_CHUNK, writerHelperpp);
 	}
 
-	void gobyAlignments_openAlignmentsWriter(char *basename, unsigned number_of_entries_per_chunk, CAlignmentsWriterHelper **writerHelperpp) {
-        debug(fprintf(stderr,"Writing alignment to basename, entries per chunk=%d\n", basename, number_of_entries_per_chunk));
+	void gobyAlignments_openAlignmentsWriter(char *basename, unsigned int number_of_entries_per_chunk, CAlignmentsWriterHelper **writerHelperpp) {
+        debug(fprintf(stderr,"Writing alignment to basename, entries per chunk=%u\n", basename, number_of_entries_per_chunk));
         *writerHelperpp = new CAlignmentsWriterHelper;
         CAlignmentsWriterHelper *writerHelper = *writerHelperpp;
         string basenameStr(basename);
@@ -50,6 +50,8 @@ extern "C" {
         writerHelper->alignmentEntry = NULL;
         writerHelper->sequenceVariation = NULL;
         writerHelper->lastSeqVarReadIndex = -1;
+        writerHelper->lastSeqVarReadChar = '\0';
+        writerHelper->lastSeqVarRefChar = '\0';
         writerHelper->smallestQueryIndex = -1;
         writerHelper->largestQueryIndex = -1;
         writerHelper->numberOfAlignedReads = 0;
@@ -61,6 +63,7 @@ extern "C" {
         writerHelper->intermediateIgnoredOutputFile = NULL;
         writerHelper->intermediateIgnoredOutputBuffer = NULL;
         writerHelper->intermediateIgnoredOutputBufferSize = 0;
+        writerHelper->alignerToGobyTargetIndexMap = NULL;
 	}
 
     void gobyAlignments_openIntermediateOutputFiles(CAlignmentsWriterHelper *writerHelper, int openIgnoredOutputFile) {
@@ -212,11 +215,28 @@ extern "C" {
     }
 
     /**
+     * This should be called once for each target, gobyTargetIndex should start at 0
+     * but the alignerTargetIndex can be any value. If you use this version to register
+     * targets, when you call gobyAlEntry_setTargetIndex you can provide the
+     * alignerTargetIndex and it will be converted to the gobyTargetIndex.
+     */
+    void gobyAlignments_addTargetWithTranslation(CAlignmentsWriterHelper *writerHelper, const unsigned int gobyTargetIndex, const unsigned int alignerTargetIndex, const char *targetName, const unsigned int targetLength) {
+        debug(fprintf(stderr,"gobyAlignments_addTargetIdentifier '%s' = [gi=%u, ai=%u] length=%u\n", targetName, gobyTargetIndex, alignerTargetIndex, targetLength));
+        string targetNameStr(targetName);
+        writerHelper->alignmentWriter->addTargetIdentifier(targetNameStr, gobyTargetIndex);
+        writerHelper->alignmentWriter->addTargetLength(targetLength);
+        if (writerHelper->alignerToGobyTargetIndexMap == NULL) {
+            writerHelper->alignerToGobyTargetIndexMap = new map<unsigned int, unsigned int>;
+        }
+        (*(writerHelper->alignerToGobyTargetIndexMap))[alignerTargetIndex] = gobyTargetIndex;
+    }
+
+    /**
      * This should be called once for each target, targetIndex should start at 0
      * on the first call and increment by one on each following call.
      */
     void gobyAlignments_addTarget(CAlignmentsWriterHelper *writerHelper, const unsigned int targetIndex, const char *targetName, const unsigned int targetLength) {
-        debug(fprintf(stderr,"gobyAlignments_addTargetIdentifier %s=%d length=%u\n", targetName, targetIndex, targetLength));
+        debug(fprintf(stderr,"gobyAlignments_addTargetIdentifier '%s' = [ai=%u] length=%u\n", targetName, targetIndex, targetLength));
         string targetNameStr(targetName);
         writerHelper->alignmentWriter->addTargetIdentifier(targetNameStr, targetIndex);
         writerHelper->alignmentWriter->addTargetLength(targetLength);
@@ -232,7 +252,7 @@ extern "C" {
     unsigned gobyAlignments_addQueryIdentifier(CAlignmentsWriterHelper *writerHelper, const char *queryIdentifier) {
         string queryIdentifierStr(queryIdentifier);
         unsigned queryIndex = writerHelper->alignmentWriter->addQueryIdentifier(queryIdentifierStr);
-        debug(fprintf(stderr,"gobyAlignments_addQueryIdentifier %s=%d\n", queryIdentifier, queryIndex));
+        debug(fprintf(stderr,"gobyAlignments_addQueryIdentifier %s=%u\n", queryIdentifier, queryIndex));
         return queryIndex;
     }
 
@@ -245,7 +265,7 @@ extern "C" {
      * that's good enough.
      */
     void gobyAlignments_addQueryIdentifierWithIndex(CAlignmentsWriterHelper *writerHelper, const char *queryIdentifier, unsigned int newQueryIndex) {
-        debug(fprintf(stderr,"gobyAlignments_addQueryIdentifierWithIndex %s=%d\n", queryIdentifier, newQueryIndex));
+        debug(fprintf(stderr,"gobyAlignments_addQueryIdentifierWithIndex %s=%u\n", queryIdentifier, newQueryIndex));
         string queryIdentifierStr(queryIdentifier);
         writerHelper->alignmentWriter->addQueryIdentifierWithIndex(queryIdentifierStr, newQueryIndex);
     }
@@ -257,13 +277,15 @@ extern "C" {
         writerHelper->alignmentEntry = writerHelper->alignmentWriter->appendEntry();
         writerHelper->sequenceVariation = NULL;
 	    writerHelper->lastSeqVarReadIndex = -1;
+        writerHelper->lastSeqVarReadChar = '\0';
+        writerHelper->lastSeqVarRefChar = '\0';
     }
     void gobyAlEntry_setMultiplicity(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
-        debug(fprintf(stderr,"gobyAlEntry_setMultiplicity=%d\n", value));
+        debug(fprintf(stderr,"gobyAlEntry_setMultiplicity=%u\n", value));
         writerHelper->alignmentEntry->set_multiplicity(value);
     }
     void gobyAlEntry_setQueryIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
-        debug(fprintf(stderr,"gobyAlEntry_setQueryIndex=%d\n", value));
+        debug(fprintf(stderr,"gobyAlEntry_setQueryIndex=%u\n", value));
         if (writerHelper->smallestQueryIndex == -1) {
             writerHelper->smallestQueryIndex = value;
             writerHelper->largestQueryIndex = value;
@@ -273,15 +295,28 @@ extern "C" {
         }
         writerHelper->alignmentEntry->set_query_index(value);
     }
+    unsigned int gobyAlEntry_getQueryIndex(CAlignmentsWriterHelper *writerHelper) {
+        return writerHelper->alignmentEntry->query_index();
+    }
+
     /**
-     * Target index should be 0 based.
+     * The target index. If you registered targets with gobyAlignments_addTargetWithTranslation()
+     * value should in the range of the native aligner (can be 1-based or even any-based).
+     * If you registered targets with gobyAlignments_addTarget() you should be providing
+     * targets that are 0-based.
      */
     void gobyAlEntry_setTargetIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
-        debug(fprintf(stderr,"gobyAlEntry_setTargetIndex=%d\n", value));
-        writerHelper->alignmentEntry->set_target_index(value);
+        debug(fprintf(stderr,"gobyAlEntry_setTargetIndex=%u\n", value));
+        unsigned int indexToUse;
+        if (writerHelper->alignerToGobyTargetIndexMap == NULL) {
+            indexToUse = value;
+        } else {
+            indexToUse = (*(writerHelper->alignerToGobyTargetIndexMap))[value];
+        }
+        writerHelper->alignmentEntry->set_target_index(indexToUse);
     }
     void gobyAlEntry_setPosition(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
-        debug(fprintf(stderr,"gobyAlEntry_setPosition=%d\n", value));
+        debug(fprintf(stderr,"gobyAlEntry_setPosition=%u\n", value));
         writerHelper->alignmentEntry->set_position(value);
     }
     void gobyAlEntry_setMatchingReverseStrand(CAlignmentsWriterHelper *writerHelper, int value /* bool */) {
@@ -289,7 +324,7 @@ extern "C" {
         writerHelper->alignmentEntry->set_matching_reverse_strand(value == 0 ? false : true);
     }
     void gobyAlEntry_setQueryPosition(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
-        debug(fprintf(stderr,"gobyAlEntry_setQueryPosition=%d\n", value));
+        debug(fprintf(stderr,"gobyAlEntry_setQueryPosition=%u\n", value));
         writerHelper->alignmentEntry->set_query_position(value);
     }
     void gobyAlEntry_setScoreInt(CAlignmentsWriterHelper *writerHelper, int value) {
@@ -298,38 +333,34 @@ extern "C" {
         writerHelper->alignmentEntry->set_score(fValue);
     }
     void gobyAlEntry_setNumberOfMismatches(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
-        debug(fprintf(stderr,"gobyAlEntry_setNumberOfMismatches=%d\n", value));
+        debug(fprintf(stderr,"gobyAlEntry_setNumberOfMismatches=%u\n", value));
         writerHelper->alignmentEntry->set_number_of_mismatches(value);
     }
     void gobyAlEntry_setNumberOfIndels(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
-        debug(fprintf(stderr,"gobyAlEntry_setNumberOfIndels=%d\n", value));
+        debug(fprintf(stderr,"gobyAlEntry_setNumberOfIndels=%u\n", value));
         writerHelper->alignmentEntry->set_number_of_indels(value);
     }
     void gobyAlEntry_setQueryAlignedLength(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
-        debug(fprintf(stderr,"gobyAlEntry_setQueryAlignedLength=%d\n", value));
+        debug(fprintf(stderr,"gobyAlEntry_setQueryAlignedLength=%u\n", value));
         writerHelper->alignmentEntry->set_query_aligned_length(value);
     }
     void gobyAlEntry_setTargetAlignedLength(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
-        debug(fprintf(stderr,"gobyAlEntry_setTargetAlignedLength=%d\n", value));
+        debug(fprintf(stderr,"gobyAlEntry_setTargetAlignedLength=%u\n", value));
         writerHelper->alignmentEntry->set_target_aligned_length(value);
     }
     void gobyAlEntry_setQueryLength(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
-        debug(fprintf(stderr,"gobyAlEntry_setQueryLength=%d\n", value));
+        debug(fprintf(stderr,"gobyAlEntry_setQueryLength=%u\n", value));
         writerHelper->alignmentEntry->set_query_length(value);
     }
     void gobyAlEntry_setMappingQuality(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
         writerHelper->alignmentEntry->set_mapping_quality(value);
     }
 
-    void startNewSequenceVariation(CAlignmentsWriterHelper *writerHelper, int readIndex) {
+    void startNewSequenceVariation(CAlignmentsWriterHelper *writerHelper, unsigned int readIndex, unsigned int refPosition) {
         debug(fprintf(stderr,"... startNewSequenceVariation\n"));
         writerHelper->sequenceVariation = writerHelper->alignmentEntry->add_sequence_variations();
         writerHelper->sequenceVariation->set_read_index(readIndex);
-        writerHelper->sequenceVariation->set_position(readIndex + 1);
-        if (!writerHelper->alignmentEntry->matching_reverse_strand()) {
-            // This will be correct for NOT-reverse... for reverse we'll set this later
-            writerHelper->sequenceVariation->set_read_index(readIndex + 1);
-        }
+        writerHelper->sequenceVariation->set_position(refPosition);
     }
 
     /**
@@ -342,30 +373,33 @@ extern "C" {
      *        position and readIndex are >1< based.
      * For contiguous sequence variations, this assumes readIndex will increment by one each time.
      */
-    void gobyAlEntry_addSequenceVariation(CAlignmentsWriterHelper *writerHelper, int readIndex, char refChar, char readChar, int hasQualCharInt /* bool */, char readQualChar) {
+    void gobyAlEntry_addSequenceVariation(CAlignmentsWriterHelper *writerHelper, unsigned int readIndex, unsigned int refPosition, char refChar, char readChar, int hasQualCharInt /* bool */, char readQualChar) {
         bool hasQualChar = hasQualCharInt == 0 ? false : true;
-        debug(fprintf(stderr,"gobyAlEntry_addSequenceVariation readIndex=%d ref=%c read=%c hasQualChar=%s\n", readIndex, refChar, readChar, hasQualChar ? "true" : "false"));
+        debug(fprintf(stderr,"gobyAlEntry_addSequenceVariation readIndex=%u refPosition=%u ref=%c read=%c hasQualChar=%s\n", readIndex, refPosition, refChar, readChar, hasQualChar ? "true" : "false"));
         if (writerHelper->sequenceVariation == NULL || writerHelper->lastSeqVarReadIndex == -1) {
             // New sequence variation
-            startNewSequenceVariation(writerHelper, readIndex);
-        } else if (writerHelper->lastSeqVarReadIndex + 1 == readIndex) {
+            startNewSequenceVariation(writerHelper, readIndex, refPosition);
+        } else if (writerHelper->lastSeqVarReadIndex + 1 == readIndex || writerHelper->lastSeqVarReadIndex == readIndex) {
             // Append to prev SequenceVar entry
             debug(fprintf(stderr,"... appending to previous seqVar\n"));
+        } else if  ((readChar == '-' && writerHelper->lastSeqVarReadChar != '-') ||
+                    (refChar == '-' && writerHelper->lastSeqVarRefChar != '-') ||
+                    (writerHelper->lastSeqVarReadChar == '-' && readChar != '-')  ||
+                    (writerHelper->lastSeqVarRefChar == '-' && refChar != '-')) {
+            // transitioning into or out of an insert or delete, make a new SeqVar
+            startNewSequenceVariation(writerHelper, readIndex, refPosition);
         } else {
             // Not contiguous to previous SeqVar
-            startNewSequenceVariation(writerHelper, readIndex);
-        }
-        if (writerHelper->alignmentEntry->matching_reverse_strand()) {
-            // For reverse, update read_index as we accumulate characters for this SeqVar
-            google::protobuf::uint32 readLength = writerHelper->alignmentEntry->query_length();
-            writerHelper->sequenceVariation->set_read_index(readLength - readIndex);
+            startNewSequenceVariation(writerHelper, readIndex, refPosition);
         }
         writerHelper->lastSeqVarReadIndex = readIndex;
+        writerHelper->lastSeqVarReadChar = readChar;
+        writerHelper->lastSeqVarRefChar = refChar;
         string *from = writerHelper->sequenceVariation->mutable_from();
         string *to = writerHelper->sequenceVariation->mutable_to();
         (*from) += refChar;
         (*to) += readChar;
-        debug(fprintf(stderr,"... sv->read_index=%d sv->position=%d from=%s to=%s\n",
+        debug(fprintf(stderr,"... sv->read_index=%u sv->position=%u from=%s to=%s\n",
             writerHelper->sequenceVariation->read_index(), writerHelper->sequenceVariation->position(),
             from->c_str(), to->c_str()));
         if (hasQualChar) {
@@ -380,7 +414,7 @@ extern "C" {
      *    gobyAlEntry_setQueryAlignedLength(...)
      */
     void gobyAlEntry_appendTooManyHits(CAlignmentsWriterHelper *writerHelper, unsigned int queryIndex, unsigned int alignedLength, int numberOfHits) {
-        debug(fprintf(stderr,"gobyAlEntry_appendTooManyHits queryIndex=%d numberOfHits=%d alignedLength=%d\n", queryIndex, numberOfHits, alignedLength));
+        debug(fprintf(stderr,"gobyAlEntry_appendTooManyHits queryIndex=%u alignedLength=%u numberOfHits=%u\n", queryIndex, alignedLength, numberOfHits));
         writerHelper->tmhWriter->append(queryIndex, numberOfHits, alignedLength);
     }
 
@@ -574,6 +608,7 @@ extern "C" {
         samHelper->numIndels = 0;
         samHelper->numMisMatches = 0;
         samHelper->score = 0;
+        samHelper->numLeftClipped = 0;
         return samHelper;
     }
 
@@ -632,10 +667,12 @@ extern "C" {
     void applyCigar(CSamHelper *samHelper) {
         pcrecpp::RE re("([0-9]+)([SMID])");
         pcrecpp::StringPiece input(samHelper->cpp_cigar->c_str());
+        debug (fprintf(stderr, ":: Applying cigar=%s\n", samHelper->cpp_cigar->c_str());)
         int length;
         char op;
         int posInReads = 0;
         int i;
+        bool startOfCigar = true;
         samHelper->numIndels = 0;
         samHelper->numMisMatches = 0;
         while (re.Consume(&input, &length, &op)) {
@@ -646,6 +683,9 @@ extern "C" {
                         (*samHelper->cpp_ref) += '-';
                         (*samHelper->cpp_query) += '-';
                         (*samHelper->cpp_qual) += ((char) samHelper->minQualValue); // min quality
+                    }
+                    if (startOfCigar) {
+                        samHelper->numLeftClipped = length;
                     }
                     posInReads += length;
                     break;
@@ -682,6 +722,7 @@ extern "C" {
                     samHelper->numIndels += length;
                     break;
             }
+            startOfCigar = false;
         }
     }
 
@@ -691,8 +732,9 @@ extern "C" {
         // spec would require 5A0C0G0 (which mine will still work with just fine).
         pcrecpp::RE re("([0-9]+|[ACGTN]|\\^[ACGTN]+)");
         pcrecpp::StringPiece input(samHelper->cpp_md->c_str());
+        debug (fprintf(stderr, ":: Applying md=%s\n", samHelper->cpp_md->c_str());)
         string mdPart;
-        int position = 0;
+        int position = samHelper->numLeftClipped;
         int i;
         while (re.Consume(&input, &mdPart)) {
             if (isdigit(mdPart[0])) {
@@ -722,11 +764,21 @@ extern "C" {
         samHelper->numMisMatches = 0;
         samHelper->score = 0;
 
+        debug (
+            fprintf(stderr, ":: Reference and query before construction\n");
+            fprintf(stderr, ":: read=%s\n", samHelper->cpp_sourceQuery->c_str());
+        )
+
         applyCigar(samHelper);
         applyMd(samHelper);
         samHelper->alignedLength = samHelper->cpp_query->size();
         samHelper->score = samHelper->alignedLength - samHelper->numIndels - samHelper->numMisMatches;
         
+        debug (
+            fprintf(stderr, ":: Reference and query constructed via SAM\n");
+            fprintf(stderr, ":: ref =%s\n", samHelper->cpp_ref->c_str());
+            fprintf(stderr, ":: read=%s\n", samHelper->cpp_query->c_str());
+        )
         // Figure out start of alignment and alignment length, by observing mismatches at head and tail
         if (samHelper->cpp_query->size() != samHelper->cpp_ref->size()) {
             printf("ERROR! reconstructed reads and refs don't match in size!!\n");
@@ -797,30 +849,50 @@ extern "C" {
                 delete writerHelper->samHelper->cpp_ref;
                 delete writerHelper->samHelper;
             }
+            if (writerHelper->alignerToGobyTargetIndexMap != NULL) {
+                delete writerHelper->alignerToGobyTargetIndexMap;
+            }
             delete writerHelper;
         }
 	}
 
-    char* hitTypes[] = { "EXACT", "SUB", "INS", "DEL", "SPLICE", "TERMINAL" };
+    char* hitTypes[] = {
+              "EXACT", "SUB", "INSERTION", "DELETION", "HALFSPLICE_DONOR",
+              "HALFSPLICE_ACCEPTOR", "SPLICE", "ONE_THIRD_SHORTEXON",
+              "TWO_THIRDS_SHORTEXON", "SHORTEXON", "TERMINAL" };
 
-    void gobyAlignments_debugSequences(CAlignmentsWriterHelper *writerHelper, int hitType, char *refSequence, char *readSequence, int startPos) {
+    void gobyAlignments_debugSequences(CAlignmentsWriterHelper *writerHelper, int hitType, char *refSequence, char *readSequence, int startPos, int hasBeenReversed) {
         debug(
+            int prefixLength;
+            int suffixLength;
+            if (!hasBeenReversed) {
+                prefixLength = startPos;
+                suffixLength= writerHelper->alignmentEntry->query_length() - strlen(refSequence) - startPos;
+            } else {
+                prefixLength = writerHelper->alignmentEntry->query_length() - strlen(refSequence) - startPos;
+                suffixLength= startPos;
+            }
+
             fprintf(stderr,":: type=%s\n", hitTypes[hitType]);
-            string prefix;
-            prefix.reserve(startPos);
-            for (int i = 0; i < startPos; i++) {
-                prefix += "_";
+            fprintf(stderr,":: ref =");
+            for (int i = 0; i < prefixLength; i++) {
+                fprintf(stderr, "_");
             }
-
-            int suffixLength = writerHelper->alignmentEntry->query_length() - strlen(refSequence) - startPos;
-            string suffix;
-            suffix.reserve(suffixLength);
+            fprintf(stderr,"%s", refSequence);
             for (int i = 0; i < suffixLength; i++) {
-                suffix += "_";
+                fprintf(stderr, "_");
             }
+            fprintf(stderr,"\n");
 
-            fprintf(stderr,":: ref =%s%s%s\n", prefix.c_str(), refSequence, suffix.c_str());
-            fprintf(stderr,":: read=%s%s%s\n", prefix.c_str(), readSequence, suffix.c_str());
+            fprintf(stderr,":: read=");
+            for (int i = 0; i < prefixLength; i++) {
+                fprintf(stderr, "_");
+            }
+            fprintf(stderr,"%s", readSequence);
+            for (int i = 0; i < suffixLength; i++) {
+                fprintf(stderr, "_");
+            }
+            fprintf(stderr,"\n");
         )
     }
 }
