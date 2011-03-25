@@ -38,6 +38,7 @@ import java.util.Comparator;
 
 /**
  * Implements the Goby 1.9.3 discover sequence variants format.
+ *
  * @author Fabien Campagne
  *         Date: Mar 20, 2011
  *         Time: 11:48:13 AM
@@ -75,6 +76,7 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
     private int[] variantsCountPerSample;
     private int[] refCountsPerSample;
     private int numberOfSamples;
+    private int biomartRegionSpanIndex;
 
     public void defineColumns(StatisticsWriter statWriter, DiscoverSequenceVariantsMode mode) {
         deAnalyzer = mode.getDiffExpAnalyzer();
@@ -98,8 +100,10 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
 
 
         this.readIndexStats = readIndexStats;
+        biomartRegionSpanIndex = statWriter.defineColumn("element-id");
         refIdColumnIndex = statWriter.defineColumn("referenceId");
         positionColumnIndex = statWriter.defineColumn("position");
+
         log2OddsRatioColumnIndex = StatisticsWriter.COLUMN_NOT_DEFINED;
         fisherExactPValueColumnIndex = -1;
         numberOfGroups = groups.length;
@@ -167,7 +171,13 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 
         statWriter.setValue(refIdColumnIndex, currentReferenceId);
-        statWriter.setValue(positionColumnIndex, position + 1);
+        String positionString = Integer.toString(position + 1);
+        statWriter.setValue(positionColumnIndex, positionString);
+        // construct a biomart region span in the format chr:pos1:chr:pos
+        String biomartRegionSpan = String.format("%s:%s:%s", currentReferenceId, positionString,
+                positionString);
+
+        statWriter.setValue(biomartRegionSpanIndex, biomartRegionSpan);
 
         if (deAnalyzer.eval("between-groups")) {
             final double denominator = (double) refCountsPerGroup[groupIndexA] * (double) variantsCountPerGroup[groupIndexB];
@@ -175,7 +185,7 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
                     ((double) refCountsPerGroup[groupIndexB] * (double) variantsCountPerGroup[groupIndexA]) /
                             denominator;
             double logOddsRatioSE;
-            
+
             if (variantsCountPerGroup[groupIndexA] < 10 ||
                     variantsCountPerGroup[groupIndexB] < 10 ||
                     refCountsPerGroup[groupIndexA] < 10 ||

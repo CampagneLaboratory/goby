@@ -44,7 +44,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     private StatisticsWriter statWriter;
     String[] samples;
 
-    
+
     public void defineColumns(StatisticsWriter statsWriter, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
         refIdColumnIndex = statsWriter.defineColumn("chr:position:chr:position");
@@ -79,7 +79,8 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 
         final int positionString = position + 1;
-        statWriter.setValue(refIdColumnIndex, String.format("%s:%d:%s:%d", currentReferenceId, positionString, currentReferenceId, positionString));
+        statWriter.setValue(refIdColumnIndex, String.format("%s:%d:%d", currentReferenceId, positionString,
+                positionString));
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             alleleSet.clear();
