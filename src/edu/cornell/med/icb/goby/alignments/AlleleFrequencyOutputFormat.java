@@ -44,7 +44,7 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
 
     public void defineColumns(StatisticsWriter statsWriter, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
-        refIdColumnIndex = statsWriter.defineColumn("chr:position:chr:position");
+        refIdColumnIndex = statsWriter.defineColumn("chr:position:position");
 
         statsWriter.defineColumnSet(samples,
                 "refProportion[%s]"
@@ -72,7 +72,7 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 
         final int positionString = position + 1;
-        statWriter.setValue(refIdColumnIndex, String.format("%s:%d:%s:%d", currentReferenceId, positionString, currentReferenceId, positionString));
+        statWriter.setValue(refIdColumnIndex, String.format("%s:%d:%d", currentReferenceId, positionString, positionString));
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             int numAlleles = 0;

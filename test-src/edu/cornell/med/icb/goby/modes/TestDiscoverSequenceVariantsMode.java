@@ -74,7 +74,7 @@ public class TestDiscoverSequenceVariantsMode {
             mode.execute();
 
             junitx.framework.FileAssert.assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
-                    new File("test-data/discover-variants/expected-output1.tsv"));
+                    new File("test-data/discover-variants/expected-groups-only.tsv"));
 
         }
     }
@@ -117,7 +117,7 @@ public class TestDiscoverSequenceVariantsMode {
         DiscoverSequenceVariantsMode mode = new DiscoverSequenceVariantsMode();
         // loop to check that results are reproducible and do not change from execution to execution..
         for (int i = 0; i < NUM_TRIALS; i++) {
-            String outputFilename = "out" + i + ".tsv";
+            String outputFilename = "out-sample-counts" + i + ".tsv";
             final String[] basenameArray = shuffle(add(basenames, specificAlignments));
             final String output = BASE_TEST_DIR + "/" + outputFilename;
             String[] args = constructArgumentString(
