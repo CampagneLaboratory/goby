@@ -199,11 +199,14 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
 
             for (final Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
                 int toLength = var.getTo().length();
+                int readIndex = var.getReadIndex();
                 for (int i = 0; i < toLength; i++) {
                     if (var.getReadIndex() < 0) {
                         System.out.printf("readIndex: %d %n", var.getReadIndex());
                     }
-                    final int readIndex = var.getReadIndex() + (alignmentEntry.getMatchingReverseStrand() ? 0 : 1) * i;
+                    char toChar=var.getTo().charAt(i);
+                    readIndex+=  toChar=='-' ? 0: (alignmentEntry.getMatchingReverseStrand() ? -1 : 1);
+                    
                     final int value = readIndexVariationTally.get(readIndex);
                     final int changedBases = alignmentEntry.getMultiplicity();
                     readIndexVariationTally.put(readIndex, value + changedBases);

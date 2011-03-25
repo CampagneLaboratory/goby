@@ -299,8 +299,11 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                         if (keepVar && !isAllNs(to)) {
                             variations = true;
                             final int maxLength = Math.max(fromLength, toLength);
+                            int offset = -1;
                             for (int i = 0; i < maxLength; i++) {
-                                final int offset = +i * (alignmentEntry.getMatchingReverseStrand() ? -1 : 1);
+                                char toChar=var.getTo().charAt(i);
+                                offset+=  toChar=='-' ? 0: (alignmentEntry.getMatchingReverseStrand() ? -1 : 1);
+
                                 printTab(alignmentEntry, basename,
                                         positionOnReference + offset,
                                         readIndex + offset,
