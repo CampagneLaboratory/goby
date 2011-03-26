@@ -1,5 +1,6 @@
 1.9.4
  - Kevin, please describe changes to C++ API. A link to the sequence variation document should be posted here.
+ - Mode compact-file-stats now reports the name and version of the aligner that produced a Goby alignment file.
  - Mode discover-sequence-variants has been extended to support multiple types of outputs (see --format flag).
    One output format prints genotypes (--format genotypes), while another estimates the proportion of the
    reference allele in each sample (--format allele_frequencies).

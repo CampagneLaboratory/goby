@@ -84,6 +84,8 @@ public class AlignmentReader extends AbstractAlignmentReader {
     private Alignments.AlignmentEntry nextEntry;
     private Alignments.AlignmentEntry nextEntryNoFilter;
     private boolean queryLengthStoredInEntries;
+    private String alignerName;
+    private String alignerVersion;
 
 
     /**
@@ -542,6 +544,8 @@ public class AlignmentReader extends AbstractAlignmentReader {
             codedInput.setSizeLimit(Integer.MAX_VALUE);
             final Alignments.AlignmentHeader header = Alignments.AlignmentHeader.parseFrom(codedInput);
 
+           alignerName=header.getAlignerName();
+            alignerVersion = header.getAlignerVersion();
             smallestQueryIndex = header.getSmallestSplitQueryIndex();
             largestQueryIndex = header.getLargestSplitQueryIndex();
             queryIdentifiers = parseIdentifiers(header.getQueryNameMapping());
@@ -746,5 +750,20 @@ public class AlignmentReader extends AbstractAlignmentReader {
 
     public boolean isQueryLengthStoredInEntries() {
         return queryLengthStoredInEntries;
+    }
+     /**
+     * Return the name of the aligner that produced this alignment.
+     * @return
+     */
+    public String getAlignerName() {
+        return alignerName;
+    }
+
+    /**
+     * Return the version of the aligner that produced this alignment.
+     * @return
+     */
+    public String getAlignerVersion() {
+        return alignerVersion;
     }
 }
