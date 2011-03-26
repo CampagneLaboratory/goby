@@ -1,5 +1,8 @@
 1.9.4
- - Kevin, please describe changes to C++ API. A link to the sequence variation document should be posted here.
+ - The C API (used by BWA, GSNAP) has been updated to more accurately write sequence variations.
+   to learn more about Goby Sequence Variations, visit:
+      http://tinyurl.com/goby-sequence-variations
+ - Mode sort now propogates the name and version of the aligner.
  - Mode compact-file-stats now reports the name and version of the aligner that produced a Goby alignment file.
  - Mode discover-sequence-variants has been extended to support multiple types of outputs (see --format flag).
    One output format prints genotypes (--format genotypes), while another estimates the proportion of the
