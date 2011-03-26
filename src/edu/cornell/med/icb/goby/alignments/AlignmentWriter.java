@@ -66,6 +66,12 @@ public class AlignmentWriter implements Closeable {
     private int[] queryLengths;
 
     /**
+     * Details about aligner.
+     */
+    private String alignerName;
+    private String alignerVersion;
+
+    /**
      * Set of query lengths to determine whether or not they are unique.
      */
     private final IntSet uniqueQueryLengths = new IntOpenHashSet();
@@ -399,6 +405,8 @@ public class AlignmentWriter implements Closeable {
             headerBuilder.setQueryNameMapping(getMapping(queryIdentifiers, queryIdentifiersArray));
             headerBuilder.setTargetNameMapping(getMapping(targetIdentifiers, targetIdentifiersArray));
             headerBuilder.setNumberOfAlignedReads(numberOfAlignedReads);
+            headerBuilder.setAlignerName(alignerName);
+            headerBuilder.setAlignerVersion(alignerVersion);
 
             // determine query lengths are constant (regardless of where they came from)
             if (uniqueQueryLengths.size() == 1) {
@@ -647,5 +655,21 @@ public class AlignmentWriter implements Closeable {
         // update the unique query length set
         uniqueQueryLengths.clear();
         uniqueQueryLengths.addAll(IntArrayList.wrap(queryLengths));
+    }
+
+    public String getAlignerVersion() {
+        return alignerVersion;
+    }
+
+    public void setAlignerVersion(String alignerVersion) {
+        this.alignerVersion = alignerVersion;
+    }
+
+    public String getAlignerName() {
+        return alignerName;
+    }
+
+    public void setAlignerName(String alignerName) {
+        this.alignerName = alignerName;
     }
 }

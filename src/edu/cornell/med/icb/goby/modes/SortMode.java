@@ -209,6 +209,8 @@ public class SortMode extends AbstractGobyMode {
                 writer.setLargestSplitQueryIndex(alignmentReader.getLargestSplitQueryIndex());
                 writer.setSmallestSplitQueryIndex(alignmentReader.getSmallestSplitQueryIndex());
                 writer.setSorted(true);
+                writer.setAlignerName(alignmentReader.getAlignerName());
+                writer.setAlignerVersion(alignmentReader.getAlignerVersion());
 
                 // Propagate the statistics from the input, but update the basename
                 writer.setStatistics(alignmentReader.getStatistics());
