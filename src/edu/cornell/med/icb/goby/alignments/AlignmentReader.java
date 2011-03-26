@@ -753,7 +753,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
     }
      /**
      * Return the name of the aligner that produced this alignment.
-     * @return
+     * @return the name of the aligner that produced this alignment.
      */
     public String getAlignerName() {
         return alignerName;
@@ -761,7 +761,7 @@ public class AlignmentReader extends AbstractAlignmentReader {
 
     /**
      * Return the version of the aligner that produced this alignment.
-     * @return
+     * @return the version of the aligner that produced this alignment.
      */
     public String getAlignerVersion() {
         return alignerVersion;

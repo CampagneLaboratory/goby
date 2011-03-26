@@ -20,18 +20,17 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.util.*;
-
-import edu.cornell.med.icb.identifier.IndexedIdentifier;
 
 /**
  * Read over a set of alignments. This aligner concatenates entries from the input alignment.
@@ -67,6 +66,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
     protected int activeIndex;
     protected boolean adjustQueryIndices = true;
     private int numberOfAlignedReads;
+
 
     /**
      * Construct an alignment reader over a set of alignments.
@@ -150,11 +150,21 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
         if (!isHeaderLoaded()) {
             final IntSet targetNumbers = new IntArraySet();
             int readerIndex = 0;
+            ObjectList<String> alignerNames = new ObjectArrayList<String>();
+            ObjectList<String> alignerVersions = new ObjectArrayList<String>();
+
             numberOfQueries = 0;
             smallestQueryIndex = Integer.MAX_VALUE;
             largestQueryIndex = adjustQueryIndices ? Integer.MIN_VALUE : 0;
             for (final AlignmentReader reader : readers) {
                 reader.readHeader();
+                String alignerName = reader.getAlignerName();
+                String alignerVersion = reader.getAlignerVersion();
+                if (!(alignerNames.contains(alignerName) && alignerVersions.contains(alignerVersion))) {
+                    alignerNames.add(alignerName);
+                    alignerVersions.add(alignerVersion);
+                }
+
                 smallestQueryIndex = Math.min(reader.getSmallestSplitQueryIndex(), smallestQueryIndex);
                 largestQueryIndex = adjustQueryIndices ?
                         Math.max(largestQueryIndex, 0) + 1 + reader.getLargestSplitQueryIndex() :
@@ -167,6 +177,8 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
                 numberOfAlignedReads += reader.getNumberOfAlignedReads();
                 readerIndex++;
             }
+            alignerName = alignerNames.toString();
+            alignerVersion = alignerVersions.toString();
             if (targetNumbers.size() != 1) {
                 throw new IllegalArgumentException("The number of targets must match exactly across the input basenames. Found " + targetNumbers.toString());
             } else {
@@ -258,6 +270,23 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
 
         }
         return false;
+    }
+
+
+    /**
+     * @return The list of aligner names with duplicates removed
+     */
+    @Override
+    public String getAlignerName() {
+        return super.getAlignerName();
+    }
+
+    /**
+     * @return The list of aligner versions with duplicates removed
+     */
+    @Override
+    public String getAlignerVersion() {
+        return super.getAlignerVersion();
     }
 
     /**

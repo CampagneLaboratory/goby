@@ -405,9 +405,12 @@ public class AlignmentWriter implements Closeable {
             headerBuilder.setQueryNameMapping(getMapping(queryIdentifiers, queryIdentifiersArray));
             headerBuilder.setTargetNameMapping(getMapping(targetIdentifiers, targetIdentifiersArray));
             headerBuilder.setNumberOfAlignedReads(numberOfAlignedReads);
-            headerBuilder.setAlignerName(alignerName);
-            headerBuilder.setAlignerVersion(alignerVersion);
-
+            if (alignerName != null) {
+                headerBuilder.setAlignerName(alignerName);
+            }
+            if (alignerVersion != null) {
+                headerBuilder.setAlignerVersion(alignerVersion);
+            }
             // determine query lengths are constant (regardless of where they came from)
             if (uniqueQueryLengths.size() == 1) {
                 // detected constant read length.

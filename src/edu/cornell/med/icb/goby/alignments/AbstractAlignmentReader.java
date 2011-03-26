@@ -264,4 +264,20 @@ public abstract class AbstractAlignmentReader implements Closeable,
     public boolean isConstantQueryLengths() {
         return constantQueryLengths;
     }
+
+
+    protected String alignerName;
+
+    public String getAlignerName() {
+        return alignerName;
+    }
+
+    public String getAlignerVersion() {
+        return alignerVersion;
+    }
+
+    /**
+     * the list of aligner versions in the order of names, with duplicates removed.
+     */
+    protected String alignerVersion;
 }

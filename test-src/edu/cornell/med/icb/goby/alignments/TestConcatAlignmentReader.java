@@ -23,12 +23,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,6 +66,20 @@ public class TestConcatAlignmentReader {
         assertEquals(numQueries101 + numQueries102, concatReader.getNumberOfQueries());
         assertEquals(numTargets, concatReader.getNumberOfTargets());
 
+    }
+
+     @Test
+    public void testLoadTwoAlignerName() throws IOException {
+
+
+        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(outputBasename1, outputBasename2);
+
+        concatReader.readHeader();
+
+        assertNotNull( concatReader.getAlignerName());
+        assertNotNull( concatReader.getAlignerVersion());
+        assertEquals("[first-aligner, second-aligner]",concatReader.getAlignerName());
+        assertEquals("[version-first-aligner, version-second-aligner]",concatReader.getAlignerVersion());
     }
 
     @Test
@@ -155,7 +167,8 @@ public class TestConcatAlignmentReader {
             outputBasename1 = FilenameUtils.concat(BASE_TEST_DIR, "concat-align-101");
             final AlignmentWriter writer = new AlignmentWriter(outputBasename1);
             writer.setNumAlignmentEntriesPerChunk(1000);
-
+            writer.setAlignerName("first-aligner");
+            writer.setAlignerVersion("version-first-aligner");
             final int numQuery = 10;
             int position = 1;
             final int score = 30;
@@ -180,6 +193,8 @@ public class TestConcatAlignmentReader {
         {
             outputBasename2 = FilenameUtils.concat(BASE_TEST_DIR, "concat-align-102");
             final AlignmentWriter writer = new AlignmentWriter(outputBasename2);
+            writer.setAlignerName("second-aligner");
+            writer.setAlignerVersion("version-second-aligner");
             writer.setNumAlignmentEntriesPerChunk(1000);
 
             final int numQuery = 13;
