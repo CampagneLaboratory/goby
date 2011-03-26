@@ -223,7 +223,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         final AlignmentReader reader = new AlignmentReader(basename);
         reader.readHeader();
         stream.println("Info from header:");
-        stream.printf("Alignment produced by aligner=%s version=%s ",reader.getAlignerName(),
+        stream.printf("Alignment produced by aligner=%s version=%s %n",reader.getAlignerName(),
                 reader.getAlignerVersion());        
         stream.printf("Sorted: %b%n", reader.isSorted());
         stream.printf("Indexed: %b%n", reader.isIndexed());
