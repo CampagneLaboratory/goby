@@ -861,35 +861,26 @@ extern "C" {
               "HALFSPLICE_ACCEPTOR", "SPLICE", "ONE_THIRD_SHORTEXON",
               "TWO_THIRDS_SHORTEXON", "SHORTEXON", "TERMINAL" };
 
-    void gobyAlignments_debugSequences(CAlignmentsWriterHelper *writerHelper, int hitType, char *refSequence, char *readSequence, int startPos, int hasBeenReversed) {
+    void gobyAlignments_debugSequences(CAlignmentsWriterHelper *writerHelper, int hitType, char *refSequence, char *readSequence, int paddingLeft, int paddingRight) {
         debug(
-            int prefixLength;
-            int suffixLength;
-            if (!hasBeenReversed) {
-                prefixLength = startPos;
-                suffixLength= writerHelper->alignmentEntry->query_length() - strlen(refSequence) - startPos;
-            } else {
-                prefixLength = writerHelper->alignmentEntry->query_length() - strlen(refSequence) - startPos;
-                suffixLength= startPos;
-            }
 
-            fprintf(stderr,":: type=%s\n", hitTypes[hitType]);
+            fprintf(stderr,":: type=%s, paddingLeft=%d, paddingRight=%d\n", hitTypes[hitType], paddingLeft, paddingRight);
             fprintf(stderr,":: ref =");
-            for (int i = 0; i < prefixLength; i++) {
+            for (int i = 0; i < paddingLeft; i++) {
                 fprintf(stderr, "_");
             }
             fprintf(stderr,"%s", refSequence);
-            for (int i = 0; i < suffixLength; i++) {
+            for (int i = 0; i < paddingRight; i++) {
                 fprintf(stderr, "_");
             }
             fprintf(stderr,"\n");
 
             fprintf(stderr,":: read=");
-            for (int i = 0; i < prefixLength; i++) {
+            for (int i = 0; i < paddingLeft; i++) {
                 fprintf(stderr, "_");
             }
             fprintf(stderr,"%s", readSequence);
-            for (int i = 0; i < suffixLength; i++) {
+            for (int i = 0; i < paddingRight; i++) {
                 fprintf(stderr, "_");
             }
             fprintf(stderr,"\n");
