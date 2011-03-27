@@ -83,7 +83,7 @@
         goby::TooManyHitsWriter *tmhWriter;
         goby::AlignmentEntry *alignmentEntry;
         goby::SequenceVariation *sequenceVariation;
-        int lastSeqVarReadIndex;
+        unsigned int lastSeqVarRefPosition;
         char lastSeqVarReadChar;
         char lastSeqVarRefChar;
         unsigned int smallestQueryIndex;
@@ -121,7 +121,7 @@
 	    void *tmhWriter;
 	    void *alignmentEntry;
 	    void *sequenceVariation;
-	    int lastSeqVarReadIndex;
+	    unsigned int lastSeqVarRefPosition;
         char lastSeqVarReadChar;
         char lastSeqVarRefChar;
 	    unsigned int smallestQueryIndex;

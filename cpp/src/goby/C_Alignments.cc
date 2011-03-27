@@ -49,7 +49,7 @@ extern "C" {
         writerHelper->tmhWriter = new goby::TooManyHitsWriter(basenameStr, 1);
         writerHelper->alignmentEntry = NULL;
         writerHelper->sequenceVariation = NULL;
-        writerHelper->lastSeqVarReadIndex = -1;
+        writerHelper->lastSeqVarRefPosition = -1;
         writerHelper->lastSeqVarReadChar = '\0';
         writerHelper->lastSeqVarRefChar = '\0';
         writerHelper->smallestQueryIndex = -1;
@@ -276,7 +276,7 @@ extern "C" {
         debug(fprintf(stderr,"gobyAlignments_appendEntry\n"));
         writerHelper->alignmentEntry = writerHelper->alignmentWriter->appendEntry();
         writerHelper->sequenceVariation = NULL;
-	    writerHelper->lastSeqVarReadIndex = -1;
+	    writerHelper->lastSeqVarRefPosition = -1;
         writerHelper->lastSeqVarReadChar = '\0';
         writerHelper->lastSeqVarRefChar = '\0';
     }
@@ -376,10 +376,10 @@ extern "C" {
     void gobyAlEntry_addSequenceVariation(CAlignmentsWriterHelper *writerHelper, unsigned int readIndex, unsigned int refPosition, char refChar, char readChar, int hasQualCharInt /* bool */, char readQualChar) {
         bool hasQualChar = hasQualCharInt == 0 ? false : true;
         debug(fprintf(stderr,"gobyAlEntry_addSequenceVariation readIndex=%u refPosition=%u ref=%c read=%c hasQualChar=%s\n", readIndex, refPosition, refChar, readChar, hasQualChar ? "true" : "false"));
-        if (writerHelper->sequenceVariation == NULL || writerHelper->lastSeqVarReadIndex == -1) {
+        if (writerHelper->sequenceVariation == NULL || writerHelper->lastSeqVarRefPosition == -1) {
             // New sequence variation
             startNewSequenceVariation(writerHelper, readIndex, refPosition);
-        } else if (writerHelper->lastSeqVarReadIndex + 1 == readIndex || writerHelper->lastSeqVarReadIndex == readIndex) {
+        } else if (writerHelper->lastSeqVarRefPosition + 1 == refPosition || writerHelper->lastSeqVarRefPosition == refPosition) {
             // Append to prev SequenceVar entry
             debug(fprintf(stderr,"... appending to previous seqVar\n"));
         } else if  ((readChar == '-' && writerHelper->lastSeqVarReadChar != '-') ||
@@ -392,7 +392,7 @@ extern "C" {
             // Not contiguous to previous SeqVar
             startNewSequenceVariation(writerHelper, readIndex, refPosition);
         }
-        writerHelper->lastSeqVarReadIndex = readIndex;
+        writerHelper->lastSeqVarRefPosition = refPosition;
         writerHelper->lastSeqVarReadChar = readChar;
         writerHelper->lastSeqVarRefChar = refChar;
         string *from = writerHelper->sequenceVariation->mutable_from();
