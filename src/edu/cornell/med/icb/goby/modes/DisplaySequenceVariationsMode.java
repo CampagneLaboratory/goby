@@ -282,8 +282,6 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                 }
                 break;
                 case TAB_SINGLE_BASE: {
-                    boolean variations = false;
-
                     for (final Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
 
                         // convert variation position to position on the reference:
@@ -297,28 +295,29 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                         boolean keepVar = true;
                         keepVar = determineKeepVariation(positionOnReference, referenceIndex, keepVar);
                         if (keepVar && !isAllNs(to)) {
-                            variations = true;
                             final int maxLength = Math.max(fromLength, toLength);
-                            int offset = -1;
+                            int fromOffset = 0;
+                            int toOffset = 0;
                             for (int i = 0; i < maxLength; i++) {
-                                char toChar=var.getTo().charAt(i);
-                                offset+=  toChar=='-' ? 0: (alignmentEntry.getMatchingReverseStrand() ? -1 : 1);
-
+                                final char fromChar = var.getFrom().charAt(i);
+                                final char toChar = var.getTo().charAt(i);
                                 printTab(alignmentEntry, basename,
-                                        positionOnReference + offset,
-                                        readIndex + offset,
-                                        i < fromLength ? from.substring(i, i + 1) : "",
-                                        i < toLength ? to.substring(i, i + 1) : "");
+                                        positionOnReference + fromOffset,
+                                        readIndex + toOffset,
+                                        i < fromLength ? Character.toString(fromChar) : "",
+                                        i < toLength ? Character.toString(toChar) : "");
+                                if (fromChar != '-') {
+                                    fromOffset += 1;
+                                }
+                                if (toChar != '-') {
+                                    toOffset += (alignmentEntry.getMatchingReverseStrand() ? -1 : 1);
+                                }
                             }
                         }
                     }
-
-
                 }
                 break;
             }
-
-
         }
 
         private boolean determineKeepVariation(final int positionOnReference, final int referenceIndex, boolean keepVar) {
