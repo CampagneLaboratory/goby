@@ -22,6 +22,7 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.IterateSortedAlignmentsToPileup;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -60,6 +61,7 @@ public class AlignmentToPileupMode extends AbstractGobyMode {
      */
     private int numberOfReadIndices[];
     private int startFlapSize;
+    private RandomAccessSequenceCache genome;
 
     @Override
     public String getModeName() {
@@ -116,6 +118,17 @@ public class AlignmentToPileupMode extends AbstractGobyMode {
         sortedPositionIterator.setStartFlapLength(startFlapSize);
         sortedPositionIterator.parseIncludeReferenceArgument(jsapResult);
 
+        String genomeBasename=jsapResult.getString("genome");
+        if (genomeBasename!=null) {
+            genome=new RandomAccessSequenceCache();
+            try {
+                genome.load(genomeBasename);
+            } catch (ClassNotFoundException e) {
+                System.err.println("Cannot load genome. An exception occured. Details may be provided below.");
+                e.printStackTrace();
+                System.exit(1);
+            }
+        }
         return this;
     }
 
@@ -150,7 +163,7 @@ public class AlignmentToPileupMode extends AbstractGobyMode {
         sortedPositionIterator.initialize(outWriter, inputFilenames, startFlapSize);
 
         sortedPositionIterator.iterate(basenames);
-        sortedPositionIterator.finish(null, outputFormat);
+        sortedPositionIterator.finish(genome, outputFormat);
         outWriter.close();
     }
 
