@@ -78,8 +78,20 @@
             <stringParser>
                 <classname>IntegerStringParser</classname>
             </stringParser>
+            <defaults>
+                <string>100</string>
+            </defaults>
             <required>false</required>
             <help>Size of the flap to consider before start-position (in bp). Reads that start within start-flap and start are used to accumulate base counts. Base counts are used to emit statistics between start and end, but not between start-flap and start. This strategy makes is possible to concatenate results from distinct windows without reporting redundant results.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>genome</id>
+            <longFlag>genome</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>Filename for the reference genome. If provided, a reference sequence will be written together with the reads in the output. Filename must end with one of the extensions .fa, .fasta, .fa.gz, .fasta.gz or .compact-reads.</help>
         </flaggedOption>
 </parameters>
 </jsap>
