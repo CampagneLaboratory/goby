@@ -150,7 +150,7 @@ public class AlignmentToPileupMode extends AbstractGobyMode {
         sortedPositionIterator.initialize(outWriter, inputFilenames, startFlapSize);
 
         sortedPositionIterator.iterate(basenames);
-        sortedPositionIterator.finish(outputFormat);
+        sortedPositionIterator.finish(null, outputFormat);
         outWriter.close();
     }
 
