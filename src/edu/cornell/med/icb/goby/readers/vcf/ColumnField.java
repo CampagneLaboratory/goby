@@ -31,6 +31,10 @@ public class ColumnField {
      */
     public String id;
     /**
+     * Global index of this field across all columns of the input file.
+     */
+    public int globalFieldIndex;
+    /**
      * Number of values listed in this field.
      */
     public int numberOfValues;

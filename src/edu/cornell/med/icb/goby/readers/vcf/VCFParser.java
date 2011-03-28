@@ -46,7 +46,14 @@ public class VCFParser {
     private int[] columnStarts;
     private int[] columnEnds;
     private MutableString line;
-    private char separatorCharacter = '\t';
+    private char columnSeparatorCharacter = '\t';
+    private int[] fieldStarts;
+    private int[] fieldEnds;
+    private char fieldSeparatorCharacter = ';';
+    private char formatFieldSeparatorCharacter = ':';
+    private int numberOfFields;
+    private int globalFieldIndex;
+    private int formatColumnIndex;
 
     /**
      * Constructs a VCF parser.
@@ -66,7 +73,7 @@ public class VCFParser {
     public int getNumberOfColumns() {
         return numberOfColumns;
     }
-   
+
     /**
      * Return the columns in the file. This method can be called after the header has been read.
      *
@@ -94,19 +101,41 @@ public class VCFParser {
 
     private void parseCurrentLine() {
         columnStarts[0] = 0;
+        int columnIndex = 0;
         int fieldIndex = 0;
         for (int i = 0; i < line.length(); i++) {
-            if (line.charAt(i) == separatorCharacter) {
+            final char c = line.charAt(i);
+            if (c == fieldSeparatorCharacter || c == columnSeparatorCharacter ||
+                    (columnIndex >= formatColumnIndex && c == formatFieldSeparatorCharacter)) {
+               
+                fieldEnds[fieldIndex] = i;
 
-
-                columnEnds[fieldIndex] = i;
-
-                if (fieldIndex + 1 < numberOfColumns) {
-                    columnStarts[fieldIndex + 1] = i + 1;
+                if (fieldIndex + 1 < numberOfFields) {
+                    fieldStarts[fieldIndex + 1] = i + 1;
                 }
+              /*  System.out.printf("Field %d: %s in format: %b%n", fieldIndex,
+                        line.substring(fieldStarts[fieldIndex], fieldEnds[fieldIndex]),
+                        columnIndex>=formatColumnIndex
+                );
+               */
                 fieldIndex++;
+                if (c == columnSeparatorCharacter) {
+
+                    columnEnds[columnIndex] = i;
+
+                    if (columnIndex + 1 < numberOfColumns) {
+                        columnStarts[columnIndex + 1] = i + 1;
+                    }
+                //    System.out.printf("column %d: %s %n", columnIndex, line.substring(columnStarts[columnIndex], columnEnds[columnIndex]));
+
+                    columnIndex++;
+                }
             }
+
+
         }
+        columnEnds[columnIndex] = line.length();
+        fieldEnds[fieldIndex] = line.length();
     }
 
     public void next() {
@@ -130,6 +159,48 @@ public class VCFParser {
     }
 
     /**
+     * Returns the total number of fields across all columns.
+     *
+     * @return the sum of the number of fields in each column.
+     */
+    public int countAllFields() {
+        int n = 0;
+        for (ColumnInfo column : columns) {
+          /*  for (ColumnField field: column.fields) {
+                System.out.printf("%s:%s %d%n",column.columnName,field.id, field.globalFieldIndex);
+            } */
+            n += column.fields.size();
+        }
+        return n;
+    }
+
+    /**
+     * Returns the value of the field.
+     * The field is identified by a global index that runs from zero (inclusive) to countAllFields() (exclusive).
+     *
+     * @param globalFieldIndex a global index that runs from zero to countAllFields()
+     * @return Value of this field.
+     */
+    public CharSequence getFieldValue(int globalFieldIndex) {
+        if (hasNextDataLine) {
+
+            return line.subSequence(fieldStarts[globalFieldIndex], fieldEnds[globalFieldIndex]);
+
+        } else return null;
+    }
+
+    /**
+     * Returns the value of a field.
+     * The field is identified by a global index that runs from zero (inclusive) to countAllFields() (exclusive).
+     *
+     * @param globalFieldIndex a global index that runs from zero to countAllFields()
+     * @return Value of this field.
+     */
+    public String getStringFieldValue(int globalFieldIndex) {
+        return getFieldValue(globalFieldIndex).toString();
+    }
+
+    /**
      * Returns a column value as a String.
      *
      * @param columnIndex index of the field on a line of input.
@@ -142,9 +213,11 @@ public class VCFParser {
     /**
      * Read the header of this file. Headers in the VCF format are supported, as well as TSV single header lines (with or
      * without first character #.
+     *
      * @throws SyntaxException When the syntax of the VCF file is incorrect.
      */
     public void readHeader() throws SyntaxException {
+        globalFieldIndex = 0;
         lineIterator = new LineIterator(new FastBufferedReader(input));
         int lineNumber = 1;
         while (lineIterator.hasNext()) {
@@ -182,9 +255,17 @@ public class VCFParser {
             }
             defineFixedColumn(columnName, columnIndex);
             if (!columns.hasColumnName(columnName)) {
-
-                ColumnInfo newCol = new ColumnInfo(columnName, new ColumnField("VALUE", -1,
-                        ColumnField.ColumnType.String, "Format described for each row in the associated FORMAT column."));
+                ColumnInfo formatColumn = columns.find("FORMAT");
+                // copy the fields of the FORMAT column for each sample:
+                ColumnField[] fields = new ColumnField[formatColumn.fields.size()];
+                int i = 0;
+                for (ColumnField f : formatColumn.fields) {
+                    fields[i] = (new ColumnField(f.id, f.numberOfValues,
+                            f.type, f.description));
+                      fields[i].globalFieldIndex = globalFieldIndex++;
+                    i++;
+                }
+                ColumnInfo newCol = new ColumnInfo(columnName, fields);
 
                 newCol.columnIndex = columnIndex;
                 columns.add(newCol);
@@ -194,12 +275,20 @@ public class VCFParser {
         numberOfColumns = columnIndex;
         columnStarts = new int[numberOfColumns];
         columnEnds = new int[numberOfColumns];
+
+        numberOfFields = countAllFields();
+        fieldStarts = new int[numberOfFields];
+        fieldEnds = new int[numberOfFields];
+        formatColumnIndex = columns.find("FORMAT").columnIndex;
     }
 
     private void defineFixedColumn(String columnName, int columnIndex) {
         for (ColumnInfo fixed : fixedColumns) {
             if (fixed.columnName.equals(columnName) && !columns.hasColumnName(columnName)) {
                 fixed.columnIndex = columnIndex;
+                for (ColumnField field: fixed.fields) {
+                      field.globalFieldIndex = globalFieldIndex++;
+                }
                 columns.add(fixed);
                 return;
             }
@@ -312,6 +401,7 @@ public class VCFParser {
 
         }
         // System.out.println("adding " + field);
+        field.globalFieldIndex = globalFieldIndex++;
         info.addField(field);
     }
 
@@ -322,5 +412,5 @@ public class VCFParser {
         }
     }
 
-    
+
 }

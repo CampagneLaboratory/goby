@@ -29,6 +29,7 @@ import java.io.FileReader;
 
 /**
  * Test the VCF parser
+ *
  * @author Fabien Campagne
  *         Date: Mar 26, 2011
  *         Time: 3:15:13 PM
@@ -65,6 +66,7 @@ public class TestVCFParser {
         assertTrue(info.hasField("MQ"));
         assertTrue(info.getField("MQ").group.equals("RMS"));
     }
+
     @Test
     public void testParseExample2() throws FileNotFoundException, VCFParser.SyntaxException {
         VCFParser parser = new VCFParser(new FileReader("test-data/vcf/example2.tsv"));
@@ -116,7 +118,7 @@ public class TestVCFParser {
         assertEquals("AC", parser.getStringColumnValue(3));
     }
 
-      @Test
+    @Test
     public void testParseValue3() throws FileNotFoundException, VCFParser.SyntaxException {
         VCFParser parser = new VCFParser(new FileReader("test-data/vcf/example3.tsv"));
         parser.readHeader();
@@ -131,6 +133,7 @@ public class TestVCFParser {
         assertEquals("1", parser.getStringColumnValue(0));
         assertEquals("AC", parser.getStringColumnValue(3));
     }
+
     public void testHasNext() throws FileNotFoundException, VCFParser.SyntaxException {
         VCFParser parser = new VCFParser(new FileReader("test-data/vcf/example2.tsv"));
         parser.readHeader();
@@ -179,7 +182,35 @@ public class TestVCFParser {
         assertEquals(9, cols.find("results/IPBKRNW/IPBKRNW-replicate.bam").columnIndex);
         assertEquals(10, cols.find("results/IPBKRNW/IPBKRNW-sorted.bam").columnIndex);
     }
-   
+
+    @Test
+    public void testParseFields() throws FileNotFoundException, VCFParser.SyntaxException {
+        VCFParser parser = new VCFParser(new FileReader("test-data/vcf/example-small.vcf"));
+        parser.readHeader();
+        assertTrue(parser.hasNextDataLine());
+        assertEquals(25, parser.countAllFields());
+        assertEquals("145497099", parser.getStringFieldValue(1));
+        assertEquals("0", parser.getStringFieldValue(0));
+        assertEquals("A", parser.getStringFieldValue(3));
+        assertEquals("1/1", parser.getStringFieldValue(10));
+        assertEquals("25,3,0", parser.getStringFieldValue(11));
+        assertEquals("42", parser.getStringFieldValue(12));
+        assertEquals("1/1", parser.getStringFieldValue(13));
+        assertEquals("25,3,0", parser.getStringFieldValue(14));
+        assertEquals("42", parser.getStringFieldValue(15));
+        parser.next();
+        assertTrue(parser.hasNextDataLine());
+        assertEquals(25, parser.countAllFields());
+        assertEquals("29389393", parser.getStringFieldValue(1));
+        assertEquals("1", parser.getStringFieldValue(0));
+        assertEquals("AC", parser.getStringFieldValue(3));
+        assertEquals("1/1", parser.getStringFieldValue(10));
+        assertEquals("36,3,0", parser.getStringFieldValue(11));
+        assertEquals("42", parser.getStringFieldValue(12));
+        assertEquals("1/1", parser.getStringFieldValue(13));
+        assertEquals("36,3,0", parser.getStringFieldValue(14));
+        assertEquals("42", parser.getStringFieldValue(15));
+    }
 
 
 }
