@@ -1,0 +1,9 @@
+##fileformat=VCFv4.1
+##samtoolsVersion=0.1.14 (r933:170)
+##INFO=<ID=DP,Number=1,Group=DEPTHS,Type=Integer,Description="Raw read depth">
+##INFO=<ID=DP4,Number=4,Type=Integer,Description="# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases">
+##INFO=<ID=MQ,Group=RMS,Number=1,Type=Integer,Description="Root-mean-square mapping quality of covering reads">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	results/IPBKRNW/IPBKRNW-replicate.bam	results/IPBKRNW/IPBKRNW-sorted.bam
+0	145497099	.	A	G	17.1	.	DP=2;AF1=0.9999;CI95=0.5,1;DP4=0,0,2,0;MQ=25;FQ=-30.8;QCHI2=1;PCHI2=0.752;PC2=3,3	GT:PL:GQ	1/1:25,3,0:42	1/1:25,3,0:42
+1	29389393	.	AC	A	31.5	.	INDEL;DP=2;AF1=0.9999;CI95=0.5,1;DP4=0,0,0,2;MQ=37;FQ=-38.3;QCHI2=1;PCHI2=0.749;PC2=3,3	GT:PL:GQ	1/1:36,3,0:42	1/1:36,3,0:42
+1	44379612	.	CT	C	31.5	.	INDEL;DP=2;AF1=0.9999;CI95=0.5,1;DP4=0,0,0,2;MQ=37;FQ=-38.3;QCHI2=1;PCHI2=0.749;PC2=3,3	GT:PL:GQ	1/1:36,3,0:42	1/1:36,3,0:42

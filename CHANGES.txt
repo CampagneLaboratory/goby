@@ -1,3 +1,13 @@
+development -> 1.9.5 
+ - Goby now includes a VCFParser class (see package edu.cornell.med.icb.goby.readers.vcf). VCF stands
+   for Variant Call Format. The VCF format is described at http://www.1000genomes.org/node/101.
+   The Goby VCFParser class implements a VCF 4.0+ parser. Importantly, this implementation also can be
+   used to parse plain TSV files, or VCF that do not include the fixed VCF columns. It therefore support
+   an extended version of the VCF format that is as generic as a TSV file, but can also provide meta-information
+   about the columns in the specific file. Another difference with VCF 4.0 is that we support the Group
+   attribute on column fields. This makes it possible to indicate that fields are part of the same group.
+   Such a feature can be used by user interfaces that would like to offer the ability to manipulate multiple
+   column fields as a group (for instance to hide or show an entire group of fields).
 1.9.4
  - The C API (used by BWA, GSNAP) has been updated to more accurately write sequence variations (this version
    fixes problems in reporting of the read index). We have created examples of how sequence variations are
