@@ -32,8 +32,9 @@ public class ColumnField {
     public String id;
     /**
      * Global index of this field across all columns of the input file.
+     * Value -1 indicates that the index has not yet been assigned.
      */
-    public int globalFieldIndex;
+    public int globalFieldIndex=-1;
     /**
      * Number of values listed in this field.
      */
@@ -52,6 +53,10 @@ public class ColumnField {
      * showing all columns in a group at the same time. The default group is "MAIN".
      */
     public String group="MAIN";
+
+    
+    public ColumnInfo column;
+    public boolean notSeen;
 
     /**
      * Construct an empty field.
@@ -73,7 +78,7 @@ public class ColumnField {
         this.description = description;
     }
 
-    enum ColumnType {
+    public enum ColumnType {
         Integer, Float, Flag, Character, String
     }
 }

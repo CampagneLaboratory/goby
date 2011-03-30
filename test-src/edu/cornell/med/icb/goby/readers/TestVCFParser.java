@@ -188,29 +188,50 @@ public class TestVCFParser {
         VCFParser parser = new VCFParser(new FileReader("test-data/vcf/example-small.vcf"));
         parser.readHeader();
         assertTrue(parser.hasNextDataLine());
+        for (int i = 0; i < parser.countAllFields(); i++) {
+            System.out.printf("field %s gfi:%d value: %s%n", parser.getFieldName(i), i,
+                    parser.getStringFieldValue(i));
+        }
         assertEquals(25, parser.countAllFields());
         assertEquals("145497099", parser.getStringFieldValue(1));
         assertEquals("0", parser.getStringFieldValue(0));
         assertEquals("A", parser.getStringFieldValue(3));
-        assertEquals("1/1", parser.getStringFieldValue(10));
-        assertEquals("25,3,0", parser.getStringFieldValue(11));
-        assertEquals("42", parser.getStringFieldValue(12));
-        assertEquals("1/1", parser.getStringFieldValue(13));
-        assertEquals("25,3,0", parser.getStringFieldValue(14));
-        assertEquals("42", parser.getStringFieldValue(15));
+
+        assertEquals("1/1", parser.getStringFieldValue(parser.getGlobalFieldIndex("results/IPBKRNW/IPBKRNW-replicate.bam", "GT")));
+        assertEquals("015,4,0", parser.getStringFieldValue(parser.getGlobalFieldIndex("results/IPBKRNW/IPBKRNW-replicate.bam", "PL")));
+        assertEquals("11", parser.getStringFieldValue(parser.getGlobalFieldIndex("results/IPBKRNW/IPBKRNW-replicate.bam", "GQ")));
+
+
+        assertEquals("1/1", parser.getStringFieldValue(parser.getGlobalFieldIndex("results/IPBKRNW/IPBKRNW-sorted.bam", "GT")));
+        assertEquals("25,3,0", parser.getStringFieldValue(parser.getGlobalFieldIndex("results/IPBKRNW/IPBKRNW-sorted.bam", "PL")));
+        assertEquals("42", parser.getStringFieldValue(parser.getGlobalFieldIndex("results/IPBKRNW/IPBKRNW-sorted.bam", "GQ")));
         parser.next();
         assertTrue(parser.hasNextDataLine());
-        assertEquals(25, parser.countAllFields());
-        assertEquals("29389393", parser.getStringFieldValue(1));
-        assertEquals("1", parser.getStringFieldValue(0));
-        assertEquals("AC", parser.getStringFieldValue(3));
-        assertEquals("1/1", parser.getStringFieldValue(10));
-        assertEquals("36,3,0", parser.getStringFieldValue(11));
-        assertEquals("42", parser.getStringFieldValue(12));
-        assertEquals("1/1", parser.getStringFieldValue(13));
-        assertEquals("36,3,0", parser.getStringFieldValue(14));
-        assertEquals("42", parser.getStringFieldValue(15));
+
     }
 
+    @Test
+    public void testParseVariableOrder() throws FileNotFoundException, VCFParser.SyntaxException {
+        VCFParser parser = new VCFParser(new FileReader("test-data/vcf/example-flags.vcf"));
+        parser.readHeader();
+        int indelFieldIndex = parser.getGlobalFieldIndex("INFO", "INDEL");
+        int af1FieldIndex = parser.getGlobalFieldIndex("INFO", "AF1");
 
+        assertTrue(parser.hasNextDataLine());
+
+        for (int i = 0; i < parser.countAllFields(); i++) {
+            System.out.printf("field %s value: %s%n", parser.getFieldName(i),
+                    parser.getStringFieldValue(i));
+        }
+
+        assertEquals("INDEL", parser.getStringFieldValue(indelFieldIndex));
+        assertEquals("AF1=0.9999", parser.getStringFieldValue(af1FieldIndex));
+        parser.next();
+        assertTrue(parser.hasNextDataLine());
+
+        assertEquals("", parser.getStringFieldValue(indelFieldIndex));
+        parser.next();
+        assertTrue(parser.hasNextDataLine());
+        assertEquals("INDEL", parser.getStringFieldValue(indelFieldIndex));
+    }
 }

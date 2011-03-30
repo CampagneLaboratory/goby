@@ -21,8 +21,15 @@ package edu.cornell.med.icb.goby.readers.vcf;
 import it.unimi.dsi.io.FastBufferedReader;
 import it.unimi.dsi.io.LineIterator;
 import it.unimi.dsi.lang.MutableString;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import java.io.Reader;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 /**
  * Parser for files in the <a href="http://vcftools.sourceforge.net/specs.html">Variant Call Format</a>, or in plain TSV format.
@@ -54,6 +61,26 @@ public class VCFParser {
     private int numberOfFields;
     private int globalFieldIndex;
     private int formatColumnIndex;
+    private int lineLength;
+    private int globalColumnIndex;
+    /**
+     * Variable TSV is true if we determined the file is tab delimited.
+     */
+    private boolean TSV = true;
+    /**
+     * An array with dimensions numAllFields that stores the permutation from the global field index
+     * to the observed field index (taking into account absence or presence of Flag attributes, and the fact that
+     * fields that occur in any order on each line in a column).
+     */
+    private int[] fieldPermutation;
+    private static final Comparator COLUMN_SORT = new Comparator<ColumnInfo>() {
+        public int compare(ColumnInfo c1, ColumnInfo c2) {
+            return c1.columnIndex - c2.columnIndex;
+        }
+    };
+    private ObjectArrayList<ColumnInfo> columnList = new ObjectArrayList<ColumnInfo>();
+    private ObjectArrayList<ColumnField> fieldList = new ObjectArrayList<ColumnField>();
+    private ColumnInfo formatColumn;
 
     /**
      * Constructs a VCF parser.
@@ -83,6 +110,35 @@ public class VCFParser {
         return columns;
     }
 
+    public ColumnField.ColumnType getColumnType(int columnIndex) {
+        for (ColumnInfo col : columns) {
+            if (col.columnIndex == columnIndex) {
+                if (col.fields.size() == 1) {
+                    return col.fields.iterator().next().type;
+
+                } else {
+                    break;
+                }
+
+            }
+        }
+
+        return ColumnField.ColumnType.String;
+
+    }
+
+    public String getColumnName(int columnIndex) {
+        for (ColumnInfo col : columns) {
+            if (col.columnIndex == columnIndex) {
+                return col.columnName;
+
+            }
+        }
+
+        return null;
+
+    }
+
     private LineIterator lineIterator;
 
     public boolean hasNextDataLine() {
@@ -99,48 +155,13 @@ public class VCFParser {
         return hasNextDataLine;
     }
 
-    private void parseCurrentLine() {
-        columnStarts[0] = 0;
-        int columnIndex = 0;
-        int fieldIndex = 0;
-        for (int i = 0; i < line.length(); i++) {
-            final char c = line.charAt(i);
-            if (c == fieldSeparatorCharacter || c == columnSeparatorCharacter ||
-                    (columnIndex >= formatColumnIndex && c == formatFieldSeparatorCharacter)) {
-               
-                fieldEnds[fieldIndex] = i;
-
-                if (fieldIndex + 1 < numberOfFields) {
-                    fieldStarts[fieldIndex + 1] = i + 1;
-                }
-              /*  System.out.printf("Field %d: %s in format: %b%n", fieldIndex,
-                        line.substring(fieldStarts[fieldIndex], fieldEnds[fieldIndex]),
-                        columnIndex>=formatColumnIndex
-                );
-               */
-                fieldIndex++;
-                if (c == columnSeparatorCharacter) {
-
-                    columnEnds[columnIndex] = i;
-
-                    if (columnIndex + 1 < numberOfColumns) {
-                        columnStarts[columnIndex + 1] = i + 1;
-                    }
-                //    System.out.printf("column %d: %s %n", columnIndex, line.substring(columnStarts[columnIndex], columnEnds[columnIndex]));
-
-                    columnIndex++;
-                }
-            }
-
-
-        }
-        columnEnds[columnIndex] = line.length();
-        fieldEnds[fieldIndex] = line.length();
-    }
 
     public void next() {
-        if (!hasNextDataLine)
+        if (!hasNextDataLine) {
+
+
             throw new IllegalArgumentException("Next can be called only after hasNext has returned true.");
+        }
         hasNextDataLine = false;
     }
 
@@ -166,9 +187,7 @@ public class VCFParser {
     public int countAllFields() {
         int n = 0;
         for (ColumnInfo column : columns) {
-          /*  for (ColumnField field: column.fields) {
-                System.out.printf("%s:%s %d%n",column.columnName,field.id, field.globalFieldIndex);
-            } */
+
             n += column.fields.size();
         }
         return n;
@@ -184,7 +203,19 @@ public class VCFParser {
     public CharSequence getFieldValue(int globalFieldIndex) {
         if (hasNextDataLine) {
 
-            return line.subSequence(fieldStarts[globalFieldIndex], fieldEnds[globalFieldIndex]);
+
+            globalFieldIndex = fieldPermutation[globalFieldIndex];
+            if (globalFieldIndex == -1) {
+                // missing field in this row;
+                return "";
+            }
+            final int start = fieldStarts[globalFieldIndex];
+            final int end = fieldEnds[globalFieldIndex];
+
+            assert (start >= 0 && end <= lineLength) :
+                    String.format("position indices must be within line boundaries start: %d end: %d length: %d", start, end, lineLength);
+            return line.subSequence(start, end);
+
 
         } else return null;
     }
@@ -197,7 +228,9 @@ public class VCFParser {
      * @return Value of this field.
      */
     public String getStringFieldValue(int globalFieldIndex) {
-        return getFieldValue(globalFieldIndex).toString();
+
+        final CharSequence value = getFieldValue(globalFieldIndex);
+        return value == null ? null : value.toString();
     }
 
     /**
@@ -210,6 +243,20 @@ public class VCFParser {
         return getColumnValue(columnIndex).toString();
     }
 
+    private Int2ObjectMap<String> fieldIndexToName;
+
+    /**
+     * Return the field name, in the format:
+     * <LI>For columns with multiple fields: &lt;column-name&gt;[&lt;field-id&gt;]
+     * <LI>For columns with a single field: &lt;column-name&gt;[&lt;field-id&gt;]
+     *
+     * @param globalFieldIndex index of the field across columns.
+     * @return the field name
+     */
+    public String getFieldName(int globalFieldIndex) {
+        return fieldIndexToName.get(globalFieldIndex);
+    }
+
     /**
      * Read the header of this file. Headers in the VCF format are supported, as well as TSV single header lines (with or
      * without first character #.
@@ -218,6 +265,7 @@ public class VCFParser {
      */
     public void readHeader() throws SyntaxException {
         globalFieldIndex = 0;
+        fieldIndexToName = new Int2ObjectOpenHashMap<String>();
         lineIterator = new LineIterator(new FastBufferedReader(input));
         int lineNumber = 1;
         while (lineIterator.hasNext()) {
@@ -225,7 +273,7 @@ public class VCFParser {
             if (!line.startsWith("#")) {
                 if (lineNumber == 1) {
                     // assume the file is TSV and starts directly with the header line. Parse lineIterator here.
-                    processHeaderLine(new MutableString("#" + line));
+                    parseHeaderLine(new MutableString("#" + line));
                 } else {
                     // We are seeing an actual line of data. Prepare for parsing:
                     parseCurrentLine();
@@ -234,60 +282,254 @@ public class VCFParser {
                 break;
             }
             if (line.startsWith("##")) {
+                TSV = false;
                 processMetaInfoLine(line);
             } else if (line.startsWith("#")) {
-                processHeaderLine(line);
+                parseHeaderLine(line);
             }
             lineNumber++;
         }
     }
 
-    private void processHeaderLine(MutableString line) {
+    private void parseCurrentLine() {
+        columnStarts[0] = 0;
+        int columnIndex = 0;
+        int fieldIndex = 0;
+        lineLength = line.length();
+        int lineFieldIndexToColumnIndex[] = new int[numberOfFields];
+        Arrays.fill(lineFieldIndexToColumnIndex, -1);
+        IntArrayList previousColumnFieldIndices = new IntArrayList();
+        // determine the position of column and field delimiters:
+
+        for (int i = 0; i < lineLength; i++) {
+            final char c = line.charAt(i);
+            if (c == columnSeparatorCharacter) {
+
+                columnEnds[columnIndex] = i;
+
+                if (columnIndex + 1 < numberOfColumns) {
+                    columnStarts[columnIndex + 1] = i + 1;
+                }
+                //lineFieldIndexToColumnIndex[columnIndex] = columnIndex;
+            }
+            if (c == columnSeparatorCharacter ||
+                    c == fieldSeparatorCharacter ||
+                    (columnIndex >= formatColumnIndex &&
+                            c == formatFieldSeparatorCharacter)) {
+
+                if (TSV) {
+
+                    // there are no fields, only columns, the field separators do not apply
+
+                    fieldEnds[columnIndex] = columnEnds[columnIndex];
+                    fieldStarts[columnIndex] = columnStarts[columnIndex];
+                    fieldIndex = columnIndex;
+                    lineFieldIndexToColumnIndex[fieldIndex] = columnIndex;
+                } else {
+
+                    fieldEnds[fieldIndex] = i;
+
+                    if (fieldIndex + 1 < numberOfFields) {
+                        fieldStarts[fieldIndex + 1] = i + 1;
+                    }
+
+                    previousColumnFieldIndices.add(fieldIndex);
+                    fieldIndex++;
+                }
+            }
+            if (c == columnSeparatorCharacter) {
+                push(columnIndex, lineFieldIndexToColumnIndex, previousColumnFieldIndices);
+                columnIndex++;
+            }
+
+        }
+        int numberOfFieldsOnLine = fieldIndex;
+        int numberOfColumnsOnLine = columnIndex;
+        columnStarts[0] = 0;
+        columnEnds[numberOfColumnsOnLine] = line.length();
+        fieldStarts[0] = 0;
+        fieldEnds[numberOfFieldsOnLine] = line.length();
+        previousColumnFieldIndices.add(fieldIndex);
+        push(columnIndex, lineFieldIndexToColumnIndex, previousColumnFieldIndices);
+
+
+        Arrays.fill(fieldPermutation, -1);
+        for (ColumnInfo c : columns) {
+            c.formatIndex = 0;
+        }
+        // determine the fieldPermutation for each possible field:
+        for (int lineFieldIndex = 0; lineFieldIndex <= numberOfFieldsOnLine; lineFieldIndex++) {
+
+            int start = fieldStarts[lineFieldIndex];
+            int end = fieldEnds[lineFieldIndex];
+
+            final int cIndex = lineFieldIndexToColumnIndex[lineFieldIndex];
+
+            ColumnInfo column = columnList.get(cIndex);
+
+            int colMinGlobalFieldIndex = Integer.MAX_VALUE;
+            int colMaxGlobalFieldIndex = Integer.MIN_VALUE;
+            for (ColumnField f : column.fields) {
+                colMinGlobalFieldIndex = Math.min(colMinGlobalFieldIndex, f.globalFieldIndex);
+                colMaxGlobalFieldIndex = Math.max(colMaxGlobalFieldIndex, f.globalFieldIndex);
+
+            }
+            int formatColumnIndex = formatColumn.columnIndex;
+            int startFormatColumn = columnStarts[formatColumnIndex];
+            int endFormatColumn = columnEnds[formatColumnIndex];
+            MutableString formatSpan = line.substring(startFormatColumn, endFormatColumn);
+            formatSpan.compact();
+            String[] formatTokens = formatSpan.toString().split(Character.toString(formatFieldSeparatorCharacter));
+            for (ColumnField f : column.fields) {
+                if (colMaxGlobalFieldIndex == colMinGlobalFieldIndex) {
+                    // This column has only one field.
+                    fieldPermutation[f.globalFieldIndex] = colMinGlobalFieldIndex;
+                } else {
+                    // find the column field f whose id matches the character span we are looking at :
+                    int j = start;
+                    final String id = f.id;
+                    int matchLength = 0;
+                    for (int i = 0; i < id.length(); i++) {
+                        if (j > end) {
+                            // reached end of field, not this field.
+                            break;
+                        }
+
+                        char linechar = line.charAt(j);
+
+                        if (id.charAt(i) != linechar) {
+                            // found mimatch with field id, not this field.
+                            matchLength = -1;
+                            break;
+                        }
+                        matchLength++;
+                        j++;
+                    }
+
+                    if (matchLength == id.length() && line.charAt(j) == '=' ||
+                            (j == end && f.type == ColumnField.ColumnType.Flag)) {
+                        // found the correct field.
+                        /*  System.out.printf("Assigning global %s %d -> %d for field %s%n",
+                                f.id, globalFieldIndex, lineFieldIndex, line.subSequence(start, end));
+                        */
+                        fieldPermutation[f.globalFieldIndex] = lineFieldIndex;
+                    } else {
+
+                        if (column.useFormat && column.formatIndex < formatTokens.length) {
+
+                            if (f.id.equals(formatTokens[column.formatIndex])) {
+                                /*    System.out.printf("Assigning FORMAT global %s %d -> %d for field %s%n",
+                            f.id, f.globalFieldIndex, lineFieldIndex, line.subSequence(start, end));*/
+
+                                fieldPermutation[f.globalFieldIndex] = lineFieldIndex;
+                                column.formatIndex++;
+                                break;
+                            }
+
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //     System.out.println("ned");
+
+
+    private void push(int columnIndex, int[] lineFieldIndexToColumnIndex, IntArrayList previousColumnFieldIndices) {
+        //  System.out.println("---");
+        for (int fIndex : previousColumnFieldIndices) {
+            /*       System.out.printf("field %s gfi:%d belongs to column %d %s%n ",
+           line.substring(fieldStarts[fIndex], fieldEnds[fIndex]),
+           fIndex,
+           columnIndex, columnList.get(columnIndex).columnName);*/
+            lineFieldIndexToColumnIndex[fIndex] = columnIndex;
+        }
+        previousColumnFieldIndices.clear();
+    }
+
+
+    private void parseHeaderLine(MutableString line) {
         // System.out.printf("header line:%s%n", line);
         // drop the #
         line = line.substring(1);
         String[] columnNames = line.toString().split("[\\s]");
-        int columnIndex = 0;
+
         for (String columnName : columnNames) {
-            ColumnInfo column = columns.find(columnName);
-            if (column != null) {
-                column.columnIndex = columnIndex;
-            }
-            defineFixedColumn(columnName, columnIndex);
+
+            defineFixedColumn(columnName);
             if (!columns.hasColumnName(columnName)) {
                 ColumnInfo formatColumn = columns.find("FORMAT");
+
                 // copy the fields of the FORMAT column for each sample:
-                ColumnField[] fields = new ColumnField[formatColumn.fields.size()];
-                int i = 0;
-                for (ColumnField f : formatColumn.fields) {
-                    fields[i] = (new ColumnField(f.id, f.numberOfValues,
-                            f.type, f.description));
-                      fields[i].globalFieldIndex = globalFieldIndex++;
-                    i++;
+                ColumnField[] fields;
+                if (formatColumn != null) {
+                    fields = new ColumnField[formatColumn.fields.size()];
+                    int i = 0;
+                    for (ColumnField f : formatColumn.fields) {
+                        fields[i] = (new ColumnField(f.id, f.numberOfValues,
+                                f.type, f.description));
+                        //fields[i].globalFieldIndex = globalFieldIndex++;
+                        i++;
+                    }
+                } else {
+                    fields = new ColumnField[]{new ColumnField("VALUE", 1, ColumnField.ColumnType.String, "")};
+                    //fields[0].globalFieldIndex = globalFieldIndex++;
                 }
                 ColumnInfo newCol = new ColumnInfo(columnName, fields);
 
-                newCol.columnIndex = columnIndex;
+                newCol.useFormat = true;
                 columns.add(newCol);
             }
-            columnIndex++;
+
         }
-        numberOfColumns = columnIndex;
+        formatColumn = columns.find("FORMAT");
+        // columns.remove(formatColumn);
+        // columnList.remove(formatColumn);
+
+        for (ColumnInfo column : columns) {
+            if (column.columnIndex == -1) {
+                column.columnIndex = globalColumnIndex++;
+            }
+            for (ColumnField field : column.fields) {
+
+                if (field.globalFieldIndex == -1) {
+                    field.globalFieldIndex = globalFieldIndex++;
+                }
+                final String name;
+                if (column.fields.size() == 1) {
+                    name = column.columnName;
+
+                } else {
+                    name = String.format("%s[%s]", column.columnName, field.id);
+                }
+                fieldIndexToName.put(field.globalFieldIndex, name);
+            }
+        }
+        formatColumnIndex = formatColumn.columnIndex;
+
+        numberOfColumns = globalColumnIndex;
         columnStarts = new int[numberOfColumns];
         columnEnds = new int[numberOfColumns];
-
-        numberOfFields = countAllFields();
+        numberOfFields = TSV ? numberOfColumns : globalFieldIndex;
         fieldStarts = new int[numberOfFields];
         fieldEnds = new int[numberOfFields];
-        formatColumnIndex = columns.find("FORMAT").columnIndex;
+        fieldPermutation = new int[numberOfFields];
+
+        columnList.addAll(columns);
+        Collections.sort(columnList, COLUMN_SORT);
+        for (ColumnInfo column : columnList) {
+            fieldList.addAll(column.fields);
+        }
     }
 
-    private void defineFixedColumn(String columnName, int columnIndex) {
+    private void defineFixedColumn(String columnName) {
         for (ColumnInfo fixed : fixedColumns) {
             if (fixed.columnName.equals(columnName) && !columns.hasColumnName(columnName)) {
-                fixed.columnIndex = columnIndex;
-                for (ColumnField field: fixed.fields) {
-                      field.globalFieldIndex = globalFieldIndex++;
+                fixed.columnIndex = globalColumnIndex++;
+                for (ColumnField field : fixed.fields) {
+                    field.globalFieldIndex = globalFieldIndex++;
                 }
                 columns.add(fixed);
                 return;
@@ -401,8 +643,23 @@ public class VCFParser {
 
         }
         // System.out.println("adding " + field);
-        field.globalFieldIndex = globalFieldIndex++;
+        // do not set the global field index on a meta-info field yet. We will do this after fixed columns have been added.
         info.addField(field);
+    }
+
+    /**
+     * Return a global field index, or -1 if the column or field id are not declared.
+     *
+     * @param columnName name of column.
+     * @param fieldId    Identifier for field in column.
+     * @return a global field index, or -1 if the column or field id are not declared.
+     */
+    public int getGlobalFieldIndex(String columnName, String fieldId) {
+        final ColumnInfo column = columns.find(columnName);
+        if (column == null) return -1;
+        final ColumnField columnField = column.fields.find(fieldId);
+        if (columnField == null) return -1;
+        return columnField.globalFieldIndex;
     }
 
 

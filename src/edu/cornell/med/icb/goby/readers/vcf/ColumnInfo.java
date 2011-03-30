@@ -38,9 +38,11 @@ public class ColumnInfo {
     ColumnFields fields = new ColumnFields();
     /**
      * Index of this column in the file being parsed. Index is zero-based. Zero is the first (left-most) column.
+     * Value is -1 if this index has not been set yet.
      */
-    public int columnIndex;
-
+    public int columnIndex=-1;
+    public boolean useFormat=false;
+    public int formatIndex=0;
     /**
      * Create a ColumnInfo with provided information.
      *
@@ -50,6 +52,9 @@ public class ColumnInfo {
     public ColumnInfo(String columnName, ColumnField... fields) {
         this.columnName = columnName;
         this.fields.addAll(Arrays.asList(fields));
+        for (ColumnField field: fields) {
+            field.column=this;
+        }
     }
 
     /**
@@ -61,6 +66,7 @@ public class ColumnInfo {
 
     public void addField(ColumnField field) {
         fields.add(field);
+        field.column=this;
     }
 
     public boolean hasField(String fieldName) {

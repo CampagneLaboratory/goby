@@ -7,5 +7,5 @@
 ##FORMAT=<ID=SP,Number=1,Type=Integer,Description="Phred-scaled strand bias P-value">
 ##FORMAT=<ID=PL,Number=-1,Type=Integer,Description="List of Phred-scaled genotype likelihoods, number of values is (#ALT+1)*(#ALT+2)/2">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	FORMAT	results/IPBKRNW/IPBKRNW-replicate.bam	results/IPBKRNW/IPBKRNW-sorted.bam
-0	145497099	.	A	G	17.1	.	GT:PL:GQ	1/1:25,3,0:42	1/1:25,3,0:42
+0	145497099	.	A	G	17.1	.	GT:PL:GQ	1/1:015,4,0:11	1/1:25,3,0:42
 1	29389393	.	AC	A	31.5	.	GT:PL:GQ	1/1:36,3,0:42	1/1:36,3,0:42
