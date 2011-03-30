@@ -249,13 +249,20 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
 
         public void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders, Alignments.AlignmentEntry alignmentEntry,
                                          Int2ObjectMap<CountsAtPosition> positionToBases,
-                                         int currentReferenceIndex, int currentRefPosition, int readIndex) {
-            if (readIndex >= 1) {
-                //       assert readIndex > 0 : String.format("positionInMatch=%d %s %n", positionInMatch, alignmentEntry);
-                maxReadIndex = Math.max(maxReadIndex, readIndex);
-                long count = readIndexReferenceTally[readIndex];
-                readIndexReferenceTally[readIndex] = count + 1;
+                                         int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
+            if (currentReadIndex >= 1) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("RB: queryIndex=%d\tref_position=%d\tread_index=%d\t%n",
+                            alignmentEntry.getQueryIndex(), currentRefPosition, currentReadIndex));
+                }
+
+                // assert readIndex > 0 : String.format("positionInMatch=%d %s %n", positionInMatch, alignmentEntry);
+                maxReadIndex = Math.max(maxReadIndex, currentReadIndex);
+                long count = readIndexReferenceTally[currentReadIndex];
+                readIndexReferenceTally[currentReadIndex] = count + 1;
                 referenceBaseCount += 1;
+            } else {
+                LOG.warn("Detected and ignoring negative read index " + currentReadIndex);
             }
         }
 
@@ -264,11 +271,15 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
                                        Alignments.AlignmentEntry alignmentEntry, Int2ObjectMap<CountsAtPosition> positionToBases,
                                        Alignments.SequenceVariation var,
                                        char toChar, char fromChar, byte toQual, int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
-
-            maxReadIndex = Math.max(maxReadIndex, currentReadIndex);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(String.format("VB: queryIndex=%d\tref_position=%d\tread_index=%d\tfromChar=%c\ttoChar=%c%n",
+                        alignmentEntry.getQueryIndex(), currentRefPosition, currentReadIndex, fromChar, toChar));
+            }
+            
             if (currentReadIndex < 1) {
                 LOG.warn("Detected and ignoring negative read index " + currentReadIndex);
             } else {
+                maxReadIndex = Math.max(maxReadIndex, currentReadIndex);
                 long count = readIndexVariationTally[currentReadIndex];
                 readIndexVariationTally[currentReadIndex] = count + 1;
             }

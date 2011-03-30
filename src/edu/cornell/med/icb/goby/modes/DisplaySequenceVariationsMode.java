@@ -298,6 +298,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                             final int maxLength = Math.max(fromLength, toLength);
                             int fromOffset = 0;
                             int toOffset = 0;
+                            int readIndexIncrementValue = (alignmentEntry.getMatchingReverseStrand() ? -1 : 1);                            
                             for (int i = 0; i < maxLength; i++) {
                                 final char fromChar = var.getFrom().charAt(i);
                                 final char toChar = var.getTo().charAt(i);
@@ -310,7 +311,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                                     fromOffset += 1;
                                 }
                                 if (toChar != '-') {
-                                    toOffset += (alignmentEntry.getMatchingReverseStrand() ? -1 : 1);
+                                    toOffset += readIndexIncrementValue;
                                 }
                             }
                         }

@@ -26,7 +26,6 @@ import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.lang.StringUtils;
@@ -35,6 +34,7 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * A helper class to iterate through a set of sorted alignments in position order. The class supports processing
@@ -267,21 +267,23 @@ public abstract class IterateSortedAlignments<T> {
             {
                 first = false;
                 assert queryLength!=0 : "queryLength cannot be zero to iterate sorted alignments.";
-                int currentReadIndex = forwardStrand ? 0 : queryLength +1;
-                int currentRefPosition = alignmentEntry.getPosition() - 1;
-                int lastMatchIndex = 0;
+                int currentReadIndex = forwardStrand ? 0 : (queryLength + 1);
+                int currentRefPosition = alignmentEntry.getPosition() - alignmentEntry.getQueryPosition();
+                int lastMatchIndex = 1;
 
-                // add to the list at this position:
-                for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
-                    for (int i = lastMatchIndex; i < var.getPosition() - 1; i++) {
-                        // match stretch before variation:
+                List<Alignments.SequenceVariation> seqVars = alignmentEntry.getSequenceVariationsList();
+                if (alignmentEntry.getQueryPosition() > 0) {
+                    LOG.debug("padding start");
+                    for (int i = 0; i < alignmentEntry.getQueryPosition(); i++) {
                         currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
                         currentRefPosition = advanceReference(currentRefPosition);
                         observeReferenceBase(sortedReaders, alignmentEntry, positionToBases,
-
                                 referenceIndex, currentRefPosition, currentReadIndex);
                     }
-
+                    LOG.debug("padding end");
+                }
+                int numObservedBases = 0;
+                for (Alignments.SequenceVariation var : seqVars) {
                     final String to = var.getTo();
                     final String from = var.getFrom();
                     final ByteString qualityScores= var.getToQuality();
@@ -289,42 +291,61 @@ public abstract class IterateSortedAlignments<T> {
                     final int fromLength = from.length();
                     final int toLength = to.length();
                     final int qualLength=qualityScores.size();
-                    int length = Math.max(fromLength, toLength);
+                    int sequenceVariationLength = Math.max(fromLength, toLength);
 
-                    lastMatchIndex = var.getPosition() + length - 1;
-
-                    for (int i = 0; i < length; i++) {
-
+                    final int preSeqvarBases;
+                    if (from.charAt(0) == '-') {
+                        preSeqvarBases = var.getPosition() - numObservedBases;
+                    } else {
+                        preSeqvarBases = var.getPosition()  - numObservedBases - 1;
+                    }
+                    for (int i = 0; i < preSeqvarBases; i++) {
+                        // Bases before the next sequence variation
+                        currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
+                        currentRefPosition = advanceReference(currentRefPosition);
+                        observeReferenceBase(sortedReaders, alignmentEntry, positionToBases,
+                                referenceIndex, currentRefPosition, currentReadIndex);
+                        numObservedBases++;
+                    }
+                    for (int i = 0; i < sequenceVariationLength; i++) {
+                        // Bases within the sequence variation
                         final char toChar = i >= toLength ? '-' : to.charAt(i);
                         final char fromChar = i >= fromLength ? '-' : from.charAt(i);
-                    //    System.out.printf("tL: %d qualScores: %s%n", toLength, ByteArrayList.wrap(qualityScores.toByteArray()));
                         final byte toQual= i >= qualLength ? 0 : qualityScores.byteAt(i);
-                        if (toChar != '-') {
-                            currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
-                        }
-                        if (fromChar != '-') {
+                        if (fromChar == '-') {
+                            // During an insert, do not increment refPosition 
+                        } else {
+                            numObservedBases++;
                             currentRefPosition = advanceReference(currentRefPosition);
-
+                        }
+                        if (toChar == '-') {
+                            if (forwardStrand) {
+                                // Do no increment readIndex during a delete on forward strand
+                            } else if (i==0) {
+                                // On reverse strand delete, decrement readIndex for the first base ONLY
+                                currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
+                            } else {
+                                // On reverse strand delete, after the first base, do not decrement readIndex
+                            }
+                        } else {
+                            currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
                         }
 
                         observeVariantBase(sortedReaders, alignmentEntry, positionToBases,
-                                var,
-                                toChar, fromChar, toQual,
+                                var, toChar, fromChar, toQual,
                                 referenceIndex, currentRefPosition, currentReadIndex);
-
-                        lastMatchIndex = i + var.getPosition();
-
+                        if (toChar == '-' && !forwardStrand && i == (sequenceVariationLength - 1)) {
+                            // On reverseStrand, the last base, unadvance the pointer one
+                            // so readIndex will be the same on the next non-delete base
+                            currentReadIndex = advanceReadIndex(!forwardStrand, currentReadIndex);
+                        }
                     }
-
-
                 }
-                while (forwardStrand ? currentReadIndex < queryLength :
-                        currentReadIndex > 1) {
+                while (forwardStrand ? currentReadIndex < queryLength : currentReadIndex > 1) {
 
-                    // match stretch before variation:
+                    // match stretch before next variation / end of read
                     currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
                     currentRefPosition = advanceReference(currentRefPosition);
-
 
                     assert currentReadIndex >= 1 && currentReadIndex < queryLength + 1 :
                             String.format("currentReadIndex %d is out of range.", currentReadIndex);

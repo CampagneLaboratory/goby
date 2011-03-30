@@ -22,6 +22,7 @@ package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.apache.log4j.Logger;
 
 /**
  * @author Fabien Campagne
@@ -30,6 +31,10 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
  */
 public abstract class IterateSortedAlignmentsListImpl
         extends IterateSortedAlignments<ObjectArrayList<PositionBaseInfo>> {
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Logger LOG = Logger.getLogger(IterateSortedAlignmentsListImpl.class);
 
     public abstract void processPositions(int referenceIndex, int intermediatePosition, ObjectArrayList<PositionBaseInfo> positionBaseInfos);
 
@@ -37,6 +42,11 @@ public abstract class IterateSortedAlignmentsListImpl
                                      Alignments.AlignmentEntry alignmentEntry,
                                      Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
                                      int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(String.format("RB: queryIndex=%d\tref_position=%d\tread_index=%d",
+                alignmentEntry.getQueryIndex(), currentRefPosition, currentReadIndex));
+        }
+
         PositionBaseInfo info = new PositionBaseInfo();
 
         info.readerIndex = sortedReaders.activeIndex;
@@ -60,6 +70,11 @@ public abstract class IterateSortedAlignmentsListImpl
                                    byte toQual, int currentReferenceIndex,
                                    int currentRefPosition,
                                    int currentReadIndex) {
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(String.format("VB: queryIndex=%d\tref_position=%d\tread_index=%d\tfromChar=%c\ttoChar=%c",
+                    alignmentEntry.getQueryIndex(), currentRefPosition, currentReadIndex, fromChar, toChar));
+        }
 
         PositionBaseInfo info = new PositionBaseInfo();
         info.readerIndex = sortedReaders.activeIndex;

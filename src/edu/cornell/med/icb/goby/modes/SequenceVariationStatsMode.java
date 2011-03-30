@@ -198,20 +198,23 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
             referenceBaseCount += alignmentEntry.getQueryLength();
 
             for (final Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
+
                 int toLength = var.getTo().length();
                 int readIndex = var.getReadIndex();
+                int readIndexIncrementValue = (alignmentEntry.getMatchingReverseStrand() ? -1 : 1);
                 for (int i = 0; i < toLength; i++) {
-                    if (var.getReadIndex() < 0) {
-                        System.out.printf("readIndex: %d %n", var.getReadIndex());
+                    if (readIndex < 0) {
+                        System.err.printf("Negative read_index=%d for queryIndex=%d%n", readIndex, alignmentEntry.getQueryIndex());
                     }
-                    char toChar=var.getTo().charAt(i);
-                    readIndex+=  toChar=='-' ? 0: (alignmentEntry.getMatchingReverseStrand() ? -1 : 1);
-                    
+
                     final int value = readIndexVariationTally.get(readIndex);
                     final int changedBases = alignmentEntry.getMultiplicity();
                     readIndexVariationTally.put(readIndex, value + changedBases);
 
                     referenceBaseCount -= changedBases;
+                    if (var.getTo().charAt(i) != '-') {
+                        readIndex += readIndexIncrementValue;
+                    }
                 }
             }
         }

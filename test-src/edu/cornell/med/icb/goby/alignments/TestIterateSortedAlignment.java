@@ -117,22 +117,22 @@ public class TestIterateSortedAlignment {
         iterator.iterate(basenamePath);
 
         for (int i = 1; i < 35; i++) {
-            assertEquals("position " + i, 1, positionMap.get(i));
+            assertEquals("[i=" + i + "] position " + i, 1, positionMap.get(i));
         }
         for (int i = 130; i < 135; i++) {
-            assertEquals("position " + i, 1, positionMap.get(i));
+            assertEquals("[i=" + i + "] position " + i, 1, positionMap.get(i));
         }
         for (int i = 135; i < 165; i++) {
-            assertEquals("position " + i, 2, positionMap.get(i));
+            assertEquals("[i=" + i + "] position " + i, 2, positionMap.get(i));
         }
         for (int i = 165; i < 170; i++) {
-            assertEquals("position " + i, 1, positionMap.get(i));
+            assertEquals("[i=" + i + "] position " + i, 1, positionMap.get(i));
         }
         for (int i = 1230; i < 1265; i++) {
-            assertEquals("position " + i, 1, positionMap.get(i));
+            assertEquals("[i=" + i + "] position " + i, 1, positionMap.get(i));
         }
         for (int i = 3000; i < 3035; i++) {
-            assertEquals("position " + i, 1, positionMap.get(i));
+            assertEquals("[i=" + i + "] position " + i, 1, positionMap.get(i));
         }
     }
 
@@ -275,7 +275,7 @@ public class TestIterateSortedAlignment {
         newEntry.setQueryIndex(queryIndex);
         newEntry.setTargetIndex(targetIndex);
         newEntry.setScore(score);
-        newEntry.setPosition(position);
+        newEntry.setPosition(position - 1); // The incoming value is 1-based, setPosition is 0-based.
         newEntry.setMatchingReverseStrand(matchesReverseStrand);
         newEntry.setMultiplicity(1);
         newEntry.setQueryLength(queryLength);
@@ -304,7 +304,7 @@ public class TestIterateSortedAlignment {
         newEntry.setQueryIndex(queryIndex);
         newEntry.setTargetIndex(targetIndex);
         newEntry.setScore(score);
-        newEntry.setPosition(position);
+        newEntry.setPosition(position - 1); // The incoming value is 1-based, setPosition is 0-based.
         newEntry.setMatchingReverseStrand(matchesReverseStrand);
         newEntry.setMultiplicity(1);
         newEntry.setQueryLength(35);
@@ -339,7 +339,7 @@ public class TestIterateSortedAlignment {
         newEntry.setQueryIndex(queryIndex);
         newEntry.setTargetIndex(targetIndex);
         newEntry.setScore(score);
-        newEntry.setPosition(position);
+        newEntry.setPosition(position - 1); // The incoming value is 1-based, setPosition is 0-based.
         newEntry.setMatchingReverseStrand(matchesReverseStrand);
         newEntry.setMultiplicity(1);
         newEntry.setQueryLength(35);
@@ -425,19 +425,19 @@ public class TestIterateSortedAlignment {
         iterator.iterate(basenamePath);
 
         for (int i = 0; i < 100; i++) {
-            assertEquals("position " + i, 0, positionMap.get(i));
+            assertEquals("[i=" + i + "] position " + i, 0, positionMap.get(i));
         }
         for (int i = 100; i < 103; i++) {
-            assertEquals("position " + i, 1, positionMap.get(i));
+            assertEquals("[i=" + i + "] position " + i, 1, positionMap.get(i));
         }
         for (int i = 103; i < 106; i++) {
-            assertEquals("position " + i, 0, positionMap.get(i));
+            assertEquals("[i=" + i + "] position " + i, 0, positionMap.get(i));
         }
         for (int i = 106; i < 137; i++) {
-            assertEquals("position " + i, 1, positionMap.get(i));
+            assertEquals("[i=" + i + "] position " + i, 1, positionMap.get(i));
         }
         for (int i = 138; i < 150; i++) {
-            assertEquals("position " + i, 0, positionMap.get(i));
+            assertEquals("[i=" + i + "] position " + i, 0, positionMap.get(i));
         }
 
     }
@@ -566,16 +566,16 @@ public class TestIterateSortedAlignment {
         iterator.iterate(basenamePath);
 
         for (int i = 1; i < 35; i++) {
-            assertEquals("position " + i, 1, positionMap.get(i));
+            assertEquals("[i=" + i + "] position " + i, 1, positionMap.get(i));
         }
         for (int i = 130; i < 135; i++) {
-            assertEquals("position " + i, 1, positionMap.get(i));
+            assertEquals("[i=" + i + "] position " + i, 1, positionMap.get(i));
         }
         for (int i = 135; i < 165; i++) {
-            assertEquals("position " + i, 2, positionMap.get(i));
+            assertEquals("[i=" + i + "] position " + i, 2, positionMap.get(i));
         }
         for (int i = 165; i < 170; i++) {
-            assertEquals("position " + i, 1, positionMap.get(i));
+            assertEquals("[i=" + i + "] position " + i, 1, positionMap.get(i));
         }
 
     }
