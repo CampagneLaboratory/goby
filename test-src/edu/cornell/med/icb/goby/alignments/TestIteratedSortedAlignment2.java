@@ -70,6 +70,21 @@ public class TestIteratedSortedAlignment2 {
 
     }
 
+    // TODO: test the refPositions in an insertion that the refPositions within the insertion
+    // TODO: are constant AND that it matches the refPosition just before the insertion, if
+    // TODO: there is one.
+    //
+    // TODO: test the readIndex in an deletion that the readIndexes within the deltion
+    // TODO: are constant AND that it matches the readIndex just before (forward) or
+    // TODO: after (reverse) the deletion.
+    //
+    // TODO: Test an insertion followed immediately by a deletion and the opposite?
+    // TODO: Test an insertion and deletion at the head or tail? Although I suspect GSNAP would
+    // TODO: just pad these out, might be the case for a synthetically created Alignment+Seqvars.
+    //
+    // TODO: Convert these to a purely synthetically created Alignment to make it easier to add
+    // TODO: other tests.
+
     @Test
     public void testIterateSorted() throws IOException {
         MyIterateSortedAlignments alignmentIterator = new MyIterateSortedAlignments();
@@ -92,10 +107,6 @@ public class TestIteratedSortedAlignment2 {
                         align.rightPadding, align.queryLength, align.numDeletions, 
                         align.targetAlignedLength, align.numInsertions, align.leftPadding));
             }
-
-            // TODO: stop incrementing refPosition after if == targetAlignnedLength
-            // TODO: stop similar with readIndex 
-            // TODO: Tests on minRefPosition (done), maxRefPosition (targetAlignedLength+left_padding)?
 
             assertEquals(String.format("queryIndex=%d readLength(%d) should equal queryLength(%d) + numDeletions(%d)",
                     queryIndex,
