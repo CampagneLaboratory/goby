@@ -318,18 +318,7 @@ public abstract class IterateSortedAlignments<T> {
                             numObservedBases++;
                             currentRefPosition = advanceReference(currentRefPosition);
                         }
-                        if (toChar == '-') {
-                            if (forwardStrand) {
-                                // Do no increment readIndex during a delete on forward strand
-                            } else if (i==0) {
-                                // On reverse strand delete, decrement readIndex for the first base ONLY
-                                currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
-                            } else {
-                                // On reverse strand delete, after the first base, do not decrement readIndex
-                            }
-                        } else {
-                            currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
-                        }
+                        currentReadIndex = incrementReadIndex(forwardStrand, currentReadIndex, i, toChar);
 
                         observeVariantBase(sortedReaders, alignmentEntry, positionToBases,
                                 var, toChar, fromChar, toQual,
@@ -337,6 +326,7 @@ public abstract class IterateSortedAlignments<T> {
                         if (toChar == '-' && !forwardStrand && i == (sequenceVariationLength - 1)) {
                             // On reverseStrand, the last base, unadvance the pointer one
                             // so readIndex will be the same on the next non-delete base
+                           // TODO explain why this is needed, see other question below where the reverse is done for first base?
                             currentReadIndex = advanceReadIndex(!forwardStrand, currentReadIndex);
                         }
                     }
@@ -389,6 +379,32 @@ public abstract class IterateSortedAlignments<T> {
 
         sortedReaders.close();
         pg.stop();
+    }
+
+    /**
+     * Update the value of read index for a base inside a variation.
+     * @param forwardStrand whether the read matches the forward strand.
+     * @param currentReadIndex current value of the read index
+     * @param i The offset within a sequence variation
+     * @param toChar the current base of the variation at offset
+     * @return the new updates read index.
+     */
+    private int incrementReadIndex(boolean forwardStrand, int currentReadIndex, int i, char toChar) {
+        if (toChar == '-') {
+            if (forwardStrand) {
+                // Do no increment readIndex during a delete on forward strand
+            } else if (i==0) {
+                // On reverse strand delete, decrement readIndex for the first base ONLY
+                // TODO why do we need to do this at first base at all? Does the code depend on the value of read index within
+                // the stretch of sequence variation? Not clear to me at this point.
+                currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
+            } else {
+                // On reverse strand delete, after the first base, do not decrement readIndex
+            }
+        } else {
+            currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
+        }
+        return currentReadIndex;
     }
 
 
