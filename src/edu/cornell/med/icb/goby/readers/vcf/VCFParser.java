@@ -26,10 +26,11 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
-import java.io.Reader;
+import java.io.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Parser for files in the <a href="http://vcftools.sourceforge.net/specs.html">Variant Call Format</a>, or in plain TSV format.
@@ -90,7 +91,16 @@ public class VCFParser {
     public VCFParser(Reader file) {
         this.input = file;
     }
-
+    /**
+     * Constructs a VCF parser.
+     *
+     * @param filename Input to parse
+     */
+    public VCFParser(String filename) throws IOException {
+        this.input = filename.endsWith(".gz")?
+                new InputStreamReader(new GZIPInputStream(new FileInputStream(filename))):
+                new FileReader(filename);
+    }
     /**
      * Return the number of columns in the file. This method can be called after the header has been read to obtain
      * the number of columns in the file.

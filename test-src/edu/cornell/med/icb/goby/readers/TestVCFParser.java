@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 
 /**
  * Test the VCF parser
@@ -40,6 +41,25 @@ public class TestVCFParser {
     @Test
     public void testParse1() throws FileNotFoundException, VCFParser.SyntaxException {
         VCFParser parser = new VCFParser(new FileReader("test-data/vcf/example1.vcf"));
+        parser.readHeader();
+        Columns cols = parser.getColumns();
+        ColumnInfo info = cols.find("INFO");
+        assertTrue(info.hasField("DP"));
+        assertTrue(info.hasField("MQ"));
+        assertTrue(info.hasField("FQ"));
+        ColumnInfo format = cols.find("FORMAT");
+        assertTrue(format.hasField("GT"));
+        assertTrue(format.hasField("GQ"));
+        assertTrue(format.hasField("GL"));
+        assertTrue(format.hasField("SP"));
+        assertEquals("Likelihoods for RR,RA,AA genotypes (R=ref,A=alt)",
+                format.getField("GL").description);
+    }
+
+    @Test
+    public void testParse1FilenameGzipped() throws IOException, VCFParser.SyntaxException {
+        // same as Parse1 with gzipped filename
+        VCFParser parser = new VCFParser("test-data/vcf/example1.vcf.gz");
         parser.readHeader();
         Columns cols = parser.getColumns();
         ColumnInfo info = cols.find("INFO");
