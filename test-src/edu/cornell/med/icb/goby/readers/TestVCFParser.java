@@ -254,4 +254,11 @@ public class TestVCFParser {
         assertTrue(parser.hasNextDataLine());
         assertEquals("INDEL", parser.getStringFieldValue(indelFieldIndex));
     }
+
+     @Test
+    public void testParseTricky() throws FileNotFoundException, VCFParser.SyntaxException {
+        VCFParser parser = new VCFParser(new FileReader("test-data/vcf/tricky.vcf"));
+        parser.readHeader();
+        
+    }
 }

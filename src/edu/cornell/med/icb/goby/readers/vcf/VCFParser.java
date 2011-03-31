@@ -91,16 +91,18 @@ public class VCFParser {
     public VCFParser(Reader file) {
         this.input = file;
     }
+
     /**
      * Constructs a VCF parser.
      *
      * @param filename Input to parse
      */
     public VCFParser(String filename) throws IOException {
-        this.input = filename.endsWith(".gz")?
-                new InputStreamReader(new GZIPInputStream(new FileInputStream(filename))):
+        this.input = filename.endsWith(".gz") ?
+                new InputStreamReader(new GZIPInputStream(new FileInputStream(filename))) :
                 new FileReader(filename);
     }
+
     /**
      * Return the number of columns in the file. This method can be called after the header has been read to obtain
      * the number of columns in the file.
@@ -634,7 +636,8 @@ public class VCFParser {
             return;
         }
         if (!infoDefinition.startsWith("<") && !infoDefinition.endsWith(">")) {
-            throw new SyntaxException(infoDefinition);
+            // is this a syntax error? test-data/vcf/tricky.vcf would trigger errors
+            return;
         }
         ColumnInfo info;
         if (columns.hasColumnName(columnName)) {
@@ -649,31 +652,40 @@ public class VCFParser {
         ColumnField field = new ColumnField();
         final MutableString insideBrackets = infoDefinition.substring(1, infoDefinition.length() - 1);
 
+        try {
+            String tokens[] = insideBrackets.toString().split("(,N)|(,T)|(,D)|(,G)");
+            for (String token : tokens) {
+                String[] kv = new String[2];
+                final int firstEqualIndex = token.indexOf("=");
+                kv[0] = token.substring(0, firstEqualIndex);
+                kv[1] = token.substring(firstEqualIndex + 1);
 
-        String tokens[] = insideBrackets.toString().split("(,N)|(,T)|(,D)|(,G)");
-        for (String token : tokens) {
-            String[] kv = new String[2];
-            final int firstEqualIndex = token.indexOf("=");
-            kv[0] = token.substring(0, firstEqualIndex);
-            kv[1] = token.substring(firstEqualIndex + 1);
+                if ("ID".equals(kv[0])) {
+                    field.id = kv[1];
+                } else if ("umber".equals(kv[0])) {
 
-            if ("ID".equals(kv[0])) {
-                field.id = kv[1];
-            } else if ("umber".equals(kv[0])) {
-                field.numberOfValues = Integer.parseInt(kv[1]);
-            } else if ("ype".equals(kv[0])) {
-                field.type = ColumnType.valueOf(kv[1]);
-            } else if ("roup".equals(kv[0])) {
-                field.group = kv[1];
-            } else if ("escription".equals(kv[0])) {
-                if (kv[1].startsWith("\"") && kv[1].endsWith("\"")) {
-                    kv[1] = kv[1].substring(1, kv[1].length() - 1);
+                    String num=kv[1];
+                    if (".".equals(num)) {
+                        // . indicates any number of values.
+                         num="1";
+                    }
+                    field.numberOfValues = Integer.parseInt(num);
+                } else if ("ype".equals(kv[0])) {
+                    field.type = ColumnType.valueOf(kv[1]);
+                } else if ("roup".equals(kv[0])) {
+                    field.group = kv[1];
+                } else if ("escription".equals(kv[0])) {
+                    if (kv[1].startsWith("\"") && kv[1].endsWith("\"")) {
+                        kv[1] = kv[1].substring(1, kv[1].length() - 1);
+                    }
+                    field.description = kv[1];
+                } else {
+                    throw new SyntaxException(infoDefinition);
                 }
-                field.description = kv[1];
-            } else {
-                throw new SyntaxException(infoDefinition);
-            }
 
+            }
+        } catch (NumberFormatException e) {
+            throw new SyntaxException(infoDefinition);
         }
         // System.out.println("adding " + field);
         // do not set the global field index on a meta-info field yet. We will do this after fixed columns have been added.
