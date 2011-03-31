@@ -182,8 +182,8 @@
             <zipgroupfileset dir="${lib}">
 
 
-                <include name="fastutil-5.1.5.jar"/>     <!-- LGPL -->
-                <include name="dsiutils-1.0.10.jar"/>    <!-- LGPL -->
+                <include name="fastutil-6.2.2.jar "/>     <!-- LGPL -->
+                <include name="dsiutils-1.0.12.jar"/>    <!-- LGPL -->
                 <include name="icb-utils.jar"/>           <!-- LGPL -->
                 <include name="protobuf-java-2.3.0.jar"/> <!-- new BSD license, compatible with LGPL? -->
                 <include name="commons-io-1.4.jar"/>         <!-- Apache version 2 license -->
