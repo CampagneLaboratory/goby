@@ -99,7 +99,7 @@ public class VCFParser {
      */
     public VCFParser(String filename) throws IOException {
         this.input = filename.endsWith(".gz") ?
-                new InputStreamReader(new GZIPInputStream(new FileInputStream(filename))) :
+                new InputStreamReader(new GZIPInputStream(new FileInputStream(filename),100000)) :
                 new FileReader(filename);
     }
 
@@ -324,6 +324,10 @@ public class VCFParser {
     }
 
     private void parseCurrentLine() {
+        Arrays.fill(columnStarts, 0);
+        Arrays.fill(columnEnds, 0);
+        Arrays.fill(fieldStarts, 0);
+        Arrays.fill(fieldEnds, 0);
         columnStarts[0] = 0;
         int columnIndex = 0;
         int fieldIndex = 0;
@@ -409,6 +413,7 @@ public class VCFParser {
             int formatColumnIndex = formatColumn.columnIndex;
             int startFormatColumn = columnStarts[formatColumnIndex];
             int endFormatColumn = columnEnds[formatColumnIndex];
+
             MutableString formatSpan = line.substring(startFormatColumn, endFormatColumn);
             formatSpan.compact();
             String[] formatTokens = formatSpan.toString().split(Character.toString(formatFieldSeparatorCharacter));
@@ -426,7 +431,13 @@ public class VCFParser {
                             // reached end of field, not this field.
                             break;
                         }
-
+                        if (j >= lineLength) {
+                           if (lineIterator.hasNext()) {
+                               System.out.println("lineNext: "+lineIterator.next());
+                           }
+                            System.out.println("line too short: " + line);
+                           // System.exit(1);
+                        }
                         char linechar = line.charAt(j);
 
                         if (id.charAt(i) != linechar) {
@@ -664,10 +675,10 @@ public class VCFParser {
                     field.id = kv[1];
                 } else if ("umber".equals(kv[0])) {
 
-                    String num=kv[1];
+                    String num = kv[1];
                     if (".".equals(num)) {
-                        // . indicates any number of values.
-                         num="1";
+                        // . indicates any number of values. Use 2
+                        num = "-1";
                     }
                     field.numberOfValues = Integer.parseInt(num);
                 } else if ("ype".equals(kv[0])) {

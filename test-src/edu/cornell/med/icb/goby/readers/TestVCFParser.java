@@ -255,10 +255,89 @@ public class TestVCFParser {
         assertEquals("INDEL", parser.getStringFieldValue(indelFieldIndex));
     }
 
-     @Test
+    @Test
     public void testParseTricky() throws FileNotFoundException, VCFParser.SyntaxException {
         VCFParser parser = new VCFParser(new FileReader("test-data/vcf/tricky.vcf"));
         parser.readHeader();
-        
+        while (parser.hasNextDataLine()) {
+            for (int i = 0; i < parser.countAllFields(); i++) {
+                final String name = parser.getFieldName(i);
+                final String stringFieldValue = parser.getStringFieldValue(i);
+                //System.out.printf("field %s gfi:%d value: %s%n", name, i,
+                  //      stringFieldValue);
+
+
+            }
+            parser.next();
+        }
     }
+
+    @Test
+    public void testParseTrickyLarge() throws IOException, VCFParser.SyntaxException {
+        //VCFParser parser = new VCFParser("/home/gobyweb/GOBYWEB_RESULTS/campagne/NXMONDD/NXMONDD.vcf.gz");
+        VCFParser parser = new VCFParser("test-data/vcf/tricky-large.vcf");
+        parser.readHeader();
+        while (parser.hasNextDataLine()) {
+            for (int i = 0; i < parser.countAllFields(); i++) {
+                final String name = parser.getFieldName(i);
+                               final String stringFieldValue = parser.getStringFieldValue(i);
+                               //System.out.printf("field %s gfi:%d value: %s%n", name, i,
+                                 //      stringFieldValue);
+
+
+
+            }
+            parser.next();
+        }
+    }
+    /*
+ @Test
+    public void testParseTrickyLarge2() throws IOException, VCFParser.SyntaxException {
+        //VCFParser parser = new VCFParser("/home/gobyweb/GOBYWEB_RESULTS/campagne/NXMONDD/NXMONDD.vcf.gz");
+        VCFParser parser = new VCFParser("test-data/vcf/tricky-large.vcf.gz");
+        parser.readHeader();
+        while (parser.hasNextDataLine()) {
+            for (int i = 0; i < parser.countAllFields(); i++) {
+                final String name = parser.getFieldName(i);
+                               final String stringFieldValue = parser.getStringFieldValue(i);
+                               //System.out.printf("field %s gfi:%d value: %s%n", name, i,
+                                 //      stringFieldValue);
+               
+            }
+            parser.next();
+        }
+    }@Test
+    public void testParseTrickyLarge3() throws IOException, VCFParser.SyntaxException {
+        //VCFParser parser = new VCFParser("/home/gobyweb/GOBYWEB_RESULTS/campagne/NXMONDD/NXMONDD.vcf.gz");
+        VCFParser parser = new VCFParser("test-data/vcf/tricky-large-regizpp.vcf.gz");
+        parser.readHeader();
+        while (parser.hasNextDataLine()) {
+            for (int i = 0; i < parser.countAllFields(); i++) {
+                final String name = parser.getFieldName(i);
+                               final String stringFieldValue = parser.getStringFieldValue(i);
+                               //System.out.printf("field %s gfi:%d value: %s%n", name, i,
+                                 //      stringFieldValue);
+
+            }
+            parser.next();
+        }
+    }
+
+    @Test
+    public void testParseTrickyLarge4() throws IOException, VCFParser.SyntaxException {
+        //VCFParser parser = new VCFParser("/home/gobyweb/GOBYWEB_RESULTS/campagne/NXMONDD/NXMONDD.vcf.gz");
+        VCFParser parser = new VCFParser("test-data/vcf/tricky-large-rebgzipp.vcf.gz");
+        parser.readHeader();
+        while (parser.hasNextDataLine()) {
+            for (int i = 0; i < parser.countAllFields(); i++) {
+                final String name = parser.getFieldName(i);
+                               final String stringFieldValue = parser.getStringFieldValue(i);
+                               //System.out.printf("field %s gfi:%d value: %s%n", name, i,
+                                 //      stringFieldValue);
+
+            }
+            parser.next();
+        }
+    }       */
 }
+
