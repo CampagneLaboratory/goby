@@ -225,7 +225,7 @@ public class TestVCFParser {
         }
 
         assertEquals("INDEL", parser.getStringFieldValue(indelFieldIndex));
-        assertEquals("AF1=0.9999", parser.getStringFieldValue(af1FieldIndex));
+        assertEquals("0.9999", parser.getStringFieldValue(af1FieldIndex));
         parser.next();
         assertTrue(parser.hasNextDataLine());
 

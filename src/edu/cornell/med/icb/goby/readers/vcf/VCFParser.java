@@ -110,7 +110,7 @@ public class VCFParser {
         return columns;
     }
 
-    public ColumnField.ColumnType getColumnType(int columnIndex) {
+    public ColumnType getColumnType(int columnIndex) {
         for (ColumnInfo col : columns) {
             if (col.columnIndex == columnIndex) {
                 if (col.fields.size() == 1) {
@@ -123,8 +123,28 @@ public class VCFParser {
             }
         }
 
-        return ColumnField.ColumnType.String;
+        return ColumnType.String;
 
+    }
+
+    /**
+     * Return the type of the specified field.
+     *
+     * @param globalFieldIndex global field index, from zero to countAllFields()-1
+     * @return type of the specified field.
+     */
+    public ColumnType getFieldType(int globalFieldIndex) {
+        return fieldList.get(globalFieldIndex).type;
+    }
+
+    /**
+     * Return the number of values in the specified field.
+     *
+     * @param globalFieldIndex global field index, from zero to countAllFields()-1
+     * @return the number of values contained in this field.
+     */
+    public int getFieldNumValues(int globalFieldIndex) {
+        return fieldList.get(globalFieldIndex).numberOfValues;
     }
 
     public String getColumnName(int columnIndex) {
@@ -407,12 +427,17 @@ public class VCFParser {
                     }
 
                     if (matchLength == id.length() && line.charAt(j) == '=' ||
-                            (j == end && f.type == ColumnField.ColumnType.Flag)) {
+                            (j == end && f.type == ColumnType.Flag)) {
                         // found the correct field.
                         /*  System.out.printf("Assigning global %s %d -> %d for field %s%n",
                                 f.id, globalFieldIndex, lineFieldIndex, line.subSequence(start, end));
                         */
                         fieldPermutation[f.globalFieldIndex] = lineFieldIndex;
+                        if (f.type != ColumnType.Flag) {
+                            fieldStarts[lineFieldIndex] += f.id.length() + 1; // remove id= from value;
+                            //fieldStarts[lineFieldIndex]=Math.min(fieldStarts[lineFieldIndex],fieldEnds[lineFieldIndex]);
+                        }
+
                     } else {
 
                         if (column.useFormat && column.formatIndex < formatTokens.length) {
@@ -474,7 +499,7 @@ public class VCFParser {
                         i++;
                     }
                 } else {
-                    fields = new ColumnField[]{new ColumnField("VALUE", 1, ColumnField.ColumnType.String, "")};
+                    fields = new ColumnField[]{new ColumnField("VALUE", 1, ColumnType.String, "")};
                     //fields[0].globalFieldIndex = globalFieldIndex++;
                 }
                 ColumnInfo newCol = new ColumnInfo(columnName, fields);
@@ -541,42 +566,42 @@ public class VCFParser {
 
 
     final private ColumnInfo fixedColumns[] = new ColumnInfo[]{
-            new ColumnInfo("CHROM", new ColumnField("VALUE", 1, ColumnField.ColumnType.String, "The reference position, with the 1st base having position 1. " +
+            new ColumnInfo("CHROM", new ColumnField("VALUE", 1, ColumnType.String, "The reference position, with the 1st base having position 1. " +
                     "Positions are sorted numerically, in increasing order, within each reference sequence CHROM.")),
-            new ColumnInfo("POS", new ColumnField("VALUE", 1, ColumnField.ColumnType.Integer, "he reference position, with the 1st base having position 1. " +
+            new ColumnInfo("POS", new ColumnField("VALUE", 1, ColumnType.Integer, "he reference position, with the 1st base having position 1. " +
                     "Positions are sorted numerically, in increasing order, within each reference sequence CHROM.")),
-            new ColumnInfo("ID", new ColumnField("VALUE", 1, ColumnField.ColumnType.String, "ID semi-colon separated list of unique identifiers where available. " +
+            new ColumnInfo("ID", new ColumnField("VALUE", 1, ColumnType.String, "ID semi-colon separated list of unique identifiers where available. " +
                     "If this is a dbSNP variant it is encouraged to use the rs number(s). " +
                     "No identifier should be present in more than one data record. " +
                     "If there is no identifier available, then the missing value should be used.")),
-            new ColumnInfo("REF", new ColumnField("VALUE", 1, ColumnField.ColumnType.String, "Reference base(s): Each base must be one of A,C,G,T,N. " +
+            new ColumnInfo("REF", new ColumnField("VALUE", 1, ColumnType.String, "Reference base(s): Each base must be one of A,C,G,T,N. " +
                     "Bases should be in uppercase. Multiple bases are permitted. " +
                     "The value in the POS field refers to the position of the first base in the String. " +
                     "For InDels, the reference String must include the base before the event " +
                     "(which must be reflected in the POS field).")),
 
-            new ColumnInfo("ALT", new ColumnField("VALUE", 1, ColumnField.ColumnType.String,
+            new ColumnInfo("ALT", new ColumnField("VALUE", 1, ColumnType.String,
                     "Comma separated list of alternate non-reference alleles called on at least one of the samples. " +
                             "Options are base Strings made up of the bases A,C,G,T,N, or " +
                             "an angle-bracketed ID String (\"<ID>\"). " +
                             "If there are no alternative alleles, then the missing value should be used. " +
                             "Bases should be in uppercase. (Alphanumeric String; no whitespace, commas, " +
                             "or angle-brackets are permitted in the ID String itself).")),
-            new ColumnInfo("QUAL", new ColumnField("VALUE", 1, ColumnField.ColumnType.Float,
+            new ColumnInfo("QUAL", new ColumnField("VALUE", 1, ColumnType.Float,
                     "Phred-scaled quality score for the assertion made in ALT. i.e. give -10log_10 prob(call in ALT is wrong). " +
                             "If ALT is \".\" (no variant) then this is -10log_10 p(variant), " +
                             "and if ALT is not \".\" this is -10log_10 p(no variant). " +
                             "High QUAL scores indicate high confidence calls. " +
                             "Although traditionally people use integer phred scores, this field is permitted to be " +
                             "a floating point to enable higher resolution for low confidence calls if desired.")),
-            new ColumnInfo("FILTER", new ColumnField("VALUE", 1, ColumnField.ColumnType.String,
+            new ColumnInfo("FILTER", new ColumnField("VALUE", 1, ColumnType.String,
                     "Filter: PASS if this position has passed all filters, i.e. a call is made at this position. " +
                             "Otherwise, if the site has not passed all filters, a semicolon-separated list of codes " +
                             "for filters that fail. e.g. \"10;s50\" might indicate that at this site the quality is " +
                             "below 10 and the number of samples with data is below 50% of the total number of samples. " +
                             "\"0\" is reserved and should not be used as a filter String. " +
                             "If filters have not been applied, then this field should be set to the missing value.")),
-            new ColumnInfo("INFO", new ColumnField("VALUE", 1, ColumnField.ColumnType.String,
+            new ColumnInfo("INFO", new ColumnField("VALUE", 1, ColumnType.String,
                     "Additional information: INFO fields are encoded as a semicolon-separated series of short keys " +
                             "with optional values in the format: <key>=<data>[,data]. Arbitrary keys are permitted, " +
                             "although some sub-fields are reserved.")),
@@ -627,7 +652,7 @@ public class VCFParser {
             } else if ("umber".equals(kv[0])) {
                 field.numberOfValues = Integer.parseInt(kv[1]);
             } else if ("ype".equals(kv[0])) {
-                field.type = ColumnField.ColumnType.valueOf(kv[1]);
+                field.type = ColumnType.valueOf(kv[1]);
             } else if ("roup".equals(kv[0])) {
                 field.group = kv[1];
             } else if ("escription".equals(kv[0])) {

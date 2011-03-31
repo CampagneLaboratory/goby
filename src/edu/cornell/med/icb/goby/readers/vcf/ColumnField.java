@@ -78,7 +78,4 @@ public class ColumnField {
         this.description = description;
     }
 
-    public enum ColumnType {
-        Integer, Float, Flag, Character, String
-    }
 }
