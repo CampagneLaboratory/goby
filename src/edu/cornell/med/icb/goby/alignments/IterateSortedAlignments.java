@@ -51,10 +51,8 @@ public abstract class IterateSortedAlignments<T> {
 
     private boolean filterByReferenceNames;
     private ObjectSet<String> includeReferenceNames = new ObjectOpenHashSet<String>();
-    private IntSortedSet referencesToProcess;
     private DoubleIndexedIdentifier referenceIds;
     protected int lastRemovedPosition = -1;
-    private Int2IntMap readIndexVariationTally;
     private int numAlignmentEntries;
     private String startOffsetArgument;
     private String endOffsetArgument;
@@ -107,6 +105,7 @@ public abstract class IterateSortedAlignments<T> {
     /**
      * Parse the string of reference sequences to include the iteration. The string must be a coma
      * separated list of reference identifiers.
+     * @param includeReferenceNameCommas names of references, separated by commas, to include in the iteration.
      */
     public void parseIncludeReferenceArgument(final String includeReferenceNameCommas) {
         if (includeReferenceNameCommas != null) {
@@ -174,7 +173,7 @@ public abstract class IterateSortedAlignments<T> {
         LOG.info(String.format("Alignment contains %d reference sequences", numberOfReferences));
         processNumberOfReferences(numberOfReferences);
         //  CountsWriter writers[] = new CountsWriter[numberOfReferences];
-        referencesToProcess = new IntLinkedOpenHashSet();
+        IntSortedSet referencesToProcess = new IntLinkedOpenHashSet();
 
 
         // setup referencesToProcess data structure according to the command line (filterByReferenceNames and includeReferenceNames)
@@ -196,7 +195,6 @@ public abstract class IterateSortedAlignments<T> {
             }
         }
 
-        sortedReaders = null;
         try {
             if (StringUtils.isEmpty(startOffsetArgument) && StringUtils.isEmpty(endOffsetArgument)) {
                 sortedReaders = new ConcatSortedAlignmentReader(basenames);
@@ -227,7 +225,7 @@ public abstract class IterateSortedAlignments<T> {
         }
 
 
-        Alignments.AlignmentEntry alignmentEntry = null;
+        Alignments.AlignmentEntry alignmentEntry;
         // the first reference that we should skip to:
         int currentMinTargetIndex = referencesToProcess.firstInt();
         // skip to will go to the next entry in or after currentMinTargetIndex with at least position 0
@@ -269,7 +267,6 @@ public abstract class IterateSortedAlignments<T> {
                 assert queryLength!=0 : "queryLength cannot be zero to iterate sorted alignments.";
                 int currentReadIndex = forwardStrand ? 0 : (queryLength + 1);
                 int currentRefPosition = alignmentEntry.getPosition() - alignmentEntry.getQueryPosition();
-                int lastMatchIndex = 1;
 
                 List<Alignments.SequenceVariation> seqVars = alignmentEntry.getSequenceVariationsList();
                 if (alignmentEntry.getQueryPosition() > 0) {
@@ -308,6 +305,44 @@ public abstract class IterateSortedAlignments<T> {
                         numObservedBases++;
                     }
                     for (int i = 0; i < sequenceVariationLength; i++) {
+                        /*------------------------------------------------------------------
+                         * DELETIONS and INSERTIONS with repect to refPosition and readIndex:
+                         *
+                         * DELETION, Forward Strand
+                         *   * readIndex is not incremented during deletion bases. On a
+                         *     forward strand match, readIndex is incremented from the left
+                         *     so the readIndex value during the deletion is the readIndex
+                         *     value left of the deletion.
+                         *   from=CCGCCCTTGCCCTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTGT
+                         *     to=CCGCCCTTGCCCTTCCTCCCTTCCCT---GGAGTCCTGGCCCCACCCTGT
+                         *    pos=12345678901234567890123456789012345678901234567890
+                         *     ri=12345678901234567890123456666789012345678901234567
+                         * DELETION, Reverse Strand:
+                         *   * readIndex is not incremented during deletion bases. On a
+                         *     reverse strand match, readIndex is incremented from the right
+                         *     (or decremented) so the readIndex value during the deletion
+                         *     is the readIndex value right of the deletion.
+                         *   from=CCGCCCTTGCCCTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTGT
+                         *     to=CCGCCCTTGCCCTTCCTCCCT---CTTTCGGAGTCCTGGCCCCACCCTGT
+                         *    pos=12345678901234567890123456789012345678901234567890
+                         *     ri=76543210987654321098766665432109876543210987654321
+                         * INSERTION, Forward strand:
+                         *   * refPosition is not incremented during insertion bases.
+                         *     On both forward and reverse strand matches, refPosition
+                         *     is incremented from the left, because the reference
+                         *     is always considered to be in the forward direction.
+                         *   from=CCGCCCTTGCCCTTCCTCCCTTCCCT---TTCGGAGTCCTGGCCCCACCC
+                         *     to=CCGCCCTTGCCCTTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACCC
+                         *    pos=12345678901234567890123456666789012345678901234567
+                         *     ri=12345678901234567890123456789012345678901234567890
+                         * INSERTION, Reverse strand:
+                         *   * See nots from INSERTION, Forward strand
+                         *   from=CCCTTGCCCTTCCTCCCTTCC---CTTTCGGAGTCCTGGCCCCACCCTGT
+                         *     to=CCCTTGCCCTTCCTCCCTTCCGATCTTTCGGAGTCCTGGCCCCACCCTGT
+                         *    pos=12345678901234567890111123456789012345678901234567
+                         *     ri=09876543210987654321098765432109876543210987654321
+                         *------------------------------------------------------------------*/
+
                         // Bases within the sequence variation
                         final char toChar = i >= toLength ? '-' : to.charAt(i);
                         final char fromChar = i >= fromLength ? '-' : from.charAt(i);
@@ -318,15 +353,30 @@ public abstract class IterateSortedAlignments<T> {
                             numObservedBases++;
                             currentRefPosition = advanceReference(currentRefPosition);
                         }
-                        currentReadIndex = incrementReadIndex(forwardStrand, currentReadIndex, i, toChar);
+
+                        if (toChar == '-') {
+                            if (forwardStrand) {
+                                // Do no increment readIndex during a delete on forward strand
+                            } else if (i==0) {
+                                // On reverse strand delete, decrement readIndex for the first base ONLY
+                                currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
+                            } else {
+                                // On reverse strand deletion, after the first base, do not decrement readIndex
+                            }
+                        } else {
+                            currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
+                        }
 
                         observeVariantBase(sortedReaders, alignmentEntry, positionToBases,
                                 var, toChar, fromChar, toQual,
                                 referenceIndex, currentRefPosition, currentReadIndex);
+
                         if (toChar == '-' && !forwardStrand && i == (sequenceVariationLength - 1)) {
-                            // On reverseStrand, the last base, unadvance the pointer one
-                            // so readIndex will be the same on the next non-delete base
-                           // TODO explain why this is needed, see other question below where the reverse is done for first base?
+                            // The logic in this algorithm is (increment/decrement) before observe().
+                            // After a deletion on reverse strand we want the next base after the deletion
+                            // to have the same readIndex as the deletion bases. Here we will
+                            // increment the readIndex by one. When the next base is processed the readIndex
+                            // will be decremented and thus be the same readIndex as those for the deletion.
                             currentReadIndex = advanceReadIndex(!forwardStrand, currentReadIndex);
                         }
                     }
@@ -381,33 +431,6 @@ public abstract class IterateSortedAlignments<T> {
         pg.stop();
     }
 
-    /**
-     * Update the value of read index for a base inside a variation.
-     * @param forwardStrand whether the read matches the forward strand.
-     * @param currentReadIndex current value of the read index
-     * @param i The offset within a sequence variation
-     * @param toChar the current base of the variation at offset
-     * @return the new updates read index.
-     */
-    private int incrementReadIndex(boolean forwardStrand, int currentReadIndex, int i, char toChar) {
-        if (toChar == '-') {
-            if (forwardStrand) {
-                // Do no increment readIndex during a delete on forward strand
-            } else if (i==0) {
-                // On reverse strand delete, decrement readIndex for the first base ONLY
-                // TODO why do we need to do this at first base at all? Does the code depend on the value of read index within
-                // the stretch of sequence variation? Not clear to me at this point.
-                currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
-            } else {
-                // On reverse strand delete, after the first base, do not decrement readIndex
-            }
-        } else {
-            currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
-        }
-        return currentReadIndex;
-    }
-
-
     private int advanceReadIndex(boolean forwardStrand, int currentReadIndex) {
         currentReadIndex += forwardStrand ? 1 : -1;
         // System.out.printf(" read-index=%d ", currentReadIndex);
@@ -436,8 +459,8 @@ public abstract class IterateSortedAlignments<T> {
     /**
      * Process positions on the previous target, which may still be in positionToBases.
      *
-     * @param lastReferenceIndex
-     * @param positionToBases
+     * @param lastReferenceIndex the last referenceIndex?
+     * @param positionToBases positionToBases?
      */
     private void processAllPreviousPositions(int lastReferenceIndex, Int2ObjectMap<T> positionToBases) {
         IntArrayList positions = new IntArrayList();
@@ -482,7 +505,7 @@ public abstract class IterateSortedAlignments<T> {
      * @param var                   The sequence variation from the alignment entry that triggered emiting this observation.
      * @param toChar                The base character in the read
      * @param fromChar              The base character in the reference.
-     * @param toQual
+     * @param toQual                The base quality value in the read (if it exists, otherwise 0)
      * @param currentReferenceIndex Index of the reference sequence where the variant occurs.
      * @param currentRefPosition    Position where the variant occurs in the reference.
      * @param currentReadIndex      Index in the read where the variant occurs.
