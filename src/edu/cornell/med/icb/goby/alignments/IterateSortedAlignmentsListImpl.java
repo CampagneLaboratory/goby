@@ -42,8 +42,8 @@ public abstract class IterateSortedAlignmentsListImpl
                                      Alignments.AlignmentEntry alignmentEntry,
                                      Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
                                      int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("RB: queryIndex=%d\tref_position=%d\tread_index=%d",
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(String.format("RB: queryIndex=%d\tref_position=%d\tread_index=%d",
                 alignmentEntry.getQueryIndex(), currentRefPosition, currentReadIndex));
         }
 
@@ -71,8 +71,8 @@ public abstract class IterateSortedAlignmentsListImpl
                                    int currentRefPosition,
                                    int currentReadIndex) {
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("VB: queryIndex=%d\tref_position=%d\tread_index=%d\tfromChar=%c\ttoChar=%c",
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(String.format("VB: queryIndex=%d\tref_position=%d\tread_index=%d\tfromChar=%c\ttoChar=%c",
                     alignmentEntry.getQueryIndex(), currentRefPosition, currentReadIndex, fromChar, toChar));
         }
 
