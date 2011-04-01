@@ -1,4 +1,6 @@
 development -> 1.9.5 
+ - Fix logic for IterateSortedAlignments which, in turn, fixes sequence-variation-stats2. The issue primarily
+   dealt with insertions, deletions, and left and/or right padding.
  - Goby now includes a VCFParser class (see package edu.cornell.med.icb.goby.readers.vcf). VCF stands
    for Variant Call Format. The VCF format is described at http://www.1000genomes.org/node/101.
    The Goby VCFParser class implements a VCF 4.0+ parser. Importantly, this implementation also can be

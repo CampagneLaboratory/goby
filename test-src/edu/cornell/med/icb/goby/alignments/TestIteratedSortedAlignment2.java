@@ -61,15 +61,6 @@ public class TestIteratedSortedAlignment2 {
      */
     private static final Logger LOG = Logger.getLogger(TestIteratedSortedAlignment2.class);
 
-    @BeforeClass
-    public static void beforeClass() throws IOException {
-    }
-
-    @AfterClass
-    public static void afterClass() throws IOException {
-
-    }
-
     // TODO: test the refPositions in an insertion that the refPositions within the insertion
     // TODO: are constant AND that it matches the refPosition just before the insertion, if
     // TODO: there is one.
@@ -85,66 +76,101 @@ public class TestIteratedSortedAlignment2 {
     // TODO: Convert these to a purely synthetically created Alignment to make it easier to add
     // TODO: other tests.
 
+    @BeforeClass
+    public static void beforeClass() throws IOException {
+    }
+
+    @AfterClass
+    public static void afterClass() throws IOException {
+
+    }
+
+    private boolean dataSetup = false;
+    private Int2ObjectMap<PerQueryAlignmentData> alignmentDataMap;
+    private int[] alignmentQueryIndexes;
+    private Int2ObjectMap<PerQueryAlignmentData> seqvarDataMap;
+    private int[] seqvarQueryIndexes;
+
+    /**
+     * Test that the queryIndexes from the alignment (ONLY those queryIndexes that have sequence variations)
+     * match with those from the "seq-var-reads-gsnap.display-seq-var-tsv-base.tsv" file.
+     * @throws IOException error reading input files
+     */
     @Test
-    public void testIterateSorted() throws IOException {
-        MyIterateSortedAlignments alignmentIterator = new MyIterateSortedAlignments();
-        final String[] singleBasename = {"test-data/seq-var-test/sorted-seq-var-reads-gsnap"};
-        alignmentIterator.iterate(singleBasename);
-        alignmentIterator.removeWithoutSeqvars();
-        Int2ObjectMap<PerQueryAlignmentData> alignmentDataMap = alignmentIterator.queryIndexToAlignmentDataMap;
-        int[] alignmentQueryIndexes = alignmentDataMap.keySet().toIntArray();
-        Arrays.sort(alignmentQueryIndexes);
+    public void testIndexesMatch() throws IOException {
+        setupData();
+        assertArrayEquals("alignmentDataMap indexes doesn't match seqvarDataMap indexes",
+                seqvarQueryIndexes, alignmentQueryIndexes);
+    }
+
+    /**
+     * Test that readLength and refLength (calculated values) are correct. This is the difference
+     * between the max and min (refPosition,readIndex) observed MyIterateSortedAlignments.
+     * @throws IOException error reading input files
+     */
+    @Test
+    public void testReadAndRefLengths() throws IOException {
+        setupData();
         for (int queryIndex : alignmentQueryIndexes) {
             PerQueryAlignmentData align = alignmentDataMap.get(queryIndex);
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("%n------------------------------------%nqueryIndex=%d, data=%s",
-                        queryIndex, align.toString()));
-                LOG.debug(String.format("leftPadding(%d)=queryPosition(%d)",
-                        align.leftPadding, align.queryPosition));
-                LOG.debug(String.format("rightPadding(%d)=(queryLength(%d) + numDeletions(%d)) - " +
-                        "(targetAlignedLength(%d) + numInsertions(%d)) - leftPadding(%d)",
-                        align.rightPadding, align.queryLength, align.numDeletions, 
-                        align.targetAlignedLength, align.numInsertions, align.leftPadding));
-            }
-
-            assertEquals(String.format("queryIndex=%d readLength(%d) should equal queryLength(%d) + numDeletions(%d)",
+            assertEquals(String.format("queryIndex=%d readLength(%d) should equal " +
+                    "queryLength(%d) + numDeletions(%d) - leftPadding(%d) - rightPadding(%d)",
                     queryIndex,
-                    align.readLength, align.queryLength, align.numDeletions),
-                    align.queryLength + align.numDeletions, align.readLength);
-            assertEquals(String.format("queryIndex=%d readLength(%d) should equal refLength(%d)", queryIndex,
+                    align.readLength, align.queryLength, align.numDeletions, align.leftPadding, align.rightPadding),
+                    align.queryLength + align.numDeletions - align.leftPadding - align.rightPadding, align.readLength);
+            assertEquals(String.format("queryIndex=%d refLength(%d) should equal readLength(%d)", queryIndex,
                     align.readLength, align.refLength),
                     align.readLength, align.refLength);
-            assertEquals(String.format("queryIndex=%d  minRefPosition(%d) should equal" +
-                    "targetPosition(%d) - queryPosition(%d) + 1", queryIndex,
-                    align.minRefPosition, align.targetPosition, align.queryPosition),
-                    align.targetPosition - align.queryPosition + 1, align.minRefPosition);
+        }
+    }
+
+    /**
+     * Verify minRefPosition.
+     * @throws IOException error reading input files
+     */
+    @Test
+    public void testMinRefPosition() throws IOException {
+        setupData();
+        for (int queryIndex : alignmentQueryIndexes) {
+            PerQueryAlignmentData align = alignmentDataMap.get(queryIndex);
+            assertEquals(String.format("queryIndex=%d  minRefPosition(%d) should equal " +
+                    "targetPosition(%d) + 1", queryIndex,
+                    align.minRefPosition, align.targetPosition),
+                    align.targetPosition + 1, align.minRefPosition);
+        }
+    }
+
+    /**
+     * Verify maxRefPosition.
+     * @throws IOException error reading input files
+     */
+    @Test
+    public void testMaxRefPosition() throws IOException {
+        setupData();
+        for (int queryIndex : alignmentQueryIndexes) {
+            PerQueryAlignmentData align = alignmentDataMap.get(queryIndex);
             assertEquals(String.format("queryIndex=%d maxRefPosition(%d) should be equal to " +
-                    "targetPosition(%d) + targetAlignedLength(%d) + rightPadding(%d)",
+                    "targetPosition(%d) + targetAlignedLength(%d)",
                     queryIndex,
-                    align.maxRefPosition, align.targetPosition, align.targetAlignedLength, align.rightPadding),
-                    align.targetPosition + align.targetAlignedLength + align.rightPadding, align.maxRefPosition);
-            assertEquals(String.format("queryIndex=%d minReadIndex(%d) should be equal to 1",
-                    queryIndex,
-                    align.minReadIndex),
-                    align.minReadIndex, 1);
-            assertEquals(String.format("queryIndex=%d maxReadIndex(%d) should be equal to queryLength(%d)",
-                    queryIndex,
-                    align.maxReadIndex, align.queryLength),
-                    align.maxReadIndex, align.queryLength);
-            if (align.reverseStrand) {
-                assertEquals(String.format("queryIndex=%d (reverse strand) firstReadIndex(%d) should be equal to " +
-                        "queryLength(%d)", queryIndex,
-                        align.firstReadIndex, align.queryLength),
-                        align.firstReadIndex, align.queryLength);
-                assertEquals(String.format("queryIndex=%d (reverse strand) firstReadIndex(%d) should be equal to " +
-                        "maxReadIndex(%d)", queryIndex,
-                        align.firstReadIndex, align.maxReadIndex),
-                        align.firstReadIndex, align.maxReadIndex);
-            } else {
-                assertEquals(String.format("queryIndex=%d (forward strand) firstReadIndex(%d) should be equal to 1",
-                        queryIndex, align.firstReadIndex),
-                        align.firstReadIndex, 1);
+                    align.maxRefPosition, align.targetPosition, align.targetAlignedLength),
+                    align.targetPosition + align.targetAlignedLength, align.maxRefPosition);
+        }
+    }
+
+    /**
+     * Verify firstReadIndex (only for forward strand).
+     * @throws IOException error reading input files
+     */
+    @Test
+    public void testFirstReadIndexForwardStrand() throws IOException {
+        setupData();
+        for (int queryIndex : alignmentQueryIndexes) {
+            PerQueryAlignmentData align = alignmentDataMap.get(queryIndex);
+            if (!align.reverseStrand) {
+                assertEquals(String.format("queryIndex=%d (forward strand) firstReadIndex(%d) should be equal to " +
+                        "1 + leftPadding(%d)",
+                        queryIndex, align.firstReadIndex, align.leftPadding),
+                        1 + align.leftPadding, align.firstReadIndex);
                 assertEquals(String.format("queryIndex=%d (forward strand) firstReadIndex(%d) should be equal to" +
                         "minReadIndex(%d)",
                         queryIndex,
@@ -152,25 +178,115 @@ public class TestIteratedSortedAlignment2 {
                         align.firstReadIndex, align.minReadIndex);
             }
         }
+    }
 
-        // Read the per-base sequence variations from here
-        Int2ObjectMap<PerQueryAlignmentData> seqvarDataMap = readSeqVarFile(
-                "test-data/seq-var-test/seq-var-reads-gsnap.display-seq-var-tsv-base.tsv");
-        // ... Update the data from the sequence variations file to add the queries from the compact-reads file
+    /**
+     * Verify firstReadIndex (only for reverse strand).
+     * @throws IOException error reading input files
+     */
+    @Test
+    public void testFirstReadIndexReverseStrand() throws IOException {
+        setupData();
+        for (int queryIndex : alignmentQueryIndexes) {
+            PerQueryAlignmentData align = alignmentDataMap.get(queryIndex);
+            if (align.reverseStrand) {
+                assertEquals(String.format("queryIndex=%d (reverse strand) firstReadIndex(%d) should be equal to " +
+                        "queryLength(%d) - rightPadding(%d)", queryIndex,
+                        align.firstReadIndex, align.queryLength, align.rightPadding),
+                        align.queryLength - align.rightPadding, align.firstReadIndex);
+                assertEquals(String.format("queryIndex=%d (reverse strand) firstReadIndex(%d) should be equal to " +
+                        "maxReadIndex(%d)", queryIndex,
+                        align.firstReadIndex, align.maxReadIndex),
+                        align.firstReadIndex, align.maxReadIndex);
+            }
+        }
+    }
 
-        int[] seqvarQueryIndexes = seqvarDataMap.keySet().toIntArray();
-        Arrays.sort(seqvarQueryIndexes);
-        assertArrayEquals("alignmentDataMap indexes doesn't match seqvarDataMap indexes",
-                seqvarQueryIndexes, alignmentQueryIndexes);
+    /**
+     * Verify minReadIndex (only for forward strand).
+     * @throws IOException error reading input files
+     */
+    @Test
+    public void testMinReadIndexForwardStrand() throws IOException {
+        setupData();
+        for (int queryIndex : alignmentQueryIndexes) {
+            PerQueryAlignmentData align = alignmentDataMap.get(queryIndex);
+            if (!align.reverseStrand) {
+                assertEquals(String.format("queryIndex=%d (forward strand) minReadIndex(%d) should be equal to leftPadding(%d) + 1",
+                        queryIndex, align.minReadIndex, align.leftPadding),
+                        align.leftPadding + 1, align.minReadIndex);
+            }
+        }
+    }
+
+    /**
+     * Verify minReadIndex (only for reverse strand).
+     * @throws IOException error reading input files
+     */
+    @Test
+    public void testMinReadIndexReverseStrand() throws IOException {
+        setupData();
+        for (int queryIndex : alignmentQueryIndexes) {
+            PerQueryAlignmentData align = alignmentDataMap.get(queryIndex);
+            if (align.reverseStrand) {
+                assertEquals(String.format("queryIndex=%d (reverse strand) minReadIndex(%d) should be equal to rightPadding(%d) + 1",
+                        queryIndex, align.minReadIndex, align.rightPadding),
+                        align.rightPadding + 1, align.minReadIndex);
+            }
+        }
+    }
+
+    /**
+     * Verify maxReadIndex (only for forward strand).
+     * @throws IOException error reading input files
+     */
+    @Test
+    public void testMaxReadIndexForwardStrand() throws IOException {
+        setupData();
+        for (int queryIndex : alignmentQueryIndexes) {
+            PerQueryAlignmentData align = alignmentDataMap.get(queryIndex);
+            if (!align.reverseStrand) {
+                assertEquals(String.format("queryIndex=%d (forward strand) maxReadIndex(%d) should be equal to queryLength(%d) - rightPadding(%d)",
+                        queryIndex,
+                        align.maxReadIndex, align.queryLength, align.rightPadding),
+                        align.queryLength - align.rightPadding, align.maxReadIndex);
+            }
+        }
+    }
+
+    /**
+     * Verify maxReadIndex (only for reverse strand).
+     * @throws IOException error reading input files
+     */
+    @Test
+    public void testMaxReadIndexReverseStrand() throws IOException {
+        setupData();
+        for (int queryIndex : alignmentQueryIndexes) {
+            PerQueryAlignmentData align = alignmentDataMap.get(queryIndex);
+            if (align.reverseStrand) {
+                assertEquals(String.format("queryIndex=%d (reverse strand) maxReadIndex(%d) should be equal to queryLength(%d) - leftPadding(%d)",
+                        queryIndex,
+                        align.maxReadIndex, align.queryLength, align.leftPadding),
+                        align.queryLength - align.leftPadding, align.maxReadIndex);
+            }
+        }
+    }
+
+    /**
+     * Test that the sequence variations in the alignment match those we know to be good from
+     * the "seq-var-reads-gsnap.display-seq-var-tsv-base.tsv" file.
+     * @throws IOException error reading input files
+     */
+    @Test
+    public void testSequenceVariationsMatch() throws IOException {
+        setupData();
         for (int queryIndex : seqvarQueryIndexes) {
             PerQueryAlignmentData align = alignmentDataMap.get(queryIndex);
             PerQueryAlignmentData var = seqvarDataMap.get(queryIndex);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("%n------------------------------------%nqueryIndex=%d, data=%s",
-                        queryIndex, var.toString()));
-            }
+
             Map<String, String> alignSeqVarsMap = align.refPositionReadIndexToBaseMap;
             Map<String, String> varSeqVarsMap = var.refPositionReadIndexToBaseMap;
+
             assertEquals(String.format("queryIndex=%d alignSeqVarsMap.size()(%d) should equal varSeqVarsMap.size()(%d)",
                     queryIndex,
                     alignSeqVarsMap.size(), varSeqVarsMap.size()),
@@ -187,6 +303,58 @@ public class TestIteratedSortedAlignment2 {
                         alignEntryBases, varEntryBases);
             }
         }
+    }
+
+    /*------------------ Support methods below here ------------------*/
+
+    /**
+     * Create the data structures that summarize the data that we will be validating
+     * with the tests in this class
+     * @throws IOException problem reading input files
+     */
+    public synchronized void setupData() throws IOException {
+        if (dataSetup) {
+            return;
+        }
+        MyIterateSortedAlignments alignmentIterator = new MyIterateSortedAlignments();
+        final String[] singleBasename = {"test-data/seq-var-test/sorted-seq-var-reads-gsnap"};
+        alignmentIterator.iterate(singleBasename);
+        alignmentIterator.removeWithoutSeqvars();
+        alignmentDataMap = alignmentIterator.queryIndexToAlignmentDataMap;
+        alignmentQueryIndexes = alignmentDataMap.keySet().toIntArray();
+        Arrays.sort(alignmentQueryIndexes);
+
+        for (int queryIndex : alignmentQueryIndexes) {
+            PerQueryAlignmentData align = alignmentDataMap.get(queryIndex);
+
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(String.format("%n------------------------------------%nqueryIndex=%d, data=%s",
+                        queryIndex, align.toString()));
+                LOG.debug(String.format("leftPadding(%d)=queryPosition(%d)",
+                        align.leftPadding, align.queryPosition));
+                LOG.debug(String.format("rightPadding(%d)=(queryLength(%d) + numDeletions(%d)) - " +
+                        "(targetAlignedLength(%d) + numInsertions(%d)) - leftPadding(%d)",
+                        align.rightPadding, align.queryLength, align.numDeletions,
+                        align.targetAlignedLength, align.numInsertions, align.leftPadding));
+            }
+        }
+
+        // Read the per-base sequence variations from here
+        seqvarDataMap = readSeqVarFile(
+                "test-data/seq-var-test/seq-var-reads-gsnap.display-seq-var-tsv-base.tsv");
+        // ... Update the data from the sequence variations file to add the queries from the compact-reads file
+        seqvarQueryIndexes = seqvarDataMap.keySet().toIntArray();
+        Arrays.sort(seqvarQueryIndexes);
+
+        for (int queryIndex : alignmentQueryIndexes) {
+            PerQueryAlignmentData var = alignmentDataMap.get(queryIndex);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(String.format("%n------------------------------------%nqueryIndex=%d, data=%s",
+                        queryIndex, var.toString()));
+            }
+        }
+
+        dataSetup = true;
     }
 
     private Int2ObjectMap<PerQueryAlignmentData> readSeqVarFile(final String filename) throws IOException {
@@ -264,7 +432,7 @@ public class TestIteratedSortedAlignment2 {
         public void observe(int refPosition, int readIndex, char fromBase, char toBase) {
             if (toBase == '-') {
                 numDeletions++;
-            } if (fromBase == '-') {
+            } else if (fromBase == '-') {
                 numInsertions++;
             } else {
                 numMismatches++;
@@ -340,8 +508,8 @@ public class TestIteratedSortedAlignment2 {
                 }
                 alignmentData.observe(currentRefPosition, currentReadIndex);
             } else {
-                throw new RuntimeException(String.format("readIndex=%d should be >=1, queryIndex=",
-                        currentReadIndex, queryIndex));
+                throw new RuntimeException(String.format("queryIndex=%d readIndex=%d should be >=1",
+                        queryIndex, currentReadIndex));
             }
         }
 
@@ -374,8 +542,8 @@ public class TestIteratedSortedAlignment2 {
                 }
                 alignmentData.observe(currentRefPosition, currentReadIndex, fromChar, toChar);
             } else {
-                throw new RuntimeException(String.format("readIndex=%d should be >=1, queryIndex=",
-                        currentReadIndex, queryIndex));
+                throw new RuntimeException(String.format("queryIndex=%d readIndex=%d should be >=1",
+                        queryIndex, currentReadIndex));
             }
         }
 

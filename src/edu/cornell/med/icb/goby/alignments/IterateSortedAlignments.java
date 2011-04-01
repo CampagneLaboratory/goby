@@ -268,16 +268,42 @@ public abstract class IterateSortedAlignments<T> {
                 int currentReadIndex = forwardStrand ? 0 : (queryLength + 1);
                 int currentRefPosition = alignmentEntry.getPosition() - alignmentEntry.getQueryPosition();
 
+                int numInsertions = 0;
+                int numDeletions = 0;
                 List<Alignments.SequenceVariation> seqVars = alignmentEntry.getSequenceVariationsList();
-                if (alignmentEntry.getQueryPosition() > 0) {
-                    LOG.debug("padding start");
-                    for (int i = 0; i < alignmentEntry.getQueryPosition(); i++) {
+                for (Alignments.SequenceVariation var : seqVars) {
+                    final String from = var.getFrom();
+                    final int fromLength = from.length();
+                    final String to = var.getTo();
+                    final int toLength = from.length();
+                    final int sequenceVariationLength = Math.max(fromLength, toLength);
+
+                    for (int i = 0; i < sequenceVariationLength; i++) {
+                        final char fromChar = i >= fromLength ? '-' : from.charAt(i);
+                        final char toChar = i >= toLength ? '-' : to.charAt(i);
+                        if (fromChar == '-') {
+                            numInsertions++;
+                        }
+                        if (toChar == '-') {
+                            numDeletions++;
+                        }
+                    }
+                }
+
+                final int leftPadding = alignmentEntry.getQueryPosition();
+                final int rightPadding = (queryLength + numDeletions) -
+                        (alignmentEntry.getTargetAlignedLength() + numInsertions) - leftPadding;
+
+                if (leftPadding > 0) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(String.format("queryIndex=%d, left padding, %d bases",
+                                alignmentEntry.getQueryIndex(), leftPadding));
+                    }
+                    for (int i = 0; i < leftPadding; i++) {
                         currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
                         currentRefPosition = advanceReference(currentRefPosition);
-                        observeReferenceBase(sortedReaders, alignmentEntry, positionToBases,
-                                referenceIndex, currentRefPosition, currentReadIndex);
+                        // Don't observe during padding chars
                     }
-                    LOG.debug("padding end");
                 }
                 int numObservedBases = 0;
                 for (Alignments.SequenceVariation var : seqVars) {
@@ -306,41 +332,11 @@ public abstract class IterateSortedAlignments<T> {
                     }
                     for (int i = 0; i < sequenceVariationLength; i++) {
                         /*------------------------------------------------------------------
-                         * DELETIONS and INSERTIONS with repect to refPosition and readIndex:
+                         * For details on how to count refPosition and readIndex, especially
+                         * with respect to DELETIONS and INSERTIONS see
                          *
-                         * DELETION, Forward Strand
-                         *   * readIndex is not incremented during deletion bases. On a
-                         *     forward strand match, readIndex is incremented from the left
-                         *     so the readIndex value during the deletion is the readIndex
-                         *     value left of the deletion.
-                         *   from=CCGCCCTTGCCCTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTGT
-                         *     to=CCGCCCTTGCCCTTCCTCCCTTCCCT---GGAGTCCTGGCCCCACCCTGT
-                         *    pos=12345678901234567890123456789012345678901234567890
-                         *     ri=12345678901234567890123456666789012345678901234567
-                         * DELETION, Reverse Strand:
-                         *   * readIndex is not incremented during deletion bases. On a
-                         *     reverse strand match, readIndex is incremented from the right
-                         *     (or decremented) so the readIndex value during the deletion
-                         *     is the readIndex value right of the deletion.
-                         *   from=CCGCCCTTGCCCTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTGT
-                         *     to=CCGCCCTTGCCCTTCCTCCCT---CTTTCGGAGTCCTGGCCCCACCCTGT
-                         *    pos=12345678901234567890123456789012345678901234567890
-                         *     ri=76543210987654321098766665432109876543210987654321
-                         * INSERTION, Forward strand:
-                         *   * refPosition is not incremented during insertion bases.
-                         *     On both forward and reverse strand matches, refPosition
-                         *     is incremented from the left, because the reference
-                         *     is always considered to be in the forward direction.
-                         *   from=CCGCCCTTGCCCTTCCTCCCTTCCCT---TTCGGAGTCCTGGCCCCACCC
-                         *     to=CCGCCCTTGCCCTTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACCC
-                         *    pos=12345678901234567890123456666789012345678901234567
-                         *     ri=12345678901234567890123456789012345678901234567890
-                         * INSERTION, Reverse strand:
-                         *   * See nots from INSERTION, Forward strand
-                         *   from=CCCTTGCCCTTCCTCCCTTCC---CTTTCGGAGTCCTGGCCCCACCCTGT
-                         *     to=CCCTTGCCCTTCCTCCCTTCCGATCTTTCGGAGTCCTGGCCCCACCCTGT
-                         *    pos=12345678901234567890111123456789012345678901234567
-                         *     ri=09876543210987654321098765432109876543210987654321
+                         *    http://tinyurl.com/goby-sequence-variations
+                         *
                          *------------------------------------------------------------------*/
 
                         // Bases within the sequence variation
@@ -381,7 +377,8 @@ public abstract class IterateSortedAlignments<T> {
                         }
                     }
                 }
-                while (forwardStrand ? currentReadIndex < queryLength : currentReadIndex > 1) {
+                while (forwardStrand ?  currentReadIndex < (queryLength - rightPadding) :
+                        currentReadIndex > (1 + rightPadding)) {
 
                     // match stretch before next variation / end of read
                     currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
@@ -392,6 +389,10 @@ public abstract class IterateSortedAlignments<T> {
 
                     observeReferenceBase(sortedReaders, alignmentEntry, positionToBases,
                             referenceIndex, currentRefPosition, currentReadIndex);
+                }
+                if (rightPadding > 0) {
+                    LOG.debug(String.format("queryIndex=%d, right padding, %d bases",
+                            alignmentEntry.getQueryIndex(), rightPadding));
                 }
             }
 
