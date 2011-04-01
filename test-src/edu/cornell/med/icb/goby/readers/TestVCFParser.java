@@ -271,7 +271,19 @@ public class TestVCFParser {
             parser.next();
         }
     }
+    @Test
+       public void testParseNoFormatTSV() throws FileNotFoundException, VCFParser.SyntaxException {
+           VCFParser parser = new VCFParser(new FileReader("test-data/vcf/no-format.tsv"));
+           parser.readHeader();
+           Columns cols = parser.getColumns();
 
+           assertNotNull("Fixed element-id column must exist", cols.find("element-id"));
+           assertNotNull("Fixed log2_odds-ratio_standard_error column must exist", cols.find("log2_odds-ratio_standard_error"));
+
+
+
+       }
+    /*
     @Test
     public void testParseTrickyLarge() throws IOException, VCFParser.SyntaxException {
         //VCFParser parser = new VCFParser("/home/gobyweb/GOBYWEB_RESULTS/campagne/NXMONDD/NXMONDD.vcf.gz");
@@ -289,7 +301,7 @@ public class TestVCFParser {
             }
             parser.next();
         }
-    }
+    }      */
     /*
  @Test
     public void testParseTrickyLarge2() throws IOException, VCFParser.SyntaxException {

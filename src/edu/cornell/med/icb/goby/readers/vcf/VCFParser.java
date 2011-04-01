@@ -555,7 +555,7 @@ public class VCFParser {
                 fieldIndexToName.put(field.globalFieldIndex, name);
             }
         }
-        formatColumnIndex = formatColumn.columnIndex;
+        formatColumnIndex = TSV? -1: formatColumn.columnIndex;
 
         numberOfColumns = globalColumnIndex;
         columnStarts = new int[numberOfColumns];
