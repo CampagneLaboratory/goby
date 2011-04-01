@@ -81,17 +81,31 @@ public class StatisticsWriter {
         return index;
     }
 
+    /**
+     * Define column atributes for this columnId and option. The shortId, description and columnId are formated with
+     * the options to yield each column information.
+     *
+     * @param shortId
+     * @param numValues
+     * @param type
+     * @param description
+     * @param columnId
+     * @param option
+     */
     public void defineColumnAttributes(String shortId,
                                        int numValues, ColumnType type,
                                        String description,
                                        String columnId,
                                        String... option) {
         String id = String.format(columnId, option);
+        shortId = String.format(shortId, option);
+        description = String.format(description, option);
+
         final int index = columnIds.registerIdentifier(new MutableString(id));
 
         indexTypes.put(index, type);
         indexDescriptions.put(index, description);
-        indexNumValues.put(index,numValues);
+        indexNumValues.put(index, numValues);
         indexShortIds.put(index, shortId);
     }
 
@@ -131,6 +145,21 @@ public class StatisticsWriter {
                 int index = columnIds.registerIdentifier(new MutableString(id));
                 indexTypes.put(index, type);
                 values = new CharSequence[columnIds.size()];
+            }
+        }
+    }
+
+    /**
+     * Define column attributes for a group of column identifiers. Description and short ids are taken to be columnId.
+     * @param numValues
+     * @param type
+     * @param options
+     * @param columnIds
+     */
+    public void defineColumnAttributes(int numValues, ColumnType type, String[] options, String... columnIds) {
+        for (String columnId : columnIds) {   //define groups of columns, grouped by option format
+            for (String option : options) {
+                defineColumnAttributes(columnId, numValues, type, columnId, columnId, option);
             }
         }
     }
@@ -227,7 +256,7 @@ public class StatisticsWriter {
         for (int columnIndex = 0; columnIndex <= max; columnIndex++) {
             final MutableString columnId = reverse.getId(columnIndex);
             if (VCFmode) {
-                assert indexTypes.get(columnIndex)!=null : "type must be defined for VCF column. Call defineColumnAttribute before writting the header.";
+                assert indexTypes.get(columnIndex) != null : "type must be defined for VCF column. Call defineColumnAttribute before writting the header.";
                 outWriter.printf("##%s=<ID=%s,Number=%d,Type=%s,Description=\"%s\">%n",
                         columnId,
                         indexShortIds.get(columnIndex),
@@ -250,4 +279,5 @@ public class StatisticsWriter {
         outWriter.println(tsvHeaderLine);
         outWriter.flush();
     }
+
 }

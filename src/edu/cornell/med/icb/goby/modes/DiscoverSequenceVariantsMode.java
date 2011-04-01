@@ -78,6 +78,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     private int numberOfReadIndices[];
     private DifferentialExpressionCalculator diffExpCalculator;
     private String[] samples;
+    private boolean outputVCF;
 
     @Override
     public String getModeName() {
@@ -172,7 +173,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                         values.toString());
                 System.exit(1);
         }
-        ;
+        outputVCF=jsapResult.getBoolean("vcf");
         sortedPositionIterator = new DiscoverVariantIterateSortedAlignments(formatter);
         int startFlapSize = jsapResult.getInt("start-flap-size", 100);
         sortedPositionIterator.setStartFlapLength(startFlapSize);
@@ -187,7 +188,9 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         ALLELE_FREQUENCIES,
         GENOTYPES
     }
-
+    public boolean outputVCF() {
+        return outputVCF;
+    }
     DiscoverVariantIterateSortedAlignments sortedPositionIterator;
 
     public DifferentialExpressionAnalysis getDiffExpAnalyzer() {

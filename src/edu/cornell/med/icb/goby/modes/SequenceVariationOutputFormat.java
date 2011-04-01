@@ -62,4 +62,9 @@ public interface SequenceVariationOutputFormat {
                             int groupIndexA, int groupIndexB);
 
 
+    /**
+     * Suggest that the format should output a VCF file.
+     * @param state True to request VCF output, false otherwise.
+     */
+    void outputVCF(boolean state);
 }

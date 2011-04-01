@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.alignments;
 import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.stats.StatisticsWriter;
+import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.chars.CharArrayList;
@@ -43,11 +44,13 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     private int[] variantsCountPerSample;
     private StatisticsWriter statWriter;
     String[] samples;
+    private boolean outputVCF;
 
 
     public void defineColumns(StatisticsWriter statsWriter, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
-        refIdColumnIndex = statsWriter.defineColumn("chr:position:chr:position");
+        refIdColumnIndex = statsWriter.defineColumn("chr:position:position");
+        statsWriter.defineColumnAttributes("ID", 1, ColumnType.String, "Unique site id, in the format chr:start:end.", "chr:position:position");
 
         statsWriter.defineColumnSet(samples,
                 "Genotype[%s]"
@@ -55,7 +58,10 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
         statsWriter.defineColumnSet(samples,
                 "Zygosity[%s]"
         );
+        statsWriter.defineColumnAttributes(1, ColumnType.String, samples, "Genotype[%s]", "Zygosity[%s]");
+
         this.statWriter = statsWriter;
+        statsWriter.setOutputVCF(outputVCF);
         statsWriter.writeHeader();
     }
 
@@ -145,6 +151,10 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
         }
 
         statWriter.writeRecord();
+    }
+
+    public void outputVCF(boolean state) {
+        outputVCF=state;
     }
 
 

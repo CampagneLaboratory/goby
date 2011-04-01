@@ -78,6 +78,7 @@ public class DiscoverVariantIterateSortedAlignments
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         statWriter = new StatisticsWriter(outWriter);
         format.defineColumns(statWriter, mode);
+        format.outputVCF(mode.outputVCF());
         if (mode.getDiffExpAnalyzer().eval("filter")) {
             baseFilters = new BaseFilter[]{
 

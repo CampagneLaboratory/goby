@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.alignments;
 import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.stats.StatisticsWriter;
+import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
@@ -41,10 +42,12 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
     private int[] variantsCountPerSample;
     private StatisticsWriter statWriter;
     String[] samples;
+    private boolean outputVCF;
 
     public void defineColumns(StatisticsWriter statsWriter, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
         refIdColumnIndex = statsWriter.defineColumn("chr:position:position");
+        statsWriter.defineColumnAttributes("ID", 1, ColumnType.String, "Unique site id, in the format chr:start:end.", "chr:position:position");
 
         statsWriter.defineColumnSet(samples,
                 "refProportion[%s]"
@@ -52,7 +55,11 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         statsWriter.defineColumnSet(samples,
                 "count[%s]"
         );
+        statsWriter.defineColumnAttributes(1, ColumnType.Float, samples, "refProportion[%s]", "Zygosity[%s]");
+        statsWriter.defineColumnAttributes(1, ColumnType.Integer, samples, "count[%s]");
+
         this.statWriter = statsWriter;
+        statsWriter.setOutputVCF(outputVCF);
         statsWriter.writeHeader();
     }
 
@@ -76,10 +83,10 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             int numAlleles = 0;
-            int totalCount=0;
+            int totalCount = 0;
             for (int count : sampleCounts[sampleIndex].counts) {
                 if (count > 0) numAlleles++;
-                totalCount+=count;
+                totalCount += count;
             }
             if (numAlleles == 2) {
                 // need exactly two alleles to estimate reference allele imbalance:
@@ -92,9 +99,13 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
                         "refProportion[%s]", samples[sampleIndex]);
             }
             statWriter.setValue(totalCount,
-                        "count[%s]", samples[sampleIndex]);
+                    "count[%s]", samples[sampleIndex]);
         }
         statWriter.writeRecord();
+    }
+
+    public void outputVCF(boolean state) {
+        outputVCF = state;
     }
 
     private void fillVariantCountArrays(SampleCountInfo[] sampleCounts) {

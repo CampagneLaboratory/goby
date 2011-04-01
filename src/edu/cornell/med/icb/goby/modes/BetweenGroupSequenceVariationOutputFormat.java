@@ -24,6 +24,7 @@ import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
 import edu.cornell.med.icb.goby.stats.StatisticsWriter;
+import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.*;
@@ -77,6 +78,7 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
     private int[] refCountsPerSample;
     private int numberOfSamples;
     private int biomartRegionSpanIndex;
+    private boolean outputVCF;
 
     public void defineColumns(StatisticsWriter statWriter, DiscoverSequenceVariantsMode mode) {
         deAnalyzer = mode.getDiffExpAnalyzer();
@@ -102,7 +104,13 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
         this.readIndexStats = readIndexStats;
         biomartRegionSpanIndex = statWriter.defineColumn("element-id");
         refIdColumnIndex = statWriter.defineColumn("referenceId");
+
         positionColumnIndex = statWriter.defineColumn("position");
+
+        statWriter.defineColumnAttributes("ID", 1, ColumnType.String, "Unique site id, in the format chr:start:end.", "element-id");
+        statWriter.defineColumnAttributes("CHR", 1, ColumnType.String, "Chromosome or reference sequence name.", "referenceId");
+        statWriter.defineColumnAttributes("POS", 1, ColumnType.Integer, "Position on the chromosome/reference sequence.", "position");
+
 
         log2OddsRatioColumnIndex = StatisticsWriter.COLUMN_NOT_DEFINED;
         fisherExactPValueColumnIndex = -1;
@@ -114,9 +122,22 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
             log2OddsRatioStandardErrorColumnIndex = statWriter.defineColumn("log2_odds-ratio_standard_error");
             log2OddsRatioZColumnIndex = statWriter.defineColumn("log2_odds-ratio-Z");
             fisherExactPValueColumnIndex = statWriter.defineColumn("Fisher-Exact-P-value[%s/%s]", groups[0], groups[1]);
+
+            statWriter.defineColumnAttributes("LOD[%s/%s])", 1, ColumnType.Float, "Log 2 of the odds-ratio group %s vs %s", "log2(Odds-ratio[%s/%s])", groups[0], groups[1]);
+            statWriter.defineColumnAttributes("LODSE[%s/%s])", 1, ColumnType.Float, "Log 2 of the standard error of the odds-ratio group %s vs %s", "log2(Odds-ratio[%s/%s])", groups[0], groups[1]);
+            statWriter.defineColumnAttributes("LODZ[%s/%s])", 1, ColumnType.Float, "Z ratio of LOD (LOD-mean(LOD)/LOD_SE)", "log2_odds-ratio-Z");
+            statWriter.defineColumnAttributes("Fisher-P[%s/%s])", 1, ColumnType.Float, "Fisher exact P-value of observing as large a difference by chance.", "Fisher-Exact-P-value[%s/%s]", groups[0], groups[1]);
+
         }
 
         statWriter.defineColumnSet(groups,
+                "refProportion[%s]",
+                "refCountsPerGroup[%s]",
+                "varCountPerGroup[%s]",
+                "distinct-read-index-count[%s]",
+                "average-variant-quality-scores[%s]");
+
+         statWriter.defineColumnAttributes(1,ColumnType.Integer, groups,
                 "refProportion[%s]",
                 "refCountsPerGroup[%s]",
                 "varCountPerGroup[%s]",
@@ -127,9 +148,13 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
 
             if (deAnalyzer.eval("within-groups")) {
                 statWriter.defineColumn("within-group-p-value[%s]", group);
+                statWriter.defineColumnAttributes("within-group-p-value[%s]",1, ColumnType.Float, "within-group-p-value[%s]","within-group-p-value[%s]", group);
             }
 
             statWriter.defineColumn("observed variations at position ([frequency:from/to,]+) group %s", group);
+            statWriter.defineColumnAttributes("observed variations at position ([frequency:from/to,]+) group %s",1, ColumnType.String,
+                    "observed variations at position ([frequency:from/to,]+) group %s",
+                    "observed variations at position ([frequency:from/to,]+) group %s", group);
 
         }
         if (deAnalyzer.eval("samples")) {
@@ -139,7 +164,12 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
                     "refCountsInSample[%s]",
                     "varCountInSample[%s]");
 
+            statWriter.defineColumnAttributes(1, ColumnType.Integer, samples,
+                    "refProportion[%s]",
+                    "refCountsInSample[%s]",
+                    "varCountInSample[%s]");
         }
+        statWriter.setOutputVCF(outputVCF);
         statWriter.writeHeader();
     }
 
@@ -263,6 +293,10 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
             summarizeVariations(statWriter, list, groupIndex);
         }
         statWriter.writeRecord();
+    }
+
+    public void outputVCF(boolean state) {
+        this.outputVCF=state;
     }
 
     private void fillVariantCountArrays(SampleCountInfo[] sampleCounts) {
