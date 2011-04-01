@@ -22,6 +22,7 @@ import com.martiansoftware.jsap.JSAPException;
 import com.google.protobuf.ByteString;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
+import edu.cornell.med.icb.goby.util.TestFiles;
 import edu.cornell.med.icb.io.TSVReader;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -29,7 +30,7 @@ import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.chars.CharSet;
 import it.unimi.dsi.fastutil.chars.CharArraySet;
 import it.unimi.dsi.lang.MutableString;
-import static junitx.framework.Assert.assertFalse;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
@@ -50,7 +51,7 @@ import java.util.Collections;
  *         Date: Mar 12, 2011
  *         Time: 12:15:11 PM
  */
-public class TestDiscoverSequenceVariantsMode {
+public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
 
     private static final Log LOG = LogFactory.getLog(TestDiscoverSequenceVariantsMode.class);
@@ -73,7 +74,7 @@ public class TestDiscoverSequenceVariantsMode {
             mode.configure(args);
             mode.execute();
 
-            junitx.framework.FileAssert.assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
+            assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
                     new File("test-data/discover-variants/expected-groups-only.tsv"));
 
         }
@@ -89,7 +90,7 @@ public class TestDiscoverSequenceVariantsMode {
                 basenames, BASE_TEST_DIR + "/" + outputFilename, "samples").split("[\\s]");
         mode.configure(args);
         mode.execute();
-        junitx.framework.FileAssert.assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
+        assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
                 new File("test-data/discover-variants/expected-output-samples.tsv"));
 
     }
@@ -106,7 +107,7 @@ public class TestDiscoverSequenceVariantsMode {
 
         mode.configure(args);
         mode.execute();
-        junitx.framework.FileAssert.assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
+        assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
                 new File("test-data/discover-variants/expected-output-alleles.tsv"));
 
     }
@@ -186,6 +187,7 @@ public class TestDiscoverSequenceVariantsMode {
         assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_OTHER_INDEX]);
     }
 
+    
     private SampleCountInfo[] makeSampleCounts() {
         SampleCountInfo[] sampleCounts = new SampleCountInfo[1];
         sampleCounts[0] = new SampleCountInfo();
@@ -209,7 +211,7 @@ public class TestDiscoverSequenceVariantsMode {
 
         mode.configure(args);
         mode.execute();
-        junitx.framework.FileAssert.assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
+        assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
                 new File("test-data/discover-variants/expected-output-genotypes.tsv"));
 
     }
