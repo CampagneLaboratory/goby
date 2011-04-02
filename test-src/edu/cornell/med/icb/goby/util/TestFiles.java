@@ -36,7 +36,7 @@ public class TestFiles {
         MutableString string1 = new MutableString();
         MutableString string2 = new MutableString();
         string1 = readFile1(file1);
-        string2 = readFile1(file1);
+        string2 = readFile1(file2);
         org.junit.Assert.assertEquals(string1.toString(), string2.toString());
     }
     public void assertEquals(int v1, int v2) {
@@ -49,6 +49,7 @@ public class TestFiles {
         while (it.hasNext()) {
             MutableString mutableString = it.next();
             result.append(mutableString);
+            result.append("\n");
 
         }
         return result;
