@@ -88,6 +88,8 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                         position));
         statsWriter.setChromosome(currentReferenceId);
         statsWriter.setPosition(position);
+        statsWriter.setReferenceAllele(Character.toString(sampleCounts[0].referenceBase));
+
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             alleleSet.clear();
             SampleCountInfo sci = sampleCounts[sampleIndex];
@@ -105,6 +107,8 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                 if (count > 0) {
                     alleleSet.add(base);
                     if (base != sci.referenceBase) {
+                        statsWriter.addAlternateAllele(Character.toString(base));
+
                         genotypeBuffer.append(String.format("%c/%c,", sci.referenceBase, base));
                         genotypeCount++;
                     }
@@ -143,8 +147,8 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
             }
 
             statsWriter.setSampleValue(zygFieldIndex, sampleIndex, zygozity);
-            
-            statsWriter.setSampleValue(genotypeFieldIndex, sampleIndex, genotypeBuffer);
+
+            statsWriter.setSampleValue(genotypeFieldIndex, sampleIndex, statsWriter.codeGenotype(genotypeBuffer.toString()));
 
         }
 

@@ -1,4 +1,6 @@
 development -> 1.9.5 
+ - Added a VCFWriter class to write files in the VCF4 format. This class is now used by discover-sequence-variants
+   when writing in genotypes format. This should make it possible to use vcf-tools on the genotype files produced.
  - Fix logic for IterateSortedAlignments which, in turn, fixes sequence-variation-stats2. The issue primarily
    dealt with insertions, deletions, and left and/or right padding.
  - Goby now includes a VCFParser class (see package edu.cornell.med.icb.goby.readers.vcf). VCF stands

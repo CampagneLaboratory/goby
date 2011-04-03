@@ -89,7 +89,9 @@ public class VCFWriter {
     }
 
     public void addAlternateAllele(String allele) {
-        altAlleles.add(allele);
+        if (!altAlleles.contains(allele)) {
+            altAlleles.add(allele);
+        }
     }
 
     private Columns columns = new Columns();
