@@ -26,12 +26,20 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+
 /**
  * @author Fabien Campagne
  *         Date: Apr 1, 2011
  *         Time: 1:07:09 AM
  */
 public class TestFiles {
+    @Test
+    public void doNothing(){
+
+        // keep this method in to please ccontrol.
+    }
+    
     public void assertEquals(File file1, File file2) throws FileNotFoundException {
         MutableString string1 = new MutableString();
         MutableString string2 = new MutableString();
