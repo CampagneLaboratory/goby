@@ -50,7 +50,6 @@ public class VCFWriter {
     private CharSequence chrom;
     private int position;
     private String id;
-    private int infoFieldIndex = 0;
     private CharSequence[] formatFieldIds;
     private CharSequence ref;
     private CharSequence alt;
@@ -77,9 +76,14 @@ public class VCFWriter {
     private Columns columns = new Columns();
     private ObjectArrayList<ColumnInfo> columnList = new ObjectArrayList<ColumnInfo>();
 
+    /**
+     * Contruct a VCFWriter.
+     *
+     * @param outWriter Where the output will be written.
+     */
     public VCFWriter(PrintWriter outWriter) {
         this.outWriter = outWriter;
-        this.sampleIds=new String[0];
+        this.sampleIds = new String[0];
         columns.addAll(Arrays.asList(VCFParser.fixedColumn()));
         for (ColumnInfo c : columns) {
             for (ColumnField field : c.fields) {
@@ -91,6 +95,9 @@ public class VCFWriter {
         columns.add(new ColumnInfo("FORMAT"));
     }
 
+    /**
+     * Write the VCF header.
+     */
     public void writeHeader() {
 
         outWriter.printf("##fileformat=VCFv4.1%n" +
@@ -159,6 +166,9 @@ public class VCFWriter {
         }
     }
 
+    /**
+     * Append a record. Call the various setter before writing a record.
+     */
     public void writeRecord() {
         outWriter.append(chrom);
         outWriter.append('\t');
@@ -232,6 +242,9 @@ public class VCFWriter {
 
     public static int COLUMN_NOT_DEFINED = -1;
 
+    /**
+     * Close the writer.
+     */
     public void close() {
         outWriter.close();
     }
@@ -241,7 +254,16 @@ public class VCFWriter {
 
     ColumnInfo infoColumn = new ColumnInfo("INFO");
 
-
+    /**
+     * Define a VCF field for a column.
+     *
+     * @param columnName  Name of an existing column.
+     * @param fieldName   Name of the new field.
+     * @param numValues   Number of values in this field.
+     * @param type        Type of data for individual values of the field.
+     * @param description Description of data represented by the field.
+     * @return index of the field in the column.
+     */
     public int defineField(String columnName, String fieldName, int numValues, ColumnType type, String description) {
         ColumnInfo c = columns.find(columnName);
         if (c == null) {
@@ -258,27 +280,56 @@ public class VCFWriter {
         return columnField.globalFieldIndex;
     }
 
+    /**
+     * Set the value of an INFO column field for the current record. The value will be written when writeRecord is executed.
+     *
+     * @param infoFieldIndex Index returned by definedField("INFO",...)
+     * @param value          Value of the field.
+     */
     public void setInfo(int infoFieldIndex, CharSequence value) {
         infoValues[infoFieldIndex] = value;
     }
 
-    public void setFormat(int formatFieldIndex, CharSequence fieldId) {
-        formatFieldIds[formatFieldIndex] = fieldId;
+
+    private String[] sampleIds;
+
+    /**
+     * Get the list of sample column identifiers.
+     *
+     * @return list of sample column identifiers.
+     */
+    public String[] getSamples() {
+        return sampleIds;
     }
 
-    String[] sampleIds;
-
+    /**
+     * Define sample identifiers. VCF stores information for each sample according to information stored in the
+     * FORMAT column in each line.
+     *
+     * @param samples Identifiers of the samples
+     */
     public void defineSamples(String[] samples) {
         sampleIds = samples;
         formatValues = new CharSequence[getNumFormatFields()][samples.length];
     }
 
-
+    /**
+     * Set a value of a sample column. The sampleIndex identifies the sample in the getSampleIds()  array.
+     *
+     * @param fieldIndex  Index of a FORMAT field created with defineField("FORMAT,...)
+     * @param sampleIndex Index of the sample
+     * @param value       Value to set the field to for the current record.
+     */
     public void setSampleValue(int fieldIndex, int sampleIndex, CharSequence value) {
         formatFieldActive[fieldIndex] = true;
         formatValues[fieldIndex][sampleIndex] = value;
     }
 
+    /**
+     * Get the total number of possible format fields in the FORMAT column.
+     *
+     * @return number of FORMAT fields.
+     */
     public int getNumFormatFields() {
         return columns.find("FORMAT").fields.size();
     }

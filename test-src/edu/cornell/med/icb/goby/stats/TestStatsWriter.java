@@ -73,16 +73,41 @@ public class TestStatsWriter extends TestFiles {
 
         VCFWriter writer = new VCFWriter(new PrintWriter(new FileWriter(file)));
 
-        int fieldC=writer.defineField("INFO", "C", 1, ColumnType.String, "something about C");
-        int fieldD=writer.defineField("INFO", "D", 1, ColumnType.String, "something about D");
+        int fieldC = writer.defineField("INFO", "C", 1, ColumnType.String, "something about C");
+        int fieldD = writer.defineField("INFO", "D", 1, ColumnType.String, "something about D");
 
         writer.writeHeader();
-        writer.setInfo(fieldC,"1");
-        writer.setInfo(fieldD,"dvalue");
+        writer.setInfo(fieldC, "1");
+        writer.setInfo(fieldD, "dvalue");
         writer.writeRecord();
         writer.close();
 
         assertEquals(new File("test-data/stats-writer/1.vcf"), new File("test-results/stats-writer/1.vcf"));
+    }
+
+
+    @Test
+    public void testVCFFormat() throws IOException {
+
+        final String file = FilenameUtils.concat(BASE_TEST_DIR, "format-1.vcf");
+
+        VCFWriter writer = new VCFWriter(new PrintWriter(new FileWriter(file)));
+
+        int fieldC = writer.defineField("FORMAT", "GT", 1, ColumnType.String, "Desc GT");
+        int fieldD = writer.defineField("FORMAT", "GQ", 1, ColumnType.String, "Desc GQ");
+        String samples[] = {"sample-id-1","sample-id-2"};
+
+        writer.defineSamples(samples);
+        writer.writeHeader();
+        writer.setSampleValue(fieldC, 0, "A");
+        writer.setSampleValue(fieldD, 0, "B");
+        writer.setSampleValue(fieldC, 1, "B");
+                writer.setSampleValue(fieldD, 1, "A");
+
+        writer.writeRecord();
+        writer.close();
+
+        assertEquals(new File("test-data/stats-writer/expected-format-1.vcf"), new File("test-results/stats-writer/format-1.vcf"));
     }
 
     @BeforeClass
