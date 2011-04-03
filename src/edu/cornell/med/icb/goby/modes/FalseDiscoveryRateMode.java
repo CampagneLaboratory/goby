@@ -20,14 +20,15 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import edu.cornell.med.icb.goby.readers.vcf.*;
 import edu.cornell.med.icb.goby.stats.*;
 import edu.cornell.med.icb.io.TSVReader;
-import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.IOUtils;
 
@@ -70,6 +71,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
     private String[] inputFiles;
     private String[] selectedPValueColumns;
     private ObjectArraySet<String> adjustedColumnIds = new ObjectArraySet<String>();
+    private boolean vcf;
 
 
     @Override
@@ -100,32 +102,35 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         outputFilename = jsapResult.getString("output");
         qValueThreshold = jsapResult.getDouble("q-threshold");
         selectedPValueColumns = jsapResult.getStringArray("column");
-
+        vcf = jsapResult.getBoolean("vcf");
         return this;
     }
 
 
     /**
-     * Combine tab delimited files and adjusts P-values for multiple testing. 
+     * Combine tab delimited files and adjusts P-values for multiple testing.
      *
      * @throws java.io.IOException error reading / writing
      */
     @Override
     public void execute() throws IOException {
-        PrintStream stream = null;
+        Writer stream = null;
         try {
-            stream = outputFilename == null ? System.out
-                    : new PrintStream(new FileOutputStream(outputFilename));
+            stream = outputFilename == null ? new OutputStreamWriter(System.out)
+                    : new FileWriter(outputFilename);
             DifferentialExpressionResults data = new DifferentialExpressionResults();
-            ObjectList<String> columnIdList = getColumns(inputFiles);
+            ObjectList<String> columnIdList = vcf ? getVCFColumns(inputFiles) : getTSVColumns(inputFiles);
             for (String col : columnIdList) {
                 System.out.println("column: " + col);
             }
             DifferentialExpressionCalculator deCalculator = new DifferentialExpressionCalculator();
 
-            load(inputFiles, data, deCalculator, columnIdList);
-
-        //    data.write(new PrintWriter(System.out), '\t', deCalculator);
+            if (vcf) {
+                loadVCF(inputFiles, data, deCalculator, columnIdList);
+            } else {
+                loadTSV(inputFiles, data, deCalculator, columnIdList);
+            }
+            //    data.write(new PrintWriter(System.out), '\t', deCalculator);
             BenjaminiHochbergAdjustment fdr = new BenjaminiHochbergAdjustment();
             for (String column : selectedPValueColumns) {
 
@@ -139,15 +144,26 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                 }
             }
             Collections.sort(data, new ElementIndexComparator());
-            combine(inputFiles, data, deCalculator, columnIdList, stream);
+            if (vcf) {
+                combineVCF(inputFiles, data, deCalculator, columnIdList, stream);
+
+            } else {
+                combineTSV(inputFiles, data, deCalculator, columnIdList, stream);
+            }
 
 
         } finally {
-            if (stream != System.out) {
+            if (outputFilename != null) {
                 IOUtils.closeQuietly(stream);
             }
         }
     }
+
+
+    private ObjectList<String> getVCFColumns(String[] inputFiles) {
+        return new ObjectArrayList<String>();
+    }
+
 
     private boolean contains(String[] selectedPValueColumns, String statId) {
         for (String s : selectedPValueColumns) {
@@ -156,7 +172,63 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         return false;
     }
 
-    private void load(String[] inputFiles, DifferentialExpressionResults data, DifferentialExpressionCalculator deCalculator, ObjectList<String> columnIdList) throws IOException {
+    private void loadVCF(String[] inputFiles, DifferentialExpressionResults data,
+                         DifferentialExpressionCalculator deCalculator, ObjectList<String> columnIdList) throws FileNotFoundException {
+        int elementIndex = 0;
+        for (String filename : inputFiles) {
+            VCFParser parser = new VCFParser(new FileReader(filename));
+            try {
+                parser.readHeader();
+                IntSet selectedInfoFieldGlobalIndices = new IntArraySet();
+                // find the global field indices for the INFO fields we need to load:
+
+                for (String selectedFieldName : selectedPValueColumns) {
+                    ColumnInfo infoColumn = parser.getColumns().find("INFO");
+                    if (infoColumn == null) {
+                        System.err.printf("Could not find INFO colum in file %s.",
+                                filename);
+                        System.exit(1);
+                    }
+                    ColumnField selectedField = infoColumn.fields.find(selectedFieldName);
+                    if (selectedField == null) {
+                        System.err.printf("Could not find selection colum %s in file %s.", selectedFieldName,
+                                filename);
+                        System.exit(1);
+                    }
+                    final String statName = selectedFieldName.toLowerCase();
+                    if (!data.isStatisticDefined(new MutableString(statName))) {
+                        data.declareStatistic(statName);
+                    }
+                    selectedInfoFieldGlobalIndices.add(selectedField.globalFieldIndex);
+                }
+                while (parser.hasNextDataLine()) {
+                    parser.next();
+                    // prepare elementId and stat info:
+
+                    final String elementId = Integer.toString(elementIndex++);
+                    deCalculator.defineElement(elementId);
+                    int index = 0;
+                    DifferentialExpressionInfo info = new DifferentialExpressionInfo(elementId);
+                    info.statistics().size(selectedInfoFieldGlobalIndices.size());
+
+                    for (int globalFieldIndex : selectedInfoFieldGlobalIndices) {
+
+                        info.statistics().set(index++, Double.parseDouble(parser.getStringFieldValue(globalFieldIndex)));
+                    }
+                    data.add(info);
+                }
+            } catch (VCFParser.SyntaxException
+                    e) {
+                System.err.println("An error occured parsing VCF file " + filename);
+                e.printStackTrace();
+                System.exit(1);
+            }
+        }
+
+    }
+
+    private void loadTSV(String[] inputFiles, DifferentialExpressionResults data, DifferentialExpressionCalculator deCalculator,
+                         ObjectList<String> columnIdList) throws IOException {
         int elementIndex = 0;
         for (String filename : inputFiles) {
             System.out.println("Loading P-values from " + filename);
@@ -218,24 +290,100 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
 
     }
 
-    private void combine(String[] inputFiles, DifferentialExpressionResults data,
-                         DifferentialExpressionCalculator deCalculator, ObjectList<String> columnIdList,
-                         PrintStream out) throws IOException {
-        int elementIndex = 0;
-        for (String column : columnIdList) {
-            out.print(column);
-            out.write('\t');
+    private void combineVCF(String[] inputFiles, DifferentialExpressionResults data,
+                            DifferentialExpressionCalculator deCalculator,
+                            ObjectList<String> columnIdList, Writer writer) throws IOException {
+
+        Columns columns = new Columns();
+        for (String filename : inputFiles) {
+            VCFParser parser = new VCFParser(filename);
+            try {
+                parser.readHeader();
+            } catch (VCFParser.SyntaxException e) {
+                throw new InternalError("this syntax error should have been caught in the first pass.");
+            }
+            Columns fileColumns = parser.getColumns();
+            for (ColumnInfo col : fileColumns) {
+                if (columns.find(col.getColumnName()) == null) {
+                    columns.add(col);
+                }
+            }
         }
+
+        // add adjusted columns:
+        ColumnInfo infoColumn = columns.find("INFO");
+        for (String fieldName : selectedPValueColumns) {
+            infoColumn.addField(new ColumnField(fieldName + "_q", 1, ColumnType.Float,
+                    String.format("Benjamini Hochberg FDR adjusted for column %s.", fieldName)));
+        }
+        VCFWriter vcfWriter = new VCFWriter(writer);
+        vcfWriter.defineSchema(columns);
+        vcfWriter.writeHeader();
+        int elementIndex=0;
+        for (String filename : inputFiles) {
+            VCFParser parser = new VCFParser(filename);
+            try {
+                parser.readHeader();
+            } catch (VCFParser.SyntaxException e) {
+                throw new InternalError("this syntax error should have been caught in the first pass.");
+            }
+            final int chromosomeFieldIndex = columns.find("CHROM").getField("VALUE").globalFieldIndex;
+            final int positionFieldIndex = columns.find("POSITION").getField("VALUE").globalFieldIndex;
+            final int idFieldIndex = columns.find("ID").getField("VALUE").globalFieldIndex;
+            final int refFieldIndex = columns.find("REF").getField("VALUE").globalFieldIndex;
+            final int altFieldIndex = columns.find("ALT").getField("VALUE").globalFieldIndex;
+            final int filterFieldIndex = columns.find("FILTER").getField("VALUE").globalFieldIndex;
+
+            for (int globalFieldIndex = 0; globalFieldIndex < parser.countAllFields(); globalFieldIndex++) {
+                String value = parser.getStringFieldValue(globalFieldIndex);
+
+                if (globalFieldIndex == chromosomeFieldIndex) {
+                    vcfWriter.setChromosome(value);
+                } else if (globalFieldIndex == positionFieldIndex) {
+                    vcfWriter.setPosition(Integer.parseInt(value));
+                } else if (globalFieldIndex == idFieldIndex) {
+                    vcfWriter.setId(value);
+                } else if (globalFieldIndex == refFieldIndex) {
+                    vcfWriter.setReferenceAllele(value);
+                } else if (globalFieldIndex == altFieldIndex) {
+                    vcfWriter.setAlternateAllele(value);
+                } else if (globalFieldIndex == filterFieldIndex) {
+                    vcfWriter.setFilter(value);
+                }
+                //TODO transfer old INFO fields and add new ones.
+               // vcfWriter.setInfo();
+               // vcfWriter.setFormat();
+                vcfWriter.writeRecord();
+            }
+            elementIndex++;
+        }
+    }
+
+    private void combineTSV(String[] inputFiles, DifferentialExpressionResults data,
+                            DifferentialExpressionCalculator deCalculator, ObjectList<String> columnIdList,
+                            Writer out) throws IOException {
+
+        PrintWriter printer = new PrintWriter(out);
+        int elementIndex = 0;
+        // write the TSV header first:
+
+        for (String column : columnIdList) {
+            printer.print(column);
+            printer.write('\t');
+        }
+
         boolean first = true;
         for (String column : adjustedColumnIds) {
             if (!first) {
-                out.write('\t');
+                printer.write('\t');
             }
-            out.print(column);
+            printer.print(column);
             first = false;
 
         }
-        out.println();
+        printer.println();
+        // end of TSV header generation
+
         for (String filename : inputFiles) {
             System.out.printf("Writing combined output (processing %s)%n", filename);
             TSVReader reader = new TSVReader(new FileReader(filename), '\t');
@@ -257,7 +405,6 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                                 data.declareStatistic(statName);
                             }
                             doubleColumnIndices.add(columnIndex);
-
                         }
                     }
                     columnIndex++;
@@ -281,7 +428,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                             }
                         }
                         if (!keepThisLine) {
-                       //     System.out.println("skipping elementId since the adjusted P-values do not make the q-value threshold." + elementId);
+                            //     System.out.println("skipping elementId since the adjusted P-values do not make the q-value threshold." + elementId);
                         }
                         if (keepThisLine) {
                             int index = 0;
@@ -291,12 +438,12 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                                 if (doubleColumnIndices.contains(j)) {
                                     reader.getString();
 
-                                    out.print(info.statistics().get(index));
-                                    out.print('\t');
+                                    printer.print(info.statistics().get(index));
+                                    printer.print('\t');
                                     index++;
                                 } else {
-                                    out.print(reader.getString());
-                                    out.print('\t');
+                                    printer.print(reader.getString());
+                                    printer.print('\t');
                                 }
 
                             }
@@ -306,12 +453,12 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                                 final DoubleArrayList list = data.get(elementIndex).statistics();
 
                                 if (!first) {
-                                    out.write('\t');
+                                    printer.write('\t');
                                 }
-                                out.print(list.get(adjustedColumnIndex));
+                                printer.print(list.get(adjustedColumnIndex));
                                 first = false;
                             }
-                            out.printf("%n");
+                            printer.printf("%n");
                         }
 
                         elementIndex++;
@@ -329,10 +476,10 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
             }
         }
 
-        out.flush();
+        printer.flush();
     }
 
-    private ObjectList<String> getColumns
+    private ObjectList<String> getTSVColumns
             (String[] inputFiles) throws IOException {
         ObjectArrayList<String> columns = new ObjectArrayList<String>();
         for (String filename : inputFiles) {

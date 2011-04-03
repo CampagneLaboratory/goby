@@ -57,7 +57,12 @@
 
             <help>Name of a column containing a P-value to adjust.</help>
         </flaggedOption>
-
+        <switch>
+            <id>vcf</id>
+            <longFlag>vcf</longFlag>
+            <defaults>false</defaults>
+            <help>When this switch is provided, input are read in the Variant Call Format (VCF) and output produced in VCF.</help>
+        </switch>
           
     </parameters>
 </jsap>

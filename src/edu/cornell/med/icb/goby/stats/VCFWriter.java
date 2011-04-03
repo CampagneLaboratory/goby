@@ -27,6 +27,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -48,7 +49,7 @@ public class VCFWriter {
     public int chromosomeColumnIndex;
     public int positionColumnIndex;
     private CharSequence chrom;
-    private int position=-1;
+    private int position = -1;
     private String id;
     private CharSequence[] formatFieldIds;
     private MutableString ref;
@@ -62,14 +63,20 @@ public class VCFWriter {
     private ObjectArrayList<String> altAlleles;
     private char genotypeDelimiterCharacter;
 
+    public VCFWriter(Writer writer) {
+        this(new PrintWriter(writer));
+    }
+
     /**
      * Indicate whether the genotypes should be recorded as phased (true) or unphased (false).
      * Default value at construction of the writer is unphased.
+     *
      * @param state True when the genotypes are phased.
      */
     public void setGenotypesPhased(boolean state) {
-        genotypeDelimiterCharacter=state?'|':'/';
+        genotypeDelimiterCharacter = state ? '|' : '/';
     }
+
     public void setId(String id) {
         this.id = id;
     }
@@ -198,7 +205,7 @@ public class VCFWriter {
     public void writeRecord() {
         outWriter.append(chrom);
         outWriter.append('\t');
-        outWriter.append(position==-1?"":Integer.toString(position));
+        outWriter.append(position == -1 ? "" : Integer.toString(position));
         outWriter.append('\t');
         outWriter.append(id);
         outWriter.append('\t');
@@ -263,7 +270,7 @@ public class VCFWriter {
         chrom = "";
         altAlleles.clear();
         refAlleles.clear();
-        position=-1;
+        position = -1;
     }
 
     MutableString buffer = new MutableString();
@@ -303,14 +310,14 @@ public class VCFWriter {
      */
     public MutableString codeGenotype(String[] alleles) {
         codedGenotypeBuffer.setLength(0);
-        boolean alleleFound=false;
+        boolean alleleFound = false;
         for (String allele : alleles) {
             int alleleIndex = 0;
             for (String ref : refAlleles) {
                 if (ref.equals(allele)) {
-                    codedGenotypeBuffer.append(Integer.toString(alleleIndex));                   
+                    codedGenotypeBuffer.append(Integer.toString(alleleIndex));
                     codedGenotypeBuffer.append(genotypeDelimiterCharacter);
-                    alleleFound=true;
+                    alleleFound = true;
                     continue;
                 }
                 alleleIndex++;
@@ -319,12 +326,12 @@ public class VCFWriter {
                 if (alt.equals(allele)) {
                     codedGenotypeBuffer.append(Integer.toString(alleleIndex));
                     codedGenotypeBuffer.append(genotypeDelimiterCharacter);
-                    alleleFound=true;
+                    alleleFound = true;
                 }
                 alleleIndex++;
             }
             if (!alleleFound) {
-                throw new IllegalArgumentException(String.format("Allele %s was not found in REF or ALT",allele));
+                throw new IllegalArgumentException(String.format("Allele %s was not found in REF or ALT", allele));
             }
         }
 
@@ -428,5 +435,26 @@ public class VCFWriter {
      */
     public int getNumFormatFields() {
         return columns.find("FORMAT").fields.size();
+    }
+
+    /**
+     * Define the VCF schema from Columns assembled externally.
+     *
+     * @param columns
+     */
+    public void defineSchema(Columns columns) {
+        columnList.clear();
+        this.columns = columns;
+    }
+
+    public void setAlternateAllele(String value) {
+        String[] alleles = value.split(",");
+        for (String allele : alleles) {
+            addAlternateAllele(allele);
+        }
+    }
+
+    public void setFilter(String value) {
+        this.filter=value;
     }
 }
