@@ -29,7 +29,5 @@ public class ColumnMetaInfo {
     int index;
     ColumnType type;
     String description;
-    enum ColumnType {
-         Integer, Float, Flag, Character,  String
-    };
+    ;
 }

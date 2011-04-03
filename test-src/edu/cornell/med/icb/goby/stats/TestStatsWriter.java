@@ -18,19 +18,20 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.BeforeClass;
-import static org.junit.Assert.assertEquals;
+import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
+import edu.cornell.med.icb.goby.util.TestFiles;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import java.io.*;
-
-import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
-import edu.cornell.med.icb.goby.util.TestFiles;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * Test that StatsWriter can write both TSV and VCF files.
@@ -53,7 +54,7 @@ public class TestStatsWriter extends TestFiles {
 
         final String file = FilenameUtils.concat(BASE_TEST_DIR, "1.tsv");
 
-        StatisticsWriter writer = new StatisticsWriter(new PrintWriter(new FileWriter(file)));
+        TSVWriter writer = new TSVWriter(new PrintWriter(new FileWriter(new File(file))));
 
         writer.defineColumn("c1");
         writer.defineColumnAttributes("C", 1, ColumnType.String, "something about c1", "c1");
@@ -70,14 +71,15 @@ public class TestStatsWriter extends TestFiles {
 
         final String file = FilenameUtils.concat(BASE_TEST_DIR, "1.vcf");
 
-        StatisticsWriter writer = new StatisticsWriter(new PrintWriter(new FileWriter(file)));
+        VCFWriter writer = new VCFWriter(new PrintWriter(new FileWriter(file)));
 
-        writer.defineColumn("c1");
-        writer.defineColumnAttributes("C",1,  ColumnType.String, "something about c1", "c1");
-        writer.defineColumn("C2");
-        writer.defineColumnAttributes("D", 1, ColumnType.Flag, "something about c2", "C2");
-        writer.setOutputVCF(true);
+        int fieldC=writer.defineField("INFO", "C", 1, ColumnType.String, "something about C");
+        int fieldD=writer.defineField("INFO", "D", 1, ColumnType.String, "something about D");
+
         writer.writeHeader();
+        writer.setInfo(fieldC,"1");
+        writer.setInfo(fieldD,"dvalue");
+        writer.writeRecord();
         writer.close();
 
         assertEquals(new File("test-data/stats-writer/1.vcf"), new File("test-results/stats-writer/1.vcf"));
@@ -89,7 +91,7 @@ public class TestStatsWriter extends TestFiles {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Creating base test directory: " + BASE_TEST_DIR);
         }
-        //     FileUtils.forceMkdir(new File(BASE_TEST_DIR));
+        FileUtils.forceMkdir(new File(BASE_TEST_DIR));
     }
 
     @Before
@@ -99,4 +101,6 @@ public class TestStatsWriter extends TestFiles {
             LOG.debug("Using test directory: " + BASE_TEST_DIR);
         }
     }
+
+
 }

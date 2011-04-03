@@ -20,10 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.alignments.*;
-import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
-import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
-import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
-import edu.cornell.med.icb.goby.stats.StatisticsWriter;
+import edu.cornell.med.icb.goby.stats.*;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -36,6 +33,7 @@ import org.rosuda.JRI.Rengine;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.io.PrintWriter;
 
 /**
  * Implements the Goby 1.9.3 discover sequence variants format.
@@ -51,7 +49,7 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
      */
     private static final Log LOG = LogFactory.getLog(BetweenGroupSequenceVariationOutputFormat.class);
 
-    StatisticsWriter statWriter;
+    TSVWriter statWriter;
     private int refIdColumnIndex;
     private int positionColumnIndex;
 
@@ -78,16 +76,16 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
     private int[] refCountsPerSample;
     private int numberOfSamples;
     private int biomartRegionSpanIndex;
-    private boolean outputVCF;
 
-    public void defineColumns(StatisticsWriter statWriter, DiscoverSequenceVariantsMode mode) {
+
+    public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
         deAnalyzer = mode.getDiffExpAnalyzer();
         deCalculator = mode.getDiffExpCalculator();
         groups = mode.getGroups();
         samples = mode.getSamples();
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
-        this.statWriter = statWriter;
+        this.statWriter = new TSVWriter(writer);
 
         if (deAnalyzer.eval("within-groups") || deAnalyzer.eval("between-groups")) {
             //activate R only if we need it:
@@ -112,7 +110,7 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
         statWriter.defineColumnAttributes("POS", 1, ColumnType.Integer, "Position on the chromosome/reference sequence.", "position");
 
 
-        log2OddsRatioColumnIndex = StatisticsWriter.COLUMN_NOT_DEFINED;
+        log2OddsRatioColumnIndex = TSVWriter.COLUMN_NOT_DEFINED;
         fisherExactPValueColumnIndex = -1;
         numberOfGroups = groups.length;
 
@@ -169,7 +167,7 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
                     "refCountsInSample[%s]",
                     "varCountInSample[%s]");
         }
-        statWriter.setOutputVCF(outputVCF);
+
         statWriter.writeHeader();
     }
 
@@ -201,11 +199,10 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 
         statWriter.setValue(refIdColumnIndex, currentReferenceId);
-        String positionString = Integer.toString(position + 1);
-        statWriter.setValue(positionColumnIndex, positionString);
+        statWriter.setValue(positionColumnIndex, position);
         // construct a biomart region span in the format chr:pos1:chr:pos
-        String biomartRegionSpan = String.format("%s:%s:%s", currentReferenceId, positionString,
-                positionString);
+        String biomartRegionSpan = String.format("%s:%s:%s", currentReferenceId, position,
+                position);
 
         statWriter.setValue(biomartRegionSpanIndex, biomartRegionSpan);
 
@@ -295,9 +292,10 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
         statWriter.writeRecord();
     }
 
-    public void outputVCF(boolean state) {
-        this.outputVCF=state;
+    public void close() {
+        statWriter.close();
     }
+
 
     private void fillVariantCountArrays(SampleCountInfo[] sampleCounts) {
 
@@ -338,7 +336,7 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
     }
 
     private void summarizeVariations
-            (StatisticsWriter
+            (TSVWriter
                     statWriter, ObjectArrayList<PositionBaseInfo> list,
              int groupIndex) {
 

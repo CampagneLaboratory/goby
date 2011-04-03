@@ -18,15 +18,13 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
-import edu.cornell.med.icb.goby.stats.StatisticsWriter;
+import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
+import edu.cornell.med.icb.goby.stats.TSVWriter;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
 
-import java.util.Arrays;
+import java.io.PrintWriter;
 
 /**
  * @author Fabien Campagne
@@ -40,13 +38,15 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
     private int numberOfSamples;
     private int[] refCountsPerSample;
     private int[] variantsCountPerSample;
-    private StatisticsWriter statWriter;
+    private TSVWriter statsWriter;
     String[] samples;
     private boolean outputVCF;
 
-    public void defineColumns(StatisticsWriter statsWriter, DiscoverSequenceVariantsMode mode) {
+    public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
+        statsWriter = new TSVWriter(writer);
         refIdColumnIndex = statsWriter.defineColumn("chr:position:position");
+
         statsWriter.defineColumnAttributes("ID", 1, ColumnType.String, "Unique site id, in the format chr:start:end.", "chr:position:position");
 
         statsWriter.defineColumnSet(samples,
@@ -58,8 +58,8 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         statsWriter.defineColumnAttributes(1, ColumnType.Float, samples, "refProportion[%s]", "Zygosity[%s]");
         statsWriter.defineColumnAttributes(1, ColumnType.Integer, samples, "count[%s]");
 
-        this.statWriter = statsWriter;
-        statsWriter.setOutputVCF(outputVCF);
+        this.statsWriter = statsWriter;
+
         statsWriter.writeHeader();
     }
 
@@ -78,8 +78,8 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
 
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 
-        final int positionString = position + 1;
-        statWriter.setValue(refIdColumnIndex, String.format("%s:%d:%d", currentReferenceId, positionString, positionString));
+        final int positionString = position;
+        statsWriter.setValue(refIdColumnIndex, String.format("%s:%d:%d", currentReferenceId, positionString, positionString));
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             int numAlleles = 0;
@@ -92,16 +92,20 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
                 // need exactly two alleles to estimate reference allele imbalance:
                 double refProportion = (double) refCountsPerSample[sampleIndex];
                 refProportion /= refCountsPerSample[sampleIndex] + variantsCountPerSample[sampleIndex];
-                statWriter.setValue(refProportion,
+                statsWriter.setValue(refProportion,
                         "refProportion[%s]", samples[sampleIndex]);
             } else {
-                statWriter.setValue("",
+                statsWriter.setValue("",
                         "refProportion[%s]", samples[sampleIndex]);
             }
-            statWriter.setValue(totalCount,
+            statsWriter.setValue(totalCount,
                     "count[%s]", samples[sampleIndex]);
         }
-        statWriter.writeRecord();
+        statsWriter.writeRecord();
+    }
+
+    public void close() {
+        statsWriter.close();
     }
 
     public void outputVCF(boolean state) {

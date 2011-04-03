@@ -22,7 +22,9 @@ package edu.cornell.med.icb.goby.alignments;
 
 import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
-import edu.cornell.med.icb.goby.stats.StatisticsWriter;
+
+import edu.cornell.med.icb.goby.stats.TSVWriter;
+import edu.cornell.med.icb.goby.stats.VCFWriter;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -70,20 +72,26 @@ public class DiscoverVariantIterateSortedAlignments
     }
 
 
-    StatisticsWriter statWriter;
+    Object statWriter;
     String[] samples;
 
     public void initialize(DiscoverSequenceVariantsMode mode,
                            PrintWriter outWriter) {
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
-        statWriter = new StatisticsWriter(outWriter);
-        format.defineColumns(statWriter, mode);
-        format.outputVCF(mode.outputVCF());
+
+        if (mode.outputVCF()) {
+            statWriter = new VCFWriter(outWriter);
+        } else {
+            statWriter = new TSVWriter(outWriter);
+        }
+
+        format.defineColumns(outWriter, mode);
+
         if (mode.getDiffExpAnalyzer().eval("filter")) {
             baseFilters = new BaseFilter[]{
 
                     new QualityScoreFilter(),
-               //     new FisherBaseFilter(mode.getReadIndexStats()),
+                    //     new FisherBaseFilter(mode.getReadIndexStats()),
                     new LeftOverFilter()
             };
             System.out.println("Filtering reads that have these criteria:");
@@ -98,7 +106,7 @@ public class DiscoverVariantIterateSortedAlignments
     }
 
     public void finish() {
-        statWriter.close();
+        format.close();
 
     }
 

@@ -27,15 +27,19 @@ import java.util.Arrays;
  *         Date: Mar 26, 2011
  *         Time: 7:31:33 PM
  */
-public class ColumnInfo {
+public class ColumnInfo implements Cloneable {
+    public String getColumnName() {
+        return columnName;
+    }
+
     /**
      * Name of the column.
      */
-    String columnName;
+    protected String columnName;
     /**
      * Set of fields for the column.
      */
-    ColumnFields fields = new ColumnFields();
+    public ColumnFields fields = new ColumnFields();
     /**
      * Index of this column in the file being parsed. Index is zero-based. Zero is the first (left-most) column.
      * Value is -1 if this index has not been set yet.
@@ -75,5 +79,16 @@ public class ColumnInfo {
 
     public ColumnField getField(String fieldName) {
         return fields.find(fieldName);
+    }
+
+
+    public ColumnInfo copy()  {
+        ColumnField[] fieldCopy=new ColumnField[fields.size()];
+        int i=0;
+        for (ColumnField f: fields) {
+            fieldCopy[i++]=new ColumnField(f.id, f.numberOfValues,f.type, f.description );
+        }
+        ColumnInfo copy=new ColumnInfo(columnName, fieldCopy);
+        return copy;
     }
 }

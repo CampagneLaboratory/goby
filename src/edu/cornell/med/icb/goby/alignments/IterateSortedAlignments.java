@@ -293,7 +293,7 @@ public abstract class IterateSortedAlignments<T> {
                 final int leftPadding = alignmentEntry.getQueryPosition();
                 final int rightPadding = (queryLength + numDeletions) -
                         (alignmentEntry.getTargetAlignedLength() + numInsertions) - leftPadding;
-
+           
                 if (leftPadding > 0) {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(String.format("queryIndex=%d, left padding, %d bases",

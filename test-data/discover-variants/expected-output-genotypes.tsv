@@ -1,11 +1,16 @@
-chr:position:chr:position	Genotype[basen0]	Genotype[basen1]	Genotype[basen2]	Genotype[basen3]	Genotype[basen4]	Genotype[basen5]	Genotype[basen6]	Genotype[basen7]	Genotype[basen8]	Genotype[basen9]	Zygosity[basen0]	Zygosity[basen1]	Zygosity[basen2]	Zygosity[basen3]	Zygosity[basen4]	Zygosity[basen5]	Zygosity[basen6]	Zygosity[basen7]	Zygosity[basen8]	Zygosity[basen9]
-target1:126:126	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous
-target1:127:127	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous
-target1:128:128	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous
-target1:129:129	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous
-target1:130:130	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous
-target1:131:131	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous
-target1:132:132	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous
-target1:133:133	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous
-target1:134:134	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous
-target1:135:135	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	A/G	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous	heterozygous
+##fileformat=VCFv4.1
+##Goby=UNKNOWN
+##INFO=<ID=BIOMART_COORDS,Number=1,Type=String,Description="Coordinates for use with Biomart.">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=Zygosity,Number=1,Type=String,Description="Zygosity">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	basen0	basen1	basen2	basen3	basen4	basen5	basen6	basen7	basen8	basen9
+target1	126	.				BIOMART_COORDS=target1:126:126	GT:Zygosity	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	
+target1	127	.				BIOMART_COORDS=target1:127:127	GT:Zygosity	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	
+target1	128	.				BIOMART_COORDS=target1:128:128	GT:Zygosity	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	
+target1	129	.				BIOMART_COORDS=target1:129:129	GT:Zygosity	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	
+target1	130	.				BIOMART_COORDS=target1:130:130	GT:Zygosity	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	
+target1	131	.				BIOMART_COORDS=target1:131:131	GT:Zygosity	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	
+target1	132	.				BIOMART_COORDS=target1:132:132	GT:Zygosity	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	
+target1	133	.				BIOMART_COORDS=target1:133:133	GT:Zygosity	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	
+target1	134	.				BIOMART_COORDS=target1:134:134	GT:Zygosity	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	
+target1	135	.				BIOMART_COORDS=target1:135:135	GT:Zygosity	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	A/G:heterozygous	

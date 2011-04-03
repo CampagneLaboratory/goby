@@ -279,7 +279,8 @@ public class TestIterateSortedAlignment {
         newEntry.setMatchingReverseStrand(matchesReverseStrand);
         newEntry.setMultiplicity(1);
         newEntry.setQueryLength(queryLength);
-
+        newEntry.setTargetAlignedLength(queryLength);
+        newEntry.setQueryAlignedLength(queryLength);
         for (int variaIndex : variationIndices) {
             
             Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder();
@@ -308,8 +309,9 @@ public class TestIterateSortedAlignment {
         newEntry.setMatchingReverseStrand(matchesReverseStrand);
         newEntry.setMultiplicity(1);
         newEntry.setQueryLength(35);
-
-
+        newEntry.setTargetAlignedLength(35);
+        int refAlignedLength=35;
+        int readAlignedLength=35;
         for (int i = 0; i < variationIndices.length / 2; i += 2) {
             Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder();
             StringBuffer insertion = new StringBuffer();
@@ -318,6 +320,8 @@ public class TestIterateSortedAlignment {
             for (int j = 0; j < gapLength; j++) {
                 gaps.append('-');
                 insertion.append('C');
+                refAlignedLength++;
+                readAlignedLength--;
             }
             varBuilder.setTo(gaps.toString());
             varBuilder.setFrom(insertion.toString());
@@ -325,7 +329,7 @@ public class TestIterateSortedAlignment {
             varBuilder.setPosition(variationIndex);
             varBuilder.setReadIndex(variationIndex);
 
-
+            newEntry.setTargetAlignedLength(refAlignedLength);
             newEntry.addSequenceVariations(varBuilder.build());
         }
         return newEntry;
@@ -343,7 +347,8 @@ public class TestIterateSortedAlignment {
         newEntry.setMatchingReverseStrand(matchesReverseStrand);
         newEntry.setMultiplicity(1);
         newEntry.setQueryLength(35);
-
+        int refAlignedLength=35;
+        int queryAlignedLength=35;
 
         for (int i = 0; i < variationIndices.length / 2; i += 2) {
             Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder();
@@ -353,6 +358,8 @@ public class TestIterateSortedAlignment {
             for (int j = 0; j < gapLength; j++) {
                 gaps.append('-');
                 insertion.append('C');
+                refAlignedLength--;
+                queryAlignedLength++;
             }
             varBuilder.setFrom(gaps.toString());
             varBuilder.setTo(insertion.toString());
@@ -360,7 +367,8 @@ public class TestIterateSortedAlignment {
             varBuilder.setPosition(variationIndex);
             varBuilder.setReadIndex(variationIndex);
 
-
+           newEntry.setQueryAlignedLength(queryAlignedLength);
+            newEntry.setTargetAlignedLength(refAlignedLength);
             newEntry.addSequenceVariations(varBuilder.build());
         }
         return newEntry;
@@ -419,7 +427,7 @@ public class TestIterateSortedAlignment {
                     coverage += info.to != '-' ? 1 : 0;
                 }
                 positionMap.put(intermediatePosition, coverage);
-                System.out.printf("position: %d listSize: %d%n", referenceIndex, coverage);
+                System.out.printf("position: %d listSize: %d%n", intermediatePosition, coverage);
             }
         };
         iterator.iterate(basenamePath);

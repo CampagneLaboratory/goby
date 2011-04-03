@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 *         Date: Mar 26, 2011
 *         Time: 7:32:22 PM
 */
-public class ColumnFields extends ObjectArraySet<ColumnField> {
+public class ColumnFields extends ObjectArraySet<ColumnField> implements Cloneable {
     public boolean hasFieldName(CharSequence id) {
         for (ColumnField field : this) {
             if (id.equals(field.id))
@@ -36,6 +36,13 @@ public class ColumnFields extends ObjectArraySet<ColumnField> {
     public ColumnField find(CharSequence id) {
         for (ColumnField field : this) {
             if (id.equals(field.id))
+                return field;
+        }
+        return null;
+    }
+    public ColumnField find(int fieldIndex) {
+        for (ColumnField field : this) {
+            if (fieldIndex==field.globalFieldIndex)
                 return field;
         }
         return null;

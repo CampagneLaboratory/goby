@@ -18,13 +18,13 @@
 
 package edu.cornell.med.icb.goby.readers.vcf;
 
-import it.unimi.dsi.io.FastBufferedReader;
-import it.unimi.dsi.io.LineIterator;
-import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.io.FastBufferedReader;
+import it.unimi.dsi.io.LineIterator;
+import it.unimi.dsi.lang.MutableString;
 
 import java.io.*;
 import java.util.Arrays;
@@ -74,7 +74,7 @@ public class VCFParser {
      * fields that occur in any order on each line in a column).
      */
     private int[] fieldPermutation;
-    private static final Comparator COLUMN_SORT = new Comparator<ColumnInfo>() {
+    public static final Comparator COLUMN_SORT = new Comparator<ColumnInfo>() {
         public int compare(ColumnInfo c1, ColumnInfo c2) {
             return c1.columnIndex - c2.columnIndex;
         }
@@ -99,7 +99,7 @@ public class VCFParser {
      */
     public VCFParser(String filename) throws IOException {
         this.input = filename.endsWith(".gz") ?
-                new InputStreamReader(new GZIPInputStream(new FileInputStream(filename),100000)) :
+                new InputStreamReader(new GZIPInputStream(new FileInputStream(filename), 100000)) :
                 new FileReader(filename);
     }
 
@@ -432,11 +432,11 @@ public class VCFParser {
                             break;
                         }
                         if (j >= lineLength) {
-                           if (lineIterator.hasNext()) {
-                               System.out.println("lineNext: "+lineIterator.next());
-                           }
+                            if (lineIterator.hasNext()) {
+                                System.out.println("lineNext: " + lineIterator.next());
+                            }
                             System.out.println("line too short: " + line);
-                           // System.exit(1);
+                            // System.exit(1);
                         }
                         char linechar = line.charAt(j);
 
@@ -555,7 +555,7 @@ public class VCFParser {
                 fieldIndexToName.put(field.globalFieldIndex, name);
             }
         }
-        formatColumnIndex = TSV? -1: formatColumn.columnIndex;
+        formatColumnIndex = TSV ? -1 : formatColumn.columnIndex;
 
         numberOfColumns = globalColumnIndex;
         columnStarts = new int[numberOfColumns];
@@ -587,8 +587,22 @@ public class VCFParser {
 
     }
 
+    public static ColumnInfo[] fixedColumn() {
 
-    final private ColumnInfo fixedColumns[] = new ColumnInfo[]{
+        // returns a deep copy of fixed columns so that this class is not affected by possible changes to the returned
+        // value.
+        ColumnInfo copy[] = new ColumnInfo[fixedColumns.length];
+        int i = 0;
+
+        for (ColumnInfo c : fixedColumns) {
+            copy[i++] = c.copy();
+        }
+
+        return copy;
+
+    }
+
+    final static private ColumnInfo fixedColumns[] = new ColumnInfo[]{
             new ColumnInfo("CHROM", new ColumnField("VALUE", 1, ColumnType.String, "The reference position, with the 1st base having position 1. " +
                     "Positions are sorted numerically, in increasing order, within each reference sequence CHROM.")),
             new ColumnInfo("POS", new ColumnField("VALUE", 1, ColumnType.Integer, "he reference position, with the 1st base having position 1. " +
@@ -621,7 +635,7 @@ public class VCFParser {
                     "Filter: PASS if this position has passed all filters, i.e. a call is made at this position. " +
                             "Otherwise, if the site has not passed all filters, a semicolon-separated list of codes " +
                             "for filters that fail. e.g. \"10;s50\" might indicate that at this site the quality is " +
-                            "below 10 and the number of samples with data is below 50% of the total number of samples. " +
+                            "below 10 and the number of samples with data is below 50%% of the total number of samples. " +
                             "\"0\" is reserved and should not be used as a filter String. " +
                             "If filters have not been applied, then this field should be set to the missing value.")),
             new ColumnInfo("INFO", new ColumnField("VALUE", 1, ColumnType.String,

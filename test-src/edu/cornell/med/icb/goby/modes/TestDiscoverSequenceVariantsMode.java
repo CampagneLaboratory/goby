@@ -407,6 +407,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
                 "--groups %s " +
                 "--compare A/B " +
                 "--eval %s " +
+                "--vcf "+
                 "--minimum-variation-support 1 " +
                 "--threshold-distinct-read-indices 1 " +
                 "--output %s " +
@@ -552,6 +553,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
             builder.setQueryAlignedLength(50);
             int multiplicity = 1;
             builder.setMultiplicity(multiplicity);
+            builder.setTargetAlignedLength(50);
             Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder();
             varBuilder.setFrom("A");
             varBuilder.setTo(Character.toString(toBase));                          
@@ -559,6 +561,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
             varBuilder.setToQuality(ByteString.copyFrom(new byte[]{40}));
             varBuilder.setPosition(25);
             varBuilder.setReadIndex(25);
+
             //   System.out.printf("%s j=%d var A/G at %d%n", basenames[basenameIndex], j, 25 + referencePosition + positionStart - 1);
             builder.addSequenceVariations(varBuilder);
             final Alignments.AlignmentEntry entry = builder.build();

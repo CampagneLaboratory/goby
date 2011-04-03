@@ -183,6 +183,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         return this;
     }
 
+    
     enum OutputFormat {
         VARIANT_DISCOVERY,
         ALLELE_FREQUENCIES,

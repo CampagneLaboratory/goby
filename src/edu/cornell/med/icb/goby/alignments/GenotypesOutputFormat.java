@@ -18,17 +18,16 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
-import edu.cornell.med.icb.goby.stats.StatisticsWriter;
+import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.chars.CharArrayList;
+import edu.cornell.med.icb.goby.stats.VCFWriter;
 import it.unimi.dsi.fastutil.chars.CharArraySet;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 
-import java.util.Collections;
+import java.io.PrintWriter;
 
 /**
  * @author Fabien Campagne
@@ -36,32 +35,31 @@ import java.util.Collections;
  *         Time: 2:37:43 PM
  */
 public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
-    private int refIdColumnIndex;
+    private int biomartCoordColumnIndex;
     private int positionColumnIndex;
     private int numberOfGroups;
     private int numberOfSamples;
     private int[] refCountsPerSample;
     private int[] variantsCountPerSample;
-    private StatisticsWriter statWriter;
+    private VCFWriter statsWriter;
     String[] samples;
-    private boolean outputVCF;
+    private int chromosomeColumnIndex;
+    private int idColumnIndex;
+    private int biomartFieldIndex;
+    private int genotypeFieldIndex;
+    private int zygFieldIndex;
 
 
-    public void defineColumns(StatisticsWriter statsWriter, DiscoverSequenceVariantsMode mode) {
+    public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
-        refIdColumnIndex = statsWriter.defineColumn("chr:position:position");
-        statsWriter.defineColumnAttributes("ID", 1, ColumnType.String, "Unique site id, in the format chr:start:end.", "chr:position:position");
+        this.statsWriter = new VCFWriter(writer);
 
-        statsWriter.defineColumnSet(samples,
-                "Genotype[%s]"
-        );
-        statsWriter.defineColumnSet(samples,
-                "Zygosity[%s]"
-        );
-        statsWriter.defineColumnAttributes(1, ColumnType.String, samples, "Genotype[%s]", "Zygosity[%s]");
 
-        this.statWriter = statsWriter;
-        statsWriter.setOutputVCF(outputVCF);
+        biomartFieldIndex = statsWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
+
+        genotypeFieldIndex = statsWriter.defineField("FORMAT", "GT", 1, ColumnType.String, "Genotype");
+        zygFieldIndex = statsWriter.defineField("FORMAT", "Zygosity", 1, ColumnType.String, "Zygosity");
+        statsWriter.defineSamples(samples);
         statsWriter.writeHeader();
     }
 
@@ -84,10 +82,12 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
 
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 
-        final int positionString = position + 1;
-        statWriter.setValue(refIdColumnIndex, String.format("%s:%d:%d", currentReferenceId, positionString,
-                positionString));
-
+        statsWriter.setId(".");
+        statsWriter.setInfo(biomartCoordColumnIndex,
+                String.format("%s:%d:%d", currentReferenceId, position,
+                        position));
+        statsWriter.setChromosome(currentReferenceId);
+        statsWriter.setPosition(position);
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             alleleSet.clear();
             SampleCountInfo sci = sampleCounts[sampleIndex];
@@ -142,19 +142,17 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                     break;
             }
 
-            statWriter.setValue(zygozity,
-                    "Zygosity[%s]", samples[sampleIndex]);
-
-            statWriter.setValue(genotypeBuffer.toString(),
-                    "Genotype[%s]", samples[sampleIndex]);
+            statsWriter.setSampleValue(zygFieldIndex, sampleIndex, zygozity);
+            
+            statsWriter.setSampleValue(genotypeFieldIndex, sampleIndex, genotypeBuffer);
 
         }
 
-        statWriter.writeRecord();
+        statsWriter.writeRecord();
     }
 
-    public void outputVCF(boolean state) {
-        outputVCF=state;
+    public void close() {
+        statsWriter.close();
     }
 
 
