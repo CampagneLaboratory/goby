@@ -48,18 +48,28 @@ public class VCFWriter {
     public int chromosomeColumnIndex;
     public int positionColumnIndex;
     private CharSequence chrom;
-    private int position;
+    private int position=-1;
     private String id;
     private CharSequence[] formatFieldIds;
-    private CharSequence ref;
-    private CharSequence alt;
+    private MutableString ref;
+    private MutableString alt;
     private CharSequence filter;
 
     private boolean[] formatFieldActive;
     private CharSequence[][] formatValues;
     private CharSequence[] infoIds;
+    ObjectArrayList<String> refAlleles;
+    private ObjectArrayList<String> altAlleles;
+    private char genotypeDelimiterCharacter;
 
-
+    /**
+     * Indicate whether the genotypes should be recorded as phased (true) or unphased (false).
+     * Default value at construction of the writer is unphased.
+     * @param state True when the genotypes are phased.
+     */
+    public void setGenotypesPhased(boolean state) {
+        genotypeDelimiterCharacter=state?'|':'/';
+    }
     public void setId(String id) {
         this.id = id;
     }
@@ -71,6 +81,15 @@ public class VCFWriter {
 
     public void setChromosome(CharSequence chromosome) {
         this.chrom = chromosome;
+    }
+
+    public void setReferenceAllele(String allele) {
+        refAlleles.clear();
+        refAlleles.add(allele);
+    }
+
+    public void addAlternateAllele(String allele) {
+        altAlleles.add(allele);
     }
 
     private Columns columns = new Columns();
@@ -93,6 +112,11 @@ public class VCFWriter {
             }
         }
         columns.add(new ColumnInfo("FORMAT"));
+        refAlleles = new ObjectArrayList<String>();
+        altAlleles = new ObjectArrayList<String>();
+        ref = new MutableString();
+        alt = new MutableString();
+        setGenotypesPhased(false);
     }
 
     /**
@@ -151,8 +175,8 @@ public class VCFWriter {
             formatFieldIds[index++] = formatField.id;
         }
         formatValues = new CharSequence[formatFieldActive.length][sampleIds.length];
-        ref = "";
-        alt = "";
+        ref.setLength(0);
+        alt.setLength(0);
         filter = "";
         id = "";
         chrom = "";
@@ -172,13 +196,13 @@ public class VCFWriter {
     public void writeRecord() {
         outWriter.append(chrom);
         outWriter.append('\t');
-        outWriter.append(Integer.toString(position));
+        outWriter.append(position==-1?"":Integer.toString(position));
         outWriter.append('\t');
         outWriter.append(id);
         outWriter.append('\t');
-        outWriter.append(ref);
+        outWriter.append(constructAlleleString(refAlleles));
         outWriter.append('\t');
-        outWriter.append(alt);
+        outWriter.append(constructAlleleString(altAlleles));
         outWriter.append('\t');
         outWriter.append(filter);
         outWriter.append('\t');
@@ -231,14 +255,83 @@ public class VCFWriter {
         Arrays.fill(formatFieldActive, false);
         for (int i = 0; i < formatFieldActive.length; i++) Arrays.fill(formatValues[i], "");
         Arrays.fill(infoValues, "");
-        ref = "";
-        alt = "";
+
         filter = "";
         id = "";
         chrom = "";
-
+        altAlleles.clear();
+        refAlleles.clear();
+        position=-1;
     }
 
+    MutableString buffer = new MutableString();
+
+    private MutableString constructAlleleString(ObjectArrayList<String> refAlleles) {
+        buffer.setLength(0);
+        int max = refAlleles.size();
+        int index = 0;
+        for (String allele : refAlleles) {
+            buffer.append(allele);
+            if (++index != max) buffer.append(',');
+        }
+        return buffer;
+    }
+
+    private MutableString codedGenotypeBuffer = new MutableString();
+
+    /**
+     * Encode the list of alleles as a VCF genotype.
+     *
+     * @param alleles String of the form A/B/C where A,B C are allele that are part of a genotype.
+     * @return coded VCF genotype.
+     * @see #codeGenotype(String[] alleles)
+     */
+    public MutableString codeGenotype(String alleles) {
+        return codeGenotype(alleles.split("/"));
+    }
+
+    /**
+     * Encode the list of alleles as a VCF genotype. VCF genotypes are coded against the REF and ALT alleles.
+     * A VCF genotype has the form 0/2/3 where each int encodes the index of the allele that participates to the
+     * genotype. REF ALT aleleles are considered in the order they appear and given increasing indices (starting at
+     * zero with the REF allele). The coded genotype 0/0 represents a genotype with two reference alleles.
+     *
+     * @param alleles List of alleles included in the genotype.
+     * @return coded VCF genotype.
+     */
+    public MutableString codeGenotype(String[] alleles) {
+        codedGenotypeBuffer.setLength(0);
+        boolean alleleFound=false;
+        for (String allele : alleles) {
+            int alleleIndex = 0;
+            for (String ref : refAlleles) {
+                if (ref.equals(allele)) {
+                    codedGenotypeBuffer.append(Integer.toString(alleleIndex));                   
+                    codedGenotypeBuffer.append(genotypeDelimiterCharacter);
+                    alleleFound=true;
+                    continue;
+                }
+                alleleIndex++;
+            }
+            for (String alt : altAlleles) {
+                if (alt.equals(allele)) {
+                    codedGenotypeBuffer.append(Integer.toString(alleleIndex));
+                    codedGenotypeBuffer.append(genotypeDelimiterCharacter);
+                    alleleFound=true;
+                }
+                alleleIndex++;
+            }
+            if (!alleleFound) {
+                throw new IllegalArgumentException(String.format("Allele %s was not found in REF or ALT",allele));
+            }
+        }
+
+        final int length = codedGenotypeBuffer.length();
+        if (length > 0) {
+            codedGenotypeBuffer.setLength(length - 1);
+        }
+        return codedGenotypeBuffer.copy();
+    }
 
     public static int COLUMN_NOT_DEFINED = -1;
 
@@ -305,6 +398,7 @@ public class VCFWriter {
     /**
      * Define sample identifiers. VCF stores information for each sample according to information stored in the
      * FORMAT column in each line.
+     * se
      *
      * @param samples Identifiers of the samples
      */

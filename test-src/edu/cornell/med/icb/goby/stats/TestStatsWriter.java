@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import edu.cornell.med.icb.goby.util.TestFiles;
+import static junit.framework.Assert.assertTrue;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
@@ -95,19 +96,74 @@ public class TestStatsWriter extends TestFiles {
 
         int fieldC = writer.defineField("FORMAT", "GT", 1, ColumnType.String, "Desc GT");
         int fieldD = writer.defineField("FORMAT", "GQ", 1, ColumnType.String, "Desc GQ");
-        String samples[] = {"sample-id-1","sample-id-2"};
+        String samples[] = {"sample-id-1", "sample-id-2"};
 
         writer.defineSamples(samples);
         writer.writeHeader();
         writer.setSampleValue(fieldC, 0, "A");
         writer.setSampleValue(fieldD, 0, "B");
         writer.setSampleValue(fieldC, 1, "B");
-                writer.setSampleValue(fieldD, 1, "A");
+        writer.setSampleValue(fieldD, 1, "A");
 
         writer.writeRecord();
         writer.close();
 
         assertEquals(new File("test-data/stats-writer/expected-format-1.vcf"), new File("test-results/stats-writer/format-1.vcf"));
+    }
+
+    @Test
+    public void testCodeGenotype() throws IOException {
+        final String file = FilenameUtils.concat(BASE_TEST_DIR, "not-tested.vcf");
+
+        VCFWriter writer = new VCFWriter(new PrintWriter(new FileWriter(file)));
+        writer.setReferenceAllele("A");
+        // Only CC ref should remain in output
+        writer.setReferenceAllele("CC");
+        writer.addAlternateAllele("T");
+        boolean success;
+        try {
+            writer.codeGenotype("A/CC/T");
+            success = false;
+        } catch (IllegalArgumentException e) {
+            success = true;
+        }
+        assertTrue("incorrect alleles must raise IllegalArgumentException", success);
+    }
+
+    @Test
+    public void testGenotypes() throws IOException {
+
+        final String file = FilenameUtils.concat(BASE_TEST_DIR, "genotypes-1.vcf");
+
+        VCFWriter writer = new VCFWriter(new PrintWriter(new FileWriter(file)));
+
+        int fieldC = writer.defineField("FORMAT", "GT", 1, ColumnType.String, "Genotype");
+        String samples[] = {"sample-id-1", "sample-id-2"};
+
+        writer.defineSamples(samples);
+        writer.writeHeader();
+        writer.setReferenceAllele("A");
+        // Only CC ref should remain in output
+        writer.setReferenceAllele("CC");
+
+        writer.addAlternateAllele("A");
+        writer.addAlternateAllele("N");
+        writer.addAlternateAllele("T");
+        writer.setSampleValue(fieldC, 0, writer.codeGenotype("CC/T"));
+        writer.setSampleValue(fieldC, 1, writer.codeGenotype("A/C/T"));
+
+        writer.writeRecord();
+        writer.setReferenceAllele("A");
+        writer.addAlternateAllele("C");
+        writer.addAlternateAllele("T");
+        writer.setSampleValue(fieldC, 0, writer.codeGenotype("A/A"));
+        writer.setSampleValue(fieldC, 1, writer.codeGenotype("A/C"));
+
+
+        writer.writeRecord();
+        writer.close();
+
+        assertEquals(new File("test-data/stats-writer/expected-genotypes-1.vcf"), new File("test-results/stats-writer/genotypes-1.vcf"));
     }
 
     @BeforeClass
