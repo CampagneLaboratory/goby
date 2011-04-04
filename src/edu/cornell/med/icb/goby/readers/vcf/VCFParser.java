@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.io.FastBufferedReader;
 import it.unimi.dsi.io.LineIterator;
 import it.unimi.dsi.lang.MutableString;
+import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.util.Arrays;
@@ -46,7 +47,7 @@ import java.util.zip.GZIPInputStream;
  *         Date: Mar 26, 2011
  *         Time: 3:01:47 PM
  */
-public class VCFParser {
+public class VCFParser implements Closeable {
     private Reader input;
     private Columns columns = new Columns();
     private boolean hasNextDataLine;
@@ -289,6 +290,8 @@ public class VCFParser {
         return fieldIndexToName.get(globalFieldIndex);
     }
 
+    private FastBufferedReader bufferedReader = null;
+
     /**
      * Read the header of this file. Headers in the VCF format are supported, as well as TSV single header lines (with or
      * without first character #.
@@ -298,7 +301,8 @@ public class VCFParser {
     public void readHeader() throws SyntaxException {
         globalFieldIndex = 0;
         fieldIndexToName = new Int2ObjectOpenHashMap<String>();
-        lineIterator = new LineIterator(new FastBufferedReader(input));
+        bufferedReader = new FastBufferedReader(input);
+        lineIterator = new LineIterator(bufferedReader);
         int lineNumber = 1;
         while (lineIterator.hasNext()) {
             line = lineIterator.next();
@@ -730,6 +734,19 @@ public class VCFParser {
         final ColumnField columnField = column.fields.find(fieldId);
         if (columnField == null) return -1;
         return columnField.globalFieldIndex;
+    }
+
+    /**
+     * Releases the IO resources held by this parser.
+     * @throws IOException
+     */
+    public void close() throws IOException {
+        if (bufferedReader != null) {
+            IOUtils.closeQuietly(bufferedReader);
+
+        }
+        IOUtils.closeQuietly(input);
+
     }
 
 

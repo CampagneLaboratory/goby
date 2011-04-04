@@ -419,13 +419,13 @@ public class VCFWriter {
     /**
      * Set a value of a sample column. The sampleIndex identifies the sample in the getSampleIds()  array.
      *
-     * @param fieldIndex  Index of a FORMAT field created with defineField("FORMAT,...)
+     * @param formatFieldIndex  Index of a FORMAT field created with defineField("FORMAT,...)
      * @param sampleIndex Index of the sample
      * @param value       Value to set the field to for the current record.
      */
-    public void setSampleValue(int fieldIndex, int sampleIndex, CharSequence value) {
-        formatFieldActive[fieldIndex] = true;
-        formatValues[fieldIndex][sampleIndex] = value;
+    public void setSampleValue(int formatFieldIndex, int sampleIndex, CharSequence value) {
+        formatFieldActive[formatFieldIndex] = true;
+        formatValues[formatFieldIndex][sampleIndex] = value;
     }
 
     /**

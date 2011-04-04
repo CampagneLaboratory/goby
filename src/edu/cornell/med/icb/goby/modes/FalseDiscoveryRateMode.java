@@ -24,6 +24,8 @@ import edu.cornell.med.icb.goby.readers.vcf.*;
 import edu.cornell.med.icb.goby.stats.*;
 import edu.cornell.med.icb.io.TSVReader;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -309,53 +311,123 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                 }
             }
         }
+        VCFWriter vcfWriter = new VCFWriter(writer);
+        vcfWriter.defineSchema(columns);
+        Int2IntMap statIndexToInfoFieldIndex = new Int2IntOpenHashMap();
 
         // add adjusted columns:
         ColumnInfo infoColumn = columns.find("INFO");
+        int statIndex = 0;
         for (String fieldName : selectedPValueColumns) {
-            infoColumn.addField(new ColumnField(fieldName + "_q", 1, ColumnType.Float,
-                    String.format("Benjamini Hochberg FDR adjusted for column %s.", fieldName)));
+            int newColFieldIndex = vcfWriter.defineField("INFO", fieldName + "_q", 1, ColumnType.Float,
+                    String.format("Benjamini Hochberg FDR adjusted for column %s.", fieldName));
+            statIndexToInfoFieldIndex.put(statIndex++, newColFieldIndex);
         }
-        VCFWriter vcfWriter = new VCFWriter(writer);
-        vcfWriter.defineSchema(columns);
+
         vcfWriter.writeHeader();
-        int elementIndex=0;
+        int elementIndex = 0;
         for (String filename : inputFiles) {
             VCFParser parser = new VCFParser(filename);
             try {
-                parser.readHeader();
-            } catch (VCFParser.SyntaxException e) {
-                throw new InternalError("this syntax error should have been caught in the first pass.");
-            }
-            final int chromosomeFieldIndex = columns.find("CHROM").getField("VALUE").globalFieldIndex;
-            final int positionFieldIndex = columns.find("POSITION").getField("VALUE").globalFieldIndex;
-            final int idFieldIndex = columns.find("ID").getField("VALUE").globalFieldIndex;
-            final int refFieldIndex = columns.find("REF").getField("VALUE").globalFieldIndex;
-            final int altFieldIndex = columns.find("ALT").getField("VALUE").globalFieldIndex;
-            final int filterFieldIndex = columns.find("FILTER").getField("VALUE").globalFieldIndex;
 
-            for (int globalFieldIndex = 0; globalFieldIndex < parser.countAllFields(); globalFieldIndex++) {
-                String value = parser.getStringFieldValue(globalFieldIndex);
-
-                if (globalFieldIndex == chromosomeFieldIndex) {
-                    vcfWriter.setChromosome(value);
-                } else if (globalFieldIndex == positionFieldIndex) {
-                    vcfWriter.setPosition(Integer.parseInt(value));
-                } else if (globalFieldIndex == idFieldIndex) {
-                    vcfWriter.setId(value);
-                } else if (globalFieldIndex == refFieldIndex) {
-                    vcfWriter.setReferenceAllele(value);
-                } else if (globalFieldIndex == altFieldIndex) {
-                    vcfWriter.setAlternateAllele(value);
-                } else if (globalFieldIndex == filterFieldIndex) {
-                    vcfWriter.setFilter(value);
+                try {
+                    parser.readHeader();
+                } catch (VCFParser.SyntaxException e) {
+                    throw new InternalError("this syntax error should have been caught in the first pass.");
                 }
-                //TODO transfer old INFO fields and add new ones.
-               // vcfWriter.setInfo();
-               // vcfWriter.setFormat();
-                vcfWriter.writeRecord();
+                final int chromosomeFieldIndex = columns.find("CHROM").getField("VALUE").globalFieldIndex;
+                final int positionFieldIndex = columns.find("POSITION").getField("VALUE").globalFieldIndex;
+                final int idFieldIndex = columns.find("ID").getField("VALUE").globalFieldIndex;
+                final int refFieldIndex = columns.find("REF").getField("VALUE").globalFieldIndex;
+                final int altFieldIndex = columns.find("ALT").getField("VALUE").globalFieldIndex;
+                final int filterFieldIndex = columns.find("FILTER").getField("VALUE").globalFieldIndex;
+
+                final IntSet infoFieldGlobalIndices = new IntArraySet();
+
+                for (ColumnField infoField : parser.getColumns().find("INFO").fields) {
+                    infoFieldGlobalIndices.add(infoField.globalFieldIndex);
+                }
+
+                final IntSet formatFieldGlobalIndices = new IntArraySet();
+
+                for (ColumnField infoField : parser.getColumns().find("FORMAT").fields) {
+                    formatFieldGlobalIndices.add(infoField.globalFieldIndex);
+                }
+                Int2IntMap globalIndexToSampleIndex = new Int2IntOpenHashMap();
+                int sampleIndex = 0;
+                for (ColumnInfo col : columns) {
+                    if (col.useFormat) {
+                        for (ColumnField field : col.fields) {
+                            globalIndexToSampleIndex.put(field.globalFieldIndex, sampleIndex++);
+                        }
+                    }
+                }
+                int infoFieldIndex = 0;
+                int formatFieldIndex = 0;
+                int previousSampleIndex = -1;
+                while (parser.hasNextDataLine()) {
+                    parser.next();
+                    final String elementId = Integer.toString(elementIndex);
+                    boolean keepThisLine = false;
+                    for (String adjustedColumn : adjustedColumnIds) {
+                        int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
+                        final DoubleArrayList list = data.get(elementIndex).statistics();
+
+                        double adjustedPValue = list.get(adjustedColumnIndex);
+                        if (adjustedPValue < qValueThreshold) {
+                            keepThisLine = true;
+
+                        }
+                    }
+                    if (keepThisLine) {
+                        final DifferentialExpressionInfo info = data.get(elementIndex);
+                        assert info.getElementId().equals(elementId) : " elementId must match";
+                        // transfer previous columsn and fields:
+                        for (int globalFieldIndex = 0; globalFieldIndex < parser.countAllFields(); globalFieldIndex++) {
+                            String value = parser.getStringFieldValue(globalFieldIndex);
+
+                            if (globalFieldIndex == chromosomeFieldIndex) {
+                                vcfWriter.setChromosome(value);
+                            } else if (globalFieldIndex == positionFieldIndex) {
+                                vcfWriter.setPosition(Integer.parseInt(value));
+                            } else if (globalFieldIndex == idFieldIndex) {
+                                vcfWriter.setId(value);
+                            } else if (globalFieldIndex == refFieldIndex) {
+                                vcfWriter.setReferenceAllele(value);
+                            } else if (globalFieldIndex == altFieldIndex) {
+                                vcfWriter.setAlternateAllele(value);
+                            } else if (globalFieldIndex == filterFieldIndex) {
+                                vcfWriter.setFilter(value);
+                            }
+                            if (infoFieldGlobalIndices.contains(globalFieldIndex)) {
+                                vcfWriter.setInfo(infoFieldIndex++, value);
+                            }
+                            if (formatFieldGlobalIndices.contains(globalFieldIndex)) {
+                                sampleIndex = globalIndexToSampleIndex.get(globalFieldIndex);
+                                if (sampleIndex != previousSampleIndex) {
+                                    formatFieldIndex = 0;
+                                }
+                                vcfWriter.setSampleValue(formatFieldIndex++, sampleIndex, value);
+                                previousSampleIndex = sampleIndex;
+                            }
+
+                        }
+                        // add new INFO field values (the adjusted p-values):
+                        for (statIndex = 0; statIndex < adjustedColumnIds.size(); statIndex++) {
+                            double newColValue = info.statistics().get(statIndex);
+                            int infoStatFieldIndex = statIndexToInfoFieldIndex.get(statIndex);
+                            vcfWriter.setInfo(infoStatFieldIndex, Double.toString(newColValue));
+                        }
+
+                        // This is a line we keep, write it:
+                        vcfWriter.writeRecord();
+
+                        elementIndex++;
+                    }
+                }
+            } finally {
+                parser.close();
             }
-            elementIndex++;
         }
     }
 
