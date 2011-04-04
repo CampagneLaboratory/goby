@@ -23,13 +23,18 @@ import edu.cornell.med.icb.goby.readers.vcf.*;
 import edu.cornell.med.icb.util.VersionUtils;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.lang.MutableString;
 
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collections;
+
+import org.apache.commons.collections.buffer.PredicatedBuffer;
 
 /**
  * Helper class to write VCF statistic result files.
@@ -54,6 +59,7 @@ public class VCFWriter {
     private CharSequence[] formatFieldIds;
     private MutableString ref;
     private MutableString alt;
+    private CharSequence qual;
     private CharSequence filter;
 
     private boolean[] formatFieldActive;
@@ -62,6 +68,13 @@ public class VCFWriter {
     ObjectArrayList<String> refAlleles;
     private ObjectArrayList<String> altAlleles;
     private char genotypeDelimiterCharacter;
+    /**
+     * flag is true if info field at index is of type Flag.
+     */
+    private boolean[] infoFlag;
+    private Object2IntMap<String> formatTypeToFormatFieldIndex = new Object2IntArrayMap<String>();
+    private int numFormatFields;
+
 
     public VCFWriter(Writer writer) {
         this(new PrintWriter(writer));
@@ -144,18 +157,19 @@ public class VCFWriter {
         MutableString tsvHeaderLine = new MutableString();
 
         for (ColumnInfo c : columnList) {
-
-            for (ColumnField field : c.fields) {
-                outWriter.printf("##%s=<ID=%s,Number=%d,Type=%s,Description=\"%s\">%n",
-                        c.getColumnName(),
-                        field.id,
-                        field.numberOfValues,
-                        field.type,
-                        field.description);
+            if (!c.useFormat) {
+                for (ColumnField field : c.fields) {
+                    if ("VALUE".equals(field.id)) continue;
+                    outWriter.printf("##%s=<ID=%s,Number=%d,Type=%s,Description=\"%s\">%n",
+                            c.getColumnName(),
+                            field.id,
+                            field.numberOfValues,
+                            field.type,
+                            field.description);
+                }
+                tsvHeaderLine.append(c.getColumnName());
+                tsvHeaderLine.append("\t");
             }
-            tsvHeaderLine.append(c.getColumnName());
-
-            tsvHeaderLine.append("\t");
 
             ++index;
         }
@@ -181,7 +195,10 @@ public class VCFWriter {
         formatFieldActive = new boolean[numFormatTypes];
         index = 0;
         for (ColumnField formatField : columns.find("FORMAT").fields) {
-            formatFieldIds[index++] = formatField.id;
+            formatFieldIds[index] = formatField.id;
+            formatTypeToFormatFieldIndex.put(formatField.id, index);
+            index += 1;
+            numFormatFields++;
         }
         formatValues = new CharSequence[formatFieldActive.length][sampleIds.length];
         ref.setLength(0);
@@ -190,12 +207,22 @@ public class VCFWriter {
         id = "";
         chrom = "";
         final ColumnInfo info = columns.find("INFO");
+
+        // constructs an array of infoIds to keep the INFO field keys (use to write key= in front of each field)
         infoIds = new CharSequence[info.fields.size()];
+        infoFlag = new boolean[info.fields.size()];
+        ObjectArrayList<ColumnField> fieldList = new ObjectArrayList<ColumnField>();
+        fieldList.addAll(info.fields);
+        Collections.sort(fieldList, VCFParser.FIELD_SORT);
 
         for (int infoFieldIndex = 0; infoFieldIndex < infoIds.length; infoFieldIndex++) {
+            final ColumnField infoField = fieldList.get(infoFieldIndex);
+            int globalFieldIndex = infoField.globalFieldIndex;
+            final ColumnField columnField = info.fields.find(globalFieldIndex);
 
-            infoIds[infoFieldIndex] = info.
-                    fields.find(infoFieldIndex).id;
+            infoIds[infoFieldIndex] =
+                    columnField.id;
+            infoFlag[infoFieldIndex] = infoField.type == ColumnType.Flag;
         }
     }
 
@@ -213,52 +240,66 @@ public class VCFWriter {
         outWriter.append('\t');
         outWriter.append(constructAlleleString(altAlleles));
         outWriter.append('\t');
+        outWriter.append(qual);
+        outWriter.append('\t');
         outWriter.append(filter);
         outWriter.append('\t');
         int max;
         int index = 0;
         max = infoValues.length;
-        for (CharSequence infoValue : infoValues) {
-            outWriter.append(infoIds[index]);
-            outWriter.append('=');
-            outWriter.append(infoValue);
 
-            if (++index != max) outWriter.append(';');
+        MutableString infoString = new MutableString();
+        for (CharSequence infoValue : infoValues) {
+            if (infoValue.length() != 0) {
+                if (infoFlag[index]) {
+                    infoString.append(infoIds[index]);
+                } else {
+
+
+                    infoString.append(infoIds[index]);
+                    infoString.append('=');
+                    infoString.append(infoValue);
+                }
+                infoString.append(';');
+
+            }
+
+            index += 1;
 
         }
+        outWriter.append(infoString.subSequence(0, infoString.length() - 1));
         outWriter.append('\t');
-        int formatIndex = 0;
+
         max = formatFieldIds.length;
         index = 0;
-        for (CharSequence formatType : formatFieldIds) {
-
+        MutableString formatString = new MutableString();
+        for (int formatIndex = 0; formatIndex < numFormatFields; formatIndex++) {
             if (formatFieldActive[formatIndex]) {
-                outWriter.append(formatFieldIds[formatIndex]);
-                if (++index != max) {
-                    outWriter.append(':');
-                }
+                formatString.append(formatFieldIds[formatIndex]);
+                formatString.append(':');
             }
-            formatIndex++;
         }
+        outWriter.append(formatString.subSequence(0, formatString.length() - 1));
+
         outWriter.append('\t');
         int sampleIndex = 0;
 
-        max = formatFieldIds.length;
+        max = sampleIds.length;
+
         for (CharSequence value : sampleIds) {
-            formatIndex = 0;
-            index = 0;
 
-            for (CharSequence formatType : formatFieldIds) {
+            MutableString sampleString = new MutableString();
+            for (int formatIndex = 0; formatIndex < numFormatFields; formatIndex++) {
+                //  for (CharSequence formatType : formatFieldIds) {
                 if (formatFieldActive[formatIndex]) {
-                    outWriter.append(formatValues[formatIndex][sampleIndex]);
-                    if (++index != max) outWriter.append(':');
-
+                    sampleString.append(formatValues[formatIndex][sampleIndex]);
+                    sampleString.append(':');
                 }
-                formatIndex++;
-
             }
+
             sampleIndex++;
-            outWriter.append('\t');
+            outWriter.append(sampleString.subSequence(0, sampleString.length() - 1));
+            if (sampleIndex!= max) outWriter.append('\t');
         }
         outWriter.println();
         Arrays.fill(formatFieldActive, false);
@@ -419,13 +460,18 @@ public class VCFWriter {
     /**
      * Set a value of a sample column. The sampleIndex identifies the sample in the getSampleIds()  array.
      *
-     * @param formatFieldIndex  Index of a FORMAT field created with defineField("FORMAT,...)
-     * @param sampleIndex Index of the sample
-     * @param value       Value to set the field to for the current record.
+     * @param formatFieldIndex Index of a FORMAT field created with defineField("FORMAT,...)
+     * @param sampleIndex      Index of the sample
+     * @param value            Value to set the field to for the current record.
      */
     public void setSampleValue(int formatFieldIndex, int sampleIndex, CharSequence value) {
         formatFieldActive[formatFieldIndex] = true;
         formatValues[formatFieldIndex][sampleIndex] = value;
+    }
+
+    public void setSampleValue(String formatToken, int sampleIndex, String value) {
+        int formatFieldIndex = formatTypeToFormatFieldIndex.get(formatToken);
+        setSampleValue(formatFieldIndex, sampleIndex, value);
     }
 
     /**
@@ -454,7 +500,13 @@ public class VCFWriter {
         }
     }
 
-    public void setFilter(String value) {
-        this.filter=value;
+    public void setFilter(CharSequence value) {
+        this.filter = value;
     }
+
+    public void setQual(CharSequence value) {
+        this.qual = value;
+    }
+
+
 }

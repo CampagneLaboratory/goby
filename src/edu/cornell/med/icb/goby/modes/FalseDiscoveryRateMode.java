@@ -297,22 +297,39 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                             ObjectList<String> columnIdList, Writer writer) throws IOException {
 
         Columns columns = new Columns();
+        ObjectArrayList<String> sampleIdList = new ObjectArrayList();
+
+
         for (String filename : inputFiles) {
             VCFParser parser = new VCFParser(filename);
             try {
-                parser.readHeader();
-            } catch (VCFParser.SyntaxException e) {
-                throw new InternalError("this syntax error should have been caught in the first pass.");
-            }
-            Columns fileColumns = parser.getColumns();
-            for (ColumnInfo col : fileColumns) {
-                if (columns.find(col.getColumnName()) == null) {
-                    columns.add(col);
+                try {
+                    parser.readHeader();
+
+                } catch (VCFParser.SyntaxException e) {
+                    throw new InternalError("this syntax error should have been caught in the first pass.");
                 }
+                Columns fileColumns = parser.getColumns();
+                for (ColumnInfo col : fileColumns) {
+                    if (columns.find(col.getColumnName()) == null) {
+                        columns.add(col);
+                        if (col.useFormat) {
+                            final String sampleId = col.getColumnName();
+                            if (!sampleIdList.contains(sampleId)) {
+
+                                sampleIdList.add(sampleId);
+                            }
+                        }
+                    }
+                }
+            } finally {
+                parser.close();
             }
         }
         VCFWriter vcfWriter = new VCFWriter(writer);
         vcfWriter.defineSchema(columns);
+        vcfWriter.defineSamples(sampleIdList.toArray(new String[sampleIdList.size()]));
+
         Int2IntMap statIndexToInfoFieldIndex = new Int2IntOpenHashMap();
 
         // add adjusted columns:
@@ -336,10 +353,11 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                     throw new InternalError("this syntax error should have been caught in the first pass.");
                 }
                 final int chromosomeFieldIndex = columns.find("CHROM").getField("VALUE").globalFieldIndex;
-                final int positionFieldIndex = columns.find("POSITION").getField("VALUE").globalFieldIndex;
+                final int positionFieldIndex = columns.find("POS").getField("VALUE").globalFieldIndex;
                 final int idFieldIndex = columns.find("ID").getField("VALUE").globalFieldIndex;
                 final int refFieldIndex = columns.find("REF").getField("VALUE").globalFieldIndex;
                 final int altFieldIndex = columns.find("ALT").getField("VALUE").globalFieldIndex;
+                final int qualFieldIndex = columns.find("QUAL").getField("VALUE").globalFieldIndex;
                 final int filterFieldIndex = columns.find("FILTER").getField("VALUE").globalFieldIndex;
 
                 final IntSet infoFieldGlobalIndices = new IntArraySet();
@@ -349,24 +367,25 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                 }
 
                 final IntSet formatFieldGlobalIndices = new IntArraySet();
-
-                for (ColumnField infoField : parser.getColumns().find("FORMAT").fields) {
-                    formatFieldGlobalIndices.add(infoField.globalFieldIndex);
-                }
                 Int2IntMap globalIndexToSampleIndex = new Int2IntOpenHashMap();
                 int sampleIndex = 0;
+
                 for (ColumnInfo col : columns) {
                     if (col.useFormat) {
+
                         for (ColumnField field : col.fields) {
                             globalIndexToSampleIndex.put(field.globalFieldIndex, sampleIndex++);
+                            formatFieldGlobalIndices.add(field.globalFieldIndex);
                         }
                     }
                 }
+
                 int infoFieldIndex = 0;
-                int formatFieldIndex = 0;
+                int formatFieldCount = 0;
                 int previousSampleIndex = -1;
+
                 while (parser.hasNextDataLine()) {
-                    parser.next();
+
                     final String elementId = Integer.toString(elementIndex);
                     boolean keepThisLine = false;
                     for (String adjustedColumn : adjustedColumnIds) {
@@ -379,10 +398,24 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
 
                         }
                     }
+                    if (adjustedColumnIds.size() == 0) {
+                        // no selection column, keep all lines.
+                        keepThisLine = true;
+                    }
                     if (keepThisLine) {
                         final DifferentialExpressionInfo info = data.get(elementIndex);
                         assert info.getElementId().equals(elementId) : " elementId must match";
                         // transfer previous columsn and fields:
+                        infoFieldIndex = 0;
+                        sampleIndex = 0;
+                        formatFieldCount = 0;
+                        previousSampleIndex = -1;
+
+                        String format = parser.getStringColumnValue(columns.find("FORMAT").columnIndex);
+                        final String[] formatTokens = format.split(":");
+                        int numFormatFields = columns.find("FORMAT").fields.size();
+                        sampleIndex = 0;
+                        int formatFieldIndex = 0;
                         for (int globalFieldIndex = 0; globalFieldIndex < parser.countAllFields(); globalFieldIndex++) {
                             String value = parser.getStringFieldValue(globalFieldIndex);
 
@@ -396,21 +429,38 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                                 vcfWriter.setReferenceAllele(value);
                             } else if (globalFieldIndex == altFieldIndex) {
                                 vcfWriter.setAlternateAllele(value);
+                            } else if (globalFieldIndex == qualFieldIndex) {
+                                vcfWriter.setQual(value);
                             } else if (globalFieldIndex == filterFieldIndex) {
                                 vcfWriter.setFilter(value);
                             }
                             if (infoFieldGlobalIndices.contains(globalFieldIndex)) {
                                 vcfWriter.setInfo(infoFieldIndex++, value);
                             }
-                            if (formatFieldGlobalIndices.contains(globalFieldIndex)) {
-                                sampleIndex = globalIndexToSampleIndex.get(globalFieldIndex);
-                                if (sampleIndex != previousSampleIndex) {
-                                    formatFieldIndex = 0;
-                                }
-                                vcfWriter.setSampleValue(formatFieldIndex++, sampleIndex, value);
-                                previousSampleIndex = sampleIndex;
-                            }
 
+                            if (formatFieldGlobalIndices.contains(globalFieldIndex)) {
+
+
+
+                             /*   System.out.printf("Set sampleValue formatIndex: %d sampleIndex: %d value: %s%n", formatFieldCount, sampleIndex,
+                                        value);
+                                System.out.flush();
+                               */ 
+
+                                if (formatFieldIndex < formatTokens.length) {
+                                    vcfWriter.setSampleValue(formatTokens[formatFieldIndex], sampleIndex, value);
+                                }
+
+                                formatFieldCount++;
+                                if (value.length() != 0) {
+                                    formatFieldIndex++;
+                                }
+                                if (formatFieldCount == numFormatFields) {
+                                    formatFieldIndex = 0;
+                                    formatFieldCount = 0;
+                                    sampleIndex++;
+                                }
+                            }
                         }
                         // add new INFO field values (the adjusted p-values):
                         for (statIndex = 0; statIndex < adjustedColumnIds.size(); statIndex++) {
@@ -424,6 +474,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
 
                         elementIndex++;
                     }
+                    parser.next();
                 }
             } finally {
                 parser.close();
