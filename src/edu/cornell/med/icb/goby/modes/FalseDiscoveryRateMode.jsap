@@ -29,7 +29,7 @@
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
             <required>true</required>
-            <help>The file where the combined output will be written.</help>
+            <help>The file where the combined output will be written. If the filename ends in .gz, the output is compressed with gzip.</help>
         </flaggedOption>
 
         <flaggedOption>
