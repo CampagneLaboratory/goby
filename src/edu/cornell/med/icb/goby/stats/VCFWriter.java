@@ -76,7 +76,6 @@ public class VCFWriter {
     private int numFormatFields;
 
 
-
     public VCFWriter(Writer writer) {
         this(new PrintWriter(writer));
     }
@@ -139,6 +138,7 @@ public class VCFWriter {
         altAlleles = new ObjectArrayList<String>();
         ref = new MutableString();
         alt = new MutableString();
+
         setGenotypesPhased(false);
     }
 
@@ -207,6 +207,7 @@ public class VCFWriter {
         filter = "";
         id = "";
         chrom = "";
+        qual="";
         final ColumnInfo info = columns.find("INFO");
 
         // constructs an array of infoIds to keep the INFO field keys (use to write key= in front of each field)
@@ -268,7 +269,7 @@ public class VCFWriter {
             index += 1;
 
         }
-        outWriter.append(infoString.subSequence(0, infoString.length() - 1));
+      if (infoString.length()>0)   outWriter.append(infoString.subSequence(0, infoString.length() - 1));
         outWriter.append('\t');
 
         max = formatFieldIds.length;
@@ -280,7 +281,7 @@ public class VCFWriter {
                 formatString.append(':');
             }
         }
-        outWriter.append(formatString.subSequence(0, formatString.length() - 1));
+        if (formatString.length() > 0) outWriter.append(formatString.subSequence(0, formatString.length() - 1));
 
         outWriter.append('\t');
         int sampleIndex = 0;
@@ -299,8 +300,8 @@ public class VCFWriter {
             }
 
             sampleIndex++;
-            outWriter.append(sampleString.subSequence(0, sampleString.length() - 1));
-            if (sampleIndex!= max) outWriter.append('\t');
+            if (sampleString.length() > 0) outWriter.append(sampleString.subSequence(0, sampleString.length() - 1));
+            if (sampleIndex != max) outWriter.append('\t');
         }
         outWriter.println();
         Arrays.fill(formatFieldActive, false);
@@ -313,6 +314,7 @@ public class VCFWriter {
         altAlleles.clear();
         refAlleles.clear();
         position = -1;
+        qual="";
     }
 
     MutableString buffer = new MutableString();
@@ -511,6 +513,7 @@ public class VCFWriter {
 
     /**
      * Returns the number of INFO fields currently defined.
+     *
      * @return the number of INFO fields currently defined.
      */
     public int getNumInfoFields() {
