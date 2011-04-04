@@ -207,7 +207,7 @@ public class VCFWriter {
         filter = "";
         id = "";
         chrom = "";
-        qual="";
+        qual = "";
         final ColumnInfo info = columns.find("INFO");
 
         // constructs an array of infoIds to keep the INFO field keys (use to write key= in front of each field)
@@ -269,7 +269,7 @@ public class VCFWriter {
             index += 1;
 
         }
-      if (infoString.length()>0)   outWriter.append(infoString.subSequence(0, infoString.length() - 1));
+        if (infoString.length() > 0) outWriter.append(infoString.subSequence(0, infoString.length() - 1));
         outWriter.append('\t');
 
         max = formatFieldIds.length;
@@ -314,7 +314,7 @@ public class VCFWriter {
         altAlleles.clear();
         refAlleles.clear();
         position = -1;
-        qual="";
+        qual = "";
     }
 
     MutableString buffer = new MutableString();
@@ -355,30 +355,42 @@ public class VCFWriter {
     public MutableString codeGenotype(String[] alleles) {
         codedGenotypeBuffer.setLength(0);
         boolean alleleFound = false;
+        int numAlleles = 0;
         for (String allele : alleles) {
+            alleleFound = false;
             int alleleIndex = 0;
             for (String ref : refAlleles) {
                 if (ref.equals(allele)) {
                     codedGenotypeBuffer.append(Integer.toString(alleleIndex));
                     codedGenotypeBuffer.append(genotypeDelimiterCharacter);
                     alleleFound = true;
-                    continue;
+                    numAlleles++;
+                    break;
                 }
                 alleleIndex++;
             }
+            if (alleleFound) continue;
             for (String alt : altAlleles) {
                 if (alt.equals(allele)) {
                     codedGenotypeBuffer.append(Integer.toString(alleleIndex));
                     codedGenotypeBuffer.append(genotypeDelimiterCharacter);
                     alleleFound = true;
+                    numAlleles++;
+                    break;
                 }
                 alleleIndex++;
             }
             if (!alleleFound) {
+                System.out.printf("allele: %s ref: %s alt: %s", allele, refAlleles.toString(), altAlleles.toString());
                 throw new IllegalArgumentException(String.format("Allele %s was not found in REF or ALT", allele));
             }
         }
+        if (numAlleles == 1) {
+            // write n/n rather than n
+            codedGenotypeBuffer.append(codedGenotypeBuffer);
 
+
+        }
         final int length = codedGenotypeBuffer.length();
         if (length > 0) {
             codedGenotypeBuffer.setLength(length - 1);
@@ -436,6 +448,15 @@ public class VCFWriter {
         infoValues[infoFieldIndex] = value;
     }
 
+    /**
+     * Set the value of an INFO column field for the current record. The value will be written when writeRecord is executed.
+     *
+     * @param infoFieldIndex Index returned by definedField("INFO",...)
+     * @param value          Value of the field.
+     */
+    public void setInfo(int infoFieldIndex, double value) {
+        infoValues[infoFieldIndex] = Double.toString(value);
+    }
 
     private String[] sampleIds;
 

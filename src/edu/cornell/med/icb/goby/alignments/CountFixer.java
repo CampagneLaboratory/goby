@@ -43,9 +43,14 @@ public class CountFixer implements CountFixerInterface {
             final SampleCountInfo countInfo = sampleCounts[info.readerIndex];
             if (info.matchesReference) {
 
-                countInfo.counts[countInfo.baseIndex(info.from)]--;
+                --countInfo.counts[countInfo.baseIndex(info.from)];
             } else {
-                countInfo.counts[countInfo.baseIndex(info.to)]--;
+                --countInfo.counts[countInfo.baseIndex(info.to)];
+            }
+        }
+        for (SampleCountInfo sci : sampleCounts) {
+            for (int i = 0; i < sci.counts.length; i++) {
+                sci.counts[i] = Math.max(sci.counts[i], 0);
             }
         }
         list.removeAll(likelyErrors);

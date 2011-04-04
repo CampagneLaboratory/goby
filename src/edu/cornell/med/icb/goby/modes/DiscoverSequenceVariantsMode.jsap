@@ -57,13 +57,10 @@
         </flaggedOption>
         <flaggedOption>
              <id>eval</id>
-
              <longFlag>eval</longFlag>
              <required>false</required>
-
              <stringParser>
                 <classname>StringStringParser</classname>
-
             </stringParser>
              <defaults>
                 <string>samples,within-groups,between-groups</string>

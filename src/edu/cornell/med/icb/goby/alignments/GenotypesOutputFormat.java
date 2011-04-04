@@ -47,7 +47,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     private int idColumnIndex;
     private int biomartFieldIndex;
     private int genotypeFieldIndex;
-    private int zygFieldIndex;
+    private int zygFieldIndex;      
 
 
     public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
@@ -57,10 +57,14 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
 
         biomartFieldIndex = statsWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
 
-        genotypeFieldIndex = statsWriter.defineField("FORMAT", "GT", 1, ColumnType.String, "Genotype");
+        defineGenotypeField(statsWriter);
         zygFieldIndex = statsWriter.defineField("FORMAT", "Zygosity", 1, ColumnType.String, "Zygosity");
         statsWriter.defineSamples(samples);
         statsWriter.writeHeader();
+    }
+
+    public void defineGenotypeField(VCFWriter statsWriter) {
+        genotypeFieldIndex = statsWriter.defineField("FORMAT", "GT", 1, ColumnType.String, "Genotype");
     }
 
     public void allocateStorage(int numberOfSamples, int numberOfGroups) {
@@ -88,38 +92,18 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                         position));
         statsWriter.setChromosome(currentReferenceId);
         statsWriter.setPosition(position);
-        statsWriter.setReferenceAllele(Character.toString(sampleCounts[0].referenceBase));
 
+        writeGenotypes(statsWriter, sampleCounts);
+
+
+        writeZygozity(sampleCounts);
+
+        statsWriter.writeRecord();
+    }
+
+    private void writeZygozity(SampleCountInfo[] sampleCounts) {
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
-            alleleSet.clear();
             SampleCountInfo sci = sampleCounts[sampleIndex];
-            int totalCount = 0;
-            for (int sampleCount : sci.counts) {
-                totalCount += sampleCount;
-            }
-
-            int baseIndex = 0;
-            int genotypeCount = 0;
-            genotypeBuffer.setLength(0);
-            char refBase = '.';
-            for (int count : sci.counts) {
-                final char base = sci.base(baseIndex);
-                if (count > 0) {
-                    alleleSet.add(base);
-                    if (base != sci.referenceBase) {
-                        statsWriter.addAlternateAllele(Character.toString(base));
-
-                        genotypeBuffer.append(String.format("%c/%c,", sci.referenceBase, base));
-                        genotypeCount++;
-                    }
-                }
-                baseIndex++;
-            }
-            if (genotypeBuffer.length() > 1) {
-                // trim the trailing coma:
-                genotypeBuffer.setLength(genotypeBuffer.length() - 1);
-            }
-
 
             String zygozity;
             switch (alleleSet.size()) {
@@ -148,11 +132,56 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
 
             statsWriter.setSampleValue(zygFieldIndex, sampleIndex, zygozity);
 
-            statsWriter.setSampleValue(genotypeFieldIndex, sampleIndex, statsWriter.codeGenotype(genotypeBuffer.toString()));
+        }
+    }
+
+    public void writeGenotypes(VCFWriter statsWriter, SampleCountInfo[] sampleCounts) {
+
+        for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
+            alleleSet.clear();
+            SampleCountInfo sci = sampleCounts[sampleIndex];
+            int totalCount = 0;
+            for (int sampleCount : sci.counts) {
+                totalCount += sampleCount;
+            }
+
+            int baseIndex = 0;
+            int genotypeCount = 0;
+            genotypeBuffer.setLength(0);
+            char refBase = '.';
+            String referenceAllele = ".";
+            boolean siteObserved = false;
+
+            for (int count : sci.counts) {
+                final char base = sci.base(baseIndex);
+                if (count > 0) {
+                    siteObserved = true;
+                    alleleSet.add(base);
+                    if (base != sci.referenceBase) {
+                        statsWriter.addAlternateAllele(Character.toString(base));
+
+                        genotypeBuffer.append(String.format("%c/", base));
+                        genotypeCount++;
+                    } else {
+                        referenceAllele = Character.toString(sci.referenceBase);
+                        genotypeBuffer.append(String.format("%c/", base));
+                    }
+                }
+                baseIndex++;
+            }
+            if (siteObserved) {
+
+                if (genotypeBuffer.length() > 1) {
+                    // trim the trailing coma:
+                    genotypeBuffer.setLength(genotypeBuffer.length() - 1);
+                }
+                statsWriter.setReferenceAllele(referenceAllele);
+                statsWriter.setSampleValue(genotypeFieldIndex, sampleIndex, statsWriter.codeGenotype(genotypeBuffer.toString()));
+            } else {
+                statsWriter.setSampleValue(genotypeFieldIndex, sampleIndex, "");
+            }
 
         }
-
-        statsWriter.writeRecord();
     }
 
     public void close() {

@@ -211,8 +211,9 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         mode.configure(args);
         mode.execute();
-        assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
-                new File("test-data/discover-variants/expected-output-genotypes.tsv"));
+        assertEquals(new File("test-data/discover-variants/expected-output-genotypes.tsv"),
+                new File(BASE_TEST_DIR + "/" + outputFilename)
+                );
 
     }
 

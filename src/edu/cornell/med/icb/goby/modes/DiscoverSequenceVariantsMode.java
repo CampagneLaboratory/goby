@@ -107,7 +107,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
         inputFilenames = jsapResult.getStringArray("input");
-
+  
         outputFile = jsapResult.getString("output");
         outWriter = "-".equals(outputFile) ? new PrintWriter(System.out) : new PrintWriter(outputFile);
 
@@ -161,6 +161,9 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             case VARIANT_DISCOVERY:
                 formatter = new BetweenGroupSequenceVariationOutputFormat();
                 break;
+            case COMPARE_GROUPS:
+                formatter = new BetweenGroupsVCFOutputFormat();
+                break;
             case ALLELE_FREQUENCIES:
                 formatter = new AlleleFrequencyOutputFormat();
                 break;
@@ -173,7 +176,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                         values.toString());
                 System.exit(1);
         }
-        outputVCF=jsapResult.getBoolean("vcf");
+        outputVCF = jsapResult.getBoolean("vcf");
         sortedPositionIterator = new DiscoverVariantIterateSortedAlignments(formatter);
         int startFlapSize = jsapResult.getInt("start-flap-size", 100);
         sortedPositionIterator.setStartFlapLength(startFlapSize);
@@ -183,15 +186,18 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         return this;
     }
 
-    
+
     enum OutputFormat {
         VARIANT_DISCOVERY,
         ALLELE_FREQUENCIES,
-        GENOTYPES
+        GENOTYPES,
+        COMPARE_GROUPS
     }
+
     public boolean outputVCF() {
         return outputVCF;
     }
+
     DiscoverVariantIterateSortedAlignments sortedPositionIterator;
 
     public DifferentialExpressionAnalysis getDiffExpAnalyzer() {
