@@ -75,9 +75,20 @@ public class VCFParser implements Closeable {
      * fields that occur in any order on each line in a column).
      */
     private int[] fieldPermutation;
-    public static final Comparator COLUMN_SORT = new Comparator<ColumnInfo>() {
+    /**
+     * Sorts columns in increasing columnIndex order.
+     */
+    public static final Comparator<ColumnInfo> COLUMN_SORT = new Comparator<ColumnInfo>() {
         public int compare(ColumnInfo c1, ColumnInfo c2) {
             return c1.columnIndex - c2.columnIndex;
+        }
+    };
+    /**
+     * Sorts fields in increasing globalFieldIndex order.
+     */
+    public static final Comparator<ColumnField> FIELD_SORT = new Comparator<ColumnField>() {
+        public int compare(ColumnField c1, ColumnField c2) {
+            return c1.globalFieldIndex - c2.globalFieldIndex;
         }
     };
     private ObjectArrayList<ColumnInfo> columnList = new ObjectArrayList<ColumnInfo>();
@@ -223,6 +234,7 @@ public class VCFParser implements Closeable {
 
             n += column.fields.size();
         }
+        
         return n;
     }
 
@@ -414,9 +426,9 @@ public class VCFParser implements Closeable {
                 colMaxGlobalFieldIndex = Math.max(colMaxGlobalFieldIndex, f.globalFieldIndex);
 
             }
-            int formatColumnIndex = formatColumn.columnIndex;
-            int startFormatColumn = columnStarts[formatColumnIndex];
-            int endFormatColumn = columnEnds[formatColumnIndex];
+            int formatColumnIndex = TSV ? -1 : formatColumn.columnIndex;
+            int startFormatColumn = TSV ? 0 : columnStarts[formatColumnIndex];
+            int endFormatColumn = TSV ? 0 : columnEnds[formatColumnIndex];
 
             MutableString formatSpan = line.substring(startFormatColumn, endFormatColumn);
             formatSpan.compact();
@@ -435,13 +447,7 @@ public class VCFParser implements Closeable {
                             // reached end of field, not this field.
                             break;
                         }
-                        if (j >= lineLength) {
-                            if (lineIterator.hasNext()) {
-                                System.out.println("lineNext: " + lineIterator.next());
-                            }
-                            System.out.println("line too short: " + line);
-                            // System.exit(1);
-                        }
+
                         char linechar = line.charAt(j);
 
                         if (id.charAt(i) != linechar) {
@@ -477,8 +483,6 @@ public class VCFParser implements Closeable {
                                 column.formatIndex++;
                                 break;
                             }
-
-
                         }
                     }
                 }
@@ -738,6 +742,7 @@ public class VCFParser implements Closeable {
 
     /**
      * Releases the IO resources held by this parser.
+     *
      * @throws IOException
      */
     public void close() throws IOException {
