@@ -133,7 +133,7 @@ public class BetweenGroupsVCFOutputFormat implements SequenceVariationOutputForm
         variantsCountPerGroup = new int[numberOfGroups];
         distinctReadIndexCountPerGroup = new int[numberOfGroups];
         averageVariantQualityScorePerGroup = new float[numberOfGroups];
-
+                                                               
         refCountsPerSample = new int[numberOfSamples];
         variantsCountPerSample = new int[numberOfSamples];
         distinctReadIndicesCountPerGroup = new IntSet[numberOfGroups];
@@ -270,107 +270,6 @@ public class BetweenGroupsVCFOutputFormat implements SequenceVariationOutputForm
             if (count < 0) ok = false;
         }
         return ok;
-    }
-
-    private void summarizeVariations
-            (TSVWriter
-                    statWriter, ObjectArrayList<PositionBaseInfo> list,
-             int groupIndex) {
-
-        final Object2IntMap<MutableString> tally = new Object2IntArrayMap<MutableString>();
-        tally.defaultReturnValue(0);
-        for (PositionBaseInfo info : list) {
-            final int varGroupIndex = readerIndexToGroupIndex[info.readerIndex];
-
-            if (!info.matchesReference && varGroupIndex == groupIndex) {
-                MutableString variation = new MutableString();
-                variation.append(info.from);
-                variation.append('/');
-                variation.append(info.to);
-                int count = tally.getInt(variation);
-                tally.put(variation, count + 1);
-            }
-        }
-        // sort variations by decreasing tally:
-        ObjectSet<MutableString> varSet = (tally.keySet());
-        ObjectList<MutableString> varList = new ObjectArrayList<MutableString>();
-        varList.addAll(varSet);
-        Collections.sort(varList, new Comparator<MutableString>() {
-            public int compare(MutableString variationA, MutableString variationB) {
-                // sort by decreasing tally:
-                return tally.getInt(variationB) - tally.getInt(variationA);
-            }
-        });
-
-        StringBuffer buffer = new StringBuffer();
-        for (MutableString variation : varList) {
-            buffer.append(String.format("%d:%s,", tally.getInt(variation), variation));
-        }
-        statWriter.setValue(buffer.toString(),
-                "observed variations at position ([frequency:from/to,]+) group %s", groups[groupIndex]);
-    }
-
-    private double estimateWithinGroupDiscoveryPalue
-            (
-                    int position,
-                    int groupIndex,
-                    ObjectArrayList<PositionBaseInfo> list,
-                    int[] variantsCount,
-                    int[] refCounts) {
-        double pValue = 1;
-        if (!deAnalyzer.eval("within-groups")) return Double.NaN;
-        int observedReferenceCount = 0;
-        double expectedVariationRate = 0;
-        int expectedVariationCount = 0;
-        int expectedReferenceCount = 0;
-        int observedVariationCount = 0;
-        observedReferenceCount = refCounts[groupIndex];
-        observedVariationCount = variantsCount[groupIndex];
-        if (observedReferenceCount + observedVariationCount == 0) {
-            // cannot call a variant if we do not observe this position in this group at all.
-            return 1;
-        }
-        long sum = 0;
-        for (PositionBaseInfo info : list) {
-            final ReadIndexStats stats = readIndexStats.get(info.readerIndex);
-            final int readIndex = info.readIndex;
-            if (readIndex < 1 ||
-                    readIndex > stats.countVariationBases.length ||
-                    readIndex > stats.countReferenceBases.length) {
-                // TODO this test is a kludge: readIndex should always be within the bounds of countVariationBases or countReferenceBases
-                // the fact that we need this test indicates that there is a bug in the calculation of readIndex, probably when read insertions or deletions are present.
-                //              assert false : "should not fail" + String.format("readIndex =%d || readIndex >= stats.countVariationBases.length || readIndex >= stats.countReferenceBases.length",
-                //                     readIndex);
-                continue;
-            }
-            long variationBases = stats.countVariationBases[readIndex - 1];
-            long referenceBases = stats.countReferenceBases[readIndex - 1];
-            //  System.out.printf("readIndex=%d variationBases=%d referenceBases=%d %n",readIndexInfo.readIndex, variationBases, referenceBases);
-            expectedVariationRate += variationBases;
-            sum += variationBases + referenceBases;
-            //   refBaseCountAnyPosition += referenceBases;
-        }
-        expectedVariationRate /= sum;
-        //   System.out.printf("Expected variation rate: %f%n", expectedVariationRate);
-        expectedVariationCount = (int) Math.round(expectedVariationRate * (double) (observedVariationCount + observedReferenceCount));
-        expectedReferenceCount = (int) Math.round((1 - expectedVariationRate) * (double) (observedVariationCount + observedReferenceCount));
-        if (LOG.isTraceEnabled()) {
-            LOG.trace(String.format("contingency position=%d: %n" +
-                    "    [  exp    obs ]%n" +
-                    "ref [ %d       %d ]%n" +
-                    "var [ %d       %d ] %n",
-                    position,
-                    expectedVariationCount, observedVariationCount,
-                    expectedReferenceCount, observedReferenceCount));
-        }
-        pValue = fisherRInstalled ? FisherExactRCalculator.getFisherOneTailedLesserPValue(
-                expectedVariationCount, observedVariationCount,
-                expectedReferenceCount, observedReferenceCount
-        ) : Double.NaN;
-        //  System.out.printf("position=%d P-Value=%f%n", position, pValue);
-        return pValue;
-
-
     }
 
 
