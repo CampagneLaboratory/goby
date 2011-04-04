@@ -36,6 +36,7 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.util.Collections;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Combines tab delimited datasets and performs FDR adjustment on a set of P-value columns. Lines will always be ordered
@@ -119,7 +120,10 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         Writer stream = null;
         try {
             stream = outputFilename == null ? new OutputStreamWriter(System.out)
-                    : new FileWriter(outputFilename);
+                    : outputFilename.endsWith(".gz")?
+                    new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(outputFilename))) :
+                    new FileWriter(outputFilename);
+
             DifferentialExpressionResults data = new DifferentialExpressionResults();
             ObjectList<String> columnIdList = vcf ? getVCFColumns(inputFiles) : getTSVColumns(inputFiles);
             for (String col : columnIdList) {
