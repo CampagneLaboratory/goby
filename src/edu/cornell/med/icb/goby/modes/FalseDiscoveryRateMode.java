@@ -183,7 +183,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
 
         int elementIndex = 0;
         for (String filename : inputFiles) {
-            System.out.printf("Loading %s%n",filename);
+            System.out.printf("Loading %s%n", filename);
             VCFParser parser = new VCFParser(filename);
             try {
                 parser.readHeader();
@@ -352,7 +352,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         vcfWriter.writeHeader();
         int elementIndex = 0;
         for (String filename : inputFiles) {
-            System.out.printf("Combining %s%n",filename);
+            System.out.printf("Combining %s%n", filename);
             VCFParser parser = new VCFParser(filename);
             try {
 
@@ -486,8 +486,9 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                         // This is a line we keep, write it:
                         vcfWriter.writeRecord();
 
-                        elementIndex++;
+
                     }
+                    elementIndex++;
                     parser.next();
                 }
             } finally {
