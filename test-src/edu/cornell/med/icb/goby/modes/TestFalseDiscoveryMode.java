@@ -35,8 +35,8 @@ import edu.cornell.med.icb.goby.util.TestFiles;
  *         Date: Apr 4, 2011
  *         Time: 11:15:54 AM
  */
-public class TestFDRMode extends TestFiles {
-    private static final Log LOG = LogFactory.getLog(TestFDRMode.class);
+public class TestFalseDiscoveryMode extends TestFiles {
+    private static final Log LOG = LogFactory.getLog(TestFalseDiscoveryMode.class);
     private static final String BASE_TEST_DIR = "test-results/fdr-mode";
 
     @BeforeClass
@@ -49,7 +49,7 @@ public class TestFDRMode extends TestFiles {
     }
 
     @Test
-    public void mergeVCF1() throws IOException, JSAPException {
+    public void mergeNoAdjustmentVCF1() throws IOException, JSAPException {
 
         FalseDiscoveryRateMode mode = new FalseDiscoveryRateMode();
         String[] args = {
@@ -64,5 +64,22 @@ public class TestFDRMode extends TestFiles {
         mode.execute();
         assertEquals(new File("test-data/fdr-mode/expected-combined-1-2-3.vcf"), new File("test-results/fdr-mode/combined-file.vcf"));
     }
+    @Test
+       public void mergeVCF2() throws IOException, JSAPException {
+
+           FalseDiscoveryRateMode mode = new FalseDiscoveryRateMode();
+           String[] args = {
+                   "--mode", "fdr",
+                   "--vcf",
+                   "--column", "PCHI2",
+                   "test-data/fdr-mode/file1.vcf",
+                   "test-data/fdr-mode/file2.vcf",
+                   "test-data/fdr-mode/file3.vcf",
+                   "--output", "test-results/fdr-mode/combined-file-adjust-PCHI2.vcf",
+           };
+           mode.configure(args);
+           mode.execute();
+           assertEquals(new File("test-data/fdr-mode/expected-combined-1-2-3-adjust.vcf"), new File("test-results/fdr-mode/combined-file-adjust-PCHI2.vcf"));
+       }
 
 }

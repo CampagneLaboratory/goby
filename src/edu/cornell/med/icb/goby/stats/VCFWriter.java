@@ -76,6 +76,7 @@ public class VCFWriter {
     private int numFormatFields;
 
 
+
     public VCFWriter(Writer writer) {
         this(new PrintWriter(writer));
     }
@@ -508,5 +509,11 @@ public class VCFWriter {
         this.qual = value;
     }
 
-
+    /**
+     * Returns the number of INFO fields currently defined.
+     * @return the number of INFO fields currently defined.
+     */
+    public int getNumInfoFields() {
+        return columns.find("INFO").fields.size();
+    }
 }

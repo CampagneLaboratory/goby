@@ -204,7 +204,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                     selectedInfoFieldGlobalIndices.add(selectedField.globalFieldIndex);
                 }
                 while (parser.hasNextDataLine()) {
-                    parser.next();
+
                     // prepare elementId and stat info:
 
                     final String elementId = Integer.toString(elementIndex++);
@@ -215,9 +215,11 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
 
                     for (int globalFieldIndex : selectedInfoFieldGlobalIndices) {
 
-                        info.statistics().set(index++, Double.parseDouble(parser.getStringFieldValue(globalFieldIndex)));
+                        final String stringFieldValue = parser.getStringFieldValue(globalFieldIndex);
+                        info.statistics().set(index++, Double.parseDouble(stringFieldValue));
                     }
                     data.add(info);
+                    parser.next();
                 }
             } catch (VCFParser.SyntaxException
                     e) {
@@ -335,10 +337,10 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         // add adjusted columns:
         ColumnInfo infoColumn = columns.find("INFO");
         int statIndex = 0;
-        for (String fieldName : selectedPValueColumns) {
-            int newColFieldIndex = vcfWriter.defineField("INFO", fieldName + "_q", 1, ColumnType.Float,
+        for (String fieldName : adjustedColumnIds) {
+            vcfWriter.defineField("INFO", fieldName, 1, ColumnType.Float,
                     String.format("Benjamini Hochberg FDR adjusted for column %s.", fieldName));
-            statIndexToInfoFieldIndex.put(statIndex++, newColFieldIndex);
+            statIndexToInfoFieldIndex.put(statIndex++, vcfWriter.getNumInfoFields() - 1);
         }
 
         vcfWriter.writeHeader();
@@ -441,11 +443,10 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                             if (formatFieldGlobalIndices.contains(globalFieldIndex)) {
 
 
-
-                             /*   System.out.printf("Set sampleValue formatIndex: %d sampleIndex: %d value: %s%n", formatFieldCount, sampleIndex,
-                                        value);
-                                System.out.flush();
-                               */ 
+                                /*   System.out.printf("Set sampleValue formatIndex: %d sampleIndex: %d value: %s%n", formatFieldCount, sampleIndex,
+                                         value);
+                                 System.out.flush();
+                                */
 
                                 if (formatFieldIndex < formatTokens.length) {
                                     vcfWriter.setSampleValue(formatTokens[formatFieldIndex], sampleIndex, value);
@@ -463,10 +464,16 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                             }
                         }
                         // add new INFO field values (the adjusted p-values):
-                        for (statIndex = 0; statIndex < adjustedColumnIds.size(); statIndex++) {
-                            double newColValue = info.statistics().get(statIndex);
-                            int infoStatFieldIndex = statIndexToInfoFieldIndex.get(statIndex);
-                            vcfWriter.setInfo(infoStatFieldIndex, Double.toString(newColValue));
+                        statIndex = 0;
+                        for (String adjustedColumn : adjustedColumnIds) {
+
+                            int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
+                            final DoubleArrayList list = data.get(elementIndex).statistics();
+
+                            double newColValue = list.get(adjustedColumnIndex);                         
+                            vcfWriter.setInfo(statIndexToInfoFieldIndex.get(statIndex), Double.toString(newColValue));
+                            statIndex++;
+
                         }
 
                         // This is a line we keep, write it:
