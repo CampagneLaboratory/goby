@@ -120,7 +120,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         Writer stream = null;
         try {
             stream = outputFilename == null ? new OutputStreamWriter(System.out)
-                    : outputFilename.endsWith(".gz")?
+                    : outputFilename.endsWith(".gz") ?
                     new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(outputFilename))) :
                     new FileWriter(outputFilename);
 
@@ -179,10 +179,12 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
     }
 
     private void loadVCF(String[] inputFiles, DifferentialExpressionResults data,
-                         DifferentialExpressionCalculator deCalculator, ObjectList<String> columnIdList) throws FileNotFoundException {
+                         DifferentialExpressionCalculator deCalculator, ObjectList<String> columnIdList) throws IOException {
+
         int elementIndex = 0;
         for (String filename : inputFiles) {
-            VCFParser parser = new VCFParser(new FileReader(filename));
+            System.out.printf("Loading %s%n",filename);
+            VCFParser parser = new VCFParser(filename);
             try {
                 parser.readHeader();
                 IntSet selectedInfoFieldGlobalIndices = new IntArraySet();
@@ -350,6 +352,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         vcfWriter.writeHeader();
         int elementIndex = 0;
         for (String filename : inputFiles) {
+            System.out.printf("Combining %s%n",filename);
             VCFParser parser = new VCFParser(filename);
             try {
 
@@ -474,7 +477,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                             int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
                             final DoubleArrayList list = data.get(elementIndex).statistics();
 
-                            double newColValue = list.get(adjustedColumnIndex);                         
+                            double newColValue = list.get(adjustedColumnIndex);
                             vcfWriter.setInfo(statIndexToInfoFieldIndex.get(statIndex), Double.toString(newColValue));
                             statIndex++;
 

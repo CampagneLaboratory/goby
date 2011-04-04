@@ -115,7 +115,7 @@ public class BetweenGroupsVCFOutputFormat implements SequenceVariationOutputForm
 
         log2OddsRatioZColumnIndex = statWriter.defineField("INFO", String.format("LOD_Z[%s/%s]", groups[0], groups[1]),
                 1, ColumnType.Float, String.format("Z value of the odds-ratio between group %s and group %s", groups[0], groups[1]));
-        fisherExactPValueColumnIndex = statWriter.defineField("INFO", String.format("FisherP[%s/%s])", groups[0], groups[1]),
+        fisherExactPValueColumnIndex = statWriter.defineField("INFO", String.format("FisherP[%s/%s]", groups[0], groups[1]),
                 1, ColumnType.Float, String.format("Fisher exact P-value of observing as large a difference by chance between group %s and group %s.", groups[0], groups[1]));
 
         depthFieldIndex = statWriter.defineField("INFO", "DP",
