@@ -90,9 +90,9 @@
                 <include name="commons-lang-2.5.jar"/>
                 <include name="commons-logging-1.1.1.jar"/>
                 <include name="commons-math-2.1.jar"/>
-                <include name="dsiutils-1.0.10.jar"/>
                 <include name="edu.mssm.crover.cli.jar"/>
-                <include name="fastutil-5.1.5.jar"/>
+                <include name="fastutil-6.2.2.jar"/>
+                <include name="dsiutils-1.0.12.jar"/>
                 <include name="icb-utils.jar"/>
                 <include name="JSAP-2.1.jar"/>
                 <include name="log4j-1.2.15.jar"/>
