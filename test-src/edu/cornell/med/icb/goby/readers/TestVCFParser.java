@@ -123,6 +123,25 @@ public class TestVCFParser {
     }
 
     @Test
+    public void testParseExampleBug() throws IOException, VCFParser.SyntaxException {
+        VCFParser parser = new VCFParser("test-data/stats-writer/GT-bug-example-vcf");
+        parser.readHeader();
+        Columns cols = parser.getColumns();
+
+
+        int formatGlobalFieldIndex = parser.getGlobalFieldIndex("FORMAT", "GT");
+
+        while (parser.hasNextDataLine()) {
+
+            assertNotSame("", parser.getStringFieldValue(formatGlobalFieldIndex));
+            parser.next();
+
+        }
+
+
+    }
+
+    @Test
     public void testParseValue2() throws FileNotFoundException, VCFParser.SyntaxException {
         VCFParser parser = new VCFParser(new FileReader("test-data/vcf/example2.tsv"));
         parser.readHeader();
@@ -264,25 +283,25 @@ public class TestVCFParser {
                 final String name = parser.getFieldName(i);
                 final String stringFieldValue = parser.getStringFieldValue(i);
                 //System.out.printf("field %s gfi:%d value: %s%n", name, i,
-                  //      stringFieldValue);
+                //      stringFieldValue);
 
 
             }
             parser.next();
         }
     }
+
     @Test
-       public void testParseNoFormatTSV() throws FileNotFoundException, VCFParser.SyntaxException {
-           VCFParser parser = new VCFParser(new FileReader("test-data/vcf/no-format.tsv"));
-           parser.readHeader();
-           Columns cols = parser.getColumns();
+    public void testParseNoFormatTSV() throws FileNotFoundException, VCFParser.SyntaxException {
+        VCFParser parser = new VCFParser(new FileReader("test-data/vcf/no-format.tsv"));
+        parser.readHeader();
+        Columns cols = parser.getColumns();
 
-           assertNotNull("Fixed element-id column must exist", cols.find("element-id"));
-           assertNotNull("Fixed log2_odds-ratio_standard_error column must exist", cols.find("log2_odds-ratio_standard_error"));
+        assertNotNull("Fixed element-id column must exist", cols.find("element-id"));
+        assertNotNull("Fixed log2_odds-ratio_standard_error column must exist", cols.find("log2_odds-ratio_standard_error"));
 
 
-
-       }
+    }
     /*
     @Test
     public void testParseTrickyLarge() throws IOException, VCFParser.SyntaxException {

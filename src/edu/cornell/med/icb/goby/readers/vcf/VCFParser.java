@@ -94,6 +94,8 @@ public class VCFParser implements Closeable {
     private ObjectArrayList<ColumnInfo> columnList = new ObjectArrayList<ColumnInfo>();
     private ObjectArrayList<ColumnField> fieldList = new ObjectArrayList<ColumnField>();
     private ColumnInfo formatColumn;
+    private boolean headerLineNotParsed = true;
+    private boolean headerParsed;
 
     /**
      * Constructs a VCF parser.
@@ -234,7 +236,7 @@ public class VCFParser implements Closeable {
 
             n += column.fields.size();
         }
-        
+
         return n;
     }
 
@@ -245,17 +247,17 @@ public class VCFParser implements Closeable {
      * @param globalFieldIndex a global index that runs from zero to countAllFields()
      * @return Value of this field.
      */
-    public CharSequence getFieldValue(int globalFieldIndex) {
+    public CharSequence getFieldValue(final int globalFieldIndex) {
         if (hasNextDataLine) {
 
 
-            globalFieldIndex = fieldPermutation[globalFieldIndex];
-            if (globalFieldIndex == -1) {
+            final int lineFieldIndex = fieldPermutation[globalFieldIndex];
+            if (lineFieldIndex == -1) {
                 // missing field in this row;
                 return "";
             }
-            final int start = fieldStarts[globalFieldIndex];
-            final int end = fieldEnds[globalFieldIndex];
+            final int start = fieldStarts[lineFieldIndex];
+            final int end = fieldEnds[lineFieldIndex];
 
             assert (start >= 0 && end <= lineLength) :
                     String.format("position indices must be within line boundaries start: %d end: %d length: %d", start, end, lineLength);
@@ -311,6 +313,8 @@ public class VCFParser implements Closeable {
      * @throws SyntaxException When the syntax of the VCF file is incorrect.
      */
     public void readHeader() throws SyntaxException {
+        if (headerParsed) return;
+        headerParsed=true;
         globalFieldIndex = 0;
         fieldIndexToName = new Int2ObjectOpenHashMap<String>();
         bufferedReader = new FastBufferedReader(input);
@@ -318,10 +322,14 @@ public class VCFParser implements Closeable {
         int lineNumber = 1;
         while (lineIterator.hasNext()) {
             line = lineIterator.next();
+            if (line.startsWith("##")) {
+                TSV = false;
+            }
             if (!line.startsWith("#")) {
-                if (lineNumber == 1) {
+                if (TSV && lineNumber == 1 && headerLineNotParsed) {
                     // assume the file is TSV and starts directly with the header line. Parse lineIterator here.
                     parseHeaderLine(new MutableString("#" + line));
+
                 } else {
                     // We are seeing an actual line of data. Prepare for parsing:
                     parseCurrentLine();
@@ -507,6 +515,7 @@ public class VCFParser implements Closeable {
 
 
     private void parseHeaderLine(MutableString line) {
+        headerLineNotParsed = false;
         // System.out.printf("header line:%s%n", line);
         // drop the #
         line = line.substring(1);
@@ -526,12 +535,12 @@ public class VCFParser implements Closeable {
                     for (ColumnField f : formatColumn.fields) {
                         fields[i] = (new ColumnField(f.id, f.numberOfValues,
                                 f.type, f.description));
-                        //fields[i].globalFieldIndex = globalFieldIndex++;
+                        fields[i].globalFieldIndex = -1;
                         i++;
                     }
                 } else {
                     fields = new ColumnField[]{new ColumnField("VALUE", 1, ColumnType.String, "")};
-                    //fields[0].globalFieldIndex = globalFieldIndex++;
+                    fields[0].globalFieldIndex = -1;
                 }
                 ColumnInfo newCol = new ColumnInfo(columnName, fields);
 
