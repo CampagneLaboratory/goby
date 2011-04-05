@@ -156,11 +156,14 @@ public class BetweenGroupsVCFOutputFormat implements SequenceVariationOutputForm
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             SampleCountInfo sci = sampleCounts[sampleIndex];
-
-            for (int sampleCount : sci.counts) {
-                totalCount += sampleCount;
-                assert sampleCount >= 0 : "counts must not be negative.";
+            int sumInSample=0;
+            for (int baseCount : sci.counts) {
+                totalCount += baseCount;
+                sumInSample+=baseCount;
+                assert baseCount >= 0 : "counts must not be negative.";
             }
+            // must observe at least one base in each sample to write output for this position.
+            if (sumInSample==0) return;
         }
         if (totalCount == 0) return;
 
