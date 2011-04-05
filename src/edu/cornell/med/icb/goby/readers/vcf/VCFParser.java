@@ -314,7 +314,7 @@ public class VCFParser implements Closeable {
      */
     public void readHeader() throws SyntaxException {
         if (headerParsed) return;
-        headerParsed=true;
+        headerParsed = true;
         globalFieldIndex = 0;
         fieldIndexToName = new Int2ObjectOpenHashMap<String>();
         bufferedReader = new FastBufferedReader(input);
@@ -444,7 +444,8 @@ public class VCFParser implements Closeable {
             for (ColumnField f : column.fields) {
                 if (colMaxGlobalFieldIndex == colMinGlobalFieldIndex) {
                     // This column has only one field.
-                    fieldPermutation[f.globalFieldIndex] = colMinGlobalFieldIndex;
+                    fieldPermutation[f.globalFieldIndex] = lineFieldIndex;
+                    
                 } else {
                     // find the column field f whose id matches the character span we are looking at :
                     int j = start;
@@ -484,8 +485,8 @@ public class VCFParser implements Closeable {
                         if (column.useFormat && column.formatIndex < formatTokens.length) {
 
                             if (f.id.equals(formatTokens[column.formatIndex])) {
-                                /*    System.out.printf("Assigning FORMAT global %s %d -> %d for field %s%n",
-                            f.id, f.globalFieldIndex, lineFieldIndex, line.subSequence(start, end));*/
+                                System.out.printf("Assigning FORMAT global %s %d -> %d for field %s%n",
+                                        f.id, f.globalFieldIndex, lineFieldIndex, line.subSequence(start, end));
 
                                 fieldPermutation[f.globalFieldIndex] = lineFieldIndex;
                                 column.formatIndex++;

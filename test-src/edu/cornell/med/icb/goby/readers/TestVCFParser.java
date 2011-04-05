@@ -133,7 +133,7 @@ public class TestVCFParser {
 
         while (parser.hasNextDataLine()) {
 
-            assertNotSame("", parser.getStringFieldValue(formatGlobalFieldIndex));
+            assertEquals("GT", parser.getStringFieldValue(formatGlobalFieldIndex));
             parser.next();
 
         }
