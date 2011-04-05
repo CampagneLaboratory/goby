@@ -23,18 +23,15 @@ import edu.cornell.med.icb.goby.readers.vcf.*;
 import edu.cornell.med.icb.util.VersionUtils;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collections;
-
-import org.apache.commons.collections.buffer.PredicatedBuffer;
 
 /**
  * Helper class to write VCF statistic result files.
@@ -456,6 +453,26 @@ public class VCFWriter {
      */
     public void setInfo(int infoFieldIndex, double value) {
         infoValues[infoFieldIndex] = Double.toString(value);
+    }
+
+    /**
+     * Set the value of an INFO column field for the current record. The value will be written when writeRecord is executed.
+     *
+     * @param infoFieldIndex Index returned by definedField("INFO",...)
+     * @param value          Value of the field.
+     */
+    public void setInfo(int infoFieldIndex, float value) {
+        infoValues[infoFieldIndex] = Float.toString(value);
+    }
+
+    /**
+     * Set the value of an INFO column field for the current record. The value will be written when writeRecord is executed.
+     *
+     * @param infoFieldIndex Index returned by definedField("INFO",...)
+     * @param value          Value of the field.
+     */
+    public void setInfo(int infoFieldIndex, int value) {
+        infoValues[infoFieldIndex] = Integer.toString(value);
     }
 
     private String[] sampleIds;
