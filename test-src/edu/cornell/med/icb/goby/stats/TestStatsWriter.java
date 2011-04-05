@@ -110,6 +110,30 @@ public class TestStatsWriter extends TestFiles {
 
         assertEquals(new File("test-data/stats-writer/expected-format-1.vcf"), new File("test-results/stats-writer/format-1.vcf"));
     }
+    @Test
+        public void testVCFFormat2() throws IOException {
+
+            final String file = FilenameUtils.concat(BASE_TEST_DIR, "format-2.vcf");
+
+            VCFWriter writer = new VCFWriter(new PrintWriter(new FileWriter(file)));
+
+            int fieldC = writer.defineField("FORMAT", "GT", 1, ColumnType.String, "Desc GT");
+            int fieldD = writer.defineField("FORMAT", "GQ", 1, ColumnType.String, "Desc GQ");
+            String samples[] = {"sample-id-1", "sample-id-2"};
+
+            writer.defineSamples(samples);
+            writer.writeHeader();
+            writer.setSampleValue(fieldC, 0, "A");
+            writer.setSampleValue(fieldD, 0, "B");
+
+            writer.setSampleValue(fieldC, 1, "A");
+               //   writer.setSampleValue(fieldD, 1, "B");
+
+            writer.writeRecord();
+            writer.close();
+
+            assertEquals(new File("test-data/stats-writer/expected-format-2.vcf"), new File("test-results/stats-writer/format-2.vcf"));
+        }
 
     @Test
     public void testCodeGenotype() throws IOException {
@@ -149,6 +173,7 @@ public class TestStatsWriter extends TestFiles {
         writer.addAlternateAllele("A");
         writer.addAlternateAllele("N");
         writer.addAlternateAllele("T");
+        writer.addAlternateAllele("C");
         writer.setSampleValue(fieldC, 0, writer.codeGenotype("CC/T"));
         writer.setSampleValue(fieldC, 1, writer.codeGenotype("A/C/T"));
 

@@ -1,0 +1,6 @@
+##fileformat=VCFv4.1
+##Goby=UNKNOWN
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Desc GT">
+##FORMAT=<ID=GQ,Number=1,Type=String,Description="Desc GQ">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample-id-1	sample-id-2
+								GT:GQ	A:B	A:
