@@ -107,8 +107,10 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         mode.configure(args);
         mode.execute();
-        assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
-                new File("test-data/discover-variants/expected-output-alleles.tsv"));
+        assertEquals(
+                new File("test-data/discover-variants/expected-output-alleles.tsv"),
+                new File(BASE_TEST_DIR + "/" + outputFilename)
+        );
 
     }
 
@@ -166,7 +168,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         list = makeList(sampleCounts, readIndices);
         adjuster.setPValueThreshold(0.5);
-        ObjectArrayList<PositionBaseInfo> filteredList=new ObjectArrayList<PositionBaseInfo>();
+        ObjectArrayList<PositionBaseInfo> filteredList = new ObjectArrayList<PositionBaseInfo>();
         adjuster.filterBases(list, sampleCounts, filteredList);
 
         System.out.println("list: " + list);
@@ -178,7 +180,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         assertTrue("Adjustment must remove T", toBases.contains('T'));
         assertTrue("Adjustment must remove other bases", toBases.contains('N'));
 
-        CountFixer fixer=new CountFixer();
+        CountFixer fixer = new CountFixer();
         fixer.fix(list, sampleCounts, filteredList);
 
         assertEquals(5, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
@@ -187,7 +189,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_OTHER_INDEX]);
     }
 
-    
+
     private SampleCountInfo[] makeSampleCounts() {
         SampleCountInfo[] sampleCounts = new SampleCountInfo[1];
         sampleCounts[0] = new SampleCountInfo();
@@ -213,7 +215,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         mode.execute();
         assertEquals(new File("test-data/discover-variants/expected-output-genotypes.tsv"),
                 new File(BASE_TEST_DIR + "/" + outputFilename)
-                );
+        );
 
     }
 
@@ -225,8 +227,8 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         final ObjectArrayList<PositionBaseInfo> list = makeListWithScores(sampleCounts, scores);
         assertEquals(16, list.size());
-        ObjectArrayList<PositionBaseInfo> filteredList=new ObjectArrayList<PositionBaseInfo>();
-        adjuster.filterBases(list, sampleCounts,filteredList);
+        ObjectArrayList<PositionBaseInfo> filteredList = new ObjectArrayList<PositionBaseInfo>();
+        adjuster.filterBases(list, sampleCounts, filteredList);
 
         System.out.println("list: " + list);
         assertEquals(16, list.size());
@@ -408,7 +410,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
                 "--groups %s " +
                 "--compare A/B " +
                 "--eval %s " +
-                "--vcf "+
+                "--vcf " +
                 "--minimum-variation-support 1 " +
                 "--threshold-distinct-read-indices 1 " +
                 "--output %s " +
@@ -557,7 +559,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
             builder.setTargetAlignedLength(50);
             Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder();
             varBuilder.setFrom("A");
-            varBuilder.setTo(Character.toString(toBase));                          
+            varBuilder.setTo(Character.toString(toBase));
 
             varBuilder.setToQuality(ByteString.copyFrom(new byte[]{40}));
             varBuilder.setPosition(25);

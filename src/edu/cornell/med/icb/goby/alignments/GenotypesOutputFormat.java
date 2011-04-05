@@ -35,7 +35,7 @@ import java.io.PrintWriter;
  *         Time: 2:37:43 PM
  */
 public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
-    private int biomartCoordColumnIndex;
+
     private int positionColumnIndex;
     private int numberOfGroups;
     private int numberOfSamples;
@@ -49,7 +49,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     private int genotypeFieldIndex;
     public int baseCountFieldIndex;
     private int zygFieldIndex;
-   
+
     public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
         this.statsWriter = new VCFWriter(writer);
@@ -88,7 +88,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 
         statsWriter.setId(".");
-        statsWriter.setInfo(biomartCoordColumnIndex,
+        statsWriter.setInfo(biomartFieldIndex,
                 String.format("%s:%d:%d", currentReferenceId, position,
                         position));
         statsWriter.setChromosome(currentReferenceId);

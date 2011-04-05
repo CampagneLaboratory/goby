@@ -21,7 +21,7 @@ package edu.cornell.med.icb.goby.alignments;
 import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
-import edu.cornell.med.icb.goby.stats.TSVWriter;
+import edu.cornell.med.icb.goby.stats.VCFWriter;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import java.io.PrintWriter;
@@ -38,29 +38,29 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
     private int numberOfSamples;
     private int[] refCountsPerSample;
     private int[] variantsCountPerSample;
-    private TSVWriter statsWriter;
+    private VCFWriter statsWriter;
     String[] samples;
     private boolean outputVCF;
+    private int refPropFieldIndex;
+    private int biomartFieldIndex;
+    GenotypesOutputFormat genotypeFormatter = new GenotypesOutputFormat();
+    private int depthFieldIndex;
 
     public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
-        statsWriter = new TSVWriter(writer);
-        refIdColumnIndex = statsWriter.defineColumn("chr:position:position");
+        statsWriter = new VCFWriter(writer);
+        biomartFieldIndex = statsWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
 
-        statsWriter.defineColumnAttributes("ID", 1, ColumnType.String, "Unique site id, in the format chr:start:end.", "chr:position:position");
 
-        statsWriter.defineColumnSet(samples,
-                "refProportion[%s]"
-        );
-        statsWriter.defineColumnSet(samples,
-                "count[%s]"
-        );
-        statsWriter.defineColumnAttributes(1, ColumnType.Float, samples, "refProportion[%s]", "Zygosity[%s]");
-        statsWriter.defineColumnAttributes(1, ColumnType.Integer, samples, "count[%s]");
+        refPropFieldIndex = statsWriter.defineField("FORMAT", "RP", 1, ColumnType.Float,
+                "Proportion of reference allele in the sample (count(ref)/(sum count other alleles)");
+        depthFieldIndex = statsWriter.defineField("INFO", "DP",
+                1, ColumnType.Integer, "Total depth of sequencing across groups at this site");
+        genotypeFormatter.defineGenotypeField(statsWriter);
 
-        this.statsWriter = statsWriter;
-
+        statsWriter.defineSamples(samples);
         statsWriter.writeHeader();
+
     }
 
     public void allocateStorage(int numberOfSamples, int numberOfGroups) {
@@ -69,21 +69,41 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
 
         refCountsPerSample = new int[numberOfSamples];
         variantsCountPerSample = new int[numberOfSamples];
+        genotypeFormatter = new GenotypesOutputFormat();
+        genotypeFormatter.allocateStorage(numberOfSamples, numberOfGroups);
     }
 
     public void writeRecord(DiscoverVariantIterateSortedAlignments iterator, SampleCountInfo[] sampleCounts,
                             int referenceIndex, int position, ObjectArrayList<PositionBaseInfo> list, int groupIndexA, int groupIndexB) {
         fillVariantCountArrays(sampleCounts);
-
+        int totalCount = 0;
+        for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
+            SampleCountInfo sci = sampleCounts[sampleIndex];
+            int sumInSample = 0;
+            for (int baseCount : sci.counts) {
+                totalCount += baseCount;
+                sumInSample += baseCount;
+                assert baseCount >= 0 : "counts must not be negative.";
+            }
+            // must observe at least one base in each sample to write output for this position.
+            if (sumInSample == 0) return;
+        }
+        if (totalCount == 0) return;
+        statsWriter.setInfo(depthFieldIndex, totalCount);
 
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 
-        final int positionString = position;
-        statsWriter.setValue(refIdColumnIndex, String.format("%s:%d:%d", currentReferenceId, positionString, positionString));
+        statsWriter.setId(".");
+        statsWriter.setInfo(biomartFieldIndex,
+                String.format("%s:%d:%d", currentReferenceId, position,
+                        position));
+        statsWriter.setChromosome(currentReferenceId);
+        statsWriter.setPosition(position);
+
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             int numAlleles = 0;
-            int totalCount = 0;
+            totalCount = 0;
             for (int count : sampleCounts[sampleIndex].counts) {
                 if (count > 0) numAlleles++;
                 totalCount += count;
@@ -92,15 +112,11 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
                 // need exactly two alleles to estimate reference allele imbalance:
                 double refProportion = (double) refCountsPerSample[sampleIndex];
                 refProportion /= refCountsPerSample[sampleIndex] + variantsCountPerSample[sampleIndex];
-                statsWriter.setValue(refProportion,
-                        "refProportion[%s]", samples[sampleIndex]);
-            } else {
-                statsWriter.setValue("",
-                        "refProportion[%s]", samples[sampleIndex]);
+                statsWriter.setSampleValue(refPropFieldIndex, sampleIndex, refProportion);
             }
-            statsWriter.setValue(totalCount,
-                    "count[%s]", samples[sampleIndex]);
         }
+        genotypeFormatter.writeGenotypes(statsWriter, sampleCounts);
+
         statsWriter.writeRecord();
     }
 

@@ -513,6 +513,39 @@ public class VCFWriter {
         formatValues[formatFieldIndex][sampleIndex] = value;
     }
 
+    /**
+     * Set a value of a sample column. The sampleIndex identifies the sample in the getSampleIds()  array.
+     *
+     * @param formatFieldIndex Index of a FORMAT field created with defineField("FORMAT,...)
+     * @param sampleIndex      Index of the sample
+     * @param value            Value to set the field to for the current record.
+     */
+    public void setSampleValue(int formatFieldIndex, int sampleIndex, double value) {
+        setSampleValue(formatFieldIndex, sampleIndex, Double.toString(value));
+    }
+
+    /**
+     * Set a value of a sample column. The sampleIndex identifies the sample in the getSampleIds()  array.
+     *
+     * @param formatFieldIndex Index of a FORMAT field created with defineField("FORMAT,...)
+     * @param sampleIndex      Index of the sample
+     * @param value            Value to set the field to for the current record.
+     */
+    public void setSampleValue(int formatFieldIndex, int sampleIndex, int value) {
+        setSampleValue(formatFieldIndex, sampleIndex, Integer.toString(value));
+    }
+
+    /**
+     * Set a value of a sample column. The sampleIndex identifies the sample in the getSampleIds()  array.
+     *
+     * @param formatFieldIndex Index of a FORMAT field created with defineField("FORMAT,...)
+     * @param sampleIndex      Index of the sample
+     * @param value            Value to set the field to for the current record.
+     */
+    public void setSampleValue(int formatFieldIndex, int sampleIndex, float value) {
+        setSampleValue(formatFieldIndex, sampleIndex, Float.toString(value));
+    }
+
     public void setSampleValue(String formatToken, int sampleIndex, String value) {
         int formatFieldIndex = formatTypeToFormatFieldIndex.get(formatToken);
         setSampleValue(formatFieldIndex, sampleIndex, value);
