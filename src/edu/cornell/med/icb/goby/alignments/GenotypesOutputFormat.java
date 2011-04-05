@@ -65,7 +65,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
 
     public void defineGenotypeField(VCFWriter statsWriter) {
         genotypeFieldIndex = statsWriter.defineField("FORMAT", "GT", 1, ColumnType.String, "Genotype");
-        baseCountFieldIndex = statsWriter.defineField("FORMAT", "BC", 1, ColumnType.String, "Base counts in format A=?,T=?,C=?,G=?,N=?.");
+        baseCountFieldIndex = statsWriter.defineField("FORMAT", "BC", 1, ColumnType.String, "Base counts in format A=?;T=?;C=?;G=?;N=?.");
     }
 
     public void allocateStorage(int numberOfSamples, int numberOfGroups) {
