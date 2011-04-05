@@ -22,9 +22,14 @@ import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
+import edu.cornell.med.icb.goby.stats.TTestCalculator;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import java.io.PrintWriter;
+
+import org.apache.commons.math.stat.inference.TTest;
+import org.apache.commons.math.stat.inference.TTestImpl;
+import org.apache.commons.math.MathException;
 
 /**
  * @author Fabien Campagne
@@ -46,10 +51,15 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
     GenotypesOutputFormat genotypeFormatter = new GenotypesOutputFormat();
     private int depthFieldIndex;
 
+    private double[] valuesGroupsA;
+    private double[] valuesGroupsB;
+    private int pValueIndex;
+
     public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
         statsWriter = new VCFWriter(writer);
         biomartFieldIndex = statsWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
+        pValueIndex = statsWriter.defineField("INFO", "P", 1, ColumnType.Float, "P-values of a t-test comparing arcsin transformed values of the ratio between groups.");
 
 
         refPropFieldIndex = statsWriter.defineField("FORMAT", "RP", 1, ColumnType.Float,
@@ -58,10 +68,21 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
                 1, ColumnType.Integer, "Total depth of sequencing across groups at this site");
         genotypeFormatter.defineGenotypeField(statsWriter);
 
+        readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
+        int countA = 0;
+        int countB = 0;
+        for (int groupIndex : readerIndexToGroupIndex) {
+            countA += groupIndex == 1 ? 0 : 1;
+            countB += groupIndex == 1 ? 1 : 0;
+        }
+        valuesGroupsA = new double[countA];
+        valuesGroupsB = new double[countB];
         statsWriter.defineSamples(samples);
         statsWriter.writeHeader();
 
     }
+
+    private final TTest mathCommonsTTest = new TTestImpl();
 
     public void allocateStorage(int numberOfSamples, int numberOfGroups) {
         this.numberOfGroups = numberOfGroups;
@@ -71,6 +92,8 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         variantsCountPerSample = new int[numberOfSamples];
         genotypeFormatter = new GenotypesOutputFormat();
         genotypeFormatter.allocateStorage(numberOfSamples, numberOfGroups);
+
+
     }
 
     public void writeRecord(DiscoverVariantIterateSortedAlignments iterator, SampleCountInfo[] sampleCounts,
@@ -100,6 +123,8 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         statsWriter.setChromosome(currentReferenceId);
         statsWriter.setPosition(position);
 
+        int valuesGroupAIndex = 0;
+        int valuesGroupBIndex = 0;
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             int numAlleles = 0;
@@ -108,15 +133,30 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
                 if (count > 0) numAlleles++;
                 totalCount += count;
             }
-            if (numAlleles == 2) {
-                // need exactly two alleles to estimate reference allele imbalance:
-                double refProportion = (double) refCountsPerSample[sampleIndex];
-                refProportion /= refCountsPerSample[sampleIndex] + variantsCountPerSample[sampleIndex];
-                statsWriter.setSampleValue(refPropFieldIndex, sampleIndex, refProportion);
+
+            // estimate reference allele proportion:
+            double refProportion = (double) refCountsPerSample[sampleIndex];
+            refProportion /= (refCountsPerSample[sampleIndex] + variantsCountPerSample[sampleIndex]);
+            statsWriter.setSampleValue(refPropFieldIndex, sampleIndex, refProportion);
+            int groupIndex = readerIndexToGroupIndex[sampleIndex];
+            final double transformedValue = StrictMath.asin(StrictMath.sqrt(refProportion));
+
+            if (groupIndex == 0) {
+                valuesGroupsA[valuesGroupAIndex++] = transformedValue;
+            } else {
+                valuesGroupsB[valuesGroupBIndex++] = transformedValue;
             }
         }
+        assert valuesGroupAIndex + valuesGroupBIndex == numberOfSamples;
         genotypeFormatter.writeGenotypes(statsWriter, sampleCounts);
+        double pValue = 1;
+        try {
+            pValue = mathCommonsTTest.homoscedasticTTest(valuesGroupsA, valuesGroupsB);
 
+        } catch (MathException e) {
+            pValue = 1;
+        }
+        statsWriter.setInfo(pValueIndex, pValue);
         statsWriter.writeRecord();
     }
 
@@ -128,6 +168,8 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         outputVCF = state;
     }
 
+    int[] readerIndexToGroupIndex;
+
     private void fillVariantCountArrays(SampleCountInfo[] sampleCounts) {
 
 
@@ -135,8 +177,13 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
             final int sampleIndex = csi.sampleIndex;
             variantsCountPerSample[sampleIndex] = csi.varCount;
             refCountsPerSample[sampleIndex] = csi.refCount;
+            int groupIndex = readerIndexToGroupIndex[sampleIndex];
         }
 
+        for (SampleCountInfo csi : sampleCounts) {
+
+
+        }
     }
 
 }
