@@ -110,30 +110,33 @@ public class TestStatsWriter extends TestFiles {
 
         assertEquals(new File("test-data/stats-writer/expected-format-1.vcf"), new File("test-results/stats-writer/format-1.vcf"));
     }
+
     @Test
-        public void testVCFFormat2() throws IOException {
+    public void testVCFFormat2() throws IOException {
 
-            final String file = FilenameUtils.concat(BASE_TEST_DIR, "format-2.vcf");
+        final String file = FilenameUtils.concat(BASE_TEST_DIR, "format-2.vcf");
 
-            VCFWriter writer = new VCFWriter(new PrintWriter(new FileWriter(file)));
+        VCFWriter writer = new VCFWriter(new PrintWriter(new FileWriter(file)));
 
-            int fieldC = writer.defineField("FORMAT", "GT", 1, ColumnType.String, "Desc GT");
-            int fieldD = writer.defineField("FORMAT", "GQ", 1, ColumnType.String, "Desc GQ");
-            String samples[] = {"sample-id-1", "sample-id-2"};
+        int fieldC = writer.defineField("FORMAT", "GT", 1, ColumnType.String, "Desc GT");
+        int fieldD = writer.defineField("FORMAT", "GQ", 1, ColumnType.String, "Desc GQ");
+        String samples[] = {"sample-id-1", "sample-id-2","sample-id-3"};
 
-            writer.defineSamples(samples);
-            writer.writeHeader();
-            writer.setSampleValue(fieldC, 0, "A");
-            writer.setSampleValue(fieldD, 0, "B");
+        writer.defineSamples(samples);
+        writer.writeHeader();
+        writer.setSampleValue(fieldC, 0, "A");
+        writer.setSampleValue(fieldD, 0, "B");
+        writer.writeRecord();
+    //      writer.setSampleValue(fieldC, 1, "A");
+    //       writer.setSampleValue(fieldD, 1, "B");
+       // writer.writeRecord();
+        writer.setSampleValue(fieldC, 2, "A");
+        writer.setSampleValue(fieldD, 2, "B");
+        writer.writeRecord();
+        writer.close();
 
-            writer.setSampleValue(fieldC, 1, "A");
-               //   writer.setSampleValue(fieldD, 1, "B");
-
-            writer.writeRecord();
-            writer.close();
-
-            assertEquals(new File("test-data/stats-writer/expected-format-2.vcf"), new File("test-results/stats-writer/format-2.vcf"));
-        }
+        assertEquals(new File("test-data/stats-writer/expected-format-2.vcf"), new File("test-results/stats-writer/format-2.vcf"));
+    }
 
     @Test
     public void testCodeGenotype() throws IOException {
