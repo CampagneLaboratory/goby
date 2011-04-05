@@ -47,9 +47,9 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     private int idColumnIndex;
     private int biomartFieldIndex;
     private int genotypeFieldIndex;
-    private int zygFieldIndex;      
-
-
+    public int baseCountFieldIndex;
+    private int zygFieldIndex;
+   
     public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
         this.statsWriter = new VCFWriter(writer);
@@ -65,6 +65,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
 
     public void defineGenotypeField(VCFWriter statsWriter) {
         genotypeFieldIndex = statsWriter.defineField("FORMAT", "GT", 1, ColumnType.String, "Genotype");
+        baseCountFieldIndex = statsWriter.defineField("FORMAT", "BC", 1, ColumnType.String, "Base counts in format A=?,T=?,C=?,G=?,N=?.");
     }
 
     public void allocateStorage(int numberOfSamples, int numberOfGroups) {
@@ -177,6 +178,19 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                 }
                 statsWriter.setReferenceAllele(referenceAllele);
                 statsWriter.setSampleValue(genotypeFieldIndex, sampleIndex, statsWriter.codeGenotype(genotypeBuffer.toString()));
+                MutableString baseCountString = new MutableString();
+                baseIndex=0;
+                for (int count : sci.counts) {
+                    final char base = sci.base(baseIndex);
+                    baseCountString.append(base);
+                    baseCountString.append('=');
+                    baseCountString.append(Integer.toString(count));
+                    baseIndex++;
+                    baseCountString.append(',');
+                }
+                baseCountString.setLength(baseCountString.length()-1);
+                statsWriter.setSampleValue(baseCountFieldIndex, sampleIndex, baseCountString);
+
             } else {
                 statsWriter.setSampleValue(genotypeFieldIndex, sampleIndex, "");
             }

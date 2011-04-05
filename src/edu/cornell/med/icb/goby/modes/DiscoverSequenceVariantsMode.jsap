@@ -153,7 +153,7 @@
                <defaults>
                 <string>variant_discovery</string>
             </defaults>
-            <help>The name of the output format. Possible choices are variant_discovery, allele_frequencies, compare_groups.</help>
+            <help>The name of the output format. Possible choices are genotypes, allele_frequencies, compare_groups.</help>
         </flaggedOption>
     </parameters>
 </jsap>
