@@ -160,6 +160,7 @@ public class FisherBaseFilter extends BaseFilter {
                             expectedVariationCount, observedVariationCount,
                             expectedReferenceCount, observedReferenceCount);
                     */
+                    sci.counts[baseIndex] = 0;
                     filteredList.addAll(considered);
 
                 }

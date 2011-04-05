@@ -38,8 +38,10 @@ public class CountFixer implements CountFixerInterface {
     public void fix(ObjectArrayList<PositionBaseInfo> list,
                     SampleCountInfo[] sampleCounts,
                     ObjectList<PositionBaseInfo> likelyErrors) {
-
-        for (PositionBaseInfo info : likelyErrors) {
+          // do not decrement counts again. The Filters have done this already..
+        // the sampleCounts reference is given to this method so that the method can recalculate sample counts
+        // after fixing list for likelyErrors.
+      /*  for (PositionBaseInfo info : likelyErrors) {
             final SampleCountInfo countInfo = sampleCounts[info.readerIndex];
             if (info.matchesReference) {
 
@@ -47,10 +49,10 @@ public class CountFixer implements CountFixerInterface {
             } else {
                 --countInfo.counts[countInfo.baseIndex(info.to)];
             }
-        }
+        } */
         for (SampleCountInfo sci : sampleCounts) {
             for (int i = 0; i < sci.counts.length; i++) {
-                sci.counts[i] = Math.max(sci.counts[i], 0);
+                assert sci.counts[i] >= 0: "Counts must never be negative. This would happen if a BaseFilter removed counts directly";
             }
         }
         list.removeAll(likelyErrors);
