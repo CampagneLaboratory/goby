@@ -291,7 +291,10 @@ public class VCFWriter {
             for (int formatIndex = 0; formatIndex < numFormatFields; formatIndex++) {
                 //  for (CharSequence formatType : formatFieldIds) {
                 if (formatFieldActive[formatIndex]) {
-                    sampleString.append(formatValues[formatIndex][sampleIndex]);
+                    final CharSequence v = formatValues[formatIndex][sampleIndex];
+                    if (v != null) {
+                        sampleString.append(v);
+                    }
                     sampleString.append(':');
                 }
             }
