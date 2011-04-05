@@ -36,18 +36,22 @@ public class QualityScoreFilter extends BaseFilter {
                             SampleCountInfo[] sampleCounts,
                             ObjectArrayList<PositionBaseInfo> filteredList) {
         resetCounters();
+        int[] removed = new int[5];
+
         for (PositionBaseInfo info : list) {
             numScreened++;
             if (!info.matchesReference && info.qualityScore < scoreThreshold) {
                 filteredList.add(info);
                 final SampleCountInfo countInfo = sampleCounts[info.readerIndex];
-                countInfo.counts[countInfo.baseIndex(info.to)]--;
+                final int baseIndex = countInfo.baseIndex(info.to);
+                countInfo.counts[baseIndex]--;
+                removed[baseIndex]++;
                 numFiltered++;
             }
         }
-
+        // adjust refCount and varCount:
+        adjustRefVarCounts(sampleCounts, removed);
     }
-
 
 
 

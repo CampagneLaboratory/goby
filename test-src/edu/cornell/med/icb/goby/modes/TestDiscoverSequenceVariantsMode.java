@@ -198,6 +198,9 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX] = 9;
         sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX] = 1;
         sampleCounts[0].counts[SampleCountInfo.BASE_OTHER_INDEX] = 1;
+        sampleCounts[0].referenceBase='A';
+        sampleCounts[0].refCount=5;
+        sampleCounts[0].varCount=11;
         return sampleCounts;
     }
 
@@ -233,6 +236,9 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         System.out.println("list: " + list);
         assertEquals(16, list.size());
         assertEquals(4, filteredList.size());
+        assertEquals(5, sampleCounts[0].refCount);
+        assertEquals(7, sampleCounts[0].varCount);
+
     }
 
     private ObjectArrayList<ReadIndexStats> makeReadIndexStats() {

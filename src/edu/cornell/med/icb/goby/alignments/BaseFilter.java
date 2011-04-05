@@ -64,4 +64,20 @@ public abstract class BaseFilter {
         numScreened=0;
         numFiltered=0;
     }
+
+    protected void adjustRefVarCounts(SampleCountInfo[] sampleCounts, int[] removed) {
+       for (SampleCountInfo sci : sampleCounts) {
+            final int refBaseIndex = sci.baseIndex(sci.referenceBase);
+
+            for (int otherBaseIndex = 0; otherBaseIndex < removed.length; otherBaseIndex++) {
+                if (refBaseIndex == otherBaseIndex) {
+                    sci.refCount -= removed[refBaseIndex];
+                } else {
+                    sci.varCount -= removed[otherBaseIndex];
+                }
+            }
+            assert sci.refCount >= 0;
+            assert sci.varCount >= 0;
+        }
+    }
 }

@@ -162,7 +162,12 @@ public class FisherBaseFilter extends BaseFilter {
                     */
                     sci.counts[baseIndex] = 0;
                     filteredList.addAll(considered);
-
+                    char base = sci.base(baseIndex);
+                    if (base == sci.referenceBase) {
+                        sci.refCount = 0;
+                    } else {
+                        sci.varCount -= numErroneouslyCalledBases;
+                    }
                 }
             }
         }

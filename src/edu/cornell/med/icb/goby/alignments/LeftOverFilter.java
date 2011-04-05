@@ -40,6 +40,7 @@ public class LeftOverFilter extends BaseFilter {
         resetCounters();
         int removedBaseCount = filteredList.size() / sampleCounts.length;
         int removedBaseCountThreshold = removedBaseCount * MULTIPLIER;
+        int[] removed = new int[5];
 
         for (PositionBaseInfo positionBaseInfo : list) {
             numScreened++;
@@ -59,12 +60,14 @@ public class LeftOverFilter extends BaseFilter {
                 // less counts remaining for this allele than were removed on average by previous filters, still likely
                 // an error.
                 // We remove this call
+                removed[baseIndex]++;
                 sampleCountInfo.counts[baseIndex] = 0;
+
                 filteredList.add(positionBaseInfo);
                 numFiltered++;
             }
         }
-
+        adjustRefVarCounts(sampleCounts, removed);
     }
 
     @Override
