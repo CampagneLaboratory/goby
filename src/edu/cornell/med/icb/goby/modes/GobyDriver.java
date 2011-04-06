@@ -56,9 +56,9 @@ public class GobyDriver extends GenericToolsDriver {
         } catch (Exception e) {
             e.printStackTrace();
             status = 1;
-        } finally {
-            System.exit(status);
         }
+        System.exit(status);
+
 
     }
 }
