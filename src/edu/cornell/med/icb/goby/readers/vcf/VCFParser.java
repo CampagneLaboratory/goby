@@ -485,9 +485,9 @@ public class VCFParser implements Closeable {
                         if (column.useFormat && column.formatIndex < formatTokens.length) {
 
                             if (f.id.equals(formatTokens[column.formatIndex])) {
-                                System.out.printf("Assigning FORMAT global %s %d -> %d for field %s%n",
+                            /*    System.out.printf("Assigning FORMAT global %s %d -> %d for field %s%n",
                                         f.id, f.globalFieldIndex, lineFieldIndex, line.subSequence(start, end));
-
+                              */
                                 fieldPermutation[f.globalFieldIndex] = lineFieldIndex;
                                 column.formatIndex++;
                                 break;
