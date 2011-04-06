@@ -141,7 +141,7 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
             int groupIndex = readerIndexToGroupIndex[sampleIndex];
             final double transformedValue = StrictMath.asin(StrictMath.sqrt(refProportion));
 
-            if (groupIndex == 0) {
+            if (groupIndex == groupIndexA) {
                 valuesGroupsA[valuesGroupAIndex++] = transformedValue;
             } else {
                 valuesGroupsB[valuesGroupBIndex++] = transformedValue;
@@ -177,13 +177,10 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
             final int sampleIndex = csi.sampleIndex;
             variantsCountPerSample[sampleIndex] = csi.varCount;
             refCountsPerSample[sampleIndex] = csi.refCount;
-            int groupIndex = readerIndexToGroupIndex[sampleIndex];
-        }
-
-        for (SampleCountInfo csi : sampleCounts) {
-
 
         }
+
+       
     }
 
 }

@@ -20,6 +20,8 @@ package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
+import java.util.Arrays;
+
 /**
  * This filter considers whether the remaining base calls of each allele (left-over)
  * have a count larger than the number of call corrections done by previous filters.
@@ -33,6 +35,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
  */
 public class LeftOverFilter extends BaseFilter {
     private static final int MULTIPLIER = 2;
+    int[] removed = new int[5];
 
     public void filterBases(ObjectArrayList<PositionBaseInfo> list,
                             SampleCountInfo[] sampleCounts,
@@ -40,7 +43,7 @@ public class LeftOverFilter extends BaseFilter {
         resetCounters();
         int removedBaseCount = filteredList.size() / sampleCounts.length;
         int removedBaseCountThreshold = removedBaseCount * MULTIPLIER;
-        int[] removed = new int[5];
+        Arrays.fill(removed, 0);
 
         for (PositionBaseInfo positionBaseInfo : list) {
             numScreened++;

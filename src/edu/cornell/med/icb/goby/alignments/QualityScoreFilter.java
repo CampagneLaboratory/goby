@@ -20,6 +20,8 @@ package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
+import java.util.Arrays;
+
 /**
  * @author Fabien Campagne
  *         Date: Mar 23, 2011
@@ -31,12 +33,12 @@ public class QualityScoreFilter extends BaseFilter {
     public String describe() {
         return "q<" + scoreThreshold;
     }
-
+    int[] removed = new int[5];
     public void filterBases(ObjectArrayList<PositionBaseInfo> list,
                             SampleCountInfo[] sampleCounts,
                             ObjectArrayList<PositionBaseInfo> filteredList) {
         resetCounters();
-        int[] removed = new int[5];
+        Arrays.fill(removed,0);
 
         for (PositionBaseInfo info : list) {
             numScreened++;
