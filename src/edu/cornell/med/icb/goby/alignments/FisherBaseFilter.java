@@ -78,7 +78,8 @@ public class FisherBaseFilter extends BaseFilter {
             }
             return;
         }
-
+        initStorage(sampleCounts.length);
+        resetCounters();
         for (SampleCountInfo sci : sampleCounts) {
             final ReadIndexStats stats = readIndexStats.get(sci.sampleIndex);
             ObjectArrayList<PositionBaseInfo> considered = new ObjectArrayList<PositionBaseInfo>();
@@ -163,16 +164,20 @@ public class FisherBaseFilter extends BaseFilter {
                     sci.counts[baseIndex] = 0;
                     filteredList.addAll(considered);
                     char base = sci.base(baseIndex);
+                    int sampleIndex = sci.sampleIndex;
                     if (base == sci.referenceBase) {
-                        sci.refCount = 0;
+
+                        refCountRemovedPerSample[sampleIndex]++;
                     } else {
-                        sci.varCount -= numErroneouslyCalledBases;
+                        varCountRemovedPerSample[sampleIndex]++;
                     }
                 }
             }
         }
         numScreened += list.size();
         numFiltered += filteredList.size();
+        adjustRefVarCounts(sampleCounts);
+
     }
 
 

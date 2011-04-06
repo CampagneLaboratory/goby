@@ -198,9 +198,33 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX] = 9;
         sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX] = 1;
         sampleCounts[0].counts[SampleCountInfo.BASE_OTHER_INDEX] = 1;
-        sampleCounts[0].referenceBase='A';
-        sampleCounts[0].refCount=5;
-        sampleCounts[0].varCount=11;
+        sampleCounts[0].referenceBase = 'A';
+        sampleCounts[0].refCount = 5;
+        sampleCounts[0].varCount = 11;
+        return sampleCounts;
+    }
+
+    private SampleCountInfo[] makeTwoSampleCounts() {
+        SampleCountInfo[] sampleCounts = new SampleCountInfo[2];
+        sampleCounts[0] = new SampleCountInfo();
+        sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX] = 5;
+        sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX] = 1;
+        sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX] = 9;
+        sampleCounts[0].counts[SampleCountInfo.BASE_OTHER_INDEX] = 1;
+        sampleCounts[0].referenceBase = 'A';
+        sampleCounts[0].refCount = 5;
+        sampleCounts[0].varCount = 11;
+        sampleCounts[0].sampleIndex = 0;
+
+        sampleCounts[1] = new SampleCountInfo();
+        sampleCounts[1].counts[SampleCountInfo.BASE_A_INDEX] = 10;
+        sampleCounts[1].counts[SampleCountInfo.BASE_T_INDEX] = 4;
+        sampleCounts[1].counts[SampleCountInfo.BASE_C_INDEX] = 0;
+        sampleCounts[1].counts[SampleCountInfo.BASE_OTHER_INDEX] = 2;
+        sampleCounts[1].referenceBase = 'A';
+        sampleCounts[1].refCount = 10;
+        sampleCounts[1].varCount = 6;
+        sampleCounts[1].sampleIndex = 1;
         return sampleCounts;
     }
 
@@ -238,6 +262,69 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         assertEquals(4, filteredList.size());
         assertEquals(5, sampleCounts[0].refCount);
         assertEquals(7, sampleCounts[0].varCount);
+
+    }
+
+    @Test
+    public void testAdjustVarCount() {
+        QualityScoreFilter adjuster1 = new QualityScoreFilter();
+        LeftOverFilter adjuster2 = new LeftOverFilter();
+        SampleCountInfo[] sampleCounts = makeTwoSampleCounts();
+
+        assertEquals(5, sampleCounts[0].refCount);
+        assertEquals(11, sampleCounts[0].varCount);
+        assertEquals(10, sampleCounts[1].refCount);
+        assertEquals(6, sampleCounts[1].varCount);
+
+        IntArrayList scores = IntArrayList.wrap(new int[]{10, 20, 30, 40, 40, 40, 40});
+
+        final ObjectArrayList<PositionBaseInfo> list = makeListWithScores(sampleCounts, scores);
+        assertEquals(32, list.size());
+        ObjectArrayList<PositionBaseInfo> filteredList = new ObjectArrayList<PositionBaseInfo>();
+        adjuster1.filterBases(list, sampleCounts, filteredList);
+        adjuster2.filterBases(list, sampleCounts, filteredList);
+
+        System.out.println("list: " + list);
+        System.out.println("filtered: " + filteredList);
+
+        assertEquals(16, filteredList.size());
+        assertEquals(0, sampleCounts[0].refCount);
+        assertEquals(11-5, sampleCounts[0].varCount);
+
+        assertEquals(10, sampleCounts[1].refCount);
+        assertEquals(6-6, sampleCounts[1].varCount);
+
+    }
+
+    @Test
+    public void testAdjustVarCount2() {
+        QualityScoreFilter adjuster1 = new QualityScoreFilter();
+        LeftOverFilter adjuster2 = new LeftOverFilter();
+        SampleCountInfo[] sampleCounts = makeTwoSampleCounts();
+
+        assertEquals(5, sampleCounts[0].refCount);
+        assertEquals(11, sampleCounts[0].varCount);
+
+        assertEquals(10, sampleCounts[1].refCount);
+        assertEquals(6, sampleCounts[1].varCount);
+
+        IntArrayList scores = IntArrayList.wrap(new int[]{ 40, 40, 40, 40, 40, 40, 10, 40, 40, 40, 40, 40, 40, 40, 40, 40});
+
+        final ObjectArrayList<PositionBaseInfo> list = makeListWithScores(sampleCounts, scores);
+        assertEquals(32, list.size());
+        ObjectArrayList<PositionBaseInfo> filteredList = new ObjectArrayList<PositionBaseInfo>();
+        adjuster1.filterBases(list, sampleCounts, filteredList);
+        adjuster2.filterBases(list, sampleCounts, filteredList);
+
+        System.out.println("list: " + list);
+        System.out.println("filtered: " + filteredList);
+
+        assertEquals(1, filteredList.size());
+        assertEquals(5, sampleCounts[0].refCount);
+        assertEquals(10, sampleCounts[0].varCount);
+
+        assertEquals(10, sampleCounts[1].refCount);
+        assertEquals(6, sampleCounts[1].varCount);
 
     }
 

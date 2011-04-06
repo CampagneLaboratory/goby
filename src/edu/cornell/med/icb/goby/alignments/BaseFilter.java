@@ -21,6 +21,8 @@ package edu.cornell.med.icb.goby.alignments;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 
+import java.util.Arrays;
+
 /**
  * Provide a strategy for filtering bases and reduce the impact of sequencing errors on downstream
  * statistics.
@@ -33,51 +35,60 @@ public abstract class BaseFilter {
 
     /**
      * Adjust list and sampleCounts to remove/reduce the effect of sequencing errors.
-     * @param list Variation or reference bases at position
+     *
+     * @param list         Variation or reference bases at position
      * @param sampleCounts Counts for alleles at position each each sample under study.
      */
     public abstract void filterBases(ObjectArrayList<PositionBaseInfo> list,
-                      SampleCountInfo[] sampleCounts,
-                      ObjectArrayList<PositionBaseInfo> filteredList);
+                                     SampleCountInfo[] sampleCounts,
+                                     ObjectArrayList<PositionBaseInfo> filteredList);
 
     /**
      * Returns a short description of the fitlering criteria.
-      * @return a short description of the fitlering criteria.
+     *
+     * @return a short description of the fitlering criteria.
      */
     public String describe() {
         return this.getClass().getSimpleName();
     }
-    int numFiltered=0;
-    int numScreened=0;
+
+    int[] varCountRemovedPerSample;
+    int[] refCountRemovedPerSample;
+    int numFiltered = 0;
+    int numScreened = 0;
 
     public double getPercentFilteredOut() {
-        double rate=numFiltered;
-        rate/=numScreened;
-        return rate*100d;
+        double rate = numFiltered;
+        rate /= numScreened;
+        return rate * 100d;
     }
 
     public String getName() {
-        return "filter ("+describe()+")";
+        return "filter (" + describe() + ")";
     }
 
-     void resetCounters() {
-        numScreened=0;
-        numFiltered=0;
+    void initStorage(int numSamples) {
+        if (varCountRemovedPerSample == null) {
+            varCountRemovedPerSample = new int[numSamples];
+            refCountRemovedPerSample = new int[numSamples];
+        } else {
+            Arrays.fill(varCountRemovedPerSample, 0);
+            Arrays.fill(refCountRemovedPerSample, 0);
+        }
     }
 
-    protected void adjustRefVarCounts(SampleCountInfo[] sampleCounts, int[] removed) {
-       for (SampleCountInfo sci : sampleCounts) {
-            final int refBaseIndex = sci.baseIndex(sci.referenceBase);
+    void resetCounters() {
 
-            for (int otherBaseIndex = 0; otherBaseIndex < removed.length; otherBaseIndex++) {
-                if (refBaseIndex == otherBaseIndex) {
-                    sci.refCount -= removed[refBaseIndex];
-                } else {
-                    sci.varCount -= removed[otherBaseIndex];
-                }
-            }
-            assert sci.refCount >= 0;
-            assert sci.varCount >= 0;
+        numScreened = 0;
+        numFiltered = 0;
+    }
+
+    protected void adjustRefVarCounts(SampleCountInfo[] sampleCounts) {
+        for (SampleCountInfo sci : sampleCounts) {
+            sci.varCount -= varCountRemovedPerSample[sci.sampleIndex];
+            sci.refCount -= refCountRemovedPerSample[sci.sampleIndex];
+            assert sci.refCount >= 0 : "refCount negative: " + sci.varCount;
+            assert sci.varCount >= 0 : "varCount negative: " + sci.varCount;
         }
     }
 }

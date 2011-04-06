@@ -20,7 +20,7 @@ package edu.cornell.med.icb.goby.alignments;
 
 /**
  * Base info for class IterateSortedAlignmentsListImpl.
-
+ *
  * @author Fabien Campagne
  *         Date: Mar 21, 2011
  *         Time: 1:53:47 PM
@@ -30,12 +30,13 @@ public class PositionBaseInfo {
     public int readerIndex;
     public byte qualityScore;
     public boolean matchesReference;
-    public char from=' ';
-    public char to=' ';
+    public char from = ' ';
+    public char to = ' ';
     public int position;
 
     @Override
     public String toString() {
-        return matchesReference?"ref:"+from: from+"/"+to+" q="+qualityScore;
+        return matchesReference ? String.format("ref: %c s=%d", from, readerIndex) :
+                String.format("%c/%c q=%d s=%d", from, to, qualityScore, readerIndex);
     }
 }

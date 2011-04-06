@@ -37,15 +37,18 @@ public class LeftOverFilter extends BaseFilter {
     private static final int MULTIPLIER = 2;
     int[] removed = new int[5];
 
+
     public void filterBases(ObjectArrayList<PositionBaseInfo> list,
                             SampleCountInfo[] sampleCounts,
                             ObjectArrayList<PositionBaseInfo> filteredList) {
         resetCounters();
+        initStorage(sampleCounts.length);
         int removedBaseCount = filteredList.size() / sampleCounts.length;
         int removedBaseCountThreshold = removedBaseCount * MULTIPLIER;
         Arrays.fill(removed, 0);
-
+        int removedVarCount = 0;
         for (PositionBaseInfo positionBaseInfo : list) {
+
             numScreened++;
             final int sampleIndex = positionBaseInfo.readerIndex;
             char base = positionBaseInfo.matchesReference ? positionBaseInfo.from : positionBaseInfo.to;
@@ -57,20 +60,25 @@ public class LeftOverFilter extends BaseFilter {
             if (count == 0) continue;
             if (count < removedBaseCountThreshold) {
 
-                /*   System.out.printf("Filtering out allele %c %d < %d %s from sample %d %n",
-           base, count, removedBaseCountThreshold, filteredList.toString(), positionBaseInfo.readerIndex); */
-
+                /*System.out.printf("Filtering out allele %c %d < %d %s from sample %d %n",
+                        base, count, removedBaseCountThreshold, filteredList.toString(), positionBaseInfo.readerIndex);
+                  */
                 // less counts remaining for this allele than were removed on average by previous filters, still likely
                 // an error.
                 // We remove this call
-                removed[baseIndex]++;
-                sampleCountInfo.counts[baseIndex] = 0;
 
+                sampleCountInfo.counts[baseIndex]--;
+                if (base == sampleCountInfo.referenceBase) {
+                    refCountRemovedPerSample[sampleIndex]++;
+                } else {
+                    varCountRemovedPerSample[sampleIndex]++;
+                }
                 filteredList.add(positionBaseInfo);
                 numFiltered++;
+
             }
         }
-        adjustRefVarCounts(sampleCounts, removed);
+        adjustRefVarCounts(sampleCounts);
     }
 
     @Override

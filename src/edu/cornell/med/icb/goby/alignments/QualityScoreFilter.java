@@ -33,13 +33,16 @@ public class QualityScoreFilter extends BaseFilter {
     public String describe() {
         return "q<" + scoreThreshold;
     }
+
     int[] removed = new int[5];
+
     public void filterBases(ObjectArrayList<PositionBaseInfo> list,
                             SampleCountInfo[] sampleCounts,
                             ObjectArrayList<PositionBaseInfo> filteredList) {
         resetCounters();
-        Arrays.fill(removed,0);
-
+        initStorage(sampleCounts.length);
+        Arrays.fill(removed, 0);
+        int removedVarCount = 0;
         for (PositionBaseInfo info : list) {
             numScreened++;
             if (!info.matchesReference && info.qualityScore < scoreThreshold) {
@@ -48,13 +51,13 @@ public class QualityScoreFilter extends BaseFilter {
                 final int baseIndex = countInfo.baseIndex(info.to);
                 countInfo.counts[baseIndex]--;
                 removed[baseIndex]++;
+                this.varCountRemovedPerSample[info.readerIndex]++;
                 numFiltered++;
-            }
+            }  
         }
         // adjust refCount and varCount:
-        adjustRefVarCounts(sampleCounts, removed);
+        adjustRefVarCounts(sampleCounts);
     }
-
 
 
 }

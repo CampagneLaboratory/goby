@@ -26,6 +26,7 @@ import edu.cornell.med.icb.goby.stats.TTestCalculator;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 import org.apache.commons.math.stat.inference.TTest;
 import org.apache.commons.math.stat.inference.TTestImpl;
@@ -97,7 +98,8 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
     }
 
     public void writeRecord(DiscoverVariantIterateSortedAlignments iterator, SampleCountInfo[] sampleCounts,
-                            int referenceIndex, int position, ObjectArrayList<PositionBaseInfo> list, int groupIndexA, int groupIndexB) {
+                            int referenceIndex, int position, ObjectArrayList<PositionBaseInfo> list,
+                            int groupIndexA, int groupIndexB) {
         fillVariantCountArrays(sampleCounts);
         int totalCount = 0;
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
@@ -135,8 +137,8 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
             }
 
             // estimate reference allele proportion:
-            double refProportion = (double) refCountsPerSample[sampleIndex];
-            refProportion /= (refCountsPerSample[sampleIndex] + variantsCountPerSample[sampleIndex]);
+            double refProportion = (double) sampleCounts[sampleIndex].refCount;
+            refProportion /= (sampleCounts[sampleIndex].refCount + sampleCounts[sampleIndex].varCount);
             statsWriter.setSampleValue(refPropFieldIndex, sampleIndex, refProportion);
             int groupIndex = readerIndexToGroupIndex[sampleIndex];
             final double transformedValue = StrictMath.asin(StrictMath.sqrt(refProportion));
@@ -151,7 +153,9 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         genotypeFormatter.writeGenotypes(statsWriter, sampleCounts);
         double pValue = 1;
         try {
-            pValue = mathCommonsTTest.homoscedasticTTest(valuesGroupsA, valuesGroupsB);
+            if (valuesGroupAIndex >= 2&& valuesGroupBIndex>=2) { // need two samples per group
+                pValue = mathCommonsTTest.homoscedasticTTest(valuesGroupsA, valuesGroupsB);
+            }
 
         } catch (MathException e) {
             pValue = 1;
@@ -180,7 +184,7 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
 
         }
 
-       
+
     }
 
 }
