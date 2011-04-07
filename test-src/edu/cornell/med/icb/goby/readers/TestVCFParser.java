@@ -302,7 +302,7 @@ public class TestVCFParser {
 
 
     }
-
+   /*
     @Test
     public void testParseTrickyLarge() throws IOException, VCFParser.SyntaxException {
         //VCFParser parser = new VCFParser("/home/gobyweb/GOBYWEB_RESULTS/campagne/NXMONDD/NXMONDD.vcf.gz");
@@ -320,7 +320,7 @@ public class TestVCFParser {
             }
             parser.next();
         }
-    }      
+    }*/
     /*
  @Test
     public void testParseTrickyLarge2() throws IOException, VCFParser.SyntaxException {
