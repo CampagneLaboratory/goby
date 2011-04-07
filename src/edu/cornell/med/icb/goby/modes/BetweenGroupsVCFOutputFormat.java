@@ -78,6 +78,8 @@ public class BetweenGroupsVCFOutputFormat implements SequenceVariationOutputForm
     private int biomartFieldIndex;
     private GenotypesOutputFormat genotypeFormatter;
     private int depthFieldIndex;
+    private int varCountsIndex[];
+    private int refCountsIndex[];
 
 
     public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
@@ -117,7 +119,15 @@ public class BetweenGroupsVCFOutputFormat implements SequenceVariationOutputForm
                 1, ColumnType.Float, String.format("Z value of the odds-ratio between group %s and group %s", groups[0], groups[1]));
         fisherExactPValueColumnIndex = statWriter.defineField("INFO", String.format("FisherP[%s/%s]", groups[0], groups[1]),
                 1, ColumnType.Float, String.format("Fisher exact P-value of observing as large a difference by chance between group %s and group %s.", groups[0], groups[1]));
+        varCountsIndex = new int[groups.length];
+        refCountsIndex = new int[groups.length];
 
+        for (int groupIndex = 0; groupIndex < groups.length; groupIndex++) {
+            refCountsIndex[groupIndex] = statWriter.defineField("INFO", String.format("refCountGroup[%s]", groups[groupIndex]),
+                    1, ColumnType.Integer, String.format("Number of reference allele called in group %s.", groups[groupIndex]));
+            varCountsIndex[groupIndex] = statWriter.defineField("INFO", String.format("varCountGroup[%s]", groups[groupIndex]),
+                    1, ColumnType.Integer, String.format("Number of variant allele(s) called in group %s.", groups[groupIndex]));
+        }
         depthFieldIndex = statWriter.defineField("INFO", "DP",
                 1, ColumnType.Integer, "Total depth of sequencing across groups at this site");
 
@@ -133,7 +143,7 @@ public class BetweenGroupsVCFOutputFormat implements SequenceVariationOutputForm
         variantsCountPerGroup = new int[numberOfGroups];
         distinctReadIndexCountPerGroup = new int[numberOfGroups];
         averageVariantQualityScorePerGroup = new float[numberOfGroups];
-                                                               
+
         refCountsPerSample = new int[numberOfSamples];
         variantsCountPerSample = new int[numberOfSamples];
         distinctReadIndicesCountPerGroup = new IntSet[numberOfGroups];
@@ -156,14 +166,14 @@ public class BetweenGroupsVCFOutputFormat implements SequenceVariationOutputForm
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             SampleCountInfo sci = sampleCounts[sampleIndex];
-            int sumInSample=0;
+            int sumInSample = 0;
             for (int baseCount : sci.counts) {
                 totalCount += baseCount;
-                sumInSample+=baseCount;
+                sumInSample += baseCount;
                 assert baseCount >= 0 : "counts must not be negative.";
             }
             // must observe at least one base in each sample to write output for this position.
-            if (sumInSample==0) return;
+            if (sumInSample == 0) return;
         }
         if (totalCount == 0) return;
 
@@ -182,9 +192,13 @@ public class BetweenGroupsVCFOutputFormat implements SequenceVariationOutputForm
 
         statWriter.setInfo(biomartFieldIndex, biomartRegionSpan);
 
-        final double denominator = (double) refCountsPerGroup[groupIndexA] * (double) variantsCountPerGroup[groupIndexB];
+        for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
+            statWriter.setInfo(refCountsIndex[groupIndex], refCountsPerGroup[groupIndex]);
+            statWriter.setInfo(varCountsIndex[groupIndex], variantsCountPerGroup[groupIndex]);
+        }
+        final double denominator = (double) (refCountsPerGroup[groupIndexA] ) * (double) (variantsCountPerGroup[groupIndexB] );
         double oddsRatio = denominator == 0 ? Double.NaN :
-                ((double) refCountsPerGroup[groupIndexB] * (double) variantsCountPerGroup[groupIndexA]) /
+                ((double) (refCountsPerGroup[groupIndexB] ) * (double) (variantsCountPerGroup[groupIndexA] )) /
                         denominator;
         double logOddsRatioSE;
 
