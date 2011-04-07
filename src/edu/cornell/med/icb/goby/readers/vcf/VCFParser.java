@@ -452,7 +452,7 @@ public class VCFParser implements Closeable {
                     final String id = f.id;
                     int matchLength = 0;
                     for (int i = 0; i < id.length(); i++) {
-                        if (j > end) {
+                        if (j >= end) {
                             // reached end of field, not this field.
                             break;
                         }
