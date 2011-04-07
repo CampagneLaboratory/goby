@@ -23,6 +23,8 @@ import edu.cornell.med.icb.goby.readers.vcf.*;
 import edu.cornell.med.icb.util.VersionUtils;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -331,6 +333,7 @@ public class VCFWriter {
     }
 
     private MutableString codedGenotypeBuffer = new MutableString();
+    private IntList genotypeIndexList = new IntArrayList();
 
     /**
      * Encode the list of alleles as a VCF genotype.
@@ -352,19 +355,37 @@ public class VCFWriter {
      * @param alleles List of alleles included in the genotype.
      * @return coded VCF genotype.
      */
-    public MutableString codeGenotype(String[] alleles) {
+    protected MutableString codeGenotype(String[] alleles) {
+        return codeGenotype(alleles, this.refAlleles, this.altAlleles);
+    }
+
+    /**
+     * Encode the list of alleles as a VCF genotype. VCF genotypes are coded against the REF and ALT alleles.
+     * A VCF genotype has the form 0/2/3 where each int encodes the index of the allele that participates to the
+     * genotype. REF ALT aleleles are considered in the order they appear and given increasing indices (starting at
+     * zero with the REF allele). The coded genotype 0/0 represents a genotype with two reference alleles.
+     *
+     * @param alleles    List of alleles included in the genotype.
+     * @param altAlleles alternate alleles
+     * @param refAlleles reference alleles
+     * @return coded VCF genotype.
+     */
+    protected MutableString codeGenotype(final String[] alleles,
+                                         final ObjectArrayList<String> refAlleles,
+                                         final ObjectArrayList<String> altAlleles) {
         codedGenotypeBuffer.setLength(0);
-        boolean alleleFound = false;
-        int numAlleles = 0;
+        boolean alleleFound;
+
+        genotypeIndexList.clear();
         for (String allele : alleles) {
             alleleFound = false;
             int alleleIndex = 0;
             for (String ref : refAlleles) {
                 if (ref.equals(allele)) {
-                    codedGenotypeBuffer.append(Integer.toString(alleleIndex));
-                    codedGenotypeBuffer.append(genotypeDelimiterCharacter);
+                    genotypeIndexList.add(alleleIndex);
+
                     alleleFound = true;
-                    numAlleles++;
+
                     break;
                 }
                 alleleIndex++;
@@ -372,10 +393,9 @@ public class VCFWriter {
             if (alleleFound) continue;
             for (String alt : altAlleles) {
                 if (alt.equals(allele)) {
-                    codedGenotypeBuffer.append(Integer.toString(alleleIndex));
-                    codedGenotypeBuffer.append(genotypeDelimiterCharacter);
+                    genotypeIndexList.add(alleleIndex);
                     alleleFound = true;
-                    numAlleles++;
+
                     break;
                 }
                 alleleIndex++;
@@ -385,11 +405,15 @@ public class VCFWriter {
                 throw new IllegalArgumentException(String.format("Allele %s was not found in REF or ALT", allele));
             }
         }
-        if (numAlleles == 1) {
+        Collections.sort(genotypeIndexList);
+
+        for (int alleleIndex : genotypeIndexList) {
+            codedGenotypeBuffer.append(Integer.toString(alleleIndex));
+            codedGenotypeBuffer.append(genotypeDelimiterCharacter);
+        }
+        if (genotypeIndexList.size() == 1) {
             // write n/n rather than n
             codedGenotypeBuffer.append(codedGenotypeBuffer);
-
-
         }
         final int length = codedGenotypeBuffer.length();
         if (length > 0) {

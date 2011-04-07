@@ -39,6 +39,10 @@ public class SampleCountInfo {
     public int sampleIndex;
     public int varCount;
     public int refCount;
+    /**
+     * Number of bases that failed base filters, for any reason.
+     */
+    public int failedCount;
     public int[] counts = new int[5];
 
     public final char base(final int baseIndex) {

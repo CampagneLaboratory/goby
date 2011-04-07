@@ -49,6 +49,8 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     private int genotypeFieldIndex;
     public int baseCountFieldIndex;
     private int zygFieldIndex;
+    private int failBaseCountFieldIndex;
+    private int goodBaseCountFieldIndex;
 
     public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
@@ -66,6 +68,8 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     public void defineGenotypeField(VCFWriter statsWriter) {
         genotypeFieldIndex = statsWriter.defineField("FORMAT", "GT", 1, ColumnType.String, "Genotype");
         baseCountFieldIndex = statsWriter.defineField("FORMAT", "BC", 1, ColumnType.String, "Base counts in format A=?;T=?;C=?;G=?;N=?.");
+        goodBaseCountFieldIndex = statsWriter.defineField("FORMAT", "GB", 1, ColumnType.String, "Number of bases that pass base filters in this sample.");
+        failBaseCountFieldIndex = statsWriter.defineField("FORMAT", "FB", 1, ColumnType.String, "Number of bases that failed base filters in this sample.");
     }
 
     public void allocateStorage(int numberOfSamples, int numberOfGroups) {
@@ -139,12 +143,16 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     public void writeGenotypes(VCFWriter statsWriter, SampleCountInfo[] sampleCounts) {
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
+
+
             alleleSet.clear();
             SampleCountInfo sci = sampleCounts[sampleIndex];
             int totalCount = 0;
             for (int sampleCount : sci.counts) {
                 totalCount += sampleCount;
             }
+            statsWriter.setSampleValue(goodBaseCountFieldIndex, sampleIndex, totalCount);
+            statsWriter.setSampleValue(failBaseCountFieldIndex, sampleIndex, sci.failedCount);
 
             int baseIndex = 0;
             int genotypeCount = 0;
@@ -179,7 +187,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                 statsWriter.setReferenceAllele(referenceAllele);
                 statsWriter.setSampleValue(genotypeFieldIndex, sampleIndex, statsWriter.codeGenotype(genotypeBuffer.toString()));
                 MutableString baseCountString = new MutableString();
-                baseIndex=0;
+                baseIndex = 0;
                 for (int count : sci.counts) {
                     final char base = sci.base(baseIndex);
                     baseCountString.append(base);
@@ -188,7 +196,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                     baseIndex++;
                     baseCountString.append(',');
                 }
-                baseCountString.setLength(baseCountString.length()-1);
+                baseCountString.setLength(baseCountString.length() - 1);
                 statsWriter.setSampleValue(baseCountFieldIndex, sampleIndex, baseCountString);
 
             } else {

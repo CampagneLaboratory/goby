@@ -55,6 +55,10 @@ public class CountFixer implements CountFixerInterface {
                 assert sci.counts[i] >= 0: "Counts must never be negative. This would happen if a BaseFilter removed counts directly";
             }
         }
+        // calculate failed Count in each sample:
+        for (PositionBaseInfo failed: likelyErrors) {
+            ++sampleCounts[failed.readerIndex].failedCount;
+        }
         list.removeAll(likelyErrors);
     }
 
