@@ -151,6 +151,7 @@ public class DiscoverVariantIterateSortedAlignments
             sampleCounts[sampleIndex].sampleIndex = sampleIndex;
             sampleCounts[sampleIndex].varCount = 0;
             sampleCounts[sampleIndex].refCount = 0;
+            sampleCounts[sampleIndex].failedCount = 0;
         }
 
         if (list != null) {

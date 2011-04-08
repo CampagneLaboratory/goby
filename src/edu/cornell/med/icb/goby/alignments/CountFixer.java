@@ -57,7 +57,7 @@ public class CountFixer implements CountFixerInterface {
         }
         // calculate failed Count in each sample:
         for (PositionBaseInfo failed: likelyErrors) {
-            ++sampleCounts[failed.readerIndex].failedCount;
+            ++(sampleCounts[failed.readerIndex].failedCount);
         }
         list.removeAll(likelyErrors);
     }

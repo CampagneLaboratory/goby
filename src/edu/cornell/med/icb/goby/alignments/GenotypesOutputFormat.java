@@ -117,8 +117,6 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                     break;
                 case 1:
                     zygozity = "homozygous";
-                    genotypeBuffer.setLength(0);
-                    genotypeBuffer.append(String.format("%c/%c", sci.referenceBase, sci.referenceBase));
                     break;
                 case 2:
                     zygozity = "heterozygous";
@@ -151,6 +149,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
             for (int sampleCount : sci.counts) {
                 totalCount += sampleCount;
             }
+            System.out.printf("totalCount %d failedCount %d%n",totalCount,sci.failedCount);
             statsWriter.setSampleValue(goodBaseCountFieldIndex, sampleIndex, totalCount);
             statsWriter.setSampleValue(failBaseCountFieldIndex, sampleIndex, sci.failedCount);
 
