@@ -93,7 +93,6 @@
         CSamHelper *samHelper;
         int qualityAdjustment;
 		std::map<unsigned int, unsigned int> *alignerToGobyTargetIndexMap;
-		std::map<std::string, unsigned int> *targetNameToIndexMap;
     };
 #else
 	// Opaque structure for C
@@ -127,7 +126,6 @@
 	    void *samHelper;
         int qualityAdjustment;
 		void *alignerToGobyTargetIndexMap;
-		void *targetNameToIndexMap;
 	} CAlignmentsWriterHelper;
 #endif
 

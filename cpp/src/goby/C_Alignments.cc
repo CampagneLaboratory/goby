@@ -54,7 +54,6 @@ extern "C" {
         writerHelper->qualityAdjustment = 0;
         writerHelper->samHelper = NULL;
         writerHelper->alignerToGobyTargetIndexMap = NULL;
-        writerHelper->targetNameToIndexMap = new map<string, unsigned int>;
 	}
 
     int gobyAlignments_getQualityAdjustment(CAlignmentsWriterHelper *writerHelper) {
@@ -111,7 +110,6 @@ extern "C" {
             writerHelper->alignerToGobyTargetIndexMap = new map<unsigned int, unsigned int>;
         }
         (*(writerHelper->alignerToGobyTargetIndexMap))[alignerTargetIndex] = gobyTargetIndex;
-        (*(writerHelper->targetNameToIndexMap))[targetNameStr] = gobyTargetIndex;
     }
 
     /**
@@ -123,7 +121,6 @@ extern "C" {
         string targetNameStr(targetName);
         writerHelper->alignmentWriter->addTargetIdentifier(targetNameStr, targetIndex);
         writerHelper->alignmentWriter->addTargetLength(targetLength);
-        (*(writerHelper->targetNameToIndexMap))[targetNameStr] = targetIndex;
     }
 
     /**
@@ -595,7 +592,7 @@ extern "C" {
     const char *samHelper_constructedRef(CSamHelper *samHelper) {
         return samHelper->cpp_ref->c_str();
     }
-
+    
 	void gobyAlignments_finished(CAlignmentsWriterHelper *writerHelper, unsigned int numberOfReads) {
         debug(fprintf(stderr,"gobyAlignments_finished\n"));
         if (writerHelper != NULL) {
@@ -621,10 +618,9 @@ extern "C" {
                 delete writerHelper->samHelper;
             }
             if (writerHelper->alignerToGobyTargetIndexMap != NULL) {
-                writerHelper->alignerToGobyTargetIndexMap.clear();
+                writerHelper->alignerToGobyTargetIndexMap->clear();
                 delete writerHelper->alignerToGobyTargetIndexMap;
             }
-            delete writerHelper->targetNameToIndexMap;
             delete writerHelper;
         }
 	}
