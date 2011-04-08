@@ -17,10 +17,6 @@ using namespace std;
 #define debug(x)
 #endif
 
-#ifdef __GNUC__
-#define INTERMEDIATE_OUTPUT_VIA_OPEN_MEMSTREAM
-#endif
-
 
 // TODO: When reading from COMPACT-READS, one should call
 // TODO: addQueryIdentifierWithInt() but ONLY if there is a text
@@ -57,125 +53,9 @@ extern "C" {
         writerHelper->numberOfAlignedReads = 0;
         writerHelper->qualityAdjustment = 0;
         writerHelper->samHelper = NULL;
-        writerHelper->intermediateOutputFile = NULL;
-        writerHelper->intermediateOutputBuffer = NULL;
-        writerHelper->intermediateOutputBufferSize = 0;
-        writerHelper->intermediateIgnoredOutputFile = NULL;
-        writerHelper->intermediateIgnoredOutputBuffer = NULL;
-        writerHelper->intermediateIgnoredOutputBufferSize = 0;
         writerHelper->alignerToGobyTargetIndexMap = NULL;
         writerHelper->targetNameToIndexMap = new map<string, unsigned int>;
-        writerHelper->samLinesQueue = NULL;
 	}
-
-    void gobyAlignments_openIntermediateOutputFiles(CAlignmentsWriterHelper *writerHelper, int openIgnoredOutputFile) {
-        gobyAlignments_closeIntermediateOutputFiles(writerHelper);
-#ifdef INTERMEDIATE_OUTPUT_VIA_OPEN_MEMSTREAM
-        fprintf(stderr, "Opening intermediate output via open_memstream()\n");
-#else
-        fprintf(stderr, "Opening intermediate output via temporary files, slower but non-gcc compatible.\n");
-#endif
-#ifdef INTERMEDIATE_OUTPUT_VIA_OPEN_MEMSTREAM
-        writerHelper->intermediateOutputFile = open_memstream(&writerHelper->intermediateOutputBuffer, &writerHelper->intermediateOutputBufferSize);
-        if (openIgnoredOutputFile) {
-            writerHelper->intermediateIgnoredOutputFile = open_memstream(&writerHelper->intermediateIgnoredOutputBuffer, &writerHelper->intermediateIgnoredOutputBufferSize);
-        }
-#else
-        writerHelper->intermediateOutputFile = tmpfile();
-        if (openIgnoredOutputFile) {
-            writerHelper->intermediateIgnoredOutputFile = tmpfile();
-        }
-#endif
-    }
-
-    FILE *gobyAlignments_intermediateOutputFileHandle(CAlignmentsWriterHelper *writerHelper) {
-        return writerHelper->intermediateOutputFile;
-    }
-    FILE *gobyAlignments_intermediateIgnoredOutputFileHandle(CAlignmentsWriterHelper *writerHelper) {
-        return writerHelper->intermediateIgnoredOutputFile;
-    }
-
-    /**
-     * Start a new section of output.
-     */
-	void gobyAlignments_intermediateOutputStartNew(CAlignmentsWriterHelper *writerHelper) {
-        if (writerHelper->intermediateOutputFile) {
-            rewind(writerHelper->intermediateOutputFile);
-        }
-        if (writerHelper->intermediateIgnoredOutputFile) {
-            rewind(writerHelper->intermediateIgnoredOutputFile);
-        }
-	}
-
-    char *gobyAlignments_intermediateOutputData(CAlignmentsWriterHelper *writerHelper) {
-        return writerHelper->intermediateOutputBuffer;
-    }
-
-    char *gobyAlignments_intermediateOutputIgnoredData(CAlignmentsWriterHelper *writerHelper) {
-        return writerHelper->intermediateIgnoredOutputBuffer;
-    }
-
-    /**
-     * A section of output is complete. Populate what was written to the files into
-     * writerHelper->intermediateOutputBuffer / writerHelper->intermediateIgnoredOutputBuffer.
-     * The output should be processed. After you're done processing the output,
-     * when you're ready to start writing new output call gobyAlignments_intermediateOutputStartNew.
-     */
-	void gobyAlignments_intermediateOutputFlush(CAlignmentsWriterHelper *writerHelper) {
-	    if (writerHelper->intermediateOutputFile) {
-            fflush(writerHelper->intermediateOutputFile);
-        }
-        if (writerHelper->intermediateIgnoredOutputFile) {
-            fflush(writerHelper->intermediateIgnoredOutputFile);
-        }
-#ifndef INTERMEDIATE_OUTPUT_VIA_OPEN_MEMSTREAM
-        size_t fileSize;
-        if (writerHelper->intermediateOutputFile) {
-            fileSize = ftell(writerHelper->intermediateOutputFile);
-            if (fileSize + 1 > writerHelper->intermediateOutputBufferSize) {
-                writerHelper->intermediateOutputBufferSize = fileSize + 1;
-                writerHelper->intermediateOutputBuffer = (char *) realloc(writerHelper->intermediateOutputBuffer, writerHelper->intermediateOutputBufferSize);
-            }
-            rewind(writerHelper->intermediateOutputFile);
-            fread(writerHelper->intermediateOutputBuffer, 1, fileSize, writerHelper->intermediateOutputFile);
-            writerHelper->intermediateOutputBuffer[fileSize] = '\0';
-        }
-        if (writerHelper->intermediateIgnoredOutputFile) {
-            fileSize = ftell(writerHelper->intermediateIgnoredOutputFile);
-            if (fileSize + 1 > writerHelper->intermediateIgnoredOutputBufferSize) {
-                writerHelper->intermediateIgnoredOutputBufferSize = fileSize + 1;
-                writerHelper->intermediateIgnoredOutputBuffer = (char *) realloc(writerHelper->intermediateIgnoredOutputBuffer, writerHelper->intermediateIgnoredOutputBufferSize);
-            }
-            rewind(writerHelper->intermediateIgnoredOutputFile);
-            fread(writerHelper->intermediateIgnoredOutputBuffer, 1, fileSize, writerHelper->intermediateIgnoredOutputFile);
-            writerHelper->intermediateIgnoredOutputBuffer[fileSize] = '\0';
-        }
-#endif
-    }
-
-	void gobyAlignments_closeIntermediateOutputFiles(CAlignmentsWriterHelper *writerHelper) {
-	    if (writerHelper->intermediateOutputFile || writerHelper->intermediateIgnoredOutputFile) {
-#ifdef INTERMEDIATE_OUTPUT_VIA_OPEN_MEMSTREAM
-            fprintf(stderr, "Closing intermediate output via open_memstream()\n");
-#else
-            fprintf(stderr, "Closing intermediate output via temporary files\n");
-#endif
-        }
-        if (writerHelper->intermediateOutputFile) {
-            fclose(writerHelper->intermediateOutputFile);
-            writerHelper->intermediateOutputFile = NULL;
-            free(writerHelper->intermediateOutputBuffer);
-            writerHelper->intermediateOutputBuffer = NULL;
-            writerHelper->intermediateOutputBufferSize = 0;
-        }
-        if (writerHelper->intermediateIgnoredOutputFile) {
-            fclose(writerHelper->intermediateIgnoredOutputFile);
-            writerHelper->intermediateIgnoredOutputFile = NULL;
-            free(writerHelper->intermediateIgnoredOutputBuffer);
-            writerHelper->intermediateIgnoredOutputBuffer = NULL;
-            writerHelper->intermediateIgnoredOutputBufferSize = 0;
-        }
-    }
 
     int gobyAlignments_getQualityAdjustment(CAlignmentsWriterHelper *writerHelper) {
         return writerHelper->qualityAdjustment;
@@ -470,151 +350,6 @@ extern "C" {
         return elems;
     }
 
-    /**
-     * Submit one or more lines of SAM (probably from BWA) for processing.
-     */
-    void gobyAlignments_submitSAMEntries(CAlignmentsWriterHelper *writerHelper, char *samInput) {
-        string samInputStr(samInput);
-
-        debug(fprintf(stderr, "----------------------------------------\n");)
-        debug(fprintf(stderr, "SAM: %s\n", samInput);)
-
-        std::vector<std::string> samLines;
-        split(samInputStr, '\n', samLines);
-
-        if (writerHelper->samLinesQueue == NULL) {
-            writerHelper->samLinesQueue = new queue<string>;
-        }
-
-        for (int samLineNo = 0; samLineNo < samLines.size(); samLineNo++) {
-            writerHelper->samLinesQueue->push(samLines[samLineNo]);
-        }
-    }
-
-    /**
-     * Process the "next" line of SAM. If there are no more lines of SAM to be processed,
-     * this will return NULL. This assumes that queryName (col=0) is a 0-based integer.
-     * @return a samHelper for the line of SAM that was processed.
-     */
-    CSamHelper *gobyAlignments_processNextSAMEntry(CAlignmentsWriterHelper *writerHelper) {
-        std::vector<std::string> samCols;
-        if (writerHelper->samLinesQueue->empty()) {
-            return NULL;
-        }
-        string samLine = writerHelper->samLinesQueue->front();
-        writerHelper->samLinesQueue->pop();
-
-        debug(fprintf(stderr, "----------------------------------------\n");)
-        samCols.clear();
-        split(samLine, '\t', samCols);
-
-        CSamHelper *samHelper = samHelper_getResetSamHelper(writerHelper);
-
-        samHelper->queryIndex = strtoul(samCols[0].c_str(), NULL, 10);
-        samHelper->pairFlags = strtoul(samCols[1].c_str(), NULL, 10);
-        samHelper->fragmentIndex = 0;
-        samHelper->mateFragmentIndex = 0;
-        samHelper->unmappedQuery = ((samHelper->pairFlags & SAM_FLAGS_QUERY_UNMAPPED) > 0);
-        if (samHelper->pairFlags & SAM_FLAGS_FIRST_READ_P) {
-            samHelper->fragmentIndex = 0;
-            samHelper->mateFragmentIndex = 1;
-        } else if (samHelper->pairFlags & SAM_FLAGS_SECOND_READ_P) {
-            samHelper->fragmentIndex = 1;
-            samHelper->mateFragmentIndex = 0;
-        }
-        samHelper->matchingReverseStrand = ((samHelper->pairFlags & SAM_FLAGS_QUERY_MINUSP) > 0);
-        
-        samHelper->targetIndex = (*(writerHelper->targetNameToIndexMap))[samCols[2]];
-        samHelper->position = strtoul(samCols[3].c_str(), NULL, 10);
-        string cigar = samCols[5];
-        bool hasMate;
-        if (samCols[6].length() == 0) {
-            // No data in mateTargetIndex column
-            samHelper->mateTargetIndex = 0;
-            samHelper->hasMate = false;
-        } else if (samCols[6].compare(0, 1, "=") == 0) {
-            // Mate on same targetIndex
-            samHelper->mateTargetIndex = samHelper->targetIndex;
-            samHelper->hasMate = true;
-        } else if (samCols[6].compare(0, 1, "*") == 0) {
-            // No mate, this value shouldn't be used.
-            samHelper->mateTargetIndex = 0;
-            samHelper->hasMate = false;
-        } else {
-            // Mate on different targetIndex
-            samHelper->mateTargetIndex = (*(writerHelper->targetNameToIndexMap))[samCols[6]];
-            samHelper->hasMate = true;
-        }
-        samHelper->matePosition = strtoul(samCols[7].c_str(), NULL, 10);
-        samHelper->templateLength = strtol(samCols[8].c_str(), NULL, 10);
-        string query = samCols[9];
-        samHelper->queryLength = query.length();
-        string quality;
-        if (samCols[10].length() > 0 && samCols[10].compare(0, 1, "*") != 0) {
-            quality = samCols[10];
-        }
-        string md;
-        int nm = -1;
-        int sm = -1;
-        int numBestHits = -1;
-        int numMismatches = -1;
-        int numGapOpens = -1;
-        int numGapExtensions = -1;
-        for (int i = 11; i < samCols.size(); i++) {
-            if (samCols[i].compare(0, 5, "MD:Z:") == 0) {
-                md = samCols[i].substr(5);
-            } else if (samCols[i].compare(0, 5, "NM:i:") == 0) {
-                nm = strtol(samCols[i].substr(5).c_str(), NULL, 10);
-            } else if (samCols[i].compare(0, 5, "SM:i:") == 0) {
-                sm = strtol(samCols[i].substr(5).c_str(), NULL, 10);
-            } else if (samCols[i].compare(0, 5, "X0:i:") == 0) {
-                numBestHits = strtol(samCols[i].substr(5).c_str(), NULL, 10);
-            } else if (samCols[i].compare(0, 5, "XM:i:") == 0) {
-                numMismatches = strtol(samCols[i].substr(5).c_str(), NULL, 10);
-            } else if (samCols[i].compare(0, 5, "XO:i:") == 0) {
-                numGapOpens = strtol(samCols[i].substr(5).c_str(), NULL, 10);
-            } else if (samCols[i].compare(0, 5, "XG:i:") == 0) {
-                numGapExtensions = strtol(samCols[i].substr(5).c_str(), NULL, 10);
-            }
-        }
-        debug(fprintf(stderr,"DECODED:\n  queryIndex=%u\n  pairFlags=%u\n  targetIndex=%u\n  position=%u\n  score=%d\n  cigar=%s\n  md=%s\n  mateTargetIndex=%u\n  matePosition=%u\n  templateLength=%d\n  query  =%s\n  quality=%s\n  nm=%d\n  sm=%d\n  numBestHits=%d\n  numMismatches=%d\n  numGapOpens=%d\n  numGapExtensions=%d\n",
-            samHelper->queryIndex,
-            samHelper->pairFlags,
-            samHelper->targetIndex,
-            samHelper->position,
-            samHelper->score,
-            cigar.c_str(),
-            md.c_str(),
-            samHelper->mateTargetIndex,
-            samHelper->matePosition,
-            samHelper->templateLength,
-            query.c_str(),
-            quality.c_str(),
-            nm, sm,
-            numBestHits, numMismatches, numGapOpens, numGapExtensions);)
-
-        debug(fprintf(stderr,"hasMate=%s, fragmentIndex=%u, mateFragmentIndex=%u, matchingReverseStrand=%s\n",
-            samHelper->hasMate?"yes":"no", samHelper->fragmentIndex, samHelper->mateFragmentIndex,
-            samHelper->matchingReverseStrand?"yes":"no");)
-        samHelper_setCigar(samHelper, cigar.c_str());
-        samHelper_setMd(samHelper, md.c_str());
-        samHelper_setQuery(samHelper, query.c_str(), quality.c_str(), query.length(), samHelper->matchingReverseStrand);
-        debug(fprintf(stderr,"cpp_cigar=%s, cpp_md=%s, cpp_query=%s, cpp_qual=%s\n",
-            samHelper->cpp_cigar->c_str(),
-            samHelper->cpp_md->c_str(),
-            samHelper->cpp_sourceQuery->c_str(),
-            samHelper->cpp_sourceQual->c_str());)
-        samHelper_constructRefAndQuery(samHelper);
-        
-        debug(fprintf(stderr,"  score=%d\n   qual=%s\n    ref=%s\n   read=%s\n",
-            samHelper->score,
-            samHelper->cpp_qual->c_str(),
-            samHelper->cpp_ref->c_str(),
-            samHelper->cpp_query->c_str());)
-
-        return samHelper;
-    }
-    
     CSamHelper *samHelper_getResetSamHelper(CAlignmentsWriterHelper *writerHelper) {
         CSamHelper *samHelper = writerHelper->samHelper;
         if (samHelper == NULL) {
@@ -643,19 +378,6 @@ extern "C" {
         samHelper->numMisMatches = 0;
         samHelper->score = 0;
         samHelper->numLeftClipped = 0;
-        samHelper->queryIndex = 0;
-        samHelper->queryLength = 0;
-        samHelper->targetIndex = 0;
-        samHelper->hasMate = 0;
-        samHelper->mateTargetIndex = 0;
-        samHelper->mateFragmentIndex = 0;
-        samHelper->pairFlags = 0;
-        samHelper->matchingReverseStrand = 0;
-        samHelper->fragmentIndex = 0;
-        samHelper->position = 0;
-        samHelper->matePosition = 0;
-        samHelper->templateLength = 0;
-        samHelper->unmappedQuery = 0;
         return samHelper;
     }
 
@@ -884,7 +606,6 @@ extern "C" {
             writerHelper->alignmentWriter->setNumberOfAlignedReads(writerHelper->numberOfAlignedReads);
 
             // Close and delete
-            gobyAlignments_closeIntermediateOutputFiles(writerHelper);
             writerHelper->alignmentWriter->close();
             delete writerHelper->alignmentWriter;
             writerHelper->tmhWriter->write();
@@ -900,19 +621,15 @@ extern "C" {
                 delete writerHelper->samHelper;
             }
             if (writerHelper->alignerToGobyTargetIndexMap != NULL) {
+                writerHelper->alignerToGobyTargetIndexMap.clear();
                 delete writerHelper->alignerToGobyTargetIndexMap;
-            }
-            if (writerHelper->samLinesQueue != NULL) {
-                while (!writerHelper->samLinesQueue->empty()) {
-                    writerHelper->samLinesQueue->pop();
-                }
-                delete writerHelper->samLinesQueue;
             }
             delete writerHelper->targetNameToIndexMap;
             delete writerHelper;
         }
 	}
 
+    /** These come from GSNAP. */
     char* hitTypes[] = {
               "EXACT", "SUB", "INSERTION", "DELETION", "HALFSPLICE_DONOR",
               "HALFSPLICE_ACCEPTOR", "SPLICE", "ONE_THIRD_SHORTEXON",

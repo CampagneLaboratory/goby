@@ -78,20 +78,6 @@
         int numMisMatches;
         int score;
         int numLeftClipped;
-        /* from Goby's processSAM */
-        unsigned int queryIndex;
-        unsigned int queryLength;
-        unsigned int targetIndex;
-        unsigned int hasMate;
-        unsigned int mateTargetIndex;
-        unsigned int mateFragmentIndex;
-        unsigned int pairFlags;
-        unsigned int matchingReverseStrand;
-        unsigned int fragmentIndex;
-        unsigned int position;
-        unsigned int matePosition;
-        unsigned int templateLength;
-        unsigned int unmappedQuery;
     };
     struct CAlignmentsWriterHelper {
         goby::AlignmentWriter *alignmentWriter;
@@ -106,15 +92,8 @@
         unsigned int numberOfAlignedReads;
         CSamHelper *samHelper;
         int qualityAdjustment;
-	    FILE *intermediateOutputFile;
-	    char *intermediateOutputBuffer;
-	    size_t  intermediateOutputBufferSize;
-	    FILE *intermediateIgnoredOutputFile;
-	    char *intermediateIgnoredOutputBuffer;
-	    size_t intermediateIgnoredOutputBufferSize;
 		std::map<unsigned int, unsigned int> *alignerToGobyTargetIndexMap;
 		std::map<std::string, unsigned int> *targetNameToIndexMap;
-        std::queue<std::string> *samLinesQueue;
     };
 #else
 	// Opaque structure for C
@@ -133,20 +112,6 @@
 	    int numMisMatches;
 	    int score;
         int numLeftClipped;
-        /* from Goby's processSAM */
-        unsigned int queryIndex;
-        unsigned int queryLength;
-        unsigned int targetIndex;
-        unsigned int hasMate;
-        unsigned int mateTargetIndex;
-        unsigned int mateFragmentIndex;
-        unsigned int pairFlags;
-        unsigned int matchingReverseStrand;
-        unsigned int fragmentIndex;
-        unsigned int position;
-        unsigned int matePosition;
-        unsigned int templateLength;
-        unsigned int unmappedQuery;
 	} CSamHelper;
 	typedef struct {
 	    void *alignmentWriter;
@@ -161,15 +126,8 @@
 	    unsigned int numberOfAlignedReads;
 	    void *samHelper;
         int qualityAdjustment;
-	    FILE *intermediateOutputFile;
-	    char *intermediateOutputBuffer;
-	    size_t  intermediateOutputBufferSize;
-	    FILE *intermediateIgnoredOutputFile;
-	    char *intermediateIgnoredOutputBuffer;
-	    size_t intermediateIgnoredOutputBufferSize;
 		void *alignerToGobyTargetIndexMap;
 		void *targetNameToIndexMap;
-        void *samLinesQueue;
 	} CAlignmentsWriterHelper;
 #endif
 
