@@ -64,6 +64,8 @@ extern "C" {
         writerHelper->intermediateIgnoredOutputBuffer = NULL;
         writerHelper->intermediateIgnoredOutputBufferSize = 0;
         writerHelper->alignerToGobyTargetIndexMap = NULL;
+        writerHelper->targetNameToIndexMap = new map<string, unsigned int>;
+        writerHelper->samLinesQueue = NULL;
 	}
 
     void gobyAlignments_openIntermediateOutputFiles(CAlignmentsWriterHelper *writerHelper, int openIgnoredOutputFile) {
@@ -229,6 +231,7 @@ extern "C" {
             writerHelper->alignerToGobyTargetIndexMap = new map<unsigned int, unsigned int>;
         }
         (*(writerHelper->alignerToGobyTargetIndexMap))[alignerTargetIndex] = gobyTargetIndex;
+        (*(writerHelper->targetNameToIndexMap))[targetNameStr] = gobyTargetIndex;
     }
 
     /**
@@ -240,6 +243,7 @@ extern "C" {
         string targetNameStr(targetName);
         writerHelper->alignmentWriter->addTargetIdentifier(targetNameStr, targetIndex);
         writerHelper->alignmentWriter->addTargetLength(targetLength);
+        (*(writerHelper->targetNameToIndexMap))[targetNameStr] = targetIndex;
     }
 
     /**
@@ -467,121 +471,150 @@ extern "C" {
     }
 
     /**
-     * Input is SAM, ready to be converted to Compact-Alignment. The queryName [col=0] and
-     * targetName [col=3] should already be zero based integers.
-     * the samInput may contain multiple lines separated by '\n', if multiple lines of input
-     * exist, the queryName (first column) should be the same for each of the lines.
-     *
-     * This is not fully tested or debugged.
+     * Submit one or more lines of SAM (probably from BWA) for processing.
      */
-    void gobyAlignments_processSAM(CAlignmentsWriterHelper *writerHelper, char *samInput, int npaths, int maxpaths) {
+    void gobyAlignments_submitSAMEntries(CAlignmentsWriterHelper *writerHelper, char *samInput) {
         string samInputStr(samInput);
 
+        debug(fprintf(stderr, "----------------------------------------\n");)
+        debug(fprintf(stderr, "SAM: %s\n", samInput);)
+
         std::vector<std::string> samLines;
-        std::vector<std::string> samCols;
         split(samInputStr, '\n', samLines);
-        
-        int sameLineNo;
-        for (sameLineNo = 0; sameLineNo < samLines.size(); sameLineNo++) {
-            samCols.clear();
-            split(samLines[sameLineNo], '\t', samCols);
-            
-            unsigned int queryIndex = strtoul(samCols[0].c_str(), NULL, 10);
-            unsigned int pairFlags = strtoul(samCols[1].c_str(), NULL, 10);
-            unsigned int fragmentIndex = 0;
-            unsigned int mateFragmentIndex = 0;
-            if (pairFlags & SAM_FLAGS_FIRST_READ_P) {
-                fragmentIndex = 0;
-                mateFragmentIndex = 1;
-            } else if (pairFlags & SAM_FLAGS_SECOND_READ_P) {
-                fragmentIndex = 1;
-                mateFragmentIndex = 0;
-            }
-            bool matchingReverseStrand = ((pairFlags & SAM_FLAGS_QUERY_MINUSP) > 0);
-            
-            unsigned int targetIndex = strtoul(samCols[2].c_str(), NULL, 10);
-            unsigned int position = strtoul(samCols[3].c_str(), NULL, 10);
-            int score = strtol(samCols[4].c_str(), NULL, 10);
-            string cigar = samCols[5];
-            unsigned int mateTargetIndex;
-            bool hasMate;
-            if (samCols[6].length() == 0) {
-                // No data in mateTargetIndex column
-                mateTargetIndex = 0;
-                hasMate = false;
-            } else if (samCols[6].compare(0, 1, "=") == 0) {
-                // Mate on same targetIndex
-                mateTargetIndex = targetIndex;
-                hasMate = true;
-            } else if (samCols[6].compare(0, 1, "*") == 0) {
-                // No mate, this value shouldn't be used.
-                mateTargetIndex = 0;
-                hasMate = false;
-            } else {
-                // Mate on different targetIndex
-                mateTargetIndex = strtoul(samCols[6].c_str(), NULL, 10);
-                hasMate = true;
-            }
-            unsigned int matePosition = strtoul(samCols[7].c_str(), NULL, 10);
-            int templateLength = strtol(samCols[8].c_str(), NULL, 10);
-            string query = samCols[9];
-            string quality;
-            if (samCols[10].length() > 0 && samCols[10].compare(0, 1, "*") != 0) {
-                quality = samCols[10];
-            }
-            string md;
-            int nm = -1;
-            int sm = -1;
-            for (int i = 11; i < samCols.size(); i++) {
-                if (samCols[i].compare(0, 5, "MD:Z:") == 0) {
-                    md = samCols[i].substr(5);
-                }
-                if (samCols[i].compare(0, 5, "NM:i:") == 0) {
-                    nm = strtol(samCols[i].substr(5).c_str(), NULL, 10);
-                }
-                if (samCols[i].compare(0, 5, "SM:i:") == 0) {
-                    sm = strtol(samCols[i].substr(5).c_str(), NULL, 10);
-                }
-            }
-            debug(fprintf(stderr,"%u:%u:%u:%u:%d:%s:%u:%u:%d:%s:%s:%s:%d:%d   ",
-                queryIndex,
-                pairFlags,
-                targetIndex,
-                position,
-                score,
-                cigar.c_str(),
-                mateTargetIndex,
-                matePosition,
-                templateLength,
-                query.c_str(),
-                quality.c_str(),
-                md.c_str(),
-                nm,
-                sm);)
-            debug(fprintf(stderr,"hasMate=%s, fragmentIndex=%u, mateFragmentIndex=%u, matchingReverseStrand=%s\n",
-                hasMate?"yes":"no", fragmentIndex, mateFragmentIndex,
-                matchingReverseStrand?"yes":"no");)
-            CSamHelper *samHelper = samHelper_getResetSamHelper(writerHelper);
-            samHelper_setCigar(samHelper, cigar.c_str());
-            samHelper_setMd(samHelper, md.c_str());
-            samHelper_setQuery(samHelper, query.c_str(), quality.c_str(), query.length(), matchingReverseStrand == true ? 1 : 0);
-            debug(fprintf(stderr,"cpp_cigar=%s, cpp_md=%s, cpp_query=%s, cpp_qual=%s\n",
-                samHelper->cpp_cigar->c_str(),
-                samHelper->cpp_md->c_str(),
-                samHelper->cpp_sourceQuery->c_str(),
-                samHelper->cpp_sourceQual->c_str());)
-            samHelper_constructRefAndQuery(samHelper);
-            
-            debug(fprintf(stderr,"  score=%d,   qual=%s\n  query=%s\n    ref=%s\n",
-                samHelper->score,
-                samHelper->cpp_qual->c_str(),
-                samHelper->cpp_query->c_str(),
-                samHelper->cpp_ref->c_str());)
-            debug(fprintf(stderr, "----------------------------------------\n");)
-            
+
+        if (writerHelper->samLinesQueue == NULL) {
+            writerHelper->samLinesQueue = new queue<string>;
+        }
+
+        for (int samLineNo = 0; samLineNo < samLines.size(); samLineNo++) {
+            writerHelper->samLinesQueue->push(samLines[samLineNo]);
         }
     }
 
+    /**
+     * Process the "next" line of SAM. If there are no more lines of SAM to be processed,
+     * this will return NULL. This assumes that queryName (col=0) is a 0-based integer.
+     * @return a samHelper for the line of SAM that was processed.
+     */
+    CSamHelper *gobyAlignments_processNextSAMEntry(CAlignmentsWriterHelper *writerHelper) {
+        std::vector<std::string> samCols;
+        if (writerHelper->samLinesQueue->empty()) {
+            return NULL;
+        }
+        string samLine = writerHelper->samLinesQueue->front();
+        writerHelper->samLinesQueue->pop();
+
+        debug(fprintf(stderr, "----------------------------------------\n");)
+        samCols.clear();
+        split(samLine, '\t', samCols);
+
+        CSamHelper *samHelper = samHelper_getResetSamHelper(writerHelper);
+
+        samHelper->queryIndex = strtoul(samCols[0].c_str(), NULL, 10);
+        samHelper->pairFlags = strtoul(samCols[1].c_str(), NULL, 10);
+        samHelper->fragmentIndex = 0;
+        samHelper->mateFragmentIndex = 0;
+        samHelper->unmappedQuery = ((samHelper->pairFlags & SAM_FLAGS_QUERY_UNMAPPED) > 0);
+        if (samHelper->pairFlags & SAM_FLAGS_FIRST_READ_P) {
+            samHelper->fragmentIndex = 0;
+            samHelper->mateFragmentIndex = 1;
+        } else if (samHelper->pairFlags & SAM_FLAGS_SECOND_READ_P) {
+            samHelper->fragmentIndex = 1;
+            samHelper->mateFragmentIndex = 0;
+        }
+        samHelper->matchingReverseStrand = ((samHelper->pairFlags & SAM_FLAGS_QUERY_MINUSP) > 0);
+        
+        samHelper->targetIndex = (*(writerHelper->targetNameToIndexMap))[samCols[2]];
+        samHelper->position = strtoul(samCols[3].c_str(), NULL, 10);
+        string cigar = samCols[5];
+        bool hasMate;
+        if (samCols[6].length() == 0) {
+            // No data in mateTargetIndex column
+            samHelper->mateTargetIndex = 0;
+            samHelper->hasMate = false;
+        } else if (samCols[6].compare(0, 1, "=") == 0) {
+            // Mate on same targetIndex
+            samHelper->mateTargetIndex = samHelper->targetIndex;
+            samHelper->hasMate = true;
+        } else if (samCols[6].compare(0, 1, "*") == 0) {
+            // No mate, this value shouldn't be used.
+            samHelper->mateTargetIndex = 0;
+            samHelper->hasMate = false;
+        } else {
+            // Mate on different targetIndex
+            samHelper->mateTargetIndex = (*(writerHelper->targetNameToIndexMap))[samCols[6]];
+            samHelper->hasMate = true;
+        }
+        samHelper->matePosition = strtoul(samCols[7].c_str(), NULL, 10);
+        samHelper->templateLength = strtol(samCols[8].c_str(), NULL, 10);
+        string query = samCols[9];
+        samHelper->queryLength = query.length();
+        string quality;
+        if (samCols[10].length() > 0 && samCols[10].compare(0, 1, "*") != 0) {
+            quality = samCols[10];
+        }
+        string md;
+        int nm = -1;
+        int sm = -1;
+        int numBestHits = -1;
+        int numMismatches = -1;
+        int numGapOpens = -1;
+        int numGapExtensions = -1;
+        for (int i = 11; i < samCols.size(); i++) {
+            if (samCols[i].compare(0, 5, "MD:Z:") == 0) {
+                md = samCols[i].substr(5);
+            } else if (samCols[i].compare(0, 5, "NM:i:") == 0) {
+                nm = strtol(samCols[i].substr(5).c_str(), NULL, 10);
+            } else if (samCols[i].compare(0, 5, "SM:i:") == 0) {
+                sm = strtol(samCols[i].substr(5).c_str(), NULL, 10);
+            } else if (samCols[i].compare(0, 5, "X0:i:") == 0) {
+                numBestHits = strtol(samCols[i].substr(5).c_str(), NULL, 10);
+            } else if (samCols[i].compare(0, 5, "XM:i:") == 0) {
+                numMismatches = strtol(samCols[i].substr(5).c_str(), NULL, 10);
+            } else if (samCols[i].compare(0, 5, "XO:i:") == 0) {
+                numGapOpens = strtol(samCols[i].substr(5).c_str(), NULL, 10);
+            } else if (samCols[i].compare(0, 5, "XG:i:") == 0) {
+                numGapExtensions = strtol(samCols[i].substr(5).c_str(), NULL, 10);
+            }
+        }
+        debug(fprintf(stderr,"DECODED:\n  queryIndex=%u\n  pairFlags=%u\n  targetIndex=%u\n  position=%u\n  score=%d\n  cigar=%s\n  md=%s\n  mateTargetIndex=%u\n  matePosition=%u\n  templateLength=%d\n  query  =%s\n  quality=%s\n  nm=%d\n  sm=%d\n  numBestHits=%d\n  numMismatches=%d\n  numGapOpens=%d\n  numGapExtensions=%d\n",
+            samHelper->queryIndex,
+            samHelper->pairFlags,
+            samHelper->targetIndex,
+            samHelper->position,
+            samHelper->score,
+            cigar.c_str(),
+            md.c_str(),
+            samHelper->mateTargetIndex,
+            samHelper->matePosition,
+            samHelper->templateLength,
+            query.c_str(),
+            quality.c_str(),
+            nm, sm,
+            numBestHits, numMismatches, numGapOpens, numGapExtensions);)
+
+        debug(fprintf(stderr,"hasMate=%s, fragmentIndex=%u, mateFragmentIndex=%u, matchingReverseStrand=%s\n",
+            samHelper->hasMate?"yes":"no", samHelper->fragmentIndex, samHelper->mateFragmentIndex,
+            samHelper->matchingReverseStrand?"yes":"no");)
+        samHelper_setCigar(samHelper, cigar.c_str());
+        samHelper_setMd(samHelper, md.c_str());
+        samHelper_setQuery(samHelper, query.c_str(), quality.c_str(), query.length(), samHelper->matchingReverseStrand);
+        debug(fprintf(stderr,"cpp_cigar=%s, cpp_md=%s, cpp_query=%s, cpp_qual=%s\n",
+            samHelper->cpp_cigar->c_str(),
+            samHelper->cpp_md->c_str(),
+            samHelper->cpp_sourceQuery->c_str(),
+            samHelper->cpp_sourceQual->c_str());)
+        samHelper_constructRefAndQuery(samHelper);
+        
+        debug(fprintf(stderr,"  score=%d\n   qual=%s\n    ref=%s\n   read=%s\n",
+            samHelper->score,
+            samHelper->cpp_qual->c_str(),
+            samHelper->cpp_ref->c_str(),
+            samHelper->cpp_query->c_str());)
+
+        return samHelper;
+    }
+    
     CSamHelper *samHelper_getResetSamHelper(CAlignmentsWriterHelper *writerHelper) {
         CSamHelper *samHelper = writerHelper->samHelper;
         if (samHelper == NULL) {
@@ -605,10 +638,24 @@ extern "C" {
             samHelper->cpp_ref->clear();
         }
         samHelper->alignedLength = 0;
-        samHelper->numIndels = 0;
+        samHelper->numInsertions = 0;
+        samHelper->numDeletions = 0;
         samHelper->numMisMatches = 0;
         samHelper->score = 0;
         samHelper->numLeftClipped = 0;
+        samHelper->queryIndex = 0;
+        samHelper->queryLength = 0;
+        samHelper->targetIndex = 0;
+        samHelper->hasMate = 0;
+        samHelper->mateTargetIndex = 0;
+        samHelper->mateFragmentIndex = 0;
+        samHelper->pairFlags = 0;
+        samHelper->matchingReverseStrand = 0;
+        samHelper->fragmentIndex = 0;
+        samHelper->position = 0;
+        samHelper->matePosition = 0;
+        samHelper->templateLength = 0;
+        samHelper->unmappedQuery = 0;
         return samHelper;
     }
 
@@ -631,10 +678,10 @@ extern "C" {
         }
     }
 
-    void samHelper_setQueryTranslate(CSamHelper *samHelper, char *reads, char *qual, 
+    void samHelper_setQueryTranslate(CSamHelper *samHelper, unsigned char *reads, unsigned char *qual, 
             unsigned int length, unsigned int reverseStrand) {
         if (!reverseStrand && qual) {
-            (*samHelper->cpp_sourceQual) += qual;
+            (*samHelper->cpp_sourceQual) += (char *) qual;
         }
         int i;
         for (i = 0; i < length; i++) {
@@ -673,7 +720,8 @@ extern "C" {
         int posInReads = 0;
         int i;
         bool startOfCigar = true;
-        samHelper->numIndels = 0;
+        samHelper->numInsertions = 0;
+        samHelper->numDeletions = 0;
         samHelper->numMisMatches = 0;
         while (re.Consume(&input, &length, &op)) {
             switch(op) {
@@ -706,7 +754,7 @@ extern "C" {
                     for (i = 0; i < length; i++) {
                         (*samHelper->cpp_ref) += '-';
                     }
-                    samHelper->numIndels += length;
+                    samHelper->numInsertions += length;
                     posInReads += length;
                     break;
                 case 'D':
@@ -719,7 +767,7 @@ extern "C" {
                         }
                         (*samHelper->cpp_ref) += '?';  // provided in applyMd()
                     }
-                    samHelper->numIndels += length;
+                    samHelper->numDeletions += length;
                     break;
             }
             startOfCigar = false;
@@ -748,7 +796,7 @@ extern "C" {
             } else {
                 // The regex should only allow a single character here, but we'll accept multiple
                 for(i = 0; i < mdPart.size(); i++) {
-                    (*samHelper->cpp_ref)[position++] = mdPart[i];
+                    (*samHelper->cpp_ref)[position++] = tolower(mdPart[i]);
                     samHelper->numMisMatches++;
                 }
             }
@@ -760,7 +808,8 @@ extern "C" {
         samHelper->cpp_qual->clear();
         samHelper->cpp_ref->clear();
         samHelper->alignedLength = 0;
-        samHelper->numIndels = 0;
+        samHelper->numInsertions = 0;
+        samHelper->numDeletions = 0;
         samHelper->numMisMatches = 0;
         samHelper->score = 0;
 
@@ -772,7 +821,7 @@ extern "C" {
         applyCigar(samHelper);
         applyMd(samHelper);
         samHelper->alignedLength = samHelper->cpp_query->size();
-        samHelper->score = samHelper->alignedLength - samHelper->numIndels - samHelper->numMisMatches;
+        samHelper->score = samHelper->alignedLength - samHelper->numDeletions - samHelper->numInsertions - samHelper->numMisMatches;
         
         debug (
             fprintf(stderr, ":: Reference and query constructed via SAM\n");
@@ -835,6 +884,7 @@ extern "C" {
             writerHelper->alignmentWriter->setNumberOfAlignedReads(writerHelper->numberOfAlignedReads);
 
             // Close and delete
+            gobyAlignments_closeIntermediateOutputFiles(writerHelper);
             writerHelper->alignmentWriter->close();
             delete writerHelper->alignmentWriter;
             writerHelper->tmhWriter->write();
@@ -852,6 +902,13 @@ extern "C" {
             if (writerHelper->alignerToGobyTargetIndexMap != NULL) {
                 delete writerHelper->alignerToGobyTargetIndexMap;
             }
+            if (writerHelper->samLinesQueue != NULL) {
+                while (!writerHelper->samLinesQueue->empty()) {
+                    writerHelper->samLinesQueue->pop();
+                }
+                delete writerHelper->samLinesQueue;
+            }
+            delete writerHelper->targetNameToIndexMap;
             delete writerHelper;
         }
 	}
@@ -861,30 +918,31 @@ extern "C" {
               "HALFSPLICE_ACCEPTOR", "SPLICE", "ONE_THIRD_SHORTEXON",
               "TWO_THIRDS_SHORTEXON", "SHORTEXON", "TERMINAL" };
 
+    /**
+     * Debugging to print read and ref sequences including padding.
+     * This ALWAYS prints if it is called. Don't call it if you don't want it to print.
+     */
     void gobyAlignments_debugSequences(CAlignmentsWriterHelper *writerHelper, int hitType, char *refSequence, char *readSequence, int paddingLeft, int paddingRight) {
-        debug(
+        fprintf(stderr,":: type=%s, paddingLeft=%d, paddingRight=%d\n", hitTypes[hitType], paddingLeft, paddingRight);
+        fprintf(stderr,":: ref =");
+        for (int i = 0; i < paddingLeft; i++) {
+            fprintf(stderr, "_");
+        }
+        fprintf(stderr,"%s", refSequence);
+        for (int i = 0; i < paddingRight; i++) {
+            fprintf(stderr, "_");
+        }
+        fprintf(stderr,"\n");
 
-            fprintf(stderr,":: type=%s, paddingLeft=%d, paddingRight=%d\n", hitTypes[hitType], paddingLeft, paddingRight);
-            fprintf(stderr,":: ref =");
-            for (int i = 0; i < paddingLeft; i++) {
-                fprintf(stderr, "_");
-            }
-            fprintf(stderr,"%s", refSequence);
-            for (int i = 0; i < paddingRight; i++) {
-                fprintf(stderr, "_");
-            }
-            fprintf(stderr,"\n");
-
-            fprintf(stderr,":: read=");
-            for (int i = 0; i < paddingLeft; i++) {
-                fprintf(stderr, "_");
-            }
-            fprintf(stderr,"%s", readSequence);
-            for (int i = 0; i < paddingRight; i++) {
-                fprintf(stderr, "_");
-            }
-            fprintf(stderr,"\n");
-        )
+        fprintf(stderr,":: read=");
+        for (int i = 0; i < paddingLeft; i++) {
+            fprintf(stderr, "_");
+        }
+        fprintf(stderr,"%s", readSequence);
+        for (int i = 0; i < paddingRight; i++) {
+            fprintf(stderr, "_");
+        }
+        fprintf(stderr,"\n");
     }
 }
 

@@ -44,7 +44,8 @@ extern "C" {
     void gobyAlignments_addQueryIdentifierWithIndex(CAlignmentsWriterHelper *writerHelper, const char *queryIdentifier, unsigned int newQueryIndex);
 
     /** Create entries from from line/lines of SAM. */
-    void gobyAlignments_processSAM(CAlignmentsWriterHelper *writerHelper, char *samLine, int npaths, int maxpaths);
+    void gobyAlignments_submitSAMEntries(CAlignmentsWriterHelper *writerHelper, char *samInput);
+    CSamHelper *gobyAlignments_processNextSAMEntry(CAlignmentsWriterHelper *writerHelper);
 
     // get an empty alignment entry to populate
     void gobyAlignments_appendEntry(CAlignmentsWriterHelper *writerHelper);
@@ -91,7 +92,7 @@ extern "C" {
     void samHelper_setCigar(CSamHelper *samHelper, const char *cigar);
     const char *samHelper_getCigarStr(CSamHelper *samHelper);
     void samHelper_setMd(CSamHelper *samHelper, const char *md);
-    void samHelper_setQueryTranslate(CSamHelper *samHelper, char *reads, char *qual, unsigned int length, unsigned int reverseStrand);
+    void samHelper_setQueryTranslate(CSamHelper *samHelper, unsigned char *reads, unsigned char *qual, unsigned int length, unsigned int reverseStrand);
     void samHelper_setQuery(CSamHelper *samHelper, const char *reads, const char *qual, unsigned int length, unsigned int reverseStrand);
     void samHelper_constructRefAndQuery(CSamHelper *samHelper);
     const char *samHelper_sourceQuery(CSamHelper *samHelper);
