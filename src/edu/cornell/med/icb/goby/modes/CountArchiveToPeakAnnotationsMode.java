@@ -129,7 +129,7 @@ public class CountArchiveToPeakAnnotationsMode extends AbstractGobyMode {
         /**
          * TODO: Determine of adjustQueryIndices should be the default of true.
          */
-        final ConcatAlignmentReader reader = new ConcatAlignmentReader(basenames);
+        final ConcatAlignmentReader reader = new ConcatAlignmentReader(alignmentReaderFactory, basenames);
         reader.readHeader();
         final int numberOfReferences = reader.getNumberOfTargets();
         final IndexedIdentifier referenceIds = reader.getTargetIdentifiers();

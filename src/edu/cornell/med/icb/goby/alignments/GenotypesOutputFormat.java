@@ -142,14 +142,13 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
 
-
             alleleSet.clear();
             SampleCountInfo sci = sampleCounts[sampleIndex];
             int totalCount = 0;
             for (int sampleCount : sci.counts) {
                 totalCount += sampleCount;
             }
-            System.out.printf("totalCount %d failedCount %d%n",totalCount,sci.failedCount);
+          //  System.out.printf("totalCount %d failedCount %d%n",totalCount,sci.failedCount);
             statsWriter.setSampleValue(goodBaseCountFieldIndex, sampleIndex, totalCount);
             statsWriter.setSampleValue(failBaseCountFieldIndex, sampleIndex, sci.failedCount);
 
@@ -201,7 +200,6 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
             } else {
                 statsWriter.setSampleValue(genotypeFieldIndex, sampleIndex, "");
             }
-
         }
     }
 
