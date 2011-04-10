@@ -20,7 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import org.apache.commons.io.IOUtils;
 
@@ -89,7 +89,7 @@ public class ReadSetToTextMode extends AbstractGobyMode {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
         final String[] inputFiles = jsapResult.getStringArray("input");
-        basenames = AlignmentReader.getBasenames(inputFiles);
+        basenames = AlignmentReaderImpl.getBasenames(inputFiles);
         outputFilename = jsapResult.getString("output");
         outputFormat = OutputFormat.valueOf(jsapResult.getString("format").toUpperCase());
         suffix = jsapResult.getString("suffix");

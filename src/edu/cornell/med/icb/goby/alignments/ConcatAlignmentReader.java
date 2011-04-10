@@ -67,7 +67,6 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
     protected boolean adjustQueryIndices = true;
     private int numberOfAlignedReads;
 
-
     /**
      * Construct an alignment reader over a set of alignments.
      * Please note that the constructor access the header of each individual alignment to
@@ -78,7 +77,21 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
      * @throws IOException If an error occurs reading the header of the alignments.
      */
     public ConcatAlignmentReader(final String... basenames) throws IOException {
-        this(true, basenames);
+        this(new DefaultAlignmentReaderFactory(), true, basenames);
+    }
+
+    /**
+     * Construct an alignment reader over a set of alignments.
+     * Please note that the constructor access the header of each individual alignment to
+     * check reference sequence identity and obtain the number of queries in each input alignment.
+     * This version uses adjustQueryIndices as the default true.
+     *
+     * @param basenames          Basenames of the individual alignemnts to combine.
+     * @param adjustQueryIndices if we need to adjustQueryIndices
+     * @throws IOException If an error occurs reading the header of the alignments.
+     */
+    public ConcatAlignmentReader(boolean adjustQueryIndices, final String... basenames) throws IOException {
+        this(new DefaultAlignmentReaderFactory(), adjustQueryIndices, basenames);
     }
 
     /**
@@ -86,40 +99,45 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
      * Please note that the constructor access the header of each individual alignment to
      * check reference sequence identity and obtain the number of queries in each input alignment.
      *
-     * @param adjustQueryIndices if we need to adjustQueryIndices
-     * @param basenames          Basenames of the individual alignemnts to combine.
+     * @param alignmentReaderFactory Factory to create new alignmentReaders.
+     * @param adjustQueryIndices     if we need to adjustQueryIndices
+     * @param basenames              Basenames of the individual alignemnts to combine.
      * @throws IOException If an error occurs reading the header of the alignments.
      */
-    public ConcatAlignmentReader(final boolean adjustQueryIndices, final String... basenames) throws IOException {
+    public ConcatAlignmentReader(final AlignmentReaderFactory alignmentReaderFactory,
+                                 final boolean adjustQueryIndices, final String... basenames) throws IOException {
         super();
         this.adjustQueryIndices = adjustQueryIndices;
-        readers = new AlignmentReader[basenames.length];
+        readers = alignmentReaderFactory.createReaderArray(basenames.length);
+
         readersWithMoreEntries = new IntArraySet();
-        int readerIndex = 0;
-        for (final String basename : basenames) {
-            readers[readerIndex] = new AlignmentReader(basename);
+
+        for (int readerIndex = 0; readerIndex < basenames.length; readerIndex++) {
+            readers[readerIndex] = alignmentReaderFactory.createReader(basenames[readerIndex]);
             readersWithMoreEntries.add(readerIndex);
-            readerIndex++;
         }
         numQueriesPerReader = new int[basenames.length];
         queryIndexOffset = new int[basenames.length];
         readHeader();
     }
 
+
     /**
      * Construct an alignment reader over a set of alignments.
      * Please note that the constructor access the header of each individual alignment to
      * check reference sequence identity and obtain the number of queries in each input alignment.
      *
-     * @param adjustQueryIndices  if we need to adjustQueryIndices
-     * @param startReferenceIndex Index of the reference for the start position.
-     * @param startPosition       Position on the reference for the start position.
-     * @param endReferenceIndex   Index of the reference for the end position.
-     * @param endPosition         Position on the reference for the end position.
-     * @param basenames           Basenames of the individual alignemnts to combine.
+     * @param alignmentReaderFactory Factory to create new alignmentReaders.
+     * @param adjustQueryIndices     if we need to adjustQueryIndices
+     * @param startReferenceIndex    Index of the reference for the start position.
+     * @param startPosition          Position on the reference for the start position.
+     * @param endReferenceIndex      Index of the reference for the end position.
+     * @param endPosition            Position on the reference for the end position.
+     * @param basenames              Basenames of the individual alignemnts to combine.
      * @throws IOException If an error occurs reading the header of the alignments.
      */
-    public ConcatAlignmentReader(final boolean adjustQueryIndices,
+    public ConcatAlignmentReader(final AlignmentReaderFactory alignmentReaderFactory,
+                                 final boolean adjustQueryIndices,
                                  final int startReferenceIndex,
                                  final int startPosition,
                                  final int endReferenceIndex,
@@ -127,11 +145,13 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
                                  final String... basenames) throws IOException {
         super();
         this.adjustQueryIndices = adjustQueryIndices;
-        readers = new AlignmentReader[basenames.length];
+        readers = alignmentReaderFactory.createReaderArray(basenames.length);
         readersWithMoreEntries = new IntArraySet();
         int readerIndex = 0;
         for (final String basename : basenames) {
-            readers[readerIndex] = new AlignmentReader(basename, startReferenceIndex, startPosition, endReferenceIndex, endPosition);
+            readers[readerIndex] = alignmentReaderFactory.createReader(basename,
+                    startReferenceIndex, startPosition,
+                    endReferenceIndex, endPosition);
             readersWithMoreEntries.add(readerIndex);
             readerIndex++;
         }

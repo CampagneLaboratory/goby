@@ -69,7 +69,7 @@ public class TestPositionSlices {
 
         {  // check that we can read everything when the boundaries include everything:
             final AlignmentReader reader =
-                    new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, basename),
+                    new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, basename),
                             0, 400, 4, 500);
 
             check(reader, 1, 12);
@@ -91,7 +91,7 @@ public class TestPositionSlices {
 
         {// check that we can read everything only 1 12-13:
             final AlignmentReader reader =
-                    new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, basename),
+                    new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, basename),
                             0, 0, 1, 13);
 
             check(reader, 1, 12);
@@ -111,7 +111,7 @@ public class TestPositionSlices {
 
         {// check that we can read everything only 1 12-13:
             final AlignmentReader reader =
-                    new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, basename),
+                    new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, basename),
                             0, 0, 1, 12);
 
             check(reader, 1, 12);
@@ -130,7 +130,7 @@ public class TestPositionSlices {
 
         {// check that we can read everything only between 1 13 and 2 123:
             final AlignmentReader reader =
-                    new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, basename),
+                    new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, basename),
                             1, 13, 2, 123);
 
             check(reader, 1, 13);
@@ -150,7 +150,7 @@ public class TestPositionSlices {
 
         {// check that we can read everything only between 1 13 and 1 13:
             final AlignmentReader reader =
-                    new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, basename),
+                    new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, basename),
                             1, 13, 1, 13);
 
             check(reader, 1, 13);
@@ -171,7 +171,7 @@ public class TestPositionSlices {
         {// check that we can read skipTo before the start of the slice and only get entries that are within the slice
             // boundaries.
             final AlignmentReader reader =
-                    new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, basename),
+                    new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, basename),
                             2, 300, 2, 300);
             // (1,0) occurs before the slice boundaries (1,13)-(1,13)
             final Alignments.AlignmentEntry alignmentEntry = reader.skipTo(2, 0);

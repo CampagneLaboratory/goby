@@ -21,12 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.aligners.AbstractAligner;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.alignments.ConcatAlignmentReader;
-import edu.cornell.med.icb.goby.alignments.ConcatSortedAlignmentReader;
-import edu.cornell.med.icb.goby.alignments.Merge;
+import edu.cornell.med.icb.goby.alignments.*;
 import it.unimi.dsi.logging.ProgressLogger;
 
 import java.io.File;
@@ -110,7 +105,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
     public void execute() throws IOException {
         final String outputFilename = outputFile;
         final AlignmentWriter writer = new AlignmentWriter(outputFilename);
-        final String[] basenames = AlignmentReader.getBasenames(inputFilenames);
+        final String[] basenames = AlignmentReaderImpl.getBasenames(inputFilenames);
         final boolean allSorted = isAllSorted(basenames);
         if (allSorted) {
             System.out.println("input alignments are all sorted, the output will also be sorted.");
@@ -179,7 +174,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
     public static boolean isAllSorted(final String[] basenames) throws IOException {
         boolean sorted = true;
         for (final String basename : basenames) {
-            final AlignmentReader reader = new AlignmentReader(basename);
+            final AlignmentReader reader = new AlignmentReaderImpl(basename);
             reader.readHeader();
 
 

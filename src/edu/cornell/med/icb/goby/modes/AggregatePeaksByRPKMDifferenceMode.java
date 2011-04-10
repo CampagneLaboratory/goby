@@ -26,6 +26,7 @@ import edu.cornell.med.icb.goby.algorithmic.data.AnnotationRPKM;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.util.Timer;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -127,8 +128,8 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
         //For all input files, and given the union peaks, compute the average RPKM for each peak across all input samples
         for (final String inputFile : inputFilenames) {
             System.out.println("Reading alignment file: " + inputFile);
-            final String inputBasename = AlignmentReader.getBasename(inputFile);
-            final AlignmentReader reader = new AlignmentReader(inputBasename);
+            final String inputBasename = AlignmentReaderImpl.getBasename(inputFile);
+            final AlignmentReaderImpl reader = new AlignmentReaderImpl(inputBasename);
             reader.readHeader();
             final int numberOfReferences = reader.getNumberOfTargets();
 
@@ -151,7 +152,7 @@ public class AggregatePeaksByRPKMDifferenceMode extends AbstractGobyMode {
             }
 
 
-            final AlignmentReader referenceReader = new AlignmentReader(inputBasename);
+            final AlignmentReader referenceReader = new AlignmentReaderImpl(inputBasename);
             referenceReader.readHeader();
 
             // read the alignment:

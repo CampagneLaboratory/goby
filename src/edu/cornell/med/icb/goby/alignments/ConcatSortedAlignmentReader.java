@@ -44,30 +44,74 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
     private Bucket[] buckets;
 
     public ConcatSortedAlignmentReader(final String... basenames) throws IOException {
-        super(basenames);
+        this(new DefaultAlignmentReaderFactory(), basenames);
+    }
+
+    /**
+     * Restricts the concatenation to the slice of the alignments between  (startReferenceIndex,startPosition)
+     * and (endReferenceIndex, endPosition)
+     *
+     * @param factory             Factory to create new alignmentReaders.
+     * @param startReferenceIndex Index of the reference for the start position.
+     * @param startPosition       Position on the reference for the start position.
+     * @param endReferenceIndex   Index of the reference for the end position.
+     * @param endPosition         Position on the reference for the end position.
+     * @param basenames           Set of alignments to concatenate.
+     * @throws IOException If an error occurs opening or reading the alignment files.
+     */
+    public ConcatSortedAlignmentReader(AlignmentReaderFactory factory,
+                                       String[] basenames,
+                                       int startReferenceIndex, int startPosition,
+                                       int endReferenceIndex, int endPosition) throws IOException {
+        super(factory,
+                true,
+                startReferenceIndex,
+                startPosition,
+                endReferenceIndex,
+                endPosition,
+                basenames);
         init(basenames);
     }
 
     /**
      * Restricts the concatenation to the slice of the alignments between  (startReferenceIndex,startPosition)
      * and (endReferenceIndex, endPosition)
-
+     *
      * @param startReferenceIndex Index of the reference for the start position.
      * @param startPosition       Position on the reference for the start position.
      * @param endReferenceIndex   Index of the reference for the end position.
      * @param endPosition         Position on the reference for the end position.
-     * @param basenames Set of alignments to concatenate.
+     * @param basenames           Set of alignments to concatenate.
      * @throws IOException If an error occurs opening or reading the alignment files.
      */
-    public ConcatSortedAlignmentReader(String[] basenames, int startReferenceIndex, int startPosition, int endReferenceIndex, int endPosition) throws IOException {
-           super(true,
-                   startReferenceIndex,
-                   startPosition,
-                   endReferenceIndex,
-                   endPosition,
-                   basenames);
+    public ConcatSortedAlignmentReader(String[] basenames,
+                                       int startReferenceIndex, int startPosition,
+                                       int endReferenceIndex, int endPosition) throws IOException {
+        super(new DefaultAlignmentReaderFactory(), true,
+                startReferenceIndex,
+                startPosition,
+                endReferenceIndex,
+                endPosition,
+                basenames);
         init(basenames);
     }
+
+    public ConcatSortedAlignmentReader(AlignmentReaderFactory alignmentReaderFactory, String[] basenames) throws IOException {
+        super(alignmentReaderFactory, true, basenames);
+        init(basenames);
+    }
+
+    public ConcatSortedAlignmentReader(final boolean adjustQueryIndices, final String... basenames) throws IOException {
+        super(new DefaultAlignmentReaderFactory(), adjustQueryIndices, basenames);
+        init(basenames);
+    }
+
+    public ConcatSortedAlignmentReader(NonAmbiguousAlignmentReaderFactory alignmentReaderFactory,
+                                       boolean adjustQueryIndices, final String... basenames) throws IOException {
+        super(alignmentReaderFactory, adjustQueryIndices, basenames);
+        init(basenames);
+    }
+
     private void init(final String... basenames) {
         nextLoadedForReader = new boolean[basenames.length];
 
@@ -89,10 +133,6 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
         }
     }
 
-    public ConcatSortedAlignmentReader(final boolean adjustQueryIndices, final String... basenames) throws IOException {
-        super(adjustQueryIndices, basenames);
-        init(basenames);
-    }
 
     /**
      * Skip all entries that have position before (targetIndex,position). This method will use the alignment index
@@ -111,8 +151,8 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
                 bucket = entryHeap.first();
                 if (bucket.entry.getTargetIndex() < targetIndex || bucket.entry.getPosition() < position) {
                     // the first entry in the heap has locaton before the skip to location. We remove it.
-                    Bucket removed=entryHeap.dequeue();
-                    nextLoadedForReader[removed.readerIndex]=false;
+                    Bucket removed = entryHeap.dequeue();
+                    nextLoadedForReader[removed.readerIndex] = false;
                 } else {
                     // the first entry in the heap is at or after the skipTo location. We are done cleaning up the heap.
                     break;
@@ -125,7 +165,7 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
             if (!nextLoadedForReader[readerIndex]) {
                 // the reader at position readerIndex was used in the previous next
                 activeIndex = readerIndex;
-           //     System.out.println("Setting activeIndex to "+readerIndex + " "+ readersWithMoreEntries);
+                //     System.out.println("Setting activeIndex to "+readerIndex + " "+ readersWithMoreEntries);
                 final AlignmentReader reader = readers[activeIndex];
                 final Alignments.AlignmentEntry alignmentEntry = reader.skipTo(targetIndex, position);
                 if (alignmentEntry == null) {
@@ -138,7 +178,7 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
                     nextLoadedForReader[readerIndex] = true;
                     final Bucket bucket = buckets[readerIndex];
                     bucket.entry = alignmentEntry;
-                    bucket.readerIndex=readerIndex;
+                    bucket.readerIndex = readerIndex;
                     entryHeap.enqueue(bucket);
                     //    System.out.println("entryHeap.size()" + entryHeap.size());
                 }
@@ -146,7 +186,7 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
         }
         // return the next entry from the heap:
         if (entryHeap.isEmpty()) return null;
-        
+
         final Bucket bucket = entryHeap.dequeue();
         nextLoadedForReader[bucket.readerIndex] = false;
 
@@ -155,8 +195,8 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
         final Alignments.AlignmentEntry alignmentEntry = bucket.entry;
 
         // the reader at position readerIndex was used in the previous next
-                       activeIndex = bucket.readerIndex;
-          //             System.out.println("Setting activeIndex to "+activeIndex + " "+ readersWithMoreEntries);
+        activeIndex = bucket.readerIndex;
+        //             System.out.println("Setting activeIndex to "+activeIndex + " "+ readersWithMoreEntries);
 
 
         final int newQueryIndex = mergedQueryIndex(alignmentEntry.getQueryIndex());

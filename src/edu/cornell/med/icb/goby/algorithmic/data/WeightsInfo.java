@@ -18,7 +18,7 @@
 
 package edu.cornell.med.icb.goby.algorithmic.data;
 
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.io.BinIO;
@@ -90,7 +90,7 @@ public class WeightsInfo implements Serializable {
     public static WeightsInfo loadForBasename(final String filename, final String id)
             throws IOException, ClassNotFoundException {
         // strip any compact alignment extensions
-        String basename = AlignmentReader.getBasename(filename);
+        String basename = AlignmentReaderImpl.getBasename(filename);
 
         // strip any compact reads extensions
         basename = ReadsReader.getBasename(basename);

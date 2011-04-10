@@ -20,12 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentPositionComparator;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.alignments.IterateAlignments;
-import edu.cornell.med.icb.goby.alignments.Merge;
+import edu.cornell.med.icb.goby.alignments.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
@@ -98,7 +93,7 @@ public class SortMode extends AbstractGobyMode {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
         final String inputFile = jsapResult.getString("input");
-        basename = AlignmentReader.getBasename(inputFile);
+        basename = AlignmentReaderImpl.getBasename(inputFile);
         outputFilename = jsapResult.getString("output");
         alignmentIterator = new SortIterateAlignments();
         alignmentIterator.parseIncludeReferenceArgument(jsapResult);
@@ -173,7 +168,7 @@ public class SortMode extends AbstractGobyMode {
         ObjectArrayList<Alignments.AlignmentEntry> entries;
 
         @Override
-        public void prepareDataStructuresForReference(final AlignmentReader alignmentReader, final int referenceIndex) {
+        public void prepareDataStructuresForReference(final AlignmentReaderImpl alignmentReader, final int referenceIndex) {
             if (this.alignmentReader == null) {
                 if (alignmentReader.isSorted()) {
                     LOG.warn("Warning: An input alignment is already sorted.");
@@ -184,13 +179,13 @@ public class SortMode extends AbstractGobyMode {
         }
 
         @Override
-        public void processAlignmentEntry(final AlignmentReader alignmentReader,
+        public void processAlignmentEntry(final AlignmentReaderImpl alignmentReader,
                                           final Alignments.AlignmentEntry alignmentEntry) {
 
             entries.add(alignmentEntry);
         }
 
-        AlignmentReader alignmentReader = null;
+        AlignmentReaderImpl alignmentReader = null;
 
         public void sort() {
             Collections.sort(entries, POSITION_ENTRY_COMPARATOR);

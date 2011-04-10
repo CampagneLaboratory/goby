@@ -20,9 +20,9 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -90,7 +90,7 @@ public class CompactAlignmentToReadSetMode extends AbstractGobyMode {
         final ObjectSet<String> basenameSet = new ObjectOpenHashSet<String>();
 
         for (final String inputFile : inputFiles) {
-            basenameSet.add(AlignmentReader.getBasename(inputFile));
+            basenameSet.add(AlignmentReaderImpl.getBasename(inputFile));
         }
 
         basenames = basenameSet.toArray(new String[basenameSet.size()]);
@@ -153,7 +153,7 @@ public class CompactAlignmentToReadSetMode extends AbstractGobyMode {
     }
 
     private void alignmentToReadSet(final String basename) throws IOException {
-        final AlignmentReader reader = new AlignmentReader(basename);
+        final AlignmentReaderImpl reader = new AlignmentReaderImpl(basename);
         reader.readHeader();
         final ReadSet outputSet = new ReadSet();
         final int numQueries = reader.getNumberOfQueries();

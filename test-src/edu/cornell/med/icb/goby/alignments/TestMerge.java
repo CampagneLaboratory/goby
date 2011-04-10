@@ -125,7 +125,7 @@ public class TestMerge {
         final int count = countAlignmentEntries(basename);
         assertEquals("Only best score, non ambiguous gene matches should be kept. ", 4 - 1 , count);     // -1 removes an entry with lower score
 
-        final AlignmentReader reader = new AlignmentReader(outputFile);
+        final AlignmentReaderImpl reader = new AlignmentReaderImpl(outputFile);
         reader.readHeader();
         assertEquals(5, reader.getNumberOfTargets());
         assertArrayEquals(new int[] {1024, 5678, 1237, 9, 143}, reader.getTargetLength());
@@ -161,7 +161,7 @@ public class TestMerge {
         merger.merge(inputFiles, outputFile);
 
 
-        final AlignmentReader reader = new AlignmentReader(outputFile);
+        final AlignmentReader reader = new AlignmentReaderImpl(outputFile);
         int maxTargetIndex = -1;
         while (reader.hasNext()) {
             final Alignments.AlignmentEntry alignmentEntry = reader.next();
@@ -338,7 +338,7 @@ public class TestMerge {
 
     private int countAlignmentEntries(final String basename) throws IOException {
         int count = 0;
-        final AlignmentReader reader = new AlignmentReader(basename);
+        final AlignmentReader reader = new AlignmentReaderImpl(basename);
         while (reader.hasNext()) {
             final Alignments.AlignmentEntry alignmentEntry = reader.next();
             System.out.println("found entry: " + alignmentEntry);

@@ -22,8 +22,8 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.ConcatAlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.counts.AnyTransitionCountsIterator;
 import edu.cornell.med.icb.goby.counts.CountsArchiveReader;
 import edu.cornell.med.icb.goby.counts.CountsReaderI;
@@ -101,7 +101,7 @@ public class CountArchiveToPeakAnnotationsMode extends AbstractGobyMode {
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
-        inputFiles = AlignmentReader.getBasenames(jsapResult.getStringArray("input"));
+        inputFiles = AlignmentReaderImpl.getBasenames(jsapResult.getStringArray("input"));
         outputFile = jsapResult.getString("output");
         final String includeReferenceNameCommas = jsapResult.getString("include-reference-names");
         includeReferenceNames = new ObjectOpenHashSet<String>();
@@ -125,7 +125,7 @@ public class CountArchiveToPeakAnnotationsMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        final String[] basenames = AlignmentReader.getBasenames(inputFiles);
+        final String[] basenames = AlignmentReaderImpl.getBasenames(inputFiles);
         /**
          * TODO: Determine of adjustQueryIndices should be the default of true.
          */

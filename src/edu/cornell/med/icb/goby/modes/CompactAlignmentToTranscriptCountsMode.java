@@ -21,8 +21,8 @@ package edu.cornell.med.icb.goby.modes;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionResults;
@@ -115,7 +115,7 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
         inputFiles = jsapResult.getStringArray("input");
         final ObjectSet<String> basenameSet = new ObjectOpenHashSet<String>();
         for (final String inputFile : inputFiles) {
-            basenameSet.add(AlignmentReader.getBasename(inputFile));
+            basenameSet.add(AlignmentReaderImpl.getBasename(inputFile));
         }
         basenames = basenameSet.toArray(new String[basenameSet.size()]);
         statsFilename = jsapResult.getString("stats");
@@ -173,7 +173,7 @@ public class CompactAlignmentToTranscriptCountsMode extends AbstractGobyMode {
     }
 
     private void processTranscriptAlignment(final String basename) throws IOException {
-        final AlignmentReader reader = new AlignmentReader(basename);
+        final AlignmentReaderImpl reader = new AlignmentReaderImpl(basename);
         PrintWriter outputWriter = null;
         try {
             WeightsInfo weights = null;

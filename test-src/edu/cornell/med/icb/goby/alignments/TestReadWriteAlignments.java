@@ -87,7 +87,7 @@ public class TestReadWriteAlignments {
 
         int count = 0;
         final AlignmentReader reader =
-                new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, "align-101"));
+                new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, "align-101"));
         int maxQueryIndex = -1;
         int maxTargetIndex = -1;
         while (reader.hasNext()) {
@@ -136,8 +136,8 @@ public class TestReadWriteAlignments {
         writer.setTargetIdentifiers(targetIds);
         writer.close();
 
-        final AlignmentReader reader =
-                new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, "align-102"));
+        final AlignmentReaderImpl reader =
+                new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, "align-102"));
         reader.readHeader();
         assertEquals(1, reader.getQueryIdentifiers().getInt(new MutableString("query:1")));
         assertEquals(-1, reader.getTargetIdentifiers().getInt(new MutableString("query:1")));
@@ -170,8 +170,8 @@ public class TestReadWriteAlignments {
         writer.setTargetLengths(targetLengths);
         writer.close();
 
-        final AlignmentReader reader =
-                new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, "align-103"));
+        final AlignmentReaderImpl reader =
+                new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, "align-103"));
         reader.readHeader();
         assertArrayEquals("Query lengths do not match", queryLengths, reader.getQueryLengths());
         assertEquals("Number of queries do not match", 3, reader.getNumberOfQueries());
@@ -213,8 +213,8 @@ public class TestReadWriteAlignments {
         writer.setTargetLengths(targetLengths);
         writer.close();
 
-        final AlignmentReader reader =
-                new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, "align-104"));
+        final AlignmentReaderImpl reader =
+                new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, "align-104"));
         reader.readHeader();
 
         assertTrue("query length must be constant", reader.isConstantQueryLengths());
@@ -249,7 +249,7 @@ public class TestReadWriteAlignments {
         }
         writer.close();
 
-        final AlignmentReader reader = new AlignmentReader(
+        final AlignmentReaderImpl reader = new AlignmentReaderImpl(
                 FilenameUtils.concat(BASE_TEST_DIR, "constant-query-lengths"));
         for (final Alignments.AlignmentEntry entry : reader) {
             assertEquals(11, entry.getQueryLength());
@@ -285,7 +285,7 @@ public class TestReadWriteAlignments {
         }
         writer.close();
 
-        final AlignmentReader reader = new AlignmentReader(
+        final AlignmentReaderImpl reader = new AlignmentReaderImpl(
                 FilenameUtils.concat(BASE_TEST_DIR, "non-constant-query-lengths"));
         for (final Alignments.AlignmentEntry entry : reader) {
             assertEquals(queryLengths[entry.getQueryIndex()], entry.getQueryLength());

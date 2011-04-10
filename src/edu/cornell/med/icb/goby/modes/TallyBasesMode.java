@@ -20,7 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.counts.AnyTransitionCountsIterator;
 import edu.cornell.med.icb.goby.counts.CountsArchiveReader;
 import edu.cornell.med.icb.goby.counts.CountsReader;
@@ -103,7 +103,7 @@ public class TallyBasesMode extends AbstractGobyMode {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
         inputFilenames = jsapResult.getStringArray("input");
-        basenames = AlignmentReader.getBasenames(inputFilenames);
+        basenames = AlignmentReaderImpl.getBasenames(inputFilenames);
         alternativeCountArhive = jsapResult.getString("alternative-count-archive");
         outputFilename = jsapResult.getString("output");
         genomeFilename = jsapResult.getString("genome");

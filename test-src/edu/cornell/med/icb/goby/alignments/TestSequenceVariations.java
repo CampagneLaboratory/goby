@@ -76,7 +76,7 @@ public class TestSequenceVariations {
 
     @Test
     public void testLastagSequenceVariationParsing() throws IOException {
-        final AlignmentReader reader = new AlignmentReader(lastagAlignmentFilename);
+        final AlignmentReader reader = new AlignmentReaderImpl(lastagAlignmentFilename);
         while (reader.hasNext()) {
             final Alignments.AlignmentEntry alignmentEntry = reader.next();
 
@@ -159,7 +159,7 @@ public class TestSequenceVariations {
 
     @Test
     public void testBwaSequenceVariationParsing() throws IOException {
-        final AlignmentReader reader = new AlignmentReader(bwaAlignmentFilename);
+        final AlignmentReader reader = new AlignmentReaderImpl(bwaAlignmentFilename);
         while (reader.hasNext()) {
             final Alignments.AlignmentEntry alignmentEntry = reader.next();
 
@@ -295,7 +295,7 @@ public class TestSequenceVariations {
 
         // run the alignment process
         bwaAlignmentFilename2 = alignWith("bwa", readsFilename2, referenceFilename2, "bug");
-        final AlignmentReader reader = new AlignmentReader(bwaAlignmentFilename2);
+        final AlignmentReader reader = new AlignmentReaderImpl(bwaAlignmentFilename2);
         while (reader.hasNext()) {
             final Alignments.AlignmentEntry alignmentEntry = reader.next();
 

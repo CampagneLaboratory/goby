@@ -19,9 +19,9 @@
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.IterateAlignments;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.modes.WeightParameters;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -64,7 +64,7 @@ public class AnnotationCountIterateAlignments extends IterateAlignments {
     private AnnotationCountInterface[] algs;
 
     @Override
-    public void processAlignmentEntry(final AlignmentReader alignmentReader,
+    public void processAlignmentEntry(final AlignmentReaderImpl alignmentReader,
                                       final Alignments.AlignmentEntry alignmentEntry) {
         final int referenceIndex = alignmentEntry.getTargetIndex();
         final int startPosition = alignmentEntry.getPosition();
@@ -80,7 +80,7 @@ public class AnnotationCountIterateAlignments extends IterateAlignments {
 
 
     @Override
-    public void prepareDataStructuresForReference(final AlignmentReader alignmentReader, final int referenceIndex) {
+    public void prepareDataStructuresForReference(final AlignmentReaderImpl alignmentReader, final int referenceIndex) {
         AnnotationCountInterface algo = new AnnotationCount();
 
         algo = chooseAlgorithm(weightParams, weights, algo);

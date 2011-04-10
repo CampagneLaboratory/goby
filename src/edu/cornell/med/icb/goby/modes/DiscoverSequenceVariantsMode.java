@@ -136,7 +136,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             final String group = sampleToGroupMap.get(sample);
             System.out.printf("sample: %s group %s%n", sample, group);
             for (int readerIndex = 0; readerIndex < inputFilenames.length; readerIndex++) {
-                if (AlignmentReader.getBasename(inputFilenames[readerIndex]).endsWith(sample)) {
+                if (AlignmentReaderImpl.getBasename(inputFilenames[readerIndex]).endsWith(sample)) {
                     readerIndexToGroupIndex[readerIndex] = groupIds.get(new MutableString(group));
 
                 }
@@ -307,7 +307,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     @Override
     public void execute() throws IOException {
 
-        final String[] basenames = AlignmentReader.getBasenames(inputFilenames);
+        final String[] basenames = AlignmentReaderImpl.getBasenames(inputFilenames);
         final boolean allSorted = ConcatenateAlignmentMode.isAllSorted(basenames);
         if (!allSorted) {
             System.out.println("Each input alignment must be sorted. Aborting.");
@@ -357,6 +357,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         }
         sortedPositionIterator.allocateStorage(basenames.length, numberOfGroups);
         sortedPositionIterator.initialize(this, outWriter);
+        // install a reader factory that filters out ambiguous reads:
+        sortedPositionIterator.setAlignmentReaderFactory(new NonAmbiguousAlignmentReaderFactory());
         sortedPositionIterator.iterate(basenames);
         sortedPositionIterator.finish();
     }

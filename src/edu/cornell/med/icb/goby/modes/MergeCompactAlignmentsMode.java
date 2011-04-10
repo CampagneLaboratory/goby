@@ -20,8 +20,8 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Merge;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 
 import java.io.File;
 import java.io.IOException;
@@ -129,7 +129,7 @@ public class MergeCompactAlignmentsMode extends AbstractGobyMode {
 
         inputFiles = new ArrayList<File>(inputFilesAr.length);
         for (final String file : inputFilesAr) {
-            final String basename = AlignmentReader.getBasename(file);
+            final String basename = AlignmentReaderImpl.getBasename(file);
             inputFiles.add(new File(basename));
         }
         outputFile = jsapResult.getString("output");

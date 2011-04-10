@@ -28,65 +28,65 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 /**
- * Basic tests for the {@link edu.cornell.med.icb.goby.alignments.AlignmentReader}.
+ * Basic tests for the {@link AlignmentReaderImpl}.
  */
 public class TestAlignmentReader {
     /**
      * Validate that the method
-     * {@link edu.cornell.med.icb.goby.alignments.AlignmentReader#getBasename(String)}
+     * {@link AlignmentReaderImpl#getBasename(String)}
      * produces the proper results.
      */
     @Test
     public void basename() {
-        assertNull("Basename should be null", AlignmentReader.getBasename(null));
-        assertEquals("Basename should be unchanged", "", AlignmentReader.getBasename(""));
+        assertNull("Basename should be null", AlignmentReaderImpl.getBasename(null));
+        assertEquals("Basename should be unchanged", "", AlignmentReaderImpl.getBasename(""));
         assertEquals("Basename should be unchanged",
-                "foobar", AlignmentReader.getBasename("foobar"));
+                "foobar", AlignmentReaderImpl.getBasename("foobar"));
         assertEquals("Basename should be unchanged",
-                "foobar.txt", AlignmentReader.getBasename("foobar.txt"));
+                "foobar.txt", AlignmentReaderImpl.getBasename("foobar.txt"));
 
         for (final String extension : FileExtensionHelper.COMPACT_ALIGNMENT_FILE_EXTS) {
             final String basename = RandomStringUtils.randomAlphabetic(8);
             final String filename = basename + extension;
             assertEquals("Basename not stripped properly from '" + filename + "'",
-                    basename, AlignmentReader.getBasename(basename));
+                    basename, AlignmentReaderImpl.getBasename(basename));
         }
 
         assertEquals("Only the extension should have been removed",
-                "foo.entries.bar", AlignmentReader.getBasename("foo.entries.bar.entries"));
+                "foo.entries.bar", AlignmentReaderImpl.getBasename("foo.entries.bar.entries"));
         assertEquals("Only the extension should have been removed",
-                "entries.foo.bar", AlignmentReader.getBasename("entries.foo.bar.entries"));
+                "entries.foo.bar", AlignmentReaderImpl.getBasename("entries.foo.bar.entries"));
     }
 
     /**
      * Validate that the method
-     * {@link edu.cornell.med.icb.goby.alignments.AlignmentReader#getBasenames(String[])}
+     * {@link AlignmentReaderImpl#getBasenames(String[])}
      * produces the proper results.
      */
     @Test
     public void basenames() {
         assertTrue("Basename array should be empty",
-                ArrayUtils.isEmpty(AlignmentReader.getBasenames()));
+                ArrayUtils.isEmpty(AlignmentReaderImpl.getBasenames()));
 
         final String[] nullArray = { null };
         assertArrayEquals("Basename array should contain a single null element",
-                nullArray, AlignmentReader.getBasenames((String) null));
+                nullArray, AlignmentReaderImpl.getBasenames((String) null));
 
         final String[] emptyStringArray = { "" };
         assertArrayEquals("Basename array should contain a single empty string element",
-                emptyStringArray, AlignmentReader.getBasenames(""));
+                emptyStringArray, AlignmentReaderImpl.getBasenames(""));
 
         final String[] foobarArray = { "foobar" };
         assertArrayEquals("Basenames should be unchanged",
-                foobarArray, AlignmentReader.getBasenames("foobar"));
+                foobarArray, AlignmentReaderImpl.getBasenames("foobar"));
 
         final String[] foobarTxtArray = { "foobar.txt" };
         assertArrayEquals("Basenames should be unchanged",
-                foobarTxtArray, AlignmentReader.getBasenames("foobar.txt"));
+                foobarTxtArray, AlignmentReaderImpl.getBasenames("foobar.txt"));
 
         assertArrayEquals("Basenames should be unchanged",
                 ArrayUtils.addAll(foobarArray, foobarTxtArray),
-                AlignmentReader.getBasenames("foobar", "foobar.txt"));
+                AlignmentReaderImpl.getBasenames("foobar", "foobar.txt"));
 
         final String basename = "mybasename";
         final String[] basenameArray = { basename };
@@ -97,6 +97,6 @@ public class TestAlignmentReader {
 
         }
         assertArrayEquals("Basename not stripped properly from " + ArrayUtils.toString(filenames),
-                basenameArray, AlignmentReader.getBasenames(filenames));
+                basenameArray, AlignmentReaderImpl.getBasenames(filenames));
     }
 }

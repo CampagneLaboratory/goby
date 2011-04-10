@@ -19,7 +19,7 @@
 package edu.cornell.med.icb.goby.stats;
 
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
@@ -94,7 +94,7 @@ public class DifferentialExpressionAnalysis {
             groups.add(groupId);
             for (final String groupString : groupBasenames.split(",")) {
 
-                final String sampleBasename = FilenameUtils.getBaseName(AlignmentReader.getBasename(groupString));
+                final String sampleBasename = FilenameUtils.getBaseName(AlignmentReaderImpl.getBasename(groupString));
                 if (!isInputBasename(sampleBasename, inputFilenames)) {
                     System.err.printf("The group basename %s is not a valid input basename.%n", sampleBasename);
                     System.exit(1);
@@ -119,7 +119,7 @@ public class DifferentialExpressionAnalysis {
      */
     private boolean isInputBasename(final String basename, final String[] inputFilenames) {
         for (final String inputFilename : inputFilenames) {
-            if (FilenameUtils.getBaseName(AlignmentReader.getBasename(inputFilename)).equals(basename)) {
+            if (FilenameUtils.getBaseName(AlignmentReaderImpl.getBasename(inputFilename)).equals(basename)) {
                 return true;
             }
         }

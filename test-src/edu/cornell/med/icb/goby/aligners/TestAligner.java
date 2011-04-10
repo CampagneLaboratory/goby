@@ -22,7 +22,7 @@ import edu.cornell.med.icb.goby.config.GobyConfiguration;
 import edu.cornell.med.icb.goby.readers.FastXEntry;
 import edu.cornell.med.icb.goby.readers.FastXReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -224,7 +224,7 @@ public class TestAligner {
         aligner.setDatabaseName(aligner.getDefaultDbNameForReferenceFile(compactReference));
         final String basename = FilenameUtils.concat(BASE_TEST_DIR, "bwa-output-missing-reads");
         aligner.align(compactReference, compactReads, basename);
-        AlignmentReader reader=new AlignmentReader(basename);
+        AlignmentReaderImpl reader=new AlignmentReaderImpl(basename);
         reader.readHeader();
         assertEquals("The number of queries must be 2",2,reader.getNumberOfQueries() );
         assertEquals("The lagest query index must be 10000",10000,reader.getLargestSplitQueryIndex() );

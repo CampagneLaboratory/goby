@@ -26,6 +26,7 @@ import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
@@ -264,7 +265,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     //   System.out.println(String.format("executing start= %d end=%d ",startIndex, endIndex));
                     for (int i = startIndex; i <= endIndex; ++i) {
                         if (i >= 0 && i < inputFilenames.length) {
-                            final String inputBasename = AlignmentReader.getBasename(inputFiles[i]);
+                            final String inputBasename = AlignmentReaderImpl.getBasename(inputFiles[i]);
                             try {
                                 processOneBasename(allAnnots, writer, inputFiles[i], inputBasename);
                                 Runtime.getRuntime().gc();
@@ -356,7 +357,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             }
         }
 
-        final AlignmentReader reader = new AlignmentReader(inputBasename);
+        final AlignmentReaderImpl reader = new AlignmentReaderImpl(inputBasename);
         reader.readHeader();
         final int numberOfReferences = reader.getNumberOfTargets();
 
@@ -369,7 +370,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         iterateAlignment.parseIncludeReferenceArgument(includeReferenceNameCommas);
 
 
-        final AlignmentReader referenceReader = new AlignmentReader(inputBasename);
+        final AlignmentReader referenceReader = new AlignmentReaderImpl(inputBasename);
         referenceReader.readHeader();
 
         // ITerate through the alignment and retrieve algs:

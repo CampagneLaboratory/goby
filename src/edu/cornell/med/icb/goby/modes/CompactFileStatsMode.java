@@ -20,10 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsReader;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.alignments.EntryFlagHelper;
+import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
@@ -217,10 +214,10 @@ public class CompactFileStatsMode extends AbstractGobyMode {
      * @throws IOException if the file cannot be read
      */
     private void describeCompactAlignment(final File file) throws IOException {
-        final String basename = AlignmentReader.getBasename(file.toString());
+        final String basename = AlignmentReaderImpl.getBasename(file.toString());
         stream.printf("Compact Alignment basename = %s%n", basename);
 
-        final AlignmentReader reader = new AlignmentReader(basename);
+        final AlignmentReaderImpl reader = new AlignmentReaderImpl(basename);
         reader.readHeader();
         stream.println("Info from header:");
         stream.printf("Alignment produced by aligner=%s version=%s %n",reader.getAlignerName(),

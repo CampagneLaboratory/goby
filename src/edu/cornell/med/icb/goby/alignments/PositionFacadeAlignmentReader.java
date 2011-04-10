@@ -20,13 +20,9 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import edu.cornell.med.icb.goby.reads.FastBufferedMessageChunksReader;
-
 import java.io.*;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-
-import org.apache.commons.io.IOUtils;
 
 /**
  * A facade over alignment reader that restricts entries read to a contiguous window of positions.
@@ -65,10 +61,10 @@ public class PositionFacadeAlignmentReader implements Closeable,
                                          final int endPosition)
             throws IOException {
 
-        AlignmentReader reader = null;
+        AlignmentReaderImpl reader = null;
 
         try {
-            reader = new AlignmentReader(basename);
+            reader = new AlignmentReaderImpl(basename);
 
 
             reader.readHeader();
@@ -82,7 +78,7 @@ public class PositionFacadeAlignmentReader implements Closeable,
             this.endReferenceIndex = endReferenceIndex;
             this.startPosition = startPosition;
             this.startReferenceIndex = startReferenceIndex;
-            this.delegate = new AlignmentReader(startOffset, endOffset, basename);
+            this.delegate = new AlignmentReaderImpl(startOffset, endOffset, basename);
 
         } finally {
             if (reader != null) {

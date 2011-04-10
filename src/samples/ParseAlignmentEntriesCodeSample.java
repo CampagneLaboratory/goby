@@ -20,6 +20,7 @@ package samples;
 
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -35,7 +36,7 @@ public class ParseAlignmentEntriesCodeSample {
         try {
             final String inputFilename = "input.entries";
 
-            final AlignmentReader reader = new AlignmentReader(inputFilename);
+            final AlignmentReader reader = new AlignmentReaderImpl(inputFilename);
 
             for (final Alignments.AlignmentEntry alignmentEntry : reader) {
 

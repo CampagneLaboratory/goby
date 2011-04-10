@@ -25,10 +25,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.FileOutputStream;
 
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.IterateSortedAlignments;
-import edu.cornell.med.icb.goby.alignments.ConcatSortedAlignmentReader;
-import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.util.DoInParallel;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -111,7 +108,7 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
         inputFilenames = jsapResult.getStringArray("input");
-        basenames = AlignmentReader.getBasenames(inputFilenames);
+        basenames = AlignmentReaderImpl.getBasenames(inputFilenames);
         outputFilename = jsapResult.getString("output");
         outputFormat = OutputFormat.valueOf(jsapResult.getString("format").toUpperCase());
 

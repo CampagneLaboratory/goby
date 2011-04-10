@@ -18,8 +18,8 @@
 
 package edu.cornell.med.icb.goby.modes;
 
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
@@ -56,7 +56,7 @@ public class TestLastToCompact {
 
 
         // read compact alignment results
-        final AlignmentReader reader = new AlignmentReader(processor.getOutputFile());
+        final AlignmentReaderImpl reader = new AlignmentReaderImpl(processor.getOutputFile());
         reader.readHeader();
         assertEquals(2857819, reader.getNumberOfQueries());
         assertEquals(1, reader.getNumberOfTargets());
@@ -161,7 +161,7 @@ public class TestLastToCompact {
 
 
         // read compact alignment results
-        final AlignmentReader reader = new AlignmentReader(processor.getOutputFile());
+        final AlignmentReaderImpl reader = new AlignmentReaderImpl(processor.getOutputFile());
         reader.readHeader();
         assertEquals(3538282, reader.getNumberOfQueries());
         assertEquals(1, reader.getNumberOfTargets());
@@ -645,7 +645,7 @@ public class TestLastToCompact {
 
 
         // read compact alignment results
-        final AlignmentReader reader = new AlignmentReader(processor.getOutputFile());
+        final AlignmentReaderImpl reader = new AlignmentReaderImpl(processor.getOutputFile());
         reader.readHeader();
         assertEquals(2857822, reader.getNumberOfQueries());
         assertEquals(1, reader.getNumberOfTargets());

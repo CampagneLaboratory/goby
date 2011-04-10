@@ -20,8 +20,8 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import com.martiansoftware.jsap.JSAPResult;
 import com.google.protobuf.ByteString;
+import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -58,6 +58,8 @@ public abstract class IterateSortedAlignments<T> {
     private String endOffsetArgument;
     private int startFlapLength;
 
+    private AlignmentReaderFactory alignmentReaderFactory = new DefaultAlignmentReaderFactory();
+
     /**
      * Set the length of the start flap. If length is larger than zero, the iterator will start reading at position
      * start - length.
@@ -93,6 +95,16 @@ public abstract class IterateSortedAlignments<T> {
     }
 
     /**
+     * Set the factory that should be used when creating alignment readers. Use this setter to install a factory that
+     * filters ambiguous reads
+     *
+     * @param factory alignment reader factory.
+     */
+    public void setAlignmentReaderFactory(AlignmentReaderFactory factory) {
+        alignmentReaderFactory = factory;
+    }
+
+    /**
      * Set the end position argument. The iterator will stop iterating after the specified position.
      * Format is either abolute byte position or ref-id,position-in-ref
      *
@@ -105,6 +117,7 @@ public abstract class IterateSortedAlignments<T> {
     /**
      * Parse the string of reference sequences to include the iteration. The string must be a coma
      * separated list of reference identifiers.
+     *
      * @param includeReferenceNameCommas names of references, separated by commas, to include in the iteration.
      */
     public void parseIncludeReferenceArgument(final String includeReferenceNameCommas) {
@@ -158,7 +171,7 @@ public abstract class IterateSortedAlignments<T> {
      * @throws java.io.IOException If an error occured reading the input alignment.
      */
     public void iterate(final String... basenames) throws IOException {
-        ConcatSortedAlignmentReader sortedReaders = new ConcatSortedAlignmentReader(basenames);
+        ConcatSortedAlignmentReader sortedReaders = new ConcatSortedAlignmentReader(alignmentReaderFactory, basenames);
 
         final int numberOfReferences = sortedReaders.getNumberOfTargets();
 
@@ -239,6 +252,7 @@ public abstract class IterateSortedAlignments<T> {
         ProgressLogger pg = new ProgressLogger(LOG);
         pg.start();
         while ((alignmentEntry = sortedReaders.skipTo(currentMinTargetIndex, 0)) != null) {
+
             pg.lightUpdate();
             numAlignmentEntries = advanceReference(numAlignmentEntries);
             final int referenceIndex = alignmentEntry.getTargetIndex();
@@ -264,7 +278,7 @@ public abstract class IterateSortedAlignments<T> {
             }
             {
                 first = false;
-                assert queryLength!=0 : "queryLength cannot be zero to iterate sorted alignments.";
+                assert queryLength != 0 : "queryLength cannot be zero to iterate sorted alignments.";
                 int currentReadIndex = forwardStrand ? 0 : (queryLength + 1);
                 int currentRefPosition = alignmentEntry.getPosition() - alignmentEntry.getQueryPosition();
 
@@ -293,7 +307,7 @@ public abstract class IterateSortedAlignments<T> {
                 final int leftPadding = alignmentEntry.getQueryPosition();
                 final int rightPadding = (queryLength + numDeletions) -
                         (alignmentEntry.getTargetAlignedLength() + numInsertions) - leftPadding;
-           
+
                 if (leftPadding > 0) {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(String.format("queryIndex=%d, left padding, %d bases",
@@ -309,18 +323,18 @@ public abstract class IterateSortedAlignments<T> {
                 for (Alignments.SequenceVariation var : seqVars) {
                     final String to = var.getTo();
                     final String from = var.getFrom();
-                    final ByteString qualityScores= var.getToQuality();
+                    final ByteString qualityScores = var.getToQuality();
 
                     final int fromLength = from.length();
                     final int toLength = to.length();
-                    final int qualLength=qualityScores.size();
+                    final int qualLength = qualityScores.size();
                     int sequenceVariationLength = Math.max(fromLength, toLength);
 
                     final int preSeqvarBases;
                     if (from.charAt(0) == '-') {
                         preSeqvarBases = var.getPosition() - numObservedBases;
                     } else {
-                        preSeqvarBases = var.getPosition()  - numObservedBases - 1;
+                        preSeqvarBases = var.getPosition() - numObservedBases - 1;
                     }
                     for (int i = 0; i < preSeqvarBases; i++) {
                         // Bases before the next sequence variation
@@ -342,7 +356,7 @@ public abstract class IterateSortedAlignments<T> {
                         // Bases within the sequence variation
                         final char toChar = i >= toLength ? '-' : to.charAt(i);
                         final char fromChar = i >= fromLength ? '-' : from.charAt(i);
-                        final byte toQual= i >= qualLength ? 0 : qualityScores.byteAt(i);
+                        final byte toQual = i >= qualLength ? 0 : qualityScores.byteAt(i);
                         if (fromChar == '-') {
                             // During an insert, do not increment refPosition 
                         } else {
@@ -353,7 +367,7 @@ public abstract class IterateSortedAlignments<T> {
                         if (toChar == '-') {
                             if (forwardStrand) {
                                 // Do no increment readIndex during a delete on forward strand
-                            } else if (i==0) {
+                            } else if (i == 0) {
                                 // On reverse strand delete, decrement readIndex for the first base ONLY
                                 currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
                             } else {
@@ -377,7 +391,7 @@ public abstract class IterateSortedAlignments<T> {
                         }
                     }
                 }
-                while (forwardStrand ?  currentReadIndex < (queryLength - rightPadding) :
+                while (forwardStrand ? currentReadIndex < (queryLength - rightPadding) :
                         currentReadIndex > (1 + rightPadding)) {
 
                     // match stretch before next variation / end of read
@@ -461,7 +475,7 @@ public abstract class IterateSortedAlignments<T> {
      * Process positions on the previous target, which may still be in positionToBases.
      *
      * @param lastReferenceIndex the last referenceIndex?
-     * @param positionToBases positionToBases?
+     * @param positionToBases    positionToBases?
      */
     private void processAllPreviousPositions(int lastReferenceIndex, Int2ObjectMap<T> positionToBases) {
         IntArrayList positions = new IntArrayList();

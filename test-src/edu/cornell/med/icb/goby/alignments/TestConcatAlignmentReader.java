@@ -23,10 +23,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,7 +68,7 @@ public class TestConcatAlignmentReader {
 
     }
 
-     @Test
+    @Test
     public void testLoadTwoAlignerName() throws IOException {
 
 
@@ -76,10 +76,10 @@ public class TestConcatAlignmentReader {
 
         concatReader.readHeader();
 
-        assertNotNull( concatReader.getAlignerName());
-        assertNotNull( concatReader.getAlignerVersion());
-        assertEquals("[first-aligner, second-aligner]",concatReader.getAlignerName());
-        assertEquals("[version-first-aligner, version-second-aligner]",concatReader.getAlignerVersion());
+        assertNotNull(concatReader.getAlignerName());
+        assertNotNull(concatReader.getAlignerVersion());
+        assertEquals("[first-aligner, second-aligner]", concatReader.getAlignerName());
+        assertEquals("[version-first-aligner, version-second-aligner]", concatReader.getAlignerVersion());
     }
 
     @Test
@@ -132,6 +132,21 @@ public class TestConcatAlignmentReader {
         }
     }
 
+    @Test
+    public void testLoadNonAmbiguousOnly() throws IOException {
+
+        // we now install a factory that removes entries whose reads match ambiguously:
+        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(
+                new NonAmbiguousAlignmentReaderFactory(),
+                false, outputBasename1, outputBasename2);
+
+        // the concat reads should now return only entries from baseaname2:
+        int count = countAlignmentEntries(concatReader);
+        assertEquals(count102, count);
+
+    }
+
+    
 
     private int countAlignmentEntries(final AbstractAlignmentReader reader) {
         int count = 0;
@@ -170,7 +185,7 @@ public class TestConcatAlignmentReader {
             writer.setAlignerName("first-aligner");
             writer.setAlignerVersion("version-first-aligner");
             final int numQuery = 10;
-            int position = 1;
+            int position = 100;
             final int score = 30;
             final int[] queryLengths = new int[numQuery];
             for (int i = 0; i < queryLengths.length; i++) {
@@ -189,6 +204,13 @@ public class TestConcatAlignmentReader {
             numQueries101 = numQuery;
 
             writer.close();
+            // reads in basename1 hit in 10 different places in the genome. They should be filtered when
+            // removing ambiguous reads.
+            AlignmentTooManyHitsWriter tmhWriter = new AlignmentTooManyHitsWriter(outputBasename1, 2);
+            for (int queryIndex = 0; queryIndex < numQuery; queryIndex++) {
+                tmhWriter.append(queryIndex, 10, 30);
+            }
+            tmhWriter.close();
         }
         {
             outputBasename2 = FilenameUtils.concat(BASE_TEST_DIR, "concat-align-102");
@@ -217,6 +239,12 @@ public class TestConcatAlignmentReader {
             numQueries102 = numQuery;
 
             writer.close();
+            // reads in basename 2 have just one hit, they are never ambiguous
+            AlignmentTooManyHitsWriter tmhWriter = new AlignmentTooManyHitsWriter(outputBasename2, 2);
+            for (int queryIndex = 0; queryIndex < numQuery; queryIndex++) {
+                tmhWriter.append(queryIndex, 1, 30);
+            }
+            tmhWriter.close();
         }
 
 

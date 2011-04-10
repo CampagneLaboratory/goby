@@ -115,7 +115,7 @@ public abstract class IterateAlignments {
     }
 
     private void iterateOverOneAlignment(final long startOffset, final long endOffset, final String basename) throws IOException {
-        final AlignmentReader reader = new AlignmentReader(startOffset, endOffset, basename);
+        final AlignmentReaderImpl reader = new AlignmentReaderImpl(startOffset, endOffset, basename);
         reader.readHeader();
         final int numberOfReferences = reader.getNumberOfTargets();
 
@@ -143,7 +143,7 @@ public abstract class IterateAlignments {
             }
         }
 
-        final AlignmentReader alignmentReader = new AlignmentReader(startOffset, endOffset, basename);
+        final AlignmentReaderImpl alignmentReader = new AlignmentReaderImpl(startOffset, endOffset, basename);
         alignmentReader.readHeader();
 
         // Give the client the ability to prepare data structures for each reference that will be processed.
@@ -200,7 +200,7 @@ public abstract class IterateAlignments {
      * @param alignmentReader The reader that parsed this entry.
      * @param alignmentEntry  The parsed entry.
      */
-    public abstract void processAlignmentEntry(AlignmentReader alignmentReader, Alignments.AlignmentEntry alignmentEntry);
+    public abstract void processAlignmentEntry(AlignmentReaderImpl alignmentReader, Alignments.AlignmentEntry alignmentEntry);
 
     /**
      * Called to let the subclass prepare some datastructure for each reference sequence. The method is called
@@ -208,7 +208,7 @@ public abstract class IterateAlignments {
      * @param alignmentReader The reader currently being iterated over.
      * @param referenceIndex  The index of the reference sequence for which data structures should be initialized.
      */
-    public void prepareDataStructuresForReference(final AlignmentReader alignmentReader, final int referenceIndex) {
+    public void prepareDataStructuresForReference(final AlignmentReaderImpl alignmentReader, final int referenceIndex) {
 
     }
 

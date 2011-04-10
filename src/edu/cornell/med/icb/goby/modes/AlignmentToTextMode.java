@@ -23,6 +23,7 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.IterateAlignments;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.util.VersionUtils;
@@ -102,7 +103,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
         final String[] inputFiles = jsapResult.getStringArray("input");
-        basenames = AlignmentReader.getBasenames(inputFiles);
+        basenames = AlignmentReaderImpl.getBasenames(inputFiles);
         outputFilename = jsapResult.getString("output");
         outputFormat = OutputFormat.valueOf(jsapResult.getString("format").toUpperCase());
         if (outputFormat == OutputFormat.SAM) {
@@ -130,7 +131,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
         }
 
         @Override
-        public void processAlignmentEntry(final AlignmentReader alignmentReader, final Alignments.AlignmentEntry alignmentEntry) {
+        public void processAlignmentEntry(final AlignmentReaderImpl alignmentReader, final Alignments.AlignmentEntry alignmentEntry) {
             final int referenceIndex = alignmentEntry.getTargetIndex();
 
             if (cachedReader != alignmentReader) {
@@ -364,7 +365,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                             + VersionUtils.getImplementationVersion(GobyDriver.class) + "%n");
 
                     for (final String basename : basenames) {
-                        final AlignmentReader reader = new AlignmentReader(basename);
+                        final AlignmentReaderImpl reader = new AlignmentReaderImpl(basename);
                         reader.readHeader();
                         final IndexedIdentifier identifiers = reader.getTargetIdentifiers();
                         for (final MutableString targetId : identifiers.keySet()) {

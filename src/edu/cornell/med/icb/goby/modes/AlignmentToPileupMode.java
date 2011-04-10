@@ -20,8 +20,8 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.IterateSortedAlignmentsToPileup;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 import org.apache.log4j.Logger;
 
@@ -152,7 +152,7 @@ public class AlignmentToPileupMode extends AbstractGobyMode {
     public void execute() throws IOException {
         final String outputFilename = outputFile;
 
-        final String[] basenames = AlignmentReader.getBasenames(inputFilenames);
+        final String[] basenames = AlignmentReaderImpl.getBasenames(inputFilenames);
         final boolean allSorted = ConcatenateAlignmentMode.isAllSorted(basenames);
         if (!allSorted) {
             System.out.println("Each input alignment must be sorted. Aborting.");

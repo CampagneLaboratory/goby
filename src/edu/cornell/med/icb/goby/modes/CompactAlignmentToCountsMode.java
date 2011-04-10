@@ -29,6 +29,7 @@ import edu.cornell.med.icb.goby.algorithmic.algorithm.FormulaWeightCount;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.counts.CountsArchiveWriter;
 import edu.cornell.med.icb.goby.counts.CountsWriter;
 import edu.cornell.med.icb.goby.util.Timer;
@@ -107,7 +108,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         final ObjectSet<String> basenameSet = new ObjectOpenHashSet<String>();
 
         for (final String inputFile : inputFiles) {
-            basenameSet.add(AlignmentReader.getBasename(inputFile));
+            basenameSet.add(AlignmentReaderImpl.getBasename(inputFile));
         }
 
         basenames = basenameSet.toArray(new String[basenameSet.size()]);
@@ -163,7 +164,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
     }
 
     private void processFullGenomeAlignment(final String basename) throws IOException {
-        final AlignmentReader reader = new AlignmentReader(basename);
+        final AlignmentReaderImpl reader = new AlignmentReaderImpl(basename);
         reader.readHeader();
         final int numberOfReferences = reader.getNumberOfTargets();
 
@@ -208,7 +209,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
             }
         }
 
-        final AlignmentReader referenceReader = new AlignmentReader(basename);
+        final AlignmentReader referenceReader = new AlignmentReaderImpl(basename);
         referenceReader.readHeader();
 
         // read the alignment:

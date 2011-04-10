@@ -22,12 +22,8 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
-import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import edu.cornell.med.icb.util.VersionUtils;
-import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ArrayUtils;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -88,7 +84,7 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
         final String[] inputFiles = jsapResult.getStringArray("input");
-        basenames = AlignmentReader.getBasenames(inputFiles);
+        basenames = AlignmentReaderImpl.getBasenames(inputFiles);
         outputFilename = jsapResult.getString("output");
         modulo = jsapResult.getInt("modulo");
         numberOfSlices = jsapResult.getInt("number-of-slices");

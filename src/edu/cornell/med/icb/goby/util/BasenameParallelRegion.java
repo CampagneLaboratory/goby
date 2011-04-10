@@ -18,7 +18,7 @@
 
 package edu.cornell.med.icb.goby.util;
 
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.rit.pj.IntegerForLoop;
 import edu.rit.pj.ParallelRegion;
 
@@ -48,7 +48,7 @@ class BasenameParallelRegion extends ParallelRegion {
                 for (int i = startIndex; i <= endIndex; ++i) {
                     if (i >= 0 && i < inputFilenames.length) {
 
-                        final String inputBasename = AlignmentReader.getBasename(inputFilenames[i]);
+                        final String inputBasename = AlignmentReaderImpl.getBasename(inputFilenames[i]);
                         loop.action(loop, inputBasename, i);
 
                     }

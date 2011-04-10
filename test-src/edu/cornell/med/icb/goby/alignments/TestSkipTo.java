@@ -99,7 +99,7 @@ public class TestSkipTo {
         writer.printStats(System.out);
 
         final AlignmentReader reader =
-                new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, basename));
+                new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, basename));
 
         final Alignments.AlignmentEntry a = reader.skipTo(0, 0);
         assertNotNull(a);
@@ -247,7 +247,7 @@ public class TestSkipTo {
         writer.printStats(System.out);
 
         final AlignmentReader reader =
-                new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, basename));
+                new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, basename));
 
 
         final Alignments.AlignmentEntry c = reader.skipTo(2, 0);
@@ -289,7 +289,7 @@ public class TestSkipTo {
         writer.printStats(System.out);
 
         final AlignmentReader reader =
-                new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, basename));
+                new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, basename));
 
 
         final Alignments.AlignmentEntry c = reader.skipTo(2, 0);
@@ -338,7 +338,7 @@ public class TestSkipTo {
         writer.printStats(System.out);
 
         final AlignmentReader reader =
-                new AlignmentReader(FilenameUtils.concat(BASE_TEST_DIR, basename));
+                new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, basename));
 
 
         final Alignments.AlignmentEntry c = reader.skipTo(1, 13);

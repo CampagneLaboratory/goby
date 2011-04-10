@@ -78,6 +78,46 @@ public class TestConcatSortedAlignmentReader {
         }
     }
 
+    @Test
+    public void testSortConcatNonAmbiguous() throws IOException {
+        final ConcatSortedAlignmentReader concat = new ConcatSortedAlignmentReader(basename1, basename2, basename3);
+        final IntList sortedPositions = new IntArrayList();
+        final int[] expectedPositions = {1, 2, 3, 5, 6, 7, 8, 9, 10, 10, 12, 99};
+        for (final Alignments.AlignmentEntry entry : concat) {
+            // System.out.println("entry.position(): "+entry.getPosition());
+            sortedPositions.add(entry.getPosition());
+        }
+        assertEquals(expectedPositions.length, sortedPositions.size());
+        for (int i = 0; i < expectedPositions.length; i++) {
+            assertEquals(expectedPositions[i], sortedPositions.getInt(i));
+        }
+    }
+
+    @Test
+    public void testLoadNonAmbiguousOnlySkipTo() throws IOException {
+
+        // we now install a factory that removes entries whose reads match ambiguously:
+        final ConcatSortedAlignmentReader concatReader = new ConcatSortedAlignmentReader(
+                new NonAmbiguousAlignmentReaderFactory(),
+                false, basename1, basename2, basename3);
+        // exclude all entries from reader 2 by position:
+    
+        final IntList sortedPositions = new IntArrayList();
+        final int[] expectedPositions = {6, 7, 8, 9, 10, 10, 12, 99};
+        Alignments.AlignmentEntry entry = null;
+        while ((entry = concatReader.skipTo(1, 6)) != null) {
+
+            // System.out.println("entry.position(): "+entry.getPosition());
+            sortedPositions.add(entry.getPosition());
+
+        }
+        assertEquals(expectedPositions.length, sortedPositions.size());
+        for (int i = 0; i < expectedPositions.length; i++) {
+            assertEquals(expectedPositions[i], sortedPositions.getInt(i));
+        }
+
+    }
+
     static final String basename1 = FilenameUtils.concat(BASE_TEST_DIR, "sort-concat-1");
     static final String basename2 = FilenameUtils.concat(BASE_TEST_DIR, "sort-concat-2");
     static final String basename3 = FilenameUtils.concat(BASE_TEST_DIR, "sort-concat-3");
@@ -88,7 +128,7 @@ public class TestConcatSortedAlignmentReader {
         final AlignmentWriter writer1 =
                 new AlignmentWriter(basename1);
         writer1.setNumAlignmentEntriesPerChunk(1000);
-        writer1.setTargetLengths(new int[]{10000,10000});
+        writer1.setTargetLengths(new int[]{10000, 10000});
         // we write this alignment sorted:
         writer1.setSorted(true);
 
@@ -103,7 +143,7 @@ public class TestConcatSortedAlignmentReader {
         final AlignmentWriter writer2 =
                 new AlignmentWriter(basename2);
         writer2.setNumAlignmentEntriesPerChunk(1000);
-        writer2.setTargetLengths(new int[]{10000,10000});
+        writer2.setTargetLengths(new int[]{10000, 10000});
         // we write this alignment sorted:
         writer2.setSorted(true);
 
@@ -117,7 +157,7 @@ public class TestConcatSortedAlignmentReader {
         final AlignmentWriter writer3 =
                 new AlignmentWriter(basename3);
         writer3.setNumAlignmentEntriesPerChunk(1000);
-        writer3.setTargetLengths(new int[]{10000,10000});
+        writer3.setTargetLengths(new int[]{10000, 10000});
 
         // we write this alignment sorted:
         writer3.setSorted(true);
@@ -130,6 +170,7 @@ public class TestConcatSortedAlignmentReader {
 
 
     }
+
 
     private void append(final AlignmentWriter writer, final int referenceIndex, final int position) throws IOException {
         writer.setAlignmentEntry(0, referenceIndex, position, 1, false);

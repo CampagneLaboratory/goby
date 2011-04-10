@@ -20,9 +20,9 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.IterateAlignments;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntCollection;
@@ -97,7 +97,7 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
         inputFilenames = jsapResult.getStringArray("input");
-        basenames = AlignmentReader.getBasenames(inputFilenames);
+        basenames = AlignmentReaderImpl.getBasenames(inputFilenames);
         outputFilename = jsapResult.getString("output");
         outputFormat = OutputFormat.valueOf(jsapResult.getString("format").toUpperCase());
 
@@ -192,7 +192,7 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
         }
 
         @Override
-        public void processAlignmentEntry(final AlignmentReader alignmentReader,
+        public void processAlignmentEntry(final AlignmentReaderImpl alignmentReader,
                                           final Alignments.AlignmentEntry alignmentEntry) {
             numAlignmentEntries += alignmentEntry.getMultiplicity();
             referenceBaseCount += alignmentEntry.getQueryLength();

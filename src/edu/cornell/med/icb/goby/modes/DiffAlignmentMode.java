@@ -20,8 +20,8 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.chars.CharArrayList;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
@@ -88,7 +88,7 @@ public class DiffAlignmentMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-        final String[] basenames = AlignmentReader.getBasenames(inputFilenames);
+        final String[] basenames = AlignmentReaderImpl.getBasenames(inputFilenames);
         if (basenames.length != 2) {
             System.out.println("You can only compare two alignments.");
             System.exit(1);
@@ -99,11 +99,11 @@ public class DiffAlignmentMode extends AbstractGobyMode {
         final ProgressLogger progress = new ProgressLogger();
         progress.start("comparing alignment entries");
 
-        final AlignmentReader readerA = new AlignmentReader(basenames[0]);
-        final AlignmentReader readerB = new AlignmentReader(basenames[1]);
+        final AlignmentReaderImpl readerA = new AlignmentReaderImpl(basenames[0]);
+        final AlignmentReaderImpl readerB = new AlignmentReaderImpl(basenames[1]);
         readerA.readHeader();
         readerB.readHeader();
-        final AlignmentReader[] readers = new AlignmentReader[2];
+        final AlignmentReaderImpl[] readers = new AlignmentReaderImpl[2];
         readers[0] = readerA;
         readers[1] = readerB;
 
@@ -142,7 +142,7 @@ public class DiffAlignmentMode extends AbstractGobyMode {
         targetsIndexesToMasterMap[1] = addIdentiersToMaster(
                 masterTargetNameToIndexMap, masterTargetIndexToNameMap, readerB.getTargetIdentifiers());
 
-        for (final AlignmentReader reader : readers) {
+        for (final AlignmentReaderImpl reader : readers) {
             queryMultiplicity[readerIndex].size(reader.getNumberOfQueries());
             targetIndices[readerIndex].size(reader.getNumberOfQueries());
             positions[readerIndex].size(reader.getNumberOfQueries());

@@ -1,4 +1,14 @@
-development -> 1.9.5 
+development -> 1.9.5
+ - Changed discover-sequence-variant mode to filter out alignment entries whose read mapped multiple locations in the
+   reference (as determined by the aligner argument (i.e., -n for gsnap)).
+ - Made AlignmentReader an interface. The previous AlignmentReader class is now called AlignmentReaderImpl.
+ - ConcatSortedAlignmentReader and ConcatAlignemntReader now support a configurable AlignmentReaderFactory.
+   The factory makes it possible to plug in alignment reads that filter entries as they are read. The default
+   factory returns all reads. However, if NonAmbiguousAlignmentReader factory is installed, the concatenate
+   reader returns only entries for which the read did not match other locations in the genome. Other filtering
+   behaviour can be implemented in a sub-class of AlignmentReader (see NonAmbiguousAlignmentReader for an example)
+   and a factory created to return instances of this class. 
+   This mechanism is used to filter out entries whose reads match several locations on the reference sequence.
  - Goby now includes a VCFParser class (see package edu.cornell.med.icb.goby.readers.vcf). VCF stands
    for Variant Call Format. The VCF format is described at http://www.1000genomes.org/node/101.
    The Goby VCFParser class implements a VCF 4.0+ parser. Importantly, this implementation also can be

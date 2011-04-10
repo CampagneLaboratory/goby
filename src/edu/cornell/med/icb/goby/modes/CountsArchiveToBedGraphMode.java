@@ -20,7 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.counts.CountsArchiveReader;
 import edu.cornell.med.icb.goby.counts.CountsReader;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
@@ -115,7 +115,7 @@ public class CountsArchiveToBedGraphMode extends AbstractGobyMode {
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
-        inputBasename = AlignmentReader.getBasename(jsapResult.getString("input"));
+        inputBasename = AlignmentReaderImpl.getBasename(jsapResult.getString("input"));
         outputFile = jsapResult.getString("output");
         alternativeCountArchiveExtension = jsapResult.getString("alternative-count-archive");
         label = jsapResult.getString("label");
@@ -154,7 +154,7 @@ public class CountsArchiveToBedGraphMode extends AbstractGobyMode {
         try {
             writer = new PrintWriter(new GZIPOutputStream(new FastBufferedOutputStream(new FileOutputStream(outputFile + ".gz"))));
             writer.write("track type=bedGraph name=" + label + " visibility=full viewLimits=1:200\n");
-            final AlignmentReader alignment = new AlignmentReader(inputBasename);
+            final AlignmentReaderImpl alignment = new AlignmentReaderImpl(inputBasename);
             alignment.readHeader();
             alignment.close();
             final IndexedIdentifier referenceIds = alignment.getTargetIdentifiers();

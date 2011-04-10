@@ -25,6 +25,7 @@ import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.stats.AverageFisherRCalculator;
 import edu.cornell.med.icb.goby.stats.BullardUpperQuartileNormalization;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
@@ -117,7 +118,7 @@ public class WithinGroupVariabilityMode extends AbstractGobyMode {
         inputFiles = jsapResult.getStringArray("input");
         final ObjectSet<String> basenameSet = new ObjectOpenHashSet<String>();
         for (final String inputFile : inputFiles) {
-            basenameSet.add(AlignmentReader.getBasename(inputFile));
+            basenameSet.add(AlignmentReaderImpl.getBasename(inputFile));
         }
         basenames = basenameSet.toArray(new String[basenameSet.size()]);
         statsFilename = jsapResult.getString("stats");
@@ -175,7 +176,7 @@ public class WithinGroupVariabilityMode extends AbstractGobyMode {
 
         // each sample belongs to its own group:
         for (final String sample : basenames) {
-            final String basename = AlignmentReader.getBasename(FilenameUtils.getBaseName(sample));
+            final String basename = AlignmentReaderImpl.getBasename(FilenameUtils.getBaseName(sample));
             deCalculator.defineGroup(basename);
             deCalculator.associateSampleToGroup(basename, basename);
 
@@ -218,8 +219,8 @@ public class WithinGroupVariabilityMode extends AbstractGobyMode {
                         final String sample1 = basenames[i];
                         final String sample2 = basenames[j];
                         // consider each pair of samples only once:
-                        final String basename1 = AlignmentReader.getBasename(FilenameUtils.getBaseName(sample1));
-                        final String basename2 = AlignmentReader.getBasename(FilenameUtils.getBaseName(sample2));
+                        final String basename1 = AlignmentReaderImpl.getBasename(FilenameUtils.getBaseName(sample1));
+                        final String basename2 = AlignmentReaderImpl.getBasename(FilenameUtils.getBaseName(sample2));
                         method.normalize(deCalculator, basename1, basename2);
                         results = deCalculator.compare(results, method, new FisherExactRCalculator(), basename1, basename2);
                         done[i][j] = true;
@@ -248,7 +249,7 @@ public class WithinGroupVariabilityMode extends AbstractGobyMode {
     private ObjectSet<String> includeReferenceNames;
 
     private void processOneBasename(final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots, final String inputBasename) throws IOException {
-        final AlignmentReader reader = new AlignmentReader(inputBasename);
+        final AlignmentReaderImpl reader = new AlignmentReaderImpl(inputBasename);
         reader.readHeader();
         final int numberOfReferences = reader.getNumberOfTargets();
 
@@ -278,7 +279,7 @@ public class WithinGroupVariabilityMode extends AbstractGobyMode {
         }
 
 
-        final AlignmentReader referenceReader = new AlignmentReader(inputBasename);
+        final AlignmentReader referenceReader = new AlignmentReaderImpl(inputBasename);
         referenceReader.readHeader();
 
         // read the alignment:
@@ -476,7 +477,7 @@ public class WithinGroupVariabilityMode extends AbstractGobyMode {
     private void processTranscriptAlignment
             (
                     final String basename) throws IOException {
-        final AlignmentReader reader = new AlignmentReader(basename);
+        final AlignmentReaderImpl reader = new AlignmentReaderImpl(basename);
         PrintWriter outputWriter = null;
         try {
             outputWriter = new PrintWriter(new FileWriter(outputFile));

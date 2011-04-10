@@ -22,6 +22,7 @@ import edu.cornell.med.icb.goby.algorithmic.data.Read;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.counts.CountsReader;
 import edu.cornell.med.icb.goby.counts.CountsWriter;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -135,7 +136,7 @@ public class TestAccumulate {
 
         AlignmentReader alignmentReader = null;
         try {
-            alignmentReader = new AlignmentReader(basename);
+            alignmentReader = new AlignmentReaderImpl(basename);
             computeCount.startPopulating();
             while (alignmentReader.hasNext()) {
                 final Alignments.AlignmentEntry alignmentEntry = alignmentReader.next();

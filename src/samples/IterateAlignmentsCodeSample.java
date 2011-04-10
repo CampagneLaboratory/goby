@@ -18,9 +18,9 @@
 
 package samples;
 
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.IterateAlignments;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 
 import java.io.IOException;
 
@@ -35,7 +35,7 @@ public class IterateAlignmentsCodeSample {
         try {
             final IterateAlignments iterator = new IterateAlignments() {
                 @Override
-                public void processAlignmentEntry(final AlignmentReader alignmentReader,
+                public void processAlignmentEntry(final AlignmentReaderImpl alignmentReader,
                                                   final Alignments.AlignmentEntry alignmentEntry) {
 
                     System.out.printf("query-index: %d target-index: %d target-identifier: %s " +

@@ -114,7 +114,7 @@ public class Merge {
         final IntSet numberOfReadsSet = new IntArraySet();
         int minQueryIndex = Integer.MAX_VALUE;
         for (final File inputFile : inputFiles) {
-            final AlignmentReader reader = new AlignmentReader(inputFile.toString());
+            final AlignmentReaderImpl reader = new AlignmentReaderImpl(inputFile.toString());
             reader.readHeader();
             message("Found input file with " + reader.getNumberOfTargets() + " target(s)");
 
@@ -152,7 +152,7 @@ public class Merge {
         int totalNumberOfEntries = 0;
         for (final File inputFile : inputFiles) {
             message("Scanning " + inputFile.getName());
-            final AlignmentReader reader = new AlignmentReader(inputFile.toString());
+            final AlignmentReaderImpl reader = new AlignmentReaderImpl(inputFile.toString());
             reader.readHeader();
             entryFilter.setTargetIdentifiers(reader.getTargetIdentifiers());
             while (reader.hasNext()) {
@@ -197,7 +197,7 @@ public class Merge {
 
         for (final File inputFile : inputFiles) {
             final String basename = inputFile.toString();
-            final AlignmentReader reader = new AlignmentReader(basename);
+            final AlignmentReaderImpl reader = new AlignmentReaderImpl(basename);
             reader.readHeader();
             entryFilter.setTargetIdentifiers(reader.getTargetIdentifiers());
             final AlignmentTooManyHitsReader specificTmhReader = new AlignmentTooManyHitsReader(basename);
@@ -373,7 +373,7 @@ public class Merge {
     private int constructTargetIndexPermutations(int mergedReferenceIndex,
                                                  final IndexedIdentifier mergedTargetIdentifiers,
                                                  final Int2IntMap mergedTargetLengths,
-                                                 final AlignmentReader reader) {
+                                                 final AlignmentReaderImpl reader) {
         final int[] targetLengths = reader.getTargetLength();
         final int targetLengthCount = ArrayUtils.getLength(targetLengths);
 
