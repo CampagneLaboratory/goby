@@ -227,4 +227,16 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
     public int[] getQueryLengths() {
         return delegate.getQueryLengths();
     }
+
+    public boolean isConstantQueryLengths() {
+        return delegate.isConstantQueryLengths();
+    }
+
+    public int getQueryLength(int queryIndex) {
+        return delegate.getQueryLength(queryIndex);
+    }
+
+    public IndexedIdentifier getQueryIdentifiers() {
+        return delegate.getQueryIdentifiers();
+    }
 }

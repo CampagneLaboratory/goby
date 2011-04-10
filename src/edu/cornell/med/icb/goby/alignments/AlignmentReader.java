@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.Object2BooleanOpenCustomHashMap;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -100,7 +101,7 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
     /**
      * Read the header of this alignment.
      *
-     * @throws java.io.IOException If an error occurs.
+it.unimi.dsi.fastutil.objects.Object2BooleanOpenCustomHashMap getQueryIdentifiers();     * @throws java.io.IOException If an error occurs.
      */
     void readHeader() throws IOException;
 
@@ -164,4 +165,11 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
     int getNumberOfQueries();
 
     int[] getQueryLengths();
+
+
+    boolean isConstantQueryLengths();
+
+    int getQueryLength(int queryIndex);
+
+    IndexedIdentifier getQueryIdentifiers();
 }

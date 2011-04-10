@@ -131,7 +131,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
         }
 
         @Override
-        public void processAlignmentEntry(final AlignmentReaderImpl alignmentReader, final Alignments.AlignmentEntry alignmentEntry) {
+        public void processAlignmentEntry(final AlignmentReader alignmentReader, final Alignments.AlignmentEntry alignmentEntry) {
             final int referenceIndex = alignmentEntry.getTargetIndex();
 
             if (cachedReader != alignmentReader) {

@@ -23,6 +23,7 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.IterateAlignments;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import org.apache.commons.io.FilenameUtils;
@@ -191,7 +192,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
         }
 
         @Override
-        public void processAlignmentEntry(final AlignmentReaderImpl alignmentReader, final Alignments.AlignmentEntry alignmentEntry) {
+        public void processAlignmentEntry(final AlignmentReader alignmentReader, final Alignments.AlignmentEntry alignmentEntry) {
             final int referenceIndex = alignmentEntry.getTargetIndex();
             final int alignmentPositionOnReference = alignmentEntry.getPosition();
             final Int2ObjectOpenHashMap<IntArraySet> referencePositionsMap = readIndicesForReferencePositions.get(referenceIndex);
@@ -219,7 +220,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
         }
 
         @Override
-        public void processAlignmentEntry(final AlignmentReaderImpl alignmentReader, final Alignments.AlignmentEntry alignmentEntry) {
+        public void processAlignmentEntry(final AlignmentReader alignmentReader, final Alignments.AlignmentEntry alignmentEntry) {
             String basename = alignmentReader.basename();
             // remove the path:
             basename = FilenameUtils.getBaseName(basename);

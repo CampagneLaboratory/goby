@@ -168,7 +168,7 @@ public class SortMode extends AbstractGobyMode {
         ObjectArrayList<Alignments.AlignmentEntry> entries;
 
         @Override
-        public void prepareDataStructuresForReference(final AlignmentReaderImpl alignmentReader, final int referenceIndex) {
+        public void prepareDataStructuresForReference(final AlignmentReader alignmentReader, final int referenceIndex) {
             if (this.alignmentReader == null) {
                 if (alignmentReader.isSorted()) {
                     LOG.warn("Warning: An input alignment is already sorted.");
@@ -179,13 +179,13 @@ public class SortMode extends AbstractGobyMode {
         }
 
         @Override
-        public void processAlignmentEntry(final AlignmentReaderImpl alignmentReader,
+        public void processAlignmentEntry(final AlignmentReader alignmentReader,
                                           final Alignments.AlignmentEntry alignmentEntry) {
 
             entries.add(alignmentEntry);
         }
 
-        AlignmentReaderImpl alignmentReader = null;
+        AlignmentReader alignmentReader = null;
 
         public void sort() {
             Collections.sort(entries, POSITION_ENTRY_COMPARATOR);
