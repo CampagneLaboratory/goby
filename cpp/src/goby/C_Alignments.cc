@@ -51,7 +51,10 @@ extern "C" {
         writerHelper->smallestQueryIndex = -1;
         writerHelper->largestQueryIndex = -1;
         writerHelper->numberOfAlignedReads = 0;
-        writerHelper->qualityAdjustment = 0;
+        // C_Reads will make quality look like ILLUMINA by default with a
+        // qualityAdjustment of +64. Here we use -64 to return them to
+        // the Goby scale.
+        writerHelper->qualityAdjustment = -64;
         writerHelper->samHelper = NULL;
         writerHelper->alignerToGobyTargetIndexMap = NULL;
 	}
@@ -254,9 +257,13 @@ extern "C" {
      *        position and readIndex are >1< based.
      * For contiguous sequence variations, this assumes readIndex will increment by one each time.
      */
-    void gobyAlEntry_addSequenceVariation(CAlignmentsWriterHelper *writerHelper, unsigned int readIndex, unsigned int refPosition, char refChar, char readChar, int hasQualCharInt /* bool */, char readQualChar) {
+    void gobyAlEntry_addSequenceVariation(CAlignmentsWriterHelper *writerHelper,
+            unsigned int readIndex, unsigned int refPosition, char refChar, char readChar,
+            int hasQualCharInt /* bool */, char readQualChar) {
         bool hasQualChar = hasQualCharInt == 0 ? false : true;
-        debug(fprintf(stderr,"gobyAlEntry_addSequenceVariation readIndex=%u refPosition=%u ref=%c read=%c hasQualChar=%s\n", readIndex, refPosition, refChar, readChar, hasQualChar ? "true" : "false"));
+        debug(fprintf(stderr,"gobyAlEntry_addSequenceVariation readIndex=%u refPosition=%u ref=%c read=%c hasQualChar=%s readQualChar=%d, adjustedreadQualChar=%d\n",
+                readIndex, refPosition, refChar, readChar, hasQualChar ? "true" : "false",
+                readQualChar, readQualChar + writerHelper->qualityAdjustment));
         if (writerHelper->sequenceVariation == NULL || writerHelper->lastSeqVarRefPosition == -1) {
             // New sequence variation
             startNewSequenceVariation(writerHelper, readIndex, refPosition);
@@ -285,7 +292,7 @@ extern "C" {
             from->c_str(), to->c_str()));
         if (hasQualChar) {
             string *toQuality = writerHelper->sequenceVariation->mutable_to_quality();
-            (*toQuality) += readQualChar;
+            (*toQuality) += (readQualChar + writerHelper->qualityAdjustment);
         }
     }
 

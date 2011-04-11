@@ -19,43 +19,43 @@ using namespace std;
  */
 extern "C" {
 
-	void gobyReads_openReadsReader(
-			char **unopenedFiles, int numUnopenedFiles, unsigned char circular, CReadsHelper **readsHelperpp) {
-	    gobyReads_openReadsReaderWindowed(unopenedFiles, numUnopenedFiles, circular, 0, 0, readsHelperpp);
+    void gobyReads_openReadsReader(
+            char **unopenedFiles, int numUnopenedFiles, unsigned char circular, CReadsHelper **readsHelperpp) {
+        gobyReads_openReadsReaderWindowed(unopenedFiles, numUnopenedFiles, circular, 0, 0, readsHelperpp);
     }
 
-	void gobyReads_openReadsReaderSingleWindowed(
-			char *filename,  unsigned long startOffset, unsigned long endOffset, CReadsHelper **readsHelperpp) {
-	    gobyReads_openReadsReaderWindowed(&filename, 1, 0, startOffset, endOffset, readsHelperpp);
+    void gobyReads_openReadsReaderSingleWindowed(
+            char *filename,  unsigned long startOffset, unsigned long endOffset, CReadsHelper **readsHelperpp) {
+        gobyReads_openReadsReaderWindowed(&filename, 1, 0, startOffset, endOffset, readsHelperpp);
     }
 
-	/**
-	 * Open the .compact-reads file to read from.
-	 */
-	void gobyReads_openReadsReaderWindowed(
-			char **unopenedFiles, int numUnopenedFiles, unsigned char circular,
-			unsigned long startOffset, unsigned long endOffset, CReadsHelper **readsHelperpp) {
+    /**
+     * Open the .compact-reads file to read from.
+     */
+    void gobyReads_openReadsReaderWindowed(
+            char **unopenedFiles, int numUnopenedFiles, unsigned char circular,
+            unsigned long startOffset, unsigned long endOffset, CReadsHelper **readsHelperpp) {
 
-		if (numUnopenedFiles == 0) {
-			fprintf(stderr,"No input files to process.\n");
-			exit(9);
-		}
+        if (numUnopenedFiles == 0) {
+            fprintf(stderr,"No input files to process.\n");
+            exit(9);
+        }
         *readsHelperpp = new CReadsHelper;
-		CReadsHelper *readsHelper = *readsHelperpp;
-		readsHelper->numberOfReads = 0;
-		readsHelper->circular = circular;
-		readsHelper->unopenedFiles = new queue<string>;
-		for (int i = 0; i < numUnopenedFiles; i++) {
-			string unopenedFile(unopenedFiles[0]);
-			readsHelper->unopenedFiles->push(unopenedFile);
-			unopenedFiles++;
-		}
-		string filename = readsHelper->unopenedFiles->front();
-		readsHelper->unopenedFiles->pop();
-		readsHelper->readsReader = new goby::ReadsReader(filename);
-		readsHelper->it = readsHelper->readsReader->beginPointer(startOffset, endOffset);
-		readsHelper->end = readsHelper->readsReader->endPointer();
-		readsHelper->numberOfReads = 0;
+        CReadsHelper *readsHelper = *readsHelperpp;
+        readsHelper->numberOfReads = 0;
+        readsHelper->circular = circular;
+        readsHelper->unopenedFiles = new queue<string>;
+        for (int i = 0; i < numUnopenedFiles; i++) {
+            string unopenedFile(unopenedFiles[0]);
+            readsHelper->unopenedFiles->push(unopenedFile);
+            unopenedFiles++;
+        }
+        string filename = readsHelper->unopenedFiles->front();
+        readsHelper->unopenedFiles->pop();
+        readsHelper->readsReader = new goby::ReadsReader(filename);
+        readsHelper->it = readsHelper->readsReader->beginPointer(startOffset, endOffset);
+        readsHelper->end = readsHelper->readsReader->endPointer();
+        readsHelper->numberOfReads = 0;
 
         int defaultSize = 50;
         readsHelper->lastReadIdentifier_m = defaultSize;
@@ -77,8 +77,14 @@ extern "C" {
         readsHelper->lastPairQuality = (char *) malloc(defaultSize);
 
         // By default, make the reads look like ILLUMINA
-        readsHelper->qualityAdjustment = 0;
-	}
+        readsHelper->qualityAdjustment = 64;
+        
+        readsHelper->avoidZeroQuals = 0;
+    }
+
+    void gobyReads_avoidZeroQuals(CReadsHelper *readsHelper, int value) {
+        readsHelper->avoidZeroQuals = value;
+    }
 
     int gobyReads_getQualityAdjustment(CReadsHelper *readsHelper) {
         return readsHelper->qualityAdjustment;
@@ -88,23 +94,23 @@ extern "C" {
         readsHelper->qualityAdjustment = value;
     }
 
-	/**
-	 * This should be called ONCE per read.
-	 * Return values, 0 == false,  1 == true
-	 *
-	 * TODO: * We have a queue of unopenedFile but it isn't currently
-	 * TODO:   switching to the next file when we've finished reading
-	 * TODO:   the first.
-	 */
-	int gobyReads_hasNext(CReadsHelper *readsHelper) {
+    /**
+     * This should be called ONCE per read.
+     * Return values, 0 == false,  1 == true
+     *
+     * TODO: * We have a queue of unopenedFile but it isn't currently
+     * TODO:   switching to the next file when we've finished reading
+     * TODO:   the first.
+     */
+    int gobyReads_hasNext(CReadsHelper *readsHelper) {
         if (*((*readsHelper).it) != *(readsHelper->end)) {
-			return 1;
-		} else {
-			return 0;
-		}
-	}
+            return 1;
+        } else {
+            return 0;
+        }
+    }
 
-	void transferString(string src, char **dest, int *prevMallocSize) {
+    void transferString(string src, char **dest, int *prevMallocSize) {
         int size = src.size();
         if (size + 1 > *prevMallocSize) {
             // we must realloc the memory we are using over and over to accomodate a new size
@@ -113,7 +119,7 @@ extern "C" {
         }
         memcpy(*dest, src.c_str(), size);
         (*dest)[size] = '\0';
-	}
+    }
 
     void initializeHelperLastFields(CReadsHelper *readsHelper) {
         // Initialize non-NULL incoming strings to empty string in case the value isn't set this time around.
@@ -140,67 +146,91 @@ extern "C" {
         clearHelperLastField(&(readsHelper->lastPairQuality), &(readsHelper->lastPairQuality_m));
     }
 
-	char *adjustQuality(char *qual, int length, int delta) {
+    void adjustQuality(CReadsHelper *readsHelper, char *qual, int length, int delta) {
         if (qual != NULL && length > 0) {
             int i;
             for (i = 0; i < length; i++) {
                 qual[i] += delta;
-                if (qual[i] == 0) {
+                if (readsHelper->avoidZeroQuals && qual[i] == 0) {
                     // For gsnap, at least for now, change 0 qual scores 1
                     // because Bisulfate alignment (gsnap -C) doesn't like 0 values
                     qual[i] += 1;
                 }
             }
         }
-        return qual;
-	}
+    }
+
+    void dumpReadAndQual(char *type, char *read, bool hasQuality, int qualityLength, char *quality, int qualityAdjustment) {
+        fprintf(stderr, ":: READ SEQUENCE (%s)\n:: %s\n", type, read);
+        if (hasQuality) {
+            fprintf(stderr, ":: no adjust ");
+            for(int i = 0; i < qualityLength; i++) {
+                if (i != 0) {
+                    fprintf(stderr, ":");
+                }
+                fprintf(stderr, "%d", (quality[i] - qualityAdjustment));
+            }
+            fprintf(stderr, "\n:: adjusted  ");
+            for(int i = 0; i < qualityLength; i++) {
+                if (i != 0) {
+                    fprintf(stderr, ":");
+                }
+                fprintf(stderr, "%d", quality[i]);
+            }
+            fprintf(stderr, "\n");
+        }
+    }
 
     /**
      * Read the sequence but ignore the pair even if it exists.
      * Do NOT free the char *'s you send to this method. If you need to keep a copy, MAKE A COPY.
      * @return the Goby read index
      */
-	unsigned long gobyReads_nextSequence(
-	    CReadsHelper *readsHelper,
-	    char **readIdentifierpp, char **descriptionpp,
-	    char **sequencepp, int *sequenceLength,
-	    char **qualitypp, int *qualityLength) {
+    unsigned long gobyReads_nextSequence(
+        CReadsHelper *readsHelper,
+        char **readIdentifierpp, char **descriptionpp,
+        char **sequencepp, int *sequenceLength,
+        char **qualitypp, int *qualityLength) {
 
         /** Default is nothing populated. */
-	    *sequenceLength = 0;
-	    *qualityLength = 0;
+        *sequenceLength = 0;
+        *qualityLength = 0;
         initializeHelperLastFields(readsHelper);
 
         goby::ReadEntry entry = *(*(*readsHelper).it);
-		(*readsHelper).numberOfReads++;
+        (*readsHelper).numberOfReads++;
 
-	    if (entry.has_read_identifier()) {
-	        transferString(entry.read_identifier(), &(readsHelper->lastReadIdentifier), &(readsHelper->lastReadIdentifier_m));
-	    }
+        if (entry.has_read_identifier()) {
+            transferString(entry.read_identifier(), &(readsHelper->lastReadIdentifier), &(readsHelper->lastReadIdentifier_m));
+        }
 
-	    if (entry.has_description()) {
-	        transferString(entry.description(), &(readsHelper->lastDescription), &(readsHelper->lastDescription_m));
-	    }
+        if (entry.has_description()) {
+            transferString(entry.description(), &(readsHelper->lastDescription), &(readsHelper->lastDescription_m));
+        }
 
-	    if (entry.has_sequence()) {
-	        transferString(entry.sequence(), &(readsHelper->lastSequence), &(readsHelper->lastSequence_m));
-	        *sequenceLength = entry.sequence().size();
-	        if (entry.has_quality_scores()) {
-	            transferString(entry.quality_scores(), &(readsHelper->lastQuality), &(readsHelper->lastQuality_m));
-	            *qualityLength = entry.quality_scores().size();
-	            adjustQuality(readsHelper->lastQuality, *qualityLength, readsHelper->qualityAdjustment);
+        if (entry.has_sequence()) {
+            transferString(entry.sequence(), &(readsHelper->lastSequence), &(readsHelper->lastSequence_m));
+            *sequenceLength = entry.sequence().size();
+            if (entry.has_quality_scores()) {
+                transferString(entry.quality_scores(), &(readsHelper->lastQuality), &(readsHelper->lastQuality_m));
+                *qualityLength = entry.quality_scores().size();
+                adjustQuality(readsHelper, readsHelper->lastQuality, *qualityLength, readsHelper->qualityAdjustment);
+            } else {
+                *qualityLength = 0;
             }
-	    }
+            debug(dumpReadAndQual("primary", readsHelper->lastSequence, entry.has_quality_scores(),
+                *qualityLength, readsHelper->lastQuality, readsHelper->qualityAdjustment);)
+        }
 
-	    *readIdentifierpp = readsHelper->lastReadIdentifier;
-	    *descriptionpp = readsHelper->lastDescription;
-	    *sequencepp = readsHelper->lastSequence;
-	    *qualitypp = readsHelper->lastQuality;
+        *readIdentifierpp = readsHelper->lastReadIdentifier;
+        *descriptionpp = readsHelper->lastDescription;
+        *sequencepp = readsHelper->lastSequence;
+        *qualitypp = readsHelper->lastQuality;
 
-	    // Increment to the next ReadsEntry
-		(*(*readsHelper).it)++;
+        // Increment to the next ReadsEntry
+        (*(*readsHelper).it)++;
 
-	    return entry.read_index();
+        return entry.read_index();
     }
 
     /**
@@ -208,70 +238,78 @@ extern "C" {
      * Do NOT free the char *'s you send to this method. If you need to keep a copy, MAKE A COPY.
      * @return the Goby read index
      */
-	unsigned long gobyReads_nextSequencePair(
-	    CReadsHelper *readsHelper,
-	    char **readIdentifierpp, char **descriptionpp,
-	    char **sequencepp, int *sequenceLength,
-	    char **qualitypp, int *qualityLength,
-	    char **pairSequencepp, int *pairSequenceLength,
-	    char **pairQualitypp, int *pairQualityLength) {
+    unsigned long gobyReads_nextSequencePair(
+        CReadsHelper *readsHelper,
+        char **readIdentifierpp, char **descriptionpp,
+        char **sequencepp, int *sequenceLength,
+        char **qualitypp, int *qualityLength,
+        char **pairSequencepp, int *pairSequenceLength,
+        char **pairQualitypp, int *pairQualityLength) {
 
         /** Default is nothing populated. */
-	    *sequenceLength = 0;
-	    *qualityLength = 0;
-	    *pairSequenceLength = 0;
-	    *pairQualityLength = 0;
+        *sequenceLength = 0;
+        *qualityLength = 0;
+        *pairSequenceLength = 0;
+        *pairQualityLength = 0;
         initializeHelperLastFields(readsHelper);
 
         goby::ReadEntry entry = *(*(*readsHelper).it);
-		(*readsHelper).numberOfReads++;
+        (*readsHelper).numberOfReads++;
 
-	    if (entry.has_read_identifier()) {
-	        transferString(entry.read_identifier(), &(readsHelper->lastReadIdentifier), &(readsHelper->lastReadIdentifier_m));
-	    }
+        if (entry.has_read_identifier()) {
+            transferString(entry.read_identifier(), &(readsHelper->lastReadIdentifier), &(readsHelper->lastReadIdentifier_m));
+        }
 
-	    if (entry.has_description()) {
-	        transferString(entry.description(), &(readsHelper->lastDescription), &(readsHelper->lastDescription_m));
-	    }
+        if (entry.has_description()) {
+            transferString(entry.description(), &(readsHelper->lastDescription), &(readsHelper->lastDescription_m));
+        }
 
-	    if (entry.has_sequence()) {
-	        transferString(entry.sequence(), &(readsHelper->lastSequence), &(readsHelper->lastSequence_m));
-	        *sequenceLength = entry.sequence().size();
-	        if (entry.has_quality_scores()) {
-	            transferString(entry.quality_scores(), &(readsHelper->lastQuality), &(readsHelper->lastQuality_m));
-	            *qualityLength = entry.quality_scores().size();
-	            adjustQuality(readsHelper->lastQuality, *qualityLength, readsHelper->qualityAdjustment);
+        if (entry.has_sequence()) {
+            transferString(entry.sequence(), &(readsHelper->lastSequence), &(readsHelper->lastSequence_m));
+            *sequenceLength = entry.sequence().size();
+            if (entry.has_quality_scores()) {
+                transferString(entry.quality_scores(), &(readsHelper->lastQuality), &(readsHelper->lastQuality_m));
+                *qualityLength = entry.quality_scores().size();
+                adjustQuality(readsHelper, readsHelper->lastQuality, *qualityLength, readsHelper->qualityAdjustment);
+            } else {
+                *qualityLength = 0;
             }
-	    }
+            debug(dumpReadAndQual("primary", readsHelper->lastSequence, entry.has_quality_scores(),
+                *qualityLength, readsHelper->lastQuality, readsHelper->qualityAdjustment);)
+        }
 
-	    if (entry.has_sequence_pair()) {
-	        transferString(entry.sequence_pair(), &(readsHelper->lastPairSequence), &(readsHelper->lastPairSequence_m));
-	        *pairSequenceLength = entry.sequence_pair().size();
-	        if (entry.has_quality_scores_pair()) {
-	            transferString(entry.quality_scores_pair(), &(readsHelper->lastPairQuality), &(readsHelper->lastPairQuality_m));
-	            *pairQualityLength = entry.quality_scores_pair().size();
-	            adjustQuality(readsHelper->lastPairQuality, *pairQualityLength, readsHelper->qualityAdjustment);
-	        }
-	    }
+        if (entry.has_sequence_pair()) {
+            transferString(entry.sequence_pair(), &(readsHelper->lastPairSequence), &(readsHelper->lastPairSequence_m));
+            *pairSequenceLength = entry.sequence_pair().size();
+            if (entry.has_quality_scores_pair()) {
+                transferString(entry.quality_scores_pair(), &(readsHelper->lastPairQuality), &(readsHelper->lastPairQuality_m));
+                *pairQualityLength = entry.quality_scores_pair().size();
+                adjustQuality(readsHelper, readsHelper->lastPairQuality, *pairQualityLength, readsHelper->qualityAdjustment);
+            } else {
+                *pairQualityLength = 0;
+            }
+            debug(dumpReadAndQual("mate", readsHelper->lastPairSequence, entry.has_quality_scores_pair(),
+                *pairQualityLength, readsHelper->lastPairQuality, readsHelper->qualityAdjustment);)
+        }
 
-	    *readIdentifierpp = readsHelper->lastReadIdentifier;
-	    *descriptionpp = readsHelper->lastDescription;
-	    *sequencepp = readsHelper->lastSequence;
-	    *qualitypp = readsHelper->lastQuality;
-	    *pairSequencepp = readsHelper->lastPairSequence;
-	    *pairQualitypp = readsHelper->lastPairQuality;
+        *readIdentifierpp = readsHelper->lastReadIdentifier;
+        *descriptionpp = readsHelper->lastDescription;
+        *sequencepp = readsHelper->lastSequence;
+        *qualitypp = readsHelper->lastQuality;
+        *pairSequencepp = readsHelper->lastPairSequence;
+        *pairQualitypp = readsHelper->lastPairQuality;
 
-	    // Increment to the next ReadsEntry
-		(*(*readsHelper).it)++;
+        // Increment to the next ReadsEntry
+        (*(*readsHelper).it)++;
 
-	    return entry.read_index();
-	}
+        return entry.read_index();
+    }
 
-	/**
-	 * Call after you are _completely_ done reading Goby Reads.
-	 */
-	void gobyReads_finished(CReadsHelper *readsHelper) {
-	    if (readsHelper != NULL) {
+    /**
+     * Call after you are _completely_ done reading Goby Reads.
+     */
+    void gobyReads_finished(CReadsHelper *readsHelper) {
+        if (readsHelper != NULL) {
             while (!readsHelper->unopenedFiles->empty()) {
                 string unopenedFile = readsHelper->unopenedFiles->front();
                 readsHelper->unopenedFiles->pop();
@@ -282,9 +320,9 @@ extern "C" {
             delete readsHelper->it;
             delete readsHelper;
         }
-	}
+    }
 
-	void goby_shutdownProtobuf() {
+    void goby_shutdownProtobuf() {
         google::protobuf::ShutdownProtobufLibrary();
     }
 }
