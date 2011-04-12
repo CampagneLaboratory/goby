@@ -76,8 +76,9 @@ extern "C" {
         readsHelper->lastPairQuality_m = defaultSize;
         readsHelper->lastPairQuality = (char *) malloc(defaultSize);
 
-        // By default, make the reads look like ILLUMINA
-        readsHelper->qualityAdjustment = 64;
+        // By default C_Reads will return quality scores as Phred. Adjust
+        // this value to get Sanger (33) or Illumina (64).
+        readsHelper->qualityAdjustment = 0;
         
         readsHelper->avoidZeroQuals = 0;
     }

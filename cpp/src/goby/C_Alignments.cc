@@ -51,10 +51,10 @@ extern "C" {
         writerHelper->smallestQueryIndex = -1;
         writerHelper->largestQueryIndex = -1;
         writerHelper->numberOfAlignedReads = 0;
-        // C_Reads will make quality look like ILLUMINA by default with a
-        // qualityAdjustment of +64. Here we use -64 to return them to
-        // the Goby scale.
-        writerHelper->qualityAdjustment = -64;
+        // Adjust this if the incoming quality scores are
+        // Illumina (-64) or Sanger (-33), otherwise Phred
+        // scores (0-based) will be assumed.
+        writerHelper->qualityAdjustment = 0;
         writerHelper->samHelper = NULL;
         writerHelper->alignerToGobyTargetIndexMap = NULL;
 	}
