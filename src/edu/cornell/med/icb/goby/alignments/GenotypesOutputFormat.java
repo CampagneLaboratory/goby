@@ -100,7 +100,6 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
 
         writeGenotypes(statsWriter, sampleCounts);
 
-
         writeZygozity(sampleCounts);
 
         statsWriter.writeRecord();
@@ -148,7 +147,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
             for (int sampleCount : sci.counts) {
                 totalCount += sampleCount;
             }
-          //  System.out.printf("totalCount %d failedCount %d%n",totalCount,sci.failedCount);
+            //  System.out.printf("totalCount %d failedCount %d%n",totalCount,sci.failedCount);
             statsWriter.setSampleValue(goodBaseCountFieldIndex, sampleIndex, totalCount);
             statsWriter.setSampleValue(failBaseCountFieldIndex, sampleIndex, sci.failedCount);
 
@@ -176,6 +175,24 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                 }
                 baseIndex++;
             }
+
+            if (alleleSet.size() == 1) {
+                // when homozygous genotype 0/ write 0/0/ (last / will be removed when length is adjusted)
+                genotypeBuffer.append(genotypeBuffer.copy());
+            }
+            MutableString baseCountString = new MutableString();
+            baseIndex = 0;
+            for (int count : sci.counts) {
+                final char base = sci.base(baseIndex);
+                baseCountString.append(base);
+                baseCountString.append('=');
+                baseCountString.append(Integer.toString(count));
+                baseIndex++;
+                baseCountString.append(',');
+            }
+            baseCountString.setLength(baseCountString.length() - 1);
+            statsWriter.setSampleValue(baseCountFieldIndex, sampleIndex, baseCountString);
+
             if (siteObserved) {
 
                 if (genotypeBuffer.length() > 1) {
@@ -184,21 +201,10 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                 }
                 statsWriter.setReferenceAllele(referenceAllele);
                 statsWriter.setSampleValue(genotypeFieldIndex, sampleIndex, statsWriter.codeGenotype(genotypeBuffer.toString()));
-                MutableString baseCountString = new MutableString();
-                baseIndex = 0;
-                for (int count : sci.counts) {
-                    final char base = sci.base(baseIndex);
-                    baseCountString.append(base);
-                    baseCountString.append('=');
-                    baseCountString.append(Integer.toString(count));
-                    baseIndex++;
-                    baseCountString.append(',');
-                }
-                baseCountString.setLength(baseCountString.length() - 1);
-                statsWriter.setSampleValue(baseCountFieldIndex, sampleIndex, baseCountString);
 
             } else {
-                statsWriter.setSampleValue(genotypeFieldIndex, sampleIndex, "");
+                statsWriter.setSampleValue(genotypeFieldIndex, sampleIndex, "./.");
+
             }
         }
     }
