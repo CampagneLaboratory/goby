@@ -28,7 +28,7 @@
             <id>output</id>
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
-            <required>true</required>
+            <required>false</required>
             <help>The file where slices definitions will be written (tab delimited:
                 targetIdStart	%positionStart	start:(ref,pos)	targetIdEnd    %positionEnd	end:(ref,pos).</help>
         </flaggedOption>

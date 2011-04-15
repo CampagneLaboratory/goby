@@ -90,7 +90,6 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
         numberOfSlices = jsapResult.getInt("number-of-slices");
 
 
-
         return this;
     }
 
@@ -111,17 +110,21 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
             input.readHeader();
             DoubleIndexedIdentifier ids = new DoubleIndexedIdentifier(input.getTargetIdentifiers());
             ObjectList<ReferenceLocation> locations = input.getLocations(modulo);
-            stream.println("targetIdStart\t%positionStart\tstart:(ref,pos)\ttargetIdEnd\t%positionEnd\tend:(ref,pos)");
-            ReferenceLocation[] breakpoints = new ReferenceLocation[numberOfSlices +1];
-            for (int i = 0; i < numberOfSlices - 1; i++) {
-                breakpoints[i+1] = locations.get(locations.size() / (numberOfSlices - 1) * i);
+           
+            if (locations.size()<numberOfSlices) {
+                numberOfSlices=locations.size();
             }
-            breakpoints[0]=new ReferenceLocation(0,0);
+            stream.println("targetIdStart\t%positionStart\tstart:(ref,pos)\ttargetIdEnd\t%positionEnd\tend:(ref,pos)");
+            ReferenceLocation[] breakpoints = new ReferenceLocation[numberOfSlices + 1];
+            for (int i = 0; i < numberOfSlices - 1; i++) {
+                breakpoints[i + 1] = locations.get(locations.size() / (numberOfSlices - 1) * i);
+            }
+            breakpoints[0] = new ReferenceLocation(0, 0);
             // largest position in the last reference sequence:
             final int lastTargetIndex = ids.size() - 1;
-            breakpoints[breakpoints.length-1]=new ReferenceLocation(lastTargetIndex,input.getTargetLength(lastTargetIndex));
+            breakpoints[breakpoints.length - 1] = new ReferenceLocation(lastTargetIndex, input.getTargetLength(lastTargetIndex));
 
-            for (int i = 0; i < numberOfSlices ; i++) {
+            for (int i = 0; i < numberOfSlices; i++) {
 
                 stream.printf(String.format("%s\t%d\t%s,%d\t%s\t%d\t%s,%d%n",
                         ids.getId(breakpoints[i].targetIndex),
@@ -129,9 +132,9 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
                         ids.getId(breakpoints[i].targetIndex),
                         breakpoints[i].position,
                         ids.getId(breakpoints[i + 1].targetIndex),
-                        breakpoints[i+1].position,
+                        breakpoints[i + 1].position,
                         ids.getId(breakpoints[i + 1].targetIndex),
-                        breakpoints[i+1].position));
+                        breakpoints[i + 1].position));
 
             }
 
