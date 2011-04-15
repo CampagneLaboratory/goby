@@ -129,6 +129,10 @@ public class Merge {
             numberOfReadsSet.add(reader.getNumberOfQueries());
             reader.close();
 
+            final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(inputFile.toString());
+            for (final int queryIndex : tmhReader.getQueryIndices()) {
+                minQueryIndex = Math.min(minQueryIndex, queryIndex);
+            }
         }
         if (numberOfReadsSet.size() != 1) {
             message("Aborting: the input alignments must have exactly the same number of reads, "

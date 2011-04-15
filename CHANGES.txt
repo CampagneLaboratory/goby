@@ -1,4 +1,6 @@
 development -> 1.9.5
+ - Fixed a bug where merge-compact-alignments would throw an ArrayIndexOutOfBounds because a TMH
+   query index was smaller than the first query index in the alignment.
  - Changed discover-sequence-variant mode to filter out alignment entries whose read mapped multiple locations in the
    reference (as determined by the aligner argument (i.e., -n for gsnap)).
  - Made AlignmentReader an interface. The previous AlignmentReader class is now called AlignmentReaderImpl.
