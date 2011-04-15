@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.util;
 
 import edu.mssm.crover.cli.CLI;
 import edu.cornell.med.icb.parsers.FastaParser;
+import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.rit.mp.buf.DoubleArrayBuf;
 
 import java.io.*;
@@ -38,6 +39,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FilenameUtils;
 
 /**
+ * Creates fastq files with simulated reads. Simulation can create bisulfite treated reads (or not treated)
+ * with mutations on C bases at some rate.
+ *
  * @author Fabien Campagne
  *         Date: Jan 20, 2011
  *         Time: 1:22:45 PM
@@ -50,16 +54,18 @@ public class SimulateBisulfiteReads {
     private Int2DoubleMap methylationForward;
     private Int2DoubleMap methylationReverse;
     private String regionTrueRates;
+    private boolean bisulfiteTreatment;
+    private long seed=232424434L;
 
     public SimulateBisulfiteReads() {
-        random = new Random();
+        random = new Random(seed);
 
     }
 
     public static void main(String[] args) throws IOException {
 
         String fastaReference = CLI.getOption(args, "-r", null);
-        String outputFilename = CLI.getOption(args, "-o", "out.fa");
+        String outputFilename = CLI.getOption(args, "-o", "out.fq");
         String regionTrueRates = CLI.getOption(args, "-t", "true-methylation.tsv");
         // reference sequence to use
         String refChoice = CLI.getOption(args, "-c", "22");
@@ -69,9 +75,14 @@ public class SimulateBisulfiteReads {
             System.err.println("argument to -e must be larger than argument to -s");
             System.exit(1);
         }
-        int readLength = CLI.getIntOption(args, "-l", 40);
+        int readLength = CLI.getIntOption(args, "-l", 50);
         String methylationRateFilename = CLI.getOption(args, "-m", "methylation-rates.tsv");
         SimulateBisulfiteReads processor = new SimulateBisulfiteReads();
+        final boolean bisulfite = CLI.isKeywordGiven(args, "--bisulfite");
+        if (bisulfite) {
+            System.out.println("Bisulfite treatment activated.");
+        }
+        processor.bisulfiteTreatment = bisulfite;
         processor.readLength = readLength;
         processor.outputFilename = outputFilename;
         processor.regionTrueRates = regionTrueRates;
@@ -92,16 +103,16 @@ public class SimulateBisulfiteReads {
 
             FastaParser.guessAccessionCode(description, accession);
             if (accession.equalsIgnoreCase(refChoice)) {
-                process(methylationRates, bases.substring(from, to));
+                process(methylationRates, bases.substring(from, to), from);
             }
         }
     }
 
-    private void process(DoubleList methylationRates, CharSequence segmentBases) throws IOException {
+    private void process(DoubleList methylationRates, CharSequence segmentBases, int from) throws IOException {
         PrintWriter writer = new PrintWriter(new FileWriter(outputFilename));
-        final String trueRateFilenam = FilenameUtils.removeExtension(outputFilename) + "-true-methylation.tsv";
-        PrintWriter trueRateWriter = new PrintWriter(new FileWriter(trueRateFilenam));
-       // System.out.printf("segmentBases.length: %d %n", segmentBases.length());
+        final String trueRateFilename = FilenameUtils.removeExtension(outputFilename) + "-true-methylation.tsv";
+        PrintWriter trueRateWriter = new PrintWriter(new FileWriter(trueRateFilename));
+        // System.out.printf("segmentBases.length: %d %n", segmentBases.length());
         methylationForward = new Int2DoubleOpenHashMap();
         methylationReverse = new Int2DoubleOpenHashMap();
 
@@ -114,19 +125,20 @@ public class SimulateBisulfiteReads {
                     it = methylationRates.iterator();
                 }
                 methylationForward.put(i, it.nextDouble());
-                trueRateWriter.printf("%d\t%g\t+1%n", i, methylationForward.get(i));
+                trueRateWriter.printf("%d\t%g\t+1\t%d%n", i, methylationForward.get(i),i+from);
             }
         }
         it = methylationRates.iterator();
         CharSequence reverseStrandSegment = reverseComplement(segmentBases);
-        for (int i = reverseStrandSegment.length()-1; i >=0; i--) {
+        // same for reverse strand:
+        for (int i = reverseStrandSegment.length() - 1; i >= 0; i--) {
             if (reverseStrandSegment.charAt(i) == 'C') {
                 if (!it.hasNext()) {
                     it = methylationRates.iterator();
                 }
-                final int positionInSegment =  i;
+                final int positionInSegment = i;
                 methylationReverse.put(positionInSegment, it.nextDouble());
-                trueRateWriter.printf("%d\t%g\t-1%n", positionInSegment, methylationReverse.get(positionInSegment));
+                trueRateWriter.printf("%d\t%g\t-1\t%d%n", positionInSegment, methylationReverse.get(positionInSegment), i+from);
             }
         }
         for (int repeatCount = 0; repeatCount < 10000; repeatCount++) {
@@ -143,30 +155,57 @@ public class SimulateBisulfiteReads {
             for (int i = 0; i < readLength; i++) {
                 final int basePositionInSegment = i;
                 char base = readBases.charAt(basePositionInSegment);
-              sequenceInitial.append(base);
+                sequenceInitial.append(base);
                 if (base == 'C') {
 
-                    boolean isBaseMethylated = random.nextDouble() < getMethylationRateAtPosition(segmentLength,
+                    final boolean b = random.nextDouble() < getMethylationRateAtPosition(segmentLength,
                             matchedReverseStrand,
                             i, startReadPosition);
+                    boolean isBaseMethylated = b;
                     if (!isBaseMethylated) {
                         // bases that are not methylated are changed to T through the bisulfite and PCR conversion steps
-                        base = 'T';
+                        if (bisulfiteTreatment) {
+                            base = 'T';
+                        } else {
+                            base = 'C';
+                        }
 
                     } else {
                         // bases that are methylated are protected and stay C on the forward strand. They would also
                         // be seen as G on the opposite strand if the sequencing protocol did not respect strandness
-                        log.append("met:");
-                        log.append(i + startReadPosition);
+                        log.append(bisulfiteTreatment ? "met: " : "mut: ");
+                        log.append(i + startReadPosition + from);
                         log.append(' ');
+
+                        log.append("read-index: ");
+                        log.append(matchedReverseStrand ? readLength - i : i);
+                        log.append(' ');
+                        // introduce mutation C -> G
+
+                        base = matchedReverseStrand ? 'C' : 'G';
                     }
                 }
                 sequenceTreated.append(base);
             }
-            writer.printf(">%d reference: %s startPosition: %d strand: %s %s%n%s%n", repeatCount, refChoice,
-                    startReadPosition, matchedReverseStrand ? "-1" : "+1", log, sequenceTreated);
+            MutableString coveredPositions = new MutableString();
+            MutableString qualityScores = new MutableString();
+            for (int i = 0; i < readLength; i++) {
+                final char c = QualityEncoding.ILLUMINA.phredQualityScoreToAsciiEncoding((byte) 40);
+                qualityScores.append(c);
 
+            }
+            for (int i = startReadPosition + from; i < startReadPosition + from + readLength; i++) {
+                coveredPositions.append(i);
+                coveredPositions.append(" ");
 
+            }
+            writer.printf("@%d reference: %s startPosition: %d strand: %s %s %s%n%s%n+%n%s%n",
+                    repeatCount,
+                    refChoice,
+
+                    startReadPosition, matchedReverseStrand ? "-1" : "+1", log,
+                    coveredPositions, sequenceTreated,
+                    qualityScores);
         }
         writer.close();
         trueRateWriter.close();
@@ -194,7 +233,7 @@ public class SimulateBisulfiteReads {
                     base = 'G';
                     break;
                 case 'T':
-                    base = 'C';
+                    base = 'A';
                     break;
                 case 'G':
                     base = 'C';
