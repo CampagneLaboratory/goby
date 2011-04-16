@@ -202,28 +202,29 @@ public class TestPositionSlices {
         // we write this alignment sorted:
 
         writer.setSorted(true);
+        int constantQueryLength=50;
         // chunk 1:
-        writer.setAlignmentEntry(0, 1, 12, 30, false);
+        writer.setAlignmentEntry(0, 1, 12, 30, false, constantQueryLength);
         writer.appendEntry();
 
-        writer.setAlignmentEntry(0, 1, 13, 1, false);
+        writer.setAlignmentEntry(0, 1, 13, 1, false, constantQueryLength);
         writer.appendEntry();
         // chunk 2:
-        writer.setAlignmentEntry(0, 1, 13, 2, false);
+        writer.setAlignmentEntry(0, 1, 13, 2, false, constantQueryLength);
         writer.appendEntry();
 
-        writer.setAlignmentEntry(0, 1, 13, 3, false);
+        writer.setAlignmentEntry(0, 1, 13, 3, false, constantQueryLength);
         writer.appendEntry();
         // chunk 3:
-        writer.setAlignmentEntry(0, 2, 123, 30, false);
+        writer.setAlignmentEntry(0, 2, 123, 30, false, constantQueryLength);
         writer.appendEntry();
-        writer.setAlignmentEntry(0, 2, 300, 1, false);
+        writer.setAlignmentEntry(0, 2, 300, 1, false, constantQueryLength);
         writer.appendEntry();
         // chunk 4:
-        writer.setAlignmentEntry(0, 2, 300, 2, false);
+        writer.setAlignmentEntry(0, 2, 300, 2, false, constantQueryLength);
         writer.appendEntry();
        // TODO remove the last entry and figure out why TestPositionSlices.testBeforeSlice cannot find the second/last (2,300) entry!
-        writer.setAlignmentEntry(0, 3, 300, 2, false);
+        writer.setAlignmentEntry(0, 3, 300, 2, false, constantQueryLength);
               writer.appendEntry();
 
         writer.close();

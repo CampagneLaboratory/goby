@@ -60,10 +60,7 @@ public class AlignmentWriter implements Closeable {
     private boolean headerWritten;
     private final GZIPOutputStream headerOutput;
     private boolean entriesHaveQueryLength;
-    /**
-     * Length of each query sequence.
-     */
-    private int[] queryLengths;
+
 
     /**
      * Details about aligner.
@@ -96,7 +93,7 @@ public class AlignmentWriter implements Closeable {
     private boolean isConstantQueryLength;
     private Alignments.AlignmentEntry.Builder newEntry;
     private final FileOutputStream alignmentEntries;
-    private int queryLength;
+
     private boolean sortedState;
 
     // data structures to build index:
@@ -203,13 +200,14 @@ public class AlignmentWriter implements Closeable {
     public final void setAlignmentEntry(final int queryIndex, final int targetIndex,
                                         final int position,
                                         final float score,
-                                        final boolean matchesReverseStrand) {
+                                        final boolean matchesReverseStrand, int queryLength) {
         newEntry.setQueryIndex(queryIndex);
         newEntry.setTargetIndex(targetIndex);
         newEntry.setScore(score);
         newEntry.setPosition(position);
         newEntry.setMatchingReverseStrand(matchesReverseStrand);
         newEntry.setMultiplicity(1);
+        newEntry.setQueryLength(queryLength);
     }
 
     /**
@@ -234,16 +232,9 @@ public class AlignmentWriter implements Closeable {
      */
     @Deprecated
     public synchronized void appendEntry() throws IOException {
-        if (newEntry.hasQueryLength()) {
-            // update the unique query length set
-            uniqueQueryLengths.add(newEntry.getQueryLength());
-        } else {
-            if (queryLengths != null) {
-                // when the entry does not already have a defined query length,
-                // set query Length from the length array if it is available
-                newEntry.setQueryLength(queryLengths[newEntry.getQueryIndex()]);
-            }
-        }
+        // update the unique query length set
+        uniqueQueryLengths.add(newEntry.getQueryLength());
+
 
         final Alignments.AlignmentEntry builtEntry = newEntry.build();
 
@@ -422,16 +413,10 @@ public class AlignmentWriter implements Closeable {
                 isConstantQueryLength = false;
             }
 
-            if (entriesHaveQueryLength) {
-                // if some entries had query length, remove the information from the header. Do not duplicate.
-                headerBuilder.setQueryLengthsStoredInEntries(true);
-            } else {
-                // store query lengths:
-                compactQueryLengths();
-                if (queryLengths != null) {
-                    headerBuilder.addAllQueryLength(IntArrayList.wrap(queryLengths));
-                }
-            }
+
+            // if some entries had query length, remove the information from the header. Do not duplicate.
+            headerBuilder.setQueryLengthsStoredInEntries(true);
+
             // store target lengths:
             if (targetLengths != null) {
                 headerBuilder.addAllTargetLength(IntArrayList.wrap(targetLengths));
@@ -535,28 +520,6 @@ public class AlignmentWriter implements Closeable {
         }
     }
 
-    /**
-     * Replace queryLength with constantQueryLength where the length is the same for all queries.
-     * Use a smaller queryLength array if we are storing just a slice of a larger alignment. In this
-     * case, the smaller array has size (maxQueryIndex-minQueryIndex+1)
-     */
-    private void compactQueryLengths() {
-        if (isConstantQueryLength) {
-            this.queryLengths = null;
-        } else {
-            if (queryLengths != null) {
-                if (actualNumberOfQueries != Integer.MIN_VALUE) {
-                    // we know how many queries we are dealing with
-                    final int smallerLength = maxQueryIndex - minQueryIndex + 1;
-                    if (smallerLength != getNumQueries()) {
-                        final int[] smaller = new int[smallerLength];
-                        System.arraycopy(queryLengths, minQueryIndex, smaller, 0, smallerLength);
-                        this.queryLengths = smaller;
-                    }
-                }
-            }
-        }
-    }
 
     public void setTargetLengths(final int[] targetLengths) {
         assert targetLengths != null : "Target lengths cannot be null.";
@@ -637,28 +600,7 @@ public class AlignmentWriter implements Closeable {
     }
 
 
-    /**
-     * Set the query legnth for the next alignment extry.
-     *
-     * @param queryLength The query length of the next alignment entry to append
-     * @deprecated use
-     *             {@link #appendEntry(edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry)}.
-     */
-    @Deprecated
-    public void setQueryLength(final int queryLength) {
-        newEntry.setQueryLength(queryLength);
-    }
 
-    public void setQueryLengths(final int[] queryLengths) {
-        assert queryLengths.length > maxQueryIndex
-                : "The number of elements of queryLength is too small to accomodate queryIndex="
-                + maxQueryIndex;
-        this.queryLengths = queryLengths;
-
-        // update the unique query length set
-        uniqueQueryLengths.clear();
-        uniqueQueryLengths.addAll(IntArrayList.wrap(queryLengths));
-    }
 
     public String getAlignerVersion() {
         return alignerVersion;

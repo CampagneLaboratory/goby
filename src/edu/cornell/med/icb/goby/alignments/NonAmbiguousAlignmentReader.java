@@ -180,9 +180,6 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
         return delegate.getNumberOfAlignedReads();
     }
 
-    public boolean hasQueryLengths() {
-        return delegate.hasQueryLengths();
-    }
 
     public ObjectList<ReferenceLocation> getLocations(int modulo) throws IOException {
         return delegate.getLocations(modulo);
@@ -224,16 +221,12 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
         return delegate.getNumberOfQueries();
     }
 
-    public int[] getQueryLengths() {
-        return delegate.getQueryLengths();
-    }
-
     public boolean isConstantQueryLengths() {
         return delegate.isConstantQueryLengths();
     }
 
-    public int getQueryLength(int queryIndex) {
-        return delegate.getQueryLength(queryIndex);
+    public int getConstantQueryLength() {
+        return delegate.getConstantQueryLength();
     }
 
     public IndexedIdentifier getQueryIdentifiers() {

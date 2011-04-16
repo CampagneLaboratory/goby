@@ -261,7 +261,7 @@ public abstract class IterateSortedAlignments<T> {
                 processAllPreviousPositions(lastTarget, positionToBases);
             }
             int queryLength = alignmentEntry.getQueryLength();
-
+            assert queryLength!=0: "queryLength should never be zero";
             currentPosition = alignmentEntry.getPosition();
             boolean forwardStrand = !alignmentEntry.getMatchingReverseStrand();
             if (lastRemovedPosition == -1) {

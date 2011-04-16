@@ -225,33 +225,12 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
             }
 
             targetLengths = readers[0].getTargetLength();
-
-            boolean queryLengthStoredInEntries = true;
-            for (AlignmentReader reader : readers) {
-                if (!reader.isQueryLengthStoredInEntries()) queryLengthStoredInEntries = false;
-            }
-            queryLengths = queryLengthStoredInEntries ? null : new int[largestQueryIndex - smallestQueryIndex + 1];
-
-            int offset = 0;
+            // calculate offsets needed to adjustQueryIndices
             for (int i = 0; i < queryIndexOffset.length; i++) {
 
-                offset = readers[i].getSmallestSplitQueryIndex();
-
                 queryIndexOffset[i] = adjustQueryIndices ? i == 0 ? 0 : readers[i - 1].getLargestSplitQueryIndex() + 1 : 0;
-                if (!queryLengthStoredInEntries) {
-                    final int[] localQueryLenths = readers[i].getQueryLengths();
-                    if (localQueryLenths != null) {
-                        if (localQueryLenths.length + offset <= queryLengths.length) {
-                            System.arraycopy(localQueryLenths, 0, queryLengths,
-                                    offset, localQueryLenths.length);
-                        } else {
-                            LOG.error("Cannot copy query lengths to destination array. Skipping this step.");
-                        }
-                    }
-                }
+
             }
-
-
         }
 
 
@@ -319,11 +298,17 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
             throw new NoSuchElementException();
         } else {
             final Alignments.AlignmentEntry alignmentEntry = readers[activeIndex].next();
-            final int newQueryIndex = mergedQueryIndex(alignmentEntry.getQueryIndex());
-            if (adjustQueryIndices) {
-                return alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry).setQueryIndex(newQueryIndex).build();
-            } else {
+            final int queryIndex = alignmentEntry.getQueryIndex();
+            final int newQueryIndex = mergedQueryIndex(queryIndex);
+
+            if (!adjustQueryIndices) {
                 return alignmentEntry;
+            } else {
+                if (newQueryIndex == queryIndex) {
+                    return alignmentEntry;
+                } else {
+                    return alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry).setQueryIndex(newQueryIndex).build();
+                }
             }
         }
     }

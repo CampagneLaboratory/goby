@@ -293,7 +293,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             System.exit(1);
         }
         if (readIndexStats.size() < inputFilenames.length) {
-            System.err.printf("The stats file seems incompleted. Expected to find statistics for %d samples, but found only %d %n",
+            System.err.printf("The stats file seems incomplete. Expected to find statistics for %d samples, but found only %d %n",
                     inputFilenames.length, readIndexStats.size());
             System.exit(1);
         }

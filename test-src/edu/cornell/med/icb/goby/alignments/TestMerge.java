@@ -58,6 +58,7 @@ public class TestMerge {
     private int numEntriesIn106;
 
     private int numEntriesIn101;
+    private int constantQueryLength=35;
 
     @Test
     public void testMerge() throws IOException {
@@ -373,9 +374,10 @@ public class TestMerge {
             final int numQuery = 10;
             int position = 1;
             int score = 30;
+
             for (int targetIndex = 0; targetIndex < numTargets; targetIndex++) {
                 for (int queryIndex = 0; queryIndex < numQuery; queryIndex++) {
-                    writer.setAlignmentEntry(queryIndex, targetIndex, position++, score++, false);
+                    writer.setAlignmentEntry(queryIndex, targetIndex, position++, score++, false, constantQueryLength);
                     writer.appendEntry();
                     numEntriesIn101++;
                 }
@@ -396,8 +398,6 @@ public class TestMerge {
             final int[] targetLengths = {1024, 5678, 1237, 9, 143};
             writer.setTargetLengths(targetLengths);
 
-            final int[] queryLentghs = {35, 35, 35, 35, 35, 35, 35, 35, 35, 35};
-            writer.setQueryLengths(queryLentghs);
 
             final IndexedIdentifier targetIds = new IndexedIdentifier();
             for (int i = 0; i < numTargets; i++) {
@@ -411,17 +411,17 @@ public class TestMerge {
             // make query 0 OK, matches 3 transcripts that belong to the same gene
             // query 1 matches two transcripts, but 2 genes, not OK.
             // query 2 OK: 1 transcript 1 gene.
-            writer.setAlignmentEntry(0, transcriptIndex[0], position++, score, false);
+            writer.setAlignmentEntry(0, transcriptIndex[0], position++, score, false, constantQueryLength);
             writer.appendEntry();
-            writer.setAlignmentEntry(0, transcriptIndex[1], position++, score + 1, false);
+            writer.setAlignmentEntry(0, transcriptIndex[1], position++, score + 1, false, constantQueryLength);
             writer.appendEntry();
-            writer.setAlignmentEntry(0, transcriptIndex[2], position++, score + 1, false);
+            writer.setAlignmentEntry(0, transcriptIndex[2], position++, score + 1, false, constantQueryLength);
             writer.appendEntry();
-            writer.setAlignmentEntry(1, transcriptIndex[2], position++, score, false);
+            writer.setAlignmentEntry(1, transcriptIndex[2], position++, score, false, constantQueryLength);
             writer.appendEntry();
-            writer.setAlignmentEntry(1, transcriptIndex[3], position++, score, false);
+            writer.setAlignmentEntry(1, transcriptIndex[3], position++, score, false, constantQueryLength);
             writer.appendEntry();
-            writer.setAlignmentEntry(2, transcriptIndex[4], position++, score, false);
+            writer.setAlignmentEntry(2, transcriptIndex[4], position++, score, false, constantQueryLength);
             writer.appendEntry();
             writer.close();
 
@@ -438,7 +438,7 @@ public class TestMerge {
             int score = 30;
             for (int targetIndex = 0; targetIndex < numTargets; targetIndex++) {
                 for (int queryIndex = 0; queryIndex < numQuery; queryIndex++) {
-                    writer.setAlignmentEntry(queryIndex, targetIndex, position++, score++, false);
+                    writer.setAlignmentEntry(queryIndex, targetIndex, position++, score++, false, constantQueryLength);
                     writer.appendEntry();
                     numEntriesIn102++;
                 }
@@ -457,7 +457,7 @@ public class TestMerge {
             int score = 30;
             for (int targetIndex = 0; targetIndex < numTargets; targetIndex++) {
                 for (int queryIndex = 0; queryIndex < numQuery; queryIndex++) {
-                    writer.setAlignmentEntry(queryIndex, targetIndex, position++, score++, false);
+                    writer.setAlignmentEntry(queryIndex, targetIndex, position++, score++, false,constantQueryLength);
                     writer.appendEntry();
                     numEntriesIn103++;
                 }
@@ -484,7 +484,7 @@ public class TestMerge {
 
             for (int targetIndex = 0; targetIndex < numTargets; targetIndex++) {
                 for (int queryIndex = 0; queryIndex < numQuery; queryIndex++) {
-                    writer.setAlignmentEntry(queryIndex, targetIndex, position++, score++, false);
+                    writer.setAlignmentEntry(queryIndex, targetIndex, position++, score++, false,constantQueryLength);
                     //         System.out.println(String.format("Preparing entry: queryIndex: %d targetIndex: %d position: %d score: %d strand: %b", queryIndex, targetIndex, position++, score++, false));
                     writer.appendEntry();
 
@@ -513,7 +513,7 @@ public class TestMerge {
 
             for (int targetIndex = 0; targetIndex < numTargets; targetIndex++) {
                 for (int queryIndex = 0; queryIndex < numQuery; queryIndex++) {
-                    writer.setAlignmentEntry(queryIndex, targetIndex, position++, score++, false);
+                    writer.setAlignmentEntry(queryIndex, targetIndex, position++, score++, false,constantQueryLength);
                     writer.appendEntry();
                     numEntriesIn106++;
                 }

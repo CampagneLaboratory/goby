@@ -53,6 +53,7 @@ public class TestConcatAlignmentReader {
     private String outputBasename2;
     private int count102;
     private int count101;
+    private int constantQueryLength = 40;
 
     @Test
     public void testLoadTwo() throws IOException {
@@ -104,9 +105,11 @@ public class TestConcatAlignmentReader {
             final Alignments.AlignmentEntry alignmentEntry = concatReader.next();
 
             if (alignmentEntry.getScore() == 50) {
-                assertTrue(alignmentEntry.getQueryIndex() >= numQueries101);
+                assertTrue("query index is too small: " + alignmentEntry.getQueryIndex(),
+                        alignmentEntry.getQueryIndex() >= numQueries101);
             } else if (alignmentEntry.getScore() == 30) {
-                assertTrue(alignmentEntry.getQueryIndex() < numQueries101);
+                assertTrue("query index is too big: " + alignmentEntry.getQueryIndex(),
+                        alignmentEntry.getQueryIndex() < numQueries101);
             } else {
                 fail("only scores possible are 30 and 50.");
             }
@@ -146,7 +149,6 @@ public class TestConcatAlignmentReader {
 
     }
 
-    
 
     private int countAlignmentEntries(final AbstractAlignmentReader reader) {
         int count = 0;
@@ -187,15 +189,11 @@ public class TestConcatAlignmentReader {
             final int numQuery = 10;
             int position = 100;
             final int score = 30;
-            final int[] queryLengths = new int[numQuery];
-            for (int i = 0; i < queryLengths.length; i++) {
-                queryLengths[i] = i;
-            }
+
 
             for (int targetIndex = 0; targetIndex < numTargets; targetIndex++) {
                 for (int queryIndex = 0; queryIndex < numQuery; queryIndex++) {
-                    writer.setAlignmentEntry(queryIndex, targetIndex, position++, score, false);
-                    writer.setQueryLength(queryLengths[queryIndex]);
+                    writer.setAlignmentEntry(queryIndex, targetIndex, position++, score, false, constantQueryLength);
                     writer.appendEntry();
                     numEntriesIn101++;
                     count101++;
@@ -220,17 +218,13 @@ public class TestConcatAlignmentReader {
             writer.setNumAlignmentEntriesPerChunk(1000);
 
             final int numQuery = 13;
-            final int[] queryLengths = new int[numQuery];
-            for (int i = 0; i < queryLengths.length; i++) {
-                queryLengths[i] = i;
-            }
 
             int position = 1;
             final int score = 50;
             for (int targetIndex = 0; targetIndex < numTargets; targetIndex++) {
                 for (int queryIndex = 0; queryIndex < numQuery; queryIndex++) {
-                    writer.setAlignmentEntry(queryIndex, targetIndex, position++, score, false);
-                    writer.setQueryLength(queryLengths[queryIndex]);
+                    writer.setAlignmentEntry(queryIndex, targetIndex, position++, score, false, constantQueryLength);
+
                     writer.appendEntry();
                     numEntriesIn102++;
                     count102++;

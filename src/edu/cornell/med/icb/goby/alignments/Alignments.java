@@ -458,7 +458,7 @@ public final class Alignments {
       return sequenceVariations_.get(index);
     }
     
-    // optional uint32 query_length = 10;
+    // required uint32 query_length = 10;
     public static final int QUERY_LENGTH_FIELD_NUMBER = 10;
     private boolean hasQueryLength;
     private int queryLength_ = 0;
@@ -523,6 +523,7 @@ public final class Alignments {
       if (!hasTargetIndex) return false;
       if (!hasPosition) return false;
       if (!hasMatchingReverseStrand) return false;
+      if (!hasQueryLength) return false;
       for (edu.cornell.med.icb.goby.alignments.Alignments.SequenceVariation element : getSequenceVariationsList()) {
         if (!element.isInitialized()) return false;
       }
@@ -1283,7 +1284,7 @@ public final class Alignments {
         return this;
       }
       
-      // optional uint32 query_length = 10;
+      // required uint32 query_length = 10;
       public boolean hasQueryLength() {
         return result.hasQueryLength();
       }
@@ -5259,7 +5260,7 @@ public final class Alignments {
       "\030\t \001(\r\022\034\n\024query_aligned_length\030\013 \001(\r\022\035\n\025" +
       "target_aligned_length\030\014 \001(\r\0224\n\023sequence_",
       "variations\030\r \003(\0132\027.goby.SequenceVariatio" +
-      "n\022\024\n\014query_length\030\n \001(\r\022\027\n\017mapping_quali" +
+      "n\022\024\n\014query_length\030\n \002(\r\022\027\n\017mapping_quali" +
       "ty\030\016 \001(\005\022\022\n\npair_flags\030\017 \001(\r\0228\n\023pair_ali" +
       "gnment_link\030\020 \001(\0132\033.goby.RelatedAlignmen" +
       "tEntry\022\026\n\016fragment_index\030\021 \001(\r\022;\n\026splice" +

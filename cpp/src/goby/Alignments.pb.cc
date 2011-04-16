@@ -326,7 +326,7 @@ void protobuf_AddDesc_Alignments_2eproto() {
     "\030\t \001(\r\022\034\n\024query_aligned_length\030\013 \001(\r\022\035\n\025"
     "target_aligned_length\030\014 \001(\r\0224\n\023sequence_"
     "variations\030\r \003(\0132\027.goby.SequenceVariatio"
-    "n\022\024\n\014query_length\030\n \001(\r\022\027\n\017mapping_quali"
+    "n\022\024\n\014query_length\030\n \002(\r\022\027\n\017mapping_quali"
     "ty\030\016 \001(\005\022\022\n\npair_flags\030\017 \001(\r\0228\n\023pair_ali"
     "gnment_link\030\020 \001(\0132\033.goby.RelatedAlignmen"
     "tEntry\022\026\n\016fragment_index\030\021 \001(\r\022;\n\026splice"
@@ -879,7 +879,7 @@ bool AlignmentEntry::MergePartialFromCodedStream(
         break;
       }
       
-      // optional uint32 query_length = 10;
+      // required uint32 query_length = 10;
       case 10: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
@@ -1113,7 +1113,7 @@ void AlignmentEntry::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(9, this->number_of_indels(), output);
   }
   
-  // optional uint32 query_length = 10;
+  // required uint32 query_length = 10;
   if (_has_bit(12)) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(10, this->query_length(), output);
   }
@@ -1224,7 +1224,7 @@ void AlignmentEntry::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(9, this->number_of_indels(), target);
   }
   
-  // optional uint32 query_length = 10;
+  // required uint32 query_length = 10;
   if (_has_bit(12)) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(10, this->query_length(), target);
   }
@@ -1371,7 +1371,7 @@ int AlignmentEntry::ByteSize() const {
           this->target_aligned_length());
     }
     
-    // optional uint32 query_length = 10;
+    // required uint32 query_length = 10;
     if (has_query_length()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
@@ -1543,7 +1543,7 @@ void AlignmentEntry::CopyFrom(const AlignmentEntry& from) {
 }
 
 bool AlignmentEntry::IsInitialized() const {
-  if ((_has_bits_[0] & 0x0000001e) != 0x0000001e) return false;
+  if ((_has_bits_[0] & 0x0000101e) != 0x0000101e) return false;
   
   for (int i = 0; i < sequence_variations_size(); i++) {
     if (!this->sequence_variations(i).IsInitialized()) return false;

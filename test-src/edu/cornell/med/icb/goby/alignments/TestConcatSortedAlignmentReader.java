@@ -173,7 +173,8 @@ public class TestConcatSortedAlignmentReader {
 
 
     private void append(final AlignmentWriter writer, final int referenceIndex, final int position) throws IOException {
-        writer.setAlignmentEntry(0, referenceIndex, position, 1, false);
+        writer.setAlignmentEntry(0, referenceIndex, position, 1, false,50);
+
         writer.appendEntry();
     }
 

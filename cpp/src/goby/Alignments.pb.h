@@ -282,7 +282,7 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::goby::SequenceVariation >*
       mutable_sequence_variations();
   
-  // optional uint32 query_length = 10;
+  // required uint32 query_length = 10;
   inline bool has_query_length() const;
   inline void clear_query_length();
   static const int kQueryLengthFieldNumber = 10;
@@ -1602,7 +1602,7 @@ AlignmentEntry::mutable_sequence_variations() {
   return &sequence_variations_;
 }
 
-// optional uint32 query_length = 10;
+// required uint32 query_length = 10;
 inline bool AlignmentEntry::has_query_length() const {
   return _has_bit(12);
 }

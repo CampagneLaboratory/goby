@@ -556,16 +556,8 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             }
             queryLengthStoredInEntries= header.getQueryLengthsStoredInEntries();
 
-            if (!header.getQueryLengthsStoredInEntries()) {
-                if (this.constantQueryLengths) {
-                    queryLengths = null;
-                } else if (header.getQueryLengthCount() > 0) {
-                    queryLengths = new IntArrayList(header.getQueryLengthList()).toIntArray();
-                    compactQueryLengths();
-                }
-            } else {
-                queryLengths = null;
-            }
+            assert queryLengthStoredInEntries : "This version of Goby requires that query lengths are stored in entries." +
+                    " You can upgrade old alignment files by transfering data with the concat mode of a previous version.";
 
             if (header.getTargetLengthCount() > 0) {
                 targetLengths = new IntArrayList(header.getTargetLengthList()).toIntArray();
@@ -620,21 +612,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         }
     }
 
-    private void compactQueryLengths() {
-        final IntSet distinctQueryLength = new IntOpenHashSet();
 
-        for (final int length : queryLengths) {
-            if (length != 0) {
-                distinctQueryLength.add(length);
-            }
-        }
-        if (distinctQueryLength.size() == 1) {
-            this.constantQueryLengths = true;
-            this.constantLength = distinctQueryLength.iterator().nextInt();
-            //release the space:
-            queryLengths = null;
-        }
-    }
 
     private IndexedIdentifier parseIdentifiers(final Alignments.IdentifierMapping nameMapping) {
         final IndexedIdentifier result = new IndexedIdentifier();
@@ -709,14 +687,6 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         return numberOfAlignedReads;
     }
 
-    /**
-     * Returns whether this read has query length information.
-     *
-     * @return True or false.
-     */
-    public boolean hasQueryLengths() {
-        return ArrayUtils.isNotEmpty(queryLengths);
-    }
 
     /**
      * Returns a sample of locations covered by this alignment.
@@ -765,5 +735,9 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      */
     public String getAlignerVersion() {
         return alignerVersion;
+    }
+
+    public int getConstantQueryLength() {
+        return constantLength;
     }
 }

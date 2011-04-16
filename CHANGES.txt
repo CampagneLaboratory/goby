@@ -1,4 +1,9 @@
 development -> 1.9.5
+ - Completely removed support for queryLength in header. This usage was deprecated a while ago, complicates
+   the code unecessarily and is error prone (because we had two ways to store read length in the previous
+   version of Goby). Changed protobuf to make queryLength a required field. This means that alignments that
+   stored queryLengths in the header cannot be read by this version. The workaround it to use the concat mode
+   of version 1.9.4 to convert the data to the new format with queryLength in entries. 
  - Fixed a bug where merge-compact-alignments would throw an ArrayIndexOutOfBounds because a TMH
    query index was smaller than the first query index in the alignment.
  - Changed discover-sequence-variant mode to filter out alignment entries whose read mapped multiple locations in the

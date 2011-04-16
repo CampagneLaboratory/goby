@@ -58,6 +58,7 @@ public class TestAlignmentPositionComparator {
     }
 
     private Alignments.AlignmentEntry.Builder newInstance() {
-        return Alignments.AlignmentEntry.newBuilder().setQueryIndex(0).setMatchingReverseStrand(false);
+        return Alignments.AlignmentEntry.newBuilder().setQueryIndex(0).setMatchingReverseStrand(false).
+                setQueryLength(100);
     }
 }

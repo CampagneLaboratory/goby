@@ -45,6 +45,7 @@ public class TestSkipTo {
     private static final Log LOG = LogFactory.getLog(TestSkipTo.class);
     private static final String BASE_TEST_DIR = "test-results/alignments-skip-to";
     private int numEntriesPerChunk=2;
+    private int constantQueryLength=40;
 
     @BeforeClass
     public static void initializeTestDirectory() throws IOException {
@@ -80,20 +81,20 @@ public class TestSkipTo {
 
         writer.setSorted(true);
 
-        writer.setAlignmentEntry(0, 1, 12, 30, false);
+        writer.setAlignmentEntry(0, 1, 12, 30, false, constantQueryLength);
         writer.appendEntry();
 
-        writer.setAlignmentEntry(0, 1, 13, 30, false);
+        writer.setAlignmentEntry(0, 1, 13, 30, false, constantQueryLength);
         writer.appendEntry();
 
-        writer.setAlignmentEntry(0, 1, 13, 30, false);
+        writer.setAlignmentEntry(0, 1, 13, 30, false, constantQueryLength);
         writer.appendEntry();
 
-        writer.setAlignmentEntry(0, 2, 123, 30, false);
+        writer.setAlignmentEntry(0, 2, 123, 30, false, constantQueryLength);
         writer.appendEntry();
-        writer.setAlignmentEntry(0, 2, 300, 30, false);
+        writer.setAlignmentEntry(0, 2, 300, 30, false, constantQueryLength);
         writer.appendEntry();
-        writer.setAlignmentEntry(0, 2, 300, 30, false);
+        writer.setAlignmentEntry(0, 2, 300, 30, false, constantQueryLength);
         writer.appendEntry();
         writer.close();
         writer.printStats(System.out);
@@ -143,20 +144,20 @@ public class TestSkipTo {
 
         writer.setSorted(true);
 
-        writer.setAlignmentEntry(0, 1, 12, 30, false);
+        writer.setAlignmentEntry(0, 1, 12, 30, false, constantQueryLength);
         writer.appendEntry();
 
-        writer.setAlignmentEntry(0, 1, 13, 30, false);
+        writer.setAlignmentEntry(0, 1, 13, 30, false, constantQueryLength);
         writer.appendEntry();
 
-        writer.setAlignmentEntry(0, 1, 13, 30, false);
+        writer.setAlignmentEntry(0, 1, 13, 30, false, constantQueryLength);
         writer.appendEntry();
 
-        writer.setAlignmentEntry(0, 2, 123, 30, false);
+        writer.setAlignmentEntry(0, 2, 123, 30, false, constantQueryLength);
         writer.appendEntry();
-        writer.setAlignmentEntry(0, 2, 300, 30, false);
+        writer.setAlignmentEntry(0, 2, 300, 30, false, constantQueryLength);
         writer.appendEntry();
-        writer.setAlignmentEntry(0, 2, 300, 30, false);
+        writer.setAlignmentEntry(0, 2, 300, 30, false, constantQueryLength);
         writer.appendEntry();
         writer.close();
         writer.printStats(System.out);
@@ -228,20 +229,20 @@ public class TestSkipTo {
 
         writer.setSorted(true);
 
-        writer.setAlignmentEntry(0, 1, 12, 30, false);
+        writer.setAlignmentEntry(0, 1, 12, 30, false, constantQueryLength);
         writer.appendEntry();
 
-        writer.setAlignmentEntry(0, 1, 13, 30, false);
+        writer.setAlignmentEntry(0, 1, 13, 30, false, constantQueryLength);
         writer.appendEntry();
 
-        writer.setAlignmentEntry(0, 1, 13, 30, false);
+        writer.setAlignmentEntry(0, 1, 13, 30, false, constantQueryLength);
         writer.appendEntry();
 
-        writer.setAlignmentEntry(0, 2, 123, 30, false);
+        writer.setAlignmentEntry(0, 2, 123, 30, false, constantQueryLength);
         writer.appendEntry();
-        writer.setAlignmentEntry(0, 2, 300, 30, false);
+        writer.setAlignmentEntry(0, 2, 300, 30, false, constantQueryLength);
         writer.appendEntry();
-        writer.setAlignmentEntry(0, 2, 300, 30, false);
+        writer.setAlignmentEntry(0, 2, 300, 30, false, constantQueryLength);
         writer.appendEntry();
         writer.close();
         writer.printStats(System.out);
@@ -319,20 +320,20 @@ public class TestSkipTo {
 
         writer.setSorted(true);
 
-        writer.setAlignmentEntry(0, 1, 12, 30, false);
+        writer.setAlignmentEntry(0, 1, 12, 30, false, constantQueryLength);
         writer.appendEntry();
 
-        writer.setAlignmentEntry(0, 1, 13, 30, false);
+        writer.setAlignmentEntry(0, 1, 13, 30, false, constantQueryLength);
         writer.appendEntry();
 
-        writer.setAlignmentEntry(0, 1, 13, 30, false);
+        writer.setAlignmentEntry(0, 1, 13, 30, false, constantQueryLength);
         writer.appendEntry();
 
-        writer.setAlignmentEntry(0, 2, 123, 30, false);
+        writer.setAlignmentEntry(0, 2, 123, 30, false, constantQueryLength);
         writer.appendEntry();
-        writer.setAlignmentEntry(0, 2, 300, 30, false);
+        writer.setAlignmentEntry(0, 2, 300, 30, false, constantQueryLength);
         writer.appendEntry();
-        writer.setAlignmentEntry(0, 2, 300, 30, false);
+        writer.setAlignmentEntry(0, 2, 300, 30, false, constantQueryLength);
         writer.appendEntry();
         writer.close();
         writer.printStats(System.out);

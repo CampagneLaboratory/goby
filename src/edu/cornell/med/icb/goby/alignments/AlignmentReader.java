@@ -123,12 +123,6 @@ it.unimi.dsi.fastutil.objects.Object2BooleanOpenCustomHashMap getQueryIdentifier
 
     int getNumberOfAlignedReads();
 
-    /**
-     * Returns whether this read has query length information.
-     *
-     * @return True or false.
-     */
-    boolean hasQueryLengths();
 
     /**
      * Returns a sample of locations covered by this alignment.
@@ -164,12 +158,11 @@ it.unimi.dsi.fastutil.objects.Object2BooleanOpenCustomHashMap getQueryIdentifier
 
     int getNumberOfQueries();
 
-    int[] getQueryLengths();
 
 
     boolean isConstantQueryLengths();
-
-    int getQueryLength(int queryIndex);
+    int getConstantQueryLength();
+   
 
     IndexedIdentifier getQueryIdentifiers();
 }

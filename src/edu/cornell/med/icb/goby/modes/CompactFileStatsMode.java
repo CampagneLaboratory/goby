@@ -20,11 +20,14 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.algorithmic.data.DistinctIntValueCounterBitSet;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
+import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsReader;
+import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.EntryFlagHelper;
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
-import edu.cornell.med.icb.goby.algorithmic.data.DistinctIntValueCounterBitSet;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.lang.MutableString;
@@ -220,8 +223,8 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         final AlignmentReaderImpl reader = new AlignmentReaderImpl(basename);
         reader.readHeader();
         stream.println("Info from header:");
-        stream.printf("Alignment produced by aligner=%s version=%s %n",reader.getAlignerName(),
-                reader.getAlignerVersion());        
+        stream.printf("Alignment produced by aligner=%s version=%s %n", reader.getAlignerName(),
+                reader.getAlignerVersion());
         stream.printf("Sorted: %b%n", reader.isSorted());
         stream.printf("Indexed: %b%n", reader.isIndexed());
         stream.printf("Number of target sequences = %,d%n", reader.getNumberOfTargets());
@@ -246,14 +249,9 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         stream.println();
 
         stream.printf("Number of query sequences = %,d%n", reader.getNumberOfQueries());
-        final int[] queryLengthsFromHeader = reader.getQueryLengths();
-        stream.printf("Number of query length entries = %,d%n",
-                ArrayUtils.getLength(queryLengthsFromHeader));
 
         final SummaryStatistics queryLengthStats = new SummaryStatistics();
-        if (queryLengthsFromHeader != null) {
-            stream.println("Query lengths are encoded in the header");
-        }
+
         stream.println("Constant query lengths = " + reader.isConstantQueryLengths());
 
         stream.printf("Has query identifiers = %s%n",
@@ -306,13 +304,10 @@ public class CompactFileStatsMode extends AbstractGobyMode {
             alignedQueryIndices.observe(entry.getQueryIndex());
 
             // check entry then header for the query length
-            if (entry.hasQueryLength()) {
-                final double queryLength = entry.getQueryLength();
-                queryLengthStats.addValue(queryLength);
-            } else if (reader.hasQueryLengths() || reader.isConstantQueryLengths()) {
-                final double queryLength = reader.getQueryLength(entry.getQueryIndex());
-                queryLengthStats.addValue(queryLength);
-            }
+
+            final double queryLength = entry.getQueryLength();
+            queryLengthStats.addValue(queryLength);
+
             numPaired += EntryFlagHelper.isPaired(entry) ? 1 : 0;
             numProperlyPaired += EntryFlagHelper.isProperlyPaired(entry) ? 1 : 0;
             numFirstInPair += EntryFlagHelper.isFirstInPair(entry) ? 1 : 0;

@@ -49,10 +49,6 @@ public abstract class AbstractAlignmentReader implements Closeable,
      */
     protected int numberOfQueries;
 
-    /**
-     * Length of each query sequence, or null when {@link #constantQueryLengths} is true.
-     */
-    protected int[] queryLengths;
 
     /**
      * Mapping from target indicies to target identifier strings.  Note that it is
@@ -189,50 +185,7 @@ public abstract class AbstractAlignmentReader implements Closeable,
         return Math.max(0, numberOfTargets);
     }
 
-    /**
-     * Returns query lengths. An array of size the number of query sequences, where each element
-     * indicates the length of the query sequence.
-     *
-     * @return an array containing the lengths of all the queries represented in the alignment
-     * @deprecated Query lengths are now stored as part of the individual alignment entry and
-     *             can be retrieved with
-     *             {@link edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry#getQueryLength()}
-     */
-    @Deprecated
-    public final int[] getQueryLengths() {
-        assert isHeaderLoaded() : "Header must be loaded to access query lengths";
-        if (constantQueryLengths) {
-            final int[] localQueryLengths = new int[numberOfQueries];
-            for (int i = 0; i < localQueryLengths.length; ++i) {
-                localQueryLengths[i] = constantLength;
-            }
-            return localQueryLengths;
-        } else {
-            return queryLengths;
-        }
-    }
-
-    /**
-     * Returns the length of a query. NB this method is only available for backward compatibility.
-     * It will be removed in a future release of Goby. Do not write new code that depends on it.
-     * Instead, store query lengths in alignment entries.
-     *
-     * @param queryIndex The index of the query to get the length for
-     * @return the length of the specified query entry
-     * @deprecated Query lengths are now stored as part of the individual alignment entry and
-     *             can be retrieved with
-     *             {@link edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry#getQueryLength()}
-     */
-    @Deprecated
-    public final int getQueryLength(final int queryIndex) {
-        assert isHeaderLoaded() : "Header must be loaded to access query lengths";
-        if (constantQueryLengths) {
-            return constantLength;
-        } else {
-            assert queryLengths != null : "Query lengths must exist in the header.";
-            return queryLengths[queryIndex - smallestQueryIndex];
-        }
-    }
+   
 
     /**
      * Returns the length of a target.

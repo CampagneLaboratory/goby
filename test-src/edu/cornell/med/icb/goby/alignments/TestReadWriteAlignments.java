@@ -48,6 +48,7 @@ public class TestReadWriteAlignments {
      */
     private static final Log LOG = LogFactory.getLog(TestReadWriteAlignments.class);
     private static final String BASE_TEST_DIR = "test-results/alignments";
+    private int constantQueryLength=40;
 
     @BeforeClass
     public static void initializeTestDirectory() throws IOException {
@@ -76,7 +77,7 @@ public class TestReadWriteAlignments {
         int position = 1;
         for (int referenceIndex = 0; referenceIndex < numTargets; referenceIndex++) {
             for (int queryIndex = 0; queryIndex < numReads; queryIndex++) {
-                writer.setAlignmentEntry(queryIndex, referenceIndex, position++, 30, false);
+                writer.setAlignmentEntry(queryIndex, referenceIndex, position++, 30, false, constantQueryLength);
                 writer.appendEntry();
                 numExpected++;
             }
@@ -162,7 +163,7 @@ public class TestReadWriteAlignments {
         assertNotNull("Query ids should not be null", queryIds.keySet());
         writer.setQueryIdentifiers(queryIds);
         final int[] queryLengths = {0, 34, 84};
-        writer.setQueryLengths(queryLengths);
+
 
         assertNotNull("Target ids should not be null", targetIds.keySet());
         writer.setTargetIdentifiers(targetIds);
@@ -173,19 +174,12 @@ public class TestReadWriteAlignments {
         final AlignmentReaderImpl reader =
                 new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, "align-103"));
         reader.readHeader();
-        assertArrayEquals("Query lengths do not match", queryLengths, reader.getQueryLengths());
         assertEquals("Number of queries do not match", 3, reader.getNumberOfQueries());
 
         assertArrayEquals("Target lengths do not match", targetLengths, reader.getTargetLength());
         assertEquals("Number of targets do not match", 2, reader.getNumberOfTargets());
 
-        try {
-            writer.setQueryLengths(new int[]{34, 84});
-        } catch (AssertionError e) {  // TODO - change to a real exception -
-            // success, not enough elements in length array to account for queryIndex=2
-            return;
-        }
-        fail("the length array is too short. This case must be detected.");
+
     }
 
     @Test
@@ -204,8 +198,7 @@ public class TestReadWriteAlignments {
 
         assertNotNull("Query ids should not be null", queryIds.keySet());
         writer.setQueryIdentifiers(queryIds);
-        final int[] queryLengths = {11, 11, 11};
-        writer.setQueryLengths(queryLengths);
+
 
         assertNotNull("Target ids should not be null", targetIds.keySet());
         writer.setTargetIdentifiers(targetIds);
@@ -217,13 +210,10 @@ public class TestReadWriteAlignments {
                 new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, "align-104"));
         reader.readHeader();
 
-        assertTrue("query length must be constant", reader.isConstantQueryLengths());
-        assertArrayEquals("Query lengths do not match", queryLengths, reader.getQueryLengths());
+
         assertEquals("Number of queries do not match", 3, reader.getNumberOfQueries());
 
-        for (final Alignments.AlignmentEntry entry : reader) {
-            assertEquals(queryLengths[entry.getQueryIndex()], entry.getQueryLength());
-        }
+
     }
 
     /**
@@ -257,7 +247,7 @@ public class TestReadWriteAlignments {
         reader.readHeader();
         assertTrue("query length should be constant", reader.isConstantQueryLengths());
         assertEquals("Number of queries do not match", 4, reader.getNumberOfQueries());
-        assertFalse("New style header shouldn't have query lengths", reader.hasQueryLengths());
+
     }
 
     /**
@@ -293,7 +283,7 @@ public class TestReadWriteAlignments {
         reader.readHeader();
         assertFalse("query length must not be constant", reader.isConstantQueryLengths());
         assertEquals("Number of queries do not match", 4, reader.getNumberOfQueries());
-        assertFalse("New style header shouldn't have query lengths", reader.hasQueryLengths());
+      
     }
 
 }

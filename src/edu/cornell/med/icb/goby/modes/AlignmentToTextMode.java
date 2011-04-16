@@ -21,9 +21,9 @@ package edu.cornell.med.icb.goby.modes;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.IterateAlignments;
-import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.util.VersionUtils;
@@ -207,13 +207,9 @@ public class AlignmentToTextMode extends AbstractGobyMode {
 
                         final int readLength;
                         // check entry then header for the query/read length otherwise use default
-                        if (alignmentEntry.hasQueryLength()) {
-                            readLength = alignmentEntry.getQueryLength();
-                        } else if (alignmentReader.hasQueryLengths() || alignmentReader.isConstantQueryLengths()) {
-                            readLength = alignmentReader.getQueryLength(alignmentEntry.getQueryIndex());
-                        } else {
-                            readLength = defaultReadLength;
-                        }
+
+                        readLength = alignmentEntry.getQueryLength();
+
 
                         final MutableString readSequence = getReadSequence(alignmentEntry, readLength);
 

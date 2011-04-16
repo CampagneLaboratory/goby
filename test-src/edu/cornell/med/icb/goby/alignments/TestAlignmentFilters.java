@@ -39,6 +39,7 @@ public class TestAlignmentFilters {
 
         builder.setNumberOfIndels(0);
         builder.setNumberOfMismatches(0);
+        builder.setQueryLength(40);
         entry = builder.build();
 
         PercentMismatchesQualityFilter filter = new PercentMismatchesQualityFilter();
@@ -48,6 +49,7 @@ public class TestAlignmentFilters {
         builder.setNumberOfIndels(2);
         builder.setNumberOfMismatches(3);
         builder.setQueryAlignedLength(1);
+
         entry = builder.build();
 
         filter = new PercentMismatchesQualityFilter();
@@ -59,7 +61,6 @@ public class TestAlignmentFilters {
         builder = buildMinimalEntry();
         builder.setNumberOfIndels(2);
         builder.setNumberOfMismatches(3);
-
         entry = builder.build();
 
         filter = new PercentMismatchesQualityFilter();
@@ -81,7 +82,7 @@ public class TestAlignmentFilters {
         builder.setPosition(10);
         builder.setQueryAlignedLength(100);
         builder.setMatchingReverseStrand(false);
-
+        builder.setQueryLength(30);
         return builder;
     }
 }

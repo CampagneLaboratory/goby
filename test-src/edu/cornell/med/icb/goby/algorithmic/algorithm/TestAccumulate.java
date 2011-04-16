@@ -84,6 +84,7 @@ public class TestAccumulate {
         final String basename = FilenameUtils.concat(testDir, "align-reads");
         AlignmentWriter alignmentWriter = null;
         try {
+           int constantQueryLength=40;
             alignmentWriter = new AlignmentWriter(basename);
             Alignments.AlignmentEntry.Builder currentEntry = alignmentWriter.getAlignmentEntry();
             currentEntry.setScore(30);
@@ -92,6 +93,7 @@ public class TestAccumulate {
             currentEntry.setTargetIndex(1);
             currentEntry.setMatchingReverseStrand(false);
             currentEntry.setQueryAlignedLength(5);
+            currentEntry.setQueryLength(constantQueryLength);
             alignmentWriter.appendEntry();
 
             currentEntry = alignmentWriter.getAlignmentEntry();
@@ -101,6 +103,7 @@ public class TestAccumulate {
             currentEntry.setTargetIndex(1);
             currentEntry.setMatchingReverseStrand(false);
             currentEntry.setQueryAlignedLength(5);
+              currentEntry.setQueryLength(constantQueryLength);
             alignmentWriter.appendEntry();
 
             currentEntry = alignmentWriter.getAlignmentEntry();
@@ -110,6 +113,7 @@ public class TestAccumulate {
             currentEntry.setTargetIndex(1);
             currentEntry.setMatchingReverseStrand(false);
             currentEntry.setQueryAlignedLength(4);
+              currentEntry.setQueryLength(constantQueryLength);
             alignmentWriter.appendEntry();
 
             currentEntry = alignmentWriter.getAlignmentEntry();
@@ -119,6 +123,7 @@ public class TestAccumulate {
             currentEntry.setTargetIndex(1);
             currentEntry.setMatchingReverseStrand(false);
             currentEntry.setQueryAlignedLength(4);
+              currentEntry.setQueryLength(constantQueryLength);
             alignmentWriter.appendEntry();
 
             alignmentWriter.printStats(System.out);
