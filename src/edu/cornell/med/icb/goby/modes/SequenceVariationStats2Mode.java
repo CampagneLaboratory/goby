@@ -20,17 +20,20 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.FileOutputStream;
-
-import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
+import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.ConcatSortedAlignmentReader;
+import edu.cornell.med.icb.goby.alignments.IterateSortedAlignments;
 import edu.cornell.med.icb.goby.util.DoInParallel;
+import edu.cornell.med.icb.goby.util.WarningCounter;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 
 /**
  * @author Fabien Campagne
@@ -259,10 +262,12 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
                 readIndexReferenceTally[currentReadIndex] = count + 1;
                 referenceBaseCount += 1;
             } else {
-                LOG.warn("Ref: Detected and ignoring negative read index " + currentReadIndex);
+                negativeReadIndexWarning.warn(LOG,
+                        "Ref: Detected and ignoring negative read index %d ", currentReadIndex);
             }
         }
 
+        WarningCounter negativeReadIndexWarning = new WarningCounter();
 
         public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
                                        Alignments.AlignmentEntry alignmentEntry, Int2ObjectMap<CountsAtPosition> positionToBases,
@@ -272,9 +277,10 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
                 LOG.debug(String.format("VB: queryIndex=%d\tref_position=%d\tread_index=%d\tfromChar=%c\ttoChar=%c%n",
                         alignmentEntry.getQueryIndex(), currentRefPosition, currentReadIndex, fromChar, toChar));
             }
-            
+
             if (currentReadIndex < 1) {
-                LOG.warn("Var: Detected and ignoring negative read index " + currentReadIndex);
+                 negativeReadIndexWarning.warn(LOG,
+                        "Var: Detected and ignoring negative read index %d ", currentReadIndex);
             } else {
                 maxReadIndex = Math.max(maxReadIndex, currentReadIndex);
                 long count = readIndexVariationTally[currentReadIndex];

@@ -20,6 +20,8 @@ package edu.cornell.med.icb.goby.util;
 
 import org.apache.commons.logging.Log;
 
+import java.util.logging.Logger;
+
 /**
  * Counter to print a specific message up to maxWarnings.
  *
@@ -48,7 +50,13 @@ public class WarningCounter {
         return ++counter < maxWarnings;
     }
 
-    public void warn(Log log, String format, Object... option) {
+    public void warn(org.apache.commons.logging.Log log, String format, Object... option) {
+        if (warnAgain()) {
+            log.warn(String.format(format, option));
+        }
+    }
+
+    public void warn(org.apache.log4j.Logger log, String format, Object... option) {
         if (warnAgain()) {
             log.warn(String.format(format, option));
         }
