@@ -20,6 +20,8 @@ package edu.cornell.med.icb.goby.alignments;
 
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.logging.ProgressLogger;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.BitSet;
@@ -37,6 +39,8 @@ import java.util.Properties;
  *         Time: 4:09:55 PM
  */
 public class NonAmbiguousAlignmentReader implements AlignmentReader {
+    private static final Logger LOG = Logger.getLogger(NonAmbiguousAlignmentReader.class);
+
     private Alignments.AlignmentEntry possibleEntry;
 
     public boolean isSorted() {
@@ -63,15 +67,24 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
     }
 
     private void readTmh(String basename) throws IOException {
+        LOG.info("start reading TMH for " + basename);
+        ProgressLogger pg = new ProgressLogger(LOG);
+
         final AlignmentTooManyHitsReader tmh = new AlignmentTooManyHitsReader(basename);
+        LOG.info("finished loading TMH for " + basename);
         numQueries = tmh.getQueryIndices().size();
         ambiguousQueryIndices = new BitSet(numQueries);
+        pg.expectedUpdates = tmh.getQueryIndices().size();
+        pg.start("start reading TMH for " + basename);
+        pg.info = "processed %d items";
         for (int i = 0; i < numQueries; i++) {
             if (tmh.isQueryAmbiguous(i)) {
                 ambiguousQueryIndices.set(i);
             }
+            pg.lightUpdate();
         }
-
+        pg.stop("done reading TMH for " + basename);
+        //   LOG.info();
     }
 
     public NonAmbiguousAlignmentReader(final long startOffset,

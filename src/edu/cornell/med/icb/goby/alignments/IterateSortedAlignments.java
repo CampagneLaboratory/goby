@@ -171,7 +171,8 @@ public abstract class IterateSortedAlignments<T> {
      * @throws java.io.IOException If an error occured reading the input alignment.
      */
     public void iterate(final String... basenames) throws IOException {
-        ConcatSortedAlignmentReader sortedReaders = new ConcatSortedAlignmentReader(alignmentReaderFactory, basenames);
+        ConcatSortedAlignmentReader sortedReaders = new ConcatSortedAlignmentReader(
+                false, basenames);
 
         final int numberOfReferences = sortedReaders.getNumberOfTargets();
 
@@ -210,7 +211,7 @@ public abstract class IterateSortedAlignments<T> {
 
         try {
             if (StringUtils.isEmpty(startOffsetArgument) && StringUtils.isEmpty(endOffsetArgument)) {
-                sortedReaders = new ConcatSortedAlignmentReader(basenames);
+                sortedReaders = new ConcatSortedAlignmentReader(alignmentReaderFactory, false, basenames);
             } else {
                 final String[] startTokens = startOffsetArgument.split("[,]");
                 final String[] endTokens = endOffsetArgument.split("[,]");
@@ -219,7 +220,10 @@ public abstract class IterateSortedAlignments<T> {
 
                 startReferenceIndex = referenceIds.getIndex(startTokens[0]);
                 endReferenceIndex = referenceIds.getIndex(endTokens[0]);
-                sortedReaders = new ConcatSortedAlignmentReader(basenames, startReferenceIndex,
+                sortedReaders = new ConcatSortedAlignmentReader(alignmentReaderFactory,
+                        false, 
+                        basenames,
+                        startReferenceIndex,
                         Math.max(0, startPosition - startFlapLength),
                         endReferenceIndex,
                         endPosition);

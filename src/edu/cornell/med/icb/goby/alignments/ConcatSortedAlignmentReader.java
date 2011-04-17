@@ -60,11 +60,12 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
      * @throws IOException If an error occurs opening or reading the alignment files.
      */
     public ConcatSortedAlignmentReader(AlignmentReaderFactory factory,
+                                       final boolean adjustQueryIndices,
                                        String[] basenames,
                                        int startReferenceIndex, int startPosition,
                                        int endReferenceIndex, int endPosition) throws IOException {
         super(factory,
-                true,
+                adjustQueryIndices,
                 startReferenceIndex,
                 startPosition,
                 endReferenceIndex,
@@ -100,7 +101,10 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
         super(alignmentReaderFactory, true, basenames);
         init(basenames);
     }
-
+     public ConcatSortedAlignmentReader(AlignmentReaderFactory alignmentReaderFactory,final boolean adjustQueryIndices, String[] basenames) throws IOException {
+        super(alignmentReaderFactory, adjustQueryIndices, basenames);
+        init(basenames);
+    }
     public ConcatSortedAlignmentReader(final boolean adjustQueryIndices, final String... basenames) throws IOException {
         super(new DefaultAlignmentReaderFactory(), adjustQueryIndices, basenames);
         init(basenames);

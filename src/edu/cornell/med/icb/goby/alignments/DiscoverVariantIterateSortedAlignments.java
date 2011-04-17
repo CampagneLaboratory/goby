@@ -22,9 +22,10 @@ package edu.cornell.med.icb.goby.alignments;
 
 import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
-
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.stats.TSVWriter;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
+import edu.cornell.med.icb.goby.util.WarningCounter;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -58,6 +59,7 @@ public class DiscoverVariantIterateSortedAlignments
     private int[] readerIndexToGroupIndex;
 
     private BaseFilter[] baseFilters;
+    private int genomeRefIndex;
 
     public void setMinimumVariationSupport(int minimumVariationSupport) {
         this.minimumVariationSupport = minimumVariationSupport;
@@ -110,6 +112,13 @@ public class DiscoverVariantIterateSortedAlignments
 
     }
 
+    RandomAccessSequenceCache genome;
+
+    public void setGenome(RandomAccessSequenceCache genome) {
+        this.genome = genome;
+
+    }
+
     public class PositionBaseInfo {
         public int readIndex;
         public int readerIndex;
@@ -133,12 +142,18 @@ public class DiscoverVariantIterateSortedAlignments
     private SampleCountInfo[] sampleCounts;
 
     private int numberOfSamples;
-
+    private int previousReference = -1;
+    WarningCounter refBaseWarning = new WarningCounter();
 
     public void processPositions(int referenceIndex, int position,
                                  ObjectArrayList<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> list) {
         int sumVariantCounts = 0;
 
+        if (referenceIndex != previousReference && genome !=null) {
+            genomeRefIndex = genome.getReferenceIndex(getReferenceId(referenceIndex).toString());
+            previousReference=referenceIndex;
+        }
+        char referenceBase =  getReferenceAllele(genome, position,list);
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_A_INDEX] = 0;
@@ -146,7 +161,7 @@ public class DiscoverVariantIterateSortedAlignments
             sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_C_INDEX] = 0;
             sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_G_INDEX] = 0;
             sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_OTHER_INDEX] = 0;
-            sampleCounts[sampleIndex].referenceBase = '?';
+            sampleCounts[sampleIndex].referenceBase = referenceBase;
             sampleCounts[sampleIndex].distinctReadIndices.clear();
             sampleCounts[sampleIndex].sampleIndex = sampleIndex;
             sampleCounts[sampleIndex].varCount = 0;
@@ -156,20 +171,25 @@ public class DiscoverVariantIterateSortedAlignments
 
         if (list != null) {
             IntSet distinctReadIndices = new IntArraySet();
-            char refBase = setReferenceAllele(list);
+
             for (edu.cornell.med.icb.goby.alignments.PositionBaseInfo info : list) {
                 final int sampleIndex = info.readerIndex;
                 distinctReadIndices.add(info.readIndex);
                 if (info.matchesReference) {
 
-                    sampleCounts[sampleIndex].referenceBase = info.from;
+                    sampleCounts[sampleIndex].referenceBase = referenceBase;
                     sampleCounts[sampleIndex].refCount++;
                     incrementBaseCounter(info.from, sampleIndex);
 
                 } else {
                     sampleCounts[sampleIndex].varCount++;
                     sumVariantCounts++;
-                    sampleCounts[sampleIndex].referenceBase = refBase;
+                    if (info.from != referenceBase) {
+
+                        refBaseWarning.warn(LOG, "reference base differ between variation (%c) and genome (%c) at position %d",
+                                info.from, referenceBase, position);
+                    }
+                    sampleCounts[sampleIndex].referenceBase = referenceBase;
                     sampleCounts[sampleIndex].distinctReadIndices.add(info.readIndex);
                     incrementBaseCounter(info.to, sampleIndex);
                 }
@@ -199,7 +219,17 @@ public class DiscoverVariantIterateSortedAlignments
         }
     }
 
-    private char setReferenceAllele(ObjectArrayList<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> list) {
+    /**
+     * Instead of this method, use the random access genome to find the reference base for all bases.
+     * @param list
+     * @return
+     * @deprecated
+     */
+    private char getReferenceAllele(RandomAccessSequenceCache genome,
+                                    int position,
+
+                                    ObjectArrayList<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> list) {
+        if (genome!=null) return genome.get(genomeRefIndex, position);
         final ObjectIterator<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> iterator = list.iterator();
         char refBase = '\0';
         // find the reference base from any variant:

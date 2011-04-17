@@ -1,4 +1,5 @@
 development -> 1.9.5
+ - Dramatically improved TMH loading times for large alignemnts. 
  - Completely removed support for queryLength in header. This usage was deprecated a while ago, complicates
    the code unecessarily and is error prone (because we had two ways to store read length in the previous
    version of Goby). Changed protobuf to make queryLength a required field. This means that alignments that

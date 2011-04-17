@@ -24,8 +24,10 @@ import com.google.protobuf.CodedInputStream;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -60,7 +62,7 @@ public class AlignmentTooManyHitsReader {
     /**
      * A map from query index to depth/length of match.
      */
-    private final Int2IntMap queryIndex2Depth = new Int2IntOpenHashMap();
+    private  Int2IntMap queryIndex2Depth = new Int2IntOpenHashMap();
 
     /**
      * The threshold used by the aligner to determine that a query is ambiguous and
@@ -91,6 +93,10 @@ public class AlignmentTooManyHitsReader {
             codedInput.setSizeLimit(Integer.MAX_VALUE);
 
             final Alignments.AlignmentTooManyHits tmh = Alignments.AlignmentTooManyHits.parseFrom(codedInput);
+
+            int capacity=tmh.getHitsCount();
+            queryIndex2NumHits=new Int2IntOpenHashMap(capacity);
+            queryIndex2Depth=new Int2IntOpenHashMap(capacity);
             for (final Alignments.AmbiguousLocation hit : tmh.getHitsList()) {
                 queryIndex2NumHits.put(hit.getQueryIndex(), hit.getAtLeastNumberOfHits());
                 if (hit.hasLengthOfMatch()) {
@@ -98,6 +104,7 @@ public class AlignmentTooManyHitsReader {
                 }
 
             }
+
             this.alignerThreshold = tmh.getAlignerThreshold();
         } else {
             tooManyHitsStream = null;

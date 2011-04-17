@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
@@ -107,7 +108,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
         inputFilenames = jsapResult.getStringArray("input");
-  
+
         outputFile = jsapResult.getString("output");
         outWriter = "-".equals(outputFile) ? new PrintWriter(System.out) : new PrintWriter(outputFile);
 
@@ -176,9 +177,27 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                         values.toString());
                 System.exit(1);
         }
+
+        final String genome = jsapResult.getString("genome");
+        RandomAccessSequenceCache cache = null;
+        if (genome != null) {
+            try {
+                System.err.println("Loading genome cache " + genome);
+                cache = new RandomAccessSequenceCache();
+                cache.load(genome);
+            } catch (ClassNotFoundException e) {
+                System.err.println("Could not load genome cache");
+                e.printStackTrace();
+                System.exit(1);
+            }
+        }
+
         outputVCF = jsapResult.getBoolean("vcf");
-        sortedPositionIterator = new DiscoverVariantIterateSortedAlignments(formatter);
         int startFlapSize = jsapResult.getInt("start-flap-size", 100);
+
+        sortedPositionIterator = new DiscoverVariantIterateSortedAlignments(formatter);
+
+        sortedPositionIterator.setGenome(cache);
         sortedPositionIterator.setStartFlapLength(startFlapSize);
         sortedPositionIterator.parseIncludeReferenceArgument(jsapResult);
         sortedPositionIterator.setMinimumVariationSupport(minimumVariationSupport);
@@ -326,6 +345,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 }
                 if (!found) {
                     System.err.printf("Cannot find basename %s in stat file.", basename);
+                    System.err.flush();
                 }
                 readerIndex++;
             }

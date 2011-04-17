@@ -155,5 +155,11 @@
             </defaults>
             <help>The name of the output format. Possible choices are genotypes, allele_frequencies, compare_groups.</help>
         </flaggedOption>
+        <flaggedOption>
+            <id>genome</id>
+            <longFlag>genome</longFlag>
+            <required>false</required>
+            <help>A file name to the sequence of the reference, in the random access format produced by the build-sequence-cache mode. </help>
+        </flaggedOption>
     </parameters>
 </jsap>
