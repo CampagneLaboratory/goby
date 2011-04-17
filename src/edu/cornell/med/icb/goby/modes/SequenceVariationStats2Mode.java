@@ -259,7 +259,7 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
                 readIndexReferenceTally[currentReadIndex] = count + 1;
                 referenceBaseCount += 1;
             } else {
-                LOG.warn("Detected and ignoring negative read index " + currentReadIndex);
+                LOG.warn("Ref: Detected and ignoring negative read index " + currentReadIndex);
             }
         }
 
@@ -274,7 +274,7 @@ public class SequenceVariationStats2Mode extends AbstractGobyMode {
             }
             
             if (currentReadIndex < 1) {
-                LOG.warn("Detected and ignoring negative read index " + currentReadIndex);
+                LOG.warn("Var: Detected and ignoring negative read index " + currentReadIndex);
             } else {
                 maxReadIndex = Math.max(maxReadIndex, currentReadIndex);
                 long count = readIndexVariationTally[currentReadIndex];
