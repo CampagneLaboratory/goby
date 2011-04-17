@@ -55,7 +55,8 @@ public class SimulateBisulfiteReads {
     private Int2DoubleMap methylationReverse;
     private String regionTrueRates;
     private boolean bisulfiteTreatment;
-    private long seed=232424434L;
+    private long seed = 232424434L;
+    private int numRepeats;
 
     public SimulateBisulfiteReads() {
         random = new Random(seed);
@@ -86,6 +87,8 @@ public class SimulateBisulfiteReads {
         processor.readLength = readLength;
         processor.outputFilename = outputFilename;
         processor.regionTrueRates = regionTrueRates;
+        processor.numRepeats=CLI.getIntOption(args,"-n",10000);
+
         processor.process(refChoice, fastaReference, from, to, methylationRateFilename);
 
     }
@@ -115,7 +118,7 @@ public class SimulateBisulfiteReads {
         // System.out.printf("segmentBases.length: %d %n", segmentBases.length());
         methylationForward = new Int2DoubleOpenHashMap();
         methylationReverse = new Int2DoubleOpenHashMap();
-
+        trueRateWriter.printf("%s\t%s\ts\t%s\t%s%n", "index", "methylationRate", "chromosome", "position");
         final int segmentLength = segmentBases.length();
         DoubleIterator it = methylationRates.iterator();
         // prepare methylation rates for each C position of the segment, forward strand:
@@ -125,7 +128,7 @@ public class SimulateBisulfiteReads {
                     it = methylationRates.iterator();
                 }
                 methylationForward.put(i, it.nextDouble());
-                trueRateWriter.printf("%d\t%g\t+1\t%d%n", i, methylationForward.get(i),i+from);
+                trueRateWriter.printf("%d\t%g\t+1\t%s\t%d%n", i, methylationForward.get(i), refChoice, i + from);
             }
         }
         it = methylationRates.iterator();
@@ -138,10 +141,11 @@ public class SimulateBisulfiteReads {
                 }
                 final int positionInSegment = i;
                 methylationReverse.put(positionInSegment, it.nextDouble());
-                trueRateWriter.printf("%d\t%g\t-1\t%d%n", positionInSegment, methylationReverse.get(positionInSegment), i+from);
+                trueRateWriter.printf("%d\t%g\t-1\t%s\t%d%n", positionInSegment, methylationReverse.get(positionInSegment),
+                        refChoice, i + from);
             }
         }
-        for (int repeatCount = 0; repeatCount < 10000; repeatCount++) {
+        for (int repeatCount = 0; repeatCount < numRepeats; repeatCount++) {
             int startReadPosition = choose(0, segmentBases.length() - 1 - readLength);
             boolean matchedReverseStrand = random.nextBoolean();
             final CharSequence selectedReadRegion = segmentBases.subSequence(startReadPosition, startReadPosition + readLength);
