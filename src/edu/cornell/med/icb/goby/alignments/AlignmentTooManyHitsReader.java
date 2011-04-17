@@ -24,10 +24,8 @@ import com.google.protobuf.CodedInputStream;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -62,7 +60,7 @@ public class AlignmentTooManyHitsReader {
     /**
      * A map from query index to depth/length of match.
      */
-    private  Int2IntMap queryIndex2Depth = new Int2IntOpenHashMap();
+    private Int2IntMap queryIndex2Depth = new Int2IntOpenHashMap();
 
     /**
      * The threshold used by the aligner to determine that a query is ambiguous and
@@ -73,10 +71,7 @@ public class AlignmentTooManyHitsReader {
     public AlignmentTooManyHitsReader(final String basename) throws IOException {
         final String filename = basename + ".tmh";
         final File optionalFile = new File(filename);
-        this.queryIndex2NumHits = new Int2IntOpenHashMap();
-        this.queryIndex2NumHits.defaultReturnValue(-1);
-        this.queryIndex2Depth.defaultReturnValue(-1);
-
+    
         InputStream tmhStream = null;
         if (optionalFile.exists()) {
             try {
@@ -94,9 +89,11 @@ public class AlignmentTooManyHitsReader {
 
             final Alignments.AlignmentTooManyHits tmh = Alignments.AlignmentTooManyHits.parseFrom(codedInput);
 
-            int capacity=tmh.getHitsCount();
-            queryIndex2NumHits=new Int2IntOpenHashMap(capacity);
-            queryIndex2Depth=new Int2IntOpenHashMap(capacity);
+            int capacity = tmh.getHitsCount();
+            queryIndex2NumHits = new Int2IntOpenHashMap(capacity);
+            queryIndex2Depth = new Int2IntOpenHashMap(capacity);
+            queryIndex2NumHits.defaultReturnValue(-1);
+            queryIndex2Depth.defaultReturnValue(-1);
             for (final Alignments.AmbiguousLocation hit : tmh.getHitsList()) {
                 queryIndex2NumHits.put(hit.getQueryIndex(), hit.getAtLeastNumberOfHits());
                 if (hit.hasLengthOfMatch()) {
