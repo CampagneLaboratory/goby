@@ -25,29 +25,26 @@ import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.*;
-import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.rosuda.JRI.Rengine;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.io.PrintWriter;
 
 /**
- * A Variant Call Format output to compare genomic variation across groups
+ * A Variant Call Format output to compare genomic variation across groups.
  *
  * @author Fabien Campagne
  *         Date: April 4 2011
  *         Time: 2:38:13 AM
  */
-public class BetweenGroupsVCFOutputFormat implements SequenceVariationOutputFormat {
+public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputFormat {
 
     /**
      * Used to log debug and informational messages.
      */
-    private static final Log LOG = LogFactory.getLog(BetweenGroupsVCFOutputFormat.class);
+    private static final Log LOG = LogFactory.getLog(CompareGroupsVCFOutputFormat.class);
 
     VCFWriter statWriter;
     private int refIdColumnIndex;
@@ -96,7 +93,7 @@ public class BetweenGroupsVCFOutputFormat implements SequenceVariationOutputForm
         fisherRInstalled = rEngine != null && rEngine.isAlive();
 
         if (groups.length != 2) {
-            System.err.println("BetweenGroupsVCFOutputFormat requires exactly two groups.");
+            System.err.println("CompareGroupsVCFOutputFormat requires exactly two groups.");
             System.exit(1);
         }
 

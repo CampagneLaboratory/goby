@@ -57,7 +57,7 @@ public abstract class IterateSortedAlignmentsListImpl
         info.matchesReference = true;
         info.position = currentRefPosition;
         info.qualityScore = 40;
-
+        info.matchesForwardStrand=!alignmentEntry.getMatchingReverseStrand();
         addToFuture(positionToBases, info);
     }
 
@@ -86,7 +86,7 @@ public abstract class IterateSortedAlignmentsListImpl
         info.matchesReference = false;
         info.position = currentRefPosition;
         info.qualityScore=toQual;
-
+        info.matchesForwardStrand=!alignmentEntry.getMatchingReverseStrand();
         addToFuture(positionToBases, info);
     }
 

@@ -149,11 +149,11 @@ public class DiscoverVariantIterateSortedAlignments
                                  ObjectArrayList<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> list) {
         int sumVariantCounts = 0;
 
-        if (referenceIndex != previousReference && genome !=null) {
+        if (referenceIndex != previousReference && genome != null) {
             genomeRefIndex = genome.getReferenceIndex(getReferenceId(referenceIndex).toString());
-            previousReference=referenceIndex;
+            previousReference = referenceIndex;
         }
-        char referenceBase =  getReferenceAllele(genome, position,list);
+        char referenceBase = getReferenceAllele(genome, position, list);
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_A_INDEX] = 0;
@@ -184,7 +184,7 @@ public class DiscoverVariantIterateSortedAlignments
                 } else {
                     sampleCounts[sampleIndex].varCount++;
                     sumVariantCounts++;
-                    if (info.from != referenceBase) {
+                    if (info.from != referenceBase && (info.from != '.' && info.from != '-')) {
 
                         refBaseWarning.warn(LOG, "reference base differ between variation (%c) and genome (%c) at position %d",
                                 info.from, referenceBase, position);
@@ -221,23 +221,26 @@ public class DiscoverVariantIterateSortedAlignments
 
     /**
      * Instead of this method, use the random access genome to find the reference base for all bases.
+     *
      * @param list
      * @return
-     * @deprecated
      */
     private char getReferenceAllele(RandomAccessSequenceCache genome,
                                     int position,
 
                                     ObjectArrayList<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> list) {
-        if (genome!=null) return genome.get(genomeRefIndex, position);
+        if (genome != null) return genome.get(genomeRefIndex, position);
         final ObjectIterator<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> iterator = list.iterator();
         char refBase = '\0';
         // find the reference base from any variant:
         while (iterator.hasNext()) {
             edu.cornell.med.icb.goby.alignments.PositionBaseInfo positionBaseInfo = iterator.next();
             if (!positionBaseInfo.matchesReference) {
-                refBase = positionBaseInfo.from;
-                break;
+                if (positionBaseInfo.from != '-' && positionBaseInfo.from != '.') {
+                    /* skip the variant if this was an insertion in the read and we don't know the reference.*/
+                    refBase = positionBaseInfo.from;
+                    break;
+                }
             }
         }
         // set on elements that match the reference:

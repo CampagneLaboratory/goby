@@ -33,7 +33,7 @@ public class PositionBaseInfo {
     public char from = ' ';
     public char to = ' ';
     public int position;
-
+    public boolean matchesForwardStrand;
     @Override
     public String toString() {
         return matchesReference ? String.format("ref: %c s=%d", from, readerIndex) :

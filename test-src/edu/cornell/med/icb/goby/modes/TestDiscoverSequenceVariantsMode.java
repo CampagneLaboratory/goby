@@ -18,30 +18,27 @@
 
 package edu.cornell.med.icb.goby.modes;
 
-import com.martiansoftware.jsap.JSAPException;
 import com.google.protobuf.ByteString;
+import com.martiansoftware.jsap.JSAPException;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.util.TestFiles;
 import edu.cornell.med.icb.io.TSVReader;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.chars.CharArraySet;
+import it.unimi.dsi.fastutil.chars.CharSet;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntIterator;
-import it.unimi.dsi.fastutil.chars.CharSet;
-import it.unimi.dsi.fastutil.chars.CharArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-
 
 import java.io.*;
 import java.util.Collections;
@@ -289,10 +286,10 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         assertEquals(16, filteredList.size());
         assertEquals(0, sampleCounts[0].refCount);
-        assertEquals(11-5, sampleCounts[0].varCount);
+        assertEquals(11 - 5, sampleCounts[0].varCount);
 
         assertEquals(10, sampleCounts[1].refCount);
-        assertEquals(6-6, sampleCounts[1].varCount);
+        assertEquals(6 - 6, sampleCounts[1].varCount);
 
     }
 
@@ -308,7 +305,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         assertEquals(10, sampleCounts[1].refCount);
         assertEquals(6, sampleCounts[1].varCount);
 
-        IntArrayList scores = IntArrayList.wrap(new int[]{ 40, 40, 40, 40, 40, 40, 10, 40, 40, 40, 40, 40, 40, 40, 40, 40});
+        IntArrayList scores = IntArrayList.wrap(new int[]{40, 40, 40, 40, 40, 40, 10, 40, 40, 40, 40, 40, 40, 40, 40, 40});
 
         final ObjectArrayList<PositionBaseInfo> list = makeListWithScores(sampleCounts, scores);
         assertEquals(32, list.size());
@@ -362,6 +359,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
                     if (base == 'A') {
                         info.matchesReference = true;
                         info.from = base;
+                        info.matchesForwardStrand = true;
                     }
                     info.readerIndex = sampleInfo.sampleIndex;
                     if (!nextReadIndexIterator.hasNext()) {
@@ -394,6 +392,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
                     if (base == 'A') {
                         info.matchesReference = true;
                         info.from = base;
+                        info.matchesForwardStrand = true;
                     }
                     info.readerIndex = sampleInfo.sampleIndex;
                     if (!nextQualityIterator.hasNext()) {

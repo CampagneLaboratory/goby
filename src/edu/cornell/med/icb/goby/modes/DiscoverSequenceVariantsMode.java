@@ -163,13 +163,16 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 formatter = new BetweenGroupSequenceVariationOutputFormat();
                 break;
             case COMPARE_GROUPS:
-                formatter = new BetweenGroupsVCFOutputFormat();
+                formatter = new CompareGroupsVCFOutputFormat();
                 break;
             case ALLELE_FREQUENCIES:
                 formatter = new AlleleFrequencyOutputFormat();
                 break;
             case GENOTYPES:
                 formatter = new GenotypesOutputFormat();
+                break;
+            case METHYLATION:
+                formatter = new MethylationRateVCFOutputFormat();
                 break;
             default:
                 ObjectArrayList<OutputFormat> values = ObjectArrayList.wrap(OutputFormat.values());
@@ -210,7 +213,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         VARIANT_DISCOVERY,
         ALLELE_FREQUENCIES,
         GENOTYPES,
-        COMPARE_GROUPS
+        COMPARE_GROUPS,
+        METHYLATION
     }
 
     public boolean outputVCF() {
