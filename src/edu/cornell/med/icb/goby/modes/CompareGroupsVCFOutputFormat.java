@@ -20,17 +20,20 @@ package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.alignments.*;
-import edu.cornell.med.icb.goby.stats.*;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
+import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
+import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
+import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
+import edu.cornell.med.icb.goby.stats.VCFWriter;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.objects.*;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.rosuda.JRI.Rengine;
 
-import java.util.Arrays;
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 /**
  * A Variant Call Format output to compare genomic variation across groups.
@@ -159,6 +162,7 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
                             int groupIndexA,
                             int groupIndexB) {
 
+        position = position - 1;
         int totalCount = 0;
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
@@ -193,9 +197,9 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
             statWriter.setInfo(refCountsIndex[groupIndex], refCountsPerGroup[groupIndex]);
             statWriter.setInfo(varCountsIndex[groupIndex], variantsCountPerGroup[groupIndex]);
         }
-        final double denominator = (double) (refCountsPerGroup[groupIndexA] ) * (double) (variantsCountPerGroup[groupIndexB] );
+        final double denominator = (double) (refCountsPerGroup[groupIndexA]) * (double) (variantsCountPerGroup[groupIndexB]);
         double oddsRatio = denominator == 0 ? Double.NaN :
-                ((double) (refCountsPerGroup[groupIndexB] ) * (double) (variantsCountPerGroup[groupIndexA] )) /
+                ((double) (refCountsPerGroup[groupIndexB]) * (double) (variantsCountPerGroup[groupIndexA])) /
                         denominator;
         double logOddsRatioSE;
 

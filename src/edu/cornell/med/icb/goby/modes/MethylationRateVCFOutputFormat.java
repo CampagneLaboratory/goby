@@ -96,11 +96,14 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
         this.statWriter = new VCFWriter(writer);
-
+        try {
         //activate R only if we need it:
         final Rengine rEngine = GobyRengine.getInstance().getRengine();
         fisherRInstalled = rEngine != null && rEngine.isAlive();
-
+        } catch (java.lang.UnsatisfiedLinkError e) {
+            System.out.println("Cannot initialize R");
+            e.printStackTrace();
+        }
         if (groups.length != 2) {
             System.err.println("CompareGroupsVCFOutputFormat requires exactly two groups.");
             System.exit(1);
@@ -171,8 +174,8 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
                             int groupIndexA,
                             int groupIndexB) {
 
-
-        fillMethylationCountArrays(sampleCounts, list);
+        position=position-1;
+        fillMethylationCountArrays(sampleCounts, list, position);
         if (eventCountAtSite == 0) return;
         statWriter.setInfo(depthFieldIndex, list.size());
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
@@ -256,7 +259,8 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
     }
 
 
-    private void fillMethylationCountArrays(SampleCountInfo[] sampleCounts, ObjectArrayList<PositionBaseInfo> list) {
+    private void fillMethylationCountArrays(SampleCountInfo[] sampleCounts, ObjectArrayList<PositionBaseInfo> list,
+                                            int position) {
 
         Arrays.fill(methylatedCCountPerGroup, 0);
         Arrays.fill(unmethylatedCCountsPerGroup, 0);

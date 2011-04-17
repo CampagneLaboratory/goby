@@ -243,6 +243,10 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         // build a samples array with the correct order:
         int numberOfSamples = readIndexStats.size();
         samples = new String[numberOfSamples];
+        if (readIndexStats.size()==0) {
+            System.err.println("Cannot find any basename in stats file. Aborting.");
+            System.exit(1);
+        }
         for (ReadIndexStats stat : readIndexStats) {
             samples[stat.readerIndex] = stat.basename;
         }

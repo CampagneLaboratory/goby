@@ -22,15 +22,12 @@ import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
-import edu.cornell.med.icb.goby.stats.TTestCalculator;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
-import java.io.PrintWriter;
-import java.util.Arrays;
-
+import org.apache.commons.math.MathException;
 import org.apache.commons.math.stat.inference.TTest;
 import org.apache.commons.math.stat.inference.TTestImpl;
-import org.apache.commons.math.MathException;
+
+import java.io.PrintWriter;
 
 /**
  * @author Fabien Campagne
@@ -100,6 +97,7 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
     public void writeRecord(DiscoverVariantIterateSortedAlignments iterator, SampleCountInfo[] sampleCounts,
                             int referenceIndex, int position, ObjectArrayList<PositionBaseInfo> list,
                             int groupIndexA, int groupIndexB) {
+        position = position - 1;
         fillVariantCountArrays(sampleCounts);
         int totalCount = 0;
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
@@ -153,7 +151,7 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         genotypeFormatter.writeGenotypes(statsWriter, sampleCounts);
         double pValue = 1;
         try {
-            if (valuesGroupAIndex >= 2&& valuesGroupBIndex>=2) { // need two samples per group
+            if (valuesGroupAIndex >= 2 && valuesGroupBIndex >= 2) { // need two samples per group
                 pValue = mathCommonsTTest.homoscedasticTTest(valuesGroupsA, valuesGroupsB);
             }
 

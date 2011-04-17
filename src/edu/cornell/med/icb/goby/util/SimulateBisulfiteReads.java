@@ -18,25 +18,21 @@
 
 package edu.cornell.med.icb.goby.util;
 
-import edu.mssm.crover.cli.CLI;
-import edu.cornell.med.icb.parsers.FastaParser;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
-import edu.rit.mp.buf.DoubleArrayBuf;
+import edu.cornell.med.icb.parsers.FastaParser;
+import edu.mssm.crover.cli.CLI;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.doubles.DoubleIterator;
+import it.unimi.dsi.fastutil.doubles.DoubleList;
+import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
+import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
+import it.unimi.dsi.io.FastBufferedReader;
+import it.unimi.dsi.io.LineIterator;
+import it.unimi.dsi.lang.MutableString;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.*;
 import java.util.Random;
-import java.text.Format;
-
-import it.unimi.dsi.lang.MutableString;
-import it.unimi.dsi.fastutil.doubles.DoubleList;
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.doubles.DoubleIterator;
-import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
-import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
-import it.unimi.dsi.io.LineIterator;
-import it.unimi.dsi.io.FastBufferedReader;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.FilenameUtils;
 
 /**
  * Creates fastq files with simulated reads. Simulation can create bisulfite treated reads (or not treated)
@@ -87,7 +83,7 @@ public class SimulateBisulfiteReads {
         processor.readLength = readLength;
         processor.outputFilename = outputFilename;
         processor.regionTrueRates = regionTrueRates;
-        processor.numRepeats=CLI.getIntOption(args,"-n",10000);
+        processor.numRepeats = CLI.getIntOption(args, "-n", 10000);
 
         processor.process(refChoice, fastaReference, from, to, methylationRateFilename);
 
@@ -127,7 +123,9 @@ public class SimulateBisulfiteReads {
                 if (!it.hasNext()) {
                     it = methylationRates.iterator();
                 }
-                methylationForward.put(i, it.nextDouble());
+                final double value = it.nextDouble();
+                methylationForward.put(i, value);
+                assert getMethylationRateAtPosition(segmentLength, false, i, 0) == value;
                 trueRateWriter.printf("%d\t%g\t+1\t%s\t%d%n", i, methylationForward.get(i), refChoice, i + from);
             }
         }
@@ -139,9 +137,11 @@ public class SimulateBisulfiteReads {
                 if (!it.hasNext()) {
                     it = methylationRates.iterator();
                 }
-                final int positionInSegment = i;
-                methylationReverse.put(positionInSegment, it.nextDouble());
-                trueRateWriter.printf("%d\t%g\t-1\t%s\t%d%n", positionInSegment, methylationReverse.get(positionInSegment),
+                final double value = it.nextDouble();
+                methylationReverse.put(i, value);
+                final double getterValue = getMethylationRateAtPosition(segmentLength, true, i, 0);
+                assert getterValue == value : "getter must work for reverse strand";
+                trueRateWriter.printf("%d\t%g\t-1\t%s\t%d%n", i, methylationReverse.get(i),
                         refChoice, i + from);
             }
         }
@@ -170,11 +170,14 @@ public class SimulateBisulfiteReads {
                         // bases that are not methylated are changed to T through the bisulfite and PCR conversion steps
                         if (bisulfiteTreatment) {
                             base = 'T';
-                        } else {
-                            base = 'C';
                         }
 
                     } else {
+                        if (!bisulfiteTreatment) {
+                            // mutate base to G
+                            // introduce mutation C -> G
+                            base = 'G';
+                        }
                         // bases that are methylated are protected and stay C on the forward strand. They would also
                         // be seen as G on the opposite strand if the sequencing protocol did not respect strandness
                         log.append(bisulfiteTreatment ? "met: " : "mut: ");
@@ -184,9 +187,8 @@ public class SimulateBisulfiteReads {
                         log.append("read-index: ");
                         log.append(matchedReverseStrand ? readLength - i : i);
                         log.append(' ');
-                        // introduce mutation C -> G
 
-                        base = matchedReverseStrand ? 'C' : 'G';
+
                     }
                 }
                 sequenceTreated.append(base);
@@ -219,7 +221,8 @@ public class SimulateBisulfiteReads {
                                                 boolean matchedReverseStrand,
                                                 int positionInRead,
                                                 int startReadPosition) {
-        return matchedReverseStrand ? methylationReverse.get(segmentLength - (startReadPosition + readLength - positionInRead)) :
+        return matchedReverseStrand ?
+                methylationReverse.get(positionInRead + startReadPosition) :
                 methylationForward.get(positionInRead + startReadPosition);
     }
 

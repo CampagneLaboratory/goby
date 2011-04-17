@@ -87,6 +87,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     public void writeRecord(DiscoverVariantIterateSortedAlignments iterator, SampleCountInfo[] sampleCounts,
                             int referenceIndex, int position, ObjectArrayList<PositionBaseInfo> list, int groupIndexA, int groupIndexB) {
 
+        position = position - 1;
         fillVariantCountArrays(sampleCounts);
 
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
