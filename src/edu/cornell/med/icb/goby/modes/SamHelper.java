@@ -121,7 +121,7 @@ public class SamHelper {
         if (md != null) {
             this.md.append(md);
         }
-        this.position = position;
+        this.position = position - 1;  // SAM positions are 1-based, goby are 0-based
         this.reverseStrand = reverseStrand;
         constructRefAndQuery();
         findSequenceVariations();
@@ -500,7 +500,7 @@ public class SamHelper {
                 qualChar = minQualValue;
             }
             if (refChar != queryChar) {
-                sequenceVariations.add(new SamSequenceVariation(refPosition + position - 1, refChar, readIndex, queryChar, hasQual, qualChar));
+                sequenceVariations.add(new SamSequenceVariation(refPosition + position, refChar, readIndex, queryChar, hasQual, (byte) qualChar));
             }
         }
 

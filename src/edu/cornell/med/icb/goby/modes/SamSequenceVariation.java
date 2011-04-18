@@ -19,6 +19,8 @@
 package edu.cornell.med.icb.goby.modes;
 
 import it.unimi.dsi.lang.MutableString;
+import it.unimi.dsi.fastutil.bytes.ByteList;
+import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 
 import java.util.List;
 import java.util.LinkedList;
@@ -29,13 +31,13 @@ import java.util.LinkedList;
 class SamSequenceVariation {
     private MutableString fromString;
     private MutableString toString;
-    private MutableString qual;
+    private ByteList qual;
     private boolean hasQual;
     private int readIndex;
     private int refPosition;
     private int lastRefPosition;
 
-    public SamSequenceVariation(int refPosition, char refChar, int readIndex, char readChar, boolean hasQual, char qualChar) {
+    public SamSequenceVariation(int refPosition, char refChar, int readIndex, char readChar, boolean hasQual, byte qualChar) {
         this.refPosition = refPosition;
         this.lastRefPosition = refPosition;
         this.fromString = new MutableString();
@@ -45,8 +47,8 @@ class SamSequenceVariation {
         this.toString.append(readChar);
         this.hasQual = hasQual;
         if (hasQual) {
-            this.qual = new MutableString();
-            this.qual.append(qualChar);
+            this.qual = new ByteArrayList();
+            this.qual.add(qualChar);
         }
     }
 
@@ -58,8 +60,12 @@ class SamSequenceVariation {
         return toString;
     }
 
-    public MutableString getQual() {
+    public ByteList getQual() {
         return qual;
+    }
+
+    public byte[] getQualByteArray() {
+        return qual.toByteArray();
     }
 
     public boolean isHasQual() {
@@ -80,11 +86,11 @@ class SamSequenceVariation {
                 fromString.toString(), refPosition,
                 toString.toString(), readIndex));
         if (hasQual) {
-            for (int i = 0; i < qual.length(); i++) {
+            for (int i = 0; i < qual.size(); i++) {
                 if (i > 0) {
                     output.append(":");
                 }
-                output.append(String.format("%d", (int) qual.charAt(i)));
+                output.append(String.format("%d", (int) qual.get(i)));
             }
         } else {
             output.append("none");
@@ -127,7 +133,7 @@ class SamSequenceVariation {
                         current.fromString.append(var.fromString);
                         current.toString.append(var.toString);
                         if (current.hasQual) {
-                            current.qual.append(var.qual);
+                            current.qual.add(var.qual.get(0));
                         }
                         toRemoves.add(var);
                         current.lastRefPosition = var.refPosition;
@@ -144,7 +150,7 @@ class SamSequenceVariation {
     }
 
     public boolean equals(final int refPosition, final CharSequence refChars, final int readIndex,
-                          final CharSequence readChars, final int[] qualChars) {
+                          final CharSequence readChars, final byte[] qualChars) {
 
         if (refPosition != this.refPosition || readIndex != this.readIndex) {
             return false;
@@ -153,11 +159,11 @@ class SamSequenceVariation {
             return false;
         }
         if (hasQual) {
-            if (qualChars == null || qual.length() != qualChars.length) {
+            if (qualChars == null || qual.size() != qualChars.length) {
                 return false;
             }
-            for (int i = 0; i < qual.length(); i++) {
-                if (qual.charAt(i) != qualChars[i]) {
+            for (int i = 0; i < qual.size(); i++) {
+                if (qual.get(i) != qualChars[i]) {
                     return false;
                 }
             }
@@ -171,7 +177,7 @@ class SamSequenceVariation {
 
     public static boolean contains(final List<SamSequenceVariation> vars, final int refPosition,
                                    final CharSequence refChars, final int readIndex, final CharSequence readChars,
-                                   final int[] qualChars) {
+                                   final byte[] qualChars) {
 
         for (final SamSequenceVariation var : vars) {
             if (var.equals(refPosition, refChars, readIndex, readChars, qualChars)) {
