@@ -97,9 +97,9 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
         this.statWriter = new VCFWriter(writer);
         try {
-        //activate R only if we need it:
-        final Rengine rEngine = GobyRengine.getInstance().getRengine();
-        fisherRInstalled = rEngine != null && rEngine.isAlive();
+            //activate R only if we need it:
+            final Rengine rEngine = GobyRengine.getInstance().getRengine();
+            fisherRInstalled = rEngine != null && rEngine.isAlive();
         } catch (java.lang.UnsatisfiedLinkError e) {
             System.out.println("Cannot initialize R");
             e.printStackTrace();
@@ -174,7 +174,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
                             int groupIndexA,
                             int groupIndexB) {
 
-        position=position-1;
+        position = position - 1;
         fillMethylationCountArrays(sampleCounts, list, position);
         if (eventCountAtSite == 0) return;
         statWriter.setInfo(depthFieldIndex, list.size());
@@ -279,7 +279,10 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
                 ++methylatedCCountsPerSample[sampleIndex];
                 ++methylatedCCountPerGroup[groupIndex];
                 ++eventCountAtSite;
-                strand = info.matchesForwardStrand && info.from == 'T' ? '+' : '-';
+                strand = info.matchesForwardStrand ?
+                        info.from == 'C' ? '+' : '-' :
+                        info.from == 'G' ? '+' : '-';
+
                 if (strandAtSite != '?') {
                     assert strandAtSite == strand : "strand information must be consistent when determined across all bases that contribute to a site.";
                 }
@@ -290,7 +293,9 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
                 ++unmethylatedCCountPerSample[sampleIndex];
                 ++unmethylatedCCountsPerGroup[groupIndex];
                 ++eventCountAtSite;
-                strand = info.matchesForwardStrand && info.to == 'C' ? '+' : '-';
+                strand = info.matchesForwardStrand ?
+                        info.from == 'T' ? '+' : '-' :
+                        info.from == 'A' ? '+' : '-';
                 if (strandAtSite != '?') {
                     assert strandAtSite == strand : "strand information must be consistent when determined across all bases that contribute to a site.";
                 }
