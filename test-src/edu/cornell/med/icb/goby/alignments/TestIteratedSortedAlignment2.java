@@ -19,7 +19,6 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.ints.*;
-import it.unimi.dsi.fastutil.objects.*;
 import org.junit.Test;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
@@ -49,7 +48,7 @@ import edu.cornell.med.icb.iterators.TsvLineIterator;
  * from DisplaySequenceVariations in the TAB_SINGLE_BASE format. It
  * has been hand checked for accuracy.
  *
- * The the MyIterateSortedAlignments class below will be used to read
+ * The the IterateSortedAlignmentsTester class will be used to read
  * the sequence variations to compare against the variations found
  * in "seq-var-reads-gsnap.display-seq-var-tsv-base.tsv".
  * User: kdorff
@@ -105,7 +104,7 @@ public class TestIteratedSortedAlignment2 {
 
     /**
      * Test that readLength and refLength (calculated values) are correct. This is the difference
-     * between the max and min (refPosition,readIndex) observed MyIterateSortedAlignments.
+     * between the max and min (refPosition,readIndex) observed IterateSortedAlignmentsTester.
      * @throws IOException error reading input files
      */
     @Test
@@ -316,7 +315,7 @@ public class TestIteratedSortedAlignment2 {
         if (dataSetup) {
             return;
         }
-        MyIterateSortedAlignments alignmentIterator = new MyIterateSortedAlignments();
+        IterateSortedAlignmentsTester alignmentIterator = new IterateSortedAlignmentsTester();
         final String[] singleBasename = {"test-data/seq-var-test/sorted-seq-var-reads-gsnap"};
         alignmentIterator.iterate(singleBasename);
         alignmentIterator.removeWithoutSeqvars();
@@ -357,7 +356,7 @@ public class TestIteratedSortedAlignment2 {
         dataSetup = true;
     }
 
-    private Int2ObjectMap<PerQueryAlignmentData> readSeqVarFile(final String filename) throws IOException {
+    public static Int2ObjectMap<PerQueryAlignmentData> readSeqVarFile(final String filename) throws IOException {
         Int2ObjectMap<PerQueryAlignmentData> seqvarDataMap = new Int2ObjectOpenHashMap<PerQueryAlignmentData>();
         final File datafile = new File(filename);
         final TsvToFromMap tsvReader = TsvToFromMap.createFromTsvFile(datafile);
@@ -376,194 +375,5 @@ public class TestIteratedSortedAlignment2 {
             var.observe(refPosition, readIndex, fromBase, toBase);
         }
         return seqvarDataMap;
-    }
-
-    private class PerQueryAlignmentData {
-        String query;           // From compact-reads file
-        int queryLength;        // From compact-reads file, verified against alignment
-        int minRefPosition;     // From seq-var
-        int maxRefPosition;     // From seq-var
-        int minReadIndex;       // From seq-var
-        int maxReadIndex;       // From seq-var
-        int numDeletions;       // From seq-var, from display-seq-var TSV file
-        int numInsertions;      // From seq-var, from display-seq-var TSV file
-        int numMismatches;      // From seq-var, from display-seq-var TSV file
-        int refLength;          // Calculated, should equal queryLength
-        int readLength;         // Calculated, should equal queryLength
-        int targetPosition;     // From alignment
-        int queryPosition;      // From alignment
-        int targetAlignedLength; // From alignment
-        int queryAlignedLength;   // From alignment
-        boolean reverseStrand;  // From alignment
-        int firstReadIndex;     // From alignment
-        int leftPadding;        // Calculated
-        int rightPadding;       // Calculated
-        Object2ObjectMap<String, String> refPositionReadIndexToBaseMap;
-        public PerQueryAlignmentData() {
-            query = "";
-            queryLength = 0;
-            minRefPosition = Integer.MAX_VALUE;
-            maxRefPosition = Integer.MIN_VALUE;
-            minReadIndex = Integer.MAX_VALUE;
-            maxReadIndex = Integer.MIN_VALUE;
-            numDeletions = 0;
-            numInsertions = 0;
-            numMismatches = 0;
-            refLength = 0;
-            readLength = 0;
-            targetPosition = 0;
-            queryPosition = 0;
-            targetAlignedLength = 0;
-            queryAlignedLength = 0;
-            reverseStrand = false;
-            firstReadIndex = -1;
-            queryPosition = -1;
-            rightPadding = -1;
-            refPositionReadIndexToBaseMap = new Object2ObjectOpenHashMap<String, String>();
-        }
-        public void observe(int refPosition, int readIndex) {
-            minRefPosition = Math.min(refPosition, minRefPosition);
-            maxRefPosition = Math.max(refPosition, maxRefPosition);
-            minReadIndex = Math.min(readIndex, minReadIndex);
-            maxReadIndex = Math.max(readIndex, maxReadIndex);
-            refLength = maxRefPosition - minRefPosition + numInsertions + 1;
-            readLength = maxReadIndex - minReadIndex + numDeletions + 1;
-        }
-        public void observe(int refPosition, int readIndex, char fromBase, char toBase) {
-            if (toBase == '-') {
-                numDeletions++;
-            } else if (fromBase == '-') {
-                numInsertions++;
-            } else {
-                numMismatches++;
-            }
-            observe(refPosition, readIndex);
-            refPositionReadIndexToBaseMap.put(
-                    String.format("%d:%d", refPosition, readIndex),
-                    String.format("%c->%c", fromBase, toBase));
-            leftPadding = queryPosition;
-            rightPadding = (queryLength + numDeletions) - (targetAlignedLength + numInsertions) - leftPadding;
-        }
-        public void setQuery(String query) {
-            this.query = query;
-            this.queryLength = query.length();
-        }
-
-        public String toString() {
-            StringBuffer result = new StringBuffer();
-            result.append(String.format(
-                "{%n  query=%s%n  queryLength=%d%n  minRefPosition=%d%n  maxRefPosition=%d%n  minReadIndex=%d%n" +
-                "  maxReadIndex=%d%n  numDeletions=%d%n  numInsertions=%d%n  numMismatches=%d%n  refLength=%d%n" +
-                "  readLength=%d%n  targetPosition=%d%n  queryPosition=%d%n  firstReadIndex=%d%n" +
-                "  targetAlignedLength=%d%n  queryAlignedLength=%d%n  reverseStrand=%s%n" +
-                "  leftPadding=%d%n  rightPadding=%d%n",
-                    query, queryLength, minRefPosition, maxRefPosition, minReadIndex,
-                    maxReadIndex, numDeletions, numInsertions, numMismatches, refLength,
-                    readLength, targetPosition, queryPosition, firstReadIndex,
-                    targetAlignedLength, queryAlignedLength,
-                    reverseStrand ? "true" : "false", leftPadding, rightPadding));
-            result.append("  seqvars=[");
-            for (Map.Entry<String,String> entry : refPositionReadIndexToBaseMap.entrySet()) {
-                result.append(String.format("%s %s, ", entry.getKey(), entry.getValue()));
-            }
-            result.append(String.format("]}"));
-            return result.toString();
-        }
-    }
-
-    private class CountsAtPosition {
-    }
-
-    private class MyIterateSortedAlignments extends IterateSortedAlignments<CountsAtPosition> {
-
-        Int2ObjectMap<PerQueryAlignmentData> queryIndexToAlignmentDataMap;
-
-        public MyIterateSortedAlignments() {
-            queryIndexToAlignmentDataMap = new Int2ObjectOpenHashMap<PerQueryAlignmentData>();
-        }
-
-        @Override
-        public void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders, Alignments.AlignmentEntry alignmentEntry,
-                                         Int2ObjectMap<CountsAtPosition> positionToBases,
-                                         int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("RB: queryIndex=%d\tref_position=%d\tread_index=%d",
-                    alignmentEntry.getQueryIndex(), currentRefPosition, currentReadIndex));
-            }
-            int queryIndex = alignmentEntry.getQueryIndex();
-            if (currentReadIndex >= 1) {
-                PerQueryAlignmentData alignmentData = queryIndexToAlignmentDataMap.get(queryIndex);
-                if (alignmentData == null) {
-                    alignmentData = new PerQueryAlignmentData();
-                    queryIndexToAlignmentDataMap.put(queryIndex, alignmentData);
-                }
-                if (alignmentData.firstReadIndex == -1) {
-                    alignmentData.firstReadIndex = currentReadIndex;
-                    alignmentData.queryPosition = alignmentEntry.getQueryPosition();
-                    alignmentData.targetPosition = alignmentEntry.getPosition();
-                    alignmentData.queryLength = alignmentEntry.getQueryLength();
-                    alignmentData.queryAlignedLength = alignmentEntry.getQueryAlignedLength();
-                    alignmentData.targetAlignedLength = alignmentEntry.getTargetAlignedLength();
-                    alignmentData.reverseStrand = alignmentEntry.getMatchingReverseStrand();
-                }
-                alignmentData.observe(currentRefPosition, currentReadIndex);
-            } else {
-                throw new RuntimeException(String.format("queryIndex=%d readIndex=%d should be >=1",
-                        queryIndex, currentReadIndex));
-            }
-        }
-
-        @Override
-        public void observeVariantBase(
-                ConcatSortedAlignmentReader sortedReaders, Alignments.AlignmentEntry alignmentEntry,
-                Int2ObjectMap<CountsAtPosition> positionToBases, Alignments.SequenceVariation var,
-                char toChar, char fromChar, byte toQual, int currentReferenceIndex,
-                int currentRefPosition, int currentReadIndex) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("VB: queryIndex=%d\tref_position=%d\tread_index=%d\tfromChar=%c\ttoChar=%c",
-                        alignmentEntry.getQueryIndex(), currentRefPosition, currentReadIndex, fromChar, toChar));
-            }
-
-            int queryIndex = alignmentEntry.getQueryIndex();
-            if (currentReadIndex >= 1) {
-                PerQueryAlignmentData alignmentData = queryIndexToAlignmentDataMap.get(queryIndex);
-                if (alignmentData == null) {
-                    alignmentData = new PerQueryAlignmentData();
-                    queryIndexToAlignmentDataMap.put(queryIndex, alignmentData);
-                }
-                if (alignmentData.firstReadIndex == -1) {
-                    alignmentData.firstReadIndex = currentReadIndex;
-                    alignmentData.queryPosition = alignmentEntry.getQueryPosition();
-                    alignmentData.targetPosition = alignmentEntry.getPosition();
-                    alignmentData.queryLength = alignmentEntry.getQueryLength();
-                    alignmentData.queryAlignedLength = alignmentEntry.getQueryAlignedLength();
-                    alignmentData.targetAlignedLength = alignmentEntry.getTargetAlignedLength();
-                    alignmentData.reverseStrand = alignmentEntry.getMatchingReverseStrand();
-                }
-                alignmentData.observe(currentRefPosition, currentReadIndex, fromChar, toChar);
-            } else {
-                throw new RuntimeException(String.format("queryIndex=%d readIndex=%d should be >=1",
-                        queryIndex, currentReadIndex));
-            }
-        }
-
-        @Override
-        public void processPositions(int referenceIndex, int intermediatePosition, CountsAtPosition positionBaseInfos) {
-        }
-
-        /**
-         * Remove any items from the map that don't have sequence variations.
-         */
-        public void removeWithoutSeqvars() {
-            IntSet toRemoveQueryIndexes = new IntArraySet(queryIndexToAlignmentDataMap.size());
-            for (Map.Entry<Integer, PerQueryAlignmentData> entry : queryIndexToAlignmentDataMap.entrySet()) {
-                if (entry.getValue().refPositionReadIndexToBaseMap.size() == 0) {
-                    toRemoveQueryIndexes.add(entry.getKey());
-                }
-            }
-            for (int queryIndex : toRemoveQueryIndexes) {
-                queryIndexToAlignmentDataMap.remove(queryIndex);
-            }
-        }
     }
 }
