@@ -60,11 +60,11 @@ public class SortMode extends AbstractGobyMode {
      * The basename of the compact alignment.
      */
     private String basename;
-    private SortIterateAlignments alignmentIterator;
+    private SortIterateAlignments alignmentIterator = null;
     private int[] targetLengths;
     private boolean hasStartOrEndPosition;
-    private long startPosition;
-    private long endPosition;
+    private long startPosition = 0;
+    private long endPosition = Long.MAX_VALUE;
 
 
     @Override
@@ -77,6 +77,27 @@ public class SortMode extends AbstractGobyMode {
         return MODE_DESCRIPTION;
     }
 
+
+    public void setInput(final String input) {
+        this.basename = AlignmentReaderImpl.getBasename(input);
+    }
+
+    public void setOutput(final String output) {
+        this.outputFilename = output;
+    }
+
+    public void setStartPosition(final long startPosition) {
+        this.startPosition = startPosition;
+    }
+
+    public void setEndPosition(final long endPosition) {
+        this.endPosition = endPosition;
+    }
+
+    public void setIncludeReferenceNames(final String includeReferenceNameCommas) {
+        alignmentIterator = new SortIterateAlignments();
+        alignmentIterator.parseIncludeReferenceArgument(includeReferenceNameCommas);
+    }
 
     /**
      * Configure.
@@ -128,7 +149,10 @@ public class SortMode extends AbstractGobyMode {
      */
     @Override
     public void execute() throws IOException {
-
+        if (alignmentIterator == null) {
+            // If executing from API, this may not have been created yet
+            alignmentIterator = new SortIterateAlignments();
+        }
 
         final AlignmentWriter writer = new AlignmentWriter(outputFilename);
 
