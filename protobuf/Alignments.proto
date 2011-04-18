@@ -82,7 +82,7 @@ message AlignmentEntry {
   /*
    Length of the query sequence.
   */
-  required uint32 query_length=10;
+  optional uint32 query_length=10;
   /*
     Mapping Quality (phred-scaled posterior probability that the mapping
     position of this read is incorrect). Please note that different aligners
