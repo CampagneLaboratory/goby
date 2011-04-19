@@ -163,7 +163,7 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
                             int groupIndexB) {
 
         // report 1-based positions
-        position = position + 1;
+        position = position +1;
         int totalCount = 0;
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {

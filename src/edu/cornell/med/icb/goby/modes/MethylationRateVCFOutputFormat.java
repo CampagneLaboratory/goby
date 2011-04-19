@@ -174,7 +174,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
                             int groupIndexA,
                             int groupIndexB) {
 
-
+        position = position + 1;
         char refBase = sampleCounts[0].referenceBase;
         fillMethylationCountArrays(sampleCounts, list, position, refBase);
         if (eventCountAtSite == 0) return;
@@ -225,25 +225,28 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         }
         double log2OddsRatio = Math.log(oddsRatio) / Math.log(2);
         double log2OddsRatioZValue = log2OddsRatio / logOddsRatioSE;
-
         double fisherP = Double.NaN;
+        if (eventCountAtSite >= 10) {
+            // estimate Fisher only if we have seen at least 10 events.
 
-        boolean ok = checkCounts();
-        if (ok) {
-            fisherP = fisherRInstalled ? FisherExactRCalculator.getFisherPValue(
-                    unmethylatedCCountsPerGroup[groupIndexB], methylatedCCountPerGroup[groupIndexB],
-                    unmethylatedCCountsPerGroup[groupIndexA], methylatedCCountPerGroup[groupIndexA]) : Double.NaN;
-        } else {
-            System.err.printf("An exception was caught evaluating the Fisher Exact test P-value. Details are provided below%n" +
-                    "referenceId=%s referenceIndex=%d position=%d %n" +
-                    "unmethylatedCCountsPerGroup[1]=%d methylatedCCountPerGroup[1]=%d%n" +
-                    "unmethylatedCCountsPerGroup[0]=%d, methylatedCCountPerGroup[0]=%d",
-                    currentReferenceId, referenceIndex,
-                    position + 1,
-                    unmethylatedCCountsPerGroup[groupIndexB], methylatedCCountPerGroup[groupIndexB],
-                    unmethylatedCCountsPerGroup[groupIndexA], methylatedCCountPerGroup[groupIndexA]
-            );
+            boolean ok = checkCounts();
+            if (ok) {
+                fisherP = fisherRInstalled ? FisherExactRCalculator.getFisherPValue(
+                        unmethylatedCCountsPerGroup[groupIndexB], methylatedCCountPerGroup[groupIndexB],
+                        unmethylatedCCountsPerGroup[groupIndexA], methylatedCCountPerGroup[groupIndexA]) : Double.NaN;
+            } else {
+                System.err.printf("An exception was caught evaluating the Fisher Exact test P-value. Details are provided below%n" +
+                        "referenceId=%s referenceIndex=%d position=%d %n" +
+                        "unmethylatedCCountsPerGroup[1]=%d methylatedCCountPerGroup[1]=%d%n" +
+                        "unmethylatedCCountsPerGroup[0]=%d, methylatedCCountPerGroup[0]=%d",
+                        currentReferenceId, referenceIndex,
+                        position ,
+                        unmethylatedCCountsPerGroup[groupIndexB], methylatedCCountPerGroup[groupIndexB],
+                        unmethylatedCCountsPerGroup[groupIndexA], methylatedCCountPerGroup[groupIndexA]
+                );
+            }
         }
+
         statWriter.setInfo(log2OddsRatioColumnIndex, log2OddsRatio);
         statWriter.setInfo(log2OddsRatioStandardErrorColumnIndex, logOddsRatioSE);
         statWriter.setInfo(log2OddsRatioZColumnIndex, log2OddsRatioZValue);

@@ -199,11 +199,12 @@ public class SimulateBisulfiteReads {
             for (int i = 0; i < readLength; i++) {
 
                 char base = readBases.charAt(i);
-                int genomicPosition = matchedReverseStrand ? readLength - (i + 1) + startReadPosition + from : i + startReadPosition + from + 1;
+                int genomicPosition = matchedReverseStrand ? readLength - i + startReadPosition + from : i + startReadPosition + from;
                 sequenceInitial.append(base);
                 if (base == 'C') {
 
                     boolean isBaseMethylated = random.nextDouble() <= getMethylationRateAtPosition(matchedReverseStrand, genomicPosition);
+
                     if (isBaseMethylated) {
                         // base is methylated, stays a C on forward or reverse strand
                         if (!bisulfiteTreatment) {
@@ -241,7 +242,7 @@ public class SimulateBisulfiteReads {
             }
             for (int i = startReadPosition + from; i < startReadPosition + from + readLength; i++) {
                 // positions are written 1-based
-                coveredPositions.append(i+1);
+                coveredPositions.append(i + 1);
                 coveredPositions.append(" ");
 
             }
@@ -258,9 +259,15 @@ public class SimulateBisulfiteReads {
     }
 
     private double getMethylationRateAtPosition(boolean matchedReverseStrand, int genomicPosition) {
-        return matchedReverseStrand ?
-                methylationReverse.get(genomicPosition) :
-                methylationForward.get(genomicPosition);
+        if (bisulfiteTreatment) {
+            return matchedReverseStrand ?
+                    methylationReverse.get(genomicPosition) :
+                    methylationForward.get(genomicPosition);
+        } else {
+            // mutate on both strands
+            return Math.max(methylationReverse.get(genomicPosition),
+                    methylationForward.get(genomicPosition));
+        }
     }
 
     private CharSequence reverseComplement(CharSequence selectedReadRegion) {
