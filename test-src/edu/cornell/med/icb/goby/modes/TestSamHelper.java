@@ -112,7 +112,7 @@ public class TestSamHelper {
             System.out.println(var.toString());
         }
         assertEquals(1, vars.size());
-        assertTrue(SamSequenceVariation.contains(vars, 57, "TTC", 27, "CGT", new byte[]{1, 2, 3}));
+        assertTrue(SamSequenceVariation.contains(vars, 57 - samHelper.getPosition(), "TTC", 27, "CGT", new byte[]{1, 2, 3}));
     }
 
     @Test
@@ -141,7 +141,7 @@ public class TestSamHelper {
         assertTrue(samHelper.isReverseStrand());
         List<SamSequenceVariation> vars = samHelper.getSequenceVariations();
         assertEquals(1, vars.size());
-        assertTrue(SamSequenceVariation.contains(vars, 52, "TCC", 29, "CTA", new byte[]{3, 2, 1}));
+        assertTrue(SamSequenceVariation.contains(vars, 52 - samHelper.getPosition(), "TCC", 29, "CTA", new byte[]{3, 2, 1}));
     }
 
     @Test
@@ -170,7 +170,7 @@ public class TestSamHelper {
         assertFalse(samHelper.isReverseStrand());
         List<SamSequenceVariation> vars = samHelper.getSequenceVariations();
         assertEquals(1, vars.size());
-        assertTrue(SamSequenceVariation.contains(vars, 56, "---", 27, "ATC", new byte[]{1, 2, 3}));
+        assertTrue(SamSequenceVariation.contains(vars, 56 - samHelper.getPosition(), "---", 27, "ATC", new byte[]{1, 2, 3}));
     }
 
     @Test
@@ -199,7 +199,7 @@ public class TestSamHelper {
         assertTrue(samHelper.isReverseStrand());
         List<SamSequenceVariation> vars = samHelper.getSequenceVariations();
         assertEquals(1, vars.size());
-        assertTrue(SamSequenceVariation.contains(vars, 54, "---", 29, "GAT", new byte[]{3, 2, 1}));
+        assertTrue(SamSequenceVariation.contains(vars, 54 - samHelper.getPosition(), "---", 29, "GAT", new byte[]{3, 2, 1}));
     }
 
     @Test
@@ -231,7 +231,7 @@ public class TestSamHelper {
         assertFalse(samHelper.isReverseStrand());
         List<SamSequenceVariation> vars = samHelper.getSequenceVariations();
         assertEquals(1, vars.size());
-        assertTrue(SamSequenceVariation.contains(vars, 57, "TTC", 26, "---", null));
+        assertTrue(SamSequenceVariation.contains(vars, 57 - samHelper.getPosition(), "TTC", 26, "---", null));
     }
 
     @Test
@@ -263,7 +263,7 @@ public class TestSamHelper {
         assertTrue(samHelper.isReverseStrand());
         List<SamSequenceVariation> vars = samHelper.getSequenceVariations();
         assertEquals(1, vars.size());
-        assertTrue(SamSequenceVariation.contains(vars, 52, "TCC", 26, "---", null));
+        assertTrue(SamSequenceVariation.contains(vars, 52 - samHelper.getPosition(), "TCC", 26, "---", null));
     }
 
     @Test
@@ -402,7 +402,7 @@ public class TestSamHelper {
         assertFalse(samHelper.isReverseStrand());
         List<SamSequenceVariation> vars = samHelper.getSequenceVariations();
         assertEquals(1, vars.size());
-        assertTrue(SamSequenceVariation.contains(vars, 20, "A", 20, "G", new byte[]{20}));
+        assertTrue(SamSequenceVariation.contains(vars, 20 - samHelper.getPosition(), "A", 20, "G", new byte[]{20}));
     }
 
     @Test
@@ -433,7 +433,7 @@ public class TestSamHelper {
         assertFalse(samHelper.isReverseStrand());
         List<SamSequenceVariation> vars = samHelper.getSequenceVariations();
         assertEquals(1, vars.size());
-        assertTrue(SamSequenceVariation.contains(vars, 20, "A", 20, "G", new byte[]{20}));
+        assertTrue(SamSequenceVariation.contains(vars, 20 - samHelper.getPosition(), "A", 20, "G", new byte[]{20}));
     }
 
     @Test
@@ -467,7 +467,7 @@ public class TestSamHelper {
         for (SamSequenceVariation var : vars) {
             System.out.println(var.toString());
         }
-        assertTrue(SamSequenceVariation.contains(vars, 20, "A", 20, "G", new byte[]{20}));
+        assertTrue(SamSequenceVariation.contains(vars, 20 - samHelper.getPosition(), "A", 20, "G", new byte[]{20}));
     }
 
     @Test
@@ -540,8 +540,8 @@ public class TestSamHelper {
         assertFalse(samHelper.isReverseStrand());
         List<SamSequenceVariation> vars = samHelper.getSequenceVariations();
         assertEquals(2, vars.size());
-        assertTrue(SamSequenceVariation.contains(vars, 41, "CC", 11, "AA", new byte[]{11, 12}));
-        assertTrue(SamSequenceVariation.contains(vars, 62, "AGT", 31, "---", null));
+        assertTrue(SamSequenceVariation.contains(vars, 41 - samHelper.getPosition(), "CC", 11, "AA", new byte[]{11, 12}));
+        assertTrue(SamSequenceVariation.contains(vars, 62 - samHelper.getPosition(), "AGT", 31, "---", null));
     }
 
     @Test
@@ -572,8 +572,8 @@ public class TestSamHelper {
         assertFalse(samHelper.isReverseStrand());
         List<SamSequenceVariation> vars = samHelper.getSequenceVariations();
         assertEquals(2, vars.size());
-        assertTrue(SamSequenceVariation.contains(vars, 41, "CC", 11, "AA", new byte[]{11, 12}));
-        assertTrue(SamSequenceVariation.contains(vars, 56, "---", 27, "ATC", new byte[]{1, 2, 3}));
+        assertTrue(SamSequenceVariation.contains(vars, 41 - samHelper.getPosition(), "CC", 11, "AA", new byte[]{11, 12}));
+        assertTrue(SamSequenceVariation.contains(vars, 56 - samHelper.getPosition(), "---", 27, "ATC", new byte[]{1, 2, 3}));
     }
 
     @Test
@@ -604,8 +604,8 @@ public class TestSamHelper {
         assertTrue(samHelper.isReverseStrand());
         List<SamSequenceVariation> vars = samHelper.getSequenceVariations();
         assertEquals(2, vars.size());
-        assertTrue(SamSequenceVariation.contains(vars, 41, "CC", 40, "AA", new byte[]{14, 13}));
-        assertTrue(SamSequenceVariation.contains(vars, 56, "---", 24, "ATC", new byte[]{24, 23, 22}));
+        assertTrue(SamSequenceVariation.contains(vars, 41 - samHelper.getPosition(), "CC", 40, "AA", new byte[]{14, 13}));
+        assertTrue(SamSequenceVariation.contains(vars, 56 - samHelper.getPosition(), "---", 24, "ATC", new byte[]{24, 23, 22}));
     }
 
 }

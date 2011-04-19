@@ -158,6 +158,7 @@ public class TestSequenceVariations {
 
 
     @Test
+    // TODO: Check these manually
     public void testBwaSequenceVariationParsing() throws IOException {
         final AlignmentReader reader = new AlignmentReaderImpl(bwaAlignmentFilename);
         while (reader.hasNext()) {
@@ -174,42 +175,22 @@ public class TestSequenceVariations {
                         var.toString()));
                 assertLength(alignmentEntry, var, alignments);
                 switch (alignmentEntry.getQueryIndex()) {
-
-                    case 5:
-                        //last finds this alignment. We test the case when the read does not match the reference at the beginning:
-                        assertEquals(24, var.getPosition());
-                        assertEquals(24, var.getReadIndex());
-                        assertEquals("T", var.getFrom());
-                        assertEquals("-", var.getTo());
-
+                    case 0:
+                        //last finds this alignment. We test deletion of TCC from the reference.
+                        assertEquals(7, var.getPosition());
+                        assertEquals(8, var.getReadIndex());
+                        assertEquals("--", var.getFrom());
+                        assertEquals("CC", var.getTo());
                         break;
-
+                    /*
                     case 1:
-                    case 4:
                         //last finds this alignment. We test deletion of TCC from the reference.
                         assertEquals(14, var.getPosition());
                         assertEquals(14, var.getReadIndex());
                         assertEquals("TCC", var.getFrom());
                         assertEquals("---", var.getTo());
                         break;
-                    case 3:
-                        //last finds this alignment. We test deletion of TCC from the reference.
-                        assertEquals(8, var.getPosition());
-                        assertEquals(9, var.getReadIndex());
-                        assertEquals("-", var.getFrom());
-                        assertEquals("C", var.getTo());
-
-                        break;
-                    case 0:
-                        //last finds this alignment. We test deletion of TCC from the reference.
-                        assertEquals(8, var.getPosition());
-                        assertEquals(8, var.getReadIndex());
-                        assertEquals("--", var.getFrom());
-                        assertEquals("CC", var.getTo());
-
-                        break;
                     case 2:
-
                         if (alignmentEntry.getMatchingReverseStrand()) {
                              assertEquals(6,alignmentEntry.getTargetIndex());
                             // in the forward strand:
@@ -222,53 +203,112 @@ public class TestSequenceVariations {
                         //  and T to C at position 21
                         switch (var.getPosition()) {
                             case 8:
+                                assertEquals("A", var.getFrom());
+                                assertEquals("C", var.getTo());
+                                break;
                             case 14:
                                 assertEquals("A", var.getFrom());
                                 assertEquals("C", var.getTo());
-
                                 break;
                             case 21:
                                 assertEquals("T", var.getFrom());
                                 assertEquals("C", var.getTo());
-
                                 break;
                             default:
                                 assertTrue("Invalid mutation detected.", false);
                         }
+                        break;
 
+                    case 3:
+                        //last finds this alignment. We test deletion of TCC from the reference.
+                        assertEquals(8, var.getPosition());
+                        assertEquals(9, var.getReadIndex());
+                        assertEquals("-", var.getFrom());
+                        assertEquals("C", var.getTo());
+                        break;
 
+                    case 4:
+                        //last finds this alignment. We test deletion of TCC from the reference.
+                        assertEquals(14, var.getPosition());
+                        assertEquals(14, var.getReadIndex());
+                        assertEquals("TCC", var.getFrom());
+                        assertEquals("---", var.getTo());
+                        break;
+                    */
+
+                    case 5:
+                        //last finds this alignment. We test the case when the read does not match the reference at the beginning:
+                        assertEquals(24, var.getPosition());
+                        assertEquals(23, var.getReadIndex());
+                        assertEquals("T", var.getFrom());
+                        assertEquals("-", var.getTo());
                         break;
 
                     case 6:
-
-                        
                         // last finds this alignment. We test mutation from A to C at position 8 or 14
                         //  and T to C at position 21
                         switch (var.getPosition()) {
                             case 8:
-                            case 14:
+                                assertEquals(37, var.getReadIndex());
                                 assertEquals("A", var.getFrom());
                                 assertEquals("C", var.getTo());
-
+                                break;
+                            case 14:
+                                assertEquals(31, var.getReadIndex());
+                                assertEquals("A", var.getFrom());
+                                assertEquals("C", var.getTo());
                                 break;
                             case 21:
+                                assertEquals(24, var.getReadIndex());
                                 assertEquals("T", var.getFrom());
                                 assertEquals("C", var.getTo());
-
                                 break;
                             default:
                                 assertTrue("Invalid mutation detected.", false);
                         }
-
-
                         break;
+
+                    case 8:
+                        //last finds this alignment. We test the case when the read does not match the reference at the beginning:
+                        assertEquals(50, var.getPosition());
+                        assertEquals(36, var.getReadIndex());
+                        assertEquals("A", var.getFrom());
+                        assertEquals("G", var.getTo());
+                        break;
+
                     case 9:
                         // TODO: add assertions
-                        System.out.println(TextFormat.printToString(var));
+                        switch (var.getPosition()) {
+                            case 1:
+                                assertEquals(1, var.getReadIndex());
+                                assertEquals("T", var.getFrom());
+                                assertEquals("C", var.getTo());
+                                break;
+                            case 26:
+                                assertEquals(26, var.getReadIndex());
+                                assertEquals("T", var.getFrom());
+                                assertEquals("G", var.getTo());
+                                break;
+                            default:
+                                assertTrue("Invalid mutation detected.", false);
+                        }
                         break;
                     case 10:
                         // TODO: add assertions
-                        System.out.println(TextFormat.printToString(var));
+                        switch (var.getPosition()) {
+                            case 1:
+                                assertEquals(36, var.getReadIndex());
+                                assertEquals("T", var.getFrom());
+                                assertEquals("C", var.getTo());
+                                break;
+                            case 26:
+                                assertEquals(11, var.getReadIndex());
+                                assertEquals("T", var.getFrom());
+                                assertEquals("G", var.getTo());
+                                break;
+                            default:
+                                assertTrue("Invalid mutation detected.", false);
+                        }
                         break;
                 }
             }
