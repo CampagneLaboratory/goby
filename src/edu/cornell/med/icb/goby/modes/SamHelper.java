@@ -29,6 +29,8 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.List;
 
+import edu.cornell.med.icb.goby.reads.QualityEncoding;
+
 /**
  * Class to assist with parsing SAM files. Translated from C_Alignments.cc.
  */
@@ -44,7 +46,6 @@ public class SamHelper {
     private static final Logger LOG = Logger.getLogger(SamHelper.class);
 
     private char minQualValue = 0;
-    private char qualShift = 0;
     private MutableString cigar = new MutableString();
     private MutableString md = new MutableString();
     private MutableString sourceQuery = new MutableString();
@@ -71,6 +72,8 @@ public class SamHelper {
     private ObjectList<SamSequenceVariation> sequenceVariations = new ObjectArrayList<SamSequenceVariation>();
 
     private MutableString logval = new MutableString();
+
+    private QualityEncoding qualityEncoding = QualityEncoding.ILLUMINA;
 
     public SamHelper() {
     }
@@ -102,6 +105,11 @@ public class SamHelper {
 
     public void setSource(final int queryIndex, final CharSequence sourceQuery, final CharSequence sourceQual,
                           final CharSequence cigar, final CharSequence md, final int position, final boolean reverseStrand) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("------ new setSource --------------------------------");
+            LOG.debug("position=" + (position -1));
+            LOG.debug("queryIndex=" + queryIndex);
+        }
         reset();
         this.queryIndex = queryIndex;
         this.sourceQuery.setLength(0);
@@ -127,6 +135,68 @@ public class SamHelper {
         findSequenceVariations();
         SamSequenceVariation.merge(sequenceVariations);
     }
+
+    // Some aligners, such as bsmap, provide the reference in the SAM file.
+    public void setSourceWithReference(final int queryIndex, final CharSequence sourceQuery,
+                                       final CharSequence sourceQual, final CharSequence sourceRef,
+                                        final int position, final boolean reverseStrand) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("------ new setSourceWithReference --------------------------------");
+            LOG.debug("position=" + (position - 1));
+            LOG.debug("queryIndex=" + queryIndex);
+        }
+        reset();
+        this.queryIndex = queryIndex;
+        this.sourceQuery.setLength(0);
+        if (sourceQuery != null) {
+            this.sourceQuery.append(sourceQuery);
+            this.queryLength = sourceQuery.length();
+        }
+        this.sourceQual.setLength(0);
+        if (sourceQual != null) {
+            this.sourceQual.append(sourceQual);
+        }
+        this.ref.setLength(0);
+        if (sourceRef != null) {
+            this.ref.append(sourceRef);
+        }
+        this.query.setLength(0);
+        if (sourceQuery != null) {
+            this.query.append(sourceQuery);
+        }
+        this.qual.setLength(0);
+        if (sourceQual != null) {
+            this.qual.append(sourceQual);
+        }
+        this.position = position - 1;  // SAM positions are 1-based, goby are 0-based
+        this.queryPosition = 0;
+        this.reverseStrand = reverseStrand;
+        this.numInsertions = 0;
+        this.numDeletions = 0;
+        this.numLeftClipped = 0;
+        this.numRightClipped = 0;
+        this.alignedLength = query.length();
+        this.queryAlignedLength = query.length();
+        this.queryLength = query.length();
+        this.targetAlignedLength = ref.length();
+        int scanLength = Math.min(query.length(), ref.length());
+        this.numMisMatches = 0;
+        for (int i = 0; i < scanLength; i++) {
+            if (query.charAt(i) != ref.charAt(i)) {
+                numMisMatches++;
+                ref.setCharAt(i, Character.toLowerCase(ref.charAt(i)));
+            }
+        }
+        this.score = alignedLength - numMisMatches;
+        findSequenceVariations();
+        SamSequenceVariation.merge(sequenceVariations);
+        if (LOG.isDebugEnabled()) {
+            for (SamSequenceVariation var : sequenceVariations) {
+                LOG.debug("... Variation " + var.toString());
+            }
+        }
+    }
+
 
     public List<SamSequenceVariation> getSequenceVariations() {
         return sequenceVariations;
@@ -158,14 +228,6 @@ public class SamHelper {
 
     public MutableString getMd() {
         return md;
-    }
-
-    public void setQualShift(char qualShift) {
-        this.qualShift = qualShift;
-    }
-
-    public char getQualShift() {
-        return qualShift;
     }
 
     public void setMinQualValue(final char minQualValue) {
@@ -494,13 +556,13 @@ public class SamHelper {
             // We check queryQuery != '-' because we don't have a qual score on deletions
             if (qual.length() > 0 && queryChar != '-') {
                 hasQual = true;
-                qualChar = (char) (qual.charAt(i) + qualShift);
+                qualChar = (char) qualityEncoding.asciiEncodingToPhredQualityScore(qual.charAt(i));
             } else {
                 hasQual = false;
                 qualChar = minQualValue;
             }
             if (refChar != queryChar) {
-                sequenceVariations.add(new SamSequenceVariation(refPosition + position, refChar, readIndex, queryChar, hasQual, (byte) qualChar));
+                sequenceVariations.add(new SamSequenceVariation(refPosition, refChar, readIndex, queryChar, hasQual, (byte) qualChar));
             }
         }
 
@@ -575,5 +637,22 @@ public class SamHelper {
             }
         }
         LOG.debug(logval.toString());
+    }
+
+    /**
+     * Get the quality encoding scale used for the input fastq file.
+     * @return the quality encoding scale used for the input fastq file
+     */
+    public QualityEncoding getQualityEncoding() {
+        return qualityEncoding;
+    }
+
+    /**
+     * Set the quality encoding scale to be used for the input fastq file.
+     * Acceptable values are "Illumina", "Sanger", and "Solexa".
+     * @param qualityEncoding the quality encoding scale to be used for the input fastq file
+     */
+    public void setQualityEncoding(final QualityEncoding qualityEncoding) {
+        this.qualityEncoding = qualityEncoding;
     }
 }

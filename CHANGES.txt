@@ -1,4 +1,9 @@
 development -> 1.9.5
+ - Show phred scores in DisplaySequenceVariants (tab + base)
+ - Add a QualityEncoding.PHRED in case one just wants to transfer quality scores without changing quality scale
+ - Rewritten sam-to-compact mode that handles sequence variations better, handles bsmap sam files better,
+   and handles quality score conversions more flexibly. The old mode is still around called
+   sam-to-compact-old for comparison. The new mode has slightly different command line paramters.
  - Added a discover-sequence-variants mode format 'methylation' to estimate methylation rates for RRBS and
    Methyl-Seq alignments.
  - Dramatically improved TMH loading times for large alignemnts.

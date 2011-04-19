@@ -18,7 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import edu.cornell.med.icb.goby.modes.SAMToCompactMode;
+import edu.cornell.med.icb.goby.modes.SAMToCompactOldMode;
 import it.unimi.dsi.lang.MutableString;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
@@ -126,7 +126,7 @@ public class TestSAMVariationParsing {
         final MutableString readSequence = new MutableString(stringReadSequence);
         final MutableString readPostInsertions = new MutableString(stringReadSequence);
 
-        SAMToCompactMode.produceReferenceSequence(CIGAR, mdAttribute, readSequence, readPostInsertions, referenceSequence);
+        SAMToCompactOldMode.produceReferenceSequence(CIGAR, mdAttribute, readSequence, readPostInsertions, referenceSequence);
     }
 
     @Test

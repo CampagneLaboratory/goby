@@ -51,6 +51,11 @@
             <longFlag>propagate-query-ids</longFlag>
             <help>When this switch is provided, propagate query ids if provided in the compact file designated by the query-ids option. The default is false since query ids are generally not useful and can consume a large amount of storage.  </help>
         </switch>
+         <switch>
+            <id>allow-missing-attributes</id>
+            <longFlag>allow-missing-attributes</longFlag>
+            <help>When this switch is provided, import SAM records even if they do not provide the MD or XO attributes. MD attributes are required to determine how much mismatch exist between a read and the reference. This switch forces the import of all records, irrespective of quality. If provided, XO attributes will also be ignored, thereby faking exactly one match per record across the reference. This flag is useful to convert SAM files produced by TopHat.</help>
+        </switch>
         <flaggedOption>
             <id>propagate-target-ids</id>
             <longFlag>propagate-target-ids</longFlag>
@@ -117,26 +122,15 @@
             </stringParser>
             <help>Use to import files not produced by Goby.</help>
         </flaggedOption>
+
         <flaggedOption>
-            <id>bsmap</id>
-            <longFlag>bsmap</longFlag>
-            <defaults>
-                <string>false</string>
-            </defaults>
+            <id>parse</id>
+            <longFlag>parse</longFlag>
+             <allowMultipleDeclarations>true</allowMultipleDeclarations>
              <stringParser>
-                <classname>BooleanStringParser</classname>
+                <classname>StringStringParser</classname>
             </stringParser>
-            <required>false</required>
-            <help>If the input sam file came from the bsmap aligner which is special in that it provides the reference string and how it handles reverse strand.</help>
-        </flaggedOption>
-        <flaggedOption>
-           <id>quality-encoding</id>
-           <longFlag>quality-encoding</longFlag>
-           <required>false</required>
-             <defaults>
-               <string>Illumina</string>
-           </defaults>
-           <help>The encoding for quality scores. The default quality encoding is that used by the Illumina pipeline 1.3+. Valid encodings include Illumina, Sanger and Solexa.</help>
+            <help>Requests parsing of a specific SAM/BAM attribute. Supported attribute include: bsmap:XR</help>
         </flaggedOption>
     </parameters>
 </jsap>

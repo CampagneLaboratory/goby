@@ -65,7 +65,11 @@ class SamSequenceVariation {
     }
 
     public byte[] getQualByteArray() {
-        return qual.toByteArray();
+        if (qual == null) {
+            return null;
+        } else {
+           return qual.toByteArray();
+        }
     }
 
     public boolean isHasQual() {

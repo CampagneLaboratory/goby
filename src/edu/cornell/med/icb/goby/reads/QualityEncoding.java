@@ -63,7 +63,12 @@ public enum QualityEncoding {
     /**
      * Solexa encoding.
      */
-    SOLEXA(59, true, -5, 62);
+    SOLEXA(59, true, -5, 62),
+
+    /**
+     * NO encoding.
+     */
+    PHRED(0, false, 0, 127);
 
     /**
      * The offset used to convert quality scores to/from ASCII characters.
@@ -82,6 +87,8 @@ public enum QualityEncoding {
      *
      * @param asciiOffset    The offset used to convert quality scores to/from ASCII characters.
      * @param solexaEncoding Indicates whether solexa scale conversion must occur.
+     * @param minPhredScore the minimum allowed phred score
+     * @param maxPhredScore the maximum allowed phred score
      */
     private QualityEncoding(final int asciiOffset, final boolean solexaEncoding, final int minPhredScore, final int maxPhredScore) {
         this.asciiOffset = asciiOffset;

@@ -234,14 +234,13 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                                 getReferenceId(alignmentEntry.getTargetIndex())));
                         boolean variations = false;
                         for (final Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
-                            variations = true;
                             // convert variation position to position on the reference:
                             final int positionOnReference = alignmentEntry.getPosition() + var.getPosition();
                             final int referenceIndex = alignmentEntry.getTargetIndex();
                             boolean keepVar = true;
                             keepVar = determineKeepVariation(positionOnReference, referenceIndex, keepVar);
                             if (keepVar) {
-                                
+                                variations = true;
                                 outputStream.print(String.format("%d:%d:%s/%s,",
 
 
@@ -253,7 +252,6 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                         }
                         if (variations) {
                             outputStream.println();
-
                         }
                     }
                 }
@@ -270,12 +268,19 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                         final String from = var.getFrom();
                         final String to = var.getTo();
                         final int referenceIndex = alignmentEntry.getTargetIndex();
+                        final byte[] qualityScores;
+                        if (var.hasToQuality()) {
+                            System.out.println("Score");
+                            qualityScores = var.getToQuality().toByteArray();
+                        } else {
+                            System.out.println("No score");
+                            qualityScores = null;
+                        }
+
                         boolean keepVar = true;
                         keepVar = determineKeepVariation(positionOnReference, referenceIndex, keepVar);
                         if (keepVar && !isAllNs(to)) {
-
-
-                            printTab(alignmentEntry, basename, positionOnReference, readIndex, from, to);
+                            printTab(alignmentEntry, basename, positionOnReference, readIndex, from, to, qualityScores);
                         }
                     }
 
@@ -293,6 +298,12 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                         final int fromLength = from.length();
                         final int toLength = to.length();
                         final int referenceIndex = alignmentEntry.getTargetIndex();
+                        final byte[] qualityScores;
+                        if (var.hasToQuality()) {
+                            qualityScores = var.getToQuality().toByteArray();
+                        } else {
+                            qualityScores = null;
+                        }
                         boolean keepVar = true;
                         keepVar = determineKeepVariation(positionOnReference, referenceIndex, keepVar);
                         if (keepVar && !isAllNs(to)) {
@@ -300,14 +311,28 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                             int fromOffset = 0;
                             int toOffset = 0;
                             int readIndexIncrementValue = (alignmentEntry.getMatchingReverseStrand() ? -1 : 1);                            
+                            byte[] toScore;
+                            if (qualityScores != null) {
+                                toScore = new byte[1];
+                            } else {
+                                toScore = null;
+                            }
                             for (int i = 0; i < maxLength; i++) {
                                 final char fromChar = var.getFrom().charAt(i);
                                 final char toChar = var.getTo().charAt(i);
+                                if (qualityScores != null) {
+                                    if (i < qualityScores.length) {
+                                        toScore[0] = qualityScores[i];
+                                    } else {
+                                        toScore = null;
+                                    }
+                                }
                                 printTab(alignmentEntry, basename,
                                         positionOnReference + fromOffset,
                                         readIndex + toOffset,
                                         i < fromLength ? Character.toString(fromChar) : "",
-                                        i < toLength ? Character.toString(toChar) : "");
+                                        i < toLength ? Character.toString(toChar) : "",
+                                        toScore);
                                 if (fromChar != '-') {
                                     fromOffset += 1;
                                 }
@@ -342,7 +367,7 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
             return true;
         }
 
-        private void printTab(final Alignments.AlignmentEntry alignmentEntry, final String basename, final int positionOnReference, final int readIndex, final String from, final String to) {
+        private void printTab(final Alignments.AlignmentEntry alignmentEntry, final String basename, final int positionOnReference, final int readIndex, final String from, final String to, final byte[] qualityScores) {
             final String type;
             if (from.contains("-") || from.length() == 0) {
                 // insertion in read sequence.
@@ -354,7 +379,16 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                 // one or more bases are mutated. no insertions or deletions.
                 type = "MUTATION";
             }
-            outputStream.println(String.format("%s\t%d\t%s\t%d\t%d\t%s\t%s\t%s",
+            StringBuffer qualStr = new StringBuffer();
+            if (qualityScores != null) {
+                for (int i = 0; i < qualityScores.length; i++) {
+                    if (i > 0) {
+                        qualStr.append(",");
+                    }
+                    qualStr.append(qualityScores[i]);
+                }
+            }
+            outputStream.println(String.format("%s\t%d\t%s\t%d\t%d\t%s\t%s\t%s\t%s",
                     basename,
                     alignmentEntry.getQueryIndex(),
                     getReferenceId(alignmentEntry.getTargetIndex()),
@@ -362,7 +396,8 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
                     readIndex,
                     from,
                     to,
-                    type));
+                    type,
+                    qualStr.toString()));
         }
 
         public void setFirstPass(final FirstPassIterateAlignments firstPassIterator) {

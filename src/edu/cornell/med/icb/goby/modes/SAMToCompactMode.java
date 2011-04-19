@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Institute for Computational Biomedicine,
+ * Copyright (C) 2009-2011 Institute for Computational Biomedicine,
  *                    Weill Medical College of Cornell University
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -20,33 +20,27 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import com.google.protobuf.ByteString;
 import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsWriter;
 import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.reads.ReadSet;
+import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.Arrays;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
-import net.sf.samtools.AlignmentBlock;
-import net.sf.samtools.CigarElement;
-import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMSequenceDictionary;
-import net.sf.samtools.SAMSequenceRecord;
-import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import net.sf.samtools.SAMFileReader;
+import net.sf.samtools.SAMRecordIterator;
+import net.sf.samtools.SAMRecord;
+import net.sf.samtools.SAMSequenceRecord;
+import net.sf.samtools.SAMSequenceDictionary;
+import net.sf.samtools.SAMFileHeader;
 
 /**
  * Converts binary BWA alignments in the SAM format to the compact alignment format.
@@ -54,6 +48,7 @@ import java.util.regex.Pattern;
  * @author Fabien Campagne
  */
 public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
+
     /**
      * Used to log debug and informational messages.
      */
@@ -75,10 +70,11 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
      */
     protected String samBinaryFilename;
 
-    private boolean skipMissingMdAttribute = true;
     private int dummyQueryIndex;
-    private ObjectSet<String> parseAttributeNames = new ObjectArraySet<String>();
 
+    private boolean bsmap;
+
+    private QualityEncoding qualityEncoding = QualityEncoding.ILLUMINA;
 
     public String getSamBinaryFilename() {
         return samBinaryFilename;
@@ -100,26 +96,39 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     }
 
     /**
+     * Get the quality encoding scale used for the input fastq file.
+     * @return the quality encoding scale used for the input fastq file
+     */
+    public QualityEncoding getQualityEncoding() {
+        return qualityEncoding;
+    }
+
+    /**
+     * Set the quality encoding scale to be used for the input fastq file.
+     * Acceptable values are "Illumina", "Sanger", and "Solexa".
+     * @param qualityEncoding the quality encoding scale to be used for the input fastq file
+     */
+    public void setQualityEncoding(final QualityEncoding qualityEncoding) {
+        this.qualityEncoding = qualityEncoding;
+    }
+
+    /**
      * Configure.
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws IOException   error parsing
-     * @throws JSAPException error parsing
+     * @throws java.io.IOException   error parsing
+     * @throws com.martiansoftware.jsap.JSAPException error parsing
      */
     @Override
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         // configure baseclass
         super.configure(args);
         final JSAPResult jsapResult = parseJsapArguments(args);
+        bsmap = jsapResult.getBoolean("bsmap");
 
-        skipMissingMdAttribute = jsapResult.getBoolean("allow-missing-attributes");
         numberOfReadsFromCommandLine = jsapResult.getInt("number-of-reads");
-        final String[] strings = jsapResult.getStringArray("parse");
-        parseAttributeNames = new ObjectArraySet<String>();
-        for (String name : strings) {
-            parseAttributeNames.add(name.intern());
-        }
+        qualityEncoding = QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
 
         this.largestQueryIndex = numberOfReadsFromCommandLine;
         this.smallestQueryIndex = 0;
@@ -131,7 +140,6 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                        final AlignmentWriter writer, final AlignmentTooManyHitsWriter tmhWriter)
             throws IOException {
         int numAligns = 0;
-        final int[] readLengths = createReadLengthArray();
 
         final ProgressLogger progress = new ProgressLogger(LOG);
         final SAMFileReader parser = new SAMFileReader(new File(inputFile));
@@ -139,88 +147,56 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
         progress.start();
 
-        final CloseableIterator<SAMRecord> recordCloseableIterator = parser.iterator();
+        final SAMRecordIterator samIterator = parser.iterator();
 
-        final MutableString readSequence = new MutableString();
-        // shared buffer for extract sequence variation work. We allocate here to avoid repetitive memory allocations.
-        final MutableString referenceSequence = new MutableString();
-        // shared buffer for extract sequence variation work. We allocate here to avoid repetitive memory allocations.
-        final MutableString readPostInsertions = new MutableString();
+        SamHelper samHelper = new SamHelper();
+        samHelper.setQualityEncoding(qualityEncoding);
         numberOfReads = 0;
 
         // int stopEarly = 0;
-        while (recordCloseableIterator.hasNext()) {
+        while (samIterator.hasNext()) {
+            samHelper.reset();
             numberOfReads++;
-            final SAMRecord samRecord = recordCloseableIterator.next();
-            final int queryIndex = getQueryIndex(samRecord);
-
-            //    stopEarly++;
-            //   if (stopEarly > 10000) break;
-            final int readLength = samRecord.getReadLength();
+            final SAMRecord samRecord = samIterator.next();
 
             // if SAM reports read is unmapped (we don't know how or why), skip record
+            final int queryIndex = getQueryIndex(samRecord);
             if (samRecord.getReadUnmappedFlag()) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("NOT keeping queryIndex=%d", queryIndex));
+                }
                 continue;
             }
 
-            // SAM mismatch info must be available, o.w. skip record
-            final String mismatches = (String) samRecord.getAttribute("MD");
-            // System.out.println("mismatches: " + mismatches);
-            if (mismatches == null && !skipMissingMdAttribute) {
+            final int targetIndex = getTargetIndex(targetIds, samRecord.getReferenceName(), thirdPartyInput);
 
-                continue;
+            final int fragmentIndex;
+            final int mateFragmentIndex;
+            if (samRecord.getReadPairedFlag()) {
+                if (samRecord.getFirstOfPairFlag()) {
+                    fragmentIndex = 0;
+                    mateFragmentIndex = 1;
+                } else {
+                    fragmentIndex = 1;
+                    mateFragmentIndex = 0;
+                }
+            } else {
+                fragmentIndex = 0;
+                mateFragmentIndex = 1;
             }
-            final int targetIndex = getTargetIndex(
-                    targetIds, samRecord.getReferenceName(), thirdPartyInput);
+
+            if (bsmap) {
+                // reference is provided in attribute XR
+                final String specifiedReference = (String) samRecord.getAttribute("XR");
+                final String directions = (String) samRecord.getAttribute("XS");
+                final boolean reverseStrand = directions.equals("-+") || directions.equals("+-"); 
+                samHelper.setSourceWithReference(queryIndex, samRecord.getReadString(), samRecord.getBaseQualityString(), specifiedReference, samRecord.getAlignmentStart(), reverseStrand);
+            } else {
+                samHelper.setSource(queryIndex, samRecord.getReadString(), samRecord.getBaseQualityString(), samRecord.getCigarString(), (String) samRecord.getAttribute("MD"), samRecord.getAlignmentStart(), samRecord.getReadNegativeStrandFlag());
+            }
 
             // positions reported by BWA appear to start at 1. We convert to start at zero.
-            final int position = samRecord.getAlignmentStart() - 1;
-            final boolean reverseStrand = samRecord.getReadNegativeStrandFlag();
-            final List<AlignmentBlock> blocks = samRecord.getAlignmentBlocks();
-
-            float score = 0;
-            int targetAlignedLength = 0;
-            int numMismatches = 0;
-            int numIndels = 0;
-            int queryAlignedLength = 0;
             int multiplicity = 1;
-            if (!skipMissingMdAttribute) {
-                // count the number of mismatches:
-                for (final char c : mismatches.toCharArray()) {
-                    if (!Character.isDigit(c)) {
-                        numMismatches++;
-                    }
-                }
-            }
-            for (final CigarElement cigar : samRecord.getCigar().getCigarElements()) {
-                final int length = cigar.getLength();
-                switch (cigar.getOperator()) {
-                    case M:
-                        // match or mismatch?!   CIGAR cannot differentiate.
-                        // This means here that the score rewards mutations as much as matches.  We would
-                        // have to parse the sequence to determine what is what.
-                        score += length;
-                        break;
-                    case I:
-                        // insertion to the reference :
-                        score -= length;
-                        numIndels += length;
-                        break;
-                    case P:
-                        //padding, no score impact:
-                        break;
-                    case D:
-                        // deletion from the reference
-                        score -= length;
-                        numIndels += length;
-                        break;
-                }
-            }
-            score -= numMismatches;
-            for (final AlignmentBlock block : blocks) {
-                targetAlignedLength += block.getLength();
-                queryAlignedLength += block.getLength();
-            }
 
             // we have a multiplicity filter. Use it to determine multiplicity.
             if (readIndexFilter != null) {
@@ -231,70 +207,78 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 multiplicity = readIndexFilter.getMultiplicity(queryIndex);
             }
             largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
-
+            smallestQueryIndex = Math.min(queryIndex, smallestQueryIndex);
+            
             // the record represents a mapped read..
             final Alignments.AlignmentEntry.Builder currentEntry = Alignments.AlignmentEntry.newBuilder();
 
-            //      System.out.println("score: " + score);
-            currentEntry.setNumberOfIndels(numIndels);
-            currentEntry.setNumberOfMismatches(numMismatches);
-            currentEntry.setMatchingReverseStrand(reverseStrand);
             currentEntry.setMultiplicity(multiplicity);
-            currentEntry.setPosition(position);
-            currentEntry.setQueryAlignedLength(queryAlignedLength);
-            currentEntry.setQueryIndex(queryIndex);
-            currentEntry.setScore(score);
-            currentEntry.setTargetAlignedLength(targetAlignedLength);
+            currentEntry.setQueryIndex(samHelper.getQueryIndex());
             currentEntry.setTargetIndex(targetIndex);
-            currentEntry.setQueryLength(readLength);
-            final String cigar = samRecord.getCigarString();
-            final String attributeMD = (String) samRecord.getAttribute("MD");
-            final String sequence = samRecord.getReadString();
-            readSequence.setLength(0);
-            readSequence.append(sequence);
+            currentEntry.setPosition(samHelper.getPosition());
+            currentEntry.setQueryPosition(samHelper.getQueryPosition());
+            currentEntry.setFragmentIndex(fragmentIndex);
+            currentEntry.setQueryLength(samHelper.getQueryLength());
+            currentEntry.setScore(samHelper.getScore());
+            currentEntry.setNumberOfIndels(samHelper.getNumDeletions() + samHelper.getNumInsertions());
+            currentEntry.setNumberOfMismatches(samHelper.getNumMisMatches());
+            currentEntry.setMatchingReverseStrand(samHelper.isReverseStrand());
+            currentEntry.setQueryAlignedLength(samHelper.getQueryAlignedLength());
+            currentEntry.setTargetAlignedLength(samHelper.getTargetAlignedLength());
+            currentEntry.setPairFlags(samRecord.getFlags());
 
-            final int queryLength = samRecord.getReadLength();
-            if (parseAttribute("BSMAP:XR")) {
-
-                // reference is provided in attribute XR
-                final String attributeXR_Z = (String) samRecord.getAttribute("XR");
-                System.out.println(attributeXR_Z);
-                referenceSequence.setLength(0);
-                referenceSequence.append(attributeXR_Z);
-                final int alignmentLength = readSequence.length();
-                interpretBisulfiteConversion(readSequence, referenceSequence);
-                extractSequenceVariations(currentEntry, alignmentLength,
-                        referenceSequence, readSequence, 0, queryLength, reverseStrand, samRecord.getBaseQualities());
-
-            } else {
-                // variations are encoded in attribute MD
-                extractSequenceVariations(cigar, attributeMD, readSequence, readPostInsertions,
-                        referenceSequence, currentEntry, queryLength, reverseStrand, samRecord.getBaseQualities());
+            if (samRecord.getReadPairedFlag()) {
+                if (!samRecord.getMateUnmappedFlag()) {
+                    final Alignments.RelatedAlignmentEntry.Builder relatedBuilder =
+                            Alignments.RelatedAlignmentEntry.newBuilder();
+                    final int mateTargetIndex = getTargetIndex(targetIds, samRecord.getMateReferenceName(), thirdPartyInput);
+                    final int mateAlignmentStart = samRecord.getMateAlignmentStart() - 1; // Goby is 0-based
+                    relatedBuilder.setFragmentIndex(mateFragmentIndex);
+                    relatedBuilder.setPosition(mateAlignmentStart);
+                    relatedBuilder.setTargetIndex(mateTargetIndex);
+                    currentEntry.setPairAlignmentLink(relatedBuilder);
+                }
             }
+
+            for (final SamSequenceVariation var : samHelper.getSequenceVariations()) {
+                appendNewSequenceVariation(currentEntry, var, samHelper.getQueryLength());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("Added seqvar=%s for queryIndex=%d to alignment", var.toString(), queryIndex));
+                }
+            }
+
+
             final Alignments.AlignmentEntry alignmentEntry = currentEntry.build();
 
+            // BWA will provide X0, the number of reads at this quality, other SAM producers
+            // probably won't.
             final Object xoString = samRecord.getAttribute("X0");
-            if (xoString == null && !skipMissingMdAttribute) {
-                System.err.println("The XO attribute is required. Use --allow-missing-attributes to ignore.");
-                System.exit(1);
-            }
-            final int numTotalHits = skipMissingMdAttribute && xoString == null ?
-                    1 : (Integer) xoString;
-
-            if (qualityFilter.keepEntry(readLength, alignmentEntry)) {
+            final int numTotalHits = xoString == null ? 1 : (Integer) xoString;
+            if (qualityFilter.keepEntry(samHelper.getQueryLength(), alignmentEntry)) {
                 // only write the entry if it is not ambiguous. i.e. less than or equal to mParameter
                 if (numTotalHits <= mParameter) {
                     writer.appendEntry(alignmentEntry);
                     numAligns += multiplicity;
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(String.format("Added queryIdndex=%d to alignment", queryIndex));
+                    }
+                } else {
+                    // TMH writer adds the alignment entry only if hits > thresh
+                    tmhWriter.append(queryIndex, numTotalHits, samHelper.getQueryLength());
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(String.format("Added queryIndex=%d to TMH", queryIndex));
+                    }
                 }
-                // TMH writer adds the alignment entry only if hits > thresh
-                tmhWriter.append(queryIndex, numTotalHits, readLength);
+            } else {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("NOT keeping queryIndex=%d", queryIndex));
+                }
             }
 
             progress.lightUpdate();
 
         }
-        recordCloseableIterator.close();
+        samIterator.close();
 
         // TODO write statistics to writer.
         // stu 090817 - mimicking LastToCompactMode.scan() statistics
@@ -330,20 +314,32 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         return numAligns;
     }
 
-    private void interpretBisulfiteConversion(MutableString readSequence, MutableString referenceSequence) {
-        int length = Math.min(readSequence.length(), referenceSequence.length());
-        for (int i = 0; i < length; i++) {
-            final char readBase = readSequence.charAt(i);
-            final char referenceBase = referenceSequence.charAt(i);
-            if (readBase == 'C' && referenceBase == 'C') readSequence.charAt(i, 'm');
-            if (readBase == 'T' && referenceBase == 'C') readSequence.charAt(i, 'C');
+    static void appendNewSequenceVariation(
+            final Alignments.AlignmentEntry.Builder currentEntry,
+            final SamSequenceVariation var, final int queryLength) {
+
+        int readIndex = var.getReadIndex();
+        if (readIndex > queryLength) {
+            assert readIndex <= queryLength : String.format(" readIndex %d must be smaller than read length %d .",
+                    readIndex, queryLength);
+            LOG.warn(String.format(
+                    "Ignoring sequence variations for a read since readIndex %d must be smaller than read length %d. query index=%d reference index=%d%n",
+                    readIndex, queryLength, currentEntry.getQueryIndex(), currentEntry.getTargetIndex()));
+            return;
         }
-    }
 
-    private boolean parseAttribute(String attributeId) {
-        return parseAttributeNames.contains(attributeId);
-    }
+        final Alignments.SequenceVariation.Builder sequenceVariation =
+                Alignments.SequenceVariation.newBuilder();
 
+        sequenceVariation.setFrom(var.getFromString().toString());
+        sequenceVariation.setTo(var.getToString().toString());
+        sequenceVariation.setPosition(var.getRefPosition()); // positions start at 1
+        sequenceVariation.setReadIndex(readIndex);  // readIndex starts at 1
+        if (var.getQual() != null) {
+            sequenceVariation.setToQuality(ByteString.copyFrom(var.getQualByteArray()));
+        }
+        currentEntry.addSequenceVariations(sequenceVariation);
+    }
 
     private int getQueryIndex(final SAMRecord samRecord) {
         final String readName = samRecord.getReadName();
@@ -361,199 +357,14 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         }
     }
 
-    private static final Pattern attributeMD_pattern;
-    private static final Pattern attributeCIGAR_insertions_pattern;
-
-    static {
-        attributeMD_pattern = Pattern.compile("([0-9]+)(([ACGTN]|\\^[ACGTN])+)?");
-        attributeCIGAR_insertions_pattern = Pattern.compile("([0-9]+)([MID])");
-    }
-
-    /*
-   @param baseQualities are ascii encoded, remove 33 to get Phred quality score.
-    */
-    private void extractSequenceVariations(final String cigar, final String attributeMD, final MutableString readSequence,
-                                           final MutableString readPostInsertions,
-                                           final MutableString referenceSequence,
-                                           final Alignments.AlignmentEntry.Builder currentEntry,
-                                           final int queryLength,
-                                           final boolean reverseStrand, byte[] baseQualities) {
-        /* From the SAM specification document, see http://samtools.sourceforge.net/SAM1.pdf
-         MD Z String for mismatching positions in the format of [0-9]+(([ACGTN]|\^[ACGTN]+)[0-9]+)* 2,3
-
-       The MD field aims to achieve SNP/indel calling without looking at the reference. SOAP and Eland SNP callers prefer
-   such information. For example, a string "10A5^AC6" means from the leftmost reference base in the alignment, there
-   are 10 matches followed by an A on the reference which is different from the aligned read base; the next 5 reference
-   bases are matches followed by a 2bp deletion from the reference; the deleted sequence is AC; the last 6 bases are
-   matches. The MD field should match the CIGAR string, although an SAM parser may not check this optional field.
-        */
-        if (attributeMD == null && skipMissingMdAttribute) {
-            return;
-        }
-
-        final int readStartPosition = produceReferenceSequence(cigar, attributeMD, readSequence, readPostInsertions,
-                referenceSequence);
-
-        final int alignmentLength = readSequence.length();
-        extractSequenceVariations(currentEntry, alignmentLength,
-                referenceSequence, readSequence, readStartPosition, queryLength, reverseStrand, baseQualities);
-
-    }
-
-    /**
-     * Interpret the CIGAR string and MD SAM attribute and reconstruct the reference sequence given the read sequence.
-     * The reference passed as a argument is cleared before appending bases.
-     *
-     * @param CIGAR             The CIGAR string.
-     * @param mdAttribute       The SAM MD attribute
-     * @param readSequence      The sequence of the read.
-     * @param referenceSequence The sequence of the reference that will be reconstructed.
-     * @return alignedReadStartPosition The position on the read that starts to align.
-     */
-    public static int produceReferenceSequence(final String CIGAR, final String mdAttribute, final MutableString readSequence, final MutableString readPostInsertions,
-                                               final MutableString referenceSequence) {
-        final Pattern matchPattern = attributeMD_pattern;
-        referenceSequence.setLength(0);
-        readPostInsertions.setLength(0);
-        int end = 0;
-        int positionInReadSequence = 0;
-        final IntList positionAdjustment = new IntArrayList();
-        positionAdjustment.size(readSequence.length());
-
-        final int readStartAlignedPosition = processInsertionsOnly(CIGAR, mdAttribute, readSequence, readPostInsertions, positionAdjustment);
-
-        final Matcher matchMatcher = matchPattern.matcher(mdAttribute);
-
-        final int currentAdjustment = 0;
-        while (matchMatcher.find(end)) {
-
-            final String matchChars = matchMatcher.group(1);
-            final String variationChars = matchMatcher.group(2);
-            if (matchChars != null) {
-                final int matchLength = Integer.parseInt(matchChars);
-
-                /*    System.out.println(String.format("subsequence(%d,%d),",
-                          positionInReadSequence,
-                          positionInReadSequence + matchLength));
-                */
-                // calculate by the read index position adjustment, given the number of insertions seen so far.
-                int regionAdjustment = currentAdjustment;
-                for (int i = positionInReadSequence; i < matchLength; i++) {
-                    regionAdjustment += positionAdjustment.getInt(i);
-                }
-                final CharSequence matchingSequence = readPostInsertions.subSequence(positionInReadSequence,
-                        positionInReadSequence + matchLength + regionAdjustment);
-
-                //  System.out.println("match " + matchChars + " appending " + matchingSequence);
-                referenceSequence.append(matchingSequence);
-                positionInReadSequence += matchLength;
-            }
-            if (variationChars != null) {
-
-                if (variationChars.charAt(0) == '^') {
-                    // deletion in the reference, to reconstitute the reference, we append the deleted characters.
-                    final int mutationLength = variationChars.length() - 1;   // -1 is for the indicator character '^'
-                    final String toAppend = variationChars.substring(1);
-                    referenceSequence.append(toAppend);
-
-                    //        System.out.println("var " + variationChars + " appending " + toAppend);
-
-                    //  positionInReadSequence += mutationLength;
-                    for (int i = 0; i < mutationLength; ++i) {
-                        readSequence.insert(positionInReadSequence, '-');
-                        readPostInsertions.insert(positionInReadSequence, '-');
-                    }
-                    positionInReadSequence += mutationLength;
-                } else {
-                    // base mutations:
-                    final int mutationLength = variationChars.length();
-
-                    referenceSequence.append(variationChars);
-                    //   System.out.println("var " + variationChars + " appending " + variationChars);
-                    //   referenceSequence.setLength(referenceSequence.length() -
-                    //           mutationLength);
-                    positionInReadSequence += mutationLength;
-
-
-                }
-            }
-            //  System.out.println("groupChars: " + matchChars + " variation chars: " + variationChars);
-            end = matchMatcher.end();
-
-            // System.out.println("mdAttribute: " + mdAttribute);
-            //matchMatcher.reset(mdAttribute);
-
-        }
-        return readStartAlignedPosition;
-    }
-
-    private static int processInsertionsOnly(final String cigar, final String mdAttribute, final MutableString readSequence,
-                                             final MutableString transformedSequence, final IntList positionAdjustment) {
-        final Pattern matchPattern = attributeCIGAR_insertions_pattern;
-        final Matcher matchMatcher = matchPattern.matcher(cigar);
-        int end = 0;
-        int positionInReadSequence = 0;
-        int readStartAlignedPosition = 0;
-        //   System.out.println("cigar: "+cigar +" mdAttribute: "+mdAttribute);
-
-        while (matchMatcher.find(end)) {
-            final String matchLenthAsString = matchMatcher.group(1);
-            final String variationType = matchMatcher.group(2);
-            final int matchLength = Integer.parseInt(matchLenthAsString);
-
-            //      System.out.println(String.format("length: %s type: %s", matchLenthAsString, variationType));
-            assert variationType.length() == 1 : " CIGAR mutation type must be one character only";
-            switch (variationType.charAt(0)) {
-                case 'M':
-                    // The read and reference match.
-
-                    final CharSequence matchingSequence = readSequence.subSequence(positionInReadSequence,
-                            positionInReadSequence + matchLength);
-                    //     System.out.println("match appending " + matchingSequence);
-                    transformedSequence.append(matchingSequence);
-
-                    positionInReadSequence += matchLength;
-                    break;
-
-                case 'I':
-                    // The read has an insertion relative to the reference. Delete these bases when reconstituting the reference:
-                    for (int i = 0; i < matchLength; i++) {
-                        positionAdjustment.set(positionInReadSequence + i, +1);
-                    }
-                    positionInReadSequence += matchLength;
-                    for (int i = 0; i < matchLength; ++i) {
-                        transformedSequence.append('-');
-                    }
-                    break;
-                case 'D':
-                    // the reference had extra bases.
-                    for (int i = 0; i < matchLength; i++) {
-                        positionAdjustment.size(Math.max(positionInReadSequence + i + 1, positionAdjustment.size()));
-                        positionAdjustment.set(positionInReadSequence + i, -1);
-                    }
-                    break;
-                case 'P':
-                    readStartAlignedPosition += matchLength;
-            }
-            //       System.out.println("current ref: " + transformedSequence);
-            end = matchMatcher.end();
-
-        }
-        return readStartAlignedPosition;
-    }
-
     /**
      * Main method.
      *
      * @param args command line args.
-     * @throws JSAPException error parsing
-     * @throws IOException   error parsing or executing.
+     * @throws com.martiansoftware.jsap.JSAPException error parsing
+     * @throws java.io.IOException   error parsing or executing.
      */
     public static void main(final String[] args) throws JSAPException, IOException {
         new SAMToCompactMode().configure(args).execute();
-    }
-
-    public int getSmallestSplitQueryIndex() {
-        return smallestQueryIndex;
     }
 }
