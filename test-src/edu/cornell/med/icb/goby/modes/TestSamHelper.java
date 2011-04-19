@@ -32,7 +32,6 @@ public class TestSamHelper {
     @Test
     public void testSimple() throws IOException {
         final SamHelper samHelper = new SamHelper();
-        samHelper.setQualShift((char) -64);
         final String sourceRead = "CCGCCCTTGCCCTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTGT";
         final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
         samHelper.setSource(0, sourceRead, sourceQual, "50M", "50", 31, false);
@@ -60,7 +59,6 @@ public class TestSamHelper {
     @Test
     public void testSimpleReverse() throws IOException {
         final SamHelper samHelper = new SamHelper();
-        samHelper.setQualShift((char) -64);
         final String sourceRead = "CCGCCCTTGCCCTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTGT";
         final String sourceQual = "XWVUTSRQPONMLKJIHGFEDCBAZYXWVUTSRQPONMLKJIHGFEDCBA";
         samHelper.setSource(1, sourceRead, sourceQual, "50M", "50", 31, true);
@@ -88,7 +86,6 @@ public class TestSamHelper {
     @Test
     public void testMismatches() throws IOException {
         final SamHelper samHelper = new SamHelper();
-        samHelper.setQualShift((char) -64);
         final String sourceRead = "CCGCCCTTGCCCTTCCTCCCTTCCCTCGTGGAGTCCTGGCCCCACCCTGT";
         final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
         final String expRef =     "CCGCCCTTGCCCTTCCTCCCTTCCCTttcGGAGTCCTGGCCCCACCCTGT";
@@ -121,7 +118,6 @@ public class TestSamHelper {
     @Test
     public void testMismatchesReverse() throws IOException {
         final SamHelper samHelper = new SamHelper();
-        samHelper.setQualShift((char) -64);
         final String sourceRead = "CCGCCCTTGCCCTTCCTCCCTCTACTTTCGGAGTCCTGGCCCCACCCTGT";
         final String sourceQual = "XWVUTSRQPONMLKJIHGFEDCBAZYXWVUTSRQPONMLKJIHGFEDCBA";
         final String expRef =     "CCGCCCTTGCCCTTCCTCCCTtccCTTTCGGAGTCCTGGCCCCACCCTGT";
@@ -151,7 +147,6 @@ public class TestSamHelper {
     @Test
     public void testInsert() throws IOException {
         final SamHelper samHelper = new SamHelper();
-        samHelper.setQualShift((char) -64);
         final String sourceRead = "CCGCCCTTGCCCTTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACCC";
         final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
         final String expRef =     "CCGCCCTTGCCCTTCCTCCCTTCCCT---TTCGGAGTCCTGGCCCCACCC";
@@ -181,7 +176,6 @@ public class TestSamHelper {
     @Test
     public void testInsertReverse() throws IOException {
         final SamHelper samHelper = new SamHelper();
-        samHelper.setQualShift((char) -64);
         final String sourceRead = "CCCTTGCCCTTCCTCCCTTCCGATCTTTCGGAGTCCTGGCCCCACCCTGT";
         final String sourceQual = "XWVUTSRQPONMLKJIHGFEDCBAZYXWVUTSRQPONMLKJIHGFEDCBA";
         final String expRef =     "CCCTTGCCCTTCCTCCCTTCC---CTTTCGGAGTCCTGGCCCCACCCTGT";
@@ -211,7 +205,6 @@ public class TestSamHelper {
     @Test
     public void testDelete() throws IOException {
         final SamHelper samHelper = new SamHelper();
-        samHelper.setQualShift((char) -64);
         final String sourceRead = "CCGCCCTTGCCCTTCCTCCCTTCCCTGGAGTCCTGGCCCCACCCTGT";
         final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU";
         final String expRef =     "CCGCCCTTGCCCTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTGT";
@@ -244,7 +237,6 @@ public class TestSamHelper {
     @Test
     public void testDeleteReverse() throws IOException {
         final SamHelper samHelper = new SamHelper();
-        samHelper.setQualShift((char) -64);
         final String sourceRead = "CCGCCCTTGCCCTTCCTCCCTCTTTCGGAGTCCTGGCCCCACCCTGT";
         final String sourceQual = "UTSRQPONMLKJIHGFEDCBAZYXWVUTSRQPONMLKJIHGFEDCBA";
         final String expRef =     "CCGCCCTTGCCCTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTGT";
@@ -277,7 +269,6 @@ public class TestSamHelper {
     @Test
     public void testExactStartOfRef() throws IOException {
         final SamHelper samHelper = new SamHelper();
-        samHelper.setQualShift((char) -64);
         final String sourceRead = "CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
         final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
         samHelper.setSource(8, sourceRead, sourceQual, "50M", "50", 1, false);
@@ -305,7 +296,6 @@ public class TestSamHelper {
     @Test
     public void testExactStartOfRefReverse() throws IOException {
         final SamHelper samHelper = new SamHelper();
-        samHelper.setQualShift((char) -64);
         final String sourceRead = "CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
         final String sourceQual = "XWVUTSRQPONMLKJIHGFEDCBAZYXWVUTSRQPONMLKJIHGFEDCBA";
         samHelper.setSource(9, sourceRead, sourceQual, "50M", "50", 1, true);
@@ -333,7 +323,6 @@ public class TestSamHelper {
     @Test
     public void testExactEndOfRef() throws IOException {
         final SamHelper samHelper = new SamHelper();
-        samHelper.setQualShift((char) -64);
         final String sourceRead = "GAGTCCTGGCCCCACCCTGTGCTTCCCCTCCGCCTGCTGCACAGGCGCCC";
         final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
         samHelper.setSource(10, sourceRead, sourceQual, "50M", "50", 61, false);
@@ -361,7 +350,6 @@ public class TestSamHelper {
     @Test
     public void testExactEndOfRefReverse() throws IOException {
         final SamHelper samHelper = new SamHelper();
-        samHelper.setQualShift((char) -64);
         final String sourceRead = "GAGTCCTGGCCCCACCCTGTGCTTCCCCTCCGCCTGCTGCACAGGCGCCC";
         final String sourceQual = "XWVUTSRQPONMLKJIHGFEDCBAZYXWVUTSRQPONMLKJIHGFEDCBA";
         samHelper.setSource(11, sourceRead, sourceQual, "50M", "50", 61, true);
@@ -389,7 +377,6 @@ public class TestSamHelper {
     @Test
     public void testTrimOneMismatchOne() throws IOException {
         final SamHelper samHelper = new SamHelper();
-        samHelper.setQualShift((char) -64);
         final String sourceRead = "ATGAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
         final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
         final String expRead =    "TGAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
@@ -421,7 +408,6 @@ public class TestSamHelper {
     @Test
     public void testTrimTwoMismatchOne() throws IOException {
         final SamHelper samHelper = new SamHelper();
-        samHelper.setQualShift((char) -64);
         final String sourceRead = "AAGAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
         final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
         final String expRead =    "GAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
@@ -453,7 +439,6 @@ public class TestSamHelper {
     @Test
     public void testTrimFiveMismatchOne() throws IOException {
         final SamHelper samHelper = new SamHelper();
-        samHelper.setQualShift((char) -64);
         final String sourceRead = "AAAAAGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
         final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
         final String expRead =    "GCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
@@ -488,7 +473,6 @@ public class TestSamHelper {
     @Test
     public void testMismatchAtPosTwo() throws IOException {
         final SamHelper samHelper = new SamHelper();
-        samHelper.setQualShift((char) -64);
         final String sourceRead = "CAGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
         final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
         final String expRead =    "CAGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC";
@@ -530,7 +514,6 @@ public class TestSamHelper {
     @Test
     public void testTrimMismatchAndDelete() throws IOException {
         final SamHelper samHelper = new SamHelper();
-        samHelper.setQualShift((char) -64);
         final String sourceRead = "ACGCCCTTGCAATTCCTCCCTTCCCTTTCGGCCTGGCCCCACCCTGA";
         final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU";
         final String expRead =    "CGCCCTTGCAATTCCTCCCTTCCCTTTCGG---CCTGGCCCCACCCTG";
@@ -564,7 +547,6 @@ public class TestSamHelper {
     @Test
     public void testTrimMismatchAndInsert() throws IOException {
         final SamHelper samHelper = new SamHelper();
-        samHelper.setQualShift((char) -64);
         final String sourceRead = "ACGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACCA";
         final String sourceQual = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX";
         final String expRead =    "CGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACC";
@@ -597,7 +579,6 @@ public class TestSamHelper {
     @Test
     public void testTrimMismatchAndInsertReverse() throws IOException {
         final SamHelper samHelper = new SamHelper();
-        samHelper.setQualShift((char) -64);
         final String sourceRead = "ACGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACCA";
         final String sourceQual = "XWVUTSRQPONMLKJIHGFEDCBAZYXWVUTSRQPONMLKJIHGFEDCBA";
         final String expRead =    "CGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACC";
