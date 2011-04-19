@@ -1,10 +1,12 @@
 development -> 1.9.5
- - Dramatically improved TMH loading times for large alignemnts. 
- - Completely removed support for queryLength in header. This usage was deprecated a while ago, complicates
+ - Added a discover-sequence-variants mode format 'methylation' to estimate methylation rates for RRBS and
+   Methyl-Seq alignments.
+ - Dramatically improved TMH loading times for large alignemnts.
+ - Completely removed support for queryLength in header. This usage was deprecated in Goby 1.7, complicates
    the code unecessarily and is error prone (because we had two ways to store read length in the previous
-   version of Goby). Changed protobuf to make queryLength a required field. This means that alignments that
-   stored queryLengths in the header cannot be read by this version. The workaround it to use the concat mode
-   of version 1.9.4 to convert the data to the new format with queryLength in entries. 
+   versions of Goby). Note that versions since 1.7 had a concat mode that transfered information from the
+   header to the alignment entries transparently. Use this mode from a pre 1.9.4 release if you need to
+   migrate a 1.6- alignment to work with Goby 1.9.5+.
  - Fixed a bug where merge-compact-alignments would throw an ArrayIndexOutOfBounds because a TMH
    query index was smaller than the first query index in the alignment.
  - Changed discover-sequence-variant mode to filter out alignment entries whose read mapped multiple locations in the
