@@ -182,6 +182,24 @@ public class SimulateBisulfiteReads {
                 }
             }
         }
+
+        if (!bisulfiteTreatment) {
+            // erase previous file and write the max mutation rate over both strands:
+            trueRateWriter.close();
+            trueRateWriter = new PrintWriter(new FileWriter(trueRateFilename));
+            trueRateWriter.printf("%s\t%s\ts\t%s\t%s%n", "index", "methylationRate", "chromosome", "position");
+            CharSequence reverseStrandSegment = reverseComplement(segmentBases);
+            for (int i = 0; i < segmentBases.length(); i++) {
+                if (segmentBases.charAt(i) == 'C' || reverseStrandSegment.charAt(i) == 'C') {
+                    final int genomicPosition = i + from;
+                    final double value = getMethylationRateAtPosition(false, genomicPosition);
+
+                    trueRateWriter.printf("%d\t%g\t+1\t%s\t%d%n", i, value,
+                            refChoice, genomicPosition + 1);
+                }
+
+            }
+        }
         for (int repeatCount = 0; repeatCount < numRepeats; repeatCount++) {
             int startReadPosition = choose(0, segmentBases.length() - 1 - readLength);
             boolean matchedReverseStrand = random.nextBoolean();
@@ -199,7 +217,7 @@ public class SimulateBisulfiteReads {
             for (int i = 0; i < readLength; i++) {
 
                 char base = readBases.charAt(i);
-                int genomicPosition = matchedReverseStrand ? readLength - i + startReadPosition + from : i + startReadPosition + from;
+                int genomicPosition = (matchedReverseStrand ? readLength - (i+1) + startReadPosition + from : i + startReadPosition + from);
                 sequenceInitial.append(base);
                 if (base == 'C') {
 
