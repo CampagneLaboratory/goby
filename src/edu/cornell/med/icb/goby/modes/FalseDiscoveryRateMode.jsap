@@ -54,7 +54,6 @@
               <stringParser>
                 <classname>StringStringParser</classname>
             </stringParser>
-
             <help>Name of a column containing a P-value to adjust.</help>
         </flaggedOption>
         <switch>

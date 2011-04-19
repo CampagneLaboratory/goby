@@ -173,6 +173,11 @@ public class DiscoverVariantIterateSortedAlignments
             IntSet distinctReadIndices = new IntArraySet();
 
             for (edu.cornell.med.icb.goby.alignments.PositionBaseInfo info : list) {
+                if (genome != null && info.matchesReference) {
+                    // from and to have to be set if the position matches the reference.
+                    info.from = referenceBase;
+                    info.to = referenceBase;
+                }
                 final int sampleIndex = info.readerIndex;
                 distinctReadIndices.add(info.readIndex);
                 if (info.matchesReference) {

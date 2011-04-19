@@ -150,10 +150,10 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      * @throws IOException Thrown if an error occurs opening or reading the alignment file.
      */
     public AlignmentReaderImpl(final String basename,
-                           final int startReferenceIndex,
-                           final int startPosition,
-                           final int endReferenceIndex,
-                           final int endPosition)
+                               final int startReferenceIndex,
+                               final int startPosition,
+                               final int endReferenceIndex,
+                               final int endPosition)
             throws IOException {
 
         super();
@@ -174,12 +174,15 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         readIndex();
         final FileInputStream stream = new FileInputStream(basename + ".entries");
         final long startOffset = getByteOffset(startReferenceIndex, startPosition, 0);
-        final long endOffset = getByteOffset(endReferenceIndex, endPosition + 1, 1);
+        long endOffset = getByteOffset(endReferenceIndex, endPosition + 1, 1);
+
+
         this.endPosition = endPosition;
         this.endReferenceIndex = endReferenceIndex;
         this.startPosition = startPosition;
         this.startReferenceIndex = startReferenceIndex;
-        alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset > 0 ? startOffset : 0, endOffset,
+        alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset > 0 ? startOffset : 0,
+                endOffset > 0 ? endOffset : Long.MAX_VALUE,
                 new FastBufferedInputStream(stream));
         LOG.trace("start offset :" + startOffset + " end offset " + endOffset);
 
@@ -544,7 +547,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             codedInput.setSizeLimit(Integer.MAX_VALUE);
             final Alignments.AlignmentHeader header = Alignments.AlignmentHeader.parseFrom(codedInput);
 
-           alignerName=header.getAlignerName();
+            alignerName = header.getAlignerName();
             alignerVersion = header.getAlignerVersion();
             smallestQueryIndex = header.getSmallestSplitQueryIndex();
             largestQueryIndex = header.getLargestSplitQueryIndex();
@@ -554,7 +557,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
                 this.constantQueryLengths = true;
                 this.constantLength = header.getConstantQueryLength();
             }
-            queryLengthStoredInEntries= header.getQueryLengthsStoredInEntries();
+            queryLengthStoredInEntries = header.getQueryLengthsStoredInEntries();
 
             assert queryLengthStoredInEntries : "This version of Goby requires that query lengths are stored in entries." +
                     " You can upgrade old alignment files by transfering data with the concat mode of a previous version.";
@@ -690,39 +693,43 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
 
     /**
      * Returns a sample of locations covered by this alignment.
+     *
      * @param modulo Modulo to avoid sampling every position in the genome.
-     * @return  A set of positions that do occur in the genome, rounded to the specified modulo value (absoluteLocation-(absoluteLocation % modulo)).
-     *  * @throws IOException
+     * @return A set of positions that do occur in the genome, rounded to the specified modulo value (absoluteLocation-(absoluteLocation % modulo)).
+     *         * @throws IOException
      */
     public ObjectList<ReferenceLocation> getLocations(int modulo) throws IOException {
         if (!isIndexed()) throw new RuntimeException("Alignment must be sorted and indexed to obtain locations.");
         readIndex();
         ObjectList<ReferenceLocation> result = new ObjectArrayList<ReferenceLocation>();
         for (long absoluteLocation : indexAbsolutePositions) {
-            final ReferenceLocation location = decodeAbsoluteLocation(absoluteLocation-(absoluteLocation % modulo));
+            final ReferenceLocation location = decodeAbsoluteLocation(absoluteLocation - (absoluteLocation % modulo));
             result.add(location);
 
         }
         return result;
     }
-    private  ReferenceLocation decodeAbsoluteLocation(long absoluteLocation) {
+
+    private ReferenceLocation decodeAbsoluteLocation(long absoluteLocation) {
         int referenceIndex;
-        for ( referenceIndex=this.targetPositionOffsets.length-1; referenceIndex>=0; referenceIndex--) {
+        for (referenceIndex = this.targetPositionOffsets.length - 1; referenceIndex >= 0; referenceIndex--) {
             final long offset = this.targetPositionOffsets[referenceIndex];
-            if (absoluteLocation> offset) {
-                absoluteLocation-=offset;
+            if (absoluteLocation > offset) {
+                absoluteLocation -= offset;
                 break;
             }
         }
 
-        return new ReferenceLocation(referenceIndex+1, (int)absoluteLocation);
+        return new ReferenceLocation(referenceIndex + 1, (int) absoluteLocation);
     }
 
     public boolean isQueryLengthStoredInEntries() {
         return queryLengthStoredInEntries;
     }
-     /**
+
+    /**
      * Return the name of the aligner that produced this alignment.
+     *
      * @return the name of the aligner that produced this alignment.
      */
     public String getAlignerName() {
@@ -731,6 +738,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
 
     /**
      * Return the version of the aligner that produced this alignment.
+     *
      * @return the version of the aligner that produced this alignment.
      */
     public String getAlignerVersion() {

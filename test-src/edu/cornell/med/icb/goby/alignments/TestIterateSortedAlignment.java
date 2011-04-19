@@ -110,7 +110,8 @@ public class TestIterateSortedAlignment {
 
             @Override
             public void processPositions(int referenceIndex, int intermediatePosition, ObjectArrayList<PositionBaseInfo> positionBaseInfos) {
-                positionMap.put(intermediatePosition, positionBaseInfos.size());
+                // store one-based positions:
+                positionMap.put(intermediatePosition+1, positionBaseInfos.size());
                 System.out.printf("position: %d listSize: %d%n", referenceIndex, positionBaseInfos.size());
             }
         };
@@ -426,7 +427,8 @@ public class TestIterateSortedAlignment {
                 for (PositionBaseInfo info : positionBaseInfos) {
                     coverage += info.to != '-' ? 1 : 0;
                 }
-                positionMap.put(intermediatePosition, coverage);
+                // store with one-based position
+                positionMap.put(intermediatePosition+1, coverage);
                 System.out.printf("position: %d listSize: %d%n", intermediatePosition, coverage);
             }
         };
@@ -492,7 +494,8 @@ public class TestIterateSortedAlignment {
                     coverage += info.from != '-' ? 1 : 0;
                     readIndexMap.put(info.readIndex, readIndexMap.get(info.readIndex) + 1);
                 }
-                positionMap.put(intermediatePosition, coverage);
+                // store one-based positions
+                positionMap.put(intermediatePosition+1, coverage);
                 //    System.out.printf("position: %d listSize: %d%n", position, coverage);
             }
         };
@@ -565,7 +568,8 @@ public class TestIterateSortedAlignment {
             public void processPositions(int referenceIndex, int intermediatePosition, ObjectArrayList<PositionBaseInfo> positionBaseInfos) {
                 if (referenceIndex == 1) {
                     // record only reference 1 matches.
-                    positionMap.put(intermediatePosition, positionBaseInfos.size());
+                    // store one-based positions
+                    positionMap.put(intermediatePosition+1, positionBaseInfos.size());
                 }
                 System.out.printf("position: %d listSize: %d%n", referenceIndex, positionBaseInfos.size());
 

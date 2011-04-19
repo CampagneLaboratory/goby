@@ -174,8 +174,9 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
                             int groupIndexA,
                             int groupIndexB) {
 
-        position = position - 1;
-        fillMethylationCountArrays(sampleCounts, list, position);
+
+        char refBase = sampleCounts[0].referenceBase;
+        fillMethylationCountArrays(sampleCounts, list, position, refBase);
         if (eventCountAtSite == 0) return;
         statWriter.setInfo(depthFieldIndex, list.size());
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
@@ -260,7 +261,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
 
 
     private void fillMethylationCountArrays(SampleCountInfo[] sampleCounts, ObjectArrayList<PositionBaseInfo> list,
-                                            int position) {
+                                            int position, char refBase) {
 
         Arrays.fill(methylatedCCountPerGroup, 0);
         Arrays.fill(unmethylatedCCountsPerGroup, 0);
@@ -274,14 +275,20 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
             final char unmethylatedConvertedBase = info.matchesForwardStrand ? 'T' : 'A';
             final int sampleIndex = info.readerIndex;
             final int groupIndex = readerIndexToGroupIndex[sampleIndex];
-            if (info.matchesReference && info.from == methylatedBase) {
+
+            if (info.matchesReference) {
+                // from and to have to be set if the position matches the reference.
+                info.from = refBase;
+                info.to = refBase;
+            }
+            if (info.matchesReference && refBase == methylatedBase) {
                 // C staying C on forward strand stayed so because they were either (1) methylated or (2) not converted.
                 ++methylatedCCountsPerSample[sampleIndex];
                 ++methylatedCCountPerGroup[groupIndex];
                 ++eventCountAtSite;
-                strand = info.matchesForwardStrand ?
+                strand = info.matchesForwardStrand ? '+' : '-';/* ?
                         info.from == 'C' ? '+' : '-' :
-                        info.from == 'G' ? '+' : '-';
+                        info.from == 'G' ? '+' : '-';*/
 
                 if (strandAtSite != '?') {
                     assert strandAtSite == strand : "strand information must be consistent when determined across all bases that contribute to a site.";

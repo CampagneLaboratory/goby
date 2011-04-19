@@ -97,7 +97,8 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
     public void writeRecord(DiscoverVariantIterateSortedAlignments iterator, SampleCountInfo[] sampleCounts,
                             int referenceIndex, int position, ObjectArrayList<PositionBaseInfo> list,
                             int groupIndexA, int groupIndexB) {
-        position = position - 1;
+        // report 1-based positions
+        position = position + 1;
         fillVariantCountArrays(sampleCounts);
         int totalCount = 0;
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {

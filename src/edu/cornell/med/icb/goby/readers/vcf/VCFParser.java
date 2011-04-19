@@ -97,6 +97,7 @@ public class VCFParser implements Closeable {
     private boolean headerLineNotParsed = true;
     private boolean headerParsed;
 
+
     /**
      * Constructs a VCF parser.
      *
@@ -445,7 +446,7 @@ public class VCFParser implements Closeable {
                 if (colMaxGlobalFieldIndex == colMinGlobalFieldIndex) {
                     // This column has only one field.
                     fieldPermutation[f.globalFieldIndex] = lineFieldIndex;
-                    
+
                 } else {
                     // find the column field f whose id matches the character span we are looking at :
                     int j = start;
@@ -485,9 +486,9 @@ public class VCFParser implements Closeable {
                         if (column.useFormat && column.formatIndex < formatTokens.length) {
 
                             if (f.id.equals(formatTokens[column.formatIndex])) {
-                            /*    System.out.printf("Assigning FORMAT global %s %d -> %d for field %s%n",
-                                        f.id, f.globalFieldIndex, lineFieldIndex, line.subSequence(start, end));
-                              */
+                                /*    System.out.printf("Assigning FORMAT global %s %d -> %d for field %s%n",
+                                          f.id, f.globalFieldIndex, lineFieldIndex, line.subSequence(start, end));
+                                */
                                 fieldPermutation[f.globalFieldIndex] = lineFieldIndex;
                                 column.formatIndex++;
                                 break;
@@ -762,6 +763,20 @@ public class VCFParser implements Closeable {
         }
         IOUtils.closeQuietly(input);
 
+    }
+
+    /**
+     * Return the sample names, or more specifically, the names of column that use the FORMAT column. 
+     * @return
+     */
+    public String[] getColumnNamesUsingFormat() {
+        ObjectArrayList<String> columnNamesUsingFormat = new ObjectArrayList<String>();
+        for (ColumnInfo info : columns) {
+            if (info.useFormat) {
+                columnNamesUsingFormat.add(info.columnName);
+            }
+        }
+        return columnNamesUsingFormat.toArray(new String[columnNamesUsingFormat.size()]);
     }
 
 

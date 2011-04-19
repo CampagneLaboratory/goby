@@ -619,7 +619,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         int numAlignmentEntries = 10;
         int readIndex = 0;
-        int referencePosition = 1;
+        int referencePosition = 1;   
         int positionStart = 100;
         writeAlignmentEntries(toBase, writer, numAlignmentEntries, readIndex, referencePosition, positionStart);
         if (toBase == 'C') {

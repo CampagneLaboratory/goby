@@ -59,7 +59,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
             throw new IllegalArgumentException("Start position ("
                     + start + ") must not be less than zero");
         }
-        if (end < 0L) {
+        if (end!= Long.MAX_VALUE && end < 0L) {
             throw new IllegalArgumentException("End position ("
                     + end + ") must not be less than zero");
         }

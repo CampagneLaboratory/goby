@@ -36,6 +36,12 @@ public abstract class IterateSortedAlignmentsListImpl
      */
     private static final Logger LOG = Logger.getLogger(IterateSortedAlignmentsListImpl.class);
 
+    /**
+     * Process a list of bases at a given reference position.
+     * @param referenceIndex Index of the reference sequence where these bases align.
+     * @param intermediatePosition Position is zero-based
+     * @param positionBaseInfos List of base information for bases that aligned.
+     */
     public abstract void processPositions(int referenceIndex, int intermediatePosition, ObjectArrayList<PositionBaseInfo> positionBaseInfos);
 
     public void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders,
@@ -55,7 +61,7 @@ public abstract class IterateSortedAlignmentsListImpl
         info.from = '\0';
         info.to = '\0';
         info.matchesReference = true;
-        info.position = currentRefPosition;
+        info.position = currentRefPosition-1; // store 0-based position
         info.qualityScore = 40;
         info.matchesForwardStrand=!alignmentEntry.getMatchingReverseStrand();
         addToFuture(positionToBases, info);
@@ -84,7 +90,7 @@ public abstract class IterateSortedAlignmentsListImpl
         info.from = fromChar;
         info.to = toChar;
         info.matchesReference = false;
-        info.position = currentRefPosition;
+        info.position = currentRefPosition-1; // store 0-based position
         info.qualityScore=toQual;
         info.matchesForwardStrand=!alignmentEntry.getMatchingReverseStrand();
         addToFuture(positionToBases, info);

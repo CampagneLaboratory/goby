@@ -325,7 +325,7 @@ public class TallyReadsMode extends AbstractGobyMode {
             }
         }
         System.out.println("Number of reads: " + numReads);
-        System.out.printf("Number of redundant reads: %d %n", num);
+        System.out.printf("Number of unique reads: %d %n", num);
         System.out.printf("Redunduncy sum: %d %n", sum);
         // we still need to map the first redundant read:
         final int avoidableMappings = sum - counts.size();

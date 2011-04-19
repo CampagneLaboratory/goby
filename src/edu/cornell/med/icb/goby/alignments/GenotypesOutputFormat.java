@@ -87,7 +87,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     public void writeRecord(DiscoverVariantIterateSortedAlignments iterator, SampleCountInfo[] sampleCounts,
                             int referenceIndex, int position, ObjectArrayList<PositionBaseInfo> list, int groupIndexA, int groupIndexB) {
 
-        position = position - 1;
+        position = position + 1; // report  1-based position
         fillVariantCountArrays(sampleCounts);
 
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
@@ -97,6 +97,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                 String.format("%s:%d:%d", currentReferenceId, position,
                         position));
         statsWriter.setChromosome(currentReferenceId);
+
         statsWriter.setPosition(position);
 
         writeGenotypes(statsWriter, sampleCounts);
@@ -155,8 +156,8 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
             int baseIndex = 0;
             int genotypeCount = 0;
             genotypeBuffer.setLength(0);
-            char refBase = '.';
-            String referenceAllele = ".";
+            char refBase = sci.referenceBase;
+            String referenceAllele = Character.toString(refBase);
             boolean siteObserved = false;
 
             for (int count : sci.counts) {

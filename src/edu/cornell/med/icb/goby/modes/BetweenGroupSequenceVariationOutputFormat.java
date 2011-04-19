@@ -194,7 +194,8 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
                             ObjectArrayList<PositionBaseInfo> list,
                             int groupIndexA,
                             int groupIndexB) {
-
+        // report 1-based positions.
+        position = position+1;
         fillVariantCountArrays(sampleCounts);
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 

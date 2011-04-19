@@ -173,6 +173,10 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 break;
             case METHYLATION:
                 formatter = new MethylationRateVCFOutputFormat();
+                // methylated bases match the reference. Do not filter on minimum variation support.
+                this.minimumVariationSupport=-1;
+                this.thresholdDistinctReadIndices=1;
+                System.out.println("Methylation format ignores thresholdDistinctReadIndices and minimumVariationSupport.");
                 break;
             default:
                 ObjectArrayList<OutputFormat> values = ObjectArrayList.wrap(OutputFormat.values());

@@ -162,7 +162,8 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
                             int groupIndexA,
                             int groupIndexB) {
 
-        position = position - 1;
+        // report 1-based positions
+        position = position + 1;
         int totalCount = 0;
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
@@ -263,6 +264,7 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         }
         for (SampleCountInfo csi : sampleCounts) {
             final int sampleIndex = csi.sampleIndex;
+         
             variantsCountPerSample[sampleIndex] = csi.varCount;
             refCountsPerSample[sampleIndex] = csi.refCount;
 
