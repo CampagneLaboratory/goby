@@ -176,6 +176,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
 
         position = position + 1;
         char refBase = sampleCounts[0].referenceBase;
+        if (refBase!='C' && refBase!='G') return;
         fillMethylationCountArrays(sampleCounts, list, position, refBase);
         if (eventCountAtSite == 0) return;
         statWriter.setInfo(depthFieldIndex, list.size());
@@ -273,18 +274,15 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         eventCountAtSite = 0;
         strandAtSite = '?';
         char strand;
+
         for (PositionBaseInfo info : list) {
             final char methylatedBase = info.matchesForwardStrand ? 'C' : 'G';
             final char unmethylatedConvertedBase = info.matchesForwardStrand ? 'T' : 'A';
             final int sampleIndex = info.readerIndex;
             final int groupIndex = readerIndexToGroupIndex[sampleIndex];
 
-            if (info.matchesReference) {
-                // from and to have to be set if the position matches the reference.
-                info.from = refBase;
-                info.to = refBase;
-            }
-            if (info.matchesReference && refBase == methylatedBase) {
+            
+            if (info.matchesReference && info.from == methylatedBase) {
                 // C staying C on forward strand stayed so because they were either (1) methylated or (2) not converted.
                 ++methylatedCCountsPerSample[sampleIndex];
                 ++methylatedCCountPerGroup[groupIndex];
@@ -304,8 +302,8 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
                 ++unmethylatedCCountsPerGroup[groupIndex];
                 ++eventCountAtSite;
                 strand = info.matchesForwardStrand ?
-                        info.from == 'T' ? '+' : '-' :
-                        info.from == 'A' ? '+' : '-';
+                        info.to == 'T' ? '+' : '-' :
+                        info.to == 'A' ? '+' : '-';
                 if (strandAtSite != '?') {
                     assert strandAtSite == strand : "strand information must be consistent when determined across all bases that contribute to a site.";
                 }
