@@ -97,7 +97,7 @@ public class SimulateBisulfiteReads {
 
     }
 
-    private void configure(boolean bisulfite, String strandChoice) {
+    public void configure(boolean bisulfite, String strandChoice) {
         if ("both".equals(strandChoice)) {
             doForwardStrand = true;
             doReverseStrand = true;
@@ -119,7 +119,7 @@ public class SimulateBisulfiteReads {
         }
     }
 
-    private void process(String refChoice, String fastaReference, int from, int to, String methylationRateFilename) throws IOException {
+    public void process(String refChoice, String fastaReference, int from, int to, String methylationRateFilename) throws IOException {
         this.refChoice = refChoice;
         DoubleList methylationRates = load(methylationRateFilename);
         FastaParser parser = new FastaParser(fastaReference.endsWith(".gz") ?
@@ -388,4 +388,12 @@ public class SimulateBisulfiteReads {
     }
 
 
+    public void setOutputFilename(String outputFilename) {
+        this.outputFilename = outputFilename;
+    }
+
+
+    public void setRegionTrueRates(String regionTrueRates) {
+        this.regionTrueRates = regionTrueRates;
+    }
 }

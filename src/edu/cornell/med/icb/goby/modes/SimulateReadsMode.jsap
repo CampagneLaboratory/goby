@@ -1,0 +1,113 @@
+<!--
+  ~ Copyright (C) 2009-2011 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+
+        <flaggedOption>
+            <id>methylation-rates</id>
+            <shortFlag>y</shortFlag>
+            <longFlag>methylation-rates</longFlag>
+            <required>true</required>
+            <help>File with one methylation rate per line [0.0-1.0]. Will determine the methylation rate of cysosines in sequence. The sequence repeats as long as reference cytosines exist.</help>
+        </flaggedOption>
+         <flaggedOption>
+            <id>strand</id>
+            <longFlag>strand</longFlag>
+            <required>true</required>
+            <defaults>
+                <string>both</string>
+            </defaults>
+            <help>The strand(s) that will be sampled. Use both for both strand, + or - for a specific strand.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>chromosome</id>
+            <shortFlag>c</shortFlag>
+            <longFlag>chromosome</longFlag>
+            <required>true</required>
+            <defaults>
+                <string>both</string>
+            </defaults>
+            <help>The name of one chromosome in the input. Reads will be sampled from this chromosome.</help>
+        </flaggedOption>
+        <switch>
+            <id>bisulfite</id>
+            <shortFlag>b</shortFlag>
+            <longFlag>bisulfite</longFlag>
+            <help>Instruct the mode to generate bisultite treated reads.</help>
+        </switch>
+
+        <flaggedOption>
+            <id>input</id>
+            <shortFlag>r</shortFlag>
+             <longFlag>input</longFlag>
+            <required>true</required>
+            <help>A Fasta(.gz) file with input reference sequence.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>true</required>
+            <help>Output filename. The simulated fastq file will be written here. The true methylation rates will be written to a file named by removing the extension and appending a suffix.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>read-length</id>
+            <shortFlag>l</shortFlag>
+            <longFlag>read-length</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <defaults>
+                <string>50</string>
+            </defaults>
+            <help>The length of reads to generate for the simulation.</help>
+         </flaggedOption>
+         <flaggedOption>
+            <id>start</id>
+            <shortFlag>s</shortFlag>
+            <longFlag>start</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>The start position of the window in which reads will be sampled.</help>
+         </flaggedOption>
+         <flaggedOption>
+            <id>end</id>
+            <shortFlag>e</shortFlag>
+            <longFlag>end</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>The end position of the window in which reads will be sampled.</help>
+         </flaggedOption>
+         <flaggedOption>
+            <id>num-repeats</id>
+            <shortFlag>n</shortFlag>
+            <longFlag>num-repeats</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>The number of reads to generate.</help>
+         </flaggedOption>
+    </parameters>
+</jsap>
