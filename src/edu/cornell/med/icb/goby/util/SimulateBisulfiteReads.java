@@ -44,7 +44,7 @@ import java.util.zip.GZIPInputStream;
  *         Time: 1:22:45 PM
  */
 public class SimulateBisulfiteReads {
-    private int readLength;
+    private int readLength = 50;
     private Random random;
     private String refChoice;
     private String outputFilename;
@@ -54,8 +54,13 @@ public class SimulateBisulfiteReads {
     private boolean bisulfiteTreatment;
     private long seed = 232424434L;
     private int numRepeats;
-    private static boolean doForwardStrand;
-    private static boolean doReverseStrand;
+
+    public void setBisulfiteTreatment(boolean bisulfiteTreatment) {
+        this.bisulfiteTreatment = bisulfiteTreatment;
+    }
+
+    private boolean doForwardStrand = true;
+    private boolean doReverseStrand = true;
 
     public SimulateBisulfiteReads() {
         random = new Random(seed);
@@ -81,6 +86,18 @@ public class SimulateBisulfiteReads {
         final boolean bisulfite = CLI.isKeywordGiven(args, "--bisulfite");
         String strandChoice = CLI.getOption(args, "--strand", "both");
 
+        processor.configure(bisulfite, strandChoice);
+        processor.bisulfiteTreatment = bisulfite;
+        processor.readLength = readLength;
+        processor.outputFilename = outputFilename;
+        processor.regionTrueRates = regionTrueRates;
+        processor.numRepeats = CLI.getIntOption(args, "-n", 10000);
+
+        processor.process(refChoice, fastaReference, from, to, methylationRateFilename);
+
+    }
+
+    private void configure(boolean bisulfite, String strandChoice) {
         if ("both".equals(strandChoice)) {
             doForwardStrand = true;
             doReverseStrand = true;
@@ -100,14 +117,6 @@ public class SimulateBisulfiteReads {
         if (bisulfite) {
             System.out.println("Bisulfite treatment activated.");
         }
-        processor.bisulfiteTreatment = bisulfite;
-        processor.readLength = readLength;
-        processor.outputFilename = outputFilename;
-        processor.regionTrueRates = regionTrueRates;
-        processor.numRepeats = CLI.getIntOption(args, "-n", 10000);
-
-        processor.process(refChoice, fastaReference, from, to, methylationRateFilename);
-
     }
 
     private void process(String refChoice, String fastaReference, int from, int to, String methylationRateFilename) throws IOException {
@@ -128,14 +137,16 @@ public class SimulateBisulfiteReads {
 
             FastaParser.guessAccessionCode(description, accession);
             if (accession.equalsIgnoreCase(refChoice)) {
+                PrintWriter writer = new PrintWriter(new FileWriter(outputFilename));
                 // from and to are zero-based
-                process(methylationRates, bases.substring(from, to), from);
+
+                process(methylationRates, bases.substring(from, to), from, writer);
             }
         }
     }
 
-    private void process(DoubleList methylationRates, CharSequence segmentBases, int from) throws IOException {
-        PrintWriter writer = new PrintWriter(new FileWriter(outputFilename));
+    protected void process(DoubleList methylationRates, CharSequence segmentBases, int from, Writer writer) throws IOException {
+        readLength = Math.min(segmentBases.length(), readLength);
         final String trueRateFilename = FilenameUtils.removeExtension(outputFilename) + "-true-methylation.tsv";
         PrintWriter trueRateWriter = new PrintWriter(new FileWriter(trueRateFilename));
         // System.out.printf("segmentBases.length: %d %n", segmentBases.length());
@@ -166,7 +177,7 @@ public class SimulateBisulfiteReads {
             it = methylationRates.iterator();
             CharSequence reverseStrandSegment = reverseComplement(segmentBases);
             // same for reverse strand:
-            for (int i = reverseStrandSegment.length() - 1; i >= 0; i--) {
+            for (int i = 0; i < segmentBases.length(); i++) {
                 if (reverseStrandSegment.charAt(i) == 'C') {
                     if (!it.hasNext()) {
                         it = methylationRates.iterator();
@@ -200,9 +211,34 @@ public class SimulateBisulfiteReads {
 
             }
         }
+        trueRateWriter.close();
+        process(segmentBases, from, writer);
+        writer.close();
+    }
+
+    public void setNumRepeats(int numRepeats) {
+        this.numRepeats = numRepeats;
+    }
+
+    public void setReadLength(int readLength) {
+        this.readLength = readLength;
+    }
+
+    public void setDoForwardStrand(boolean doForwardStrand) {
+        this.doForwardStrand = doForwardStrand;
+    }
+
+    public void setDoReverseStrand(boolean doReverseStrand) {
+        this.doReverseStrand = doReverseStrand;
+    }
+
+    protected void process(CharSequence segmentBases, int from, Writer writer) throws IOException {
+
+
         for (int repeatCount = 0; repeatCount < numRepeats; repeatCount++) {
             int startReadPosition = choose(0, segmentBases.length() - 1 - readLength);
-            boolean matchedReverseStrand = random.nextBoolean();
+            boolean matchedReverseStrand = doReverseStrand && doForwardStrand ?
+                    random.nextBoolean():doReverseStrand;
             if (matchedReverseStrand && !doReverseStrand) continue;
             if (!matchedReverseStrand && !doForwardStrand) continue;
 
@@ -217,7 +253,8 @@ public class SimulateBisulfiteReads {
             for (int i = 0; i < readLength; i++) {
 
                 char base = readBases.charAt(i);
-                int genomicPosition = (matchedReverseStrand ? readLength - (i+1) + startReadPosition + from : i + startReadPosition + from);
+                // genomic position is zero-based
+                int genomicPosition = i+ startReadPosition + from;
                 sequenceInitial.append(base);
                 if (base == 'C') {
 
@@ -264,16 +301,16 @@ public class SimulateBisulfiteReads {
                 coveredPositions.append(" ");
 
             }
-            writer.printf("@%d reference: %s startPosition: %d strand: %s %s %s%n%s%n+%n%s%n",
+            writer.write(String.format("@%d reference: %s startPosition: %d strand: %s %s %s%n%s%n+%n%s%n",
                     repeatCount,
                     refChoice,
 
                     startReadPosition, matchedReverseStrand ? "-1" : "+1", log,
                     coveredPositions, sequenceTreated,
-                    qualityScores);
+                    qualityScores));
         }
-        writer.close();
-        trueRateWriter.close();
+        writer.flush();
+
     }
 
     private double getMethylationRateAtPosition(boolean matchedReverseStrand, int genomicPosition) {
