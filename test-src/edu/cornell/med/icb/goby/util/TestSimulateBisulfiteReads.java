@@ -45,16 +45,34 @@ public class TestSimulateBisulfiteReads {
         simulator.setBisulfiteTreatment(true);
         simulator.writeTrueRatesBisulfite(rates, "CCCCCCCCC", 0, stringBuffer);
         String expected=
-                "index\tmethylationRate\tstrand\tchromosome\tposition\n" +
-                        "0\t1.00000\t+1\tnull\t1\n" +
-                        "1\t0.00000\t+1\tnull\t2\n" +
-                        "2\t1.00000\t+1\tnull\t3\n" +
-                        "3\t0.00000\t+1\tnull\t4\n" +
-                        "4\t1.00000\t+1\tnull\t5\n" +
-                        "5\t0.00000\t+1\tnull\t6\n" +
-                        "6\t1.00000\t+1\tnull\t7\n" +
-                        "7\t0.00000\t+1\tnull\t8\n" +
-                        "8\t1.00000\t+1\tnull\t9\n";
+                "index\tmethylationRate\tstrand\tchromosome\tposition\tfromBase\ttoBase\tcontext\n" +
+                        "0\t1.00000\t+1\tnull\t1\tC\tC\t>C<CCCCCCCC\n" +
+                        "1\t0.00000\t+1\tnull\t2\tC\tT\tC>C<CCCCCCC\n" +
+                        "2\t1.00000\t+1\tnull\t3\tC\tC\tCC>C<CCCCCC\n" +
+                        "3\t0.00000\t+1\tnull\t4\tC\tT\tCCC>C<CCCCC\n" +
+                        "4\t1.00000\t+1\tnull\t5\tC\tC\tCCCC>C<CCCC\n" +
+                        "5\t0.00000\t+1\tnull\t6\tC\tT\tCCCCC>C<CCC\n" +
+                        "6\t1.00000\t+1\tnull\t7\tC\tC\tCCCCCC>C<CC\n" +
+                        "7\t0.00000\t+1\tnull\t8\tC\tT\tCCCCCCC>C<C\n" +
+                        "8\t1.00000\t+1\tnull\t9\tC\tC\tCCCCCCCC>C<\n";
+        assertEquals(expected, stringBuffer.getBuffer().toString());
+    }
+
+     @Test
+    public void testBisulfiteForwardTrueRates2() throws IOException {
+        SimulateBisulfiteReads simulator = new SimulateBisulfiteReads();
+        simulator.setNumRepeats(1);
+        DoubleList rates = DoubleArrayList.wrap(new double[]{1, 0, 1, 0, 1, 0});
+        StringWriter stringBuffer = new StringWriter(1000);
+        simulator.setDoForwardStrand(true);
+        simulator.setDoReverseStrand(false);
+        simulator.setBisulfiteTreatment(true);
+        simulator.writeTrueRatesBisulfite(rates, "ACTGCACT", 0, stringBuffer);
+        String expected=
+                "index\tmethylationRate\tstrand\tchromosome\tposition\tfromBase\ttoBase\tcontext\n" +
+                        "1\t1.00000\t+1\tnull\t2\tC\tC\tA>C<TGCACT\n" +
+                        "4\t0.00000\t+1\tnull\t5\tC\tT\tACTG>C<ACT\n" +
+                        "6\t1.00000\t+1\tnull\t7\tC\tC\tACTGCA>C<T\n";
         assertEquals(expected, stringBuffer.getBuffer().toString());
     }
     @Test
@@ -68,15 +86,15 @@ public class TestSimulateBisulfiteReads {
         simulator.setBisulfiteTreatment(true);
         simulator.writeTrueRatesBisulfite(rates, "GGGGGGGG", 0, stringBuffer);
         String expected=
-                "index\tmethylationRate\tstrand\tchromosome\tposition\n" +
-                        "0\t1.00000\t-1\tnull\t1\n" +
-                        "1\t0.00000\t-1\tnull\t2\n" +
-                        "2\t1.00000\t-1\tnull\t3\n" +
-                        "3\t0.00000\t-1\tnull\t4\n" +
-                        "4\t1.00000\t-1\tnull\t5\n" +
-                        "5\t0.00000\t-1\tnull\t6\n" +
-                        "6\t1.00000\t-1\tnull\t7\n" +
-                        "7\t0.00000\t-1\tnull\t8\n";
+                "index\tmethylationRate\tstrand\tchromosome\tposition\tfromBase\ttoBase\tcontext\n" +
+                        "0\t1.00000\t-1\tnull\t8\tC\tC\tGGGGGGG>G<\n" +
+                        "1\t0.00000\t-1\tnull\t7\tC\tT\tGGGGGG>G<G\n" +
+                        "2\t1.00000\t-1\tnull\t6\tC\tC\tGGGGG>G<GG\n" +
+                        "3\t0.00000\t-1\tnull\t5\tC\tT\tGGGG>G<GGG\n" +
+                        "4\t1.00000\t-1\tnull\t4\tC\tC\tGGG>G<GGGG\n" +
+                        "5\t0.00000\t-1\tnull\t3\tC\tT\tGG>G<GGGGG\n" +
+                        "6\t1.00000\t-1\tnull\t2\tC\tC\tG>G<GGGGGG\n" +
+                        "7\t0.00000\t-1\tnull\t1\tC\tT\t>G<GGGGGGG\n";
         assertEquals(expected, stringBuffer.getBuffer().toString());
     }
 
@@ -92,7 +110,7 @@ public class TestSimulateBisulfiteReads {
         simulator.writeTrueRatesBisulfite(rates, "CCCCCCCCC", 0, stringBuffer);
         // no G on reverse strand:
         String expected=
-                "index\tmethylationRate\tstrand\tchromosome\tposition\n";
+                "index\tmethylationRate\tstrand\tchromosome\tposition\tfromBase\ttoBase\tcontext\n";
         assertEquals(expected, stringBuffer.getBuffer().toString());
     }
     @Test
@@ -122,9 +140,14 @@ public class TestSimulateBisulfiteReads {
         simulator.setDoForwardStrand(false);
         simulator.setDoReverseStrand(true);
         simulator.setBisulfiteTreatment(true);
+         // ref: ACTGGG
+         // rev: CCCAGT
+         // bis: TTCAGT read-index=3
+         // rev: ACTGAA pos=4
+         // pos: 123456
         simulator.process(rates, "ACTGGG", 0, stringBuffer);
         String expected=
-                "@0 reference: null startPosition: 0 strand: -1 met: 3 read-index: 4  1 2 3 4 5 6 \n" +
+                "@0 reference: null startPosition: 0 strand: -1 met: 4 read-index: 3  1 2 3 4 5 6 \n" +
                 "TTCAGT\n" +
                 "+\n" +
                 "hhhhhh\n";
@@ -135,7 +158,7 @@ public class TestSimulateBisulfiteReads {
     public void testMutateForwardStrand() throws IOException {
         SimulateBisulfiteReads simulator = new SimulateBisulfiteReads();
         simulator.setNumRepeats(1);
-        DoubleList rates = DoubleArrayList.wrap(new double[]{1,0,  0, 0, 0});
+        DoubleList rates = DoubleArrayList.wrap(new double[]{1,0,  0, 0, 0,0});
         StringWriter stringBuffer = new StringWriter(1000);
         simulator.setDoForwardStrand(true);
         simulator.setDoReverseStrand(false);
@@ -158,9 +181,13 @@ public class TestSimulateBisulfiteReads {
         simulator.setDoForwardStrand(false);
         simulator.setDoReverseStrand(true);
         simulator.setBisulfiteTreatment(false);
+          //ref: ACTCGG
+          //rev: CCGAGT
+          //mut: CGGAGT  read-index=2
+          //rev: ACTCCG  position=5
         simulator.process(rates, "ACTCGG", 0, stringBuffer);
         String expected=
-                "@0 reference: null startPosition: 0 strand: -1 mut: 2 read-index: 5  1 2 3 4 5 6 \n" +
+                "@0 reference: null startPosition: 0 strand: -1 mut: 5 read-index: 2  1 2 3 4 5 6 \n" +
                 "CGGAGT\n" +
                 "+\n" +
                 "hhhhhh\n";

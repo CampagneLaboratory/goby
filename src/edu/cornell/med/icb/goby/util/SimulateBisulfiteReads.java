@@ -35,6 +35,8 @@ import java.io.*;
 import java.util.Random;
 import java.util.zip.GZIPInputStream;
 
+import com.sun.tools.jdi.EventSetImpl;
+
 /**
  * Creates fastq files with simulated reads. Simulation can create bisulfite treated reads (or not treated)
  * with mutations on C bases at some rate.
@@ -54,6 +56,7 @@ public class SimulateBisulfiteReads {
     private boolean bisulfiteTreatment;
     private long seed = 232424434L;
     private int numRepeats;
+
 
     public void setBisulfiteTreatment(boolean bisulfiteTreatment) {
         this.bisulfiteTreatment = bisulfiteTreatment;
@@ -139,7 +142,7 @@ public class SimulateBisulfiteReads {
             if (accession.equalsIgnoreCase(refChoice)) {
                 PrintWriter writer = new PrintWriter(new FileWriter(outputFilename));
                 // from and to are zero-based
-
+                System.out.println("matching " + description);
                 process(methylationRates, bases.substring(from, to), from, writer);
             }
         }
@@ -150,9 +153,9 @@ public class SimulateBisulfiteReads {
         final String trueRateFilename = FilenameUtils.removeExtension(outputFilename) + "-true-methylation.tsv";
         final PrintWriter trueRateWriter = new PrintWriter(new FileWriter(trueRateFilename));
         if (bisulfiteTreatment) {
-            writeTrueRatesMutations(methylationRates, segmentBases, from, trueRateWriter);
-        } else {
             writeTrueRatesBisulfite(methylationRates, segmentBases, from, trueRateWriter);
+        } else {
+            writeTrueRatesMutations(methylationRates, segmentBases, from, trueRateWriter);
         }
         process(segmentBases, from, writer);
         writer.close();
@@ -163,20 +166,28 @@ public class SimulateBisulfiteReads {
 
         PrintWriter trueRateWriter = new PrintWriter(writer);
         writeTrueRatesBisulfite(methylationRates, segmentBases, from, new StringWriter());
-    trueRateWriter.printf("%s\t%s\t%s\t%s\t%s%n", "index", "methylationRate", "strand","chromosome", "position");
+        trueRateWriter.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n", "index", "methylationRate", "strand", "chromosome", "position", "fromBase", "toBase", "context");
         CharSequence reverseStrandSegment = reverseComplement(segmentBases);
         for (int i = 0; i < segmentBases.length(); i++) {
-            if (segmentBases.charAt(i) == 'C' || reverseStrandSegment.charAt(i) == 'C') {
+            char fromBaseForward = segmentBases.charAt(i);
+            char fromBaseReverse = reverseStrandSegment.charAt(i);
+            if (fromBaseForward == 'C') {
                 final int genomicPosition = i + from;
                 final double value = getMethylationRateAtPosition(false, genomicPosition);
 
-                trueRateWriter.printf("%d\t%g\t+1\t%s\t%d%n", i, value,
-                        refChoice, genomicPosition + 1);
+                trueRateWriter.printf("%d\t%g\t+1\t%s\t%d\t%c\t%c\t%s%n", i, value, refChoice, genomicPosition + 1,
+                        fromBaseForward, 'G', context(i, segmentBases));
+            } else if (fromBaseReverse == 'C') {
+                final int genomicPosition = i + from;
+                final double value = getMethylationRateAtPosition(false, genomicPosition);
+
+                trueRateWriter.printf("%d\t%g\t+1\t%s\t%d\t%c\t%c\t%s%n", i, value, refChoice, genomicPosition + 1,
+                        fromBaseReverse, 'G', context(i, segmentBases));
+
             }
 
+            trueRateWriter.close();
         }
-
-        trueRateWriter.flush();
     }
 
     protected void writeTrueRatesBisulfite(DoubleList methylationRates, CharSequence segmentBases, int from,
@@ -186,24 +197,32 @@ public class SimulateBisulfiteReads {
         // System.out.printf("segmentBases.length: %d %n", segmentBases.length());
         methylationForward = new Int2DoubleOpenHashMap();
         methylationReverse = new Int2DoubleOpenHashMap();
-        trueRateWriter.printf("%s\t%s\t%s\t%s\t%s%n", "index", "methylationRate", "strand","chromosome", "position");
+        trueRateWriter.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n", "index", "methylationRate", "strand", "chromosome", "position", "fromBase", "toBase", "context");
         final int segmentLength = segmentBases.length();
         DoubleIterator it = methylationRates.iterator();
         if (doForwardStrand) {
             // prepare methylation rates for each C position of the segment, forward strand:
             for (int i = 0; i < segmentBases.length(); i++) {
-                if (segmentBases.charAt(i) == 'C') {
+                char fromBase = segmentBases.charAt(i);
+                if (fromBase == 'C') {
+                    char toBase = '.';
                     if (!it.hasNext()) {
                         it = methylationRates.iterator();
                     }
                     final double value = it.nextDouble();
+                    if (value == 1) {
+                        toBase = 'C';
+                    } else if (value == 0) {
+                        toBase = 'T';
+                    }
                     // zero-based
                     final int genomicPosition = i + from;
                     methylationForward.put(genomicPosition, value);
                     final double getterValue = getMethylationRateAtPosition(false, genomicPosition);
                     assert getterValue == value;
                     // write 1-based position
-                    trueRateWriter.printf("%d\t%g\t+1\t%s\t%d%n", i, getterValue, refChoice, genomicPosition + 1);
+                    trueRateWriter.printf("%d\t%g\t+1\t%s\t%d\t%c\t%c\t%s%n", i, getterValue, refChoice, genomicPosition + 1,
+                            fromBase, toBase, context(i, segmentBases));
                 }
             }
         }
@@ -211,25 +230,54 @@ public class SimulateBisulfiteReads {
             it = methylationRates.iterator();
             CharSequence reverseStrandSegment = reverseComplement(segmentBases);
             // same for reverse strand:
-            for (int i = 0; i < segmentBases.length(); i++) {
-                if (reverseStrandSegment.charAt(i) == 'C') {
+            for (int i=0;i<segmentLength;i++) {
+                char fromBase = reverseStrandSegment.charAt(i);
+                if (fromBase == 'C') {
+                    char toBase = '.';
                     if (!it.hasNext()) {
                         it = methylationRates.iterator();
                     }
                     final double value = it.nextDouble();
-                    methylationReverse.put(i + from, value);
+                    if (value == 1) {
+                        toBase = 'C';
+                    } else if (value == 0) {
+                        toBase = 'T';
+                    }
+
                     // zero-based
-                    final int genomicPosition = i + from;
+                    final int genomicPosition = segmentLength - (i +1)+ from;
+                    methylationReverse.put(genomicPosition, value);
                     final double getterValue = getMethylationRateAtPosition(true, genomicPosition);
                     assert getterValue == value : "getter must work for reverse strand";
-                    trueRateWriter.printf("%d\t%g\t-1\t%s\t%d%n", i, getterValue,
-                            refChoice, genomicPosition + 1); // write 1-based position
+                    trueRateWriter.printf("%d\t%g\t-1\t%s\t%d\t%c\t%c\t%s%n", i, getterValue,
+                            refChoice, genomicPosition + 1, fromBase, toBase,
+                            reverseComplement(context(i, reverseStrandSegment))); // write 1-based position
                 }
             }
         }
 
 
         trueRateWriter.close();
+    }
+
+
+    private MutableString context(int i, CharSequence segmentBases) {
+        MutableString context = new MutableString();
+        int contextLength = 10;
+        int start = Math.max(0, i - contextLength);
+        int end = Math.min(segmentBases.length(), i + contextLength);
+
+        final String bases = segmentBases.toString();
+        context.append(bases.subSequence(start, i));
+        context.append('>');
+        context.append(bases.charAt(i));
+        context.append('<');
+        final int a = i + 1;
+        if (a < end) {
+            final CharSequence sequence = bases.subSequence(a, end);
+            context.append(sequence);
+        }
+        return context;
     }
 
     public void setNumRepeats(int numRepeats) {
@@ -250,7 +298,7 @@ public class SimulateBisulfiteReads {
 
     protected void process(CharSequence segmentBases, int from, Writer writer) throws IOException {
 
-
+        int segmentLength = segmentBases.length();
         for (int repeatCount = 0; repeatCount < numRepeats; repeatCount++) {
             int startReadPosition = choose(0, Math.max(0, segmentBases.length() - 1 - readLength));
             boolean matchedReverseStrand = doReverseStrand && doForwardStrand ?
@@ -270,7 +318,9 @@ public class SimulateBisulfiteReads {
 
                 char base = readBases.charAt(i);
                 // genomic position is zero-based
-                int genomicPosition = i + startReadPosition + from;
+                int genomicPosition = matchedReverseStrand ?
+                        segmentLength - (i+1) + from :
+                        i + startReadPosition + from;
                 sequenceInitial.append(base);
                 if (base == 'C') {
 
@@ -290,7 +340,7 @@ public class SimulateBisulfiteReads {
                         log.append(' ');
 
                         log.append("read-index: ");
-                        log.append(matchedReverseStrand ? readLength - i : i + 1);
+                        log.append( i + 1);
                         log.append(' ');
 
 
@@ -353,6 +403,12 @@ public class SimulateBisulfiteReads {
                     break;
                 case 'C':
                     base = 'G';
+                    break;
+                case '>':
+                    base = '<';
+                    break;
+                case '<':
+                    base = '>';
                     break;
                 case 'T':
                     base = 'A';

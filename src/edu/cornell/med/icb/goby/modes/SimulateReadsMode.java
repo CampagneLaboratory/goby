@@ -95,6 +95,7 @@ public class SimulateReadsMode extends AbstractGobyMode {
         processor = new SimulateBisulfiteReads();
 
         processor.configure(bisulfite, strandChoice);
+
         processor.setBisulfiteTreatment(bisulfite);
         processor.setReadLength(readLength);
         processor.setOutputFilename(outputFilename);
