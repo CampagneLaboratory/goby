@@ -236,7 +236,7 @@ public class SimulateBisulfiteReads {
 
 
         for (int repeatCount = 0; repeatCount < numRepeats; repeatCount++) {
-            int startReadPosition = choose(0, segmentBases.length() - 1 - readLength);
+            int startReadPosition = choose(0, Math.max(0,segmentBases.length() - 1 - readLength));
             boolean matchedReverseStrand = doReverseStrand && doForwardStrand ?
                     random.nextBoolean():doReverseStrand;
             if (matchedReverseStrand && !doReverseStrand) continue;
