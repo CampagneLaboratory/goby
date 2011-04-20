@@ -34,6 +34,67 @@ import java.io.Writer;
  */
 public class TestSimulateBisulfiteReads {
 
+   @Test
+    public void testBisulfiteForwardTrueRates() throws IOException {
+        SimulateBisulfiteReads simulator = new SimulateBisulfiteReads();
+        simulator.setNumRepeats(1);
+        DoubleList rates = DoubleArrayList.wrap(new double[]{1, 0, 1, 0, 1, 0});
+        StringWriter stringBuffer = new StringWriter(1000);
+        simulator.setDoForwardStrand(true);
+        simulator.setDoReverseStrand(false);
+        simulator.setBisulfiteTreatment(true);
+        simulator.writeTrueRatesBisulfite(rates, "CCCCCCCCC", 0, stringBuffer);
+        String expected=
+                "index\tmethylationRate\tstrand\tchromosome\tposition\n" +
+                        "0\t1.00000\t+1\tnull\t1\n" +
+                        "1\t0.00000\t+1\tnull\t2\n" +
+                        "2\t1.00000\t+1\tnull\t3\n" +
+                        "3\t0.00000\t+1\tnull\t4\n" +
+                        "4\t1.00000\t+1\tnull\t5\n" +
+                        "5\t0.00000\t+1\tnull\t6\n" +
+                        "6\t1.00000\t+1\tnull\t7\n" +
+                        "7\t0.00000\t+1\tnull\t8\n" +
+                        "8\t1.00000\t+1\tnull\t9\n";
+        assertEquals(expected, stringBuffer.getBuffer().toString());
+    }
+    @Test
+    public void testBisulfiteReverseTrueRates() throws IOException {
+        SimulateBisulfiteReads simulator = new SimulateBisulfiteReads();
+        simulator.setNumRepeats(1);
+        DoubleList rates = DoubleArrayList.wrap(new double[]{1, 0, 1, 0, 1, 0});
+        StringWriter stringBuffer = new StringWriter(1000);
+        simulator.setDoForwardStrand(false);
+        simulator.setDoReverseStrand(true);
+        simulator.setBisulfiteTreatment(true);
+        simulator.writeTrueRatesBisulfite(rates, "GGGGGGGG", 0, stringBuffer);
+        String expected=
+                "index\tmethylationRate\tstrand\tchromosome\tposition\n" +
+                        "0\t1.00000\t-1\tnull\t1\n" +
+                        "1\t0.00000\t-1\tnull\t2\n" +
+                        "2\t1.00000\t-1\tnull\t3\n" +
+                        "3\t0.00000\t-1\tnull\t4\n" +
+                        "4\t1.00000\t-1\tnull\t5\n" +
+                        "5\t0.00000\t-1\tnull\t6\n" +
+                        "6\t1.00000\t-1\tnull\t7\n" +
+                        "7\t0.00000\t-1\tnull\t8\n";
+        assertEquals(expected, stringBuffer.getBuffer().toString());
+    }
+
+    @Test
+    public void testBisulfiteReverseTrueRatesNothing() throws IOException {
+        SimulateBisulfiteReads simulator = new SimulateBisulfiteReads();
+        simulator.setNumRepeats(1);
+        DoubleList rates = DoubleArrayList.wrap(new double[]{1, 0, 1, 0, 1, 0});
+        StringWriter stringBuffer = new StringWriter(1000);
+        simulator.setDoForwardStrand(false);
+        simulator.setDoReverseStrand(true);
+        simulator.setBisulfiteTreatment(true);
+        simulator.writeTrueRatesBisulfite(rates, "CCCCCCCCC", 0, stringBuffer);
+        // no G on reverse strand:
+        String expected=
+                "index\tmethylationRate\tstrand\tchromosome\tposition\n";
+        assertEquals(expected, stringBuffer.getBuffer().toString());
+    }
     @Test
     public void testBisulfiteForwardStrand() throws IOException {
         SimulateBisulfiteReads simulator = new SimulateBisulfiteReads();
