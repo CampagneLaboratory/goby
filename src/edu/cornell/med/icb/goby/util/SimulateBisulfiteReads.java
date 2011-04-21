@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.io.FastBufferedReader;
 import it.unimi.dsi.io.LineIterator;
 import it.unimi.dsi.lang.MutableString;
@@ -230,7 +231,7 @@ public class SimulateBisulfiteReads {
             it = methylationRates.iterator();
             CharSequence reverseStrandSegment = reverseComplement(segmentBases);
             // same for reverse strand:
-            for (int i=0;i<segmentLength;i++) {
+            for (int i = 0; i < segmentLength; i++) {
                 char fromBase = reverseStrandSegment.charAt(i);
                 if (fromBase == 'C') {
                     char toBase = '.';
@@ -245,7 +246,7 @@ public class SimulateBisulfiteReads {
                     }
 
                     // zero-based
-                    final int genomicPosition = segmentLength - (i +1)+ from;
+                    final int genomicPosition = segmentLength - (i+1)  + from;
                     methylationReverse.put(genomicPosition, value);
                     final double getterValue = getMethylationRateAtPosition(true, genomicPosition);
                     assert getterValue == value : "getter must work for reverse strand";
@@ -313,15 +314,17 @@ public class SimulateBisulfiteReads {
             MutableString sequenceInitial = new MutableString();
             MutableString sequenceTreated = new MutableString();
             MutableString log = new MutableString();
+            IntArrayList mutatedPositions = new IntArrayList();
 
             for (int i = 0; i < readLength; i++) {
 
-                char base = readBases.charAt(i);
+                char base = readBases.charAt(i);  
                 // genomic position is zero-based
                 int genomicPosition = matchedReverseStrand ?
-                        segmentLength - (i+1) + from :
+                        readLength - (i+1) + from +startReadPosition:
                         i + startReadPosition + from;
                 sequenceInitial.append(base);
+
                 if (base == 'C') {
 
                     boolean isBaseMethylated = random.nextDouble() <= getMethylationRateAtPosition(matchedReverseStrand, genomicPosition);
@@ -332,6 +335,7 @@ public class SimulateBisulfiteReads {
                             // mutate base to G
                             // introduce mutation C -> G
                             base = 'G';
+
                         }
                         // bases that are methylated are protected and stay C on the forward strand. They would also
                         // be seen as G on the opposite strand if the sequencing protocol did not respect strandness
@@ -340,14 +344,15 @@ public class SimulateBisulfiteReads {
                         log.append(' ');
 
                         log.append("read-index: ");
-                        log.append( i + 1);
+                        log.append(i + 1);
                         log.append(' ');
-
+                        mutatedPositions.add(genomicPosition);
 
                     } else {
                         // bases that are not methylated are changed to T through the bisulfite and PCR conversion steps
                         if (bisulfiteTreatment) {
                             base = 'T';
+
                         }
 
                     }
@@ -361,12 +366,19 @@ public class SimulateBisulfiteReads {
                 qualityScores.append(c);
 
             }
+            // zero-based positions covered by the read:
+            IntArrayList readCoveredPositions = new IntArrayList();
+
             for (int i = startReadPosition + from; i < startReadPosition + from + readLength; i++) {
                 // positions are written 1-based
                 coveredPositions.append(i + 1);
                 coveredPositions.append(" ");
-
+                readCoveredPositions.add(i);
             }
+
+            readCoveredPositions.retainAll(mutatedPositions);
+            assert readCoveredPositions.size() == mutatedPositions.size() : "positions mutated or changed must be covered by read.";
+            //   System.out.printf("initial: %s%nbis:     %s%n", sequenceInitial, sequenceTreated);
             writer.write(String.format("@%d reference: %s startPosition: %d strand: %s %s %s%n%s%n+%n%s%n",
                     repeatCount,
                     refChoice,

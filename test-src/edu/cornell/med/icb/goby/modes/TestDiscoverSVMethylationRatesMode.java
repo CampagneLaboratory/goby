@@ -155,7 +155,9 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
         outputFormat.allocateStorage(2, 2);
         outputFormat.defineColumns(new PrintWriter(writer), mode);
 
-        outputFormat.writeRecord(iterator, makeTwoSampleCounts(), 0, 0, list2(), 0, 1);
+        final SampleCountInfo[] sampleCounts = makeTwoSampleCounts();
+        sampleCounts[0].referenceBase='G';
+        outputFormat.writeRecord(iterator, sampleCounts, 0, 0, list2(), 0, 1);
         writer.flush();
         stringB = writer.getBuffer().toString();
         assertTrue(stringB, stringB.contains("#Cm Group[methylated]=1;"));

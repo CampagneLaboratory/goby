@@ -176,7 +176,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
 
         position = position + 1;
         char refBase = sampleCounts[0].referenceBase;
-        if (refBase!='C' && refBase!='G') return;
+        if (refBase != 'C' && refBase != 'G') return;
         fillMethylationCountArrays(sampleCounts, list, position, refBase);
         if (eventCountAtSite == 0) return;
         statWriter.setInfo(depthFieldIndex, list.size());
@@ -241,7 +241,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
                         "unmethylatedCCountsPerGroup[1]=%d methylatedCCountPerGroup[1]=%d%n" +
                         "unmethylatedCCountsPerGroup[0]=%d, methylatedCCountPerGroup[0]=%d",
                         currentReferenceId, referenceIndex,
-                        position ,
+                        position,
                         unmethylatedCCountsPerGroup[groupIndexB], methylatedCCountPerGroup[groupIndexB],
                         unmethylatedCCountsPerGroup[groupIndexA], methylatedCCountPerGroup[groupIndexA]
                 );
@@ -273,41 +273,33 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         Arrays.fill(unmethylatedCCountPerSample, 0);
         eventCountAtSite = 0;
         strandAtSite = '?';
-        char strand;
+
+        if (refBase == 'C') strandAtSite = '+';
+        else if (refBase == 'G') strandAtSite = '-';
 
         for (PositionBaseInfo info : list) {
-            final char methylatedBase = info.matchesForwardStrand ? 'C' : 'G';
-            final char unmethylatedConvertedBase = info.matchesForwardStrand ? 'T' : 'A';
-            final int sampleIndex = info.readerIndex;
-            final int groupIndex = readerIndexToGroupIndex[sampleIndex];
-
+            //@@@! only look at the strand that the read matches:
+           if (refBase == 'G' && info.matchesForwardStrand) continue;
+           if (refBase == 'C' && !info.matchesForwardStrand) continue;
             
-            if (info.matchesReference && info.from == methylatedBase) {
-                // C staying C on forward strand stayed so because they were either (1) methylated or (2) not converted.
-                ++methylatedCCountsPerSample[sampleIndex];
-                ++methylatedCCountPerGroup[groupIndex];
-                ++eventCountAtSite;
-                strand = info.matchesForwardStrand ? '+' : '-';/* ?
-                        info.from == 'C' ? '+' : '-' :
-                        info.from == 'G' ? '+' : '-';*/
+            if (refBase == 'C' || refBase == 'G') {
+                // readBase is always given in the forward strand..
+                char readBase = info.matchesReference ? refBase : info.to;
+                final int sampleIndex = info.readerIndex;
+                final int groupIndex = readerIndexToGroupIndex[sampleIndex];
 
-                if (strandAtSite != '?') {
-                    assert strandAtSite == strand : "strand information must be consistent when determined across all bases that contribute to a site.";
+                if (readBase == refBase) {
+                    // C staying C on forward strand stayed so because they were either (1) methylated or (2) not converted.
+                    ++methylatedCCountsPerSample[sampleIndex];
+                    ++methylatedCCountPerGroup[groupIndex];
+                    ++eventCountAtSite;
+                } else {
+                    // C became T on forward strand (G->A on reverse) indicates that the Cytosine was not methylated and was converted.
+                    ++unmethylatedCCountPerSample[sampleIndex];
+                    ++unmethylatedCCountsPerGroup[groupIndex];
+                    ++eventCountAtSite;
                 }
-                strandAtSite = strand;
-            }
-            if (!info.matchesReference && info.to == unmethylatedConvertedBase) {
-                // C became T on forward strand (G->A on reverse) indicates that the Cytosine was not methylated and was converted.
-                ++unmethylatedCCountPerSample[sampleIndex];
-                ++unmethylatedCCountsPerGroup[groupIndex];
-                ++eventCountAtSite;
-                strand = info.matchesForwardStrand ?
-                        info.to == 'T' ? '+' : '-' :
-                        info.to == 'A' ? '+' : '-';
-                if (strandAtSite != '?') {
-                    assert strandAtSite == strand : "strand information must be consistent when determined across all bases that contribute to a site.";
-                }
-                strandAtSite = strand;
+
             }
         }
 
