@@ -168,27 +168,34 @@ public class SimulateBisulfiteReads {
         PrintWriter trueRateWriter = new PrintWriter(writer);
         writeTrueRatesBisulfite(methylationRates, segmentBases, from, new StringWriter());
         trueRateWriter.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n", "index", "methylationRate", "strand", "chromosome", "position", "fromBase", "toBase", "context");
-        CharSequence reverseStrandSegment = reverseComplement(segmentBases);
+        DoubleIterator it = methylationRates.iterator();
+
         for (int i = 0; i < segmentBases.length(); i++) {
             char fromBaseForward = segmentBases.charAt(i);
-            char fromBaseReverse = reverseStrandSegment.charAt(i);
+
             if (fromBaseForward == 'C') {
                 final int genomicPosition = i + from;
-                final double value = getMethylationRateAtPosition(false, genomicPosition);
+                if (!it.hasNext()) {
+                    it = methylationRates.iterator();
+                }
+                char toBase = '.';
+                final double value = it.nextDouble();
+                if (value == 1) {
+                    toBase = 'C';
+                } else if (value == 0) {
+                    toBase = 'G';
+                }
 
+                methylationForward.put(genomicPosition, value);
+                final double getterValue = getMethylationRateAtPosition(false, genomicPosition);
+                assert getterValue == value;
                 trueRateWriter.printf("%d\t%g\t+1\t%s\t%d\t%c\t%c\t%s%n", i, value, refChoice, genomicPosition + 1,
-                        fromBaseForward, 'G', context(i, segmentBases));
-            } else if (fromBaseReverse == 'C') {
-                final int genomicPosition = i + from;
-                final double value = getMethylationRateAtPosition(false, genomicPosition);
-
-                trueRateWriter.printf("%d\t%g\t+1\t%s\t%d\t%c\t%c\t%s%n", i, value, refChoice, genomicPosition + 1,
-                        fromBaseReverse, 'G', context(i, segmentBases));
-
+                        fromBaseForward, toBase, context(i, segmentBases));
             }
 
-            trueRateWriter.close();
+
         }
+        trueRateWriter.close();
     }
 
     protected void writeTrueRatesBisulfite(DoubleList methylationRates, CharSequence segmentBases, int from,
@@ -246,7 +253,7 @@ public class SimulateBisulfiteReads {
                     }
 
                     // zero-based
-                    final int genomicPosition = segmentLength - (i+1)  + from;
+                    final int genomicPosition = segmentLength - (i + 1) + from;
                     methylationReverse.put(genomicPosition, value);
                     final double getterValue = getMethylationRateAtPosition(true, genomicPosition);
                     assert getterValue == value : "getter must work for reverse strand";
@@ -318,10 +325,10 @@ public class SimulateBisulfiteReads {
 
             for (int i = 0; i < readLength; i++) {
 
-                char base = readBases.charAt(i);  
+                char base = readBases.charAt(i);
                 // genomic position is zero-based
                 int genomicPosition = matchedReverseStrand ?
-                        readLength - (i+1) + from +startReadPosition:
+                        readLength - (i + 1) + from + startReadPosition :
                         i + startReadPosition + from;
                 sequenceInitial.append(base);
 

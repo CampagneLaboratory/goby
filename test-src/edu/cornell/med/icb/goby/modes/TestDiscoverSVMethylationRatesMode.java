@@ -231,13 +231,15 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
 
     private ObjectArrayList<PositionBaseInfo> list2() {
         ObjectArrayList<PositionBaseInfo> result = new ObjectArrayList<PositionBaseInfo>();
-        final PositionBaseInfo info = new PositionBaseInfo();
+         PositionBaseInfo info = new PositionBaseInfo();
         info.matchesReference = true;
         info.matchesForwardStrand = false;
         info.from = 'G';
         info.to = 'G';
 
         result.add(info);
+
+
         return result;
     }
 

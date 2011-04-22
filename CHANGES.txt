@@ -1,4 +1,7 @@
 development -> 1.9.5
+ - New mode simulate-reads will generate reads artifically against a reference sequence. We use this mode
+   to create simulated datasets of bisulfite converted reads or mutated reads and to test that Goby produces
+   the expected results.
  - Show phred scores in DisplaySequenceVariants (tab + base)
  - Add a QualityEncoding.PHRED in case one just wants to transfer quality scores without changing quality scale
  - Rewritten sam-to-compact mode that handles sequence variations better, handles bsmap sam files better,
