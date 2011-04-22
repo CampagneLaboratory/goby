@@ -43,6 +43,13 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
     private final IntArrayList averageCountPerGroupIndexes = new IntArrayList();
     private boolean omitNonInformativeColumns;
 
+    public DifferentialExpressionResults(int capacity) {
+        super(capacity);
+    }
+    public DifferentialExpressionResults() {
+        super();
+    }
+
     /**
      * Declare a new statistic.
      *

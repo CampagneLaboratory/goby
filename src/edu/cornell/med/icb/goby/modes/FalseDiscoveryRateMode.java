@@ -123,8 +123,8 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                     : outputFilename.endsWith(".gz") ?
                     new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(outputFilename))) :
                     new FileWriter(outputFilename);
-
-            DifferentialExpressionResults data = new DifferentialExpressionResults();
+            // start with an array of size 1M. This improves loading time for large datasets.
+            DifferentialExpressionResults data = new DifferentialExpressionResults(10000000);
             ObjectList<String> columnIdList = vcf ? getVCFColumns(inputFiles) : getTSVColumns(inputFiles);
             for (String col : columnIdList) {
                 System.out.println("column: " + col);
