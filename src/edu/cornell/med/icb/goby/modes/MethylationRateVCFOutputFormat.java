@@ -87,6 +87,12 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
     private char strandAtSite;
     private int strandFieldIndex;
 
+    public void setMinimumEventThreshold(int minimumEventThreshold) {
+        this.minimumEventThreshold = minimumEventThreshold;
+    }
+
+    private int minimumEventThreshold=1;
+
 
     public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
         deAnalyzer = mode.getDiffExpAnalyzer();
@@ -178,7 +184,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         char refBase = sampleCounts[0].referenceBase;
         if (refBase != 'C' && refBase != 'G') return;
         fillMethylationCountArrays(sampleCounts, list, position, refBase);
-        if (eventCountAtSite == 0) return;
+        if (eventCountAtSite <minimumEventThreshold) return;
         statWriter.setInfo(depthFieldIndex, list.size());
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 

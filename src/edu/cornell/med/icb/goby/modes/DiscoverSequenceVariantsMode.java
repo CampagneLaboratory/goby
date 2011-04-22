@@ -176,6 +176,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 // methylated bases match the reference. Do not filter on minimum variation support.
                 this.minimumVariationSupport=-1;
                 this.thresholdDistinctReadIndices=1;
+                // need at least 10 methylation/non-methylation event to record site in output
+               ( (MethylationRateVCFOutputFormat)formatter).setMinimumEventThreshold(10);
                 System.out.println("Methylation format ignores thresholdDistinctReadIndices and minimumVariationSupport.");
                 break;
             default:
