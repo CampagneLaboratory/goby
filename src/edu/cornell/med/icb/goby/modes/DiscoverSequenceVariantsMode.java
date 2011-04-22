@@ -122,17 +122,16 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         Map<String, String> sampleToGroupMap = deCalculator.getSampleToGroupMap();
         readerIndexToGroupIndex = new int[inputFilenames.length];
 
+          groups = deAnalyzer.getGroups();
+        numberOfGroups = groups.length;
         IndexedIdentifier groupIds = new IndexedIdentifier();
-        for (String group : sampleToGroupMap.values()) {
+        for (String group : groups) {
             groupIds.registerIdentifier(new MutableString(group));
         }
         minimumVariationSupport = jsapResult.getInt("minimum-variation-support");
         thresholdDistinctReadIndices = jsapResult.getInt("threshold-distinct-read-indices");
         CompactAlignmentToAnnotationCountsMode.parseEval(jsapResult, deAnalyzer);
-
-        numberOfGroups = deAnalyzer.getGroups().length;
-        groups = deAnalyzer.getGroups();
-
+   
         for (String sample : sampleToGroupMap.keySet()) {
             final String group = sampleToGroupMap.get(sample);
             System.out.printf("sample: %s group %s%n", sample, group);
