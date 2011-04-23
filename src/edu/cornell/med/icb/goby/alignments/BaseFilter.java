@@ -20,6 +20,8 @@ package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 import java.util.Arrays;
 
@@ -41,7 +43,7 @@ public abstract class BaseFilter {
      */
     public abstract void filterBases(ObjectArrayList<PositionBaseInfo> list,
                                      SampleCountInfo[] sampleCounts,
-                                     ObjectArrayList<PositionBaseInfo> filteredList);
+                                     ObjectSet<PositionBaseInfo> filteredSet);
 
     /**
      * Returns a short description of the fitlering criteria.

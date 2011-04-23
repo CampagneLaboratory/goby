@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 import java.util.Arrays;
 
@@ -37,10 +38,10 @@ public class LeftOverFilter extends BaseFilter {
     private static final int MULTIPLIER = 2;
     int[] removed = new int[5];
 
-
+    @Override
     public void filterBases(ObjectArrayList<PositionBaseInfo> list,
                             SampleCountInfo[] sampleCounts,
-                            ObjectArrayList<PositionBaseInfo> filteredList) {
+                            ObjectSet<PositionBaseInfo> filteredList) {
         resetCounters();
         initStorage(sampleCounts.length);
         int removedBaseCount = filteredList.size() / sampleCounts.length;
@@ -67,14 +68,16 @@ public class LeftOverFilter extends BaseFilter {
                 // an error.
                 // We remove this call
 
-                sampleCountInfo.counts[baseIndex]--;
-                if (base == sampleCountInfo.referenceBase) {
-                    refCountRemovedPerSample[sampleIndex]++;
-                } else {
-                    varCountRemovedPerSample[sampleIndex]++;
+                if (!filteredList.contains(positionBaseInfo)) {
+                    sampleCountInfo.counts[baseIndex]--;
+                    if (base == sampleCountInfo.referenceBase) {
+                        refCountRemovedPerSample[sampleIndex]++;
+                    } else {
+                        varCountRemovedPerSample[sampleIndex]++;
+                    }
+                    filteredList.add(positionBaseInfo);
+                    numFiltered++;
                 }
-                filteredList.add(positionBaseInfo);
-                numFiltered++;
 
             }
         }

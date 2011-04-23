@@ -270,15 +270,15 @@ public class TestSimulateBisulfiteReads {
         simulator.writeTrueRatesMutations(rates, "CCCCCCCCC", 0, stringBuffer);
         String expected =
                 "index\tmethylationRate\tstrand\tchromosome\tposition\tfromBase\ttoBase\tcontext\n" +
-                        "0\t1.00000\t+1\tnull\t1\tC\tG\t>C<CCCCCCCC\n" +
+                        "0\t1.00000\t+1\tnull\t1\tC\tC\t>C<CCCCCCCC\n" +
                         "1\t0.00000\t+1\tnull\t2\tC\tG\tC>C<CCCCCCC\n" +
-                        "2\t1.00000\t+1\tnull\t3\tC\tG\tCC>C<CCCCCC\n" +
+                        "2\t1.00000\t+1\tnull\t3\tC\tC\tCC>C<CCCCCC\n" +
                         "3\t0.00000\t+1\tnull\t4\tC\tG\tCCC>C<CCCCC\n" +
-                        "4\t1.00000\t+1\tnull\t5\tC\tG\tCCCC>C<CCCC\n" +
+                        "4\t1.00000\t+1\tnull\t5\tC\tC\tCCCC>C<CCCC\n" +
                         "5\t0.00000\t+1\tnull\t6\tC\tG\tCCCCC>C<CCC\n" +
-                        "6\t1.00000\t+1\tnull\t7\tC\tG\tCCCCCC>C<CC\n" +
+                        "6\t1.00000\t+1\tnull\t7\tC\tC\tCCCCCC>C<CC\n" +
                         "7\t0.00000\t+1\tnull\t8\tC\tG\tCCCCCCC>C<C\n" +
-                        "8\t1.00000\t+1\tnull\t9\tC\tG\tCCCCCCCC>C<\n";
+                        "8\t1.00000\t+1\tnull\t9\tC\tC\tCCCCCCCC>C<\n";
         assertEquals(expected, stringBuffer.getBuffer().toString());
     }
 

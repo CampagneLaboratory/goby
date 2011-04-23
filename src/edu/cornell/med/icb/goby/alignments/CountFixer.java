@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 /**
  * @author Fabien Campagne
@@ -37,7 +38,7 @@ public class CountFixer implements CountFixerInterface {
      */
     public void fix(ObjectArrayList<PositionBaseInfo> list,
                     SampleCountInfo[] sampleCounts,
-                    ObjectList<PositionBaseInfo> likelyErrors) {
+                    ObjectSet<PositionBaseInfo> likelyErrors) {
           // do not decrement counts again. The Filters have done this already..
         // the sampleCounts reference is given to this method so that the method can recalculate sample counts
         // after fixing list for likelyErrors.

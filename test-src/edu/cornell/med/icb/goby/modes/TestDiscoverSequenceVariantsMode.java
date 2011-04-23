@@ -27,8 +27,12 @@ import edu.cornell.med.icb.io.TSVReader;
 import it.unimi.dsi.fastutil.chars.CharArraySet;
 import it.unimi.dsi.fastutil.chars.CharSet;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -150,6 +154,73 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
     }
 
     @Test
+    public void testCleanup() {
+        QualityScoreFilter qualityScoreFilter = new QualityScoreFilter();
+        LeftOverFilter leftOverFilter = new LeftOverFilter();
+
+
+        ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
+
+        appendInfo(list, 1, (byte) 20, false, 'A', 'C', 0);  // will be filtered by qualityScoreFilter
+        appendInfo(list, 1, (byte) 40, false, 'A', 'T', 0);  // will be filtered by leftOverFilter
+        appendInfo(list, 10, (byte) 40, true, 'A', 'A', 0);
+
+        ObjectSet<PositionBaseInfo> removed = new ObjectArraySet<PositionBaseInfo>();
+        SampleCountInfo[] sampleCounts = sampleCounts(list);
+        qualityScoreFilter.filterBases(list, sampleCounts, removed);
+        assertEquals(10, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
+        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
+        assertEquals(1, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
+        assertEquals(1, removed.size());
+        leftOverFilter.filterBases(list, sampleCounts, removed);
+        CountFixer fixer = new CountFixer();
+        fixer.fix(list, sampleCounts, removed);
+        assertEquals(2, removed.size());
+        assertEquals(10, list.size());
+        assertEquals(10, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
+        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
+        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
+
+    }
+
+    // construct a SampleCountInfo array holding counts for list
+    private SampleCountInfo[] sampleCounts(ObjectArrayList<PositionBaseInfo> list) {
+        IntSet sampleIndices = new
+                IntArraySet();
+        for (PositionBaseInfo info : list) {
+            sampleIndices.add(info.readerIndex);
+        }
+        SampleCountInfo[] sci = new SampleCountInfo[sampleIndices.size()];
+        for (int i = 0; i < sci.length; i++) {
+            sci[i] = new SampleCountInfo();
+        }
+        for (PositionBaseInfo info : list) {
+            final int sampleIndex = info.readerIndex;
+            int toBaseIndex = sci[sampleIndex].baseIndex(info.to);
+            sci[sampleIndex].counts[toBaseIndex]++;
+            if (info.matchesReference) {
+                sci[sampleIndex].refCount++;
+            } else {
+                sci[sampleIndex].varCount++;
+            }
+
+        }
+        return sci;
+    }
+
+    private void appendInfo(ObjectArrayList<PositionBaseInfo> list, int n, byte qualityScore, boolean matchesReference, char from, char to, int sampleIndex) {
+        for (int i = 0; i < n; i++) {
+            PositionBaseInfo info = new PositionBaseInfo();
+            info.qualityScore = qualityScore;
+            info.from = from;
+            info.to = to;
+            info.matchesReference = matchesReference;
+            info.readerIndex = sampleIndex;
+            list.add(info);
+        }
+    }
+
+    @Test
     public void testAdjuster() {
         ObjectArrayList<ReadIndexStats> readIndexStats = makeReadIndexStats();
 
@@ -165,7 +236,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         list = makeList(sampleCounts, readIndices);
         adjuster.setPValueThreshold(0.5);
-        ObjectArrayList<PositionBaseInfo> filteredList = new ObjectArrayList<PositionBaseInfo>();
+        ObjectSet<PositionBaseInfo> filteredList = new ObjectArraySet<PositionBaseInfo>();
         adjuster.filterBases(list, sampleCounts, filteredList);
 
         System.out.println("list: " + list);
@@ -251,7 +322,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         final ObjectArrayList<PositionBaseInfo> list = makeListWithScores(sampleCounts, scores);
         assertEquals(16, list.size());
-        ObjectArrayList<PositionBaseInfo> filteredList = new ObjectArrayList<PositionBaseInfo>();
+        ObjectSet<PositionBaseInfo> filteredList = new ObjectArraySet<PositionBaseInfo>();
         adjuster.filterBases(list, sampleCounts, filteredList);
 
         System.out.println("list: " + list);
@@ -277,7 +348,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         final ObjectArrayList<PositionBaseInfo> list = makeListWithScores(sampleCounts, scores);
         assertEquals(32, list.size());
-        ObjectArrayList<PositionBaseInfo> filteredList = new ObjectArrayList<PositionBaseInfo>();
+        ObjectSet<PositionBaseInfo> filteredList = new ObjectArraySet<PositionBaseInfo>();
         adjuster1.filterBases(list, sampleCounts, filteredList);
         adjuster2.filterBases(list, sampleCounts, filteredList);
 
@@ -309,7 +380,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         final ObjectArrayList<PositionBaseInfo> list = makeListWithScores(sampleCounts, scores);
         assertEquals(32, list.size());
-        ObjectArrayList<PositionBaseInfo> filteredList = new ObjectArrayList<PositionBaseInfo>();
+        ObjectSet<PositionBaseInfo> filteredList = new ObjectArraySet<PositionBaseInfo>();
         adjuster1.filterBases(list, sampleCounts, filteredList);
         adjuster2.filterBases(list, sampleCounts, filteredList);
 
@@ -619,7 +690,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         int numAlignmentEntries = 10;
         int readIndex = 0;
-        int referencePosition = 1;   
+        int referencePosition = 1;
         int positionStart = 100;
         writeAlignmentEntries(toBase, writer, numAlignmentEntries, readIndex, referencePosition, positionStart);
         if (toBase == 'C') {

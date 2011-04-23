@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 /**
  * Implementations of this interface provide strategies to eliminate or correct likely errors.
@@ -37,5 +38,5 @@ public interface CountFixerInterface {
      * @param likelyErrors List of suspicious variations or reference bases.
      */
     void fix(ObjectArrayList<PositionBaseInfo> list, SampleCountInfo[] sampleCounts,
-             ObjectList<PositionBaseInfo> likelyErrors);
+             ObjectSet<PositionBaseInfo> likelyErrors);
 }

@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 import java.util.Arrays;
 
@@ -36,9 +37,10 @@ public class QualityScoreFilter extends BaseFilter {
 
     int[] removed = new int[5];
 
+    @Override
     public void filterBases(ObjectArrayList<PositionBaseInfo> list,
                             SampleCountInfo[] sampleCounts,
-                            ObjectArrayList<PositionBaseInfo> filteredList) {
+                            ObjectSet<PositionBaseInfo> filteredList) {
         resetCounters();
         initStorage(sampleCounts.length);
         Arrays.fill(removed, 0);
@@ -46,14 +48,16 @@ public class QualityScoreFilter extends BaseFilter {
         for (PositionBaseInfo info : list) {
             numScreened++;
             if (!info.matchesReference && info.qualityScore < scoreThreshold) {
-                filteredList.add(info);
-                final SampleCountInfo countInfo = sampleCounts[info.readerIndex];
-                final int baseIndex = countInfo.baseIndex(info.to);
-                countInfo.counts[baseIndex]--;
-                removed[baseIndex]++;
-                this.varCountRemovedPerSample[info.readerIndex]++;
-                numFiltered++;
-            }  
+                if (!filteredList.contains(info)) {
+                    filteredList.add(info);
+                    final SampleCountInfo countInfo = sampleCounts[info.readerIndex];
+                    final int baseIndex = countInfo.baseIndex(info.to);
+                    countInfo.counts[baseIndex]--;
+                    removed[baseIndex]++;
+                    this.varCountRemovedPerSample[info.readerIndex]++;
+                    numFiltered++;
+                }
+            }
         }
         // adjust refCount and varCount:
         adjustRefVarCounts(sampleCounts);

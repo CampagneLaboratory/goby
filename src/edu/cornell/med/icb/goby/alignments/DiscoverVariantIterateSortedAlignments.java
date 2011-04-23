@@ -29,6 +29,7 @@ import edu.cornell.med.icb.goby.util.WarningCounter;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -137,14 +138,25 @@ public class DiscoverVariantIterateSortedAlignments
             sampleCounts[i] = new SampleCountInfo();
         }
         format.allocateStorage(numberOfSamples, numberOfGroups);
+        filteredList=new ObjectArraySet<edu.cornell.med.icb.goby.alignments.PositionBaseInfo>();
+
     }
 
+    private ObjectArraySet<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> filteredList;
     private SampleCountInfo[] sampleCounts;
 
     private int numberOfSamples;
     private int previousReference = -1;
     WarningCounter refBaseWarning = new WarningCounter();
 
+    /**
+     * This method is not re-entrant. The behavior is unpredictable when if multiple threads can call this method. This
+     * constraint is added to avoid allocating data structures inside this method, because it is usually called in a loop
+     * over all the positions of a genome, and the data structures can be reused, saving garbage collection time. 
+     * @param referenceIndex Index of the reference sequence where these bases align.
+     * @param position
+     * @param list
+     */
     public void processPositions(int referenceIndex, int position,
                                  ObjectArrayList<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> list) {
         int sumVariantCounts = 0;
@@ -209,8 +221,7 @@ public class DiscoverVariantIterateSortedAlignments
                 if (!isWithinStartFlap(referenceIndex, position)) {
 
                     if (baseFilters.length != 0) {
-                        ObjectArrayList<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> filteredList =
-                                new ObjectArrayList<edu.cornell.med.icb.goby.alignments.PositionBaseInfo>();
+                        filteredList.clear();
                         for (BaseFilter filter : baseFilters) {
                             filter.filterBases(list, sampleCounts, filteredList);
                             //       System.out.printf("filter %s removed %3g %% %n", filter.getName(), filter.getPercentFilteredOut());

@@ -18,13 +18,14 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
 import edu.cornell.med.icb.goby.R.GobyRengine;
-import org.rosuda.JRI.Rengine;
+import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
+import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.collections.map.LRUMap;
+import org.rosuda.JRI.Rengine;
 
 /**
  * Removes likely sequencing errors from the list of variantions. Either filter the errors completely or tries to determine
@@ -66,9 +67,10 @@ public class FisherBaseFilter extends BaseFilter {
 
     }
 
+    @Override
     public void filterBases(ObjectArrayList<PositionBaseInfo> list,
                             SampleCountInfo[] sampleCounts,
-                            ObjectArrayList<PositionBaseInfo> filteredList) {
+                            ObjectSet<PositionBaseInfo> filteredList) {
 
 
         if (!fisherRInstalled) {
