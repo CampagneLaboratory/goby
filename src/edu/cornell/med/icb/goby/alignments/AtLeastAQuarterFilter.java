@@ -35,6 +35,11 @@ import java.util.Arrays;
 public class AtLeastAQuarterFilter extends BaseFilter {
     private int[] maxAlleleCountsPerSample;
 
+    @Override
+     public String describe() {
+        return "count(allele in sample) < 1/4 * max_count over alleles in sample";
+    }
+
     void initStorage(int numSamples) {
         super.initStorage(numSamples);
         if (maxAlleleCountsPerSample == null) {
