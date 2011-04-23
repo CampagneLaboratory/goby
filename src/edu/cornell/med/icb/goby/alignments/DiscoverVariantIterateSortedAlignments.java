@@ -95,7 +95,8 @@ public class DiscoverVariantIterateSortedAlignments
 
                     new QualityScoreFilter(),
                     //     new FisherBaseFilter(mode.getReadIndexStats()),
-                    new LeftOverFilter()
+                    new LeftOverFilter(),
+                    new AtLeastAQuarterFilter()
             };
             System.out.println("Filtering reads that have these criteria:");
             for (BaseFilter filter : baseFilters) {

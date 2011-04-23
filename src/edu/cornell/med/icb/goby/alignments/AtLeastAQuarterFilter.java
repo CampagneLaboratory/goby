@@ -24,33 +24,47 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
 import java.util.Arrays;
 
 /**
- * This filter considers whether the remaining base calls of each allele (left-over)
- * have a count larger than the number of call corrections done by previous filters.
- * If this is not the case, the allele is considered mis-called and its observations
- * filtered out. This is a simple and efficient base call correction strategy that
- * improves agreement between genotypes in technical replicates.
+ * Filter that rejects alleles if their count is not at least a quarter of the count of the allele with the most counts.
+ * This filter is useful when the samples are from unpooled diploid genomes. It will remove the occasional sequencing
+ * error that is not flagged by low base quality score.
  *
  * @author Fabien Campagne
- *         Date: Mar 24, 2011
- *         Time: 11:42:42 AM
+ *         Date: Apr 23, 2011
+ *         Time: 1:57:30 PM
  */
-public class LeftOverFilter extends BaseFilter {
-    private static final int MULTIPLIER = 2;
+public class AtLeastAQuarterFilter extends BaseFilter {
+    private int[] maxAlleleCountsPerSample;
 
-    @Override
+    void initStorage(int numSamples) {
+        super.initStorage(numSamples);
+        if (maxAlleleCountsPerSample == null) {
+            maxAlleleCountsPerSample = new int[numSamples];
+        } else {
+            Arrays.fill(maxAlleleCountsPerSample, 0);
+        }
+    }
+
     public void filterBases(ObjectArrayList<PositionBaseInfo> list,
                             SampleCountInfo[] sampleCounts,
-                            ObjectSet<PositionBaseInfo> filteredList) {
+                            ObjectSet<PositionBaseInfo> filteredSet) {
+
         resetCounters();
         initStorage(sampleCounts.length);
-        int removedBaseCount = filteredList.size() / sampleCounts.length;
-        int removedBaseCountThreshold = removedBaseCount * MULTIPLIER;
+        for (SampleCountInfo sci : sampleCounts) {
+
+            for (int count : sci.counts) {
+                maxAlleleCountsPerSample[sci.sampleIndex] = Math.max(maxAlleleCountsPerSample[sci.sampleIndex], count);
+            }
+        }
 
 
         for (PositionBaseInfo positionBaseInfo : list) {
 
-            numScreened++;
             final int sampleIndex = positionBaseInfo.readerIndex;
+
+            int removedBaseCountThreshold = maxAlleleCountsPerSample[sampleIndex] / 4;
+
+            numScreened++;
             char base = positionBaseInfo.matchesReference ? positionBaseInfo.from : positionBaseInfo.to;
 
             final SampleCountInfo sampleCountInfo = sampleCounts[sampleIndex];
@@ -60,21 +74,17 @@ public class LeftOverFilter extends BaseFilter {
             if (count == 0) continue;
             if (count < removedBaseCountThreshold) {
 
-                /*System.out.printf("Filtering out allele %c %d < %d %s from sample %d %n",
-                        base, count, removedBaseCountThreshold, filteredList.toString(), positionBaseInfo.readerIndex);
-                  */
-                // less counts remaining for this allele than were removed on average by previous filters, still likely
-                // an error.
-                // We remove this call
+                // this allele has less than 1/4 of the counts of the allele with the most counts in this sample.
+                // remove.
 
-                if (!filteredList.contains(positionBaseInfo)) {
+                if (!filteredSet.contains(positionBaseInfo)) {
                     sampleCountInfo.counts[baseIndex]--;
                     if (base == sampleCountInfo.referenceBase) {
                         refCountRemovedPerSample[sampleIndex]++;
                     } else {
                         varCountRemovedPerSample[sampleIndex]++;
                     }
-                    filteredList.add(positionBaseInfo);
+                    filteredSet.add(positionBaseInfo);
                     numFiltered++;
                 }
 
@@ -82,10 +92,4 @@ public class LeftOverFilter extends BaseFilter {
         }
         adjustRefVarCounts(sampleCounts);
     }
-
-    @Override
-    public String describe() {
-        return String.format("#count(allele) < (%d *#filtered)", MULTIPLIER);
-    }
-
 }

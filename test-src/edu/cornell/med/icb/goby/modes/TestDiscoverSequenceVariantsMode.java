@@ -183,6 +183,35 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
     }
 
+
+    @Test
+    public void testQuarterFilter() {
+        AtLeastAQuarterFilter atLeastAQuarterFilter = new AtLeastAQuarterFilter();
+
+
+        ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
+
+        appendInfo(list, 2, (byte) 40, false, 'A', 'T', 0);  // will be filtered by at least a quarter filter
+        appendInfo(list, 3, (byte) 40, false, 'A', 'C', 0);  // will be kept since 3>= 12/4
+        appendInfo(list, 4, (byte) 40, false, 'A', 'G', 0);  // will be kept since 4>= 12/4
+        appendInfo(list, 12, (byte) 40, true, 'A', 'A', 0);  // allele with most count.
+
+        ObjectSet<PositionBaseInfo> removed = new ObjectArraySet<PositionBaseInfo>();
+        SampleCountInfo[] sampleCounts = sampleCounts(list);
+        atLeastAQuarterFilter.filterBases(list, sampleCounts, removed);
+        assertEquals(2, removed.size());
+        CountFixer fixer = new CountFixer();
+        fixer.fix(list, sampleCounts, removed);
+
+        assertEquals(19, list.size());
+        assertEquals(12, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
+        assertEquals(3, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
+        assertEquals(4, sampleCounts[0].counts[SampleCountInfo.BASE_G_INDEX]);
+        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
+
+    }
+
+
     // construct a SampleCountInfo array holding counts for list
     private SampleCountInfo[] sampleCounts(ObjectArrayList<PositionBaseInfo> list) {
         IntSet sampleIndices = new
