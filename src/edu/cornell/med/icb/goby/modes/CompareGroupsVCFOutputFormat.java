@@ -18,15 +18,16 @@
 
 package edu.cornell.med.icb.goby.modes;
 
+import edu.cornell.med.icb.goby.R.FisherExact;
 import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
-import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -80,6 +81,9 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
     private int depthFieldIndex;
     private int varCountsIndex[];
     private int refCountsIndex[];
+    private int[][] alleleCountsPerGroup;
+    private int[] fisherVector;
+    private final int numberOfAlleles = SampleCountInfo.BASE_MAX_INDEX;
 
 
     public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
@@ -110,15 +114,15 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
 
 
         log2OddsRatioColumnIndex = statWriter.defineField("INFO", String.format("LOD[%s/%s]", groups[0], groups[1]),
-                1, ColumnType.Float, String.format("Log2 of the odds-ratio between group %s and group %s", groups[0], groups[1]));
+                1, ColumnType.Float, String.format("Log2 of the odds-ratio of observing a variant in group %s versus group %s", groups[0], groups[1]));
 
         log2OddsRatioStandardErrorColumnIndex = statWriter.defineField("INFO", String.format("LOD_SE[%s/%s]", groups[0], groups[1]),
                 1, ColumnType.Float, String.format("Standard Error of the log2 of the odds-ratio between group %s and group %s", groups[0], groups[1]));
 
         log2OddsRatioZColumnIndex = statWriter.defineField("INFO", String.format("LOD_Z[%s/%s]", groups[0], groups[1]),
-                1, ColumnType.Float, String.format("Z value of the odds-ratio between group %s and group %s", groups[0], groups[1]));
+                1, ColumnType.Float, String.format("Z value of the odds-ratio of observing a variant in group %s versus group %s", groups[0], groups[1]));
         fisherExactPValueColumnIndex = statWriter.defineField("INFO", String.format("FisherP[%s/%s]", groups[0], groups[1]),
-                1, ColumnType.Float, String.format("Fisher exact P-value of observing as large a difference by chance between group %s and group %s.", groups[0], groups[1]));
+                1, ColumnType.Float, String.format("Fisher exact P-value of allelic count differences between group %s and group %s.", groups[0], groups[1]));
         varCountsIndex = new int[groups.length];
         refCountsIndex = new int[groups.length];
 
@@ -144,6 +148,10 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         distinctReadIndexCountPerGroup = new int[numberOfGroups];
         averageVariantQualityScorePerGroup = new float[numberOfGroups];
 
+        // used for allelic fisher exact test:
+        alleleCountsPerGroup = new int[numberOfAlleles][numberOfGroups];
+        fisherVector = new int[numberOfAlleles * numberOfGroups];
+
         refCountsPerSample = new int[numberOfSamples];
         variantsCountPerSample = new int[numberOfSamples];
         distinctReadIndicesCountPerGroup = new IntSet[numberOfGroups];
@@ -163,7 +171,7 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
                             int groupIndexB) {
 
         // report 1-based positions
-        position = position +1;
+        position = position + 1;
         int totalCount = 0;
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
@@ -198,9 +206,9 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
             statWriter.setInfo(refCountsIndex[groupIndex], refCountsPerGroup[groupIndex]);
             statWriter.setInfo(varCountsIndex[groupIndex], variantsCountPerGroup[groupIndex]);
         }
-        final double denominator = (double) (refCountsPerGroup[groupIndexA]) * (double) (variantsCountPerGroup[groupIndexB]);
+        final double denominator = (double) (refCountsPerGroup[groupIndexA]+1) * (double) (variantsCountPerGroup[groupIndexB]+1);
         double oddsRatio = denominator == 0 ? Double.NaN :
-                ((double) (refCountsPerGroup[groupIndexB]) * (double) (variantsCountPerGroup[groupIndexA])) /
+                ((double) (refCountsPerGroup[groupIndexB]+1) * (double) (variantsCountPerGroup[groupIndexA]+1)) /
                         denominator;
         double logOddsRatioSE;
 
@@ -221,21 +229,25 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
 
         double fisherP = Double.NaN;
 
-        boolean ok = checkCounts();
-        if (ok) {
-            fisherP = fisherRInstalled ? FisherExactRCalculator.getFisherPValue(
-                    refCountsPerGroup[groupIndexB], variantsCountPerGroup[groupIndexB],
-                    refCountsPerGroup[groupIndexA], variantsCountPerGroup[groupIndexA]) : Double.NaN;
-        } else {
-            System.err.printf("An exception was caught evaluating the Fisher Exact test P-value. Details are provided below%n" +
-                    "referenceId=%s referenceIndex=%d position=%d %n" +
-                    "refCountsPerGroup[1]=%d variantsCountPerGroup[1]=%d%n" +
-                    "refCountsPerGroup[0]=%d, variantsCountPerGroup[0]=%d",
-                    currentReferenceId, referenceIndex,
-                    position + 1,
-                    refCountsPerGroup[groupIndexB], variantsCountPerGroup[groupIndexB],
-                    refCountsPerGroup[groupIndexA], variantsCountPerGroup[groupIndexA]
-            );
+
+
+        if (fisherRInstalled) {
+            try {
+                if (checkCounts()) {
+                final FisherExact.Result result = FisherExact.fexact(fisherVector, numberOfAlleles, numberOfGroups,
+                        FisherExact.AlternativeHypothesis.twosided, true);
+                fisherP = result.getPValue();
+                }
+            } catch (Exception e) {
+                System.err.printf("An exception was caught evaluating the Fisher Exact test P-value. Details are provided below%n" +
+
+                        "referenceId=%s referenceIndex=%d position=%d %n" +
+                        "%s",
+                        currentReferenceId, referenceIndex,
+                        position + 1,
+                        IntArrayList.wrap(fisherVector)
+                );
+            }
         }
         statWriter.setInfo(log2OddsRatioColumnIndex, log2OddsRatio);
         statWriter.setInfo(log2OddsRatioStandardErrorColumnIndex, logOddsRatioSE);
@@ -258,22 +270,38 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         Arrays.fill(variantsCountPerGroup, 0);
         Arrays.fill(refCountsPerGroup, 0);
         Arrays.fill(distinctReadIndexCountPerGroup, 0);
-
+        Arrays.fill(fisherVector, 0);
+        for (int alleleIndex = 0; alleleIndex < numberOfAlleles; alleleIndex++) {
+            Arrays.fill(alleleCountsPerGroup[alleleIndex], 0);
+        }
         for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
             distinctReadIndicesCountPerGroup[groupIndex].clear();
+
         }
         for (SampleCountInfo csi : sampleCounts) {
             final int sampleIndex = csi.sampleIndex;
-         
+
             variantsCountPerSample[sampleIndex] = csi.varCount;
             refCountsPerSample[sampleIndex] = csi.refCount;
 
-            int groupIndex = readerIndexToGroupIndex[sampleIndex];
+            final int groupIndex = readerIndexToGroupIndex[sampleIndex];
             variantsCountPerGroup[groupIndex] += csi.varCount;
             refCountsPerGroup[groupIndex] += csi.refCount;
             distinctReadIndicesCountPerGroup[groupIndex].addAll(csi.distinctReadIndices);
-        }
+            for (int alleleIndex = 0; alleleIndex < SampleCountInfo.BASE_MAX_INDEX; alleleIndex++) {
 
+                alleleCountsPerGroup[alleleIndex][groupIndex] += csi.counts[alleleIndex];
+            }
+        }
+        // reorder allelic counts for fisher exact test:
+        int j = 0;
+        for (int alleleIndex = 0; alleleIndex < SampleCountInfo.BASE_MAX_INDEX; ++alleleIndex) {
+            for (int groupIndex = 0; groupIndex < numberOfGroups; ++groupIndex) {
+                fisherVector[j] = alleleCountsPerGroup[alleleIndex][groupIndex];
+                ++j;
+            }
+
+        }
         for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
             distinctReadIndexCountPerGroup[groupIndex] = distinctReadIndicesCountPerGroup[groupIndex].size();
         }
@@ -281,14 +309,19 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
 
     private boolean checkCounts() {
         boolean ok = true;
-        // detect if any count is negative (that's a bug)
+       int totalCount=0;
+        // detect if any count is negative
         for (int count : refCountsPerGroup) {
 
             if (count < 0) ok = false;
+            totalCount+=count;
         }
         for (int count : variantsCountPerGroup) {
             if (count < 0) ok = false;
+             totalCount+=count;
         }
+        // skip fisher if all counts are zero:
+        if (totalCount==0) return false;
         return ok;
     }
 

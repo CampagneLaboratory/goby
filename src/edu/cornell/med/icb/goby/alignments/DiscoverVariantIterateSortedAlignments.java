@@ -26,9 +26,7 @@ import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.util.WarningCounter;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -115,11 +113,11 @@ public class DiscoverVariantIterateSortedAlignments
             sampleCounts[i] = new SampleCountInfo();
         }
         format.allocateStorage(numberOfSamples, numberOfGroups);
-        filteredList = new ObjectArraySet<edu.cornell.med.icb.goby.alignments.PositionBaseInfo>();
+        filteredList = new ObjectOpenHashSet<edu.cornell.med.icb.goby.alignments.PositionBaseInfo>();
 
     }
 
-    private ObjectArraySet<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> filteredList;
+    private ObjectSet<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> filteredList;
     private SampleCountInfo[] sampleCounts;
 
     private int numberOfSamples;
@@ -163,7 +161,7 @@ public class DiscoverVariantIterateSortedAlignments
             IntSet distinctReadIndices = new IntArraySet();
 
             for (edu.cornell.med.icb.goby.alignments.PositionBaseInfo info : list) {
-                if (genome != null && info.matchesReference) {
+                if (info.matchesReference && referenceBase!='\0') {
                     // from and to have to be set if the position matches the reference.
                     info.from = referenceBase;
                     info.to = referenceBase;
@@ -181,8 +179,9 @@ public class DiscoverVariantIterateSortedAlignments
                     sumVariantCounts++;
                     if (info.from != referenceBase && (info.from != '.' && info.from != '-')) {
 
-                        refBaseWarning.warn(LOG, "reference base differ between variation (%c) and genome (%c) at position %d",
-                                info.from, referenceBase, position);
+                        refBaseWarning.warn(LOG, "reference base differ between variation (%c) and genome (%c) at chr %s position %d",
+                                info.from, referenceBase, getReferenceId(referenceIndex),
+                                position);
                     }
                     sampleCounts[sampleIndex].referenceBase = referenceBase;
                     sampleCounts[sampleIndex].distinctReadIndices.add(info.readIndex);
@@ -216,14 +215,17 @@ public class DiscoverVariantIterateSortedAlignments
     /**
      * Instead of this method, use the random access genome to find the reference base for all bases.
      *
+     * @param genome
+     * @param position
      * @param list
      * @return
      */
     private char getReferenceAllele(RandomAccessSequenceCache genome,
                                     int position,
-
                                     ObjectArrayList<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> list) {
-        if (genome != null) return genome.get(genomeRefIndex, position);
+
+        // We will find some referenceBase among the variations that do not match the reference:
+        // this procedure will not be able to determine the refBase if all samples are homzygotes matching the reference
         final ObjectIterator<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> iterator = list.iterator();
         char refBase = '\0';
         // find the reference base from any variant:
@@ -237,11 +239,10 @@ public class DiscoverVariantIterateSortedAlignments
                 }
             }
         }
-        // set on elements that match the reference:
-        for (edu.cornell.med.icb.goby.alignments.PositionBaseInfo elem : list) {
-            if (elem.matchesReference) {
-                elem.from = refBase;
-            }
+        if (refBase == '\0' && genome != null) {
+            // look up the reference base since we have a genome:
+            refBase = genome.get(genomeRefIndex, position);
+
         }
         return refBase;
     }
