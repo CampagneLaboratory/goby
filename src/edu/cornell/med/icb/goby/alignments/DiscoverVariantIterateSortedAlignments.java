@@ -23,8 +23,6 @@ package edu.cornell.med.icb.goby.alignments;
 import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
-import edu.cornell.med.icb.goby.stats.TSVWriter;
-import edu.cornell.med.icb.goby.stats.VCFWriter;
 import edu.cornell.med.icb.goby.util.WarningCounter;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -79,28 +77,12 @@ public class DiscoverVariantIterateSortedAlignments
     String[] samples;
 
     public void initialize(DiscoverSequenceVariantsMode mode,
-                           PrintWriter outWriter) {
+                           PrintWriter outWriter, ObjectArrayList<BaseFilter> filters) {
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
 
         format.defineColumns(outWriter, mode);
+        baseFilters = filters.toArray(new BaseFilter[filters.size()]);
 
-        if (mode.getDiffExpAnalyzer().eval("filter")) {
-            baseFilters = new BaseFilter[]{
-
-                    new QualityScoreFilter(),
-                    //     new FisherBaseFilter(mode.getReadIndexStats()),
-                    new LeftOverFilter(),
-                    new AtLeastAQuarterFilter()
-            };
-            System.out.println("Filtering reads that have these criteria:");
-            for (BaseFilter filter : baseFilters) {
-
-                System.out.println(filter.describe());
-            }
-
-        } else {
-            baseFilters = new BaseFilter[0];
-        }
     }
 
     public void finish() {
@@ -133,7 +115,7 @@ public class DiscoverVariantIterateSortedAlignments
             sampleCounts[i] = new SampleCountInfo();
         }
         format.allocateStorage(numberOfSamples, numberOfGroups);
-        filteredList=new ObjectArraySet<edu.cornell.med.icb.goby.alignments.PositionBaseInfo>();
+        filteredList = new ObjectArraySet<edu.cornell.med.icb.goby.alignments.PositionBaseInfo>();
 
     }
 
@@ -147,7 +129,8 @@ public class DiscoverVariantIterateSortedAlignments
     /**
      * This method is not re-entrant. The behavior is unpredictable when if multiple threads can call this method. This
      * constraint is added to avoid allocating data structures inside this method, because it is usually called in a loop
-     * over all the positions of a genome, and the data structures can be reused, saving garbage collection time. 
+     * over all the positions of a genome, and the data structures can be reused, saving garbage collection time.
+     *
      * @param referenceIndex Index of the reference sequence where these bases align.
      * @param position
      * @param list

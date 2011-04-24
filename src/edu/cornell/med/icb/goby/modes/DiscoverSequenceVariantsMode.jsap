@@ -65,8 +65,17 @@
              <defaults>
                 <string>samples</string>
             </defaults>
-                   <help>List of optional analysis steps. The option 'filter' will filter bases to remove low quality variations. </help>
+                <help>List of optional analysis steps. This option is currently ignored. Previous versions use this option to control output. Output formats are now controlled by the --format flag.</help>
         </flaggedOption>
+        <!--flaggedOption>
+             <id>filters</id>
+             <longFlag>filters</longFlag>
+             <required>false</required>
+             <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+                <help>List of base filters to use. The default will use the filters most appropriate for the output format, but you can override this choice. The syntax of the filter argument is id1,id2,... where id1 and id2 are the names of base filters.</help>
+        </flaggedOption-->
        <flaggedOption>
             <id>start-position</id>
             <shortFlag>s</shortFlag>
@@ -155,7 +164,7 @@
             <id>genome</id>
             <longFlag>genome</longFlag>
             <required>false</required>
-            <help>A file name to the sequence of the reference, in the random access format produced by the build-sequence-cache mode. </help>
+            <help>A genome basename. The genome must have been processed by build-sequence-cache mode to produce the compressed, random access files this mode needs. </help>
         </flaggedOption>
     </parameters>
 </jsap>

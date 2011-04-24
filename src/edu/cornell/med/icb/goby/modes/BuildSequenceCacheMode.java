@@ -22,6 +22,7 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -82,6 +83,17 @@ public class BuildSequenceCacheMode extends AbstractGobyMode {
 
         inputFile = jsapResult.getString("input");
         basename = jsapResult.getString("basename");
+        if (basename==null) {
+            String filename=inputFile;
+            if (filename.endsWith(".gz")) {
+                // remove the .gz before removing the next extension
+                // this is done so that file.fasta.gz results in basename=file.
+                filename=  FilenameUtils.removeExtension(filename);                
+            }
+            basename= FilenameUtils.removeExtension(filename);
+            System.out.printf("Automatically determined basename=%s, please use --basename if you prefer " +
+                    "different output filenames.%n", basename);
+        }
         return this;
     }
 
@@ -96,6 +108,7 @@ public class BuildSequenceCacheMode extends AbstractGobyMode {
 
         InputStream input = null;
         try {
+            System.out.println("Loading and compressing genome..");
             if (inputFile.endsWith(".compact-reads")) {
                 input = new FileInputStream(inputFile);
                 cacheBuilder.loadCompact(input);
@@ -111,6 +124,7 @@ public class BuildSequenceCacheMode extends AbstractGobyMode {
 
             System.out.println("Done loading input. Starting to write random access cacheBuilder.");
             cacheBuilder.save(basename);
+            System.out.println("Compressed genome was written to basename "+basename);
         } finally {
             IOUtils.closeQuietly(input);
         }

@@ -72,6 +72,9 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
             String outputFilename = "out" + i + ".tsv";
             String[] args = constructArgumentString(
                     basenames, BASE_TEST_DIR + "/" + outputFilename, "none").split("[\\s]");
+            args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.BETWEEN_GROUPS.toString()});
+
+
             mode.configure(args);
             mode.execute();
 
@@ -89,6 +92,8 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         String outputFilename = "out-samples-" + i + ".tsv";
         String[] args = constructArgumentString(
                 basenames, BASE_TEST_DIR + "/" + outputFilename, "samples").split("[\\s]");
+        args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.BETWEEN_GROUPS.toString()});
+
         mode.configure(args);
         mode.execute();
         assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
@@ -126,6 +131,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
             final String output = BASE_TEST_DIR + "/" + outputFilename;
             String[] args = constructArgumentString(
                     basenameArray, output, "samples").split("[\\s]");
+            args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.BETWEEN_GROUPS.toString()});
             mode.configure(args);
             mode.execute();
 
@@ -335,7 +341,9 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
                 basenames, BASE_TEST_DIR + "/" + outputFilename, "samples").split("[\\s]");
         args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.GENOTYPES.toString()});
 
+        mode.setDisableAtLeastQuarterFilter(true);
         mode.configure(args);
+
         mode.execute();
         assertEquals(new File("test-data/discover-variants/expected-output-genotypes.tsv"),
                 new File(BASE_TEST_DIR + "/" + outputFilename)
@@ -602,7 +610,6 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
                 "--groups %s " +
                 "--compare A/B " +
                 "--eval %s " +
-                "--vcf " +
                 "--minimum-variation-support 1 " +
                 "--threshold-distinct-read-indices 1 " +
                 "--output %s " +

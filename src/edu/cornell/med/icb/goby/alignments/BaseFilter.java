@@ -89,7 +89,7 @@ public abstract class BaseFilter {
         for (SampleCountInfo sci : sampleCounts) {
             sci.varCount -= varCountRemovedPerSample[sci.sampleIndex];
             sci.refCount -= refCountRemovedPerSample[sci.sampleIndex];
-            assert sci.refCount >= 0 : "refCount negative: " + sci.varCount;
+            assert sci.refCount >= 0 : "refCount negative: " + sci.refCount;
             assert sci.varCount >= 0 : "varCount negative: " + sci.varCount;
         }
     }

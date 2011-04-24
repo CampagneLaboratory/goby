@@ -69,7 +69,7 @@ public class LeftOverFilter extends BaseFilter {
 
                 if (!filteredList.contains(positionBaseInfo)) {
                     sampleCountInfo.counts[baseIndex]--;
-                    if (base == sampleCountInfo.referenceBase) {
+                    if ( positionBaseInfo.matchesReference) {
                         refCountRemovedPerSample[sampleIndex]++;
                     } else {
                         varCountRemovedPerSample[sampleIndex]++;

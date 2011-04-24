@@ -23,8 +23,8 @@
             <id>basename</id>
             <shortFlag>b</shortFlag>
             <longFlag>basename</longFlag>
-            <required>true</required>
-            <help>The cache basename. The basename will be used to construct the filenames for the cache file constituents.</help>
+            <required>false</required>
+            <help>The cache basename. The basename will be used to construct the filenames for the cache file constituents. When the basename is not provided, one is constructed by removing the extension(s) of the input file (two extensions are moved when the file ends in .gz).</help>
         </flaggedOption>
 
         <unflaggedOption>

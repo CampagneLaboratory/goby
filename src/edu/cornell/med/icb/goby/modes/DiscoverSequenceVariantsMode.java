@@ -80,6 +80,13 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     private DifferentialExpressionCalculator diffExpCalculator;
     private String[] samples;
     private boolean groupsAreDefined;
+    private ObjectArrayList<BaseFilter> baseFilters;
+
+    public void setDisableAtLeastQuarterFilter(boolean disableAtLeastQuarterFilter) {
+        this.disableAtLeastQuarterFilter = disableAtLeastQuarterFilter;
+    }
+
+    private boolean disableAtLeastQuarterFilter=false;
 
     @Override
     public String getModeName() {
@@ -177,6 +184,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         SequenceVariationOutputFormat formatter = null;
         switch (format) {
             case VARIANT_DISCOVERY:
+            case BETWEEN_GROUPS:
                 stopWhenDefaultGroupOptions();
                 formatter = new BetweenGroupSequenceVariationOutputFormat();
                 break;
@@ -205,6 +213,31 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 System.err.printf("The format argument is not recognized. Allowed values include %s",
                         values.toString());
                 System.exit(1);
+        }
+
+        // set base filters according to output format:
+        baseFilters = new ObjectArrayList<BaseFilter>();
+        switch (format) {
+
+            case COMPARE_GROUPS:
+            case METHYLATION:
+            case ALLELE_FREQUENCIES:
+            case BETWEEN_GROUPS:
+            case VARIANT_DISCOVERY:
+                baseFilters.add(new QualityScoreFilter());
+                baseFilters.add(new LeftOverFilter());
+                break;
+            case GENOTYPES:
+                baseFilters.add(new QualityScoreFilter());
+                baseFilters.add(new LeftOverFilter());
+             if (!disableAtLeastQuarterFilter)   baseFilters.add(new AtLeastAQuarterFilter());
+                break;
+            default:
+                throw new InternalError("Filters must be configured for new output format.");
+        }
+        System.out.println("Filtering reads that have these criteria:");
+        for (BaseFilter filter : baseFilters) {
+            System.out.println(filter.describe());
         }
 
         final String genome = jsapResult.getString("genome");
@@ -247,10 +280,10 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         ALLELE_FREQUENCIES,
         GENOTYPES,
         COMPARE_GROUPS,
-        METHYLATION
+        METHYLATION,
+        BETWEEN_GROUPS
     }
 
-   
 
     DiscoverVariantIterateSortedAlignments sortedPositionIterator;
 
@@ -421,8 +454,10 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
             readIndexStats.removeAll(toRemove);
         }
+
+
         sortedPositionIterator.allocateStorage(basenames.length, numberOfGroups);
-        sortedPositionIterator.initialize(this, outWriter);
+        sortedPositionIterator.initialize(this, outWriter, baseFilters);
         // install a reader factory that filters out ambiguous reads:
         sortedPositionIterator.setAlignmentReaderFactory(new NonAmbiguousAlignmentReaderFactory());
         sortedPositionIterator.iterate(basenames);
