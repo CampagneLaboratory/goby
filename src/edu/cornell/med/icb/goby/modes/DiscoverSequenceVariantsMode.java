@@ -79,7 +79,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     private int numberOfReadIndices[];
     private DifferentialExpressionCalculator diffExpCalculator;
     private String[] samples;
-    private boolean outputVCF;
+    private boolean groupsAreDefined;
 
     @Override
     public String getModeName() {
@@ -112,17 +112,35 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         outputFile = jsapResult.getString("output");
         outWriter = "-".equals(outputFile) ? new PrintWriter(System.out) : new PrintWriter(outputFile);
 
-        final String groupsDefinition = jsapResult.getString("groups");
-        deAnalyzer.parseGroupsDefinition(groupsDefinition, deCalculator, inputFilenames);
-        final String compare = jsapResult.getString("compare");
+        String groupsDefinition = jsapResult.getString("groups");
+        String compare = jsapResult.getString("compare");
+        if (compare == null) {
+            // make default groups and group definitions.  Each sample becomes its own group, compare group1 and group2.
 
+            compare = "group1/group2";
+            MutableString buffer = new MutableString();
+            int groupIndex = 1;
+            for (String inputFilename : inputFilenames) {
+                buffer.append("group").append(String.valueOf(groupIndex++));
+                buffer.append("=");
+                buffer.append(AlignmentReaderImpl.getBasename(inputFilename));
+                buffer.append('/');
+            }
+            groupsDefinition = buffer.substring(0, buffer.length() - 1).toString();
+            System.out.println(groupsDefinition);
+        } else {
+            groupsAreDefined = true;
+        }
+        deAnalyzer.parseGroupsDefinition(groupsDefinition, deCalculator, inputFilenames);
         deAnalyzer.parseCompare(compare);
+
+
         boolean parallel = jsapResult.getBoolean("parallel", false);
         deAnalyzer.setRunInParallel(parallel);
         Map<String, String> sampleToGroupMap = deCalculator.getSampleToGroupMap();
         readerIndexToGroupIndex = new int[inputFilenames.length];
 
-          groups = deAnalyzer.getGroups();
+        groups = deAnalyzer.getGroups();
         numberOfGroups = groups.length;
         IndexedIdentifier groupIds = new IndexedIdentifier();
         for (String group : groups) {
@@ -131,7 +149,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         minimumVariationSupport = jsapResult.getInt("minimum-variation-support");
         thresholdDistinctReadIndices = jsapResult.getInt("threshold-distinct-read-indices");
         CompactAlignmentToAnnotationCountsMode.parseEval(jsapResult, deAnalyzer);
-   
+
         for (String sample : sampleToGroupMap.keySet()) {
             final String group = sampleToGroupMap.get(sample);
             System.out.printf("sample: %s group %s%n", sample, group);
@@ -159,12 +177,15 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         SequenceVariationOutputFormat formatter = null;
         switch (format) {
             case VARIANT_DISCOVERY:
+                stopWhenDefaultGroupOptions();
                 formatter = new BetweenGroupSequenceVariationOutputFormat();
                 break;
             case COMPARE_GROUPS:
+                stopWhenDefaultGroupOptions();
                 formatter = new CompareGroupsVCFOutputFormat();
                 break;
             case ALLELE_FREQUENCIES:
+                stopWhenDefaultGroupOptions();
                 formatter = new AlleleFrequencyOutputFormat();
                 break;
             case GENOTYPES:
@@ -173,10 +194,10 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             case METHYLATION:
                 formatter = new MethylationRateVCFOutputFormat();
                 // methylated bases match the reference. Do not filter on minimum variation support.
-                this.minimumVariationSupport=-1;
-                this.thresholdDistinctReadIndices=1;
+                this.minimumVariationSupport = -1;
+                this.thresholdDistinctReadIndices = 1;
                 // need at least 10 methylation/non-methylation event to record site in output
-               ( (MethylationRateVCFOutputFormat)formatter).setMinimumEventThreshold(10);
+                ((MethylationRateVCFOutputFormat) formatter).setMinimumEventThreshold(10);
                 System.out.println("Methylation format ignores thresholdDistinctReadIndices and minimumVariationSupport.");
                 break;
             default:
@@ -200,7 +221,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             }
         }
 
-        outputVCF = jsapResult.getBoolean("vcf");
+
         int startFlapSize = jsapResult.getInt("start-flap-size", 100);
 
         sortedPositionIterator = new DiscoverVariantIterateSortedAlignments(formatter);
@@ -213,6 +234,13 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         return this;
     }
 
+    private void stopWhenDefaultGroupOptions() {
+        if (!groupsAreDefined) {
+            System.err.println("Format group_comparison requires that arguments --group and --compare be defined.");
+            System.exit(1);
+        }
+    }
+
 
     enum OutputFormat {
         VARIANT_DISCOVERY,
@@ -222,9 +250,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         METHYLATION
     }
 
-    public boolean outputVCF() {
-        return outputVCF;
-    }
+   
 
     DiscoverVariantIterateSortedAlignments sortedPositionIterator;
 
@@ -245,17 +271,24 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     }
 
     public String[] getSamples() {
-        // build a samples array with the correct order:
-        int numberOfSamples = readIndexStats.size();
-        samples = new String[numberOfSamples];
-        if (readIndexStats.size()==0) {
-            System.err.println("Cannot find any basename in stats file. Aborting.");
-            System.exit(1);
+        if (readIndexStats != null) {
+            // build a samples array with the correct order:
+            int numberOfSamples = readIndexStats.size();
+            samples = new String[numberOfSamples];
+            if (readIndexStats.size() == 0) {
+                System.err.println("Cannot find any basename in stats file. Aborting.");
+                System.exit(1);
+            }
+            for (ReadIndexStats stat : readIndexStats) {
+                samples[stat.readerIndex] = stat.basename;
+            }
+            return samples;
+        } else {
+            // since we don't need to map basename order to readerIndex to just create a samples array from basenames
+            // listed on the command line:
+            samples = AlignmentReaderImpl.getBasenames(inputFilenames);
+            return samples;
         }
-        for (ReadIndexStats stat : readIndexStats) {
-            samples[stat.readerIndex] = stat.basename;
-        }
-        return samples;
     }
 
     public int[] getReaderIndexToGroupIndex() {

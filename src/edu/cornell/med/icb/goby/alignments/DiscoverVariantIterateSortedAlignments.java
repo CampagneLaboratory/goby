@@ -82,12 +82,6 @@ public class DiscoverVariantIterateSortedAlignments
                            PrintWriter outWriter) {
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
 
-        if (mode.outputVCF()) {
-            statWriter = new VCFWriter(outWriter);
-        } else {
-            statWriter = new TSVWriter(outWriter);
-        }
-
         format.defineColumns(outWriter, mode);
 
         if (mode.getDiffExpAnalyzer().eval("filter")) {

@@ -46,14 +46,14 @@
             <id>groups</id>
             <shortFlag>g</shortFlag>
             <longFlag>groups</longFlag>
-            <required>true</required>
-            <help>Define groups for multi-group comparisons. The syntax of the groups arguments is id-1=basename1,basename2/id-2=basename4,basename5 Where id-1 is the id of the first group, defined to consist of samples basename1 and basename2. basename1 must refer to a basename provided as input on the command line (see input). Multiple groups are separated by forward slashes (/).</help>
+            <required>false</required>
+            <help>Define groups for multi-group comparisons. This option is required for some output formats. The syntax of the groups arguments is id-1=basename1,basename2/id-2=basename4,basename5 Where id-1 is the id of the first group, defined to consist of samples basename1 and basename2. basename1 must refer to a basename provided as input on the command line (see input). Multiple groups are separated by forward slashes (/). If the option is not provided, one group per sample is assumed and group1... groupN are defined corresponding to the N input basenames, in the order these appear on the command line.</help>
         </flaggedOption>
         <flaggedOption>
             <id>compare</id>
             <longFlag>compare</longFlag>
-            <required>true</required>
-            <help>Compare sequence variations across groups of samples. The compare flag must be followed by group ids separated by slashes. For instance, if groups group-A and group-B have been defined (see --groups option), --compare group-A/group-B will evaluate statistical tests between sequence variation in groups A and B.</help>
+            <required>false</required>
+            <help>Compare sequence variations across groups of samples. This option is required for some output formats. When provided, the compare flag must be followed by group ids separated by slashes. For instance, if groups group-A and group-B have been defined (see --groups option), --compare group-A/group-B will evaluate statistical tests between sequence variation in groups A and B.</help>
         </flaggedOption>
         <flaggedOption>
              <id>eval</id>
@@ -63,9 +63,9 @@
                 <classname>StringStringParser</classname>
             </stringParser>
              <defaults>
-                <string>samples,within-groups,between-groups</string>
+                <string>samples</string>
             </defaults>
-                   <help>Name the statistics tests to perform. The option 'within-group' will test for sequence variation discovered within samples of each group. The option 'between-groups' will test for sequence variations that are found with different frequency between groups (odds-ratio and fisher exact test statistics are reported). The option filter will remove low quality bases before estimating genotypes or statistics.</help>
+                   <help>List of optional analysis steps. The option 'filter' will filter bases to remove low quality variations. </help>
         </flaggedOption>
        <flaggedOption>
             <id>start-position</id>
@@ -140,11 +140,7 @@
             <longFlag>parallel</longFlag>
             <help>Run some computations in parallel. You can tune the number of processors used by setting the property pj.nt. For instance, -Dpj.nt=5 will use 5 parallel threads. When --parallel is specified, one thread per processing core of the machine will be used unless specified otherwise (with pj.nt).</help>
         </switch>
-         <switch>
-            <id>vcf</id>
-            <longFlag>vcf</longFlag>
-            <help>Produce output file in the Variant Call Format (VCF). VCF may not be supported by all output formats at this time.</help>
-        </switch>
+
          <flaggedOption>
             <id>format</id>
             <shortFlag>f</shortFlag>
@@ -153,7 +149,7 @@
                <defaults>
                 <string>variant_discovery</string>
             </defaults>
-            <help>The name of the output format. Possible choices are genotypes, allele_frequencies, compare_groups.</help>
+            <help>The name of the output format. Possible choices are genotypes, allele_frequencies, compare_groups, methylation.</help>
         </flaggedOption>
         <flaggedOption>
             <id>genome</id>
