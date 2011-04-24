@@ -52,6 +52,7 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
     private double[] valuesGroupsA;
     private double[] valuesGroupsB;
     private int pValueIndex;
+    private boolean eventObserved;
 
     public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
@@ -100,6 +101,9 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         // report 1-based positions
         position = position + 1;
         fillVariantCountArrays(sampleCounts);
+        // records are only written for site where at least one sample is bi-allelic
+        if (!eventObserved) return;
+
         int totalCount = 0;
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             SampleCountInfo sci = sampleCounts[sampleIndex];
@@ -174,13 +178,13 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
     int[] readerIndexToGroupIndex;
 
     private void fillVariantCountArrays(SampleCountInfo[] sampleCounts) {
-
+        eventObserved=false;
 
         for (SampleCountInfo csi : sampleCounts) {
             final int sampleIndex = csi.sampleIndex;
             variantsCountPerSample[sampleIndex] = csi.varCount;
             refCountsPerSample[sampleIndex] = csi.refCount;
-
+            eventObserved |=   variantsCountPerSample[sampleIndex] >0 &&   refCountsPerSample[sampleIndex]>0;
         }
 
 
