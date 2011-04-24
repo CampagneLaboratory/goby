@@ -17,6 +17,16 @@ export other_parameters=$*
 
 export WORKING_DIR=`dirname "$0"`
 export GOBY_JAR=${WORKING_DIR}/goby.jar
+      
+if [ "${RJAVA_HOME:-notset}" == "notset" ]; then
+  echo "Trying to set RJAVA_HOME environment variable"
+  cat >/tmp/r-cmd.txt <<EOT
+system.file("jri",package="rJava")
+EOT
+  export RJAVA_HOME=`R --no-save </tmp/r-cmd.txt|grep [1]|tail -1 |awk '{print $2}'`
+  rm -f /tmp/r-cmd.txt
+ 
+fi
 
-echo java -Xmx${memory_requirement} -jar ${GOBY_JAR} --mode ${other_parameters}
-java -ea -Xmx${memory_requirement} -jar ${GOBY_JAR} --mode ${other_parameters}
+echo java -ea -Xmx${memory_requirement} -Djava.library.path=${RJAVA_HOME} -jar ${GOBY_JAR} --mode ${other_parameters}
+java -ea -Xmx${memory_requirement} -Djava.library.path=${RJAVA_HOME} -jar ${GOBY_JAR} --mode ${other_parameters}
