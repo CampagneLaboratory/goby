@@ -37,7 +37,19 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 
 /**
- * A Variant Call Format output to compare genomic variation across groups.
+ * A Variant Call Format output to compare genomic variations across groups. This format implements a fisher exact
+ * test that compares the number of samples in each group that have each possible allele. This is the usual allelic
+ * test of population genetics. Formally, we consider the matrix:
+ *          group-1   group-2
+ * allele=A   C1A       C2A
+ * allele=C
+ * allele=G
+ * allele=T
+ * allele=N   C1N       C2N
+ *
+ * and estimate the chance that the number of samples in this N x 2 matrix are non-randomly distributed. The Cij in
+ * the matrix are the number of samples in each group i that have at least one count for the j allele. We use N to
+ * indicate any non base allele (such as deletion in the reference N='-').
  *
  * @author Fabien Campagne
  *         Date: April 4 2011
@@ -106,12 +118,10 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
 
         this.readIndexStats = readIndexStats;
 
-
         log2OddsRatioColumnIndex = -1;
         fisherExactPValueColumnIndex = -1;
         numberOfGroups = groups.length;
         biomartFieldIndex = statWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
-
 
         log2OddsRatioColumnIndex = statWriter.defineField("INFO", String.format("LOD[%s/%s]", groups[0], groups[1]),
                 1, ColumnType.Float, String.format("Log2 of the odds-ratio of observing a variant in group %s versus group %s", groups[0], groups[1]));
@@ -122,7 +132,8 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         log2OddsRatioZColumnIndex = statWriter.defineField("INFO", String.format("LOD_Z[%s/%s]", groups[0], groups[1]),
                 1, ColumnType.Float, String.format("Z value of the odds-ratio of observing a variant in group %s versus group %s", groups[0], groups[1]));
         fisherExactPValueColumnIndex = statWriter.defineField("INFO", String.format("FisherP[%s/%s]", groups[0], groups[1]),
-                1, ColumnType.Float, String.format("Fisher exact P-value of allelic count differences between group %s and group %s.", groups[0], groups[1]));
+                1, ColumnType.Float, String.format("Fisher exact P-value that the allelic frequencies (each sample contributes at least one toward the group count of each allele) differ between group %s and group %s.", groups[0], groups[1]));
+     
         varCountsIndex = new int[groups.length];
         refCountsIndex = new int[groups.length];
 
@@ -290,7 +301,7 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
             distinctReadIndicesCountPerGroup[groupIndex].addAll(csi.distinctReadIndices);
             for (int alleleIndex = 0; alleleIndex < SampleCountInfo.BASE_MAX_INDEX; alleleIndex++) {
 
-                alleleCountsPerGroup[alleleIndex][groupIndex] += csi.counts[alleleIndex];
+                alleleCountsPerGroup[alleleIndex][groupIndex] += csi.counts[alleleIndex]>0?1:0;
             }
         }
         // reorder allelic counts for fisher exact test:
