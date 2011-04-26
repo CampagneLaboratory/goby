@@ -616,7 +616,6 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     }
 
 
-
     private IndexedIdentifier parseIdentifiers(final Alignments.IdentifierMapping nameMapping) {
         final IndexedIdentifier result = new IndexedIdentifier();
 
@@ -630,7 +629,9 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      * {@inheritDoc}
      */
     public void close() {
-        alignmentEntryReader.close();
+        if (alignmentEntryReader != null) {
+            alignmentEntryReader.close();
+        }
     }
 
     /**
