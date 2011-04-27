@@ -12,7 +12,6 @@ if [ $OS = "Darwin" ]; then
 fi
 
 autoreconf -i
-#automake --add-missing
 aclocal $INCLUDE_OPTION
 autoheader
 automake
