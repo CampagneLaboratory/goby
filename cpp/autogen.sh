@@ -6,11 +6,13 @@ test -n "$srcdir" || srcdir=.
 # Need to set the following variable based on OS. MacOS needs the -I option to aclocal
 OS=`uname -s`
 if [ $OS = "Darwin" ]; then
-  INCLUDE_OPTION=-I /opt/local/share/aclocal
+  INCLUDE_OPTION="-I /opt/local/share/aclocal"
  else
   INCLUDE_OPTION=""
 fi
 
+autoreconf -i
+#automake --add-missing
 aclocal $INCLUDE_OPTION
 autoheader
 automake

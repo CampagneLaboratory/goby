@@ -32,8 +32,11 @@ AC_TYPE_SIZE_T
 AC_CHECK_SIZEOF(unsigned long)
 AC_CHECK_SIZEOF(unsigned long long)
 
-AC_CHECK_HEADERS([tr1/unordered_map])
-AC_CHECK_HEADERS([tr1/unordered_set])
+#
+# "tr1" causes problems compiling on the Mac so for now we won't try to use it.
+#
+#AC_CHECK_HEADERS([tr1/unordered_map])
+#AC_CHECK_HEADERS([tr1/unordered_set])
 AC_CHECK_HEADERS([ext/hash_map])
 AC_CHECK_HEADERS([ext/hash_set])
 
