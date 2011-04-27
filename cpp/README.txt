@@ -21,7 +21,7 @@
       tar zxvf protobuf-2.3.0.tar.gz
       cd protobuf-2.3.0
       #
-      # for root or cygwin, don't use the --prefix command
+      # for root or cygwin, don't use the --prefix option
       #
       ./configure --prefix=${LOCAL_LIB}
       make
@@ -34,7 +34,7 @@
       tar zxvf pcre-8.10.tar.gz
       cd pcre-8.10
       #
-      # for root or cygwin, don't use the --prefix command
+      # for root or cygwin, don't use the --prefix option
       #
       ./configure --prefix=${LOCAL_LIB}
       make
@@ -48,9 +48,9 @@
       tar zxvf boost_1_44_0.tar.gz
       cd boost_1_44_0
       #
-      # for root or cygwin, don't use the --prefix command
+      # for root or cygwin, don't use the --prefix option
       #
-      ./bootstrap.sh --prefix=/home/YOUR_USERNAME/local-lib   
+      ./bootstrap.sh --prefix=${LOCAL_LIB}
       ./bjam install
 
 
@@ -65,10 +65,16 @@
       # edit the "configure.ac" file to uncomment the AX_BOOST_ lines.
       #
       chmod +x autogen.sh
-      ./autogen.sh
       #
-      # for root or cygwin, don't use the --prefix command
+      # for root or cygwin, don't use the --prefix option
       #
-      ./configure --prefix=/home/YOUR_USERNAME/local-lib   
+      ./autogen.sh --prefix=${LOCAL_LIB}
+      #
+      # The Goby autogen.sh script runs configure, so it is not
+      # necessary to run configure again, but this is the command
+      # you would use. For root or cygwin, don't use the
+      # --prefix option.
+      #
+      ./configure --prefix=${LOCAL_LIB}
       make
       make install
