@@ -16,4 +16,4 @@ aclocal $INCLUDE_OPTION
 autoheader
 automake
 autoconf
-test -n "$NOCONFIGURE" || "$srcdir/configure" "$@"
+

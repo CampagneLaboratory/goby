@@ -2,7 +2,7 @@
     using the BASH shell,  Edit the .bash_profile file so that pkgconfig
     will find libs/includes installed "locally"
 
-      export LOCAL_LIB=/home/gobyweb/local-lib
+      export LOCAL_LIB=${HOME}/local-lib
       export PKG_CONFIG_PATH=/usr/lib/pkgconfig:${LOCAL_LIB}/lib/pkgconfig
       export PATH=${LOCAL_LIB}/bin:${PATH}
 
@@ -14,7 +14,18 @@
       mkdir -p ${LOCAL_LIB}/lib/pkgconfig/
       mkdir -p ${LOCAL_LIB}/bin/
 
-2. Download, build, and install Protobuf (2.3.0 or later) from
+2. Check your version of autoconf with the command "autoconf --version".
+   If you aren't running at least version 2.61, you should update your
+   autoconf with the following commands
+   
+      wget http://ftp.gnu.org/gnu/autoconf/autoconf-2.68.tar.gz
+      tar zxvf autoconf-2.68.tar.gz
+      cd autoconf-2.68
+      ./configure --prefix=${LOCAL_LIB}
+      make
+      make install
+
+3. Download, build, and install Protobuf (2.3.0 or later) from
     http://code.google.com/p/protobuf/
 
       wget http://protobuf.googlecode.com/files/protobuf-2.3.0.tar.gz
@@ -27,7 +38,7 @@
       make
       make install
 
-3. Download, build, and install the PCRE (Perl Compatible Regular
+4. Download, build, and install the PCRE (Perl Compatible Regular
    Expressions) library (8.10 or later) from http://pcre.org
 
       wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.10.tar.gz
@@ -40,7 +51,7 @@
       make
       make install
 
-4. >>OPTIONAL<< The Boost libraries cause problems on some systems/compilers.
+5. >>OPTIONAL<< The Boost libraries cause problems on some systems/compilers.
    Portions of the Goby C++ API library OPTIONALLY use the Boost
    library. If you choose to use this, first download and install Boost:
 
@@ -54,7 +65,7 @@
       ./bjam install
 
 
-5. Build the Goby C++ API library, requires the Goby source distribution.
+6. Build the Goby C++ API library, requires the Goby source distribution.
    The following steps install this library:
 
       wget http://chagall.med.cornell.edu/goby/releases/goby_latest-src.zip
@@ -68,13 +79,12 @@
       #
       # for root or cygwin, don't use the --prefix option
       #
-      ./autogen.sh --prefix=${LOCAL_LIB}
+      ./autogen.sh
       #
-      # The Goby autogen.sh script runs configure, so it is not
-      # necessary to run configure again, but this is the command
-      # you would use. For root or cygwin, don't use the
-      # --prefix option.
+      # For root or cygwin, don't use the --prefix option.
       #
       ./configure --prefix=${LOCAL_LIB}
       make
       make install
+
+   
