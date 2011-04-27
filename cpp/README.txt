@@ -5,6 +5,7 @@
       export LOCAL_LIB=${HOME}/local-lib
       export PKG_CONFIG_PATH=/usr/lib/pkgconfig:${LOCAL_LIB}/lib/pkgconfig
       export PATH=${LOCAL_LIB}/bin:${PATH}
+      export LD_LIBRARY_PATH=${LOCAL_LIB}/lib:${LD_LIBRARY_PATH}
 
     Logout and re-login so these environment variables are set in your
     environment.
