@@ -633,7 +633,7 @@ extern "C" {
 	}
 
     /** These come from GSNAP. */
-    char* hitTypes[] = {
+    const char* hitTypes[] = {
               "EXACT", "SUB", "INSERTION", "DELETION", "HALFSPLICE_DONOR",
               "HALFSPLICE_ACCEPTOR", "SPLICE", "ONE_THIRD_SHORTEXON",
               "TWO_THIRDS_SHORTEXON", "SHORTEXON", "TERMINAL" };
