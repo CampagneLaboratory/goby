@@ -76,9 +76,6 @@
       # edit the "configure.ac" file to uncomment the AX_BOOST_ lines.
       #
       chmod +x autogen.sh
-      #
-      # for root or cygwin, don't use the --prefix option
-      #
       ./autogen.sh
       #
       # For root or cygwin, don't use the --prefix option.
