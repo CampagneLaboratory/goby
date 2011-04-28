@@ -569,10 +569,17 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             numberOfTargets = header.getNumberOfTargets();
             setHeaderLoaded(true);
             numberOfAlignedReads = header.getNumberOfAlignedReads();
-            sorted = header.getSorted();
-            indexed = header.getIndexed();
+            // we determine sortedness and index state from the header and by checking that the index file exists.
+            // This allows to recover alignments when the index file was deleted. We can then read and sort them
+            // again.
+            sorted = header.getSorted() && indexExists(basename);
+            indexed = header.getIndexed()&& indexExists(basename);
 
         }
+    }
+
+    private boolean indexExists(String basename) {
+        return new File(basename+".index").exists();
     }
 
     private LongArrayList indexOffsets = new LongArrayList();

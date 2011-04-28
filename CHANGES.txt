@@ -1,4 +1,7 @@
 development -> 1.9.5
+ - Determine alignment sortedness and index state from the header and by checking that the index file exists.
+   This allows to recover alignments when the index file was deleted. In such cases, sorting the alignment can
+   be done again, this is preferable to losing the alignemnt data.
  - New mode simulate-reads will generate reads artifically against a reference sequence. We use this mode
    to create simulated datasets of bisulfite converted reads or mutated reads and to test that Goby produces
    the expected results.
