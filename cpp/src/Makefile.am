@@ -1,13 +1,13 @@
 ## Process this file with automake to produce Makefile.in
 
-lib_LTLIBRARIES = libgoby.la
+lib_LTLIBRARIES = libgobypp.la libgoby.la
 
 AM_CXXFLAGS = @PROTOBUF_CFLAGS@ @LIBPCRECPP_CFLAGS@ ${BOOST_CPPFLAGS}
 AM_CFLAGS = @PROTOBUF_CFLAGS@ @LIBPCRECPP_CFLAGS@ ${BOOST_CPPFLAGS}
 
-libgoby_la_LIBADD = @PROTOBUF_LIBS@ @LIBPCRECPP_LIBS@
-libgoby_la_LDFLAGS = -version-info @version_info@ -export-dynamic # -no-undefined
-libgoby_la_SOURCES = \
+libgobypp_la_LIBADD = @PROTOBUF_LIBS@ @LIBPCRECPP_LIBS@
+libgobypp_la_LDFLAGS = -version-info @version_info@ -export-dynamic # -no-undefined
+libgobypp_la_SOURCES = \
 	goby/Alignments.cc \
 	goby/Alignments.h \
 	goby/Alignments.pb.cc \
@@ -19,12 +19,17 @@ libgoby_la_SOURCES = \
 	goby/Reads.pb.cc \
 	goby/Reads.pb.h \
 	goby/TooManyHits.cc \
-	goby/TooManyHits.h \
+	goby/TooManyHits.h
+
+libgoby_la_LIBADD = libgobypp.la @PROTOBUF_LIBS@ @LIBPCRECPP_LIBS@
+libgoby_la_LDFLAGS = -version-info @version_info@ -export-dynamic # -no-undefined
+libgoby_la_SOURCES = \
 	goby/C_Reads.cc \
 	goby/C_Reads.h \
-    goby/C_Alignments.cc \
-    goby/C_Alignments.h \
-    goby/C_CompactHelpers.h
+	goby/C_Alignments.cc \
+	goby/C_Alignments.h \
+	goby/C_CompactHelpers.h \
+	goby/SamFlags.h
 
 nobase_include_HEADERS = \
 	goby/Alignments.h \
@@ -36,8 +41,9 @@ nobase_include_HEADERS = \
 	goby/Reads.pb.h \
 	goby/TooManyHits.h \
 	goby/C_Reads.h \
-    goby/C_Alignments.h \
-    goby/C_CompactHelpers.h
+	goby/C_Alignments.h \
+	goby/C_CompactHelpers.h \
+	goby/SamFlags.h
 
 bin_PROGRAMS = GobyAlignmentStats GobyAlignmentToText GobyReadsStats GobyFastaToCompact C_Sample_CompactReads
 
