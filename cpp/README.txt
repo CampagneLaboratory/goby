@@ -52,30 +52,12 @@
       make
       make install
 
-5. >>OPTIONAL<< The Boost libraries cause problems on some systems/compilers.
-   Portions of the Goby C++ API library OPTIONALLY use the Boost
-   library. If you choose to use this, first download and install Boost:
-
-      wget http://downloads.sourceforge.net/project/boost/boost/1.44.0/boost_1_44_0.tar.gz
-      tar zxvf boost_1_44_0.tar.gz
-      cd boost_1_44_0
-      #
-      # for root or cygwin, don't use the --prefix option
-      #
-      ./bootstrap.sh --prefix=${LOCAL_LIB}
-      ./bjam install
-
-
-6. Build the Goby C++ API library, requires the Goby source distribution.
+5. Build the Goby C++ API library, requires the Goby source distribution.
    The following steps install this library:
 
       wget http://chagall.med.cornell.edu/goby/releases/goby_latest-src.zip
       unzip goby_latest-src.zip
-      cd goby_1.8/cpp/
-      #
-      # If you have chosen to use the Boost library from step #4 above,
-      # edit the "configure.ac" file to uncomment the AX_BOOST_ lines.
-      #
+      cd goby_VERSION/cpp/
       chmod +x autogen.sh
       ./autogen.sh
       #
