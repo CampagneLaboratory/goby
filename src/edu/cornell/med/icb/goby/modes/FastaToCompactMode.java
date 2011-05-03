@@ -119,6 +119,8 @@ public class FastaToCompactMode extends AbstractGobyMode {
     private File keyValuePairsFilename;
     private Properties keyValueProps;
 
+    private boolean apiMode = true;
+
     /**
      * Returns the mode name defined by subclasses.
      *
@@ -222,6 +224,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
      */
     @Override
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
+        this.apiMode = false;
         final JSAPResult jsapResult = parseJsapArguments(args);
         parallel = jsapResult.getBoolean("parallel", false);
         inputFilenames = jsapResult.getStringArray("input");
@@ -241,7 +244,8 @@ public class FastaToCompactMode extends AbstractGobyMode {
         if (processPairs && tokens != null) {
             final String[] tmp = tokens.split("[,]");
             if (tmp.length != 2) {
-                System.err.println("Pair indicator argument must have exactly two tokens, separated by comma. Offending syntax: " + tokens);
+                System.err.println("Pair indicator argument must have exactly two tokens, separated by " +
+                        "comma. Offending syntax: " + tokens);
                 System.exit(1);
             }
             pairIndicator1 = tmp[0];
@@ -287,20 +291,38 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
 
         try {
-            final DoInParallel loop = new DoInParallel() {
-                @Override
-                public void action(final DoInParallel forDataAccess, final String inputBasename, final int loopIndex) {
-                    try {
-                        debugStart(inputBasename);
-                        processOneFile(loopIndex, inputFilenames.length, inputBasename, keyValueProps);
-                        debugEnd(inputBasename);
-                    } catch (IOException e) {
-                        LOG.error("Error processing index " + loopIndex + ", " + inputBasename, e);
+            if (apiMode) {
+                // In API mode do not run in parallel.
+                int loopIndex = 0;
+                try {
+                    for (String inputBasename : inputFilenames) {
+                        processOneFile(loopIndex++, inputFilenames.length, inputBasename, keyValueProps);
                     }
+                } catch (IOException e) {
+                    throw e;
                 }
-            };
-            System.out.println("parallel: " + parallel);
-            loop.execute(parallel, inputFilenames);
+            } else {
+                final DoInParallel loop = new DoInParallel() {
+                    @Override
+                    public void action(final DoInParallel forDataAccess, final String inputBasename, final int loopIndex) {
+                        try {
+                            debugStart(inputBasename);
+                            processOneFile(loopIndex, inputFilenames.length, inputBasename, keyValueProps);
+                            debugEnd(inputBasename);
+                        } catch (IOException e) {
+                            LOG.error("Error processing index " + loopIndex + ", " + inputBasename, e);
+                        }
+                    }
+                };
+                System.out.println("parallel: " + parallel);
+                loop.execute(parallel, inputFilenames);
+            }
+        } catch (IllegalArgumentException e) {
+            if (apiMode) {
+                throw e;
+            } else {
+                LOG.error("Error processing", e);
+            }
         } catch (Exception e) {
             LOG.error("Error processing", e);
         }
@@ -379,9 +401,11 @@ public class FastaToCompactMode extends AbstractGobyMode {
                     writer.setSequence("");
                 }
                 if (!excludeQuality) {
-                    writer.setQualityScores(convertQualityScores(qualityEncoding, entry.getQuality(),verboseQualityScores));
+                    writer.setQualityScores(convertQualityScores(qualityEncoding, entry.getQuality(),
+                            verboseQualityScores, apiMode));
                     if (pairEntry != null) {
-                        writer.setQualityScoresPair(convertQualityScores(qualityEncoding,pairEntry.getQuality(), verboseQualityScores));
+                        writer.setQualityScoresPair(convertQualityScores(qualityEncoding,pairEntry.getQuality(),
+                                verboseQualityScores, apiMode));
                     }
                 }
 
@@ -394,9 +418,12 @@ public class FastaToCompactMode extends AbstractGobyMode {
         }
     }
 
-   static  public byte[] convertQualityScores(QualityEncoding qualityEncoding, final CharSequence quality, boolean verboseQualityScores) {
+    static  public byte[] convertQualityScores(QualityEncoding qualityEncoding, final CharSequence quality, boolean verboseQualityScores) {
+        return convertQualityScores(qualityEncoding, quality, verboseQualityScores, false);
+    }
+
+    static  public byte[] convertQualityScores(QualityEncoding qualityEncoding, final CharSequence quality, boolean verboseQualityScores, boolean apiMode) {
         // Only Solexa, Sanger and Illumina encoding are supported at this time
-     
 
         final int size = quality.length();
         final byte[] qualityScoreBuffer = new byte[size];
@@ -410,10 +437,16 @@ public class FastaToCompactMode extends AbstractGobyMode {
                     qualityEncoding.asciiEncodingToPhredQualityScore(quality.charAt(position));
 
             if (!qualityEncoding.isWithinValidRange(qualityScoreBuffer[position])) {
-                System.err.println("Phred quality scores must be within specific ranges for specfic encodings. The value decoded "
-                        + "was " + qualityScoreBuffer[position] + " and outside of the valid range for " + qualityEncoding
-                        + " You may have selected an incorrect encoding.");
-                System.exit(10);
+                final String message = "Phred quality scores must be within specific ranges for specfic encodings. " +
+                        "The value decoded was " + qualityScoreBuffer[position] +
+                        " and outside of the valid range for " + qualityEncoding +
+                        " You may have selected an incorrect encoding.";
+                if (apiMode) {
+                    throw new IllegalArgumentException(message);
+                } else {
+                    System.err.println(message);
+                    System.exit(10);
+                }
             }
             if (verboseQualityScores) {
                 System.out.print(qualityScoreBuffer[position]);

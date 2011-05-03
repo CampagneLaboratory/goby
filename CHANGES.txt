@@ -1,3 +1,7 @@
+development -> ?
+ - Detect when FastaToCompact is running in API mode versus command line. Do NOT do System.exit in API
+   mode and instead throw exceptions. Also, API mode doesn't run conversions in parallel but instead runs
+   them serially for easier exception catching.
 development -> 1.9.5
  - Determine alignment sortedness and index state from the header and by checking that the index file exists.
    This allows to recover alignments when the index file was deleted. In such cases, sorting the alignment can
