@@ -57,6 +57,7 @@ public class SimulateBisulfiteReads {
     private boolean bisulfiteTreatment;
     private long seed = 232424434L;
     private int numRepeats;
+    private boolean nonDirectionalLibPrep;
 
 
     public void setBisulfiteTreatment(boolean bisulfiteTreatment) {
@@ -120,6 +121,9 @@ public class SimulateBisulfiteReads {
         }
         if (bisulfite) {
             System.out.println("Bisulfite treatment activated.");
+        }
+        if (nonDirectionalLibPrep) {
+            System.out.println("Non directional library mode activated.");
         }
     }
 
@@ -192,8 +196,6 @@ public class SimulateBisulfiteReads {
                 trueRateWriter.printf("%d\t%g\t+1\t%s\t%d\t%c\t%c\t%s%n", i, value, refChoice, genomicPosition + 1,
                         fromBaseForward, toBase, context(i, segmentBases));
             }
-
-
         }
         trueRateWriter.close();
     }
@@ -389,13 +391,38 @@ public class SimulateBisulfiteReads {
             writer.write(String.format("@%d reference: %s startPosition: %d strand: %s %s %s%n%s%n+%n%s%n",
                     repeatCount,
                     refChoice,
-
                     startReadPosition, matchedReverseStrand ? "-1" : "+1", log,
-                    coveredPositions, sequenceTreated,
+                    coveredPositions, complement(sequenceTreated),
                     qualityScores));
         }
         writer.flush();
 
+    }
+
+    private MutableString complement(MutableString sequenceTreated) {
+        if (this.nonDirectionalLibPrep && random.nextBoolean()) {
+            // return the complement of sequenceTreated:
+            for (int i = 0; i < sequenceTreated.length(); i++) {
+                char base = sequenceTreated.charAt(i);
+                switch (base) {
+                    case 'A':
+                        base = 'T';
+                        break;
+                    case 'C':
+                        base = 'G';
+                        break;
+                    case 'G':
+                        base = 'C';
+                        break;
+                    case 'T':
+                        base = 'A';
+                        break;
+                }
+                sequenceTreated.charAt(i, base);
+            }
+
+        }
+        return sequenceTreated;
     }
 
     private double getMethylationRateAtPosition(boolean matchedReverseStrand, int genomicPosition) {
@@ -486,5 +513,9 @@ public class SimulateBisulfiteReads {
 
     public void setRegionTrueRates(String regionTrueRates) {
         this.regionTrueRates = regionTrueRates;
+    }
+
+    public void setNonDirectionalLibPrep(boolean nonDirectionalLibPrep) {
+        this.nonDirectionalLibPrep = nonDirectionalLibPrep;
     }
 }

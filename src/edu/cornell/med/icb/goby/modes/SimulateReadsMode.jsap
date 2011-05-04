@@ -51,7 +51,11 @@
             <longFlag>bisulfite</longFlag>
             <help>Instruct the mode to generate bisultite treated reads.</help>
         </switch>
-
+        <switch>
+            <id>non-directional-lib-prep</id>
+            <longFlag>non-directional-lib-prep</longFlag>
+            <help>Simulate non-directional library preparation protocols. Half of the reads will be flipped to the complementary strand after bisulfite conversion. This simulates library preparation protocols that do not preserve the strand of the input DNA and yield ~50% input strand and ~50% complement strand.</help>
+        </switch>
         <flaggedOption>
             <id>input</id>
             <shortFlag>r</shortFlag>

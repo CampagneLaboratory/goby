@@ -91,7 +91,7 @@ public class SimulateReadsMode extends AbstractGobyMode {
         methylationRateFilename = jsapResult.getString("methylation-rates");
         final boolean bisulfite = jsapResult.getBoolean("bisulfite");
         String strandChoice = jsapResult.getString("strand");
-
+        boolean nonDirectionalLibPrep=  jsapResult.getBoolean("non-directional-lib-prep");
         processor = new SimulateBisulfiteReads();
 
         processor.configure(bisulfite, strandChoice);
@@ -101,7 +101,7 @@ public class SimulateReadsMode extends AbstractGobyMode {
         processor.setOutputFilename(outputFilename);
         processor.setRegionTrueRates(regionTrueRates);
         processor.setNumRepeats(jsapResult.getInt("num-repeats"));
-
+        processor.setNonDirectionalLibPrep(nonDirectionalLibPrep);
         return this;
     }
 
