@@ -533,7 +533,7 @@ public class AlignmentWriter implements Closeable {
             targetPositionOffsets[targetIndex] += targetLengths[targetIndex];
             targetPositionOffsets[targetIndex] += targetIndex < 1 ? 0 : targetPositionOffsets[targetIndex - 1];
         }
-
+        targetPositionOffsets[0]=0;
         this.targetLengths = targetLengths;
     }
 
@@ -598,8 +598,6 @@ public class AlignmentWriter implements Closeable {
     public void setLargestSplitQueryIndex(final int largestQueryIndex) {
         maxQueryIndex = largestQueryIndex;
     }
-
-
 
 
     public String getAlignerVersion() {

@@ -26,8 +26,6 @@ import edu.cornell.med.icb.goby.reads.FastBufferedMessageChunksReader;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -35,16 +33,17 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Properties;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -573,13 +572,13 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             // This allows to recover alignments when the index file was deleted. We can then read and sort them
             // again.
             sorted = header.getSorted() && indexExists(basename);
-            indexed = header.getIndexed()&& indexExists(basename);
+            indexed = header.getIndexed() && indexExists(basename);
 
         }
     }
 
     private boolean indexExists(String basename) {
-        return new File(basename+".index").exists();
+        return new File(basename + ".index").exists();
     }
 
     private LongArrayList indexOffsets = new LongArrayList();
@@ -617,7 +616,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
                 targetPositionOffsets[targetIndex] += targetLengths[targetIndex];
                 targetPositionOffsets[targetIndex] += targetIndex < 1 ? 0 : targetPositionOffsets[targetIndex - 1];
             }
-
+            targetPositionOffsets[0]=0;
             indexLoaded = true;
         }
     }
