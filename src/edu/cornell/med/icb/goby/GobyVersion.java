@@ -18,8 +18,11 @@
 
 package edu.cornell.med.icb.goby;
 
-import java.util.Date;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Helper class to compare Goby versions.
@@ -30,40 +33,48 @@ import java.text.SimpleDateFormat;
  */
 public class GobyVersion {
     private static String[] versionPairs = {
+            "1.9.5-", "20110101000000",
             "1.9.5", "20110501000000",
             "1.9.6", "20110506200142", // TODO update to correct compile time.
             "1.9.6+", now()
     };
 
     private static String now() {
-            Date d=new Date();
-       SimpleDateFormat formatter=new SimpleDateFormat("yyyymmddHHmmss");
+        Date d = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyymmddHHmmss");
 
         return formatter.format(d);
     }
 
     /**
-     * Return true when version is strictly older than toBeComparedl, false otherwise.
+     * Return true when version is more recent or as recent as toBeComparedTo, false otherwise.
      *
-     * @param version
-     * @param toBeCompared
-     * @return
+     * @param version       The goby version under test.
+     * @param toBeCompareTo A specific version we wish to compare version to.
+     * @return rrue if version is more or as recent as toBeComparedTo.
      */
-    public static boolean isOlder(String version, String toBeCompared) {
+    public static boolean isMoreRecent(String version, String toBeCompareTo) {
+        return !isOlder(version, toBeCompareTo);
+    }
 
-        if (version.equals(toBeCompared)) {
+    /**
+     * Return true when version is strictly older than toBeComparedTo, false otherwise.
+     *
+     * @param version       The goby version under test.
+     * @param toBeCompareTo A specific version we wish to compare version to.
+     * @return Return true when version is strictly older than toBeComparedTo, false otherwise.
+     */
+    public static boolean isOlder(String version, String toBeCompareTo) {
+
+        if (version.equals(toBeCompareTo)) {
             // same version, the second one is not older.
             return false;
         }
-        if (version.indexOf(".") >= 0 && toBeCompared.indexOf(".") > 0) {
-            if (version.equals("1.9.5-") && version.equals("1.9.6")) return true;
-        } else {
 
-            long time1 = Long.parseLong(reduce(version));
-            long time2 = Long.parseLong(reduce(toBeCompared));
-            return time1 < time2;
-        }
-        return false;
+        long time1 = Long.parseLong(reduce(version));
+        long time2 = Long.parseLong(reduce(toBeCompareTo));
+        return time1 < time2;
+
     }
 
     private static String reduce(String version) {
@@ -76,7 +87,14 @@ public class GobyVersion {
             for (int i = 0; i < versionPairs.length; i++) {
                 if (version.equals(versionPairs[i])) return versionPairs[i + 1];
             }
-        }
-        return "unknown";
+        } // the version number was not recognized, assume we are dealing with a more recent version.
+        LOG.warn(String.format("Version number %s not recognized. Assuming this version is the most recent.", version));
+        return now();
     }
+
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(GobyVersion.class);
+
 }

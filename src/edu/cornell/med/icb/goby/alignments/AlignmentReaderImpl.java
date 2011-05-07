@@ -23,19 +23,15 @@ package edu.cornell.med.icb.goby.alignments;
 import com.google.protobuf.CodedInputStream;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import edu.cornell.med.icb.goby.reads.FastBufferedMessageChunksReader;
-import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -159,7 +155,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
                                final int endPosition)
             throws IOException {
 
-        super();
+        super(true, basename);
         this.basename = basename;
 
         try {
@@ -204,7 +200,17 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             }
         }
     }
-
+     /**
+     * Open a Goby alignment file for reading between the byte positions startOffset and endOffset.
+     * This method will try to upgrade the alignment to the latest version of the Goby data structures on the fly.
+     * @param startOffset Position in the file where reading will start (in bytes).
+     * @param endOffset   Position in the file where reading will end (in bytes).
+     * @param basename    Basename of the alignment to read.
+     * @throws IOException If an error occurs opening or reading the file.
+     */
+     public AlignmentReaderImpl(final long startOffset, final long endOffset, final String basename) throws IOException {
+         this(startOffset, endOffset,basename, true);
+     }
 
     /**
      * Open a Goby alignment file for reading between the byte positions startOffset and endOffset.
@@ -212,10 +218,11 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      * @param startOffset Position in the file where reading will start (in bytes).
      * @param endOffset   Position in the file where reading will end (in bytes).
      * @param basename    Basename of the alignment to read.
+     * @param upgrade     Whether to try to upgrade the alignment on the fly.
      * @throws IOException If an error occurs opening or reading the file.
      */
-    public AlignmentReaderImpl(final long startOffset, final long endOffset, final String basename) throws IOException {
-        super();
+    public AlignmentReaderImpl(final long startOffset, final long endOffset, final String basename, boolean upgrade) throws IOException {
+        super(upgrade, basename);
         this.basename = basename;
         final FileInputStream stream = new FileInputStream(basename + ".entries");
         alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset, endOffset, new FastBufferedInputStream(stream));
@@ -248,7 +255,12 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     }
 
     public AlignmentReaderImpl(final String basename) throws IOException {
-        this(0, Long.MAX_VALUE, getBasename(basename));
+        this(0, Long.MAX_VALUE, getBasename(basename) ,true);
+
+    }
+
+    public AlignmentReaderImpl(final String basename, boolean upgrade) throws IOException {
+        this(0, Long.MAX_VALUE, getBasename(basename), upgrade);
 
     }
 
@@ -263,7 +275,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     }
 
     public AlignmentReaderImpl(final InputStream entriesStream) throws IOException {
-        super();
+        super(true, null);
         alignmentEntryReader = new FastBufferedMessageChunksReader(0, Long.MAX_VALUE, new FastBufferedInputStream(entriesStream));
     }
 
@@ -279,7 +291,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      */
     public AlignmentReaderImpl(final long start, final long end, final FastBufferedInputStream stream)
             throws IOException {
-        super();
+        super(true, null);
         alignmentEntryReader = new FastBufferedMessageChunksReader(start, end, stream);
     }
 
@@ -592,6 +604,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             sorted = header.getSorted() && indexExists(basename);
             indexed = header.getIndexed() && indexExists(basename);
             gobyVersion = header.getVersion();
+
         }
     }
 
@@ -660,50 +673,8 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         }
     }
 
-    /**
-     * Return the basename corresponding to the input alignment filename.  Note
-     * that if the filename does have the extension known to be a compact alignemt
-     * the returned value is the original filename
-     *
-     * @param filename The name of the file to get the basename for
-     * @return basename for the alignment file
-     */
-    public static String getBasename(final String filename) {
-        for (final String ext : FileExtensionHelper.COMPACT_ALIGNMENT_FILE_EXTS) {
-            if (StringUtils.endsWith(filename, ext)) {
-                return StringUtils.removeEnd(filename, ext);
-            }
-        }
-
-        // perhaps the input was a basename already.
-        return filename;
-    }
-
-    /**
-     * Return the basenames corresponding to the input filenames. Less basename than filenames
-     * may be returned (if several filenames reduce to the same baseline after removing
-     * the extension). This method returns the unique set of basenames in the same order they are
-     * provided as argument.
-     *
-     * @param filenames The names of the files to get the basnames for
-     * @return An array of basenames
-     */
-    public static String[] getBasenames(final String... filenames) {
-        final ObjectSet<String> result = new ObjectArraySet<String>();
-        final ObjectList<String> unique = new ObjectArrayList<String>();
-        if (filenames != null) {
-            for (final String filename : filenames) {
 
 
-                final String newBasename = getBasename(filename);
-                if (!result.contains(newBasename)) {
-                    unique.add(newBasename);
-                    result.add(getBasename(filename));
-                }
-            }
-        }
-        return unique.toArray(new String[unique.size()]);
-    }
 
     public Iterator<Alignments.AlignmentEntry> iterator() {
         return this;

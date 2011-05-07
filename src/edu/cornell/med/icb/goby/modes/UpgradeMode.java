@@ -56,6 +56,7 @@ public class UpgradeMode extends AbstractGobyMode {
      * The basename of the compact alignment.
      */
     private String[] basenames;
+    private boolean silent;
 
     @Override
     public String getModeName() {
@@ -94,21 +95,29 @@ public class UpgradeMode extends AbstractGobyMode {
         }
     }
 
-    private void upgrade(String basename) {
+    /**
+     * Upgrade a Goby alignment as needed.
+     * @param basename Basename of the alignment.
+     */
+    public void upgrade(String basename) {
         try {
-            AlignmentReaderImpl reader = new AlignmentReaderImpl(basename);
+            AlignmentReaderImpl reader = new AlignmentReaderImpl(basename, false);
             reader.readHeader();
             String version = reader.getGobyVersion();
-            System.out.printf("processing %s with version %s %n", basename, version);
-            if (!GobyVersion.isOlder(version, "1.9.6")) {
+           if (!silent) {
+               System.out.printf("processing %s with version %s %n", basename, version);
+           }
+            if (GobyVersion.isOlder(version, "1.9.6")) {
                 if (reader.isIndexed()) {
                     // we need to upgrade 1.9.5- alignment indices to the new indexing scheme implemented in 1.9.6+:
                     UpgradeTo1_9_6 upgrader = new UpgradeTo1_9_6();
+                    upgrader.setSilent(silent);
                     upgrader.upgrade(basename, reader);
                 }
             }
         } catch (IOException e) {
             System.err.println("Could not read alignment " + basename);
+            e.printStackTrace();
         }
     }
 
@@ -124,5 +133,9 @@ public class UpgradeMode extends AbstractGobyMode {
 
     public static void main(final String[] args) throws JSAPException, IOException {
         new UpgradeMode().configure(args).execute();
+    }
+
+    public void setSilent(boolean silent) {
+        this.silent=silent;
     }
 }

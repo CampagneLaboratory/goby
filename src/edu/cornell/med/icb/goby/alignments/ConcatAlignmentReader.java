@@ -106,7 +106,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
      */
     public ConcatAlignmentReader(final AlignmentReaderFactory alignmentReaderFactory,
                                  final boolean adjustQueryIndices, final String... basenames) throws IOException {
-        super();
+        super(true, null);
         this.adjustQueryIndices = adjustQueryIndices;
         readers = alignmentReaderFactory.createReaderArray(basenames.length);
 
@@ -143,7 +143,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
                                  final int endReferenceIndex,
                                  final int endPosition,
                                  final String... basenames) throws IOException {
-        super();
+        super(true, null);
         this.adjustQueryIndices = adjustQueryIndices;
         readers = alignmentReaderFactory.createReaderArray(basenames.length);
         readersWithMoreEntries = new IntArraySet();

@@ -20,7 +20,14 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.modes.UpgradeMode;
+import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -90,6 +97,67 @@ public abstract class AbstractAlignmentReader implements Closeable,
      * structure.
      */
     protected int smallestQueryIndex;
+
+    /**
+     * This constructor will upgrade the alignment to the latest version of the Goby data structure.
+     *
+     * @param upgrade
+     * @param basename Alignment basename.
+     */
+    protected AbstractAlignmentReader(boolean upgrade, String basename) {
+        // do not upgrade when the upgrade flag is false;
+        if (basename != null && upgrade) {
+            // we can only upgrade alignments for which we have a basename
+            UpgradeMode upgrader = new UpgradeMode();
+            upgrader.setSilent(true);
+            upgrader.upgrade(basename);
+        }
+    }
+
+    /**
+     * Return the basename corresponding to the input alignment filename.  Note
+     * that if the filename does have the extension known to be a compact alignemt
+     * the returned value is the original filename
+     *
+     * @param filename The name of the file to get the basename for
+     * @return basename for the alignment file
+     */
+    public static String getBasename(final String filename) {
+        for (final String ext : FileExtensionHelper.COMPACT_ALIGNMENT_FILE_EXTS) {
+            if (StringUtils.endsWith(filename, ext)) {
+                return StringUtils.removeEnd(filename, ext);
+            }
+        }
+
+        // perhaps the input was a basename already.
+        return filename;
+    }
+
+    /**
+     * Return the basenames corresponding to the input filenames. Less basename than filenames
+     * may be returned (if several filenames reduce to the same baseline after removing
+     * the extension). This method returns the unique set of basenames in the same order they are
+     * provided as argument.
+     *
+     * @param filenames The names of the files to get the basnames for
+     * @return An array of basenames
+     */
+    public static String[] getBasenames(final String... filenames) {
+        final ObjectSet<String> result = new ObjectArraySet<String>();
+        final ObjectList<String> unique = new ObjectArrayList<String>();
+        if (filenames != null) {
+            for (final String filename : filenames) {
+
+
+                final String newBasename = getBasename(filename);
+                if (!result.contains(newBasename)) {
+                    unique.add(newBasename);
+                    result.add(getBasename(filename));
+                }
+            }
+        }
+        return unique.toArray(new String[unique.size()]);
+    }
 
     /**
      * The smallest possible query index in this alignment.
@@ -185,7 +253,6 @@ public abstract class AbstractAlignmentReader implements Closeable,
         return Math.max(0, numberOfTargets);
     }
 
-   
 
     /**
      * Returns the length of a target.

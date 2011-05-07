@@ -9,8 +9,12 @@ development -> 1.9.6
    We provide a new mode, goby upgrade, to perform these calculations and fix such alignments. To upgrade
    alignments off-line, simply do:
                                     goby 3g upgrade [files].
-   This command will upgrade each alignment corresponding to the filenames provided. 
-
+   This command will upgrade each alignment corresponding to the filenames provided. It skip those alignemnts
+   produced by versions of Goby that do not require upgrading. The upgrade process creates a backup of the
+   files that are affected: .index and .header are backed to .index.bak and .header.bak respectively.
+   The upgrade process is relatively fast, in our tests we upgraded a 750Mb alignment file in 2'30".
+   
+ - Version 1.9.6 will try to upgrade alignments on the fly to the new version of the index data structures.   
  - Detect when FastaToCompact is running in API mode versus command line. Do NOT do System.exit in API
    mode and instead throw exceptions. Also, API mode doesn't run conversions in parallel but instead runs
    them serially for easier exception catching.
