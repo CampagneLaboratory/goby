@@ -1,10 +1,20 @@
-development -> ?
- - Changed the indexing scheme to avoid an issue that can occur when reads match on target N and have a
-   position greater than the length of target N+1. 
+development -> 1.9.6
+ - The indexing logic used in versions of Goby up to 1.9.5 (inclusive) had subtle flaws. This could cause
+   the skipTo method to behave incorrectly for some aligments. For instance,  if reads matched on target N
+   at a position larger than the length of target N+1, these reads would not be returned by skipTo.
+   Thanks to Alec Chapman for identifying these issues.
+   We have corrected the problem and added additional unit tests to check the behavior of the implementation
+   in various edge cases. A consequence of this change is that the new indexing logic requires recalculating
+   the .index data structure for alignments sorted and indexed with a version of Goby prior to 1.9.6.
+   We provide a new mode, goby upgrade, to perform these calculations and fix such alignments. To upgrade
+   alignments off-line, simply do:
+                                    goby 3g upgrade [files].
+   This command will upgrade each alignment corresponding to the filenames provided. 
+
  - Detect when FastaToCompact is running in API mode versus command line. Do NOT do System.exit in API
    mode and instead throw exceptions. Also, API mode doesn't run conversions in parallel but instead runs
    them serially for easier exception catching.
-development -> 1.9.5
+1.9.5
  - Determine alignment sortedness and index state from the header and by checking that the index file exists.
    This allows to recover alignments when the index file was deleted. In such cases, sorting the alignment can
    be done again, this is preferable to losing the alignemnt data.

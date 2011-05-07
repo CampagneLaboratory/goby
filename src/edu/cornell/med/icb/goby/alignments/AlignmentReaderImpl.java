@@ -463,8 +463,9 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         offsetIndex = offsetIndex < 0 ? -1 - offsetIndex : offsetIndex;
         // NB offsetIndex contains absolutePosition in the first entry, but the chunk before it also likely
         // contains entries with this absolute position. We therefore substract one to position on the chunk
-        // before. 
+        // before.
         offsetIndex = offsetIndex >= indexOffsets.size() ? indexOffsets.size() - 1 : offsetIndex - 1;
+
 
         if (offsetIndex < 0) {
             // empty alignment.
@@ -478,7 +479,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         //   }
         final long newPosition = indexOffsets.getLong(offsetIndex);
         final long currentPosition = alignmentEntryReader.position();
-        if (newPosition > currentPosition) {
+        if (newPosition >= currentPosition) {
 
             seek(newPosition);
         }
@@ -494,7 +495,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         alignmentEntryReader.seek(byteOffset);
         nextEntry = null;
         nextEntryNoFilter = null;
-        collection=null;
+        collection = null;
     }
 
     /**
@@ -518,7 +519,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      */
     protected long getByteOffset(final int targetIndex, final int position, final int chunkOffset) {
 
-        if (targetIndex > targetPositionOffsets.length) return Long.MAX_VALUE;
+        if (targetIndex >= targetPositionOffsets.length) return Long.MAX_VALUE;
 
         final long absolutePosition = recodePosition(targetIndex, position);
         int offsetIndex = Arrays.binarySearch(indexAbsolutePositions.elements(), absolutePosition);
@@ -725,7 +726,9 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      *         * @throws IOException
      */
     public ObjectList<ReferenceLocation> getLocations(int modulo) throws IOException {
+        assert isHeaderLoaded() : "header must be loaded to query locations.";
         if (!isIndexed()) throw new RuntimeException("Alignment must be sorted and indexed to obtain locations.");
+
         readIndex();
         ObjectList<ReferenceLocation> result = new ObjectArrayList<ReferenceLocation>();
         for (long absoluteLocation : indexAbsolutePositions) {
@@ -740,13 +743,14 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         int referenceIndex;
         for (referenceIndex = this.targetPositionOffsets.length - 1; referenceIndex >= 0; referenceIndex--) {
             final long offset = this.targetPositionOffsets[referenceIndex];
-            if (absoluteLocation > offset) {
+            if (absoluteLocation > offset - 1) {
+
                 absoluteLocation -= offset;
                 break;
             }
         }
 
-        return new ReferenceLocation(referenceIndex + 1, (int) absoluteLocation);
+        return new ReferenceLocation(referenceIndex, (int) absoluteLocation);
     }
 
     public boolean isQueryLengthStoredInEntries() {

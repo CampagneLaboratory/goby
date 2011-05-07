@@ -19,21 +19,16 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import com.google.protobuf.CodedInputStream;
+import edu.cornell.med.icb.util.VersionUtils;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.logging.ProgressLogger;
+import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.logging.ProgressLogger;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
-import org.apache.log4j.Level;
-import edu.cornell.med.icb.goby.GobyVersion;
-import edu.cornell.med.icb.goby.modes.GobyDriver;
-import edu.cornell.med.icb.util.VersionUtils;
 
 /**
  * @author Fabien Campagne
@@ -50,6 +45,7 @@ public class UpgradeTo1_9_6 {
         final Alignments.AlignmentIndex index = Alignments.AlignmentIndex.parseFrom(codedInput);
 
         LongArrayList indexOffsets = new LongArrayList();
+        LongArrayList upgradedOffsets = new LongArrayList();
         LongArrayList indexAbsolutePositions = new LongArrayList();
         LongArrayList upgradedIndexAbsolutePositions = new LongArrayList();
 
@@ -79,6 +75,8 @@ public class UpgradeTo1_9_6 {
         progress.expectedUpdates = indexOffsets.size();
         progress.priority = Level.INFO;
         progress.start();
+
+
         for (long indexOffset : indexOffsets) {
             // for each offset in the entries file, obtain the first entry then recode absolute position:
 
@@ -93,16 +91,17 @@ public class UpgradeTo1_9_6 {
             int position = entry.getPosition();
 
             long newAbsolutePosition = targetPositionOffsets[targetIndex] + position;
-            if (newAbsolutePosition < previousAbsolutePosition) {
-                throw new InternalError("absolute position must increase monotonically.");
+            if (newAbsolutePosition > previousAbsolutePosition) {
+                upgradedOffsets.add(indexOffset);
+                upgradedIndexAbsolutePositions.add(newAbsolutePosition);
+                previousAbsolutePosition = newAbsolutePosition;
+
             }
-            upgradedIndexAbsolutePositions.add(newAbsolutePosition);
-            previousAbsolutePosition = newAbsolutePosition;
             progress.lightUpdate();
         }
         progress.stop();
         //    printIndices(basename, indexOffsets, indexAbsolutePositions, upgradedIndexAbsolutePositions);
-        writeIndex(basename, indexOffsets, upgradedIndexAbsolutePositions);
+        writeIndex(basename, upgradedOffsets, upgradedIndexAbsolutePositions);
         upgradeHeaderVersion(basename);
         System.out.printf("alignment %s upgraded successfully.%n", basename);
     }

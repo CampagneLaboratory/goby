@@ -20,18 +20,19 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.junit.BeforeClass;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
-import org.junit.Test;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
 
 /**
  * @author Fabien Campagne
@@ -173,17 +174,42 @@ public class TestPositionSlices {
             final AlignmentReader reader =
                     new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, basename),
                             2, 300, 2, 300);
-            // (1,0) occurs before the slice boundaries (1,13)-(1,13)
+
             final Alignments.AlignmentEntry alignmentEntry = reader.skipTo(2, 0);
 
             assertNotNull(alignmentEntry);
             assertEquals(2, alignmentEntry.getTargetIndex());
             assertEquals(300, alignmentEntry.getPosition());
             check(reader, 2, 300);
-            
 
             assertFalse(reader.hasNext());
             reader.close();
+        }
+    }
+
+    @Test
+    public void testIndexLocations() throws IOException {
+        final String basename = "align-position-slices-index-locations1";
+        buildAlignment(basename);
+
+
+        {// check that we can read skipTo before the start of the slice and only get entries that are within the slice
+            // boundaries.
+            final AlignmentReader reader =
+                    new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, basename));
+            reader.readHeader();
+            ObjectList<ReferenceLocation> locations = reader.getLocations(1);
+            reader.close();
+            Assert.assertEquals(1, locations.get(0).targetIndex);
+            Assert.assertEquals(12, locations.get(0).position);
+            Assert.assertEquals(1, locations.get(1).targetIndex);
+            Assert.assertEquals(13, locations.get(1).position);
+            Assert.assertEquals(2, locations.get(2).targetIndex);
+            Assert.assertEquals(123, locations.get(2).position);
+            Assert.assertEquals(2, locations.get(3).targetIndex);
+            Assert.assertEquals(300, locations.get(3).position);
+            Assert.assertEquals(4, locations.size());
+
         }
     }
 
@@ -200,9 +226,10 @@ public class TestPositionSlices {
         }
         writer.setTargetLengths(targetLengths);
         // we write this alignment sorted:
-
         writer.setSorted(true);
-        int constantQueryLength=50;
+
+
+        int constantQueryLength = 50;
         // chunk 1:
         writer.setAlignmentEntry(0, 1, 12, 30, false, constantQueryLength);
         writer.appendEntry();
@@ -223,9 +250,7 @@ public class TestPositionSlices {
         // chunk 4:
         writer.setAlignmentEntry(0, 2, 300, 2, false, constantQueryLength);
         writer.appendEntry();
-       // TODO remove the last entry and figure out why TestPositionSlices.testBeforeSlice cannot find the second/last (2,300) entry!
-        writer.setAlignmentEntry(0, 3, 300, 2, false, constantQueryLength);
-              writer.appendEntry();
+
 
         writer.close();
         writer.printStats(System.out);

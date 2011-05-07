@@ -21,8 +21,6 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import edu.cornell.med.icb.goby.reads.MessageChunksWriter;
-import edu.cornell.med.icb.goby.modes.VersionMode;
-import edu.cornell.med.icb.goby.modes.GobyDriver;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.util.VersionUtils;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -71,7 +69,7 @@ public class AlignmentWriter implements Closeable {
     private String alignerName;
     private String alignerVersion;
     /**
-     * The version of Goby that created this alignment file. 
+     * The version of Goby that created this alignment file.
      */
     private String gobyVersion;
     /**
@@ -103,7 +101,7 @@ public class AlignmentWriter implements Closeable {
     private boolean sortedState;
 
     // data structures to build index:
-    private int previousChunkOffset;
+    private int previousChunkOffset = -1;
     private int firstTargetIndexInChunk;
     private boolean firstEntryInChunk = true;
     private int firstPositionInChunk;
@@ -266,33 +264,41 @@ public class AlignmentWriter implements Closeable {
             firstPositionInChunk = builtEntry.getPosition();
             firstEntryInChunk = false;
         }
-        final int currentChunkOffset = entriesChunkWriter.writeAsNeeded(collectionBuilder, builtEntry.getMultiplicity());
-        //     LOG.warn(String.format("#entriesWritten: %d currentChunkOffset: %d previousChunkOffset: %d",
-        //            entriesChunkWriter.getTotalEntriesWritten(), currentChunkOffset, previousChunkOffset));
-        if (sortedState && currentChunkOffset != previousChunkOffset) {
+        final long currentChunkOffset = entriesChunkWriter.writeAsNeeded(collectionBuilder, builtEntry.getMultiplicity());
+       // LOG.warn(String.format("#entriesWritten: %d currentChunkOffset: %d previousChunkOffset: %d",
+        //        entriesChunkWriter.getTotalEntriesWritten(), currentChunkOffset, previousChunkOffset));
+        if (sortedState && entriesChunkWriter.getAppendedInChunk()==0) {
             // we have just written a new chunk.
-            pushIndex(previousChunkOffset, firstTargetIndexInChunk, firstPositionInChunk);
-            previousChunkOffset = currentChunkOffset;
+            pushIndex(currentChunkOffset, firstTargetIndexInChunk, firstPositionInChunk);
             firstEntryInChunk = true;
+
 
         } else {
             firstEntryInChunk = false;
+
         }
+
     }
 
-    private void pushIndex(final int previousChunkOffset, final int firstTargetIndexInChunk, final int firstPositionInChunk) {
-        final int newOffset = Math.max(previousChunkOffset, 0);
-        final int size = indexOffsets.size();
+    private void pushIndex(final long startOfChunkOffset, final int firstTargetIndexInChunk, final int firstPositionInChunk) {
+        final long newOffset = Math.max(startOfChunkOffset, 0);
+        final int size = indexAbsolutePositions.size();
         // remove duplicates because the behavior of binary search is undefined for duplicates:
-        //   LOG.warn(String.format("INDEX attempting to push offset %d %d %n", firstTargetIndexInChunk, firstPositionInChunk));
-        if (size == 0 || newOffset != indexOffsets.get(size - 1)) {
+        /**
+         * Keep only the first absolutePosition we encounter and its offset in the file. This is done because if an
+         * absolute position repeats at the beginning of several consecutive chunks, we want to keep only the first.
+         * Also, binarySearch, which we use to access the indexAbsolutePositions array when the alignment is read
+         * has undefined behavior when duplicates exist in the array.
+         */
+        //      LOG.warn(String.format("INDEX attempting to push offset %d %d %n", firstTargetIndexInChunk, firstPositionInChunk));
+        final long codedPosition = recodePosition(firstTargetIndexInChunk, firstPositionInChunk);
+
+        if (size == 0 || codedPosition != indexAbsolutePositions.get(size - 1)) {
 
             indexOffsets.add(newOffset);
-            final long codedPosition = recodePosition(firstTargetIndexInChunk, firstPositionInChunk);
             indexAbsolutePositions.add(codedPosition);
-            // LOG.warn(String.format("INDEX Pushing offset %d %d %n", newOffset, codedPosition));
+        //    LOG.warn(String.format("INDEX Pushing offset=%d position=%d", newOffset, codedPosition));
         }
-
     }
 
     protected long recodePosition(final int firstTargetIndexInChunk, final int firstPositionInChunk) {
@@ -369,7 +375,8 @@ public class AlignmentWriter implements Closeable {
     private void writeIndex() throws IOException {
         if (!indexWritten) {
             // Push the last chunkoffset:
-            pushIndex(previousChunkOffset, firstTargetIndexInChunk, firstPositionInChunk);
+            pushIndex(entriesChunkWriter.getCurrentChunkStartOffset(),
+                    firstTargetIndexInChunk, firstPositionInChunk);
             GZIPOutputStream indexOutput = null;
             try {
                 indexOutput = new GZIPOutputStream(new FileOutputStream(basename + ".index"));

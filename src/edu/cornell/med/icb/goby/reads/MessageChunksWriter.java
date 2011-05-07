@@ -65,7 +65,7 @@ public class MessageChunksWriter {
      */
     private long totalEntriesWritten;
     private long totalBytesWritten;
-    private int currentChunkStartOffset;
+    private long currentChunkStartOffset;
 
     /**
      * Specify the maximum number of entries to store in any given chunk.
@@ -104,7 +104,7 @@ public class MessageChunksWriter {
      *                          was just appended.
      * @throws IOException if there was an error writing the entries
      */
-    public int writeAsNeeded(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder,
+    public long writeAsNeeded(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder,
                              final int multiplicity) throws IOException {
         totalEntriesWritten += multiplicity;
         if (++numAppended >= numEntriesPerChunk) {
@@ -113,6 +113,13 @@ public class MessageChunksWriter {
         return currentChunkStartOffset;
     }
 
+    /**
+     * Return the offset of the beginning of the current chunk (in byte, from position zero in the file).
+     * @return offset of the beginning of the current chunk
+     */
+    public long getCurrentChunkStartOffset () {
+        return currentChunkStartOffset;
+    }
     /**
      * Force the writing of the collection to the output stream.
      *
@@ -128,7 +135,7 @@ public class MessageChunksWriter {
         if (totalEntriesWritten == 0 || numAppended > 0) {
             // the position just before this chunk is written is recorded:
             currentChunkStartOffset = out.size();
-
+      //     System.out.println("Writting new chunk at position "+currentChunkStartOffset);
             if (LOG.isTraceEnabled()) {
                 LOG.trace("writing zero bytes length=" + DELIMITER_LENGTH);
             }
@@ -221,5 +228,13 @@ public class MessageChunksWriter {
      */
     public void printStats(final PrintStream out) {
         printStats(new PrintWriter(out));
+    }
+
+    /**
+     * The number of entries appended in the current chunk. Zero indicates the start of a new chunk.
+     * @return
+     */
+    public int getAppendedInChunk() {
+        return numAppended;
     }
 }

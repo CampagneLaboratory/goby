@@ -18,15 +18,19 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import static junit.framework.Assert.assertEquals;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.junit.BeforeClass;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertFalse;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
 
 /**
  * @author Fabien Campagne
@@ -34,21 +38,149 @@ import java.io.File;
  *         Time: 4:48:24 PM
  */
 public class TestAlignmentIndex {
-    public void testProblem() throws IOException {
+    /**
+     * This test triggers an issue with Goby 1.9.5 indices. Using pre 1.9.6 indices, the skipTo method could fail
+     * to return alignments if they occured at a position after the length of the next sequence. This test will fail
+     * with any version of Goby prior to 1.9.6, and will success with Goby 1.9.6. Old alignments can be upgraded to
+     * the index structures used by Goby 1.9.6 with the goby upgrade mode.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void test_1_9_5_IndexIssue() throws IOException {
+
+        int[] targetLengths = new int[]{100, 50, 20, 10, 5};
+        final String basename1 = FilenameUtils.concat(BASE_TEST_DIR, "align-index-error-1");
         final AlignmentWriter writer =
-                new AlignmentWriter(FilenameUtils.concat(BASE_TEST_DIR, "align-index-error-1"));
-        writer.setNumAlignmentEntriesPerChunk(2);
-
-        int position = 1;
+                new AlignmentWriter(basename1);
+        writer.setTargetLengths(targetLengths);
+        writer.setNumAlignmentEntriesPerChunk(1);
+        writer.setSorted(true);
         int queryIndex = 0;
-        int referenceIndex = 0;
 
-        writer.setAlignmentEntry(queryIndex++, referenceIndex, position++, 30, false, constantQueryLength);
+        writer.setAlignmentEntry(queryIndex++, 0, 99, 30, false, constantQueryLength);
         writer.appendEntry();
-
-
+        writer.setAlignmentEntry(queryIndex++, 1, 0, 30, false, constantQueryLength);
+        writer.appendEntry();
+        writer.setAlignmentEntry(queryIndex++, 1, 1, 30, false, constantQueryLength);
+        writer.appendEntry();
         writer.close();
 
+        AlignmentReaderImpl reader = new AlignmentReaderImpl(basename1);
+        reader.reposition(0, 99);
+        Alignments.AlignmentEntry entry = reader.next();
+        assertEquals(0, entry.getTargetIndex());
+        assertEquals(99, entry.getPosition());
+        entry = reader.next();
+        assertEquals(1, entry.getTargetIndex());
+        assertEquals(0, entry.getPosition());
+        entry = reader.next();
+        assertEquals(1, entry.getTargetIndex());
+        assertEquals(1, entry.getPosition());
+        assertFalse(reader.hasNext());
+        // Now check that the locations were stored in the index and can be decoded correctly:
+        ObjectList<ReferenceLocation> locations = reader.getLocations(1);
+        assertEquals(0, locations.get(0).targetIndex);
+        assertEquals(99, locations.get(0).position);
+        assertEquals(1, locations.get(1).targetIndex);
+        assertEquals(0, locations.get(1).position);
+        assertEquals(1, locations.get(2).targetIndex);
+        assertEquals(1, locations.get(2).position);
+
+        assertEquals("with modulo=1, must recover three locations.", 3, locations.size());
+    }
+
+    @Test
+    public void test_1_9_5_IndexIssueExtraTests() throws IOException {
+
+        int[] targetLengths = new int[]{100, 50, 20, 10, 5};
+        final String basename1 = FilenameUtils.concat(BASE_TEST_DIR, "align-index-error-2");
+        final AlignmentWriter writer =
+                new AlignmentWriter(basename1);
+        writer.setTargetLengths(targetLengths);
+        writer.setNumAlignmentEntriesPerChunk(1);
+        writer.setSorted(true);
+        int queryIndex = 0;
+
+        writer.setAlignmentEntry(queryIndex++, 0, 99, 30, false, constantQueryLength);
+        writer.appendEntry();
+        writer.setAlignmentEntry(queryIndex++, 1, 0, 30, false, constantQueryLength);
+        writer.appendEntry();
+        writer.setAlignmentEntry(queryIndex++, 1, 1, 30, false, constantQueryLength);
+        writer.appendEntry();
+        writer.close();
+
+        AlignmentReaderImpl reader = new AlignmentReaderImpl(basename1);
+        reader.reposition(1, 0);    // will be (0,99) because reposition goes one chunk before.
+
+        Alignments.AlignmentEntry entry = reader.next();
+        assertEquals(0, entry.getTargetIndex());
+        assertEquals(99, entry.getPosition());
+        entry = reader.next();
+        assertEquals(1, entry.getTargetIndex());
+        assertEquals(0, entry.getPosition());
+        entry = reader.next();
+        assertEquals(1, entry.getTargetIndex());
+        assertEquals(1, entry.getPosition());
+        assertFalse(reader.hasNext());
+        // Now check that the locations were stored in the index and can be decoded correctly:
+        ObjectList<ReferenceLocation> locations = reader.getLocations(1);
+        assertEquals(0, locations.get(0).targetIndex);
+        assertEquals(99, locations.get(0).position);
+        assertEquals(1, locations.get(1).targetIndex);
+        assertEquals(0, locations.get(1).position);
+        assertEquals(1, locations.get(2).targetIndex);
+        assertEquals(1, locations.get(2).position);
+
+        assertEquals("with modulo=1, must recover three locations.", 3, locations.size());
+
+        reader = new AlignmentReaderImpl(basename1);
+
+        entry =  reader.skipTo(1, 1); 
+        assertEquals(1, entry.getTargetIndex());
+        assertEquals(1, entry.getPosition());
+        assertFalse(reader.hasNext());
+    }
+
+    @Test
+    public void test_1_9_5_IndexIssueWithSkipTo() throws IOException {
+
+        int[] targetLengths = new int[]{100, 50, 20, 10, 5};
+        final String basename1 = FilenameUtils.concat(BASE_TEST_DIR, "align-index-error-2");
+        final AlignmentWriter writer =
+                new AlignmentWriter(basename1);
+        writer.setTargetLengths(targetLengths);
+        writer.setNumAlignmentEntriesPerChunk(1);
+        writer.setSorted(true);
+        int queryIndex = 0;
+
+        writer.setAlignmentEntry(queryIndex++, 0, 99, 30, false, constantQueryLength);
+        writer.appendEntry();
+        writer.setAlignmentEntry(queryIndex++, 1, 0, 30, false, constantQueryLength);
+        writer.appendEntry();
+        writer.setAlignmentEntry(queryIndex++, 1, 1, 30, false, constantQueryLength);
+        writer.appendEntry();
+        writer.close();
+
+        AlignmentReaderImpl reader = new AlignmentReaderImpl(basename1);
+        Alignments.AlignmentEntry entry = reader.skipTo(1, 0);
+
+        assertEquals(1, entry.getTargetIndex());
+        assertEquals(0, entry.getPosition());
+        entry = reader.next();
+        assertEquals(1, entry.getTargetIndex());
+        assertEquals(1, entry.getPosition());
+        assertFalse(reader.hasNext());
+        // Now check that the locations were stored in the index and can be decoded correctly:
+        ObjectList<ReferenceLocation> locations = reader.getLocations(1);
+        assertEquals(0, locations.get(0).targetIndex);
+        assertEquals(99, locations.get(0).position);
+        assertEquals(1, locations.get(1).targetIndex);
+        assertEquals(0, locations.get(1).position);
+        assertEquals(1, locations.get(2).targetIndex);
+        assertEquals(1, locations.get(2).position);
+
+        assertEquals("with modulo=1, must recover three locations.", 3, locations.size());
     }
 
     /**
