@@ -111,7 +111,10 @@ public class TestAlignmentIndex {
         writer.close();
 
         AlignmentReaderImpl reader = new AlignmentReaderImpl(basename1);
-        reader.reposition(1, 0);    // will be (0,99) because reposition goes one chunk before.
+        reader.reposition(1, 0);    // will be (0,99) because reposition goes one chunk before. The previous chunk
+        // will have the indexed entry as first entry, plus some other entry, possibly including an entry with
+        // position equal to the reposition argument. Repositioning to the chunk before garantees that skipTo will
+        // not miss these entries, and appropriately filter the beginning of the chunk with position before (1,0).
 
         Alignments.AlignmentEntry entry = reader.next();
         assertEquals(0, entry.getTargetIndex());
