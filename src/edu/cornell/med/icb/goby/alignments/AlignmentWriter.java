@@ -21,7 +21,10 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import edu.cornell.med.icb.goby.reads.MessageChunksWriter;
+import edu.cornell.med.icb.goby.modes.VersionMode;
+import edu.cornell.med.icb.goby.modes.GobyDriver;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
+import edu.cornell.med.icb.util.VersionUtils;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -67,7 +70,10 @@ public class AlignmentWriter implements Closeable {
      */
     private String alignerName;
     private String alignerVersion;
-
+    /**
+     * The version of Goby that created this alignment file. 
+     */
+    private String gobyVersion;
     /**
      * Set of query lengths to determine whether or not they are unique.
      */
@@ -422,6 +428,7 @@ public class AlignmentWriter implements Closeable {
                 headerBuilder.addAllTargetLength(IntArrayList.wrap(targetLengths));
             }
 
+            headerBuilder.setVersion(VersionUtils.getImplementationVersion(AlignmentWriter.class));
             headerBuilder.build().writeTo(headerOutput);
             headerWritten = true;
         }
@@ -529,11 +536,14 @@ public class AlignmentWriter implements Closeable {
 
         // calculate the coding offset for each target index. This information will be used by recode
         targetPositionOffsets = new long[targetLengths.length];
-        for (int targetIndex = 0; targetIndex < targetLengths.length; targetIndex++) {
-            targetPositionOffsets[targetIndex] += targetLengths[targetIndex];
-            targetPositionOffsets[targetIndex] += targetIndex < 1 ? 0 : targetPositionOffsets[targetIndex - 1];
+        targetPositionOffsets[0] = 0;
+        for (int targetIndex = 1; targetIndex < targetLengths.length; targetIndex++) {
+            targetPositionOffsets[targetIndex] =
+                    targetLengths[targetIndex - 1] +
+                            targetPositionOffsets[targetIndex - 1];
+
         }
-        targetPositionOffsets[0]=0;
+
         this.targetLengths = targetLengths;
     }
 

@@ -1,4 +1,6 @@
 development -> ?
+ - Changed the indexing scheme to avoid an issue that can occur when reads match on target N and have a
+   position greater than the length of target N+1. 
  - Detect when FastaToCompact is running in API mode versus command line. Do NOT do System.exit in API
    mode and instead throw exceptions. Also, API mode doesn't run conversions in parallel but instead runs
    them serially for easier exception catching.

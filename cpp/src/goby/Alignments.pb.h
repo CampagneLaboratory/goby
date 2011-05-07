@@ -798,6 +798,16 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline void set_aligner_version(const char* value, size_t size);
   inline ::std::string* mutable_aligner_version();
   
+  // optional string version = 25;
+  inline bool has_version() const;
+  inline void clear_version();
+  static const int kVersionFieldNumber = 25;
+  inline const ::std::string& version() const;
+  inline void set_version(const ::std::string& value);
+  inline void set_version(const char* value);
+  inline void set_version(const char* value, size_t size);
+  inline ::std::string* mutable_version();
+  
   // @@protoc_insertion_point(class_scope:goby.AlignmentHeader)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
@@ -820,11 +830,13 @@ class AlignmentHeader : public ::google::protobuf::Message {
   static const ::std::string _default_aligner_name_;
   ::std::string* aligner_version_;
   static const ::std::string _default_aligner_version_;
+  ::std::string* version_;
+  static const ::std::string _default_version_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
   friend void protobuf_ShutdownFile_Alignments_2eproto();
   
-  ::google::protobuf::uint32 _has_bits_[(15 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(16 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
   inline bool _has_bit(int index) const {
@@ -2260,6 +2272,48 @@ inline ::std::string* AlignmentHeader::mutable_aligner_version() {
     aligner_version_ = new ::std::string;
   }
   return aligner_version_;
+}
+
+// optional string version = 25;
+inline bool AlignmentHeader::has_version() const {
+  return _has_bit(15);
+}
+inline void AlignmentHeader::clear_version() {
+  if (version_ != &_default_version_) {
+    version_->clear();
+  }
+  _clear_bit(15);
+}
+inline const ::std::string& AlignmentHeader::version() const {
+  return *version_;
+}
+inline void AlignmentHeader::set_version(const ::std::string& value) {
+  _set_bit(15);
+  if (version_ == &_default_version_) {
+    version_ = new ::std::string;
+  }
+  version_->assign(value);
+}
+inline void AlignmentHeader::set_version(const char* value) {
+  _set_bit(15);
+  if (version_ == &_default_version_) {
+    version_ = new ::std::string;
+  }
+  version_->assign(value);
+}
+inline void AlignmentHeader::set_version(const char* value, size_t size) {
+  _set_bit(15);
+  if (version_ == &_default_version_) {
+    version_ = new ::std::string;
+  }
+  version_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* AlignmentHeader::mutable_version() {
+  _set_bit(15);
+  if (version_ == &_default_version_) {
+    version_ = new ::std::string;
+  }
+  return version_;
 }
 
 // -------------------------------------------------------------------

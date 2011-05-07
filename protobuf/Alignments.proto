@@ -312,6 +312,10 @@ message AlignmentHeader {
      Version number for the aligner implementation that produced this alignment.
    */
    optional string aligner_version=18;
+   /*
+      The version of Goby that created this alignment file.
+   */
+   optional string version=25;
 }
 
 message IdentifierMapping {

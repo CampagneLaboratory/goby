@@ -85,6 +85,10 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     private boolean queryLengthStoredInEntries;
     private String alignerName;
     private String alignerVersion;
+    /**
+     * The version of Goby that created the alignment file we are reading.
+     */
+    private String gobyVersion;
 
 
     /**
@@ -476,8 +480,21 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         final long currentPosition = alignmentEntryReader.position();
         if (newPosition > currentPosition) {
 
-            alignmentEntryReader.seek(newPosition);
+            seek(newPosition);
         }
+    }
+
+    /**
+     * Seek to a position in the entries file.
+     *
+     * @param byteOffset Where to reposition the stream.
+     * @throws IOException If an error occured.
+     */
+    protected void seek(long byteOffset) throws IOException {
+        alignmentEntryReader.seek(byteOffset);
+        nextEntry = null;
+        nextEntryNoFilter = null;
+        collection=null;
     }
 
     /**
@@ -573,7 +590,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             // again.
             sorted = header.getSorted() && indexExists(basename);
             indexed = header.getIndexed() && indexExists(basename);
-
+            gobyVersion = header.getVersion();
         }
     }
 
@@ -612,11 +629,13 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             indexOffsets.trim();
 // calculate the coding offset for each target index. This information will be used by recode
             targetPositionOffsets = new long[targetLengths.length];
-            for (int targetIndex = 0; targetIndex < targetLengths.length; targetIndex++) {
-                targetPositionOffsets[targetIndex] += targetLengths[targetIndex];
-                targetPositionOffsets[targetIndex] += targetIndex < 1 ? 0 : targetPositionOffsets[targetIndex - 1];
+            targetPositionOffsets[0] = 0;
+            for (int targetIndex = 1; targetIndex < targetLengths.length; targetIndex++) {
+                targetPositionOffsets[targetIndex] =
+                        targetLengths[targetIndex - 1] +
+                                targetPositionOffsets[targetIndex - 1];
+
             }
-            targetPositionOffsets[0]=0;
             indexLoaded = true;
         }
     }
@@ -754,5 +773,16 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
 
     public int getConstantQueryLength() {
         return constantLength;
+    }
+
+    /**
+     * Return the version of Goby that created this alignment. If the alignment did not store a version number explicitely,
+     * the string "1.9.5-" is returned to represent all versions of Goby released before Goby 1.9.6.
+     *
+     * @return A string in the format 1.9.5, or a timestamp YYYYMMDDHHMMSS, where YYYY is the year, MM is the month, DD is the day, HH is the hour, MM the minutes and SS the seconds (time of compilation) when the alignment was created with a development version of Goby.
+     */
+    public String getGobyVersion() {
+        assert isHeaderLoaded() : "header must be loaded to query Goby version.";
+        return gobyVersion == null || "".equals(gobyVersion) ? "1.9.5-" : gobyVersion;
     }
 }
