@@ -30,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
 import edu.cornell.med.icb.goby.GobyVersion;
 import edu.cornell.med.icb.goby.modes.GobyDriver;
 import edu.cornell.med.icb.util.VersionUtils;
@@ -74,14 +75,15 @@ public class UpgradeTo1_9_6 {
                             targetPositionOffsets[targetIndex - 1];
         }
         long previousAbsolutePosition = -1;
-        ProgressLogger progress=new ProgressLogger(LOG);
-        progress.expectedUpdates=indexOffsets.size();
+        ProgressLogger progress = new ProgressLogger(LOG);
+        progress.expectedUpdates = indexOffsets.size();
+        progress.priority = Level.INFO;
         progress.start();
         for (long indexOffset : indexOffsets) {
             // for each offset in the entries file, obtain the first entry then recode absolute position:
 
             Alignments.AlignmentEntry entry = fetchFirstEntry(reader, indexOffset);
-         //   System.out.printf("entry target=%d position=%d %n", entry.getTargetIndex(), entry.getPosition());
+            //   System.out.printf("entry target=%d position=%d %n", entry.getTargetIndex(), entry.getPosition());
             if (entry == null) {
 
                 System.err.println("Error: Cannot obtain entry at start of chunk for indexOffset: " + indexOffset);
@@ -99,10 +101,10 @@ public class UpgradeTo1_9_6 {
             progress.lightUpdate();
         }
         progress.stop();
-    //    printIndices(basename, indexOffsets, indexAbsolutePositions, upgradedIndexAbsolutePositions);
+        //    printIndices(basename, indexOffsets, indexAbsolutePositions, upgradedIndexAbsolutePositions);
         writeIndex(basename, indexOffsets, upgradedIndexAbsolutePositions);
         upgradeHeaderVersion(basename);
-        System.out.printf("alignment %s upgraded successfully.%n",basename);
+        System.out.printf("alignment %s upgraded successfully.%n", basename);
     }
 
     private void upgradeHeaderVersion(String basename) throws IOException {
