@@ -21,6 +21,8 @@ package edu.cornell.med.icb.goby.alignments;
 import java.io.IOException;
 
 /**
+ * A factory that returns alignment reader. This interface can be subclassed to provide specific implementations of
+ * the AlignmentReader interface. This is useful to provide implementations that perform some filtering on the fly.
  * @author Fabien Campagne
  *         Date: Apr 9, 2011
  *         Time: 4:29:29 PM
@@ -45,6 +47,18 @@ public interface AlignmentReaderFactory {
      */
     AlignmentReader[] createReaderArray(int numElements) throws IOException;
 
+    /**
+     * Create a reader for a specific slice of an alignment file contained exactly between a start
+     * and an end location. Start and end locations are genomic/reference positions. Entries will be returned
+     * that occur from the start position and up to the end position (start and end positions are inclusive).
+     *
+     * @param basename            Basename for the alignemnt.
+     * @param startReferenceIndex Index of the reference for the start position.
+     * @param startPosition       Position on the reference for the start position.
+     * @param endReferenceIndex   Index of the reference for the end position.
+     * @param endPosition         Position on the reference for the end position.
+     * @throws IOException Thrown if an error occurs opening or reading the alignment file.
+     */
     AlignmentReader createReader(String basename,
                                  int startReferenceIndex, int startPosition,
                                  int endReferenceIndex, int endPosition) throws IOException;

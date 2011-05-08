@@ -140,7 +140,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     /**
      * A constructor that allows reading a slice of an alignment file contained exactly between a start
      * and an end location. Start and end locations are genomic/reference positions. Entries will be returned
-     * that occur after the start position and before the end position.
+     * that occur after the start position and up to the end position (start and end positions are inclusive).
      *
      * @param basename            Basename for the alignemnt.
      * @param startReferenceIndex Index of the reference for the start position.
