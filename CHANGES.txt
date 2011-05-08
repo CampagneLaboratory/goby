@@ -1,7 +1,8 @@
 development -> 1.9.6
- - AlignmentReaderImpl now supports full random access to an alignment. Use reposition(ref,pos) followed by skipTo(ref,pos)
-   to obtain the first entry matching at location (ref,pos). Prior to 1.9.6, the reposition method would not
-   reposition to a location already visited forcing clients to close the alignment reader and reopen it.
+ - AlignmentReaderImpl now supports full random access to an alignment. Use reposition(ref,pos) followed
+   by skipTo(ref,pos) to obtain the first entry matching at location (ref,pos). Prior to 1.9.6, the
+   reposition method would not reposition to a location already visited forcing clients to close the
+   alignment reader and reopen it (this new behaviour should improve performance in IGV).
  - The indexing logic used in versions of Goby up to 1.9.5 (inclusive) had subtle flaws. This could cause
    the skipTo method to behave incorrectly for some aligments. For instance,  if reads matched on target N
    at a position larger than the length of target N+1, these reads would not be returned by skipTo.
