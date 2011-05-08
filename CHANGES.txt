@@ -1,4 +1,7 @@
 development -> 1.9.6
+ - AlignmentReaderImpl now supports full random access to an alignment. Use reposition(ref,pos) followed by skipTo(ref,pos)
+   to obtain the first entry matching at location (ref,pos). Prior to 1.9.6, the reposition method would not
+   reposition to a location already visited forcing clients to close the alignment reader and reopen it.
  - The indexing logic used in versions of Goby up to 1.9.5 (inclusive) had subtle flaws. This could cause
    the skipTo method to behave incorrectly for some aligments. For instance,  if reads matched on target N
    at a position larger than the length of target N+1, these reads would not be returned by skipTo.
@@ -14,10 +17,7 @@ development -> 1.9.6
    files that are affected: .index and .header are backed to .index.bak and .header.bak respectively.
    The upgrade process is relatively fast, in our tests we upgraded a 750Mb alignment file in 2'30".
    
- - Version 1.9.6 will try to upgrade alignments on the fly to the new version of the index data structures. 
- - AlignmentReaderImpl now supports full random access to an alignment. Use reposition(ref,pos) followed by skipTo(ref,pos)
-   to obtain the first entry matching at location (ref,pos). Prior to 1.9.6, the reposition method would not
-   reposition to a location already visited forcing clients to close the alignment reader and reopen it.
+ - Version 1.9.6 will try to upgrade alignments on the fly to the new version of the index data structures.
  - Detect when FastaToCompact is running in API mode versus command line. Do NOT do System.exit in API
    mode and instead throw exceptions. Also, API mode doesn't run conversions in parallel but instead runs
    them serially for easier exception catching.
