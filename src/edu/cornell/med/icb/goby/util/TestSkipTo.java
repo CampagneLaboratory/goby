@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.util.Random;
 
 /**
+ * A utility that takes a brute force approach to testing that AlignmentReaderImpl works as specified when slicing
+ * skiping into or repositioning into alignments. 
  * @author Fabien Campagne
  *         Date: May 8, 2011
  *         Time: 9:43:09 AM
