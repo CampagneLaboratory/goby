@@ -20,20 +20,16 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import com.google.protobuf.CodedInputStream;
-import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.GobyVersion;
-import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
-import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import edu.cornell.med.icb.util.VersionUtils;
-import it.unimi.dsi.lang.MutableString;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ArrayUtils;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
+import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.ReferenceLocation;
+import edu.cornell.med.icb.goby.alignments.UpgradeTo1_9_6;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.logging.ProgressLogger;
+import org.apache.log4j.Level;
 
-import java.io.*;
-import java.util.zip.GZIPInputStream;
+import java.io.IOException;
 
 /**
  * Converts a compact alignment to plain text.
@@ -57,6 +53,8 @@ public class UpgradeMode extends AbstractGobyMode {
      */
     private String[] basenames;
     private boolean silent;
+    private boolean check;
+
 
     @Override
     public String getModeName() {
@@ -85,18 +83,24 @@ public class UpgradeMode extends AbstractGobyMode {
 
         final String[] inputFiles = jsapResult.getStringArray("input");
         basenames = AlignmentReaderImpl.getBasenames(inputFiles);
+     //   check = jsapResult.getBoolean("check");
         return this;
+
 
     }
 
     public void execute() throws IOException {
         for (String basename : basenames) {
             upgrade(basename);
+            if (check) {
+                check(basename);
+            }
         }
     }
 
     /**
      * Upgrade a Goby alignment as needed.
+     *
      * @param basename Basename of the alignment.
      */
     public void upgrade(String basename) {
@@ -104,9 +108,9 @@ public class UpgradeMode extends AbstractGobyMode {
             AlignmentReaderImpl reader = new AlignmentReaderImpl(basename, false);
             reader.readHeader();
             String version = reader.getGobyVersion();
-           if (!silent) {
-               System.out.printf("processing %s with version %s %n", basename, version);
-           }
+            if (!silent) {
+                System.out.printf("processing %s with version %s %n", basename, version);
+            }
             if (GobyVersion.isOlder(version, "1.9.6")) {
                 if (reader.isIndexed()) {
                     // we need to upgrade 1.9.5- alignment indices to the new indexing scheme implemented in 1.9.6+:
@@ -121,6 +125,54 @@ public class UpgradeMode extends AbstractGobyMode {
         }
     }
 
+    public void check(String basename) {
+        try {
+            AlignmentReaderImpl reader = new AlignmentReaderImpl(basename, false);
+            reader.readHeader();
+            String version = reader.getGobyVersion();
+            if (!silent) {
+                System.out.printf("processing %s with version %s %n", basename, version);
+            }
+            if (GobyVersion.isMoreRecent(version, "1.9.6")) {
+                if (reader.isIndexed()) {
+                    ObjectList<ReferenceLocation> locations = reader.getLocations(1000);
+                    System.out.println("Checking..");
+                    ProgressLogger progress = new ProgressLogger();
+                    progress.expectedUpdates = locations.size();
+                    progress.priority = Level.INFO;
+                    progress.start();
+                    for (ReferenceLocation location : locations) {
+                        Alignments.AlignmentEntry entry = reader.skipTo(location.targetIndex, location.position);
+                        if (entry == null) {
+                            System.err.printf("Entry must be found at position (t=%d,p=%d) %n", location.targetIndex,
+                                    location.position);
+                            System.exit(1);
+                        }
+                        if (entry.getTargetIndex() < location.targetIndex) {
+                            System.err.printf("Entry must be found on reference >%d for position (t=%d,p=%d) %n",
+                                    location.targetIndex, location.targetIndex,
+                                    location.position);
+                            System.exit(1);
+                        }
+                        if (entry.getPosition() < location.position) {
+                            System.err.printf("Entry must be found at position >=%d for position (t=%d,p=%d) %n",
+                                    location.position, entry.getTargetIndex()
+                                    ,
+                                    entry.getPosition());
+                            System.exit(1);
+                        }
+                        progress.lightUpdate();
+                    }
+                    progress.stop();
+                    System.out.printf("Checked %d skipTo calls", locations.size());
+                }
+
+            }
+        } catch (IOException e) {
+            System.err.println("Could not read alignment " + basename);
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Main method.
@@ -136,6 +188,6 @@ public class UpgradeMode extends AbstractGobyMode {
     }
 
     public void setSilent(boolean silent) {
-        this.silent=silent;
+        this.silent = silent;
     }
 }

@@ -28,6 +28,10 @@
           <required>true</required>
             <help>Name of the alignment files to upgrade.</help>
       </unflaggedOption>
-        
+       <!--switch>
+            <id>check</id>
+            <longFlag>check</longFlag>
+            <help>Check the alignemnt after upgrading </help>
+        </switch-->
     </parameters>
 </jsap>

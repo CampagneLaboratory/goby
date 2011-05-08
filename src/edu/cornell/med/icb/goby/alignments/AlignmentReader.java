@@ -75,7 +75,9 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
     /**
      * Skip all entries that have position before (targetIndex,position). This method will use the alignment index
      * when it is available to skip directly to the closest chunk start before the entry identified by targetIndex
-     * and position.
+     * and position. Please note that this method skips entries, it does not go back to previously visited entries.
+     * This is useful to simply iterate through an alignment visiting only certain regions.
+     * If you need full random access in an alignment, you need to call reposition(ref,pos) followed by skipTo(ref,pos).
      *
      * @param targetIndex The index of the target sequence to skip to.
      * @param position    The position on the target sequence.
@@ -85,7 +87,12 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
     Alignments.AlignmentEntry skipTo(int targetIndex, int position) throws IOException;
 
     /**
-     * Reposition the reader to a new target sequence and start position.
+     * Reposition the reader to a new target sequence and start position. Since 1.9.6 this method supports
+     * full random access and will reposition to locations earlier or after the current location. Goby 1.9.5-
+     * would only reposition to locations after the current location. Please be advised that calling reposition
+     * relocates to the start of the chunk that contains the entry with targetIndex and position, it does not
+     * garantee that a subsequent call to next() will return an entry at location targetIndex, position. You must
+     * call skipTo after reposition if you require this behavior.
      *
      * @param targetIndex Index of the target sequence to reposition to.
      * @param position    Position in the target sequence to reposition to.
@@ -101,7 +108,7 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
     /**
      * Read the header of this alignment.
      *
-it.unimi.dsi.fastutil.objects.Object2BooleanOpenCustomHashMap getQueryIdentifiers();     * @throws java.io.IOException If an error occurs.
+     * @throws java.io.IOException If an error occurs.
      */
     void readHeader() throws IOException;
 

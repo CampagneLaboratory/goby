@@ -40,7 +40,7 @@ public class UpgradeTo1_9_6 {
 
     public void upgrade(String basename, AlignmentReaderImpl reader) throws IOException {
         if (!"1.9.5-".equals(reader.getGobyVersion())) return;
-        
+
         final GZIPInputStream indexStream = new GZIPInputStream(new FileInputStream(basename + ".index"));
 
         final CodedInputStream codedInput = CodedInputStream.newInstance(indexStream);
@@ -78,40 +78,51 @@ public class UpgradeTo1_9_6 {
         progress.expectedUpdates = indexOffsets.size();
         progress.priority = Level.INFO;
         progress.start();
-
+        // push the very first entry to the index at offset zero. This is necessary because 1.9.5 did not include
+        // offset information and absolute position for the very first entry of the alignment.
+        Alignments.AlignmentEntry entry = reader.next();
+        previousAbsolutePosition = pushEntryToIndex(upgradedOffsets, upgradedIndexAbsolutePositions,
+                targetPositionOffsets, previousAbsolutePosition, 0, entry);
 
         for (long indexOffset : indexOffsets) {
             // for each offset in the entries file, obtain the first entry then recode absolute position:
 
-            Alignments.AlignmentEntry entry = fetchFirstEntry(reader, indexOffset);
-            //   System.out.printf("entry target=%d position=%d %n", entry.getTargetIndex(), entry.getPosition());
-            if (entry == null) {
+            entry = fetchFirstEntry(reader, indexOffset);
+            previousAbsolutePosition = pushEntryToIndex(upgradedOffsets, upgradedIndexAbsolutePositions,
+                    targetPositionOffsets, previousAbsolutePosition, indexOffset, entry);
 
-                if (verbose) {
-                    System.err.println("Error: Cannot obtain entry at start of chunk for indexOffset: " + indexOffset);
-                    System.exit(10);
-                }
-            } else {
-                int targetIndex = entry.getTargetIndex();
-                int position = entry.getPosition();
-
-                long newAbsolutePosition = targetPositionOffsets[targetIndex] + position;
-                if (newAbsolutePosition > previousAbsolutePosition) {
-                    upgradedOffsets.add(indexOffset);
-                    upgradedIndexAbsolutePositions.add(newAbsolutePosition);
-                    previousAbsolutePosition = newAbsolutePosition;
-
-                }
-            }
             progress.lightUpdate();
         }
         progress.stop();
-        //    printIndices(basename, indexOffsets, indexAbsolutePositions, upgradedIndexAbsolutePositions);
+            printIndices(basename, indexOffsets, upgradedOffsets, indexAbsolutePositions, upgradedIndexAbsolutePositions);
         writeIndex(basename, upgradedOffsets, upgradedIndexAbsolutePositions);
         upgradeHeaderVersion(basename);
         if (verbose) {
             System.out.printf("alignment %s upgraded successfully.%n", basename);
         }
+    }
+
+    private long pushEntryToIndex(LongArrayList upgradedOffsets, LongArrayList upgradedIndexAbsolutePositions, long[] targetPositionOffsets, long previousAbsolutePosition, long indexOffset, Alignments.AlignmentEntry entry) {
+        //   System.out.printf("entry target=%d position=%d %n", entry.getTargetIndex(), entry.getPosition());
+        if (entry == null) {
+
+            if (verbose) {
+                System.err.println("Error: Cannot obtain entry at start of chunk for indexOffset: " + indexOffset);
+                System.exit(10);
+            }
+        } else {
+            int targetIndex = entry.getTargetIndex();
+            int position = entry.getPosition();
+
+            long newAbsolutePosition = targetPositionOffsets[targetIndex] + position;
+            if (newAbsolutePosition > previousAbsolutePosition) {
+                upgradedOffsets.add(indexOffset);
+                upgradedIndexAbsolutePositions.add(newAbsolutePosition);
+                previousAbsolutePosition = newAbsolutePosition;
+
+            }
+        }
+        return previousAbsolutePosition;
     }
 
     private void upgradeHeaderVersion(String basename) throws IOException {
@@ -157,13 +168,15 @@ public class UpgradeTo1_9_6 {
         }
     }
 
-    private void printIndices(String basename, LongArrayList indexOffsets, LongArrayList indexAbsolutePositions, LongArrayList upgradedIndexAbsolutePositions) {
+    private void printIndices(String basename, LongArrayList indexOffsets, LongArrayList upgradedIndexOffsets,
+                              LongArrayList indexAbsolutePositions, LongArrayList upgradedIndexAbsolutePositions ) {
         int size = indexOffsets.size();
         if (verbose) {
             for (int i = 0; i < size; i++) {
 
-                System.out.printf("%s entries offset: %d pre-abs-pos: %d new-abs-pos: %d %n",
+                System.out.printf("%s entries offset: %d new-offset: %d pre-abs-pos: %d new-abs-pos: %d %n",
                         basename, indexOffsets.get(i),
+                        upgradedIndexOffsets.get(i),
                         indexAbsolutePositions.get(i),
                         upgradedIndexAbsolutePositions.get(i));
             }

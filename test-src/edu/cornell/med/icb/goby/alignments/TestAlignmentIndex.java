@@ -26,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -166,6 +167,7 @@ public class TestAlignmentIndex {
         writer.close();
 
         AlignmentReaderImpl reader = new AlignmentReaderImpl(basename1);
+        reader.readHeader();
         Alignments.AlignmentEntry entry = reader.skipTo(1, 0);
 
         assertEquals(1, entry.getTargetIndex());
@@ -185,7 +187,37 @@ public class TestAlignmentIndex {
 
         assertEquals("with modulo=1, must recover three locations.", 3, locations.size());
     }
+    @Test
+    public void testReposition() throws IOException {
+         int[] targetLengths = new int[]{100, 50, 20, 10, 5};
+        final String basename1 = FilenameUtils.concat(BASE_TEST_DIR, "align-index-error-2");
+        final AlignmentWriter writer =
+                new AlignmentWriter(basename1);
+        writer.setTargetLengths(targetLengths);
+        writer.setNumAlignmentEntriesPerChunk(1);
+        writer.setSorted(true);
+        int queryIndex = 0;
 
+        writer.setAlignmentEntry(queryIndex++, 0, 99, 30, false, constantQueryLength);
+        writer.appendEntry();
+        writer.setAlignmentEntry(queryIndex++, 1, 0, 30, false, constantQueryLength);
+        writer.appendEntry();
+        writer.setAlignmentEntry(queryIndex++, 1, 1, 30, false, constantQueryLength);
+        writer.appendEntry();
+        writer.close();
+
+        AlignmentReaderImpl reader = new AlignmentReaderImpl(basename1);
+        reader.readHeader();
+        assertNotNull(reader.skipTo(1,0));
+        // now reposition to an earlier position (since 1.9.6):
+        reader.reposition(0,99);
+        assertNotNull(reader.skipTo(1,0));
+        assertNotNull(reader.skipTo(1,1));
+             reader.reposition(0,99);
+         assertNotNull(reader.skipTo(1,0));
+        assertNotNull(reader.skipTo(1,1));
+
+    }
     /**
      * Used to log debug and informational messages.
      */

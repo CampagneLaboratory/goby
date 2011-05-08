@@ -23,6 +23,7 @@ package edu.cornell.med.icb.goby.alignments;
 import com.google.protobuf.CodedInputStream;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import edu.cornell.med.icb.goby.reads.FastBufferedMessageChunksReader;
+import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
@@ -155,23 +156,23 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
                                final int endPosition)
             throws IOException {
 
-        super(true, basename);
-        this.basename = basename;
+        super(true, getBasename(basename));
+        this.basename = getBasename(basename);
 
         try {
-            headerStream = new GZIPInputStream(new FileInputStream(basename + ".header"));
+            headerStream = new GZIPInputStream(new FileInputStream(this.basename + ".header"));
         } catch (IOException e) {
             // try not compressed for compatibility with 1.4-:
             LOG.trace("falling back to legacy 1.4- uncompressed header.");
 
-            headerStream = new FileInputStream(basename + ".header");
+            headerStream = new FileInputStream(this.basename + ".header");
         }
 
         readHeader();
         if (!indexed)
             throw new UnsupportedOperationException("The alignment must be sorted and indexed to read slices of data by reference position.");
         readIndex();
-        final FileInputStream stream = new FileInputStream(basename + ".entries");
+        final FileInputStream stream = new FileInputStream(this.basename + ".entries");
         final long startOffset = getByteOffset(startReferenceIndex, startPosition, 0);
         long endOffset = getByteOffset(endReferenceIndex, endPosition + 1, 1);
 
@@ -200,17 +201,19 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             }
         }
     }
-     /**
+
+    /**
      * Open a Goby alignment file for reading between the byte positions startOffset and endOffset.
      * This method will try to upgrade the alignment to the latest version of the Goby data structures on the fly.
+     *
      * @param startOffset Position in the file where reading will start (in bytes).
      * @param endOffset   Position in the file where reading will end (in bytes).
      * @param basename    Basename of the alignment to read.
      * @throws IOException If an error occurs opening or reading the file.
      */
-     public AlignmentReaderImpl(final long startOffset, final long endOffset, final String basename) throws IOException {
-         this(startOffset, endOffset,basename, true);
-     }
+    public AlignmentReaderImpl(final long startOffset, final long endOffset, final String basename) throws IOException {
+        this(startOffset, endOffset, basename, true);
+    }
 
     /**
      * Open a Goby alignment file for reading between the byte positions startOffset and endOffset.
@@ -222,28 +225,28 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      * @throws IOException If an error occurs opening or reading the file.
      */
     public AlignmentReaderImpl(final long startOffset, final long endOffset, final String basename, boolean upgrade) throws IOException {
-        super(upgrade, basename);
-        this.basename = basename;
+        super(upgrade, getBasename(basename));
+        this.basename = getBasename(basename);
         final FileInputStream stream = new FileInputStream(basename + ".entries");
         alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset, endOffset, new FastBufferedInputStream(stream));
         LOG.trace("start offset :" + startOffset + " end offset " + endOffset);
         try {
-            headerStream = new GZIPInputStream(new FileInputStream(basename + ".header"));
+            headerStream = new GZIPInputStream(new FileInputStream(this.basename + ".header"));
         } catch (IOException e) {
             // try not compressed for compatibility with 1.4-:
             LOG.trace("falling back to legacy 1.4- uncompressed header.");
 
-            headerStream = new FileInputStream(basename + ".header");
+            headerStream = new FileInputStream(this.basename + ".header");
         }
         stats = new Properties();
-        final File statsFile = new File(basename + ".stats");
+        final File statsFile = new File(this.basename + ".stats");
         if (statsFile.exists()) {
             Reader statsFileReader = null;
             try {
                 statsFileReader = new FileReader(statsFile);
                 stats.load(statsFileReader);
             } catch (IOException e) {
-                LOG.warn("cannot load properties for basename: " + basename, e);
+                LOG.warn("cannot load properties for basename: " + this.basename, e);
             } finally {
                 IOUtils.closeQuietly(statsFileReader);
             }
@@ -255,7 +258,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     }
 
     public AlignmentReaderImpl(final String basename) throws IOException {
-        this(0, Long.MAX_VALUE, getBasename(basename) ,true);
+        this(0, Long.MAX_VALUE, getBasename(basename), true);
 
     }
 
@@ -299,13 +302,16 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         return collection != null ? collection.getAlignmentEntriesCount() : 0;
     }
 
+    private IndexedIdentifier identifiers;
+    private DoubleIndexedIdentifier back;
+
     /**
      * Returns true if the input has more entries.
      *
      * @return true if the input has more entries, false otherwise.
      */
     public boolean hasNext() {
-        //   System.out.println("hasNext");
+   
         if (nextEntry != null) return true;
 
         int entryTargetIndex;
@@ -324,6 +330,8 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             if (entryTargetIndex > endReferenceIndex ||
                     (entryTargetIndex == endReferenceIndex && position > endPosition)) {
                 nextEntry = null;
+                nextEntryNoFilter = null;
+                collection = null;
                 return false;
             }
         } while (entryTargetIndex < startReferenceIndex ||
@@ -344,8 +352,15 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             throw new NoSuchElementException();
         }
         try {
+            final int position = nextEntry.getPosition();
+            final int targetIndex = nextEntry.getTargetIndex();
             if (LOG.isTraceEnabled()) {
-                LOG.trace(String.format("Returning next entry at position %s/%d%n", getTargetIdentifiers().get(new MutableString(nextEntry.getTargetIndex())), nextEntry.getPosition()));
+                if (back == null) {
+                    identifiers = getTargetIdentifiers();
+                    back = new DoubleIndexedIdentifier(identifiers);
+                }
+
+                LOG.trace(String.format("Returning next entry at position %s/%d", back.getId(nextEntry.getTargetIndex()), nextEntry.getPosition()));
             }
             return nextEntry;
 
@@ -433,7 +448,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         if (LOG.isTraceEnabled()) {
             LOG.trace(String.format("skipTo %d/%d%n", targetIndex, positionChanged));
         }
-        reposition(targetIndex, positionChanged);
+        repositionInternal(targetIndex, positionChanged,false);
         Alignments.AlignmentEntry entry = null;
         boolean hasNext = false;
         while ((hasNext = hasNext()) &&
@@ -459,14 +474,22 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     public final void reposition(final int targetIndex, final int position) throws IOException {
         readHeader();
         if (!sorted) {
-            throw new UnsupportedOperationException("skipTo cannot be used with unsorted alignments.");
+            throw new UnsupportedOperationException("reposition cannot be used with unsorted alignments.");
         }
 
         readIndex();
-        repositionInternal(targetIndex, position);
+        repositionInternal(targetIndex, position, true);
     }
 
-    private void repositionInternal(final int targetIndex, final int position) throws IOException {
+    /**
+     * Reposition to an genomic position. The goBack flag when true allows to reposition to positions that
+     * we have already passed. When false, reposition will only advance to future positions.
+     * @param targetIndex
+     * @param position
+     * @param goBack
+     * @throws IOException
+     */
+    private void repositionInternal(final int targetIndex, final int position, boolean goBack) throws IOException {
         if (!indexLoaded) {
             return;
         }
@@ -476,7 +499,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         // NB offsetIndex contains absolutePosition in the first entry, but the chunk before it also likely
         // contains entries with this absolute position. We therefore substract one to position on the chunk
         // before.
-        offsetIndex = offsetIndex >= indexOffsets.size() ? indexOffsets.size() - 1 : offsetIndex - 1;
+        offsetIndex = offsetIndex >= indexOffsets.size() ? indexOffsets.size() - 1 : Math.max(offsetIndex - 1,0);
 
 
         if (offsetIndex < 0) {
@@ -494,6 +517,12 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         if (newPosition >= currentPosition) {
 
             seek(newPosition);
+       } else {
+          if (goBack) {
+              seek(newPosition);
+            //  System.out.printf("Skiping to newPos=%d from %d %n",newPosition,currentPosition );
+          }
+         //   throw new IllegalArgumentException("Trying to skipTo to a position before the current position");
         }
     }
 
@@ -672,8 +701,6 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             alignmentEntryReader.close();
         }
     }
-
-
 
 
     public Iterator<Alignments.AlignmentEntry> iterator() {
