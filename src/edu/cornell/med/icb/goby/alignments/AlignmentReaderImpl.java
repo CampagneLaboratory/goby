@@ -482,12 +482,12 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     }
 
     /**
-     * Reposition to an genomic position. The goBack flag when true allows to reposition to positions that
+     * Reposition to an genomic position. The goBack flag, when true, allows to reposition to positions that
      * we have already passed. When false, reposition will only advance to future positions.
-     * @param targetIndex
-     * @param position
-     * @param goBack
-     * @throws IOException
+     * @param targetIndex index of the target sequence to reposition to.
+     * @param position  position of the location to reposition to.
+     * @param goBack If true, the method will reposition to past positions, otherwise, only reposition to future locations.
+     * @throws IOException If an error occurs repositioning.
      */
     private void repositionInternal(final int targetIndex, final int position, boolean goBack) throws IOException {
         if (!indexLoaded) {
@@ -519,10 +519,10 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             seek(newPosition);
        } else {
           if (goBack) {
+              // only reposition to past locations if we are called directly through reposition. Otherwise, we honor
+              // the skipTo contract and do not reposition to previously visited locations.
               seek(newPosition);
-            //  System.out.printf("Skiping to newPos=%d from %d %n",newPosition,currentPosition );
           }
-         //   throw new IllegalArgumentException("Trying to skipTo to a position before the current position");
         }
     }
 
