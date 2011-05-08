@@ -62,7 +62,7 @@ public class TestSkipTo {
             chunkIndex = entryIndex / maxPerChunk;
         }
         reader.close();
-        //   checkSlices(locations, filename);
+        checkSlices(locations, filename);
         checkSkipTo(locations, filename);
     }
 
