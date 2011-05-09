@@ -1,4 +1,6 @@
 development -> 1.9.6
+ - VCFParser now splits headers by tab instead of whitespace so column names that contain spaces
+   are read correctly.
  - AlignmentReaderImpl now supports full random access to an alignment. Use reposition(ref,pos) followed
    by skipTo(ref,pos) to obtain the first entry matching at location (ref,pos). Prior to 1.9.6, the
    reposition method would not reposition to a location already visited forcing clients to close the

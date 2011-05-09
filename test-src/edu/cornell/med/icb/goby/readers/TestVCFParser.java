@@ -21,7 +21,9 @@ package edu.cornell.med.icb.goby.readers;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnInfo;
 import edu.cornell.med.icb.goby.readers.vcf.Columns;
 import edu.cornell.med.icb.goby.readers.vcf.VCFParser;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
@@ -54,6 +56,14 @@ public class TestVCFParser {
         assertTrue(format.hasField("SP"));
         assertEquals("Likelihoods for RR,RA,AA genotypes (R=ref,A=alt)",
                 format.getField("GL").description);
+    }
+
+    @Test
+    public void tsvHeaderHasSpaces() throws IOException, VCFParser.SyntaxException {
+        VCFParser parser = new VCFParser("test-data/vcf/tsv-with-header-spaces.tsv");
+        parser.readHeader();
+        assertEquals(48, parser.countAllFields());
+        parser.close();
     }
 
     @Test

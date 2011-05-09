@@ -521,7 +521,7 @@ public class VCFParser implements Closeable {
         // System.out.printf("header line:%s%n", line);
         // drop the #
         line = line.substring(1);
-        String[] columnNames = line.toString().split("[\\s]");
+        String[] columnNames = line.toString().split("[\\t]");
 
         for (String columnName : columnNames) {
 

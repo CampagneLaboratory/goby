@@ -36,8 +36,6 @@ import java.io.*;
 import java.util.Random;
 import java.util.zip.GZIPInputStream;
 
-import com.sun.tools.jdi.EventSetImpl;
-
 /**
  * Creates fastq files with simulated reads. Simulation can create bisulfite treated reads (or not treated)
  * with mutations on C bases at some rate.
