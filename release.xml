@@ -134,7 +134,9 @@
     <target name="cpp-source" depends="export" description="Assemble a cpp source code release">
         <zip destfile="${cpp-srcfile}" comment="Goby version: ${tag}">
             <!-- don't include all the libraries and data -->
-            <fileset dir="${exportdir}/${tag}/cpp" />
+            <fileset dir="${exportdir}">
+                <include name="${tag}/cpp/**"/>
+            </fileset>
         </zip>
     </target>
 
