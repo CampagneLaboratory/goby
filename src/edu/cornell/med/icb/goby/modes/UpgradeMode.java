@@ -111,7 +111,7 @@ public class UpgradeMode extends AbstractGobyMode {
             if (!silent) {
                 System.out.printf("processing %s with version %s %n", basename, version);
             }
-            if (GobyVersion.isOlder(version, "1.9.6")) {
+            if (GobyVersion.isOlder(version, "goby_1.9.6")) {
                 if (reader.isIndexed()) {
                     // we need to upgrade 1.9.5- alignment indices to the new indexing scheme implemented in 1.9.6+:
                     UpgradeTo1_9_6 upgrader = new UpgradeTo1_9_6();
