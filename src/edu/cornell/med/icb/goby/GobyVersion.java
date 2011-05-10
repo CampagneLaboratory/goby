@@ -34,9 +34,6 @@ import java.util.Date;
 public class GobyVersion {
     private static String[] versionPairs = {
             "1.9.5-", "20110101000000",
-            "1.9.5", "20110501000000",
-            "1.9.6", "20110506200142", // TODO update to correct compile time.
-            "1.9.6+", now()
     };
 
     private static String now() {
@@ -77,9 +74,15 @@ public class GobyVersion {
 
     }
 
+    /**
+     * Reduce a version string to a date in the format yyyymmddHHmmss.
+     * @param version String obtained from the Goby jar manifest.
+     * @return Date the version was packaged.
+     */
     private static String reduce(String version) {
-        if (version.startsWith("development")) {
-            // format "development (version)"
+        if (version.indexOf('(')>=0 && version.indexOf(')')>=0)  {
+
+            // format "development (DATE)"  OR "goby_1.9.6 (DATE)
             String tokens[] = version.split("[()]");
             final String token = tokens[1];
             return token;
