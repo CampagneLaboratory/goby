@@ -2,7 +2,6 @@
 <project name="goby-release" basedir="." default="release">
     <import file="${basedir}/buildsupport/build.xml"/>
 
-    <property name="label" value="release"/>
     <property file="${config}/release.properties"/>
 
     <tstamp>
@@ -12,6 +11,7 @@
 	<target name="init" depends="getrevision, gettag">
 	    <property name="exportdir" value="tmp-${tag}"/>
 		<property name="releasedir" value="release-${tag}"/>
+        <property name="label" value="${tag}"/>
 
     	<mkdir dir="${releasedir}"/>
 
@@ -173,7 +173,7 @@
 
 	<target name="jar" depends="export" description="create and package the jar files">
         <ant target="jar" dir="${exportdir}/${tag}">
-        	<property name="buildstamp" value="${tag}"/>
+        	<property name="buildstamp" value="${exportdate}"/>
             <property name="classes" location="${exportdir}/${tag}/classes"/>
             <property name="config" location="${exportdir}/${tag}/config"/>
             <property name="lib" location="${exportdir}/${tag}/lib"/>
