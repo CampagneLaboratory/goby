@@ -16,6 +16,7 @@
     	<mkdir dir="${releasedir}"/>
 
 	    <property name="srcfile" value="${releasedir}/${tag}-src.zip"/>
+        <property name="cpp-srcfile" value="${releasedir}/${tag}-cpp.zip"/>
         <property name="depsfile" value="${releasedir}/${tag}-deps.zip"/>
 	    <property name="apidocfile" value="${releasedir}/${tag}-apidoc.zip"/>
 	    <property name="datafile" value="${releasedir}/${tag}-data.zip"/>
@@ -78,8 +79,9 @@
     </target>
 
     <target name="release" description="Tag and release build"
-	    	depends="tag, source, jar, data, dependencies, javadocs, goby">
+	    	depends="tag, source, cpp-source, jar, data, dependencies, javadocs, goby">
         <!-- make links to the release files to match what the web server expects -->
+        <symlink link="${releasedir}/goby-cpp.zip" resource="${tag}-cpp.zip"/>
 	    <symlink link="${releasedir}/goby-src.zip" resource="${tag}-src.zip"/>
         <symlink link="${releasedir}/goby-deps.zip" resource="${tag}-deps.zip"/>
 	    <symlink link="${releasedir}/goby-apidoc.zip" resource="${tag}-apidoc.zip"/>
@@ -128,6 +130,13 @@
 			</fileset>
        	</zip>
 	</target>
+
+    <target name="cpp-source" depends="export" description="Assemble a cpp source code release">
+        <zip destfile="${cpp-srcfile}" comment="Goby version: ${tag}">
+            <!-- don't include all the libraries and data -->
+            <fileset dir="${exportdir}/cpp" />
+        </zip>
+    </target>
 
     <target name="data" depends="export" description="Assemble a data release">
         <zip destfile="${datafile}" comment="Goby version: ${tag}">
