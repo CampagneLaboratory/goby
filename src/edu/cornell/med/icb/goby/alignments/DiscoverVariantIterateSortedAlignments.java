@@ -23,10 +23,14 @@ package edu.cornell.med.icb.goby.alignments;
 import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.util.WarningCounter;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.objects.*;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -93,6 +97,10 @@ public class DiscoverVariantIterateSortedAlignments
     public void setGenome(RandomAccessSequenceCache genome) {
         this.genome = genome;
 
+    }
+    @Override
+    public RandomAccessSequenceInterface getGenome() {
+        return genome;
     }
 
     public class PositionBaseInfo {
@@ -161,7 +169,7 @@ public class DiscoverVariantIterateSortedAlignments
             IntSet distinctReadIndices = new IntArraySet();
 
             for (edu.cornell.med.icb.goby.alignments.PositionBaseInfo info : list) {
-                if (info.matchesReference && referenceBase!='\0') {
+                if (info.matchesReference && referenceBase != '\0') {
                     // from and to have to be set if the position matches the reference.
                     info.from = referenceBase;
                     info.to = referenceBase;

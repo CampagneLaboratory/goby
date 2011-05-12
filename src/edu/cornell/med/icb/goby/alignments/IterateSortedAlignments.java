@@ -22,6 +22,10 @@ package edu.cornell.med.icb.goby.alignments;
 
 import com.google.protobuf.ByteString;
 import com.martiansoftware.jsap.JSAPResult;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
+import edu.cornell.med.icb.goby.alignments.processors.AlignmentProcessorInterface;
+import edu.cornell.med.icb.goby.alignments.processors.DummyProcessor;
+import edu.cornell.med.icb.goby.alignments.processors.RealignmentProcessor;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -59,6 +63,7 @@ public abstract class IterateSortedAlignments<T> {
     private int startFlapLength;
 
     private AlignmentReaderFactory alignmentReaderFactory = new DefaultAlignmentReaderFactory();
+    private boolean realign=false;
 
     /**
      * Set the length of the start flap. If length is larger than zero, the iterator will start reading at position
@@ -221,7 +226,7 @@ public abstract class IterateSortedAlignments<T> {
                 startReferenceIndex = referenceIds.getIndex(startTokens[0]);
                 endReferenceIndex = referenceIds.getIndex(endTokens[0]);
                 sortedReaders = new ConcatSortedAlignmentReader(alignmentReaderFactory,
-                        false, 
+                        false,
                         basenames,
                         startReferenceIndex,
                         Math.max(0, startPosition - startFlapLength),
@@ -255,7 +260,11 @@ public abstract class IterateSortedAlignments<T> {
         boolean first = true;
         ProgressLogger pg = new ProgressLogger(LOG);
         pg.start();
-        while ((alignmentEntry = sortedReaders.skipTo(currentMinTargetIndex, 0)) != null) {
+        
+        final AlignmentProcessorInterface realigner = realign ? new RealignmentProcessor(sortedReaders) :
+                new DummyProcessor(sortedReaders);
+        realigner.setGenome(getGenome());
+        while ((alignmentEntry = realigner.nextRealignedEntry(currentMinTargetIndex, 0)) != null) {
 
             pg.lightUpdate();
             numAlignmentEntries = advanceReference(numAlignmentEntries);
@@ -265,7 +274,7 @@ public abstract class IterateSortedAlignments<T> {
                 processAllPreviousPositions(lastTarget, positionToBases);
             }
             int queryLength = alignmentEntry.getQueryLength();
-            assert queryLength!=0: "queryLength should never be zero";
+            assert queryLength != 0 : "queryLength should never be zero";
             currentPosition = alignmentEntry.getPosition();
             boolean forwardStrand = !alignmentEntry.getMatchingReverseStrand();
             if (lastRemovedPosition == -1) {
@@ -451,6 +460,7 @@ public abstract class IterateSortedAlignments<T> {
         pg.stop();
     }
 
+
     private int advanceReadIndex(boolean forwardStrand, int currentReadIndex) {
         currentReadIndex += forwardStrand ? 1 : -1;
         // System.out.printf(" read-index=%d ", currentReadIndex);
@@ -563,5 +573,7 @@ public abstract class IterateSortedAlignments<T> {
         return referenceIds.getId(targetIndex);
     }
 
-
+    public RandomAccessSequenceInterface getGenome() {
+        return null;
+    }
 }

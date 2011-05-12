@@ -20,6 +20,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.log4j.Logger;
@@ -38,9 +39,10 @@ public abstract class IterateSortedAlignmentsListImpl
 
     /**
      * Process a list of bases at a given reference position.
-     * @param referenceIndex Index of the reference sequence where these bases align.
+     *
+     * @param referenceIndex       Index of the reference sequence where these bases align.
      * @param intermediatePosition Position is zero-based
-     * @param positionBaseInfos List of base information for bases that aligned.
+     * @param positionBaseInfos    List of base information for bases that aligned.
      */
     public abstract void processPositions(int referenceIndex, int intermediatePosition, ObjectArrayList<PositionBaseInfo> positionBaseInfos);
 
@@ -50,22 +52,23 @@ public abstract class IterateSortedAlignmentsListImpl
                                      int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(String.format("RB: queryIndex=%d\tref_position=%d\tread_index=%d",
-                alignmentEntry.getQueryIndex(), currentRefPosition, currentReadIndex));
+                    alignmentEntry.getQueryIndex(), currentRefPosition, currentReadIndex));
         }
 
         PositionBaseInfo info = new PositionBaseInfo();
 
         info.readerIndex = sortedReaders.activeIndex;
-   //     System.out.printf("observing ref readerIndex=%d%n",info.readerIndex);
+        //     System.out.printf("observing ref readerIndex=%d%n",info.readerIndex);
         info.readIndex = currentReadIndex;
         info.from = '\0';
         info.to = '\0';
         info.matchesReference = true;
-        info.position = currentRefPosition-1; // store 0-based position
+        info.position = currentRefPosition - 1; // store 0-based position
         info.qualityScore = 40;
-        info.matchesForwardStrand=!alignmentEntry.getMatchingReverseStrand();
+        info.matchesForwardStrand = !alignmentEntry.getMatchingReverseStrand();
         addToFuture(positionToBases, info);
     }
+
 
 
     public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
@@ -84,15 +87,15 @@ public abstract class IterateSortedAlignmentsListImpl
 
         PositionBaseInfo info = new PositionBaseInfo();
         info.readerIndex = sortedReaders.activeIndex;
-    //    System.out.printf("observing var readerIndex=%d%n",info.readerIndex);
+        //    System.out.printf("observing var readerIndex=%d%n",info.readerIndex);
 
         info.readIndex = currentReadIndex;
         info.from = fromChar;
         info.to = toChar;
         info.matchesReference = false;
-        info.position = currentRefPosition-1; // store 0-based position
-        info.qualityScore=toQual;
-        info.matchesForwardStrand=!alignmentEntry.getMatchingReverseStrand();
+        info.position = currentRefPosition - 1; // store 0-based position
+        info.qualityScore = toQual;
+        info.matchesForwardStrand = !alignmentEntry.getMatchingReverseStrand();
         addToFuture(positionToBases, info);
     }
 

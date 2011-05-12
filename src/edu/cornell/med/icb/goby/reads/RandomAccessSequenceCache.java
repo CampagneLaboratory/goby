@@ -52,7 +52,7 @@ import java.util.zip.GZIPInputStream;
  *         Date: May 19, 2009
  *         Time: 3:08:21 PM
  */
-public class RandomAccessSequenceCache {
+public class RandomAccessSequenceCache implements RandomAccessSequenceInterface {
     private ObjectArrayList<LongArrayBitVector> referenceIgnoreLists;
     private Object2IntMap<String> referenceNameMap;
     private ObjectArrayList<byte[]> compressedData;
