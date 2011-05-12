@@ -58,7 +58,7 @@ public class VCFWriter {
     private CharSequence[] formatFieldIds;
     private MutableString ref;
     private MutableString alt;
-    private CharSequence qual;
+    private CharSequence qual=".";
     private CharSequence filter;
 
     private boolean[] formatFieldActive;
@@ -206,7 +206,7 @@ public class VCFWriter {
         filter = "";
         id = "";
         chrom = "";
-        qual = "";
+        qual = ".";
         final ColumnInfo info = columns.find("INFO");
 
         // constructs an array of infoIds to keep the INFO field keys (use to write key= in front of each field)
@@ -316,7 +316,7 @@ public class VCFWriter {
         altAlleles.clear();
         refAlleles.clear();
         position = -1;
-        qual = "";
+        qual = ".";
     }
 
     MutableString buffer = new MutableString();

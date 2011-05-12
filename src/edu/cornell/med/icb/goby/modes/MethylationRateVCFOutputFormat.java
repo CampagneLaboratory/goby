@@ -91,7 +91,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         this.minimumEventThreshold = minimumEventThreshold;
     }
 
-    private int minimumEventThreshold=1;
+    private int minimumEventThreshold = 1;
 
 
     public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
@@ -150,8 +150,10 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
                 1, ColumnType.Integer, "Total depth of sequencing across groups at this site");
 
         statWriter.defineSamples(samples);
-        methylationRateFieldIndex = statWriter.defineField("FORMAT", "MR", 1, ColumnType.Integer, "Methylation rate. 0-100%, 100% indicate fully methylated.");
+        // define Genotype as first field (required by VCF specification):
         genotypeFormatter.defineGenotypeField(statWriter);
+        methylationRateFieldIndex = statWriter.defineField("FORMAT", "MR", 1, ColumnType.Integer, "Methylation rate. 0-100%, 100% indicate fully methylated.");
+
         statWriter.writeHeader();
     }
 
@@ -184,7 +186,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         char refBase = sampleCounts[0].referenceBase;
         if (refBase != 'C' && refBase != 'G') return;
         fillMethylationCountArrays(sampleCounts, list, position, refBase);
-        if (eventCountAtSite <minimumEventThreshold) return;
+        if (eventCountAtSite < minimumEventThreshold) return;
         statWriter.setInfo(depthFieldIndex, list.size());
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 
@@ -258,7 +260,6 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         statWriter.setInfo(log2OddsRatioStandardErrorColumnIndex, logOddsRatioSE);
         statWriter.setInfo(log2OddsRatioZColumnIndex, log2OddsRatioZValue);
         statWriter.setInfo(fisherExactPValueColumnIndex, fisherP);
-
         genotypeFormatter.writeGenotypes(statWriter, sampleCounts);
 
         statWriter.writeRecord();
@@ -285,9 +286,9 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
 
         for (PositionBaseInfo info : list) {
             //@@@! only look at the strand that the read matches:
-           if (refBase == 'G' && info.matchesForwardStrand) continue;
-           if (refBase == 'C' && !info.matchesForwardStrand) continue;
-            
+            if (refBase == 'G' && info.matchesForwardStrand) continue;
+            if (refBase == 'C' && !info.matchesForwardStrand) continue;
+
             if (refBase == 'C' || refBase == 'G') {
                 // readBase is always given in the forward strand..
                 char readBase = info.matchesReference ? refBase : info.to;
