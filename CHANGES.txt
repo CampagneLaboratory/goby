@@ -3,6 +3,7 @@ development -> 1.9.6.1
    field and write genotype as the first field in the methylation output format. Additionally, we only
    write a VCF line if the site can be typed in at least on of the samples. This changes make Goby VCF
    output compatible with the IGV 2.0 VCFTrack.
+ - Fix a bug in merge that could trigger a ArrayIndexOutOfBoundsException with some alignments.
    
 1.9.6
  - AlignmentReaderImpl now supports full random access to an alignment. Use reposition(ref,pos) followed

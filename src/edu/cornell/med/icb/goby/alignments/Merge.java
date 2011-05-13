@@ -121,10 +121,7 @@ public class Merge {
             mergedReferenceIndex = constructTargetIndexPermutations(mergedReferenceIndex,
                     mergedTargetIdentifiers, mergedTargetLengths, reader);
 
-            if (reader.hasNext()) {
-                final Alignments.AlignmentEntry entry = reader.next();
-                minQueryIndex = Math.min(minQueryIndex, entry.getQueryIndex());
-            }
+            minQueryIndex = Math.min(minQueryIndex, reader.getSmallestSplitQueryIndex());
 
             numberOfReadsSet.add(reader.getNumberOfQueries());
             reader.close();
@@ -133,6 +130,7 @@ public class Merge {
             for (final int queryIndex : tmhReader.getQueryIndices()) {
                 minQueryIndex = Math.min(minQueryIndex, queryIndex);
             }
+
         }
         if (numberOfReadsSet.size() != 1) {
             message("Aborting: the input alignments must have exactly the same number of reads, "
@@ -314,7 +312,7 @@ public class Merge {
      * @throws IOException error processing
      */
     public static int prepareMergedTooManyHits(
-            final String outputFile,  int numberOfReads, final int minQueryIndex,
+            final String outputFile, int numberOfReads, final int minQueryIndex,
             final String... basenames) throws IOException {
         final Int2IntMap tmhMap = new Int2IntOpenHashMap();
         tmhMap.defaultReturnValue(0);
