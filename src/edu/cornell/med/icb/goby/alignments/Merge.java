@@ -386,7 +386,10 @@ public class Merge {
         final DoubleIndexedIdentifier backward = new DoubleIndexedIdentifier(targetIdentifers);
 
         for (int i = 0; i < reader.getNumberOfTargets(); i++) {
-            final int newIndex = mergedReferenceIndex++;
+
+            MutableString id = backward.size() != 0 ? backward.getId(i) :
+                    new MutableString(String.valueOf(mergedTargetIdentifiers.size()));
+            final int newIndex = mergedTargetIdentifiers.registerIdentifier(id);
             tempPermutation.put(i, newIndex);
 
             final MutableString targetId = backward.getId(i);
@@ -395,7 +398,7 @@ public class Merge {
                     LOG.debug("tempPermutation associating targetId: " + targetId
                             + " to index " + newIndex);
                 }
-                mergedTargetIdentifiers.put(targetId, newIndex);
+                mergedTargetIdentifiers.registerIdentifier(targetId);
                 final int targetLength;
                 if (i < targetLengthCount) {
                     targetLength = targetLengths[i];
@@ -403,7 +406,10 @@ public class Merge {
                     targetLength = 0;
                 }
                 mergedTargetLengths.put(newIndex, targetLength);
+            } else {
+
             }
+
         }
 
         // transfer target index permutation to array for fast access:
@@ -424,7 +430,7 @@ public class Merge {
             newPermutation[key] = tempPermutation.get(key);
         }
         referenceIndexPermutation.add(newPermutation);
-        return mergedReferenceIndex;
+        return mergedTargetIdentifiers.size();
     }
 
     /**
