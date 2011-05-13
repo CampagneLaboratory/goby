@@ -57,19 +57,23 @@ extern "C" {
         writerHelper->qualityAdjustment = 0;
         writerHelper->samHelper = NULL;
         writerHelper->alignerToGobyTargetIndexMap = NULL;
+        writerHelper->alignmentWriter->setQueryLengthsStoredInEntries(true);
 	}
 
     int gobyAlignments_getQualityAdjustment(CAlignmentsWriterHelper *writerHelper) {
         return writerHelper->qualityAdjustment;
     }
     void gobyAlignments_setQualityAdjustment(CAlignmentsWriterHelper *writerHelper, int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setQualityAdjustment=%d\n", value));
         writerHelper->qualityAdjustment = value;
     }
     void gobyAlignments_setAlignerName(CAlignmentsWriterHelper *writerHelper, char *value) {
+        debug(fprintf(stderr,"gobyAlEntry_setAlignerName=%s\n", value));
         string valueStr(value);
         writerHelper->alignmentWriter->setAlignerName(valueStr);
     }
     void gobyAlignments_setAlignerVersion(CAlignmentsWriterHelper *writerHelper, char *value) {
+        debug(fprintf(stderr,"gobyAlEntry_setAlignerVersion=%s\n", value));
         string valueStr(value);
         writerHelper->alignmentWriter->setAlignerVersion(valueStr);
     }
@@ -237,6 +241,7 @@ extern "C" {
         writerHelper->alignmentEntry->set_query_length(value);
     }
     void gobyAlEntry_setMappingQuality(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setMappingQuality=%u\n", value));
         writerHelper->alignmentEntry->set_mapping_quality(value);
     }
 
@@ -307,38 +312,48 @@ extern "C" {
     }
 
     void gobyAlEntry_setFragmentIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setFragmentIndex=%u\n", value));
         writerHelper->alignmentEntry->set_fragment_index(value);
     }
 
     void gobyAlEntry_setInsertSize(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setInsertSize=%u\n", value));
         writerHelper->alignmentEntry->set_insert_size(value);
     }
 
     // These are only used when dealing with a Query Pair
     void gobyAlEntry_setPairFlags(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setPairFlags=%u\n", value));
         writerHelper->alignmentEntry->set_pair_flags(value);
     }
     void gobyAlEntry_setPairTargetIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setPairTargetIndex=%u\n", value));
         writerHelper->alignmentEntry->mutable_pair_alignment_link()->set_target_index(value);
     }
     void gobyAlEntry_setPairFragmentIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setPairFragmentIndex=%u\n", value));
         writerHelper->alignmentEntry->mutable_pair_alignment_link()->set_fragment_index(value);
     }
     void gobyAlEntry_setPairPosition(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setPairPosition=%u\n", value));
         writerHelper->alignmentEntry->mutable_pair_alignment_link()->set_position(value);
     }
 
     // These are only used when dealing with a Splice
     void gobyAlEntry_setSplicedFlags(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setSplicedFlags=%u\n", value));
         writerHelper->alignmentEntry->set_spliced_flags(value);
     }
     void gobyAlEntry_setSplicedTargetIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setSplicedTargetIndex=%u\n", value));
         writerHelper->alignmentEntry->mutable_spliced_alignment_link()->set_target_index(value);
     }
     void gobyAlEntry_setSplicedFragmentIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setSplicedFragmentIndex=%u\n", value));
         writerHelper->alignmentEntry->mutable_spliced_alignment_link()->set_fragment_index(value);
     }
     void gobyAlEntry_setSplicedPosition(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setSplicedPosition=%u\n", value));
         writerHelper->alignmentEntry->mutable_spliced_alignment_link()->set_position(value);
     }
 

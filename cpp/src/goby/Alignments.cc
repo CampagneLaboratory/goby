@@ -293,6 +293,10 @@ namespace goby {
     header.add_target_length(targetLength);
   }
 
+  void AlignmentWriter::setQueryLengthsStoredInEntries(bool value) {
+    header.set_query_lengths_stored_in_entries(value);
+  }
+
   void AlignmentWriter::setTargetLengths(const unsigned* target_lengths) {
     int num_elements = sizeof(target_lengths) / sizeof(target_lengths[0]);
     this->target_lengths.resize(num_elements);

@@ -159,6 +159,8 @@ namespace goby {
     void addTargetLength(const google::protobuf::uint32 targetLength);
     // NOTE: Query Length setters are not provided - this information is no longer in the header
 
+    void setQueryLengthsStoredInEntries(bool value);
+
     void addTargetIdentifier(const std::string& targetName, const google::protobuf::uint32 targetIndex);
     unsigned addQueryIdentifier(const std::string& queryIdentifier);
     void addQueryIdentifierWithIndex(const std::string& queryIdentifier, unsigned newQueryIndex);
