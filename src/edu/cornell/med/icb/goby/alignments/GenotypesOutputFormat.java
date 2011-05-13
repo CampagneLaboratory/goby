@@ -103,8 +103,10 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
         writeGenotypes(statsWriter, sampleCounts);
 
         writeZygozity(sampleCounts);
-
-        statsWriter.writeRecord();
+        if (alleleSet.size() > 0) {
+            // Do not write record if alleleSet is empty, IGV VCF track cannot handle that.
+            statsWriter.writeRecord();
+        }
     }
 
     private void writeZygozity(SampleCountInfo[] sampleCounts) {
