@@ -91,8 +91,8 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         // check if we still have entries in the previously active target:
 
         final InfoForTarget backInfo; // the pool info we will use to dequeue the entry at the back of the window
-        final InfoForTarget altBackInfo = targetInfo.get(previousActiveTargetIndex);
-        if (altBackInfo.entriesInWindow.isEmpty()) {
+        final InfoForTarget altBackInfo = previousActiveTargetIndex>=0?targetInfo.get(previousActiveTargetIndex):null;
+        if (altBackInfo==null || altBackInfo.entriesInWindow.isEmpty()) {
             // we are done with the previous active target, update to current target:
             final int currentTargetIndex = targetInfo.size() - 1;
             previousActiveTargetIndex = currentTargetIndex;
