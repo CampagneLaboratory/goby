@@ -1,6 +1,8 @@
 development -> 1.9.6.1
  - Patched VCF output for compatibility with VCF specification. Specifically, we now write . in the QUAL
-   field and write genotype as the first field in the methylation output format.
+   field and write genotype as the first field in the methylation output format. Additionally, we only
+   write a VCF line if the site can be typed in at least on of the samples. This changes make Goby VCF
+   output compatible with the IGV 2.0 VCFTrack.
    
 1.9.6
  - AlignmentReaderImpl now supports full random access to an alignment. Use reposition(ref,pos) followed
