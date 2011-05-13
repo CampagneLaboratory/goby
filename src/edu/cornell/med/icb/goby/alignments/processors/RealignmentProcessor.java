@@ -72,18 +72,18 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
 
     public Alignments.AlignmentEntry nextRealignedEntry(final int targetIndex, final int position) throws IOException {
 
-       int minTargetIndex=Integer.MAX_VALUE;
+        int minTargetIndex = Integer.MAX_VALUE;
         // push entries to the pool until we have a pool windowLength wide:
         Alignments.AlignmentEntry entry;
         do {
             entry = iterator.skipTo(targetIndex, position);
             if (entry != null) {
-                minTargetIndex=Math.min(minTargetIndex, entry.getTargetIndex());
+                minTargetIndex = Math.min(minTargetIndex, entry.getTargetIndex());
                 final int entryTargetIndex = entry.getTargetIndex();
                 final InfoForTarget frontInfo = reallocateTargetInfo(entryTargetIndex);
                 pushEntryToPool(frontInfo, position, entry);
-                if (entryTargetIndex!=minTargetIndex) {
-                    windowStartPosition=entry.getPosition();
+                if (entryTargetIndex != minTargetIndex) {
+                    windowStartPosition = entry.getPosition();
                 }
             }
         }
@@ -91,8 +91,8 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         // check if we still have entries in the previously active target:
 
         final InfoForTarget backInfo; // the pool info we will use to dequeue the entry at the back of the window
-        final InfoForTarget altBackInfo = previousActiveTargetIndex>=0?targetInfo.get(previousActiveTargetIndex):null;
-        if (altBackInfo==null || altBackInfo.entriesInWindow.isEmpty()) {
+        final InfoForTarget altBackInfo = previousActiveTargetIndex >= 0 ? targetInfo.get(previousActiveTargetIndex) : null;
+        if (altBackInfo == null || altBackInfo.entriesInWindow.isEmpty()) {
             // we are done with the previous active target, update to current target:
             final int currentTargetIndex = targetInfo.size() - 1;
             previousActiveTargetIndex = currentTargetIndex;
@@ -107,10 +107,6 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         if (backInfo.entriesInWindow.isEmpty()) return null;
         Alignments.AlignmentEntry returnedEntry = backInfo.entriesInWindow.remove();
 
-        // TODO handle the case when more entries in the pool are from the previous reference.
-        // but we switch to a new one:
-
-       
         if (backInfo.positionsWithSpanningIndel.size() > 0) {
             returnedEntry = realign(returnedEntry);
         }
@@ -130,7 +126,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
     private InfoForTarget reallocateTargetInfo(int targetIndex) {
         int intermediateTargetIndex = targetInfo.size() - 1;
         while (targetIndex >= numTargets) {
-            previousActiveTargetIndex = targetInfo.size()-1;
+            previousActiveTargetIndex = targetInfo.size() - 1;
             targetInfo.add(new InfoForTarget(++intermediateTargetIndex));
             numTargets = targetInfo.size();
         }

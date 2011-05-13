@@ -46,8 +46,8 @@ public class TestRealignmentProcessor {
 
     private ObjectListIterator<Alignments.AlignmentEntry> buildList2() {
         ObjectList<Alignments.AlignmentEntry> list = new ObjectArrayList<Alignments.AlignmentEntry>();
+        addEntry(list, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "ACTGACTGACTGAATTACTA");  // this read should be realigned to the right      
         addEntry(list, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAA----TTACTAG"); // this read carries the candidate indel
-        addEntry(list, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "ACTGACTGACTGAATTACTA");  // this read should be realigned to the right
 
         return list.iterator();
     }
@@ -116,7 +116,11 @@ public class TestRealignmentProcessor {
         Alignments.AlignmentEntry entry;
         while ((entry = realigner.nextRealignedEntry(0, 0)) != null) {
             // TODO assert this read was realigned (to the right)
-            if (entry.getQueryIndex() == 1) {
+            if (entry.getQueryIndex() == 0) {
+                Alignments.SequenceVariation var = entry.getSequenceVariations(0);
+        //        assertEquals("----", var.getFrom());
+         //       assertEquals("CTAG", var.getTo());
+         //       assertEquals(10, var.getPosition());
                 System.out.println("entry:"
                         + entry);
             }
