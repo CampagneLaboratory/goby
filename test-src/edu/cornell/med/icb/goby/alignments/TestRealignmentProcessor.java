@@ -18,8 +18,8 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
 import edu.cornell.med.icb.goby.alignments.processors.RealignmentProcessor;
+import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
@@ -43,13 +43,25 @@ public class TestRealignmentProcessor {
         addMutation(list, 1, 50, 20, 'A', 'T');
         return list.iterator();
     }
-     private ObjectListIterator<Alignments.AlignmentEntry> buildList2() {
+
+    private ObjectListIterator<Alignments.AlignmentEntry> buildList2() {
         ObjectList<Alignments.AlignmentEntry> list = new ObjectArrayList<Alignments.AlignmentEntry>();
         addEntry(list, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAA----TTACTAG"); // this read carries the candidate indel
         addEntry(list, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "ACTGACTGACTGAATTACTA");  // this read should be realigned to the right
 
         return list.iterator();
     }
+
+    private ObjectListIterator<Alignments.AlignmentEntry> buildListDifferentTargets() {
+        ObjectList<Alignments.AlignmentEntry> list = new ObjectArrayList<Alignments.AlignmentEntry>();
+        addEntry(list, 0, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "ACTGACTGACTGAATTACTA");  // this read should be realigned to the right
+        addEntry(list, 0, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAA----TTACTAG"); // this read carries the candidate indel
+
+        addEntry(list, 1, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "ACTGACTGACTGAATTACTA");  // this read should be realigned to the right
+        addEntry(list, 1, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAA----TTACTAG"); // this read carries the candidate indel
+        return list.iterator();
+    }
+
     @Test
     public void testFirstRealign() throws IOException {
 
@@ -59,15 +71,15 @@ public class TestRealignmentProcessor {
             int entryIndex = 0;
 
             @Override
-            public void pushEntryToPool(int position, Alignments.AlignmentEntry entry) {
-                super.pushEntryToPool(position, entry);
+            public void pushEntryToPool(RealignmentProcessor.InfoForTarget tinfo, int position, Alignments.AlignmentEntry entry) {
+                super.pushEntryToPool(tinfo, position, entry);
                 entryIndex++;
                 if (entryIndex == 1) {
-                    assertFalse(this.positionsWithSpanningIndel.contains(29));
-                    assertTrue(this.positionsWithSpanningIndel.contains(30));
-                    assertTrue(this.positionsWithSpanningIndel.contains(31));
-                    assertTrue(this.positionsWithSpanningIndel.contains(32));
-                    assertFalse(this.positionsWithSpanningIndel.contains(33));
+                    assertFalse(tinfo.positionsWithSpanningIndel.contains(29));
+                    assertTrue(tinfo.positionsWithSpanningIndel.contains(30));
+                    assertTrue(tinfo.positionsWithSpanningIndel.contains(31));
+                    assertTrue(tinfo.positionsWithSpanningIndel.contains(32));
+                    assertFalse(tinfo.positionsWithSpanningIndel.contains(33));
                 }
             }
         };
@@ -79,6 +91,23 @@ public class TestRealignmentProcessor {
     }
 
     @Test
+    public void testProcessDifferentTargets() throws IOException {
+        ObjectListIterator<Alignments.AlignmentEntry> list = buildListDifferentTargets();
+        RealignmentProcessor realigner = new RealignmentProcessor(list);
+        Alignments.AlignmentEntry entry;
+        int[] count = new int[3];
+        while ((entry = realigner.nextRealignedEntry(0, 0)) != null) {
+            System.out.printf("processing entry on target %d at position %d %n",
+                    entry.getTargetIndex(), entry.getPosition());
+            count[entry.getTargetIndex()]++;
+
+        }
+        assertEquals(2, count[0]);
+        assertEquals(2, count[1]);
+        // assertEquals(2,count[1]);
+    }
+
+    @Test
     public void testRealignToTheRight() throws IOException {
 
 
@@ -86,22 +115,21 @@ public class TestRealignmentProcessor {
         RealignmentProcessor realigner = new RealignmentProcessor(list);
         Alignments.AlignmentEntry entry;
         while ((entry = realigner.nextRealignedEntry(0, 0)) != null) {
-       // TODO assert this read was realigned (to the right)
-         if (entry.getQueryIndex()==1) {
-               System.out.println("entry:"
-                    + entry);
-         }
+            // TODO assert this read was realigned (to the right)
+            if (entry.getQueryIndex() == 1) {
+                System.out.println("entry:"
+                        + entry);
+            }
 
         }
     }
 
     private int queryIndex = 0;
 
-
-    private void addEntry(ObjectList<Alignments.AlignmentEntry> list, String reference, String read) {
+    private void addEntry(ObjectList<Alignments.AlignmentEntry> list, int targetIndex, String reference, String read) {
         Alignments.AlignmentEntry.Builder entry = Alignments.AlignmentEntry.newBuilder();
 
-        entry.setTargetIndex(0);
+        entry.setTargetIndex(targetIndex);
         entry.setMatchingReverseStrand(false);
         int position = -1;
         while (read.charAt(++position) == ' ') ;
@@ -137,6 +165,10 @@ public class TestRealignmentProcessor {
         list.add(entry.build());
     }
 
+    private void addEntry(ObjectList<Alignments.AlignmentEntry> list, String reference, String read) {
+        addEntry(list, 0, reference, read);
+    }
+
     private byte[] baseQual(String read) {
         byte[] result = new byte[read.length()];
         Arrays.fill(result, (byte) 40);
@@ -164,12 +196,11 @@ public class TestRealignmentProcessor {
         assertEquals(18, entry.getSequenceVariations(1).getPosition());
         assertEquals("G", entry.getSequenceVariations(1).getFrom());
         assertEquals("C", entry.getSequenceVariations(1).getTo());
-        
+
         assertEquals(20, entry.getSequenceVariations(2).getPosition());
         assertEquals("T", entry.getSequenceVariations(2).getFrom());
         assertEquals("A", entry.getSequenceVariations(2).getTo());
     }
-
 
 
     private void addIndel(ObjectList<Alignments.AlignmentEntry> list, int position, int alignLength, int indelLength,
