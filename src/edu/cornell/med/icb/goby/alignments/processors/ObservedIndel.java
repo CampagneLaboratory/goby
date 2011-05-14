@@ -24,12 +24,30 @@ package edu.cornell.med.icb.goby.alignments.processors;
  *         Time: 10:50:34 AM
  */
 public class ObservedIndel {
+    /**
+     * Start position is zero-based.
+     */
     int startPosition;
+    /**
+     * End position is zero-based.
+     */
     int endPosition;
     String from;
     String to;
-    public int length() {return endPosition-startPosition+1;}
 
+    /**
+     * Return the length of the indel, in bases (e.g., --- has a length of 3).
+     * @return
+     */
+    public int length() {return endPosition-startPosition;}
+
+    /**
+     * Construct an indel observation.
+     * @param startPosition The position where the indel starts, zero-based, position of the base at the left of the first gap.
+     * @param endPosition   The position where the indel ends, zero-based, position of the base at the right of the first gap.
+     * @param from          Bases in the reference
+     * @param to            Bases in the read
+     */
     public ObservedIndel(int startPosition, int endPosition, String from, String to) {
         this.startPosition = startPosition;
         this.endPosition = endPosition;

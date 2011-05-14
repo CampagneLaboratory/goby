@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.alignments.processors.InfoForTarget;
 import edu.cornell.med.icb.goby.alignments.processors.ObservedIndel;
 import edu.cornell.med.icb.goby.alignments.processors.RealignmentProcessor;
 import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
@@ -51,11 +52,11 @@ public class TestRealignmentProcessor {
         return new String[]{"ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA"};
     }
 
-    
+
     private ObjectListIterator<Alignments.AlignmentEntry> buildList2() {
         ObjectList<Alignments.AlignmentEntry> list = new ObjectArrayList<Alignments.AlignmentEntry>();
-        addEntry(list,  "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "ACTGACTGACTGAATTACTA");  // this read should be realigned to the right
-        addEntry(list,  "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAA----TTACTAG"); // this read carries the candidate indel
+        addEntry(list, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "ACTGACTGACTGAATTACTA");  // this read should be realigned to the right
+        addEntry(list, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAA----TTACTAG"); // this read carries the candidate indel
 
         return list.iterator();
     }
@@ -75,6 +76,28 @@ public class TestRealignmentProcessor {
     }
 
     @Test
+    public void pushEntryToIndelState() {
+
+        ObjectListIterator<Alignments.AlignmentEntry> list = buildList0();
+        RealignmentProcessor realigner = new RealignmentProcessor(list);
+        InfoForTarget tinfo = new InfoForTarget(0);
+        final Alignments.AlignmentEntry entry = list.next();
+        System.out.println("entry: " + entry);
+        realigner.pushEntryToPool(tinfo, 0, entry);
+        assertEquals(2, tinfo.potentialIndels.get(0).getStart());
+        assertEquals(5, tinfo.potentialIndels.get(0).getEnd());
+        assertEquals(3, tinfo.potentialIndels.get(0).length());
+
+
+    }
+
+    private ObjectListIterator<Alignments.AlignmentEntry> buildList0() {
+        ObjectList<Alignments.AlignmentEntry> list = new ObjectArrayList<Alignments.AlignmentEntry>();
+        addIndel(list, 0, 10, 3, 3); // indel at position 2+1, length 3 AA---CC  start=2 end=5
+        return list.iterator();
+    }
+
+    @Test
     public void testFirstRealign() throws IOException {
 
 
@@ -83,18 +106,18 @@ public class TestRealignmentProcessor {
             int entryIndex = 0;
 
             @Override
-            public void pushEntryToPool(RealignmentProcessor.InfoForTarget tinfo, int position, Alignments.AlignmentEntry entry) {
+            public void pushEntryToPool(InfoForTarget tinfo, int position, Alignments.AlignmentEntry entry) {
                 super.pushEntryToPool(tinfo, position, entry);
                 entryIndex++;
                 if (entryIndex == 1) {
-                    assertFalse(tinfo.positionsWithSpanningIndel.contains(29-1));
-                    assertTrue(tinfo.positionsWithSpanningIndel.contains(30-1));
-                    assertTrue(tinfo.positionsWithSpanningIndel.contains(31-1));
-                    assertTrue(tinfo.positionsWithSpanningIndel.contains(32-1));
-                    assertFalse(tinfo.positionsWithSpanningIndel.contains(33-1));
+                    assertFalse(tinfo.positionsWithSpanningIndel.contains(29 - 1));
+                    assertTrue(tinfo.positionsWithSpanningIndel.contains(30 - 1));
+                    assertTrue(tinfo.positionsWithSpanningIndel.contains(31 - 1));
+                    assertTrue(tinfo.positionsWithSpanningIndel.contains(32 - 1));
+                    assertFalse(tinfo.positionsWithSpanningIndel.contains(33 - 1));
 
-                    assertEquals(30-1, tinfo.potentialIndels.get(0).getStart());
-                    assertEquals(32-1, tinfo.potentialIndels.get(0).getEnd());
+                    assertEquals(30 - 1, tinfo.potentialIndels.get(0).getStart());
+                    assertEquals(33 - 1, tinfo.potentialIndels.get(0).getEnd());
                 }
             }
         };
@@ -172,21 +195,25 @@ public class TestRealignmentProcessor {
         ObjectListIterator<Alignments.AlignmentEntry> iterator = new ObjectArrayList().iterator();
         RealignmentProcessor realigner = new RealignmentProcessor(iterator);
         RandomAccessSequenceInterface genome = new RandomAccessSequenceTestSupport(list2Refs());
-        Alignments.AlignmentEntry entry = makeEntry(0, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAATTACTAG").build();
-        ObservedIndel indel = new ObservedIndel(15, 19,"CTAG","----");
-        assertEquals(4, realigner.score(entry, indel, true, 0,      genome));
+        Alignments.AlignmentEntry entry = makeEntry(0, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAATTACTA").build();
+        ObservedIndel indel = new ObservedIndel(14, 18, "CTAG", "----");
+        assertEquals(3, realigner.score(entry, indel, true, 0, genome));
+
+        entry = makeEntry(0, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAATTACTAG").build();
+        indel = new ObservedIndel(14, 18, "CTAG", "----");
+        assertEquals(4, realigner.score(entry, indel, true, 0, genome));
     }
 
     @Test
-        public void testRealignmentScore2() {
-            ObjectListIterator<Alignments.AlignmentEntry> iterator = new ObjectArrayList().iterator();
-            RealignmentProcessor realigner = new RealignmentProcessor(iterator);
-            RandomAccessSequenceInterface genome = new RandomAccessSequenceTestSupport(list2Refs());
-            Alignments.AlignmentEntry entry = makeEntry(0, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAATTAGTAG").build();
-            ObservedIndel indel = new ObservedIndel(15, 19,"CTAG","----");
-           // expected score is 1 because despite the +3 you get for inserting the indel you have one base mismatch between the ref and the read.
-            assertEquals(1, realigner.score(entry, indel, true, 0,      genome));
-        }
+    public void testRealignmentScore2() {
+        ObjectListIterator<Alignments.AlignmentEntry> iterator = new ObjectArrayList().iterator();
+        RealignmentProcessor realigner = new RealignmentProcessor(iterator);
+        RandomAccessSequenceInterface genome = new RandomAccessSequenceTestSupport(list2Refs());
+        Alignments.AlignmentEntry entry = makeEntry(0, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAATTAGTA").build();
+        ObservedIndel indel = new ObservedIndel(15, 19, "CTAG", "----");
+        // expected score is 1 because despite the +3 you get for inserting the indel you have one base mismatch between the ref and the read.
+        assertEquals(1, realigner.score(entry, indel, true, 0, genome));
+    }
 
     private int queryIndex = 0;
 

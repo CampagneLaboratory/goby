@@ -18,7 +18,6 @@
 
 package edu.cornell.med.icb.goby.alignments.processors;
 
-import edu.cornell.med.icb.goby.algorithmic.data.UnboundedFifoPool;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.ConcatSortedAlignmentReader;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
@@ -54,54 +53,6 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
     private IntArrayFIFOQueue activeTargetIndices = new IntArrayFIFOQueue();
     private WarningCounter genomeNull = new WarningCounter(1);
 
-
-    protected class InfoForTarget {
-        int targetIndex;
-        /**
-         *  positionsWithSpanningIndel contains zero-based positions.
-         */
-        public IntArraySet positionsWithSpanningIndel = new IntArraySet();
-        UnboundedFifoPool<Alignments.AlignmentEntry> entriesInWindow = new UnboundedFifoPool<Alignments.AlignmentEntry>();
-        public ObjectArrayList<ObservedIndel> potentialIndels = new ObjectArrayList<ObservedIndel>();
-
-        public void addIndel(int startPosition, int endPosition, String from, String to) {
-            for (int p = startPosition; p < endPosition + 1; p++) {
-                positionsWithSpanningIndel.add(p);
-            }
-            potentialIndels.add(new ObservedIndel(startPosition, endPosition,from,to));
-
-        }
-
-        InfoForTarget(int targetIndex) {
-            this.targetIndex = targetIndex;
-        }
-
-
-        /**
-         * Remove indels that span firstPosition-lastPosition or whose end occur before endPosition (inclusive).
-         *
-         * @param firstPosition
-         * @param lastPosition
-         */
-        public void removeIndels(int firstPosition, int lastPosition) {
-            for (int pos = firstPosition; pos < lastPosition; ++pos) {
-                positionsWithSpanningIndel.rem(pos);
-
-            }
-            // TODO is this removing enough?
-            for (ObservedIndel indel : potentialIndels) {
-                if (indel.getEnd() <= lastPosition) {
-                    potentialIndels.remove(indel);
-                }
-            }
-        }
-
-        public void clear() {
-            potentialIndels.clear();
-            positionsWithSpanningIndel.clear();
-            entriesInWindow.clear();
-        }
-    }
 
     ObjectArrayList<InfoForTarget> targetInfo = new ObjectArrayList<InfoForTarget>();
 
@@ -189,7 +140,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
 
     private final boolean[] directions = new boolean[]{true, false};
 
-    private Alignments.AlignmentEntry realign(Alignments.AlignmentEntry entry, RealignmentProcessor.InfoForTarget tinfo) {
+    private Alignments.AlignmentEntry realign(Alignments.AlignmentEntry entry, InfoForTarget tinfo) {
         int currentBestScore = 0;
         ObservedIndel bestScoreIndel = null;
         boolean bestScoreDirection = false;
@@ -297,7 +248,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         varBuilder.setFrom(indel.from);
         varBuilder.setTo(indel.to);
         // we set readIndex to the left most position before the read gap, by convention, see  http://tinyurl.com/goby-sequence-variations (read deletion)
-        int readIndex=entry.getMatchingReverseStrand()? entry.getQueryLength()-indelOffsetInAlignment: indelOffsetInAlignment;
+        int readIndex = entry.getMatchingReverseStrand() ? entry.getQueryLength() - indelOffsetInAlignment : indelOffsetInAlignment;
         varBuilder.setReadIndex(readIndex);
         rewrittenVariations.add(varBuilder.build());
         builder.clearSequenceVariations();
@@ -340,6 +291,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
             Alignments.SequenceVariation var = entry.getSequenceVariations(i);
             // check if var becomes compatible with reference when var's position is shifted by the length of the indel in the specified shiftForward
             // newGenomicPosition is zero-based 
+            // final int originalGenomicPosition = var.getPosition() + entryPosition - 1;
             final int newGenomicPosition = var.getPosition() + (direction * indelLength) + entryPosition - 1;
             for (int j = 0; j < var.getTo().length(); ++j) {
 
@@ -349,11 +301,14 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
                 score += compatible ? 1 : 0;
                 // store which reference positions are different from the reference:
 
+
                 variantPositions.add(var.getPosition() + entryPosition + j - 1);
+
             }
 
         }
         // Determine which previously unchanged bases become incompatible with the reference when the the indel is introduced
+        // Consider the span of reference between the indel insertion point and the end of the reference alignment going in the direction of extension.
         // startAlignment and endAlignment are zero-based
         int startAlignment = shiftForward ? entryPosition + indelOffsetInAlignment : entryPosition;
         int endAlignment = shiftForward ? entry.getTargetAlignedLength() + entryPosition : indelOffsetInAlignment + entryPosition + indelLength;
@@ -368,9 +323,17 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
                 final int realignedPos = pos + (direction * indelLength);
                 // if the realigned position lies outside of the reference penalize heavily with -10, otherwise
                 // count -1 for every new mismatch introduced by the indel:
-                score += realignedPos < 0 ? -10 :
-                        genome.get(targetIndex, pos) == genome.get(targetIndex, realignedPos) ? 0 : -1;
+                if (realignedPos < 0) {
+                    score += -10;
+                } else {
+                    final char refBase = genome.get(targetIndex, pos);
+                    final char newRefBase = genome.get(targetIndex, realignedPos);
+
+                    score += (refBase == newRefBase )? 0 : -1;
+                }
             }
+
+        System.out.printf("indelOffsetInAlignment: %d shiftForward: %b score: %d%n", indelOffsetInAlignment, shiftForward, score);
         }
 
 
@@ -386,7 +349,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         return sequence.toString();
     }
 
-    public void pushEntryToPool(RealignmentProcessor.InfoForTarget tinfo, int position, Alignments.AlignmentEntry entry) {
+    public void pushEntryToPool(InfoForTarget tinfo, int position, Alignments.AlignmentEntry entry) {
         windowStartPosition = Math.min(windowStartPosition, position);
         windowStartPosition = Math.min(windowStartPosition, entry.getPosition());
         // set window length to twice the longest read length.
@@ -396,12 +359,12 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         for (int i = 0; i < entry.getSequenceVariationsCount(); ++i) {
             final Alignments.SequenceVariation var = entry.getSequenceVariations(i);
             if (isIndel(var)) {
-                // start and last position are zero-based:
+                // start and last position are zero-based:           A--CAC start=1 end=3
                 final int startPosition = var.getPosition() + entry.getPosition() - 1;
                 final int lastPosition = var.getPosition() + entry.getPosition() +
                         Math.max(var.getFrom().length(), var.getTo().length()) - 1;
 
-                tinfo.addIndel(startPosition, lastPosition-1,var.getFrom(), var.getTo());
+                tinfo.addIndel(startPosition, lastPosition, var.getFrom(), var.getTo());
 
             }
         }
