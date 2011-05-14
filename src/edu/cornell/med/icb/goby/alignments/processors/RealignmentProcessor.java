@@ -22,6 +22,7 @@ import edu.cornell.med.icb.goby.algorithmic.data.UnboundedFifoPool;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.ConcatSortedAlignmentReader;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
+import it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
@@ -43,15 +44,54 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
     /**
      * The targetIndex that was active and for which we may still have entries stored in the corresponding pool:
      */
-    private int previousActiveTargetIndex;
+    private int previousActiveTargetIndex = -1;
+    /**
+     * The FIFO queue that holds target indices that have entries pooled in tinfo:
+     */
+    private IntArrayFIFOQueue activeTargetIndices = new IntArrayFIFOQueue();
 
     protected class InfoForTarget {
         int targetIndex;
         public IntArraySet positionsWithSpanningIndel = new IntArraySet();
         UnboundedFifoPool<Alignments.AlignmentEntry> entriesInWindow = new UnboundedFifoPool<Alignments.AlignmentEntry>();
+        public ObjectArrayList<ObservedIndel> potentialIndels = new ObjectArrayList<ObservedIndel>();
+
+        public void addIndel(int startPosition, int endPosition) {
+            for (int p = startPosition; p < endPosition + 1; p++) {
+                positionsWithSpanningIndel.add(p);
+            }
+            potentialIndels.add(new ObservedIndel(startPosition, endPosition));
+
+        }
 
         InfoForTarget(int targetIndex) {
             this.targetIndex = targetIndex;
+        }
+
+
+        /**
+         * Remove indels that span firstPosition-lastPosition or whose end occur before endPosition (inclusive).
+         *
+         * @param firstPosition
+         * @param lastPosition
+         */
+        public void removeIndels(int firstPosition, int lastPosition) {
+            for (int pos = firstPosition; pos < lastPosition; ++pos) {
+                positionsWithSpanningIndel.rem(pos);
+
+            }
+            // TODO is this removing enough?
+            for (ObservedIndel indel : potentialIndels) {
+                if (indel.getEnd() <= lastPosition) {
+                    potentialIndels.remove(indel);
+                }
+            }
+        }
+
+        public void clear() {
+            potentialIndels.clear();
+            positionsWithSpanningIndel.clear();
+            entriesInWindow.clear();
         }
     }
 
@@ -80,6 +120,11 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
             if (entry != null) {
                 minTargetIndex = Math.min(minTargetIndex, entry.getTargetIndex());
                 final int entryTargetIndex = entry.getTargetIndex();
+                // push new targetIndices to activeTargetIndices:
+                if (activeTargetIndices.isEmpty() || activeTargetIndices.lastInt() != entryTargetIndex) {
+
+                    activeTargetIndices.enqueue(entryTargetIndex);
+                }
                 final InfoForTarget frontInfo = reallocateTargetInfo(entryTargetIndex);
                 pushEntryToPool(frontInfo, position, entry);
                 if (entryTargetIndex != minTargetIndex) {
@@ -89,19 +134,19 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         }
         while (entry != null && entry.getPosition() < windowStartPosition + windowLength);
         // check if we still have entries in the previously active target:
-
-        final InfoForTarget backInfo; // the pool info we will use to dequeue the entry at the back of the window
-        final InfoForTarget altBackInfo = previousActiveTargetIndex >= 0 ? targetInfo.get(previousActiveTargetIndex) : null;
-        if (altBackInfo == null || altBackInfo.entriesInWindow.isEmpty()) {
-            // we are done with the previous active target, update to current target:
-            final int currentTargetIndex = targetInfo.size() - 1;
-            previousActiveTargetIndex = currentTargetIndex;
-            // set backInfo to use the new target
-            backInfo = targetInfo.get(currentTargetIndex);
-        } else {
-            // set backInfo on the previously active target since it still contains entries to dequeue:
-            backInfo = altBackInfo;
+        int backTargetIndex = activeTargetIndices.firstInt();
+        if (targetInfo.get(backTargetIndex).entriesInWindow.isEmpty()) {
+            activeTargetIndices.dequeueInt();
+            assert  targetInfo.get(0).targetIndex==backTargetIndex:"first element of targetInfo must match backTargetIndex";
+       //     targetInfo.remove(0);
+            targetInfo.get(0).clear();
+            if (activeTargetIndices.isEmpty()) {
+                // no more targets, we are done.
+                return null;
+            }
+            backTargetIndex = activeTargetIndices.firstInt();
         }
+        final InfoForTarget backInfo = targetInfo.get(backTargetIndex); // the pool info we will use to dequeue the entry at the back of the window
 
         // now find the entry at the left of the realignment window on the active target:
         if (backInfo.entriesInWindow.isEmpty()) return null;
@@ -115,9 +160,10 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         windowStartPosition = Math.max(windowStartPosition, returnedEntry.getPosition());
         // remove indel locations that are now outside the new window position
         if (previousWindowStart != windowStartPosition) {
-            for (int pos = previousWindowStart; pos < windowStartPosition - 1; ++pos) {
-                backInfo.positionsWithSpanningIndel.rem(pos);
-            }
+            int firstPosition = previousWindowStart;
+            int lastPosition = windowStartPosition - 1;
+
+            backInfo.removeIndels(firstPosition, lastPosition);
         }
         return returnedEntry;
 
@@ -126,7 +172,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
     private InfoForTarget reallocateTargetInfo(int targetIndex) {
         int intermediateTargetIndex = targetInfo.size() - 1;
         while (targetIndex >= numTargets) {
-            previousActiveTargetIndex = targetInfo.size() - 1;
+
             targetInfo.add(new InfoForTarget(++intermediateTargetIndex));
             numTargets = targetInfo.size();
         }
@@ -150,11 +196,10 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
             if (isIndel(var)) {
                 final int startPosition = var.getPosition() + entry.getPosition();
                 final int lastPosition = var.getPosition() + entry.getPosition() +
-                        Math.max(var.getFrom().length(), var.getTo().length());
+                        Math.max(var.getFrom().length(), var.getTo().length()) - 1;
 
-                for (int p = startPosition; p < lastPosition; p++) {
-                    tinfo.positionsWithSpanningIndel.add(p);
-                }
+                tinfo.addIndel(startPosition, lastPosition);
+
             }
         }
         tinfo.entriesInWindow.add(entry);

@@ -59,6 +59,10 @@ public class TestRealignmentProcessor {
 
         addEntry(list, 1, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "ACTGACTGACTGAATTACTA");  // this read should be realigned to the right
         addEntry(list, 1, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAA----TTACTAG"); // this read carries the candidate indel
+
+        addEntry(list, 4, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "ACTGACTGACTGAATTACTA");  // this read should be realigned to the right
+        addEntry(list, 4, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAA----TTACTAG"); // this read carries the candidate indel
+
         return list.iterator();
     }
 
@@ -80,6 +84,9 @@ public class TestRealignmentProcessor {
                     assertTrue(tinfo.positionsWithSpanningIndel.contains(31));
                     assertTrue(tinfo.positionsWithSpanningIndel.contains(32));
                     assertFalse(tinfo.positionsWithSpanningIndel.contains(33));
+
+                    assertEquals(30, tinfo.potentialIndels.get(0).getStart());
+                    assertEquals(32, tinfo.potentialIndels.get(0).getEnd());
                 }
             }
         };
@@ -95,7 +102,7 @@ public class TestRealignmentProcessor {
         ObjectListIterator<Alignments.AlignmentEntry> list = buildListDifferentTargets();
         RealignmentProcessor realigner = new RealignmentProcessor(list);
         Alignments.AlignmentEntry entry;
-        int[] count = new int[3];
+        int[] count = new int[5];
         while ((entry = realigner.nextRealignedEntry(0, 0)) != null) {
             System.out.printf("processing entry on target %d at position %d %n",
                     entry.getTargetIndex(), entry.getPosition());
@@ -104,7 +111,8 @@ public class TestRealignmentProcessor {
         }
         assertEquals(2, count[0]);
         assertEquals(2, count[1]);
-        // assertEquals(2,count[1]);
+        assertEquals(2, count[4]);
+
     }
 
     @Test
@@ -118,9 +126,9 @@ public class TestRealignmentProcessor {
             // TODO assert this read was realigned (to the right)
             if (entry.getQueryIndex() == 0) {
                 Alignments.SequenceVariation var = entry.getSequenceVariations(0);
-        //        assertEquals("----", var.getFrom());
-         //       assertEquals("CTAG", var.getTo());
-         //       assertEquals(10, var.getPosition());
+                assertEquals("----", var.getFrom());
+                assertEquals("CTAG", var.getTo());
+                assertEquals(10, var.getPosition());
                 System.out.println("entry:"
                         + entry);
             }

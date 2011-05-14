@@ -83,7 +83,7 @@ public class UnboundedFifoPool<T> {
             headIndex = 0;
             tailIndex = 0;
         }
-        //     System.out.printf("Removing post: head-index=%d tail-index=%d %n", headIndex, tailIndex);
+   //     System.out.printf("Removing post: head-index=%d tail-index=%d %n", headIndex, tailIndex);
 
         return element;
 
@@ -114,4 +114,9 @@ public class UnboundedFifoPool<T> {
     }
 
 
+    public void clear() {
+        while (!isEmpty()) {
+            remove();
+        }
+    }
 }
