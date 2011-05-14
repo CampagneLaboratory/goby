@@ -195,7 +195,7 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
      * is not in the cache.
      *
      * @param referenceName The name of the sequence to get the index for
-     * @return The index for the specified refreence
+     * @return The index for the specified reference
      */
     public final int getReferenceIndex(final String referenceName) {
         return referenceNameMap.getInt(referenceName);

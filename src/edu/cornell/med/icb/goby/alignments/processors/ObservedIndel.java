@@ -26,11 +26,15 @@ package edu.cornell.med.icb.goby.alignments.processors;
 public class ObservedIndel {
     int startPosition;
     int endPosition;
-    public int length() {return endPosition-startPosition;}
+    String from;
+    String to;
+    public int length() {return endPosition-startPosition+1;}
 
-    public ObservedIndel(int startPosition, int endPosition) {
+    public ObservedIndel(int startPosition, int endPosition, String from, String to) {
         this.startPosition = startPosition;
         this.endPosition = endPosition;
+        this.from=from;
+        this.to=to;
     }
 
     public int getStart() {
@@ -38,5 +42,9 @@ public class ObservedIndel {
     }
     public int getEnd() {
         return endPosition;
+    }
+
+    public String from() {
+        return from;
     }
 }
