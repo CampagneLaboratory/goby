@@ -357,7 +357,7 @@ entry.position=0
         }
     }
 
-
+  
     /**
      * Test case 7  TODO: enable this test for read insertion.
      */
@@ -365,9 +365,9 @@ entry.position=0
 
 
         ObjectList<Alignments.AlignmentEntry> list1 = new ObjectArrayList<Alignments.AlignmentEntry>();
-        addEntry(list1, 0, "ACTGACTGACTGAA----TTACTAGCTAAAGTTA", "CTGACTGAACTAGTTACTAG"); // this read carries the candidate read insertion
-        addEntry(list1, 0, "ACTGACTGACTGAATTACTAGCTAAAGTTA", "CTGACTGAACTAGTTACTAG");  // this read should be realigned to the right
-        // ACTGACTGACTGAA----TTACTAGCTAAAGTTA ref
+        addEntry(list1, 0, "ACTGACTGACTGAATTACTAGCTAAAGTTA",     "     CTGACTGAACTAGTTACTAG");  // this read should be realigned to the right
+        addEntry(list1, 0, "ACTGACTGACTGAA----TTACTAGCTAAAGTTA", "     CTGACTGAACTAGTTACTAG"); // this read carries the candidate read insertion
+               // ACTGACTGACTGAA----TTACTAGCTAAAGTTA ref
         //      CTGACTGAACTAGTTACTAG          read with insertion.    
         ObjectListIterator<Alignments.AlignmentEntry> iterator = list1.iterator();
         RealignmentProcessor realigner = new RealignmentProcessor(iterator);
@@ -375,13 +375,13 @@ entry.position=0
         Alignments.AlignmentEntry entry;
         while ((entry = realigner.nextRealignedEntry(0, 0)) != null) {
 
-            if (entry.getQueryIndex() == 1) {
-                assertTrue(entry.getMatchingReverseStrand());
+            if (entry.getQueryIndex() == 0) {
+                assertFalse(entry.getMatchingReverseStrand());
                 Alignments.SequenceVariation var = entry.getSequenceVariations(0);
-                assertEquals("TGACTGA", var.getFrom());
-                assertEquals("-------", var.getTo());
-                assertEquals(2, var.getPosition());
-                assertEquals(26, var.getReadIndex());
+                assertEquals("----", var.getFrom());
+                assertEquals("CTAG", var.getTo());
+                assertEquals(10, var.getPosition());
+                assertEquals(10, var.getReadIndex());
 
             }
             System.out.println("entry:"
