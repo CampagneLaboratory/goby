@@ -32,4 +32,11 @@ public interface RandomAccessSequenceInterface {
      * @return base at position in reference sequence.
      */
     char get(final int referenceIndex, final int position);
+
+    /**
+     * Returns the length of the target sequence at index targetIndex.
+     * @param targetIndex Index of the target sequence.
+     * @return  Length of the sequence, in bases.
+     */
+    int getLength(int targetIndex);
 }

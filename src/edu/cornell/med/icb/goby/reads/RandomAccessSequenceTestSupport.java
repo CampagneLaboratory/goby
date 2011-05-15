@@ -31,6 +31,10 @@ public class RandomAccessSequenceTestSupport implements RandomAccessSequenceInte
     }
 
     public char get(int referenceIndex, int position) {
-        return referenceSequences[referenceIndex].charAt(position);
+         return referenceSequences[referenceIndex].charAt(position);
+    }
+
+    public int getLength(int targetIndex) {
+        return referenceSequences[targetIndex].length();
     }
 }

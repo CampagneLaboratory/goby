@@ -61,6 +61,14 @@ public class TestRealignmentProcessor {
         return list.iterator();
     }
 
+    private ObjectListIterator<Alignments.AlignmentEntry> buildList2Left() {
+        ObjectList<Alignments.AlignmentEntry> list = new ObjectArrayList<Alignments.AlignmentEntry>();
+        addEntry(list, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "ACTGACTGACTGAACTA");  // this read should be realigned to the right
+        addEntry(list, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "ACT------GACTGACTGAACTA"); // this read carries the candidate indel
+
+        return list.iterator();
+    }
+
     private ObjectListIterator<Alignments.AlignmentEntry> buildListDifferentTargets() {
         ObjectList<Alignments.AlignmentEntry> list = new ObjectArrayList<Alignments.AlignmentEntry>();
         addEntry(list, 0, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "ACTGACTGACTGAATTACTA");  // this read should be realigned to the right
@@ -88,7 +96,6 @@ public class TestRealignmentProcessor {
         assertEquals(5, tinfo.potentialIndels.get(0).getEnd());
         assertEquals(3, tinfo.potentialIndels.get(0).length());
 
-
     }
 
     private ObjectListIterator<Alignments.AlignmentEntry> buildList0() {
@@ -99,7 +106,6 @@ public class TestRealignmentProcessor {
 
     @Test
     public void testFirstRealign() throws IOException {
-
 
         ObjectListIterator<Alignments.AlignmentEntry> list = buildList1();
         RealignmentProcessor realigner = new RealignmentProcessor(list) {
@@ -171,14 +177,15 @@ public class TestRealignmentProcessor {
     @Test
     public void testRealignToTheRightReverseStrand() throws IOException {
 
+        ObjectListIterator<Alignments.AlignmentEntry> list = buildList3();
 
-        ObjectListIterator<Alignments.AlignmentEntry> list = buildList2();
         RealignmentProcessor realigner = new RealignmentProcessor(list);
         realigner.setGenome(new RandomAccessSequenceTestSupport(list2Refs()));
         Alignments.AlignmentEntry entry;
         while ((entry = realigner.nextRealignedEntry(0, 0)) != null) {
 
             if (entry.getQueryIndex() == 0) {
+                assertTrue("entry must match reverse strand", entry.getMatchingReverseStrand());
                 Alignments.SequenceVariation var = entry.getSequenceVariations(0);
                 assertEquals("CTAG", var.getFrom());
                 assertEquals("----", var.getTo());
@@ -186,8 +193,41 @@ public class TestRealignmentProcessor {
                 System.out.println("entry:"
                         + entry);
             }
-
         }
+    }
+
+    @Test
+    public void testRealignToTheLeft() throws IOException {
+
+
+        ObjectList<Alignments.AlignmentEntry> list1 = new ObjectArrayList<Alignments.AlignmentEntry>();
+        addEntry(list1, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "        CCTGAACTAGTTACTAGCTA");  // this read should be realigned to the right
+        addEntry(list1, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "AC-------CTGAACTAGTTACTAGCTA"); // this read carries the candidate indel
+        // ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA
+        // ACT------GACTGACTGAACTA
+        ObjectListIterator<Alignments.AlignmentEntry> iterator = list1.iterator();
+        RealignmentProcessor realigner = new RealignmentProcessor(iterator);
+        realigner.setGenome(new RandomAccessSequenceTestSupport(list2Refs()));
+        Alignments.AlignmentEntry entry;
+        while ((entry = realigner.nextRealignedEntry(0, 0)) != null) {
+
+            if (entry.getQueryIndex() == 0) {
+                Alignments.SequenceVariation var = entry.getSequenceVariations(0);
+                assertEquals("TGACTGA", var.getFrom());
+                assertEquals("-------", var.getTo());
+                assertEquals(2, var.getPosition());
+                System.out.println("entry:"
+                        + entry);
+            }
+        }
+    }
+
+    private ObjectListIterator<Alignments.AlignmentEntry> buildList3() {
+        ObjectList<Alignments.AlignmentEntry> list = new ObjectArrayList<Alignments.AlignmentEntry>();
+        addEntry(list, 0, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "ACTGACTGACTGAATTACTA", true);  // this read should be realigned to the right
+        addEntry(list, 0, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAA----TTACTAG"); // this read carries the candidate indel
+
+        return list.iterator();
     }
 
     @Test
@@ -195,11 +235,11 @@ public class TestRealignmentProcessor {
         ObjectListIterator<Alignments.AlignmentEntry> iterator = new ObjectArrayList().iterator();
         RealignmentProcessor realigner = new RealignmentProcessor(iterator);
         RandomAccessSequenceInterface genome = new RandomAccessSequenceTestSupport(list2Refs());
-        Alignments.AlignmentEntry entry = makeEntry(0, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAATTACTA").build();
+        Alignments.AlignmentEntry entry = makeEntry(0, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAATTACTA", true).build();
         ObservedIndel indel = new ObservedIndel(14, 18, "CTAG", "----");
         assertEquals(3, realigner.score(entry, indel, true, 0, genome));
 
-        entry = makeEntry(0, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAATTACTAG").build();
+        entry = makeEntry(0, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAATTACTAG", true).build();
         indel = new ObservedIndel(14, 18, "CTAG", "----");
         assertEquals(4, realigner.score(entry, indel, true, 0, genome));
     }
@@ -209,7 +249,7 @@ public class TestRealignmentProcessor {
         ObjectListIterator<Alignments.AlignmentEntry> iterator = new ObjectArrayList().iterator();
         RealignmentProcessor realigner = new RealignmentProcessor(iterator);
         RandomAccessSequenceInterface genome = new RandomAccessSequenceTestSupport(list2Refs());
-        Alignments.AlignmentEntry entry = makeEntry(0, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAATTAGTA").build();
+        Alignments.AlignmentEntry entry = makeEntry(0, "ACTGACTGACTGAACTAGTTACTAGCTAAAGTTA", "     CTGACTGAATTAGTA", true).build();
         ObservedIndel indel = new ObservedIndel(15, 19, "CTAG", "----");
         // expected score is 1 because despite the +3 you get for inserting the indel you have one base mismatch between the ref and the read.
         assertEquals(1, realigner.score(entry, indel, true, 0, genome));
@@ -217,16 +257,21 @@ public class TestRealignmentProcessor {
 
     private int queryIndex = 0;
 
+
     private void addEntry(ObjectList<Alignments.AlignmentEntry> list, int targetIndex, String reference, String read) {
-        Alignments.AlignmentEntry.Builder entry = makeEntry(targetIndex, reference, read);
+        addEntry(list, targetIndex, reference, read, false);
+    }
+
+    private void addEntry(ObjectList<Alignments.AlignmentEntry> list, int targetIndex, String reference, String read, boolean reverseStrand) {
+        Alignments.AlignmentEntry.Builder entry = makeEntry(targetIndex, reference, read, reverseStrand);
         list.add(entry.build());
     }
 
-    private Alignments.AlignmentEntry.Builder makeEntry(int targetIndex, String reference, String read) {
+    private Alignments.AlignmentEntry.Builder makeEntry(int targetIndex, String reference, String read, boolean reverseStrand) {
         Alignments.AlignmentEntry.Builder entry = Alignments.AlignmentEntry.newBuilder();
 
         entry.setTargetIndex(targetIndex);
-        entry.setMatchingReverseStrand(false);
+        entry.setMatchingReverseStrand(reverseStrand);
         int position = -1;
         while (read.charAt(++position) == ' ') ;
         entry.setPosition(position);

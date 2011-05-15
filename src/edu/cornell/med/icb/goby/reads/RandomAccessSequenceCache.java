@@ -216,6 +216,11 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         }
     }
 
+
+    public int getLength(int targetIndex) {
+       return sizes.getInt(targetIndex);
+    }
+
     private char decode(final byte[] bytes, final int position, final int maxSize) {
         assert position < maxSize : "position must be less than size of the reference sequence (" + maxSize + ")";
 
