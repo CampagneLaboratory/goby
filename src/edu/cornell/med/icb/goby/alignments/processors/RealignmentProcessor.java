@@ -225,8 +225,8 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         int startAlignment = shiftForward ? entryPosition + indelOffsetInAlignment : entryPosition;
         int endAlignment = shiftForward ? entry.getTargetAlignedLength() + entryPosition : indelOffsetInAlignment + entryPosition + (direction * indelLength);
         String pre = getGenomeSegment(genome, targetIndex, startAlignment, endAlignment);
-        String post = getGenomeSegment(genome, targetIndex, startAlignment + indelLength, endAlignment + indelLength);
-        //   System.out.printf(" pre and post alignments: %n%s\n%s%n", pre, post);
+        String post = getGenomeSegment(genome, targetIndex, startAlignment + (direction * indelLength), endAlignment + (direction * indelLength));
+         System.out.printf(" pre and post alignments: %n%s\n%s%n", pre, post);
         // pos is zero-based:
         for (int pos = startAlignment; pos < endAlignment; pos++) {
             // both variantPositions and pos are zero-based:
@@ -238,16 +238,24 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
                 assert realignedPos < 0 : "realignedPos cannot be negative for best indel.";
 
 
-                final char toBase = genome.get(targetIndex, realignedPos);
-                final char fromBase = genome.get(targetIndex, pos);
+                final char fromBase = genome.get(targetIndex, realignedPos);
+                final char toBase = genome.get(targetIndex, pos);
                 final boolean compatible = fromBase == toBase;
 
                 if (!compatible) {
                     Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder();
-                    varBuilder.setPosition(realignedPos - entryPosition);
+                    // varPosition is one-based while realignedPos and entryPos are zero-based:
+                    final int varPosition = realignedPos - entryPosition+1;
+                    varBuilder.setPosition(varPosition);
                     varBuilder.setFrom(Character.toString(fromBase));
                     varBuilder.setTo(Character.toString(toBase));
-                    builder.addSequenceVariations(varBuilder.build());
+                    
+                    int readIndex = entry.getMatchingReverseStrand() ?
+                            entry.getQueryLength() - indelOffsetInAlignment + (shiftForward ? 1 : indelLength) :
+                            varPosition;
+                    varBuilder.setReadIndex(readIndex);
+                    rewrittenVariations.add(varBuilder.build());
+                   
                 }
             }
         }
