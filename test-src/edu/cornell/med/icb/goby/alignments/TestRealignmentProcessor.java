@@ -64,15 +64,15 @@ public class TestRealignmentProcessor {
 queryIndex=0:
 var.readIndex=9
 var.position=10
-var.from=ÓCTAGÓ
-var.to=Ó----Ó
+var.from="CTAG"
+var.to="----"
 entry.position=5
 
 queryIndex=1:
-var.readIndex=14 (defined as the position before the left-most Ô-Õ)
-var.position=15 (defined as the position of the left-most Ô-Õ)
-var.from=ÓCTAGÓ
-var.to=Ó----Ó
+var.readIndex=14 (defined as the position before the left-most '-')
+var.position=15 (defined as the position of the left-most '-')
+var.from="CTAG"
+var.to="----"
 entry.position=0
          */
         return list.iterator();
