@@ -33,6 +33,7 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -227,8 +228,15 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     public AlignmentReaderImpl(final long startOffset, final long endOffset, final String basename, boolean upgrade) throws IOException {
         super(upgrade, getBasename(basename));
         this.basename = getBasename(basename);
-        final FileInputStream stream = new FileInputStream(basename + ".entries");
-        alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset, endOffset, new FastBufferedInputStream(stream));
+        final String entriesFile = basename + ".entries";
+        boolean entriesFileExist = new File(entriesFile).exists();
+        if (entriesFileExist) {
+            final FileInputStream stream = new FileInputStream(entriesFile);
+
+            alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset, endOffset, new FastBufferedInputStream(stream));
+        }  else {
+            alignmentEntryReader=null;
+        }
         LOG.trace("start offset :" + startOffset + " end offset " + endOffset);
         try {
             headerStream = new GZIPInputStream(new FileInputStream(this.basename + ".header"));
@@ -311,7 +319,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      * @return true if the input has more entries, false otherwise.
      */
     public boolean hasNext() {
-   
+
         if (nextEntry != null) return true;
 
         int entryTargetIndex;
@@ -448,7 +456,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         if (LOG.isTraceEnabled()) {
             LOG.trace(String.format("skipTo %d/%d%n", targetIndex, positionChanged));
         }
-        repositionInternal(targetIndex, positionChanged,false);
+        repositionInternal(targetIndex, positionChanged, false);
         Alignments.AlignmentEntry entry = null;
         boolean hasNext = false;
         while ((hasNext = hasNext()) &&
@@ -484,9 +492,10 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     /**
      * Reposition to an genomic position. The goBack flag, when true, allows to reposition to positions that
      * we have already passed. When false, reposition will only advance to future positions.
+     *
      * @param targetIndex index of the target sequence to reposition to.
-     * @param position  position of the location to reposition to.
-     * @param goBack If true, the method will reposition to past positions, otherwise, only reposition to future locations.
+     * @param position    position of the location to reposition to.
+     * @param goBack      If true, the method will reposition to past positions, otherwise, only reposition to future locations.
      * @throws IOException If an error occurs repositioning.
      */
     private void repositionInternal(final int targetIndex, final int position, boolean goBack) throws IOException {
@@ -499,7 +508,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         // NB offsetIndex contains absolutePosition in the first entry, but the chunk before it also likely
         // contains entries with this absolute position. We therefore substract one to position on the chunk
         // before.
-        offsetIndex = offsetIndex >= indexOffsets.size() ? indexOffsets.size() - 1 : Math.max(offsetIndex - 1,0);
+        offsetIndex = offsetIndex >= indexOffsets.size() ? indexOffsets.size() - 1 : Math.max(offsetIndex - 1, 0);
 
 
         if (offsetIndex < 0) {
@@ -517,12 +526,12 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         if (newPosition >= currentPosition) {
 
             seek(newPosition);
-       } else {
-          if (goBack) {
-              // only reposition to past locations if we are called directly through reposition. Otherwise, we honor
-              // the skipTo contract and do not reposition to previously visited locations.
-              seek(newPosition);
-          }
+        } else {
+            if (goBack) {
+                // only reposition to past locations if we are called directly through reposition. Otherwise, we honor
+                // the skipTo contract and do not reposition to previously visited locations.
+                seek(newPosition);
+            }
         }
     }
 
