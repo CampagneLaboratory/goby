@@ -1,4 +1,10 @@
-development -> 1.9.6.1
+development -> 1.9.6.2
+ - Make it possible to open an alignment if the header file is present, but the entries file is missing.
+   This allows to read the header only, for instance when we need to load counts and have access to targetIds.
+ - Add mode to convert annotations to counts archive format.
+ - Add draft mode to calculate coverage stats over annotation regions.
+
+1.9.6.1
  - Patched VCF output for compatibility with VCF specification. Specifically, we now write . in the QUAL
    field and write genotype as the first field in the methylation output format. Additionally, we only
    write a VCF line if the site can be typed in at least on of the samples. This changes make Goby VCF

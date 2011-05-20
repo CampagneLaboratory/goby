@@ -1,0 +1,46 @@
+<!--
+  ~ Copyright (C) 2009-2011 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>false</required>
+            <defaults>
+                <string>-</string>
+            </defaults>
+            <help>The name of the output file to write the coverage stats to. - indicates standard out.</help>
+        </flaggedOption>
+          <flaggedOption>
+            <id>annotation-basename</id>
+            <shortFlag>a</shortFlag>
+            <longFlag>annotation</longFlag>
+            <required>false</required>
+            <help>The basename that contains the count archive for the captured target.</help>
+        </flaggedOption>
+        <unflaggedOption>
+            <id>input</id>
+            <required>true</required>
+            <greedy>true</greedy>
+            <help>The basenames of the input alignments. This mode will use the .header and .count files for each alignment.</help>
+        </unflaggedOption>       
+</parameters>
+</jsap>
