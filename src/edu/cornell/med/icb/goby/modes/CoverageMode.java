@@ -117,6 +117,8 @@ public class CoverageMode extends AbstractGobyMode {
                 // sum of depth when depth is not zero:
                 long sumDepth = 0;
                 int countDepth = 0;
+                long sumDepthAnnot=0;
+                int countDepthAnnot=0;
                 long countAllBases = 0;
                 for (int referenceIndex = 0; referenceIndex < archiveReader.getNumberOfIndices(); referenceIndex++) {
                     CountsReader reader = archiveReader.getCountReader(referenceIndex);
@@ -141,12 +143,17 @@ public class CoverageMode extends AbstractGobyMode {
                             if (depth != 0) {
                                 sumDepth += depth;
                                 countDepth++;
+                                if (inAnnotation) {
+                                    sumDepthAnnot+=depth;
+                                    countDepthAnnot++;
+                                }
                             }
                             grow(depthTallyInAnnotation, depth);
                             grow(depthTallyOutsideAnnotation, depth);
-
-                            update.set(depth, update.get(depth) + length);
-                            countAllBases += length;
+                            // count bases over constant count segment: depth time length
+                            final int numBases = depth * length;
+                            update.set(depth, update.get(depth) + numBases);
+                            countAllBases += depth*length;
 
                         }
                     } else {
@@ -154,6 +161,7 @@ public class CoverageMode extends AbstractGobyMode {
                     }
                 }
                 System.out.printf("Average depth= %g %n", divide(sumDepth, countDepth));
+                System.out.printf("Average depth over annotations= %g %n", divide(sumDepthAnnot, countDepthAnnot));
                 System.out.printf("Enrichment efficiency is %2g%%%n", 100d * divide(sum(depthTallyInAnnotation, 1), sum(depthTallyOutsideAnnotation, 1) + sum(depthTallyInAnnotation, 1)));
                 //      System.out.println("capturedDepths: " + depthTallyInAnnotation);
                 //    System.out.println("notcapture Depths: " + depthTallyOutsideAnnotation);
@@ -169,10 +177,14 @@ public class CoverageMode extends AbstractGobyMode {
                 final int length = depthTallyInAnnotation.size();
                 long[] cumulativeCaptured = new long[length];
                 long[] cumulativeNotCaptured = new long[length];
+                long sumCaptured=(long)sum(depthTallyInAnnotation,0);
+                long sumNotCaptured=(long)sum(depthTallyOutsideAnnotation,0);
+                for (int depth = 0; depth <length ; ++depth) {
 
-                for (int depth = length - 2; depth >= 0; --depth) {
-                    cumulativeCaptured[depth] = cumulativeCaptured[depth + 1] + depthTallyInAnnotation.get(depth);
-                    cumulativeNotCaptured[depth] = cumulativeNotCaptured[depth + 1] + depthTallyOutsideAnnotation.get(depth);
+                    cumulativeCaptured[depth] =sumCaptured;
+                    sumCaptured-=depthTallyInAnnotation.get(depth);
+                    cumulativeNotCaptured[depth] = sumNotCaptured;
+                    sumNotCaptured-=depthTallyOutsideAnnotation.get(depth);
                 }
 
                 System.out.printf("Enrichment efficiency cumulative is %2g%%%n", 100d * divide(cumulativeCaptured[0], countAllBases));
@@ -183,7 +195,7 @@ public class CoverageMode extends AbstractGobyMode {
                 }
                 //      System.out.println("fraction of bases covered at >=depths : " + DoubleArrayList.wrap(fractionOfBasesCoveredCumulative));
 
-                for (int depth = 0; depth < 100; depth++) {
+                for (int depth = 0; depth < 300; depth++) {
                     //System.out.printf("%d %g %n", depth, divide(cumulativeCaptured[depth],cumulativeCaptured[0]) * 100);
                     System.out.printf("%d %g %g %n", depth,
                             divide(cumulativeCaptured[depth], countAllBases) * 100,
