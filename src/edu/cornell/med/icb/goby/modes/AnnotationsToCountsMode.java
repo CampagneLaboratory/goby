@@ -54,7 +54,7 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
      * Basename of the output counts archive.
      */
     private String countBasename;
-    private int flankingSize;
+    private int flankingSize = 0;
     private boolean verbose;
     /**
      * The total number of transitions written over the all  targets.
@@ -89,7 +89,7 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
         inputFilename = jsapResult.getString("input");
         countBasename = jsapResult.getString("basename");
         verbose = jsapResult.getBoolean("verbose");
-        //   flankingSize = jsapResult.getInt("flanking-size");
+        flankingSize = jsapResult.getInt("flanking-size");
         return this;
     }
 
@@ -164,8 +164,8 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
                     int endPosition = reader.getInt();
                     AnnotationSegment a = new AnnotationSegment();
                     a.chromosome = chromosome;
-                    a.start = startPosition;
-                    a.end = endPosition;
+                    a.start = startPosition - flankingSize;
+                    a.end = endPosition + flankingSize;
                     if (!buffer.isEmpty()) {
                         AnnotationSegment last = buffer.get(buffer.size() - 1);
                         if (a.canCombine(last)) {
@@ -204,8 +204,10 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
 
                         final int length = a.start - lastPosition;
                         if (length > 0) {
-                            countWriter.appendCount(0, length);
+                            System.out.printf("appending 0 for length=%d%n", length);
 
+                            countWriter.appendCount(0, length);
+                            System.out.printf("appending 1 for length=%d%n", a.end - a.start);
                             countWriter.appendCount(1, a.end - a.start);
                             lastPosition = a.end;
                         }
@@ -214,6 +216,8 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
             }
 
             if (countWriter != null) {
+                countWriter.appendCount(0,1);
+                countWriter.close();
                 numTransitions += countWriter.getNumberOfTransitions();
                 writer.returnWriter(countWriter);
             }
@@ -222,11 +226,11 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
             System.out.println("Overall number of transitions written: " + numTransitions);
         }
 
-        catch (FileNotFoundException e){
+        catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
-        catch (IOException e){
+        catch (IOException e) {
             e.printStackTrace();
         }
 

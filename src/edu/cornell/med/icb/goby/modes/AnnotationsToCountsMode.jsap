@@ -29,6 +29,19 @@
             </defaults>
             <help>The name of the output basename to write the count archive.</help>
         </flaggedOption>
+         <flaggedOption>
+            <id>flanking-size</id>
+            <shortFlag>f</shortFlag>
+            <longFlag>flanking-size</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>100</string>
+            </defaults>
+            <help>Extend captured regions by this number of bases on either side.</help>
+        </flaggedOption>
         <unflaggedOption>
             <id>input</id>
             <required>true</required>

@@ -69,10 +69,17 @@ public class AnyTransitionCountsIterator implements CountsReaderI {
      */
     private int[] lastPosition;
 
-
     public AnyTransitionCountsIterator(final CountsReaderI... countReader) {
+        this(false, countReader);
+    }
+
+    public AnyTransitionCountsIterator(boolean useAdapter, final CountsReaderI... countReader) {
         super();
-        readers = countReader;
+        readers = new CountsReaderI[countReader.length];
+        int i = 0;
+        for (CountsReaderI reader : countReader) {
+            readers[i++] = useAdapter ? new PositionAdapter(reader): reader;
+        }
         numReaders = countReader.length;
         position = new int[numReaders];
         Arrays.fill(position, -1);
@@ -87,14 +94,13 @@ public class AnyTransitionCountsIterator implements CountsReaderI {
         if (nextTransitionLoaded) {
             return true;
         }
-       
+
 //        extremities.clear();
         // advance by at least one position:
         //   currentPosition++;
         // load count for each reader that transitions at this position:
         int countReadersFinished = 0;
         for (int i = 0; i < numReaders; i++) {
-
 
             // passed the previous transition, must advance this reader.
             if (!readers[i].hasNextTransition()) {
@@ -106,7 +112,7 @@ public class AnyTransitionCountsIterator implements CountsReaderI {
 
                 finished[i] = true;
                 countReadersFinished++;
-                position[i]++;
+
                 if (currentPosition < lastPosition[i]) {
                     // last position is still in scope:
                     extremities.add(lastPosition[i]);
@@ -124,15 +130,19 @@ public class AnyTransitionCountsIterator implements CountsReaderI {
         }
 
         // determine the new current position, since we may have advanced all the readers in a big jump:
+        do {
+            // length is current position minus previous position.
+            if (!extremities.isEmpty()) {
+                currentLength = extremities.firstInt() - currentPosition;
+                currentPosition = extremities.firstInt();
+            } else {
+                return false;
+            }
+            if (currentLength == 0) {
+                extremities.rem(extremities.firstInt());
+            }
+        } while (currentLength == 0);
 
-        // length is current position minus previous position.
-        if (!extremities.isEmpty()) {
-            currentLength = extremities.firstInt() - currentPosition; 
-            currentPosition = extremities.firstInt();
-        }   else {
-            currentPosition++;
-            currentLength=0;
-        }
         for (int i = 0; i < numReaders; i++) {
             // set the reader count if current position is within the window of the reader's transition:
 
@@ -142,23 +152,20 @@ public class AnyTransitionCountsIterator implements CountsReaderI {
             } else {
                 count[i] = 0;
             }
-     //       System.out.printf("reader[%d] start=%d end=%d position=%d count=%d%n", i, readerPosition - length[i], readerPosition, currentPosition, count[i]);
+            System.out.printf("reader[%d] start=%d end=%d position=%d count=%d%n", i, readerPosition - length[i],
+                    readerPosition, currentPosition, count[i]);
 
             if (currentPosition > readerPosition) {
                 extremities.rem(readerPosition);
-                extremities.rem(readerPosition + length[i] - 1);
+                extremities.rem(readerPosition - length[i]);
             }
         }
-        if (countReadersFinished == numReaders) {
-            // no more transitions in any reader.
-            return false;
-        }
+
         //    System.out.println("currentPosition=" + currentPosition);
         extremities.rem(currentPosition);
         nextTransitionLoaded = true;
         return true;
     }
-
 
 
     /**

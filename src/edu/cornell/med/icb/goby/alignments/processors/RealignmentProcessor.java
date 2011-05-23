@@ -369,10 +369,8 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
                     score += (refBase == newRefBase) ? 0 : -1;
                 }
             }
-
             // System.out.printf("indelOffsetInAlignment: %d shiftForward: %b score: %d%n", indelOffsetInAlignment, shiftForward, score);
         }
-
 
         System.out.printf("indelOffsetInAlignment: %d shiftForward: %b score: %d%n", indelOffsetInAlignment, shiftForward, score);
         return score;

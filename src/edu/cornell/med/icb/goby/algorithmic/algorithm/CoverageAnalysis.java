@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
 import edu.cornell.med.icb.goby.counts.AnyTransitionCountsIterator;
 import edu.cornell.med.icb.goby.counts.CountsReaderI;
+import edu.cornell.med.icb.goby.counts.UnionDumpIterator;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 
 import java.io.IOException;
@@ -32,7 +33,7 @@ import java.io.IOException;
  *         Time: 10:44:00 AM
  */
 public class CoverageAnalysis {
-    AnyTransitionCountsIterator orIterator;
+    UnionDumpIterator orIterator;
     /**
      * Arrays where each element is the number of bases observed for which exactly i reads match span the base. The index of the array is i.
      */
@@ -86,7 +87,7 @@ public class CoverageAnalysis {
     }
 
     public void process(CountsReaderI annotationReader, CountsReaderI reader) throws IOException {
-        orIterator = new AnyTransitionCountsIterator(reader, annotationReader);
+        orIterator = new UnionDumpIterator( reader, annotationReader);
 
         while (orIterator.hasNextTransition()) {
             orIterator.nextTransition();
@@ -129,8 +130,9 @@ public class CoverageAnalysis {
             countAllBases += depth * length;
 
         }
-
-
+        orIterator.close();
+        orIterator=null;
+        Runtime.getRuntime().gc();
     }
 
     private double sum(long[] array) {
@@ -203,7 +205,7 @@ public class CoverageAnalysis {
     public double getEnrichmentEfficiency() {
         checkStatsEstimated();
 
-        return divide(cumulativeBasesCaptured[1], cumulativeBasesCaptured[1] + cumulativeBasesNotCaptured[1]);
+        return divide(cumulativeSitesCaptured[1], cumulativeSitesCaptured[1] + cumulativeSitesNotCaptured[1]);
 
     }
 
@@ -346,7 +348,7 @@ public class CoverageAnalysis {
         for (int depth = 0; depth < size; ++depth) {
 
             long sum = cumulativeSitesCaptured[depth];
-            System.out.printf("depth=%d sum %d threshold %g%n",depth, sum,threshold);
+         //   System.out.printf("depth=%d sum %d threshold %g%n",depth, sum,threshold);
             if (sum <= threshold) return depth;
         }
         return size - 1;

@@ -30,6 +30,8 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.FileWriter;
 
 
 /**
@@ -95,6 +97,14 @@ public class CoverageMode extends AbstractGobyMode {
      */
     @Override
     public void execute() {
+        PrintWriter output = null;
+        try {
+            output = statsOuputFilename.equals("-") ? new PrintWriter(System.out) : new PrintWriter(new FileWriter(statsOuputFilename));
+
+        } catch (IOException e) {
+            System.err.println("An error occured opening the output file. ");
+            System.exit(1);
+        }
         for (String basename : inputBasenames) {
             try {
                 final AlignmentReaderImpl alignment = new AlignmentReaderImpl(basename);
@@ -115,7 +125,7 @@ public class CoverageMode extends AbstractGobyMode {
                     // determine the corresponding chromosome in the annotation count archive:
                     String countArchiveRefId = backwards.getId(referenceIndex).toString();
                     if (archiveIdentifiers.contains(countArchiveRefId)) {
-                        System.out.println("Processing reference "+countArchiveRefId);
+                        System.out.println("Processing reference " + countArchiveRefId);
                         CountsReader annotationReader = annotationArchiveReader.getCountReader(countArchiveRefId);
 
                         analysis.process(annotationReader, reader);
@@ -125,10 +135,12 @@ public class CoverageMode extends AbstractGobyMode {
                 }
                 long sumDepth = analysis.getSumDepth();
                 long countDepth = analysis.getCountDepth();
-                System.out.printf("Average depth= %g %n", divide(sumDepth, countDepth));
+                final double averageDepth = divide(sumDepth, countDepth);
+                System.out.printf("Average depth= %g %n", averageDepth);
                 long sumDepthAnnot = analysis.getSumDepthAnnot();
                 long countDepthAnnot = analysis.getCountDepthAnnot();
-                System.out.printf("Average depth over annotations= %g %n", divide(sumDepthAnnot, countDepthAnnot));
+                final double averageDepthCaptured = divide(sumDepthAnnot, countDepthAnnot);
+                System.out.printf("Average depth over annotations= %g %n", averageDepthCaptured);
                 analysis.estimateStatistics();
 
                 System.out.printf("Enrichment efficiency cumulative is %2g%%%n", 100d * analysis.getEnrichmentEfficiency());
@@ -136,7 +148,14 @@ public class CoverageMode extends AbstractGobyMode {
                 System.out.printf("75%% of captured sites have depth>= %d%n", analysis.depthCapturedAtPercentile(.75));
                 System.out.printf("50%% of captured sites have depth>= %d%n", analysis.depthCapturedAtPercentile(.5));
                 System.out.printf("1%% of captured sites have depth>= %d%n", analysis.depthCapturedAtPercentile(.01));
+                output.printf("average-depth-captured\t%s\t%s\t%g%n", basename, "-", averageDepth);
+                output.printf("average-depth\t%s\t%s\t%g%n", basename, "-", averageDepthCaptured);
 
+                for (double percentile : new double[]{0.9, .75, .5, 1}) {
+                    output.printf("depth-captured\t%s\t%s\t%d%n", basename, Integer.toString((int) (percentile * 100)),
+                            analysis.depthCapturedAtPercentile(percentile));
+                }
+                output.flush();
             } catch (IOException e) {
                 System.err.println("Cannot open input basename : " + basename);
                 e.printStackTrace();
