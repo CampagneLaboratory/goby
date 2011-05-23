@@ -20,25 +20,14 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
-import edu.cornell.med.icb.goby.algorithmic.data.Segment;
-import edu.cornell.med.icb.goby.algorithmic.data.UnboundedFifoPool;
-import edu.cornell.med.icb.goby.readers.vcf.VCFParser;
-import edu.cornell.med.icb.goby.counts.CountsWriter;
 import edu.cornell.med.icb.goby.counts.CountsArchiveWriter;
+import edu.cornell.med.icb.goby.counts.CountsWriter;
 import edu.cornell.med.icb.io.TSVReader;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import it.unimi.dsi.fastutil.objects.ObjectList;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
 
-import java.io.*;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 
 /**
  * Write annotations corresponding to consensus peaks found in each sequence of count archives.
@@ -65,6 +54,12 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
      * Basename of the output counts archive.
      */
     private String countBasename;
+    private int flankingSize;
+    private boolean verbose;
+    /**
+     * The total number of transitions written over the all  targets.
+     */
+    private int numTransitions;
 
 
     @Override
@@ -93,7 +88,8 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
 
         inputFilename = jsapResult.getString("input");
         countBasename = jsapResult.getString("basename");
-
+        verbose = jsapResult.getBoolean("verbose");
+        //   flankingSize = jsapResult.getInt("flanking-size");
         return this;
     }
 
@@ -104,15 +100,15 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
 
         @Override
         public String toString() {
-            return String.format("%s %d-%d%n",chromosome,start,end);
+            return String.format("%s %d-%d ", chromosome, start, end);
         }
 
         public boolean canCombine(AnnotationSegment last) {
-            boolean result= (last.end >= start && chromosome.equals(last.chromosome));
-           // System.out.println("canCombine: "+result);
-         //   if (result==true) {
-          //      System.out.println("last: "+last +" this: "+this);
-          //  }
+            boolean result = (last.end >= start && chromosome.equals(last.chromosome));
+            // System.out.println("canCombine: "+result);
+            //   if (result==true) {
+            //      System.out.println("last: "+last +" this: "+this);
+            //  }
             return result;
         }
 
@@ -122,10 +118,13 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
          * @param last
          */
         public void extendWith(AnnotationSegment last) {
-            System.out.printf("before: other: %s this: %s",last,this);
+            if (verbose) {
+                System.out.printf("joining two annotation segments that overlap first: %s second: %s%n", last, this);
+            }
+            //     System.out.printf("before: other: %s this: %s",last,this);
             start = Math.min(start, last.start);
             end = Math.max(end, last.end);
-             System.out.printf("now: other: %s this: %s",last,this);
+            //    System.out.printf("now: other: %s this: %s",last,this);
         }
     }
 
@@ -168,7 +167,7 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
                     a.start = startPosition;
                     a.end = endPosition;
                     if (!buffer.isEmpty()) {
-                        AnnotationSegment last = buffer.get(buffer.size()-1);
+                        AnnotationSegment last = buffer.get(buffer.size() - 1);
                         if (a.canCombine(last)) {
                             last.extendWith(a);
                         } else {
@@ -180,12 +179,13 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
                 }
             }
 
-            for (int index=0; index<buffer.size();index++) {
+            for (int index = 0; index < buffer.size(); index++) {
                 AnnotationSegment a = buffer.get(index);
-             //   System.out.printf("size: %d %s %d-%d %n",buffer.size(), a.chromosome, a.start, a.end);
+                //   System.out.printf("size: %d %s %d-%d %n",buffer.size(), a.chromosome, a.start, a.end);
                 if (!a.chromosome.equals(previousChromosome)) {
 
                     if (countWriter != null) {
+                        numTransitions += countWriter.getNumberOfTransitions();
                         writer.returnWriter(countWriter);
                         System.out.println("finished writting " + previousChromosome);
                     }
@@ -195,38 +195,38 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
                 }
 
                 if (countWriter != null) {
-                    if (a.end - a.start == 0) {
-                        System.out.printf("error: annotation has zero length: %d %d %d%n",
+                    if (a.end - a.start <= 0) {
+                        System.out.printf("error: annotation has zero or negative length: %d %d %d%n",
                                 refIndex, a.start, a.end);
+                    } else {
+                        //      System.out.println("appending 0 for "+(startPosition - lastPosition));
+                        //     System.out.println("appending 1 for "+(endPosition - startPosition));
+
+                        final int length = a.start - lastPosition;
+                        if (length > 0) {
+                            countWriter.appendCount(0, length);
+
+                            countWriter.appendCount(1, a.end - a.start);
+                            lastPosition = a.end;
+                        }
                     }
-                    //      System.out.println("appending 0 for "+(startPosition - lastPosition));
-                    //     System.out.println("appending 1 for "+(endPosition - startPosition));
-                    countWriter.appendCount(0, a.start - lastPosition);
-                    countWriter.appendCount(1, a.end - a.start);
-                    lastPosition = a.end;
                 }
             }
 
             if (countWriter != null) {
+                numTransitions += countWriter.getNumberOfTransitions();
                 writer.returnWriter(countWriter);
             }
 
             writer.close();
+            System.out.println("Overall number of transitions written: " + numTransitions);
         }
 
-        catch (
-                FileNotFoundException e
-                )
-
-        {
+        catch (FileNotFoundException e){
             e.printStackTrace();
         }
 
-        catch (
-                IOException e
-                )
-
-        {
+        catch (IOException e){
             e.printStackTrace();
         }
 

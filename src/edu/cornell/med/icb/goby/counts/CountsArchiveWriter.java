@@ -129,9 +129,9 @@ public class CountsArchiveWriter implements Closeable {
      */
     public void close() throws IOException {
         compoundWriter.close();
-        System.out.println("Global statististics:");
-        System.out.printf("Bits written: %d ", totalBitsWritten);
-        System.out.printf("Number of transitions: %d ", totalTransitions);
-        System.out.printf("Bits per transitions: %2.2g ", ((double)(totalBitsWritten) / (double) totalTransitions));
+        System.out.println("Global statististics:%n");
+        System.out.printf("Bits written: %d %n", totalBitsWritten);
+        System.out.printf("Number of transitions: %d %n", totalTransitions);
+        System.out.printf("Bits per transitions: %2.2g %n", ((double)(totalBitsWritten) / (double) totalTransitions));
     }
 }

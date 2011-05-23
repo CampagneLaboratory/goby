@@ -34,6 +34,12 @@
             <required>true</required>
             <greedy>true</greedy>
             <help>The basenames of the input alignments</help>
-        </unflaggedOption>       
+        </unflaggedOption>
+          <switch>
+            <id>verbose</id>
+            <longFlag>verbose</longFlag>
+            <shortFlag>v</shortFlag>
+            <help>Verbose. For instance, reports when annotation segments are joined because they overlap.</help>
+        </switch>
 </parameters>
 </jsap>

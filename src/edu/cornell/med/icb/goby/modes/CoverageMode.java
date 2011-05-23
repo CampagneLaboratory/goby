@@ -20,17 +20,16 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.counts.*;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.CoverageAnalysis;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
-import edu.cornell.med.icb.identifier.IndexedIdentifier;
+import edu.cornell.med.icb.goby.counts.CountsArchiveReader;
+import edu.cornell.med.icb.goby.counts.CountsReader;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
-
-import java.io.*;
-
-import it.unimi.dsi.lang.MutableString;
+import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+
+import java.io.IOException;
 
 
 /**
@@ -106,101 +105,38 @@ public class CoverageMode extends AbstractGobyMode {
 
                 CountsArchiveReader archiveReader = new CountsArchiveReader(basename);
                 CountsArchiveReader annotationArchiveReader = new CountsArchiveReader(annotationBasename);
-                /* An array where each element is the number of bases observed for which exactly i reads match span the base. The index of the array is i.
-
-                 */
-                LongArrayList depthTallyInAnnotation = new LongArrayList(10000);
-                LongArrayList depthTallyOutsideAnnotation = new LongArrayList(10000);
 
                 ObjectOpenHashSet<String> archiveIdentifiers = new ObjectOpenHashSet<String>();
                 archiveIdentifiers.addAll(annotationArchiveReader.getIdentifiers());
-                // sum of depth when depth is not zero:
-                long sumDepth = 0;
-                int countDepth = 0;
-                long sumDepthAnnot=0;
-                int countDepthAnnot=0;
-                long countAllBases = 0;
+                CoverageAnalysis analysis = new CoverageAnalysis();
+
                 for (int referenceIndex = 0; referenceIndex < archiveReader.getNumberOfIndices(); referenceIndex++) {
                     CountsReader reader = archiveReader.getCountReader(referenceIndex);
                     // determine the corresponding chromosome in the annotation count archive:
                     String countArchiveRefId = backwards.getId(referenceIndex).toString();
                     if (archiveIdentifiers.contains(countArchiveRefId)) {
-                        System.out.println(countArchiveRefId);
+                        System.out.println("Processing reference "+countArchiveRefId);
                         CountsReader annotationReader = annotationArchiveReader.getCountReader(countArchiveRefId);
-                        AnyTransitionCountsIterator orIterator = new AnyTransitionCountsIterator(reader, annotationReader);
 
-                        while (orIterator.hasNextTransition()) {
-                            orIterator.nextTransition();
-                            int annotationCount = orIterator.getCount(1);
-                            int readerCount = orIterator.getCount(0);
-                            int position = orIterator.getPosition();
-                            int length = orIterator.getLength();
-                            int end = position + length;
-
-                            boolean inAnnotation = annotationCount == 1;
-                            LongArrayList update = inAnnotation ? depthTallyInAnnotation : depthTallyOutsideAnnotation;
-                            int depth = readerCount;
-                            if (depth != 0) {
-                                sumDepth += depth;
-                                countDepth++;
-                                if (inAnnotation) {
-                                    sumDepthAnnot+=depth;
-                                    countDepthAnnot++;
-                                }
-                            }
-                            grow(depthTallyInAnnotation, depth);
-                            grow(depthTallyOutsideAnnotation, depth);
-                            // count bases over constant count segment: depth time length
-                            final int numBases = depth * length;
-                            update.set(depth, update.get(depth) + numBases);
-                            countAllBases += depth*length;
-
-                        }
+                        analysis.process(annotationReader, reader);
                     } else {
                         System.out.printf("Skipping chromosome: %s%n", countArchiveRefId);
                     }
                 }
+                long sumDepth = analysis.getSumDepth();
+                long countDepth = analysis.getCountDepth();
                 System.out.printf("Average depth= %g %n", divide(sumDepth, countDepth));
+                long sumDepthAnnot = analysis.getSumDepthAnnot();
+                long countDepthAnnot = analysis.getCountDepthAnnot();
                 System.out.printf("Average depth over annotations= %g %n", divide(sumDepthAnnot, countDepthAnnot));
-                System.out.printf("Enrichment efficiency is %2g%%%n", 100d * divide(sum(depthTallyInAnnotation, 1), sum(depthTallyOutsideAnnotation, 1) + sum(depthTallyInAnnotation, 1)));
-                //      System.out.println("capturedDepths: " + depthTallyInAnnotation);
-                //    System.out.println("notcapture Depths: " + depthTallyOutsideAnnotation);
-                /*double[] fractionOfBasesCovered = new double[depthTallyInAnnotation.size()];
-                for (int i = 0; i < fractionOfBasesCovered.length; i++) {
-                    fractionOfBasesCovered[i] = ((double) depthTallyInAnnotation.get(i)) /
-                            ((double) (depthTallyOutsideAnnotation.get(i) + depthTallyInAnnotation.get(i)));
-                }
-                */
-                //     System.out.println("fraction of bases covered at depths: " + DoubleArrayList.wrap(fractionOfBasesCovered));
+                analysis.estimateStatistics();
 
+                System.out.printf("Enrichment efficiency cumulative is %2g%%%n", 100d * analysis.getEnrichmentEfficiency());
+                System.out.printf("90%% of captured sites have depth>= %d%n", analysis.depthCapturedAtPercentile(.9));
+                System.out.printf("75%% of captured sites have depth>= %d%n", analysis.depthCapturedAtPercentile(.75));
+                System.out.printf("50%% of captured sites have depth>= %d%n", analysis.depthCapturedAtPercentile(.5));
+                System.out.printf("1%% of captured sites have depth>= %d%n", analysis.depthCapturedAtPercentile(.01));
 
-                final int length = depthTallyInAnnotation.size();
-                long[] cumulativeCaptured = new long[length];
-                long[] cumulativeNotCaptured = new long[length];
-                long sumCaptured=(long)sum(depthTallyInAnnotation,0);
-                long sumNotCaptured=(long)sum(depthTallyOutsideAnnotation,0);
-                for (int depth = 0; depth <length ; ++depth) {
-
-                    cumulativeCaptured[depth] =sumCaptured;
-                    sumCaptured-=depthTallyInAnnotation.get(depth);
-                    cumulativeNotCaptured[depth] = sumNotCaptured;
-                    sumNotCaptured-=depthTallyOutsideAnnotation.get(depth);
-                }
-
-                System.out.printf("Enrichment efficiency cumulative is %2g%%%n", 100d * divide(cumulativeCaptured[0], countAllBases));
-                double[] fractionOfBasesCoveredCumulative = new double[length];
-                for (int i = 0; i < length; i++) {
-                    fractionOfBasesCoveredCumulative[i] = ((double) cumulativeCaptured[i]) /
-                            ((double) (cumulativeCaptured[i] + cumulativeNotCaptured[i]));
-                }
-                //      System.out.println("fraction of bases covered at >=depths : " + DoubleArrayList.wrap(fractionOfBasesCoveredCumulative));
-
-                for (int depth = 0; depth < 300; depth++) {
-                    //System.out.printf("%d %g %n", depth, divide(cumulativeCaptured[depth],cumulativeCaptured[0]) * 100);
-                    System.out.printf("%d %g %g %n", depth,
-                            divide(cumulativeCaptured[depth], countAllBases) * 100,
-                            divide(cumulativeNotCaptured[depth], countAllBases) * 100);
-                }
             } catch (IOException e) {
                 System.err.println("Cannot open input basename : " + basename);
                 e.printStackTrace();
@@ -235,11 +171,6 @@ public class CoverageMode extends AbstractGobyMode {
         return sum;
     }
 
-    private void grow(LongArrayList update, int depth) {
-        for (int k = update.size(); k <= depth; k++) {
-            update.add(0);
-        }
-    }
 
     /**
      * Main method.
