@@ -371,7 +371,61 @@ public class TestCoverageAnalysis {
         assertEquals(3, orIterator.getLength());
     }
 
-    @Test
+    //TODO reactivate these tests
+    public void twoFlats() throws IOException {
+
+
+        // (length, count) (2,0) (8,1) (1,0)
+
+        CountsReaderI reader0 = new CountsReaderTestSupport("(1,0)(1,1)(4,0)(2,1)(1,0)(1,1)(3,0)(1,1)");
+        CountsReaderI reader1 = new CountsReaderTestSupport("(5,0)(10,1)");
+        AnyTransitionCountsIterator orIterator;
+        /*
+         orIterator = new AnyTransitionCountsIterator(reader0, reader1);
+           while (orIterator.hasNextTransition()) {
+               orIterator.nextTransition();
+                System.out.printf("position=%d count=%d length=%d%n", orIterator.getPosition(), orIterator.getCount(), orIterator.getLength());
+
+              }
+        */
+        int[][] expected = {
+                // {0, 0, 0},
+                {1, 0, 0},
+                {2, 1, 0},
+                {3, 0, 0},
+                //          {4, 0, 0},
+                {5, 0, 1},
+                //        {6, 0, 1},
+                {7, 1, 1},
+                //      {8, 1, 1},
+                {9, 0, 1},
+                {10, 1, 1},
+                {11, 0, 1},
+                //    {12, 0, 1},
+                {13, 1, 1},
+                {14, 0, 1},
+                {15, 0, 0},
+                //  {16, 0, 0},
+                {17, 1, 0}};
+
+
+        orIterator = new AnyTransitionCountsIterator(reader0, reader1);
+
+        int index = 0;
+        while (orIterator.hasNextTransition()) {
+            orIterator.nextTransition();
+            int position = orIterator.getPosition();
+            System.out.printf("index=%d position=%d %n", index, position);
+            assertEquals(expected[index][0], position);
+            for (int readerIndex = 0; readerIndex < 2; readerIndex++) {
+                assertEquals(expected[index][readerIndex + 1], orIterator.getCount(readerIndex));
+            }
+            index++;
+        }
+
+    }
+
+    //TODO reactivate these tests
     public void fourFlats() throws IOException {
 
 
@@ -381,18 +435,16 @@ public class TestCoverageAnalysis {
         CountsReaderI reader1 = new CountsReaderTestSupport("(2,0)(6,1)");
         CountsReaderI reader2 = new CountsReaderTestSupport("(3,0)(7,1) ");
         CountsReaderI reader3 = new CountsReaderTestSupport("(5,0)(10,1) ");
-        CountsReaderI expectedReader = new CountsReaderTestSupport("(2,0)(1,1)(2,2)(1,4)(2,3)(1,3)(1,4)(1,3)(1,0)(1,1)");
-        AnyTransitionCountsIterator orIterator = new AnyTransitionCountsIterator(reader0, reader1, reader2, reader3);
-        while (orIterator.hasNextTransition()) {
-            orIterator.nextTransition();
-            //  expectedReader.nextTransition();
-            System.out.printf("position=%d count=%d length=%d%n", orIterator.getPosition(), orIterator.getCount(), orIterator.getLength());
+        AnyTransitionCountsIterator orIterator;
 
-            //     assertEquals(expectedReader.getPosition(), orIterator.getPosition());
-            //   assertEquals(expectedReader.getCount(), orIterator.getCount());
-            // assertEquals(expectedReader.getLength(), orIterator.getLength());
-        }
+        /* orIterator = new AnyTransitionCountsIterator(reader0, reader1, reader2, reader3);
+       while (orIterator.hasNextTransition()) {
+           orIterator.nextTransition();
 
+           System.out.printf("position=%d count=%d length=%d%n", orIterator.getPosition(), orIterator.getCount(), orIterator.getLength());
+
+       }
+        */
         int[][] expected = {
                 //  {0, 0, 0, 0, 0},
                 //  {1, 0, 0, 0, 0},
