@@ -209,7 +209,7 @@ public class CoverageAnalysis {
     public double getEnrichmentEfficiency() {
         checkStatsEstimated();
 
-        return divide(cumulativeSitesCaptured[1], cumulativeSitesCaptured[1] + cumulativeSitesNotCaptured[1]);
+        return divide(cumulativeBasesCaptured[1], cumulativeBasesCaptured[1] + cumulativeBasesNotCaptured[1]);
 
     }
 

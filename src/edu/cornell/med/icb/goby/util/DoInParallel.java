@@ -33,10 +33,15 @@ public abstract class DoInParallel {
     private boolean parallel;
     protected static final Logger LOG = Logger.getLogger(DoInParallel.class);
     private int currentlyActive;
+    private int numThreads=-1;
 
     protected DoInParallel() {
-        super();
-    }
+            super();
+        }
+    protected DoInParallel(int numThreads) {
+            super();
+        this.numThreads=numThreads;
+        }
 
     protected synchronized ParallelTeam getParallelTeam() {
         if (team == null) {
@@ -45,7 +50,7 @@ public abstract class DoInParallel {
                 team = new ParallelTeam(1);
             } else {
                 // as many threads as configured with -Dpj.nt or default.
-                team = new ParallelTeam();
+                team = numThreads==-1?new ParallelTeam(): new ParallelTeam(numThreads);
             }
         }
         LOG.info("Executing on " + team.getThreadCount() + " threads.");

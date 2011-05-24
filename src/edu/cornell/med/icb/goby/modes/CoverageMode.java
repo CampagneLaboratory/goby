@@ -24,6 +24,7 @@ import edu.cornell.med.icb.goby.algorithmic.algorithm.CoverageAnalysis;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.counts.CountsArchiveReader;
 import edu.cornell.med.icb.goby.counts.CountsReader;
+import edu.cornell.med.icb.goby.util.DoInParallel;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -60,6 +61,7 @@ public class CoverageMode extends AbstractGobyMode {
      * Basename of the annotation counts archive.
      */
     private String annotationBasename;
+    private int numThreads;
 
 
     @Override
@@ -88,7 +90,7 @@ public class CoverageMode extends AbstractGobyMode {
         inputBasenames = jsapResult.getStringArray("input");
         statsOuputFilename = jsapResult.getString("output");
         annotationBasename = jsapResult.getString("annotation-basename");
-
+        numThreads=jsapResult.getInt("num-threads");
         return this;
     }
 
@@ -97,75 +99,88 @@ public class CoverageMode extends AbstractGobyMode {
      */
     @Override
     public void execute() {
-        PrintWriter output = null;
+        final PrintWriter output;
         try {
             output = statsOuputFilename.equals("-") ? new PrintWriter(System.out) : new PrintWriter(new FileWriter(statsOuputFilename));
 
+
+            DoInParallel forLoop = new DoInParallel(numThreads) {
+                @Override
+                public void action(DoInParallel forDataAccess, String inputBasename, int loopIndex) {
+                    process(output, inputBasename);
+                }
+            };
+
+            forLoop.execute(true, inputBasenames);
         } catch (IOException e) {
             System.err.println("An error occured opening the output file. ");
             System.exit(1);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        for (String basename : inputBasenames) {
-            try {
-                basename=AlignmentReaderImpl.getBasename(basename);
-                final AlignmentReaderImpl alignment = new AlignmentReaderImpl(basename);
-                alignment.readHeader();
-                alignment.close();
-                final IndexedIdentifier referenceIds = alignment.getTargetIdentifiers();
-                final DoubleIndexedIdentifier backwards = new DoubleIndexedIdentifier(referenceIds);
+    }
 
-                CountsArchiveReader archiveReader = new CountsArchiveReader(basename);
-                CountsArchiveReader annotationArchiveReader = new CountsArchiveReader(annotationBasename);
+    private void process(PrintWriter output, String basename) {
+        try {
+            basename = AlignmentReaderImpl.getBasename(basename);
+            final AlignmentReaderImpl alignment = new AlignmentReaderImpl(basename);
+            alignment.readHeader();
+            alignment.close();
+            final IndexedIdentifier referenceIds = alignment.getTargetIdentifiers();
+            final DoubleIndexedIdentifier backwards = new DoubleIndexedIdentifier(referenceIds);
 
-                ObjectOpenHashSet<String> archiveIdentifiers = new ObjectOpenHashSet<String>();
-                archiveIdentifiers.addAll(annotationArchiveReader.getIdentifiers());
-                CoverageAnalysis analysis = new CoverageAnalysis();
+            CountsArchiveReader archiveReader = new CountsArchiveReader(basename);
+            CountsArchiveReader annotationArchiveReader = new CountsArchiveReader(annotationBasename);
 
-                for (int referenceIndex = 0; referenceIndex < archiveReader.getNumberOfIndices(); referenceIndex++) {
-                    CountsReader reader = archiveReader.getCountReader(referenceIndex);
-                    // determine the corresponding chromosome in the annotation count archive:
-                    String countArchiveRefId = backwards.getId(referenceIndex).toString();
-                    if (archiveIdentifiers.contains(countArchiveRefId)) {
-                        System.out.println("Processing reference " + countArchiveRefId);
-                        CountsReader annotationReader = annotationArchiveReader.getCountReader(countArchiveRefId);
+            ObjectOpenHashSet<String> archiveIdentifiers = new ObjectOpenHashSet<String>();
+            archiveIdentifiers.addAll(annotationArchiveReader.getIdentifiers());
+            CoverageAnalysis analysis = new CoverageAnalysis();
 
-                        analysis.process(annotationReader, reader);
-                    } else {
-                        System.out.printf("Skipping chromosome: %s%n", countArchiveRefId);
-                    }
+            for (int referenceIndex = 0; referenceIndex < archiveReader.getNumberOfIndices(); referenceIndex++) {
+                CountsReader reader = archiveReader.getCountReader(referenceIndex);
+                // determine the corresponding chromosome in the annotation count archive:
+                String countArchiveRefId = backwards.getId(referenceIndex).toString();
+                if (archiveIdentifiers.contains(countArchiveRefId)) {
+                    System.out.println("Processing reference " + countArchiveRefId);
+                    CountsReader annotationReader = annotationArchiveReader.getCountReader(countArchiveRefId);
+
+                    analysis.process(annotationReader, reader);
+                } else {
+                    System.out.printf("Skipping chromosome: %s%n", countArchiveRefId);
                 }
-                long sumDepth = analysis.getSumDepth();
-                long countDepth = analysis.getCountDepth();
-                final double averageDepth = divide(sumDepth, countDepth);
-                System.out.printf("Average depth= %g %n", averageDepth);
-                long sumDepthAnnot = analysis.getSumDepthAnnot();
-                long countDepthAnnot = analysis.getCountDepthAnnot();
-                final double averageDepthCaptured = divide(sumDepthAnnot, countDepthAnnot);
-                System.out.printf("Average depth over annotations= %g %n", averageDepthCaptured);
-                analysis.estimateStatistics();
-
-                System.out.printf("Enrichment efficiency cumulative is %2g%%%n", 100d * analysis.getEnrichmentEfficiency());
-                System.out.printf("90%% of captured sites have depth>= %d%n", analysis.depthCapturedAtPercentile(.9));
-                System.out.printf("75%% of captured sites have depth>= %d%n", analysis.depthCapturedAtPercentile(.75));
-                System.out.printf("50%% of captured sites have depth>= %d%n", analysis.depthCapturedAtPercentile(.5));
-                System.out.printf("1%% of captured sites have depth>= %d%n", analysis.depthCapturedAtPercentile(.01));
-                output.printf("average-depth-captured\t%s\t%s\t%g%n", basename, "-", averageDepth);
-                output.printf("average-depth\t%s\t%s\t%g%n", basename, "-", averageDepthCaptured);
-
-                for (double percentile : new double[]{0.9, .75, .5, .1, .01}) {
-                    output.printf("depth-captured\t%s\t%s\t%d%n", basename, Integer.toString((int) (percentile * 100)),
-                            analysis.depthCapturedAtPercentile(percentile));
-                }
-                for (int depth : new int[]{5, 10, 15, 20, 30}) {
-                    output.printf("percent-capture-sites-at-depth\t%s\t%s\t%d%n", basename,
-                            Integer.toString((int) (100 * analysis.percentSitesCaptured(depth))),
-                            depth);
-                }
-                output.flush();
-            } catch (IOException e) {
-                System.err.println("Cannot open input basename : " + basename);
-                e.printStackTrace();
             }
+            long sumDepth = analysis.getSumDepth();
+            long countDepth = analysis.getCountDepth();
+            final double averageDepth = divide(sumDepth, countDepth);
+            System.out.printf("Average depth= %g %n", averageDepth);
+            long sumDepthAnnot = analysis.getSumDepthAnnot();
+            long countDepthAnnot = analysis.getCountDepthAnnot();
+            final double averageDepthCaptured = divide(sumDepthAnnot, countDepthAnnot);
+            System.out.printf("Average depth over annotations= %g %n", averageDepthCaptured);
+            analysis.estimateStatistics();
+
+            System.out.printf("Enrichment efficiency is %2g%%%n", 100d * analysis.getEnrichmentEfficiency());
+            System.out.printf("90%% of captured sites have depth>= %d%n", analysis.depthCapturedAtPercentile(.9));
+            System.out.printf("75%% of captured sites have depth>= %d%n", analysis.depthCapturedAtPercentile(.75));
+            System.out.printf("50%% of captured sites have depth>= %d%n", analysis.depthCapturedAtPercentile(.5));
+            System.out.printf("1%% of captured sites have depth>= %d%n", analysis.depthCapturedAtPercentile(.01));
+            output.printf("average-depth-captured\t%s\t%s\t%g%n", basename, "-", averageDepth);
+            output.printf("average-depth\t%s\t%s\t%g%n", basename, "-", averageDepthCaptured);
+            output.printf("enrichment-efficiency\t%s\t%g%%\t-%n", basename, 100d * analysis.getEnrichmentEfficiency());
+
+            for (double percentile : new double[]{0.9, .75, .5, .1, .01}) {
+                output.printf("depth-captured\t%s\t%s\t%d%n", basename, Integer.toString((int) (percentile * 100)),
+                        analysis.depthCapturedAtPercentile(percentile));
+            }
+            for (int depth : new int[]{5, 10, 15, 20, 30}) {
+                output.printf("percent-capture-sites-at-depth\t%s\t%s\t%d%n", basename,
+                        Integer.toString((int) (100 * analysis.percentSitesCaptured(depth))),
+                        depth);
+            }
+            output.flush();
+        } catch (IOException e) {
+            System.err.println("Cannot open input basename : " + basename);
+            e.printStackTrace();
         }
     }
 

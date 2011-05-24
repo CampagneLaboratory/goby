@@ -41,6 +41,19 @@
             <required>true</required>
             <greedy>true</greedy>
             <help>The basenames of the input alignments. This mode will use the .header and .count files for each alignment.</help>
-        </unflaggedOption>       
+        </unflaggedOption>
+        <flaggedOption>
+            <id>num-threads</id>
+            <shortFlag>t</shortFlag>
+            <longFlag>num-threads</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>-1</string>
+            </defaults>
+            <help>The number of threads to run with. When -1 defaults to the number of cores on the machine.</help>
+        </flaggedOption>
 </parameters>
 </jsap>
