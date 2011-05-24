@@ -204,10 +204,10 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
 
                         final int length = a.start - lastPosition;
                         if (length > 0) {
-                            System.out.printf("appending 0 for length=%d%n", length);
+                           // System.out.printf("appending 0 for length=%d%n", length);
 
                             countWriter.appendCount(0, length);
-                            System.out.printf("appending 1 for length=%d%n", a.end - a.start);
+                         //   System.out.printf("appending 1 for length=%d%n", a.end - a.start);
                             countWriter.appendCount(1, a.end - a.start);
                             lastPosition = a.end;
                         }

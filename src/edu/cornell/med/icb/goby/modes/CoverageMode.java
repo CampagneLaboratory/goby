@@ -107,6 +107,7 @@ public class CoverageMode extends AbstractGobyMode {
         }
         for (String basename : inputBasenames) {
             try {
+                basename=AlignmentReaderImpl.getBasename(basename);
                 final AlignmentReaderImpl alignment = new AlignmentReaderImpl(basename);
                 alignment.readHeader();
                 alignment.close();
@@ -151,9 +152,14 @@ public class CoverageMode extends AbstractGobyMode {
                 output.printf("average-depth-captured\t%s\t%s\t%g%n", basename, "-", averageDepth);
                 output.printf("average-depth\t%s\t%s\t%g%n", basename, "-", averageDepthCaptured);
 
-                for (double percentile : new double[]{0.9, .75, .5, 1}) {
+                for (double percentile : new double[]{0.9, .75, .5, .1, .01}) {
                     output.printf("depth-captured\t%s\t%s\t%d%n", basename, Integer.toString((int) (percentile * 100)),
                             analysis.depthCapturedAtPercentile(percentile));
+                }
+                for (int depth : new int[]{5, 10, 15, 20, 30}) {
+                    output.printf("percent-capture-sites-at-depth\t%s\t%s\t%d%n", basename,
+                            Integer.toString((int) (100 * analysis.percentSitesCaptured(depth))),
+                            depth);
                 }
                 output.flush();
             } catch (IOException e) {

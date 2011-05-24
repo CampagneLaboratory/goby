@@ -48,6 +48,9 @@ public class CoverageAnalysis {
     private long sumDepth = 0;
     private long countDepth = 0;
     private long sumDepthAnnot = 0;
+    /**
+     * The number of annotated/captured sites:
+     */
     private long countDepthAnnot = 0;
     private boolean statsEstimated = false;
     private long[] cumulativeSitesNotCaptured;
@@ -87,7 +90,7 @@ public class CoverageAnalysis {
     }
 
     public void process(CountsReaderI annotationReader, CountsReaderI reader) throws IOException {
-        orIterator = new UnionDumpIterator( reader, annotationReader);
+        orIterator = new UnionDumpIterator(reader, annotationReader);
 
         while (orIterator.hasNextTransition()) {
             orIterator.nextTransition();
@@ -108,6 +111,7 @@ public class CoverageAnalysis {
                 if (inAnnotation) {
                     sumDepthAnnot += numBases;
                     countDepthAnnot += length;
+
                 }
             }
             grow(depthTallyBasesInAnnotation, depth);
@@ -118,20 +122,20 @@ public class CoverageAnalysis {
 
             updateSites.set(depth, updateSites.get(depth) + length);
             updateBases.set(depth, updateBases.get(depth) + numBases);
-       /*     if (false) System.out.printf("position=%d depth=%d #sites=%d length=%d %n",
-                    position, depth,
-                    depthTallySitesInAnnotation.get(depth) + depthTallySitesOutsideAnnotation.get(depth),
-                    length);
-        if (false)    System.out.printf("annotations only position=%d depth=%d #sites=%d length=%d %n",
-                    position, depth,
-                    depthTallySitesInAnnotation.get(depth),
-                    length);
-         */
+            /*     if (false) System.out.printf("position=%d depth=%d #sites=%d length=%d %n",
+                       position, depth,
+                       depthTallySitesInAnnotation.get(depth) + depthTallySitesOutsideAnnotation.get(depth),
+                       length);
+           if (false)    System.out.printf("annotations only position=%d depth=%d #sites=%d length=%d %n",
+                       position, depth,
+                       depthTallySitesInAnnotation.get(depth),
+                       length);
+            */
             countAllBases += depth * length;
 
         }
         orIterator.close();
-        orIterator=null;
+        orIterator = null;
         Runtime.getRuntime().gc();
     }
 
@@ -183,7 +187,7 @@ public class CoverageAnalysis {
             sumBasesCaptured -= depthTallyBasesInAnnotation.get(depth);
             cumulativeBasesNotCaptured[depth] = sumBasesNotCaptured;
             sumBasesNotCaptured -= depthTallyBasesOutsideAnnotation.get(depth);
-           
+
 
             cumulativeSitesCaptured[depth] = sumSitesCaptured;
             sumSitesCaptured -= depthTallySitesInAnnotation.get(depth);
@@ -348,7 +352,7 @@ public class CoverageAnalysis {
         for (int depth = 0; depth < size; ++depth) {
 
             long sum = cumulativeSitesCaptured[depth];
-         //   System.out.printf("depth=%d sum %d threshold %g%n",depth, sum,threshold);
+            //   System.out.printf("depth=%d sum %d threshold %g%n",depth, sum,threshold);
             if (sum <= threshold) return depth;
         }
         return size - 1;
@@ -377,5 +381,15 @@ public class CoverageAnalysis {
 
     public long[] getCumulativeSitesNotCaptured() {
         return cumulativeSitesNotCaptured;
+    }
+
+    /**
+     * Returns the percentage of captured sites whose depth d is larger or equal to d
+     *
+     * @param d
+     * @return
+     */
+    public double percentSitesCaptured(int d) {
+        return divide(cumulativeSitesCaptured[d], countDepthAnnot);
     }
 }
