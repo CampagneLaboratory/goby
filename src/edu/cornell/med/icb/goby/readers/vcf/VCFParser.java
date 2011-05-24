@@ -114,8 +114,8 @@ public class VCFParser implements Closeable {
      */
     public VCFParser(String filename) throws IOException {
         this.input = filename.endsWith(".gz") ?
-                new InputStreamReader(new GZIPInputStream(new FileInputStream(filename), 100000)) :
-                new FileReader(filename);
+                new FastBufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(filename), 100000))) :
+                new FastBufferedReader(new FileReader(filename));
     }
 
     /**

@@ -108,7 +108,7 @@ public class VCFWriter {
     }
 
     public void addAlternateAllele(String allele) {
-        if (!altAlleles.contains(allele)) {
+        if (!altAlleles.contains(allele) && !refAlleles.contains(allele)) {
             altAlleles.add(allele);
         }
     }
