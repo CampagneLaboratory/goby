@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
 import edu.cornell.med.icb.goby.counts.AnyTransitionCountsIterator;
+import edu.cornell.med.icb.goby.counts.CountsAggregatorI;
 import edu.cornell.med.icb.goby.counts.CountsReaderI;
 import edu.cornell.med.icb.goby.counts.UnionDumpIterator;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -33,7 +34,7 @@ import java.io.IOException;
  *         Time: 10:44:00 AM
  */
 public class CoverageAnalysis {
-    UnionDumpIterator orIterator;
+    CountsAggregatorI orIterator;
     /**
      * Arrays where each element is the number of bases observed for which exactly i reads match span the base. The index of the array is i.
      */

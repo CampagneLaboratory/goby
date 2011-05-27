@@ -36,7 +36,7 @@ import java.util.Arrays;
  *         Date: Jun 13, 2009
  *         Time: 2:00:21 PM
  */
-public class AnyTransitionCountsIterator implements CountsReaderI {
+public class AnyTransitionCountsIterator implements CountsAggregatorI {
 
     private final CountsReaderI[] readers;
     /**
@@ -78,7 +78,7 @@ public class AnyTransitionCountsIterator implements CountsReaderI {
         readers = new CountsReaderI[countReader.length];
         int i = 0;
         for (CountsReaderI reader : countReader) {
-            readers[i++] = useAdapter ? new PositionAdapter(reader): reader;
+            readers[i++] = useAdapter ? new PositionAdapter(reader) : reader;
         }
         numReaders = countReader.length;
         position = new int[numReaders];
@@ -95,11 +95,6 @@ public class AnyTransitionCountsIterator implements CountsReaderI {
             return true;
         }
 
-//        extremities.clear();
-        // advance by at least one position:
-        //   currentPosition++;
-        // load count for each reader that transitions at this position:
-        int countReadersFinished = 0;
         for (int i = 0; i < numReaders; i++) {
 
             // passed the previous transition, must advance this reader.
@@ -111,8 +106,6 @@ public class AnyTransitionCountsIterator implements CountsReaderI {
                 // reader has no more transitions.
 
                 finished[i] = true;
-                countReadersFinished++;
-
                 if (currentPosition < lastPosition[i]) {
                     // last position is still in scope:
                     extremities.add(lastPosition[i]);
@@ -124,7 +117,7 @@ public class AnyTransitionCountsIterator implements CountsReaderI {
                     position[i] = readers[i].getPosition();
                     length[i] = readers[i].getLength();
                     extremities.add(position[i]);
-                    extremities.add(position[i] + length[i] - 1);
+                    extremities.add(position[i] + length[i] );
                 }
             }
         }
