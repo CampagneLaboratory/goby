@@ -120,6 +120,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
     private Properties keyValueProps;
 
     private boolean apiMode = true;
+    private int numThreads;
 
     /**
      * Returns the mode name defined by subclasses.
@@ -234,6 +235,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
         excludeQuality = jsapResult.getBoolean("exclude-quality");
         verboseQualityScores = jsapResult.getBoolean("verbose-quality-scores");
         qualityEncoding = QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
+        numThreads=jsapResult.getInt("num-threads");
         if (inputFilenames.length == 1) {
             outputFilename = jsapResult.getString("output");
         }
@@ -302,7 +304,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
                     throw e;
                 }
             } else {
-                final DoInParallel loop = new DoInParallel() {
+                final DoInParallel loop = new DoInParallel(numThreads) {
                     @Override
                     public void action(final DoInParallel forDataAccess, final String inputBasename, final int loopIndex) {
                         try {

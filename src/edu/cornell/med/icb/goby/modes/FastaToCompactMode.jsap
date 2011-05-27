@@ -90,6 +90,19 @@
             <longFlag>parallel</longFlag>
             <help>Process input files in parallel. Use when you have many input files to process. You can tune the number of processors used by setting the property pj.nt. For instance, -Dpj.nt=5 will use 5 parallel threads. When --parallel is specified, one thread per processing core of the machine will be used unless specified otherwise (with pj.nt).</help>
         </switch>
+        <flaggedOption>
+            <id>num-threads</id>
+            <shortFlag>t</shortFlag>
+            <longFlag>num-threads</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>-1</string>
+            </defaults>
+            <help>The number of threads to run with. When -1 defaults to the number of cores on the machine. This option is only active when --parallel is specified.</help>
+        </flaggedOption>
          <switch>
             <id>paired-end</id>
             <longFlag>paired-end</longFlag>

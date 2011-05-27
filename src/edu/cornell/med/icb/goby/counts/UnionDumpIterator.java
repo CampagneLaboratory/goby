@@ -24,7 +24,8 @@ import java.io.IOException;
 
 /**
  * A naive implementation of the union iterator. Beware, this is slow and uses a lot of memory (proportional to the
- * length of the sequence). 
+ * length of the sequence).
+ *
  * @author Fabien Campagne
  *         Date: May 23, 2011
  *         Time: 4:25:02 PM
@@ -36,13 +37,14 @@ public class UnionDumpIterator implements CountsReaderI {
     IntArrayList lengths[];
     int sizes[];
     int numReaders;
-    private int position = 0;
+    private int position=-1;
     private boolean hasNextTransition;
     private int index;
     private int count[];
     private int length;
     private int maxSize;
     private int beforePosition;
+    private boolean doneOnNext;
 
 
     public UnionDumpIterator(final CountsReaderI... countReader) throws IOException {
@@ -63,15 +65,15 @@ public class UnionDumpIterator implements CountsReaderI {
                 final int count = reader.getCount();
                 final int length = reader.getLength();
                 int pos = reader.getPosition();
-                for (int j = position; j < pos; ++j) {
-                    counts[i].add(0);
-                    //positions[i].add(j);
-                }
+                //    for (int j = position; j < pos; ++j) {
+                //        counts[i].add(0);
+                //positions[i].add(j);
+                //  }
                 for (int j = 0; j < length; j++) {
 
                     counts[i].add(count);
                     position++;
-                   // positions[i].add(position);
+                    // positions[i].add(position);
                 }
 
             }
@@ -90,27 +92,31 @@ public class UnionDumpIterator implements CountsReaderI {
         if (hasNextTransition) {
             return true;
         }
+        if (position>maxSize) return false;
+
         beforePosition = position;
         while (sameCounts(position, position + 1)) {
             ++position;
             ++length;
-            if (position + 1 >= maxSize) return false;
+            if (position + 1 >= maxSize) break;
         }
 
+        if (length == 0) return false;
         //  System.out.println("false");
         for (int i = 0; i < numReaders; i++) {
             final int count = position >= sizes[i] ? 0 : counts[i].getInt(position);
             this.count[i] = count;
         }
-        if (beforePosition == position) {
+       // if (beforePosition == position) {
             position++;
-        }
-        if (position + 1 >= maxSize) return false;
+       // }
+      //  if (position + 1 >= maxSize) doneOnNext = true;
         hasNextTransition = true;
         return true;
     }
 
     private boolean sameCounts(int position, int nextPos) {
+       if (position ==-1) return true;
         for (int i = 0; i < numReaders; i++) {
             if (nextPos < sizes[i] && counts[i].getInt(position) != counts[i].getInt(nextPos)) return false;
         }

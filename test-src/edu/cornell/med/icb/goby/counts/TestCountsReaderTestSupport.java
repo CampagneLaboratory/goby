@@ -49,31 +49,31 @@ public class TestCountsReaderTestSupport {
     public void validate() throws IOException {
 
         assertTrue(countsReader.hasNextTransition());
-        assertEquals(0, countsReader.getPosition());
+
 
         countsReader.nextTransition();
-
-        assertEquals(5, countsReader.getPosition());
+        // first position is zero by definition since it is the position of the base before the count transition occurs.
+        assertEquals(0, countsReader.getPosition());
         assertEquals(0, countsReader.getCount());
         assertEquals(5, countsReader.getLength());
 
         countsReader.nextTransition();
-        assertEquals(6, countsReader.getPosition());
+        assertEquals(5, countsReader.getPosition());
         assertEquals(1, countsReader.getCount());
         assertEquals(1, countsReader.getLength());
 
         countsReader.nextTransition();
-        assertEquals(26, countsReader.getPosition());
+        assertEquals(6, countsReader.getPosition());
         assertEquals(0, countsReader.getCount());
         assertEquals(20, countsReader.getLength());
 
         countsReader.nextTransition();
-        assertEquals(56, countsReader.getPosition());
+        assertEquals(26, countsReader.getPosition());
         assertEquals(20, countsReader.getCount());
         assertEquals(30, countsReader.getLength());
 
         countsReader.nextTransition();
-        assertEquals(1056, countsReader.getPosition());
+        assertEquals(56, countsReader.getPosition());
         assertEquals(0, countsReader.getCount());
         assertEquals(1000, countsReader.getLength());
 

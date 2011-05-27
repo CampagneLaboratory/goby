@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.counts;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 /**
  * An implementation of CountsReader to facilitate writting JUnit tests.
@@ -34,7 +35,7 @@ public class CountsReaderTestSupport implements CountsReaderI {
     private int[] counts;
     private int index;
     private int size;
-    private int currentPosition;
+    private int currentPosition = 0;
 
     /**
      * Creates a CountsReader with arrays of counts and lengths. Paired elements of the array
@@ -48,13 +49,13 @@ public class CountsReaderTestSupport implements CountsReaderI {
         IntArrayList counts = new IntArrayList();
         for (int i = 0; i < tokens.length; i++) {
             String token = tokens[i];
-            if (token.length()>0) {
+            if (token.length() > 0) {
                 String[] t = token.split(",");
                 lengths.add(Integer.parseInt(t[0]));
                 counts.add(Integer.parseInt(t[1]));
             }
         }
-       // System.out.printf("lengths: %s counts: %s", lengths, counts);
+        // System.out.printf("lengths: %s counts: %s", lengths, counts);
         init(lengths.toIntArray(), counts.toIntArray());
     }
 
@@ -79,23 +80,28 @@ public class CountsReaderTestSupport implements CountsReaderI {
     }
 
     public int getPosition() {
-  //      System.out.println("returning position="+currentPosition);
+        //      System.out.println("returning position="+currentPosition);
         return currentPosition;
     }
 
     public boolean hasNextTransition() throws IOException {
+
         return index + 1 < size;
     }
 
     public void nextTransition() throws IOException {
-        if (!hasNextTransition()) throw new IllegalStateException("no more elements.");
+        if (!hasNextTransition()) {
+            throw new NoSuchElementException("No such element.");
+        }
+        currentPosition +=  index>=0?lengths[index]:0;
+
         index++;
-        currentPosition += lengths[index];
+
 
     }
 
     public int getCount() {
-      //    System.out.println("returning count="+counts[index]);
+        //    System.out.println("returning count="+counts[index]);
         return counts[index];
     }
 

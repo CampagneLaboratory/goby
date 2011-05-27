@@ -58,7 +58,7 @@ public class TestAnyTransitionCountsIterator {
         }
         FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
     }
-
+     /*
     @Test
     public void testSimple1() throws IOException {
         final int[] starts1 = {
@@ -162,7 +162,7 @@ public class TestAnyTransitionCountsIterator {
         }
 
     }
-
+      */
     private void makeStartCounts(final int[] starts, final String filename) throws IOException {
         final ComputeStartCount computer = new ComputeStartCount(ComputeStartCount.POSITIVE_STRAND_ONLY);
         for (final int start : starts) {

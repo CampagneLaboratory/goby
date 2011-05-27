@@ -37,7 +37,7 @@ public class TestCoverageAnalysis {
     @Test
     public void constantDepth() throws IOException {
         CoverageAnalysis analysis = new CoverageAnalysis();
-        int[] annotLengths = {10};
+        final int[] annotLengths = {10};
         int[] annotCounts = {1};
         CountsReaderI annotations = new CountsReaderTestSupport(annotLengths, annotCounts);
 
@@ -45,7 +45,7 @@ public class TestCoverageAnalysis {
         int[] counts = {4};
         CountsReaderI reader = new CountsReaderTestSupport(lengths, counts);
 
-        analysis.process(annotations, reader);
+        analysis.process(annotations,reader);
 
         assertEquals(4d, analysis.getAverageDepth(), .01);
     }
@@ -80,13 +80,13 @@ public class TestCoverageAnalysis {
 
         analysis.process(annotations, reader);
 
-        assertEquals((2d * 4 + 4 * 3) / 7d, analysis.getAverageDepth(), .01);
-        assertEquals(4d, analysis.getAnnotationAverageDepth(), .01);
-        assertEquals(2d, analysis.getNotAnnotationAverageDepth(), .01);
+        assertEquals((2.0d * 4 + 4 * 3) / 7.0d, analysis.getAverageDepth(), 0.01d);
+        assertEquals(4.0d, analysis.getAnnotationAverageDepth(), 0.01);
+        assertEquals(2.0d, analysis.getNotAnnotationAverageDepth(), 0.01);
         analysis.estimateStatistics();
-        assertEquals(0d, analysis.getNumBasesWithDepthAtLeast(5), .1);
-        assertEquals(3 * 4d, analysis.getNumBasesWithDepthAtLeast(4), .1);
-        assertEquals(3d, analysis.getNumSitesWithDepthAtLeast(4), .1);
+        assertEquals(0.0d, analysis.getNumBasesWithDepthAtLeast(5), 0.1);
+        assertEquals(3 * 4.0d, analysis.getNumBasesWithDepthAtLeast(4), 0.1);
+        assertEquals(3.0d, analysis.getNumSitesWithDepthAtLeast(4), 0.1);
 
     }
 

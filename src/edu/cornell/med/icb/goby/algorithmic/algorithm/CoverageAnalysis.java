@@ -94,8 +94,8 @@ public class CoverageAnalysis {
 
         while (orIterator.hasNextTransition()) {
             orIterator.nextTransition();
-            int annotationCount = orIterator.getCount(1);
             int readerCount = orIterator.getCount(0);
+            int annotationCount = orIterator.getCount(1);
             int position = orIterator.getPosition();
             int length = orIterator.getLength();
             int end = position + length;
