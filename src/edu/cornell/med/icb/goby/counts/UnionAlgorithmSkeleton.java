@@ -18,37 +18,105 @@
 
 package edu.cornell.med.icb.goby.counts;
 
+
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
+
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 /**
  * Skeleton for algorithm development discussion.
+ *
  * @author Fabien Campagne
  *         Date: 5/26/11
  *         Time: 10:14 PM
  */
-public class UnionAlgorithmSkeleton  implements CountsReaderI {
+public class UnionAlgorithmSkeleton implements CountsReaderI {
     private int numReaders;
     private CountsReaderI[] readers;
+    private boolean hasNextTransition;
+    private int length;
+    private int position = 0;
+    private int first;
+    private int second;
+    private int[] positions;
 
-    public UnionAlgorithmSkeleton(CountsReaderI ... readers) {
-        this.numReaders=readers.length;
-        this.readers=readers;
+    public UnionAlgorithmSkeleton(CountsReaderI... readers) {
+        this.numReaders = readers.length;
+        this.readers = readers;
+        this.counts = new int[this.numReaders];
+        this.positions = new int[this.numReaders];
     }
 
     public int getPosition() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return position;
     }
+
+    int counts[];
+    IntArraySet startAndEndPositions = new IntArraySet();
 
     public boolean hasNextTransition() throws IOException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        if (hasNextTransition) {
+            return true;
+        }
+        hasNextTransition = false;
+
+        for (int readerIndex = 0; readerIndex < numReaders; ++readerIndex) {
+            final CountsReaderI reader = readers[readerIndex];
+            if (reader.hasNextTransition()) {
+                reader.nextTransition();
+                startAndEndPositions.add(reader.getPosition());
+                startAndEndPositions.add(reader.getPosition() + reader.getLength());
+                counts[readerIndex] = reader.getCount();
+                positions[readerIndex] = reader.getPosition();
+            }
+        }
+
+        first = first(startAndEndPositions);
+        second = second(startAndEndPositions, first);
+        //TODO handle if Integer.MAX_VALUE is back.
+        length = second - first;
+        startAndEndPositions.rem(first);
+        position = first;
+        hasNextTransition=startAndEndPositions.size() >= 2;
+        return hasNextTransition;
     }
+
+    /**
+     * Returns the  minimum value in array excluding first. Returns Integer.MAX_VALUE if the array
+     * is empty or contains first.
+     *
+     * @param array
+     * @param first
+     * @return
+     */
+    private int second(final IntArraySet array, final int first) {
+        int min = Integer.MAX_VALUE;
+        for (final int value : array) {
+            if (value != first) min = Math.min(value, min);
+        }
+        return min;
+    }
+
+    private int first(final IntArraySet array) {
+        int min = Integer.MAX_VALUE;
+        for (final int value : array) {
+            min = Math.min(value, min);
+        }
+        return min;
+    }
+
 
     public void nextTransition() throws IOException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        if (!hasNextTransition()) {
+            throw new NoSuchElementException("no elements left in reader.");
+        }
+        hasNextTransition = false;
     }
 
 
-    public void skipTo(int position) throws IOException {
+    public void skipTo(int position) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -56,7 +124,7 @@ public class UnionAlgorithmSkeleton  implements CountsReaderI {
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void close() throws IOException {
+    public void close() {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -77,11 +145,18 @@ public class UnionAlgorithmSkeleton  implements CountsReaderI {
 
     /**
      * Return the count for a specific reader.
-     * @param readerIndex  Index ((zero-based) of the reader when provided as parameter to the constructor
+     *
+     * @param readerIndex Index ((zero-based) of the reader when provided as parameter to the constructor
      * @return count for the reader identified by readerIndex.
      */
     public final int getCount(final int readerIndex) {
-      return 0;
-      //To change body of implemented methods use File | Settings | File Templates.
+        return isReaderInRange(readerIndex) ? counts[readerIndex]:0;
+
+    }
+
+    private boolean isReaderInRange(final int readerIndex) {
+        final int readerPosition = positions[readerIndex];
+        if (readerPosition >=first  && readerPosition<second) return true;
+        else return false;
     }
 }

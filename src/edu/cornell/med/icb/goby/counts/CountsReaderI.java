@@ -32,7 +32,12 @@ import java.io.IOException;
  */
 public interface CountsReaderI extends Closeable {
     /**
-     * Return the position along the sequence where the count is observed.
+     * Return the zero-based position along the sequence where the count is observed. For instance
+     * getPosition() will return 1 on the first transition of the toy histogram shown below (and 3
+     * on the second transition):
+     *
+     *  xx
+     * 0123
      *
      * @return
      */

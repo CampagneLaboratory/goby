@@ -18,17 +18,43 @@
 
 package edu.cornell.med.icb.goby.counts;
 
+import it.unimi.dsi.lang.MutableString;
 import org.junit.Test;
+
+import java.io.IOException;
+
+import static junit.framework.Assert.assertEquals;
 
 /**
  * Skeleton for testing union algorithm.
+ *
  * @author Fabien Campagne
  *         Date: 5/26/11
  *         Time: 9:47 PM
  */
 public class TestCountUnionAlgorithmSkeleton {
     @Test
-    public void testCase1() {
+    /**
+     * https://docs.google.com/document/d/1VtHTd3Bq9iFC-pAISVtnEBt8EbkWZ9Ot356pjRE5poc/edit?hl=en_US#
+     */
+    public void testCase1() throws IOException {
+        CountsReaderI reader0 = new CountsReaderTestSupport("(1,0)(3,3)(2,-3)");
+        CountsReaderI reader1 = new CountsReaderTestSupport("(6,1)");
 
+        String expected ="(1,1)(3,3)(2,-3)";
+
+        UnionAlgorithmSkeleton unionAlgo=new UnionAlgorithmSkeleton(reader0, reader1);
+
+        CountsReaderI reader = unionAlgo;
+        MutableString result=new MutableString();
+
+        while (reader.hasNextTransition()) {
+            reader.nextTransition();
+            result.append(String.format("(%d,%d)", reader.getPosition(),
+                    reader.getCount()));
+
+        }
+        System.out.println("result: "+result);
+        assertEquals("the result of the union must match", expected,result.toString());
     }
 }
