@@ -37,7 +37,7 @@ public class UnionDumpIterator implements CountsReaderI {
     IntArrayList lengths[];
     int sizes[];
     int numReaders;
-    private int position=-1;
+    private int position = 0;
     private boolean hasNextTransition;
     private int index;
     private int count[];
@@ -92,32 +92,32 @@ public class UnionDumpIterator implements CountsReaderI {
         if (hasNextTransition) {
             return true;
         }
-        if (position>maxSize) return false;
+        if (position > maxSize) return false;
 
         beforePosition = position;
-        while (sameCounts(position, position + 1)) {
+        while (sameCounts(position, position + 1) && position < maxSize) {
             ++position;
-            ++length;
-            if (position + 1 >= maxSize) break;
         }
 
-        if (length == 0) return false;
-        //  System.out.println("false");
+        length = position - beforePosition + 1;
+        System.out.printf("Position %d length=%d%n",position, length);
+
         for (int i = 0; i < numReaders; i++) {
-            final int count = position >= sizes[i] ? 0 : counts[i].getInt(position);
+            final int count = beforePosition >= sizes[i] ? 0 : counts[i].getInt(beforePosition);
             this.count[i] = count;
+          //  System.out.printf("Position %d count[%d]=%d%n",position, i,count);
         }
-       // if (beforePosition == position) {
-            position++;
-       // }
-      //  if (position + 1 >= maxSize) doneOnNext = true;
+        position+=length-1;
+
         hasNextTransition = true;
         return true;
     }
 
     private boolean sameCounts(int position, int nextPos) {
-       if (position ==-1) return true;
+        if (position == -1) return true;
+
         for (int i = 0; i < numReaders; i++) {
+
             if (nextPos < sizes[i] && counts[i].getInt(position) != counts[i].getInt(nextPos)) return false;
         }
         return true;

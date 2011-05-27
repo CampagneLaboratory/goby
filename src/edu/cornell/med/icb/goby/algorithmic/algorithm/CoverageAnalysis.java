@@ -106,6 +106,8 @@ public class CoverageAnalysis {
             int depth = readerCount;
             final int numBases = depth * length;
             if (depth != 0) {
+               // System.out.printf("Position %d Adding %d to sumDepth.%n",position, numBases);
+              //  System.out.printf("Position %d Adding %d to countDepth.%n",position, length);
                 sumDepth += numBases;
                 countDepth += length;
                 if (inAnnotation) {
