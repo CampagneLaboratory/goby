@@ -30,7 +30,7 @@ import java.io.IOException;
  *         Date: May 23, 2011
  *         Time: 4:25:02 PM
  */
-public class UnionDumpIterator implements CountsReaderI {
+public class UnionDumpIterator implements CountsAggregatorI {
     private CountsReaderI[] readers;
     IntArrayList positions[];
     IntArrayList counts[];
@@ -92,7 +92,10 @@ public class UnionDumpIterator implements CountsReaderI {
         if (hasNextTransition) {
             return true;
         }
-        if (position > maxSize) return false;
+        if (position > maxSize) {
+            beforePosition = position - 1;
+            return false;
+        }
 
         beforePosition = position;
         while (sameCounts(position, position + 1) && position < maxSize) {
@@ -105,14 +108,14 @@ public class UnionDumpIterator implements CountsReaderI {
         for (int i = 0; i < numReaders; i++) {
             final int count = beforePosition >= sizes[i] ? 0 : counts[i].getInt(beforePosition);
             this.count[i] = count;
-         //   System.out.printf("Position %d count[%d]=%d%n",position, i,count);
+            //   System.out.printf("Position %d count[%d]=%d%n",position, i,count);
         }
 
-          position++;
-        if (position>=maxSize) {
-            length-=1;
+        position++;
+        if (position >= maxSize) {
+            length -= 1;
         }
-       // position+=length-1;
+        // position+=length-1;
 
         hasNextTransition = true;
         return true;
@@ -123,8 +126,15 @@ public class UnionDumpIterator implements CountsReaderI {
 
         for (int i = 0; i < numReaders; i++) {
 
+
             if (nextPos < sizes[i] && counts[i].getInt(position) != counts[i].getInt(nextPos)) return false;
+            if (nextPos==sizes[i]
+                    && counts[i].getInt(position) !=0 && nextPos!=maxSize) {
+                // the reader ends in a count different from zero, we have to detect that transition.
+                return false;
+           }
         }
+
         return true;
     }
 

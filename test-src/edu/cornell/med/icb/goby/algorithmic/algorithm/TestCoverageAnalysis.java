@@ -18,12 +18,12 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import edu.cornell.med.icb.goby.counts.AnyTransitionCountsIterator;
-import edu.cornell.med.icb.goby.counts.CountsReaderI;
-import edu.cornell.med.icb.goby.counts.CountsReaderTestSupport;
+import edu.cornell.med.icb.goby.counts.*;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.lang.MutableString;
+
 import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 import java.io.IOException;
@@ -45,7 +45,7 @@ public class TestCoverageAnalysis {
         int[] counts = {4};
         CountsReaderI reader = new CountsReaderTestSupport(lengths, counts);
 
-        analysis.process(annotations,reader);
+        analysis.process(annotations, reader);
 
         assertEquals(4d, analysis.getAverageDepth(), .01);
     }
@@ -54,7 +54,7 @@ public class TestCoverageAnalysis {
     public void constantDepth2() throws IOException {
         CoverageAnalysis analysis = new CoverageAnalysis();
         int[] annotLengths = {20, 10, 0};
-        int[] annotCounts =  {0,   1, 0};
+        int[] annotCounts = {0, 1, 0};
         CountsReaderI annotations = new CountsReaderTestSupport(annotLengths, annotCounts);
 
         int[] lengths = {20, 10};
@@ -220,7 +220,7 @@ public class TestCoverageAnalysis {
 
 
     //TODO this test must pass without the final (1,0) in annotation.
-  @Test
+    @Test
     public void problemWithAnnotationsTooShort() throws IOException {
         CoverageAnalysis analysis = new CoverageAnalysis();
         // (length, count) (2,0) (8,1) (1,0)
@@ -376,85 +376,34 @@ public class TestCoverageAnalysis {
     public void small() throws IOException {
 
 
-        // (length, count) (2,0) (8,1) (1,0)
-
-
         assertEquals("(1,0)(3,1)", outputLengthCount("(1,0)(3,1)"));
-        assertEquals("(1,0)(4,1)", outputPositionCount("(1,0)(3,1)"));
+        assertEquals("(0,0)(1,1)(4,0)", outputPositionCount("(1,0)(3,1)"));
     }
 
-    
+    @Test
+    public void goBackToZero() throws IOException {
+
+        assertEquals("(0,0)(2,1)(4,0)(6,1)(7,0)", outputPositionCount("(2,0)(2,1)(2,0)(1,1)"));
+    }
+
     @Test
     public void twoFlats() throws IOException {
 
 
-        // (length, count) (2,0) (8,1) (1,0)
 
-
-        String expected = "(2,0)(1,1)(2,0)(2,1)(2,2)(1,1)(1,2)(2,1)(1,2)(1,1)";
+        String expected = "(0,0)(2,0)(1,1)(2,0)(2,1)(2,2)(1,1)(1,2)(2,1)(1,2)(1,1)";
 
         String produced =
                 outputLengthCount("(2,0)(1,1)(4,0)(2,1)(1,0)(1,1)(2,0)(1,1)(3,0)(1,1)",
-                "(5,0)(10,1)");
-        //    assertEquals(expected, produced);
+                        "(5,0)(10,1)");
 
 
-        assertEquals("(2,0)(3,1)(5,0)(7,1)(9,2)(10,1)(11,2)(13,1)(14,2)(15,1)(17,0)(18,1)",
+        assertEquals("(0,0)(2,1)(3,0)(5,1)(7,2)(9,1)(10,2)(11,1)(13,2)(14,1)(15,0)(17,1)(18,0)",
 
                 outputPositionCount("(2,0)(1,1)(4,0)(2,1)(1,0)(1,1)(2,0)(1,1)(3,0)(1,1)",
-                "(5,0)(10,1)"));
-        /*
-        int[][] expected = {
-                // {0, 0, 0},
-                {1, 0, 0},
-                {2, 1, 0},
-                {3, 0, 0},
-                //          {4, 0, 0},
-                {5, 0, 1},
-                //        {6, 0, 1},
-                {7, 1, 1},
-                //      {8, 1, 1},
-                {9, 0, 1},
-                {10, 1, 1},
-                {11, 0, 1},
-                //    {12, 0, 1},
-                {13, 1, 1},
-                {14, 0, 1},
-                {15, 0, 0},
-                //  {16, 0, 0},
-                {17, 1, 0}};
+                        "(5,0)(10,1)"));
 
-
-        orIterator = new AnyTransitionCountsIterator(reader0, reader1);
-
-        int index = 0;
-        while (orIterator.hasNextTransition()) {
-            orIterator.nextTransition();
-            int position = orIterator.getPosition();
-            System.out.printf("index=%d position=%d %n", index, position);
-            assertEquals(expected[index][0], position);
-            for (int readerIndex = 0; readerIndex < 2; readerIndex++) {
-                assertEquals(expected[index][readerIndex + 1], orIterator.getCount(readerIndex));
-            }
-            index++;
-        }
-        */
     }
-      @Test
-    public void testNegativeStart() throws IOException {
-
-          assertEquals("(2,0)(4,1)(5,2)(62,1)",
-                outputPositionCount("(4,0)(1,1)",
-                "(2,0)(60,1)"));
-    }
-       @Test
-    public void testAnnotation() throws IOException {
-
-          assertEquals("(32271285,1)(32271290,1)(32271295,1)",
-                outputPositionCount("(32271280,0)(770290,1)",
-                "(32271285,0)(1,1)(5,0)(1,1)(5,0)(1,1)"));
-    }
-
 
     private String outputLengthCount(final String... formats) throws IOException {
         CountsReaderI readers[] = new CountsReaderI[formats.length];
@@ -463,9 +412,9 @@ public class TestCoverageAnalysis {
             readers[i] = new CountsReaderTestSupport(format);
             i++;
         }
-        AnyTransitionCountsIterator orIterator;
+        CountsAggregatorI orIterator;
         MutableString result = new MutableString();
-        orIterator = new AnyTransitionCountsIterator(readers);
+        orIterator = new UnionDumpIterator(readers);
         while (orIterator.hasNextTransition()) {
             orIterator.nextTransition();
 
@@ -482,15 +431,16 @@ public class TestCoverageAnalysis {
             readers[i] = new CountsReaderTestSupport(format);
             i++;
         }
-        AnyTransitionCountsIterator orIterator;
+        CountsAggregatorI orIterator;
         MutableString result = new MutableString();
-        orIterator = new AnyTransitionCountsIterator(readers);
+        orIterator = new UnionDumpIterator(readers);
         while (orIterator.hasNextTransition()) {
             orIterator.nextTransition();
 
             result.append(String.format("(%d,%d)", orIterator.getPosition(), orIterator.getCount()));
 
         }
+        result.append(String.format("(%d,%d)", orIterator.getPosition(), 0));
         return result.toString();
     }
 
