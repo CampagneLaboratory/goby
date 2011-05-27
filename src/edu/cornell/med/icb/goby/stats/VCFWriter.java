@@ -58,7 +58,7 @@ public class VCFWriter {
     private CharSequence[] formatFieldIds;
     private MutableString ref;
     private MutableString alt;
-    private CharSequence qual=".";
+    private CharSequence qual = ".";
     private CharSequence filter;
 
     private boolean[] formatFieldActive;
@@ -571,7 +571,7 @@ public class VCFWriter {
     }
 
     public void setSampleValue(String formatToken, int sampleIndex, String value) {
-        int formatFieldIndex = formatTypeToFormatFieldIndex.get(formatToken);
+        int formatFieldIndex = formatTypeToFormatFieldIndex.getInt(formatToken);
         setSampleValue(formatFieldIndex, sampleIndex, value);
     }
 

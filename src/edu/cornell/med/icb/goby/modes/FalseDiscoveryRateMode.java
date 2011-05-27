@@ -456,7 +456,9 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                                 */
 
                                 if (formatFieldIndex < formatTokens.length) {
-                                    vcfWriter.setSampleValue(formatTokens[formatFieldIndex], sampleIndex, value);
+                                    if (!"".equals(formatTokens[formatFieldIndex])) {
+                                        vcfWriter.setSampleValue(formatTokens[formatFieldIndex], sampleIndex, value);
+                                    }
                                 }
 
                                 formatFieldCount++;
