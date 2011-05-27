@@ -54,7 +54,7 @@ public class TestCoverageAnalysis {
     public void constantDepth2() throws IOException {
         CoverageAnalysis analysis = new CoverageAnalysis();
         int[] annotLengths = {20, 10, 0};
-        int[] annotCounts = {0, 1, 0};
+        int[] annotCounts =  {0,   1, 0};
         CountsReaderI annotations = new CountsReaderTestSupport(annotLengths, annotCounts);
 
         int[] lengths = {20, 10};

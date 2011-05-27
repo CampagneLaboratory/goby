@@ -100,14 +100,19 @@ public class UnionDumpIterator implements CountsReaderI {
         }
 
         length = position - beforePosition + 1;
-        System.out.printf("Position %d length=%d%n",position, length);
+        // System.out.printf("Position %d length=%d%n",position, length);
 
         for (int i = 0; i < numReaders; i++) {
             final int count = beforePosition >= sizes[i] ? 0 : counts[i].getInt(beforePosition);
             this.count[i] = count;
-          //  System.out.printf("Position %d count[%d]=%d%n",position, i,count);
+         //   System.out.printf("Position %d count[%d]=%d%n",position, i,count);
         }
-        position+=length-1;
+
+          position++;
+        if (position>=maxSize) {
+            length-=1;
+        }
+       // position+=length-1;
 
         hasNextTransition = true;
         return true;
