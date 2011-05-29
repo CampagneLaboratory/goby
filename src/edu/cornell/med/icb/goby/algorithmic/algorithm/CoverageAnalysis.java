@@ -91,7 +91,7 @@ public class CoverageAnalysis {
     }
 
     public void process(CountsReaderI annotationReader, CountsReaderI reader) throws IOException {
-        orIterator = new UnionDumpIterator(reader, annotationReader);
+        orIterator = new AnyTransitionCountsIterator(reader, annotationReader);
 
         while (orIterator.hasNextTransition()) {
             orIterator.nextTransition();

@@ -1,8 +1,14 @@
-development -> 1.9.6.2
+development -> 1.9.7
  - Make it possible to open an alignment if the header file is present, but the entries file is missing.
    This allows to read the header only, for instance when we need to load counts and have access to targetIds.
  - Add mode to convert annotations to counts archive format.
- - Add draft mode to calculate coverage stats over annotation regions.
+ - Add new coverage mode to calculate coverage stats over annotation regions. When annotation regions are
+   defined with capture regions, this mode outputs enrichment efficiency efficiency and depth of coverage for
+   specific proportions of captured sites.
+   The mode uses just .header and .count files and traverses count transitions. The algorithm used to iterate
+   through count transitions is very efficient (for instance it takes about ~20 seconds to estimate coverage
+   stats for an alignment with ~20M aligned reads). Count files are produced with GobyWeb together with the
+   alignment or with the alignment-to-counts mode.
 
 1.9.6.1
  - Patched VCF output for compatibility with VCF specification. Specifically, we now write . in the QUAL

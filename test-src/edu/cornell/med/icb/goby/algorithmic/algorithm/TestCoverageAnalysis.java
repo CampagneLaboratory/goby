@@ -18,15 +18,17 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import edu.cornell.med.icb.goby.counts.*;
+import edu.cornell.med.icb.goby.counts.AnyTransitionCountsIterator;
+import edu.cornell.med.icb.goby.counts.CountsAggregatorI;
+import edu.cornell.med.icb.goby.counts.CountsReaderI;
+import edu.cornell.med.icb.goby.counts.CountsReaderTestSupport;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.lang.MutableString;
-
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
 
 import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Fabien Campagne
@@ -390,7 +392,6 @@ public class TestCoverageAnalysis {
     public void twoFlats() throws IOException {
 
 
-
         String expected = "(0,0)(2,0)(1,1)(2,0)(2,1)(2,2)(1,1)(1,2)(2,1)(1,2)(1,1)";
 
         String produced =
@@ -414,7 +415,7 @@ public class TestCoverageAnalysis {
         }
         CountsAggregatorI orIterator;
         MutableString result = new MutableString();
-        orIterator = new UnionDumpIterator(readers);
+        orIterator = new AnyTransitionCountsIterator(readers);
         while (orIterator.hasNextTransition()) {
             orIterator.nextTransition();
 
@@ -433,7 +434,7 @@ public class TestCoverageAnalysis {
         }
         CountsAggregatorI orIterator;
         MutableString result = new MutableString();
-        orIterator = new UnionDumpIterator(readers);
+        orIterator = new AnyTransitionCountsIterator(readers);
         while (orIterator.hasNextTransition()) {
             orIterator.nextTransition();
 
@@ -445,7 +446,7 @@ public class TestCoverageAnalysis {
     }
 
 
-    //TODO reactivate these tests
+    @Test
     public void fourFlats() throws IOException {
 
 
@@ -455,30 +456,23 @@ public class TestCoverageAnalysis {
         CountsReaderI reader1 = new CountsReaderTestSupport("(2,0)(6,1)");
         CountsReaderI reader2 = new CountsReaderTestSupport("(3,0)(7,1) ");
         CountsReaderI reader3 = new CountsReaderTestSupport("(5,0)(10,1) ");
-        AnyTransitionCountsIterator orIterator;
+        CountsAggregatorI orIterator;
 
-        /* orIterator = new AnyTransitionCountsIterator(reader0, reader1, reader2, reader3);
-       while (orIterator.hasNextTransition()) {
-           orIterator.nextTransition();
 
-           System.out.printf("position=%d count=%d length=%d%n", orIterator.getPosition(), orIterator.getCount(), orIterator.getLength());
-
-       }
-        */
         int[][] expected = {
-                //  {0, 0, 0, 0, 0},
-                //  {1, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0},
+                //           {1, 0, 0, 0, 0},    counts are same as previous solution, will not be returned.
                 {2, 0, 1, 0, 0},
                 {3, 0, 1, 1, 0},
-                {4, 0, 1, 1, 0},
+                // {4, 0, 1, 1, 0},      counts are same as previous solution, will not be returned.
                 {5, 1, 1, 1, 1},
                 {6, 0, 1, 1, 1},
-                {7, 0, 1, 1, 1},
+                //    {7, 0, 1, 1, 1},
                 {8, 0, 0, 1, 1},
                 {9, 1, 0, 1, 1},
                 {10, 0, 0, 0, 1},
-                {11, 0, 0, 0, 1},
-                {12, 0, 0, 0, 1},
+                //  {11, 0, 0, 0, 1},     counts are same as previous solution, will not be returned.
+                //   {12, 0, 0, 0, 1},     counts are same as previous solution, will not be returned.
                 {13, 1, 0, 0, 1},
                 {14, 0, 0, 0, 1},
                 {15, 1, 0, 0, 0},
@@ -492,10 +486,55 @@ public class TestCoverageAnalysis {
         while (orIterator.hasNextTransition()) {
             orIterator.nextTransition();
             int position = orIterator.getPosition();
-            System.out.printf("index=%d position=%d %n", index, position);
+
             assertEquals(expected[index][0], position);
             for (int readerIndex = 0; readerIndex < 4; readerIndex++) {
-                assertEquals(expected[index][readerIndex + 1], orIterator.getCount(readerIndex));
+                assertEquals(String.format("count must match for reader[%d] at position %d ", readerIndex, position)
+                        , expected[index][readerIndex + 1], orIterator.getCount(readerIndex));
+            }
+            index++;
+        }
+
+    }
+
+    @Test
+    public void fourSkipTo() throws IOException {
+
+
+        // (length, count) (2,0) (8,1) (1,0)
+
+        CountsReaderI reader0 = new CountsReaderTestSupport("(5,0)(1,1)(3,0)(1,1)(3,0)(1,1)(1,0)(1,1)(1,0)(1,1) ");
+        CountsReaderI reader1 = new CountsReaderTestSupport("(2,0)(6,1)");
+        CountsReaderI reader2 = new CountsReaderTestSupport("(3,0)(7,1) ");
+        CountsReaderI reader3 = new CountsReaderTestSupport("(5,0)(10,1) ");
+        CountsAggregatorI orIterator;
+
+
+        int[][] expected = {
+
+
+            //    {9, 1, 0, 1, 1},
+                {10, 0, 0, 0, 1},
+                //  {11, 0, 0, 0, 1},     counts are same as previous solution, will not be returned.
+                //   {12, 0, 0, 0, 1},     counts are same as previous solution, will not be returned.
+                {13, 1, 0, 0, 1},
+                {14, 0, 0, 0, 1},
+                {15, 1, 0, 0, 0},
+                {16, 0, 0, 0, 0},
+                {17, 1, 0, 0, 0}};
+
+
+        orIterator = new AnyTransitionCountsIterator(reader0, reader1, reader2, reader3);
+        orIterator.skipTo(9);
+        int index = 0;
+        while (orIterator.hasNextTransition()) {
+            orIterator.nextTransition();
+            int position = orIterator.getPosition();
+
+            assertEquals(expected[index][0], position);
+            for (int readerIndex = 0; readerIndex < 4; readerIndex++) {
+                assertEquals(String.format("count must match for reader[%d] at position %d ", readerIndex, position)
+                        , expected[index][readerIndex + 1], orIterator.getCount(readerIndex));
             }
             index++;
         }

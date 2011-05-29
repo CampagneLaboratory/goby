@@ -23,9 +23,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -33,6 +30,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Fabien Campagne
@@ -58,6 +57,34 @@ public class TestAnyTransitionCountsIterator {
         }
         FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
     }
+
+    @Test
+    /**
+     * https://docs.google.com/document/d/1VtHTd3Bq9iFC-pAISVtnEBt8EbkWZ9Ot356pjRE5poc/edit?hl=en_US#
+     */
+    public void testCase1() throws IOException {
+
+
+        assertEquals("the result of the union must match", "(0,1)(1,4)(4,1)(6,0)",
+                TestCountUnionAlgorithmSkeleton.unionPositionCount("(1,0)(3,3)(2,0)", "(6,1)"));
+    }
+
+
+    @Test
+    /**
+     * https://docs.google.com/document/d/1VtHTd3Bq9iFC-pAISVtnEBt8EbkWZ9Ot356pjRE5poc/edit?hl=en_US#
+     */
+    public void testCase2() throws IOException {
+
+        assertEquals("the result of the union must match", "(0,0)(1,1)(2,0)(4,1)(6,2)(8,1)(9,2)(10,1)(12,2)(13,1)(14,0)(16,1)(17,0)",
+                TestCountUnionAlgorithmSkeleton.unionPositionCount("(1,0)(1,1)(4,0)(2,1)(1,0)(1,1)(2,0)(1,1)(3,0)(1,1)",
+                        "(4,0)(10,1)"));
+
+        assertEquals("the result of the union must match", "(1,0)(1,1)(2,0)(2,1)(2,2)(1,1)(1,2)(2,1)(1,2)(1,1)(2,0)(1,1)(0,0)",
+                TestCountUnionAlgorithmSkeleton.unionLengthCount("(1,0)(1,1)(4,0)(2,1)(1,0)(1,1)(2,0)(1,1)(3,0)(1,1)",
+                        "(4,0)(10,1)"));
+    }
+
      /*
     @Test
     public void testSimple1() throws IOException {
@@ -162,7 +189,7 @@ public class TestAnyTransitionCountsIterator {
         }
 
     }
-      */
+
     private void makeStartCounts(final int[] starts, final String filename) throws IOException {
         final ComputeStartCount computer = new ComputeStartCount(ComputeStartCount.POSITIVE_STRAND_ONLY);
         for (final int start : starts) {
@@ -173,4 +200,5 @@ public class TestAnyTransitionCountsIterator {
         computer.baseCount(writer);
         writer.close();
     }
+    */
 }

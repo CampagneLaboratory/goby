@@ -20,11 +20,11 @@
 
 package edu.cornell.med.icb.goby.counts;
 
-import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
-import it.unimi.dsi.fastutil.ints.IntSortedSet;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 
 /**
  * Iterates through a set of count readers, returning a transition whenever one of the
@@ -37,143 +37,146 @@ import java.util.Arrays;
  *         Time: 2:00:21 PM
  */
 public class AnyTransitionCountsIterator implements CountsAggregatorI {
-
-    private final CountsReaderI[] readers;
-    /**
-     * The position each reader is at:
-     */
-    private final int[] position;
-    /**
-     * The count the reader sees at the current position.
-     */
-    private final int[] count;
-    /**
-     * The length each reader has, at its own position.
-     */
-    private int[] length;
-    /**
-     * Contains the start and end position of the last entry obtained from each active reader. An extremity is
-     * removed when a reader is no longer in scope.
-     */
-    private IntSortedSet extremities = new IntAVLTreeSet();
-    private boolean nextTransitionLoaded;
-    private final int numReaders;
-    private int currentPosition;
-    private int currentLength;
-    /**
-     * An array whose element is true when the reader is completely exhausted.
-     */
+    private int numReaders;
+    private CountsReaderI[] readers;
+    private boolean hasNextTransition;
+    private int length;
+    private int position = 0;
+    private int first;
+    private int second;
+    private int[] positions;
+    private int[] startPositions;
+    private int[] endPositions;
     private boolean[] finished;
-    /**
-     * For readers that are exhausted, the following array records the last position the reader returned.
-     */
-    private int[] lastPosition;
 
-    public AnyTransitionCountsIterator(final CountsReaderI... countReader) {
-        this(false, countReader);
-    }
-
-    public AnyTransitionCountsIterator(boolean useAdapter, final CountsReaderI... countReader) {
-        super();
-        readers = new CountsReaderI[countReader.length];
-        int i = 0;
-        for (CountsReaderI reader : countReader) {
-            readers[i++] = useAdapter ? new PositionAdapter(reader) : reader;
-        }
-        numReaders = countReader.length;
-        position = new int[numReaders];
-        Arrays.fill(position, -1);
-        count = new int[numReaders];
-        currentPosition = 0;
+    public AnyTransitionCountsIterator(CountsReaderI... readers) {
+        numReaders = readers.length;
+        this.readers = readers;
+        counts = new int[this.numReaders];
+        positions = new int[this.numReaders];
+        startPositions = new int[this.numReaders];
+        endPositions = new int[this.numReaders];
+        Arrays.fill(startPositions, Integer.MAX_VALUE);
+        Arrays.fill(endPositions, Integer.MAX_VALUE);
         finished = new boolean[numReaders];
-        lastPosition = new int[numReaders];
-        length = new int[numReaders];
     }
+
+    public int getPosition() {
+        return position;
+    }
+
+    int counts[];
+    IntArraySet startAndEndPositions = new IntArraySet();
 
     public boolean hasNextTransition() throws IOException {
-        if (nextTransitionLoaded) {
+        if (hasNextTransition) {
             return true;
         }
+        hasNextTransition = false;
+        position = first;
+        first = first(startAndEndPositions);
 
-        for (int i = 0; i < numReaders; i++) {
+        for (int readerIndex = 0; readerIndex < numReaders; ++readerIndex) {
+            final CountsReaderI reader = readers[readerIndex];
+            if (needsLoading(readerIndex)) {
+                if (reader.hasNextTransition()) {
 
-            // passed the previous transition, must advance this reader.
-            if (!readers[i].hasNextTransition()) {
-                if (!finished[i]) {
-                    lastPosition[i] = position[i];
-                    //       System.out.printf("reader %d finished at position %d %n", i, position[i]);
-                }
-                // reader has no more transitions.
+                    reader.nextTransition();
+                    //      System.out.printf("loading transition for reader[%d] position=%d length=%d count=%d %n", readerIndex, reader.getPosition(), reader.getLength(), reader.getCount());
+                    final int startPosition = reader.getPosition();
+                    final int endPosition = startPosition + reader.getLength();
+                    startPositions[readerIndex] = startPosition;
+                    endPositions[readerIndex] = endPosition;
+                    startAndEndPositions.add(startPosition);
+                    startAndEndPositions.add(endPosition);
+                    counts[readerIndex] = reader.getCount();
+                    positions[readerIndex] = startPosition;
+                } else {
+                    finished[readerIndex] = true;
 
-                finished[i] = true;
-                if (currentPosition < lastPosition[i]) {
-                    // last position is still in scope:
-                    extremities.add(lastPosition[i]);
-                }
-            } else {
-                // load the next transition:
-                if (currentPosition >= position[i]) {
-                    readers[i].nextTransition();
-                    position[i] = readers[i].getPosition();
-                    length[i] = readers[i].getLength();
-                    extremities.add(position[i]);
-                    extremities.add(position[i] + length[i] );
                 }
             }
         }
-
-        // determine the new current position, since we may have advanced all the readers in a big jump:
-        do {
-            // length is current position minus previous position.
-            if (!extremities.isEmpty()) {
-                currentLength = extremities.firstInt() - currentPosition;
-                currentPosition = extremities.firstInt();
-            } else {
-                return false;
-            }
-            if (currentLength == 0) {
-                extremities.rem(extremities.firstInt());
-            }
-        } while (currentLength == 0);
-
-        for (int i = 0; i < numReaders; i++) {
-            // set the reader count if current position is within the window of the reader's transition:
-
-            final int readerPosition = position[i];
-            if (currentPosition >= (readerPosition - length[i]) && currentPosition <= readerPosition) {
-                count[i] = readers[i].getCount();
-            } else {
-                count[i] = 0;
-            }
-            System.out.printf("reader[%d] start=%d end=%d position=%d count=%d%n", i, readerPosition - length[i],
-                    readerPosition, currentPosition, count[i]);
-
-            if (currentPosition > readerPosition) {
-                extremities.rem(readerPosition);
-                extremities.rem(readerPosition - length[i]);
-            }
+        first = first(startAndEndPositions);
+        second = second(startAndEndPositions, first);
+        length = second - first;
+        if (second == Integer.MAX_VALUE) {
+            length = 0;
         }
+        startAndEndPositions.rem(first);
+        position = first;
+        hasNextTransition = length > 0;
+        return hasNextTransition;
+    }
 
-        //    System.out.println("currentPosition=" + currentPosition);
-        extremities.rem(currentPosition);
-        nextTransitionLoaded = true;
-        return true;
+    /**
+     * Determine if we should load the next transition for a specific reader.
+     *
+     * @param readerIndex
+     * @return
+     */
+    private boolean needsLoading(int readerIndex) {
+        if (!finished[readerIndex]) {
+            return endPositions[readerIndex] == Integer.MAX_VALUE ||
+                    first + 1 > endPositions[readerIndex];
+        } else {
+            return false;
+        }
     }
 
 
     /**
-     * Advance to the next transition. After this method has been called successfully, position,
-     * length, deltaCount and currentCount are available through getters of this reader.
+     * Returns the  minimum value in array excluding first. Returns Integer.MAX_VALUE if the array
+     * is empty or contains first.
      *
-     * @throws IOException
+     * @param array
+     * @param first
+     * @return
      */
-    public void nextTransition() throws IOException {
-        if (hasNextTransition()) {
-            nextTransitionLoaded = false;
-
-        } else {
-            throw new IllegalStateException("next cannot be called when hasNext would return false.");
+    private int second(final IntArraySet array, final int first) {
+        int min = Integer.MAX_VALUE;
+        for (final int value : array) {
+            if (value != first) min = Math.min(value, min);
         }
+        return min;
+    }
+
+    private int first(final IntArraySet array) {
+        int min = Integer.MAX_VALUE;
+        for (final int value : array) {
+            min = Math.min(value, min);
+        }
+        return min;
+    }
+
+
+    public void nextTransition() throws IOException {
+        if (!hasNextTransition()) {
+            throw new NoSuchElementException("no elements left in reader.");
+        }
+        hasNextTransition = false;
+    }
+
+
+    public void skipTo(int position) throws IOException {
+        // skip to the specified position
+        while (hasNextTransition()) {
+            nextTransition();
+            if (getPosition() >= position) {
+                break;
+            }
+        }
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    public void close() throws IOException {
+        for (CountsReaderI reader : readers) {
+            reader.close();
+        }
+        startAndEndPositions.clear();
     }
 
     /**
@@ -191,34 +194,41 @@ public class AnyTransitionCountsIterator implements CountsAggregatorI {
         return readers;
     }
 
+    /**
+     * Return the count for a specific reader.
+     *
+     * @param readerIndex Index ((zero-based) of the reader when provided as parameter to the constructor
+     * @return count for the reader identified by readerIndex.
+     */
     public final int getCount(final int readerIndex) {
-        return count[readerIndex];
-    }
+        return isReaderInRange(readerIndex) ? counts[readerIndex] : 0;
 
-    public void close() throws IOException {
-        for (final CountsReaderI reader : readers) {
-            reader.close();
-        }
-    }
-
-    public void skipTo(final int position) throws IOException {
-        throw new UnsupportedOperationException("skipTo is not currently supported by this implementation.");
-    }
-
-    public int getLength() {
-        // System.out.println("currentLength=" + currentLength);
-        return currentLength;
     }
 
     /**
-     * Position on the sequence before the count transition is observed.
+     * Determine if the position of the reader partially overlaps with the range [first-second[
      *
-     * @return
+     * @param readerIndex Index of the reader
+     * @return True if the position of the reader overlaps
      */
-    public int getPosition() {
+    private boolean isReaderInRange(final int readerIndex) {
+        final int readerStart = startPositions[readerIndex];
+        final int readerEnd = endPositions[readerIndex];
+        /*
+      xxxx
+         xxxx
+       xxxxxx reader range
+        <    first
+          >  second
+        */
+        if (readerStart == Integer.MAX_VALUE) {
+            return false;
+        }
+        boolean result = readerStart == first ||
+                readerStart <= position && readerEnd > position;
 
-        final int value = currentPosition;
-        //      System.out.println("currentPosition=" + value);
-        return value;
+        //  System.out.printf("Position=%d reader[%d]: [%d-%d[ in range=%b count=%d%n", position, readerIndex,
+        //         readerStart, readerEnd, result, counts[readerIndex]);
+        return result;
     }
 }
