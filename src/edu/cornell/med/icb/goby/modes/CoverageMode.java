@@ -27,12 +27,14 @@ import edu.cornell.med.icb.goby.counts.CountsReader;
 import edu.cornell.med.icb.goby.util.DoInParallel;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.FileWriter;
 
 
 /**
@@ -62,6 +64,9 @@ public class CoverageMode extends AbstractGobyMode {
      */
     private String annotationBasename;
     private int numThreads;
+    private double[] percentiles = new double[]{0.9, .75, .5, .1, .01};
+    private int[] depths = new int[]{5, 10, 15, 20, 30};
+
 
 
     @Override
@@ -90,8 +95,28 @@ public class CoverageMode extends AbstractGobyMode {
         inputBasenames = jsapResult.getStringArray("input");
         statsOuputFilename = jsapResult.getString("output");
         annotationBasename = jsapResult.getString("annotation-basename");
-        numThreads=jsapResult.getInt("num-threads");
+        numThreads = jsapResult.getInt("num-threads");
+        percentiles = stringToDoubles(jsapResult.getString("percentiles"));
+        depths = stringToInts(jsapResult.getString("depths"));
         return this;
+    }
+
+    private double[] stringToDoubles(String percentiles) {
+        String[] values = percentiles.split(",");
+        DoubleArrayList result = new DoubleArrayList();
+        for (String value : values) {
+            result.add(Double.parseDouble(value)/100.0d);
+        }
+        return result.toDoubleArray();
+    }
+
+    private int[] stringToInts(String depths) {
+        String[] values = depths.split(",");
+        IntArrayList result = new IntArrayList();
+        for (String value : values) {
+            result.add(Integer.parseInt(value));
+        }
+        return result.toIntArray();
     }
 
     /**
@@ -129,32 +154,32 @@ public class CoverageMode extends AbstractGobyMode {
             final IndexedIdentifier referenceIds = alignment.getTargetIdentifiers();
             final DoubleIndexedIdentifier backwards = new DoubleIndexedIdentifier(referenceIds);
 
-            CountsArchiveReader archiveReader = new CountsArchiveReader(basename);
-            CountsArchiveReader annotationArchiveReader = new CountsArchiveReader(annotationBasename);
+            final CountsArchiveReader archiveReader = new CountsArchiveReader(basename);
+            final CountsArchiveReader annotationArchiveReader = new CountsArchiveReader(annotationBasename);
 
-            ObjectOpenHashSet<String> archiveIdentifiers = new ObjectOpenHashSet<String>();
+            final ObjectOpenHashSet<String> archiveIdentifiers = new ObjectOpenHashSet<String>();
             archiveIdentifiers.addAll(annotationArchiveReader.getIdentifiers());
-            CoverageAnalysis analysis = new CoverageAnalysis();
+            final CoverageAnalysis analysis = new CoverageAnalysis();
 
             for (int referenceIndex = 0; referenceIndex < archiveReader.getNumberOfIndices(); referenceIndex++) {
-                CountsReader reader = archiveReader.getCountReader(referenceIndex);
+                final CountsReader reader = archiveReader.getCountReader(referenceIndex);
                 // determine the corresponding chromosome in the annotation count archive:
-                String countArchiveRefId = backwards.getId(referenceIndex).toString();
+                final String countArchiveRefId = backwards.getId(referenceIndex).toString();
                 if (archiveIdentifiers.contains(countArchiveRefId)) {
                     System.out.println("Processing reference " + countArchiveRefId);
-                    CountsReader annotationReader = annotationArchiveReader.getCountReader(countArchiveRefId);
+                    final CountsReader annotationReader = annotationArchiveReader.getCountReader(countArchiveRefId);
 
                     analysis.process(annotationReader, reader);
                 } else {
                     System.out.printf("Skipping chromosome: %s%n", countArchiveRefId);
                 }
             }
-            long sumDepth = analysis.getSumDepth();
-            long countDepth = analysis.getCountDepth();
+            final long sumDepth = analysis.getSumDepth();
+            final long countDepth = analysis.getCountDepth();
             final double averageDepth = divide(sumDepth, countDepth);
             System.out.printf("Average depth= %g %n", averageDepth);
-            long sumDepthAnnot = analysis.getSumDepthAnnot();
-            long countDepthAnnot = analysis.getCountDepthAnnot();
+            final long sumDepthAnnot = analysis.getSumDepthAnnot();
+            final long countDepthAnnot = analysis.getCountDepthAnnot();
             final double averageDepthCaptured = divide(sumDepthAnnot, countDepthAnnot);
             System.out.printf("Average depth over annotations= %g %n", averageDepthCaptured);
             analysis.estimateStatistics();
@@ -168,11 +193,13 @@ public class CoverageMode extends AbstractGobyMode {
             output.printf("average-depth\t%s\t%s\t%g%n", basename, "-", averageDepthCaptured);
             output.printf("enrichment-efficiency\t%s\t%g%%\t-%n", basename, 100d * analysis.getEnrichmentEfficiency());
 
-            for (double percentile : new double[]{0.9, .75, .5, .1, .01}) {
+
+            for (double percentile : percentiles) {
                 output.printf("depth-captured\t%s\t%s\t%d%n", basename, Integer.toString((int) (percentile * 100)),
                         analysis.depthCapturedAtPercentile(percentile));
             }
-            for (int depth : new int[]{5, 10, 15, 20, 30}) {
+
+            for (int depth : depths) {
                 output.printf("percent-capture-sites-at-depth\t%s\t%s\t%d%n", basename,
                         Integer.toString((int) (100 * analysis.percentSitesCaptured(depth))),
                         depth);

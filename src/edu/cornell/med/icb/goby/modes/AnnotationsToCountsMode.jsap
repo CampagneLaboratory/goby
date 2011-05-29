@@ -20,9 +20,9 @@
     <parameters>
 
         <flaggedOption>
-            <id>basename</id>
-            <shortFlag>b</shortFlag>
-            <longFlag>basename</longFlag>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
             <required>false</required>
             <defaults>
                 <string>output-basename</string>

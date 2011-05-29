@@ -87,7 +87,7 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
         inputFilename = jsapResult.getString("input");
-        countBasename = jsapResult.getString("basename");
+        countBasename = jsapResult.getString("output");
         verbose = jsapResult.getBoolean("verbose");
         flankingSize = jsapResult.getInt("flanking-size");
         return this;
