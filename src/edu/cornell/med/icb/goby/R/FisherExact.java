@@ -280,7 +280,7 @@ public final class FisherExact {
                 LOG.debug("oddsRatio: " + ArrayUtils.toString(oddsRatio));
             }
         } else {
-            // these values are not present in the 2x2 case
+            // these values are not present in the 2xN case
             estimate = Double.NaN;
             confidenceInterval = ArrayUtils.EMPTY_DOUBLE_ARRAY;
             oddsRatio = Double.NaN;
@@ -302,7 +302,7 @@ public final class FisherExact {
      * </pre>
      *
      * @param vector An array of integer values used to populate the matrtix to be evaluated.
-     * @param nrows  The number of rows in the resulting martrix
+     * @param nrows  The number of rows in the resulting matrix
      * @param ncols  The number of columns in the resulting matrix
      * @return The result from the fisher test (should never be null)
      */
