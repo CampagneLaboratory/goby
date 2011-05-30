@@ -62,7 +62,7 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
      */
     private static final Log LOG = LogFactory.getLog(CompareGroupsVCFOutputFormat.class);
 
-    VCFWriter statWriter;
+    private VCFWriter statWriter;
     private int refIdColumnIndex;
     private int positionColumnIndex;
 
@@ -79,7 +79,7 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
 
     private int log2OddsRatioStandardErrorColumnIndex;
     private int log2OddsRatioZColumnIndex;
-    int[] readerIndexToGroupIndex;
+    private int[] readerIndexToGroupIndex;
     private int[] refCountsPerGroup;
     private int[] variantsCountPerGroup;
     private int[] distinctReadIndexCountPerGroup;
@@ -98,13 +98,13 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
     private final int numberOfAlleles = SampleCountInfo.BASE_MAX_INDEX;
 
 
-    public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
+    public void defineColumns(final PrintWriter writer, final DiscoverSequenceVariantsMode mode) {
         deAnalyzer = mode.getDiffExpAnalyzer();
         deCalculator = mode.getDiffExpCalculator();
         groups = mode.getGroups();
         samples = mode.getSamples();
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
-        ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
+        final ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
         this.statWriter = new VCFWriter(writer);
 
         //activate R only if we need it:
@@ -151,7 +151,7 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         statWriter.writeHeader();
     }
 
-    public void allocateStorage(int numberOfSamples, int numberOfGroups) {
+    public void allocateStorage(final int numberOfSamples, final int numberOfGroups) {
         this.numberOfGroups = numberOfGroups;
         this.numberOfSamples = numberOfSamples;
         refCountsPerGroup = new int[numberOfGroups];
@@ -173,22 +173,22 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         genotypeFormatter.allocateStorage(numberOfSamples, numberOfGroups);
     }
 
-    public void writeRecord(DiscoverVariantIterateSortedAlignments iterator,
-                            SampleCountInfo[] sampleCounts,
-                            int referenceIndex,
+    public void writeRecord(final DiscoverVariantIterateSortedAlignments iterator,
+                            final SampleCountInfo[] sampleCounts,
+                            final int referenceIndex,
                             int position,
-                            ObjectArrayList<PositionBaseInfo> list,
-                            int groupIndexA,
-                            int groupIndexB) {
+                            final ObjectArrayList<PositionBaseInfo> list,
+                            final int groupIndexA,
+                            final int groupIndexB) {
 
         // report 1-based positions
         position = position + 1;
         int totalCount = 0;
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
-            SampleCountInfo sci = sampleCounts[sampleIndex];
+            final SampleCountInfo sci = sampleCounts[sampleIndex];
             int sumInSample = 0;
-            for (int baseCount : sci.counts) {
+            for (final int baseCount : sci.counts) {
                 totalCount += baseCount;
                 sumInSample += baseCount;
                 assert baseCount >= 0 : "counts must not be negative.";
@@ -201,14 +201,14 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         statWriter.setInfo(depthFieldIndex, totalCount);
         fillVariantCountArrays(sampleCounts);
 
-        CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
+        final CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 
         statWriter.setChromosome(currentReferenceId);
         statWriter.setPosition(position);
         statWriter.setReferenceAllele(Character.toString(sampleCounts[0].referenceBase));
 
         // construct a biomart region span in the format chr:pos1:chr:pos
-        String biomartRegionSpan = String.format("%s:%s:%s", currentReferenceId, position,
+        final String biomartRegionSpan = String.format("%s:%s:%s", currentReferenceId, position,
                 position);
 
         statWriter.setInfo(biomartFieldIndex, biomartRegionSpan);
@@ -218,10 +218,10 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
             statWriter.setInfo(varCountsIndex[groupIndex], variantsCountPerGroup[groupIndex]);
         }
         final double denominator = (double) (refCountsPerGroup[groupIndexA]+1) * (double) (variantsCountPerGroup[groupIndexB]+1);
-        double oddsRatio = denominator == 0 ? Double.NaN :
+        final double oddsRatio = denominator == 0 ? Double.NaN :
                 ((double) (refCountsPerGroup[groupIndexB]+1) * (double) (variantsCountPerGroup[groupIndexA]+1)) /
                         denominator;
-        double logOddsRatioSE;
+        final double logOddsRatioSE;
 
         if (variantsCountPerGroup[groupIndexA] < 10 ||
                 variantsCountPerGroup[groupIndexB] < 10 ||
@@ -235,8 +235,8 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
                     1d / variantsCountPerGroup[groupIndexB] +
                     1d / refCountsPerGroup[groupIndexA]);
         }
-        double log2OddsRatio = Math.log(oddsRatio) / Math.log(2);
-        double log2OddsRatioZValue = log2OddsRatio / logOddsRatioSE;
+        final double log2OddsRatio = Math.log(oddsRatio) / Math.log(2);
+        final double log2OddsRatioZValue = log2OddsRatio / logOddsRatioSE;
 
         double fisherP = Double.NaN;
 
@@ -276,7 +276,7 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
     }
 
 
-    private void fillVariantCountArrays(SampleCountInfo[] sampleCounts) {
+    private void fillVariantCountArrays(final SampleCountInfo[] sampleCounts) {
 
         Arrays.fill(variantsCountPerGroup, 0);
         Arrays.fill(refCountsPerGroup, 0);
@@ -289,7 +289,7 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
             distinctReadIndicesCountPerGroup[groupIndex].clear();
 
         }
-        for (SampleCountInfo csi : sampleCounts) {
+        for (final SampleCountInfo csi : sampleCounts) {
             final int sampleIndex = csi.sampleIndex;
 
             variantsCountPerSample[sampleIndex] = csi.varCount;
@@ -322,12 +322,12 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         boolean ok = true;
        int totalCount=0;
         // detect if any count is negative
-        for (int count : refCountsPerGroup) {
+        for (final int count : refCountsPerGroup) {
 
             if (count < 0) ok = false;
             totalCount+=count;
         }
-        for (int count : variantsCountPerGroup) {
+        for (final int count : variantsCountPerGroup) {
             if (count < 0) ok = false;
              totalCount+=count;
         }

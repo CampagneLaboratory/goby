@@ -352,6 +352,25 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
     }
 
     @Test
+    public void testCompareAllelic() throws IOException, JSAPException {
+        DiscoverSequenceVariantsMode mode = new DiscoverSequenceVariantsMode();
+        int i = 1;
+        String outputFilename = "out-compare-allelic-" + i + ".tsv";
+        String[] args = constructArgumentString(
+                basenames, BASE_TEST_DIR + "/" + outputFilename, "samples").split("[\\s]");
+        args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.COMPARE_GROUPS.toString()});
+
+        mode.setDisableAtLeastQuarterFilter(true);
+        mode.configure(args);
+
+        mode.execute();
+        assertEquals(new File("test-data/discover-variants/expected-output-compare-allelic.tsv"),
+                new File(BASE_TEST_DIR + "/" + outputFilename)
+        );
+
+    }
+
+    @Test
     public void testQualityScoreAdjuster() {
         QualityScoreFilter adjuster = new QualityScoreFilter();
         SampleCountInfo[] sampleCounts = makeSampleCounts();
