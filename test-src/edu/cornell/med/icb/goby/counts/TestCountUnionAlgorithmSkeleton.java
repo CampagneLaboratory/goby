@@ -23,7 +23,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
+
 
 /**
  * Skeleton for testing union algorithm.
@@ -38,23 +39,79 @@ public class TestCountUnionAlgorithmSkeleton {
      * https://docs.google.com/document/d/1VtHTd3Bq9iFC-pAISVtnEBt8EbkWZ9Ot356pjRE5poc/edit?hl=en_US#
      */
     public void testCase1() throws IOException {
-        CountsReaderI reader0 = new CountsReaderTestSupport("(1,0)(3,3)(2,-3)");
-        CountsReaderI reader1 = new CountsReaderTestSupport("(6,1)");
 
-        String expected ="(1,1)(3,3)(2,-3)";
 
-        UnionAlgorithmSkeleton unionAlgo=new UnionAlgorithmSkeleton(reader0, reader1);
+        assertEquals("the result of the union must match", "(0,1)(1,4)(4,1)(6,0)", unionPositionCount("(1,0)(3,3)(2,0)", "(6,1)"));
+    }
 
-        CountsReaderI reader = unionAlgo;
-        MutableString result=new MutableString();
 
-        while (reader.hasNextTransition()) {
-            reader.nextTransition();
-            result.append(String.format("(%d,%d)", reader.getPosition(),
-                    reader.getCount()));
+    @Test
+    /**
+     * https://docs.google.com/document/d/1VtHTd3Bq9iFC-pAISVtnEBt8EbkWZ9Ot356pjRE5poc/edit?hl=en_US#
+     */
+    public void testCase2() throws IOException {
+
+       assertEquals("the result of the union must match", "(0,0)(1,1)(2,0)(4,1)(6,2)(8,1)(9,2)(10,1)(12,2)(13,1)(14,0)(16,1)(17,0)",
+                unionPositionCount("(1,0)(1,1)(4,0)(2,1)(1,0)(1,1)(2,0)(1,1)(3,0)(1,1)",
+                        "(4,0)(10,1)"));
+
+        assertEquals("the result of the union must match", "(1,0)(1,1)(2,0)(2,1)(2,2)(1,1)(1,2)(2,1)(1,2)(1,1)(2,0)(1,1)(0,0)",
+                unionLengthCount("(1,0)(1,1)(4,0)(2,1)(1,0)(1,1)(2,0)(1,1)(3,0)(1,1)",
+                        "(4,0)(10,1)"));
+    }
+
+    @Test
+    /**
+     * https://docs.google.com/document/d/1VtHTd3Bq9iFC-pAISVtnEBt8EbkWZ9Ot356pjRE5poc/edit?hl=en_US#
+     */
+    public void testCase3() throws IOException {
+
+   //     assertEquals("(1,0)(3,1)", unionLengthCount("(1,0)(3,1)"));
+        assertEquals("(0,0)(1,1)(4,0)", unionPositionCount("(1,0)(3,1)"));
+
+    }
+
+
+    public static String unionLengthCount(final String... formats) throws IOException {
+        CountsReaderI readers[] = new CountsReaderI[formats.length];
+        int i = 0;
+        for (String format : formats) {
+            readers[i] = new CountsReaderTestSupport(format);
+            i++;
+        }
+        CountsAggregatorI orIterator;
+        MutableString result = new MutableString();
+        orIterator = new UnionAlgorithmSkeleton(readers);
+        while (orIterator.hasNextTransition()) {
+            orIterator.nextTransition();
+
+            result.append(String.format("(%d,%d)", orIterator.getLength(), orIterator.getCount()));
 
         }
-        System.out.println("result: "+result);
-        assertEquals("the result of the union must match", expected,result.toString());
+        result.append(String.format("(%d,%d)", 0, orIterator.getCount()));
+        return result.toString();
     }
+
+    public static   String unionPositionCount(final String... formats) throws IOException {
+        CountsReaderI readers[] = new CountsReaderI[formats.length];
+        int i = 0;
+        for (String format : formats) {
+            readers[i] = new CountsReaderTestSupport(format);
+            i++;
+        }
+        CountsAggregatorI orIterator;
+        MutableString result = new MutableString();
+        orIterator = new UnionAlgorithmSkeleton(readers);
+        while (orIterator.hasNextTransition()) {
+            orIterator.nextTransition();
+
+            result.append(String.format("(%d,%d)", orIterator.getPosition(), orIterator.getCount()));
+            System.out.println(result);
+        }
+        // last position must be correctly updated after hasNext returns false:
+        result.append(String.format("(%d,%d)", orIterator.getPosition(), 0));
+        return result.toString();
+    }
+
+
 }

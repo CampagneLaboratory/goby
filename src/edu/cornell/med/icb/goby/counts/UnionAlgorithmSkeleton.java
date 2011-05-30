@@ -19,10 +19,10 @@
 package edu.cornell.med.icb.goby.counts;
 
 
-import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.NoSuchElementException;
 
 /**
@@ -32,7 +32,7 @@ import java.util.NoSuchElementException;
  *         Date: 5/26/11
  *         Time: 10:14 PM
  */
-public class UnionAlgorithmSkeleton implements CountsReaderI {
+public class UnionAlgorithmSkeleton implements CountsAggregatorI {
     private int numReaders;
     private CountsReaderI[] readers;
     private boolean hasNextTransition;
@@ -41,12 +41,21 @@ public class UnionAlgorithmSkeleton implements CountsReaderI {
     private int first;
     private int second;
     private int[] positions;
+    private int[] startPositions;
+    private int[] endPositions;
+    private boolean[] finished;
+    private int previousPosition = -1;
 
     public UnionAlgorithmSkeleton(CountsReaderI... readers) {
-        this.numReaders = readers.length;
+        numReaders = readers.length;
         this.readers = readers;
-        this.counts = new int[this.numReaders];
-        this.positions = new int[this.numReaders];
+        counts = new int[this.numReaders];
+        positions = new int[this.numReaders];
+        startPositions = new int[this.numReaders];
+        endPositions = new int[this.numReaders];
+        Arrays.fill(startPositions, Integer.MAX_VALUE);
+        Arrays.fill(endPositions, Integer.MAX_VALUE);
+        finished = new boolean[numReaders];
     }
 
     public int getPosition() {
@@ -61,26 +70,55 @@ public class UnionAlgorithmSkeleton implements CountsReaderI {
             return true;
         }
         hasNextTransition = false;
+        position = first;
+        first = first(startAndEndPositions);
 
         for (int readerIndex = 0; readerIndex < numReaders; ++readerIndex) {
             final CountsReaderI reader = readers[readerIndex];
-            if (reader.hasNextTransition()) {
-                reader.nextTransition();
-                startAndEndPositions.add(reader.getPosition());
-                startAndEndPositions.add(reader.getPosition() + reader.getLength());
-                counts[readerIndex] = reader.getCount();
-                positions[readerIndex] = reader.getPosition();
+            if (needsLoading(readerIndex)) {
+                if (reader.hasNextTransition()) {
+
+                    reader.nextTransition();
+                    System.out.printf("loading transition for reader[%d] position=%d length=%d count=%d %n", readerIndex, reader.getPosition(), reader.getLength(), reader.getCount());
+                    final int startPosition = reader.getPosition();
+                    final int endPosition = startPosition + reader.getLength();
+                    startPositions[readerIndex] = startPosition;
+                    endPositions[readerIndex] = endPosition;
+                    startAndEndPositions.add(startPosition);
+                    startAndEndPositions.add(endPosition);
+                    counts[readerIndex] = reader.getCount();
+                    positions[readerIndex] = startPosition;
+                } else {
+                    finished[readerIndex] = true;
+                }
             }
         }
-
         first = first(startAndEndPositions);
         second = second(startAndEndPositions, first);
-        //TODO handle if Integer.MAX_VALUE is back.
         length = second - first;
+        if (second == Integer.MAX_VALUE) {
+            length = 0;
+        }
         startAndEndPositions.rem(first);
         position = first;
-        hasNextTransition=startAndEndPositions.size() >= 2;
+        hasNextTransition = length > 0;
+        previousPosition = position;
         return hasNextTransition;
+    }
+
+    /**
+     * Determine if we should load the next transition for a specific reader.
+     *
+     * @param readerIndex
+     * @return
+     */
+    private boolean needsLoading(int readerIndex) {
+        if (!finished[readerIndex]) {
+            return endPositions[readerIndex] == Integer.MAX_VALUE ||
+                    first + 1 >endPositions[readerIndex];
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -121,7 +159,7 @@ public class UnionAlgorithmSkeleton implements CountsReaderI {
     }
 
     public int getLength() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return length;
     }
 
     public void close() {
@@ -150,13 +188,34 @@ public class UnionAlgorithmSkeleton implements CountsReaderI {
      * @return count for the reader identified by readerIndex.
      */
     public final int getCount(final int readerIndex) {
-        return isReaderInRange(readerIndex) ? counts[readerIndex]:0;
+        return isReaderInRange(readerIndex) ? counts[readerIndex] : 0;
 
     }
 
+    /**
+     * Determine if the position of the reader partially overlaps with the range [first-second[
+     *
+     * @param readerIndex Index of the reader
+     * @return True if the position of the reader overlaps
+     */
     private boolean isReaderInRange(final int readerIndex) {
-        final int readerPosition = positions[readerIndex];
-        if (readerPosition >=first  && readerPosition<second) return true;
-        else return false;
+        final int readerStart = startPositions[readerIndex];
+        final int readerEnd = endPositions[readerIndex];
+        /*
+      xxxx
+         xxxx
+       xxxxxx reader range
+        <    first
+          >  second
+        */
+        if (readerStart == Integer.MAX_VALUE) {
+            return false;
+        }
+        boolean result = readerStart == first ||
+                readerStart <= position && readerEnd > position;
+
+        //  System.out.printf("Position=%d reader[%d]: [%d-%d[ in range=%b count=%d%n", position, readerIndex,
+        //         readerStart, readerEnd, result, counts[readerIndex]);
+        return result;
     }
 }
