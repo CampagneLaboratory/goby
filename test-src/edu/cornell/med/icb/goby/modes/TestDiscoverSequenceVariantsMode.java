@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.google.protobuf.ByteString;
 import com.martiansoftware.jsap.JSAPException;
+import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.util.TestFiles;
@@ -39,10 +40,14 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
+
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.rosuda.JRI.Rengine;
 
 import java.io.*;
 import java.util.Collections;
@@ -62,6 +67,14 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
     private static final int NUM_TRIALS = 10;
     private static String statsFilename = BASE_TEST_DIR + "/variations-stats2.tsv";
     private static String[] specificAlignments;
+
+
+    @BeforeClass
+    public static void init() {
+
+        GobyRengine.getInstance();
+        assertNotNull("R engine must be available", GobyRengine.getInstance().getRengine());
+    }
 
     @Test
     public void testDiscoverGroupsOnly() throws IOException, JSAPException {
@@ -257,41 +270,42 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
     @Test
     public void testAdjuster() {
-        ObjectArrayList<ReadIndexStats> readIndexStats = makeReadIndexStats();
+        synchronized (GobyRengine.getInstance().getRengine()) {
+            ObjectArrayList<ReadIndexStats> readIndexStats = makeReadIndexStats();
 
 
-        FisherBaseFilter adjuster = new FisherBaseFilter(readIndexStats);
+            FisherBaseFilter adjuster = new FisherBaseFilter(readIndexStats);
 
-        SampleCountInfo[] sampleCounts = makeSampleCounts();
+            SampleCountInfo[] sampleCounts = makeSampleCounts();
 
-        ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
-        PositionBaseInfo info = new PositionBaseInfo();
-        list.add(info);
-        IntArrayList readIndices = IntArrayList.wrap(new int[]{1, 1, 1, 1, 2, 2, 2, 2, 3});
+            ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
+            PositionBaseInfo info = new PositionBaseInfo();
+            list.add(info);
+            IntArrayList readIndices = IntArrayList.wrap(new int[]{1, 1, 1, 1, 2, 2, 2, 2, 3});
 
-        list = makeList(sampleCounts, readIndices);
-        adjuster.setPValueThreshold(0.5);
-        ObjectSet<PositionBaseInfo> filteredList = new ObjectArraySet<PositionBaseInfo>();
-        adjuster.filterBases(list, sampleCounts, filteredList);
+            list = makeList(sampleCounts, readIndices);
+            adjuster.setPValueThreshold(0.5);
+            ObjectSet<PositionBaseInfo> filteredList = new ObjectArraySet<PositionBaseInfo>();
+            adjuster.filterBases(list, sampleCounts, filteredList);
 
-        System.out.println("list: " + list);
+            System.out.println("list: " + list);
 
-        CharSet toBases = new CharArraySet();
-        for (PositionBaseInfo i : filteredList) {
-            toBases.add(i.to);
+            CharSet toBases = new CharArraySet();
+            for (PositionBaseInfo i : filteredList) {
+                toBases.add(i.to);
+            }
+            assertTrue("Adjustment must remove T", toBases.contains('T'));
+            assertTrue("Adjustment must remove other bases", toBases.contains('N'));
+
+            CountFixer fixer = new CountFixer();
+            fixer.fix(list, sampleCounts, filteredList);
+
+            assertEquals(5, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
+            assertEquals(9, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
+            assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
+            assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_OTHER_INDEX]);
         }
-        assertTrue("Adjustment must remove T", toBases.contains('T'));
-        assertTrue("Adjustment must remove other bases", toBases.contains('N'));
-
-        CountFixer fixer = new CountFixer();
-        fixer.fix(list, sampleCounts, filteredList);
-
-        assertEquals(5, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
-        assertEquals(9, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
-        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
-        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_OTHER_INDEX]);
     }
-
 
     private SampleCountInfo[] makeSampleCounts() {
         SampleCountInfo[] sampleCounts = new SampleCountInfo[1];
@@ -346,25 +360,6 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         mode.execute();
         assertEquals(new File("test-data/discover-variants/expected-output-genotypes.tsv"),
-                new File(BASE_TEST_DIR + "/" + outputFilename)
-        );
-
-    }
-
-    @Test
-    public void testCompareAllelic() throws IOException, JSAPException {
-        DiscoverSequenceVariantsMode mode = new DiscoverSequenceVariantsMode();
-        int i = 1;
-        String outputFilename = "out-compare-allelic-" + i + ".tsv";
-        String[] args = constructArgumentString(
-                basenames, BASE_TEST_DIR + "/" + outputFilename, "samples").split("[\\s]");
-        args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.COMPARE_GROUPS.toString()});
-
-        mode.setDisableAtLeastQuarterFilter(true);
-        mode.configure(args);
-
-        mode.execute();
-        assertEquals(new File("test-data/discover-variants/expected-output-compare-allelic.tsv"),
                 new File(BASE_TEST_DIR + "/" + outputFilename)
         );
 

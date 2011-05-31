@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.modes;
 
+import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.alignments.DiscoverVariantIterateSortedAlignments;
 import edu.cornell.med.icb.goby.alignments.PositionBaseInfo;
 import edu.cornell.med.icb.goby.alignments.SampleCountInfo;
@@ -28,6 +29,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import org.easymock.EasyMock;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.PrintWriter;
@@ -42,6 +44,13 @@ import static org.easymock.EasyMock.*;
  */
 @SuppressWarnings({"IOResourceOpenedButNotSafelyClosed"})
 public class TestCompareGroupsVCFOutputFormat {
+    @BeforeClass
+    public static void init() {
+
+        GobyRengine.getInstance();
+
+    }
+
     DiscoverVariantIterateSortedAlignments iterator;
     CompareGroupsVCFOutputFormat format;
     private int groupIndexA = 0;
@@ -108,48 +117,52 @@ public class TestCompareGroupsVCFOutputFormat {
 
     @Test
     public void testNoDifference() throws Exception {
-        SampleCountInfo[] sampleCounts = makeSampleCounts(1, 30, 5, 30, 6, 2, 60, 10, 60, 12);
-        ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
-        expect(mode.getReaderIndexToGroupIndex()).andReturn(readerIndexToGroupIndex);
-        replay(mode);
+        synchronized (GobyRengine.getInstance().getRengine()) {
+            SampleCountInfo[] sampleCounts = makeSampleCounts(1, 30, 5, 30, 6, 2, 60, 10, 60, 12);
+            ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
+            expect(mode.getReaderIndexToGroupIndex()).andReturn(readerIndexToGroupIndex);
+            replay(mode);
 
-        statWriter.setInfo(eq(fisherExactPValueColumnIndex = 4), eq(1d));
+            statWriter.setInfo(eq(fisherExactPValueColumnIndex = 4), eq(1d));
 
-        replay(statWriter);
-        format.allocateStorage(20, 2);
-        format.defineColumns(output, mode);
-        format.setStatWriter(statWriter);
-        format.writeRecord(iterator, sampleCounts,
-                refIndex,
-                position,
-                list,
-                groupIndexA,
-                groupIndexB);
-        verify(mode);
-        verify(statWriter);
+            replay(statWriter);
+            format.allocateStorage(20, 2);
+            format.defineColumns(output, mode);
+            format.setStatWriter(statWriter);
+            format.writeRecord(iterator, sampleCounts,
+                    refIndex,
+                    position,
+                    list,
+                    groupIndexA,
+                    groupIndexB);
+            verify(mode);
+            verify(statWriter);
+        }
     }
 
 
     @Test
     public void testAllelicDifference() throws Exception {
-        SampleCountInfo[] sampleCounts = makeSampleCounts(1, 30, 5, 30, 6, 2, 0, 10, 60, 12);
-        ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
-        expect(mode.getReaderIndexToGroupIndex()).andReturn(readerIndexToGroupIndex);
-        replay(mode);
+        synchronized (GobyRengine.getInstance().getRengine()) {
+            SampleCountInfo[] sampleCounts = makeSampleCounts(1, 30, 5, 30, 6, 2, 0, 10, 60, 12);
+            ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
+            expect(mode.getReaderIndexToGroupIndex()).andReturn(readerIndexToGroupIndex);
+            replay(mode);
 
-        statWriter.setInfo(eq(fisherExactPValueColumnIndex = 4), lt(1d));
-        replay(statWriter);
-        format.allocateStorage(20, 2);
-        format.defineColumns(output, mode);
-        format.setStatWriter(statWriter);
-        format.writeRecord(iterator, sampleCounts,
-                refIndex,
-                position,
-                list,
-                groupIndexA,
-                groupIndexB);
-        verify(mode);
-        verify(statWriter);
+            statWriter.setInfo(eq(fisherExactPValueColumnIndex = 4), lt(1d));
+            replay(statWriter);
+            format.allocateStorage(20, 2);
+            format.defineColumns(output, mode);
+            format.setStatWriter(statWriter);
+            format.writeRecord(iterator, sampleCounts,
+                    refIndex,
+                    position,
+                    list,
+                    groupIndexA,
+                    groupIndexB);
+            verify(mode);
+            verify(statWriter);
+        }
     }
 
     private SampleCountInfo[] makeSampleCounts(int a_0, int t_0, int c_0, int refCount_0, int varCount_0,
