@@ -294,31 +294,23 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
         try {
             if (apiMode) {
-                // In API mode do not run in parallel.
-                int loopIndex = 0;
-                try {
-                    for (String inputBasename : inputFilenames) {
-                        processOneFile(loopIndex++, inputFilenames.length, inputBasename, keyValueProps);
-                    }
-                } catch (IOException e) {
-                    throw e;
-                }
-            } else {
-                final DoInParallel loop = new DoInParallel(numThreads) {
-                    @Override
-                    public void action(final DoInParallel forDataAccess, final String inputBasename, final int loopIndex) {
-                        try {
-                            debugStart(inputBasename);
-                            processOneFile(loopIndex, inputFilenames.length, inputBasename, keyValueProps);
-                            debugEnd(inputBasename);
-                        } catch (IOException e) {
-                            LOG.error("Error processing index " + loopIndex + ", " + inputBasename, e);
-                        }
-                    }
-                };
-                System.out.println("parallel: " + parallel);
-                loop.execute(parallel, inputFilenames);
+                // Force parallel to false if in apiMode.
+                parallel = false;
             }
+            final DoInParallel loop = new DoInParallel(numThreads) {
+                @Override
+                public void action(final DoInParallel forDataAccess, final String inputBasename, final int loopIndex) {
+                    try {
+                        debugStart(inputBasename);
+                        processOneFile(loopIndex, inputFilenames.length, inputBasename, keyValueProps);
+                        debugEnd(inputBasename);
+                    } catch (IOException e) {
+                        LOG.error("Error processing index " + loopIndex + ", " + inputBasename, e);
+                    }
+                }
+            };
+            System.out.println("parallel: " + parallel);
+            loop.execute(parallel, inputFilenames);
         } catch (IllegalArgumentException e) {
             if (apiMode) {
                 throw e;
