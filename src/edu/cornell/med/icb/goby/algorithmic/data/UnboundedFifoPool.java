@@ -121,6 +121,8 @@ public class UnboundedFifoPool<T> {
         while (!isEmpty()) {
             remove();
         }
+        array.size(0);
+        array.trim();
     }
 
     public int size() {

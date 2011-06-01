@@ -187,7 +187,10 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
 
         writer.printStats(System.out);
         System.out.printf("Wrote a total of %d alignment entries.%n", entriesInOutputFile);
-    }
+        System.out.printf("Number of alignment entries realigned in the proximity of indels: %d (%3.3g %% of total)%n",
+                processor.getModifiedCount(),
+                divide(100*processor.getModifiedCount(), processor.getProcessedCount()));
+         }
 
     public static boolean isAllSorted(final String[] basenames) throws IOException {
         boolean sorted = true;

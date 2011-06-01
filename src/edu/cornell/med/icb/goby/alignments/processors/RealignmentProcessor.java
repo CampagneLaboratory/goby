@@ -40,9 +40,23 @@ import java.io.IOException;
  */
 public class RealignmentProcessor implements AlignmentProcessorInterface {
     int windowLength = 0;
-    int windowStartPosition = Integer.MAX_VALUE;
+
     int currentTargetIndex = -1;
     private int numTargets;
+
+    private int processedCount;
+    private int numEntriesRealigned;
+
+    @Override
+    public int getModifiedCount() {
+        return numEntriesRealigned;
+    }
+
+    @Override
+    public int getProcessedCount() {
+        return processedCount;
+    }
+
     /**
      * The targetIndex that was active and for which we may still have entries stored in the corresponding pool:
      */
@@ -70,36 +84,49 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
     }
 
     int enqueuedCount = 0;
-    int dequeuedCount = 0;
 
     public Alignments.AlignmentEntry nextRealignedEntry(final int targetIndex, final int position) throws IOException {
 
-        int minTargetIndex = Integer.MAX_VALUE;
-        // push entries to the pool until we have a pool windowLength wide:
-        Alignments.AlignmentEntry entry;
-        do {
-            entry = iterator.skipTo(targetIndex, position);
-            if (entry != null) {
-
-                minTargetIndex = Math.min(minTargetIndex, entry.getTargetIndex());
-                final int entryTargetIndex = entry.getTargetIndex();
-                // push new targetIndices to activeTargetIndices:
-                if (activeTargetIndices.isEmpty() || activeTargetIndices.lastInt() != entryTargetIndex) {
-
-                    activeTargetIndices.enqueue(entryTargetIndex);
-                }
-                final InfoForTarget frontInfo = reallocateTargetInfo(entryTargetIndex);
-                // System.out.printf("windowStartPosition=%,d %n",windowStartPosition);
-
-                pushEntryToPool(frontInfo, position, entry);
-                if (entryTargetIndex != minTargetIndex) {
-                    frontInfo.windowStartPosition = entry.getPosition();
-                }
-                windowStartPosition = frontInfo.windowStartPosition;
-            }
+        boolean mustLoadPool;
+        if (activeTargetIndices.isEmpty()) {
+            // nothing seen yet, load the pool
+            mustLoadPool = true;
+        } else {
+        //determine if the pool has enough entry within windowSize:
+            InfoForTarget backTargetInfo = targetInfo.get(activeTargetIndices.firstInt());
+            // windowLength is zero at the beginning
+            int wl=windowLength ==0?1000:windowLength;
+            mustLoadPool=backTargetInfo.entriesInWindow.isEmpty() ||
+                    backTargetInfo.maxEntryPosition<backTargetInfo.windowStartPosition+wl;
         }
-        while (entry != null && entry.getPosition() < windowStartPosition + windowLength);
 
+        if (mustLoadPool) {
+            // fill the window pool only if we don't have enough entries to return already.
+            int windowStartPosition = Integer.MAX_VALUE;
+            int minTargetIndex = Integer.MAX_VALUE;
+            // push entries to the pool until we have a pool windowLength wide:
+            Alignments.AlignmentEntry entry;
+            do {
+                entry = iterator.skipTo(targetIndex, position);
+                if (entry != null) {
+
+                    minTargetIndex = Math.min(minTargetIndex, entry.getTargetIndex());
+                    final int entryTargetIndex = entry.getTargetIndex();
+                    // push new targetIndices to activeTargetIndices:
+                    if (activeTargetIndices.isEmpty() || activeTargetIndices.lastInt() != entryTargetIndex) {
+
+                        activeTargetIndices.enqueue(entryTargetIndex);
+                    }
+                    final InfoForTarget frontInfo = reallocateTargetInfo(entryTargetIndex);
+                    // System.out.printf("windowStartPosition=%,d %n",windowStartPosition);
+
+                    pushEntryToPool(frontInfo, position, entry);
+
+                    windowStartPosition = frontInfo.windowStartPosition;
+                }
+            }
+            while (entry != null && entry.getPosition() < windowStartPosition + windowLength);
+        }
         // check if we still have entries in the previously active target:
         int backTargetIndex = activeTargetIndices.firstInt();
         if (targetInfo.get(backTargetIndex).entriesInWindow.isEmpty()) {
@@ -113,25 +140,29 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
             }
             backTargetIndex = activeTargetIndices.firstInt();
         }
+
         final InfoForTarget backInfo = targetInfo.get(backTargetIndex); // the pool info we will use to dequeue the entry at the back of the window
         //  System.out.printf("back is holding %d entries %n", backInfo.entriesInWindow.size());
         // now find the entry at the left of the realignment window on the active target:
-        if (backInfo.entriesInWindow.isEmpty()) return null;
+        if (backInfo.entriesInWindow.isEmpty()) {
+            return null;
+        }
         Alignments.AlignmentEntry returnedEntry = backInfo.entriesInWindow.remove();
 
         if (backInfo.positionsWithSpanningIndel.size() > 0) {
             returnedEntry = realign(returnedEntry, backInfo);
         }
         // advance the windowStartPosition
-        int previousWindowStart = windowStartPosition;
-        windowStartPosition = Math.max(windowStartPosition, returnedEntry.getPosition());
+        int previousWindowStart = backInfo.windowStartPosition;
+        int windowStartPosition = Math.max(backInfo.windowStartPosition, returnedEntry.getPosition());
         // remove indel locations that are now outside the new window position
         if (previousWindowStart != windowStartPosition) {
             int lastPosition = windowStartPosition - 1;
 
             backInfo.removeIndels(previousWindowStart, lastPosition);
         }
-        ++dequeuedCount;
+
+        ++processedCount;
         return returnedEntry;
 
     }
@@ -168,6 +199,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
             return entry;
         } else {
             // actually modify entry to realign through the indel:
+            ++numEntriesRealigned;
             return realign(entry, bestScoreIndel, bestScoreDirection, currentBestScore);
         }
 
@@ -290,7 +322,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
             builder = builder.addSequenceVariations(var);
         }
         final Alignments.AlignmentEntry alignmentEntry = builder.build();
-    //    System.out.printf("realigned queryIndex=%d%n", alignmentEntry.getQueryIndex());
+        //    System.out.printf("realigned queryIndex=%d%n", alignmentEntry.getQueryIndex());
         return alignmentEntry;
     }
 
@@ -396,8 +428,9 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
 
     public void pushEntryToPool(InfoForTarget tinfo, int position, Alignments.AlignmentEntry entry) {
         // the window start is only decreased in the pushing step, never increased.
-        tinfo.windowStartPosition = Math.min(tinfo.windowStartPosition, entry.getPosition());
-
+        final int entryPosition = entry.getPosition();
+        tinfo.windowStartPosition = Math.min(tinfo.windowStartPosition, entryPosition);
+        tinfo.maxEntryPosition=Math.max(tinfo.maxEntryPosition,entryPosition);
         // set window length to twice the longest read length.
         windowLength = Math.max(windowLength, entry.getQueryLength() * 2);
 
@@ -406,8 +439,8 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
             final Alignments.SequenceVariation var = entry.getSequenceVariations(i);
             if (isIndel(var)) {
                 // start and last position are zero-based:           A--CAC start=1 end=3
-                final int startPosition = var.getPosition() + entry.getPosition() - 1;
-                final int lastPosition = var.getPosition() + entry.getPosition() +
+                final int startPosition = var.getPosition() + entryPosition - 1;
+                final int lastPosition = var.getPosition() + entryPosition +
                         Math.max(var.getFrom().length(), var.getTo().length()) - 1;
 
                 tinfo.addIndel(startPosition, lastPosition, var.getFrom(), var.getTo());

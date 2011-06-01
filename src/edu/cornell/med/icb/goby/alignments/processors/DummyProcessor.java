@@ -53,10 +53,23 @@ public class DummyProcessor implements AlignmentProcessorInterface {
      * @throws IOException
      */
     public Alignments.AlignmentEntry nextRealignedEntry(int targetIndex, int position) throws IOException {
+        ++processedCount;
         return reader.skipTo(targetIndex, position);
     }
 
     public void setGenome(RandomAccessSequenceInterface genome) {
 
+    }
+
+    private int processedCount;
+
+    @Override
+    public int getModifiedCount() {
+        return 0;
+    }
+
+    @Override
+    public int getProcessedCount() {
+        return processedCount;
     }
 }

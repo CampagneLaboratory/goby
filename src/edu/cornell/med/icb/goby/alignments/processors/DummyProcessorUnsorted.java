@@ -42,6 +42,7 @@ public class DummyProcessorUnsorted implements AlignmentProcessorInterface {
      */
     public DummyProcessorUnsorted(ConcatAlignmentReader reader) {
         this.reader = reader;
+
     }
 
     /**
@@ -53,10 +54,23 @@ public class DummyProcessorUnsorted implements AlignmentProcessorInterface {
      * @throws java.io.IOException
      */
     public Alignments.AlignmentEntry nextRealignedEntry(int targetIndex, int position) throws IOException {
+        ++processedCount;
         return reader.next();
     }
 
     public void setGenome(RandomAccessSequenceInterface genome) {
 
+    }
+
+    private int processedCount;
+
+    @Override
+    public int getModifiedCount() {
+        return 0;
+    }
+
+    @Override
+    public int getProcessedCount() {
+        return processedCount;
     }
 }

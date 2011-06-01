@@ -42,6 +42,11 @@ public class InfoForTarget {
      * between windowStartPosition and windowStartPosition+windowLength are stored in entriesInWindow
      */
     public int windowStartPosition=Integer.MAX_VALUE;
+    /**
+     * The maximum entry position reached on the target sequence. If when maxEntryPosition >windowStartPosition+windowLength,
+     * we do not need to keep adding to the pool, since there is enough in the pool to return another entry.
+     */
+    public int maxEntryPosition;
 
     public void addIndel(int startPosition, int endPosition, String from, String to) {
         for (int p = startPosition; p < endPosition; p++) {

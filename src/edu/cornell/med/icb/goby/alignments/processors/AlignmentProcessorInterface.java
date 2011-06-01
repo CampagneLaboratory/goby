@@ -22,6 +22,7 @@ import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * @author Fabien Campagne
@@ -29,7 +30,37 @@ import java.io.IOException;
  *         Time: 9:16:42 AM
  */
 public interface AlignmentProcessorInterface {
+    /**
+     * Provides the next processed entry. The processor had the opportunity to modify the entry before returning it.
+     *
+     * @param targetIndex index of the reference sequence, similar to a call to AlignmentReaderI.skipTo()
+     * @param position    position on the reference sequence, similar to a call to AlignmentReaderI.skipTo()
+     * @return The next available alignment entry.
+     * @throws IOException If an error occurred reading the alignment.
+     */
     Alignments.AlignmentEntry nextRealignedEntry(int targetIndex, int position) throws IOException;
 
+    /**
+     * Provide this processor with a compressed genome. The genome must match the reference against which the alignment was
+     * produced.
+     *
+     * @param genome The genome corresponding to the alignment
+     */
     void setGenome(RandomAccessSequenceInterface genome);
+
+    /**
+     * Returns the number of entries actually modified by the processor. This is garanteed to be less or equal to
+     * getProcessedCount().
+     *
+     * @return the number of entries modified by this processor.
+     */
+    int getModifiedCount();
+
+    /**
+     * Returns the number of entries processed by the processor. This is exactly the number of times  nextRealignedEntry
+     * was called.
+     *
+     * @return the number of entries modified by this processor.
+     */
+    int getProcessedCount();
 }
