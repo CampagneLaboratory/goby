@@ -694,7 +694,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="Make" enabled="true" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -725,7 +724,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="Make" enabled="true" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -756,7 +754,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="Make" enabled="true" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -787,8 +784,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="Make" enabled="true" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -819,8 +814,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="Make" enabled="true" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -851,8 +844,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="Make" enabled="true" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -883,8 +874,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="Make" enabled="true" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -915,8 +904,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="Make" enabled="true" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -948,7 +935,6 @@
       <ConfigurationWrapper RunnerId="JProfiler" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="Make" enabled="true" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -979,7 +965,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="Make" enabled="true" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1010,7 +995,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="Make" enabled="true" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1041,7 +1025,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="Make" enabled="true" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1072,7 +1055,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="Make" enabled="true" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1154,7 +1136,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="Make" enabled="true" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1193,8 +1174,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="Make" enabled="true" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
@@ -1233,8 +1212,6 @@
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="Make" enabled="true" />
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>

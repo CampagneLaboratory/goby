@@ -1,4 +1,13 @@
 development -> 1.9.7
+ - We have added the capability to perform on the fly realignment around indels. This feature is available
+   in mode discover-sequence-variants and in concatenate-alignments. The feature is activated with the new
+   --processor realign_near_indels option. When the option is provided, a compressed reference genome must
+   also be given on the command line (with the --genome option). This will trigger realignment of reads in
+   regions where candidate indels are found by the aligner. The algorithm is very fast, in fact much faster
+   than previously described approaches and consumes a reasonable amount of memory (function of maximum
+   depth of coverage in the region where candidate indels are observed). Realignment correctly removes
+   artifactual SNPs that can be introduced when an aligner fails to align the read ends properly through
+   a read deletion.
  - Make it possible to open an alignment if the header file is present, but the entries file is missing.
    This allows to read the header only, for instance when we need to load counts and have access to targetIds.
  - Add mode to convert annotations to counts archive format.
