@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments.processors;
 
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import edu.cornell.med.icb.goby.alignments.Alignments;
@@ -25,9 +26,9 @@ import edu.cornell.med.icb.goby.algorithmic.data.UnboundedFifoPool;
 
 /**
  * @author Fabien Campagne
-*         Date: May 14, 2011
-*         Time: 5:59:16 PM
-*/
+ *         Date: May 14, 2011
+ *         Time: 5:59:16 PM
+ */
 public class InfoForTarget {
     int targetIndex;
     /**
@@ -36,12 +37,21 @@ public class InfoForTarget {
     public IntArraySet positionsWithSpanningIndel = new IntArraySet();
     UnboundedFifoPool<Alignments.AlignmentEntry> entriesInWindow = new UnboundedFifoPool<Alignments.AlignmentEntry>();
     public ObjectArrayList<ObservedIndel> potentialIndels = new ObjectArrayList<ObservedIndel>();
+    /**
+     * Position of the start of the realignment window for this target sequence. Alignment entries located
+     * between windowStartPosition and windowStartPosition+windowLength are stored in entriesInWindow
+     */
+    public int windowStartPosition=Integer.MAX_VALUE;
 
     public void addIndel(int startPosition, int endPosition, String from, String to) {
-        for (int p = startPosition; p < endPosition ; p++) {
+        for (int p = startPosition; p < endPosition; p++) {
             positionsWithSpanningIndel.add(p);
         }
-        potentialIndels.add(new ObservedIndel(startPosition, endPosition, from, to));
+        final ObservedIndel candidate = new ObservedIndel(startPosition, endPosition, from, to);
+        if (!potentialIndels.contains(candidate)) {
+            potentialIndels.add(candidate);
+         System.out.printf("Adding indel %s %n", candidate);
+        }
 
     }
 
@@ -57,16 +67,26 @@ public class InfoForTarget {
      * @param lastPosition
      */
     public void removeIndels(int firstPosition, int lastPosition) {
-        for (int pos = firstPosition; pos < lastPosition; ++pos) {
-            positionsWithSpanningIndel.rem(pos);
 
-        }
-        // TODO is this removing enough?
-        for (ObservedIndel indel : potentialIndels) {
-            if (indel.getEnd() <= lastPosition) {
-                potentialIndels.remove(indel);
+        for (int pos : positionsWithSpanningIndel) {
+            if (pos >= firstPosition && pos < lastPosition) {
+
+               positionsWithSpanningIndel.remove(pos);
             }
         }
+
+
+        // TODO is this removing enough?
+        final ObjectArrayList<ObservedIndel> toRemove = new ObjectArrayList<ObservedIndel>();
+        for (ObservedIndel indel : potentialIndels) {
+            if (indel.getEnd() <= lastPosition) {
+
+               toRemove.add(indel);
+                System.out.printf("lastPosition=%d removing indel %s %n",lastPosition, indel);
+            }
+        }
+        potentialIndels.removeAll(toRemove);
+
     }
 
     public void clear() {

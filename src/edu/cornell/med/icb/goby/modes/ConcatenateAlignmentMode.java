@@ -22,6 +22,8 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.aligners.AbstractAligner;
 import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.alignments.processors.*;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 import it.unimi.dsi.logging.ProgressLogger;
 
 import java.io.File;
@@ -62,6 +64,9 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
     private String[] inputFilenames;
     private String outputFile;
     private boolean adjustQueryIndices = true;
+    private boolean realign = true;
+    private AlignmentProcessorFactory alignmentProcessorFactory;
+    private RandomAccessSequenceCache genome;
 
     @Override
     public String getModeName() {
@@ -93,6 +98,8 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
 
         outputFile = jsapResult.getString("output");
         adjustQueryIndices = jsapResult.getBoolean("adjust-query-indices", true);
+        alignmentProcessorFactory=DiscoverSequenceVariantsMode.configureProcessor(jsapResult);
+        genome = DiscoverSequenceVariantsMode.configureGenome(jsapResult);
         return this;
     }
 
@@ -114,7 +121,10 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
             System.out.println("At least one of the input alignments is not sorted, the output will NOT be sorted.");
 
         }
-        final ConcatAlignmentReader alignmentReader = allSorted ? new ConcatSortedAlignmentReader(adjustQueryIndices, basenames) :
+        AlignmentProcessorFactory processorFactor = new DefaultAlignmentProcessorFactory();
+
+        final ConcatAlignmentReader alignmentReader = allSorted ?
+                new ConcatSortedAlignmentReader(adjustQueryIndices, basenames) :
                 new ConcatAlignmentReader(adjustQueryIndices, basenames);
         final ProgressLogger progress = new ProgressLogger();
         progress.displayFreeMemory = true;
@@ -129,10 +139,23 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
             writer.setTargetLengths(alignmentReader.getTargetLength());
         }
         writer.setSorted(allSorted);
-        for (final Alignments.AlignmentEntry entry : alignmentReader) {
+        AlignmentProcessorInterface processor = null;
+        if (!allSorted) {
+            processor = new DummyProcessorUnsorted(alignmentReader);
+        } else {
+            processor=alignmentProcessorFactory.create((ConcatSortedAlignmentReader) alignmentReader);
+            if (genome==null) {
+                System.err.println("A genome must be provided when realignment is requested.");
+                System.exit(1);
+            }
+            processor.setGenome(genome);
+        }
+        assert processor != null : "processor cannot be null";
+        Alignments.AlignmentEntry entry;
+        while ((entry = processor.nextRealignedEntry(0, 0)) != null) {
 
-                // query lengths are now always stored in the entry..
-                writer.appendEntry(entry);
+            // query lengths are now always stored in the entry..
+            writer.appendEntry(entry);
 
             numLogicalEntries += entry.getMultiplicity();
             numEntries++;

@@ -18,6 +18,8 @@
 
 package edu.cornell.med.icb.goby.alignments.processors;
 
+import java.text.Normalizer;
+
 /**
  * @author Fabien Campagne
  *         Date: May 14, 2011
@@ -27,37 +29,42 @@ public class ObservedIndel {
     /**
      * Start position is zero-based.
      */
-    int startPosition;
+    final int startPosition;
     /**
      * End position is zero-based.
      */
-    int endPosition;
-    String from;
-    String to;
+    final int endPosition;
+    final String from;
+    final String to;
 
     /**
      * Return the length of the indel, in bases (e.g., --- has a length of 3).
+     *
      * @return
      */
-    public int length() {return endPosition-startPosition;}
+    public int length() {
+        return endPosition - startPosition;
+    }
 
     /**
      * Construct an indel observation.
+     *
      * @param startPosition The position where the indel starts, zero-based, position of the base at the left of the first gap.
      * @param endPosition   The position where the indel ends, zero-based, position of the base at the right of the first gap.
      * @param from          Bases in the reference
      * @param to            Bases in the read
      */
-    public ObservedIndel(int startPosition, int endPosition, String from, String to) {
+    public ObservedIndel(final int startPosition, final int endPosition, final String from, final String to) {
         this.startPosition = startPosition;
         this.endPosition = endPosition;
-        this.from=from;
-        this.to=to;
+        this.from = from;
+        this.to = to;
     }
 
     public int getStart() {
         return startPosition;
     }
+
     public int getEnd() {
         return endPosition;
     }
@@ -66,8 +73,28 @@ public class ObservedIndel {
         return from;
     }
 
-    public boolean isReadInsertion() {
+    public final boolean isReadInsertion() {
         return to.contains("-");
     }
-   
+
+    @Override
+    public int hashCode() {
+        return startPosition ^ endPosition ^ from.hashCode() ^ to.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (!(o instanceof ObservedIndel)) {
+            return false;
+        }
+        final ObservedIndel other = (ObservedIndel) o;
+        return other.startPosition == startPosition &&
+                other.endPosition == endPosition &&
+                other.from().equals(from) && other.to.equals(to);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s/%s %d-%d",from,to ,startPosition,endPosition);
+    }
 }

@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.alignments.processors.*;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
@@ -81,12 +82,13 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     private String[] samples;
     private boolean groupsAreDefined;
     private ObjectArrayList<BaseFilter> baseFilters;
+    private AlignmentProcessorFactory realignmentFactory = new DefaultAlignmentProcessorFactory();
 
     public void setDisableAtLeastQuarterFilter(boolean disableAtLeastQuarterFilter) {
         this.disableAtLeastQuarterFilter = disableAtLeastQuarterFilter;
     }
 
-    private boolean disableAtLeastQuarterFilter=false;
+    private boolean disableAtLeastQuarterFilter = false;
 
     @Override
     public String getModeName() {
@@ -177,9 +179,11 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             }
 
         }
-        final String formatSring = jsapResult.getString("format");
 
-        OutputFormat format = OutputFormat.valueOf(formatSring.toUpperCase());
+        realignmentFactory=configureProcessor(jsapResult);
+        final String formatString = jsapResult.getString("format");
+
+       final OutputFormat format = OutputFormat.valueOf(formatString.toUpperCase());
 
         SequenceVariationOutputFormat formatter = null;
         switch (format) {
@@ -230,7 +234,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             case GENOTYPES:
                 baseFilters.add(new QualityScoreFilter());
                 baseFilters.add(new LeftOverFilter());
-             if (!disableAtLeastQuarterFilter)   baseFilters.add(new AtLeastAQuarterFilter());
+                if (!disableAtLeastQuarterFilter) baseFilters.add(new AtLeastAQuarterFilter());
                 break;
             default:
                 throw new InternalError("Filters must be configured for new output format.");
@@ -240,6 +244,22 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             System.out.println(filter.describe());
         }
 
+        RandomAccessSequenceCache genome = configureGenome(jsapResult);
+
+
+        int startFlapSize = jsapResult.getInt("start-flap-size", 100);
+
+        sortedPositionIterator = new DiscoverVariantIterateSortedAlignments(formatter);
+
+        sortedPositionIterator.setGenome(genome);
+        sortedPositionIterator.setStartFlapLength(startFlapSize);
+        sortedPositionIterator.parseIncludeReferenceArgument(jsapResult);
+        sortedPositionIterator.setMinimumVariationSupport(minimumVariationSupport);
+        sortedPositionIterator.setThresholdDistinctReadIndices(thresholdDistinctReadIndices);
+        return this;
+    }
+
+    static RandomAccessSequenceCache configureGenome(JSAPResult jsapResult) throws IOException {
         final String genome = jsapResult.getString("genome");
         RandomAccessSequenceCache cache = null;
         if (genome != null) {
@@ -253,18 +273,28 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 System.exit(1);
             }
         }
+        return cache;
+    }
 
+    public static AlignmentProcessorFactory configureProcessor(JSAPResult jsapResult) {
+        final AlignmentProcessorNames processorName = AlignmentProcessorNames.valueOf(jsapResult.getString("processor").toUpperCase());
+        AlignmentProcessorFactory realignmentFactory;
+        switch (processorName) {
+            case REALIGN_NEAR_INDELS:
+                realignmentFactory = new AlignmentProcessorFactory() {
+                    public AlignmentProcessorInterface create(final ConcatSortedAlignmentReader sortedReaders) {
+                        return new RealignmentProcessor(sortedReaders);
+                    }
+                };
 
-        int startFlapSize = jsapResult.getInt("start-flap-size", 100);
+                break;
+            case NONE:
+            default:
+                System.err.println("Using processor NONE");
+                realignmentFactory = new DefaultAlignmentProcessorFactory();
 
-        sortedPositionIterator = new DiscoverVariantIterateSortedAlignments(formatter);
-
-        sortedPositionIterator.setGenome(cache);
-        sortedPositionIterator.setStartFlapLength(startFlapSize);
-        sortedPositionIterator.parseIncludeReferenceArgument(jsapResult);
-        sortedPositionIterator.setMinimumVariationSupport(minimumVariationSupport);
-        sortedPositionIterator.setThresholdDistinctReadIndices(thresholdDistinctReadIndices);
-        return this;
+        }
+        return realignmentFactory;
     }
 
     private void stopWhenDefaultGroupOptions() {
@@ -284,6 +314,10 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         BETWEEN_GROUPS
     }
 
+    enum AlignmentProcessorNames {
+        NONE,
+        REALIGN_NEAR_INDELS
+    }
 
     DiscoverVariantIterateSortedAlignments sortedPositionIterator;
 
@@ -382,9 +416,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         } catch (FileNotFoundException e) {
             System.err.printf("Error. The -v file argument cannot be found (%s)%n", statFile);
             System.exit(1);
-        }
-
-        catch (IOException e) {
+        } catch (IOException e) {
             System.err.println("Cannot parse stats file. Details may be provided below." +
                     " The file should have been produced with --mode sequence-variation-stats");
             e.printStackTrace(System.err);
@@ -460,6 +492,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         sortedPositionIterator.initialize(this, outWriter, baseFilters);
         // install a reader factory that filters out ambiguous reads:
         sortedPositionIterator.setAlignmentReaderFactory(new NonAmbiguousAlignmentReaderFactory());
+        sortedPositionIterator.setAlignmentProcessorFactory(realignmentFactory);
         sortedPositionIterator.iterate(basenames);
         sortedPositionIterator.finish();
     }

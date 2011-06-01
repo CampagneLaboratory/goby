@@ -166,5 +166,15 @@
             <required>false</required>
             <help>A genome basename. The genome must have been processed by build-sequence-cache mode to produce the compressed, random access files this mode needs. </help>
         </flaggedOption>
+         <flaggedOption>
+            <id>processor</id>
+            <shortFlag>p</shortFlag>
+            <longFlag>processor</longFlag>
+            <required>false</required>
+            <defaults>
+                <string>NONE</string>
+            </defaults>
+            <help>The name of the alignment processor. An alignment processor can be configured to scan alignment entries before calling variants. By default, no processor is used. If you specify realign_near_indels, a processor that realigns reads in the proximity of indels will be used. Please note that this feature is experimental (Since Goby 1.9.7).</help>
+        </flaggedOption>
     </parameters>
 </jsap>

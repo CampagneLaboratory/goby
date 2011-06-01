@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.algorithmic.data;
 
+import edu.cornell.med.icb.goby.alignments.Alignments;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 /**
@@ -51,15 +52,21 @@ public class UnboundedFifoPool<T> {
 
     /**
      * Add an element to the pool.
+     *
      * @param element element to add.
      */
     public final void add(final T element) {
         //     System.out.printf("Adding %s pre: head-index=%d tail-index=%d %n", element, headIndex, tailIndex);
+            ++numElements;
 
-        ++numElements;
-        array.ensureCapacity(numElements);
-        array.size(Math.max(numElements, array.size()));
+        // grow the backing array
+        while (array.size() <= numElements) {
+            array.add(null);
+        }
         array.set(tailIndex, element);
+        if (((Alignments.AlignmentEntry)element).getQueryIndex()==540) {
+            System.out.println("adding 540");
+        }
         advanceTailIndex();
 
         //  System.out.printf("Adding post: head-index=%d tail-index=%d array-size=%d %n", headIndex, tailIndex,
@@ -68,6 +75,7 @@ public class UnboundedFifoPool<T> {
 
     /**
      * Remove an element from the pool. The first element added will be removed.
+     *
      * @return
      */
     public final T remove() {
@@ -83,7 +91,7 @@ public class UnboundedFifoPool<T> {
             headIndex = 0;
             tailIndex = 0;
         }
-   //     System.out.printf("Removing post: head-index=%d tail-index=%d %n", headIndex, tailIndex);
+        //     System.out.printf("Removing post: head-index=%d tail-index=%d %n", headIndex, tailIndex);
 
         return element;
 
@@ -107,6 +115,7 @@ public class UnboundedFifoPool<T> {
 
     /**
      * Determine if the FIFO pool is empty.
+     *
      * @return True if the pool is empty, false otherwise.
      */
     public final boolean isEmpty() {
@@ -118,5 +127,9 @@ public class UnboundedFifoPool<T> {
         while (!isEmpty()) {
             remove();
         }
+    }
+
+    public int size() {
+        return numElements;
     }
 }

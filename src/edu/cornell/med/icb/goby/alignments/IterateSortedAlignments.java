@@ -22,10 +22,9 @@ package edu.cornell.med.icb.goby.alignments;
 
 import com.google.protobuf.ByteString;
 import com.martiansoftware.jsap.JSAPResult;
+import edu.cornell.med.icb.goby.alignments.processors.*;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
-import edu.cornell.med.icb.goby.alignments.processors.AlignmentProcessorInterface;
-import edu.cornell.med.icb.goby.alignments.processors.DummyProcessor;
-import edu.cornell.med.icb.goby.alignments.processors.RealignmentProcessor;
+import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -63,7 +62,19 @@ public abstract class IterateSortedAlignments<T> {
     private int startFlapLength;
 
     private AlignmentReaderFactory alignmentReaderFactory = new DefaultAlignmentReaderFactory();
-    private boolean realign=false;
+
+
+    /**
+     * Configure the alignment factory used by this class. If this setter is not called, the DefaultAlignmentProcessorFactory is used, resulting in
+     * no change to the alignment.
+     *
+     * @param alignmentProcessorFactory what to set the factory to.
+     */
+    public void setAlignmentProcessorFactory(final AlignmentProcessorFactory alignmentProcessorFactory) {
+        this.alignmentProcessorFactory = alignmentProcessorFactory;
+    }
+
+    private AlignmentProcessorFactory alignmentProcessorFactory = new DefaultAlignmentProcessorFactory();
 
     /**
      * Set the length of the start flap. If length is larger than zero, the iterator will start reading at position
@@ -260,9 +271,9 @@ public abstract class IterateSortedAlignments<T> {
         boolean first = true;
         ProgressLogger pg = new ProgressLogger(LOG);
         pg.start();
-        
-        final AlignmentProcessorInterface realigner = realign ? new RealignmentProcessor(sortedReaders) :
-                new DummyProcessor(sortedReaders);
+
+        final AlignmentProcessorInterface realigner = alignmentProcessorFactory.create(sortedReaders);
+
         realigner.setGenome(getGenome());
         while ((alignmentEntry = realigner.nextRealignedEntry(currentMinTargetIndex, 0)) != null) {
 

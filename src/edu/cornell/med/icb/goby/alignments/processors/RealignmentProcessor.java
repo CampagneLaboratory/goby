@@ -51,7 +51,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
      * The FIFO queue that holds target indices that have entries pooled in tinfo:
      */
     private IntArrayFIFOQueue activeTargetIndices = new IntArrayFIFOQueue();
-    private WarningCounter genomeNull = new WarningCounter(1);
+    private WarningCounter genomeNull = new WarningCounter(2);
 
 
     ObjectArrayList<InfoForTarget> targetInfo = new ObjectArrayList<InfoForTarget>();
@@ -69,6 +69,9 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         iterator = new SkipToListIterator(entryIterator);
     }
 
+    int enqueuedCount = 0;
+    int dequeuedCount = 0;
+
     public Alignments.AlignmentEntry nextRealignedEntry(final int targetIndex, final int position) throws IOException {
 
         int minTargetIndex = Integer.MAX_VALUE;
@@ -77,6 +80,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         do {
             entry = iterator.skipTo(targetIndex, position);
             if (entry != null) {
+
                 minTargetIndex = Math.min(minTargetIndex, entry.getTargetIndex());
                 final int entryTargetIndex = entry.getTargetIndex();
                 // push new targetIndices to activeTargetIndices:
@@ -85,13 +89,19 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
                     activeTargetIndices.enqueue(entryTargetIndex);
                 }
                 final InfoForTarget frontInfo = reallocateTargetInfo(entryTargetIndex);
+                // System.out.printf("windowStartPosition=%,d %n",windowStartPosition);
+                if (entry.getQueryIndex() == 540) {
+                    System.err.println("enqueuing 540");
+                }
                 pushEntryToPool(frontInfo, position, entry);
                 if (entryTargetIndex != minTargetIndex) {
-                    windowStartPosition = entry.getPosition();
+                    frontInfo.windowStartPosition = entry.getPosition();
                 }
+                windowStartPosition = frontInfo.windowStartPosition;
             }
         }
         while (entry != null && entry.getPosition() < windowStartPosition + windowLength);
+
         // check if we still have entries in the previously active target:
         int backTargetIndex = activeTargetIndices.firstInt();
         if (targetInfo.get(backTargetIndex).entriesInWindow.isEmpty()) {
@@ -106,11 +116,14 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
             backTargetIndex = activeTargetIndices.firstInt();
         }
         final InfoForTarget backInfo = targetInfo.get(backTargetIndex); // the pool info we will use to dequeue the entry at the back of the window
-
+        //  System.out.printf("back is holding %d entries %n", backInfo.entriesInWindow.size());
         // now find the entry at the left of the realignment window on the active target:
         if (backInfo.entriesInWindow.isEmpty()) return null;
         Alignments.AlignmentEntry returnedEntry = backInfo.entriesInWindow.remove();
-
+        if (returnedEntry.getQueryIndex() == 540) {
+            System.out.printf("found 540 entry.getPosition=%,d%n", returnedEntry.getPosition());
+            System.out.println("");
+        }
         if (backInfo.positionsWithSpanningIndel.size() > 0) {
             returnedEntry = realign(returnedEntry, backInfo);
         }
@@ -123,13 +136,14 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
 
             backInfo.removeIndels(previousWindowStart, lastPosition);
         }
+        ++dequeuedCount;
         return returnedEntry;
 
     }
 
     private InfoForTarget reallocateTargetInfo(int targetIndex) {
         int intermediateTargetIndex = targetInfo.size() - 1;
-        while (targetIndex >= numTargets) {
+        while (intermediateTargetIndex <= targetIndex) {
 
             targetInfo.add(new InfoForTarget(++intermediateTargetIndex));
             numTargets = targetInfo.size();
@@ -173,6 +187,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         builder.setScore(entry.getScore() + scoreDelta);
         int indelLength = indel.length();
         int entryPosition = entry.getPosition();
+        final int originalEntryPosition = entryPosition;
         if (!shiftForward && indel.isReadInsertion()) {
             // shifting to the left a read insertion, must shift alignment start position to the right
             entryPosition = entry.getPosition() - indelLength;
@@ -201,7 +216,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
             Alignments.SequenceVariation var = entry.getSequenceVariations(i);
             // check if var becomes compatible with reference when var's varPosition is shifted by the length of the indel in the specified shiftForward
             // newGenomicPosition is zero-based
-            final int newGenomicPosition = var.getPosition() + (direction * indelLength) + entryPosition - 1;
+            final int newGenomicPosition = var.getPosition() + (direction * indelLength) + originalEntryPosition - 1;
             for (int j = 0; j < var.getTo().length(); ++j) {
 
                 final char toBase = var.getTo().charAt(j);
@@ -247,7 +262,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
                 if (!compatible) {
                     Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder();
                     // varPosition is one-based while realignedPos and entryPos are zero-based:
-                    final int varPosition = realignedPos - entryPosition + 1;
+                    final int varPosition = direction * (realignedPos - entryPosition) + 1;
                     varBuilder.setPosition(varPosition);
                     varBuilder.setFrom(Character.toString(fromBase));
                     varBuilder.setTo(Character.toString(toBase));
@@ -280,7 +295,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
             builder = builder.addSequenceVariations(var);
         }
         final Alignments.AlignmentEntry alignmentEntry = builder.build();
-        System.out.println(alignmentEntry);
+        System.out.printf("realigned queryIndex=%d%n", alignmentEntry.getQueryIndex());
         return alignmentEntry;
     }
 
@@ -307,7 +322,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
 
         if (genome == null) {
             genomeNull.warn(LOG, "Genome must not be null outside of JUnit tests.");
-            return 0;
+            return Integer.MIN_VALUE;
         }
         final int targetLength = genome.getLength(targetIndex);
         /*
@@ -372,7 +387,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
             // System.out.printf("indelOffsetInAlignment: %d shiftForward: %b score: %d%n", indelOffsetInAlignment, shiftForward, score);
         }
 
-        System.out.printf("indelOffsetInAlignment: %d shiftForward: %b score: %d%n", indelOffsetInAlignment, shiftForward, score);
+        //   System.out.printf("indelOffsetInAlignment: %d shiftForward: %b score: %d%n", indelOffsetInAlignment, shiftForward, score);
         return score;
     }
 
@@ -385,8 +400,9 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
     }
 
     public void pushEntryToPool(InfoForTarget tinfo, int position, Alignments.AlignmentEntry entry) {
-        windowStartPosition = Math.min(windowStartPosition, position);
-        windowStartPosition = Math.min(windowStartPosition, entry.getPosition());
+        // the window start is only decreased in the pushing step, never increased.
+        tinfo.windowStartPosition = Math.min(tinfo.windowStartPosition, entry.getPosition());
+
         // set window length to twice the longest read length.
         windowLength = Math.max(windowLength, entry.getQueryLength() * 2);
 
@@ -404,6 +420,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
             }
         }
         tinfo.entriesInWindow.add(entry);
+        ++enqueuedCount;
     }
 
     private boolean isIndel(Alignments.SequenceVariation var) {
