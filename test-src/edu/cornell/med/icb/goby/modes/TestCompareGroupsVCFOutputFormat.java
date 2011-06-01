@@ -144,7 +144,7 @@ public class TestCompareGroupsVCFOutputFormat {
     @Test
     public void testAllelicDifference() throws Exception {
         synchronized (GobyRengine.getInstance().getRengine()) {
-            SampleCountInfo[] sampleCounts = makeSampleCounts(1, 30, 5, 30, 6, 2, 0, 10, 60, 12);
+            SampleCountInfo[] sampleCounts = makeSampleCounts(1, 30, 5, 30, 6, 2 /* this value would have been 60 is no difference existed for this allele */, 0, 10, 60, 12);
             ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
             expect(mode.getReaderIndexToGroupIndex()).andReturn(readerIndexToGroupIndex);
             replay(mode);

@@ -141,7 +141,7 @@ public class VCFParser implements Closeable {
         for (ColumnInfo col : columns) {
             if (col.columnIndex == columnIndex) {
                 if (col.fields.size() == 1) {
-                    return col.fields.iterator().next().type;
+                    return ((ColumnField)col.fields.toArray()[0]).type;
 
                 } else {
                     break;
@@ -441,7 +441,7 @@ public class VCFParser implements Closeable {
 
             MutableString formatSpan = line.substring(startFormatColumn, endFormatColumn);
             formatSpan.compact();
-            String[] formatTokens = formatSpan.toString().split(Character.toString(formatFieldSeparatorCharacter));
+            final String[] formatTokens = split(formatSpan, formatFieldSeparatorCharacter);
             for (ColumnField f : column.fields) {
                 if (colMaxGlobalFieldIndex == colMinGlobalFieldIndex) {
                     // This column has only one field.
@@ -497,6 +497,37 @@ public class VCFParser implements Closeable {
                     }
                 }
             }
+        }
+    }
+        String[] formatSplit=null;
+    private String[] split(MutableString formatSpan, char formatFieldSeparatorCharacter) {
+        if (formatSplit!=null){
+            return formatSplit;
+        }  else {
+        int fieldCount = 0;
+
+        formatSpan.append(formatFieldSeparatorCharacter);
+        final int length = formatSpan.length();
+        for (int i = 0; i < length; i++) {
+            if (formatSpan.charAt(i) == formatFieldSeparatorCharacter) {
+                ++fieldCount;
+            }
+        }
+        String result[] = new String[fieldCount];
+        MutableString value = new MutableString();
+        int last = 0;
+        int j = 0;
+        for (int i = 0; i < length; i++) {
+            if (formatSpan.charAt(i) == formatFieldSeparatorCharacter && i > last ) {
+                value.append(formatSpan.substring(last, i));
+                last=i+1;
+                result[j] = value.toString();
+                value.setLength(0);
+                ++j;
+            }
+        }
+            formatSplit=result;
+        return result;
         }
     }
 
@@ -766,7 +797,8 @@ public class VCFParser implements Closeable {
     }
 
     /**
-     * Return the sample names, or more specifically, the names of column that use the FORMAT column. 
+     * Return the sample names, or more specifically, the names of column that use the FORMAT column.
+     *
      * @return
      */
     public String[] getColumnNamesUsingFormat() {
