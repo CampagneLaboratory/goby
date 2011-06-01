@@ -19,7 +19,9 @@
 package edu.cornell.med.icb.goby.algorithmic.data;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 /**
@@ -49,5 +51,29 @@ public class TestUnboundedFifoPool {
         assertTrue(tester.isEmpty());
     }
 
+
+    @Test
+    public void growLargeReduce() {
+        UnboundedFifoPool<Integer> tester = new UnboundedFifoPool<Integer>();
+        assertTrue(tester.isEmpty());
+        tester.add(1);
+        tester.add(2);
+        tester.add(3);
+        assertEquals((Integer) 1, tester.remove());
+        assertEquals((Integer) 2, tester.remove());
+        assertEquals((Integer) 3, tester.remove());
+        assertTrue(tester.isEmpty());
+        tester.add(4);
+        tester.add(5);
+        tester.add(6);
+        tester.add(7);
+
+        assertEquals((Integer) 4, tester.remove());
+        assertEquals((Integer) 5, tester.remove());
+        assertFalse(tester.isEmpty());
+        assertEquals((Integer) 6, tester.remove());
+        assertEquals((Integer) 7, tester.remove());
+        assertTrue(tester.isEmpty());
+    }
 
 }

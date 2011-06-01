@@ -33,6 +33,7 @@ public class UnboundedFifoPool<T> {
     private int tailIndex = 0;
     private int headIndex = 0;
     int numElements = 0;
+    private int capacity;
 
     /**
      * Create an UnboundedFifoPool with the specified initial capacity.
@@ -58,15 +59,13 @@ public class UnboundedFifoPool<T> {
     public final void add(final T element) {
         //     System.out.printf("Adding %s pre: head-index=%d tail-index=%d %n", element, headIndex, tailIndex);
             ++numElements;
-
+        capacity=Math.max(capacity,tailIndex+1);
         // grow the backing array
-        while (array.size() <= numElements) {
+        while (array.size() <= capacity) {
             array.add(null);
         }
         array.set(tailIndex, element);
-        if (((Alignments.AlignmentEntry)element).getQueryIndex()==540) {
-            System.out.println("adding 540");
-        }
+
         advanceTailIndex();
 
         //  System.out.printf("Adding post: head-index=%d tail-index=%d array-size=%d %n", headIndex, tailIndex,
@@ -99,18 +98,13 @@ public class UnboundedFifoPool<T> {
 
     private void advanceHeadIndex() {
 
-        ++headIndex;
-        if (headIndex > numElements) {
-            headIndex = 0;
-        }
+       headIndex=headIndex% capacity+1 ;
+
     }
 
     private void advanceTailIndex() {
 
-        ++tailIndex;
-        if (tailIndex > numElements) {
-            tailIndex = 0;
-        }
+       tailIndex=tailIndex% capacity+1 ;
     }
 
     /**
