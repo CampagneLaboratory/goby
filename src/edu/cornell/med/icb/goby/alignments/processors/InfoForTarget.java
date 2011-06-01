@@ -50,7 +50,7 @@ public class InfoForTarget {
         final ObservedIndel candidate = new ObservedIndel(startPosition, endPosition, from, to);
         if (!potentialIndels.contains(candidate)) {
             potentialIndels.add(candidate);
-         System.out.printf("Adding indel %s %n", candidate);
+     //    System.out.printf("Adding indel %s %n", candidate);
         }
 
     }
@@ -82,7 +82,7 @@ public class InfoForTarget {
             if (indel.getEnd() <= lastPosition) {
 
                toRemove.add(indel);
-                System.out.printf("lastPosition=%d removing indel %s %n",lastPosition, indel);
+        //        System.out.printf("lastPosition=%d removing indel %s %n",lastPosition, indel);
             }
         }
         potentialIndels.removeAll(toRemove);

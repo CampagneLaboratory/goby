@@ -90,9 +90,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
                 }
                 final InfoForTarget frontInfo = reallocateTargetInfo(entryTargetIndex);
                 // System.out.printf("windowStartPosition=%,d %n",windowStartPosition);
-                if (entry.getQueryIndex() == 540) {
-                    System.err.println("enqueuing 540");
-                }
+
                 pushEntryToPool(frontInfo, position, entry);
                 if (entryTargetIndex != minTargetIndex) {
                     frontInfo.windowStartPosition = entry.getPosition();
@@ -120,10 +118,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         // now find the entry at the left of the realignment window on the active target:
         if (backInfo.entriesInWindow.isEmpty()) return null;
         Alignments.AlignmentEntry returnedEntry = backInfo.entriesInWindow.remove();
-        if (returnedEntry.getQueryIndex() == 540) {
-            System.out.printf("found 540 entry.getPosition=%,d%n", returnedEntry.getPosition());
-            System.out.println("");
-        }
+
         if (backInfo.positionsWithSpanningIndel.size() > 0) {
             returnedEntry = realign(returnedEntry, backInfo);
         }
@@ -295,7 +290,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
             builder = builder.addSequenceVariations(var);
         }
         final Alignments.AlignmentEntry alignmentEntry = builder.build();
-        System.out.printf("realigned queryIndex=%d%n", alignmentEntry.getQueryIndex());
+    //    System.out.printf("realigned queryIndex=%d%n", alignmentEntry.getQueryIndex());
         return alignmentEntry;
     }
 
