@@ -1,5 +1,23 @@
 #!/bin/env groovy
 
+/*
+ * Copyright (C) 2009-2011 Institute for Computational Biomedicine,
+ *                    Weill Medical College of Cornell University
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 //
 // After files have been sequenced by one or more Flow Cells
 // (and de-multiplexed) and transferred from the facility that
@@ -235,6 +253,9 @@ class RenameSequencedFiles {
         int lineNum = 1
         Integer sampleIdColumnNum
         for (String line in projectTsvFile.readLines()) {
+            if (line.startsWith("#")) {
+                continue
+            }
             if (lineNum == 1) {
                 projectColumns = line.split("\t") as List
                 // Make a map of column name to column number
@@ -365,29 +386,34 @@ class RenameSequencedFiles {
                     return null
                 }
                 List<String> renameValues = []
-                for (String renameColumn in sequencerIdToRenameColumns[sequencerId]) {
-                    switch (renameColumn) {
-                        case "%flowCell":
-                            renameValues << flowCell
-                            break
-                        case "%lane":
-                            renameValues << lane
-                            break
-                        default:
-                            renameValues << renameColumn
-                            break
+                def renameColumns = sequencerIdToRenameColumns[sequencerId]
+                if (renameColumns != null) {
+                    for (String renameColumn in sequencerIdToRenameColumns[sequencerId]) {
+                        switch (renameColumn) {
+                            case "%flowCell":
+                                renameValues << flowCell
+                                break
+                            case "%lane":
+                                renameValues << lane
+                                break
+                            default:
+                                renameValues << renameColumn
+                                break
+                        }
                     }
+                    String oldFilename = file.toString()
+                    String newFilename = "${this.outputFolderFile}/${renameValues.join('-')}.${PROCESS_SUFFIX}"
+                    if (renameFromToMap.containsKey(oldFilename) ||
+                        renameFromToMap.containsValue(oldFilename) ||
+                        renameFromToMap.containsKey(newFilename) ||
+                        renameFromToMap.containsValue(newFilename)) {
+                        System.err.println "Tried to add rename ${oldFilename} to ${newFilename} but one of the filenames was not unique."
+                        return null
+                    }
+                    renameFromToMap[oldFilename] = newFilename
+                } else {
+                    System.err.println "WARNING: sequencer-id ${sequencerId} not found in --project-tsv file ${projectTsvFile.toString()} so file ${file.toString()} cannot be renamed"
                 }
-                String oldFilename = file.toString()
-                String newFilename = "${this.outputFolderFile}/${renameValues.join('-')}.${PROCESS_SUFFIX}"
-                if (renameFromToMap.containsKey(oldFilename) ||
-                    renameFromToMap.containsValue(oldFilename) ||
-                    renameFromToMap.containsKey(newFilename) ||
-                    renameFromToMap.containsValue(newFilename)) {
-                    System.err.println "Tried to add rename ${oldFilename} to ${newFilename} but one of the filenames was not unique."
-                    return null
-                }
-                renameFromToMap[oldFilename] = newFilename
             } 
         }
         return renameFromToMap
