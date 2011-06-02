@@ -1072,7 +1072,7 @@
       <option name="MAIN_CLASS_NAME" value="" />
       <option name="METHOD_NAME" value="" />
       <option name="TEST_OBJECT" value="package" />
-      <option name="VM_PARAMETERS" value="-ea -Xmx3g  -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties  -Dlog4j.configration=file:$PROJECT_DIR$/config/log4j.properties -Djava.library.path=&quot;/Library/Frameworks/R.framework/Resources/library/rJava/jri&quot; " />
+      <option name="VM_PARAMETERS" value="-ea -Xmx3g  -Dlog4j.debug=true -Dlog4j.configuration=file:$PROJECT_DIR$/config/log4j.properties -Djava.library.path=&quot;/Library/Frameworks/R.framework/Resources/library/rJava/jri&quot; " />
       <option name="PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <option name="ENV_VARIABLES" />
@@ -1363,6 +1363,17 @@
     <Base>
       <setting name="state" value="2" />
     </Base>
+  </component>
+  <component name="libraryTable">
+    <library name="fastutil">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/fastutil-6.2.2.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="http://fastutil.dsi.unimi.it/docs/" />
+      </JAVADOC>
+      <SOURCES />
+    </library>
   </component>
   <component name="org.twodividedbyzero.idea.findbugs">
     <option name="_basePreferences">

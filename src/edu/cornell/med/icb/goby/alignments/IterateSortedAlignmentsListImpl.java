@@ -57,7 +57,7 @@ public abstract class IterateSortedAlignmentsListImpl
 
         PositionBaseInfo info = new PositionBaseInfo();
 
-        info.readerIndex = sortedReaders.activeIndex;
+        info.readerIndex = alignmentEntry.getSampleIndex();
         //     System.out.printf("observing ref readerIndex=%d%n",info.readerIndex);
         info.readIndex = currentReadIndex;
         info.from = '\0';
@@ -86,7 +86,7 @@ public abstract class IterateSortedAlignmentsListImpl
         }
 
         PositionBaseInfo info = new PositionBaseInfo();
-        info.readerIndex = sortedReaders.activeIndex;
+        info.readerIndex = alignmentEntry.getSampleIndex();
         //    System.out.printf("observing var readerIndex=%d%n",info.readerIndex);
 
         info.readIndex = currentReadIndex;

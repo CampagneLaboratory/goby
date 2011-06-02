@@ -36,7 +36,7 @@ public abstract class IterateSortedAlignmentsListImpl2
                                      Int2ObjectMap<ObjectArrayList<PositionBaseInfo2>> positionToBases,
                                      int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
         PositionBaseInfo2 info = new PositionBaseInfo2();
-        info.readerIndex = sortedReaders.activeIndex;
+        info.readerIndex = alignmentEntry.getSampleIndex();
         info.readIndex = currentReadIndex;
         info.from = '\0';
         info.to = '\0';
@@ -55,14 +55,14 @@ public abstract class IterateSortedAlignmentsListImpl2
                                    char toChar, char fromChar, byte toQual, int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
 
         PositionBaseInfo2 info = new PositionBaseInfo2();
-        info.readerIndex = sortedReaders.activeIndex;
+        info.readerIndex = alignmentEntry.getSampleIndex();
         info.readIndex = currentReadIndex;
         info.from = fromChar;
         info.to = toChar;
         info.matchesReference = false;
         info.position = currentRefPosition;
         info.alignmentEntryQueryIndex = alignmentEntry.getQueryIndex();
-        info.variationLength=Math.max(var.getFrom().length(), var.getTo().length());
+        info.variationLength = Math.max(var.getFrom().length(), var.getTo().length());
         addToFuture(positionToBases, info);
     }
 

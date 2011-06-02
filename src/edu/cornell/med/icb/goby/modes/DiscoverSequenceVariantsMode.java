@@ -283,7 +283,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             case REALIGN_NEAR_INDELS:
                 realignmentFactory = new AlignmentProcessorFactory() {
                     public AlignmentProcessorInterface create(final ConcatSortedAlignmentReader sortedReaders) {
-                        return new RealignmentProcessor(sortedReaders);
+                        return new LocalSortProcessor(new RealignmentProcessor(sortedReaders));
                     }
                 };
 

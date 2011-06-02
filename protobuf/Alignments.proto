@@ -144,6 +144,14 @@ message AlignmentEntry {
   of reads by the aligner and is recorded here if was estimated (i.e., for paired-end reads).
   */
   optional uint32 insert_size=20;
+
+  /*
+     The sample index. Uniquely identifies the aligned sample this read was read from. Storing the sample index in the
+     alignment entry makes it possible to concat alignments from different origins and track what sample originally
+     contained each entry.
+  */
+  optional uint32 sample_index=21;
+
 }
 
 /* A link to another alignment entry. This message type is used to represent relations
@@ -316,6 +324,12 @@ message AlignmentHeader {
       The version of Goby that created this alignment file.
    */
    optional string version=25;
+
+   /*
+     Sample basenames, in the order of increasing sampleIndex, starting with sampleIndex=0.
+   */
+
+   repeated string sample_basename=30;
 }
 
 message IdentifierMapping {

@@ -15,7 +15,7 @@
 
     <property name="label" value="development"/>
 
-    <import file="buildsupport/build.xml"/>
+    <import file="buildsupport/build.xml" />
 
     <if>
         <os family="windows"/>

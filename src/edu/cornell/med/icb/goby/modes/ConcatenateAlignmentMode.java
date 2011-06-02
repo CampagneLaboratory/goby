@@ -121,7 +121,6 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
             System.out.println("At least one of the input alignments is not sorted, the output will NOT be sorted.");
 
         }
-        AlignmentProcessorFactory processorFactor = new DefaultAlignmentProcessorFactory();
 
         final ConcatAlignmentReader alignmentReader = allSorted ?
                 new ConcatSortedAlignmentReader(adjustQueryIndices, basenames) :
@@ -144,7 +143,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
             processor = new DummyProcessorUnsorted(alignmentReader);
         } else {
             processor=alignmentProcessorFactory.create((ConcatSortedAlignmentReader) alignmentReader);
-            if (genome==null) {
+            if (processor instanceof LocalSortProcessor && genome==null) {
                 System.err.println("A genome must be provided when realignment is requested.");
                 System.exit(1);
             }

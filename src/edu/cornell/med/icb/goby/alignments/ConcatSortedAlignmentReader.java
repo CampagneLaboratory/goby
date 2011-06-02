@@ -101,10 +101,12 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
         super(alignmentReaderFactory, true, basenames);
         init(basenames);
     }
-     public ConcatSortedAlignmentReader(AlignmentReaderFactory alignmentReaderFactory,final boolean adjustQueryIndices, String[] basenames) throws IOException {
+
+    public ConcatSortedAlignmentReader(AlignmentReaderFactory alignmentReaderFactory, final boolean adjustQueryIndices, String[] basenames) throws IOException {
         super(alignmentReaderFactory, adjustQueryIndices, basenames);
         init(basenames);
     }
+
     public ConcatSortedAlignmentReader(final boolean adjustQueryIndices, final String... basenames) throws IOException {
         super(new DefaultAlignmentReaderFactory(), adjustQueryIndices, basenames);
         init(basenames);
@@ -205,9 +207,13 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
 
         final int newQueryIndex = mergedQueryIndex(alignmentEntry.getQueryIndex());
         if (adjustQueryIndices) {
-            return alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry).setQueryIndex(newQueryIndex).build();
+            return alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry).
+                    setQueryIndex(newQueryIndex).
+                    setSampleIndex(activeIndex).build();
         } else {
-            return alignmentEntry;
+            // TODO associate sampleIndex to reader basename in concat header
+            return alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry).
+                    setSampleIndex(activeIndex).build();
         }
     }
 
@@ -291,9 +297,11 @@ public class ConcatSortedAlignmentReader extends ConcatAlignmentReader {
             final Alignments.AlignmentEntry alignmentEntry = bucket.entry;
             final int newQueryIndex = mergedQueryIndex(alignmentEntry.getQueryIndex());
             if (adjustQueryIndices) {
-                return alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry).setQueryIndex(newQueryIndex).build();
+                return alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry).setQueryIndex(newQueryIndex).
+                        setSampleIndex(activeIndex).build();
             } else {
-                return alignmentEntry;
+                return alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry).
+                        setSampleIndex(activeIndex).build();
             }
 
         }

@@ -1,4 +1,10 @@
 development -> 1.9.7
+ - AlignmentEntry schema change: a new field sample_index holds the index of the alignment from which the
+   entry was read. This is useful when concatenating over multiple alignments and realigning reads that span
+   indels, to realiably track the alignment origin of each entry.  The concatenation readers have been
+   modified to set sample_index accordingly. Please note that the activeIndex field of the sorted reader
+   is not a realiable way to identify the alignment of origin when realignment is active. Please use the
+   new sample_index field instead.
  - We have added the capability to perform on the fly realignment around indels. This feature is available
    in mode discover-sequence-variants and in concatenate-alignments. The feature is activated with the new
    --processor realign_near_indels option. When the option is provided, a compressed reference genome must

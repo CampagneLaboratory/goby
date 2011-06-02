@@ -108,6 +108,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
             Alignments.AlignmentEntry entry;
             do {
                 entry = iterator.skipTo(targetIndex, position);
+
                 if (entry != null) {
 
                     minTargetIndex = Math.min(minTargetIndex, entry.getTargetIndex());
@@ -447,6 +448,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
 
             }
         }
+
         tinfo.entriesInWindow.add(entry);
         ++enqueuedCount;
     }

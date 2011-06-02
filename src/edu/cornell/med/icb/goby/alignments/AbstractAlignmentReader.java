@@ -300,4 +300,15 @@ public abstract class AbstractAlignmentReader implements Closeable,
      * the list of aligner versions in the order of names, with duplicates removed.
      */
     protected String alignerVersion;
+
+    protected ObjectArrayList<String> sampleBasenames=new ObjectArrayList<String>();
+
+    /**
+     * Return the sample basename associated with the given sampleIndex.
+     * @param sampleIndex index of the sample, from AlignmentEntry.
+     * @return The sample basename/identifier for the index.
+     */
+    public String getSampleBasename(final int sampleIndex) {
+        return sampleBasenames.get(sampleIndex);
+    }
 }

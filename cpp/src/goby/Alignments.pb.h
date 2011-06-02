@@ -338,6 +338,13 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 insert_size() const;
   inline void set_insert_size(::google::protobuf::uint32 value);
   
+  // optional uint32 sample_index = 21;
+  inline bool has_sample_index() const;
+  inline void clear_sample_index();
+  static const int kSampleIndexFieldNumber = 21;
+  inline ::google::protobuf::uint32 sample_index() const;
+  inline void set_sample_index(::google::protobuf::uint32 value);
+  
   // @@protoc_insertion_point(class_scope:goby.AlignmentEntry)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
@@ -363,11 +370,12 @@ class AlignmentEntry : public ::google::protobuf::Message {
   ::goby::RelatedAlignmentEntry* spliced_alignment_link_;
   ::google::protobuf::uint32 spliced_flags_;
   ::google::protobuf::uint32 insert_size_;
+  ::google::protobuf::uint32 sample_index_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
   friend void protobuf_ShutdownFile_Alignments_2eproto();
   
-  ::google::protobuf::uint32 _has_bits_[(20 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(21 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
   inline bool _has_bit(int index) const {
@@ -808,6 +816,22 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline void set_version(const char* value, size_t size);
   inline ::std::string* mutable_version();
   
+  // repeated string sample_basename = 30;
+  inline int sample_basename_size() const;
+  inline void clear_sample_basename();
+  static const int kSampleBasenameFieldNumber = 30;
+  inline const ::std::string& sample_basename(int index) const;
+  inline ::std::string* mutable_sample_basename(int index);
+  inline void set_sample_basename(int index, const ::std::string& value);
+  inline void set_sample_basename(int index, const char* value);
+  inline void set_sample_basename(int index, const char* value, size_t size);
+  inline ::std::string* add_sample_basename();
+  inline void add_sample_basename(const ::std::string& value);
+  inline void add_sample_basename(const char* value);
+  inline void add_sample_basename(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& sample_basename() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_sample_basename();
+  
   // @@protoc_insertion_point(class_scope:goby.AlignmentHeader)
  private:
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
@@ -832,11 +856,12 @@ class AlignmentHeader : public ::google::protobuf::Message {
   static const ::std::string _default_aligner_version_;
   ::std::string* version_;
   static const ::std::string _default_version_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> sample_basename_;
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
   friend void protobuf_ShutdownFile_Alignments_2eproto();
   
-  ::google::protobuf::uint32 _has_bits_[(16 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(17 + 31) / 32];
   
   // WHY DOES & HAVE LOWER PRECEDENCE THAN != !?
   inline bool _has_bit(int index) const {
@@ -1744,6 +1769,22 @@ inline void AlignmentEntry::set_insert_size(::google::protobuf::uint32 value) {
   insert_size_ = value;
 }
 
+// optional uint32 sample_index = 21;
+inline bool AlignmentEntry::has_sample_index() const {
+  return _has_bit(20);
+}
+inline void AlignmentEntry::clear_sample_index() {
+  sample_index_ = 0u;
+  _clear_bit(20);
+}
+inline ::google::protobuf::uint32 AlignmentEntry::sample_index() const {
+  return sample_index_;
+}
+inline void AlignmentEntry::set_sample_index(::google::protobuf::uint32 value) {
+  _set_bit(20);
+  sample_index_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // RelatedAlignmentEntry
@@ -2314,6 +2355,50 @@ inline ::std::string* AlignmentHeader::mutable_version() {
     version_ = new ::std::string;
   }
   return version_;
+}
+
+// repeated string sample_basename = 30;
+inline int AlignmentHeader::sample_basename_size() const {
+  return sample_basename_.size();
+}
+inline void AlignmentHeader::clear_sample_basename() {
+  sample_basename_.Clear();
+}
+inline const ::std::string& AlignmentHeader::sample_basename(int index) const {
+  return sample_basename_.Get(index);
+}
+inline ::std::string* AlignmentHeader::mutable_sample_basename(int index) {
+  return sample_basename_.Mutable(index);
+}
+inline void AlignmentHeader::set_sample_basename(int index, const ::std::string& value) {
+  sample_basename_.Mutable(index)->assign(value);
+}
+inline void AlignmentHeader::set_sample_basename(int index, const char* value) {
+  sample_basename_.Mutable(index)->assign(value);
+}
+inline void AlignmentHeader::set_sample_basename(int index, const char* value, size_t size) {
+  sample_basename_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* AlignmentHeader::add_sample_basename() {
+  return sample_basename_.Add();
+}
+inline void AlignmentHeader::add_sample_basename(const ::std::string& value) {
+  sample_basename_.Add()->assign(value);
+}
+inline void AlignmentHeader::add_sample_basename(const char* value) {
+  sample_basename_.Add()->assign(value);
+}
+inline void AlignmentHeader::add_sample_basename(const char* value, size_t size) {
+  sample_basename_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+AlignmentHeader::sample_basename() const {
+  return sample_basename_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+AlignmentHeader::mutable_sample_basename() {
+  return &sample_basename_;
 }
 
 // -------------------------------------------------------------------

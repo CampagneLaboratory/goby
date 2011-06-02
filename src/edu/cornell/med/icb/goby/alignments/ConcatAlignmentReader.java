@@ -29,6 +29,7 @@ import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.*;
 
@@ -115,6 +116,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
         for (int readerIndex = 0; readerIndex < basenames.length; readerIndex++) {
             readers[readerIndex] = alignmentReaderFactory.createReader(basenames[readerIndex]);
             readersWithMoreEntries.add(readerIndex);
+            sampleBasenames.add(basenames[readerIndex]);
         }
         numQueriesPerReader = new int[basenames.length];
         queryIndexOffset = new int[basenames.length];
@@ -153,6 +155,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
                     startReferenceIndex, startPosition,
                     endReferenceIndex, endPosition);
             readersWithMoreEntries.add(readerIndex);
+            sampleBasenames.add(basename);
             readerIndex++;
         }
         numQueriesPerReader = new int[basenames.length];
@@ -231,6 +234,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
                 queryIndexOffset[i] = adjustQueryIndices ? i == 0 ? 0 : readers[i - 1].getLargestSplitQueryIndex() + 1 : 0;
 
             }
+
         }
 
 
@@ -288,6 +292,7 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
         return super.getAlignerVersion();
     }
 
+
     /**
      * Returns the next alignment entry from the input stream.
      *
@@ -305,9 +310,12 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
                 return alignmentEntry;
             } else {
                 if (newQueryIndex == queryIndex) {
-                    return alignmentEntry;
+                    return alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry).
+                            setSampleIndex(activeIndex).build();
                 } else {
-                    return alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry).setQueryIndex(newQueryIndex).build();
+                    return alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry).
+                            setQueryIndex(newQueryIndex).
+                            setSampleIndex(activeIndex).build();
                 }
             }
         }

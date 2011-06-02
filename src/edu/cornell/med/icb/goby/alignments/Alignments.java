@@ -514,6 +514,13 @@ public final class Alignments {
     public boolean hasInsertSize() { return hasInsertSize; }
     public int getInsertSize() { return insertSize_; }
     
+    // optional uint32 sample_index = 21;
+    public static final int SAMPLE_INDEX_FIELD_NUMBER = 21;
+    private boolean hasSampleIndex;
+    private int sampleIndex_ = 0;
+    public boolean hasSampleIndex() { return hasSampleIndex; }
+    public int getSampleIndex() { return sampleIndex_; }
+    
     private void initFields() {
       pairAlignmentLink_ = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance();
       splicedAlignmentLink_ = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance();
@@ -597,6 +604,9 @@ public final class Alignments {
       }
       if (hasInsertSize()) {
         output.writeUInt32(20, getInsertSize());
+      }
+      if (hasSampleIndex()) {
+        output.writeUInt32(21, getSampleIndex());
       }
       getUnknownFields().writeTo(output);
     }
@@ -686,6 +696,10 @@ public final class Alignments {
       if (hasInsertSize()) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(20, getInsertSize());
+      }
+      if (hasSampleIndex()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(21, getSampleIndex());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -912,6 +926,9 @@ public final class Alignments {
         if (other.hasInsertSize()) {
           setInsertSize(other.getInsertSize());
         }
+        if (other.hasSampleIndex()) {
+          setSampleIndex(other.getSampleIndex());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -1027,6 +1044,10 @@ public final class Alignments {
             }
             case 160: {
               setInsertSize(input.readUInt32());
+              break;
+            }
+            case 168: {
+              setSampleIndex(input.readUInt32());
               break;
             }
           }
@@ -1462,6 +1483,24 @@ public final class Alignments {
       public Builder clearInsertSize() {
         result.hasInsertSize = false;
         result.insertSize_ = 0;
+        return this;
+      }
+      
+      // optional uint32 sample_index = 21;
+      public boolean hasSampleIndex() {
+        return result.hasSampleIndex();
+      }
+      public int getSampleIndex() {
+        return result.getSampleIndex();
+      }
+      public Builder setSampleIndex(int value) {
+        result.hasSampleIndex = true;
+        result.sampleIndex_ = value;
+        return this;
+      }
+      public Builder clearSampleIndex() {
+        result.hasSampleIndex = false;
+        result.sampleIndex_ = 0;
         return this;
       }
       
@@ -2444,6 +2483,18 @@ public final class Alignments {
     public boolean hasVersion() { return hasVersion; }
     public java.lang.String getVersion() { return version_; }
     
+    // repeated string sample_basename = 30;
+    public static final int SAMPLE_BASENAME_FIELD_NUMBER = 30;
+    private java.util.List<java.lang.String> sampleBasename_ =
+      java.util.Collections.emptyList();
+    public java.util.List<java.lang.String> getSampleBasenameList() {
+      return sampleBasename_;
+    }
+    public int getSampleBasenameCount() { return sampleBasename_.size(); }
+    public java.lang.String getSampleBasename(int index) {
+      return sampleBasename_.get(index);
+    }
+    
     private void initFields() {
       queryNameMapping_ = edu.cornell.med.icb.goby.alignments.Alignments.IdentifierMapping.getDefaultInstance();
       targetNameMapping_ = edu.cornell.med.icb.goby.alignments.Alignments.IdentifierMapping.getDefaultInstance();
@@ -2508,6 +2559,9 @@ public final class Alignments {
       }
       if (hasVersion()) {
         output.writeString(25, getVersion());
+      }
+      for (java.lang.String element : getSampleBasenameList()) {
+        output.writeString(30, element);
       }
       getUnknownFields().writeTo(output);
     }
@@ -2592,6 +2646,15 @@ public final class Alignments {
         size += com.google.protobuf.CodedOutputStream
           .computeStringSize(25, getVersion());
       }
+      {
+        int dataSize = 0;
+        for (java.lang.String element : getSampleBasenameList()) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeStringSizeNoTag(element);
+        }
+        size += dataSize;
+        size += 2 * getSampleBasenameList().size();
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
       return size;
@@ -2670,9 +2733,8 @@ public final class Alignments {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
-
-     
-      public static final class Builder extends
+    
+    public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private edu.cornell.med.icb.goby.alignments.Alignments.AlignmentHeader result;
       
@@ -2743,6 +2805,10 @@ public final class Alignments {
           result.targetLength_ =
             java.util.Collections.unmodifiableList(result.targetLength_);
         }
+        if (result.sampleBasename_ != java.util.Collections.EMPTY_LIST) {
+          result.sampleBasename_ =
+            java.util.Collections.unmodifiableList(result.sampleBasename_);
+        }
         edu.cornell.med.icb.goby.alignments.Alignments.AlignmentHeader returnMe = result;
         result = null;
         return returnMe;
@@ -2812,6 +2878,12 @@ public final class Alignments {
         }
         if (other.hasVersion()) {
           setVersion(other.getVersion());
+        }
+        if (!other.sampleBasename_.isEmpty()) {
+          if (result.sampleBasename_.isEmpty()) {
+            result.sampleBasename_ = new java.util.ArrayList<java.lang.String>();
+          }
+          result.sampleBasename_.addAll(other.sampleBasename_);
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -2928,6 +3000,10 @@ public final class Alignments {
             }
             case 202: {
               setVersion(input.readString());
+              break;
+            }
+            case 242: {
+              addSampleBasename(input.readString());
               break;
             }
           }
@@ -3299,6 +3375,46 @@ public final class Alignments {
       public Builder clearVersion() {
         result.hasVersion = false;
         result.version_ = getDefaultInstance().getVersion();
+        return this;
+      }
+      
+      // repeated string sample_basename = 30;
+      public java.util.List<java.lang.String> getSampleBasenameList() {
+        return java.util.Collections.unmodifiableList(result.sampleBasename_);
+      }
+      public int getSampleBasenameCount() {
+        return result.getSampleBasenameCount();
+      }
+      public java.lang.String getSampleBasename(int index) {
+        return result.getSampleBasename(index);
+      }
+      public Builder setSampleBasename(int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.sampleBasename_.set(index, value);
+        return this;
+      }
+      public Builder addSampleBasename(java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  if (result.sampleBasename_.isEmpty()) {
+          result.sampleBasename_ = new java.util.ArrayList<java.lang.String>();
+        }
+        result.sampleBasename_.add(value);
+        return this;
+      }
+      public Builder addAllSampleBasename(
+          java.lang.Iterable<? extends java.lang.String> values) {
+        if (result.sampleBasename_.isEmpty()) {
+          result.sampleBasename_ = new java.util.ArrayList<java.lang.String>();
+        }
+        super.addAll(values, result.sampleBasename_);
+        return this;
+      }
+      public Builder clearSampleBasename() {
+        result.sampleBasename_ = java.util.Collections.emptyList();
         return this;
       }
       
@@ -5293,7 +5409,7 @@ public final class Alignments {
     java.lang.String[] descriptorData = {
       "\n\020Alignments.proto\022\004goby\"F\n\023AlignmentCol" +
       "lection\022/\n\021alignment_entries\030\001 \003(\0132\024.gob" +
-      "y.AlignmentEntry\"\324\004\n\016AlignmentEntry\022\024\n\014m" +
+      "y.AlignmentEntry\"\352\004\n\016AlignmentEntry\022\024\n\014m" +
       "ultiplicity\030\007 \001(\r\022\023\n\013query_index\030\001 \002(\r\022\024" +
       "\n\014target_index\030\002 \002(\r\022\020\n\010position\030\003 \002(\r\022\037" +
       "\n\027matching_reverse_strand\030\006 \002(\010\022\026\n\016query" +
@@ -5308,35 +5424,37 @@ public final class Alignments {
       "tEntry\022\026\n\016fragment_index\030\021 \001(\r\022;\n\026splice" +
       "d_alignment_link\030\022 \001(\0132\033.goby.RelatedAli" +
       "gnmentEntry\022\025\n\rspliced_flags\030\023 \001(\r\022\023\n\013in" +
-      "sert_size\030\024 \001(\r\"W\n\025RelatedAlignmentEntry" +
-      "\022\024\n\014target_index\030\001 \002(\r\022\020\n\010position\030\002 \002(\r" +
-      "\022\026\n\016fragment_index\030\003 \002(\r\"g\n\021SequenceVari",
-      "ation\022\014\n\004from\030\002 \002(\t\022\n\n\002to\030\001 \002(\t\022\020\n\010posit" +
-      "ion\030\003 \002(\r\022\022\n\nread_index\030\005 \002(\r\022\022\n\nto_qual" +
-      "ity\030\004 \001(\014\"\364\003\n\017AlignmentHeader\022\"\n\032smalles" +
-      "t_split_query_index\030\t \001(\r\022!\n\031largest_spl" +
-      "it_query_index\030\013 \001(\r\0223\n\022query_name_mappi" +
-      "ng\030\001 \001(\0132\027.goby.IdentifierMapping\0224\n\023tar" +
-      "get_name_mapping\030\002 \001(\0132\027.goby.Identifier" +
-      "Mapping\022\031\n\021number_of_queries\030\005 \001(\r\022\031\n\021nu" +
-      "mber_of_targets\030\006 \001(\r\022\037\n\027number_of_align" +
-      "ed_reads\030\007 \001(\r\022\030\n\014query_length\030\003 \003(\rB\002\030\001",
-      "\022\035\n\025constant_query_length\030\n \001(\r\022\025\n\rtarge" +
-      "t_length\030\010 \003(\r\022\016\n\006sorted\030\r \001(\010\022\017\n\007indexe" +
-      "d\030\016 \001(\010\022\'\n\037query_lengths_stored_in_entri" +
-      "es\030\017 \001(\010\022\024\n\014aligner_name\030\021 \001(\t\022\027\n\017aligne" +
-      "r_version\030\022 \001(\t\022\017\n\007version\030\031 \001(\t\";\n\021Iden" +
-      "tifierMapping\022&\n\010mappings\030\001 \003(\0132\024.goby.I" +
-      "dentifierInfo\"-\n\016IdentifierInfo\022\014\n\004name\030" +
-      "\001 \002(\t\022\r\n\005index\030\002 \002(\r\"X\n\024AlignmentTooMany" +
-      "Hits\022\031\n\021aligner_threshold\030\002 \002(\r\022%\n\004hits\030" +
-      "\001 \003(\0132\027.goby.AmbiguousLocation\"b\n\021Ambigu",
-      "ousLocation\022\023\n\013query_index\030\001 \002(\r\022\037\n\027at_l" +
-      "east_number_of_hits\030\002 \002(\r\022\027\n\017length_of_m" +
-      "atch\030\003 \001(\r\"j\n\016AlignmentIndex\022#\n\027target_p" +
-      "osition_offsets\030\001 \003(\rB\002\020\001\022\023\n\007offsets\030\002 \003" +
-      "(\004B\002\020\001\022\036\n\022absolute_positions\030\003 \003(\004B\002\020\001B\'" +
-      "\n#edu.cornell.med.icb.goby.alignmentsH\001"
+      "sert_size\030\024 \001(\r\022\024\n\014sample_index\030\025 \001(\r\"W\n" +
+      "\025RelatedAlignmentEntry\022\024\n\014target_index\030\001" +
+      " \002(\r\022\020\n\010position\030\002 \002(\r\022\026\n\016fragment_index",
+      "\030\003 \002(\r\"g\n\021SequenceVariation\022\014\n\004from\030\002 \002(" +
+      "\t\022\n\n\002to\030\001 \002(\t\022\020\n\010position\030\003 \002(\r\022\022\n\nread_" +
+      "index\030\005 \002(\r\022\022\n\nto_quality\030\004 \001(\014\"\215\004\n\017Alig" +
+      "nmentHeader\022\"\n\032smallest_split_query_inde" +
+      "x\030\t \001(\r\022!\n\031largest_split_query_index\030\013 \001" +
+      "(\r\0223\n\022query_name_mapping\030\001 \001(\0132\027.goby.Id" +
+      "entifierMapping\0224\n\023target_name_mapping\030\002" +
+      " \001(\0132\027.goby.IdentifierMapping\022\031\n\021number_" +
+      "of_queries\030\005 \001(\r\022\031\n\021number_of_targets\030\006 " +
+      "\001(\r\022\037\n\027number_of_aligned_reads\030\007 \001(\r\022\030\n\014",
+      "query_length\030\003 \003(\rB\002\030\001\022\035\n\025constant_query" +
+      "_length\030\n \001(\r\022\025\n\rtarget_length\030\010 \003(\r\022\016\n\006" +
+      "sorted\030\r \001(\010\022\017\n\007indexed\030\016 \001(\010\022\'\n\037query_l" +
+      "engths_stored_in_entries\030\017 \001(\010\022\024\n\014aligne" +
+      "r_name\030\021 \001(\t\022\027\n\017aligner_version\030\022 \001(\t\022\017\n" +
+      "\007version\030\031 \001(\t\022\027\n\017sample_basename\030\036 \003(\t\"" +
+      ";\n\021IdentifierMapping\022&\n\010mappings\030\001 \003(\0132\024" +
+      ".goby.IdentifierInfo\"-\n\016IdentifierInfo\022\014" +
+      "\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"X\n\024Alignment" +
+      "TooManyHits\022\031\n\021aligner_threshold\030\002 \002(\r\022%",
+      "\n\004hits\030\001 \003(\0132\027.goby.AmbiguousLocation\"b\n" +
+      "\021AmbiguousLocation\022\023\n\013query_index\030\001 \002(\r\022" +
+      "\037\n\027at_least_number_of_hits\030\002 \002(\r\022\027\n\017leng" +
+      "th_of_match\030\003 \001(\r\"j\n\016AlignmentIndex\022#\n\027t" +
+      "arget_position_offsets\030\001 \003(\rB\002\020\001\022\023\n\007offs" +
+      "ets\030\002 \003(\004B\002\020\001\022\036\n\022absolute_positions\030\003 \003(" +
+      "\004B\002\020\001B\'\n#edu.cornell.med.icb.goby.alignm" +
+      "entsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -5356,7 +5474,7 @@ public final class Alignments {
           internal_static_goby_AlignmentEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_goby_AlignmentEntry_descriptor,
-              new java.lang.String[] { "Multiplicity", "QueryIndex", "TargetIndex", "Position", "MatchingReverseStrand", "QueryPosition", "Score", "NumberOfMismatches", "NumberOfIndels", "QueryAlignedLength", "TargetAlignedLength", "SequenceVariations", "QueryLength", "MappingQuality", "PairFlags", "PairAlignmentLink", "FragmentIndex", "SplicedAlignmentLink", "SplicedFlags", "InsertSize", },
+              new java.lang.String[] { "Multiplicity", "QueryIndex", "TargetIndex", "Position", "MatchingReverseStrand", "QueryPosition", "Score", "NumberOfMismatches", "NumberOfIndels", "QueryAlignedLength", "TargetAlignedLength", "SequenceVariations", "QueryLength", "MappingQuality", "PairFlags", "PairAlignmentLink", "FragmentIndex", "SplicedAlignmentLink", "SplicedFlags", "InsertSize", "SampleIndex", },
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry.class,
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry.Builder.class);
           internal_static_goby_RelatedAlignmentEntry_descriptor =
@@ -5380,7 +5498,7 @@ public final class Alignments {
           internal_static_goby_AlignmentHeader_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_goby_AlignmentHeader_descriptor,
-              new java.lang.String[] { "SmallestSplitQueryIndex", "LargestSplitQueryIndex", "QueryNameMapping", "TargetNameMapping", "NumberOfQueries", "NumberOfTargets", "NumberOfAlignedReads", "QueryLength", "ConstantQueryLength", "TargetLength", "Sorted", "Indexed", "QueryLengthsStoredInEntries", "AlignerName", "AlignerVersion", "Version", },
+              new java.lang.String[] { "SmallestSplitQueryIndex", "LargestSplitQueryIndex", "QueryNameMapping", "TargetNameMapping", "NumberOfQueries", "NumberOfTargets", "NumberOfAlignedReads", "QueryLength", "ConstantQueryLength", "TargetLength", "Sorted", "Indexed", "QueryLengthsStoredInEntries", "AlignerName", "AlignerVersion", "Version", "SampleBasename", },
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentHeader.class,
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentHeader.Builder.class);
           internal_static_goby_IdentifierMapping_descriptor =
