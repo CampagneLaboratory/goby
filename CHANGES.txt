@@ -1,4 +1,6 @@
 development -> 1.9.7
+ - AlignmentWriter now correctly records Goby version in header upon close(). This fixes a problem when alignments
+   read from read-only files would fail upon trying a new upgrade.
  - Optimized the performance of VCFParser on files with large number of columns. The VCF format seems designed
    without performance in mind, so it is hard to come up with a reasonably fast implementation. The current
    implementation of the Goby VCF parser can only process about 8,000 lines of compressed VCF per second on

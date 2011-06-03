@@ -20,6 +20,8 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.GobyVersion;
+import edu.cornell.med.icb.goby.modes.GobyDriver;
 import edu.cornell.med.icb.goby.reads.MessageChunksWriter;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.util.VersionUtils;
@@ -265,9 +267,9 @@ public class AlignmentWriter implements Closeable {
             firstEntryInChunk = false;
         }
         final long currentChunkOffset = entriesChunkWriter.writeAsNeeded(collectionBuilder, builtEntry.getMultiplicity());
-       // LOG.warn(String.format("#entriesWritten: %d currentChunkOffset: %d previousChunkOffset: %d",
+        // LOG.warn(String.format("#entriesWritten: %d currentChunkOffset: %d previousChunkOffset: %d",
         //        entriesChunkWriter.getTotalEntriesWritten(), currentChunkOffset, previousChunkOffset));
-        if (sortedState && entriesChunkWriter.getAppendedInChunk()==0) {
+        if (sortedState && entriesChunkWriter.getAppendedInChunk() == 0) {
             // we have just written a new chunk.
             pushIndex(currentChunkOffset, firstTargetIndexInChunk, firstPositionInChunk);
             firstEntryInChunk = true;
@@ -297,7 +299,7 @@ public class AlignmentWriter implements Closeable {
 
             indexOffsets.add(newOffset);
             indexAbsolutePositions.add(codedPosition);
-        //    LOG.warn(String.format("INDEX Pushing offset=%d position=%d", newOffset, codedPosition));
+            //    LOG.warn(String.format("INDEX Pushing offset=%d position=%d", newOffset, codedPosition));
         }
     }
 
@@ -362,6 +364,7 @@ public class AlignmentWriter implements Closeable {
         writeHeader();
 
         writeStats();
+
         IOUtils.closeQuietly(headerOutput);
         entriesChunkWriter.close(collectionBuilder);
         if (sortedState) {
@@ -385,8 +388,7 @@ public class AlignmentWriter implements Closeable {
                 indexBuilder.addAllOffsets(indexOffsets);
                 indexBuilder.addAllAbsolutePositions(indexAbsolutePositions);
                 indexBuilder.build().writeTo(indexOutput);
-            }
-            finally {
+            } finally {
                 if (indexOutput != null) indexOutput.close();
                 indexWritten = true;
             }
@@ -397,6 +399,9 @@ public class AlignmentWriter implements Closeable {
         if (!headerWritten) {
 
             final Alignments.AlignmentHeader.Builder headerBuilder = Alignments.AlignmentHeader.newBuilder();
+            // record the version of Goby that created this alignment..
+            final String version = VersionUtils.getImplementationVersion(GobyDriver.class);
+            headerBuilder.setVersion(version);
 
             headerBuilder.setLargestSplitQueryIndex(maxQueryIndex);
             headerBuilder.setSmallestSplitQueryIndex(minQueryIndex);
