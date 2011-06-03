@@ -1,4 +1,8 @@
 development -> 1.9.7
+ - Optimized the performance of VCFParser on files with large number of columns. The VCF format seems designed
+   without performance in mind, so it is hard to come up with a reasonably fast implementation. The current
+   implementation of the Goby VCF parser can only process about 8,000 lines of compressed VCF per second on
+   a desktop machine.
  - AlignmentEntry schema change: a new field sample_index holds the index of the alignment from which the
    entry was read. This is useful when concatenating over multiple alignments and realigning reads that span
    indels, to realiably track the alignment origin of each entry.  The concatenation readers have been

@@ -251,7 +251,6 @@ public class VCFParser implements Closeable {
     public CharSequence getFieldValue(final int globalFieldIndex) {
         if (hasNextDataLine) {
 
-
             final int lineFieldIndex = fieldPermutation[globalFieldIndex];
             if (lineFieldIndex == -1) {
                 // missing field in this row;
