@@ -92,12 +92,12 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
             // nothing seen yet, load the pool
             mustLoadPool = true;
         } else {
-        //determine if the pool has enough entry within windowSize:
+            //determine if the pool has enough entry within windowSize:
             InfoForTarget backTargetInfo = targetInfo.get(activeTargetIndices.firstInt());
             // windowLength is zero at the beginning
-            int wl=windowLength ==0?1000:windowLength;
-            mustLoadPool=backTargetInfo.entriesInWindow.isEmpty() ||
-                    backTargetInfo.maxEntryPosition<backTargetInfo.windowStartPosition+wl;
+            int wl = windowLength == 0 ? 1000 : windowLength;
+            mustLoadPool = backTargetInfo.entriesInWindow.isEmpty() ||
+                    backTargetInfo.maxEntryPosition < backTargetInfo.windowStartPosition + wl;
         }
 
         if (mustLoadPool) {
@@ -181,18 +181,23 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
 
     private final boolean[] directions = new boolean[]{true, false};
 
-    private Alignments.AlignmentEntry realign(Alignments.AlignmentEntry entry, InfoForTarget tinfo) {
+    private Alignments.AlignmentEntry realign(final Alignments.AlignmentEntry entry, InfoForTarget tinfo) {
         int currentBestScore = 0;
         ObservedIndel bestScoreIndel = null;
         boolean bestScoreDirection = false;
-        for (ObservedIndel indel : tinfo.potentialIndels) {
-            for (boolean direction : directions) {
 
-                final int realignedScore = score(entry, indel, direction, currentBestScore, genome);
-                if (realignedScore > currentBestScore) {
-                    currentBestScore = realignedScore;
-                    bestScoreIndel = indel;
-                    bestScoreDirection = direction;
+
+        for (ObservedIndel indel : tinfo.potentialIndels) {
+            if (entryOverlapsIndel(indel, entry)) {
+
+                for (boolean direction : directions) {
+
+                    final int realignedScore = score(entry, indel, direction, currentBestScore, genome);
+                    if (realignedScore > currentBestScore) {
+                        currentBestScore = realignedScore;
+                        bestScoreIndel = indel;
+                        bestScoreDirection = direction;
+                    }
                 }
             }
         }
@@ -204,6 +209,18 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
             return realign(entry, bestScoreIndel, bestScoreDirection, currentBestScore);
         }
 
+    }
+
+    /**
+     * Return true if the alignment overlaps the indel.
+     * @param indel
+     * @param entry
+     * @return
+     */
+    private boolean entryOverlapsIndel(final ObservedIndel indel, final Alignments.AlignmentEntry entry) {
+        final int entryStart=entry.getPosition();
+        final int entryEnd=entryStart+entry.getTargetAlignedLength();
+        return entryStart<=indel.getStart() && indel.getEnd() <=entryEnd;
     }
 
     private Alignments.AlignmentEntry realign(Alignments.AlignmentEntry entry,
@@ -432,7 +449,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         // the window start is only decreased in the pushing step, never increased.
         final int entryPosition = entry.getPosition();
         tinfo.windowStartPosition = Math.min(tinfo.windowStartPosition, entryPosition);
-        tinfo.maxEntryPosition=Math.max(tinfo.maxEntryPosition,entryPosition);
+        tinfo.maxEntryPosition = Math.max(tinfo.maxEntryPosition, entryPosition);
         // set window length to twice the longest read length.
         windowLength = Math.max(windowLength, entry.getQueryLength() * 2);
 
