@@ -78,7 +78,7 @@ public class ColumnFields extends ObjectArraySet<ColumnField> {
     final ObjectArrayList<ColumnField> list = new ObjectArrayList<ColumnField>();
 
     @Override
-    public ObjectIterator<ColumnField> iterator() {
+    public final ObjectIterator<ColumnField> iterator() {
 
         rebuildList();
         return list.listIterator();
@@ -93,6 +93,7 @@ public class ColumnFields extends ObjectArraySet<ColumnField> {
                 ColumnField next = it.next();
                 list.add(next);
             }
+          //  array=list.toArray(new ColumnField[setSize]);
             previousSize = setSize;
         }
     }

@@ -348,7 +348,7 @@ public class VCFParser implements Closeable {
         }
     }
 
-    IntArrayList previousColumnFieldIndices = new IntArrayList();
+   final IntArrayList previousColumnFieldIndices = new IntArrayList();
 
     private void parseCurrentLine() {
         Arrays.fill(columnStarts, 0);
@@ -445,9 +445,9 @@ public class VCFParser implements Closeable {
 
             }
 
-            int formatColumnIndex = TSV ? -1 : formatColumn.columnIndex;
-            int startFormatColumn = TSV ? 0 : columnStarts[formatColumnIndex];
-            int endFormatColumn = TSV ? 0 : columnEnds[formatColumnIndex];
+            final int formatColumnIndex = TSV ? -1 : formatColumn.columnIndex;
+            final int startFormatColumn = TSV ? 0 : columnStarts[formatColumnIndex];
+            final int endFormatColumn = TSV ? 0 : columnEnds[formatColumnIndex];
 
 
             final String[] formatTokens = split(line, formatFieldSeparatorCharacter, startFormatColumn, endFormatColumn);
@@ -519,11 +519,12 @@ public class VCFParser implements Closeable {
 
     String[] formatSplit = null;
 
-    private String[] split(final MutableString line, final char formatFieldSeparatorCharacter, int startFormatColumn, int endFormatColumn) {
+    private String[] split(final MutableString line, final char formatFieldSeparatorCharacter,
+                           final int startFormatColumn, final int endFormatColumn) {
         if (formatSplit != null) {
             return formatSplit;
         } else {
-            MutableString formatSpan = line.substring(startFormatColumn, endFormatColumn);
+           final MutableString formatSpan = line.substring(startFormatColumn, endFormatColumn);
 
             int fieldCount = 0;
 
