@@ -68,6 +68,7 @@ public class ColumnFields extends ObjectArraySet<ColumnField> {
     }
 
     public ColumnField find(final int fieldIndex) {
+        rebuildMap();
         return indexMap.get(fieldIndex);
     }
 
@@ -93,7 +94,7 @@ public class ColumnFields extends ObjectArraySet<ColumnField> {
                 ColumnField next = it.next();
                 list.add(next);
             }
-          //  array=list.toArray(new ColumnField[setSize]);
+            //  array=list.toArray(new ColumnField[setSize]);
             previousSize = setSize;
         }
     }
