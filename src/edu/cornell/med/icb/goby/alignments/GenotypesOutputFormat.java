@@ -84,8 +84,9 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     CharArraySet alleleSet = new CharArraySet();
     MutableString genotypeBuffer = new MutableString();
 
-    public void writeRecord(DiscoverVariantIterateSortedAlignments iterator, SampleCountInfo[] sampleCounts,
-                            int referenceIndex, int position, ObjectArrayList<PositionBaseInfo> list, int groupIndexA, int groupIndexB) {
+    @Override
+    public void writeRecord(final DiscoverVariantIterateSortedAlignments iterator, final SampleCountInfo[] sampleCounts,
+                            final int referenceIndex, int position, final ObjectArrayList<PositionBaseInfo> list, final int groupIndexA, final int groupIndexB) {
 
         position = position + 1; // report  1-based position
         fillVariantCountArrays(sampleCounts);

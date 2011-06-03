@@ -415,7 +415,7 @@ public abstract class IterateSortedAlignments<T> {
                         }
                     }
                 }
-                // TODO discuss with Kevin:  rightPadding as meant or leftPadding?
+
                 while (forwardStrand ? currentReadIndex < (queryLength - rightPadding) :
                         currentReadIndex > (1 + rightPadding)) {
 

@@ -98,6 +98,7 @@ public class DiscoverVariantIterateSortedAlignments
         this.genome = genome;
 
     }
+
     @Override
     public RandomAccessSequenceInterface getGenome() {
         return genome;
@@ -133,23 +134,24 @@ public class DiscoverVariantIterateSortedAlignments
     WarningCounter refBaseWarning = new WarningCounter();
 
     /**
-     * This method is not re-entrant. The behavior is unpredictable when if multiple threads can call this method. This
+     * This method is not re-entrant. The behavior is unpredictable when if multiple threads call this method. This
      * constraint is added to avoid allocating data structures inside this method, because it is usually called in a loop
      * over all the positions of a genome, and the data structures can be reused, saving garbage collection time.
      *
      * @param referenceIndex Index of the reference sequence where these bases align.
-     * @param position
-     * @param list
+     * @param position       position where the bases are observed
+     * @param list           list of bases observed at position.
      */
-    public void processPositions(int referenceIndex, int position,
-                                 ObjectArrayList<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> list) {
+    @Override
+    public void processPositions(final int referenceIndex, final int position,
+                                 final ObjectArrayList<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> list) {
         int sumVariantCounts = 0;
 
         if (referenceIndex != previousReference && genome != null) {
             genomeRefIndex = genome.getReferenceIndex(getReferenceId(referenceIndex).toString());
             previousReference = referenceIndex;
         }
-        char referenceBase = getReferenceAllele(genome, position, list);
+        final char referenceBase = getReferenceAllele(genome, position, list);
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             sampleCounts[sampleIndex].counts[SampleCountInfo.BASE_A_INDEX] = 0;
@@ -166,9 +168,9 @@ public class DiscoverVariantIterateSortedAlignments
         }
 
         if (list != null) {
-            IntSet distinctReadIndices = new IntArraySet();
+            final IntSet distinctReadIndices = new IntArraySet();
 
-            for (edu.cornell.med.icb.goby.alignments.PositionBaseInfo info : list) {
+            for (final edu.cornell.med.icb.goby.alignments.PositionBaseInfo info : list) {
                 if (info.matchesReference && referenceBase != '\0') {
                     // from and to have to be set if the position matches the reference.
                     info.from = referenceBase;
@@ -198,8 +200,8 @@ public class DiscoverVariantIterateSortedAlignments
             }
 
             if (distinctReadIndices.size() >= thresholdDistinctReadIndices && sumVariantCounts > minimumVariationSupport) {
-                int groupIndexA = 0;
-                int groupIndexB = 1;
+                final int groupIndexA = 0;
+                final int groupIndexB = 1;
                 // Do not write statistics for positions in the start flap. The flap start is used to accumulate
                 // base counts for reads that can overlap with the window under consideration.
 
@@ -207,15 +209,16 @@ public class DiscoverVariantIterateSortedAlignments
 
                     if (baseFilters.length != 0) {
                         filteredList.clear();
-                        for (BaseFilter filter : baseFilters) {
+                        for (final BaseFilter filter : baseFilters) {
                             filter.filterBases(list, sampleCounts, filteredList);
                             //       System.out.printf("filter %s removed %3g %% %n", filter.getName(), filter.getPercentFilteredOut());
                         }
-                        CountFixer fixer = new CountFixer();
+                        final CountFixer fixer = new CountFixer();
                         fixer.fix(list, sampleCounts, filteredList);
                     }
+                    format.writeRecord(this, sampleCounts, referenceIndex, position, list, groupIndexA, groupIndexB);
                 }
-                format.writeRecord(this, sampleCounts, referenceIndex, position, list, groupIndexA, groupIndexB);
+
             }
         }
     }
