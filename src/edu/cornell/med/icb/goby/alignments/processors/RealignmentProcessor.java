@@ -220,9 +220,11 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
     private boolean entryOverlapsIndel(final ObservedIndel indel, final Alignments.AlignmentEntry entry) {
         final int entryStart=entry.getPosition();
         final int entryEnd=entryStart+entry.getTargetAlignedLength();
-        return entryStart<=indel.getStart() && indel.getEnd() <=entryEnd ||
-                entryStart<indel.getEnd() && entryEnd>indel.getStart() ||
-                entryEnd>indel.getStart() && entryStart<indel.getEnd();
+        final int indelStart = indel.getStart();
+        final int indelEnd = indel.getEnd();
+        return entryStart<= indelStart && indelEnd <=entryEnd ||
+                entryStart< indelEnd && entryEnd> indelStart ||
+                entryEnd> indelStart && entryStart< indelEnd;
     }
 
     private Alignments.AlignmentEntry realign(Alignments.AlignmentEntry entry,
