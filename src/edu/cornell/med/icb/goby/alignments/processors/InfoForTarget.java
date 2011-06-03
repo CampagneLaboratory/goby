@@ -80,8 +80,6 @@ public class InfoForTarget {
             }
         }
 
-
-        // TODO is this removing enough?
         final ObjectArrayList<ObservedIndel> toRemove = new ObjectArrayList<ObservedIndel>();
         for (ObservedIndel indel : potentialIndels) {
             if (indel.getEnd() <= lastPosition) {

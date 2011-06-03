@@ -146,7 +146,7 @@ public class TestCoverageAnalysis {
     public void capturedDepthAtPercentile() throws IOException {
         CoverageAnalysis analysis = new CoverageAnalysis();
         // (length, count) (2,0) (8,1) (1,0)
-        // TODO fix problem when annotations do not end at the same position as counts.
+
         int[] annotLengths = {2, 8, 1};
         int[] annotCounts = {0, 1, 0};
         CountsReaderI annotations = new CountsReaderTestSupport(annotLengths, annotCounts);
@@ -221,7 +221,7 @@ public class TestCoverageAnalysis {
     }
 
 
-    //TODO this test must pass without the final (1,0) in annotation.
+
     @Test
     public void problemWithAnnotationsTooShort() throws IOException {
         CoverageAnalysis analysis = new CoverageAnalysis();

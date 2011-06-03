@@ -221,7 +221,8 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
             entryPosition = entry.getPosition() - indelLength;
             builder.setPosition(entryPosition);
 
-            // TODO when entry position changes, we need to update the pool to reflect the new entry sort order
+            //  when entry position changes, we need to update the pool to reflect the new entry sort order
+            // this is accomplished by wrapping this processor with a LocalSortProcessor instance.
         }
         int indelOffsetInAlignment = indel.getStart() - entryPosition;
 

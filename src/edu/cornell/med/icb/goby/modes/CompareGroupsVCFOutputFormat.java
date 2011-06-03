@@ -96,6 +96,18 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
     private int[][] alleleCountsPerGroup;
     private int[] fisherVector;
     private final int numberOfAlleles = SampleCountInfo.BASE_MAX_INDEX;
+    /**
+     * The number of allele observed in group for the allele with most counts in the group.  For instance if counts are
+     *             group0 group1
+     * allele=A    0        0
+     * allele=C   10        0
+     * allele=T    2        0
+     * allele=G    4       15
+     * allele=N    3        2
+     *
+     * alleleCountGroupMax will contain {10,15}
+     */
+    private int[] alleleCountGroupMax;
 
     protected void setStatWriter(VCFWriter statWriter) {
         this.statWriter = statWriter;
@@ -316,7 +328,6 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         }
 
         // reorder allelic counts for fisher exact test:
-
         int j = 0;
         for (int groupIndex = 0; groupIndex < numberOfGroups; ++groupIndex) {
             for (int alleleIndex = 0; alleleIndex < SampleCountInfo.BASE_MAX_INDEX; ++alleleIndex) {
