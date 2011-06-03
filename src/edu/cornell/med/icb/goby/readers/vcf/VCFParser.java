@@ -114,8 +114,8 @@ public class VCFParser implements Closeable {
      */
     public VCFParser(String filename) throws IOException {
         this.input = filename.endsWith(".gz") ?
-                new FastBufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(filename), 100000))) :
-                new FastBufferedReader(new FileReader(filename));
+                new InputStreamReader(new GZIPInputStream(new FileInputStream(filename), 100000)) :
+                new FileReader(filename);
     }
 
     /**
@@ -141,7 +141,7 @@ public class VCFParser implements Closeable {
         for (ColumnInfo col : columns) {
             if (col.columnIndex == columnIndex) {
                 if (col.fields.size() == 1) {
-                    return ((ColumnField)col.fields.toArray()[0]).type;
+                    return ((ColumnField) col.fields.toArray()[0]).type;
 
                 } else {
                     break;
@@ -348,6 +348,8 @@ public class VCFParser implements Closeable {
         }
     }
 
+    IntArrayList previousColumnFieldIndices = new IntArrayList();
+
     private void parseCurrentLine() {
         Arrays.fill(columnStarts, 0);
         Arrays.fill(columnEnds, 0);
@@ -359,7 +361,7 @@ public class VCFParser implements Closeable {
         lineLength = line.length();
         int lineFieldIndexToColumnIndex[] = new int[numberOfFields];
         Arrays.fill(lineFieldIndexToColumnIndex, -1);
-        IntArrayList previousColumnFieldIndices = new IntArrayList();
+        previousColumnFieldIndices.clear();
         // determine the position of column and field delimiters:
 
         for (int i = 0; i < lineLength; i++) {
@@ -418,6 +420,8 @@ public class VCFParser implements Closeable {
         for (ColumnInfo c : columns) {
             c.formatIndex = 0;
         }
+
+
         // determine the fieldPermutation for each possible field:
         for (int lineFieldIndex = 0; lineFieldIndex <= numberOfFieldsOnLine; lineFieldIndex++) {
 
@@ -430,23 +434,36 @@ public class VCFParser implements Closeable {
 
             int colMinGlobalFieldIndex = Integer.MAX_VALUE;
             int colMaxGlobalFieldIndex = Integer.MIN_VALUE;
-            for (ColumnField f : column.fields) {
+            final ColumnFields fields = column.fields;
+            fields.rebuildList();
+
+            for (int fi = 0; fi < fields.size(); ++fi) {
+
+                ColumnField f = fields.get(fi);
                 colMinGlobalFieldIndex = Math.min(colMinGlobalFieldIndex, f.globalFieldIndex);
                 colMaxGlobalFieldIndex = Math.max(colMaxGlobalFieldIndex, f.globalFieldIndex);
 
             }
+
             int formatColumnIndex = TSV ? -1 : formatColumn.columnIndex;
             int startFormatColumn = TSV ? 0 : columnStarts[formatColumnIndex];
             int endFormatColumn = TSV ? 0 : columnEnds[formatColumnIndex];
 
-            MutableString formatSpan = line.substring(startFormatColumn, endFormatColumn);
-            formatSpan.compact();
-            final String[] formatTokens = split(formatSpan, formatFieldSeparatorCharacter);
-            for (ColumnField f : column.fields) {
+
+            final String[] formatTokens = split(line, formatFieldSeparatorCharacter, startFormatColumn, endFormatColumn);
+
+            for (int fi = 0; fi < fields.size(); ++fi) {
+
+                final ColumnField f = fields.get(fi);
+
+                if (fieldPermutation[f.globalFieldIndex] != -1) {
+                    // already assigned.
+                    continue;
+                }
                 if (colMaxGlobalFieldIndex == colMinGlobalFieldIndex) {
                     // This column has only one field.
                     fieldPermutation[f.globalFieldIndex] = lineFieldIndex;
-
+                    break;
                 } else {
                     // find the column field f whose id matches the character span we are looking at :
                     int j = start;
@@ -458,7 +475,7 @@ public class VCFParser implements Closeable {
                             break;
                         }
 
-                        char linechar = line.charAt(j);
+                        final char linechar = line.charAt(j);
 
                         if (id.charAt(i) != linechar) {
                             // found mimatch with field id, not this field.
@@ -480,7 +497,7 @@ public class VCFParser implements Closeable {
                             fieldStarts[lineFieldIndex] += f.id.length() + 1; // remove id= from value;
                             //fieldStarts[lineFieldIndex]=Math.min(fieldStarts[lineFieldIndex],fieldEnds[lineFieldIndex]);
                         }
-
+                        break;
                     } else {
 
                         if (column.useFormat && column.formatIndex < formatTokens.length) {
@@ -499,44 +516,48 @@ public class VCFParser implements Closeable {
             }
         }
     }
-        String[] formatSplit=null;
-    private String[] split(MutableString formatSpan, char formatFieldSeparatorCharacter) {
-        if (formatSplit!=null){
-            return formatSplit;
-        }  else {
-        int fieldCount = 0;
 
-        formatSpan.append(formatFieldSeparatorCharacter);
-        final int length = formatSpan.length();
-        for (int i = 0; i < length; i++) {
-            if (formatSpan.charAt(i) == formatFieldSeparatorCharacter) {
-                ++fieldCount;
+    String[] formatSplit = null;
+
+    private String[] split(final MutableString line, final char formatFieldSeparatorCharacter, int startFormatColumn, int endFormatColumn) {
+        if (formatSplit != null) {
+            return formatSplit;
+        } else {
+            MutableString formatSpan = line.substring(startFormatColumn, endFormatColumn);
+
+            int fieldCount = 0;
+
+            formatSpan.append(formatFieldSeparatorCharacter);
+            final int length = formatSpan.length();
+            for (int i = 0; i < length; i++) {
+                if (formatSpan.charAt(i) == formatFieldSeparatorCharacter) {
+                    ++fieldCount;
+                }
             }
-        }
-        String result[] = new String[fieldCount];
-        MutableString value = new MutableString();
-        int last = 0;
-        int j = 0;
-        for (int i = 0; i < length; i++) {
-            if (formatSpan.charAt(i) == formatFieldSeparatorCharacter && i > last ) {
-                value.append(formatSpan.substring(last, i));
-                last=i+1;
-                result[j] = value.toString();
-                value.setLength(0);
-                ++j;
+            String result[] = new String[fieldCount];
+            MutableString value = new MutableString();
+            int last = 0;
+            int j = 0;
+            for (int i = 0; i < length; i++) {
+                if (formatSpan.charAt(i) == formatFieldSeparatorCharacter && i > last) {
+                    value.append(formatSpan.substring(last, i));
+                    last = i + 1;
+                    result[j] = value.toString();
+                    value.setLength(0);
+                    ++j;
+                }
             }
-        }
-            formatSplit=result;
-        return result;
+            formatSplit = result;
+            return result;
         }
     }
 
     //     System.out.println("ned");
 
 
-    private void push(int columnIndex, int[] lineFieldIndexToColumnIndex, IntArrayList previousColumnFieldIndices) {
+    private void push(final int columnIndex, final int[] lineFieldIndexToColumnIndex, final IntArrayList previousColumnFieldIndices) {
         //  System.out.println("---");
-        for (int fIndex : previousColumnFieldIndices) {
+        for (final int fIndex : previousColumnFieldIndices.toIntArray()) {
             /*       System.out.printf("field %s gfi:%d belongs to column %d %s%n ",
            line.substring(fieldStarts[fIndex], fieldEnds[fIndex]),
            fIndex,

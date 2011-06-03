@@ -18,7 +18,9 @@
 
 package edu.cornell.med.icb.goby.readers.vcf;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.lang.MutableString;
 
 /**
@@ -27,6 +29,8 @@ import it.unimi.dsi.lang.MutableString;
  *         Time: 7:33:07 PM
  */
 public class Columns extends ObjectArraySet<ColumnInfo> {
+    private int previousSize;
+
     public boolean hasColumnName(CharSequence id) {
         for (ColumnInfo info : this) {
             if (id.equals(info.columnName))
@@ -41,5 +45,26 @@ public class Columns extends ObjectArraySet<ColumnInfo> {
                 return info;
         }
         return null;
+    }
+
+    final ObjectArrayList<ColumnInfo> list = new ObjectArrayList<ColumnInfo>();
+
+    @Override
+    public final ObjectIterator<ColumnInfo> iterator() {
+        rebuildList();
+        return list.listIterator();
+    }
+
+    private void rebuildList() {
+        final int setSize = size();
+        if (previousSize != setSize) {
+            list.clear();
+            ObjectIterator<ColumnInfo> it = super.iterator();
+            while (it.hasNext()) {
+                ColumnInfo next = it.next();
+                list.add(next);
+            }
+            previousSize = setSize;
+        }
     }
 }

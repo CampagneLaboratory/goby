@@ -45,7 +45,7 @@ public class LocalSortProcessor implements AlignmentProcessorInterface {
      * the maximum indel size that aligners can detect. Realignment cannot change the start position by more than the
      * indel length, so there is no need for a larger window.
      */
-    private int windowLength = 300;
+    private int windowLength = 30;
     private int processedCount = 0;
     private int modifiedCount = 0;
     final Comparator<? super Alignments.AlignmentEntry> comparator = new Comparator<Alignments.AlignmentEntry>() {
@@ -145,7 +145,7 @@ public class LocalSortProcessor implements AlignmentProcessorInterface {
     private void pushEntry(final Alignments.AlignmentEntry entry) {
     //    System.out.println("Position=" + entry.getPosition());
         if (entry.getTargetIndex() == lastTargetIndex && entry.getPosition() <lastCurrentPosition) {
-            System.out.println("entry to be enqueued needs to be resorted.");
+        //    System.out.println("entry to be enqueued needs to be resorted.");
             // entry to be enqueued will need to be resorted.
             ++modifiedCount;
         }
@@ -164,7 +164,7 @@ public class LocalSortProcessor implements AlignmentProcessorInterface {
 
     @Override
     public int getModifiedCount() {
-        System.out.printf("Have locally sorted %d entries%n",modifiedCount);
+   //     System.out.printf("Have locally sorted %d entries%n",modifiedCount);
         return delegate.getModifiedCount();
     }
 

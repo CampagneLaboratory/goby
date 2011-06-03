@@ -32,10 +32,13 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.lang.MutableString;
+import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.util.Collections;
+import java.util.logging.Level;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -209,6 +212,11 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                     }
                     selectedInfoFieldGlobalIndices.add(selectedField.globalFieldIndex);
                 }
+                ProgressLogger pg = new ProgressLogger(LOG);
+
+                pg.priority = org.apache.log4j.Level.INFO;
+                pg.itemsName = "line";
+                pg.start();
                 while (parser.hasNextDataLine()) {
 
                     // prepare elementId and stat info:
@@ -226,7 +234,9 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                     }
                     data.add(info);
                     parser.next();
+                    pg.lightUpdate();
                 }
+                pg.stop();
             } catch (VCFParser.SyntaxException
                     e) {
                 System.err.println("An error occured parsing VCF file " + filename);
@@ -619,6 +629,8 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         printer.flush();
     }
 
+    private static final Logger LOG = Logger.getLogger(FalseDiscoveryRateMode.class);
+
     private ObjectList<String> getTSVColumns
             (String[] inputFiles) throws IOException {
         ObjectArrayList<String> columns = new ObjectArrayList<String>();
@@ -657,8 +669,8 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
      */
 
     public static void main
-            (
-                    final String[] args) throws JSAPException, IOException {
+    (
+            final String[] args) throws JSAPException, IOException {
         new FalseDiscoveryRateMode().configure(args).execute();
     }
 }

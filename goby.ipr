@@ -731,8 +731,8 @@
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma" />
       <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.GobyDriver" />
       <option name="VM_PARAMETERS" value="-ea -Xmx4g -Dlog4j.debug=true -Dlog4j.configuration=file:$PROJECT_DIR$/config/log4j.properties" />
-      <option name="PROGRAM_PARAMETERS" value="-m  fdr split/PAYAWRF-discover-sequence-variants-output-33.vcf.gz  --vcf -o out.vcf " />
-      <option name="WORKING_DIRECTORY" value="file:///data/exome/vcf" />
+      <option name="PROGRAM_PARAMETERS" value="--mode fdr --vcf HFBVBRN-discover-sequence-variants-output-1.vcf.gz HFBVBRN-discover-sequence-variants-output-10.vcf.gz HFBVBRN-discover-sequence-variants-output-2.vcf.gz HFBVBRN-discover-sequence-variants-output-8.vcf.gz HFBVBRN-discover-sequence-variants-output-9.vcf.gz IIYXGDZ.vcf.gz TCVCQQC.vcf.gz out.vcf.gz -o out.vcf " />
+      <option name="WORKING_DIRECTORY" value="file:///data/fdr" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
       <option name="ENABLE_SWING_INSPECTOR" value="false" />
