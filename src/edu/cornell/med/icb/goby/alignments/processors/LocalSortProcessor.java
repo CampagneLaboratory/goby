@@ -22,6 +22,7 @@ import com.sun.tools.javac.util.Position;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import it.unimi.dsi.fastutil.AbstractPriorityQueue;
+import it.unimi.dsi.fastutil.objects.ObjectArrayPriorityQueue;
 import it.unimi.dsi.fastutil.objects.ObjectHeapPriorityQueue;
 
 import java.io.IOException;
@@ -38,7 +39,7 @@ import java.util.Comparator;
  *         Time: 10:49 AM
  */
 public class LocalSortProcessor implements AlignmentProcessorInterface {
-    ObjectHeapPriorityQueue<Alignments.AlignmentEntry> entryHeap;
+    AbstractPriorityQueue<Alignments.AlignmentEntry> entryHeap;
     AlignmentProcessorInterface delegate;
     /**
      * We store at most alignments for 30 consecutive genomic positions. 30 is chosen because it is much larger than
@@ -65,9 +66,9 @@ public class LocalSortProcessor implements AlignmentProcessorInterface {
 
     public LocalSortProcessor(final AlignmentProcessorInterface delegate) {
         this.delegate = delegate;
-        // heap will hold up to 10,000 elements:
+        // heap will hold up to 10,000 elements initially, but will grow as needed:
 
-        entryHeap = new ObjectHeapPriorityQueue<Alignments.AlignmentEntry>(10000, comparator);
+        entryHeap =  new ObjectHeapPriorityQueue<Alignments.AlignmentEntry>(10000, comparator);
     }
 
     /**
@@ -113,10 +114,8 @@ public class LocalSortProcessor implements AlignmentProcessorInterface {
                             pushEntry(entry);
                             break;
                         }
-
                         //  assert entryHeap.isEmpty() : "entryHeap must be empty when enqueing the first entry of a new target";
                     }
-
                     pushEntry(entry);
                 } else {
                     finished = true;

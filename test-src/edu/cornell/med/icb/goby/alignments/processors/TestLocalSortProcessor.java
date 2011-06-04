@@ -76,21 +76,49 @@ public class TestLocalSortProcessor {
         verify(delegate);
     }
 
+    @Test
+    public void testSeveralElements() throws Exception {
+
+        Alignments.AlignmentEntry entry_0_9;
+        Alignments.AlignmentEntry entry_0_10;
+        Alignments.AlignmentEntry entry_0_14;
+        Alignments.AlignmentEntry entry_0_13;
+        Alignments.AlignmentEntry entry_0_12;
+        Alignments.AlignmentEntry entry_0_11;
+        expect(delegate.nextRealignedEntry(0, 0)).andReturn(entry_0_9 = buildEntry(2, 0, 9));
+        expect(delegate.nextRealignedEntry(0, 0)).andReturn(entry_0_9 = buildEntry(2, 0, 9));
+        expect(delegate.nextRealignedEntry(0, 0)).andReturn(entry_0_11 = buildEntry(2, 0, 11));
+        expect(delegate.nextRealignedEntry(0, 0)).andReturn(entry_0_12 = buildEntry(2, 0, 12));
+        expect(delegate.nextRealignedEntry(0, 0)).andReturn(entry_0_10 = buildEntry(1, 0, 10));
+        expect(delegate.nextRealignedEntry(0, 0)).andReturn(entry_0_13 = buildEntry(2, 0, 13));
+        expect(delegate.nextRealignedEntry(0, 0)).andReturn(entry_0_14 = buildEntry(2, 0, 14));
+        expect(delegate.nextRealignedEntry(0, 0)).andReturn(null);
+        replay(delegate);
+        assertEquals("entry_0_9 must have been reordered first", entry_0_9, resortProcessor.nextRealignedEntry(0, 0));
+        assertEquals("entry_0_9 must have been reordered second", entry_0_9, resortProcessor.nextRealignedEntry(0, 0));
+        assertEquals("entry_0_10 must have been reordered third", entry_0_10, resortProcessor.nextRealignedEntry(0, 0));
+        assertEquals("entry_0_11 must have been reordered fourth", entry_0_11, resortProcessor.nextRealignedEntry(0, 0));
+        assertEquals("entry_0_12 must have been reordered fith", entry_0_12, resortProcessor.nextRealignedEntry(0, 0));
+        assertEquals("entry_0_13 must have been reordered sixth", entry_0_13, resortProcessor.nextRealignedEntry(0, 0));
+        assertEquals("entry_0_14 must have been reordered seventh", entry_0_14, resortProcessor.nextRealignedEntry(0, 0));
+        assertEquals("", null, resortProcessor.nextRealignedEntry(0, 0));
+        verify(delegate);
+    }
 
     @Test
-       public void testTwoTargets() throws Exception {
+    public void testTwoTargets() throws Exception {
 
-           Alignments.AlignmentEntry entry_0_10;
-           Alignments.AlignmentEntry entry_1_1;
-           expect(delegate.nextRealignedEntry(0, 0)).andReturn(entry_0_10 = buildEntry(1, 0, 10));
-           expect(delegate.nextRealignedEntry(0, 0)).andReturn(entry_1_1 = buildEntry(2, 1, 1));
-           expect(delegate.nextRealignedEntry(0, 0)).andReturn(null);
-           replay(delegate);
-           assertEquals("expected entry on target 0", entry_0_10, resortProcessor.nextRealignedEntry(0, 0));
-           assertEquals("expected entry on target 1", entry_1_1, resortProcessor.nextRealignedEntry(0, 0));
-           assertEquals("", null, resortProcessor.nextRealignedEntry(0, 0));
-           verify(delegate);
-       }
+        Alignments.AlignmentEntry entry_0_10;
+        Alignments.AlignmentEntry entry_1_1;
+        expect(delegate.nextRealignedEntry(0, 0)).andReturn(entry_0_10 = buildEntry(1, 0, 10));
+        expect(delegate.nextRealignedEntry(0, 0)).andReturn(entry_1_1 = buildEntry(2, 1, 1));
+        expect(delegate.nextRealignedEntry(0, 0)).andReturn(null);
+        replay(delegate);
+        assertEquals("expected entry on target 0", entry_0_10, resortProcessor.nextRealignedEntry(0, 0));
+        assertEquals("expected entry on target 1", entry_1_1, resortProcessor.nextRealignedEntry(0, 0));
+        assertEquals("", null, resortProcessor.nextRealignedEntry(0, 0));
+        verify(delegate);
+    }
 
     private Alignments.AlignmentEntry buildEntry(int queryIndex, int targetIndex, int position) {
         return Alignments.AlignmentEntry.newBuilder().
