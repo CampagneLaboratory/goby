@@ -7,6 +7,7 @@ from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 
+
 DESCRIPTOR = descriptor.FileDescriptor(
   name='Alignments.proto',
   package='goby',
@@ -630,7 +631,6 @@ _ALIGNMENTINDEX = descriptor.Descriptor(
   serialized_end=1845,
 )
 
-
 _ALIGNMENTCOLLECTION.fields_by_name['alignment_entries'].message_type = _ALIGNMENTENTRY
 _ALIGNMENTENTRY.fields_by_name['sequence_variations'].message_type = _SEQUENCEVARIATION
 _ALIGNMENTENTRY.fields_by_name['pair_alignment_link'].message_type = _RELATEDALIGNMENTENTRY
@@ -639,6 +639,16 @@ _ALIGNMENTHEADER.fields_by_name['query_name_mapping'].message_type = _IDENTIFIER
 _ALIGNMENTHEADER.fields_by_name['target_name_mapping'].message_type = _IDENTIFIERMAPPING
 _IDENTIFIERMAPPING.fields_by_name['mappings'].message_type = _IDENTIFIERINFO
 _ALIGNMENTTOOMANYHITS.fields_by_name['hits'].message_type = _AMBIGUOUSLOCATION
+DESCRIPTOR.message_types_by_name['AlignmentCollection'] = _ALIGNMENTCOLLECTION
+DESCRIPTOR.message_types_by_name['AlignmentEntry'] = _ALIGNMENTENTRY
+DESCRIPTOR.message_types_by_name['RelatedAlignmentEntry'] = _RELATEDALIGNMENTENTRY
+DESCRIPTOR.message_types_by_name['SequenceVariation'] = _SEQUENCEVARIATION
+DESCRIPTOR.message_types_by_name['AlignmentHeader'] = _ALIGNMENTHEADER
+DESCRIPTOR.message_types_by_name['IdentifierMapping'] = _IDENTIFIERMAPPING
+DESCRIPTOR.message_types_by_name['IdentifierInfo'] = _IDENTIFIERINFO
+DESCRIPTOR.message_types_by_name['AlignmentTooManyHits'] = _ALIGNMENTTOOMANYHITS
+DESCRIPTOR.message_types_by_name['AmbiguousLocation'] = _AMBIGUOUSLOCATION
+DESCRIPTOR.message_types_by_name['AlignmentIndex'] = _ALIGNMENTINDEX
 
 class AlignmentCollection(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType

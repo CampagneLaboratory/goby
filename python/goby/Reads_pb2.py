@@ -7,6 +7,7 @@ from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 
+
 DESCRIPTOR = descriptor.FileDescriptor(
   name='Reads.proto',
   package='goby',
@@ -175,9 +176,11 @@ _METADATA = descriptor.Descriptor(
   serialized_end=388,
 )
 
-
 _READCOLLECTION.fields_by_name['reads'].message_type = _READENTRY
 _READENTRY.fields_by_name['meta_data'].message_type = _METADATA
+DESCRIPTOR.message_types_by_name['ReadCollection'] = _READCOLLECTION
+DESCRIPTOR.message_types_by_name['ReadEntry'] = _READENTRY
+DESCRIPTOR.message_types_by_name['MetaData'] = _METADATA
 
 class ReadCollection(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType

@@ -2,6 +2,9 @@
 
 #define INTERNAL_SUPPRESS_PROTOBUF_FIELD_DEPRECATION
 #include "Reads.pb.h"
+
+#include <algorithm>
+
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/wire_format_lite_inl.h>
@@ -364,12 +367,6 @@ void ReadCollection::Swap(ReadCollection* other) {
 
 // ===================================================================
 
-const ::std::string ReadEntry::_default_read_identifier_;
-const ::std::string ReadEntry::_default_description_;
-const ::std::string ReadEntry::_default_sequence_;
-const ::std::string ReadEntry::_default_sequence_pair_;
-const ::std::string ReadEntry::_default_quality_scores_;
-const ::std::string ReadEntry::_default_quality_scores_pair_;
 #ifndef _MSC_VER
 const int ReadEntry::kReadIndexFieldNumber;
 const int ReadEntry::kBarcodeIndexFieldNumber;
@@ -402,14 +399,14 @@ void ReadEntry::SharedCtor() {
   _cached_size_ = 0;
   read_index_ = 0u;
   barcode_index_ = 0u;
-  read_identifier_ = const_cast< ::std::string*>(&_default_read_identifier_);
-  description_ = const_cast< ::std::string*>(&_default_description_);
+  read_identifier_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  description_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   read_length_ = 0u;
-  sequence_ = const_cast< ::std::string*>(&_default_sequence_);
-  sequence_pair_ = const_cast< ::std::string*>(&_default_sequence_pair_);
+  sequence_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  sequence_pair_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   read_length_pair_ = 0u;
-  quality_scores_ = const_cast< ::std::string*>(&_default_quality_scores_);
-  quality_scores_pair_ = const_cast< ::std::string*>(&_default_quality_scores_pair_);
+  quality_scores_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  quality_scores_pair_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -418,22 +415,22 @@ ReadEntry::~ReadEntry() {
 }
 
 void ReadEntry::SharedDtor() {
-  if (read_identifier_ != &_default_read_identifier_) {
+  if (read_identifier_ != &::google::protobuf::internal::kEmptyString) {
     delete read_identifier_;
   }
-  if (description_ != &_default_description_) {
+  if (description_ != &::google::protobuf::internal::kEmptyString) {
     delete description_;
   }
-  if (sequence_ != &_default_sequence_) {
+  if (sequence_ != &::google::protobuf::internal::kEmptyString) {
     delete sequence_;
   }
-  if (sequence_pair_ != &_default_sequence_pair_) {
+  if (sequence_pair_ != &::google::protobuf::internal::kEmptyString) {
     delete sequence_pair_;
   }
-  if (quality_scores_ != &_default_quality_scores_) {
+  if (quality_scores_ != &::google::protobuf::internal::kEmptyString) {
     delete quality_scores_;
   }
-  if (quality_scores_pair_ != &_default_quality_scores_pair_) {
+  if (quality_scores_pair_ != &::google::protobuf::internal::kEmptyString) {
     delete quality_scores_pair_;
   }
   if (this != default_instance_) {
@@ -464,37 +461,37 @@ void ReadEntry::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     read_index_ = 0u;
     barcode_index_ = 0u;
-    if (_has_bit(2)) {
-      if (read_identifier_ != &_default_read_identifier_) {
+    if (has_read_identifier()) {
+      if (read_identifier_ != &::google::protobuf::internal::kEmptyString) {
         read_identifier_->clear();
       }
     }
-    if (_has_bit(3)) {
-      if (description_ != &_default_description_) {
+    if (has_description()) {
+      if (description_ != &::google::protobuf::internal::kEmptyString) {
         description_->clear();
       }
     }
     read_length_ = 0u;
-    if (_has_bit(5)) {
-      if (sequence_ != &_default_sequence_) {
+    if (has_sequence()) {
+      if (sequence_ != &::google::protobuf::internal::kEmptyString) {
         sequence_->clear();
       }
     }
-    if (_has_bit(6)) {
-      if (sequence_pair_ != &_default_sequence_pair_) {
+    if (has_sequence_pair()) {
+      if (sequence_pair_ != &::google::protobuf::internal::kEmptyString) {
         sequence_pair_->clear();
       }
     }
     read_length_pair_ = 0u;
   }
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
-    if (_has_bit(8)) {
-      if (quality_scores_ != &_default_quality_scores_) {
+    if (has_quality_scores()) {
+      if (quality_scores_ != &::google::protobuf::internal::kEmptyString) {
         quality_scores_->clear();
       }
     }
-    if (_has_bit(9)) {
-      if (quality_scores_pair_ != &_default_quality_scores_pair_) {
+    if (has_quality_scores_pair()) {
+      if (quality_scores_pair_ != &::google::protobuf::internal::kEmptyString) {
         quality_scores_pair_->clear();
       }
     }
@@ -517,7 +514,7 @@ bool ReadEntry::MergePartialFromCodedStream(
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
                  input, &read_index_)));
-          _set_bit(0);
+          set_has_read_index();
         } else {
           goto handle_uninterpreted;
         }
@@ -533,7 +530,7 @@ bool ReadEntry::MergePartialFromCodedStream(
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
                  input, &read_length_)));
-          _set_bit(4);
+          set_has_read_length();
         } else {
           goto handle_uninterpreted;
         }
@@ -591,7 +588,7 @@ bool ReadEntry::MergePartialFromCodedStream(
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
                  input, &read_length_pair_)));
-          _set_bit(7);
+          set_has_read_length_pair();
         } else {
           goto handle_uninterpreted;
         }
@@ -621,7 +618,7 @@ bool ReadEntry::MergePartialFromCodedStream(
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
                  input, &barcode_index_)));
-          _set_bit(1);
+          set_has_barcode_index();
         } else {
           goto handle_uninterpreted;
         }
@@ -697,51 +694,51 @@ bool ReadEntry::MergePartialFromCodedStream(
 void ReadEntry::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // required uint32 read_index = 1;
-  if (_has_bit(0)) {
+  if (has_read_index()) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->read_index(), output);
   }
   
   // required uint32 read_length = 2;
-  if (_has_bit(4)) {
+  if (has_read_length()) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->read_length(), output);
   }
   
   // optional bytes sequence = 3;
-  if (_has_bit(5)) {
+  if (has_sequence()) {
     ::google::protobuf::internal::WireFormatLite::WriteBytes(
       3, this->sequence(), output);
   }
   
   // optional bytes quality_scores = 4;
-  if (_has_bit(8)) {
+  if (has_quality_scores()) {
     ::google::protobuf::internal::WireFormatLite::WriteBytes(
       4, this->quality_scores(), output);
   }
   
   // optional bytes sequence_pair = 5;
-  if (_has_bit(6)) {
+  if (has_sequence_pair()) {
     ::google::protobuf::internal::WireFormatLite::WriteBytes(
       5, this->sequence_pair(), output);
   }
   
   // optional uint32 read_length_pair = 6;
-  if (_has_bit(7)) {
+  if (has_read_length_pair()) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(6, this->read_length_pair(), output);
   }
   
   // optional bytes quality_scores_pair = 7;
-  if (_has_bit(9)) {
+  if (has_quality_scores_pair()) {
     ::google::protobuf::internal::WireFormatLite::WriteBytes(
       7, this->quality_scores_pair(), output);
   }
   
   // optional uint32 barcode_index = 10;
-  if (_has_bit(1)) {
+  if (has_barcode_index()) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(10, this->barcode_index(), output);
   }
   
   // optional string description = 22;
-  if (_has_bit(3)) {
+  if (has_description()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->description().data(), this->description().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -750,7 +747,7 @@ void ReadEntry::SerializeWithCachedSizes(
   }
   
   // optional string read_identifier = 23;
-  if (_has_bit(2)) {
+  if (has_read_identifier()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->read_identifier().data(), this->read_identifier().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -773,55 +770,55 @@ void ReadEntry::SerializeWithCachedSizes(
 ::google::protobuf::uint8* ReadEntry::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // required uint32 read_index = 1;
-  if (_has_bit(0)) {
+  if (has_read_index()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->read_index(), target);
   }
   
   // required uint32 read_length = 2;
-  if (_has_bit(4)) {
+  if (has_read_length()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->read_length(), target);
   }
   
   // optional bytes sequence = 3;
-  if (_has_bit(5)) {
+  if (has_sequence()) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         3, this->sequence(), target);
   }
   
   // optional bytes quality_scores = 4;
-  if (_has_bit(8)) {
+  if (has_quality_scores()) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         4, this->quality_scores(), target);
   }
   
   // optional bytes sequence_pair = 5;
-  if (_has_bit(6)) {
+  if (has_sequence_pair()) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         5, this->sequence_pair(), target);
   }
   
   // optional uint32 read_length_pair = 6;
-  if (_has_bit(7)) {
+  if (has_read_length_pair()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(6, this->read_length_pair(), target);
   }
   
   // optional bytes quality_scores_pair = 7;
-  if (_has_bit(9)) {
+  if (has_quality_scores_pair()) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         7, this->quality_scores_pair(), target);
   }
   
   // optional uint32 barcode_index = 10;
-  if (_has_bit(1)) {
+  if (has_barcode_index()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(10, this->barcode_index(), target);
   }
   
   // optional string description = 22;
-  if (_has_bit(3)) {
+  if (has_description()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->description().data(), this->description().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -831,7 +828,7 @@ void ReadEntry::SerializeWithCachedSizes(
   }
   
   // optional string read_identifier = 23;
-  if (_has_bit(2)) {
+  if (has_read_identifier()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->read_identifier().data(), this->read_identifier().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -966,36 +963,36 @@ void ReadEntry::MergeFrom(const ReadEntry& from) {
   GOOGLE_CHECK_NE(&from, this);
   meta_data_.MergeFrom(from.meta_data_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from._has_bit(0)) {
+    if (from.has_read_index()) {
       set_read_index(from.read_index());
     }
-    if (from._has_bit(1)) {
+    if (from.has_barcode_index()) {
       set_barcode_index(from.barcode_index());
     }
-    if (from._has_bit(2)) {
+    if (from.has_read_identifier()) {
       set_read_identifier(from.read_identifier());
     }
-    if (from._has_bit(3)) {
+    if (from.has_description()) {
       set_description(from.description());
     }
-    if (from._has_bit(4)) {
+    if (from.has_read_length()) {
       set_read_length(from.read_length());
     }
-    if (from._has_bit(5)) {
+    if (from.has_sequence()) {
       set_sequence(from.sequence());
     }
-    if (from._has_bit(6)) {
+    if (from.has_sequence_pair()) {
       set_sequence_pair(from.sequence_pair());
     }
-    if (from._has_bit(7)) {
+    if (from.has_read_length_pair()) {
       set_read_length_pair(from.read_length_pair());
     }
   }
   if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
-    if (from._has_bit(8)) {
+    if (from.has_quality_scores()) {
       set_quality_scores(from.quality_scores());
     }
-    if (from._has_bit(9)) {
+    if (from.has_quality_scores_pair()) {
       set_quality_scores_pair(from.quality_scores_pair());
     }
   }
@@ -1053,8 +1050,6 @@ void ReadEntry::Swap(ReadEntry* other) {
 
 // ===================================================================
 
-const ::std::string MetaData::_default_key_;
-const ::std::string MetaData::_default_value_;
 #ifndef _MSC_VER
 const int MetaData::kKeyFieldNumber;
 const int MetaData::kValueFieldNumber;
@@ -1076,8 +1071,8 @@ MetaData::MetaData(const MetaData& from)
 
 void MetaData::SharedCtor() {
   _cached_size_ = 0;
-  key_ = const_cast< ::std::string*>(&_default_key_);
-  value_ = const_cast< ::std::string*>(&_default_value_);
+  key_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  value_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -1086,10 +1081,10 @@ MetaData::~MetaData() {
 }
 
 void MetaData::SharedDtor() {
-  if (key_ != &_default_key_) {
+  if (key_ != &::google::protobuf::internal::kEmptyString) {
     delete key_;
   }
-  if (value_ != &_default_value_) {
+  if (value_ != &::google::protobuf::internal::kEmptyString) {
     delete value_;
   }
   if (this != default_instance_) {
@@ -1118,13 +1113,13 @@ MetaData* MetaData::New() const {
 
 void MetaData::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (_has_bit(0)) {
-      if (key_ != &_default_key_) {
+    if (has_key()) {
+      if (key_ != &::google::protobuf::internal::kEmptyString) {
         key_->clear();
       }
     }
-    if (_has_bit(1)) {
-      if (value_ != &_default_value_) {
+    if (has_value()) {
+      if (value_ != &::google::protobuf::internal::kEmptyString) {
         value_->clear();
       }
     }
@@ -1191,7 +1186,7 @@ bool MetaData::MergePartialFromCodedStream(
 void MetaData::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // required string key = 1;
-  if (_has_bit(0)) {
+  if (has_key()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->key().data(), this->key().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -1200,7 +1195,7 @@ void MetaData::SerializeWithCachedSizes(
   }
   
   // required string value = 2;
-  if (_has_bit(1)) {
+  if (has_value()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->value().data(), this->value().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -1217,7 +1212,7 @@ void MetaData::SerializeWithCachedSizes(
 ::google::protobuf::uint8* MetaData::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // required string key = 1;
-  if (_has_bit(0)) {
+  if (has_key()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->key().data(), this->key().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -1227,7 +1222,7 @@ void MetaData::SerializeWithCachedSizes(
   }
   
   // required string value = 2;
-  if (_has_bit(1)) {
+  if (has_value()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->value().data(), this->value().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -1288,10 +1283,10 @@ void MetaData::MergeFrom(const ::google::protobuf::Message& from) {
 void MetaData::MergeFrom(const MetaData& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from._has_bit(0)) {
+    if (from.has_key()) {
       set_key(from.key());
     }
-    if (from._has_bit(1)) {
+    if (from.has_value()) {
       set_value(from.value());
     }
   }
