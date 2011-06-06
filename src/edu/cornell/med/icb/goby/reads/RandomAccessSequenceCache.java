@@ -34,13 +34,7 @@ import it.unimi.dsi.io.OutputBitStream;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.log4j.Logger;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.util.Random;
 import java.util.zip.GZIPInputStream;
 
@@ -190,6 +184,58 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         return get(referenceIndex, position);
     }
 
+    public final int getRange(final String referenceName, final int position, final int length) {
+        final int referenceIndex = getReferenceIndex(referenceName);
+        return getRange(referenceIndex, position, length);
+    }
+
+
+    final LongArrayBitVector bits = LongArrayBitVector.getInstance();
+
+    public int getRange(final int referenceIndex, final int position, final int length) {
+        final int maxSize = sizes.getInt(referenceIndex);
+        assert position + length < maxSize : "position must be less than size of the reference sequence (" + maxSize + ")";
+
+
+        assert length < 15 : "lenth must be less than 15";
+        bits.clear();
+        final byte[] bytes = compressedData.get(referenceIndex);
+        final LongArrayBitVector ignoreList = referenceIgnoreLists.get(referenceIndex);
+
+        for (int i = 0; i < length; i++) {
+            final int offset = (position+i) * 2;
+            final byte b = bytes[offset / 8];
+            if (ignoreList.get(position)) {
+                // a range that contain 'N' at any position is represented by -1.
+                return -1;
+            }
+            final int c = b >> (6 - (offset % 8)) & 0x3; // two right-most bits are left, which encode
+            switch (c) {
+                case 2 * 1 + 1 * 1:
+                    bits.add(0);
+                    bits.add(0);
+                    break;
+                case 2 * 0 + 1 * 1:
+                    bits.add(1);
+                    bits.add(0);
+                    break;
+                case 2 * 1 + 1 * 0:
+                    bits.add(0);
+                    bits.add(1);
+                    break;
+                case 2 * 0 + 1 * 0:
+                    bits.add(1);
+                    bits.add(1);
+                    break;
+                default:
+                    throw new InternalError("Should never happen");
+
+
+            }
+        }
+        return (int) bits.bits()[0];
+    }
+
     /**
      * Return the index of the reference sequence identified by name, or -1 if the sequence name
      * is not in the cache.
@@ -197,6 +243,7 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
      * @param referenceName The name of the sequence to get the index for
      * @return The index for the specified reference
      */
+
     public final int getReferenceIndex(final String referenceName) {
         return referenceNameMap.getInt(referenceName);
     }
@@ -218,7 +265,7 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
 
 
     public int getLength(int targetIndex) {
-       return sizes.getInt(targetIndex);
+        return sizes.getInt(targetIndex);
     }
 
     private char decode(final byte[] bytes, final int position, final int maxSize) {
@@ -227,6 +274,7 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         final int offset = position * 2;
         final byte b = bytes[offset / 8];
         final int c = b >> (6 - (offset % 8)) & 0x3; // two right-most bits are left, which encode
+
         switch (c) {
             case 2 * 1 + 1 * 1:
                 return 'A';
