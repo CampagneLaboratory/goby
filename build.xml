@@ -96,7 +96,7 @@
                 <include name="icb-utils.jar"/>
                 <include name="JSAP-2.1.jar"/>
                 <include name="log4j-1.2.15.jar"/>
-                <include name="protobuf-java-2.3.0.jar"/>
+                <include name="protobuf-java-2.4.1.jar"/>
                 <include name="sam-1.43.jar"/>
                 <include name="squil.jar"/>
                 <include name="tisim-api.jar"/>
@@ -185,7 +185,7 @@
                 <include name="fastutil-6.3.jar"/>     <!-- LGPL -->
                 <include name="dsiutils-1.0.12.jar"/>    <!-- LGPL -->
                 <include name="icb-utils.jar"/>           <!-- LGPL -->
-                <include name="protobuf-java-2.3.0.jar"/> <!-- new BSD license, compatible with LGPL? -->
+                <include name="protobuf-java-2.4.1.jar"/> <!-- new BSD license, compatible with LGPL? -->
                 <include name="commons-io-1.4.jar"/>         <!-- Apache version 2 license -->
                 <include name="commons-lang-2.5.jar"/>       <!-- Apache version 2 license -->
                 <include name="commons-logging-1.1.1.jar"/>  <!-- Apache version 2 license -->
