@@ -667,126 +667,6 @@
     <output url="file://$PROJECT_DIR$/classes" />
   </component>
   <component name="ProjectRunConfigurationManager">
-    <configuration default="false" name="compare-groups" type="Application" factoryName="Application">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma" />
-      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode" />
-      <option name="VM_PARAMETERS" value="-ea -Xmx4g -Djava.library.path=&quot;/Library/Frameworks/R.framework/Resources/lib:/Library/Frameworks/R.framework/Resources/bin:&quot; -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties -Dlog4j.debug=true -Dlog4j.configuration=file:$PROJECT_DIR$/config/log4j.properties" />
-      <option name="PROGRAM_PARAMETERS" value="--mode discover-sequence-variants TDXSYYZ-419-pos11-chr22-simulated-flat.entries HNGJLKP-419-pos11-chr22-simulated-spikes.entries --compare flat/spikes  --groups flat=TDXSYYZ-419-pos11-chr22-simulated-flat/spikes=HNGJLKP-419-pos11-chr22-simulated-spikes  --variation-stats var-stats2.tsv  -f compare_groups  --eval filter   --genome ../reverse/random-access-genome -n -1 -t 1 -o dense1_spikes_vs_flat.tsv " />
-      <option name="WORKING_DIRECTORY" value="file:///data/bisulfite/pos11" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="ENABLE_SWING_INSPECTOR" value="false" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <module name="goby" />
-      <envs />
-      <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="61987" />
-        <option name="TRANSPORT" value="0" />
-        <option name="LOCAL" value="true" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="JProfiler">
-        <option name="WINDOW" value="false" />
-        <option name="JVMPI" value="false" />
-        <option name="INTERPRETED" value="false" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Debug" />
-      <ConfigurationWrapper RunnerId="Run" />
-      <method>
-        <option name="Run Ant target" value="true" />
-      </method>
-    </configuration>
-    <configuration default="false" name="slice" type="Application" factoryName="Application">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma" />
-      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.GobyDriver" />
-      <option name="VM_PARAMETERS" value="-ea -Xmx4g -Dlog4j.debug=true -Dlog4j.configuration=file:$PROJECT_DIR$/config/log4j.properties" />
-      <option name="PROGRAM_PARAMETERS" value="--mode suggest-position-slices BHWADRA-Pickrell-eQTL-NA19143_yale.entries HJXAGFR-Pickrell-eQTL-NA19143_argonne.entries SGGAOSC-Pickrell-eQTL-NA18501_yale.entries ZVCCURQ-Pickrell-eQTL-NA18501_argonne.entries -o slices.tsv" />
-      <option name="WORKING_DIRECTORY" value="file:///data/variations" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="ENABLE_SWING_INSPECTOR" value="false" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <module name="goby" />
-      <envs />
-      <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="58319" />
-        <option name="TRANSPORT" value="0" />
-        <option name="LOCAL" value="true" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="JProfiler">
-        <option name="WINDOW" value="false" />
-        <option name="JVMPI" value="false" />
-        <option name="INTERPRETED" value="false" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Debug" />
-      <ConfigurationWrapper RunnerId="Run" />
-      <method>
-        <option name="Run Ant target" value="true" />
-      </method>
-    </configuration>
-    <configuration default="false" name="methylation" type="Application" factoryName="Application">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma" />
-      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode" />
-      <option name="VM_PARAMETERS" value="-ea -Xmx4g -Djava.library.path=&quot;/Library/Frameworks/R.framework/Resources/lib:/Library/Frameworks/R.framework/Resources/bin:&quot; -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties -Dlog4j.debug=true -Dlog4j.configuration=file:$PROJECT_DIR$/config/log4j.properties" />
-      <option name="PROGRAM_PARAMETERS" value="--mode discover-sequence-variants GNVNGNJ-negative-bis14-spikes.entries NEPRPSI-420-bis14-chr22-simulated-flat.entries --compare flat/spikes  --groups flat=NEPRPSI-420-bis14-chr22-simulated-flat/spikes=GNVNGNJ-negative-bis14-spikes  --variation-stats var-stats2.tsv  -f methylation  --eval filter   --genome random-access-genome -n -1 -t 1 -o met.tsv " />
-      <option name="WORKING_DIRECTORY" value="file:///data/bisulfite/bis14" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="ENABLE_SWING_INSPECTOR" value="false" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <module name="goby" />
-      <envs />
-      <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="57231" />
-        <option name="TRANSPORT" value="0" />
-        <option name="LOCAL" value="true" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="JProfiler">
-        <option name="WINDOW" value="false" />
-        <option name="JVMPI" value="false" />
-        <option name="INTERPRETED" value="false" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Debug" />
-      <ConfigurationWrapper RunnerId="Run" />
-      <method>
-        <option name="Run Ant target" value="true" />
-      </method>
-    </configuration>
-    <configuration default="false" name="fdr" type="Application" factoryName="Application">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma" />
-      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.GobyDriver" />
-      <option name="VM_PARAMETERS" value="-ea -Xmx4g -Dlog4j.debug=true -Dlog4j.configuration=file:$PROJECT_DIR$/config/log4j.properties" />
-      <option name="PROGRAM_PARAMETERS" value="--mode fdr --vcf HFBVBRN-discover-sequence-variants-output-1.vcf.gz HFBVBRN-discover-sequence-variants-output-10.vcf.gz HFBVBRN-discover-sequence-variants-output-2.vcf.gz HFBVBRN-discover-sequence-variants-output-8.vcf.gz HFBVBRN-discover-sequence-variants-output-9.vcf.gz IIYXGDZ.vcf.gz TCVCQQC.vcf.gz out.vcf.gz -o out.vcf " />
-      <option name="WORKING_DIRECTORY" value="file:///data/fdr" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="ENABLE_SWING_INSPECTOR" value="false" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <module name="goby" />
-      <envs />
-      <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="57463" />
-        <option name="TRANSPORT" value="0" />
-        <option name="LOCAL" value="true" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="JProfiler">
-        <option name="WINDOW" value="false" />
-        <option name="JVMPI" value="false" />
-        <option name="INTERPRETED" value="false" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Debug" />
-      <ConfigurationWrapper RunnerId="Run" />
-      <method>
-        <option name="Run Ant target" value="true" />
-      </method>
-    </configuration>
     <configuration default="false" name="file stats" type="Application" factoryName="Application">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma" />
       <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.CompactFileStatsMode" />
@@ -817,67 +697,6 @@
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
-    <configuration default="false" name="discovery-sequence-variants" type="Application" factoryName="Application">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma" />
-      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.GobyDriver" />
-      <option name="VM_PARAMETERS" value="-ea -Xmx3g -Djava.library.path=&quot;/Library/Frameworks/R.framework/Resources/lib:/Library/Frameworks/R.framework/Resources/bin:&quot; -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties -Dlog4j.debug=true -Dlog4j.configuration=file:$PROJECT_DIR$/config/log4j.properties" />
-      <option name="PROGRAM_PARAMETERS" value="--mode discover-sequence-variants -s 1,249000000 -e 3,55550006 --variation-stats JNYQEGH-variations-stats2.tsv --groups R=JVWZIOT-745580R,EFWLXOB-726584R/D=JFXCVPY-745580D,MGTSTHR-726584D --compare R/D --eval within-groups,between-groups --minimum-variation-support 3 --threshold-distinct-read-indices 3 --output JNYQEGH-discover-sequence-variants-output-2.tsv EFWLXOB-726584R.entries JFXCVPY-745580D.entries JVWZIOT-745580R.entries  MGTSTHR-726584D.entries  " />
-      <option name="WORKING_DIRECTORY" value="file:///data/variations/source" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="ENABLE_SWING_INSPECTOR" value="false" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <module name="goby" />
-      <envs />
-      <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="52562" />
-        <option name="TRANSPORT" value="0" />
-        <option name="LOCAL" value="true" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="JProfiler">
-        <option name="WINDOW" value="false" />
-        <option name="JVMPI" value="false" />
-        <option name="INTERPRETED" value="false" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Debug" />
-      <ConfigurationWrapper RunnerId="JProfiler" />
-      <ConfigurationWrapper RunnerId="Run" />
-      <method>
-        <option name="Run Ant target" value="true" />
-      </method>
-    </configuration>
-    <configuration default="false" name="discover-sequence-variants" type="Application" factoryName="Application">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma" />
-      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.GobyDriver" />
-      <option name="VM_PARAMETERS" value="-ea -Xmx3g -Djava.library.path=&quot;/Library/Frameworks/R.framework/Resources/lib:/Library/Frameworks/R.framework/Resources/bin:&quot; -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties -Dlog4j.debug=true -Dlog4j.configuration=file:$PROJECT_DIR$/config/log4j.properties" />
-      <option name="PROGRAM_PARAMETERS" value="--mode discover-sequence-variants /data/CALHM1_KO/BDDULNU-CALHM1-s1-310-WT.entries /data/CALHM1_KO/MEJDYNQ-CALHM1-s8-310-WT-repeat.entries --compare s1/s8 --groups s1=BDDULNU-CALHM1-s1-310-WT/s8=MEJDYNQ-CALHM1-s8-310-WT-repeat --variation-stats /data/CALHM1_KO/stats2.tsv -f allele_frequencies --eval filter  " />
-      <option name="WORKING_DIRECTORY" value="file:///data/variations/source" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="ENABLE_SWING_INSPECTOR" value="false" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <module name="goby" />
-      <envs />
-      <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="62946" />
-        <option name="TRANSPORT" value="0" />
-        <option name="LOCAL" value="true" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="JProfiler">
-        <option name="WINDOW" value="false" />
-        <option name="JVMPI" value="false" />
-        <option name="INTERPRETED" value="false" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Debug" />
-      <ConfigurationWrapper RunnerId="Run" />
-      <method>
-        <option name="Run Ant target" value="true" />
-      </method>
-    </configuration>
     <configuration default="false" name="annotation counts" type="Application" factoryName="Application">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma" />
       <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.GobyDriver" />
@@ -893,6 +712,36 @@
       <envs />
       <RunnerSettings RunnerId="Debug">
         <option name="DEBUG_PORT" value="54802" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="JProfiler">
+        <option name="WINDOW" value="false" />
+        <option name="JVMPI" value="false" />
+        <option name="INTERPRETED" value="false" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method>
+        <option name="Run Ant target" value="true" />
+      </method>
+    </configuration>
+    <configuration default="false" name="fdr" type="Application" factoryName="Application">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma" />
+      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.GobyDriver" />
+      <option name="VM_PARAMETERS" value="-ea -Xmx4g -Dlog4j.debug=true -Dlog4j.configuration=file:$PROJECT_DIR$/config/log4j.properties" />
+      <option name="PROGRAM_PARAMETERS" value="--mode fdr --vcf HFBVBRN-discover-sequence-variants-output-1.vcf.gz HFBVBRN-discover-sequence-variants-output-10.vcf.gz HFBVBRN-discover-sequence-variants-output-2.vcf.gz HFBVBRN-discover-sequence-variants-output-8.vcf.gz HFBVBRN-discover-sequence-variants-output-9.vcf.gz IIYXGDZ.vcf.gz TCVCQQC.vcf.gz out.vcf.gz -o out.vcf " />
+      <option name="WORKING_DIRECTORY" value="file:///data/fdr" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="goby" />
+      <envs />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="57463" />
         <option name="TRANSPORT" value="0" />
         <option name="LOCAL" value="true" />
       </RunnerSettings>
@@ -1058,38 +907,152 @@
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
-    <configuration default="false" name="TestVCFWriter" type="JUnit" factoryName="JUnit">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma">
-        <pattern>
-          <option name="PATTERN" value="edu.cornell.med.icb.goby.stats.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <module name="goby" />
+    <configuration default="false" name="discovery-sequence-variants" type="Application" factoryName="Application">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma" />
+      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.GobyDriver" />
+      <option name="VM_PARAMETERS" value="-ea -Xmx3g -Djava.library.path=&quot;/Library/Frameworks/R.framework/Resources/lib:/Library/Frameworks/R.framework/Resources/bin:&quot; -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties -Dlog4j.debug=true -Dlog4j.configuration=file:$PROJECT_DIR$/config/log4j.properties" />
+      <option name="PROGRAM_PARAMETERS" value="--mode discover-sequence-variants -s 1,249000000 -e 3,55550006 --variation-stats JNYQEGH-variations-stats2.tsv --groups R=JVWZIOT-745580R,EFWLXOB-726584R/D=JFXCVPY-745580D,MGTSTHR-726584D --compare R/D --eval within-groups,between-groups --minimum-variation-support 3 --threshold-distinct-read-indices 3 --output JNYQEGH-discover-sequence-variants-output-2.tsv EFWLXOB-726584R.entries JFXCVPY-745580D.entries JVWZIOT-745580R.entries  MGTSTHR-726584D.entries  " />
+      <option name="WORKING_DIRECTORY" value="file:///data/variations/source" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="edu.cornell.med.icb.goby.stats" />
-      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.stats.TestVCFWriter" />
-      <option name="METHOD_NAME" value="testCodeGenotypes" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" value="" />
-      <option name="PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="moduleWithDependencies" />
-      </option>
-      <envs>
-        <env name="R_HOME" value="/Library/Frameworks/R.framework/Resources " />
-      </envs>
-      <patterns />
+      <module name="goby" />
+      <envs />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="52562" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
       <RunnerSettings RunnerId="JProfiler">
         <option name="WINDOW" value="false" />
         <option name="JVMPI" value="false" />
         <option name="INTERPRETED" value="false" />
       </RunnerSettings>
       <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="JProfiler" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method>
+        <option name="Run Ant target" value="true" />
+      </method>
+    </configuration>
+    <configuration default="false" name="slice" type="Application" factoryName="Application">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma" />
+      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.GobyDriver" />
+      <option name="VM_PARAMETERS" value="-ea -Xmx4g -Dlog4j.debug=true -Dlog4j.configuration=file:$PROJECT_DIR$/config/log4j.properties" />
+      <option name="PROGRAM_PARAMETERS" value="--mode suggest-position-slices BHWADRA-Pickrell-eQTL-NA19143_yale.entries HJXAGFR-Pickrell-eQTL-NA19143_argonne.entries SGGAOSC-Pickrell-eQTL-NA18501_yale.entries ZVCCURQ-Pickrell-eQTL-NA18501_argonne.entries -o slices.tsv" />
+      <option name="WORKING_DIRECTORY" value="file:///data/variations" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="goby" />
+      <envs />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="58319" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="JProfiler">
+        <option name="WINDOW" value="false" />
+        <option name="JVMPI" value="false" />
+        <option name="INTERPRETED" value="false" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method>
+        <option name="Run Ant target" value="true" />
+      </method>
+    </configuration>
+    <configuration default="false" name="discover-sequence-variants" type="Application" factoryName="Application">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma" />
+      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.GobyDriver" />
+      <option name="VM_PARAMETERS" value="-ea -Xmx3g -Djava.library.path=&quot;/Library/Frameworks/R.framework/Resources/lib:/Library/Frameworks/R.framework/Resources/bin:&quot; -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties -Dlog4j.debug=true -Dlog4j.configuration=file:$PROJECT_DIR$/config/log4j.properties" />
+      <option name="PROGRAM_PARAMETERS" value="--mode discover-sequence-variants /data/CALHM1_KO/BDDULNU-CALHM1-s1-310-WT.entries /data/CALHM1_KO/MEJDYNQ-CALHM1-s8-310-WT-repeat.entries --compare s1/s8 --groups s1=BDDULNU-CALHM1-s1-310-WT/s8=MEJDYNQ-CALHM1-s8-310-WT-repeat --variation-stats /data/CALHM1_KO/stats2.tsv -f allele_frequencies --eval filter  " />
+      <option name="WORKING_DIRECTORY" value="file:///data/variations/source" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="goby" />
+      <envs />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="62946" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="JProfiler">
+        <option name="WINDOW" value="false" />
+        <option name="JVMPI" value="false" />
+        <option name="INTERPRETED" value="false" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method>
+        <option name="Run Ant target" value="true" />
+      </method>
+    </configuration>
+    <configuration default="false" name="methylation" type="Application" factoryName="Application">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma" />
+      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode" />
+      <option name="VM_PARAMETERS" value="-ea -Xmx4g -Djava.library.path=&quot;/Library/Frameworks/R.framework/Resources/lib:/Library/Frameworks/R.framework/Resources/bin:&quot; -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties -Dlog4j.debug=true -Dlog4j.configuration=file:$PROJECT_DIR$/config/log4j.properties" />
+      <option name="PROGRAM_PARAMETERS" value="--mode discover-sequence-variants GNVNGNJ-negative-bis14-spikes.entries NEPRPSI-420-bis14-chr22-simulated-flat.entries --compare flat/spikes  --groups flat=NEPRPSI-420-bis14-chr22-simulated-flat/spikes=GNVNGNJ-negative-bis14-spikes  --variation-stats var-stats2.tsv  -f methylation  --eval filter   --genome random-access-genome -n -1 -t 1 -o met.tsv " />
+      <option name="WORKING_DIRECTORY" value="file:///data/bisulfite/bis14" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="goby" />
+      <envs />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="57231" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="JProfiler">
+        <option name="WINDOW" value="false" />
+        <option name="JVMPI" value="false" />
+        <option name="INTERPRETED" value="false" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method>
+        <option name="Run Ant target" value="true" />
+      </method>
+    </configuration>
+    <configuration default="false" name="compare-groups" type="Application" factoryName="Application">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma" />
+      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode" />
+      <option name="VM_PARAMETERS" value="-ea -Xmx4g -Djava.library.path=&quot;/Library/Frameworks/R.framework/Resources/lib:/Library/Frameworks/R.framework/Resources/bin:&quot; -Dlog4j.debug=true -Dlog4j.configuration=file:config/log4j.properties -Dlog4j.debug=true -Dlog4j.configuration=file:$PROJECT_DIR$/config/log4j.properties" />
+      <option name="PROGRAM_PARAMETERS" value="--mode discover-sequence-variants TDXSYYZ-419-pos11-chr22-simulated-flat.entries HNGJLKP-419-pos11-chr22-simulated-spikes.entries --compare flat/spikes  --groups flat=TDXSYYZ-419-pos11-chr22-simulated-flat/spikes=HNGJLKP-419-pos11-chr22-simulated-spikes  --variation-stats var-stats2.tsv  -f compare_groups  --eval filter   --genome ../reverse/random-access-genome -n -1 -t 1 -o dense1_spikes_vs_flat.tsv " />
+      <option name="WORKING_DIRECTORY" value="file:///data/bisulfite/pos11" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="goby" />
+      <envs />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="61987" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="JProfiler">
+        <option name="WINDOW" value="false" />
+        <option name="JVMPI" value="false" />
+        <option name="INTERPRETED" value="false" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
         <option name="Run Ant target" value="true" />
@@ -1252,6 +1215,43 @@
         <option name="Run Ant target" value="true" />
       </method>
     </configuration>
+    <configuration default="false" name="TestVCFWriter" type="JUnit" factoryName="JUnit">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="emma">
+        <pattern>
+          <option name="PATTERN" value="edu.cornell.med.icb.goby.stats.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <module name="goby" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="PACKAGE_NAME" value="edu.cornell.med.icb.goby.stats" />
+      <option name="MAIN_CLASS_NAME" value="edu.cornell.med.icb.goby.stats.TestVCFWriter" />
+      <option name="METHOD_NAME" value="testCodeGenotypes" />
+      <option name="TEST_OBJECT" value="class" />
+      <option name="VM_PARAMETERS" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="moduleWithDependencies" />
+      </option>
+      <envs>
+        <env name="R_HOME" value="/Library/Frameworks/R.framework/Resources " />
+      </envs>
+      <patterns />
+      <RunnerSettings RunnerId="JProfiler">
+        <option name="WINDOW" value="false" />
+        <option name="JVMPI" value="false" />
+        <option name="INTERPRETED" value="false" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method>
+        <option name="Run Ant target" value="true" />
+      </method>
+    </configuration>
   </component>
   <component name="ResourceManagerContainer">
     <option name="myResourceBundles">
@@ -1367,7 +1367,7 @@
   <component name="libraryTable">
     <library name="fastutil">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../fastutil-6.3/fastutil-6.3.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/fastutil-6.3.jar!/" />
       </CLASSES>
       <JAVADOC>
         <root url="http://fastutil.dsi.unimi.it/docs/" />
@@ -1375,6 +1375,15 @@
       <SOURCES>
         <root url="file://$PROJECT_DIR$/../fastutil-6.3/src" />
       </SOURCES>
+    </library>
+    <library name="protobuf">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/protobuf-java-2.4.1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="http://code.google.com/apis/protocolbuffers/docs/reference/java/" />
+      </JAVADOC>
+      <SOURCES />
     </library>
   </component>
   <component name="org.twodividedbyzero.idea.findbugs">

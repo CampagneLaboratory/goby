@@ -22,9 +22,10 @@ package edu.cornell.med.icb.goby.alignments;
 
 import com.google.protobuf.ByteString;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.processors.*;
+import edu.cornell.med.icb.goby.alignments.processors.AlignmentProcessorFactory;
+import edu.cornell.med.icb.goby.alignments.processors.AlignmentProcessorInterface;
+import edu.cornell.med.icb.goby.alignments.processors.DefaultAlignmentProcessorFactory;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
-import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
