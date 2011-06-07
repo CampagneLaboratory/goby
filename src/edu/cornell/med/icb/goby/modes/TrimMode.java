@@ -23,20 +23,28 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
+import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import it.unimi.dsi.bits.BitVector;
 import it.unimi.dsi.bits.LongArrayBitVector;
 import it.unimi.dsi.fastutil.booleans.BooleanListIterator;
+import it.unimi.dsi.fastutil.bytes.ByteArrayList;
+import it.unimi.dsi.fastutil.io.BinIO;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import it.unimi.dsi.util.IntHyperLogLogCounterArray;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.LineIterator;
+import org.apache.commons.lang.mutable.Mutable;
 import org.apache.log4j.Logger;
+import org.apache.tools.ant.taskdefs.Length;
+import org.omg.CosNaming.BindingIteratorOperations;
 
-import java.io.IOException;
-import java.io.Writer;
+import javax.xml.transform.Result;
+import java.io.*;
 
 /**
- * Analyse a compact-reads file to determine what to trim.
+ * Trims adapter sequences from reads.
  *
  * @author Fabien Campagne
  *         Date: June 6 2011
@@ -50,13 +58,14 @@ public class TrimMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Analyze compact reads to determine what to trim";
+    private static final String MODE_DESCRIPTION = "Trims reads to remove adapter sequences.";
 
     private String inputFilename;
     private String outputFilename;
     private static final Logger LOG = Logger.getLogger(TrimMode.class);
-    private int kgramSize = 10;
-    private int numScanned = 0;
+    private byte[] buffer = new byte[10000];
+    private String adapterFilename;
+    private boolean complementAdapters;
 
 
     /**
@@ -92,7 +101,11 @@ public class TrimMode extends AbstractGobyMode {
 
         inputFilename = jsapResult.getString("input");
         outputFilename = jsapResult.getString("output");
-
+        /**
+         * File with one line per adapter sequence.
+         */
+        adapterFilename = jsapResult.getString("adapters");
+        complementAdapters = jsapResult.getBoolean("complement");
 
         return this;
     }
@@ -104,113 +117,210 @@ public class TrimMode extends AbstractGobyMode {
     public void execute() throws IOException {
 
         ReadsReader reader = null;
-        Writer writer = null;
+        ReadsWriter writer = null;
         ProgressLogger progress = new ProgressLogger(LOG);
         try {
 
             reader = new ReadsReader(inputFilename);
-            final long numDistinctElements = 10000; // any k-gram is expected at most 1 million times.
-            final double estimateStandardDeviationSought = 0.1; // we don't need a lot of precision on the estimate of counts
-            final int numberOfCounters = (int) Math.pow(2, (double) kgramSize * 2);
-            System.out.println("numberOfCounters " + numberOfCounters);
-            final IntHyperLogLogCounterArray counters = new IntHyperLogLogCounterArray(numberOfCounters,
-                    IntHyperLogLogCounterArray.registerSize(numDistinctElements),
-                    IntHyperLogLogCounterArray.log2NumberOfRegisters(estimateStandardDeviationSought));
-
-            for (Reads.ReadEntry entry : reader) {
-                observe(counters, entry.getSequence(), entry.getReadIndex());
+            LineIterator lines = new LineIterator(new FileReader(adapterFilename));
+            ObjectArrayList<MutableString> adapterList = new ObjectArrayList<MutableString>();
+            while (lines.hasNext()) {
+                String next = lines.nextLine();
+                adapterList.add(new MutableString(next));
             }
+            MutableString[] adapters;
+            if (complementAdapters) {
+                adapters = addComplementAdapters(adapterList);
+            } else {
+                adapters = adapterList.toArray(new MutableString[adapterList.size()]);
+            }
+            progress.start();
+            writer = new ReadsWriter(new FileOutputStream(outputFilename));
+
+            ByteArrayList newQualScores = new ByteArrayList();
+            ByteArrayList newPairQualScores = new ByteArrayList();
+            MutableString sequence = new MutableString();
+            MutableString sequencePair = new MutableString();
+
+            for (final Reads.ReadEntry entry : reader) {
+                //      observe(counters, entry.getSequence(), entry.getReadIndex());
+                ByteString bytes = entry.getSequence();
+                convert(bytes, sequence);
+
+                ByteString qualityScores = entry.getQualityScores();
+                newQualScores.clear();
+                MutableString seq1 = trim(adapters, newQualScores, sequence, qualityScores);
+                MutableString pairSeq = null;
+                if (entry.hasSequencePair()) {
+                    newPairQualScores.clear();
+                    ByteString pairBytes = entry.getSequencePair();
+                    convert(bytes, sequencePair);
+
+                    ByteString pairQualityScores = entry.getQualityScores();
+                    pairSeq = trim(adapters, newPairQualScores, sequencePair, pairQualityScores);
+
+                }
+                //    System.out.printf(">seq%n%s%n", c);
+                Reads.ReadEntry.Builder builder = Reads.ReadEntry.newBuilder();
+                builder = builder.mergeFrom(entry).setSequence(ReadsWriter.encodeSequence(sequence, buffer)).setReadLength(sequence.length());
+                if (sequence.length() != seq1.length()) {
+                    builder = builder.setQualityScores(ByteString.copyFrom(newQualScores.toByteArray()));
+                }
+
+                if (entry.hasSequencePair()) {
+                    builder = builder.mergeFrom(entry)
+                            .setSequencePair(ReadsWriter.encodeSequence(pairSeq, buffer))
+                            .setReadLength(pairSeq.length());
+
+                    if (sequencePair.length() != pairSeq.length()) {
+                        builder = builder.setQualityScoresPair(ByteString.copyFrom(newPairQualScores.toByteArray()));
+                    }
+                }
+
+                writer.appendEntry(builder);
+                progress.lightUpdate();
+            }
+            progress.stop();
+
         } finally {
-            IOUtils.closeQuietly(writer);
+            if (writer != null) {
+                writer.close();
+            }
 
         }
 
         progress.stop();
     }
 
-    private void observe(IntHyperLogLogCounterArray counters, ByteString sequence, int readIndex) {
-        ++numScanned;
-        int length = sequence.size();
-        boolean maxCountChanged = false;
-        int maxKgramCode=-1;
-        for (int index = 0; index < length - kgramSize; ++index) {
-            vector.clear();
-            boolean containsN = false;
-            for (int j = 0; j < kgramSize; ++j) {
-                char c = (char) sequence.byteAt(j);
-                switch (c) {
-                    case 'A':
-                        vector.add(0);
-                        vector.add(0);
-                        break;
-                    case 'C':
-                        vector.add(1);
-                        vector.add(0);
-                        break;
-                    case 'T':
-                        vector.add(0);
-                        vector.add(1);
-                        break;
-                    case 'G':
-                        vector.add(1);
-                        vector.add(1);
-                        break;
-                    default:
-                        containsN = true;
-                        break;
-                }
+    protected MutableString trim(MutableString[] adapters, ByteArrayList newQualScores, MutableString sequence, ByteString qualityScores) {
+        final int length = sequence.length();
+        MutableString a = contains(length, sequence, qualityScores, newQualScores, adapters);
+        MutableString b = trimLeft(length, a, qualityScores, newQualScores, adapters);
+        return trimRight(length, b, qualityScores, newQualScores, adapters);
+    }
+
+    protected void convert(ByteString bytes, MutableString sequence) {
+        int length = bytes.size();
+        sequence.setLength(length);
+        for (int pos = 0; pos < length; pos++) {
+            sequence.charAt(pos, (char) bytes.byteAt(pos));
+        }
+
+    }
+
+    protected MutableString[] addComplementAdapters(ObjectArrayList<MutableString> adapterList) {
+        ObjectArrayList<MutableString> result = new ObjectArrayList<MutableString>();
+        for (MutableString adapter : adapterList) {
+            result.add(adapter);
+            result.add(complement(adapter));
+        }
+        return result.toArray(new MutableString[result.size()]);
+    }
+
+    private MutableString complement(MutableString input) {
+        MutableString result = new MutableString();
+        result.setLength(input.length());
+        // return the complement of input:
+        for (int i = 0; i < input.length(); i++) {
+            char base = input.charAt(i);
+            switch (base) {
+                case 'A':
+                    base = 'T';
+                    break;
+                case 'C':
+                    base = 'G';
+                    break;
+                case 'G':
+                    base = 'C';
+                    break;
+                case 'T':
+                    base = 'A';
+                    break;
             }
-            if (!containsN) {
-                int kgramCode = (int) vector.bits()[0];
-                //     System.out.printf("adding %d %d", kgramCode, readIndex);
-                counters.add(kgramCode, readIndex);
-                final double count = counters.count(kgramCode);
-                if (count > maxCount) {
-                    maxCount=count;
-                    maxCountChanged = true;
-                    maxKgramCode = kgramCode;
+            result.charAt(i, base);
+        }
+        return result;
+    }
+
+
+    protected MutableString trimRight(int length, MutableString sequence,
+                                      ByteString qualityScores,
+                                      ByteArrayList newQualScores,
+                                      MutableString[] adapters) {
+
+        int currentLength = sequence.length();
+        for (MutableString adapter : adapters) {
+            final int adaptLength = adapter.length();
+
+            for (int j = 0; j < adaptLength; j++) {
+                if (sequence.endsWith(adapter.subSequence(j, adaptLength))) {
+                    final int trimedLength = adaptLength - j;
+                    if (trimedLength > 10) {
+                        System.out.printf("%d bases matching right %s %s %n", trimedLength, sequence, adapter);
+                    }
+                    if (currentLength == length) {
+                        copy(qualityScores, newQualScores);
+                    }
+                    newQualScores.removeElements(currentLength - trimedLength, Math.min(currentLength + 1, newQualScores.size()));
+
+                    return sequence.substring(0, currentLength - trimedLength);
+
+
+                }
+
+            }
+        }
+        return sequence;
+    }
+
+    protected MutableString trimLeft(int length, MutableString sequence, ByteString qualityScores, ByteArrayList newQualScores, MutableString[] adapters) {
+        int currentLength = sequence.length();
+
+        for (MutableString adapter : adapters) {
+            final int adaptLength = adapter.length();
+            for (int j = adaptLength; j >= 1; --j) {
+                if (sequence.startsWith(adapter.subSequence(0, j))) {
+                    final int trimedLength = j;
+                    if (trimedLength > 10) {
+                        System.out.printf("%d bases matching left %s %s %n", trimedLength, sequence, adapter);
+                    }
+                    if (currentLength == length) { // previously unchanged, we need to copy quality score to the list representation for editing.
+                        copy(qualityScores, newQualScores);
+                    }
+                    newQualScores.removeElements(0, trimedLength);
+
+                    return sequence.substring(trimedLength, currentLength);
+
 
                 }
             }
         }
+        return sequence;
+    }
 
-        if (maxCountChanged && maxCount>10) {
+    protected MutableString contains(int length, MutableString sequence, ByteString qualityScores, ByteArrayList newQualScores, MutableString[] adapters) {
 
-            System.out.printf("count: %g %s read-index %d %n", maxCount, decode(maxKgramCode),readIndex);
+        for (MutableString adapter : adapters) {
+            final int index = sequence.indexOf(adapter);
+            if (index >= 0) {
+                System.out.printf("adapter %s contained entirely in sequence %s%n", adapter, sequence);
+                copy(qualityScores, newQualScores);
+
+                final int end = adapter.length() + index;
+                newQualScores.removeElements(index, end);
+                return sequence.delete(index, end);
+            }
+
+        }
+        return sequence;
+    }
+
+    private void copy(ByteString qualityScores, ByteArrayList newQualScores) {
+        for (byte qual : qualityScores.toByteArray()) {
+            newQualScores.add(qual);
         }
     }
 
-    private MutableString decode
-            (
-                    int kgramCode) {
-        LongArrayBitVector vector = LongArrayBitVector.wrap(new long[]{kgramCode});
-        final BooleanListIterator it = vector.iterator();
-        MutableString sequence = new MutableString();
-        int pos = 0;
-        while (it.hasNext()) {
-            boolean a = it.nextBoolean();
-            boolean b = it.nextBoolean();
-            if (a) {
-                if (b) {
-                    sequence.append('G');
-                } else {
-                    sequence.append('C');
-                }
-
-            } else {
-                if (b) {
-                    sequence.append('T');
-                } else {
-                    sequence.append('A');
-                }
-            }
-            ++pos;
-            if (pos == kgramSize) {
-                return sequence;
-            }
-        }
-        return null;
-    }
 
     public static void main
             (

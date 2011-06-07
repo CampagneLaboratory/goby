@@ -39,6 +39,21 @@
             <required>true</required>
             <help>Name of the fasta file output.</help>
         </flaggedOption>
+          <flaggedOption>
+            <id>adapters</id>
+            <shortFlag>a</shortFlag>
+            <longFlag>adapters</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>true</required>
+            <help>Name of the file with the sequence of the adapters (one sequence per line)</help>
+        </flaggedOption>
+        <switch>
+            <id>complement</id>
+            <longFlag>complement</longFlag>
+            <help>When this switch is provided, the complement of the adapter sequences are also trimmed.  </help>
+        </switch>
 
     </parameters>
 </jsap>
