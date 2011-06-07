@@ -185,11 +185,12 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
                         ReadQualityStats stats = qualityStats.get(readIndex);
                         if (stats == null) {
                             stats = new ReadQualityStats(sampleFraction);
+                             qualityStats.put(readIndex, stats);
                         }
                         stats.readIndex = readIndex;
                         stats.observe(code);
 
-                        qualityStats.put(readIndex, stats);
+
                     }
                 }
 
