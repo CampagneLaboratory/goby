@@ -17,6 +17,9 @@ using namespace std;
 #define debug(x)
 #endif
 
+#ifdef __GNUC__
+#define INTERMEDIATE_OUTPUT_VIA_OPEN_MEMSTREAM
+#endif
 
 // TODO: When reading from COMPACT-READS, one should call
 // TODO: addQueryIdentifierWithInt() but ONLY if there is a text
@@ -56,9 +59,122 @@ extern "C" {
         // scores (0-based) will be assumed.
         writerHelper->qualityAdjustment = 0;
         writerHelper->samHelper = NULL;
+        writerHelper->intermediateOutputFile = NULL;
+        writerHelper->intermediateOutputBuffer = NULL;
+        writerHelper->intermediateOutputBufferSize = 0;
+        writerHelper->intermediateIgnoredOutputFile = NULL;
+        writerHelper->intermediateIgnoredOutputBuffer = NULL;
+        writerHelper->intermediateIgnoredOutputBufferSize = 0;
         writerHelper->alignerToGobyTargetIndexMap = NULL;
         writerHelper->alignmentWriter->setQueryLengthsStoredInEntries(true);
-	}
+    }
+
+    void gobyAlignments_openIntermediateOutputFiles(CAlignmentsWriterHelper *writerHelper, int openIgnoredOutputFile) {
+        gobyAlignments_closeIntermediateOutputFiles(writerHelper);
+#ifdef INTERMEDIATE_OUTPUT_VIA_OPEN_MEMSTREAM
+        debug(fprintf(stderr, "Opening intermediate output via open_memstream()\n"));
+        writerHelper->intermediateOutputFile = open_memstream(&writerHelper->intermediateOutputBuffer, &writerHelper->intermediateOutputBufferSize);
+        if (openIgnoredOutputFile) {
+            writerHelper->intermediateIgnoredOutputFile = open_memstream(&writerHelper->intermediateIgnoredOutputBuffer, &writerHelper->intermediateIgnoredOutputBufferSize);
+        }
+#else
+        debug(fprintf(stderr, "Opening intermediate output via temporary files, slower but non-gcc compatible.\n"));
+        writerHelper->intermediateOutputFile = tmpfile();
+        if (openIgnoredOutputFile) {
+            writerHelper->intermediateIgnoredOutputFile = tmpfile();
+        }
+#endif
+    }
+
+    FILE *gobyAlignments_intermediateOutputFileHandle(CAlignmentsWriterHelper *writerHelper) {
+        return writerHelper->intermediateOutputFile;
+    }
+
+    FILE *gobyAlignments_intermediateIgnoredOutputFileHandle(CAlignmentsWriterHelper *writerHelper) {
+        return writerHelper->intermediateIgnoredOutputFile;
+    }
+
+    /**
+     * Start a new section of output.
+     */
+    void gobyAlignments_intermediateOutputStartNew(CAlignmentsWriterHelper *writerHelper) {
+        if (writerHelper->intermediateOutputFile) {
+            rewind(writerHelper->intermediateOutputFile);
+        }
+        if (writerHelper->intermediateIgnoredOutputFile) {
+            rewind(writerHelper->intermediateIgnoredOutputFile);
+        }
+    }
+
+    char *gobyAlignments_intermediateOutputData(CAlignmentsWriterHelper *writerHelper) {
+        return writerHelper->intermediateOutputBuffer;
+    }
+
+    char *gobyAlignments_intermediateOutputIgnoredData(CAlignmentsWriterHelper *writerHelper) {
+        return writerHelper->intermediateIgnoredOutputBuffer;
+    }
+
+    /**
+     * A section of output is complete. Populate what was written to the files into
+     * writerHelper->intermediateOutputBuffer / writerHelper->intermediateIgnoredOutputBuffer.
+     * The output should be processed. After you're done processing the output,
+     * when you're ready to start writing new output call gobyAlignments_intermediateOutputStartNew.
+     */
+    void gobyAlignments_intermediateOutputFlush(CAlignmentsWriterHelper *writerHelper) {
+	    if (writerHelper->intermediateOutputFile) {
+            fflush(writerHelper->intermediateOutputFile);
+        }
+        if (writerHelper->intermediateIgnoredOutputFile) {
+            fflush(writerHelper->intermediateIgnoredOutputFile);
+        }
+#ifndef INTERMEDIATE_OUTPUT_VIA_OPEN_MEMSTREAM
+        size_t fileSize;
+        if (writerHelper->intermediateOutputFile) {
+            fileSize = ftell(writerHelper->intermediateOutputFile);
+            if (fileSize + 1 > writerHelper->intermediateOutputBufferSize) {
+                writerHelper->intermediateOutputBufferSize = fileSize + 1;
+                writerHelper->intermediateOutputBuffer = (char *) realloc(writerHelper->intermediateOutputBuffer, writerHelper->intermediateOutputBufferSize);
+            }
+            rewind(writerHelper->intermediateOutputFile);
+            fread(writerHelper->intermediateOutputBuffer, 1, fileSize, writerHelper->intermediateOutputFile);
+            writerHelper->intermediateOutputBuffer[fileSize] = '\0';
+        }
+        if (writerHelper->intermediateIgnoredOutputFile) {
+            fileSize = ftell(writerHelper->intermediateIgnoredOutputFile);
+            if (fileSize + 1 > writerHelper->intermediateIgnoredOutputBufferSize) {
+                writerHelper->intermediateIgnoredOutputBufferSize = fileSize + 1;
+                writerHelper->intermediateIgnoredOutputBuffer = (char *) realloc(writerHelper->intermediateIgnoredOutputBuffer, writerHelper->intermediateIgnoredOutputBufferSize);
+            }
+            rewind(writerHelper->intermediateIgnoredOutputFile);
+            fread(writerHelper->intermediateIgnoredOutputBuffer, 1, fileSize, writerHelper->intermediateIgnoredOutputFile);
+            writerHelper->intermediateIgnoredOutputBuffer[fileSize] = '\0';
+        }
+#endif
+    }
+
+    void gobyAlignments_closeIntermediateOutputFiles(CAlignmentsWriterHelper *writerHelper) {
+	    if (writerHelper->intermediateOutputFile || writerHelper->intermediateIgnoredOutputFile) {
+#ifdef INTERMEDIATE_OUTPUT_VIA_OPEN_MEMSTREAM
+            fprintf(stderr, "Closing intermediate output via open_memstream()\n");
+#else
+            fprintf(stderr, "Closing intermediate output via temporary files\n");
+#endif
+        }
+        if (writerHelper->intermediateOutputFile) {
+            fclose(writerHelper->intermediateOutputFile);
+            writerHelper->intermediateOutputFile = NULL;
+            free(writerHelper->intermediateOutputBuffer);
+            writerHelper->intermediateOutputBuffer = NULL;
+            writerHelper->intermediateOutputBufferSize = 0;
+        }
+        if (writerHelper->intermediateIgnoredOutputFile) {
+            fclose(writerHelper->intermediateIgnoredOutputFile);
+            writerHelper->intermediateIgnoredOutputFile = NULL;
+            free(writerHelper->intermediateIgnoredOutputBuffer);
+            writerHelper->intermediateIgnoredOutputBuffer = NULL;
+            writerHelper->intermediateIgnoredOutputBufferSize = 0;
+        }
+    }
 
     int gobyAlignments_getQualityAdjustment(CAlignmentsWriterHelper *writerHelper) {
         return writerHelper->qualityAdjustment;

@@ -14,6 +14,20 @@ extern "C" {
     void gobyAlignments_openAlignmentsWriterDefaultEntriesPerChunk(char *basename, CAlignmentsWriterHelper **writerHelperpp);
     void gobyAlignments_openAlignmentsWriter(char *basename, unsigned int number_of_entries_per_chunk, CAlignmentsWriterHelper **writerHelperpp);
 
+    /**
+     * Provides a way to write data to a memory stream (or a temporary file) for methods that
+     * want to write data to a FILE, but we want to capture that data without it being written
+     * to a file.
+     */
+    void gobyAlignments_openIntermediateOutputFiles(CAlignmentsWriterHelper *writerHelper, int openIgnoredOutputFile);
+    FILE *gobyAlignments_intermediateOutputFileHandle(CAlignmentsWriterHelper *writerHelper);
+    FILE *gobyAlignments_intermediateIgnoredOutputFileHandle(CAlignmentsWriterHelper *writerHelper);
+    void gobyAlignments_intermediateOutputStartNew(CAlignmentsWriterHelper *writerHelper);
+    void gobyAlignments_intermediateOutputFlush(CAlignmentsWriterHelper *writerHelper);
+    char *gobyAlignments_intermediateOutputData(CAlignmentsWriterHelper *writerHelper);
+    char *gobyAlignments_intermediateOutputIgnoredData(CAlignmentsWriterHelper *writerHelper);
+    void gobyAlignments_closeIntermediateOutputFiles(CAlignmentsWriterHelper *writerHelper);
+
     void gobyAlignments_setAlignerName(CAlignmentsWriterHelper *writerHelper, char *value);
     void gobyAlignments_setAlignerVersion(CAlignmentsWriterHelper *writerHelper, char *value);
     int  gobyAlignments_getQualityAdjustment(CAlignmentsWriterHelper *writerHelper);
