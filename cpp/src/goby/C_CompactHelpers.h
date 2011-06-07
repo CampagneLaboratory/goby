@@ -94,7 +94,13 @@
         unsigned int numberOfAlignedReads;
         CSamHelper *samHelper;
         int qualityAdjustment;
-		std::map<unsigned int, unsigned int> *alignerToGobyTargetIndexMap;
+        FILE *intermediateOutputFile;
+        char *intermediateOutputBuffer;
+        size_t  intermediateOutputBufferSize;
+        FILE *intermediateIgnoredOutputFile;
+        char *intermediateIgnoredOutputBuffer;
+        size_t intermediateIgnoredOutputBufferSize;
+        std::map<unsigned int, unsigned int> *alignerToGobyTargetIndexMap;
     };
 #else
 	// Opaque structure for C
@@ -127,6 +133,12 @@
 	    unsigned int numberOfAlignedReads;
 	    void *samHelper;
         int qualityAdjustment;
+	    FILE *intermediateOutputFile;
+	    char *intermediateOutputBuffer;
+	    size_t  intermediateOutputBufferSize;
+	    FILE *intermediateIgnoredOutputFile;
+	    char *intermediateIgnoredOutputBuffer;
+	    size_t intermediateIgnoredOutputBufferSize;
 		void *alignerToGobyTargetIndexMap;
 	} CAlignmentsWriterHelper;
 #endif
