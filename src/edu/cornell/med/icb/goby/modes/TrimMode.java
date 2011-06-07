@@ -151,6 +151,8 @@ public class TrimMode extends AbstractGobyMode {
                 newQualScores.clear();
                 MutableString seq1 = trim(adapters, newQualScores, sequence, qualityScores);
                 MutableString pairSeq = null;
+
+
                 if (entry.hasSequencePair()) {
                     newPairQualScores.clear();
                     ByteString pairBytes = entry.getSequencePair();
@@ -160,11 +162,14 @@ public class TrimMode extends AbstractGobyMode {
                     pairSeq = trim(adapters, newPairQualScores, sequencePair, pairQualityScores);
 
                 }
+
                 //    System.out.printf(">seq%n%s%n", c);
                 Reads.ReadEntry.Builder builder = Reads.ReadEntry.newBuilder();
-                builder = builder.mergeFrom(entry).setSequence(ReadsWriter.encodeSequence(sequence, buffer)).setReadLength(sequence.length());
+                builder = builder.mergeFrom(entry).setSequence(ReadsWriter.encodeSequence(seq1, buffer)).setReadLength(seq1.length());
                 if (sequence.length() != seq1.length()) {
-                    builder = builder.setQualityScores(ByteString.copyFrom(newQualScores.toByteArray()));
+                    final byte[] bytes1 = newQualScores.toByteArray();
+                    builder = builder.setQualityScores(ByteString.copyFrom(bytes1));
+                    assert builder.getQualityScores().size() ==builder.getSequence().size() :"sequence length and quality scores must match.";
                 }
 
                 if (entry.hasSequencePair()) {
@@ -173,7 +178,10 @@ public class TrimMode extends AbstractGobyMode {
                             .setReadLength(pairSeq.length());
 
                     if (sequencePair.length() != pairSeq.length()) {
+
                         builder = builder.setQualityScoresPair(ByteString.copyFrom(newPairQualScores.toByteArray()));
+                        assert builder.getQualityScoresPair().size() ==builder.getSequencePair().size() :"sequence length and quality scores must match.";
+
                     }
                 }
 

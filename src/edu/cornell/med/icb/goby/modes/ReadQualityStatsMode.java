@@ -105,6 +105,7 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
      * 1.0 means 100% of reads. The default of 0.01 should work fine
      * for most files but if you are dealing with a very small file
      * you should set this to 1.0.
+     *
      * @return The precentage of reads to process
      */
     public double getSampleFraction() {
@@ -116,6 +117,7 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
      * 1.0 means 100% of reads. The default of 0.01 should work fine
      * for most files but if you are dealing with a very small file
      * you should set this to 1.0.
+     *
      * @return The precentage of reads to process
      */
     public void setSampleFraction(double sampleFraction) {
@@ -142,6 +144,7 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
 
     /**
      * Get the output file.
+     *
      * @return the output file
      */
     public File getOutputFile() {
@@ -150,6 +153,7 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
 
     /**
      * Set the output file.
+     *
      * @param outputFile the output file
      */
     public void setOutputFile(final File outputFile) {
@@ -190,14 +194,16 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
                 }
 
                 for (final ReadQualityStats stat : qualityStats.values()) {
-                    stat.evaluatePercentiles();
-                    writer.printf("%s\t%d\t%d\t%d\t%f\t%d%n",
-                            basename,
-                            stat.readIndex,
-                            stat.percentile(25),
-                            stat.percentile(50),
-                            stat.averageQuality / stat.observedCount,
-                            stat.percentile(75));
+                    if (!stat.sampleIsEmpty()) {
+                        stat.evaluatePercentiles();
+                        writer.printf("%s\t%d\t%d\t%d\t%f\t%d%n",
+                                basename,
+                                stat.readIndex,
+                                stat.percentile(25),
+                                stat.percentile(50),
+                                stat.averageQuality / stat.observedCount,
+                                stat.percentile(75));
+                    }
                 }
             }
         } finally {
@@ -250,6 +256,10 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
         public byte percentile(final double percent) {
             final int index = (int) (((double) sample.size()) * percent / 100d);
             return sample.get(index);
+        }
+
+        public boolean sampleIsEmpty() {
+            return sample.size() == 0;
         }
     }
 }

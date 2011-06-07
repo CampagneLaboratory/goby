@@ -652,6 +652,14 @@
   <component name="ProjectDetails">
     <option name="projectName" value="goby" />
   </component>
+  <component name="ProjectDictionaryState">
+    <dictionary name="fac2003">
+      <words>
+        <w>indel</w>
+        <w>indels</w>
+      </words>
+    </dictionary>
+  </component>
   <component name="ProjectKey">
     <option name="state" value="https://pbtech-vc.med.cornell.edu/public/svn/icb/trunk/goby/goby.ipr" />
   </component>
@@ -1383,7 +1391,10 @@
       <JAVADOC>
         <root url="http://code.google.com/apis/protocolbuffers/docs/reference/java/" />
       </JAVADOC>
-      <SOURCES />
+      <SOURCES>
+        <root url="file://$PROJECT_DIR$/../protobuf-2.4.1/java/src/test/java" />
+        <root url="file://$PROJECT_DIR$/../protobuf-2.4.1/java/src/main/java" />
+      </SOURCES>
     </library>
   </component>
   <component name="org.twodividedbyzero.idea.findbugs">
