@@ -29,6 +29,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.math.fraction.ProperFractionFormat;
+import org.apache.commons.math.random.MersenneTwister;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -179,25 +180,27 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
             final Int2ObjectMap<ReadQualityStats> qualityStats = new Int2ObjectOpenHashMap<ReadQualityStats>();
             ProgressLogger progress = new ProgressLogger(LOG);
             progress.start();
-
+            final MersenneTwister random = new MersenneTwister();
             writer.println("basename\treadIndex\t25%-percentile\tmedian\taverageQuality\t75%-percentile");
             for (final File filename : inputFiles) {
                 final ReadsReader reader = new ReadsReader(filename);
                 final String basename = ReadsReader.getBasename(filename.toString());
                 for (final Reads.ReadEntry entry : reader) {
+                    if (random.nextDouble() < sampleFraction) {
+                        final ByteString qualityScores = entry.getQualityScores();
+                        final int size = qualityScores.size();
+                        for (int readIndex = 0; readIndex < size; readIndex++) {
+                            final byte code = qualityScores.byteAt(readIndex);
+                            ReadQualityStats stats = qualityStats.get(readIndex);
+                            if (stats == null) {
+                                stats = new ReadQualityStats(1d);
+                                qualityStats.put(readIndex, stats);
 
-                    final ByteString qualityScores = entry.getQualityScores();
-                    final int size = qualityScores.size();
-                    for (int readIndex = 0; readIndex < size; readIndex++) {
-                        final byte code = qualityScores.byteAt(readIndex);
-                        ReadQualityStats stats = qualityStats.get(readIndex);
-                        if (stats == null) {
-                            stats = new ReadQualityStats(sampleFraction);
-                            qualityStats.put(readIndex, stats);
-
+                            }
+                            stats.readIndex = readIndex;
+                            stats.observe(code);
                         }
-                        stats.readIndex = readIndex;
-                        stats.observe(code);
+
                     }
                     progress.lightUpdate();
                 }
@@ -240,7 +243,7 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
     }
 
     private static class ReadQualityStats {
-        private final Random random = new Random();
+        private final MersenneTwister random = new MersenneTwister();
         private int readIndex;
         // byte minValue;
         // byte maxValue;
@@ -248,15 +251,21 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
         private double averageQuality;
         private int observedCount;
         private final double sampleFraction;
+        private boolean doSample;
 
         private ReadQualityStats(final double sampleFraction) {
             this.sampleFraction = sampleFraction;
+            if (sampleFraction<1.0) {
+                doSample=true;
+            }                 else {
+                doSample=false;
+            }
         }
 
         void observe(final byte b) {
             averageQuality += b;
             observedCount += 1;
-            if (random.nextDouble() < sampleFraction) {
+            if (doSample && random.nextDouble() < sampleFraction) {
                 sample.add(b);
             }
         }
