@@ -26,13 +26,16 @@ import edu.cornell.med.icb.goby.reads.ReadsReader;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.math.fraction.ProperFractionFormat;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Evaluate statistics for read qualities.
@@ -40,6 +43,8 @@ import java.util.*;
  * @author Fabien Campagne
  */
 public class ReadQualityStatsMode extends AbstractGobyMode {
+
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(ReadQualityStatsMode.class);
     /**
      * The mode name.
      */
@@ -172,6 +177,8 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
             writer = outputFile == null ? System.out
                     : new PrintStream(new FileOutputStream(outputFile));
             final Int2ObjectMap<ReadQualityStats> qualityStats = new Int2ObjectOpenHashMap<ReadQualityStats>();
+            ProgressLogger progress = new ProgressLogger(LOG);
+            progress.start();
 
             writer.println("basename\treadIndex\t25%-percentile\tmedian\taverageQuality\t75%-percentile");
             for (final File filename : inputFiles) {
@@ -180,18 +187,19 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
                 for (final Reads.ReadEntry entry : reader) {
 
                     final ByteString qualityScores = entry.getQualityScores();
-                    for (int readIndex = 0; readIndex < qualityScores.size(); readIndex++) {
+                    final int size = qualityScores.size();
+                    for (int readIndex = 0; readIndex < size; readIndex++) {
                         final byte code = qualityScores.byteAt(readIndex);
                         ReadQualityStats stats = qualityStats.get(readIndex);
                         if (stats == null) {
                             stats = new ReadQualityStats(sampleFraction);
-                             qualityStats.put(readIndex, stats);
+                            qualityStats.put(readIndex, stats);
+
                         }
                         stats.readIndex = readIndex;
                         stats.observe(code);
-
-
                     }
+                    progress.lightUpdate();
                 }
 
                 for (final ReadQualityStats stat : qualityStats.values()) {
@@ -207,6 +215,9 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
                     }
                 }
             }
+            progress.updateAndDisplay();
+            progress.stop();
+
         } finally {
             if (writer != System.out) {
                 IOUtils.closeQuietly(writer);
