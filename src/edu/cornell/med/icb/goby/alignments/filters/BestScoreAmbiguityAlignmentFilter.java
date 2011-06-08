@@ -23,6 +23,7 @@ package edu.cornell.med.icb.goby.alignments.filters;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
+import it.unimi.dsi.fastutil.ints.*;
 
 import java.util.Arrays;
 
@@ -32,14 +33,14 @@ import java.util.Arrays;
  */
 public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFilter {
     /**
-     * An array of of read-name-index to the number of fewest mismatches.
+     * An array of of read-name-index to the score of the read.
      */
-    private final float[] indexToBestScore;
+    private final Int2FloatMap indexToBestScore;
 
     /**
      * A array of read-name-index to the count of reads with the same fewest mismatches.
      */
-    private final short[] indexToCountAtBestScore;
+    private final Int2ShortMap indexToCountAtBestScore;
 
     /**
      * The k value for the filter.
@@ -72,10 +73,11 @@ public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFil
      */
     public BestScoreAmbiguityAlignmentFilter(final int k, final int maxNumberOfReads, final int minQueryIndex) {
         super();
-        indexToBestScore = new float[maxNumberOfReads];
-        Arrays.fill(indexToBestScore, Float.MIN_VALUE);
-        indexToCountAtBestScore = new short[maxNumberOfReads];
-        Arrays.fill(indexToCountAtBestScore, (short) 0);
+        indexToBestScore = new Int2FloatOpenHashMap();
+        indexToBestScore.defaultReturnValue(Float.MIN_VALUE);
+        indexToCountAtBestScore = new Int2ShortOpenHashMap();
+        indexToCountAtBestScore.defaultReturnValue( (short)0);
+
 
         this.k = k;
         this.minQueryIndex = minQueryIndex;
@@ -103,15 +105,16 @@ public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFil
         final float score = entry.getScore();
 
 
-        final float previousScore = indexToBestScore[index - minQueryIndex];
+        final float previousScore = indexToBestScore.get(index);
         if (previousScore == score) {
             // Increment the count for this quality
-            indexToCountAtBestScore[index - minQueryIndex] += 1;
+            final short newValue= (short) (indexToCountAtBestScore.get(index)+1);
+            indexToCountAtBestScore.put(index, newValue );
 
         } else if (previousScore < score) {
             // We have a new best score: start over with this as the new best score
-            indexToBestScore[index - minQueryIndex] = score;
-            indexToCountAtBestScore[index - minQueryIndex] = 1;
+            indexToBestScore.put(index, score);
+            indexToCountAtBestScore.put(index, (short) 1);
         }
     }
 
@@ -126,12 +129,12 @@ public class BestScoreAmbiguityAlignmentFilter extends AbstractAlignmentEntryFil
     public boolean shouldRetainEntry(final Alignments.AlignmentEntry entry) {
         final int index = entry.getQueryIndex();
         final float score = entry.getScore();
-        final float keepHighestScore = indexToBestScore[index - minQueryIndex];
+        final float keepHighestScore = indexToBestScore.get(index);
         if (keepHighestScore == Float.MIN_VALUE) {
             return false;
         }
         if (keepHighestScore == score) {
-            final short count = indexToCountAtBestScore[index - minQueryIndex];
+            final short count = indexToCountAtBestScore.get(index);
             if (count > k) {
                 // the entry matches too many reference locations. We do not keep it.
                 return false;
