@@ -328,8 +328,8 @@ public class Merge {
             }
         }
         numberOfReads = maxQueryIndex + 1;
-        final int[] queryIndex2MaxDepth = new int[numberOfReads];
-        Arrays.fill(queryIndex2MaxDepth, -1);
+        final Int2IntMap queryIndex2MaxDepth = new Int2IntOpenHashMap();
+        queryIndex2MaxDepth.defaultReturnValue(-1);
         // calculate maxDepth for each query sequence:
         for (final String basename : basenames) {
             final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
@@ -338,21 +338,21 @@ public class Merge {
 
             for (final int queryIndex : tmhReader.getQueryIndices()) {
                 final int currentMatchLength = tmhReader.getLengthOfMatch(queryIndex);
-                final int maxDepth = Math.max(currentMatchLength, queryIndex2MaxDepth[queryIndex - minQueryIndex]);
+                final int maxDepth = Math.max(currentMatchLength, queryIndex2MaxDepth.get(queryIndex ));
                 if (maxDepth != -1) {
-                    queryIndex2MaxDepth[queryIndex - minQueryIndex] = maxDepth;
+                    queryIndex2MaxDepth.put(queryIndex,maxDepth);
                 }
 
             }
         }
         boolean foundDepth = false;
-        // TODO: sum only the number of occurrences corresponding to the longest aligned length
+
         for (final String basename : basenames) {
 
             final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
             for (final int queryIndex : tmhReader.getQueryIndices()) {
                 final int depthForBasename = tmhReader.getLengthOfMatch(queryIndex);
-                if (depthForBasename == queryIndex2MaxDepth[queryIndex - minQueryIndex]) {
+                if (depthForBasename == queryIndex2MaxDepth.get(queryIndex )) {
                     if (depthForBasename != 1) {
                         final int newValue = tmhMap.get(queryIndex) + tmhReader.getNumberOfHits(queryIndex);
                         tmhMap.put(queryIndex, newValue);
@@ -366,7 +366,7 @@ public class Merge {
         }
         final AlignmentTooManyHitsWriter mergedTmhWriter = new AlignmentTooManyHitsWriter(outputFile, consensusAlignerThreshold);
         for (final int queryIndex : tmhMap.keySet()) {
-            mergedTmhWriter.append(queryIndex, tmhMap.get(queryIndex), queryIndex2MaxDepth[queryIndex - minQueryIndex]);
+            mergedTmhWriter.append(queryIndex, tmhMap.get(queryIndex), queryIndex2MaxDepth.get(queryIndex));
         }
         mergedTmhWriter.close();
         return numberOfReads;
