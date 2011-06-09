@@ -1,0 +1,7 @@
+# Statistics for merged alignment.
+basename=seq-var-reads-gsnap
+basename.full=seq-var-reads-gsnap
+max.query.index=26
+min.query.index=0
+number.alignment.entries=27
+number.of.queries=27
