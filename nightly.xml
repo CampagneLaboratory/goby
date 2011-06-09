@@ -5,8 +5,8 @@
     <makeurl file="${config}/log4j.properties" property="log4j.config.url" validate="false"/>
 
     <!-- timeout (in milliseconds) to prevent jobs getting "stuck" indefinitely -->
-    <property name="timeout" value="1800000"/>
-    <!-- 30 minutes -->
+    <property name="timeout" value="2700000"/>
+    <!-- 45 minutes -->
 
     <!-- memory used per step -->
     <property name="max.memory" value="3g"/>
