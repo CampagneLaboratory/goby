@@ -155,6 +155,9 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
             hasStartOrEndPosition = true;
             startPosition = jsapResult.getLong("start-position", 0L);
             endPosition = jsapResult.getLong("end-position", Long.MAX_VALUE);
+            if (startPosition==0 && endPosition==0) {
+                endPosition= Long.MAX_VALUE;
+            }
         }
 
         if (startPosition < 0L) {
