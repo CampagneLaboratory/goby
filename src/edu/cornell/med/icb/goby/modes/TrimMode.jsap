@@ -54,6 +54,30 @@
             <longFlag>complement</longFlag>
             <help>When this switch is provided, the complement of the adapter sequences are also trimmed.  </help>
         </switch>
+          <flaggedOption>
+            <id>min-left-length</id>
+            <longFlag>min-left-length</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                    <string>0</string>
+            </defaults>
+            <help>Minimum number of bases the adapter must match on the left to be trimmed.</help>
+        </flaggedOption>
+        <flaggedOption>
+          <id>min-right-length</id>
+          <longFlag>min-right-length</longFlag>
+          <stringParser>
+              <classname>IntegerStringParser</classname>
+          </stringParser>
+          <required>false</required>
+          <defaults>
+                <string>0</string>
+          </defaults>
+          <help>Minimum number of bases the adapter must match on the right to be trimmed.</help>
+      </flaggedOption>
 
     </parameters>
 </jsap>

@@ -26,21 +26,13 @@ import edu.cornell.med.icb.goby.reads.ReadsReader;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import it.unimi.dsi.bits.BitVector;
 import it.unimi.dsi.bits.LongArrayBitVector;
-import it.unimi.dsi.fastutil.booleans.BooleanListIterator;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
-import it.unimi.dsi.fastutil.io.BinIO;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
-import it.unimi.dsi.util.IntHyperLogLogCounterArray;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
-import org.apache.commons.lang.mutable.Mutable;
 import org.apache.log4j.Logger;
-import org.apache.tools.ant.taskdefs.Length;
-import org.omg.CosNaming.BindingIteratorOperations;
 
-import javax.xml.transform.Result;
 import java.io.*;
 
 /**
@@ -66,6 +58,13 @@ public class TrimMode extends AbstractGobyMode {
     private byte[] buffer = new byte[10000];
     private String adapterFilename;
     private boolean complementAdapters;
+    private int numTrimmedLeft;
+    private int numTrimmedRight;
+    private int numContained;
+    private double numSequencesInInput;
+    private int numTrimmed;
+    private int minRightLength = 0;
+    private int minLeftLength = 0;
 
 
     /**
@@ -106,7 +105,8 @@ public class TrimMode extends AbstractGobyMode {
          */
         adapterFilename = jsapResult.getString("adapters");
         complementAdapters = jsapResult.getBoolean("complement");
-
+        minLeftLength = jsapResult.getInt("min-left-length");
+        minRightLength = jsapResult.getInt("min-right-length");
         return this;
     }
 
@@ -144,32 +144,32 @@ public class TrimMode extends AbstractGobyMode {
 
             for (final Reads.ReadEntry entry : reader) {
                 //      observe(counters, entry.getSequence(), entry.getReadIndex());
-                ByteString bytes = entry.getSequence();
-                convert(bytes, sequence);
+                ReadsReader.decodeSequence(entry, sequence);
 
                 ByteString qualityScores = entry.getQualityScores();
                 newQualScores.clear();
                 MutableString seq1 = trim(adapters, newQualScores, sequence, qualityScores);
                 MutableString pairSeq = null;
 
-
+                numSequencesInInput++;
                 if (entry.hasSequencePair()) {
                     newPairQualScores.clear();
-                    ByteString pairBytes = entry.getSequencePair();
-                    convert(bytes, sequencePair);
 
-                    ByteString pairQualityScores = entry.getQualityScores();
+                    ReadsReader.decodeSequence(entry, sequencePair, true);
+
+                    ByteString pairQualityScores = entry.getQualityScoresPair();
                     pairSeq = trim(adapters, newPairQualScores, sequencePair, pairQualityScores);
-
+                    numSequencesInInput++;
                 }
 
                 //    System.out.printf(">seq%n%s%n", c);
                 Reads.ReadEntry.Builder builder = Reads.ReadEntry.newBuilder();
                 builder = builder.mergeFrom(entry).setSequence(ReadsWriter.encodeSequence(seq1, buffer)).setReadLength(seq1.length());
                 if (sequence.length() != seq1.length()) {
+                    numTrimmed++;
                     final byte[] bytes1 = newQualScores.toByteArray();
                     builder = builder.setQualityScores(ByteString.copyFrom(bytes1));
-                    assert builder.getQualityScores().size() ==builder.getSequence().size() :"sequence length and quality scores must match.";
+                    assert builder.getQualityScores().size() == builder.getSequence().size() : "sequence length and quality scores must match.";
                 }
 
                 if (entry.hasSequencePair()) {
@@ -178,9 +178,9 @@ public class TrimMode extends AbstractGobyMode {
                             .setReadLength(pairSeq.length());
 
                     if (sequencePair.length() != pairSeq.length()) {
-
+                        numTrimmed++;
                         builder = builder.setQualityScoresPair(ByteString.copyFrom(newPairQualScores.toByteArray()));
-                        assert builder.getQualityScoresPair().size() ==builder.getSequencePair().size() :"sequence length and quality scores must match.";
+                        assert builder.getQualityScoresPair().size() == builder.getSequencePair().size() : "sequence length and quality scores must match.";
 
                     }
                 }
@@ -190,6 +190,20 @@ public class TrimMode extends AbstractGobyMode {
             }
             progress.stop();
 
+            final int numSequencesTrimmed = numTrimmed;
+            double percent = 100d * numSequencesTrimmed;
+            percent /= numSequencesInInput;
+            System.out.printf("Number of reads trimmed %d (%g %% of input sequences), including: %n" +
+                    "left: %d (%g%%)%n" +
+                    "right: %d (%g%%), %n" +
+                    "fully contained: %d (%g%%)%n",
+                    numSequencesTrimmed, percent, numTrimmedLeft,
+                    percent(numTrimmedLeft, numSequencesTrimmed),
+                    numTrimmedRight,
+                    percent(numTrimmedRight, numSequencesTrimmed),
+                    numContained,
+                    percent(numContained, numSequencesTrimmed));
+            System.out.flush();
         } finally {
             if (writer != null) {
                 writer.close();
@@ -198,6 +212,10 @@ public class TrimMode extends AbstractGobyMode {
         }
 
         progress.stop();
+    }
+
+    private double percent(double a, double b) {
+        return a / b * 100;
     }
 
     protected MutableString trim(MutableString[] adapters, ByteArrayList newQualScores, MutableString sequence, ByteString qualityScores) {
@@ -210,6 +228,7 @@ public class TrimMode extends AbstractGobyMode {
     protected void convert(ByteString bytes, MutableString sequence) {
         int length = bytes.size();
         sequence.setLength(length);
+
         for (int pos = 0; pos < length; pos++) {
             sequence.charAt(pos, (char) bytes.byteAt(pos));
         }
@@ -260,7 +279,7 @@ public class TrimMode extends AbstractGobyMode {
         for (MutableString adapter : adapters) {
             final int adaptLength = adapter.length();
 
-            for (int j = 0; j < adaptLength; j++) {
+            for (int j = minRightLength; j < adaptLength; j++) {
                 if (sequence.endsWith(adapter.subSequence(j, adaptLength))) {
                     final int trimedLength = adaptLength - j;
                     if (trimedLength > 10) {
@@ -270,7 +289,7 @@ public class TrimMode extends AbstractGobyMode {
                         copy(qualityScores, newQualScores);
                     }
                     newQualScores.removeElements(currentLength - trimedLength, Math.min(currentLength + 1, newQualScores.size()));
-
+                    numTrimmedRight++;
                     return sequence.substring(0, currentLength - trimedLength);
 
 
@@ -286,7 +305,7 @@ public class TrimMode extends AbstractGobyMode {
 
         for (MutableString adapter : adapters) {
             final int adaptLength = adapter.length();
-            for (int j = adaptLength; j >= 1; --j) {
+            for (int j = adaptLength; j >= minLeftLength; --j) {
                 if (sequence.startsWith(adapter.subSequence(0, j))) {
                     final int trimedLength = j;
                     if (trimedLength > 10) {
@@ -296,7 +315,7 @@ public class TrimMode extends AbstractGobyMode {
                         copy(qualityScores, newQualScores);
                     }
                     newQualScores.removeElements(0, trimedLength);
-
+                    numTrimmedLeft++;
                     return sequence.substring(trimedLength, currentLength);
 
 
@@ -316,6 +335,7 @@ public class TrimMode extends AbstractGobyMode {
 
                 final int end = adapter.length() + index;
                 newQualScores.removeElements(index, end);
+                numContained++;
                 return sequence.delete(index, end);
             }
 
@@ -334,5 +354,13 @@ public class TrimMode extends AbstractGobyMode {
             (
                     final String[] args) throws IOException, JSAPException {
         new TrimMode().configure(args).execute();
+    }
+
+    public void setMinLengthLeft(int i) {
+        this.minLeftLength = i;
+    }
+
+    public void setMinLengthRight(int i) {
+        this.minRightLength = i;
     }
 }
