@@ -19,14 +19,14 @@ extern "C" {
      * want to write data to a FILE, but we want to capture that data without it being written
      * to a file.
      */
-    void gobyAlignments_openIntermediateOutputFiles(CAlignmentsWriterHelper *writerHelper, int openIgnoredOutputFile);
-    FILE *gobyAlignments_intermediateOutputFileHandle(CAlignmentsWriterHelper *writerHelper);
-    FILE *gobyAlignments_intermediateIgnoredOutputFileHandle(CAlignmentsWriterHelper *writerHelper);
-    void gobyAlignments_intermediateOutputStartNew(CAlignmentsWriterHelper *writerHelper);
-    void gobyAlignments_intermediateOutputFlush(CAlignmentsWriterHelper *writerHelper);
-    char *gobyAlignments_intermediateOutputData(CAlignmentsWriterHelper *writerHelper);
-    char *gobyAlignments_intermediateOutputIgnoredData(CAlignmentsWriterHelper *writerHelper);
-    void gobyAlignments_closeIntermediateOutputFiles(CAlignmentsWriterHelper *writerHelper);
+    void gobyCapture_open(CAlignmentsWriterHelper *writerHelper, int openIgnoredFile);
+    FILE *gobyCapture_fileHandle(CAlignmentsWriterHelper *writerHelper);
+    FILE *gobyCapture_ignoredFileHandle(CAlignmentsWriterHelper *writerHelper);
+    void gobyCapture_startNew(CAlignmentsWriterHelper *writerHelper);
+    char *gobyCapture_capturedData(CAlignmentsWriterHelper *writerHelper);
+    char *gobyCapture_ignoredData(CAlignmentsWriterHelper *writerHelper);
+    void gobyCapture_flush(CAlignmentsWriterHelper *writerHelper);
+    void gobyCapture_close(CAlignmentsWriterHelper *writerHelper);
 
     void gobyAlignments_setAlignerName(CAlignmentsWriterHelper *writerHelper, char *value);
     void gobyAlignments_setAlignerVersion(CAlignmentsWriterHelper *writerHelper, char *value);

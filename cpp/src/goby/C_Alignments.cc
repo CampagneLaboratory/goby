@@ -18,7 +18,7 @@ using namespace std;
 #endif
 
 #ifdef __GNUC__
-#define INTERMEDIATE_OUTPUT_VIA_OPEN_MEMSTREAM
+#define GOBY_CAPTURE_VIA_OPEN_MEMSTREAM
 #endif
 
 // TODO: When reading from COMPACT-READS, one should call
@@ -59,120 +59,120 @@ extern "C" {
         // scores (0-based) will be assumed.
         writerHelper->qualityAdjustment = 0;
         writerHelper->samHelper = NULL;
-        writerHelper->intermediateOutputFile = NULL;
-        writerHelper->intermediateOutputBuffer = NULL;
-        writerHelper->intermediateOutputBufferSize = 0;
-        writerHelper->intermediateIgnoredOutputFile = NULL;
-        writerHelper->intermediateIgnoredOutputBuffer = NULL;
-        writerHelper->intermediateIgnoredOutputBufferSize = 0;
+        writerHelper->captureFile = NULL;
+        writerHelper->captureBuffer = NULL;
+        writerHelper->captureBufferSize = 0;
+        writerHelper->captureIgnoredFile = NULL;
+        writerHelper->captureIgnoredBuffer = NULL;
+        writerHelper->captureIgnoredBufferSize = 0;
         writerHelper->alignerToGobyTargetIndexMap = NULL;
         writerHelper->alignmentWriter->setQueryLengthsStoredInEntries(true);
     }
 
-    void gobyAlignments_openIntermediateOutputFiles(CAlignmentsWriterHelper *writerHelper, int openIgnoredOutputFile) {
-        gobyAlignments_closeIntermediateOutputFiles(writerHelper);
-#ifdef INTERMEDIATE_OUTPUT_VIA_OPEN_MEMSTREAM
-        debug(fprintf(stderr, "Opening intermediate output via open_memstream()\n"));
-        writerHelper->intermediateOutputFile = open_memstream(&writerHelper->intermediateOutputBuffer, &writerHelper->intermediateOutputBufferSize);
-        if (openIgnoredOutputFile) {
-            writerHelper->intermediateIgnoredOutputFile = open_memstream(&writerHelper->intermediateIgnoredOutputBuffer, &writerHelper->intermediateIgnoredOutputBufferSize);
+    void gobyCapture_open(CAlignmentsWriterHelper *writerHelper, int openIgnoredFile) {
+        gobyCapture_close(writerHelper);
+#ifdef GOBY_CAPTURE_VIA_OPEN_MEMSTREAM
+        debug(fprintf(stderr, "Opening gobyCapture via open_memstream()\n"));
+        writerHelper->captureFile = open_memstream(&writerHelper->captureBuffer, &writerHelper->captureBufferSize);
+        if (openIgnoredFile) {
+            writerHelper->captureIgnoredFile = open_memstream(&writerHelper->captureIgnoredBuffer, &writerHelper->captureIgnoredBufferSize);
         }
 #else
-        debug(fprintf(stderr, "Opening intermediate output via temporary files, slower but non-gcc compatible.\n"));
-        writerHelper->intermediateOutputFile = tmpfile();
-        if (openIgnoredOutputFile) {
-            writerHelper->intermediateIgnoredOutputFile = tmpfile();
+        debug(fprintf(stderr, "Opening gobyCapture via temporary files, slower but non-gcc compatible.\n"));
+        writerHelper->captureFile = tmpfile();
+        if (openIgnoredFile) {
+            writerHelper->captureIgnoredFile = tmpfile();
         }
 #endif
     }
 
-    FILE *gobyAlignments_intermediateOutputFileHandle(CAlignmentsWriterHelper *writerHelper) {
-        return writerHelper->intermediateOutputFile;
+    FILE *gobyCapture_fileHandle(CAlignmentsWriterHelper *writerHelper) {
+        return writerHelper->captureFile;
     }
 
-    FILE *gobyAlignments_intermediateIgnoredOutputFileHandle(CAlignmentsWriterHelper *writerHelper) {
-        return writerHelper->intermediateIgnoredOutputFile;
+    FILE *gobyCapture_ignoredFileHandle(CAlignmentsWriterHelper *writerHelper) {
+        return writerHelper->captureIgnoredFile;
     }
 
     /**
      * Start a new section of output.
      */
-    void gobyAlignments_intermediateOutputStartNew(CAlignmentsWriterHelper *writerHelper) {
-        if (writerHelper->intermediateOutputFile) {
-            rewind(writerHelper->intermediateOutputFile);
+    void gobyCapture_startNew(CAlignmentsWriterHelper *writerHelper) {
+        if (writerHelper->captureFile) {
+            rewind(writerHelper->captureFile);
         }
-        if (writerHelper->intermediateIgnoredOutputFile) {
-            rewind(writerHelper->intermediateIgnoredOutputFile);
+        if (writerHelper->captureIgnoredFile) {
+            rewind(writerHelper->captureIgnoredFile);
         }
     }
 
-    char *gobyAlignments_intermediateOutputData(CAlignmentsWriterHelper *writerHelper) {
-        return writerHelper->intermediateOutputBuffer;
+    char *gobyCapture_capturedData(CAlignmentsWriterHelper *writerHelper) {
+        return writerHelper->captureBuffer;
     }
 
-    char *gobyAlignments_intermediateOutputIgnoredData(CAlignmentsWriterHelper *writerHelper) {
-        return writerHelper->intermediateIgnoredOutputBuffer;
+    char *gobyCapture_ignoredData(CAlignmentsWriterHelper *writerHelper) {
+        return writerHelper->captureIgnoredBuffer;
     }
 
     /**
      * A section of output is complete. Populate what was written to the files into
-     * writerHelper->intermediateOutputBuffer / writerHelper->intermediateIgnoredOutputBuffer.
+     * writerHelper->captureBuffer / writerHelper->captureIgnoredBuffer.
      * The output should be processed. After you're done processing the output,
-     * when you're ready to start writing new output call gobyAlignments_intermediateOutputStartNew.
+     * when you're ready to start writing new output call gobyCapture_startNew().
      */
-    void gobyAlignments_intermediateOutputFlush(CAlignmentsWriterHelper *writerHelper) {
-	    if (writerHelper->intermediateOutputFile) {
-            fflush(writerHelper->intermediateOutputFile);
+    void gobyCapture_flush(CAlignmentsWriterHelper *writerHelper) {
+	    if (writerHelper->captureFile) {
+            fflush(writerHelper->captureFile);
         }
-        if (writerHelper->intermediateIgnoredOutputFile) {
-            fflush(writerHelper->intermediateIgnoredOutputFile);
+        if (writerHelper->captureIgnoredFile) {
+            fflush(writerHelper->captureIgnoredFile);
         }
-#ifndef INTERMEDIATE_OUTPUT_VIA_OPEN_MEMSTREAM
+#ifndef GOBY_CAPTURE_VIA_OPEN_MEMSTREAM
         size_t fileSize;
-        if (writerHelper->intermediateOutputFile) {
-            fileSize = ftell(writerHelper->intermediateOutputFile);
-            if (fileSize + 1 > writerHelper->intermediateOutputBufferSize) {
-                writerHelper->intermediateOutputBufferSize = fileSize + 1;
-                writerHelper->intermediateOutputBuffer = (char *) realloc(writerHelper->intermediateOutputBuffer, writerHelper->intermediateOutputBufferSize);
+        if (writerHelper->captureFile) {
+            fileSize = ftell(writerHelper->captureFile);
+            if (fileSize + 1 > writerHelper->captureBufferSize) {
+                writerHelper->captureBufferSize = fileSize + 1;
+                writerHelper->captureBuffer = (char *) realloc(writerHelper->captureBuffer, writerHelper->captureBufferSize);
             }
-            rewind(writerHelper->intermediateOutputFile);
-            fread(writerHelper->intermediateOutputBuffer, 1, fileSize, writerHelper->intermediateOutputFile);
-            writerHelper->intermediateOutputBuffer[fileSize] = '\0';
+            rewind(writerHelper->captureFile);
+            fread(writerHelper->captureBuffer, 1, fileSize, writerHelper->captureFile);
+            writerHelper->captureBuffer[fileSize] = '\0';
         }
-        if (writerHelper->intermediateIgnoredOutputFile) {
-            fileSize = ftell(writerHelper->intermediateIgnoredOutputFile);
-            if (fileSize + 1 > writerHelper->intermediateIgnoredOutputBufferSize) {
-                writerHelper->intermediateIgnoredOutputBufferSize = fileSize + 1;
-                writerHelper->intermediateIgnoredOutputBuffer = (char *) realloc(writerHelper->intermediateIgnoredOutputBuffer, writerHelper->intermediateIgnoredOutputBufferSize);
+        if (writerHelper->captureIgnoredFile) {
+            fileSize = ftell(writerHelper->captureIgnoredFile);
+            if (fileSize + 1 > writerHelper->captureIgnoredBufferSize) {
+                writerHelper->captureIgnoredBufferSize = fileSize + 1;
+                writerHelper->captureIgnoredBuffer = (char *) realloc(writerHelper->captureIgnoredBuffer, writerHelper->captureIgnoredBufferSize);
             }
-            rewind(writerHelper->intermediateIgnoredOutputFile);
-            fread(writerHelper->intermediateIgnoredOutputBuffer, 1, fileSize, writerHelper->intermediateIgnoredOutputFile);
-            writerHelper->intermediateIgnoredOutputBuffer[fileSize] = '\0';
+            rewind(writerHelper->captureIgnoredFile);
+            fread(writerHelper->captureIgnoredBuffer, 1, fileSize, writerHelper->captureIgnoredFile);
+            writerHelper->captureIgnoredBuffer[fileSize] = '\0';
         }
 #endif
     }
 
-    void gobyAlignments_closeIntermediateOutputFiles(CAlignmentsWriterHelper *writerHelper) {
-	    if (writerHelper->intermediateOutputFile || writerHelper->intermediateIgnoredOutputFile) {
-#ifdef INTERMEDIATE_OUTPUT_VIA_OPEN_MEMSTREAM
-            fprintf(stderr, "Closing intermediate output via open_memstream()\n");
+    void gobyCapture_close(CAlignmentsWriterHelper *writerHelper) {
+	    if (writerHelper->captureFile || writerHelper->captureIgnoredFile) {
+#ifdef GOBY_CAPTURE_VIA_OPEN_MEMSTREAM
+            fprintf(stderr, "Closing gobyCapture via open_memstream()\n");
 #else
-            fprintf(stderr, "Closing intermediate output via temporary files\n");
+            fprintf(stderr, "Closing gobyCapture via temporary files\n");
 #endif
         }
-        if (writerHelper->intermediateOutputFile) {
-            fclose(writerHelper->intermediateOutputFile);
-            writerHelper->intermediateOutputFile = NULL;
-            free(writerHelper->intermediateOutputBuffer);
-            writerHelper->intermediateOutputBuffer = NULL;
-            writerHelper->intermediateOutputBufferSize = 0;
+        if (writerHelper->captureFile) {
+            fclose(writerHelper->captureFile);
+            writerHelper->captureFile = NULL;
+            free(writerHelper->captureBuffer);
+            writerHelper->captureBuffer = NULL;
+            writerHelper->captureBufferSize = 0;
         }
-        if (writerHelper->intermediateIgnoredOutputFile) {
-            fclose(writerHelper->intermediateIgnoredOutputFile);
-            writerHelper->intermediateIgnoredOutputFile = NULL;
-            free(writerHelper->intermediateIgnoredOutputBuffer);
-            writerHelper->intermediateIgnoredOutputBuffer = NULL;
-            writerHelper->intermediateIgnoredOutputBufferSize = 0;
+        if (writerHelper->captureIgnoredFile) {
+            fclose(writerHelper->captureIgnoredFile);
+            writerHelper->captureIgnoredFile = NULL;
+            free(writerHelper->captureIgnoredBuffer);
+            writerHelper->captureIgnoredBuffer = NULL;
+            writerHelper->captureIgnoredBufferSize = 0;
         }
     }
 
