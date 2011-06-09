@@ -8,9 +8,9 @@ development -> 1.9.7
    a desktop machine.
  - AlignmentEntry schema change: a new field sample_index holds the index of the alignment from which the
    entry was read. This is useful when concatenating over multiple alignments and realigning reads that span
-   indels, to realiably track the alignment origin of each entry.  The concatenation readers have been
+   indels, to reliably track the alignment origin of each entry.  The concatenation readers have been
    modified to set sample_index accordingly. Please note that the activeIndex field of the sorted reader
-   is not a realiable way to identify the alignment of origin when realignment is active. Please use the
+   is not a reliable way to identify the alignment of origin when realignment is active. Please use the
    new sample_index field instead.
  - We have added the capability to perform on the fly realignment around indels. This feature is available
    in mode discover-sequence-variants and in concatenate-alignments. The feature is activated with the new
@@ -19,8 +19,9 @@ development -> 1.9.7
    regions where candidate indels are found by the aligner. The algorithm is very fast, in fact much faster
    than previously described approaches and consumes a reasonable amount of memory (function of maximum
    depth of coverage in the region where candidate indels are observed, but typically <2GB). Realignment
-   correctly removes artifactual SNPs that can be introduced when an aligner fails to align the read ends
-   properly through a read deletion.
+   correctly removes artefactual SNPs that can be introduced when an aligner fails to align the read ends
+   properly through a read deletion. Please note that this version realigns read deletions. Realignment of
+   read insertions has not been implemented.
  - Make it possible to open an alignment if the header file is present, but the entries file is missing.
    This allows to read the header only, for instance when we need to load counts and have access to targetIds.
  - Add mode to convert annotations to counts archive format.
