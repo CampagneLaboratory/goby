@@ -174,10 +174,16 @@
             <fileset dir="${classes}">
                 <include name="edu/cornell/med/icb/goby/reads/**"/>
                 <include name="edu/cornell/med/icb/goby/alignments/**"/>
+                <include name="edu/cornell/med/icb/goby/counts/**"/>
+                <include name="edu/cornell/med/icb/goby/modes/UpgradeMode*"/>
+                <include name="edu/cornell/med/icb/goby/modes/AbstractGobyMode*"/>
+                <include name="edu/cornell/med/icb/goby/modes/AbstractCommandLineMode*"/>
+                <include name="edu/cornell/med/icb/goby/modes/GenericToolsDriver*"/>
                 <include name="edu/cornell/med/icb/goby/util/**"/>
                 <include name="edu/cornell/med/icb/goby/exception/**"/>
                 <include name="edu/cornell/med/icb/goby/identifier/**"/>
                 <include name="edu/cornell/med/icb/goby/counts/**"/>
+                <include name="edu/cornell/med/icb/goby/GobyVersion*"/>
             </fileset>
             <zipgroupfileset dir="${lib}">
 
@@ -189,6 +195,7 @@
                 <include name="commons-io-1.4.jar"/>         <!-- Apache version 2 license -->
                 <include name="commons-lang-2.5.jar"/>       <!-- Apache version 2 license -->
                 <include name="commons-logging-1.1.1.jar"/>  <!-- Apache version 2 license -->
+                <include name="bdval-api.jar"/>  <!-- LGPL -->
             </zipgroupfileset>
             <manifest>
                 <attribute name="Specification-Title" value="Goby IO (LGPL compatible)"/>
@@ -205,7 +212,7 @@
                 <provider classname="edu.cornell.med.icb.goby.stats.AlignedCountNormalization"/>
             </service>
         </jar>
-      
+        <exec command="scripts/autojar/run-autojar.sh"/>
     </target>
     <target name="cruisecontrol"
             depends="clean, cobertura-setup, findbugs, test, jar, javadocs, pmd, cpd, cobertura-report"
