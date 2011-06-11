@@ -27,7 +27,7 @@ import edu.cornell.med.icb.goby.alignments.ReferenceLocation;
 import edu.cornell.med.icb.goby.alignments.UpgradeTo1_9_6;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.logging.ProgressLogger;
-import org.apache.log4j.Level;
+
 
 import java.io.IOException;
 
@@ -139,7 +139,7 @@ public class UpgradeMode extends AbstractGobyMode {
                     System.out.println("Checking..");
                     ProgressLogger progress = new ProgressLogger();
                     progress.expectedUpdates = locations.size();
-                    progress.priority = Level.INFO;
+                  //  progress.priority = Level.INFO;
                     progress.start();
                     for (ReferenceLocation location : locations) {
                         Alignments.AlignmentEntry entry = reader.skipTo(location.targetIndex, location.position);
