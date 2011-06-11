@@ -190,11 +190,9 @@ public class CountsReader implements CountsReaderI {
      */
     public void skipTo(final int position) throws IOException {
         // skip to the specified position
-        while (hasNextTransition()) {
+        while (hasNextTransition() && this.position<position) {
             nextTransition();
-            if (getPosition() >= position) {
-                break;
-            }
+
         }
     }
 }

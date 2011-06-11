@@ -22,13 +22,10 @@ package edu.cornell.med.icb.goby.counts;
 
 import edu.cornell.med.icb.goby.modes.CompactAlignmentToCountsMode;
 import org.apache.commons.io.FileUtils;
+import org.bdval.io.compound.CompoundDataOutput;
 import org.bdval.io.compound.CompoundFileWriter;
 
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.DataOutput;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * Writes archives of counts information  for several sequences. CountsArchiveWriter leverages
@@ -46,6 +43,8 @@ public class CountsArchiveWriter implements Closeable {
     private ByteArrayOutputStream stream;
     private long totalBitsWritten;
     private int totalTransitions;
+    private long totalBasesSeen;
+    private long totalSitesSeen;
 
     /**
      * Initialize with a basename. Count information will be written to a file basename+".counts"
@@ -54,12 +53,13 @@ public class CountsArchiveWriter implements Closeable {
      * @throws IOException If an error occurs preparing the packaged counts.
      */
     public CountsArchiveWriter(final String basename) throws IOException {
-      this(basename, CompactAlignmentToCountsMode.COUNT_ARCHIVE_MODIFIER_DEFAULT);
+        this(basename, CompactAlignmentToCountsMode.COUNT_ARCHIVE_MODIFIER_DEFAULT);
     }
+
     /**
      * Initialize with a basename. Count information will be written to a file basename+"."+countArchiveModifier
      *
-     * @param basename Basename for the alignment/counts.
+     * @param basename             Basename for the alignment/counts.
      * @param countArchiveModifier the extension to write the archive.
      * @throws IOException If an error occurs preparing the packaged counts.
      */
@@ -77,7 +77,7 @@ public class CountsArchiveWriter implements Closeable {
      * track of multiple sequences.
      *
      * @param referenceIndex index of the sequence for which counts need to be recorded.
-     * @param identifier Identifier of the sequence for which counts need to be recorded.
+     * @param identifier     Identifier of the sequence for which counts need to be recorded.
      * @return A ready CountWriter implementation.
      * @throws IOException If an error occurs.
      */
@@ -108,10 +108,12 @@ public class CountsArchiveWriter implements Closeable {
      * @throws IOException If an error occurs packaging the count information in the archive.
      */
     public void returnWriter(final CountsWriter writer) throws IOException {
-        assert writer == currentCountsWriter : "You must return the current counts writter.";
+        assert writer == currentCountsWriter : "You must return the current counts writer.";
         writer.close();
-        totalBitsWritten+=writer.getNumberOfBitsWritten();
-        totalTransitions+=writer.getNumberOfTransitions();
+        totalBitsWritten += writer.getNumberOfBitsWritten();
+        totalTransitions += writer.getNumberOfTransitions();
+        totalBasesSeen += writer.getNumberOfBasesSeen();
+        totalSitesSeen += writer.getNumberOfSitesSeen();
         final byte[] bytes = stream.toByteArray();
 
         final DataOutput part = compoundWriter.addFile(currentId);
@@ -127,11 +129,22 @@ public class CountsArchiveWriter implements Closeable {
      *
      * @throws IOException
      */
+    @Override
     public void close() throws IOException {
-        compoundWriter.close();
+        // a file whose name starts with # is special and not interpreted as a reference sequence index,id
+        final CompoundDataOutput statsFile = compoundWriter.addFile("#stats");
+        statsFile.writeUTF("totalBasesSeen");
+        statsFile.writeLong(totalBasesSeen);
+        statsFile.writeUTF("totalSitesSeen");
+        statsFile.writeLong(totalSitesSeen);
+        statsFile.writeUTF("END");
+       statsFile.close();
+        compoundWriter.finishAddFile();
+
         System.out.println("Global statististics:%n");
         System.out.printf("Bits written: %d %n", totalBitsWritten);
         System.out.printf("Number of transitions: %d %n", totalTransitions);
-        System.out.printf("Bits per transitions: %2.2g %n", ((double)(totalBitsWritten) / (double) totalTransitions));
+        System.out.printf("Bits per transitions: %2.2g %n", ((double) (totalBitsWritten) / (double) totalTransitions));
+        compoundWriter.close();
     }
 }

@@ -29,6 +29,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import org.apache.log4j.Logger;
 import org.bdval.io.compound.CompoundDataInput;
 import org.bdval.io.compound.CompoundDirectoryEntry;
 import org.bdval.io.compound.CompoundFileReader;
@@ -51,6 +52,43 @@ public class CountsArchiveReader implements Closeable {
     private final CompoundFileReader compoundReader;
     private final Int2ObjectMap<String> indexToIdentifierMap;
     private Object2IntMap<String> identifierToIndexMap;
+
+    /**
+     * The total number of bases seen in the counts data stored in this archive.
+     * This is defined as the sum of count*length over all transitions stored. A normalization
+     * factor for count data can be defined as   getNumberOfBasesSeen()/  getNumberOfSitesSeen() : this represents
+     * the average coverage per site observed.
+     *
+     * @return the total number of bases seen.
+     */
+
+
+    public long getTotalBasesSeen() {
+
+        return totalBasesSeen;
+    }
+
+    /**
+     * The total number of sites observed at which count!=0.
+     *
+     * @return number of sites seen in the archive.
+     */
+    public long getTotalSitesSeen() {
+        return totalSitesSeen;
+    }
+
+    /**
+     * Indicate whether the archive had statistics.  Count archives generated with Goby 1.9.7+ include normalization statistics calculated
+     * at the time the counts were written.
+     *
+     * @return whether the archive had statistics.
+     */
+    public boolean isStatsParsed() {
+        return totalBasesSeen != 0 && totalSitesSeen != 0;
+    }
+
+    private long totalBasesSeen;
+    private long totalSitesSeen;
 
     /**
      * Initialize the MultiCountReader. Will look for count archive information in basename".count"
@@ -156,14 +194,50 @@ public class CountsArchiveReader implements Closeable {
         final Collection<CompoundDirectoryEntry> directory = compoundReader.getDirectory();
         for (final CompoundDirectoryEntry entry : directory) {
             final String name = entry.getName();
-            final String[] tokens = name.split(",");
-            assert tokens.length == 2 : "archive count filenames must be of the form int,String";
-            final int index = Integer.parseInt(tokens[0]);
-            final String id = tokens[1];
-            indexToIdentifierMap.put(index, id);
-            identifierToIndexMap.put(id, index);
+            if (!name.startsWith("#")) {
+                final String[] tokens = name.split(",");
+                assert tokens.length == 2 : "archive count filenames must be of the form int,String";
+                final int index = Integer.parseInt(tokens[0]);
+                final String id = tokens[1];
+                indexToIdentifierMap.put(index, id);
+                identifierToIndexMap.put(id, index);
+            } else {
+                parseSpecialFile(entry);
+            }
+
         }
 
+    }
+
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Logger LOG = Logger.getLogger(CountsArchiveReader.class);
+
+    private void parseSpecialFile(CompoundDirectoryEntry entry) {
+        if ("#stats".equals(entry.getName())) {
+            try {
+
+                final CompoundDataInput input = compoundReader.readFile("#stats");
+                boolean done = false;
+                while (!done) {
+                    String key = input.readUTF();
+                    if ("totalBasesSeen".equals(key)) {
+                        totalBasesSeen = input.readLong();
+                    } else {
+                        if ("totalSitesSeen".equals(key)) {
+                            totalSitesSeen = input.readLong();
+                        }
+                    }
+                    if ("END".equals(key)) {
+                        done = true;
+                    }
+                }
+            } catch (IOException e) {
+                LOG.error("could not access special file #stats in counts archive");
+            }
+
+        }
     }
 
     /**

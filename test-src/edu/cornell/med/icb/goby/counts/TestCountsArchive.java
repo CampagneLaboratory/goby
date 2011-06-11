@@ -23,15 +23,13 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Fabien Campagne
@@ -62,7 +60,7 @@ public class TestCountsArchive {
     public void testWriter() throws IOException {
         final String basename = FilenameUtils.concat(BASE_TEST_DIR, "101.bin");
         final CountsArchiveWriter writer = new CountsArchiveWriter(basename);
-        CountsWriter cw = writer.newCountWriter(0,"count-0");
+        CountsWriter cw = writer.newCountWriter(0, "count-0");
         cw.appendCount(0, 10000);
         cw.appendCount(10, 10000);
         cw.appendCount(20, 10000);
@@ -70,7 +68,7 @@ public class TestCountsArchive {
         writer.returnWriter(cw);
 
         // read counts 1
-        cw = writer.newCountWriter(1,"count-1");
+        cw = writer.newCountWriter(1, "count-1");
         cw.appendCount(0, 20000);
         cw.appendCount(10, 20000);
         cw.appendCount(20, 20000);
@@ -80,6 +78,7 @@ public class TestCountsArchive {
         writer.close();
 
         final CountsArchiveReader reader = new CountsArchiveReader(basename);
+        assertTrue("Since Goby 1.9.7 reader must have stats.", reader.isStatsParsed());
         CountsReader cr = reader.getCountReader("count-1");
         assertTrue(cr.hasNextTransition());
         cr.nextTransition();

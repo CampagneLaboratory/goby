@@ -43,6 +43,8 @@ public class CountsWriter implements Closeable {
     private int numberOfCountsWritten;
     private int bitsWritten;
     private int position;
+    private long numberOfBasesSeen;
+    private int numberOfSitesSeen;
 
     @Deprecated
     public CountsWriter(final OutputStream output, final int initialCount) throws IOException {
@@ -96,6 +98,10 @@ public class CountsWriter implements Closeable {
         previousCount = count;
         ++numberOfCountsWritten;
         position += lengthConstant;
+        numberOfBasesSeen+=count*lengthConstant;
+        if (count!=0) {
+            numberOfSitesSeen+=lengthConstant;
+        }
     }
 
     protected static int encodeDeltaCount(final int deltaCount) {
@@ -128,4 +134,25 @@ public class CountsWriter implements Closeable {
             }
         }
     }
+
+    /**
+     * The total number of bases seen in the counts data we wrote.
+     * This is defined as the sum of count*length over all transitions written by this reader. A normalization
+     * factor for count data can be defined as   getNumberOfBasesSeen()/  getNumberOfSitesSeen() : this represents
+     * the average coverage per site observed.
+     * @return number of bases seen.
+     */
+    public long  getNumberOfBasesSeen() {
+        return numberOfBasesSeen;
+    }
+
+     /**
+     * The total number of sites observed at which count!=0.
+     * @return  number of sites seen.
+     */
+    public long  getNumberOfSitesSeen() {
+        return numberOfSitesSeen;
+    }
+
+
 }
