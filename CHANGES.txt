@@ -34,7 +34,8 @@ development -> 1.9.7
    alignment or with the alignment-to-counts mode.
  - Add CountBinningAdaptor, useful to bin counts on the fly at any resolution for display in IGV.
  - Added ability to record total number of bases and sites seen in count archive.
-
+ - Added a new mode (file-to-attributes) to generate a sample attribute file suitable for loading in IGV.
+   Useful when files are named with the convention attr1-attr2-attr3.counts
 1.9.6.1
  - Patched VCF output for compatibility with VCF specification. Specifically, we now write . in the QUAL
    field and write genotype as the first field in the methylation output format. Additionally, we only
