@@ -240,9 +240,11 @@ public class TestComputeStartCount {
 
         assertEquals(2, reader.getCount());
         assertEquals(10010, reader.getPosition());
+        reader.hasNextTransition();
         reader.nextTransition();
-        assertEquals(1, reader.getCount());
+
         assertEquals(10011, reader.getPosition());
+          assertEquals(1, reader.getCount());
         reader.close();
     }
 }

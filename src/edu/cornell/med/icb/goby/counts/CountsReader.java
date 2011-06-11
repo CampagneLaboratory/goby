@@ -54,6 +54,7 @@ public class CountsReader implements CountsReaderI {
 
     /**
      * Return the position along the sequence where the count is observed.
+     *
      * @return
      */
     public int getPosition() {
@@ -68,8 +69,8 @@ public class CountsReader implements CountsReaderI {
 
     /**
      * Determines if the reader has data about another transition.
-     * @return True when a call to nextTransition() will succeed, False otherwise.
      *
+     * @return True when a call to nextTransition() will succeed, False otherwise.
      * @throws IOException
      */
     public boolean hasNextTransition() throws IOException {
@@ -185,14 +186,18 @@ public class CountsReader implements CountsReaderI {
     /**
      * Advance up to or past the specified position. The reader is advanced until the position returned by getPosition()
      * is at least equal, or greater to the specified position.
+     *
      * @param position
      * @throws IOException
      */
     public void skipTo(final int position) throws IOException {
         // skip to the specified position
-        while (hasNextTransition() && this.position<position) {
-            nextTransition();
 
+        while (hasNextTransition()) {
+            nextTransition();
+            if (getPosition() >= position) {
+                break;
+            }
         }
     }
 }

@@ -167,7 +167,7 @@ public class CountsArchiveReader implements Closeable {
      */
 
     public int getNumberOfIndices() {
-        return compoundReader.getDirectory().size();
+        return identifierToIndexMap.size();
 
     }
 
@@ -181,11 +181,14 @@ public class CountsArchiveReader implements Closeable {
         final Collection<CompoundDirectoryEntry> directory = compoundReader.getDirectory();
         for (final CompoundDirectoryEntry entry : directory) {
             final String name = entry.getName();
-            final String[] tokens = name.split(",");
-            if (tokens.length < 2) {
-                return null;
+
+            if (!name.startsWith("#")) {
+                final String[] tokens = name.split(",");
+                if (tokens.length < 2) {
+                    return null;
+                }
+                result.add(tokens[1]);
             }
-            result.add(tokens[1]);
         }
         return result;
     }
@@ -251,14 +254,18 @@ public class CountsArchiveReader implements Closeable {
         final Collection<CompoundDirectoryEntry> directory = compoundReader.getDirectory();
         for (final CompoundDirectoryEntry entry : directory) {
             final String name = entry.getName();
-            final String[] tokens = name.split(",");
-            if (tokens.length < 1) {
-                return null;
+
+            if (!name.startsWith("#")) {
+                final String[] tokens = name.split(",");
+
+                if (tokens.length < 1) {
+                    return null;
+                }
+
+                result.add(Integer.parseInt(tokens[0]));
             }
-
-
-            result.add(Integer.parseInt(tokens[0]));
         }
+
         return result;
     }
 
