@@ -32,6 +32,8 @@ development -> 1.9.7
    through count transitions is very efficient (for instance it takes about ~20 seconds to estimate coverage
    stats for an alignment with ~20M aligned reads). Count files are produced with GobyWeb together with the
    alignment or with the alignment-to-counts mode.
+ - Add CountBinningAdaptor, useful to bin counts on the fly at any resolution for display in IGV.
+ - Added ability to record total number of bases and sites seen in count archive.
 
 1.9.6.1
  - Patched VCF output for compatibility with VCF specification. Specifically, we now write . in the QUAL
