@@ -22,16 +22,16 @@ import java.io.IOException;
 import java.util.NoSuchElementException;
 
 /**
- * An adapter over a CountReaderI which returns average counts over bins. This adapter is used in IGV to create lower
+ * An adapter over a CountReaderI which returns average counts over bins. Bins are determined adaptively. A bin is
+ * defined over count peaks whose value is above zero. This adapter is used in IGV to create lower
  * resolution views of the count data. The bin size can be chosen to return just a few bins over an entire chromosome.
  *
  * @author Fabien Campagne
- *         Date: 6/11/11
+ *         Date: 6/12/11
  *         Time: 12:31 PM
  */
-public class CountBinningAdaptor implements CountBinningAdapterI {
+public class CountAdaptiveBinningAdaptor implements CountBinningAdapterI {
     final CountsReaderI delegate;
-    private final int binSize;
     int position = -1;
     int length;
     /**
@@ -53,9 +53,9 @@ public class CountBinningAdaptor implements CountBinningAdapterI {
     private boolean haveCachedNextTransition;
 
 
-    public CountBinningAdaptor(final CountsReaderI delegate, final int binSize) {
+    public CountAdaptiveBinningAdaptor(final CountsReaderI delegate) {
         this.delegate = delegate;
-        this.binSize = binSize;
+
     }
 
     @Override
@@ -68,45 +68,62 @@ public class CountBinningAdaptor implements CountBinningAdapterI {
         return position;
     }
 
+    boolean previousCountWasZero = true;
+
     @Override
     public boolean hasNextTransition() throws IOException {
         if (binLoaded) {
             return true;
         } else {
 
-            if (!delegate.hasNextTransition()) {
+            if (!haveCachedNextTransition && !delegate.hasNextTransition()) {
                 // no more transitions in the source, we are done already.
                 return false;
             }
             length = 0;
             sumBasesOverBin = 0;
-            int numSitesObserved = 0;
             max = 0;
             position = Integer.MAX_VALUE;
 
 
-            while (delegate.hasNextTransition() && numSitesObserved < binSize) {
+            boolean binCompleted = false;
+
+            if (haveCachedNextTransition) {
+                length = nextLength;
+                sumBasesOverBin = (long) nextCount * nextLength;
+                max = nextCount;
+                haveCachedNextTransition = false;
+                position = Math.min(nextPosition, position);
+                previousCountWasZero=nextCount==0;
+            }
+
+            while (delegate.hasNextTransition() && !binCompleted) {
                 delegate.nextTransition();
                 // the length of the bin transition is the position of the current position minus the position of the
                 // very first non-zero count observed in the bin, plus the length of the current transition:
                 final int delegateLength = delegate.getLength();
-                final int newLength = Math.max(delegateLength, delegate.getPosition() - position + delegateLength);
                 final int count = delegate.getCount();
-                    // the count is still in the current bin:
-                    length = newLength;
+                if (count == 0 && previousCountWasZero || count != 0 && !previousCountWasZero) {
+                    // the count is still in the current bin (count!0 peak or count=0 stretch):
+                    length += delegateLength;
 
-                    if (count != 0) {
-                        numSitesObserved += delegateLength;
-                    }
-                    sumBasesOverBin += (long) count * delegateLength;
+                   sumBasesOverBin += (long) count * delegateLength;
                     max = Math.max(count, max);
                     //set position to the first non-zero count encountered in a bin:
-                    if (count != 0) {
-                        position = Math.min(delegate.getPosition(), position);
-                    }
+
+                    position = Math.min(delegate.getPosition(), position);
+                    previousCountWasZero = count == 0;
+                } else {
+                    binCompleted = true;
+                    nextCount = count;
+                    nextLength = delegateLength;
+                    nextPosition = delegate.getPosition();
+                    haveCachedNextTransition = true;
+
+                }
             }
             // set count to average count over all counts with count>0 observed within bin size:
-            average = ((double) sumBasesOverBin) / (double) numSitesObserved;
+            average = ((double) sumBasesOverBin) / (double) length;
         }
         binLoaded = true;
         return true;
@@ -128,6 +145,7 @@ public class CountBinningAdaptor implements CountBinningAdapterI {
     }
 
 
+    @Override
     public double getAverage() {
         return average;
     }
@@ -137,12 +155,12 @@ public class CountBinningAdaptor implements CountBinningAdapterI {
      * is at least equal, or greater to the specified position.
      *
      * @param position position to skip to.
-     * @throws IOException
+     * @throws java.io.IOException
      */
     @Override
     public void skipTo(final int position) throws IOException {
         // skip to the specified position
-        while (hasNextTransition() && getPosition()< position) {
+        while (hasNextTransition() && getPosition() < position) {
             nextTransition();
 
         }
@@ -158,6 +176,7 @@ public class CountBinningAdaptor implements CountBinningAdapterI {
      *
      * @return return the maximum count in the current bin.
      */
+    @Override
     public int getMax() {
         return max;
     }

@@ -2,11 +2,16 @@ org.apache.commons.logging.impl.LogFactoryImpl.class
 edu.cornell.med.icb.goby.alignments.AlignmentReader.class
 edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl.class
 edu.cornell.med.icb.identifier.DoubleIndexedIdentifier.class
+it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap.class
 edu.cornell.med.icb.goby.alignments.EntryFlagHelper.class
 org.apache.commons.io.FilenameUtils.class
 edu.cornell.med.icb.goby.util.WarningCounter.class
 edu.cornell.med.icb.goby.counts.CountsReader.class
 edu.cornell.med.icb.goby.counts.CountBinningAdaptor.class
 edu.cornell.med.icb.goby.counts.CountsArchiveReader.class
+edu.cornell.med.icb.goby.counts.CountAdaptiveBinningAdaptor.class
 edu.cornell.med.icb.goby.counts.CountsReaderI.class
+it.unimi.dsi.fastutil.bytes.ByteList.class
+it.unimi.dsi.fastutil.bytes.ByteArrayList.class
 it/unimi/dsi/io/*.in.*
+
