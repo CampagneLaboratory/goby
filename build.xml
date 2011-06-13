@@ -212,6 +212,7 @@
                 <provider classname="edu.cornell.med.icb.goby.stats.AlignedCountNormalization"/>
             </service>
         </jar>
+        <chmod file="scripts/autojar/run-autojar.sh" perm="744"/>
         <exec command="scripts/autojar/run-autojar.sh"/>
     </target>
     <target name="cruisecontrol"
