@@ -37,7 +37,7 @@
                 <classname>StringStringParser</classname>
             </stringParser>
             <required>true</required>
-            <help>Name of the fasta file output.</help>
+            <help>Name of the compact file output.</help>
         </flaggedOption>
           <flaggedOption>
             <id>adapters</id>
