@@ -59,9 +59,9 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION =
-            "Discover sequence variants within and across groups of samples. This mode will either (i) identify sequence variants within a group of sample\n" +
-                    "  or (ii) identify variants whose frequency is significantly enriched in one of two groups. \n" +
-                    "  This mode requires sorted/indexed alignments as input. (Since Goby 1.8) ";
+            "This mode is discovering sequence variants, calling genotypes, estimating allele frequencies, " +
+                    "or methylation rates (RRBS or methyl-seq datasets)." +
+                    " This mode requires sorted/indexed alignments as input. (Since Goby 1.8) ";
 
     private static final Logger LOG = Logger.getLogger(DiscoverSequenceVariantsMode.class);
     private String[] inputFilenames;
