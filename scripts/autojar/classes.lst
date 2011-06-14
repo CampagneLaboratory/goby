@@ -9,6 +9,7 @@ edu.cornell.med.icb.goby.util.WarningCounter.class
 edu.cornell.med.icb.goby.counts.CountsReader.class
 edu.cornell.med.icb.goby.counts.CountBinningAdaptor.class
 edu.cornell.med.icb.goby.counts.CountsArchiveReader.class
+edu.cornell.med.icb.goby.counts.CachingCountsArchiveReader.class
 edu.cornell.med.icb.goby.counts.CountAdaptiveBinningAdaptor.class
 edu.cornell.med.icb.goby.counts.CountsReaderI.class
 it.unimi.dsi.fastutil.bytes.ByteList.class

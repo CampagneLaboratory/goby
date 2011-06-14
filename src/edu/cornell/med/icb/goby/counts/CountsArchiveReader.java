@@ -49,7 +49,7 @@ import java.util.Collection;
  *         Time: 12:22:30 PM
  */
 public class CountsArchiveReader implements Closeable {
-    private final CompoundFileReader compoundReader;
+    protected final CompoundFileReader compoundReader;
     private final Int2ObjectMap<String> indexToIdentifierMap;
     private Object2IntMap<String> identifierToIndexMap;
 
@@ -154,7 +154,7 @@ public class CountsArchiveReader implements Closeable {
         return indexToIdentifierMap.get(index);
     }
 
-    private String makeFileIdentifier(final String countId) {
+    protected String makeFileIdentifier(final String countId) {
         return countId.indexOf(',') == -1
                 ? identifierToIndexMap.get(countId) + "," + countId : countId;
 
