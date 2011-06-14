@@ -42,10 +42,13 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION =
-            "Convert annotations to counts. Annotations can be used to represent segment of the reference sequences. " +
-                    "This is can used to represent boundaries of exons on the chromosome sequences or the boundary of any " +
-                    "other chromosomal region. This mode converts annotation files to the count format, setting count" +
-                    "within the regions defined by the annotations to 1 and zero outside of the annotated regions.";
+            "Convert annotations to counts. Annotations can be used to represent segments of " +
+                    "the reference sequences. This is can used to represent boundaries of exons " +
+                    "on the chromosome sequences or the boundary of any other chromosomal region(s). " +
+                    "This mode converts annotation files to the count format, setting count within " +
+                    "the regions defined by the annotations to 1 and zero outside of the annotated " +
+                    "regions." +
+                    "";
     /**
      * filename of the annotation file.
      */
