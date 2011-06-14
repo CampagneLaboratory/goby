@@ -94,7 +94,6 @@ public class UpgradeTo1_9_6 {
             progress.lightUpdate();
         }
         progress.stop();
-            printIndices(basename, indexOffsets, upgradedOffsets, indexAbsolutePositions, upgradedIndexAbsolutePositions);
         writeIndex(basename, upgradedOffsets, upgradedIndexAbsolutePositions);
         upgradeHeaderVersion(basename);
         if (verbose) {
@@ -161,27 +160,12 @@ public class UpgradeTo1_9_6 {
             indexBuilder.addAllOffsets(indexOffsets);
             indexBuilder.addAllAbsolutePositions(indexAbsolutePositions);
             indexBuilder.build().writeTo(indexOutput);
-        }
-        finally {
+        } finally {
             if (indexOutput != null) indexOutput.close();
 
         }
     }
 
-    private void printIndices(String basename, LongArrayList indexOffsets, LongArrayList upgradedIndexOffsets,
-                              LongArrayList indexAbsolutePositions, LongArrayList upgradedIndexAbsolutePositions ) {
-        int size = indexOffsets.size();
-        if (verbose) {
-            for (int i = 0; i < size; i++) {
-
-                System.out.printf("%s entries offset: %d new-offset: %d pre-abs-pos: %d new-abs-pos: %d %n",
-                        basename, indexOffsets.get(i),
-                        upgradedIndexOffsets.get(i),
-                        indexAbsolutePositions.get(i),
-                        upgradedIndexAbsolutePositions.get(i));
-            }
-        }
-    }
 
 
     private Alignments.AlignmentEntry fetchFirstEntry(AlignmentReaderImpl reader, long indexOffset) throws IOException {

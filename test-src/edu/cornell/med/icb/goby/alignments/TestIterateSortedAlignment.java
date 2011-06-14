@@ -25,8 +25,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -109,9 +111,9 @@ public class TestIterateSortedAlignment {
 
 
             @Override
-            public void processPositions(int referenceIndex, int intermediatePosition, ObjectArrayList<PositionBaseInfo> positionBaseInfos) {
+            public void processPositions(int referenceIndex, int intermediatePosition, DiscoverVariantPositionData positionBaseInfos) {
                 // store one-based positions:
-                positionMap.put(intermediatePosition+1, positionBaseInfos.size());
+                positionMap.put(intermediatePosition + 1, positionBaseInfos.size());
                 System.out.printf("position: %d listSize: %d%n", referenceIndex, positionBaseInfos.size());
             }
         };
@@ -169,15 +171,16 @@ public class TestIterateSortedAlignment {
         final IntSet variantReadIndices = new IntOpenHashSet();
         final IntSet variantPositionOnRef = new IntOpenHashSet();
         IterateSortedAlignmentsListImpl iterator = new IterateSortedAlignmentsListImpl() {
-
-            public void processPositions(int referenceIndex, int intermediatePosition, ObjectArrayList<PositionBaseInfo> positionBaseInfos) {
+                @Override
+            public void processPositions(int referenceIndex, int intermediatePosition,
+                                         DiscoverVariantPositionData positionBaseInfos) {
 
             }
 
-            @Override
+                @Override
             public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
                                            Alignments.AlignmentEntry alignmentEntry,
-                                           Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
+                                           Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
                                            Alignments.SequenceVariation var,
                                            char toChar, char fromChar,
                                            byte toQual, int currentReferenceIndex,
@@ -232,15 +235,15 @@ public class TestIterateSortedAlignment {
         final IntSet variantReadIndices = new IntOpenHashSet();
         final IntSet variantPositionOnRef = new IntOpenHashSet();
         IterateSortedAlignmentsListImpl iterator = new IterateSortedAlignmentsListImpl() {
-
-            public void processPositions(int referenceIndex, int intermediatePosition, ObjectArrayList<PositionBaseInfo> positionBaseInfos) {
+            @Override
+            public void processPositions(int referenceIndex, int intermediatePosition, DiscoverVariantPositionData positionBaseInfos) {
 
             }
 
             @Override
             public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
                                            Alignments.AlignmentEntry alignmentEntry,
-                                           Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
+                                           Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
                                            Alignments.SequenceVariation var, char toChar, char fromChar,
                                            byte toQual, int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
                 variantReadIndices.add(currentReadIndex);
@@ -283,7 +286,7 @@ public class TestIterateSortedAlignment {
         newEntry.setTargetAlignedLength(queryLength);
         newEntry.setQueryAlignedLength(queryLength);
         for (int variaIndex : variationIndices) {
-            
+
             Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder();
             varBuilder.setFrom("A");
             varBuilder.setTo("C");
@@ -311,8 +314,8 @@ public class TestIterateSortedAlignment {
         newEntry.setMultiplicity(1);
         newEntry.setQueryLength(35);
         newEntry.setTargetAlignedLength(35);
-        int refAlignedLength=35;
-        int readAlignedLength=35;
+        int refAlignedLength = 35;
+        int readAlignedLength = 35;
         for (int i = 0; i < variationIndices.length / 2; i += 2) {
             Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder();
             StringBuffer insertion = new StringBuffer();
@@ -348,8 +351,8 @@ public class TestIterateSortedAlignment {
         newEntry.setMatchingReverseStrand(matchesReverseStrand);
         newEntry.setMultiplicity(1);
         newEntry.setQueryLength(35);
-        int refAlignedLength=35;
-        int queryAlignedLength=35;
+        int refAlignedLength = 35;
+        int queryAlignedLength = 35;
 
         for (int i = 0; i < variationIndices.length / 2; i += 2) {
             Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder();
@@ -368,7 +371,7 @@ public class TestIterateSortedAlignment {
             varBuilder.setPosition(variationIndex);
             varBuilder.setReadIndex(variationIndex);
 
-           newEntry.setQueryAlignedLength(queryAlignedLength);
+            newEntry.setQueryAlignedLength(queryAlignedLength);
             newEntry.setTargetAlignedLength(refAlignedLength);
             newEntry.addSequenceVariations(varBuilder.build());
         }
@@ -411,7 +414,7 @@ public class TestIterateSortedAlignment {
             @Override
             public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
                                            Alignments.AlignmentEntry alignmentEntry,
-                                           Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
+                                           Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
                                            Alignments.SequenceVariation var,
                                            char toChar, char fromChar,
                                            byte toQual, int currentReferenceIndex,
@@ -422,13 +425,13 @@ public class TestIterateSortedAlignment {
             }
 
             @Override
-            public void processPositions(int referenceIndex, int intermediatePosition, ObjectArrayList<PositionBaseInfo> positionBaseInfos) {
+            public void processPositions(int referenceIndex, int intermediatePosition, DiscoverVariantPositionData positionBaseInfos) {
                 int coverage = 0;
                 for (PositionBaseInfo info : positionBaseInfos) {
                     coverage += info.to != '-' ? 1 : 0;
                 }
                 // store with one-based position
-                positionMap.put(intermediatePosition+1, coverage);
+                positionMap.put(intermediatePosition + 1, coverage);
                 System.out.printf("position: %d listSize: %d%n", intermediatePosition, coverage);
             }
         };
@@ -488,14 +491,14 @@ public class TestIterateSortedAlignment {
 
 
             @Override
-            public void processPositions(int referenceIndex, int intermediatePosition, ObjectArrayList<PositionBaseInfo> positionBaseInfos) {
+            public void processPositions(int referenceIndex, int intermediatePosition, DiscoverVariantPositionData positionBaseInfos) {
                 int coverage = 0;
                 for (PositionBaseInfo info : positionBaseInfos) {
                     coverage += info.from != '-' ? 1 : 0;
                     readIndexMap.put(info.readIndex, readIndexMap.get(info.readIndex) + 1);
                 }
                 // store one-based positions
-                positionMap.put(intermediatePosition+1, coverage);
+                positionMap.put(intermediatePosition + 1, coverage);
                 //    System.out.printf("position: %d listSize: %d%n", position, coverage);
             }
         };
@@ -565,11 +568,11 @@ public class TestIterateSortedAlignment {
 
 
             @Override
-            public void processPositions(int referenceIndex, int intermediatePosition, ObjectArrayList<PositionBaseInfo> positionBaseInfos) {
+            public void processPositions(int referenceIndex, int intermediatePosition, DiscoverVariantPositionData positionBaseInfos) {
                 if (referenceIndex == 1) {
                     // record only reference 1 matches.
                     // store one-based positions
-                    positionMap.put(intermediatePosition+1, positionBaseInfos.size());
+                    positionMap.put(intermediatePosition + 1, positionBaseInfos.size());
                 }
                 System.out.printf("position: %d listSize: %d%n", referenceIndex, positionBaseInfos.size());
 

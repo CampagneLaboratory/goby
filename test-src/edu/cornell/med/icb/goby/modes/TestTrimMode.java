@@ -82,4 +82,37 @@ public class TestTrimMode {
 
     }
 
+     @Test
+    public void testMinTrimLengthLeft() {
+
+        TrimMode trimmer=new TrimMode();
+         trimmer.setMinLengthLeft(4);
+        MutableString original=new MutableString("ACT1234567");
+        byte[] bytes=new byte[]{0,1,2,3,4,5,6,7,8,9,10};
+        ByteArrayList list=new ByteArrayList();
+        MutableString[] adapters= {
+                new MutableString("ACT")
+        };
+        MutableString result = trimmer.trimLeft(10, original, ByteString.copyFrom(bytes), list, adapters);
+        assertEquals(new MutableString("ACT1234567"),result);
+
+
+    }
+    @Test
+    public void testMinLengthRight() {
+
+        TrimMode trimmer=new TrimMode();
+        trimmer.setMinLengthRight(4);
+        MutableString original=new MutableString("ACT1234567ACT");
+        byte[] bytes=new byte[]{0,1,2,3,4,5,6,7,8,9,10,11,12,13};
+        ByteArrayList list=new ByteArrayList();
+        MutableString[] adapters= {
+                new MutableString("ACT")
+        };
+        MutableString result = trimmer.trimRight(original.length(), original, ByteString.copyFrom(bytes), list, adapters);
+        assertEquals(new MutableString("ACT1234567ACT"),result);
+
+
+    }
+
 }
