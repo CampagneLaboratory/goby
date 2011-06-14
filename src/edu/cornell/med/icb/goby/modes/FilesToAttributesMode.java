@@ -45,7 +45,7 @@ public class FilesToAttributesMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Scan a list of files and constructs an IGV attribute file with attributes about each file.";
+    private static final String MODE_DESCRIPTION = "Scan a list of files and construct an IGV attribute file with attributes about each file.";
 
     /**
      * Used to log debug and informational messages.
