@@ -244,12 +244,16 @@ public abstract class IterateSortedAlignments<T> {
                         Math.max(0, startPosition - startFlapLength),
                         endReferenceIndex,
                         endPosition);
+
+
                 // adjust referenceIndex to contain only integers between start and end (inclusive):
                 for (int referenceIndex = 0; referenceIndex < referencesToProcess.size(); referenceIndex++) {
                     if (referenceIndex < startReferenceIndex || referenceIndex > endReferenceIndex) {
                         referencesToProcess.rem(referenceIndex);
                     }
                 }
+
+
             }
         } catch (NumberFormatException e) {
             System.err.println("An error occured parsing --start-position or --end-position. These arguments expect \n" +
@@ -257,6 +261,8 @@ public abstract class IterateSortedAlignments<T> {
                     "string and ref-position in an integer that encodes a position within the reference sequence.");
             throw e;
         }
+        // track the origin of each sample entry to the reader of origin:
+        sortedReaders.setAdjustSampleIndices(true);
 
 
         Alignments.AlignmentEntry alignmentEntry;

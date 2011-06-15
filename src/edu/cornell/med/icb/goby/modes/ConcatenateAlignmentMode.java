@@ -22,7 +22,10 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.aligners.AbstractAligner;
 import edu.cornell.med.icb.goby.alignments.*;
-import edu.cornell.med.icb.goby.alignments.processors.*;
+import edu.cornell.med.icb.goby.alignments.processors.AlignmentProcessorFactory;
+import edu.cornell.med.icb.goby.alignments.processors.AlignmentProcessorInterface;
+import edu.cornell.med.icb.goby.alignments.processors.DummyProcessorUnsorted;
+import edu.cornell.med.icb.goby.alignments.processors.LocalSortProcessor;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 import it.unimi.dsi.logging.ProgressLogger;
 
@@ -67,6 +70,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
     private boolean realign = true;
     private AlignmentProcessorFactory alignmentProcessorFactory;
     private RandomAccessSequenceCache genome;
+    private boolean adjustSampleIndices;
 
     @Override
     public String getModeName() {
@@ -98,7 +102,8 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
 
         outputFile = jsapResult.getString("output");
         adjustQueryIndices = jsapResult.getBoolean("adjust-query-indices", true);
-        alignmentProcessorFactory=DiscoverSequenceVariantsMode.configureProcessor(jsapResult);
+        adjustSampleIndices = jsapResult.getBoolean("adjust-sample-indices", false);
+        alignmentProcessorFactory = DiscoverSequenceVariantsMode.configureProcessor(jsapResult);
         genome = DiscoverSequenceVariantsMode.configureGenome(jsapResult);
         return this;
     }
@@ -125,6 +130,9 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         final ConcatAlignmentReader alignmentReader = allSorted ?
                 new ConcatSortedAlignmentReader(adjustQueryIndices, basenames) :
                 new ConcatAlignmentReader(adjustQueryIndices, basenames);
+
+        alignmentReader.setAdjustSampleIndices(adjustSampleIndices);
+
         final ProgressLogger progress = new ProgressLogger();
         progress.displayFreeMemory = true;
         int entriesInOutputFile = 0;
@@ -142,8 +150,8 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         if (!allSorted) {
             processor = new DummyProcessorUnsorted(alignmentReader);
         } else {
-            processor=alignmentProcessorFactory.create((ConcatSortedAlignmentReader) alignmentReader);
-            if (processor instanceof LocalSortProcessor && genome==null) {
+            processor = alignmentProcessorFactory.create((ConcatSortedAlignmentReader) alignmentReader);
+            if (processor instanceof LocalSortProcessor && genome == null) {
                 System.err.println("A genome must be provided when realignment is requested.");
                 System.exit(1);
             }
@@ -188,8 +196,8 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         System.out.printf("Wrote a total of %d alignment entries.%n", entriesInOutputFile);
         System.out.printf("Number of alignment entries realigned in the proximity of indels: %d (%3.3g %% of total)%n",
                 processor.getModifiedCount(),
-                divide(100*processor.getModifiedCount(), processor.getProcessedCount()));
-         }
+                divide(100 * processor.getModifiedCount(), processor.getProcessedCount()));
+    }
 
     public static boolean isAllSorted(final String[] basenames) throws IOException {
         boolean sorted = true;

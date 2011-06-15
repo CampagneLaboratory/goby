@@ -1,4 +1,8 @@
-development -> 1.9.7
+development -> 1.9.7.1
+ - Add ability to switch off the recording of sampleIndex. This is useful when concat is just used to put pieces
+   of a large alignment back together after splitting reads for parallel processing.
+ - Do not print indices at the end of upgrade. This caused upgrade to fail on some alignments with an exception.
+1.9.7
  - Now using protobuf 2.4.1. Please upgrade your local version of protobuf if you are recompiling from sources.
  - AlignmentWriter now correctly records Goby version in header upon close(). This fixes a problem when alignments
    read from read-only files would fail upon trying a new upgrade.

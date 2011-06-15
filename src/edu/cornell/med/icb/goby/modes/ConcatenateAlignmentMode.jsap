@@ -43,6 +43,17 @@
             </stringParser>
             <help>Indicates that the query indices should be adjusted to remove clashes among alignment inputs. Use this options to concatenate alignments built from different split of a large read file (such splits can be created with reformat-compact-reads).  </help>
         </flaggedOption>
+                <flaggedOption>
+            <id>adjust-sample-indices</id>
+            <longFlag>adjust-sample-indices</longFlag>
+            <defaults>
+                <string>false</string>
+            </defaults>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <help>Indicates that the file origin of each entry should be recorded by setting the sampleIndex field on each entry. SampleIndex will be zero for the first reader on the command line, one for the next and so on. This option should be set when concatenating alignments from independent sample, when it is important to track which file contained the entry, but not for instance when concatenating several pieces of the same sample file aligned in parallel on different machines.   </help>
+        </flaggedOption>
         <flaggedOption>
             <id>genome</id>
             <longFlag>genome</longFlag>

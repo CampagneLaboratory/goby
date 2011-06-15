@@ -29,7 +29,6 @@ import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.util.*;
 
@@ -45,7 +44,7 @@ import java.util.*;
  *         Date: May 20, 2009
  *         Time: 5:06:01 PM
  */
-public class ConcatAlignmentReader extends AbstractAlignmentReader {
+public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
     /**
      * Used to log debug and informational messages.
      */
@@ -306,18 +305,17 @@ public class ConcatAlignmentReader extends AbstractAlignmentReader {
             final int queryIndex = alignmentEntry.getQueryIndex();
             final int newQueryIndex = mergedQueryIndex(queryIndex);
 
-            if (!adjustQueryIndices) {
-                return alignmentEntry;
-            } else {
-                if (newQueryIndex == queryIndex) {
-                    return alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry).
-                            setSampleIndex(activeIndex).build();
-                } else {
-                    return alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry).
-                            setQueryIndex(newQueryIndex).
-                            setSampleIndex(activeIndex).build();
-                }
+
+            Alignments.AlignmentEntry.Builder builder = alignmentEntry.newBuilderForType().mergeFrom(alignmentEntry);
+            if (adjustQueryIndices && newQueryIndex != queryIndex) {
+
+                builder = builder.setQueryIndex(newQueryIndex);
             }
+            if (adjustSampleIndices) {
+                builder = builder.setSampleIndex(activeIndex);
+            }
+
+            return builder.build();
         }
     }
 
