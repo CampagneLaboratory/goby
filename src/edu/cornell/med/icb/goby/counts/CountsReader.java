@@ -20,10 +20,16 @@
 
 package edu.cornell.med.icb.goby.counts;
 
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.io.BinIO;
+import it.unimi.dsi.fastutil.io.RepositionableStream;
 import it.unimi.dsi.io.InputBitStream;
+import org.bdval.io.compound.CompoundDataInput;
 
+import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 /**
  * Reads counts encoded written by {@link CountsWriter}.
@@ -39,7 +45,9 @@ public class CountsReader implements CountsReaderI {
     private int deltaCount;
     private int currentCount;
     private int length = -1;
-
+    final int[] positions;
+    final int[] offsets;
+    final int[] counts;
     /**
      * True iff {@link #hasNextTransition()} will fetch the next transition or will find
      * the end of file.
@@ -51,6 +59,11 @@ public class CountsReader implements CountsReaderI {
      * Position on the sequence before the count transition is observed.
      */
     private int position = -1;
+    /**
+     * This boolean is true if the reader has an index.
+     */
+    private boolean hasIndex;
+
 
     /**
      * Return the position along the sequence where the count is observed.
@@ -65,6 +78,36 @@ public class CountsReader implements CountsReaderI {
         input = new InputBitStream(inputStream);
         currentCount = input.readDelta() - 1;
         count = currentCount;
+        counts = offsets = positions = null;
+
+    }
+
+    public CountsReader(final InputBitStream inputBitStream) throws IOException {
+        input = inputBitStream;
+        currentCount = input.readDelta() - 1;
+        count = currentCount;
+        counts = offsets = positions = null;
+    }
+
+
+    public CountsReader(InputStream inputStream, DataInput indexInputStream) throws IOException {
+        assert inputStream instanceof RepositionableStream : "inputStream must be repositionable.";
+        input = new InputBitStream(inputStream);
+        currentCount = input.readDelta() - 1;
+        count = currentCount;
+        if (indexInputStream != null) {
+            final int length = indexInputStream.readInt();
+
+            positions = new int[length];
+            BinIO.loadInts(indexInputStream, positions);
+            offsets = new int[length];
+            BinIO.loadInts(indexInputStream, offsets);
+            counts = new int[length];
+            BinIO.loadInts(indexInputStream, counts);
+            hasIndex = true;
+        } else {
+            counts = offsets = positions = null;
+        }
     }
 
     /**
@@ -191,12 +234,87 @@ public class CountsReader implements CountsReaderI {
      * @throws IOException
      */
     public void skipTo(final int position) throws IOException {
-        // skip to the specified position
+        if (position < this.position) {
+            if (hasNextTransition()) {
+                nextTransition();
+            }
+            return;
+        }
+        if (hasIndex) {
+            reposition(position);
+        } else {
+            // skip to the specified position
 
-        while (hasNextTransition()) {
-            nextTransition();
-            if (getPosition() >= position) {
-                break;
+            while (hasNextTransition()) {
+                nextTransition();
+                if (getPosition() >= position) {
+                    break;
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Reposition the reader on a genomic position. In contrast to skipTo, this method reposition to any position,
+     * including position that occured before the position returned last by getPosition().
+     *
+     * @param position Position to seek to.
+     * @throws IOException If an error occurs accessing the index or counts data.
+     */
+    public void reposition(final int position) throws IOException {
+        if (!hasIndex) {
+            throw new IllegalStateException("The Counts must have an index to use the reposition method.");
+        }
+        final int r = Arrays.binarySearch(positions, position);
+        // position at the position if found, or immediately before if the position was not found in the index
+     //   System.out.println("CountsReader.reposition " + position);
+        final int ip = r >= 0 ? r : -(r + 1);
+        final int index = r >= 0 ? r : Math.max(0, ip);
+        int priorIndex = index - 1;
+
+        if (priorIndex<0 || index >= positions.length) {
+            // the index does not contain the position, go back to the beginning of the file.
+            this.position = position;
+            this.count = 0;
+            deltaCount = 0;
+            nextTransitionLoaded = false;
+            input.position(0);
+            return;
+            //    throw new IllegalStateException(String.format("Positions array (length=%d) is too small for index %d.",
+            //          positions.length, index));
+        }
+        if (positions[index] == position) {
+            this.position = position;
+            this.count = counts[index];
+            deltaCount = 0;
+            nextTransitionLoaded = false;
+
+            input.position(offsets[index]);
+            input.readGamma(); // advance delta count, ignore the value, we know the count already from the index.
+            length = input.readGamma();
+            return;
+
+        } else {
+            // initialize read data structure at the position of the index
+            this.position = positions[priorIndex] ;
+            count = priorIndex < 0 ? 0 : counts[priorIndex];
+            input.position(offsets[priorIndex]);
+            nextTransitionLoaded = false;
+            currentCount = count;
+            deltaCount=0;
+            length = 0;
+            input.readGamma(); // advance delta count, ignore the value, we know the count already from the index.
+                       length = input.readGamma();
+
+
+            // now iterate until we meet the skipTo position condition:
+            while (hasNextTransition()) {
+                nextTransition();
+             //   System.out.printf("CountsReader.reposition seeking %d currentPosition=%d %n", position,  getPosition());
+                if (getPosition() >= position) {
+                    break;
+                }
             }
         }
     }

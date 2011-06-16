@@ -45,6 +45,7 @@ public class CountsArchiveWriter implements Closeable {
     private int totalTransitions;
     private long totalBasesSeen;
     private long totalSitesSeen;
+    private CountIndexBuilder indexBuilder = new CountIndexBuilder();
 
     /**
      * Initialize with a basename. Count information will be written to a file basename+".counts"
@@ -116,9 +117,14 @@ public class CountsArchiveWriter implements Closeable {
         totalSitesSeen += writer.getNumberOfSitesSeen();
         final byte[] bytes = stream.toByteArray();
 
-        final DataOutput part = compoundWriter.addFile(currentId);
+        final org.bdval.io.compound.CompoundDataOutput part = compoundWriter.addFile(currentId);
         part.write(bytes);
+        part.close();
+        compoundWriter.finishAddFile();
 
+        final org.bdval.io.compound.CompoundDataOutput indexPart = compoundWriter.addFile("#index:" + currentId);
+        indexBuilder.buildIndex(bytes, indexPart);
+        indexPart.close();
         compoundWriter.finishAddFile();
         currentId = null;
         currentCountsWriter = null;
@@ -138,7 +144,7 @@ public class CountsArchiveWriter implements Closeable {
         statsFile.writeUTF("totalSitesSeen");
         statsFile.writeLong(totalSitesSeen);
         statsFile.writeUTF("END");
-       statsFile.close();
+        statsFile.close();
         compoundWriter.finishAddFile();
 
         System.out.println("Global statististics:%n");

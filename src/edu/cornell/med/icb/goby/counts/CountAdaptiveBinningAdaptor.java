@@ -94,7 +94,7 @@ public class CountAdaptiveBinningAdaptor implements CountBinningAdapterI {
                 max = nextCount;
                 haveCachedNextTransition = false;
                 position = Math.min(nextPosition, position);
-                previousCountWasZero=nextCount==0;
+                previousCountWasZero = nextCount == 0;
             }
 
             while (delegate.hasNextTransition() && !binCompleted) {
@@ -107,7 +107,7 @@ public class CountAdaptiveBinningAdaptor implements CountBinningAdapterI {
                     // the count is still in the current bin (count!0 peak or count=0 stretch):
                     length += delegateLength;
 
-                   sumBasesOverBin += (long) count * delegateLength;
+                    sumBasesOverBin += (long) count * delegateLength;
                     max = Math.max(count, max);
                     //set position to the first non-zero count encountered in a bin:
 
@@ -164,6 +164,17 @@ public class CountAdaptiveBinningAdaptor implements CountBinningAdapterI {
             nextTransition();
 
         }
+    }
+
+    @Override
+    public void reposition(int position) throws IOException {
+        delegate.reposition(position);
+        this.position = delegate.getPosition() - 1;
+        length = 0;
+        sumBasesOverBin = 0;
+        max = 0;
+        average = 0;
+        haveCachedNextTransition = false;
     }
 
     @Override

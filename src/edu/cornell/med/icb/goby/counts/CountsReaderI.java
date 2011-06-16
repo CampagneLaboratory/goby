@@ -35,8 +35,8 @@ public interface CountsReaderI extends Closeable {
      * Return the zero-based position along the sequence where the count is observed. For instance
      * getPosition() will return 1 on the first transition of the toy histogram shown below (and 3
      * on the second transition):
-     *
-     *  xx
+     * <p/>
+     * xx
      * 0123
      *
      * @return
@@ -77,7 +77,17 @@ public interface CountsReaderI extends Closeable {
     void skipTo(int position) throws IOException;
 
     /**
+     * Reposition the reader on a genomic position. In contrast to skipTo, this method reposition to any position,
+     * including position that occured before the position returned last by getPosition().
+     *
+     * @param position Position to seek to.
+     * @throws IOException If an error occurs accessing the index or counts data.
+     */
+    void reposition(int position) throws java.io.IOException;
+
+    /**
      * The length of the region/peak where the count is observed.
+     *
      * @return The length of the region
      */
     int getLength();

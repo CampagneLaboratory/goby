@@ -121,6 +121,7 @@ public class TestCountsArchive {
         cr.nextTransition();
         assertEquals(30, cr.getCount());
         assertFalse(cr.hasNextTransition());
+
         cr.close();
     }
 

@@ -92,18 +92,18 @@ public class CountBinningAdaptor implements CountBinningAdapterI {
                 final int delegateLength = delegate.getLength();
                 final int newLength = Math.max(delegateLength, delegate.getPosition() - position + delegateLength);
                 final int count = delegate.getCount();
-                    // the count is still in the current bin:
-                    length = newLength;
+                // the count is still in the current bin:
+                length = newLength;
 
-                    if (count != 0) {
-                        numSitesObserved += delegateLength;
-                    }
-                    sumBasesOverBin += (long) count * delegateLength;
-                    max = Math.max(count, max);
-                    //set position to the first non-zero count encountered in a bin:
-                    if (count != 0) {
-                        position = Math.min(delegate.getPosition(), position);
-                    }
+                if (count != 0) {
+                    numSitesObserved += delegateLength;
+                }
+                sumBasesOverBin += (long) count * delegateLength;
+                max = Math.max(count, max);
+                //set position to the first non-zero count encountered in a bin:
+                if (count != 0) {
+                    position = Math.min(delegate.getPosition(), position);
+                }
             }
             // set count to average count over all counts with count>0 observed within bin size:
             average = ((double) sumBasesOverBin) / (double) numSitesObserved;
@@ -142,10 +142,20 @@ public class CountBinningAdaptor implements CountBinningAdapterI {
     @Override
     public void skipTo(final int position) throws IOException {
         // skip to the specified position
-        while (hasNextTransition() && getPosition()< position) {
+        while (hasNextTransition() && getPosition() < position) {
             nextTransition();
 
         }
+    }
+
+    @Override
+    public void reposition(int position) throws IOException {
+        delegate.reposition(position);
+        this.position = delegate.getPosition()-1;
+        length = 0;
+        sumBasesOverBin=0;
+        max=0;
+        average=0;
     }
 
     @Override

@@ -20,11 +20,11 @@
 
 package edu.cornell.med.icb.goby.counts;
 
-import edu.cornell.med.icb.goby.modes.CompactAlignmentToCountsMode;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.io.FastByteArrayInputStream;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -34,10 +34,7 @@ import org.bdval.io.compound.CompoundDataInput;
 import org.bdval.io.compound.CompoundDirectoryEntry;
 import org.bdval.io.compound.CompoundFileReader;
 
-import java.io.ByteArrayInputStream;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Collection;
 
 /**
@@ -98,8 +95,10 @@ public class CountsArchiveReader implements Closeable {
      * @throws IOException if the file cannot be accessed
      */
     public CountsArchiveReader(final String basename) throws IOException {
-        this(basename, CompactAlignmentToCountsMode.COUNT_ARCHIVE_MODIFIER_DEFAULT);
+        this(basename, COUNT_ARCHIVE_MODIFIER_DEFAULT);
     }
+
+    final static String COUNT_ARCHIVE_MODIFIER_DEFAULT = "counts";
 
     /**
      * Initialize the MultiCountReader. Will look for count archive information in basename".count"
@@ -120,17 +119,27 @@ public class CountsArchiveReader implements Closeable {
     /**
      * Obtain the count reader over the count information identified by id.
      *
-     * @param identifier The indentifier of the count information to retrieve.
+     * @param identifier The identifier of the count information to retrieve.
      * @return A countReader over count information associated with the id.
      * @throws IOException If an error occurs reading count information.
      */
     public CountsReader getCountReader(final String identifier) throws IOException {
 
-        final CompoundDataInput input = compoundReader.readFile(makeFileIdentifier(identifier));
+        String name = makeFileIdentifier(identifier);
+        final CompoundDataInput input = compoundReader.readFile(name);
         final byte[] bytes = new byte[(int) input.length()];
         input.readFully(bytes);
-        final InputStream stream = new ByteArrayInputStream(bytes);
-        return new CountsReader(stream);
+        // warning: the countStream implementation has to support RepositionableStream
+        final InputStream countStream = new FastByteArrayInputStream(bytes);
+        final String indexName = "#index:" + name;
+        if (compoundReader.containsFile(indexName)) {
+
+            final CompoundDataInput indexInput = compoundReader.readFile(indexName);
+            // this archive contained an index:
+            return new CountsReader(countStream, indexInput);
+        } else {
+            return new CountsReader(countStream);
+        }
 
     }
 

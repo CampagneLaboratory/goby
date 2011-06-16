@@ -18,9 +18,12 @@
 
 package edu.cornell.med.icb.goby.counts;
 
+
+import it.unimi.dsi.fastutil.io.FastByteArrayInputStream;
 import org.bdval.io.compound.CompoundDataInput;
 
 import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -35,6 +38,8 @@ public class CachingCountsArchiveReader extends CountsArchiveReader {
 
     private byte[] bytes;
     private String previousId;
+    private byte[] indexBytes;
+    private boolean hasIndex;
 
     public CachingCountsArchiveReader(final String basename) throws IOException {
         super(basename);
@@ -52,15 +57,34 @@ public class CachingCountsArchiveReader extends CountsArchiveReader {
      */
     @Override
     public CountsReader getCountReader(final String identifier) throws IOException {
-        if (identifier==null || previousId==null || !identifier.equals(previousId)) {
-            final CompoundDataInput input = compoundReader.readFile(makeFileIdentifier(identifier));
+        if (identifier == null || previousId == null || !identifier.equals(previousId)) {
+            String name = makeFileIdentifier(identifier);
+            final CompoundDataInput input = compoundReader.readFile(name);
             bytes = new byte[(int) input.length()];
             input.readFully(bytes);
-            previousId=identifier;
-        }
+            String indexName = "#index:" + name;
+            if (compoundReader.containsFile(indexName)) {
 
-        final InputStream stream = new ByteArrayInputStream(bytes);
-        return new CountsReader(stream);
+                final CompoundDataInput indexInput = compoundReader.readFile(indexName);
+                indexBytes = new byte[(int) indexInput.length()];
+                indexInput.readFully(indexBytes);
+                hasIndex = true;
+            }
+
+            previousId = identifier;
+        }
+        final InputStream stream = new FastByteArrayInputStream(bytes);
+        if (hasIndex) {
+
+
+            final DataInputStream indexDataInput = new DataInputStream(new FastByteArrayInputStream(indexBytes));
+            return new CountsReader(stream, indexDataInput);
+
+        } else {
+
+            return new CountsReader(stream);
+
+        }
 
     }
 }
