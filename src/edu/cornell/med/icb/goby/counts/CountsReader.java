@@ -136,8 +136,11 @@ public class CountsReader implements CountsReaderI {
         final int decodedDeltaCount = decodeDeltaCount(deltaCount);
         this.deltaCount = decodedDeltaCount;
         count += decodedDeltaCount;
+        assert count>=0:"Count must never be negative! now at position ="+position;
+
         nextTransitionLoaded = true;
         return true;
+
     }
 
     /**
@@ -146,6 +149,7 @@ public class CountsReader implements CountsReaderI {
      *
      * @throws IOException
      */
+
     public void nextTransition() throws IOException {
         if (hasNextTransition()) {
             nextTransitionLoaded = false;
@@ -254,7 +258,6 @@ public class CountsReader implements CountsReaderI {
         }
 
     }
-
     /**
      * Reposition the reader on a genomic position. In contrast to skipTo, this method reposition to any position,
      * including position that occured before the position returned last by getPosition().
@@ -268,18 +271,20 @@ public class CountsReader implements CountsReaderI {
         }
         final int r = Arrays.binarySearch(positions, position);
         // position at the position if found, or immediately before if the position was not found in the index
-     //   System.out.println("CountsReader.reposition " + position);
+        //   System.out.println("CountsReader.reposition " + position);
         final int ip = r >= 0 ? r : -(r + 1);
         final int index = r >= 0 ? r : Math.max(0, ip);
         int priorIndex = index - 1;
 
-        if (priorIndex<0 || index >= positions.length) {
+
+        if (priorIndex < 0 || index >= positions.length) {
             // the index does not contain the position, go back to the beginning of the file.
             this.position = position;
             this.count = 0;
             deltaCount = 0;
             nextTransitionLoaded = false;
             input.position(0);
+            endOfStream = false;
             return;
             //    throw new IllegalStateException(String.format("Positions array (length=%d) is too small for index %d.",
             //          positions.length, index));
@@ -291,31 +296,37 @@ public class CountsReader implements CountsReaderI {
             nextTransitionLoaded = false;
 
             input.position(offsets[index]);
+            endOfStream = false;
             input.readGamma(); // advance delta count, ignore the value, we know the count already from the index.
             length = input.readGamma();
             return;
 
         } else {
             // initialize read data structure at the position of the index
-            this.position = positions[priorIndex] ;
+            this.position = positions[priorIndex];
             count = priorIndex < 0 ? 0 : counts[priorIndex];
             input.position(offsets[priorIndex]);
+            endOfStream = false;
             nextTransitionLoaded = false;
             currentCount = count;
-            deltaCount=0;
+            deltaCount = 0;
             length = 0;
             input.readGamma(); // advance delta count, ignore the value, we know the count already from the index.
-                       length = input.readGamma();
+            length = input.readGamma();
 
 
             // now iterate until we meet the skipTo position condition:
             while (hasNextTransition()) {
                 nextTransition();
-             //   System.out.printf("CountsReader.reposition seeking %d currentPosition=%d %n", position,  getPosition());
+                //   System.out.printf("CountsReader.reposition seeking %d currentPosition=%d %n", position,  getPosition());
                 if (getPosition() >= position) {
                     break;
                 }
             }
         }
+    }
+
+    public boolean isPositionInIndex(int i) {
+        return Arrays.binarySearch(positions, i)>=0;
     }
 }

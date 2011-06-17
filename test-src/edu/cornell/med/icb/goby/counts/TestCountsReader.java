@@ -19,6 +19,8 @@
 package edu.cornell.med.icb.goby.counts;
 
 import edu.cornell.med.icb.goby.algorithmic.algorithm.TestAccumulate;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.io.FastByteArrayInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
@@ -29,8 +31,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.*;
+import java.util.Random;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * @author campagne
@@ -155,4 +159,74 @@ public class TestCountsReader {
         assertEquals(20, reader.getPosition());
         assertEquals(2, reader.getCount());
     }
+
+    @Test
+    public void testNegativeSkipTo() throws IOException {
+
+
+        final CountsArchiveReader archiveReader = new CountsArchiveReader("test-data/counts/GDFQPGI-pickrellNA18486_yale");
+        final CountsReader reader1 = archiveReader.getCountReader("1");
+        reader1.reposition(77120584);
+        reader1.skipTo(77120584);
+
+        // count should be 0
+    }
+
+    @Test
+    public void testNotNegativeAfterSkipTo() throws IOException {
+
+        final CountsArchiveReader archiveReader = new CountsArchiveReader("test-data/counts/GDFQPGI-pickrellNA18486_yale");
+        final CountsReader reader1 = archiveReader.getCountReader("1");
+        int maxPos = -1;
+        Int2IntMap positionToCount = new Int2IntOpenHashMap();
+        Int2IntMap positionToLength = new Int2IntOpenHashMap();
+        int maxTransitions=10000;
+        int counter=0;
+        int reader1Position = reader1.getPosition();
+        while (reader1.hasNextTransition()) {
+            reader1.nextTransition();
+            maxPos = Math.max(maxPos, reader1Position);
+            int position = reader1.getPosition();
+            int count = reader1.getCount();
+            int length = reader1.getLength();
+            for (int j = 0; j < length; j++) {
+                positionToCount.put(position+ j, count );
+            }
+
+            positionToLength.put(position, length);
+            if (counter++>maxTransitions) break;
+        }
+        System.out.printf("maxPos=%,d%n", maxPos);
+        Random random = new Random();
+        int lastSkipToPos = -1;
+        try {
+            for (int i = 1; i < maxPos; i++) {
+
+
+                    int skipToPos = (int) (random.nextDouble() * (maxPos - 1));
+
+                    lastSkipToPos = skipToPos;
+
+                    reader1.reposition(skipToPos);
+                    if (positionToCount.containsKey(reader1Position) && reader1.getCount() != positionToCount.get(reader1Position)) {
+                        System.out.printf("error, count differ at position %,d. Count was %d, should have been %d %n",
+                                reader1Position,
+                                reader1.getCount(),
+                                positionToCount.get(reader1Position));
+                    }
+                    reader1.skipTo(skipToPos);
+
+                    if (reader1.hasNextTransition()) {
+                        reader1.nextTransition();
+                        lastSkipToPos = skipToPos;
+                        assertTrue("count must be positive. ", reader1.getCount() >= 0);
+                        assertTrue("reader position must be greater or equal to skipToPos. ", reader1Position >= skipToPos);
+                    }
+                }
+
+        } finally {
+            System.out.printf("last skipToPosition=%,d %n", lastSkipToPos);
+        }
+    }
+
 }

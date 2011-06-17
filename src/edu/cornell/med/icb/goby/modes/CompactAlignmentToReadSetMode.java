@@ -101,7 +101,7 @@ public class CompactAlignmentToReadSetMode extends AbstractGobyMode {
         this.ambiguousReads = jsapResult.getBoolean("ambiguous-reads");
         this.nonAmbiguousReads = jsapResult.getBoolean("non-ambiguous-reads");
         if (!ambiguousReads && !nonAmbiguousReads) {
-            System.err.println("Combination of options will result in no reads selected since a read is either ambiguous or is not.");
+            System.err.println("Combination of options will result in no reads selected since a read is either ambiguous or is not. You must specify exactly one of --ambiguous-reads or --non-ambiguous reads.");
             System.exit(1);
         }
         this.k = jsapResult.getInt("ambiguity-threshold", 2);

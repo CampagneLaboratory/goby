@@ -30,7 +30,7 @@ import java.io.InputStream;
 
 /**
  * Build an index for Counts information.
- *
+ * *
  * @author Fabien Campagne
  *         Date: 6/15/11
  *         Time: 5:56 PM

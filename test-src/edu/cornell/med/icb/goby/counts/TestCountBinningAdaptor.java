@@ -18,6 +18,8 @@
 
 package edu.cornell.med.icb.goby.counts;
 
+import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -101,7 +103,47 @@ public class TestCountBinningAdaptor {
         assertEquals(6, binAdapter.getMax(), .1);
 
 
-         assertFalse(binAdapter.hasNextTransition());
+        assertFalse(binAdapter.hasNextTransition());
 
     }
+
+  /*  @Test
+    public void testBinWithSkipTo() throws IOException {
+        String format = "(10,0)(2,2)(10,0)(4,6)";
+        CountsReaderTestSupport reader = new CountsReaderTestSupport(format);
+        Int2IntMap positionToCounts = new Int2IntArrayMap();
+        while (reader.hasNextTransition()) {
+            reader.nextTransition();
+            for (int i = 0; i < reader.getLength(); i++) {
+                positionToCounts.put(reader.getPosition() + i, reader.getCount());
+            }
+
+        }
+        for (int binSize = 3; binSize < 5; binSize++) {
+            for (int skipToPosition = 0; skipToPosition < 30; skipToPosition++) {
+
+                CountsReaderTestSupport readerLocal = new CountsReaderTestSupport(format);
+                CountBinningAdaptor bin = new CountBinningAdaptor(readerLocal, binSize);
+            //    bin.skipTo(skipToPosition);
+                while (bin.hasNextTransition()) {
+
+                    bin.nextTransition();
+                    System.out.printf("position=%d count=%g%n",bin.getPosition(), bin.getAverage());
+                    double binAverage = 0;
+                    int count = 0;
+                    for (int j = 0; j < binSize; j++) {
+                       final int value = positionToCounts.get(bin.getPosition()+j);
+                        binAverage += value;
+                        if (value != 0) {
+                            count++;
+                        }
+                    }
+                    binAverage /= count;
+                    assertEquals(String.format("average differ from expected at skipPosition=%d position=%d binSize=%d %n",
+                            skipToPosition, bin.getPosition(), binSize),
+                            binAverage, bin.getAverage());
+                }
+            }
+        }
+    }       */
 }

@@ -159,22 +159,27 @@ public class CountAdaptiveBinningAdaptor implements CountBinningAdapterI {
      */
     @Override
     public void skipTo(final int position) throws IOException {
-        // skip to the specified position
-        while (hasNextTransition() && getPosition() < position) {
-            nextTransition();
-
-        }
+        delegate.skipTo(position);
+        resetStateAtNewPosition();
     }
 
     @Override
     public void reposition(int position) throws IOException {
         delegate.reposition(position);
+        resetStateAtNewPosition();
+    }
+
+    private void resetStateAtNewPosition() {
         this.position = delegate.getPosition() - 1;
         length = 0;
         sumBasesOverBin = 0;
         max = 0;
         average = 0;
         haveCachedNextTransition = false;
+        final int count = delegate.getCount();
+
+        previousCountWasZero = true;
+
     }
 
     @Override
