@@ -115,7 +115,7 @@ public abstract class IterateAlignments {
     }
 
     private void iterateOverOneAlignment(final long startOffset, final long endOffset, final String basename) throws IOException {
-        final AlignmentReaderImpl reader = new AlignmentReaderImpl(startOffset, endOffset, basename);
+        final AlignmentReader reader = alignmentReaderFactory.createReader(basename, startOffset, endOffset);
         reader.readHeader();
         final int numberOfReferences = reader.getNumberOfTargets();
 
@@ -235,5 +235,10 @@ public abstract class IterateAlignments {
         return referenceIds.getId(targetIndex);
     }
 
+    private AlignmentReaderFactory alignmentReaderFactory;
+
+    public void setAlignmentReaderFactory(AlignmentReaderFactory factory) {
+        this.alignmentReaderFactory = factory;
+    }
 
 }

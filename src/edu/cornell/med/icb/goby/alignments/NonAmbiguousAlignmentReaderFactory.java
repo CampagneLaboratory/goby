@@ -29,16 +29,24 @@ import java.io.IOException;
  *         Time: 4:37:26 PM
  */
 public class NonAmbiguousAlignmentReaderFactory implements AlignmentReaderFactory {
+    @Override
     public AlignmentReader createReader(String basename) throws IOException {
         return new NonAmbiguousAlignmentReader(basename);
     }
 
+    @Override
     public AlignmentReader[] createReaderArray(int numElements) throws IOException {
         return new NonAmbiguousAlignmentReader[numElements];
     }
 
+    @Override
     public AlignmentReader createReader(String basename, int startReferenceIndex,
                                         int startPosition, int endReferenceIndex, int endPosition) throws IOException {
         return new NonAmbiguousAlignmentReader(basename, startReferenceIndex, startPosition, endReferenceIndex, endPosition);
+    }
+
+    @Override
+    public AlignmentReader createReader(String basename, long startOffset, long endOffset) throws IOException {
+        return new NonAmbiguousAlignmentReader(startOffset, endOffset, basename);
     }
 }

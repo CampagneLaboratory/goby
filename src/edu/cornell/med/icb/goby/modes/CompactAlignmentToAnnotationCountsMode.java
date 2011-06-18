@@ -25,8 +25,7 @@ import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCountIterateAlig
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
+import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
@@ -38,24 +37,13 @@ import edu.rit.pj.IntegerForLoop;
 import edu.rit.pj.ParallelRegion;
 import edu.rit.pj.ParallelTeam;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.*;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Arrays;
 
 /**
@@ -117,6 +105,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
     WeightParameters weightParams;
     private String includeReferenceNameCommas;
+    private boolean filterAmbiguousReads;
 
     @Override
     public String getModeName() {
@@ -146,8 +135,10 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         omitNonInformativeColumns = jsapResult.getBoolean("omit-non-informative-columns");
         inputFilenames = jsapResult.getStringArray("input");
         outputFilename = jsapResult.getString("output");
-
-
+        filterAmbiguousReads = jsapResult.getBoolean("filter-ambiguous-reads");
+        if (filterAmbiguousReads) {
+            System.out.println("Ambiguous reads will not be considered when estimating count statistics.");
+        }
         statsFilename = jsapResult.getString("stats");
         final String groupsDefinition = jsapResult.getString("groups");
         deAnalyzer.parseGroupsDefinition(groupsDefinition, deCalculator, inputFilenames);
@@ -356,8 +347,10 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 System.err.println("Weights have been provided and loaded and will be used to reweight transcript counts.");
             }
         }
+        final AlignmentReaderFactory factory = filterAmbiguousReads ? new NonAmbiguousAlignmentReaderFactory() :
+                new DefaultAlignmentReaderFactory();
 
-        final AlignmentReaderImpl reader = new AlignmentReaderImpl(inputBasename);
+        final AlignmentReader reader = factory.createReader(inputBasename);
         reader.readHeader();
         final int numberOfReferences = reader.getNumberOfTargets();
 
@@ -370,11 +363,12 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         iterateAlignment.parseIncludeReferenceArgument(includeReferenceNameCommas);
 
 
-        final AlignmentReader referenceReader = new AlignmentReaderImpl(inputBasename);
+        AlignmentReader referenceReader = factory.createReader(inputBasename);
         referenceReader.readHeader();
 
-        // ITerate through the alignment and retrieve algs:
+        // Iterate through the alignment and retrieve algs:
         System.out.println("Loading alignment " + inputBasename + "..");
+        iterateAlignment.setAlignmentReaderFactory(factory);
         iterateAlignment.iterate(inputBasename);
 
         final int numAlignedReadsInSample = iterateAlignment.getNumAlignedReadsInSample();

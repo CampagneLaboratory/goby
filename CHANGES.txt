@@ -1,7 +1,16 @@
 development -> 1.9.7.1
+ - alignment-to-counts now generates indexed base-level histogram files. Indexing makes it possible to jump quickly
+   to a new genomic location in IGV. This is especially useful when viewing coverage for tens of tracks.
+ - Filter out ambiguous reads from alignment-to-counts base level histogram output. Also try a new way to create
+   base-level histograms from sorted alignment files. This turns out to be about 3 times slower than the current
+   approach. We still keep the new approach because it should scale to any size alignment. Mode alignment-to-count
+   will use to the new approach if an alignment is sorted and has more than 50 million aligned reads.
+ - Filter out ambiguous reads from alignment-to-annotation-counts by default. Pre-1.9.7.1 behaviour can be obtained
+   by setting the argument --filter-ambiguous-reads to false.
  - Add ability to switch off the recording of sampleIndex. This is useful when concat is just used to put pieces
    of a large alignment back together after splitting reads for parallel processing.
  - Do not print indices at the end of upgrade. This caused upgrade to fail on some alignments with an exception.
+ - Extended IterateAlignments to create alignment reader with a configurable AlignmentReaderFactory.
 1.9.7
  - Now using protobuf 2.4.1. Please upgrade your local version of protobuf if you are recompiling from sources.
  - AlignmentWriter now correctly records Goby version in header upon close(). This fixes a problem when alignments

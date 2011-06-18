@@ -39,4 +39,10 @@ public class DefaultAlignmentReaderFactory implements AlignmentReaderFactory {
                                         int startPosition, int endReferenceIndex, int endPosition) throws IOException {
         return new AlignmentReaderImpl(basename, startReferenceIndex, startPosition, endReferenceIndex, endPosition);
     }
+
+
+    @Override
+    public AlignmentReaderImpl createReader(String basename, long startOffset, long endOffset) throws IOException {
+        return new AlignmentReaderImpl(startOffset, endOffset,basename);
+             }
 }

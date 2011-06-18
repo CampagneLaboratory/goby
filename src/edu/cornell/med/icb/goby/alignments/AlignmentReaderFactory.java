@@ -23,6 +23,7 @@ import java.io.IOException;
 /**
  * A factory that returns alignment reader. This interface can be subclassed to provide specific implementations of
  * the AlignmentReader interface. This is useful to provide implementations that perform some filtering on the fly.
+ *
  * @author Fabien Campagne
  *         Date: Apr 9, 2011
  *         Time: 4:29:29 PM
@@ -62,4 +63,15 @@ public interface AlignmentReaderFactory {
     AlignmentReader createReader(String basename,
                                  int startReferenceIndex, int startPosition,
                                  int endReferenceIndex, int endPosition) throws IOException;
+
+    /**
+     * Create a reder for reading between the byte positions startOffset and endOffset.
+     *
+     * @param basename    Basename of the alignment to read.
+     * @param startOffset Position in the file where reading will start (in bytes).
+     * @param endOffset   Position in the file where reading will end (in bytes).
+     * @throws IOException If an error occurs opening or reading the file.
+     * @return an alignment reader constrained to the offsets.
+     */
+    AlignmentReader createReader(String basename, long startOffset, long endOffset) throws IOException;
 }
