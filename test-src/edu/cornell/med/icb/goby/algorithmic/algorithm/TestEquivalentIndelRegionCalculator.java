@@ -18,7 +18,7 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
+//import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import edu.cornell.med.icb.goby.alignments.processors.ObservedIndel;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import org.junit.Before;
@@ -37,9 +37,9 @@ public class TestEquivalentIndelRegionCalculator {
             "ACTCAAAGACT",
             "AAACAGAGATCCC"
     };
-    private EquivalentIndelRegionCalculator equivalentIndelRegionCalculator;
+  //  private EquivalentIndelRegionCalculator equivalentIndelRegionCalculator;
 
-    @Before
+ /*   @Before
     public void setUp() throws Exception {
 
         genome = new RandomAccessSequenceTestSupport(sequences);
@@ -56,5 +56,5 @@ public class TestEquivalentIndelRegionCalculator {
         assertEquals("AAA", result.to);
         assertEquals("ACTC", result.flankLeft);
         assertEquals("GACT", result.flankRight);
-    }
+    }        */
 }

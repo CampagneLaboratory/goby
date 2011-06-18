@@ -276,7 +276,11 @@ public class CountsReader implements CountsReaderI {
         final int index = r >= 0 ? r : Math.max(0, ip);
         int priorIndex = index - 1;
 
-
+        if (index==positions.length)
+        {
+            endOfStream=true;
+            return;
+        }
         if (priorIndex < 0 || index >= positions.length) {
             // the index does not contain the position, go back to the beginning of the file.
             this.position = position;

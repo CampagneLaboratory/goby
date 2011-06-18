@@ -31,6 +31,7 @@ import java.io.InputStream;
 /**
  * Build an index for Counts information.
  * *
+ *
  * @author Fabien Campagne
  *         Date: 6/15/11
  *         Time: 5:56 PM
@@ -59,11 +60,19 @@ public class CountIndexBuilder {
      */
     public void buildIndex(byte[] countBytes, DataOutput indexPart) throws IOException {
 
+        positions.clear();
+        offsets.clear();
+        counts.clear();
+        numIndexEntries=0;
         final InputStream stream = new ByteArrayInputStream(countBytes);
         InputBitStream inputBitStream = new InputBitStream(stream);
         final CountsReaderI reader = new CountsReader(inputBitStream);
         int transitionNum = 0;
-        long bitsWritten=0;
+        long bitsWritten = 0;
+        int maxPosition = 0;
+        assert positions.isEmpty() : "we start a new sequence and must not have positions from other sequences.";
+        assert offsets.isEmpty() : "we start a new sequence and must not have offsets from other sequences.";
+        assert counts.isEmpty() : "we start a new sequence and must not have counts from other sequences.";
         while (reader.hasNextTransition()) {
 
             reader.nextTransition();
@@ -79,9 +88,16 @@ public class CountIndexBuilder {
                 // we cast the offset to an int because we do not expect to see offsets larger than a few million bits.
 
                 ++numIndexEntries;
+                maxPosition = Math.max(position, maxPosition);
             }
             bitsWritten = inputBitStream.readBits();
         }
+
+        // add a last index entry to mark the very end of the available positions:
+        offsets.add((int) bitsWritten);
+        positions.add(maxPosition);
+        counts.add(0);
+         ++numIndexEntries;
         indexPart.writeInt(numIndexEntries);
         BinIO.storeInts(positions.toIntArray(), indexPart);
         BinIO.storeInts(offsets.toIntArray(), indexPart);

@@ -18,13 +18,13 @@
 
 package edu.cornell.med.icb.goby.counts;
 
-import edu.cornell.med.icb.goby.algorithmic.algorithm.TestAccumulate;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.io.FastByteArrayInputStream;
+import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -33,8 +33,7 @@ import org.junit.Test;
 import java.io.*;
 import java.util.Random;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 
 /**
  * @author campagne
@@ -42,7 +41,7 @@ import static junit.framework.Assert.assertTrue;
  *         Time: 6:53 PM
  */
 public class TestCountsReader {
-    private static final Log LOG = LogFactory.getLog(TestAccumulate.class);
+    private static final Logger LOG = Logger.getLogger(TestCountsReader.class);
     private static final String BASE_TEST_DIR = "test-results/counts/";
     private CountsReader reader;
 
@@ -161,6 +160,14 @@ public class TestCountsReader {
     }
 
     @Test
+    public void testPastEnd() throws IOException {
+
+
+        reader.reposition(100);
+        assertFalse(reader.hasNextTransition());
+    }
+
+    @Test
     public void testNegativeSkipTo() throws IOException {
 
 
@@ -172,7 +179,12 @@ public class TestCountsReader {
         // count should be 0
     }
 
-    @Test
+    /**
+     * This test is disabled because it takes more than a minute to run. It is still in subversion because it is useful
+     * to check that the index implementation behaves appropriately on large count archive files.
+     * @throws IOException
+     */
+    //@Test
     public void testNotNegativeAfterSkipTo() throws IOException {
 
         final CountsArchiveReader archiveReader = new CountsArchiveReader("test-data/counts/GDFQPGI-pickrellNA18486_yale");
@@ -180,50 +192,60 @@ public class TestCountsReader {
         int maxPos = -1;
         Int2IntMap positionToCount = new Int2IntOpenHashMap();
         Int2IntMap positionToLength = new Int2IntOpenHashMap();
-        int maxTransitions=10000;
-        int counter=0;
+        int maxTransitions = 10000;
+        int counter = 0;
         int reader1Position = reader1.getPosition();
         while (reader1.hasNextTransition()) {
             reader1.nextTransition();
-            maxPos = Math.max(maxPos, reader1Position);
+
             int position = reader1.getPosition();
+            maxPos = Math.max(maxPos, position);
             int count = reader1.getCount();
             int length = reader1.getLength();
-            for (int j = 0; j < length; j++) {
-                positionToCount.put(position+ j, count );
-            }
-
+            /* for (int j = 0; j < length; j++) {
+               positionToCount.put(position+ j, count );
+           }
+            */
             positionToLength.put(position, length);
-            if (counter++>maxTransitions) break;
+            //  if (counter++>maxTransitions) break;
         }
         System.out.printf("maxPos=%,d%n", maxPos);
         Random random = new Random();
         int lastSkipToPos = -1;
         try {
-            for (int i = 1; i < maxPos; i++) {
+            ProgressLogger pg = new ProgressLogger(LOG);
+            pg.priority= Level.INFO;
+            final double start = maxPos * .95;
+            final int end = maxPos + 10;
+            pg.expectedUpdates = (long) (end - start)/99;
+
+            pg.start();
+            for (int i = end; i > start; i-=99) {
 
 
-                    int skipToPos = (int) (random.nextDouble() * (maxPos - 1));
-
+                int skipToPos = i;//(int) (random.nextDouble() * (maxPos - 1));
+                lastSkipToPos = skipToPos;
+                reader1.reposition(skipToPos);
+                /*  if (positionToCount.containsKey(reader1Position) && reader1.getCount() != positionToCount.get(reader1Position)) {
+                 System.out.printf("error, count differ at position %,d. Count was %d, should have been %d %n",
+                         reader1Position,
+                         reader1.getCount(),
+                         positionToCount.get(reader1Position));
+             }   */
+                reader1.skipTo(skipToPos);
+                reader1Position = reader1.getPosition();
+                if (reader1.hasNextTransition()) {
+                    reader1.nextTransition();
                     lastSkipToPos = skipToPos;
-
-                    reader1.reposition(skipToPos);
-                    if (positionToCount.containsKey(reader1Position) && reader1.getCount() != positionToCount.get(reader1Position)) {
-                        System.out.printf("error, count differ at position %,d. Count was %d, should have been %d %n",
-                                reader1Position,
-                                reader1.getCount(),
-                                positionToCount.get(reader1Position));
-                    }
-                    reader1.skipTo(skipToPos);
-
-                    if (reader1.hasNextTransition()) {
-                        reader1.nextTransition();
-                        lastSkipToPos = skipToPos;
-                        assertTrue("count must be positive. ", reader1.getCount() >= 0);
-                        assertTrue("reader position must be greater or equal to skipToPos. ", reader1Position >= skipToPos);
-                    }
+                    //     System.out.println("found");
+                    assertTrue("count must be positive. ", reader1.getCount() >= 0);
+                    assertTrue("reader position must be greater or equal to skipToPos. ", reader1Position >= skipToPos);
                 }
-
+                // System.out.printf(".");
+                pg.info = String.format("current position=%d i=%d", reader1Position, skipToPos);
+                pg.lightUpdate();
+            }
+            pg.done();
         } finally {
             System.out.printf("last skipToPosition=%,d %n", lastSkipToPos);
         }
