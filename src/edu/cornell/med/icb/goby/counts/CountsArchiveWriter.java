@@ -25,7 +25,10 @@ import org.apache.commons.io.FileUtils;
 import org.bdval.io.compound.CompoundDataOutput;
 import org.bdval.io.compound.CompoundFileWriter;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Writes archives of counts information  for several sequences. CountsArchiveWriter leverages
@@ -46,6 +49,7 @@ public class CountsArchiveWriter implements Closeable {
     private long totalBasesSeen;
     private long totalSitesSeen;
     private CountIndexBuilder indexBuilder = new CountIndexBuilder();
+    private boolean verbose = false;
 
     /**
      * Initialize with a basename. Count information will be written to a file basename+".counts"
@@ -146,11 +150,22 @@ public class CountsArchiveWriter implements Closeable {
         statsFile.writeUTF("END");
         statsFile.close();
         compoundWriter.finishAddFile();
-
-        System.out.println("Global statististics:%n");
-        System.out.printf("Bits written: %d %n", totalBitsWritten);
-        System.out.printf("Number of transitions: %d %n", totalTransitions);
-        System.out.printf("Bits per transitions: %2.2g %n", ((double) (totalBitsWritten) / (double) totalTransitions));
+        if (verbose) {
+            System.out.println("Global statististics:%n");
+            System.out.printf("Bits written: %d %n", totalBitsWritten);
+            System.out.printf("Number of transitions: %d %n", totalTransitions);
+            System.out.printf("Bits per transitions: %2.2g %n", ((double) (totalBitsWritten) / (double) totalTransitions));
+        }
         compoundWriter.close();
+    }
+
+    /**
+     * Set the verbose flag. When the flag is true, prints some statistics to the console upon close(). Otherwise, no
+     * output to the console.
+     *
+     * @param verbose Verbose flag.
+     */
+    public void setVerbose(final boolean verbose) {
+        this.verbose = verbose;
     }
 }

@@ -21,6 +21,8 @@ package edu.cornell.med.icb.goby.util;
 import java.util.Date;
 
 /**
+ * A simple timer to time operations.
+ *
  * @author Fabien Campagne
  *         Date: Oct 28, 2010
  *         Time: 12:16:30 PM
@@ -38,11 +40,13 @@ public class Timer {
     }
 
     public String toString() {
-        long tmp = stopTime - startTime;
-        long milliseconds = tmp / 1000;
-        long secs = milliseconds / 60;
-        long mins = secs / 60;
-        long hrs = mins / 60;
+        Elapsed elapsed = new Elapsed(startTime, stopTime);
+
+
+        long hrs = elapsed.removeHours();
+        long mins = elapsed.removeMinutes();
+        long secs = elapsed.removeSeconds();
+        long milliseconds = elapsed.removeMilliseconds();
         return String.format("Time elapsed %d hrs %d mins %d sec %d ms",
                 hrs,
                 mins,
@@ -51,23 +55,60 @@ public class Timer {
     }
 
     public long millis() {
-        long tmp = stopTime - startTime;
-        long milliseconds = tmp / 1000;
+
+        long milliseconds = stopTime - startTime;
         return milliseconds;
     }
 
     public long seconds() {
-        long tmp = stopTime - startTime;
-        long milliseconds = tmp / 1000;
+        long milliseconds = stopTime - startTime;
         long secs = milliseconds / 60;
         return secs;
     }
 
     public long minutes() {
-        long tmp = stopTime - startTime;
-        long milliseconds = tmp / 1000;
+        long milliseconds = stopTime - startTime;
         long secs = milliseconds / 60;
         long mins = secs / 60;
         return mins;
+    }
+
+    private class Elapsed {
+        long duration;
+
+        private static final int SECONDS_IN_MS = 1000;
+        private static final int MINUTES_IN_MS = SECONDS_IN_MS * 60;
+        private static final int HOURS_IN_MS = MINUTES_IN_MS * 60;
+
+        public Elapsed(long startTime, long stopTime) {
+            duration = stopTime - startTime;
+        }
+
+        int removeAmount(long amountInMilliSeconds) {
+
+            long amount = duration / amountInMilliSeconds;
+            if (amount > 0) {
+                duration -= amount * amountInMilliSeconds;
+            }
+            return (int) amount;
+        }
+
+        int removeHours() {
+            return removeAmount(HOURS_IN_MS);
+        }
+
+        int removeMinutes() {
+            return removeAmount(MINUTES_IN_MS);
+        }
+
+        int removeSeconds() {
+            return removeAmount(SECONDS_IN_MS);
+
+        }
+
+        int removeMilliseconds() {
+            return removeAmount(1);
+
+        }
     }
 }

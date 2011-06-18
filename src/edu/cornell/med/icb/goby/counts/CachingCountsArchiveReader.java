@@ -47,6 +47,13 @@ public class CachingCountsArchiveReader extends CountsArchiveReader {
 
     int previousIndex = -1;
 
+    /**
+     * Determine if the previous counts reader  returned supports position().
+     * @return
+     */
+    public boolean hasIndex() {
+        return hasIndex;
+    }
 
     /**
      * Obtain the count reader over the count information identified by id.

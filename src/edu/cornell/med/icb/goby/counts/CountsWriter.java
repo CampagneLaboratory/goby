@@ -72,10 +72,12 @@ public class CountsWriter implements Closeable {
         previousCount = count;
         bitsWritten += out.writeDelta(previousCount + 1);  // Delta cannot be zero, so add 1.
     }
+
     public long getNumberOfBitsWritten() {
         return bitsWritten;
 
     }
+
     public int getNumberOfTransitions() {
         return numberOfCountsWritten;
     }
@@ -98,9 +100,9 @@ public class CountsWriter implements Closeable {
         previousCount = count;
         ++numberOfCountsWritten;
         position += lengthConstant;
-        numberOfBasesSeen+=count*lengthConstant;
-        if (count!=0) {
-            numberOfSitesSeen+=lengthConstant;
+        numberOfBasesSeen += count * lengthConstant;
+        if (count != 0) {
+            numberOfSitesSeen += lengthConstant;
         }
     }
 
@@ -126,11 +128,11 @@ public class CountsWriter implements Closeable {
             out.flush();
             out.close();
             out = null;
-            if (LOG.isInfoEnabled()) {
-                LOG.info("bits written: " + bitsWritten);
-                LOG.info("bytes written: " + bitsWritten / 8);
-                LOG.info("number of transitions: " + numberOfCountsWritten);
-                LOG.info("bits/count_transition (average): " + (float) bitsWritten / (float) numberOfCountsWritten);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("bits written: " + bitsWritten);
+                LOG.debug("bytes written: " + bitsWritten / 8);
+                LOG.debug("number of transitions: " + numberOfCountsWritten);
+                LOG.debug("bits/count_transition (average): " + (float) bitsWritten / (float) numberOfCountsWritten);
             }
         }
     }
@@ -140,17 +142,19 @@ public class CountsWriter implements Closeable {
      * This is defined as the sum of count*length over all transitions written by this reader. A normalization
      * factor for count data can be defined as   getNumberOfBasesSeen()/  getNumberOfSitesSeen() : this represents
      * the average coverage per site observed.
+     *
      * @return number of bases seen.
      */
-    public long  getNumberOfBasesSeen() {
+    public long getNumberOfBasesSeen() {
         return numberOfBasesSeen;
     }
 
-     /**
+    /**
      * The total number of sites observed at which count!=0.
-     * @return  number of sites seen.
+     *
+     * @return number of sites seen.
      */
-    public long  getNumberOfSitesSeen() {
+    public long getNumberOfSitesSeen() {
         return numberOfSitesSeen;
     }
 

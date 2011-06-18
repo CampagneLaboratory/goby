@@ -121,7 +121,7 @@ public abstract class IterateAlignments {
 
         referenceIds = new DoubleIndexedIdentifier(reader.getTargetIdentifiers());
         reader.close();
-        LOG.info(String.format("Alignment contains %d reference sequences", numberOfReferences));
+        LOG.debug(String.format("Alignment contains %d reference sequences", numberOfReferences));
         processNumberOfReferences(basename, numberOfReferences);
         //  CountsWriter writers[] = new CountsWriter[numberOfReferences];
         referencesToProcess = new IntLinkedOpenHashSet();
@@ -155,7 +155,7 @@ public abstract class IterateAlignments {
 
         // read the alignment:
 
-        System.out.println("Loading the alignment " + basename);
+        LOG.debug("Loading the alignment " + basename);
         if (alignmentReader.isSorted()) {
             LOG.debug("The alignment is sorted, iteration will use the faster skipTo method.");
             // the alignment is not sorted, we leverage skipTo to get directly to the sequence of interest.:
@@ -197,6 +197,7 @@ public abstract class IterateAlignments {
 
     /**
      * Process one alignment entry.
+     *
      * @param alignmentReader The reader that parsed this entry.
      * @param alignmentEntry  The parsed entry.
      */
@@ -205,6 +206,7 @@ public abstract class IterateAlignments {
     /**
      * Called to let the subclass prepare some datastructure for each reference sequence. The method is called
      * exactly once for each valid reference index.
+     *
      * @param alignmentReader The reader currently being iterated over.
      * @param referenceIndex  The index of the reference sequence for which data structures should be initialized.
      */
@@ -215,7 +217,7 @@ public abstract class IterateAlignments {
     /**
      * Will be called to let the client know how many references will be processed in a given alignment.
      *
-     * @param basename   The basename of the alignment being processed.
+     * @param basename           The basename of the alignment being processed.
      * @param numberOfReferences The number of references in this alignment.
      * @throws IOException If an error occcurs.
      */
