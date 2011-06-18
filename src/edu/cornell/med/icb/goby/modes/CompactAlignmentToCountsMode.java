@@ -20,24 +20,22 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeCount;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeCountInterface;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeStartCount;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.ComputeWeightCount;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.FormulaWeightAnnotationCount;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.FormulaWeightCount;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.*;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
+import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.counts.CountWriterHelper;
 import edu.cornell.med.icb.goby.counts.CountsArchiveWriter;
 import edu.cornell.med.icb.goby.counts.CountsWriter;
 import edu.cornell.med.icb.goby.util.Timer;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.logging.ProgressLogger;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -80,6 +78,8 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
     private String countArchiveModifier = COUNT_ARCHIVE_MODIFIER_DEFAULT;
 
     private WeightParameters weightParams;
+    private static final Logger LOG = Logger.getLogger(CompactAlignmentToCountsMode.class);
+    private boolean verbose;
 
     @Override
     public String getModeName() {
@@ -148,32 +148,58 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
     }
 
     /**
-     * Run the map2text mode.
+     * Run the mode.
      *
      * @throws java.io.IOException error reading / writing
      */
     @Override
     public void execute() throws IOException {
+        final ProgressLogger progress = new ProgressLogger(LOG);
+        progress.priority = Level.INFO;
+        progress.expectedUpdates = basenames.length;
+        progress.itemsName = "basenames";
+        progress.start();
+        if (basenames.length > 1) {
+            verbose = true;
+        }
         for (final String basename : basenames) {
             if (optionalOutputFile == null) {
                 outputFile = basename;
             }
 
             processFullGenomeAlignment(basename);
+            progress.info = "last processed: " + basename;
+            progress.lightUpdate();
+
         }
+        progress.done();
     }
 
     private void processFullGenomeAlignment(final String basename) throws IOException {
-        final AlignmentReaderImpl reader = new AlignmentReaderImpl(basename);
+        NonAmbiguousAlignmentReaderFactory factory = new NonAmbiguousAlignmentReaderFactory();
+        AlignmentReader reader = factory.createReader(basename);
+
         reader.readHeader();
+        if (reader.isSorted() && reader.getNumberOfAlignedReads() > 50000000) {
+
+            // if the alignment is sorted and has more than 50 million aligned reads, we switch to the more scalable
+            // count production method. The method scales to any size alignment, but is about 3-4 times slower than
+            // directly loading the entire alignment in memory..
+            processSortedAlignmentFullGenome(basename, reader);
+            return;
+        }
+
         final int numberOfReferences = reader.getNumberOfTargets();
 
         final DoubleIndexedIdentifier referenceIds = new DoubleIndexedIdentifier(reader.getTargetIdentifiers());
         reader.close();
-        System.out.println(String.format("Alignment contains %d reference sequences", numberOfReferences));
+        //System.out.println(String.format("Alignment contains %d reference sequences", numberOfReferences));
         final ComputeCountInterface[] algs = new ComputeCountInterface[numberOfReferences];
         final CountsArchiveWriter countArchive;
         countArchive = new CountsArchiveWriter(basename, countArchiveModifier);
+        // be verbose if only one basename to process.
+
+        countArchive.setVerbose(verbose);
         //  CountsWriter writers[] = new CountsWriter[numberOfReferences];
         final IntSet referencesToProcess = new IntOpenHashSet();
         WeightsInfo weights = null;
@@ -213,7 +239,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         referenceReader.readHeader();
 
         // read the alignment:
-        System.out.println("Loading the alignment..");
+        //   System.out.println("Loading the alignment..");
         for (final Alignments.AlignmentEntry alignmentEntry : referenceReader) {
             final int referenceIndex = alignmentEntry.getTargetIndex();
             if (referencesToProcess.contains(referenceIndex)) {
@@ -234,7 +260,9 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         for (final int referenceIndex : referencesToProcess) {
             final String chromosomeName = referenceIds.getId(referenceIndex).toString();
 
-            System.out.println("Writing counts for reference " + chromosomeName);
+            if (verbose) {
+                System.out.println("Writing counts for reference " + chromosomeName);
+            }
 
             algs[referenceIndex].accumulate();
             final CountsWriter countsWriter = countArchive.newCountWriter(referenceIndex, chromosomeName);
@@ -246,9 +274,53 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         }
         countArchive.close();
         timer.stop();
-        System.out.println(String.format("time spent  %d ms %d secs %d mins",
-                timer.millis(), timer.seconds(),
-                timer.minutes()));
+        System.out.println(timer);
+    }
+
+    private void processSortedAlignmentFullGenome(final String basename, AlignmentReader reader) throws IOException {
+
+        final CountsArchiveWriter countArchive = new CountsArchiveWriter(basename, countArchiveModifier);
+        final IterateForCounts sortedPositionIterator = new IterateForCounts(countArchive);
+        sortedPositionIterator.iterate(basename);
+        sortedPositionIterator.finishWriter();
+    }
+
+    private class IterateForCounts extends IterateSortedAlignmentsListImpl {
+        CountsWriter writer;
+        CountsArchiveWriter archiveWriter;
+        CountWriterHelper helper;
+
+        private IterateForCounts(CountsArchiveWriter archiveWriter) {
+            this.archiveWriter = archiveWriter;
+
+        }
+
+        int lastReferenceIndex = -1;
+
+        @Override
+        public void processPositions(int referenceIndex, int position, ObjectArrayList<PositionBaseInfo> positionBaseInfos) {
+            try {
+                if (referenceIndex != lastReferenceIndex) {
+                    if (writer != null) {
+                        finishWriter();
+                    }
+                    writer = archiveWriter.newCountWriter(referenceIndex, getReferenceId(referenceIndex).toString());
+                    helper = new CountWriterHelper(writer);
+                    lastReferenceIndex = referenceIndex;
+                }
+                helper.appendCountAtPosition(positionBaseInfos.size(), position);
+            } catch (IOException e) {
+                LOG.error("cannot return counts writer to archive", e);
+
+            }
+        }
+
+        public void finishWriter() throws IOException {
+            helper.close();
+            archiveWriter.returnWriter(writer);
+
+            writer = null;
+        }
     }
 
     private ComputeCountInterface chooseAlgorithm(final WeightParameters weightParams, final WeightsInfo weights, ComputeCountInterface algo) {
@@ -281,4 +353,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
     public static void main(final String[] args) throws JSAPException, IOException {
         new CompactAlignmentToCountsMode().configure(args).execute();
     }
+
+
 }
+

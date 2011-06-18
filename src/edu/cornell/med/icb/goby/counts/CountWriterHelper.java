@@ -24,6 +24,7 @@ import java.io.Closeable;
 import java.io.IOException;
 
 /**
+ * A helper class to facilitate writing counts with a CountsWriter.
  * @author Fabien Campagne
  *         Date: Jun 12, 2009
  *         Time: 4:44:06 PM
@@ -40,8 +41,9 @@ public class CountWriterHelper implements Closeable {
     }
 
     public void appendCountAtPosition(final int count, final int position) throws IOException {
-        System.out.printf("// count=%d position=%d previousCount=%d %n",
+     /*   System.out.printf("// count=%d position=%d previousCount=%d %n",
                 count, position, previousCount);
+      */
         lengthConstant++;
         if (count == previousCount) {
             lengthConstant += position - previousPositionNotWritten;
