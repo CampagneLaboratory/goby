@@ -80,6 +80,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
     private WeightParameters weightParams;
     private static final Logger LOG = Logger.getLogger(CompactAlignmentToCountsMode.class);
     private boolean verbose;
+    private boolean filterAmbiguousReads;
 
     @Override
     public String getModeName() {
@@ -144,6 +145,12 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         }
 
         weightParams = CompactAlignmentToAnnotationCountsMode.configureWeights(jsapResult);
+
+
+        filterAmbiguousReads = jsapResult.getBoolean("filter-ambiguous-reads");
+        if (filterAmbiguousReads) {
+            System.out.println("Ambiguous reads will not be considered when estimating count statistics.");
+        }
         return this;
     }
 
@@ -176,7 +183,9 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
     }
 
     private void processFullGenomeAlignment(final String basename) throws IOException {
-        NonAmbiguousAlignmentReaderFactory factory = new NonAmbiguousAlignmentReaderFactory();
+        final AlignmentReaderFactory factory = filterAmbiguousReads ? new NonAmbiguousAlignmentReaderFactory() :
+                new DefaultAlignmentReaderFactory();
+
         AlignmentReader reader = factory.createReader(basename);
 
         reader.readHeader();

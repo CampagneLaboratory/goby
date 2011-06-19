@@ -86,5 +86,17 @@
             </defaults>
                    <help>When other than false, the identifier of a formula to reweight counts (requires use-weights gc). If false, no reweighting is done. This option is available since Goby 1.7.</help>
          </flaggedOption>
+        <flaggedOption>
+            <id>filter-ambiguous-reads</id>
+            <longFlag>filter-ambiguous-reads</longFlag>
+            <required>true</required>
+            <help>If true, the reads that match more locations than the ambiguity threshold are not used to construct the histogram output. When false, all reads are considered. Please note that prior to Goby 1.9.7.1, this mode used false. The default for Goby 1.9.7.1+ is true.</help>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>true</string>
+            </defaults>
+        </flaggedOption>
     </parameters>
 </jsap>

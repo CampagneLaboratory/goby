@@ -83,7 +83,7 @@
             <longFlag>normalization-methods</longFlag>
             <required>false</required>
               <defaults>
-                <string>aligned-count,bullard-upper-quartile</string>
+                <string>bullard-upper-quartile</string>
             </defaults>
             <help>Comma separated list of the normalization methods to apply. Method currently supported include (AC=aligned-count) normalization by aligned sample count, or (BUQ=bullard-upper-quartile) Bullard Upper Quantile normalization. By default both options are evaluated. This option is available since goby 1.5.</help>
         </flaggedOption>
