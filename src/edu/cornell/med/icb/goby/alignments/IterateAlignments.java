@@ -115,12 +115,15 @@ public abstract class IterateAlignments {
     }
 
     private void iterateOverOneAlignment(final long startOffset, final long endOffset, final String basename) throws IOException {
-        final AlignmentReader reader = alignmentReaderFactory.createReader(basename, startOffset, endOffset);
-        reader.readHeader();
-        final int numberOfReferences = reader.getNumberOfTargets();
+        final int numberOfReferences;
+        {
+            final AlignmentReader reader = alignmentReaderFactory.createReader(basename, startOffset, endOffset);
+            reader.readHeader();
+            numberOfReferences = reader.getNumberOfTargets();
 
-        referenceIds = new DoubleIndexedIdentifier(reader.getTargetIdentifiers());
-        reader.close();
+            referenceIds = new DoubleIndexedIdentifier(reader.getTargetIdentifiers());
+            reader.close();
+        }
         LOG.debug(String.format("Alignment contains %d reference sequences", numberOfReferences));
         processNumberOfReferences(basename, numberOfReferences);
         //  CountsWriter writers[] = new CountsWriter[numberOfReferences];
@@ -143,7 +146,7 @@ public abstract class IterateAlignments {
             }
         }
 
-        final AlignmentReaderImpl alignmentReader = new AlignmentReaderImpl(startOffset, endOffset, basename);
+        final AlignmentReader alignmentReader = alignmentReaderFactory.createReader(basename, startOffset, endOffset);
         alignmentReader.readHeader();
 
         // Give the client the ability to prepare data structures for each reference that will be processed.
@@ -192,7 +195,7 @@ public abstract class IterateAlignments {
                 }
             }
         }
-        reader.close();
+        alignmentReader.close();
     }
 
     /**

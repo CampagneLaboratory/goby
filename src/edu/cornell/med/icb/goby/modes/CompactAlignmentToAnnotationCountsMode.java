@@ -335,6 +335,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         }
         timer.stop();
         System.out.println("time spent  " + timer.toString());
+
     }
 
     private void processOneBasename(final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots,
@@ -349,22 +350,22 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         }
         final AlignmentReaderFactory factory = filterAmbiguousReads ? new NonAmbiguousAlignmentReaderFactory() :
                 new DefaultAlignmentReaderFactory();
+        final int numberOfReferences;
+        final DoubleIndexedIdentifier referenceIds;
+        {
+            final AlignmentReader reader = factory.createReader(inputBasename);
+            reader.readHeader();
+            numberOfReferences = reader.getNumberOfTargets();
 
-        final AlignmentReader reader = factory.createReader(inputBasename);
-        reader.readHeader();
-        final int numberOfReferences = reader.getNumberOfTargets();
-
-        final DoubleIndexedIdentifier referenceIds = new DoubleIndexedIdentifier(reader.getTargetIdentifiers());
-        reader.close();
+            referenceIds = new DoubleIndexedIdentifier(reader.getTargetIdentifiers());
+            reader.close();
+        }
         System.out.println(String.format("Alignment contains %d reference sequences", numberOfReferences));
 
         final AnnotationCountIterateAlignments iterateAlignment = new AnnotationCountIterateAlignments();
         iterateAlignment.setWeightInfo(weightParams, weights);
         iterateAlignment.parseIncludeReferenceArgument(includeReferenceNameCommas);
 
-
-        AlignmentReader referenceReader = factory.createReader(inputBasename);
-        referenceReader.readHeader();
 
         // Iterate through the alignment and retrieve algs:
         System.out.println("Loading alignment " + inputBasename + "..");

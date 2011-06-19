@@ -47,7 +47,7 @@ public abstract class StatisticCalculator {
     public int defineStatisticId(final DifferentialExpressionResults results, final MutableString statisticId) {
 
         if (!results.isStatisticDefined(statisticId)) {
-            synchronized (results) {
+            synchronized (statisticIds) {
                 // we test again now that we have synchronized:
                 if (!results.isStatisticDefined(statisticId)) {
                     final int index = results.declareStatistic(statisticId);
