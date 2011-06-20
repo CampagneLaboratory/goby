@@ -203,8 +203,8 @@ public class VCFWriter {
         formatValues = new CharSequence[formatFieldActive.length][sampleIds.length];
         ref.setLength(0);
         alt.setLength(0);
-        filter = "";
-        id = "";
+        filter = ".";
+        id = ".";
         chrom = "";
         qual = ".";
         final ColumnInfo info = columns.find("INFO");
@@ -310,8 +310,8 @@ public class VCFWriter {
         for (int i = 0; i < formatFieldActive.length; i++) Arrays.fill(formatValues[i], "");
         Arrays.fill(infoValues, "");
 
-        filter = "";
-        id = "";
+        filter = ".";
+        id = ".";
         chrom = "";
         altAlleles.clear();
         refAlleles.clear();

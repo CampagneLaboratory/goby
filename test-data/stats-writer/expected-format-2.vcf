@@ -3,5 +3,5 @@
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Desc GT">
 ##FORMAT=<ID=GQ,Number=1,Type=String,Description="Desc GQ">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample-id-1	sample-id-2	sample-id-3
-					.			GT:GQ	A:B	:	:
-					.			GT:GQ	:	:	A:B
+		.			.	.		GT:GQ	A:B	:	:
+		.			.	.		GT:GQ	:	:	A:B
