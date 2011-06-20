@@ -14,6 +14,8 @@
  - Do not print indices at the end of upgrade. This caused upgrade to fail on some alignments with an exception.
  - Extended IterateAlignments to create alignment reader with a configurable AlignmentReaderFactory.
  - Set the default normalization method for alignment-to-annotation-count to bullard normalization only.
+ - Fix a bug in VCFParser that affected parsing tab delimited files. Some files would be parsed with a tab in the
+   value of the last column, separating the values of the last two actual columns.
 1.9.7
  - Now using protobuf 2.4.1. Please upgrade your local version of protobuf if you are recompiling from sources.
  - AlignmentWriter now correctly records Goby version in header upon close(). This fixes a problem when alignments
