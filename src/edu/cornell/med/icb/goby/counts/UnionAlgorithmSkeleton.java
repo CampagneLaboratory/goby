@@ -155,7 +155,12 @@ public class UnionAlgorithmSkeleton implements CountsAggregatorI {
 
 
     public void skipTo(int position) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        throw new UnsupportedOperationException("this implementation does not support this method.");
+    }
+
+    @Override
+    public void reposition(int position) throws IOException {
+         throw new UnsupportedOperationException("this implementation does not support this method.");
     }
 
     public int getLength() {

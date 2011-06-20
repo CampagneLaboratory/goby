@@ -27,11 +27,12 @@ import java.io.IOException;
  */
 public class PositionAdapter implements CountsReaderI {
     /**
-     * Return the position after the transition occured.
+     * Return the position after the transition occurred.
+     *
      * @return
      */
     public int getPosition() {
-        return reader.getPosition()+reader.getLength();
+        return reader.getPosition() + reader.getLength();
     }
 
     public boolean hasNextTransition() throws IOException {
@@ -48,6 +49,11 @@ public class PositionAdapter implements CountsReaderI {
 
     public void skipTo(int position) throws IOException {
         reader.skipTo(position);
+    }
+
+    @Override
+    public void reposition(int position) throws IOException {
+        reader.reposition(position);
     }
 
     public int getLength() {

@@ -115,6 +115,11 @@ public class CountsReaderTestSupport implements CountsReaderI {
         }
     }
 
+    @Override
+    public void reposition(int position) throws IOException {
+         throw new UnsupportedOperationException("this implementation does not support this method.");
+    }
+
     public int getLength() {
         return lengths[index];
     }

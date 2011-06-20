@@ -56,6 +56,11 @@ public class OffsetCountsReader implements CountsReaderI {
         delegate.skipTo(position - offset);
     }
 
+    @Override
+    public void reposition(final int position) throws IOException {
+        delegate.reposition(position-offset);
+    }
+
     public int getLength() {
         return delegate.getLength();
     }

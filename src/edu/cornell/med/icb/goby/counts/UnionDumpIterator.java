@@ -170,6 +170,11 @@ public class UnionDumpIterator implements CountsAggregatorI {
         }
     }
 
+    @Override
+    public void reposition(int position) throws IOException {
+         throw new UnsupportedOperationException("this implementation does not support this method.");
+    }
+
     public int getLength() {
         return length;
     }
