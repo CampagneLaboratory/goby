@@ -155,9 +155,9 @@ extern "C" {
     void gobyCapture_close(CAlignmentsWriterHelper *writerHelper) {
 	    if (writerHelper->captureFile || writerHelper->captureIgnoredFile) {
 #ifdef GOBY_CAPTURE_VIA_OPEN_MEMSTREAM
-            fprintf(stderr, "Closing gobyCapture via open_memstream()\n");
+            debug(fprintf(stderr, "Closing gobyCapture via open_memstream()\n");)
 #else
-            fprintf(stderr, "Closing gobyCapture via temporary files\n");
+            debug(fprintf(stderr, "Closing gobyCapture via temporary files\n");)
 #endif
         }
         if (writerHelper->captureFile) {
@@ -795,5 +795,33 @@ extern "C" {
         }
         fprintf(stderr,"\n");
     }
+
+	/**
+	 * Duplicate a string with an optional length to copy. If the incoming
+	 * str is NULL, this will return null. If length is -1, the length
+	 * that is copied is strlen(str). The size of the returned buffer is
+	 * always length + 1 (to include the trailing '\0'). The caller is required
+	 * to FREE the string.
+	 * @param str the string to copy
+	 * @param the maximum length to copy or -1 for the whole string
+	 * @return the duplicate string.
+	 */
+
+    char *goby_copy_string(char *str, int length) {
+            int copy_length = length;
+            char *new_str = (char *) NULL;
+
+            if (str != NULL) {
+                    if (copy_length == -1) {
+                            copy_length = strlen(str);
+                    }
+                    new_str = (char *) calloc(copy_length + 1, sizeof(char));
+                    strncpy(new_str, str, copy_length);
+                    new_str[copy_length] = '\0';
+            }
+
+            return new_str;
+    }
+
 }
 

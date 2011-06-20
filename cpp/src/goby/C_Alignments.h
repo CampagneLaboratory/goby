@@ -7,6 +7,24 @@
 
 #include "C_CompactHelpers.h"
 
+// CAPTURE results are mutable. If you want a copy that will live
+// beyond the next gobyCapture_startNew(), use CAPTURE_DUPE.
+// which will duplicate the string returned by CAPTURE().
+#define GOBY_CAPTURE(RESULT,HELPER,CODE) {              \
+		gobyCapture_startNew(HELPER);              \
+		CODE;                                      \
+		gobyCapture_flush(HELPER);                 \
+		RESULT = gobyCapture_capturedData(HELPER); \
+}
+
+// Execute CAPTURE and duplicate the string so it won't be destroyed
+// during the next CAPTURE. The char* in RESULT after you call this
+// needs to be free()'d.
+#define GOBY_CAPTURE_DUPE(RESULT,HELPER,CODE) {      \
+		CAPTURE(RESULT,HELPER,CODE);            \
+		RESULT = goby_copy_string(RESULT, -1);  \
+}
+
 #ifdef __cplusplus
 
 extern "C" {
@@ -98,6 +116,8 @@ extern "C" {
     const char *samHelper_constructedRef(CSamHelper *samHelper);
 
 	void gobyAlignments_finished(CAlignmentsWriterHelper *alWriterHelper, unsigned int numberOfReads);
+
+	char *goby_copy_string(char *str, int length);
 #ifdef __cplusplus
 }
 #endif
