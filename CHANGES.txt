@@ -1,4 +1,4 @@
-development -> 1.9.7.1
+1.9.7.1
  - alignment-to-counts now generates indexed base-level histogram files. Indexing makes it possible to jump quickly
    to a new genomic location in IGV. This is especially useful when viewing coverage for tens of tracks.
  - Filter out ambiguous reads from alignment-to-counts base level histogram output. Pre-1.9.7.1 behaviour can be
