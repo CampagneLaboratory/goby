@@ -111,7 +111,10 @@ public class TestVCFParser {
         assertNotNull("optional sample column 1 must exist", cols.find("results/IPBKRNW/IPBKRNW-replicate.bam"));
         assertNotNull("optional sample column w must exist", cols.find("results/IPBKRNW/IPBKRNW-sorted.bam"));
 
-
+        assertTrue("file must have one line at least", parser.hasNextDataLine());
+        assertEquals("0", parser.getColumnValue(0).toString());
+        assertEquals("145497099", parser.getColumnValue(1).toString());
+        assertEquals("1/1:25,3,0:42", parser.getColumnValue(10).toString());
     }
 
     @Test
@@ -300,23 +303,25 @@ public class TestVCFParser {
         }
     }
 
+
     @Test
-    public void testParseNoFormatTSV() throws FileNotFoundException, VCFParser.SyntaxException {
-        VCFParser parser = new VCFParser(new FileReader("test-data/vcf/no-format.tsv"));
+    public void testParseLargeBuggyTSV() throws FileNotFoundException, VCFParser.SyntaxException {
+        VCFParser parser = new VCFParser(new FileReader("test-data/vcf/large-bug.tsv"));
         parser.readHeader();
         Columns cols = parser.getColumns();
 
-        assertNotNull("Fixed element-id column must exist", cols.find("element-id"));
-        assertNotNull("Fixed log2_odds-ratio_standard_error column must exist", cols.find("log2_odds-ratio_standard_error"));
-        int lastColumnIndex = parser.getGlobalFieldIndex("within-group-p-value[normal]-BH-FDR-q-value", "VALUE");
+        int previousToLastColumnIndex = parser.getGlobalFieldIndex("fisher-exact-R Group_1/Group_2(BUQ)", "VALUE");
+        int lastColumnIndex = parser.getGlobalFieldIndex("fisher-exact-R Group_1/Group_2(BUQ)-BH-FDR-q-value", "VALUE");
         while (parser.hasNextDataLine()) {
-
-            String colValue = parser.getFieldValue(lastColumnIndex).toString();
-            System.out.println(colValue);
-            assertFalse("column value must not contain a tab.",colValue.contains("\t"));
+            for (int i = 26; i < parser.getNumberOfColumns(); i++) {
+                String colValue = parser.getFieldValue(i).toString();
+       //         System.out.println(colValue);
+                assertFalse("column value must not contain a tab.", colValue.contains("\t"));
+            }
             parser.next();
-        }
 
+        }
+        System.out.println("done");
     }
     /*
     @Test

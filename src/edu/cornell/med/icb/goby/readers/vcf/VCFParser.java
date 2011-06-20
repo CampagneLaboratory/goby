@@ -199,7 +199,7 @@ public class VCFParser implements Closeable {
             if (!TSV) {
                 parseCurrentLine();
 
-            }   else {
+            } else {
                 parseTSVLine();
             }
 
@@ -339,7 +339,7 @@ public class VCFParser implements Closeable {
                     // We are seeing an actual line of data. Prepare for parsing:
                     if (!TSV) {
                         parseCurrentLine();
-                    }                       else {
+                    } else {
                         parseTSVLine();
                     }
                     hasNextDataLine = true;
@@ -367,17 +367,23 @@ public class VCFParser implements Closeable {
 
             final char c = line.charAt(i);
             if (c == '\t') {
+                String columnName = columnList.get(columnIndex).columnName;
+
                 columnEnds[columnIndex] = i;
-                if (columnIndex + 1 < numberOfColumns) {
+                if (columnIndex + 1 < columnStarts.length) {
+
                     columnStarts[columnIndex + 1] = i + 1;
                 }
+                fieldPermutation[columnIndex] = columnIndex;
                 ++columnIndex;
             }
-
         }
-        columnEnds[columnEnds.length-1]=lineLength;
-        System.arraycopy(columnEnds, 0, fieldEnds,0, columnEnds.length);
-        System.arraycopy(columnStarts, 0, fieldStarts,0, columnStarts.length);
+
+        fieldPermutation[columnEnds.length - 1] = columnEnds.length - 1;
+        columnEnds[columnEnds.length - 1] = lineLength;
+        columnStarts[columnEnds.length - 1] = columnEnds[columnEnds.length - 2] + 1;
+        System.arraycopy(columnEnds, 0, fieldEnds, 0, columnEnds.length);
+        System.arraycopy(columnStarts, 0, fieldStarts, 0, columnStarts.length);
 
     }
 
@@ -401,7 +407,7 @@ public class VCFParser implements Closeable {
             final char c = line.charAt(i);
             if (c == columnSeparatorCharacter) {
 
-                fieldPermutation[columnIndex]=columnIndex;
+                fieldPermutation[columnIndex] = columnIndex;
                 columnEnds[columnIndex] = i;
 
                 if (columnIndex + 1 < numberOfColumns) {
@@ -671,7 +677,7 @@ public class VCFParser implements Closeable {
         numberOfColumns = globalColumnIndex;
         columnStarts = new int[numberOfColumns];
         columnEnds = new int[numberOfColumns];
-        numberOfFields = TSV ? numberOfColumns : globalFieldIndex;
+        numberOfFields = globalFieldIndex;
         fieldStarts = new int[numberOfFields];
         fieldEnds = new int[numberOfFields];
         fieldPermutation = new int[numberOfFields];
