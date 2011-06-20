@@ -304,25 +304,7 @@ public class TestVCFParser {
     }
 
 
-    @Test
-    public void testParseLargeBuggyTSV() throws FileNotFoundException, VCFParser.SyntaxException {
-        VCFParser parser = new VCFParser(new FileReader("test-data/vcf/large-bug.tsv"));
-        parser.readHeader();
-        Columns cols = parser.getColumns();
 
-        int previousToLastColumnIndex = parser.getGlobalFieldIndex("fisher-exact-R Group_1/Group_2(BUQ)", "VALUE");
-        int lastColumnIndex = parser.getGlobalFieldIndex("fisher-exact-R Group_1/Group_2(BUQ)-BH-FDR-q-value", "VALUE");
-        while (parser.hasNextDataLine()) {
-            for (int i = 26; i < parser.getNumberOfColumns(); i++) {
-                String colValue = parser.getFieldValue(i).toString();
-       //         System.out.println(colValue);
-                assertFalse("column value must not contain a tab.", colValue.contains("\t"));
-            }
-            parser.next();
-
-        }
-        System.out.println("done");
-    }
     /*
     @Test
     public void testParseTrickyLarge() throws IOException, VCFParser.SyntaxException {
