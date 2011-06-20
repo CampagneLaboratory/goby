@@ -39,6 +39,10 @@ public class TestEquivalentIndelRegionCalculator {
     };
   //  private EquivalentIndelRegionCalculator equivalentIndelRegionCalculator;
 
+    @Test
+    public void emptyTest() {
+    }
+
  /*   @Before
     public void setUp() throws Exception {
 
