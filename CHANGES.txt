@@ -1,8 +1,8 @@
 development -> 1.9.7.1
  - alignment-to-counts now generates indexed base-level histogram files. Indexing makes it possible to jump quickly
    to a new genomic location in IGV. This is especially useful when viewing coverage for tens of tracks.
- - Filter out ambiguous reads from alignment-to-counts base level histogram output. Pre-1.9.7.1 behaviour can be obtained
-   by setting the argument --filter-ambiguous-reads to false.
+ - Filter out ambiguous reads from alignment-to-counts base level histogram output. Pre-1.9.7.1 behaviour can be
+   obtained by setting the argument --filter-ambiguous-reads to false.
    alignment-to-counts: also tried a new way to create base-level histograms from sorted alignment files.
    This turns out to be about 3 times slower than the current approach. We still keep the new approach because it
    should scale to any size alignment. Mode alignment-to-count will use to the new approach if an alignment is sorted
