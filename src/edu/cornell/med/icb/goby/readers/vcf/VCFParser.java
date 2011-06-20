@@ -196,7 +196,12 @@ public class VCFParser implements Closeable {
         hasNextDataLine = lineIterator.hasNext();
         if (hasNextDataLine) {
             line = lineIterator.next();
-            parseCurrentLine();
+            if (!TSV) {
+                parseCurrentLine();
+
+            }   else {
+                parseTSVLine();
+            }
 
         }
         return hasNextDataLine;
@@ -332,7 +337,11 @@ public class VCFParser implements Closeable {
 
                 } else {
                     // We are seeing an actual line of data. Prepare for parsing:
-                    parseCurrentLine();
+                    if (!TSV) {
+                        parseCurrentLine();
+                    }                       else {
+                        parseTSVLine();
+                    }
                     hasNextDataLine = true;
                 }
                 break;
@@ -345,6 +354,31 @@ public class VCFParser implements Closeable {
             }
             lineNumber++;
         }
+    }
+
+    private void parseTSVLine() {
+        Arrays.fill(columnStarts, 0);
+        Arrays.fill(columnEnds, 0);
+        Arrays.fill(fieldStarts, 0);
+        Arrays.fill(fieldEnds, 0);
+        int columnIndex = 0;
+        lineLength = line.length();
+        for (int i = 0; i < lineLength; i++) {
+
+            final char c = line.charAt(i);
+            if (c == '\t') {
+                columnEnds[columnIndex] = i;
+                if (columnIndex + 1 < numberOfColumns) {
+                    columnStarts[columnIndex + 1] = i + 1;
+                }
+                ++columnIndex;
+            }
+
+        }
+        columnEnds[columnEnds.length-1]=lineLength;
+        System.arraycopy(columnEnds, 0, fieldEnds,0, columnEnds.length);
+        System.arraycopy(columnStarts, 0, fieldStarts,0, columnStarts.length);
+
     }
 
     final IntArrayList previousColumnFieldIndices = new IntArrayList();
@@ -367,6 +401,7 @@ public class VCFParser implements Closeable {
             final char c = line.charAt(i);
             if (c == columnSeparatorCharacter) {
 
+                fieldPermutation[columnIndex]=columnIndex;
                 columnEnds[columnIndex] = i;
 
                 if (columnIndex + 1 < numberOfColumns) {
@@ -400,7 +435,7 @@ public class VCFParser implements Closeable {
                 }
             }
             if (c == columnSeparatorCharacter) {
-               if (TSV) {
+                if (TSV) {
                     lineFieldIndexToColumnIndex[fieldIndex] = columnIndex;
                 }
                 push(columnIndex, lineFieldIndexToColumnIndex, previousColumnFieldIndices);
@@ -411,9 +446,9 @@ public class VCFParser implements Closeable {
         int numberOfFieldsOnLine = fieldIndex;
         int numberOfColumnsOnLine = columnIndex;
         columnStarts[0] = 0;
-        columnEnds[numberOfColumnsOnLine- (TSV?1:0)] = line.length();
+        columnEnds[numberOfColumnsOnLine - (TSV ? 1 : 0)] = line.length();
         fieldStarts[0] = 0;
-        fieldEnds[numberOfFieldsOnLine- (TSV?1:0)] = line.length();
+        fieldEnds[numberOfFieldsOnLine - (TSV ? 1 : 0)] = line.length();
         previousColumnFieldIndices.add(fieldIndex);
         push(columnIndex, lineFieldIndexToColumnIndex, previousColumnFieldIndices);
 
@@ -431,8 +466,8 @@ public class VCFParser implements Closeable {
             int end = fieldEnds[lineFieldIndex];
 
             final int cIndex = lineFieldIndexToColumnIndex[lineFieldIndex];
-            if (cIndex>=columnList.size()) {
-               break;
+            if (cIndex >= columnList.size()) {
+                break;
             }
             ColumnInfo column = columnList.get(cIndex);
 
@@ -561,9 +596,9 @@ public class VCFParser implements Closeable {
 
 
     private void push(final int columnIndex, final int[] lineFieldIndexToColumnIndex, final IntArrayList previousColumnFieldIndices) {
-    //    System.out.println("---");
+        //    System.out.println("---");
         for (final int fIndex : previousColumnFieldIndices.toIntArray()) {
-          /*        System.out.printf("field %s gfi:%d belongs to column %d %s%n ",
+            /*        System.out.printf("field %s gfi:%d belongs to column %d %s%n ",
            line.substring(fieldStarts[fIndex], fieldEnds[fIndex]),
            fIndex,
            columnIndex, columnList.get(columnIndex).columnName);*/
