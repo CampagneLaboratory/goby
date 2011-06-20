@@ -238,7 +238,7 @@ public abstract class IterateAlignments {
         return referenceIds.getId(targetIndex);
     }
 
-    private AlignmentReaderFactory alignmentReaderFactory;
+    private AlignmentReaderFactory alignmentReaderFactory=new DefaultAlignmentReaderFactory();
 
     public void setAlignmentReaderFactory(AlignmentReaderFactory factory) {
         this.alignmentReaderFactory = factory;
