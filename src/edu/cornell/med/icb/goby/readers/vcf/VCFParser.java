@@ -347,7 +347,7 @@ public class VCFParser implements Closeable {
         }
     }
 
-   final IntArrayList previousColumnFieldIndices = new IntArrayList();
+    final IntArrayList previousColumnFieldIndices = new IntArrayList();
 
     private void parseCurrentLine() {
         Arrays.fill(columnStarts, 0);
@@ -400,6 +400,9 @@ public class VCFParser implements Closeable {
                 }
             }
             if (c == columnSeparatorCharacter) {
+               if (TSV) {
+                    lineFieldIndexToColumnIndex[fieldIndex] = columnIndex;
+                }
                 push(columnIndex, lineFieldIndexToColumnIndex, previousColumnFieldIndices);
                 columnIndex++;
             }
@@ -408,9 +411,9 @@ public class VCFParser implements Closeable {
         int numberOfFieldsOnLine = fieldIndex;
         int numberOfColumnsOnLine = columnIndex;
         columnStarts[0] = 0;
-        columnEnds[numberOfColumnsOnLine] = line.length();
+        columnEnds[numberOfColumnsOnLine- (TSV?1:0)] = line.length();
         fieldStarts[0] = 0;
-        fieldEnds[numberOfFieldsOnLine] = line.length();
+        fieldEnds[numberOfFieldsOnLine- (TSV?1:0)] = line.length();
         previousColumnFieldIndices.add(fieldIndex);
         push(columnIndex, lineFieldIndexToColumnIndex, previousColumnFieldIndices);
 
@@ -428,7 +431,9 @@ public class VCFParser implements Closeable {
             int end = fieldEnds[lineFieldIndex];
 
             final int cIndex = lineFieldIndexToColumnIndex[lineFieldIndex];
-
+            if (cIndex>=columnList.size()) {
+               break;
+            }
             ColumnInfo column = columnList.get(cIndex);
 
             int colMinGlobalFieldIndex = Integer.MAX_VALUE;
@@ -523,7 +528,7 @@ public class VCFParser implements Closeable {
         if (formatSplit != null) {
             return formatSplit;
         } else {
-           final MutableString formatSpan = line.substring(startFormatColumn, endFormatColumn);
+            final MutableString formatSpan = line.substring(startFormatColumn, endFormatColumn);
 
             int fieldCount = 0;
 
@@ -556,9 +561,9 @@ public class VCFParser implements Closeable {
 
 
     private void push(final int columnIndex, final int[] lineFieldIndexToColumnIndex, final IntArrayList previousColumnFieldIndices) {
-        //  System.out.println("---");
+    //    System.out.println("---");
         for (final int fIndex : previousColumnFieldIndices.toIntArray()) {
-            /*       System.out.printf("field %s gfi:%d belongs to column %d %s%n ",
+          /*        System.out.printf("field %s gfi:%d belongs to column %d %s%n ",
            line.substring(fieldStarts[fIndex], fieldEnds[fIndex]),
            fIndex,
            columnIndex, columnList.get(columnIndex).columnName);*/

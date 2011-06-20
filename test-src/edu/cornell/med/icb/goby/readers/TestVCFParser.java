@@ -21,14 +21,13 @@ package edu.cornell.med.icb.goby.readers;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnInfo;
 import edu.cornell.med.icb.goby.readers.vcf.Columns;
 import edu.cornell.med.icb.goby.readers.vcf.VCFParser;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+
+import static org.junit.Assert.*;
 
 /**
  * Test the VCF parser
@@ -292,7 +291,7 @@ public class TestVCFParser {
             for (int i = 0; i < parser.countAllFields(); i++) {
                 final String name = parser.getFieldName(i);
                 final String stringFieldValue = parser.getStringFieldValue(i);
-              /*  System.out.printf("field %s gfi:%d value: %s%n", name, i,
+                /*  System.out.printf("field %s gfi:%d value: %s%n", name, i,
                       stringFieldValue);
                 */
 
@@ -309,10 +308,17 @@ public class TestVCFParser {
 
         assertNotNull("Fixed element-id column must exist", cols.find("element-id"));
         assertNotNull("Fixed log2_odds-ratio_standard_error column must exist", cols.find("log2_odds-ratio_standard_error"));
+        int lastColumnIndex = parser.getGlobalFieldIndex("within-group-p-value[normal]-BH-FDR-q-value", "VALUE");
+        while (parser.hasNextDataLine()) {
 
+            String colValue = parser.getFieldValue(lastColumnIndex).toString();
+            System.out.println(colValue);
+            assertFalse("column value must not contain a tab.",colValue.contains("\t"));
+            parser.next();
+        }
 
     }
-   /*
+    /*
     @Test
     public void testParseTrickyLarge() throws IOException, VCFParser.SyntaxException {
         //VCFParser parser = new VCFParser("/home/gobyweb/GOBYWEB_RESULTS/campagne/NXMONDD/NXMONDD.vcf.gz");
