@@ -114,7 +114,7 @@ public class TestFalseDiscoveryMode extends TestFiles {
                     "test-data/fdr-mode/file-B-1.vcf",
                     "test-data/fdr-mode/file-B-2.vcf",
                     "-q", "0.3",
-                    "--output", "test-results/fdr-mode/combined-file-B-adjust-PCHI2.vcf",
+                    "--output", "test-results/fdr-mode/combined-B-file-adjust-PCHI2.vcf",
             };
             mode.configure(args);
             mode.execute();
