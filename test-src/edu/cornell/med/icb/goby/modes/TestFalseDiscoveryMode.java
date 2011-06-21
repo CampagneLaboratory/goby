@@ -64,22 +64,61 @@ public class TestFalseDiscoveryMode extends TestFiles {
         mode.execute();
         assertEquals(new File("test-data/fdr-mode/expected-combined-1-2-3.vcf"), new File("test-results/fdr-mode/combined-file.vcf"));
     }
-    @Test
-       public void mergeVCF2() throws IOException, JSAPException {
 
-           FalseDiscoveryRateMode mode = new FalseDiscoveryRateMode();
-           String[] args = {
-                   "--mode", "fdr",
-                   "--vcf",
-                   "--column", "PCHI2",
-                   "test-data/fdr-mode/file1.vcf",
-                   "test-data/fdr-mode/file2.vcf",
-                   "test-data/fdr-mode/file3.vcf",
-                   "--output", "test-results/fdr-mode/combined-file-adjust-PCHI2.vcf",
-           };
-           mode.configure(args);
-           mode.execute();
-           assertEquals(new File("test-data/fdr-mode/expected-combined-1-2-3-adjust.vcf"), new File("test-results/fdr-mode/combined-file-adjust-PCHI2.vcf"));
-       }
+    @Test
+    public void mergeVCF2() throws IOException, JSAPException {
+
+        FalseDiscoveryRateMode mode = new FalseDiscoveryRateMode();
+        String[] args = {
+                "--mode", "fdr",
+                "--vcf",
+                "--column", "PCHI2",
+                "test-data/fdr-mode/file1.vcf",
+                "test-data/fdr-mode/file2.vcf",
+                "test-data/fdr-mode/file3.vcf",
+                "--output", "test-results/fdr-mode/combined-file-B-top-2adjust-PCHI2.vcf",
+        };
+        mode.configure(args);
+        mode.execute();
+        assertEquals(new File("test-data/fdr-mode/expected-combined-1-2-3-adjust.vcf"), new File("test-results/fdr-mode/combined-file-B-top-2adjust-PCHI2.vcf"));
+    }
+
+
+    @Test
+    public void mergeVCF3() throws IOException, JSAPException {
+
+        FalseDiscoveryRateMode mode = new FalseDiscoveryRateMode();
+        String[] args = {
+                "--mode", "fdr",
+                "--vcf",
+                "--column", "PCHI2",
+                "test-data/fdr-mode/file-B-1.vcf",
+                "test-data/fdr-mode/file-B-2.vcf",
+                "-q", "0.3",
+                "--top-hits", "2",
+                "--output", "test-results/fdr-mode/combined-file-B-adjust-strict-PCHI2.vcf",
+        };
+        mode.configure(args);
+        mode.execute();
+        assertEquals(new File("test-data/fdr-mode/expected-combined-B-1-2-adjust-top-2.vcf"), new File("test-results/fdr-mode/combined-file-B-adjust-strict-PCHI2.vcf"));
+    }
+
+    @Test
+        public void mergeVCF4() throws IOException, JSAPException {
+
+            FalseDiscoveryRateMode mode = new FalseDiscoveryRateMode();
+            String[] args = {
+                    "--mode", "fdr",
+                    "--vcf",
+                    "--column", "PCHI2",
+                    "test-data/fdr-mode/file-B-1.vcf",
+                    "test-data/fdr-mode/file-B-2.vcf",
+                    "-q", "0.3",
+                    "--output", "test-results/fdr-mode/combined-file-B-adjust-PCHI2.vcf",
+            };
+            mode.configure(args);
+            mode.execute();
+            assertEquals(new File("test-data/fdr-mode/expected-combined-B-1-2-adjust.vcf"), new File("test-results/fdr-mode/combined-B-file-adjust-PCHI2.vcf"));
+        }
 
 }

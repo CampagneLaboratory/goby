@@ -62,6 +62,17 @@
             <defaults>false</defaults>
             <help>When this switch is provided, input are read in the Variant Call Format (VCF) and output produced in VCF.</help>
         </switch>
-          
+        <flaggedOption>
+            <id>top-hits</id>
+            <longFlag>top-hits</longFlag>
+            <shortFlag>n</shortFlag>
+            <required>false</required>
+              <allowMultipleDeclarations>true</allowMultipleDeclarations>
+              <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <defaults>0</defaults>
+            <help>Minimum number of hits to report even if FDR threshold is not met. This option reports n top hits (ranked by lower adjusted p-value for the last column adjusted).</help>
+        </flaggedOption>
     </parameters>
 </jsap>

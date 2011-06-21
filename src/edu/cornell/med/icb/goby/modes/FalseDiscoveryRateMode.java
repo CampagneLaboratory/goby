@@ -61,7 +61,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Combines tab delimited datasets and performs FDR adjustment on a set of P-value columns.";
+    private static final String MODE_DESCRIPTION = "Combines tab delimited or CVF datasets and performs FDR adjustment on a set of P-value columns.";
 
     /**
      * The output file.
@@ -78,6 +78,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
     private String[] selectedPValueColumns;
     private ObjectArraySet<String> adjustedColumnIds = new ObjectArraySet<String>();
     private boolean vcf;
+    private int topHitNum;
 
 
     @Override
@@ -107,6 +108,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         inputFiles = jsapResult.getStringArray("input");
         outputFilename = jsapResult.getString("output");
         qValueThreshold = jsapResult.getDouble("q-threshold");
+        topHitNum = jsapResult.getInt("top-hits",0);
         selectedPValueColumns = jsapResult.getStringArray("column");
         vcf = jsapResult.getBoolean("vcf");
         return this;
@@ -152,6 +154,12 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                     adjustedColumnIds.add(statId);
                 }
             }
+            if (topHitNum!=0) {
+
+                qValueThreshold=data.get(topHitNum-1).statistics().getDouble(selectedPValueColumns.length);
+                System.out.printf("determined q-threshold to keep %d top hits=%g %n", topHitNum,qValueThreshold );
+            }
+
             Collections.sort(data, new ElementIndexComparator());
             if (vcf) {
                 combineVCF(inputFiles, data, deCalculator, columnIdList, stream);
@@ -412,10 +420,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                         final DoubleArrayList list = data.get(elementIndex).statistics();
 
                         double adjustedPValue = list.get(adjustedColumnIndex);
-                        if (adjustedPValue < qValueThreshold) {
-                            keepThisLine = true;
-
-                        }
+                        keepThisLine = determineKeepThisLine(keepThisLine, adjustedPValue);
                     }
                     if (adjustedColumnIds.size() == 0) {
                         // no selection column, keep all lines.
@@ -509,6 +514,14 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         }
     }
 
+    private boolean determineKeepThisLine(boolean keepThisLine, double adjustedPValue) {
+        if (adjustedPValue <= qValueThreshold) {
+            keepThisLine = true;
+
+        }
+        return keepThisLine;
+    }
+
     private void combineTSV(String[] inputFiles, DifferentialExpressionResults data,
                             DifferentialExpressionCalculator deCalculator, ObjectList<String> columnIdList,
                             Writer out) throws IOException {
@@ -572,10 +585,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                             final DoubleArrayList list = data.get(elementIndex).statistics();
 
                             double adjustedPValue = list.get(adjustedColumnIndex);
-                            if (adjustedPValue < qValueThreshold) {
-                                keepThisLine = true;
-
-                            }
+                            keepThisLine = determineKeepThisLine(keepThisLine, adjustedPValue);
                         }
                         if (!keepThisLine) {
                             //     System.out.println("skipping elementId since the adjusted P-values do not make the q-value threshold." + elementId);
