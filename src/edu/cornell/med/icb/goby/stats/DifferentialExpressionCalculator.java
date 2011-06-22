@@ -157,10 +157,10 @@ public class DifferentialExpressionCalculator {
      * @return the index of the element
      */
     public synchronized int defineElement(final String label, final ElementType type) {
-        final MutableString elementLabel = new MutableString(label);
+        final MutableString elementLabel = new MutableString(label).compact();
         final int elementIndex = elementLabels.registerIdentifier(elementLabel);
         if (elementLabelToElementType.get(elementIndex) == -1) {
-            // Don't REPLACE the ElementType for an label. If it was set before, leave it alone.
+            // Don't REPLACE the ElementType for a label. If it was set before, leave it alone.
             elementLabelToElementType.put(elementIndex, type.ordinal());
         }
         return elementIndex;
