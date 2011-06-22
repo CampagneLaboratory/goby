@@ -603,13 +603,19 @@ public class VCFParser implements Closeable {
 
     private void push(final int columnIndex, final int[] lineFieldIndexToColumnIndex, final IntArrayList previousColumnFieldIndices) {
         //    System.out.println("---");
-        for (final int fIndex : previousColumnFieldIndices.toIntArray()) {
+        final int size = previousColumnFieldIndices.size();
+        for (int i = 0; i < size; ++i) {
+            final int fIndex = previousColumnFieldIndices.getInt(i);
             /*        System.out.printf("field %s gfi:%d belongs to column %d %s%n ",
            line.substring(fieldStarts[fIndex], fieldEnds[fIndex]),
            fIndex,
            columnIndex, columnList.get(columnIndex).columnName);*/
             lineFieldIndexToColumnIndex[fIndex] = columnIndex;
         }
+        /*for (final int fIndex : previousColumnFieldIndices.toIntArray()) {
+
+
+        } */
         previousColumnFieldIndices.clear();
     }
 
