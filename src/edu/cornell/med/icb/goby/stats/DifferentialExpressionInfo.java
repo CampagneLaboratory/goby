@@ -29,24 +29,38 @@ import java.io.Writer;
 
 /**
  * Represents a line of double information about a DE element.
+ *
  * @author Fabien Campagne
  *         Date: Jan 11, 2010
  *         Time: 6:57:49 PM
  */
 public class DifferentialExpressionInfo {
     private final MutableString elementId;
-    final DoubleArrayList statistics = new DoubleArrayList();
-   
+    final DoubleArrayList statistics;
+
     private final InformativeDouble informativeDouble = new InformativeNonZeroNonNaN();
 
     public DifferentialExpressionInfo(final String elementId) {
-        super();
-        this.elementId = new MutableString(elementId);
+        this(new MutableString(elementId), 16);
+
+
     }
 
     public DifferentialExpressionInfo(final MutableString elementId) {
+        this(elementId, 16);
+
+    }
+
+    public DifferentialExpressionInfo(final MutableString elementId, final int capacity) {
         super();
-        this.elementId = elementId;
+        this.elementId = elementId.compact();
+        statistics = new DoubleArrayList(capacity);
+    }
+
+    public DifferentialExpressionInfo(final String elementId, final int capacity) {
+        super();
+        this.elementId = new MutableString(elementId).compact();
+        statistics = new DoubleArrayList(capacity);
     }
 
     public MutableString getElementId() {
@@ -77,6 +91,7 @@ public class DifferentialExpressionInfo {
 
     /**
      * Check the data in the current row to see which colums are informative.
+     *
      * @param informativeColumns the object that helps track which columns are informative
      * @return true if all columns have been determined to be informative
      */
@@ -89,6 +104,7 @@ public class DifferentialExpressionInfo {
 
     /**
      * Is the DE informative?
+     *
      * @return if this line of data is informative
      */
     public boolean informative() {
@@ -97,8 +113,9 @@ public class DifferentialExpressionInfo {
 
     /**
      * Is the DE informative?
+     *
      * @param averageCountPerGroupIndexes list of average counts for group. If this isn't null,
-     * the value for at least one of these indexes must be informative (!NaN and > 0).
+     *                                    the value for at least one of these indexes must be informative (!NaN and > 0).
      * @return if this line of data is informative
      */
     public boolean informative(final IntArrayList averageCountPerGroupIndexes) {

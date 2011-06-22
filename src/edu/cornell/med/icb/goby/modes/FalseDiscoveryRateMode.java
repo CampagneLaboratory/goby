@@ -108,7 +108,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         inputFiles = jsapResult.getStringArray("input");
         outputFilename = jsapResult.getString("output");
         qValueThreshold = jsapResult.getDouble("q-threshold");
-        topHitNum = jsapResult.getInt("top-hits",0);
+        topHitNum = jsapResult.getInt("top-hits", 0);
         selectedPValueColumns = jsapResult.getStringArray("column");
         vcf = jsapResult.getBoolean("vcf");
         return this;
@@ -154,10 +154,10 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                     adjustedColumnIds.add(statId);
                 }
             }
-            if (topHitNum!=0) {
+            if (topHitNum != 0) {
 
-                qValueThreshold=data.get(topHitNum-1).statistics().getDouble(selectedPValueColumns.length);
-                System.out.printf("determined q-threshold to keep %d top hits=%g %n", topHitNum,qValueThreshold );
+                qValueThreshold = data.get(topHitNum - 1).statistics().getDouble(selectedPValueColumns.length);
+                System.out.printf("determined q-threshold to keep %d top hits=%g %n", topHitNum, qValueThreshold);
             }
 
             Collections.sort(data, new ElementIndexComparator());
@@ -228,14 +228,13 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                 while (parser.hasNextDataLine()) {
 
                     // prepare elementId and stat info:
-
-                    final String elementId = Integer.toString(elementIndex++);
-                    deCalculator.defineElement(elementId);
                     int index = 0;
-                    DifferentialExpressionInfo info = new DifferentialExpressionInfo(elementId);
-                    info.statistics().size(selectedInfoFieldGlobalIndices.size());
+                    final String elementId = Integer.toString(elementIndex++);
+                    final DifferentialExpressionInfo info = createInfo(deCalculator,
+                            selectedInfoFieldGlobalIndices.size(),
+                            elementId);
 
-                    for (int globalFieldIndex : selectedInfoFieldGlobalIndices) {
+                    for (final int globalFieldIndex : selectedInfoFieldGlobalIndices) {
 
                         final String stringFieldValue = parser.getStringFieldValue(globalFieldIndex);
                         info.statistics().set(index++, Double.parseDouble(stringFieldValue));
@@ -253,6 +252,19 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
             }
         }
 
+    }
+
+    private DifferentialExpressionInfo createInfo(DifferentialExpressionCalculator deCalculator, int numPValueColumns, String elementId) {
+        deCalculator.defineElement(elementId);
+
+        // determine capacity to be twice the number of selected columns, since we need one column for the p-value
+        // and one for the q-value.
+        final int capacity = numPValueColumns * 2;
+        final DifferentialExpressionInfo info = new DifferentialExpressionInfo(elementId, capacity);
+        // we set the size to load only the p-values:
+        info.statistics().size(numPValueColumns);
+        // the fdr will create the columns it needs (within capacity) to store corresponding q-values.
+        return info;
     }
 
     private void loadTSV(String[] inputFiles, DifferentialExpressionResults data, DifferentialExpressionCalculator deCalculator,
@@ -277,7 +289,6 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                                 data.declareStatistic(statName);
                             }
                             doubleColumnIndices.add(columnIndex);
-
                         }
                     }
                     columnIndex++;
@@ -289,10 +300,9 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                     if (!reader.isCommentLine()) {
                         reader.next();
                         final String elementId = Integer.toString(elementIndex++);
-                        deCalculator.defineElement(elementId);
-                        DifferentialExpressionInfo info = new DifferentialExpressionInfo(elementId);
-                        info.statistics().size(doubleColumnIndices.size());
                         int index = 0;
+
+                        final DifferentialExpressionInfo info = createInfo(deCalculator, selectedPValueColumns.length, elementId);
 
                         for (int j = 0; j < reader.numTokens(); j++) {
                             if (doubleColumnIndices.contains(j)) {
@@ -575,7 +585,6 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
 
                 while (reader.hasNext()) {
 
-
                     if (!reader.isCommentLine()) {
                         reader.next();
                         final String elementId = Integer.toString(elementIndex);
@@ -605,11 +614,10 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                                     printer.print(reader.getString());
                                     printer.print('\t');
                                 }
-
                             }
                             first = true;
-                            for (String adjustedColumn : adjustedColumnIds) {
-                                int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
+                            for (final String adjustedColumn : adjustedColumnIds) {
+                                final int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
                                 final DoubleArrayList list = data.get(elementIndex).statistics();
 
                                 if (!first) {
@@ -641,8 +649,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
 
     private static final Logger LOG = Logger.getLogger(FalseDiscoveryRateMode.class);
 
-    private ObjectList<String> getTSVColumns
-            (String[] inputFiles) throws IOException {
+    private ObjectList<String> getTSVColumns(final String[] inputFiles) throws IOException {
         ObjectArrayList<String> columns = new ObjectArrayList<String>();
         for (String filename : inputFiles) {
             TSVReader reader = new TSVReader(new FileReader(filename), '\t');
