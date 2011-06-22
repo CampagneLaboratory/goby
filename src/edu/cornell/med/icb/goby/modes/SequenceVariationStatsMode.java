@@ -24,9 +24,9 @@ import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.IterateAlignments;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntCollection;
+import it.unimi.dsi.fastutil.longs.Long2LongMap;
+import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -131,13 +131,13 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
                 // Iterate through each alignment and write sequence variations to output file:
                 alignmentIterator.iterate(singleBasename);
 
-                final Int2IntMap readIndexTallies = alignmentIterator.getReadIndexVariationTally();
+                final Long2LongMap readIndexTallies = alignmentIterator.getReadIndexVariationTally();
                 final double totalNumberOfVariationBases = sum(readIndexTallies.values());
                 final double numberOfAlignmentEntries = alignmentIterator.getNumAlignmentEntries();
 
                 final long countReferenceBases = alignmentIterator.getReferenceBaseCount();
-                for (final int readIndex : readIndexTallies.keySet()) {
-                    final int countVariationBasesAtReadIndex = readIndexTallies.get(readIndex);
+                for (final long readIndex : readIndexTallies.keySet()) {
+                    final long countVariationBasesAtReadIndex = readIndexTallies.get(readIndex);
                     final double frequency = ((double) countVariationBasesAtReadIndex) / totalNumberOfVariationBases;
                     final double alignFrequency = ((double) countVariationBasesAtReadIndex) / countReferenceBases;
 
@@ -158,9 +158,9 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
         }
     }
 
-    private double sum(final IntCollection intCollection) {
+    private double sum(final LongCollection longCollection) {
         double sum = 0;
-        for (final int value : intCollection) {
+        for (final long value : longCollection) {
             sum += value;
         }
         return sum;
@@ -179,16 +179,16 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
     }
 
     private static class MyIterateAlignments extends IterateAlignments {
-        private Int2IntMap readIndexVariationTally = new Int2IntOpenHashMap();
-        private Int2IntMap readIndexReferenceTally = new Int2IntOpenHashMap();
-        private int numAlignmentEntries;
-        private int referenceBaseCount;
+        private Long2LongMap readIndexVariationTally = new Long2LongOpenHashMap();
+        private final Long2LongMap readIndexReferenceTally = new Long2LongOpenHashMap();
+        private long numAlignmentEntries;
+        private long referenceBaseCount;
 
-        public Int2IntMap getReadIndexVariationTally() {
+        public Long2LongMap getReadIndexVariationTally() {
             return readIndexVariationTally;
         }
 
-        public int getNumAlignmentEntries() {
+        public long getNumAlignmentEntries() {
             return numAlignmentEntries;
         }
 
@@ -198,22 +198,22 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
             numAlignmentEntries += alignmentEntry.getMultiplicity();
             referenceBaseCount += alignmentEntry.getQueryLength();
 
-            for (final Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
+            for (final Alignments.SequenceVariation variation : alignmentEntry.getSequenceVariationsList()) {
 
-                int toLength = var.getTo().length();
-                int readIndex = var.getReadIndex();
-                int readIndexIncrementValue = (alignmentEntry.getMatchingReverseStrand() ? -1 : 1);
+                final int toLength = variation.getTo().length();
+                final int readIndexIncrementValue = alignmentEntry.getMatchingReverseStrand() ? -1 : 1;
+                int readIndex = variation.getReadIndex();
                 for (int i = 0; i < toLength; i++) {
                     if (readIndex < 0) {
                         System.err.printf("Negative read_index=%d for queryIndex=%d%n", readIndex, alignmentEntry.getQueryIndex());
                     }
 
-                    final int value = readIndexVariationTally.get(readIndex);
-                    final int changedBases = alignmentEntry.getMultiplicity();
+                    final long value = readIndexVariationTally.get(readIndex);
+                    final long changedBases = alignmentEntry.getMultiplicity();
                     readIndexVariationTally.put(readIndex, value + changedBases);
 
                     referenceBaseCount -= changedBases;
-                    if (var.getTo().charAt(i) != '-') {
+                    if (variation.getTo().charAt(i) != '-') {
                         readIndex += readIndexIncrementValue;
                     }
                 }
@@ -221,12 +221,12 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
         }
 
         public void resetTallies() {
-            readIndexVariationTally = new Int2IntOpenHashMap();
+            readIndexVariationTally = new Long2LongOpenHashMap();
             numAlignmentEntries = 0;
             referenceBaseCount = 0;
         }
 
-        public int getReferenceBaseCount() {
+        public long getReferenceBaseCount() {
             return referenceBaseCount;
         }
     }
