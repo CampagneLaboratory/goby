@@ -31,7 +31,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class FDRAdjustment {
     private static final Log LOG = LogFactory.getLog(FDRAdjustment.class);
-
+    protected int ignoredElementsAboveThreshold;
     public DifferentialExpressionResults adjust(final DifferentialExpressionResults list, final NormalizationMethod method, final String... statisticIds) {
         for (final String statisticId : statisticIds) {
             LOG.info("Trying to perform FDR adjustment for statistic " + statisticId);

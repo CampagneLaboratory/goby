@@ -24,8 +24,10 @@ import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.stat.inference.ChiSquareTest;
 import org.apache.commons.math.stat.inference.ChiSquareTestImpl;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 import java.io.IOException;
@@ -268,9 +270,9 @@ public class TestStatistics {
             @Override
             public double getNormalizedExpressionValue(final String sample, final NormalizationMethod method, final MutableString elementId) {
                 if (sample.startsWith("A")) {
-                    return 2 * Math.abs(randomEngine.nextGaussian()+3);
+                    return 2 * Math.abs(randomEngine.nextGaussian() + 3);
                 } else {
-                    return Math.abs(randomEngine.nextGaussian()+20);
+                    return Math.abs(randomEngine.nextGaussian() + 20);
                 }
 
                 // fold change A/B = 2
@@ -559,6 +561,37 @@ public class TestStatistics {
 
     }
 
+    @Test
+    public void testTruncatedFDR() {
+        final BenjaminiHochbergAdjustment fdr = new BenjaminiHochbergAdjustment();
+
+        double[] expandedPValues = new double[p.length + 100];
+        System.arraycopy(p, 0, expandedPValues, 0, p.length);
+        for (int i = 0; i < 100; i++) {
+            expandedPValues[p.length + i] = Math.min(1.0, 0.3 + i / 100.0);
+        }
+
+        final DifferentialExpressionResults originalList = fdr.adjust(toList(expandedPValues), "p-value");
+        fdr.setNumberOfElementsAboveThreshold(100);
+        final DifferentialExpressionResults truncatedList = fdr.adjust(toList(expandedPValues), "p-value");
+
+        final int truncatedListStatisticIndex = truncatedList.getStatisticIndex("p-value-BH-FDR-q-value");
+        final int originalListStatisticIndex = originalList.getStatisticIndex("p-value-BH-FDR-q-value");
+        System.out.println("originalList:" + originalList);
+        System.out.println("truncatedList (truncated):" + truncatedList);
+        for (int i = 0; i < p.length; i++) {
+            final DifferentialExpressionInfo originalInfo = originalList.get(i);
+            final DifferentialExpressionInfo truncatedInfo = truncatedList.get(i);
+
+            double truncatedQValue = truncatedInfo.statistics.getDouble(truncatedListStatisticIndex);
+            double originalQValue = originalInfo.statistics.getDouble(originalListStatisticIndex);
+            System.out.printf("truncated fdr=%g original=%g %n",
+                    truncatedQValue,
+                    originalQValue);
+            assertEquals("original and truncated q-values must match", originalQValue, truncatedQValue,0.001);
+        }
+
+    }
 
     @Test
     public void testFDR() {
@@ -618,50 +651,63 @@ public class TestStatistics {
         //      System.out.println("list.adjusted: " + list);
 
 
-        final double[] p = {
-                2.354054e-07, 2.101590e-05, 2.576842e-05, 9.814783e-05, 1.052610e-04
-                , 1.241481e-04, 1.325988e-04, 1.568503e-04, 2.254557e-04, 3.795380e-04
-                , 6.114943e-04, 1.613954e-03, 3.302430e-03, 3.538342e-03, 5.236997e-03
-                , 6.831909e-03, 7.059226e-03, 8.805129e-03, 9.401040e-03, 1.129798e-02
-                , 2.115017e-02, 4.922736e-02, 6.053298e-02, 6.262239e-02, 7.395153e-02
-                , 8.281103e-02, 8.633331e-02, 1.190654e-01, 1.890796e-01, 2.058494e-01
-                , 2.209214e-01, 2.856000e-01, 3.048895e-01, 4.660682e-01, 4.830809e-01
-                , 4.921755e-01, 5.319453e-01, 5.751550e-01, 5.783195e-01, 6.185894e-01
-                , 6.363620e-01, 6.448587e-01, 6.558414e-01, 6.885884e-01, 7.189864e-01
-                , 8.179539e-01, 8.274487e-01, 8.971300e-01, 9.118680e-01, 9.437890e-01};
-
-        final double[] adjusted_R = {
-                1.177027e-05, 4.294736e-04, 4.294736e-04, 9.471343e-04, 9.471343e-04
-                , 9.471343e-04, 9.471343e-04, 9.803146e-04, 1.252532e-03, 1.897690e-03
-                , 2.779520e-03, 6.724807e-03, 1.263693e-02, 1.263693e-02, 1.745666e-02
-                , 2.076243e-02, 2.076243e-02, 2.445869e-02, 2.473958e-02, 2.824495e-02
-                , 5.035754e-02, 1.118804e-01, 1.304633e-01, 1.304633e-01, 1.479031e-01
-                , 1.592520e-01, 1.598765e-01, 2.126168e-01, 3.259994e-01, 3.430823e-01
-                , 3.563248e-01, 4.462501e-01, 4.619538e-01, 6.835770e-01, 6.835770e-01
-                , 6.835770e-01, 7.188450e-01, 7.414352e-01, 7.414352e-01, 7.626063e-01
-                , 7.626063e-01, 7.626063e-01, 7.626063e-01, 7.824868e-01, 7.988737e-01
-                , 8.802645e-01, 8.802645e-01, 9.304775e-01, 9.304775e-01, 9.437890e-01};
-
-        final double[] adjusted_R_nocummin = {
-                1.177027e-05, 5.253976e-04, 4.294736e-04, 1.226848e-03, 1.052610e-03
-                , 1.034567e-03, 9.471343e-04, 9.803146e-04, 1.252532e-03, 1.897690e-03
-                , 2.779520e-03, 6.724807e-03, 1.270165e-02, 1.263693e-02, 1.745666e-02
-                , 2.134972e-02, 2.076243e-02, 2.445869e-02, 2.473958e-02, 2.824495e-02
-                , 5.035754e-02, 1.118804e-01, 1.315934e-01, 1.304633e-01, 1.479031e-01
-                , 1.592520e-01, 1.598765e-01, 2.126168e-01, 3.259994e-01, 3.430823e-01
-                , 3.563248e-01, 4.462501e-01, 4.619538e-01, 6.853944e-01, 6.901156e-01
-                , 6.835770e-01, 7.188450e-01, 7.567830e-01, 7.414352e-01, 7.732368e-01
-                , 7.760512e-01, 7.676890e-01, 7.626063e-01, 7.824868e-01, 7.988737e-01
-                , 8.890803e-01, 8.802645e-01, 9.345104e-01, 9.304775e-01, 9.437890e-01
-        };
-
-
         final int n = p.length;
         for (int rank = p.length; rank >= 1; rank--) {
             final int index = rank - 1;
             assertEquals("rank: " + rank, adjusted_R_nocummin[index], p[index] * (((double) n) / (double) rank), 0.01);
         }
 
+        {
+            final DifferentialExpressionResults list3 = fdr.adjust(toList(p), "p-value");
+            System.out.println("list3:" + list3);
+            final int index = list3.getStatisticIndex("p-value-BH-FDR-q-value");
+            for (final DifferentialExpressionInfo infoAdjusted : list3) {
+                final int elementIndex = Integer.parseInt(infoAdjusted.getElementId().toString());
+                assertEquals("adjusted p-values must match for i=" + infoAdjusted.getElementId(),
+                        adjusted_R[elementIndex], infoAdjusted.statistics.get(index), 0.01);
+            }
+        }
+
+    }
+
+    final double[] p = {
+            2.354054e-07, 2.101590e-05, 2.576842e-05, 9.814783e-05, 1.052610e-04
+            , 1.241481e-04, 1.325988e-04, 1.568503e-04, 2.254557e-04, 3.795380e-04
+            , 6.114943e-04, 1.613954e-03, 3.302430e-03, 3.538342e-03, 5.236997e-03
+            , 6.831909e-03, 7.059226e-03, 8.805129e-03, 9.401040e-03, 1.129798e-02
+            , 2.115017e-02, 4.922736e-02, 6.053298e-02, 6.262239e-02, 7.395153e-02
+            , 8.281103e-02, 8.633331e-02, 1.190654e-01, 1.890796e-01, 2.058494e-01
+            , 2.209214e-01, 2.856000e-01, 3.048895e-01, 4.660682e-01, 4.830809e-01
+            , 4.921755e-01, 5.319453e-01, 5.751550e-01, 5.783195e-01, 6.185894e-01
+            , 6.363620e-01, 6.448587e-01, 6.558414e-01, 6.885884e-01, 7.189864e-01
+            , 8.179539e-01, 8.274487e-01, 8.971300e-01, 9.118680e-01, 9.437890e-01};
+
+    final double[] adjusted_R = {
+            1.177027e-05, 4.294736e-04, 4.294736e-04, 9.471343e-04, 9.471343e-04
+            , 9.471343e-04, 9.471343e-04, 9.803146e-04, 1.252532e-03, 1.897690e-03
+            , 2.779520e-03, 6.724807e-03, 1.263693e-02, 1.263693e-02, 1.745666e-02
+            , 2.076243e-02, 2.076243e-02, 2.445869e-02, 2.473958e-02, 2.824495e-02
+            , 5.035754e-02, 1.118804e-01, 1.304633e-01, 1.304633e-01, 1.479031e-01
+            , 1.592520e-01, 1.598765e-01, 2.126168e-01, 3.259994e-01, 3.430823e-01
+            , 3.563248e-01, 4.462501e-01, 4.619538e-01, 6.835770e-01, 6.835770e-01
+            , 6.835770e-01, 7.188450e-01, 7.414352e-01, 7.414352e-01, 7.626063e-01
+            , 7.626063e-01, 7.626063e-01, 7.626063e-01, 7.824868e-01, 7.988737e-01
+            , 8.802645e-01, 8.802645e-01, 9.304775e-01, 9.304775e-01, 9.437890e-01};
+
+    final double[] adjusted_R_nocummin = {
+            1.177027e-05, 5.253976e-04, 4.294736e-04, 1.226848e-03, 1.052610e-03
+            , 1.034567e-03, 9.471343e-04, 9.803146e-04, 1.252532e-03, 1.897690e-03
+            , 2.779520e-03, 6.724807e-03, 1.270165e-02, 1.263693e-02, 1.745666e-02
+            , 2.134972e-02, 2.076243e-02, 2.445869e-02, 2.473958e-02, 2.824495e-02
+            , 5.035754e-02, 1.118804e-01, 1.315934e-01, 1.304633e-01, 1.479031e-01
+            , 1.592520e-01, 1.598765e-01, 2.126168e-01, 3.259994e-01, 3.430823e-01
+            , 3.563248e-01, 4.462501e-01, 4.619538e-01, 6.853944e-01, 6.901156e-01
+            , 6.835770e-01, 7.188450e-01, 7.567830e-01, 7.414352e-01, 7.732368e-01
+            , 7.760512e-01, 7.676890e-01, 7.626063e-01, 7.824868e-01, 7.988737e-01
+            , 8.890803e-01, 8.802645e-01, 9.345104e-01, 9.304775e-01, 9.437890e-01
+    };
+
+    private DifferentialExpressionResults toList(double[] p) {
         final DifferentialExpressionResults list2 = new DifferentialExpressionResults();
         list2.declareStatistic("p-value");
         int i = 0;
@@ -670,14 +716,6 @@ public class TestStatistics {
             info.statistics.add(pValue);
             list2.add(info);
         }
-
-        final DifferentialExpressionResults list3 = fdr.adjust(list2, "p-value");
-        System.out.println("list3:" + list3);
-        final int index = list3.getStatisticIndex("p-value-BH-FDR-q-value");
-        for (final DifferentialExpressionInfo infoAdjusted : list3) {
-            final int elementIndex = Integer.parseInt(infoAdjusted.getElementId().toString());
-            assertEquals("adjusted p-values must match for i=" + infoAdjusted.getElementId(),
-                    adjusted_R[elementIndex], infoAdjusted.statistics.get(index), 0.01);
-        }
+        return list2;
     }
 }

@@ -143,6 +143,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
             }
             //    data.write(new PrintWriter(System.out), '\t', deCalculator);
             BenjaminiHochbergAdjustment fdr = new BenjaminiHochbergAdjustment();
+            fdr.setNumberOfElementsAboveThreshold(0);
             for (String column : selectedPValueColumns) {
 
                 fdr.adjust(data, column.toLowerCase());

@@ -48,15 +48,18 @@ public class BenjaminiHochbergAdjustment extends FDRAdjustment {
         ///int rank = 1;
         double cummin = 1;
 
-        for (int rank = list.size(); rank >= 1; --rank) {
+        int size = list.size();
+        int completeSize = size+ignoredElementsAboveThreshold;
+        int rank = completeSize;
+        for (int index = size; index >= 1; --index) {
             //   for (DifferentialExpressionInfo info : list) {
-            final DifferentialExpressionInfo info = list.get(rank - 1);
+            final DifferentialExpressionInfo info = list.get(index - 1);
             final double pValue = info.statistics.get(statisticIndex);
             double adjustedPValue = 1;
             if (pValue == pValue) {
 
                 // pValue is a number.
-                final double adjustment = listSize / (double) rank;
+                final double adjustment = completeSize / (double) rank;
                 adjustedPValue = pValue * adjustment;
                 if (adjustedPValue < cummin) {
                     // keep track of the smallest adjusted P-value seen so far (traversing from large to small P-values):
@@ -81,8 +84,17 @@ public class BenjaminiHochbergAdjustment extends FDRAdjustment {
             */
             info.statistics.size(list.getNumberOfStatistics());
             info.statistics.set(adjustedStatisticIndex, adjustedPValue);
-
+            --rank;
         }
         return list;
+    }
+
+    /**
+     * Set the number of elements that were not stored in list, because their P-value was already above threshold.
+     *
+     * @param ignoredElementsAboveThreshold the number of elements not in list.
+     */
+    public void setNumberOfElementsAboveThreshold(int ignoredElementsAboveThreshold) {
+        //To change body of created methods use File | Settings | File Templates.
     }
 }
