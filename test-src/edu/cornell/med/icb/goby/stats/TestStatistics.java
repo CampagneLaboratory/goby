@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.goby.R.FisherExact;
 import gominer.Fisher;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.stat.inference.ChiSquareTest;
@@ -40,6 +41,8 @@ import java.util.Random;
  *         Time: 1:14:57 PM
  */
 public class TestStatistics {
+
+
     @Test
     public void testFoldChange() {
         final Random randomEngine = new Random();
@@ -564,33 +567,55 @@ public class TestStatistics {
     @Test
     public void testTruncatedFDR() {
         final BenjaminiHochbergAdjustment fdr = new BenjaminiHochbergAdjustment();
-
+        // we construct an array with additional p-values than contained in p. Each additional
+        // p-values is larger than some q-threshold we care about.
         double[] expandedPValues = new double[p.length + 100];
         System.arraycopy(p, 0, expandedPValues, 0, p.length);
         for (int i = 0; i < 100; i++) {
             expandedPValues[p.length + i] = Math.min(1.0, 0.3 + i / 100.0);
         }
+        // we run both the complete fdr test and the truncated version of the test:
+        DifferentialExpressionResults expandedList = toList(expandedPValues);
 
-        final DifferentialExpressionResults originalList = fdr.adjust(toList(expandedPValues), "p-value");
-        fdr.setNumberOfElementsAboveThreshold(100);
-        final DifferentialExpressionResults truncatedList = fdr.adjust(toList(expandedPValues), "p-value");
 
-        final int truncatedListStatisticIndex = truncatedList.getStatisticIndex("p-value-BH-FDR-q-value");
+        DifferentialExpressionResults truncatedList = toList(expandedPValues);
+        final int numberAboveThreshold = truncate(truncatedList, 0.3, truncatedList.getStatisticIndex("p-value"));
+
+        final DifferentialExpressionResults originalList = fdr.adjust(expandedList, "p-value");
+
+        fdr.setNumberAboveThreshold(numberAboveThreshold);
+        final DifferentialExpressionResults truncatedListAdjusted = fdr.adjust(truncatedList, "p-value");
+
+        final int truncatedListStatisticIndex = truncatedListAdjusted.getStatisticIndex("p-value-BH-FDR-q-value");
         final int originalListStatisticIndex = originalList.getStatisticIndex("p-value-BH-FDR-q-value");
-        System.out.println("originalList:" + originalList);
-        System.out.println("truncatedList (truncated):" + truncatedList);
-        for (int i = 0; i < p.length; i++) {
+        //      System.out.println("originalList:" + originalList);
+        //    System.out.println("truncatedList (truncated):" + truncatedListAdjusted);
+        for (int i = 0; i < truncatedList.size(); i++) {
             final DifferentialExpressionInfo originalInfo = originalList.get(i);
-            final DifferentialExpressionInfo truncatedInfo = truncatedList.get(i);
+            final DifferentialExpressionInfo truncatedInfo = truncatedListAdjusted.get(i);
 
             double truncatedQValue = truncatedInfo.statistics.getDouble(truncatedListStatisticIndex);
             double originalQValue = originalInfo.statistics.getDouble(originalListStatisticIndex);
             System.out.printf("truncated fdr=%g original=%g %n",
                     truncatedQValue,
                     originalQValue);
-            assertEquals("original and truncated q-values must match", originalQValue, truncatedQValue,0.001);
+            assertEquals("original and truncated q-values must match", originalQValue, truncatedQValue, 0.001);
         }
 
+    }
+
+    private int truncate(DifferentialExpressionResults expandedList, double threshold, int index) {
+        int numTruncated = 0;
+        ObjectArrayList<DifferentialExpressionInfo> toRemove = new ObjectArrayList<DifferentialExpressionInfo>();
+        for (DifferentialExpressionInfo info : expandedList) {
+            double pValue = info.statistics().getDouble(index);
+            if (pValue > threshold) {
+                numTruncated++;
+                toRemove.add(info);
+            }
+        }
+        expandedList.removeAll(toRemove);
+        return numTruncated;
     }
 
     @Test

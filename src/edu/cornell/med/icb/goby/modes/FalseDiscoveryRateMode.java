@@ -24,10 +24,7 @@ import edu.cornell.med.icb.goby.readers.vcf.*;
 import edu.cornell.med.icb.goby.stats.*;
 import edu.cornell.med.icb.io.TSVReader;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
-import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectList;
@@ -79,6 +76,11 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
     private ObjectArraySet<String> adjustedColumnIds = new ObjectArraySet<String>();
     private boolean vcf;
     private int topHitNum;
+    private int numIgnoredObservations;
+    /**
+     * Store a map between the element index in the input files, and the index of the element in the set we keep in memory.
+     */
+    private Int2IntMap elementPermutation = new Int2IntOpenHashMap();
 
 
     @Override
@@ -143,7 +145,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
             }
             //    data.write(new PrintWriter(System.out), '\t', deCalculator);
             BenjaminiHochbergAdjustment fdr = new BenjaminiHochbergAdjustment();
-            fdr.setNumberOfElementsAboveThreshold(0);
+            fdr.setNumberAboveThreshold(numIgnoredObservations);
             for (String column : selectedPValueColumns) {
 
                 fdr.adjust(data, column.toLowerCase());
@@ -157,7 +159,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
             }
             if (topHitNum != 0) {
 
-                qValueThreshold = data.get(topHitNum - 1).statistics().getDouble(selectedPValueColumns.length);
+                qValueThreshold = data.get(Math.min(topHitNum,data.size()) - 1).statistics().getDouble(selectedPValueColumns.length);
                 System.out.printf("determined q-threshold to keep %d top hits=%g %n", topHitNum, qValueThreshold);
             }
 
@@ -225,26 +227,40 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
 
                 pg.priority = org.apache.log4j.Level.INFO;
                 pg.itemsName = "line";
+                pg.displayFreeMemory=true;
                 pg.start();
                 while (parser.hasNextDataLine()) {
 
                     // prepare elementId and stat info:
                     int index = 0;
-                    final String elementId = Integer.toString(elementIndex++);
+                    final String elementId = Integer.toString(elementIndex);
                     final DifferentialExpressionInfo info = createInfo(deCalculator,
                             selectedInfoFieldGlobalIndices.size(),
                             elementId);
+                    // keep all lines if we don't adjust any column:
 
+                    boolean keepLine = selectedInfoFieldGlobalIndices.isEmpty();
                     for (final int globalFieldIndex : selectedInfoFieldGlobalIndices) {
 
                         final String stringFieldValue = parser.getStringFieldValue(globalFieldIndex);
-                        info.statistics().set(index++, Double.parseDouble(stringFieldValue));
+                        double pValue = Double.parseDouble(stringFieldValue);
+                        if (pValue < qValueThreshold) {
+                            keepLine = true;
+                        }
+                        info.statistics().set(index++, pValue);
                     }
-                    data.add(info);
+                    if (keepLine) {
+                        data.add(info);
+                        elementPermutation.put(elementIndex, data.size() - 1);
+                    } else {
+                        numIgnoredObservations++;
+                    }
                     parser.next();
                     pg.lightUpdate();
+                    ++elementIndex;
                 }
                 pg.stop();
+                Runtime.getRuntime().gc();
             } catch (VCFParser.SyntaxException
                     e) {
                 System.err.println("An error occured parsing VCF file " + filename);
@@ -300,21 +316,30 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
 
                     if (!reader.isCommentLine()) {
                         reader.next();
-                        final String elementId = Integer.toString(elementIndex++);
+                        final String elementId = Integer.toString(elementIndex);
                         int index = 0;
 
                         final DifferentialExpressionInfo info = createInfo(deCalculator, selectedPValueColumns.length, elementId);
-
+                        boolean keepLine = doubleColumnIndices.isEmpty();
                         for (int j = 0; j < reader.numTokens(); j++) {
                             if (doubleColumnIndices.contains(j)) {
-                                info.statistics().set(index++, reader.getDouble());
+                                final double pValue = reader.getDouble();
+                                if (pValue < qValueThreshold) {
+                                    keepLine = true;
+                                }
+                                info.statistics().set(index++, pValue);
                             } else {
                                 reader.getString();
                             }
 
                         }
-                        data.add(info);
-
+                        if (keepLine) {
+                            data.add(info);
+                            elementPermutation.put(elementIndex, data.size() - 1);
+                        } else {
+                            ++numIgnoredObservations;
+                        }
+                        ++elementIndex;
                     } else {
                         reader.skip();
                     }
@@ -426,95 +451,98 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
 
                     final String elementId = Integer.toString(elementIndex);
                     boolean keepThisLine = false;
-                    for (String adjustedColumn : adjustedColumnIds) {
-                        int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
-                        final DoubleArrayList list = data.get(elementIndex).statistics();
+                    if (elementPermutation.containsKey(elementIndex)) {
+                        DifferentialExpressionInfo differentialExpressionInfo = data.get(elementPermutation.get(elementIndex));
+                        for (String adjustedColumn : adjustedColumnIds) {
+                            int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
+                            final DoubleArrayList list = differentialExpressionInfo.statistics();
 
-                        double adjustedPValue = list.get(adjustedColumnIndex);
-                        keepThisLine = determineKeepThisLine(keepThisLine, adjustedPValue);
-                    }
-                    if (adjustedColumnIds.size() == 0) {
-                        // no selection column, keep all lines.
-                        keepThisLine = true;
-                    }
-                    if (keepThisLine) {
-                        final DifferentialExpressionInfo info = data.get(elementIndex);
-                        assert info.getElementId().equals(elementId) : " elementId must match";
-                        // transfer previous columsn and fields:
-                        infoFieldIndex = 0;
-                        sampleIndex = 0;
-                        formatFieldCount = 0;
-                        previousSampleIndex = -1;
+                            double adjustedPValue = list.get(adjustedColumnIndex);
+                            keepThisLine = determineKeepThisLine(keepThisLine, adjustedPValue);
+                        }
+                        if (adjustedColumnIds.size() == 0) {
+                            // no selection column, keep all lines.
+                            keepThisLine = true;
+                        }
+                        if (keepThisLine) {
+                            final DifferentialExpressionInfo info = differentialExpressionInfo;
+                            assert info.getElementId().equals(elementId) : " elementId must match";
+                            // transfer previous columsn and fields:
+                            infoFieldIndex = 0;
+                            sampleIndex = 0;
+                            formatFieldCount = 0;
+                            previousSampleIndex = -1;
 
-                        String format = parser.getStringColumnValue(columns.find("FORMAT").columnIndex);
-                        final String[] formatTokens = format.split(":");
-                        int numFormatFields = columns.find("FORMAT").fields.size();
-                        sampleIndex = 0;
-                        int formatFieldIndex = 0;
-                        for (int globalFieldIndex = 0; globalFieldIndex < parser.countAllFields(); globalFieldIndex++) {
-                            String value = parser.getStringFieldValue(globalFieldIndex);
+                            String format = parser.getStringColumnValue(columns.find("FORMAT").columnIndex);
+                            final String[] formatTokens = format.split(":");
+                            int numFormatFields = columns.find("FORMAT").fields.size();
+                            sampleIndex = 0;
+                            int formatFieldIndex = 0;
+                            for (int globalFieldIndex = 0; globalFieldIndex < parser.countAllFields(); globalFieldIndex++) {
+                                String value = parser.getStringFieldValue(globalFieldIndex);
 
-                            if (globalFieldIndex == chromosomeFieldIndex) {
-                                vcfWriter.setChromosome(value);
-                            } else if (globalFieldIndex == positionFieldIndex) {
-                                vcfWriter.setPosition(Integer.parseInt(value));
-                            } else if (globalFieldIndex == idFieldIndex) {
-                                vcfWriter.setId(value);
-                            } else if (globalFieldIndex == refFieldIndex) {
-                                vcfWriter.setReferenceAllele(value);
-                            } else if (globalFieldIndex == altFieldIndex) {
-                                vcfWriter.setAlternateAllele(value);
-                            } else if (globalFieldIndex == qualFieldIndex) {
-                                vcfWriter.setQual(value);
-                            } else if (globalFieldIndex == filterFieldIndex) {
-                                vcfWriter.setFilter(value);
-                            }
-                            if (infoFieldGlobalIndices.contains(globalFieldIndex)) {
-                                vcfWriter.setInfo(infoFieldIndex++, value);
-                            }
+                                if (globalFieldIndex == chromosomeFieldIndex) {
+                                    vcfWriter.setChromosome(value);
+                                } else if (globalFieldIndex == positionFieldIndex) {
+                                    vcfWriter.setPosition(Integer.parseInt(value));
+                                } else if (globalFieldIndex == idFieldIndex) {
+                                    vcfWriter.setId(value);
+                                } else if (globalFieldIndex == refFieldIndex) {
+                                    vcfWriter.setReferenceAllele(value);
+                                } else if (globalFieldIndex == altFieldIndex) {
+                                    vcfWriter.setAlternateAllele(value);
+                                } else if (globalFieldIndex == qualFieldIndex) {
+                                    vcfWriter.setQual(value);
+                                } else if (globalFieldIndex == filterFieldIndex) {
+                                    vcfWriter.setFilter(value);
+                                }
+                                if (infoFieldGlobalIndices.contains(globalFieldIndex)) {
+                                    vcfWriter.setInfo(infoFieldIndex++, value);
+                                }
 
-                            if (formatFieldGlobalIndices.contains(globalFieldIndex)) {
+                                if (formatFieldGlobalIndices.contains(globalFieldIndex)) {
 
 
-                                /*   System.out.printf("Set sampleValue formatIndex: %d sampleIndex: %d value: %s%n", formatFieldCount, sampleIndex,
-                                         value);
-                                 System.out.flush();
-                                */
+                                    /*   System.out.printf("Set sampleValue formatIndex: %d sampleIndex: %d value: %s%n", formatFieldCount, sampleIndex,
+                                             value);
+                                     System.out.flush();
+                                    */
 
-                                if (formatFieldIndex < formatTokens.length) {
-                                    if (!"".equals(formatTokens[formatFieldIndex])) {
-                                        vcfWriter.setSampleValue(formatTokens[formatFieldIndex], sampleIndex, value);
+                                    if (formatFieldIndex < formatTokens.length) {
+                                        if (!"".equals(formatTokens[formatFieldIndex])) {
+                                            vcfWriter.setSampleValue(formatTokens[formatFieldIndex], sampleIndex, value);
+                                        }
+                                    }
+
+                                    formatFieldCount++;
+                                    if (value.length() != 0) {
+                                        formatFieldIndex++;
+                                    }
+                                    if (formatFieldCount == numFormatFields) {
+                                        formatFieldIndex = 0;
+                                        formatFieldCount = 0;
+                                        sampleIndex++;
                                     }
                                 }
-
-                                formatFieldCount++;
-                                if (value.length() != 0) {
-                                    formatFieldIndex++;
-                                }
-                                if (formatFieldCount == numFormatFields) {
-                                    formatFieldIndex = 0;
-                                    formatFieldCount = 0;
-                                    sampleIndex++;
-                                }
                             }
+                            // add new INFO field values (the adjusted p-values):
+                            statIndex = 0;
+                            for (String adjustedColumn : adjustedColumnIds) {
+
+                                int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
+                                final DoubleArrayList list = differentialExpressionInfo.statistics();
+
+                                double newColValue = list.get(adjustedColumnIndex);
+                                vcfWriter.setInfo(statIndexToInfoFieldIndex.get(statIndex), Double.toString(newColValue));
+                                statIndex++;
+
+                            }
+
+                            // This is a line we keep, write it:
+                            vcfWriter.writeRecord();
+
+
                         }
-                        // add new INFO field values (the adjusted p-values):
-                        statIndex = 0;
-                        for (String adjustedColumn : adjustedColumnIds) {
-
-                            int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
-                            final DoubleArrayList list = data.get(elementIndex).statistics();
-
-                            double newColValue = list.get(adjustedColumnIndex);
-                            vcfWriter.setInfo(statIndexToInfoFieldIndex.get(statIndex), Double.toString(newColValue));
-                            statIndex++;
-
-                        }
-
-                        // This is a line we keep, write it:
-                        vcfWriter.writeRecord();
-
-
                     }
                     elementIndex++;
                     parser.next();
@@ -590,46 +618,51 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                         reader.next();
                         final String elementId = Integer.toString(elementIndex);
                         boolean keepThisLine = false;
-                        for (String adjustedColumn : adjustedColumnIds) {
-                            int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
-                            final DoubleArrayList list = data.get(elementIndex).statistics();
+                        if (elementPermutation.containsKey(elementIndex)) {
+                            DifferentialExpressionInfo differentialExpressionInfo = data.get(elementPermutation.get(elementIndex));
+                            {
+                                final DoubleArrayList list = differentialExpressionInfo.statistics();
 
-                            double adjustedPValue = list.get(adjustedColumnIndex);
-                            keepThisLine = determineKeepThisLine(keepThisLine, adjustedPValue);
-                        }
-                        if (!keepThisLine) {
-                            //     System.out.println("skipping elementId since the adjusted P-values do not make the q-value threshold." + elementId);
-                        }
-                        if (keepThisLine) {
-                            int index = 0;
-                            final DifferentialExpressionInfo info = data.get(elementIndex);
-                            assert info.getElementId().equals(elementId) : " elementId must match";
-                            for (int j = 0; j < reader.numTokens(); j++) {
-                                if (doubleColumnIndices.contains(j)) {
-                                    reader.getString();
+                                for (String adjustedColumn : adjustedColumnIds) {
+                                    int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
 
-                                    printer.print(info.statistics().get(index));
-                                    printer.print('\t');
-                                    index++;
-                                } else {
-                                    printer.print(reader.getString());
-                                    printer.print('\t');
+                                    double adjustedPValue = list.get(adjustedColumnIndex);
+                                    keepThisLine = determineKeepThisLine(keepThisLine, adjustedPValue);
                                 }
                             }
-                            first = true;
-                            for (final String adjustedColumn : adjustedColumnIds) {
-                                final int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
-                                final DoubleArrayList list = data.get(elementIndex).statistics();
-
-                                if (!first) {
-                                    printer.write('\t');
-                                }
-                                printer.print(list.get(adjustedColumnIndex));
-                                first = false;
+                            if (!keepThisLine) {
+                                //     System.out.println("skipping elementId since the adjusted P-values do not make the q-value threshold." + elementId);
                             }
-                            printer.printf("%n");
-                        }
+                            if (keepThisLine) {
+                                int index = 0;
+                                final DifferentialExpressionInfo info = differentialExpressionInfo;
+                                assert info.getElementId().equals(elementId) : " elementId must match";
+                                for (int j = 0; j < reader.numTokens(); j++) {
+                                    if (doubleColumnIndices.contains(j)) {
+                                        reader.getString();
 
+                                        printer.print(info.statistics().get(index));
+                                        printer.print('\t');
+                                        index++;
+                                    } else {
+                                        printer.print(reader.getString());
+                                        printer.print('\t');
+                                    }
+                                }
+                                first = true;
+                                for (final String adjustedColumn : adjustedColumnIds) {
+                                    final int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
+                                    final DoubleArrayList list = differentialExpressionInfo.statistics();
+
+                                    if (!first) {
+                                        printer.write('\t');
+                                    }
+                                    printer.print(list.get(adjustedColumnIndex));
+                                    first = false;
+                                }
+                                printer.printf("%n");
+                            }
+                        }
                         elementIndex++;
 
                     } else {

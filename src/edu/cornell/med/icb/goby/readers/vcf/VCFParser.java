@@ -612,10 +612,6 @@ public class VCFParser implements Closeable {
            columnIndex, columnList.get(columnIndex).columnName);*/
             lineFieldIndexToColumnIndex[fIndex] = columnIndex;
         }
-        /*for (final int fIndex : previousColumnFieldIndices.toIntArray()) {
-
-
-        } */
         previousColumnFieldIndices.clear();
     }
 

@@ -32,6 +32,16 @@ import org.apache.commons.logging.LogFactory;
 public abstract class FDRAdjustment {
     private static final Log LOG = LogFactory.getLog(FDRAdjustment.class);
     protected int ignoredElementsAboveThreshold;
+
+    /**
+     * Set the number of elements that were not stored in list, because their P-value was already above threshold.
+     *
+     * @param ignoredElementsAboveThreshold the number of elements not in list.
+     */
+    public void setNumberAboveThreshold(final int ignoredElementsAboveThreshold) {
+        this.ignoredElementsAboveThreshold = ignoredElementsAboveThreshold;
+    }
+
     public DifferentialExpressionResults adjust(final DifferentialExpressionResults list, final NormalizationMethod method, final String... statisticIds) {
         for (final String statisticId : statisticIds) {
             LOG.info("Trying to perform FDR adjustment for statistic " + statisticId);

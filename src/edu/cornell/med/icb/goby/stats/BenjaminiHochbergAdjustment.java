@@ -43,19 +43,19 @@ public class BenjaminiHochbergAdjustment extends FDRAdjustment {
         Collections.sort(list, new StatisticComparator(list, statistic));
 
         final int statisticIndex = list.getStatisticIndex(statistic);
-        final double listSize = getListSize(list);
-
         ///int rank = 1;
         double cummin = 1;
 
         int size = list.size();
-        int completeSize = size+ignoredElementsAboveThreshold;
-        int rank = completeSize;
+        int completeSize = size + ignoredElementsAboveThreshold;
+        int rank = size;
+
         for (int index = size; index >= 1; --index) {
             //   for (DifferentialExpressionInfo info : list) {
             final DifferentialExpressionInfo info = list.get(index - 1);
             final double pValue = info.statistics.get(statisticIndex);
             double adjustedPValue = 1;
+
             if (pValue == pValue) {
 
                 // pValue is a number.
@@ -89,12 +89,5 @@ public class BenjaminiHochbergAdjustment extends FDRAdjustment {
         return list;
     }
 
-    /**
-     * Set the number of elements that were not stored in list, because their P-value was already above threshold.
-     *
-     * @param ignoredElementsAboveThreshold the number of elements not in list.
-     */
-    public void setNumberOfElementsAboveThreshold(int ignoredElementsAboveThreshold) {
-        //To change body of created methods use File | Settings | File Templates.
-    }
+
 }
