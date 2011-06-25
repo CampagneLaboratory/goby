@@ -90,6 +90,10 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
      * after having seen the top hits.
      */
     private double minAdjustedQValue;
+    /**
+     * The list of element indices to report as top hits.
+     */
+    private IntArraySet topHitsElementIndices;
 
 
     @Override
@@ -159,7 +163,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
 
                 fdr.adjust(data, column.toLowerCase());
             }
-            determineMinQvalue(data);
+            recordTopHits(data);
             for (int i = 0; i < data.getNumberOfStatistics(); i++) {
                 MutableString statisticId = data.getStatisticIdForIndex(i);
                 final String statId = statisticId.toString();
@@ -184,22 +188,14 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         }
     }
 
-    private void determineMinQvalue(DifferentialExpressionResults data) {
-        if (data.size() == 0) {
-            // no results, set minAdjustedQValue to the maximum to trigger early start
-            // as soon as possible
-            minAdjustedQValue = 1;
-        }
-        int numStats = data.get(0).statistics().size();
-        double[] minQValues = new double[numStats];
-        DoubleArrayList statistics = data.get(0).statistics();
-        int doneWithStatNum = 0;
-        final DifferentialExpressionInfo info = data.get(0);
-        for (int statIndex = 0; statIndex < numStats; statIndex++) {
-            final double qValueForStat = info.statistics().getDouble(statIndex);
-
-            minAdjustedQValue = Math.min(minAdjustedQValue, qValueForStat);
-
+    private void recordTopHits(final DifferentialExpressionResults data) {
+        topHitsElementIndices = new IntArraySet();
+        int num = 0;
+        for (final DifferentialExpressionInfo info : data) {
+            topHitsElementIndices.add(Integer.parseInt(info.getElementId().toString()));
+            if (num++ > topHitNum) {
+                break;
+            }
         }
     }
 
@@ -485,13 +481,14 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
 
                             final double adjustedPValue = list.get(adjustedColumnIndex);
                             keepThisLine = determineKeepThisLine(keepThisLine, adjustedPValue);
-                            if (topHitNum != 0 && permutedIndex + 1 > topHitNum && minAdjustedQValue > qValueThreshold) {
+                            if (topHitNum != 0 && topHitsElementIndices.isEmpty()) {
                                 // early stop: there are no q-values below the threshold and we have seen enough top hits already.
                                 break;
                             }
-                            if (topHitNum != 0 && permutedIndex <= topHitNum) {
+                            if (topHitNum != 0 && topHitsElementIndices.contains(elementIndex)) {
                                 // the q-value is not good enough for the threshold, but we want to include up to top hits in the results:
                                 keepThisLine = true;
+                                topHitsElementIndices.remove(elementIndex);
                             }
 
                         }
@@ -666,15 +663,15 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                                     final double adjustedPValue = list.get(adjustedColumnIndex);
                                     keepThisLine = determineKeepThisLine(keepThisLine, adjustedPValue);
                                 }
-                                if (topHitNum != 0 && permutedIndex + 1 > topHitNum && minAdjustedQValue > qValueThreshold) {
+                                if (topHitNum != 0 && topHitsElementIndices.isEmpty()) {
                                     // early stop: there are no q-values below the threshold and we have seen enough top hits already.
                                     break;
                                 }
-                                if (topHitNum != 0 && permutedIndex <= topHitNum) {
+                                if (topHitNum != 0 && topHitsElementIndices.contains(elementIndex)) {
                                     // the q-value is not good enough for the threshold, but we want to include up to top hits in the results:
                                     keepThisLine = true;
+                                    topHitsElementIndices.remove(elementIndex);
                                 }
-
                             }
                             if (!keepThisLine) {
                                 //     System.out.println("skipping elementId since the adjusted P-values do not make the q-value threshold." + elementId);
