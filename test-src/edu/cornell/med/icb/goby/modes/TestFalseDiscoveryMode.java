@@ -94,7 +94,7 @@ public class TestFalseDiscoveryMode extends TestFiles {
                 "--column", "PCHI2",
                 "test-data/fdr-mode/file-B-1.vcf",
                 "test-data/fdr-mode/file-B-2.vcf",
-                "-q", "0.3",
+                "-q", "0.05",
                 "--top-hits", "2",
                 "--output", "test-results/fdr-mode/combined-file-B-adjust-strict-PCHI2.vcf",
         };
@@ -113,7 +113,7 @@ public class TestFalseDiscoveryMode extends TestFiles {
                     "--column", "PCHI2",
                     "test-data/fdr-mode/file-B-1.vcf",
                     "test-data/fdr-mode/file-B-2.vcf",
-                    "-q", "0.3",
+                    "-q", "0.05",
                     "--output", "test-results/fdr-mode/combined-B-file-adjust-PCHI2.vcf",
             };
             mode.configure(args);

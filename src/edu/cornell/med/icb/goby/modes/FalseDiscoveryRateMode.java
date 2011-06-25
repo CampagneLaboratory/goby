@@ -24,7 +24,10 @@ import edu.cornell.med.icb.goby.readers.vcf.*;
 import edu.cornell.med.icb.goby.stats.*;
 import edu.cornell.med.icb.io.TSVReader;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectList;
@@ -35,7 +38,6 @@ import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.util.Collections;
-import java.util.logging.Level;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -81,6 +83,11 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
      * Store a map between the element index in the input files, and the index of the element in the set we keep in memory.
      */
     private Int2IntMap elementPermutation = new Int2IntOpenHashMap();
+    /**
+     * The minimum q-value seen across all hits. Used to decide when to early stop
+     * after having seen the top hits.
+     */
+    private double minAdjustedQValue;
 
 
     @Override
@@ -150,17 +157,13 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
 
                 fdr.adjust(data, column.toLowerCase());
             }
+            determineMinQvalue(data);
             for (int i = 0; i < data.getNumberOfStatistics(); i++) {
                 MutableString statisticId = data.getStatisticIdForIndex(i);
                 final String statId = statisticId.toString();
                 if (!contains(selectedPValueColumns, statId)) {
                     adjustedColumnIds.add(statId);
                 }
-            }
-            if (topHitNum != 0) {
-
-                qValueThreshold = data.get(Math.min(topHitNum,data.size()) - 1).statistics().getDouble(selectedPValueColumns.length);
-                System.out.printf("determined q-threshold to keep %d top hits=%g %n", topHitNum, qValueThreshold);
             }
 
             Collections.sort(data, new ElementIndexComparator());
@@ -176,6 +179,25 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
             if (outputFilename != null) {
                 IOUtils.closeQuietly(stream);
             }
+        }
+    }
+
+    private void determineMinQvalue(DifferentialExpressionResults data) {
+        if (data.size() == 0) {
+            // no results, set minAdjustedQValue to the maximum to trigger early start
+            // as soon as possible
+            minAdjustedQValue = 1;
+        }
+        int numStats = data.get(0).statistics().size();
+        double[] minQValues = new double[numStats];
+        DoubleArrayList statistics = data.get(0).statistics();
+        int doneWithStatNum = 0;
+        final DifferentialExpressionInfo info = data.get(0);
+        for (int statIndex = 0; statIndex < numStats; statIndex++) {
+            final double qValueForStat = info.statistics().getDouble(statIndex);
+
+            minAdjustedQValue = Math.min(minAdjustedQValue, qValueForStat);
+
         }
     }
 
@@ -227,7 +249,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
 
                 pg.priority = org.apache.log4j.Level.INFO;
                 pg.itemsName = "line";
-                pg.displayFreeMemory=true;
+                pg.displayFreeMemory = true;
                 pg.start();
                 while (parser.hasNextDataLine()) {
 
@@ -452,13 +474,24 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                     final String elementId = Integer.toString(elementIndex);
                     boolean keepThisLine = false;
                     if (elementPermutation.containsKey(elementIndex)) {
-                        DifferentialExpressionInfo differentialExpressionInfo = data.get(elementPermutation.get(elementIndex));
-                        for (String adjustedColumn : adjustedColumnIds) {
-                            int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
+                        final int permutedIndex = elementPermutation.get(elementIndex);
+                        final DifferentialExpressionInfo differentialExpressionInfo = data.get(permutedIndex);
+                        assert Integer.parseInt(differentialExpressionInfo.getElementId().toString()) == elementIndex : " element index must match with data element retrived";
+                        for (final String adjustedColumn : adjustedColumnIds) {
+                            final int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
                             final DoubleArrayList list = differentialExpressionInfo.statistics();
 
-                            double adjustedPValue = list.get(adjustedColumnIndex);
+                            final double adjustedPValue = list.get(adjustedColumnIndex);
                             keepThisLine = determineKeepThisLine(keepThisLine, adjustedPValue);
+                            if (topHitNum != 0 && permutedIndex + 1 > topHitNum && minAdjustedQValue > qValueThreshold) {
+                                // early stop: there are no q-values below the threshold and we have seen enough top hits already.
+                                break;
+                            }
+                            if (topHitNum != 0 && permutedIndex <= topHitNum) {
+                                // the q-value is not good enough for the threshold, but we want to include up to top hits in the results:
+                                keepThisLine = true;
+                            }
+
                         }
                         if (adjustedColumnIds.size() == 0) {
                             // no selection column, keep all lines.
@@ -619,16 +652,27 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                         final String elementId = Integer.toString(elementIndex);
                         boolean keepThisLine = false;
                         if (elementPermutation.containsKey(elementIndex)) {
-                            DifferentialExpressionInfo differentialExpressionInfo = data.get(elementPermutation.get(elementIndex));
+                            final int permutedIndex = elementPermutation.get(elementIndex);
+                            final DifferentialExpressionInfo differentialExpressionInfo = data.get(permutedIndex);
+                            assert Integer.parseInt(differentialExpressionInfo.getElementId().toString()) == elementIndex : " element index must match with data element retrived";
                             {
                                 final DoubleArrayList list = differentialExpressionInfo.statistics();
 
-                                for (String adjustedColumn : adjustedColumnIds) {
-                                    int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
+                                for (final String adjustedColumn : adjustedColumnIds) {
+                                    final int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
 
-                                    double adjustedPValue = list.get(adjustedColumnIndex);
+                                    final double adjustedPValue = list.get(adjustedColumnIndex);
                                     keepThisLine = determineKeepThisLine(keepThisLine, adjustedPValue);
                                 }
+                                if (topHitNum != 0 && permutedIndex + 1 > topHitNum && minAdjustedQValue > qValueThreshold) {
+                                    // early stop: there are no q-values below the threshold and we have seen enough top hits already.
+                                    break;
+                                }
+                                if (topHitNum != 0 && permutedIndex <= topHitNum) {
+                                    // the q-value is not good enough for the threshold, but we want to include up to top hits in the results:
+                                    keepThisLine = true;
+                                }
+
                             }
                             if (!keepThisLine) {
                                 //     System.out.println("skipping elementId since the adjusted P-values do not make the q-value threshold." + elementId);
