@@ -85,11 +85,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
      * Store a map between the element index in the input files, and the index of the element in the set we keep in memory.
      */
     private Int2IntMap elementPermutation = new Int2IntOpenHashMap();
-    /**
-     * The minimum q-value seen across all hits. Used to decide when to early stop
-     * after having seen the top hits.
-     */
-    private double minAdjustedQValue;
+
     /**
      * The list of element indices to report as top hits.
      */
