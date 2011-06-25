@@ -41,12 +41,14 @@ import java.util.Collections;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * Combines tab delimited datasets and performs FDR adjustment on a set of P-value columns. Lines will always be ordered
+ * Combines tab delimited or VCF formatted datasets and performs FDR adjustment on a set of P-value columns. Lines will always be ordered
  * in the output in the same order that the lines are read from the input. However, since each line is independent, this
  * mode garantees that sorting the output by a  identifier column (unique for each line) will yield the same output
- * irrespective of the order in which the input files are presented to the mode. The FDR adjustment is done with all the
- * P-value kept in memory, but only the P-values. The data files are scanned a second time to read other columns and
- * produce the combined output.
+ * irrespective of the order in which the input files are presented to the mode. The FDR adjustment is done with a subset of
+ * P-value kept in memory, and only the P-values. The data files are scanned a second time to read other columns and
+ * produce the combined output.  The fdr mode also has an option to keep the top lines (ranked by p-values), so that it is
+ * also possible to examine the top hundred hits, even in cases when the adjusted q-value does not reach the pre-specified
+ * threshold.
  *
  * @author Fabien Campagne
  * @since Goby 1.9
