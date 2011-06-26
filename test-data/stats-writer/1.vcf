@@ -3,4 +3,4 @@
 ##INFO=<ID=C,Number=1,Type=String,Description="something about C">
 ##INFO=<ID=D,Number=1,Type=String,Description="something about D">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT
-		.			.	.	C=1;D=dvalue		
+		.	.	.	.	.	C=1;D=dvalue		
