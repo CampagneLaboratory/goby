@@ -23,8 +23,8 @@ import edu.cornell.med.icb.goby.readers.vcf.*;
 import edu.cornell.med.icb.util.VersionUtils;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -328,6 +328,10 @@ public class VCFWriter {
         for (String allele : refAlleles) {
             buffer.append(allele);
             if (++index != max) buffer.append(',');
+        }
+        if (buffer.length() == 0) {
+            // set REF or ALT to the VCF missing value if there are no alleles to write:
+            buffer.append('.');
         }
         return buffer;
     }
