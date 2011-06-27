@@ -28,7 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.rosuda.JRI.Rengine;
 
 /**
- * Removes likely sequencing errors from the list of variantions. Either filter the errors completely or tries to determine
+ * Removes likely sequencing errors from the list of variations. Either filter the errors completely or tries to determine
  * which base should have been sequenced.
  *
  * @author Fabien Campagne

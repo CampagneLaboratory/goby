@@ -20,7 +20,6 @@ package edu.cornell.med.icb.goby.util;
 
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.log4j.Logger;
@@ -46,7 +45,7 @@ public class BaseStats {
         long[] tallies = new long['T' + 1];
         ProgressLogger progress = new ProgressLogger(LOG);
         progress.start("Starting to analyze base stats.");
-        progress.itemsName="reads";
+        progress.itemsName = "reads";
         for (Reads.ReadEntry entry : reader) {
 
             ReadsReader.decodeSequence(entry, sequence);
@@ -65,10 +64,9 @@ public class BaseStats {
                 "C: %d %g%% %n" +
                 "T: %d %g%% %n" +
                 "G: %d %g%% %n",
-                tallies['A'],
-                percent(tallies['A'], sum),
-                tallies['C'],
-                percent(tallies['C'], sum), tallies['T'], percent(tallies['T'], sum),
+                tallies['A'], percent(tallies['A'], sum),
+                tallies['C'], percent(tallies['C'], sum),
+                tallies['T'], percent(tallies['T'], sum),
                 tallies['G'], percent(tallies['G'], sum)
         );
     }
