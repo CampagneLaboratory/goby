@@ -73,6 +73,9 @@ public class ObservedIndel {
         return from;
     }
 
+    public String to() {
+        return to;
+    }
     public final boolean isReadInsertion() {
         return to.contains("-");
     }

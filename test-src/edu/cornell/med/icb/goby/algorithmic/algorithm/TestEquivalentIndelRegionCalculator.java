@@ -19,6 +19,8 @@
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
 //import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
+
+import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import edu.cornell.med.icb.goby.alignments.processors.ObservedIndel;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import org.junit.Before;
@@ -34,16 +36,16 @@ import static junit.framework.Assert.assertEquals;
 public class TestEquivalentIndelRegionCalculator {
     RandomAccessSequenceTestSupport genome;
     private String[] sequences = {
-            "ACTCAAAGACT",
-            "AAACAGAGATCCC"
+            "ACTCAAAGACT",  // will delete one A in the three consecutive As
+            "AAACAGATCCCACA"  // will insert AG between C and AG
     };
-  //  private EquivalentIndelRegionCalculator equivalentIndelRegionCalculator;
+    private EquivalentIndelRegionCalculator equivalentIndelRegionCalculator;
 
     @Test
     public void emptyTest() {
     }
 
- /*   @Before
+    @Before
     public void setUp() throws Exception {
 
         genome = new RandomAccessSequenceTestSupport(sequences);
@@ -52,13 +54,33 @@ public class TestEquivalentIndelRegionCalculator {
 
     @Test
     public void testDetermine() throws Exception {
-        ObservedIndel indel = new ObservedIndel(2, 3, "A", "-");
+        ObservedIndel indel = new ObservedIndel(4, 5, "-", "A");
         EquivalentIndelRegion result = equivalentIndelRegionCalculator.determine(0, indel);
         assertEquals(0, result.referenceIndex);
-        assertEquals(1, result.startPosition);
-        assertEquals("AAAA", result.from);
+        assertEquals(3, result.startPosition);
+        assertEquals(7, result.endPosition);
+        assertEquals("-AA", result.from);
         assertEquals("AAA", result.to);
         assertEquals("ACTC", result.flankLeft);
         assertEquals("GACT", result.flankRight);
-    }        */
+    }
+
+    @Test
+    public void testInsertAG() throws Exception {
+        ObservedIndel indel = new ObservedIndel(3, 4, "--", "AG");
+        EquivalentIndelRegion result = equivalentIndelRegionCalculator.determine(1, indel);
+        assertEquals(0, result.referenceIndex);
+        assertEquals(3, result.startPosition);
+        assertEquals(7, result.endPosition);
+        assertEquals("--AGA", result.from);
+        assertEquals("AGAGA", result.to);
+        assertEquals("AAAC", result.flankLeft);
+        assertEquals("TCCC", result.flankRight);
+        assertEquals("AAAC--AGATCCC", result.fromInContext());
+        assertEquals("AAACAGAGATCCC", result.toInContext());
+        // "AAAC  AGATCCC"
+        // "AAACAGAGATCCC"
+    }
+
+
 }
