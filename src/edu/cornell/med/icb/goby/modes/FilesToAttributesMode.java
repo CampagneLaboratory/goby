@@ -32,6 +32,7 @@ import java.io.PrintWriter;
  * delimited attribute file suitable for loading in IGV.
  * This mode is useful if you follow the following convention when naming a set of files"
  * TAG-phenotype-sampleId.counts  you can then extract a sample attribute table with these arguments: -a ignore -a phenotype -a sampleId -d - -o sample-attributes.txt *.counts
+ *
  * @author Fabien Campagne
  *         Date: 6/11/11
  *         Time: 5:03 PM
@@ -55,6 +56,9 @@ public class FilesToAttributesMode extends AbstractGobyMode {
     private String[] attributeNames;
     private String[] filenames;
     private String outputFilename;
+    private String suffixTransform;
+    private String suffixLookup;
+    private String suffixReplace;
 
 
     @Override
@@ -74,49 +78,67 @@ public class FilesToAttributesMode extends AbstractGobyMode {
         delimiter = jsapResult.getString("delimiter");
         attributeNames = jsapResult.getStringArray("attribute");
         filenames = jsapResult.getStringArray("file");
-      outputFilename=jsapResult.getString("output");
+        outputFilename = jsapResult.getString("output");
+        suffixTransform = jsapResult.getString("suffix");
+        if (suffixTransform != null) {
+            String toks[] = suffixTransform.split("/");
+            suffixLookup=toks[0];
+           if (toks.length>1) {
+               suffixReplace=toks[1];
+           }   else {
+               suffixReplace="";
+           }
+        }
         return this;
     }
 
     @Override
     public void execute() throws IOException {
-        final PrintWriter out= outputFilename==null? new PrintWriter(System.out) :
+        final PrintWriter out = outputFilename == null ? new PrintWriter(System.out) :
                 new PrintWriter(outputFilename);
         try {
-        int index = 0;
+            int index = 0;
             out.print("trackName\t");
             for (String attributeName : attributeNames) {
-            if (!"ignore".equals(attributeName)) {
-                out.print(attributeName);
+                if (!"ignore".equals(attributeName)) {
+                    out.print(attributeName);
 
-                if (index != attributeNames.length) {
-                    out.print('\t');
-                }
-            }
-            index++;
-        }
-        out.println();
-        for (String file : filenames) {
-            final String file1 = file;
-            String name = FilenameUtils.getName(file1);
-            String filename = FilenameUtils.getBaseName(name);
-            String[] tokens = filename.split(delimiter);
-            out.printf("%s\t",name);
-            for (int i = 0; i < attributeNames.length; i++) {
-                if (!"ignore".equals(attributeNames[i])) {
-                    out.print(tokens[i]);
-                    if (i != attributeNames.length) {
+                    if (index != attributeNames.length) {
                         out.print('\t');
                     }
                 }
-
+                index++;
             }
             out.println();
-        }
-        out.flush();
-        }finally {
+            for (String file : filenames) {
+                final String file1 = file;
+                String name = FilenameUtils.getName(file1);
+                String filename = FilenameUtils.getBaseName(name);
+                String[] tokens = filename.split(delimiter);
+                out.printf("%s\t", adjustSuffix(name));
+                for (int i = 0; i < attributeNames.length; i++) {
+                    if (!"ignore".equals(attributeNames[i])) {
+                        out.print(tokens[i]);
+                        if (i != attributeNames.length) {
+                            out.print('\t');
+                        }
+                    }
+
+                }
+                out.println();
+            }
+            out.flush();
+        } finally {
             out.close();
 
         }
+    }
+
+    private String adjustSuffix(final String name) {
+
+        if (name.endsWith(suffixLookup)) {
+            return name.replace(suffixLookup, suffixReplace);
+        }
+        return name;
     }
 }

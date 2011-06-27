@@ -28,6 +28,12 @@
         </flaggedOption>
 
         <flaggedOption>
+            <id>suffix</id>
+            <longFlag>suffix</longFlag>
+            <required>false</required>
+            <help>Determine how filename suffixes should be processed to generate the first column of the sample attribute file. This argument should be in the format A/B, where A is a suffix of the filename, and B is a string to substitute to A for every file. For instance, .entries/ will remove the .entries suffix of each filename. </help>
+        </flaggedOption>
+        <flaggedOption>
             <id>attribute</id>
             <shortFlag>a</shortFlag>
             <longFlag>attribute</longFlag>
