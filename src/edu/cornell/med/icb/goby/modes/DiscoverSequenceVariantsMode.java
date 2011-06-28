@@ -23,6 +23,8 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.alignments.processors.*;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
@@ -83,6 +85,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     private boolean groupsAreDefined;
     private ObjectArrayList<BaseFilter> baseFilters;
     private AlignmentProcessorFactory realignmentFactory = new DefaultAlignmentProcessorFactory();
+    /** A genome used for testing. */
+    private RandomAccessSequenceInterface testGenome;
 
     public void setDisableAtLeastQuarterFilter(boolean disableAtLeastQuarterFilter) {
         this.disableAtLeastQuarterFilter = disableAtLeastQuarterFilter;
@@ -244,7 +248,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             System.out.println(filter.describe());
         }
 
-        RandomAccessSequenceCache genome = configureGenome(jsapResult);
+        RandomAccessSequenceInterface genome = configureGenome(jsapResult);
 
 
         int startFlapSize = jsapResult.getInt("start-flap-size", 100);
@@ -259,7 +263,10 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         return this;
     }
 
-    static RandomAccessSequenceCache configureGenome(JSAPResult jsapResult) throws IOException {
+   private RandomAccessSequenceInterface configureGenome(JSAPResult jsapResult) throws IOException {
+       if (testGenome!=null) {
+           return testGenome;
+       }
         final String genome = jsapResult.getString("genome");
         RandomAccessSequenceCache cache = null;
         if (genome != null) {
@@ -302,6 +309,11 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             System.err.println("Format group_comparison requires that arguments --group and --compare be defined.");
             System.exit(1);
         }
+    }
+
+
+    public void setTestGenome(final RandomAccessSequenceTestSupport testGenome) {
+        this.testGenome=testGenome;
     }
 
 

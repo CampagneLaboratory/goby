@@ -111,7 +111,7 @@ entry.position=0
         realigner.pushEntryToPool(tinfo, 0, entry);
         assertEquals(2, tinfo.potentialIndels.get(0).getStart());
         assertEquals(5, tinfo.potentialIndels.get(0).getEnd());
-        assertEquals(3, tinfo.potentialIndels.get(0).length());
+        assertEquals(3, tinfo.potentialIndels.get(0).positionSpan());
 
     }
 

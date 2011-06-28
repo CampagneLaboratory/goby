@@ -20,6 +20,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.alignments.processors.ObservedIndel;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -31,7 +32,7 @@ import org.apache.log4j.Logger;
  *         Time: 2:14:38 PM
  */
 public abstract class IterateSortedAlignmentsListImpl
-        extends IterateSortedAlignments<ObjectArrayList<PositionBaseInfo>> {
+        extends IterateSortedAlignments<DiscoverVariantPositionData> {
     /**
      * Used to log debug and informational messages.
      */
@@ -44,18 +45,22 @@ public abstract class IterateSortedAlignmentsListImpl
      * @param intermediatePosition Position is zero-based
      * @param positionBaseInfos    List of base information for bases that aligned.
      */
-    public abstract void processPositions(int referenceIndex, int intermediatePosition, ObjectArrayList<PositionBaseInfo> positionBaseInfos);
+    @Override
+    public abstract void processPositions(int referenceIndex, int intermediatePosition, DiscoverVariantPositionData positionBaseInfos);
 
-    public void observeReferenceBase(ConcatSortedAlignmentReader sortedReaders,
-                                     Alignments.AlignmentEntry alignmentEntry,
-                                     Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
-                                     int currentReferenceIndex, int currentRefPosition, int currentReadIndex) {
+
+
+    @Override
+    public final void observeReferenceBase(final ConcatSortedAlignmentReader sortedReaders,
+                                           final Alignments.AlignmentEntry alignmentEntry,
+                                           final Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
+                                           final int currentReferenceIndex, final int currentRefPosition, final int currentReadIndex) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(String.format("RB: queryIndex=%d\tref_position=%d\tread_index=%d",
                     alignmentEntry.getQueryIndex(), currentRefPosition, currentReadIndex));
         }
 
-        PositionBaseInfo info = new PositionBaseInfo();
+        final PositionBaseInfo info = new PositionBaseInfo();
 
         info.readerIndex = alignmentEntry.getSampleIndex();
         //     System.out.printf("observing ref readerIndex=%d%n",info.readerIndex);
@@ -70,22 +75,22 @@ public abstract class IterateSortedAlignmentsListImpl
     }
 
 
-
-    public void observeVariantBase(ConcatSortedAlignmentReader sortedReaders,
-                                   Alignments.AlignmentEntry alignmentEntry,
-                                   Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
-                                   Alignments.SequenceVariation var,
-                                   char toChar, char fromChar,
-                                   byte toQual, int currentReferenceIndex,
-                                   int currentRefPosition,
-                                   int currentReadIndex) {
+    @Override
+    public void observeVariantBase(final ConcatSortedAlignmentReader sortedReaders,
+                                   final Alignments.AlignmentEntry alignmentEntry,
+                                   final Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
+                                   final Alignments.SequenceVariation variation,
+                                   final char toChar, final char fromChar,
+                                   final byte toQual, final int currentReferenceIndex,
+                                   final int currentRefPosition,
+                                   final int currentReadIndex) {
 
         if (LOG.isTraceEnabled()) {
             LOG.trace(String.format("VB: queryIndex=%d\tref_position=%d\tread_index=%d\tfromChar=%c\ttoChar=%c",
                     alignmentEntry.getQueryIndex(), currentRefPosition, currentReadIndex, fromChar, toChar));
         }
 
-        PositionBaseInfo info = new PositionBaseInfo();
+        final PositionBaseInfo info = new PositionBaseInfo();
         info.readerIndex = alignmentEntry.getSampleIndex();
         //    System.out.printf("observing var readerIndex=%d%n",info.readerIndex);
 
@@ -100,12 +105,13 @@ public abstract class IterateSortedAlignmentsListImpl
     }
 
 
-    private void addToFuture(Int2ObjectMap<ObjectArrayList<PositionBaseInfo>> positionToBases,
-                             PositionBaseInfo info) {
 
-        ObjectArrayList<PositionBaseInfo> list = positionToBases.get(info.position);
+
+    private void addToFuture(final Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
+                             final PositionBaseInfo info) {
+        DiscoverVariantPositionData list = positionToBases.get(info.position);
         if (list == null) {
-            list = new ObjectArrayList<PositionBaseInfo>();
+            list = new DiscoverVariantPositionData(info.position);
             positionToBases.put(info.position, list);
         }
         list.add(info);

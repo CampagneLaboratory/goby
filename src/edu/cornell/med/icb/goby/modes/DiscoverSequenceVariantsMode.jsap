@@ -163,7 +163,7 @@
         <flaggedOption>
             <id>genome</id>
             <longFlag>genome</longFlag>
-            <required>false</required>
+            <required>true</required>
             <help>A genome basename. The genome must have been processed by build-sequence-cache mode to produce the compressed, random access files this mode needs. </help>
         </flaggedOption>
          <flaggedOption>

@@ -351,7 +351,7 @@ public abstract class IterateSortedAlignments<T> {
                     }
                 }
                 int numObservedBases = 0;
-                for (Alignments.SequenceVariation var : seqVars) {
+                for (final Alignments.SequenceVariation var : seqVars) {
                     final String to = var.getTo();
                     final String from = var.getFrom();
                     final ByteString qualityScores = var.getToQuality();
@@ -359,7 +359,8 @@ public abstract class IterateSortedAlignments<T> {
                     final int fromLength = from.length();
                     final int toLength = to.length();
                     final int qualLength = qualityScores.size();
-                    int sequenceVariationLength = Math.max(fromLength, toLength);
+                    final int sequenceVariationLength = Math.max(fromLength, toLength);
+
 
                     final int preSeqvarBases;
                     if (from.charAt(0) == '-') {
@@ -412,7 +413,7 @@ public abstract class IterateSortedAlignments<T> {
                                 var, toChar, fromChar, toQual,
                                 referenceIndex, currentRefPosition, currentReadIndex);
 
-                        if (toChar == '-' && !forwardStrand && i == (sequenceVariationLength - 1)) {
+                        if (toChar == '-' && !forwardStrand && i == sequenceVariationLength - 1) {
                             // The logic in this algorithm is (increment/decrement) before observe().
                             // After a deletion on reverse strand we want the next base after the deletion
                             // to have the same readIndex as the deletion bases. Here we will
@@ -420,11 +421,20 @@ public abstract class IterateSortedAlignments<T> {
                             // will be decremented and thus be the same readIndex as those for the deletion.
                             currentReadIndex = advanceReadIndex(!forwardStrand, currentReadIndex);
                         }
+
+                    }
+                    //
+                    if (var.getFrom().indexOf('-') >= 0 || var.getTo().indexOf('-') >= 0) {
+                        observeIndel(positionToBases, referenceIndex,
+                                alignmentEntry.getPosition()+var.getPosition(),
+                                var.getFrom(), var.getTo(),
+                                alignmentEntry.getSampleIndex()
+                        );
                     }
                 }
 
-                while (forwardStrand ? currentReadIndex < (queryLength - rightPadding) :
-                        currentReadIndex > (1 + rightPadding)) {
+                while (forwardStrand ? currentReadIndex < queryLength - rightPadding :
+                        currentReadIndex > 1 + rightPadding) {
 
                     // match stretch before next variation / end of read
                     currentReadIndex = advanceReadIndex(forwardStrand, currentReadIndex);
@@ -493,9 +503,15 @@ public abstract class IterateSortedAlignments<T> {
         return currentRefPosition;
     }
 
-    private void processAndCleanup(int lastReferenceIndex, int lastPosition, Int2ObjectMap<T> positionToBases) {
-        for (int intermediatePosition = lastRemovedPosition + 1; intermediatePosition <= lastPosition; intermediatePosition++) {
+    private void processAndCleanup(final int lastReferenceIndex,
+                                   final int lastPosition, final
+    Int2ObjectMap<T> positionToBases) {
+
+        for (int intermediatePosition = lastRemovedPosition + 1;
+             intermediatePosition <= lastPosition; intermediatePosition++) {
+
             if (positionToBases.containsKey(intermediatePosition)) {
+
                 processPositions(lastReferenceIndex, intermediatePosition, positionToBases.get(intermediatePosition));
                 positionToBases.remove(intermediatePosition);
             }
@@ -505,18 +521,25 @@ public abstract class IterateSortedAlignments<T> {
     }
 
     /**
-     * Process positions on the previous target, which may still be in positionToBases.
+     * Temporary position used for sorting in method processAllPreviousPositions.
+     */
+    IntArrayList tmpPositions = new IntArrayList();
+
+    /**
+     * Process positions on the previous target, which may still be in positionToBases. Note that this method is no
+     * re-entrant.
      *
      * @param lastReferenceIndex the last referenceIndex?
      * @param positionToBases    positionToBases?
      */
-    private void processAllPreviousPositions(int lastReferenceIndex, Int2ObjectMap<T> positionToBases) {
-        IntArrayList positions = new IntArrayList();
-        positions.addAll(positionToBases.keySet());
-        Collections.sort(positions);
+    private void processAllPreviousPositions(final int lastReferenceIndex, final Int2ObjectMap<T> positionToBases) {
+
+        tmpPositions.clear();
+        tmpPositions.addAll(positionToBases.keySet());
+        Collections.sort(tmpPositions);
 
 
-        for (int intermediatePosition : positions) {
+        for (final int intermediatePosition : tmpPositions) {
             if (positionToBases.containsKey(intermediatePosition)) {
 
                 processPositions(lastReferenceIndex, intermediatePosition, positionToBases.get(intermediatePosition));
@@ -569,6 +592,23 @@ public abstract class IterateSortedAlignments<T> {
 
 
     public abstract void processPositions(int referenceIndex, int intermediatePosition, T positionBaseInfos);
+
+    /**
+     * Implement this call-back method to observe a candidate indel that begins at startPosition.
+     *
+     * @param positionToBases map from eir start positions to info about indels whose eir start at the location.
+     * @param referenceIndex  The reference sequence where the indel candidate is observed.
+     * @param startPosition   The position where the indel start, according to pair-wise sequence alignment (before eir calculation)
+     * @param from            from bases (before eir calculation)
+     * @param to              to bases (before eir calculation)
+     * @param sampleIndex     Index of the sample where the indel was observed.
+     */
+    public void observeIndel(final Int2ObjectMap<T> positionToBases,
+                             final int referenceIndex,
+                             final int startPosition,
+                             final String from, final String to,
+                             final int sampleIndex) {
+    }
 
 
     /**

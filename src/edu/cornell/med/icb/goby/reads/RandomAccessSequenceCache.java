@@ -204,7 +204,7 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         assert position + length < maxSize : "position must be less than size of the reference sequence (" + maxSize + ")";
 
 
-        assert length < 15 : "lenth must be less than 15";
+        assert length < 15 : "length must be less than 15";
         bits.clear();
         final byte[] bytes = compressedData.get(referenceIndex);
         final LongArrayBitVector ignoreList = referenceIgnoreLists.get(referenceIndex);

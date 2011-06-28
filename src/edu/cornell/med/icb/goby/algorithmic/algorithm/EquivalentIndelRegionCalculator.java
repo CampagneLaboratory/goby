@@ -22,7 +22,6 @@ import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import edu.cornell.med.icb.goby.alignments.processors.ObservedIndel;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import it.unimi.dsi.lang.MutableString;
-import sun.awt.image.ToolkitImage;
 
 /**
  * Implements the method of Krawitz et al to determine a span of equivalent indel regions, given
@@ -34,9 +33,48 @@ import sun.awt.image.ToolkitImage;
  *         Time: 6:00 PM
  */
 public class EquivalentIndelRegionCalculator {
-    public static final int FLANK_SIZE = 4;
+
     RandomAccessSequenceInterface genome;
     private static final String GAPS = "----------------------------------------------------------------";
+    private int flankRightSize = 4;
+    public int flankLeftSize = 4;
+
+    /**
+     * Set the number of bases to record in flank-right.
+     *
+     * @param flankRightSize number of flanking bases on the right.
+     */
+    public void setFlankRightSize(final int flankRightSize) {
+        this.flankRightSize = flankRightSize;
+    }
+
+    /**
+     * Set the number of bases to record in flank-left.
+     *
+     * @param flankLeftSize number of flanking bases on the left.
+     */
+    public void setFlankLeftSize(final int flankLeftSize) {
+
+        this.flankLeftSize = flankLeftSize;
+    }
+
+    /**
+     * Return the number of bases flanking this indel to hte right.
+     *
+     * @return flank right size.
+     */
+    public int getFlankRightSize() {
+        return flankRightSize;
+    }
+
+    /**
+     * Return the number of bases flanking this indel to the left.
+     *
+     * @return flank left size.
+     */
+    public int getFlankLeftSize() {
+        return flankLeftSize;
+    }
 
     public EquivalentIndelRegionCalculator(RandomAccessSequenceInterface genome) {
         this.genome = genome;
@@ -118,22 +156,22 @@ public class EquivalentIndelRegionCalculator {
 
         //     debug("from: ", result);
         flankingLeft.setLength(0);
-        genome.getRange(referenceIndex, result.startPosition - FLANK_SIZE + 1, FLANK_SIZE, flankingLeft);
+        genome.getRange(referenceIndex, result.startPosition - flankLeftSize + 1, flankLeftSize, flankingLeft);
 
         result.flankLeft = flankingLeft.toString();
 
         flankingRight.setLength(0);
-        genome.getRange(referenceIndex, result.endPosition, FLANK_SIZE, flankingRight);
+        genome.getRange(referenceIndex, result.endPosition, flankRightSize, flankingRight);
 
         final int maxRefLength = genome.getLength(referenceIndex);
 
         result.flankRight = flankingRight.toString();
-        //       debug("flanks: ", result);
+ //              debug("flanks: ", result);
         return result;
 
     }
 
-   final MutableString rollBuffer = new MutableString();
+    final MutableString rollBuffer = new MutableString();
 
     private final MutableString roll(int leftExtensions, String from) {
         rollBuffer.setLength(0);

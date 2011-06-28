@@ -234,7 +234,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         Alignments.AlignmentEntry.Builder builder = Alignments.AlignmentEntry.newBuilder(entry);
         // update the score to reflect the realignment:
         builder.setScore(entry.getScore() + scoreDelta);
-        int indelLength = indel.length();
+        int indelLength = indel.positionSpan();
         int entryPosition = entry.getPosition();
         final int originalEntryPosition = entryPosition;
         if (!shiftForward && indel.isReadInsertion()) {
@@ -364,7 +364,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
                            final RandomAccessSequenceInterface genome) {
         int entryPosition = entry.getPosition();
         int indelOffsetInAlignment = indel.getStart() - entryPosition;
-        int indelLength = indel.length();
+        int indelLength = indel.positionSpan();
         int varCount = entry.getSequenceVariationsCount();
         int targetIndex = entry.getTargetIndex();
         int score = 0;

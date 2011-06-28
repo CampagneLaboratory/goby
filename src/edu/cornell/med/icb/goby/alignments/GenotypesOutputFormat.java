@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
@@ -25,7 +26,10 @@ import edu.cornell.med.icb.goby.stats.VCFWriter;
 import it.unimi.dsi.fastutil.chars.CharArraySet;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.lang.MutableString;
+
+import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
 
@@ -51,6 +55,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     private int zygFieldIndex;
     private int failBaseCountFieldIndex;
     private int goodBaseCountFieldIndex;
+    private String[] singleton = new String[1];
 
     public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
@@ -143,7 +148,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     }
 
     public void writeGenotypes(VCFWriter statsWriter, SampleCountInfo[] sampleCounts) {
-
+        boolean referenceAlleleSetForIndel = false;
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
 
             alleleSet.clear();
@@ -159,28 +164,42 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
             int baseIndex = 0;
             int genotypeCount = 0;
             genotypeBuffer.setLength(0);
-            char refBase = sci.referenceBase;
+            final char refBase = sci.referenceBase;
             String referenceAllele = Character.toString(refBase);
             boolean siteObserved = false;
+            // add indel genotypes:
+            ObjectArraySet<String> indelReferenceSet = null;
+            if (sci.hasIndels()) {
+                indelReferenceSet = new ObjectArraySet<String>();
+                for (final EquivalentIndelRegion eir : sci.getEquivalentIndelRegions()) {
+                    indelReferenceSet.add(eir.fromInContext());
+                    statsWriter.addAlternateAllele(eir.toInContext());
+                    genotypeBuffer.append(eir.toInContext());
+                    genotypeBuffer.append('/');
+                    if (eir.frequency >= 1) {
 
-            for (int count : sci.counts) {
-                final char base = sci.base(baseIndex);
-                if (count > 0) {
-                    siteObserved = true;
-                    alleleSet.add(base);
-                    if (base != sci.referenceBase) {
-                        statsWriter.addAlternateAllele(Character.toString(base));
-
-                        genotypeBuffer.append(String.format("%c/", base));
-                        genotypeCount++;
-                    } else {
-                        referenceAllele = Character.toString(sci.referenceBase);
-                        genotypeBuffer.append(String.format("%c/", base));
+                        siteObserved = true;
                     }
                 }
-                baseIndex++;
-            }
+            } else {
+                for (final int count : sci.counts) {
+                    final char base = sci.base(baseIndex);
+                    if (count > 0) {
+                        siteObserved = true;
+                        alleleSet.add(base);
+                        if (base != sci.referenceBase) {
+                            statsWriter.addAlternateAllele(Character.toString(base));
+                            genotypeBuffer.append(String.format("%c/", base));
+                            genotypeCount++;
 
+                        } else {
+                            referenceAllele = Character.toString(sci.referenceBase);
+                            genotypeBuffer.append(String.format("%c/", base));
+                        }
+                    }
+                    baseIndex++;
+                }
+            }
             if (alleleSet.size() == 1) {
                 // when homozygous genotype 0/ write 0/0/ (last / will be removed when length is adjusted)
                 genotypeBuffer.append(genotypeBuffer.copy());
@@ -195,6 +214,14 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                 baseIndex++;
                 baseCountString.append(',');
             }
+            if (sci.hasIndels()) {
+                for (final EquivalentIndelRegion eir : sci.getEquivalentIndelRegions()) {
+                    baseCountString.append(eir.toInContext());
+                    baseCountString.append('=');
+                    baseCountString.append(Integer.toString(eir.frequency));
+                    baseCountString.append(',');
+                }
+            }
             baseCountString.setLength(baseCountString.length() - 1);
             statsWriter.setSampleValue(baseCountFieldIndex, sampleIndex, baseCountString);
 
@@ -204,13 +231,29 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                     // trim the trailing coma:
                     genotypeBuffer.setLength(genotypeBuffer.length() - 1);
                 }
-                statsWriter.setReferenceAllele(referenceAllele);
+                if (sci.hasIndels()) {
+                    if (indelReferenceSet != null) {
+                        if (indelReferenceSet.size() == 1) {
+                            statsWriter.setReferenceAllele(indelReferenceSet.toArray(singleton)[0]);
+                            referenceAlleleSetForIndel = true;
+                        } else {
+                            LOG.error(String.format("Observed multiple indel references at position %d: \n %s %n", statsWriter.getPosition(),
+                                    indelReferenceSet));
+                        }
+                    }
+                } else {
+                    if (!referenceAlleleSetForIndel) {
+                        // do not overwrite the reference allele with a SNP if an indel has been observed at this location:
+                        statsWriter.setReferenceAllele(referenceAllele);
+                    }
+                }
                 statsWriter.setSampleValue(genotypeFieldIndex, sampleIndex, statsWriter.codeGenotype(genotypeBuffer.toString()));
 
             } else {
                 statsWriter.setSampleValue(genotypeFieldIndex, sampleIndex, "./.");
 
             }
+
         }
     }
 
@@ -229,5 +272,10 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
         }
 
     }
+
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Logger LOG = Logger.getLogger(GenotypesOutputFormat.class);
 
 }

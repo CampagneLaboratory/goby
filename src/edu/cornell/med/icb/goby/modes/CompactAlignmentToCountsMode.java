@@ -307,7 +307,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         int lastReferenceIndex = -1;
 
         @Override
-        public void processPositions(int referenceIndex, int position, ObjectArrayList<PositionBaseInfo> positionBaseInfos) {
+        public void processPositions(int referenceIndex, int position,  DiscoverVariantPositionData positionBaseInfos) {
             try {
                 if (referenceIndex != lastReferenceIndex) {
                     if (writer != null) {
@@ -330,6 +330,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
 
             writer = null;
         }
+
     }
 
     private ComputeCountInterface chooseAlgorithm(final WeightParameters weightParams, final WeightsInfo weights, ComputeCountInterface algo) {

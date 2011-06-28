@@ -22,6 +22,7 @@ import com.google.protobuf.ByteString;
 import com.martiansoftware.jsap.JSAPException;
 import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.util.TestFiles;
 import edu.cornell.med.icb.io.TSVReader;
@@ -88,13 +89,26 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
             args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.BETWEEN_GROUPS.toString()});
 
 
+            configureTestGenome(mode);
             mode.configure(args);
+
             mode.execute();
 
             assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
                     new File("test-data/discover-variants/expected-groups-only.tsv"));
 
         }
+    }
+
+    private void configureTestGenome(DiscoverSequenceVariantsMode mode) {
+        RandomAccessSequenceTestSupport genomeForTest=new RandomAccessSequenceTestSupport(new String[]{"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}){
+            @Override
+            public char get(int referenceIndex, int position) {
+
+                return 'C';
+            }
+        };
+        mode.setTestGenome(genomeForTest);
     }
 
     @Test
@@ -107,6 +121,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
                 basenames, BASE_TEST_DIR + "/" + outputFilename, "samples").split("[\\s]");
         args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.BETWEEN_GROUPS.toString()});
 
+        configureTestGenome(mode);
         mode.configure(args);
         mode.execute();
         assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
@@ -124,7 +139,9 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
                 basenames, BASE_TEST_DIR + "/" + outputFilename, "samples").split("[\\s]");
         args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.ALLELE_FREQUENCIES.toString()});
 
+        configureTestGenome(mode);
         mode.configure(args);
+
         mode.execute();
         assertEquals(
                 new File("test-data/discover-variants/expected-output-alleles.tsv"),
@@ -145,7 +162,10 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
             String[] args = constructArgumentString(
                     basenameArray, output, "samples").split("[\\s]");
             args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.BETWEEN_GROUPS.toString()});
+
+            configureTestGenome(mode);
             mode.configure(args);
+
             mode.execute();
 
             TSVReader reader = new TSVReader(new FileReader(output));
@@ -356,6 +376,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.GENOTYPES.toString()});
 
         mode.setDisableAtLeastQuarterFilter(true);
+        configureTestGenome(mode);
         mode.configure(args);
 
         mode.execute();
@@ -623,6 +644,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
                 "--variation-stats %s " +
                 "--groups %s " +
                 "--compare A/B " +
+                "--genome use-dummy-in-test " +
                 "--eval %s " +
                 "--minimum-variation-support 1 " +
                 "--threshold-distinct-read-indices 1 " +

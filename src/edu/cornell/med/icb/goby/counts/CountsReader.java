@@ -125,7 +125,6 @@ public class CountsReader implements CountsReaderI {
         }
         final int deltaCount = input.readGamma();
 
-
         if (deltaCount == END_OF_DATA_MARKER) {
             endOfStream = true;
             return false;
@@ -136,7 +135,7 @@ public class CountsReader implements CountsReaderI {
         final int decodedDeltaCount = decodeDeltaCount(deltaCount);
         this.deltaCount = decodedDeltaCount;
         count += decodedDeltaCount;
-        assert count>=0:"Count must never be negative! now at position ="+position;
+       // assert count>=0:"Count must never be negative! now at position ="+position;
 
         nextTransitionLoaded = true;
         return true;

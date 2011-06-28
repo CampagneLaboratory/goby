@@ -55,4 +55,5 @@ public interface RandomAccessSequenceInterface {
      */
     void getRange(final int referenceIndex, final int position, final int length, MutableString bases);
 
+    int getReferenceIndex(String referenceId);
 }

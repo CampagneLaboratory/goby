@@ -385,7 +385,9 @@ public class VCFWriter {
             alleleFound = false;
             int alleleIndex = 0;
             for (String ref : refAlleles) {
-                if (ref.equals(allele)) {
+                 // the second part of the next clause checks if the one base allele is included in the ref allele (i.e., C is included in CC
+                // since the next base matches the reference in both C and CC when CC is a ref allele.
+                if (ref.equals(allele) || (ref.length() > 1 && allele.length() == 1 && ref.charAt(0) == allele.charAt(0))) {
                     genotypeIndexList.add(alleleIndex);
 
                     alleleFound = true;
@@ -620,5 +622,9 @@ public class VCFWriter {
      */
     public int getNumInfoFields() {
         return columns.find("INFO").fields.size();
+    }
+
+    public int getPosition() {
+        return position;
     }
 }

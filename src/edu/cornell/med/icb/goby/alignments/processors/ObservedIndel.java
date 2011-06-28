@@ -18,7 +18,6 @@
 
 package edu.cornell.med.icb.goby.alignments.processors;
 
-import java.text.Normalizer;
 
 /**
  * @author Fabien Campagne
@@ -36,14 +35,32 @@ public class ObservedIndel {
     final int endPosition;
     final String from;
     final String to;
+    private int length;
+
+    public ObservedIndel(final int startPosition, final String from, final String to) {
+        this.startPosition = startPosition;
+        this.endPosition = startPosition + Math.max(from.length(), to.length());
+        this.from=from;
+        this.to=to;
+        this.length=Math.max(from.length(), to.length());
+    }
 
     /**
-     * Return the length of the indel, in bases (e.g., --- has a length of 3).
+     * Return the span of the indel, in bases. This is the difference between endPosition and startPosition, measured on
+     * the reference.
      *
-     * @return
+     * @return the indel reference span.
      */
-    public int length() {
+    public int positionSpan() {
         return endPosition - startPosition;
+    }
+
+    /**
+     * Return the length of the indel. (e.g., --- has a length of 3)
+     * @return length.
+     */
+    public int getLength() {
+        return length;
     }
 
     /**
@@ -76,6 +93,7 @@ public class ObservedIndel {
     public String to() {
         return to;
     }
+
     public final boolean isReadInsertion() {
         return to.contains("-");
     }
@@ -98,6 +116,6 @@ public class ObservedIndel {
 
     @Override
     public String toString() {
-        return String.format("%s/%s %d-%d",from,to ,startPosition,endPosition);
+        return String.format("%s/%s %d-%d", from, to, startPosition, endPosition);
     }
 }

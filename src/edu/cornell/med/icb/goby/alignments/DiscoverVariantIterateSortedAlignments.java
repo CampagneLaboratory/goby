@@ -20,11 +20,15 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.algorithmic.algorithm.EquivalentIndelRegionCalculator;
+import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
+import edu.cornell.med.icb.goby.alignments.processors.ObservedIndel;
 import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.util.WarningCounter;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -45,8 +49,7 @@ import java.io.PrintWriter;
  *         Time: 2:14:38 PM
  * @see edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode
  */
-public class DiscoverVariantIterateSortedAlignments
-        extends IterateSortedAlignmentsListImpl {
+public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignmentsListImpl {
     /**
      * Used to log debug and informational messages.
      */
@@ -92,11 +95,12 @@ public class DiscoverVariantIterateSortedAlignments
 
     }
 
-    RandomAccessSequenceCache genome;
+    private RandomAccessSequenceInterface genome;
+    private EquivalentIndelRegionCalculator equivalentIndelRegionCalculator;
 
-    public void setGenome(RandomAccessSequenceCache genome) {
+    public void setGenome(RandomAccessSequenceInterface genome) {
         this.genome = genome;
-
+        equivalentIndelRegionCalculator = new EquivalentIndelRegionCalculator(genome);
     }
 
     @Override
@@ -133,6 +137,29 @@ public class DiscoverVariantIterateSortedAlignments
     private int previousReference = -1;
     WarningCounter refBaseWarning = new WarningCounter();
 
+    @Override
+    public void observeIndel(final Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
+                             final int referenceIndex,
+                             final int startPosition, final String from, final String to,
+                             final int sampleIndex) {
+
+        final ObservedIndel indel = new ObservedIndel(startPosition, from, to);
+        equivalentIndelRegionCalculator.setFlankLeftSize(1); // VCF output requires one base before the indel
+        equivalentIndelRegionCalculator.setFlankRightSize(0);
+        final EquivalentIndelRegion indelCandidateRegion = equivalentIndelRegionCalculator.determine(referenceIndex, indel);
+        // substract -1 to yield keyPos: the position of the first base in the indel (includes the 1 base left flank, as
+        // per VCF spec.)
+        final int keyPos = indelCandidateRegion.startPosition -1;
+
+        DiscoverVariantPositionData positionBaseInfos = positionToBases.get(keyPos);
+       // System.out.printf("Observing indel at position %d %n", keyPos);
+       if (positionBaseInfos == null) {
+            positionBaseInfos = new DiscoverVariantPositionData(keyPos);
+            positionToBases.put(keyPos, positionBaseInfos);
+        }
+        positionBaseInfos.observeCandidateIndel(indelCandidateRegion);
+    }
+
     /**
      * This method is not re-entrant. The behavior is unpredictable when if multiple threads call this method. This
      * constraint is added to avoid allocating data structures inside this method, because it is usually called in a loop
@@ -143,8 +170,9 @@ public class DiscoverVariantIterateSortedAlignments
      * @param list           list of bases observed at position.
      */
     @Override
-    public void processPositions(final int referenceIndex, final int position,
-                                 final ObjectArrayList<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> list) {
+    public void processPositions(final int referenceIndex,
+                                 final int position,
+                                 final DiscoverVariantPositionData list) {
         int sumVariantCounts = 0;
 
         if (referenceIndex != previousReference && genome != null) {
@@ -187,7 +215,7 @@ public class DiscoverVariantIterateSortedAlignments
                 } else {
                     sampleCounts[sampleIndex].varCount++;
                     sumVariantCounts++;
-                    if (info.from != referenceBase && (info.from != '.' && info.from != '-')) {
+                    if (info.from != referenceBase && info.from != '.' && info.from != '-') {
 
                         refBaseWarning.warn(LOG, "reference base differ between variation (%c) and genome (%c) at chr %s position %d",
                                 info.from, referenceBase, getReferenceId(referenceIndex),
@@ -198,8 +226,15 @@ public class DiscoverVariantIterateSortedAlignments
                     incrementBaseCounter(info.to, sampleIndex);
                 }
             }
+            boolean hasIndel=false;
+            if (list.getIndels() != null) {
+                for (final EquivalentIndelRegion indel : list.getIndels()) {
+                    sampleCounts[indel.sampleIndex].addIndel(indel);
+                                   hasIndel=true;
+                }
+            }
 
-            if (distinctReadIndices.size() >= thresholdDistinctReadIndices && sumVariantCounts > minimumVariationSupport) {
+            if (hasIndel || distinctReadIndices.size() >= thresholdDistinctReadIndices && sumVariantCounts > minimumVariationSupport) {
                 final int groupIndexA = 0;
                 final int groupIndexB = 1;
                 // Do not write statistics for positions in the start flap. The flap start is used to accumulate
@@ -231,9 +266,9 @@ public class DiscoverVariantIterateSortedAlignments
      * @param list
      * @return
      */
-    private char getReferenceAllele(RandomAccessSequenceCache genome,
+    private char getReferenceAllele(RandomAccessSequenceInterface genome,
                                     int position,
-                                    ObjectArrayList<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> list) {
+                                    DiscoverVariantPositionData list) {
 
         // We will find some referenceBase among the variations that do not match the reference:
         // this procedure will not be able to determine the refBase if all samples are homzygotes matching the reference

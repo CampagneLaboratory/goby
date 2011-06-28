@@ -27,6 +27,7 @@ import edu.cornell.med.icb.goby.alignments.processors.AlignmentProcessorInterfac
 import edu.cornell.med.icb.goby.alignments.processors.DummyProcessorUnsorted;
 import edu.cornell.med.icb.goby.alignments.processors.LocalSortProcessor;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import it.unimi.dsi.logging.ProgressLogger;
 
 import java.io.File;
@@ -69,7 +70,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
     private boolean adjustQueryIndices = true;
     private boolean realign = true;
     private AlignmentProcessorFactory alignmentProcessorFactory;
-    private RandomAccessSequenceCache genome;
+    private RandomAccessSequenceInterface genome;
     private boolean adjustSampleIndices;
 
     @Override

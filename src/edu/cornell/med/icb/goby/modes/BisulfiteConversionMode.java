@@ -167,7 +167,7 @@ public class BisulfiteConversionMode extends AbstractGobyMode {
     }
 
     // Convert each C to T
-    private void convert(MutableString sequence) {
+    private void convert(final MutableString sequence) {
         final int length = sequence.length();
         for (int i = 0; i < length; i++) {
             char base = sequence.charAt(i);
