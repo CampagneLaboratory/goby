@@ -189,6 +189,13 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         return getRange(referenceIndex, position, length);
     }
 
+    @Override
+    public void getRange(final int referenceIndex, final int position, final int length, final MutableString bases) {
+        bases.setLength(0);
+        for (int i = position; i < position + length; i++) {
+            bases.append(get(referenceIndex, i));
+        }
+    }
 
     final LongArrayBitVector bits = LongArrayBitVector.getInstance();
 
@@ -203,7 +210,7 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         final LongArrayBitVector ignoreList = referenceIgnoreLists.get(referenceIndex);
 
         for (int i = 0; i < length; i++) {
-            final int offset = (position+i) * 2;
+            final int offset = (position + i) * 2;
             final byte b = bytes[offset / 8];
             if (ignoreList.get(position)) {
                 // a range that contain 'N' at any position is represented by -1.

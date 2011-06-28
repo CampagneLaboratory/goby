@@ -22,6 +22,7 @@ import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import edu.cornell.med.icb.goby.alignments.processors.ObservedIndel;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import it.unimi.dsi.lang.MutableString;
+import sun.awt.image.ToolkitImage;
 
 /**
  * Implements the method of Krawitz et al to determine a span of equivalent indel regions, given
@@ -35,9 +36,13 @@ import it.unimi.dsi.lang.MutableString;
 public class EquivalentIndelRegionCalculator {
     public static final int FLANK_SIZE = 4;
     RandomAccessSequenceInterface genome;
+    private static final String GAPS = "----------------------------------------------------------------";
 
     public EquivalentIndelRegionCalculator(RandomAccessSequenceInterface genome) {
         this.genome = genome;
+        if (genome == null) {
+            throw new IllegalArgumentException("genome cannot be null");
+        }
     }
 
     MutableString p = new MutableString();
@@ -46,83 +51,111 @@ public class EquivalentIndelRegionCalculator {
      * Determine the span of equivalent indel regions for the observed indel. Indel are often non uniquely described
      * by the information provided by observed indel.
      *
-     * @param indel the observed indel
+     * @param referenceIndex Index of the reference sequence where the indel is located.
+     * @param indel          the observed indel
      * @return the span of equivalent indel regions
      */
     public EquivalentIndelRegion determine(final int referenceIndex, final ObservedIndel indel) {
         final EquivalentIndelRegion result = new EquivalentIndelRegion();
         result.startPosition = indel.getStart();
         result.endPosition = indel.getEnd();
+        result.referenceIndex = referenceIndex;
 
-        int ip = indel.getStart();
         p.setLength(0);
-        boolean insertion = insertionInRead(indel);
+        final boolean insertion = insertionInRead(indel);
         p.append(insertion ? indel.to() : indel.from());
 
         // extend left:
         int leftExtensions = 0;
         final int indelSize = p.length();
         final int lastBaseIndex = indelSize - 1;
+        int rewindLeft = 0;
 
-
-        while (p.charAt(lastBaseIndex + leftExtensions % indelSize) == genome.get(referenceIndex, result.startPosition)) {
+        while (p.charAt(lastBaseIndex - leftExtensions + rewindLeft) == genome.get(referenceIndex, result.startPosition)) {
             leftExtensions++;
             result.startPosition = indel.getStart() - leftExtensions;
+            if (lastBaseIndex - leftExtensions + rewindLeft < 0) {
+                rewindLeft += indelSize;
+            }
+            //       debug("extending left", result);
         }
         int rightExtensions = 0;
-
-        while (p.charAt(rightExtensions % indelSize) == genome.get(referenceIndex, result.endPosition)) {
+        int rewindRight = 0;
+        while (p.charAt(rightExtensions + rewindRight) == genome.get(referenceIndex, result.endPosition)) {
             rightExtensions++;
             result.endPosition = indel.getEnd() + rightExtensions;
+            if (rightExtensions + rewindRight >= indelSize) {
+                rewindRight -= indelSize;
+            }
+            //      debug("extending right:", result);
         }
         from.setLength(0);
         to.setLength(0);
-        final MutableString toFill;
-        final MutableString gaps;
+        toFill.setLength(0);
+
+        genome.getRange(referenceIndex, result.startPosition + 1, result.endPosition - result.startPosition - 1, from);
 
         if (insertion) {
-            toFill = to;
-            gaps = from;
-        } else {
-            toFill = from;
-            gaps = to;
-        }
-        for (int i = result.startPosition + 1; i < result.startPosition + leftExtensions; ++i) {
-            char c = genome.get(referenceIndex, i);
-            toFill.append(c);
-            gaps.append(c);
-        }
-        toFill.append(insertion ? indel.to() : indel.from());
-        for (int i = 0; i < indelSize; i++) {
-            gaps.append('-');
 
-        }
-        for (int i = result.endPosition - rightExtensions; i < result.endPosition; ++i) {
-            final char c = genome.get(referenceIndex, i);
-            toFill.append(c);
-            gaps.append(c);
-        }
-        if (insertion) {
-            result.from = gaps.toString();
-            result.to = toFill.toString();
+            // construct the read sequence in the insertion region of the eir:
+            to.append(roll(leftExtensions, indel.to()));
+            to.append(from);
+
+            from.insert(0, GAPS.subSequence(0, indelSize));
+
         } else {
-            result.from = toFill.toString();
-            result.to = gaps.toString();
+            // construct the read sequence in the deletion region of the eir:
+            to.append(GAPS.subSequence(0, indelSize));
+            to.append(from.subSequence(indelSize, from.length()));
         }
+        result.from = from.toString();
+        result.to = to.toString();
+        /*  gaps.setLength(0);
+        gaps.append(toFill);
+        gaps.delete(0, indelSize);
+        gaps.insert(0, GAPS.subSequence(0, indelSize));
+        */
+
+        //     debug("from: ", result);
         flankingLeft.setLength(0);
-        for (int i = result.startPosition - FLANK_SIZE + 1; i >= 0 && i < result.startPosition + 1; ++i) {
-            flankingLeft.append(genome.get(referenceIndex, i));
-        }
+        genome.getRange(referenceIndex, result.startPosition - FLANK_SIZE + 1, FLANK_SIZE, flankingLeft);
+
         result.flankLeft = flankingLeft.toString();
+
         flankingRight.setLength(0);
+        genome.getRange(referenceIndex, result.endPosition, FLANK_SIZE, flankingRight);
 
         final int maxRefLength = genome.getLength(referenceIndex);
-        for (int i = result.endPosition; i < maxRefLength && i < result.endPosition + FLANK_SIZE; ++i) {
-            flankingRight.append(genome.get(referenceIndex, i));
-        }
+
         result.flankRight = flankingRight.toString();
+        //       debug("flanks: ", result);
         return result;
 
+    }
+
+   final MutableString rollBuffer = new MutableString();
+
+    private final MutableString roll(int leftExtensions, String from) {
+        rollBuffer.setLength(0);
+        rollBuffer.append(from);
+        final int length = from.length();
+        final int lastCharIndex = length - 1;
+        for (int i = 0; i < leftExtensions; i++) {
+
+            rollBuffer.insert(0, rollBuffer.charAt(lastCharIndex));
+            rollBuffer.setLength(length);
+        }
+        return rollBuffer;
+    }
+
+    final MutableString toFill = new MutableString();
+    final MutableString gaps = new MutableString();
+
+    private void debug(String prefix, EquivalentIndelRegion result) {
+        MutableString bases = new MutableString();
+        genome.getRange(result.referenceIndex, result.startPosition, result.endPosition - result.startPosition, bases);
+        System.out.printf("%s %s %s%n", prefix, result, bases);
+        System.out.flush();
     }
 
     MutableString from = new MutableString();

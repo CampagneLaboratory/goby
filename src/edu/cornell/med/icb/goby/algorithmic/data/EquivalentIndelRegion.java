@@ -43,6 +43,14 @@ public class EquivalentIndelRegion {
     public String to;
     public String flankLeft;
     public String flankRight;
+    /**
+     * The number of times the candidate indel was observed. Start at one, increment as needed.
+     */
+    public int frequency = 1;
+    /**
+     * The index of the sample where these indels were observed.
+     */
+    public int sampleIndex;
 
     /**
      * Return the from bases, surrounded by flankLeft and flankRight bases.
@@ -60,7 +68,7 @@ public class EquivalentIndelRegion {
     /**
      * Return the to bases, surrounded by flankLeft and flankRight bases.
      *
-        * @return to bases in context of the flanking sequence.
+     * @return to bases in context of the flanking sequence.
      */
     public String toInContext() {
         MutableString toC = new MutableString();
@@ -68,5 +76,39 @@ public class EquivalentIndelRegion {
         toC.append(to);
         toC.append(flankRight);
         return toC.toString();
+    }
+
+    /**
+     * Compares startPosition, endPosition, referenceIndex and sampleIndex.
+     * @param o other object
+     * @return True if the other object matches location and sampleIndex, False otherwise.
+     */
+    @Override
+    public final boolean equals(final Object o) {
+        if (!(o instanceof EquivalentIndelRegion )) {
+            return false;
+        }
+        final EquivalentIndelRegion other = (EquivalentIndelRegion) o;
+        return startPosition == other.startPosition
+                && endPosition == other.endPosition
+                && referenceIndex == other.referenceIndex
+                && sampleIndex == other.sampleIndex;
+
+    }
+
+    @Override
+    public final int hashCode() {
+        return (sampleIndex * 31 + (referenceIndex * 31 + endPosition)) * 31 + startPosition;
+    }
+
+    /**
+     * Returns a string representation of the eir, in the format "flankingLeft from/to flankingRight start-end"
+     *
+     * @return a string
+     */
+    @Override
+
+    public String toString() {
+        return String.format("%s %s/%s %s %d-%d", flankLeft, from, to, flankRight, startPosition, endPosition);
     }
 }

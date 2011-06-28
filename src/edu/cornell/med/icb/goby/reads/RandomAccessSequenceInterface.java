@@ -18,8 +18,11 @@
 
 package edu.cornell.med.icb.goby.reads;
 
+import it.unimi.dsi.lang.MutableString;
+
 /**
  * An interface to obtain bases from a RandomAccessSequence cache implementation.
+ *
  * @author Fabien Campagne
  *         Date: May 1, 2011
  *         Time: 1:36:27 PM
@@ -27,16 +30,29 @@ package edu.cornell.med.icb.goby.reads;
 public interface RandomAccessSequenceInterface {
     /**
      * Return the base in the specified reference at the given position.
-      * @param referenceIndex index of the reference sequence.
-     * @param position zero-based position in the reference for which the base is sought.
+     *
+     * @param referenceIndex index of the reference sequence.
+     * @param position       zero-based position in the reference for which the base is sought.
      * @return base at position in reference sequence.
      */
     char get(final int referenceIndex, final int position);
 
     /**
      * Returns the length of the target sequence at index targetIndex.
+     *
      * @param targetIndex Index of the target sequence.
-     * @return  Length of the sequence, in bases.
+     * @return Length of the sequence, in bases.
      */
     int getLength(int targetIndex);
+
+    /**
+     * Return bases from a range of positions in the cache.
+     *
+     * @param referenceIndex Name of the reference sequence
+     * @param position       position where the range starts
+     * @param length         length of the range for which bases should be returned.
+     * @param bases          where the bases will be written.
+     */
+    void getRange(final int referenceIndex, final int position, final int length, MutableString bases);
+
 }

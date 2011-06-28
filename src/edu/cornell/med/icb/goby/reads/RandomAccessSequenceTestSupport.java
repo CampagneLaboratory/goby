@@ -18,6 +18,8 @@
 
 package edu.cornell.med.icb.goby.reads;
 
+import it.unimi.dsi.lang.MutableString;
+
 /**
  * @author Fabien Campagne
  *         Date: May 1, 2011
@@ -36,5 +38,11 @@ public class RandomAccessSequenceTestSupport implements RandomAccessSequenceInte
 
     public int getLength(int targetIndex) {
         return referenceSequences[targetIndex].length();
+    }
+
+    @Override
+    public void getRange(int referenceIndex, int position, int length, MutableString bases) {
+        bases.setLength(0);
+        bases.append(referenceSequences[referenceIndex].substring(position, position+length));
     }
 }

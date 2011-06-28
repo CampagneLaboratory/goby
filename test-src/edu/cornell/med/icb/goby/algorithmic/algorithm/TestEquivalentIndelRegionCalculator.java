@@ -37,7 +37,8 @@ public class TestEquivalentIndelRegionCalculator {
     RandomAccessSequenceTestSupport genome;
     private String[] sequences = {
             "ACTCAAAGACT",  // will delete one A in the three consecutive As
-            "AAACAGATCCCACA"  // will insert AG between C and AG
+            "AAACAGATCCCACA",  // will insert AG between C and AG
+            "GGGGATATATATATACGAGGG"  // will remove AT somewhere between GGGA and CGA
     };
     private EquivalentIndelRegionCalculator equivalentIndelRegionCalculator;
 
@@ -53,23 +54,26 @@ public class TestEquivalentIndelRegionCalculator {
     }
 
     @Test
-    public void testDetermine() throws Exception {
+    public void tesSequence0() throws Exception {
         ObservedIndel indel = new ObservedIndel(4, 5, "-", "A");
         EquivalentIndelRegion result = equivalentIndelRegionCalculator.determine(0, indel);
+        // INSERTION in the read:
         assertEquals(0, result.referenceIndex);
         assertEquals(3, result.startPosition);
         assertEquals(7, result.endPosition);
-        assertEquals("-AA", result.from);
-        assertEquals("AAA", result.to);
+        assertEquals("-AAA", result.from);
+        assertEquals("AAAA", result.to);
         assertEquals("ACTC", result.flankLeft);
         assertEquals("GACT", result.flankRight);
+        // "ACTCAAAGACT",  // will insert one A in the three consecutive As
     }
 
     @Test
-    public void testInsertAG() throws Exception {
+    public void testSequence1() throws Exception {
+        // INSERTION in the read:
         ObservedIndel indel = new ObservedIndel(3, 4, "--", "AG");
         EquivalentIndelRegion result = equivalentIndelRegionCalculator.determine(1, indel);
-        assertEquals(0, result.referenceIndex);
+        assertEquals(1, result.referenceIndex);
         assertEquals(3, result.startPosition);
         assertEquals(7, result.endPosition);
         assertEquals("--AGA", result.from);
@@ -82,5 +86,24 @@ public class TestEquivalentIndelRegionCalculator {
         // "AAACAGAGATCCC"
     }
 
+    @Test
+    public void testSequence2() throws Exception {
+        // DELETION in the read:
+        ObservedIndel indel = new ObservedIndel(6, 7, "TA", "--");
+        EquivalentIndelRegion result = equivalentIndelRegionCalculator.determine(2, indel);
+        assertEquals(2, result.referenceIndex);
+        assertEquals(3, result.startPosition);
+        assertEquals(15, result.endPosition);
+        assertEquals("ATATATATATA", result.from);
+        assertEquals("--ATATATATA", result.to);
+        assertEquals("GGGG", result.flankLeft);
+        assertEquals("CGAG", result.flankRight);
+        assertEquals("GGGGATATATATATACGAG", result.fromInContext());
+        assertEquals("GGGG--ATATATATACGAG", result.toInContext());
+        // "GGGGA  TATATATACGAGGG"
+        // "GGGGATATATATATACGAGGG" from
+        // "GGGGATA--TATATATACGAGGG    to
+        //  0123456  78
+    }
 
 }
