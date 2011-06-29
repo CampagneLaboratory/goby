@@ -48,7 +48,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.rosuda.JRI.Rengine;
 
 import java.io.*;
 import java.util.Collections;
@@ -198,7 +197,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         LeftOverFilter leftOverFilter = new LeftOverFilter();
 
 
-        ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
+        DiscoverVariantPositionData list = new DiscoverVariantPositionData();
 
         appendInfo(list, 1, (byte) 20, false, 'A', 'C', 0);  // will be filtered by qualityScoreFilter
         appendInfo(list, 1, (byte) 40, false, 'A', 'T', 0);  // will be filtered by leftOverFilter
@@ -206,12 +205,12 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         ObjectSet<PositionBaseInfo> removed = new ObjectArraySet<PositionBaseInfo>();
         SampleCountInfo[] sampleCounts = sampleCounts(list);
-        qualityScoreFilter.filterBases(list, sampleCounts, removed);
+        qualityScoreFilter.filterGenotypes(list, sampleCounts, removed);
         assertEquals(10, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
         assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
         assertEquals(1, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
         assertEquals(1, removed.size());
-        leftOverFilter.filterBases(list, sampleCounts, removed);
+        leftOverFilter.filterGenotypes(list, sampleCounts, removed);
         CountFixer fixer = new CountFixer();
         fixer.fix(list, sampleCounts, removed);
         assertEquals(2, removed.size());
@@ -228,7 +227,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         AtLeastAQuarterFilter atLeastAQuarterFilter = new AtLeastAQuarterFilter();
 
 
-        ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
+        DiscoverVariantPositionData list = new DiscoverVariantPositionData();
 
         appendInfo(list, 2, (byte) 40, false, 'A', 'T', 0);  // will be filtered by at least a quarter filter
         appendInfo(list, 3, (byte) 40, false, 'A', 'C', 0);  // will be kept since 3>= 12/4
@@ -237,7 +236,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         ObjectSet<PositionBaseInfo> removed = new ObjectArraySet<PositionBaseInfo>();
         SampleCountInfo[] sampleCounts = sampleCounts(list);
-        atLeastAQuarterFilter.filterBases(list, sampleCounts, removed);
+        atLeastAQuarterFilter.filterGenotypes(list, sampleCounts, removed);
         assertEquals(2, removed.size());
         CountFixer fixer = new CountFixer();
         fixer.fix(list, sampleCounts, removed);
@@ -252,7 +251,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
 
     // construct a SampleCountInfo array holding counts for list
-    private SampleCountInfo[] sampleCounts(ObjectArrayList<PositionBaseInfo> list) {
+    private SampleCountInfo[] sampleCounts(DiscoverVariantPositionData list) {
         IntSet sampleIndices = new
                 IntArraySet();
         for (PositionBaseInfo info : list) {
@@ -276,7 +275,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         return sci;
     }
 
-    private void appendInfo(ObjectArrayList<PositionBaseInfo> list, int n, byte qualityScore, boolean matchesReference, char from, char to, int sampleIndex) {
+    private void appendInfo(DiscoverVariantPositionData list, int n, byte qualityScore, boolean matchesReference, char from, char to, int sampleIndex) {
         for (int i = 0; i < n; i++) {
             PositionBaseInfo info = new PositionBaseInfo();
             info.qualityScore = qualityScore;
@@ -298,7 +297,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
             SampleCountInfo[] sampleCounts = makeSampleCounts();
 
-            ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
+            DiscoverVariantPositionData list = new DiscoverVariantPositionData();
             PositionBaseInfo info = new PositionBaseInfo();
             list.add(info);
             IntArrayList readIndices = IntArrayList.wrap(new int[]{1, 1, 1, 1, 2, 2, 2, 2, 3});
@@ -306,7 +305,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
             list = makeList(sampleCounts, readIndices);
             adjuster.setPValueThreshold(0.5);
             ObjectSet<PositionBaseInfo> filteredList = new ObjectArraySet<PositionBaseInfo>();
-            adjuster.filterBases(list, sampleCounts, filteredList);
+            adjuster.filterGenotypes(list, sampleCounts, filteredList);
 
             System.out.println("list: " + list);
 
@@ -392,10 +391,10 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         SampleCountInfo[] sampleCounts = makeSampleCounts();
         IntArrayList scores = IntArrayList.wrap(new int[]{10, 20, 30, 40, 40, 40, 40});
 
-        final ObjectArrayList<PositionBaseInfo> list = makeListWithScores(sampleCounts, scores);
+        final DiscoverVariantPositionData list = makeListWithScores(sampleCounts, scores);
         assertEquals(16, list.size());
         ObjectSet<PositionBaseInfo> filteredList = new ObjectArraySet<PositionBaseInfo>();
-        adjuster.filterBases(list, sampleCounts, filteredList);
+        adjuster.filterGenotypes(list, sampleCounts, filteredList);
 
         System.out.println("list: " + list);
         assertEquals(16, list.size());
@@ -418,11 +417,11 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         IntArrayList scores = IntArrayList.wrap(new int[]{10, 20, 30, 40, 40, 40, 40});
 
-        final ObjectArrayList<PositionBaseInfo> list = makeListWithScores(sampleCounts, scores);
+        final DiscoverVariantPositionData list = makeListWithScores(sampleCounts, scores);
         assertEquals(32, list.size());
         ObjectSet<PositionBaseInfo> filteredList = new ObjectArraySet<PositionBaseInfo>();
-        adjuster1.filterBases(list, sampleCounts, filteredList);
-        adjuster2.filterBases(list, sampleCounts, filteredList);
+        adjuster1.filterGenotypes(list, sampleCounts, filteredList);
+        adjuster2.filterGenotypes(list, sampleCounts, filteredList);
 
         System.out.println("list: " + list);
         System.out.println("filtered: " + filteredList);
@@ -450,11 +449,11 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         IntArrayList scores = IntArrayList.wrap(new int[]{40, 40, 40, 40, 40, 40, 10, 40, 40, 40, 40, 40, 40, 40, 40, 40});
 
-        final ObjectArrayList<PositionBaseInfo> list = makeListWithScores(sampleCounts, scores);
+        final DiscoverVariantPositionData list = makeListWithScores(sampleCounts, scores);
         assertEquals(32, list.size());
         ObjectSet<PositionBaseInfo> filteredList = new ObjectArraySet<PositionBaseInfo>();
-        adjuster1.filterBases(list, sampleCounts, filteredList);
-        adjuster2.filterBases(list, sampleCounts, filteredList);
+        adjuster1.filterGenotypes(list, sampleCounts, filteredList);
+        adjuster2.filterGenotypes(list, sampleCounts, filteredList);
 
         System.out.println("list: " + list);
         System.out.println("filtered: " + filteredList);
@@ -488,9 +487,9 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
     }
 
 
-    private ObjectArrayList<PositionBaseInfo> makeList(SampleCountInfo[] sampleCounts, IntArrayList readIndices) {
+    private DiscoverVariantPositionData makeList(SampleCountInfo[] sampleCounts, IntArrayList readIndices) {
         IntIterator nextReadIndexIterator = readIndices.iterator();
-        ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
+        DiscoverVariantPositionData list = new DiscoverVariantPositionData();
         for (SampleCountInfo sampleInfo : sampleCounts) {
             for (int baseIndex = 0; baseIndex < SampleCountInfo.BASE_MAX_INDEX; baseIndex++) {
 
@@ -520,9 +519,9 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         return list;
     }
 
-    private ObjectArrayList<PositionBaseInfo> makeListWithScores(SampleCountInfo[] sampleCounts, IntArrayList qualityScores) {
+    private DiscoverVariantPositionData makeListWithScores(SampleCountInfo[] sampleCounts, IntArrayList qualityScores) {
         IntIterator nextQualityIterator = qualityScores.iterator();
-        ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
+        DiscoverVariantPositionData list = new DiscoverVariantPositionData();
         for (SampleCountInfo sampleInfo : sampleCounts) {
             for (int baseIndex = 0; baseIndex < SampleCountInfo.BASE_MAX_INDEX; baseIndex++) {
 

@@ -25,7 +25,6 @@ import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import edu.cornell.med.icb.goby.alignments.processors.ObservedIndel;
 import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
-import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.util.WarningCounter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -62,7 +61,7 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
     private int numberOfGroups;
     private int[] readerIndexToGroupIndex;
 
-    private BaseFilter[] baseFilters;
+    private GenotypeFilter[] genotypeFilters;
     private int genomeRefIndex;
 
     public void setMinimumVariationSupport(int minimumVariationSupport) {
@@ -82,11 +81,11 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
     String[] samples;
 
     public void initialize(DiscoverSequenceVariantsMode mode,
-                           PrintWriter outWriter, ObjectArrayList<BaseFilter> filters) {
+                           PrintWriter outWriter, ObjectArrayList<GenotypeFilter> filters) {
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
 
         format.defineColumns(outWriter, mode);
-        baseFilters = filters.toArray(new BaseFilter[filters.size()]);
+        genotypeFilters = filters.toArray(new GenotypeFilter[filters.size()]);
 
     }
 
@@ -242,10 +241,10 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
 
                 if (!isWithinStartFlap(referenceIndex, position)) {
 
-                    if (baseFilters.length != 0) {
+                    if (genotypeFilters.length != 0) {
                         filteredList.clear();
-                        for (final BaseFilter filter : baseFilters) {
-                            filter.filterBases(list, sampleCounts, filteredList);
+                        for (final GenotypeFilter filter : genotypeFilters) {
+                            filter.filterGenotypes(list, sampleCounts, filteredList);
                             //       System.out.printf("filter %s removed %3g %% %n", filter.getName(), filter.getPercentFilteredOut());
                         }
                         final CountFixer fixer = new CountFixer();

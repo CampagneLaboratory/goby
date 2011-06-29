@@ -18,7 +18,6 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 import java.util.Arrays;
@@ -32,7 +31,7 @@ import java.util.Arrays;
  *         Date: Apr 23, 2011
  *         Time: 1:57:30 PM
  */
-public class AtLeastAQuarterFilter extends BaseFilter {
+public class AtLeastAQuarterFilter extends GenotypeFilter {
     private int[] maxAlleleCountsPerSample;
 
     @Override
@@ -49,9 +48,9 @@ public class AtLeastAQuarterFilter extends BaseFilter {
         }
     }
 
-    public void filterBases(ObjectArrayList<PositionBaseInfo> list,
-                            SampleCountInfo[] sampleCounts,
-                            ObjectSet<PositionBaseInfo> filteredSet) {
+    public void filterGenotypes(DiscoverVariantPositionData list,
+                                SampleCountInfo[] sampleCounts,
+                                ObjectSet<PositionBaseInfo> filteredSet) {
 
         resetCounters();
         initStorage(sampleCounts.length);

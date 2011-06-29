@@ -53,7 +53,7 @@ public class CountFixer implements CountFixerInterface {
         } */
         for (SampleCountInfo sci : sampleCounts) {
             for (int i = 0; i < sci.counts.length; i++) {
-                assert sci.counts[i] >= 0: "Counts must never be negative. This would happen if a BaseFilter removed counts directly";
+                assert sci.counts[i] >= 0: "Counts must never be negative. This would happen if a GenotypeFilter removed counts directly";
             }
         }
         // calculate failed Count in each sample:

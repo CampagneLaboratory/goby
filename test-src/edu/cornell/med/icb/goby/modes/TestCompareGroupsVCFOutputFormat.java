@@ -93,6 +93,7 @@ public class TestCompareGroupsVCFOutputFormat {
         statWriter.setSampleValue(anyInt(), anyInt(), EasyMock.<CharSequence>anyObject());
         expectLastCall().anyTimes();
         statWriter.setSampleValue(anyInt(), anyInt(), anyInt());
+
         expectLastCall().anyTimes();
         statWriter.setChromosome(EasyMock.<CharSequence>anyObject());
         statWriter.setPosition(position + 1); // position is written 1-based
@@ -103,7 +104,8 @@ public class TestCompareGroupsVCFOutputFormat {
 
         expect(statWriter.codeGenotype(EasyMock.<String>anyObject())).andReturn(new MutableString("0/1/2"));
         expectLastCall().anyTimes();
-
+        statWriter.setFlag(EasyMock.anyInt(), EasyMock.anyBoolean());
+        expectLastCall().anyTimes();
         statWriter.writeRecord();
         expectLastCall().anyTimes();
 

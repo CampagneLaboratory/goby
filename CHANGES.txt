@@ -1,7 +1,8 @@
 1.9.7.2
  - Preliminary support for calling indels with discover-sequence-variants. Candidate indels are now written
-   in the genotype output format. The method of Krawitz et al is used to determine the equivalent indel region
-   for each possible candidate. After possible realignment, EIR candidates are reported.
+   in the formats that use GenotypeOutputFormat( allele_frequency, methylation, genotypes, compare_groups).
+   The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.
+   After possible realignment, and filtering to remove possible errors, EIR candidates are reported.
  - FDR mode now supports reporting the top n hits irrespective of corrected q-value threshold (top n hits are
     defined by the ranking produced by ordering the hits by increasing p-value, for the last column adjusted).
  - Significantly reduced memory consumption when performing FDR BH adjustment on hundreds of million of elements.

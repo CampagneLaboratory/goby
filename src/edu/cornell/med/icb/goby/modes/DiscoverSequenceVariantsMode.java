@@ -83,7 +83,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     private DifferentialExpressionCalculator diffExpCalculator;
     private String[] samples;
     private boolean groupsAreDefined;
-    private ObjectArrayList<BaseFilter> baseFilters;
+    private ObjectArrayList<GenotypeFilter> genotypeFilters;
     private AlignmentProcessorFactory realignmentFactory = new DefaultAlignmentProcessorFactory();
     /**
      * A genome used for testing.
@@ -226,7 +226,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         }
 
         // set base filters according to output format:
-        baseFilters = new ObjectArrayList<BaseFilter>();
+        genotypeFilters = new ObjectArrayList<GenotypeFilter>();
         switch (format) {
 
             case COMPARE_GROUPS:
@@ -234,23 +234,23 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             case ALLELE_FREQUENCIES:
             case BETWEEN_GROUPS:
             case VARIANT_DISCOVERY:
-                baseFilters.add(new QualityScoreFilter());
-                baseFilters.add(new LeftOverFilter());
+                genotypeFilters.add(new QualityScoreFilter());
+                genotypeFilters.add(new LeftOverFilter());
                 break;
             case GENOTYPES:
-                baseFilters.add(new QualityScoreFilter());
-                baseFilters.add(new LeftOverFilter());
-                if (!disableAtLeastQuarterFilter) baseFilters.add(new AtLeastAQuarterFilter());
+                genotypeFilters.add(new QualityScoreFilter());
+                genotypeFilters.add(new LeftOverFilter());
+                if (!disableAtLeastQuarterFilter) genotypeFilters.add(new AtLeastAQuarterFilter());
                 break;
             default:
                 throw new InternalError("Filters must be configured for new output format.");
         }
         System.out.println("Filtering reads that have these criteria:");
-        for (BaseFilter filter : baseFilters) {
+        for (GenotypeFilter filter : genotypeFilters) {
             System.out.println(filter.describe());
         }
 
-        RandomAccessSequenceInterface genome = configureGenome(jsapResult);
+        RandomAccessSequenceInterface genome = configureGenome(testGenome, jsapResult);
 
 
         int startFlapSize = jsapResult.getInt("start-flap-size", 100);
@@ -270,7 +270,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         return configureGenome(null, jsapResult);
     }
 
-    public static RandomAccessSequenceInterface configureGenome(RandomAccessSequenceInterface testGenome, JSAPResult jsapResult) throws IOException {
+    public static RandomAccessSequenceInterface configureGenome(RandomAccessSequenceInterface testGenome,
+                                                                JSAPResult jsapResult) throws IOException {
         if (testGenome != null) {
             return testGenome;
         }
@@ -508,7 +509,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
 
         sortedPositionIterator.allocateStorage(basenames.length, numberOfGroups);
-        sortedPositionIterator.initialize(this, outWriter, baseFilters);
+        sortedPositionIterator.initialize(this, outWriter, genotypeFilters);
         // install a reader factory that filters out ambiguous reads:
         sortedPositionIterator.setAlignmentReaderFactory(new NonAmbiguousAlignmentReaderFactory());
         sortedPositionIterator.setAlignmentProcessorFactory(realignmentFactory);

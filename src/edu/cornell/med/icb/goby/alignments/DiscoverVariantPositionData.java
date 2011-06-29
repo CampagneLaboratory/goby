@@ -34,6 +34,12 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
     private static final long serialVersionUID = 9212001398502402859L;
     private ObjectArraySet<EquivalentIndelRegion> candidateIndels;
     private int position;
+    private ObjectArraySet<EquivalentIndelRegion> failedIndels;
+
+    public DiscoverVariantPositionData() {
+        super();
+        position = -1;
+    }
 
     public DiscoverVariantPositionData(final int position) {
         super();
@@ -60,7 +66,29 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
         }
     }
 
-    public ObjectArraySet<EquivalentIndelRegion>  getIndels() {
+    public ObjectArraySet<EquivalentIndelRegion> getIndels() {
         return candidateIndels;
+    }
+
+    /**
+     * Mark an indel observation as failing genotype filters.
+     *
+     * @param indel the candidate indel that failed tests.
+     */
+    public void failIndel(EquivalentIndelRegion indel) {
+        candidateIndels.remove(indel);
+        if (failedIndels == null) {
+            failedIndels = new ObjectArraySet<EquivalentIndelRegion>();
+        }
+        failedIndels.add(indel);
+    }
+
+    /**
+     * Test if this set of genotype observation includes indels.
+     *
+     * @return True when the genotype observed include indels.
+     */
+    public boolean hasCandidateIndels() {
+        return candidateIndels != null && !candidateIndels.isEmpty();
     }
 }

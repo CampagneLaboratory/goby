@@ -35,7 +35,7 @@ import org.rosuda.JRI.Rengine;
  *         Date: Mar 21, 2011
  *         Time: 11:39:40 AM
  */
-public class FisherBaseFilter extends BaseFilter {
+public class FisherBaseFilter extends GenotypeFilter {
 
     /**
      * Used to log debug and informational messages.
@@ -68,9 +68,9 @@ public class FisherBaseFilter extends BaseFilter {
     }
 
     @Override
-    public void filterBases(ObjectArrayList<PositionBaseInfo> list,
-                            SampleCountInfo[] sampleCounts,
-                            ObjectSet<PositionBaseInfo> filteredList) {
+    public void filterGenotypes(DiscoverVariantPositionData list,
+                                SampleCountInfo[] sampleCounts,
+                                ObjectSet<PositionBaseInfo> filteredList) {
 
 
         if (!fisherRInstalled) {

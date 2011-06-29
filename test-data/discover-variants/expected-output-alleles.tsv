@@ -1,6 +1,7 @@
 ##fileformat=VCFv4.1
 ##Goby=UNKNOWN
 ##INFO=<ID=BIOMART_COORDS,Number=1,Type=String,Description="Coordinates for use with Biomart.">
+##INFO=<ID=INDEL,Number=1,Type=Flag,Description="Indicates that the variation is an indel.">
 ##INFO=<ID=P,Number=1,Type=Float,Description="P-values of a t-test comparing arcsin transformed values of the ratio between groups.">
 ##INFO=<ID=DP,Number=1,Type=Integer,Description="Total depth of sequencing across groups at this site">
 ##FORMAT=<ID=RP,Number=1,Type=Float,Description="Proportion of reference allele in the sample (count(ref)/(sum count other alleles)">

@@ -26,29 +26,32 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
 import java.util.Arrays;
 
 /**
- * Provide a strategy for filtering bases and reduce the impact of sequencing errors on downstream
- * statistics.
+ * Provide a strategy for filtering genotype observations (bases or indels) and reduce the impact of sequencing errors
+ * on downstream statistics.
  *
  * @author Fabien Campagne
  *         Date: Mar 23, 2011
  *         Time: 11:07:11 AM
  */
-public abstract class BaseFilter {
+public abstract class GenotypeFilter {
 
     /**
-     * Adjust list and sampleCounts to remove/reduce the effect of sequencing errors.
+     * Adjust genotypes and sampleCounts to remove/reduce the effect of sequencing errors.
+     * Observations that are filtered by this strategy are added to filteredSet. When a previous
+     * filter removed genotypes, they can be found in filteredSet.
      *
-     * @param list         Variation or reference bases at position
+     * @param list         Variation or reference genotype observations at position
      * @param sampleCounts Counts for alleles at position each each sample under study.
+     * @param filteredSet  Set of genotype observations that have been filtered
      */
-    public abstract void filterBases(ObjectArrayList<PositionBaseInfo> list,
-                                     SampleCountInfo[] sampleCounts,
-                                     ObjectSet<PositionBaseInfo> filteredSet);
+    public abstract void filterGenotypes(DiscoverVariantPositionData list,
+                                         SampleCountInfo[] sampleCounts,
+                                         ObjectSet<PositionBaseInfo> filteredSet);
 
     /**
-     * Returns a short description of the fitlering criteria.
+     * Returns a short description of the filtering criteria.
      *
-     * @return a short description of the fitlering criteria.
+     * @return a short description of the filtering criteria.
      */
     public String describe() {
         return this.getClass().getSimpleName();

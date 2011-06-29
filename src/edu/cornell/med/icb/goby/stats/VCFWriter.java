@@ -108,9 +108,26 @@ public class VCFWriter {
     }
 
     public void addAlternateAllele(String allele) {
-        if (!altAlleles.contains(allele) && !refAlleles.contains(allele)) {
+        if (!altAlleles.contains(allele) && !includedIn(allele, refAlleles)) {
             altAlleles.add(allele);
         }
+    }
+
+    /**
+     * Determine if an allele is included in a set of reference alleles. An allele is included if any of the alleles
+     * of refAlleles start with the string allele, possibly followed by bases.
+     *
+     * @param allele     the allele that may be in refAlleles
+     * @param refAlleles a list of reference alleles to consider
+     * @return True when allele is included in refAlleles
+     */
+    private boolean includedIn(final String allele, final ObjectArrayList<String> refAlleles) {
+        for (final String testAllele : refAlleles) {
+            if (testAllele.startsWith(allele)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Columns columns = new Columns();
@@ -336,8 +353,29 @@ public class VCFWriter {
         return buffer;
     }
 
-    private MutableString codedGenotypeBuffer = new MutableString();
-    private IntList genotypeIndexList = new IntArrayList();
+    /**
+     * Set a flag to true.
+     *
+     * @param infoFlagIndex index of the INFO field corresponding to the flag.
+     */
+    public void setFlag(final int infoFlagIndex) {
+        setFlag(infoFlagIndex, true);
+    }
+
+    /**
+     * Set a flag to state.
+     *
+     * @param infoFlagIndex index of the INFO field corresponding to the flag.
+     * @param state         state to set the flag to.
+     */
+    public void setFlag(final int infoFlagIndex, final boolean state) {
+
+        infoValues[infoFlagIndex]=state?infoIds[infoFlagIndex]:"";
+
+    }
+
+    private final MutableString codedGenotypeBuffer = new MutableString();
+    private final IntList genotypeIndexList = new IntArrayList();
 
     /**
      * Encode the list of alleles as a VCF genotype.
@@ -385,9 +423,9 @@ public class VCFWriter {
             alleleFound = false;
             int alleleIndex = 0;
             for (String ref : refAlleles) {
-                 // the second part of the next clause checks if the one base allele is included in the ref allele (i.e., C is included in CC
+                // the second part of the next clause checks if the one base allele is included in the ref allele (i.e., C is included in CC
                 // since the next base matches the reference in both C and CC when CC is a ref allele.
-                if (ref.equals(allele) || (ref.length() > 1 && allele.length() == 1 && ref.charAt(0) == allele.charAt(0))) {
+                if (includedIn(allele, ref)) {
                     genotypeIndexList.add(alleleIndex);
 
                     alleleFound = true;
@@ -426,6 +464,10 @@ public class VCFWriter {
             codedGenotypeBuffer.setLength(length - 1);
         }
         return codedGenotypeBuffer.copy();
+    }
+
+    private boolean includedIn(final String allele, final String referenceAllele) {
+        return referenceAllele.startsWith(allele);
     }
 
     public static int COLUMN_NOT_DEFINED = -1;

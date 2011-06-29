@@ -18,7 +18,6 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 import java.util.Arrays;
@@ -28,7 +27,7 @@ import java.util.Arrays;
  *         Date: Mar 23, 2011
  *         Time: 11:16:18 AM
  */
-public class QualityScoreFilter extends BaseFilter {
+public class QualityScoreFilter extends GenotypeFilter {
     private byte scoreThreshold = 30;
 
     public String describe() {
@@ -38,9 +37,9 @@ public class QualityScoreFilter extends BaseFilter {
     int[] removed = new int[5];
 
     @Override
-    public void filterBases(ObjectArrayList<PositionBaseInfo> list,
-                            SampleCountInfo[] sampleCounts,
-                            ObjectSet<PositionBaseInfo> filteredList) {
+    public void filterGenotypes(DiscoverVariantPositionData list,
+                                SampleCountInfo[] sampleCounts,
+                                ObjectSet<PositionBaseInfo> filteredList) {
         resetCounters();
         initStorage(sampleCounts.length);
         Arrays.fill(removed, 0);

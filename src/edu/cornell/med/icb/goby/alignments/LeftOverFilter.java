@@ -18,10 +18,8 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-
-import java.util.Arrays;
 
 /**
  * This filter considers whether the remaining base calls of each allele (left-over)
@@ -34,13 +32,13 @@ import java.util.Arrays;
  *         Date: Mar 24, 2011
  *         Time: 11:42:42 AM
  */
-public class LeftOverFilter extends BaseFilter {
+public class LeftOverFilter extends GenotypeFilter {
     private static final int MULTIPLIER = 2;
 
     @Override
-    public void filterBases(ObjectArrayList<PositionBaseInfo> list,
-                            SampleCountInfo[] sampleCounts,
-                            ObjectSet<PositionBaseInfo> filteredList) {
+    public void filterGenotypes(DiscoverVariantPositionData list,
+                                SampleCountInfo[] sampleCounts,
+                                ObjectSet<PositionBaseInfo> filteredList) {
         resetCounters();
         initStorage(sampleCounts.length);
         int removedBaseCount = filteredList.size() / sampleCounts.length;
@@ -69,7 +67,7 @@ public class LeftOverFilter extends BaseFilter {
 
                 if (!filteredList.contains(positionBaseInfo)) {
                     sampleCountInfo.counts[baseIndex]--;
-                    if ( positionBaseInfo.matchesReference) {
+                    if (positionBaseInfo.matchesReference) {
                         refCountRemovedPerSample[sampleIndex]++;
                     } else {
                         varCountRemovedPerSample[sampleIndex]++;
@@ -78,6 +76,15 @@ public class LeftOverFilter extends BaseFilter {
                     numFiltered++;
                 }
 
+            }
+        }
+        if (list.hasCandidateIndels()) {
+            // remove candidate indels if they don't make the frequency threshold (threshold determined by bases observed
+            // at that position):
+            for (final EquivalentIndelRegion indel : list.getIndels()) {
+                if (indel.frequency < removedBaseCountThreshold) {
+                    list.failIndel(indel);
+                }
             }
         }
         adjustRefVarCounts(sampleCounts);
