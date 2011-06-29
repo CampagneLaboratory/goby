@@ -254,7 +254,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
             if (referencesToProcess.contains(referenceIndex)) {
                 final int startPosition = alignmentEntry.getPosition();
 
-                final int alignmentLength = alignmentEntry.getQueryAlignedLength();
+                final int alignmentLength = alignmentEntry.getTargetAlignedLength();
                 for (int i = 0; i < alignmentEntry.getMultiplicity(); ++i) {
 
                     algs[referenceIndex].populate(startPosition, startPosition + alignmentLength,
