@@ -1,4 +1,5 @@
 1.9.7.2
+ - AlignmentToTextMode will now display splice information
  - Preliminary support for calling indels with discover-sequence-variants. Candidate indels are now written
    in the formats that use GenotypeOutputFormat( allele_frequency, methylation, genotypes, compare_groups).
    The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.

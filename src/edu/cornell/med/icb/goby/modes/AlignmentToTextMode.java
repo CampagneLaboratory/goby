@@ -159,13 +159,20 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 }
                 switch (outputFormat) {
                     case PLAIN:
-                        outputStream.printf("%s\t%d\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%g\t%d\t%d\t%s\t%d%n",
+                        outputStream.printf("%s\t%d\t" +
+                                "%s\t%s\t%s\t%s\t" +   // Pair
+                                "%s\t%s\t%s\t%s\t" +   // Splice
+                                "%s\t%d\t%d\t%d\t%g\t%d\t%d\t%s\t%d%n",
                                 hasReadIds ? readIds.getId(queryIndex) : queryIndex,
                                 alignmentEntry.hasFragmentIndex() ? alignmentEntry.getFragmentIndex() : 0,
-                                alignmentEntry.hasPairFlags() ? zeroPad(Integer.toBinaryString(alignmentEntry.getPairFlags()), 9) : 0,
+                                alignmentEntry.hasPairFlags() ? zeroPad(Integer.toBinaryString(alignmentEntry.getPairFlags()), 9) : "",
                                 alignmentEntry.hasPairAlignmentLink() ? alignmentEntry.getPairAlignmentLink().getFragmentIndex() : "",
                                 alignmentEntry.hasPairAlignmentLink() ? getReferenceId(alignmentEntry.getPairAlignmentLink().getTargetIndex()) : "",
                                 alignmentEntry.hasPairAlignmentLink() ? alignmentEntry.getPairAlignmentLink().getPosition() : "",
+                                alignmentEntry.hasSplicedFlags() ? zeroPad(Integer.toBinaryString(alignmentEntry.getSplicedFlags()), 9) : "",
+                                alignmentEntry.hasSplicedAlignmentLink() ? alignmentEntry.getSplicedAlignmentLink().getFragmentIndex() : "",
+                                alignmentEntry.hasSplicedAlignmentLink() ? getReferenceId(alignmentEntry.getSplicedAlignmentLink().getTargetIndex()) : "",
+                                alignmentEntry.hasSplicedAlignmentLink() ? alignmentEntry.getSplicedAlignmentLink().getPosition() : "",
                                 getReferenceId(alignmentEntry.getTargetIndex()),
                                 referenceLength,
                                 alignmentEntry.getNumberOfIndels(),
@@ -237,13 +244,17 @@ public class AlignmentToTextMode extends AbstractGobyMode {
 
     private void printHeader(PrintStream outputStream) {
         headerWritten = true;
-        outputStream.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n",
+        outputStream.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n",
                 "queryIndex",
                 "queryFragmentIndex",
                 "pairFlags",
                 "pairFragmentIndex",
                 "pairTarget",
                 "pairPosition",
+                "spliceFlags",
+                "spliceFragmentIndex",
+                "spliceTarget",
+                "splicePosition",
                 "targetIdentifier",
                 "referenceLength",
                 "numIndels",

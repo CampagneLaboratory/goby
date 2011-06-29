@@ -18,11 +18,9 @@
 
 package edu.cornell.med.icb.goby.alignments.processors;
 
-import com.sun.tools.javac.util.Position;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import it.unimi.dsi.fastutil.AbstractPriorityQueue;
-import it.unimi.dsi.fastutil.objects.ObjectArrayPriorityQueue;
 import it.unimi.dsi.fastutil.objects.ObjectHeapPriorityQueue;
 
 import java.io.IOException;

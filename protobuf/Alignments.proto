@@ -47,6 +47,7 @@ message AlignmentEntry {
   /*
    The position on the query where the alignment starts. This value is different from zero
    when some bases/residues of the query could not be aligned with the target.
+   TODO: Rename this to left_trim. Add a right_trim property.
   */
   optional uint32 query_position=5;
 
