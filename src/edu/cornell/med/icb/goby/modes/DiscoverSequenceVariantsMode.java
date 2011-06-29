@@ -85,7 +85,9 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     private boolean groupsAreDefined;
     private ObjectArrayList<BaseFilter> baseFilters;
     private AlignmentProcessorFactory realignmentFactory = new DefaultAlignmentProcessorFactory();
-    /** A genome used for testing. */
+    /**
+     * A genome used for testing.
+     */
     private RandomAccessSequenceInterface testGenome;
 
     public void setDisableAtLeastQuarterFilter(boolean disableAtLeastQuarterFilter) {
@@ -184,10 +186,10 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
         }
 
-        realignmentFactory=configureProcessor(jsapResult);
+        realignmentFactory = configureProcessor(jsapResult);
         final String formatString = jsapResult.getString("format");
 
-       final OutputFormat format = OutputFormat.valueOf(formatString.toUpperCase());
+        final OutputFormat format = OutputFormat.valueOf(formatString.toUpperCase());
 
         SequenceVariationOutputFormat formatter = null;
         switch (format) {
@@ -263,10 +265,15 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         return this;
     }
 
-   private RandomAccessSequenceInterface configureGenome(JSAPResult jsapResult) throws IOException {
-       if (testGenome!=null) {
-           return testGenome;
-       }
+    public static RandomAccessSequenceInterface configureGenome(JSAPResult jsapResult) throws IOException {
+
+        return configureGenome(null, jsapResult);
+    }
+
+    public static RandomAccessSequenceInterface configureGenome(RandomAccessSequenceInterface testGenome, JSAPResult jsapResult) throws IOException {
+        if (testGenome != null) {
+            return testGenome;
+        }
         final String genome = jsapResult.getString("genome");
         RandomAccessSequenceCache cache = null;
         if (genome != null) {
@@ -313,7 +320,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
 
     public void setTestGenome(final RandomAccessSequenceTestSupport testGenome) {
-        this.testGenome=testGenome;
+        this.testGenome = testGenome;
     }
 
 
