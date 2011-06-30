@@ -93,21 +93,41 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
     private int depthFieldIndex;
     private int varCountsIndex[];
     private int refCountsIndex[];
+    /**
+     * The array used for testing, pointing to pre-allocated or dynamically allocated version.
+     */
     private int[][] alleleCountsPerGroup;
+    // pre-allocated array, when the site has no indels:
+    private int[][] alleleCountsPerGroupBaseAllelesOnly;
+    // pre-allocated vector, when the site has no indels:
+
+    private int[] vectorBaseAllelesOnly;
+    /**
+     * The vector used for testing, pointing to pre-allocated or dynamically allocated version:
+     */
     private int[] fisherVector;
+    /**
+     * The number of alleles, for sites that have no indels:
+     */
     private final int numberOfAlleles = SampleCountInfo.BASE_MAX_INDEX;
     /**
      * The number of allele observed in group for the allele with most counts in the group.  For instance if counts are
-     *             group0 group1
+     * group0 group1
      * allele=A    0        0
      * allele=C   10        0
      * allele=T    2        0
      * allele=G    4       15
      * allele=N    3        2
-     *
+     * <p/>
      * alleleCountGroupMax will contain {10,15}
      */
     private int[] alleleCountGroupMax;
+
+    /**
+     * The vector that will be used for testing.
+     */
+    private long[] fisherVectorUnderTest;
+
 
     protected void setStatWriter(VCFWriter statWriter) {
         this.statWriter = statWriter;
@@ -166,6 +186,7 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         statWriter.writeHeader();
     }
 
+    @Override
     public void allocateStorage(final int numberOfSamples, final int numberOfGroups) {
         this.numberOfGroups = numberOfGroups;
         this.numberOfSamples = numberOfSamples;
@@ -174,9 +195,10 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         distinctReadIndexCountPerGroup = new int[numberOfGroups];
         averageVariantQualityScorePerGroup = new float[numberOfGroups];
 
+
         // used for allelic fisher exact test:
-        alleleCountsPerGroup = new int[numberOfAlleles][numberOfGroups];
-        fisherVector = new int[numberOfAlleles * numberOfGroups];
+        alleleCountsPerGroupBaseAllelesOnly = new int[numberOfAlleles][numberOfGroups];
+        vectorBaseAllelesOnly = new int[numberOfAlleles * numberOfGroups];
 
         refCountsPerSample = new int[numberOfSamples];
         variantsCountPerSample = new int[numberOfSamples];
@@ -199,16 +221,23 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         // report 1-based positions
         position = position + 1;
         int totalCount = 0;
+        int maxGenotypeIndexAcrossSamples = 0;
+
+        // make genotypes comparable across all samples:
+        SampleCountInfo.alignIndels(sampleCounts);
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             final SampleCountInfo sci = sampleCounts[sampleIndex];
             int sumInSample = 0;
 
-
-            for (final int baseCount : sci.counts) {
-                totalCount += baseCount;
-                sumInSample += baseCount;
-                assert baseCount >= 0 : "counts must not be negative.";
+            //for (final int baseCount : sci.counts) {
+            final int maxGenotypeIndex = sci.getGenotypeMaxIndex();
+            maxGenotypeIndexAcrossSamples = Math.max(maxGenotypeIndex, maxGenotypeIndexAcrossSamples);
+            for (int genotypeIndex = 0; genotypeIndex < maxGenotypeIndex; genotypeIndex++) {
+                final int genotypeCount = sci.getGenotypeCount(genotypeIndex);
+                totalCount += genotypeCount;
+                sumInSample += genotypeCount;
+                assert genotypeCount >= 0 : "counts must not be negative.";
             }
             // must observe at least one base in each sample to write output for this position.
             if (sumInSample == 0) {
@@ -220,7 +249,8 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         }
 
         statWriter.setInfo(depthFieldIndex, totalCount);
-        fillVariantCountArrays(sampleCounts);
+
+        fillVariantCountArrays(sampleCounts, maxGenotypeIndexAcrossSamples);
 
         final CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 
@@ -265,7 +295,8 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         if (fisherRInstalled) {
             try {
                 if (checkCounts()) {
-                    final FisherExact.Result result = FisherExact.fexact(fisherVector, numberOfAlleles, numberOfGroups,
+                    final FisherExact.Result result = FisherExact.fexact(fisherVector, maxGenotypeIndexAcrossSamples,
+                            numberOfGroups,
                             FisherExact.AlternativeHypothesis.twosided, true);
                     fisherP = result.getPValue();
 
@@ -297,15 +328,33 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
     }
 
 
-    private void fillVariantCountArrays(final SampleCountInfo[] sampleCounts) {
+    private void fillVariantCountArrays(final SampleCountInfo[] sampleCounts, int maxGenotypeIndexAcrossSamples) {
 
         Arrays.fill(variantsCountPerGroup, 0);
         Arrays.fill(refCountsPerGroup, 0);
         Arrays.fill(distinctReadIndexCountPerGroup, 0);
-        Arrays.fill(fisherVector, 0);
-        for (int alleleIndex = 0; alleleIndex < numberOfAlleles; alleleIndex++) {
-            Arrays.fill(alleleCountsPerGroup[alleleIndex], 0);
+
+        if (maxGenotypeIndexAcrossSamples == SampleCountInfo.BASE_MAX_INDEX) {
+            // reuse the vector if we have only SNPs at that site:
+
+            fisherVector = vectorBaseAllelesOnly;
+            Arrays.fill(fisherVector, 0);
+            alleleCountsPerGroup = alleleCountsPerGroupBaseAllelesOnly;
+            for (int alleleIndex = 0; alleleIndex < numberOfAlleles; alleleIndex++) {
+                Arrays.fill(alleleCountsPerGroup[alleleIndex], 0);
+            }
+        } else {
+            // allocate a new custom-size array if the site has indels:
+
+            fisherVector = new int[maxGenotypeIndexAcrossSamples * numberOfGroups];
+            alleleCountsPerGroup = new int[maxGenotypeIndexAcrossSamples][numberOfGroups];
+
+            for (int genotypeIndex = 0; genotypeIndex < maxGenotypeIndexAcrossSamples; genotypeIndex++) {
+                alleleCountsPerGroup[genotypeIndex] = new int[numberOfGroups];
+            }
         }
+
+
         for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
             distinctReadIndicesCountPerGroup[groupIndex].clear();
 
@@ -320,18 +369,19 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
             variantsCountPerGroup[groupIndex] += csi.varCount;
             refCountsPerGroup[groupIndex] += csi.refCount;
             distinctReadIndicesCountPerGroup[groupIndex].addAll(csi.distinctReadIndices);
-            for (int alleleIndex = 0; alleleIndex < SampleCountInfo.BASE_MAX_INDEX; alleleIndex++) {
+            for (int genotypeIndex = 0; genotypeIndex < maxGenotypeIndexAcrossSamples; genotypeIndex++) {
 
-                final int alleleCount = csi.counts[alleleIndex] > 0 ? 1 : 0;
-                alleleCountsPerGroup[alleleIndex][groupIndex] += alleleCount;
+                final int alleleCount = csi.getGenotypeCount(genotypeIndex) > 0 ? 1 : 0;
+                alleleCountsPerGroup[genotypeIndex][groupIndex] += alleleCount;
             }
         }
 
         // reorder allelic counts for fisher exact test:
         int j = 0;
         for (int groupIndex = 0; groupIndex < numberOfGroups; ++groupIndex) {
-            for (int alleleIndex = 0; alleleIndex < SampleCountInfo.BASE_MAX_INDEX; ++alleleIndex) {
-                fisherVector[j] = alleleCountsPerGroup[alleleIndex][groupIndex];
+            for (int genotypeIndex = 0; genotypeIndex < maxGenotypeIndexAcrossSamples; genotypeIndex++) {
+
+                fisherVector[j] = alleleCountsPerGroup[genotypeIndex][groupIndex];
                 ++j;
             }
         }

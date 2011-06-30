@@ -23,9 +23,13 @@ import edu.rit.mp.buf.ObjectArrayBuf;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.lang.MutableString;
 
 import javax.swing.*;
+import java.util.Collections;
+import java.util.Comparator;
 
 /**
  * @author Fabien Campagne
@@ -54,6 +58,18 @@ public class SampleCountInfo {
      * List of indel eirs that start at the position in this sample.
      */
     private ObjectArrayList<EquivalentIndelRegion> indels;
+    private static final Comparator<? super EquivalentIndelRegion> INDEL_COMPARATOR = new Comparator<EquivalentIndelRegion>() {
+        /**
+         * Simply order eir by to string, alphabetically.
+         * @param eir1 first indel
+         * @param eir2 second indel
+         * @return sort order
+         */
+        @Override
+        public int compare(final EquivalentIndelRegion eir1, final EquivalentIndelRegion eir2) {
+            return eir1.to.compareTo(eir2.to);
+        }
+    };
 
     /**
      * Add an indel to this sample info. This method lazily creates the indels collection when the first
@@ -69,18 +85,119 @@ public class SampleCountInfo {
         }
         for (final EquivalentIndelRegion prevIndel : indels) {
             if (prevIndel.equals(indel)) {
-                prevIndel.frequency+=1;
+                prevIndel.frequency += 1;
             }
         }
         indels.add(indel);
     }
 
     /**
+     * Return the maximum index for genotypes observed in this sample.
+     *
+     * @return the maximum index that will retrieve a genotype count.
+     */
+    public final int getGenotypeMaxIndex() {
+        return BASE_MAX_INDEX + (hasIndels() ? indels.size() : 0);
+
+    }
+
+    /**
+     * Return the genotype frequency in the sample. The number of times the genotype was observed in the sample.
+     *
+     * @param genotypeIndex Index of the genotype for which count/frequency is sought.
+     * @return the frequency.
+     */
+    public final int getGenotypeCount(final int genotypeIndex) {
+
+        if (genotypeIndex < BASE_MAX_INDEX) {
+            return counts[genotypeIndex];
+        } else {
+            if (hasIndels()) {
+                final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
+                return indels.get(indelIndex).frequency;
+            }
+        }
+        throw new IllegalArgumentException("The genotype index argument was out of range: " + genotypeIndex);
+    }
+
+    /**
+     * Align indel genotypes so that genotype indices refer to the same genotype across a set of samples.
+     *
+     * @param samples a set of samples under comparison.
+     */
+    public static void alignIndels(final SampleCountInfo[] samples) {
+        final ObjectArraySet<EquivalentIndelRegion> dummyIndels = new ObjectArraySet<EquivalentIndelRegion>();
+        boolean hasSomeIndels = false;
+        for (final SampleCountInfo sample : samples) {
+            if (sample.hasIndels()) {
+                hasSomeIndels = true;
+                for (final EquivalentIndelRegion indel : sample.indels) {
+                    if (!dummyIndels.contains(indel)) {
+
+                        dummyIndels.add(indel.copy());
+                    }
+                }
+            }
+        }
+        if (!hasSomeIndels) {
+            // not indels, done aligning.
+            return;
+        }
+
+        // dummyIndels contains the canonical set of indels seen across all the samples.
+        for (final SampleCountInfo sample : samples) {
+            for (final EquivalentIndelRegion indel : dummyIndels) {
+                if (!sample.hasMatching(indel)) {
+                    // make a copy again for this specific sample, set the sampleIndex:
+                    final EquivalentIndelRegion copy = indel.copy();
+                    copy.sampleIndex = sample.sampleIndex;
+                    // set frequency to -1 because add will increase frequency by one and this indel genotype
+                    // was never observed in this sample, we just create a dummy observation to align genotypes across samples.
+                    copy.frequency = 0;
+                    if (sample.indels == null) {
+                        sample.indels = new ObjectArrayList<EquivalentIndelRegion>();
+                    }
+                    sample.indels.add(copy);
+                }
+            }
+            sample.sortGenotypes();
+        }
+    }
+
+    /**
+     * Sort genotypes in a predefined order. Indels are sorted by increasing to field (alphabetically).
+     */
+    private void sortGenotypes() {
+        Collections.sort(indels, INDEL_COMPARATOR);
+    }
+
+    /**
+     * Determine if the sample has an indel matching the argument.
+     *
+     * @param indel argument to look for.
+     * @return True if the indels collection for this sample has an indel at the same position, with the same to sequence. False otherwise.
+     */
+    private boolean hasMatching(final EquivalentIndelRegion indel) {
+        if (!hasIndels()) {
+            return false;
+        }
+        for (final EquivalentIndelRegion eir : indels) {
+            if (eir.startPosition == indel.startPosition && eir.endPosition == indel.endPosition &&
+                    eir.referenceIndex == indel.referenceIndex &&
+                    eir.to.equals(indel.to)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Return true if this sample has indel observations.
-     * @return  True or false.
+     *
+     * @return True or false.
      */
     public boolean hasIndels() {
-        return !(indels==null);
+        return !(indels == null);
     }
 
     public final char base(final int baseIndex) {
@@ -115,5 +232,20 @@ public class SampleCountInfo {
 
     public ObjectArrayList<EquivalentIndelRegion> getEquivalentIndelRegions() {
         return indels;
+    }
+
+    public final void getGenotype(final int genotypeIndex, final MutableString destination) {
+        destination.setLength(0);
+        if (genotypeIndex < BASE_MAX_INDEX) {
+            destination.append(base(genotypeIndex));
+            return;
+        } else {
+            if (hasIndels()) {
+                final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
+                destination.append(indels.get(indelIndex).to);
+                return;
+            }
+        }
+        throw new IllegalArgumentException("The genotype index argument was out of range: " + genotypeIndex);
     }
 }

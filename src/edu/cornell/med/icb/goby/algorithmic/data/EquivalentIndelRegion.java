@@ -80,12 +80,13 @@ public class EquivalentIndelRegion {
 
     /**
      * Compares startPosition, endPosition, referenceIndex and sampleIndex.
+     *
      * @param o other object
      * @return True if the other object matches location and sampleIndex, False otherwise.
      */
     @Override
     public final boolean equals(final Object o) {
-        if (!(o instanceof EquivalentIndelRegion )) {
+        if (!(o instanceof EquivalentIndelRegion)) {
             return false;
         }
         final EquivalentIndelRegion other = (EquivalentIndelRegion) o;
@@ -110,5 +111,24 @@ public class EquivalentIndelRegion {
 
     public String toString() {
         return String.format("%s %s/%s %s %d-%d", flankLeft, from, to, flankRight, startPosition, endPosition);
+    }
+
+    /**
+     * Make a copy of this indel, with zero count.
+     *
+     * @return copy of this indel region.
+     */
+    public EquivalentIndelRegion copy() {
+       final EquivalentIndelRegion result = new EquivalentIndelRegion();
+        result.from = from;
+        result.to = to;
+        result.flankLeft = flankLeft;
+        result.flankRight = flankRight;
+        result.referenceIndex = referenceIndex;
+        result.startPosition=startPosition;
+        result.endPosition=endPosition;
+        result.sampleIndex=sampleIndex;
+        return result;
+
     }
 }

@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.R.GobyRengine;
+import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import edu.cornell.med.icb.goby.alignments.DiscoverVariantIterateSortedAlignments;
 import edu.cornell.med.icb.goby.alignments.PositionBaseInfo;
 import edu.cornell.med.icb.goby.alignments.SampleCountInfo;
@@ -35,6 +36,8 @@ import org.junit.Test;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import static org.easymock.EasyMock.*;
 
 /**
@@ -97,7 +100,7 @@ public class TestCompareGroupsVCFOutputFormat {
         expectLastCall().anyTimes();
         statWriter.setChromosome(EasyMock.<CharSequence>anyObject());
         statWriter.setPosition(position + 1); // position is written 1-based
-        statWriter.setReferenceAllele("C");
+        statWriter.setReferenceAllele(EasyMock.anyObject(String.class));
         expectLastCall().atLeastOnce();
         statWriter.addAlternateAllele(EasyMock.<String>anyObject());
         expectLastCall().atLeastOnce();
@@ -147,6 +150,98 @@ public class TestCompareGroupsVCFOutputFormat {
     public void testAllelicDifference() throws Exception {
         synchronized (GobyRengine.getInstance().getRengine()) {
             SampleCountInfo[] sampleCounts = makeSampleCounts(1, 30, 5, 30, 6, 2 /* this value would have been 60 is no difference existed for this allele */, 0, 10, 60, 12);
+            ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
+            expect(mode.getReaderIndexToGroupIndex()).andReturn(readerIndexToGroupIndex);
+            replay(mode);
+
+            statWriter.setInfo(eq(fisherExactPValueColumnIndex = 4), lt(1d));
+            replay(statWriter);
+            format.allocateStorage(20, 2);
+            format.defineColumns(output, mode);
+            format.setStatWriter(statWriter);
+            format.writeRecord(iterator, sampleCounts,
+                    refIndex,
+                    position,
+                    list,
+                    groupIndexA,
+                    groupIndexB);
+            verify(mode);
+            verify(statWriter);
+        }
+    }
+
+    @Test
+    public void testAlignIndels() {
+        SampleCountInfo[] sampleCounts = makeSampleCountsWithIndels();
+
+
+        assertEquals(SampleCountInfo.BASE_MAX_INDEX + 2, sampleCounts[0].getGenotypeMaxIndex());
+        assertEquals(SampleCountInfo.BASE_MAX_INDEX + 1, sampleCounts[1].getGenotypeMaxIndex());
+        assertTrue(sampleCounts[0].hasIndels());
+        assertTrue(sampleCounts[1].hasIndels());
+
+        SampleCountInfo.alignIndels(sampleCounts);
+        assertEquals(SampleCountInfo.BASE_MAX_INDEX + 2, sampleCounts[0].getGenotypeMaxIndex());
+        assertEquals(SampleCountInfo.BASE_MAX_INDEX + 2, sampleCounts[1].getGenotypeMaxIndex());
+        String sample_0_indel0_to = getGenotypeAsString(sampleCounts[0], SampleCountInfo.BASE_MAX_INDEX);
+        String sample_0_indel1_to = getGenotypeAsString(sampleCounts[0], SampleCountInfo.BASE_MAX_INDEX + 1);
+        String sample_1_indel0_to = getGenotypeAsString(sampleCounts[1], SampleCountInfo.BASE_MAX_INDEX);
+        String sample_1_indel1_to = getGenotypeAsString(sampleCounts[1], SampleCountInfo.BASE_MAX_INDEX + 1);
+
+        assertEquals("first indel genotype must match across both samples", sample_0_indel0_to, sample_1_indel0_to);
+        assertEquals("second indel genotype must match across both samples", sample_0_indel1_to, sample_1_indel1_to);
+        assertEquals(5, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_MAX_INDEX));
+        assertEquals(10, sampleCounts[0].getGenotypeCount(SampleCountInfo.BASE_MAX_INDEX + 1));
+        assertEquals("frequency of dummy indel must be zero, dummy indels were never observed in the sample.",
+                0, sampleCounts[1].getGenotypeCount(SampleCountInfo.BASE_MAX_INDEX));
+        assertEquals(3, sampleCounts[1].getGenotypeCount(SampleCountInfo.BASE_MAX_INDEX + 1));
+    }
+
+    private String getGenotypeAsString(SampleCountInfo sampleCount, int genotypeIndex) {
+        MutableString dest = new MutableString();
+        sampleCount.getGenotype(genotypeIndex, dest);
+        return dest.toString();
+    }
+
+    private SampleCountInfo[] makeSampleCountsWithIndels() {
+        SampleCountInfo[] sampleCounts = makeSampleCounts(1, 30, 5, 30, 6, 2 /* this value would have been 60 is no difference existed for this allele */, 0, 10, 60, 12);
+
+        // add indels to these sample counts, TODO:
+        EquivalentIndelRegion indel1 = new EquivalentIndelRegion();
+        indel1.startPosition = 1;
+        indel1.endPosition = 5;
+        indel1.referenceIndex = 0;
+        indel1.from = "AC";
+        indel1.to = "A---C";
+        indel1.flankLeft = "T";
+        indel1.flankRight = "";
+        indel1.sampleIndex = 0;
+        indel1.frequency = 5;
+        EquivalentIndelRegion indel2 = new EquivalentIndelRegion();
+        indel2.startPosition = 1;
+        indel2.endPosition = 3;
+        indel2.referenceIndex = 0;
+        indel2.from = "AC";
+        indel2.to = "ATC";
+        indel2.flankLeft = "T";
+        indel2.flankRight = "";
+        indel1.sampleIndex = 0;
+        indel2.frequency = 10;
+        sampleCounts[0].addIndel(indel1);
+        sampleCounts[0].addIndel(indel2);
+        EquivalentIndelRegion indel3 = indel2.copy();
+        indel3.sampleIndex = 1;
+        indel3.frequency = 3;
+
+        sampleCounts[1].addIndel(indel3);
+        return sampleCounts;
+    }
+
+    @Test
+    public void testIndelDifferences() throws Exception {
+        synchronized (GobyRengine.getInstance().getRengine()) {
+            SampleCountInfo[] sampleCounts = makeSampleCountsWithIndels();
+
             ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
             expect(mode.getReaderIndexToGroupIndex()).andReturn(readerIndexToGroupIndex);
             replay(mode);
