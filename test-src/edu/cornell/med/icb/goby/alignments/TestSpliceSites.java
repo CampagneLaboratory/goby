@@ -24,7 +24,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -68,10 +67,10 @@ public class TestSpliceSites {
         Alignments.RelatedAlignmentEntry linkBackward = Alignments.RelatedAlignmentEntry.newBuilder().
                 setFragmentIndex(0).setPosition(10).setTargetIndex(0).build();
         Alignments.AlignmentEntry entry1 = Alignments.AlignmentEntry.newBuilder().setPosition(10).setMatchingReverseStrand(false).
-                setQueryLength(50).setQueryIndex(0).setTargetIndex(0).setFragmentIndex(0).setSplicedAlignmentLink(linkForward).
+                setQueryLength(50).setQueryIndex(0).setTargetIndex(0).setFragmentIndex(0).setSplicedForwardAlignmentLink(linkForward).
                 setQueryAlignedLength(20).addSequenceVariations(mutation).setMappingQuality(255).setScore(20).build();
         Alignments.AlignmentEntry entry2 = Alignments.AlignmentEntry.newBuilder().setPosition(70).setMatchingReverseStrand(false).
-                setQueryLength(50).setQueryIndex(0).setTargetIndex(0).setFragmentIndex(1).setSplicedAlignmentLink(linkBackward).
+                setQueryLength(50).setQueryIndex(0).setTargetIndex(0).setFragmentIndex(1).setSplicedBackwardAlignmentLink(linkBackward).
                 setQueryAlignedLength(30).setMappingQuality(255).setScore(30).build();
 
         writer.appendEntry(entry1);
@@ -86,10 +85,10 @@ public class TestSpliceSites {
         linkBackward = Alignments.RelatedAlignmentEntry.newBuilder().
                 setFragmentIndex(1).setPosition(10).setTargetIndex(0).build();
         entry1 = Alignments.AlignmentEntry.newBuilder().setPosition(10).setMatchingReverseStrand(true).
-                setQueryLength(50).setQueryIndex(0).setTargetIndex(0).setFragmentIndex(1).setSplicedAlignmentLink(linkForward).
+                setQueryLength(50).setQueryIndex(0).setTargetIndex(0).setFragmentIndex(1).setSplicedForwardAlignmentLink(linkForward).
                 setQueryAlignedLength(20).addSequenceVariations(mutation).setMappingQuality(255).setScore(20).build();
         entry2 = Alignments.AlignmentEntry.newBuilder().setPosition(70).setMatchingReverseStrand(true).
-                setQueryLength(50).setQueryIndex(0).setTargetIndex(0).setFragmentIndex(0).setSplicedAlignmentLink(linkBackward).
+                setQueryLength(50).setQueryIndex(0).setTargetIndex(0).setFragmentIndex(0).setSplicedBackwardAlignmentLink(linkBackward).
                 setQueryAlignedLength(30).setMappingQuality(255).setScore(30).build();
         writer.appendEntry(entry1);
         writer.appendEntry(entry2);

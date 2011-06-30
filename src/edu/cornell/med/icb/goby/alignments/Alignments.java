@@ -649,10 +649,15 @@ public final class Alignments {
     boolean hasFragmentIndex();
     int getFragmentIndex();
     
-    // optional .goby.RelatedAlignmentEntry spliced_alignment_link = 18;
-    boolean hasSplicedAlignmentLink();
-    edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry getSplicedAlignmentLink();
-    edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntryOrBuilder getSplicedAlignmentLinkOrBuilder();
+    // optional .goby.RelatedAlignmentEntry spliced_forward_alignment_link = 18;
+    boolean hasSplicedForwardAlignmentLink();
+    edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry getSplicedForwardAlignmentLink();
+    edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntryOrBuilder getSplicedForwardAlignmentLinkOrBuilder();
+    
+    // optional .goby.RelatedAlignmentEntry spliced_backward_alignment_link = 22;
+    boolean hasSplicedBackwardAlignmentLink();
+    edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry getSplicedBackwardAlignmentLink();
+    edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntryOrBuilder getSplicedBackwardAlignmentLinkOrBuilder();
     
     // optional uint32 spliced_flags = 19;
     boolean hasSplicedFlags();
@@ -879,24 +884,37 @@ public final class Alignments {
       return fragmentIndex_;
     }
     
-    // optional .goby.RelatedAlignmentEntry spliced_alignment_link = 18;
-    public static final int SPLICED_ALIGNMENT_LINK_FIELD_NUMBER = 18;
-    private edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry splicedAlignmentLink_;
-    public boolean hasSplicedAlignmentLink() {
+    // optional .goby.RelatedAlignmentEntry spliced_forward_alignment_link = 18;
+    public static final int SPLICED_FORWARD_ALIGNMENT_LINK_FIELD_NUMBER = 18;
+    private edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry splicedForwardAlignmentLink_;
+    public boolean hasSplicedForwardAlignmentLink() {
       return ((bitField0_ & 0x00010000) == 0x00010000);
     }
-    public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry getSplicedAlignmentLink() {
-      return splicedAlignmentLink_;
+    public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry getSplicedForwardAlignmentLink() {
+      return splicedForwardAlignmentLink_;
     }
-    public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntryOrBuilder getSplicedAlignmentLinkOrBuilder() {
-      return splicedAlignmentLink_;
+    public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntryOrBuilder getSplicedForwardAlignmentLinkOrBuilder() {
+      return splicedForwardAlignmentLink_;
+    }
+    
+    // optional .goby.RelatedAlignmentEntry spliced_backward_alignment_link = 22;
+    public static final int SPLICED_BACKWARD_ALIGNMENT_LINK_FIELD_NUMBER = 22;
+    private edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry splicedBackwardAlignmentLink_;
+    public boolean hasSplicedBackwardAlignmentLink() {
+      return ((bitField0_ & 0x00020000) == 0x00020000);
+    }
+    public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry getSplicedBackwardAlignmentLink() {
+      return splicedBackwardAlignmentLink_;
+    }
+    public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntryOrBuilder getSplicedBackwardAlignmentLinkOrBuilder() {
+      return splicedBackwardAlignmentLink_;
     }
     
     // optional uint32 spliced_flags = 19;
     public static final int SPLICED_FLAGS_FIELD_NUMBER = 19;
     private int splicedFlags_;
     public boolean hasSplicedFlags() {
-      return ((bitField0_ & 0x00020000) == 0x00020000);
+      return ((bitField0_ & 0x00040000) == 0x00040000);
     }
     public int getSplicedFlags() {
       return splicedFlags_;
@@ -906,7 +924,7 @@ public final class Alignments {
     public static final int INSERT_SIZE_FIELD_NUMBER = 20;
     private int insertSize_;
     public boolean hasInsertSize() {
-      return ((bitField0_ & 0x00040000) == 0x00040000);
+      return ((bitField0_ & 0x00080000) == 0x00080000);
     }
     public int getInsertSize() {
       return insertSize_;
@@ -916,7 +934,7 @@ public final class Alignments {
     public static final int SAMPLE_INDEX_FIELD_NUMBER = 21;
     private int sampleIndex_;
     public boolean hasSampleIndex() {
-      return ((bitField0_ & 0x00080000) == 0x00080000);
+      return ((bitField0_ & 0x00100000) == 0x00100000);
     }
     public int getSampleIndex() {
       return sampleIndex_;
@@ -940,7 +958,8 @@ public final class Alignments {
       pairFlags_ = 0;
       pairAlignmentLink_ = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance();
       fragmentIndex_ = 0;
-      splicedAlignmentLink_ = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance();
+      splicedForwardAlignmentLink_ = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance();
+      splicedBackwardAlignmentLink_ = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance();
       splicedFlags_ = 0;
       insertSize_ = 0;
       sampleIndex_ = 0;
@@ -978,8 +997,14 @@ public final class Alignments {
           return false;
         }
       }
-      if (hasSplicedAlignmentLink()) {
-        if (!getSplicedAlignmentLink().isInitialized()) {
+      if (hasSplicedForwardAlignmentLink()) {
+        if (!getSplicedForwardAlignmentLink().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      if (hasSplicedBackwardAlignmentLink()) {
+        if (!getSplicedBackwardAlignmentLink().isInitialized()) {
           memoizedIsInitialized = 0;
           return false;
         }
@@ -1043,16 +1068,19 @@ public final class Alignments {
         output.writeUInt32(17, fragmentIndex_);
       }
       if (((bitField0_ & 0x00010000) == 0x00010000)) {
-        output.writeMessage(18, splicedAlignmentLink_);
-      }
-      if (((bitField0_ & 0x00020000) == 0x00020000)) {
-        output.writeUInt32(19, splicedFlags_);
+        output.writeMessage(18, splicedForwardAlignmentLink_);
       }
       if (((bitField0_ & 0x00040000) == 0x00040000)) {
-        output.writeUInt32(20, insertSize_);
+        output.writeUInt32(19, splicedFlags_);
       }
       if (((bitField0_ & 0x00080000) == 0x00080000)) {
+        output.writeUInt32(20, insertSize_);
+      }
+      if (((bitField0_ & 0x00100000) == 0x00100000)) {
         output.writeUInt32(21, sampleIndex_);
+      }
+      if (((bitField0_ & 0x00020000) == 0x00020000)) {
+        output.writeMessage(22, splicedBackwardAlignmentLink_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -1133,19 +1161,23 @@ public final class Alignments {
       }
       if (((bitField0_ & 0x00010000) == 0x00010000)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(18, splicedAlignmentLink_);
-      }
-      if (((bitField0_ & 0x00020000) == 0x00020000)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(19, splicedFlags_);
+          .computeMessageSize(18, splicedForwardAlignmentLink_);
       }
       if (((bitField0_ & 0x00040000) == 0x00040000)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(20, insertSize_);
+          .computeUInt32Size(19, splicedFlags_);
       }
       if (((bitField0_ & 0x00080000) == 0x00080000)) {
         size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(20, insertSize_);
+      }
+      if (((bitField0_ & 0x00100000) == 0x00100000)) {
+        size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(21, sampleIndex_);
+      }
+      if (((bitField0_ & 0x00020000) == 0x00020000)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(22, splicedBackwardAlignmentLink_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1265,7 +1297,8 @@ public final class Alignments {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getSequenceVariationsFieldBuilder();
           getPairAlignmentLinkFieldBuilder();
-          getSplicedAlignmentLinkFieldBuilder();
+          getSplicedForwardAlignmentLinkFieldBuilder();
+          getSplicedBackwardAlignmentLinkFieldBuilder();
         }
       }
       private static Builder create() {
@@ -1316,18 +1349,24 @@ public final class Alignments {
         bitField0_ = (bitField0_ & ~0x00008000);
         fragmentIndex_ = 0;
         bitField0_ = (bitField0_ & ~0x00010000);
-        if (splicedAlignmentLinkBuilder_ == null) {
-          splicedAlignmentLink_ = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance();
+        if (splicedForwardAlignmentLinkBuilder_ == null) {
+          splicedForwardAlignmentLink_ = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance();
         } else {
-          splicedAlignmentLinkBuilder_.clear();
+          splicedForwardAlignmentLinkBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00020000);
-        splicedFlags_ = 0;
+        if (splicedBackwardAlignmentLinkBuilder_ == null) {
+          splicedBackwardAlignmentLink_ = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance();
+        } else {
+          splicedBackwardAlignmentLinkBuilder_.clear();
+        }
         bitField0_ = (bitField0_ & ~0x00040000);
-        insertSize_ = 0;
+        splicedFlags_ = 0;
         bitField0_ = (bitField0_ & ~0x00080000);
-        sampleIndex_ = 0;
+        insertSize_ = 0;
         bitField0_ = (bitField0_ & ~0x00100000);
+        sampleIndex_ = 0;
+        bitField0_ = (bitField0_ & ~0x00200000);
         return this;
       }
       
@@ -1446,21 +1485,29 @@ public final class Alignments {
         if (((from_bitField0_ & 0x00020000) == 0x00020000)) {
           to_bitField0_ |= 0x00010000;
         }
-        if (splicedAlignmentLinkBuilder_ == null) {
-          result.splicedAlignmentLink_ = splicedAlignmentLink_;
+        if (splicedForwardAlignmentLinkBuilder_ == null) {
+          result.splicedForwardAlignmentLink_ = splicedForwardAlignmentLink_;
         } else {
-          result.splicedAlignmentLink_ = splicedAlignmentLinkBuilder_.build();
+          result.splicedForwardAlignmentLink_ = splicedForwardAlignmentLinkBuilder_.build();
         }
         if (((from_bitField0_ & 0x00040000) == 0x00040000)) {
           to_bitField0_ |= 0x00020000;
         }
-        result.splicedFlags_ = splicedFlags_;
+        if (splicedBackwardAlignmentLinkBuilder_ == null) {
+          result.splicedBackwardAlignmentLink_ = splicedBackwardAlignmentLink_;
+        } else {
+          result.splicedBackwardAlignmentLink_ = splicedBackwardAlignmentLinkBuilder_.build();
+        }
         if (((from_bitField0_ & 0x00080000) == 0x00080000)) {
           to_bitField0_ |= 0x00040000;
         }
-        result.insertSize_ = insertSize_;
+        result.splicedFlags_ = splicedFlags_;
         if (((from_bitField0_ & 0x00100000) == 0x00100000)) {
           to_bitField0_ |= 0x00080000;
+        }
+        result.insertSize_ = insertSize_;
+        if (((from_bitField0_ & 0x00200000) == 0x00200000)) {
+          to_bitField0_ |= 0x00100000;
         }
         result.sampleIndex_ = sampleIndex_;
         result.bitField0_ = to_bitField0_;
@@ -1553,8 +1600,11 @@ public final class Alignments {
         if (other.hasFragmentIndex()) {
           setFragmentIndex(other.getFragmentIndex());
         }
-        if (other.hasSplicedAlignmentLink()) {
-          mergeSplicedAlignmentLink(other.getSplicedAlignmentLink());
+        if (other.hasSplicedForwardAlignmentLink()) {
+          mergeSplicedForwardAlignmentLink(other.getSplicedForwardAlignmentLink());
+        }
+        if (other.hasSplicedBackwardAlignmentLink()) {
+          mergeSplicedBackwardAlignmentLink(other.getSplicedBackwardAlignmentLink());
         }
         if (other.hasSplicedFlags()) {
           setSplicedFlags(other.getSplicedFlags());
@@ -1598,8 +1648,14 @@ public final class Alignments {
             return false;
           }
         }
-        if (hasSplicedAlignmentLink()) {
-          if (!getSplicedAlignmentLink().isInitialized()) {
+        if (hasSplicedForwardAlignmentLink()) {
+          if (!getSplicedForwardAlignmentLink().isInitialized()) {
+            
+            return false;
+          }
+        }
+        if (hasSplicedBackwardAlignmentLink()) {
+          if (!getSplicedBackwardAlignmentLink().isInitialized()) {
             
             return false;
           }
@@ -1722,26 +1778,35 @@ public final class Alignments {
             }
             case 146: {
               edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder subBuilder = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.newBuilder();
-              if (hasSplicedAlignmentLink()) {
-                subBuilder.mergeFrom(getSplicedAlignmentLink());
+              if (hasSplicedForwardAlignmentLink()) {
+                subBuilder.mergeFrom(getSplicedForwardAlignmentLink());
               }
               input.readMessage(subBuilder, extensionRegistry);
-              setSplicedAlignmentLink(subBuilder.buildPartial());
+              setSplicedForwardAlignmentLink(subBuilder.buildPartial());
               break;
             }
             case 152: {
-              bitField0_ |= 0x00040000;
+              bitField0_ |= 0x00080000;
               splicedFlags_ = input.readUInt32();
               break;
             }
             case 160: {
-              bitField0_ |= 0x00080000;
+              bitField0_ |= 0x00100000;
               insertSize_ = input.readUInt32();
               break;
             }
             case 168: {
-              bitField0_ |= 0x00100000;
+              bitField0_ |= 0x00200000;
               sampleIndex_ = input.readUInt32();
+              break;
+            }
+            case 178: {
+              edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder subBuilder = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.newBuilder();
+              if (hasSplicedBackwardAlignmentLink()) {
+                subBuilder.mergeFrom(getSplicedBackwardAlignmentLink());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setSplicedBackwardAlignmentLink(subBuilder.buildPartial());
               break;
             }
           }
@@ -2341,112 +2406,202 @@ public final class Alignments {
         return this;
       }
       
-      // optional .goby.RelatedAlignmentEntry spliced_alignment_link = 18;
-      private edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry splicedAlignmentLink_ = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance();
+      // optional .goby.RelatedAlignmentEntry spliced_forward_alignment_link = 18;
+      private edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry splicedForwardAlignmentLink_ = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntryOrBuilder> splicedAlignmentLinkBuilder_;
-      public boolean hasSplicedAlignmentLink() {
+          edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntryOrBuilder> splicedForwardAlignmentLinkBuilder_;
+      public boolean hasSplicedForwardAlignmentLink() {
         return ((bitField0_ & 0x00020000) == 0x00020000);
       }
-      public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry getSplicedAlignmentLink() {
-        if (splicedAlignmentLinkBuilder_ == null) {
-          return splicedAlignmentLink_;
+      public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry getSplicedForwardAlignmentLink() {
+        if (splicedForwardAlignmentLinkBuilder_ == null) {
+          return splicedForwardAlignmentLink_;
         } else {
-          return splicedAlignmentLinkBuilder_.getMessage();
+          return splicedForwardAlignmentLinkBuilder_.getMessage();
         }
       }
-      public Builder setSplicedAlignmentLink(edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry value) {
-        if (splicedAlignmentLinkBuilder_ == null) {
+      public Builder setSplicedForwardAlignmentLink(edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry value) {
+        if (splicedForwardAlignmentLinkBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          splicedAlignmentLink_ = value;
+          splicedForwardAlignmentLink_ = value;
           onChanged();
         } else {
-          splicedAlignmentLinkBuilder_.setMessage(value);
+          splicedForwardAlignmentLinkBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00020000;
         return this;
       }
-      public Builder setSplicedAlignmentLink(
+      public Builder setSplicedForwardAlignmentLink(
           edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder builderForValue) {
-        if (splicedAlignmentLinkBuilder_ == null) {
-          splicedAlignmentLink_ = builderForValue.build();
+        if (splicedForwardAlignmentLinkBuilder_ == null) {
+          splicedForwardAlignmentLink_ = builderForValue.build();
           onChanged();
         } else {
-          splicedAlignmentLinkBuilder_.setMessage(builderForValue.build());
+          splicedForwardAlignmentLinkBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00020000;
         return this;
       }
-      public Builder mergeSplicedAlignmentLink(edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry value) {
-        if (splicedAlignmentLinkBuilder_ == null) {
+      public Builder mergeSplicedForwardAlignmentLink(edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry value) {
+        if (splicedForwardAlignmentLinkBuilder_ == null) {
           if (((bitField0_ & 0x00020000) == 0x00020000) &&
-              splicedAlignmentLink_ != edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance()) {
-            splicedAlignmentLink_ =
-              edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.newBuilder(splicedAlignmentLink_).mergeFrom(value).buildPartial();
+              splicedForwardAlignmentLink_ != edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance()) {
+            splicedForwardAlignmentLink_ =
+              edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.newBuilder(splicedForwardAlignmentLink_).mergeFrom(value).buildPartial();
           } else {
-            splicedAlignmentLink_ = value;
+            splicedForwardAlignmentLink_ = value;
           }
           onChanged();
         } else {
-          splicedAlignmentLinkBuilder_.mergeFrom(value);
+          splicedForwardAlignmentLinkBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00020000;
         return this;
       }
-      public Builder clearSplicedAlignmentLink() {
-        if (splicedAlignmentLinkBuilder_ == null) {
-          splicedAlignmentLink_ = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance();
+      public Builder clearSplicedForwardAlignmentLink() {
+        if (splicedForwardAlignmentLinkBuilder_ == null) {
+          splicedForwardAlignmentLink_ = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance();
           onChanged();
         } else {
-          splicedAlignmentLinkBuilder_.clear();
+          splicedForwardAlignmentLinkBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00020000);
         return this;
       }
-      public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder getSplicedAlignmentLinkBuilder() {
+      public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder getSplicedForwardAlignmentLinkBuilder() {
         bitField0_ |= 0x00020000;
         onChanged();
-        return getSplicedAlignmentLinkFieldBuilder().getBuilder();
+        return getSplicedForwardAlignmentLinkFieldBuilder().getBuilder();
       }
-      public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntryOrBuilder getSplicedAlignmentLinkOrBuilder() {
-        if (splicedAlignmentLinkBuilder_ != null) {
-          return splicedAlignmentLinkBuilder_.getMessageOrBuilder();
+      public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntryOrBuilder getSplicedForwardAlignmentLinkOrBuilder() {
+        if (splicedForwardAlignmentLinkBuilder_ != null) {
+          return splicedForwardAlignmentLinkBuilder_.getMessageOrBuilder();
         } else {
-          return splicedAlignmentLink_;
+          return splicedForwardAlignmentLink_;
         }
       }
       private com.google.protobuf.SingleFieldBuilder<
           edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntryOrBuilder> 
-          getSplicedAlignmentLinkFieldBuilder() {
-        if (splicedAlignmentLinkBuilder_ == null) {
-          splicedAlignmentLinkBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+          getSplicedForwardAlignmentLinkFieldBuilder() {
+        if (splicedForwardAlignmentLinkBuilder_ == null) {
+          splicedForwardAlignmentLinkBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntryOrBuilder>(
-                  splicedAlignmentLink_,
+                  splicedForwardAlignmentLink_,
                   getParentForChildren(),
                   isClean());
-          splicedAlignmentLink_ = null;
+          splicedForwardAlignmentLink_ = null;
         }
-        return splicedAlignmentLinkBuilder_;
+        return splicedForwardAlignmentLinkBuilder_;
+      }
+      
+      // optional .goby.RelatedAlignmentEntry spliced_backward_alignment_link = 22;
+      private edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry splicedBackwardAlignmentLink_ = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntryOrBuilder> splicedBackwardAlignmentLinkBuilder_;
+      public boolean hasSplicedBackwardAlignmentLink() {
+        return ((bitField0_ & 0x00040000) == 0x00040000);
+      }
+      public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry getSplicedBackwardAlignmentLink() {
+        if (splicedBackwardAlignmentLinkBuilder_ == null) {
+          return splicedBackwardAlignmentLink_;
+        } else {
+          return splicedBackwardAlignmentLinkBuilder_.getMessage();
+        }
+      }
+      public Builder setSplicedBackwardAlignmentLink(edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry value) {
+        if (splicedBackwardAlignmentLinkBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          splicedBackwardAlignmentLink_ = value;
+          onChanged();
+        } else {
+          splicedBackwardAlignmentLinkBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00040000;
+        return this;
+      }
+      public Builder setSplicedBackwardAlignmentLink(
+          edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder builderForValue) {
+        if (splicedBackwardAlignmentLinkBuilder_ == null) {
+          splicedBackwardAlignmentLink_ = builderForValue.build();
+          onChanged();
+        } else {
+          splicedBackwardAlignmentLinkBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00040000;
+        return this;
+      }
+      public Builder mergeSplicedBackwardAlignmentLink(edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry value) {
+        if (splicedBackwardAlignmentLinkBuilder_ == null) {
+          if (((bitField0_ & 0x00040000) == 0x00040000) &&
+              splicedBackwardAlignmentLink_ != edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance()) {
+            splicedBackwardAlignmentLink_ =
+              edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.newBuilder(splicedBackwardAlignmentLink_).mergeFrom(value).buildPartial();
+          } else {
+            splicedBackwardAlignmentLink_ = value;
+          }
+          onChanged();
+        } else {
+          splicedBackwardAlignmentLinkBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00040000;
+        return this;
+      }
+      public Builder clearSplicedBackwardAlignmentLink() {
+        if (splicedBackwardAlignmentLinkBuilder_ == null) {
+          splicedBackwardAlignmentLink_ = edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.getDefaultInstance();
+          onChanged();
+        } else {
+          splicedBackwardAlignmentLinkBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00040000);
+        return this;
+      }
+      public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder getSplicedBackwardAlignmentLinkBuilder() {
+        bitField0_ |= 0x00040000;
+        onChanged();
+        return getSplicedBackwardAlignmentLinkFieldBuilder().getBuilder();
+      }
+      public edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntryOrBuilder getSplicedBackwardAlignmentLinkOrBuilder() {
+        if (splicedBackwardAlignmentLinkBuilder_ != null) {
+          return splicedBackwardAlignmentLinkBuilder_.getMessageOrBuilder();
+        } else {
+          return splicedBackwardAlignmentLink_;
+        }
+      }
+      private com.google.protobuf.SingleFieldBuilder<
+          edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntryOrBuilder> 
+          getSplicedBackwardAlignmentLinkFieldBuilder() {
+        if (splicedBackwardAlignmentLinkBuilder_ == null) {
+          splicedBackwardAlignmentLinkBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntry.Builder, edu.cornell.med.icb.goby.alignments.Alignments.RelatedAlignmentEntryOrBuilder>(
+                  splicedBackwardAlignmentLink_,
+                  getParentForChildren(),
+                  isClean());
+          splicedBackwardAlignmentLink_ = null;
+        }
+        return splicedBackwardAlignmentLinkBuilder_;
       }
       
       // optional uint32 spliced_flags = 19;
       private int splicedFlags_ ;
       public boolean hasSplicedFlags() {
-        return ((bitField0_ & 0x00040000) == 0x00040000);
+        return ((bitField0_ & 0x00080000) == 0x00080000);
       }
       public int getSplicedFlags() {
         return splicedFlags_;
       }
       public Builder setSplicedFlags(int value) {
-        bitField0_ |= 0x00040000;
+        bitField0_ |= 0x00080000;
         splicedFlags_ = value;
         onChanged();
         return this;
       }
       public Builder clearSplicedFlags() {
-        bitField0_ = (bitField0_ & ~0x00040000);
+        bitField0_ = (bitField0_ & ~0x00080000);
         splicedFlags_ = 0;
         onChanged();
         return this;
@@ -2455,19 +2610,19 @@ public final class Alignments {
       // optional uint32 insert_size = 20;
       private int insertSize_ ;
       public boolean hasInsertSize() {
-        return ((bitField0_ & 0x00080000) == 0x00080000);
+        return ((bitField0_ & 0x00100000) == 0x00100000);
       }
       public int getInsertSize() {
         return insertSize_;
       }
       public Builder setInsertSize(int value) {
-        bitField0_ |= 0x00080000;
+        bitField0_ |= 0x00100000;
         insertSize_ = value;
         onChanged();
         return this;
       }
       public Builder clearInsertSize() {
-        bitField0_ = (bitField0_ & ~0x00080000);
+        bitField0_ = (bitField0_ & ~0x00100000);
         insertSize_ = 0;
         onChanged();
         return this;
@@ -2476,19 +2631,19 @@ public final class Alignments {
       // optional uint32 sample_index = 21;
       private int sampleIndex_ ;
       public boolean hasSampleIndex() {
-        return ((bitField0_ & 0x00100000) == 0x00100000);
+        return ((bitField0_ & 0x00200000) == 0x00200000);
       }
       public int getSampleIndex() {
         return sampleIndex_;
       }
       public Builder setSampleIndex(int value) {
-        bitField0_ |= 0x00100000;
+        bitField0_ |= 0x00200000;
         sampleIndex_ = value;
         onChanged();
         return this;
       }
       public Builder clearSampleIndex() {
-        bitField0_ = (bitField0_ & ~0x00100000);
+        bitField0_ = (bitField0_ & ~0x00200000);
         sampleIndex_ = 0;
         onChanged();
         return this;
@@ -8172,7 +8327,7 @@ public final class Alignments {
     java.lang.String[] descriptorData = {
       "\n\020Alignments.proto\022\004goby\"F\n\023AlignmentCol" +
       "lection\022/\n\021alignment_entries\030\001 \003(\0132\024.gob" +
-      "y.AlignmentEntry\"\352\004\n\016AlignmentEntry\022\024\n\014m" +
+      "y.AlignmentEntry\"\270\005\n\016AlignmentEntry\022\024\n\014m" +
       "ultiplicity\030\007 \001(\r\022\023\n\013query_index\030\001 \002(\r\022\024" +
       "\n\014target_index\030\002 \002(\r\022\020\n\010position\030\003 \002(\r\022\037" +
       "\n\027matching_reverse_strand\030\006 \002(\010\022\026\n\016query" +
@@ -8184,40 +8339,42 @@ public final class Alignments {
       "n\022\024\n\014query_length\030\n \001(\r\022\027\n\017mapping_quali" +
       "ty\030\016 \001(\005\022\022\n\npair_flags\030\017 \001(\r\0228\n\023pair_ali" +
       "gnment_link\030\020 \001(\0132\033.goby.RelatedAlignmen" +
-      "tEntry\022\026\n\016fragment_index\030\021 \001(\r\022;\n\026splice" +
-      "d_alignment_link\030\022 \001(\0132\033.goby.RelatedAli" +
-      "gnmentEntry\022\025\n\rspliced_flags\030\023 \001(\r\022\023\n\013in" +
-      "sert_size\030\024 \001(\r\022\024\n\014sample_index\030\025 \001(\r\"W\n" +
-      "\025RelatedAlignmentEntry\022\024\n\014target_index\030\001" +
-      " \002(\r\022\020\n\010position\030\002 \002(\r\022\026\n\016fragment_index",
-      "\030\003 \002(\r\"g\n\021SequenceVariation\022\014\n\004from\030\002 \002(" +
-      "\t\022\n\n\002to\030\001 \002(\t\022\020\n\010position\030\003 \002(\r\022\022\n\nread_" +
-      "index\030\005 \002(\r\022\022\n\nto_quality\030\004 \001(\014\"\215\004\n\017Alig" +
-      "nmentHeader\022\"\n\032smallest_split_query_inde" +
-      "x\030\t \001(\r\022!\n\031largest_split_query_index\030\013 \001" +
-      "(\r\0223\n\022query_name_mapping\030\001 \001(\0132\027.goby.Id" +
-      "entifierMapping\0224\n\023target_name_mapping\030\002" +
-      " \001(\0132\027.goby.IdentifierMapping\022\031\n\021number_" +
-      "of_queries\030\005 \001(\r\022\031\n\021number_of_targets\030\006 " +
-      "\001(\r\022\037\n\027number_of_aligned_reads\030\007 \001(\r\022\030\n\014",
-      "query_length\030\003 \003(\rB\002\030\001\022\035\n\025constant_query" +
-      "_length\030\n \001(\r\022\025\n\rtarget_length\030\010 \003(\r\022\016\n\006" +
-      "sorted\030\r \001(\010\022\017\n\007indexed\030\016 \001(\010\022\'\n\037query_l" +
-      "engths_stored_in_entries\030\017 \001(\010\022\024\n\014aligne" +
-      "r_name\030\021 \001(\t\022\027\n\017aligner_version\030\022 \001(\t\022\017\n" +
-      "\007version\030\031 \001(\t\022\027\n\017sample_basename\030\036 \003(\t\"" +
-      ";\n\021IdentifierMapping\022&\n\010mappings\030\001 \003(\0132\024" +
-      ".goby.IdentifierInfo\"-\n\016IdentifierInfo\022\014" +
-      "\n\004name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"X\n\024Alignment" +
-      "TooManyHits\022\031\n\021aligner_threshold\030\002 \002(\r\022%",
-      "\n\004hits\030\001 \003(\0132\027.goby.AmbiguousLocation\"b\n" +
-      "\021AmbiguousLocation\022\023\n\013query_index\030\001 \002(\r\022" +
-      "\037\n\027at_least_number_of_hits\030\002 \002(\r\022\027\n\017leng" +
-      "th_of_match\030\003 \001(\r\"j\n\016AlignmentIndex\022#\n\027t" +
-      "arget_position_offsets\030\001 \003(\rB\002\020\001\022\023\n\007offs" +
-      "ets\030\002 \003(\004B\002\020\001\022\036\n\022absolute_positions\030\003 \003(" +
-      "\004B\002\020\001B\'\n#edu.cornell.med.icb.goby.alignm" +
-      "entsH\001"
+      "tEntry\022\026\n\016fragment_index\030\021 \001(\r\022C\n\036splice" +
+      "d_forward_alignment_link\030\022 \001(\0132\033.goby.Re" +
+      "latedAlignmentEntry\022D\n\037spliced_backward_" +
+      "alignment_link\030\026 \001(\0132\033.goby.RelatedAlign" +
+      "mentEntry\022\025\n\rspliced_flags\030\023 \001(\r\022\023\n\013inse" +
+      "rt_size\030\024 \001(\r\022\024\n\014sample_index\030\025 \001(\r\"W\n\025R",
+      "elatedAlignmentEntry\022\024\n\014target_index\030\001 \002" +
+      "(\r\022\020\n\010position\030\002 \002(\r\022\026\n\016fragment_index\030\003" +
+      " \002(\r\"g\n\021SequenceVariation\022\014\n\004from\030\002 \002(\t\022" +
+      "\n\n\002to\030\001 \002(\t\022\020\n\010position\030\003 \002(\r\022\022\n\nread_in" +
+      "dex\030\005 \002(\r\022\022\n\nto_quality\030\004 \001(\014\"\215\004\n\017Alignm" +
+      "entHeader\022\"\n\032smallest_split_query_index\030" +
+      "\t \001(\r\022!\n\031largest_split_query_index\030\013 \001(\r" +
+      "\0223\n\022query_name_mapping\030\001 \001(\0132\027.goby.Iden" +
+      "tifierMapping\0224\n\023target_name_mapping\030\002 \001" +
+      "(\0132\027.goby.IdentifierMapping\022\031\n\021number_of",
+      "_queries\030\005 \001(\r\022\031\n\021number_of_targets\030\006 \001(" +
+      "\r\022\037\n\027number_of_aligned_reads\030\007 \001(\r\022\030\n\014qu" +
+      "ery_length\030\003 \003(\rB\002\030\001\022\035\n\025constant_query_l" +
+      "ength\030\n \001(\r\022\025\n\rtarget_length\030\010 \003(\r\022\016\n\006so" +
+      "rted\030\r \001(\010\022\017\n\007indexed\030\016 \001(\010\022\'\n\037query_len" +
+      "gths_stored_in_entries\030\017 \001(\010\022\024\n\014aligner_" +
+      "name\030\021 \001(\t\022\027\n\017aligner_version\030\022 \001(\t\022\017\n\007v" +
+      "ersion\030\031 \001(\t\022\027\n\017sample_basename\030\036 \003(\t\";\n" +
+      "\021IdentifierMapping\022&\n\010mappings\030\001 \003(\0132\024.g" +
+      "oby.IdentifierInfo\"-\n\016IdentifierInfo\022\014\n\004",
+      "name\030\001 \002(\t\022\r\n\005index\030\002 \002(\r\"X\n\024AlignmentTo" +
+      "oManyHits\022\031\n\021aligner_threshold\030\002 \002(\r\022%\n\004" +
+      "hits\030\001 \003(\0132\027.goby.AmbiguousLocation\"b\n\021A" +
+      "mbiguousLocation\022\023\n\013query_index\030\001 \002(\r\022\037\n" +
+      "\027at_least_number_of_hits\030\002 \002(\r\022\027\n\017length" +
+      "_of_match\030\003 \001(\r\"j\n\016AlignmentIndex\022#\n\027tar" +
+      "get_position_offsets\030\001 \003(\rB\002\020\001\022\023\n\007offset" +
+      "s\030\002 \003(\004B\002\020\001\022\036\n\022absolute_positions\030\003 \003(\004B" +
+      "\002\020\001B\'\n#edu.cornell.med.icb.goby.alignmen" +
+      "tsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -8237,7 +8394,7 @@ public final class Alignments {
           internal_static_goby_AlignmentEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_goby_AlignmentEntry_descriptor,
-              new java.lang.String[] { "Multiplicity", "QueryIndex", "TargetIndex", "Position", "MatchingReverseStrand", "QueryPosition", "Score", "NumberOfMismatches", "NumberOfIndels", "QueryAlignedLength", "TargetAlignedLength", "SequenceVariations", "QueryLength", "MappingQuality", "PairFlags", "PairAlignmentLink", "FragmentIndex", "SplicedAlignmentLink", "SplicedFlags", "InsertSize", "SampleIndex", },
+              new java.lang.String[] { "Multiplicity", "QueryIndex", "TargetIndex", "Position", "MatchingReverseStrand", "QueryPosition", "Score", "NumberOfMismatches", "NumberOfIndels", "QueryAlignedLength", "TargetAlignedLength", "SequenceVariations", "QueryLength", "MappingQuality", "PairFlags", "PairAlignmentLink", "FragmentIndex", "SplicedForwardAlignmentLink", "SplicedBackwardAlignmentLink", "SplicedFlags", "InsertSize", "SampleIndex", },
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry.class,
               edu.cornell.med.icb.goby.alignments.Alignments.AlignmentEntry.Builder.class);
           internal_static_goby_RelatedAlignmentEntry_descriptor =

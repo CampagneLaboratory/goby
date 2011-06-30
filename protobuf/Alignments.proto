@@ -125,10 +125,19 @@ message AlignmentEntry {
   /* Index of the read fragment from which this alignment was obtained. */
   optional uint32 fragment_index=17;
 
-   /* If a read spans exon-exon junctions some aligners (e.g., GSNAP) will output two alignment entries, one for each
-      matching part of the read, and link these entries with spliced_alignment_links (bi-directional).
+   /* If a read spans exon-exon junctions some aligners (e.g., GSNAP) will output two or more
+      alignment entries, one for each matching part of the read, and link these entries with
+      spliced_alignment_links. The field spliced_forward_alignment_link points to the next
+      AlignmentEntry in the chain of spliced alignments.
     */
-  optional RelatedAlignmentEntry spliced_alignment_link=18;
+  optional RelatedAlignmentEntry spliced_forward_alignment_link=18;
+
+   /* If a read spans exon-exon junctions some aligners (e.g., GSNAP) will output two or more
+      alignment entries, one for each matching part of the read, and link these entries with
+      spliced_alignment_links. The field spliced_backward_alignment_link points to the previous
+      AlignmentEntry in the chain of spliced alignments.
+    */
+  optional RelatedAlignmentEntry spliced_backward_alignment_link=22;
 
   /*
      If a read spans exon-exon junctions some aligners (e.g., GSNAP) will output two alignment entries, one for each

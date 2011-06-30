@@ -309,13 +309,21 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 fragment_index() const;
   inline void set_fragment_index(::google::protobuf::uint32 value);
   
-  // optional .goby.RelatedAlignmentEntry spliced_alignment_link = 18;
-  inline bool has_spliced_alignment_link() const;
-  inline void clear_spliced_alignment_link();
-  static const int kSplicedAlignmentLinkFieldNumber = 18;
-  inline const ::goby::RelatedAlignmentEntry& spliced_alignment_link() const;
-  inline ::goby::RelatedAlignmentEntry* mutable_spliced_alignment_link();
-  inline ::goby::RelatedAlignmentEntry* release_spliced_alignment_link();
+  // optional .goby.RelatedAlignmentEntry spliced_forward_alignment_link = 18;
+  inline bool has_spliced_forward_alignment_link() const;
+  inline void clear_spliced_forward_alignment_link();
+  static const int kSplicedForwardAlignmentLinkFieldNumber = 18;
+  inline const ::goby::RelatedAlignmentEntry& spliced_forward_alignment_link() const;
+  inline ::goby::RelatedAlignmentEntry* mutable_spliced_forward_alignment_link();
+  inline ::goby::RelatedAlignmentEntry* release_spliced_forward_alignment_link();
+  
+  // optional .goby.RelatedAlignmentEntry spliced_backward_alignment_link = 22;
+  inline bool has_spliced_backward_alignment_link() const;
+  inline void clear_spliced_backward_alignment_link();
+  static const int kSplicedBackwardAlignmentLinkFieldNumber = 22;
+  inline const ::goby::RelatedAlignmentEntry& spliced_backward_alignment_link() const;
+  inline ::goby::RelatedAlignmentEntry* mutable_spliced_backward_alignment_link();
+  inline ::goby::RelatedAlignmentEntry* release_spliced_backward_alignment_link();
   
   // optional uint32 spliced_flags = 19;
   inline bool has_spliced_flags() const;
@@ -372,8 +380,10 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline void clear_has_pair_alignment_link();
   inline void set_has_fragment_index();
   inline void clear_has_fragment_index();
-  inline void set_has_spliced_alignment_link();
-  inline void clear_has_spliced_alignment_link();
+  inline void set_has_spliced_forward_alignment_link();
+  inline void clear_has_spliced_forward_alignment_link();
+  inline void set_has_spliced_backward_alignment_link();
+  inline void clear_has_spliced_backward_alignment_link();
   inline void set_has_spliced_flags();
   inline void clear_has_spliced_flags();
   inline void set_has_insert_size();
@@ -399,14 +409,15 @@ class AlignmentEntry : public ::google::protobuf::Message {
   ::google::protobuf::int32 mapping_quality_;
   ::google::protobuf::uint32 pair_flags_;
   ::goby::RelatedAlignmentEntry* pair_alignment_link_;
-  ::goby::RelatedAlignmentEntry* spliced_alignment_link_;
+  ::goby::RelatedAlignmentEntry* spliced_forward_alignment_link_;
   ::google::protobuf::uint32 fragment_index_;
   ::google::protobuf::uint32 spliced_flags_;
+  ::goby::RelatedAlignmentEntry* spliced_backward_alignment_link_;
   ::google::protobuf::uint32 insert_size_;
   ::google::protobuf::uint32 sample_index_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(21 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(22 + 31) / 32];
   
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
@@ -1832,44 +1843,73 @@ inline void AlignmentEntry::set_fragment_index(::google::protobuf::uint32 value)
   fragment_index_ = value;
 }
 
-// optional .goby.RelatedAlignmentEntry spliced_alignment_link = 18;
-inline bool AlignmentEntry::has_spliced_alignment_link() const {
+// optional .goby.RelatedAlignmentEntry spliced_forward_alignment_link = 18;
+inline bool AlignmentEntry::has_spliced_forward_alignment_link() const {
   return (_has_bits_[0] & 0x00020000u) != 0;
 }
-inline void AlignmentEntry::set_has_spliced_alignment_link() {
+inline void AlignmentEntry::set_has_spliced_forward_alignment_link() {
   _has_bits_[0] |= 0x00020000u;
 }
-inline void AlignmentEntry::clear_has_spliced_alignment_link() {
+inline void AlignmentEntry::clear_has_spliced_forward_alignment_link() {
   _has_bits_[0] &= ~0x00020000u;
 }
-inline void AlignmentEntry::clear_spliced_alignment_link() {
-  if (spliced_alignment_link_ != NULL) spliced_alignment_link_->::goby::RelatedAlignmentEntry::Clear();
-  clear_has_spliced_alignment_link();
+inline void AlignmentEntry::clear_spliced_forward_alignment_link() {
+  if (spliced_forward_alignment_link_ != NULL) spliced_forward_alignment_link_->::goby::RelatedAlignmentEntry::Clear();
+  clear_has_spliced_forward_alignment_link();
 }
-inline const ::goby::RelatedAlignmentEntry& AlignmentEntry::spliced_alignment_link() const {
-  return spliced_alignment_link_ != NULL ? *spliced_alignment_link_ : *default_instance_->spliced_alignment_link_;
+inline const ::goby::RelatedAlignmentEntry& AlignmentEntry::spliced_forward_alignment_link() const {
+  return spliced_forward_alignment_link_ != NULL ? *spliced_forward_alignment_link_ : *default_instance_->spliced_forward_alignment_link_;
 }
-inline ::goby::RelatedAlignmentEntry* AlignmentEntry::mutable_spliced_alignment_link() {
-  set_has_spliced_alignment_link();
-  if (spliced_alignment_link_ == NULL) spliced_alignment_link_ = new ::goby::RelatedAlignmentEntry;
-  return spliced_alignment_link_;
+inline ::goby::RelatedAlignmentEntry* AlignmentEntry::mutable_spliced_forward_alignment_link() {
+  set_has_spliced_forward_alignment_link();
+  if (spliced_forward_alignment_link_ == NULL) spliced_forward_alignment_link_ = new ::goby::RelatedAlignmentEntry;
+  return spliced_forward_alignment_link_;
 }
-inline ::goby::RelatedAlignmentEntry* AlignmentEntry::release_spliced_alignment_link() {
-  clear_has_spliced_alignment_link();
-  ::goby::RelatedAlignmentEntry* temp = spliced_alignment_link_;
-  spliced_alignment_link_ = NULL;
+inline ::goby::RelatedAlignmentEntry* AlignmentEntry::release_spliced_forward_alignment_link() {
+  clear_has_spliced_forward_alignment_link();
+  ::goby::RelatedAlignmentEntry* temp = spliced_forward_alignment_link_;
+  spliced_forward_alignment_link_ = NULL;
+  return temp;
+}
+
+// optional .goby.RelatedAlignmentEntry spliced_backward_alignment_link = 22;
+inline bool AlignmentEntry::has_spliced_backward_alignment_link() const {
+  return (_has_bits_[0] & 0x00040000u) != 0;
+}
+inline void AlignmentEntry::set_has_spliced_backward_alignment_link() {
+  _has_bits_[0] |= 0x00040000u;
+}
+inline void AlignmentEntry::clear_has_spliced_backward_alignment_link() {
+  _has_bits_[0] &= ~0x00040000u;
+}
+inline void AlignmentEntry::clear_spliced_backward_alignment_link() {
+  if (spliced_backward_alignment_link_ != NULL) spliced_backward_alignment_link_->::goby::RelatedAlignmentEntry::Clear();
+  clear_has_spliced_backward_alignment_link();
+}
+inline const ::goby::RelatedAlignmentEntry& AlignmentEntry::spliced_backward_alignment_link() const {
+  return spliced_backward_alignment_link_ != NULL ? *spliced_backward_alignment_link_ : *default_instance_->spliced_backward_alignment_link_;
+}
+inline ::goby::RelatedAlignmentEntry* AlignmentEntry::mutable_spliced_backward_alignment_link() {
+  set_has_spliced_backward_alignment_link();
+  if (spliced_backward_alignment_link_ == NULL) spliced_backward_alignment_link_ = new ::goby::RelatedAlignmentEntry;
+  return spliced_backward_alignment_link_;
+}
+inline ::goby::RelatedAlignmentEntry* AlignmentEntry::release_spliced_backward_alignment_link() {
+  clear_has_spliced_backward_alignment_link();
+  ::goby::RelatedAlignmentEntry* temp = spliced_backward_alignment_link_;
+  spliced_backward_alignment_link_ = NULL;
   return temp;
 }
 
 // optional uint32 spliced_flags = 19;
 inline bool AlignmentEntry::has_spliced_flags() const {
-  return (_has_bits_[0] & 0x00040000u) != 0;
+  return (_has_bits_[0] & 0x00080000u) != 0;
 }
 inline void AlignmentEntry::set_has_spliced_flags() {
-  _has_bits_[0] |= 0x00040000u;
+  _has_bits_[0] |= 0x00080000u;
 }
 inline void AlignmentEntry::clear_has_spliced_flags() {
-  _has_bits_[0] &= ~0x00040000u;
+  _has_bits_[0] &= ~0x00080000u;
 }
 inline void AlignmentEntry::clear_spliced_flags() {
   spliced_flags_ = 0u;
@@ -1885,13 +1925,13 @@ inline void AlignmentEntry::set_spliced_flags(::google::protobuf::uint32 value) 
 
 // optional uint32 insert_size = 20;
 inline bool AlignmentEntry::has_insert_size() const {
-  return (_has_bits_[0] & 0x00080000u) != 0;
+  return (_has_bits_[0] & 0x00100000u) != 0;
 }
 inline void AlignmentEntry::set_has_insert_size() {
-  _has_bits_[0] |= 0x00080000u;
+  _has_bits_[0] |= 0x00100000u;
 }
 inline void AlignmentEntry::clear_has_insert_size() {
-  _has_bits_[0] &= ~0x00080000u;
+  _has_bits_[0] &= ~0x00100000u;
 }
 inline void AlignmentEntry::clear_insert_size() {
   insert_size_ = 0u;
@@ -1907,13 +1947,13 @@ inline void AlignmentEntry::set_insert_size(::google::protobuf::uint32 value) {
 
 // optional uint32 sample_index = 21;
 inline bool AlignmentEntry::has_sample_index() const {
-  return (_has_bits_[0] & 0x00100000u) != 0;
+  return (_has_bits_[0] & 0x00200000u) != 0;
 }
 inline void AlignmentEntry::set_has_sample_index() {
-  _has_bits_[0] |= 0x00100000u;
+  _has_bits_[0] |= 0x00200000u;
 }
 inline void AlignmentEntry::clear_has_sample_index() {
-  _has_bits_[0] &= ~0x00100000u;
+  _has_bits_[0] &= ~0x00200000u;
 }
 inline void AlignmentEntry::clear_sample_index() {
   sample_index_ = 0u;

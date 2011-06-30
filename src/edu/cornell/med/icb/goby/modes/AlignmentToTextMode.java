@@ -161,7 +161,8 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                     case PLAIN:
                         outputStream.printf("%s\t%d\t" +
                                 "%s\t%s\t%s\t%s\t" +   // Pair
-                                "%s\t%s\t%s\t%s\t" +   // Splice
+                                "%s\t%s\t%s\t%s\t" +   // Splice Forward
+                                "%s\t%s\t%s\t%s\t" +   // Splice Backward
                                 "%s\t%d\t%d\t%d\t%g\t%d\t%d\t%s\t%d%n",
                                 hasReadIds ? readIds.getId(queryIndex) : queryIndex,
                                 alignmentEntry.hasFragmentIndex() ? alignmentEntry.getFragmentIndex() : 0,
@@ -170,9 +171,12 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                                 alignmentEntry.hasPairAlignmentLink() ? getReferenceId(alignmentEntry.getPairAlignmentLink().getTargetIndex()) : "",
                                 alignmentEntry.hasPairAlignmentLink() ? alignmentEntry.getPairAlignmentLink().getPosition() : "",
                                 alignmentEntry.hasSplicedFlags() ? zeroPad(Integer.toBinaryString(alignmentEntry.getSplicedFlags()), 9) : "",
-                                alignmentEntry.hasSplicedAlignmentLink() ? alignmentEntry.getSplicedAlignmentLink().getFragmentIndex() : "",
-                                alignmentEntry.hasSplicedAlignmentLink() ? getReferenceId(alignmentEntry.getSplicedAlignmentLink().getTargetIndex()) : "",
-                                alignmentEntry.hasSplicedAlignmentLink() ? alignmentEntry.getSplicedAlignmentLink().getPosition() : "",
+                                alignmentEntry.hasSplicedForwardAlignmentLink() ? alignmentEntry.getSplicedForwardAlignmentLink().getFragmentIndex() : "",
+                                alignmentEntry.hasSplicedForwardAlignmentLink() ? getReferenceId(alignmentEntry.getSplicedForwardAlignmentLink().getTargetIndex()) : "",
+                                alignmentEntry.hasSplicedForwardAlignmentLink() ? alignmentEntry.getSplicedForwardAlignmentLink().getPosition() : "",
+                                alignmentEntry.hasSplicedBackwardAlignmentLink() ? alignmentEntry.getSplicedBackwardAlignmentLink().getFragmentIndex() : "",
+                                alignmentEntry.hasSplicedBackwardAlignmentLink() ? getReferenceId(alignmentEntry.getSplicedBackwardAlignmentLink().getTargetIndex()) : "",
+                                alignmentEntry.hasSplicedBackwardAlignmentLink() ? alignmentEntry.getSplicedBackwardAlignmentLink().getPosition() : "",
                                 getReferenceId(alignmentEntry.getTargetIndex()),
                                 referenceLength,
                                 alignmentEntry.getNumberOfIndels(),
@@ -244,7 +248,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
 
     private void printHeader(PrintStream outputStream) {
         headerWritten = true;
-        outputStream.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n",
+        outputStream.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n",
                 "queryIndex",
                 "queryFragmentIndex",
                 "pairFlags",
@@ -252,9 +256,12 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 "pairTarget",
                 "pairPosition",
                 "spliceFlags",
-                "spliceFragmentIndex",
-                "spliceTarget",
-                "splicePosition",
+                "spliceForwardFragmentIndex",
+                "spliceForwardTarget",
+                "spliceForwardPosition",
+                "spliceBackwardFragmentIndex",
+                "spliceBackwardTarget",
+                "spliceBackwardPosition",
                 "targetIdentifier",
                 "referenceLength",
                 "numIndels",
