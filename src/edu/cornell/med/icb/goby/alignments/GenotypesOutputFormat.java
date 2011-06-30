@@ -27,6 +27,7 @@ import it.unimi.dsi.fastutil.chars.CharArraySet;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ReferenceSet;
 import it.unimi.dsi.lang.MutableString;
 
 import org.apache.log4j.Logger;
@@ -57,6 +58,8 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     private int goodBaseCountFieldIndex;
     private String[] singleton = new String[1];
     private int indelFlagFieldIndex;
+    private boolean siteObserved;
+
 
     public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
@@ -91,7 +94,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     }
 
     IntArrayList decreasingCounts = new IntArrayList();
-    CharArraySet alleleSet = new CharArraySet();
+    ObjectArraySet<String> alleleSet = new ObjectArraySet<String>();
     MutableString genotypeBuffer = new MutableString();
 
     @Override
@@ -110,11 +113,13 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
         statsWriter.setChromosome(currentReferenceId);
 
         statsWriter.setPosition(position);
-
+        if (position == 1179753) {
+            System.out.println("STOP");
+        }
         writeGenotypes(statsWriter, sampleCounts);
 
         writeZygozity(sampleCounts);
-        if (alleleSet.size() > 0) {
+        if (!alleleSet.isEmpty()) {
             // Do not write record if alleleSet is empty, IGV VCF track cannot handle that.
             statsWriter.writeRecord();
         }
@@ -152,14 +157,20 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
         }
     }
 
+    ObjectArraySet<String> referenceSet = new ObjectArraySet<String>();
+
     public void writeGenotypes(VCFWriter statsWriter, SampleCountInfo[] sampleCounts) {
         boolean referenceAlleleSetForIndel = false;
+        siteObserved = false;
+        boolean siteHasIndel = false;
+        referenceSet.clear();
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
 
             alleleSet.clear();
             SampleCountInfo sci = sampleCounts[sampleIndex];
             int totalCount = 0;
-            for (int sampleCount : sci.counts) {
+            for (int genotypeIndex = 0; genotypeIndex < sci.getGenotypeMaxIndex(); ++genotypeIndex) {
+                final int sampleCount = sci.getGenotypeCount(genotypeIndex);
                 totalCount += sampleCount;
             }
             //  System.out.printf("totalCount %d failedCount %d%n",totalCount,sci.failedCount);
@@ -167,67 +178,42 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
             statsWriter.setSampleValue(failBaseCountFieldIndex, sampleIndex, sci.failedCount);
 
             int baseIndex = 0;
-            int genotypeCount = 0;
+            int altGenotypeCount = 0;
             genotypeBuffer.setLength(0);
-            final char refBase = sci.referenceBase;
-            String referenceAllele = Character.toString(refBase);
-            boolean siteObserved = false;
-            // add indel genotypes:
-            ObjectArraySet<String> indelReferenceSet = null;
-            if (sci.hasIndels()) {
-                indelReferenceSet = new ObjectArraySet<String>();
-                for (final EquivalentIndelRegion eir : sci.getEquivalentIndelRegions()) {
-                    indelReferenceSet.add(eir.fromInContext());
-                    statsWriter.addAlternateAllele(eir.toInContext());
-                    genotypeBuffer.append(eir.toInContext());
+            final MutableString baseCountString = new MutableString();
+            for (int genotypeIndex = 0; genotypeIndex < sci.getGenotypeMaxIndex(); ++genotypeIndex) {
+                final int sampleCount = sci.getGenotypeCount(genotypeIndex);
+                final String genotype = sci.getGenotypeString(genotypeIndex);
+
+                if (sampleCount > 0) {
+                    siteObserved = true;
+                    alleleSet.add(genotype);
+
+                    if (!sci.isReferenceGenotype(genotypeIndex)) {
+                        statsWriter.addAlternateAllele(genotype);
+                        altGenotypeCount++;
+
+                    } else {
+                        referenceSet.add(genotype);
+                    }
+                    genotypeBuffer.append(genotype);
                     genotypeBuffer.append('/');
-                    if (eir.frequency >= 1) {
-
-                        siteObserved = true;
+                    if (sci.isIndel(genotypeIndex)) {
+                        siteHasIndel = true;
                     }
                 }
-            } else {
+                baseCountString.append(genotype);
+                baseCountString.append('=');
+                baseCountString.append(Integer.toString(sampleCount));
+                baseCountString.append(',');
 
-                for (final int count : sci.counts) {
-                    final char base = sci.base(baseIndex);
-                    if (count > 0) {
-                        siteObserved = true;
-                        alleleSet.add(base);
-                        if (base != sci.referenceBase) {
-                            statsWriter.addAlternateAllele(Character.toString(base));
-                            genotypeBuffer.append(String.format("%c/", base));
-                            genotypeCount++;
-
-                        } else {
-                            referenceAllele = Character.toString(sci.referenceBase);
-                            genotypeBuffer.append(String.format("%c/", base));
-                        }
-                    }
-                    baseIndex++;
-                }
             }
+
             if (alleleSet.size() == 1) {
                 // when homozygous genotype 0/ write 0/0/ (last / will be removed when length is adjusted)
                 genotypeBuffer.append(genotypeBuffer.copy());
             }
-            MutableString baseCountString = new MutableString();
-            baseIndex = 0;
-            for (int count : sci.counts) {
-                final char base = sci.base(baseIndex);
-                baseCountString.append(base);
-                baseCountString.append('=');
-                baseCountString.append(Integer.toString(count));
-                baseIndex++;
-                baseCountString.append(',');
-            }
-            if (sci.hasIndels()) {
-                for (final EquivalentIndelRegion eir : sci.getEquivalentIndelRegions()) {
-                    baseCountString.append(eir.toInContext());
-                    baseCountString.append('=');
-                    baseCountString.append(Integer.toString(eir.frequency));
-                    baseCountString.append(',');
-                }
-            }
+
             baseCountString.setLength(baseCountString.length() - 1);
             statsWriter.setSampleValue(baseCountFieldIndex, sampleIndex, baseCountString);
 
@@ -237,38 +223,38 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                     // trim the trailing coma:
                     genotypeBuffer.setLength(genotypeBuffer.length() - 1);
                 }
-                if (sci.hasIndels()) {
-                    if (indelReferenceSet != null) {
-                        if (indelReferenceSet.size() == 1) {
-                            statsWriter.setReferenceAllele(indelReferenceSet.toArray(singleton)[0]);
-                            referenceAlleleSetForIndel = true;
-                        } else {
-                            LOG.error(String.format("Observed multiple indel references at position %d: \n %s %n", statsWriter.getPosition(),
-                                    indelReferenceSet));
-                        }
+                if (referenceSet.size() <= 1) {
+                    if (referenceSet.isEmpty()) {
+                        statsWriter.setReferenceAllele(sci.getReferenceGenotype());
+                    } else {
+                        statsWriter.setReferenceAllele(referenceSet.toArray(singleton)[0]);
                     }
+
                 } else {
-                    if (!referenceAlleleSetForIndel) {
-                        // do not overwrite the reference allele with a SNP if an indel has been observed at this location:
-                        statsWriter.setReferenceAllele(referenceAllele);
-                    }
+                    LOG.error(String.format("Observed multiple indel references at position %d: \n %s %n", statsWriter.getPosition(),
+                            referenceSet));
                 }
                 statsWriter.setSampleValue(genotypeFieldIndex, sampleIndex, statsWriter.codeGenotype(genotypeBuffer.toString()));
 
             } else {
-                statsWriter.setSampleValue(genotypeFieldIndex, sampleIndex, "./.");
 
+
+                statsWriter.setSampleValue(genotypeFieldIndex, sampleIndex, "./.");
             }
-            statsWriter.setFlag(indelFlagFieldIndex, referenceAlleleSetForIndel);
+
+
         }
+        statsWriter.setFlag(indelFlagFieldIndex, siteHasIndel);
     }
+
 
     public void close() {
         statsWriter.close();
     }
 
 
-    private void fillVariantCountArrays(SampleCountInfo[] sampleCounts) {
+    private void fillVariantCountArrays
+            (SampleCountInfo[] sampleCounts) {
 
 
         for (SampleCountInfo csi : sampleCounts) {

@@ -143,8 +143,10 @@ public class EquivalentIndelRegionCalculator {
 
         } else {
             // construct the read sequence in the deletion region of the eir:
+            final int length = from.length();
             to.append(GAPS.subSequence(0, indelSize));
-            to.append(from.subSequence(indelSize, from.length()));
+            to.append(from.subSequence(Math.min(indelSize, length), length));
+
         }
         result.from = from.toString();
         result.to = to.toString();
@@ -166,7 +168,7 @@ public class EquivalentIndelRegionCalculator {
         final int maxRefLength = genome.getLength(referenceIndex);
 
         result.flankRight = flankingRight.toString();
- //              debug("flanks: ", result);
+        //              debug("flanks: ", result);
         return result;
 
     }

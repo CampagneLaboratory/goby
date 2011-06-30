@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.lang.MutableString;
+import sun.net.idn.StringPrep;
 
 import javax.swing.*;
 import java.util.Collections;
@@ -83,11 +84,18 @@ public class SampleCountInfo {
         if (indels == null) {
             indels = new ObjectArrayList<EquivalentIndelRegion>();
         }
+        int previousStartPosition = -1;
         for (final EquivalentIndelRegion prevIndel : indels) {
             if (prevIndel.equals(indel)) {
                 prevIndel.frequency += 1;
             }
+            previousStartPosition = prevIndel.startPosition;
+
         }
+        if (previousStartPosition != -1) {
+            assert indel.startPosition == previousStartPosition : "You can only add indels with the same start position in any given SampleCountInfo ";
+        }
+
         indels.add(indel);
     }
 
@@ -197,7 +205,7 @@ public class SampleCountInfo {
      * @return True or false.
      */
     public boolean hasIndels() {
-        return !(indels == null);
+        return !(indels == null || indels.isEmpty());
     }
 
     public final char base(final int baseIndex) {
@@ -248,4 +256,75 @@ public class SampleCountInfo {
         }
         throw new IllegalArgumentException("The genotype index argument was out of range: " + genotypeIndex);
     }
+
+
+    public final String getGenotypeString(final int genotypeIndex) {
+        if (genotypeIndex < BASE_MAX_INDEX) {
+
+            return STRING[genotypeIndex];
+        } else {
+            if (hasIndels()) {
+                final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
+                return indels.get(indelIndex).toInContext();
+
+            }
+        }
+        throw new IllegalArgumentException("The genotype index argument was out of range: " + genotypeIndex);
+    }
+
+
+    public boolean isReferenceGenotype(final int genotypeIndex) {
+        if (genotypeIndex < BASE_MAX_INDEX) {
+
+            return base(genotypeIndex) == referenceBase;
+        } else {
+            if (hasIndels()) {
+                final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
+                final EquivalentIndelRegion equivalentIndelRegion = indels.get(indelIndex);
+                return equivalentIndelRegion.to.equals(equivalentIndelRegion.from);
+            }
+        }
+        throw new IllegalArgumentException("The genotype index argument was out of range: " + genotypeIndex);
+    }
+
+    public boolean isIndel(int genotypeIndex) {
+        if (genotypeIndex < BASE_MAX_INDEX) {
+
+            return false;
+        } else {
+            return hasIndels()? genotypeIndex-BASE_MAX_INDEX<indels.size():false;
+        }
+
+    }
+
+    public String getReferenceGenotype() {
+        if (hasIndels()) {
+            return indels.get(0).fromInContext();
+        } else {
+            return Character.toString(referenceBase);
+
+        }
+    }
+
+    /**
+     * Remove all previously recorded indels.
+     */
+    public void clearIndels() {
+        if (indels != null) {
+            indels.clear();
+        }
+    }
+
+    static final String A_BASE = "A";
+    static final String C_BASE = "C";
+    static final String T_BASE = "T";
+    static final String G_BASE = "G";
+    static final String N_BASE = "N";
+    static final String[] STRING = {A_BASE, C_BASE, T_BASE, G_BASE,N_BASE};
+
+    public final String baseString(final int baseIndex) {
+        return STRING[baseIndex];
+    }
+
+
 }

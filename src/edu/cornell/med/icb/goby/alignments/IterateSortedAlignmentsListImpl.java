@@ -20,10 +20,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import edu.cornell.med.icb.goby.alignments.processors.ObservedIndel;
-import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.log4j.Logger;
 
 /**

@@ -30,7 +30,6 @@ import edu.cornell.med.icb.goby.util.Timer;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.logging.ProgressLogger;
@@ -307,7 +306,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         int lastReferenceIndex = -1;
 
         @Override
-        public void processPositions(int referenceIndex, int position,  DiscoverVariantPositionData positionBaseInfos) {
+        public void processPositions(int referenceIndex, int position, DiscoverVariantPositionData positionBaseInfos) {
             try {
                 if (referenceIndex != lastReferenceIndex) {
                     if (writer != null) {

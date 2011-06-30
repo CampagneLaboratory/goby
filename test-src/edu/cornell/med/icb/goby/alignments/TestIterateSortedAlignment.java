@@ -19,7 +19,6 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.ints.*;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;

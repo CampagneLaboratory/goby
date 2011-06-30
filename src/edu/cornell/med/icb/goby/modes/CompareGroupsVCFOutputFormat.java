@@ -223,8 +223,6 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         int totalCount = 0;
         int maxGenotypeIndexAcrossSamples = 0;
 
-        // make genotypes comparable across all samples:
-        SampleCountInfo.alignIndels(sampleCounts);
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             final SampleCountInfo sci = sampleCounts[sampleIndex];

@@ -91,4 +91,8 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
     public boolean hasCandidateIndels() {
         return candidateIndels != null && !candidateIndels.isEmpty();
     }
+
+    public char getReferenceBase() {
+       return get(0).from;
+    }
 }

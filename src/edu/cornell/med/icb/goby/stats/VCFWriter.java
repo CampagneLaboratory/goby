@@ -108,7 +108,7 @@ public class VCFWriter {
     }
 
     public void addAlternateAllele(String allele) {
-        if (!altAlleles.contains(allele) && !includedIn(allele, refAlleles)) {
+        if (!altAlleles.contains(allele) ) {
             altAlleles.add(allele);
         }
     }
@@ -436,7 +436,7 @@ public class VCFWriter {
             }
             if (alleleFound) continue;
             for (String alt : altAlleles) {
-                if (alt.equals(allele)) {
+                if (includedIn(allele, alt)) {
                     genotypeIndexList.add(alleleIndex);
                     alleleFound = true;
 
@@ -444,6 +444,7 @@ public class VCFWriter {
                 }
                 alleleIndex++;
             }
+
             if (!alleleFound) {
                 System.out.printf("allele: %s ref: %s alt: %s", allele, refAlleles.toString(), altAlleles.toString());
                 throw new IllegalArgumentException(String.format("Allele %s was not found in REF or ALT", allele));

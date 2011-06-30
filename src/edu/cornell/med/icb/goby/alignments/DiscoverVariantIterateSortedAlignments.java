@@ -143,20 +143,44 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                              final int sampleIndex) {
 
         final ObservedIndel indel = new ObservedIndel(startPosition, from, to);
-        equivalentIndelRegionCalculator.setFlankLeftSize(1); // VCF output requires one base before the indel
+        int flankLeftSize = 1;
+        equivalentIndelRegionCalculator.setFlankLeftSize(flankLeftSize); // VCF output requires one base before the indel
         equivalentIndelRegionCalculator.setFlankRightSize(0);
         final EquivalentIndelRegion indelCandidateRegion = equivalentIndelRegionCalculator.determine(referenceIndex, indel);
-        // substract -1 to yield keyPos: the position of the first base in the indel (includes the 1 base left flank, as
+        // subtracts -1 to yield keyPos: the position of the first base in the indel (includes the 1 base left flank, as
         // per VCF spec.)
-        final int keyPos = indelCandidateRegion.startPosition -1;
+        final int keyPos = indelCandidateRegion.startPosition - flankLeftSize;
+        // assert genome.get(referenceIndex, keyPos)== indelCandidateRegion.fromInContext().charAt(0) :
+        //        "first base of context must match genome at key position";
 
+       /*
+        {
+            MutableString bases = new MutableString();
+            genome.getRange(referenceIndex, keyPos, 10, bases);
+            System.out.println(bases);
+            System.out.println(indelCandidateRegion);
+        }*/
         DiscoverVariantPositionData positionBaseInfos = positionToBases.get(keyPos);
-       // System.out.printf("Observing indel at position %d %n", keyPos);
-       if (positionBaseInfos == null) {
+      //  System.out.printf("Observing indel at position %d %n", keyPos);
+        if (positionBaseInfos == null) {
             positionBaseInfos = new DiscoverVariantPositionData(keyPos);
             positionToBases.put(keyPos, positionBaseInfos);
         }
+
         positionBaseInfos.observeCandidateIndel(indelCandidateRegion);
+        //printBasesAround(keyPos, positionToBases);
+
+
+    }
+
+    private void printBasesAround(int keyPos, Int2ObjectMap<DiscoverVariantPositionData> positionBaseInfos) {
+        System.out.println("keyPos=" + keyPos);
+        for (int i = keyPos - 10; i < keyPos + 10; i++) {
+            DiscoverVariantPositionData list = positionBaseInfos.get(i);
+            System.out.printf("%c", list != null ? getReferenceAllele(genome, i, list) : ' ');
+
+        }
+        System.out.println();
     }
 
     /**
@@ -164,9 +188,9 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
      * constraint is added to avoid allocating data structures inside this method, because it is usually called in a loop
      * over all the positions of a genome, and the data structures can be reused, saving garbage collection time.
      *
-     * @param referenceIndex Index of the reference sequence where these bases align.
-     * @param position       position where the bases are observed
-     * @param list           list of bases observed at position.
+     * @param referenceIndex  Index of the reference sequence where these bases align.
+     * @param position        position where the bases are observed
+     * @param list            list of bases observed at position.
      */
     @Override
     public void processPositions(final int referenceIndex,
@@ -192,6 +216,7 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
             sampleCounts[sampleIndex].varCount = 0;
             sampleCounts[sampleIndex].refCount = 0;
             sampleCounts[sampleIndex].failedCount = 0;
+            sampleCounts[sampleIndex].clearIndels();
         }
 
         if (list != null) {
@@ -225,11 +250,11 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                     incrementBaseCounter(info.to, sampleIndex);
                 }
             }
-            boolean hasIndel=false;
+            boolean hasIndel = false;
             if (list.getIndels() != null) {
                 for (final EquivalentIndelRegion indel : list.getIndels()) {
                     sampleCounts[indel.sampleIndex].addIndel(indel);
-                                   hasIndel=true;
+                    hasIndel = true;
                 }
             }
 
@@ -250,6 +275,12 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                         final CountFixer fixer = new CountFixer();
                         fixer.fix(list, sampleCounts, filteredList);
                     }
+                   /* if (hasIndel) {
+                        printBasesAround(position, positionToBases);
+                    }*/
+                    // make genotypes comparable across all samples:
+                    SampleCountInfo.alignIndels(sampleCounts);
+
                     format.writeRecord(this, sampleCounts, referenceIndex, position, list, groupIndexA, groupIndexB);
                 }
 
