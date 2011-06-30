@@ -460,17 +460,30 @@ extern "C" {
         debug(fprintf(stderr,"gobyAlEntry_setSplicedFlags=%u\n", value));
         writerHelper->alignmentEntry->set_spliced_flags(value);
     }
-    void gobyAlEntry_setSplicedTargetIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
-        debug(fprintf(stderr,"gobyAlEntry_setSplicedTargetIndex=%u\n", value));
-        writerHelper->alignmentEntry->mutable_spliced_alignment_link()->set_target_index(value);
+    void gobyAlEntry_setSplicedForwardTargetIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setSplicedForwardTargetIndex=%u\n", value));
+        writerHelper->alignmentEntry->mutable_spliced_forward_alignment_link()->set_target_index(value);
     }
-    void gobyAlEntry_setSplicedFragmentIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
-        debug(fprintf(stderr,"gobyAlEntry_setSplicedFragmentIndex=%u\n", value));
-        writerHelper->alignmentEntry->mutable_spliced_alignment_link()->set_fragment_index(value);
+    void gobyAlEntry_setSplicedForwardFragmentIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setSplicedForwardFragmentIndex=%u\n", value));
+        writerHelper->alignmentEntry->mutable_spliced_forward_alignment_link()->set_fragment_index(value);
     }
-    void gobyAlEntry_setSplicedPosition(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
-        debug(fprintf(stderr,"gobyAlEntry_setSplicedPosition=%u\n", value));
-        writerHelper->alignmentEntry->mutable_spliced_alignment_link()->set_position(value);
+    void gobyAlEntry_setSplicedForwardPosition(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setSplicedForwardPosition=%u\n", value));
+        writerHelper->alignmentEntry->mutable_spliced_forward_alignment_link()->set_position(value);
+    }
+
+    void gobyAlEntry_setSplicedBackwardTargetIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setSplicedBackwardTargetIndex=%u\n", value));
+        writerHelper->alignmentEntry->mutable_spliced_backward_alignment_link()->set_target_index(value);
+    }
+    void gobyAlEntry_setSplicedBackwardFragmentIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setSplicedBackwardFragmentIndex=%u\n", value));
+        writerHelper->alignmentEntry->mutable_spliced_backward_alignment_link()->set_fragment_index(value);
+    }
+    void gobyAlEntry_setSplicedBackwardPosition(CAlignmentsWriterHelper *writerHelper, unsigned int value) {
+        debug(fprintf(stderr,"gobyAlEntry_setSplicedBackwardPosition=%u\n", value));
+        writerHelper->alignmentEntry->mutable_spliced_backward_alignment_link()->set_position(value);
     }
 
     /**

@@ -89,9 +89,12 @@ extern "C" {
 
     // These are only used when dealing with a Splice
     void gobyAlEntry_setSplicedFlags(CAlignmentsWriterHelper *writerHelper, unsigned int value);
-    void gobyAlEntry_setSplicedTargetIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value);
-    void gobyAlEntry_setSplicedFragmentIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value);
-    void gobyAlEntry_setSplicedPosition(CAlignmentsWriterHelper *writerHelper, unsigned int value);
+    void gobyAlEntry_setSplicedForwardTargetIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value);
+    void gobyAlEntry_setSplicedForwardFragmentIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value);
+    void gobyAlEntry_setSplicedForwardPosition(CAlignmentsWriterHelper *writerHelper, unsigned int value);
+    void gobyAlEntry_setSplicedBackwardTargetIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value);
+    void gobyAlEntry_setSplicedBackwardFragmentIndex(CAlignmentsWriterHelper *writerHelper, unsigned int value);
+    void gobyAlEntry_setSplicedBackwardPosition(CAlignmentsWriterHelper *writerHelper, unsigned int value);
 
     void gobyAlEntry_appendTooManyHits(CAlignmentsWriterHelper *writerHelper, unsigned int queryIndex, unsigned int alignedLength, int numberOfHits);
     void gobyAlEntry_addSequenceVariation(CAlignmentsWriterHelper *writerHelper, unsigned int readIndex, unsigned int refPosition, char refChar, char readChar, int hasQualCharInt /* bool */, char readQualChar);
