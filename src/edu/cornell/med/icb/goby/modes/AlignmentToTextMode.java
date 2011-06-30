@@ -162,7 +162,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                         outputStream.printf("%s\t%d\t" +
                                 "%s\t%s\t%s\t%s\t" +   // Pair
                                 "%s\t%s\t%s\t%s\t" +   // Splice Forward
-                                "%s\t%s\t%s\t%s\t" +   // Splice Backward
+                                "%s\t%s\t%s\t" +   // Splice Backward
                                 "%s\t%d\t%d\t%d\t%g\t%d\t%d\t%s\t%d%n",
                                 hasReadIds ? readIds.getId(queryIndex) : queryIndex,
                                 alignmentEntry.hasFragmentIndex() ? alignmentEntry.getFragmentIndex() : 0,
