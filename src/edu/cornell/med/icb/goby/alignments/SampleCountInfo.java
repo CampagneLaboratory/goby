@@ -19,16 +19,12 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
-import edu.rit.mp.buf.ObjectArrayBuf;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.lang.MutableString;
-import sun.net.idn.StringPrep;
 
-import javax.swing.*;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -292,7 +288,7 @@ public class SampleCountInfo {
 
             return false;
         } else {
-            return hasIndels()? genotypeIndex-BASE_MAX_INDEX<indels.size():false;
+            return hasIndels() ? genotypeIndex - BASE_MAX_INDEX < indels.size() : false;
         }
 
     }
@@ -320,7 +316,7 @@ public class SampleCountInfo {
     static final String T_BASE = "T";
     static final String G_BASE = "G";
     static final String N_BASE = "N";
-    static final String[] STRING = {A_BASE, C_BASE, T_BASE, G_BASE,N_BASE};
+    static final String[] STRING = {A_BASE, C_BASE, T_BASE, G_BASE, N_BASE};
 
     public final String baseString(final int baseIndex) {
         return STRING[baseIndex];
