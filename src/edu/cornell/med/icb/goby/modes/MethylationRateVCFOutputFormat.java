@@ -38,6 +38,7 @@ import java.util.Arrays;
 /**
  * A Variant Call Format output to estimate methylation rates for a set of samples and find methylation rate differences
  * between group.
+ * TODO evaluate if supporting indel genotypes would make any difference.
  *
  * @author Fabien Campagne
  *         Date: April 4 2011
@@ -80,27 +81,27 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
     private int biomartFieldIndex;
     private GenotypesOutputFormat genotypeFormatter;
     private int depthFieldIndex;
-    private int methylatedCCountsIndex[];
-    private int notMethylatedCCountsIndex[];
+    private int[] methylatedCCountsIndex;
+    private int[] notMethylatedCCountsIndex;
     private int eventCountAtSite;
     private int methylationRateFieldIndex;
     private char strandAtSite;
     private int strandFieldIndex;
 
-    public void setMinimumEventThreshold(int minimumEventThreshold) {
+    public void setMinimumEventThreshold(final int minimumEventThreshold) {
         this.minimumEventThreshold = minimumEventThreshold;
     }
 
     private int minimumEventThreshold = 1;
 
 
-    public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
+    public void defineColumns(final PrintWriter writer, final DiscoverSequenceVariantsMode mode) {
         deAnalyzer = mode.getDiffExpAnalyzer();
         deCalculator = mode.getDiffExpCalculator();
         groups = mode.getGroups();
         samples = mode.getSamples();
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
-        ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
+        final ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
         this.statWriter = new VCFWriter(writer);
         try {
             //activate R only if we need it:
@@ -109,6 +110,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         } catch (java.lang.UnsatisfiedLinkError e) {
             System.out.println("Cannot initialize R");
             e.printStackTrace();
+            throw e;
         }
         if (groups.length != 2) {
             System.err.println("CompareGroupsVCFOutputFormat requires exactly two groups.");
@@ -157,7 +159,8 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         statWriter.writeHeader();
     }
 
-    public void allocateStorage(int numberOfSamples, int numberOfGroups) {
+    @Override
+    public void allocateStorage(final int numberOfSamples, final int numberOfGroups) {
         this.numberOfGroups = numberOfGroups;
         this.numberOfSamples = numberOfSamples;
         unmethylatedCCountsPerGroup = new int[numberOfGroups];
@@ -174,28 +177,33 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         genotypeFormatter.allocateStorage(numberOfSamples, numberOfGroups);
     }
 
-    public void writeRecord(DiscoverVariantIterateSortedAlignments iterator,
-                            SampleCountInfo[] sampleCounts,
-                            int referenceIndex,
+    @Override
+    public void writeRecord(final DiscoverVariantIterateSortedAlignments iterator,
+                            final SampleCountInfo[] sampleCounts,
+                            final int referenceIndex,
                             int position,
-                            ObjectArrayList<PositionBaseInfo> list,
-                            int groupIndexA,
-                            int groupIndexB) {
+                            final ObjectArrayList<PositionBaseInfo> list,
+                            final int groupIndexA,
+                            final int groupIndexB) {
 
         position = position + 1;
-        char refBase = sampleCounts[0].referenceBase;
-        if (refBase != 'C' && refBase != 'G') return;
+        final char refBase = sampleCounts[0].referenceBase;
+        if (refBase != 'C' && refBase != 'G') {
+            return;
+        }
         fillMethylationCountArrays(sampleCounts, list, position, refBase);
-        if (eventCountAtSite < minimumEventThreshold) return;
+        if (eventCountAtSite < minimumEventThreshold) {
+            return;
+        }
         statWriter.setInfo(depthFieldIndex, list.size());
-        CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
+        final CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 
         statWriter.setChromosome(currentReferenceId);
         statWriter.setPosition(position);
         statWriter.setReferenceAllele(Character.toString(sampleCounts[0].referenceBase));
 
         // construct a biomart region span in the format chr:pos1:chr:pos
-        String biomartRegionSpan = String.format("%s:%s:%s", currentReferenceId, position,
+        final String biomartRegionSpan = String.format("%s:%s:%s", currentReferenceId, position,
                 position);
 
         statWriter.setInfo(biomartFieldIndex, biomartRegionSpan);
@@ -207,18 +215,18 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         }
 
         for (int sampleIndex = 0; sampleIndex < numberOfGroups; sampleIndex++) {
-            float numerator = methylatedCCountsPerSample[sampleIndex];
-            float denominator = numerator + unmethylatedCCountPerSample[sampleIndex];
+            final float numerator = methylatedCCountsPerSample[sampleIndex];
+            final float denominator = numerator + unmethylatedCCountPerSample[sampleIndex];
 
-            float methylationRate = numerator * 100 / denominator;
+            final float methylationRate = numerator * 100 / denominator;
             statWriter.setSampleValue(methylationRateFieldIndex, sampleIndex, Math.round(methylationRate));
         }
 
         final double denominator = (double) (unmethylatedCCountsPerGroup[groupIndexA]) * (double) (methylatedCCountPerGroup[groupIndexB]);
-        double oddsRatio = denominator == 0 ? Double.NaN :
+        final double oddsRatio = denominator == 0 ? Double.NaN :
                 ((double) (unmethylatedCCountsPerGroup[groupIndexB]) * (double) (methylatedCCountPerGroup[groupIndexA])) /
                         denominator;
-        double logOddsRatioSE;
+        final double logOddsRatioSE;
 
         if (methylatedCCountPerGroup[groupIndexA] < 10 ||
                 methylatedCCountPerGroup[groupIndexB] < 10 ||
@@ -232,13 +240,13 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
                     1d / methylatedCCountPerGroup[groupIndexB] +
                     1d / unmethylatedCCountsPerGroup[groupIndexA]);
         }
-        double log2OddsRatio = Math.log(oddsRatio) / Math.log(2);
-        double log2OddsRatioZValue = log2OddsRatio / logOddsRatioSE;
+        final double log2OddsRatio = Math.log(oddsRatio) / Math.log(2);
+        final double log2OddsRatioZValue = log2OddsRatio / logOddsRatioSE;
         double fisherP = Double.NaN;
         if (eventCountAtSite >= 10) {
             // estimate Fisher only if we have seen at least 10 events.
 
-            boolean ok = checkCounts();
+            final boolean ok = checkCounts();
             if (ok) {
                 fisherP = fisherRInstalled ? FisherExactRCalculator.getFisherPValue(
                         unmethylatedCCountsPerGroup[groupIndexB], methylatedCCountPerGroup[groupIndexB],
@@ -271,8 +279,8 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
     }
 
 
-    private void fillMethylationCountArrays(SampleCountInfo[] sampleCounts, ObjectArrayList<PositionBaseInfo> list,
-                                            int position, char refBase) {
+    private void fillMethylationCountArrays(final SampleCountInfo[] sampleCounts, final ObjectArrayList<PositionBaseInfo> list,
+                                            final int position, final char refBase) {
 
         Arrays.fill(methylatedCCountPerGroup, 0);
         Arrays.fill(unmethylatedCCountsPerGroup, 0);
@@ -281,17 +289,24 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         eventCountAtSite = 0;
         strandAtSite = '?';
 
-        if (refBase == 'C') strandAtSite = '+';
-        else if (refBase == 'G') strandAtSite = '-';
+        if (refBase == 'C') {
+            strandAtSite = '+';
+        } else if (refBase == 'G') {
+            strandAtSite = '-';
+        }
 
-        for (PositionBaseInfo info : list) {
+        for (final PositionBaseInfo info : list) {
             //@@@! only look at the strand that the read matches:
-            if (refBase == 'G' && info.matchesForwardStrand) continue;
-            if (refBase == 'C' && !info.matchesForwardStrand) continue;
+            if (refBase == 'G' && info.matchesForwardStrand) {
+                continue;
+            }
+            if (refBase == 'C' && !info.matchesForwardStrand) {
+                continue;
+            }
 
             if (refBase == 'C' || refBase == 'G') {
                 // readBase is always given in the forward strand..
-                char readBase = info.matchesReference ? refBase : info.to;
+                final char readBase = info.matchesReference ? refBase : info.to;
                 final int sampleIndex = info.readerIndex;
                 final int groupIndex = readerIndexToGroupIndex[sampleIndex];
 
@@ -315,12 +330,16 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
     private boolean checkCounts() {
         boolean ok = true;
         // detect if any count is negative (that's a bug)
-        for (int count : unmethylatedCCountsPerGroup) {
+        for (final int count : unmethylatedCCountsPerGroup) {
 
-            if (count < 0) ok = false;
+            if (count < 0) {
+                ok = false;
+            }
         }
-        for (int count : methylatedCCountPerGroup) {
-            if (count < 0) ok = false;
+        for (final int count : methylatedCCountPerGroup) {
+            if (count < 0) {
+                ok = false;
+            }
         }
         return ok;
     }

@@ -42,6 +42,8 @@ import java.io.PrintWriter;
 /**
  * Helper class to implement the logic of discovering sequence variations in and across groups of samples.
  * Implements most of the work done by DiscoverSequenceVariantsMode
+ * TODO: estimate reference frequency for indels, or in other words, how many reads overlap the location
+ * of an indel and match exactly the reference for the length of the indel.
  *
  * @author Fabien Campagne
  *         Date: Sep 7, 2010

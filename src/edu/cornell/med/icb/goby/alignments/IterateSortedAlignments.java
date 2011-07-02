@@ -463,7 +463,6 @@ public abstract class IterateSortedAlignments<T> {
 
             if (referencesToProcess.contains(referenceIndex)) {
 
-
                 lastPosition = alignmentEntry.getPosition();
                 lastTarget = alignmentEntry.getTargetIndex();
             }
