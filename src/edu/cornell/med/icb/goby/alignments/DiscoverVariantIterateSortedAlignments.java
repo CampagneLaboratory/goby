@@ -296,14 +296,8 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                             //       System.out.printf("filter %s removed %3g %% %n", filter.getName(), filter.getPercentFilteredOut());
                         }
                         final CountFixer fixer = new CountFixer();
-                        try {
-                            fixer.fix(list, sampleCounts, filteredList);
-                        } catch (AssertionError e) {
+                        fixer.fix(list, sampleCounts, filteredList);
 
-                            System.out.println("position:" + position);
-                            e.printStackTrace();
-                            throw e;
-                        }
                     }
 
                     // make genotypes comparable across all samples:
