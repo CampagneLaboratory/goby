@@ -93,7 +93,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
      * When this flag is true, the mode overrides reference alleles with that of the genome when there is a disagreement
      * between the genome and the allele.
      */
-    private boolean overrideReferenceWithGenome=true;
+    private boolean overrideReferenceWithGenome = true;
 
     public void setDisableAtLeastQuarterFilter(boolean disableAtLeastQuarterFilter) {
         this.disableAtLeastQuarterFilter = disableAtLeastQuarterFilter;
@@ -333,7 +333,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
     public void setTestGenome(final RandomAccessSequenceTestSupport testGenome) {
         this.testGenome = testGenome;
-        overrideReferenceWithGenome=false;
+        overrideReferenceWithGenome = false;
     }
 
 
@@ -525,8 +525,9 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         // install a reader factory that filters out ambiguous reads:
         sortedPositionIterator.setAlignmentReaderFactory(new NonAmbiguousAlignmentReaderFactory());
         sortedPositionIterator.setAlignmentProcessorFactory(realignmentFactory);
-        sortedPositionIterator.iterate(basenames);
         sortedPositionIterator.setOverrideReferenceWithGenome(overrideReferenceWithGenome);
+        sortedPositionIterator.iterate(basenames);
+
         sortedPositionIterator.finish();
     }
 
