@@ -89,6 +89,11 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
      * A genome used for testing.
      */
     private RandomAccessSequenceInterface testGenome;
+    /**
+     * When this flag is true, the mode overrides reference alleles with that of the genome when there is a disagreement
+     * between the genome and the allele.
+     */
+    private boolean overrideReferenceWithGenome=true;
 
     public void setDisableAtLeastQuarterFilter(boolean disableAtLeastQuarterFilter) {
         this.disableAtLeastQuarterFilter = disableAtLeastQuarterFilter;
@@ -234,13 +239,19 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             case ALLELE_FREQUENCIES:
             case BETWEEN_GROUPS:
             case VARIANT_DISCOVERY:
+
                 genotypeFilters.add(new QualityScoreFilter());
                 genotypeFilters.add(new LeftOverFilter());
+                genotypeFilters.add(new RemoveIndelArtifactsFilter());
                 break;
             case GENOTYPES:
+
                 genotypeFilters.add(new QualityScoreFilter());
                 genotypeFilters.add(new LeftOverFilter());
-                if (!disableAtLeastQuarterFilter) genotypeFilters.add(new AtLeastAQuarterFilter());
+                genotypeFilters.add(new RemoveIndelArtifactsFilter());
+                if (!disableAtLeastQuarterFilter) {
+                    genotypeFilters.add(new AtLeastAQuarterFilter());
+                }
                 break;
             default:
                 throw new InternalError("Filters must be configured for new output format.");
@@ -322,6 +333,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
     public void setTestGenome(final RandomAccessSequenceTestSupport testGenome) {
         this.testGenome = testGenome;
+        overrideReferenceWithGenome=false;
     }
 
 
@@ -514,6 +526,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         sortedPositionIterator.setAlignmentReaderFactory(new NonAmbiguousAlignmentReaderFactory());
         sortedPositionIterator.setAlignmentProcessorFactory(realignmentFactory);
         sortedPositionIterator.iterate(basenames);
+        sortedPositionIterator.setOverrideReferenceWithGenome(overrideReferenceWithGenome);
         sortedPositionIterator.finish();
     }
 

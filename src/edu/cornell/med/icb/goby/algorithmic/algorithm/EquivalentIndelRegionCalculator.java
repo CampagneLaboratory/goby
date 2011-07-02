@@ -22,6 +22,8 @@ import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import edu.cornell.med.icb.goby.alignments.processors.ObservedIndel;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import it.unimi.dsi.lang.MutableString;
+import org.apache.log4j.Logger;
+
 
 /**
  * Implements the method of Krawitz et al to determine a span of equivalent indel regions, given
@@ -38,6 +40,7 @@ public class EquivalentIndelRegionCalculator {
     private static final String GAPS = "----------------------------------------------------------------";
     private int flankRightSize = 4;
     public int flankLeftSize = 4;
+    private static final Logger LOG = Logger.getLogger(EquivalentIndelRegionCalculator.class);
 
     /**
      * Set the number of bases to record in flank-right.
@@ -91,14 +94,14 @@ public class EquivalentIndelRegionCalculator {
      *
      * @param referenceIndex Index of the reference sequence where the indel is located.
      * @param indel          the observed indel
-     * @return the span of equivalent indel regions
+     * @return the span of equivalent indel regions , or null, if the indel positions are outside the boundaries of the genome sequence.
      */
     public EquivalentIndelRegion determine(final int referenceIndex, final ObservedIndel indel) {
         final EquivalentIndelRegion result = new EquivalentIndelRegion();
         result.startPosition = indel.getStart();
         result.endPosition = indel.getEnd();
         result.referenceIndex = referenceIndex;
-
+        result.readIndex = indel.readIndex;
         p.setLength(0);
         final boolean insertion = insertionInRead(indel);
         p.append(insertion ? indel.to() : indel.from());
@@ -108,6 +111,10 @@ public class EquivalentIndelRegionCalculator {
         final int indelSize = p.length();
         final int lastBaseIndex = indelSize - 1;
         int rewindLeft = 0;
+        if (result.startPosition > genome.getLength(referenceIndex)) {
+            LOG.warn("Cannot determine sequence at position " + result.startPosition);
+            return null;
+        }
 
         while (p.charAt(lastBaseIndex - leftExtensions + rewindLeft) == genome.get(referenceIndex, result.startPosition)) {
             leftExtensions++;
@@ -127,53 +134,63 @@ public class EquivalentIndelRegionCalculator {
             }
             //      debug("extending right:", result);
         }
-        from.setLength(0);
-        to.setLength(0);
-        toFill.setLength(0);
 
-        genome.getRange(referenceIndex, result.startPosition + 1, result.endPosition - result.startPosition - 1, from);
 
-        if (insertion) {
 
-            // construct the read sequence in the insertion region of the eir:
-            to.append(roll(leftExtensions, indel.to()));
-            to.append(from);
+    from.setLength(0);
+    to.setLength(0);
+    toFill.setLength(0);
 
-            from.insert(0, GAPS.subSequence(0, indelSize));
+    genome.getRange(referenceIndex,result.startPosition+1,result.endPosition-result.startPosition-1,from);
 
-        } else {
-            // construct the read sequence in the deletion region of the eir:
-            final int length = from.length();
-            to.append(GAPS.subSequence(0, indelSize));
-            to.append(from.subSequence(Math.min(indelSize, length), length));
+    if(insertion)
 
-        }
-        result.from = from.toString();
-        result.to = to.toString();
-        /*  gaps.setLength(0);
-        gaps.append(toFill);
-        gaps.delete(0, indelSize);
-        gaps.insert(0, GAPS.subSequence(0, indelSize));
-        */
+    {
 
-        //     debug("from: ", result);
-        flankingLeft.setLength(0);
-        genome.getRange(referenceIndex, result.startPosition - flankLeftSize + 1, flankLeftSize, flankingLeft);
+        // construct the read sequence in the insertion region of the eir:
+        to.append(roll(leftExtensions, indel.to()));
+        to.append(from);
 
-        result.flankLeft = flankingLeft.toString();
-
-        flankingRight.setLength(0);
-        genome.getRange(referenceIndex, result.endPosition, flankRightSize, flankingRight);
-
-        final int maxRefLength = genome.getLength(referenceIndex);
-
-        result.flankRight = flankingRight.toString();
-        //              debug("flanks: ", result);
-        return result;
+        from.insert(0, GAPS.subSequence(0, indelSize));
 
     }
 
-    final MutableString rollBuffer = new MutableString();
+    else
+
+    {
+        // construct the read sequence in the deletion region of the eir:
+        final int length = from.length();
+        to.append(GAPS.subSequence(0, indelSize));
+        to.append(from.subSequence(Math.min(indelSize, length), length));
+
+    }
+
+    result.from=from.toString();
+    result.to=to.toString();
+    /*  gaps.setLength(0);
+    gaps.append(toFill);
+    gaps.delete(0, indelSize);
+    gaps.insert(0, GAPS.subSequence(0, indelSize));
+    */
+
+    //     debug("from: ", result);
+    flankingLeft.setLength(0);
+    genome.getRange(referenceIndex,result.startPosition-flankLeftSize+1,flankLeftSize,flankingLeft);
+
+    result.flankLeft=flankingLeft.toString();
+
+    flankingRight.setLength(0);
+    genome.getRange(referenceIndex,result.endPosition,flankRightSize,flankingRight);
+
+    final int maxRefLength = genome.getLength(referenceIndex);
+
+    result.flankRight=flankingRight.toString();
+    //              debug("flanks: ", result);
+    return result;
+
+}
+
+final MutableString rollBuffer = new MutableString();
 
     private final MutableString roll(int leftExtensions, String from) {
         rollBuffer.setLength(0);
@@ -188,8 +205,8 @@ public class EquivalentIndelRegionCalculator {
         return rollBuffer;
     }
 
-    final MutableString toFill = new MutableString();
-    final MutableString gaps = new MutableString();
+final MutableString toFill = new MutableString();
+final MutableString gaps = new MutableString();
 
     private void debug(String prefix, EquivalentIndelRegion result) {
         MutableString bases = new MutableString();
@@ -198,10 +215,10 @@ public class EquivalentIndelRegionCalculator {
         System.out.flush();
     }
 
-    MutableString from = new MutableString();
-    MutableString to = new MutableString();
-    MutableString flankingLeft = new MutableString();
-    MutableString flankingRight = new MutableString();
+MutableString from = new MutableString();
+MutableString to = new MutableString();
+MutableString flankingLeft = new MutableString();
+MutableString flankingRight = new MutableString();
 
     private boolean insertionInRead(final ObservedIndel indel) {
         final String from = indel.from();

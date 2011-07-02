@@ -302,9 +302,7 @@ public class SequenceVariationPool {
         //   System.out.printf("Decrementing position %d%n", position);
         int newCount = referenceAlleleCounts.get(position) - 1;
         assert newCount >= 0 : "reference allele count must be positive.";
-        /* if (newCount < 0) {
-            System.err.println("STOP!");
-        }*/
+
         referenceAlleleCounts.put(position, newCount);
     }
 

@@ -18,8 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectList;
+import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 /**
@@ -36,29 +35,25 @@ public class CountFixer implements CountFixerInterface {
      * @param sampleCounts
      * @param likelyErrors
      */
-    public void fix(ObjectArrayList<PositionBaseInfo> list,
-                    SampleCountInfo[] sampleCounts,
-                    ObjectSet<PositionBaseInfo> likelyErrors) {
-          // do not decrement counts again. The Filters have done this already..
-        // the sampleCounts reference is given to this method so that the method can recalculate sample counts
-        // after fixing list for likelyErrors.
-      /*  for (PositionBaseInfo info : likelyErrors) {
-            final SampleCountInfo countInfo = sampleCounts[info.readerIndex];
-            if (info.matchesReference) {
+    @Override
+    public void fix(final DiscoverVariantPositionData list,
+                    final SampleCountInfo[] sampleCounts,
+                    final ObjectSet<PositionBaseInfo> likelyErrors) {
 
-                --countInfo.counts[countInfo.baseIndex(info.from)];
-            } else {
-                --countInfo.counts[countInfo.baseIndex(info.to)];
-            }
-        } */
+        // do not decrement counts again. The Filters have done this already..
+
         for (SampleCountInfo sci : sampleCounts) {
             for (int i = 0; i < sci.counts.length; i++) {
-                assert sci.counts[i] >= 0: "Counts must never be negative. This would happen if a GenotypeFilter removed counts directly";
+                assert sci.counts[i] >= 0 : ("Counts must never be negative. This would happen if a GenotypeFilter removed counts directly. Value was "+sci.counts[i]);
             }
         }
         // calculate failed Count in each sample:
-        for (PositionBaseInfo failed: likelyErrors) {
+        for (PositionBaseInfo failed : likelyErrors) {
             ++(sampleCounts[failed.readerIndex].failedCount);
+        }
+        for (final EquivalentIndelRegion failedIndel : list.getFailedIndels()) {
+            sampleCounts[failedIndel.sampleIndex].removeIndel(failedIndel);
+            ++(sampleCounts[failedIndel.sampleIndex].failedCount);
         }
         list.removeAll(likelyErrors);
     }

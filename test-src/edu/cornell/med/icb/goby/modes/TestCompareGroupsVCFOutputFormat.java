@@ -216,7 +216,7 @@ public class TestCompareGroupsVCFOutputFormat {
         indel1.flankLeft = "T";
         indel1.flankRight = "";
         indel1.sampleIndex = 0;
-        indel1.frequency = 5;
+        indel1.setFrequency( 5);
         EquivalentIndelRegion indel2 = new EquivalentIndelRegion();
         indel2.startPosition = 1;
         indel2.endPosition = 3;
@@ -226,12 +226,12 @@ public class TestCompareGroupsVCFOutputFormat {
         indel2.flankLeft = "T";
         indel2.flankRight = "";
         indel1.sampleIndex = 0;
-        indel2.frequency = 10;
+        indel2.setFrequency(  10);
         sampleCounts[0].addIndel(indel1);
         sampleCounts[0].addIndel(indel2);
         EquivalentIndelRegion indel3 = indel2.copy();
         indel3.sampleIndex = 1;
-        indel3.frequency = 3;
+        indel3.setFrequency( 3);
 
         sampleCounts[1].addIndel(indel3);
         return sampleCounts;
@@ -251,6 +251,7 @@ public class TestCompareGroupsVCFOutputFormat {
             format.allocateStorage(20, 2);
             format.defineColumns(output, mode);
             format.setStatWriter(statWriter);
+            SampleCountInfo.alignIndels(sampleCounts);
             format.writeRecord(iterator, sampleCounts,
                     refIndex,
                     position,

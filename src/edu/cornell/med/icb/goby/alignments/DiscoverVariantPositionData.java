@@ -35,6 +35,7 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
     private ObjectArraySet<EquivalentIndelRegion> candidateIndels;
     private int position;
     private ObjectArraySet<EquivalentIndelRegion> failedIndels;
+    private static final ObjectArraySet<EquivalentIndelRegion> EMPTY_SET = new ObjectArraySet<EquivalentIndelRegion>();
 
     public DiscoverVariantPositionData() {
         super();
@@ -60,14 +61,16 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
         } else {
             for (final EquivalentIndelRegion eir : candidateIndels) {
                 if (eir.equals(candidateIndel)) {
-                    eir.frequency++;
+                    eir.incrementFrequency();
                 }
             }
         }
     }
 
     public ObjectArraySet<EquivalentIndelRegion> getIndels() {
-        return candidateIndels;
+      // switch to disable indels calls
+        // return EMPTY_SET;
+       return candidateIndels;
     }
 
     /**
@@ -75,8 +78,10 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
      *
      * @param indel the candidate indel that failed tests.
      */
-    public void failIndel(EquivalentIndelRegion indel) {
-        candidateIndels.remove(indel);
+    public void failIndel(final EquivalentIndelRegion indel) {
+        if (candidateIndels!=null) {
+            candidateIndels.remove(indel);
+        }
         if (failedIndels == null) {
             failedIndels = new ObjectArraySet<EquivalentIndelRegion>();
         }
@@ -93,6 +98,14 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
     }
 
     public char getReferenceBase() {
-       return get(0).from;
+        return get(0).from;
+    }
+
+    public ObjectArraySet<EquivalentIndelRegion> getFailedIndels() {
+        if (failedIndels == null) {
+            return EMPTY_SET;
+        } else {
+            return failedIndels;
+        }
     }
 }

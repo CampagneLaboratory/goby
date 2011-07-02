@@ -18,16 +18,13 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
-import it.unimi.dsi.fastutil.chars.CharArraySet;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ReferenceSet;
 import it.unimi.dsi.lang.MutableString;
 
 import org.apache.log4j.Logger;
@@ -113,10 +110,10 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
         statsWriter.setChromosome(currentReferenceId);
 
         statsWriter.setPosition(position);
-        if (position == 1179753) {
-            System.out.println("STOP");
-        }
-        writeGenotypes(statsWriter, sampleCounts);
+        //    if (position == 154722608 + 1) {
+        //       System.out.println("STOP");
+        //   }
+        writeGenotypes(statsWriter, sampleCounts, position);
 
         writeZygozity(sampleCounts);
         if (!alleleSet.isEmpty()) {
@@ -159,7 +156,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
 
     ObjectArraySet<String> referenceSet = new ObjectArraySet<String>();
 
-    public void writeGenotypes(VCFWriter statsWriter, SampleCountInfo[] sampleCounts) {
+    public void writeGenotypes(VCFWriter statsWriter, SampleCountInfo[] sampleCounts, int position) {
         boolean referenceAlleleSetForIndel = false;
         siteObserved = false;
         boolean siteHasIndel = false;
@@ -180,27 +177,36 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
             int baseIndex = 0;
             int altGenotypeCount = 0;
             genotypeBuffer.setLength(0);
+
             final MutableString baseCountString = new MutableString();
             for (int genotypeIndex = 0; genotypeIndex < sci.getGenotypeMaxIndex(); ++genotypeIndex) {
                 final int sampleCount = sci.getGenotypeCount(genotypeIndex);
-                final String genotype = sci.getGenotypeString(genotypeIndex);
+                String genotype = sci.getGenotypeString(genotypeIndex);
 
                 if (sampleCount > 0) {
                     siteObserved = true;
-                    alleleSet.add(genotype);
 
-                    if (!sci.isReferenceGenotype(genotypeIndex)) {
-                        statsWriter.addAlternateAllele(genotype);
-                        altGenotypeCount++;
-
-                    } else {
-                        referenceSet.add(genotype);
-                    }
-                    genotypeBuffer.append(genotype);
-                    genotypeBuffer.append('/');
                     if (sci.isIndel(genotypeIndex)) {
                         siteHasIndel = true;
                     }
+                    if (!sci.isReferenceGenotype(genotypeIndex)) {
+                        statsWriter.addAlternateAllele(genotype);
+                        altGenotypeCount++;
+                        updateReferenceSet(sci.getReferenceGenotype());
+                    } else {
+                        //updateReferenceSet(genotype);
+                        if (sci.isIndel(genotypeIndex)) {
+                            siteHasIndel = true;
+                            genotype = sci.getReferenceGenotype();
+
+                        }
+                        updateReferenceSet(genotype);
+
+                    }
+                    alleleSet.add(genotype);
+                    genotypeBuffer.append(genotype);
+                    genotypeBuffer.append('/');
+
                 }
                 baseCountString.append(genotype);
                 baseCountString.append('=');
@@ -231,8 +237,17 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                     }
 
                 } else {
-                    LOG.error(String.format("Observed multiple indel references at position %d: \n %s %n", statsWriter.getPosition(),
+                    LOG.error(String.format("Observed multiple indel references at position %d: \n %s %n",
+                            position,
                             referenceSet));
+                    // we use the longest reference sequence
+                    int maxLength = 0;
+                    for (final String ref : referenceSet) {
+                        if (ref.length() > maxLength) {
+                            statsWriter.setReferenceAllele(ref);
+                            maxLength = ref.length();
+                        }
+                    }
                 }
                 statsWriter.setSampleValue(genotypeFieldIndex, sampleIndex, statsWriter.codeGenotype(genotypeBuffer.toString()));
 
@@ -245,6 +260,46 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
 
         }
         statsWriter.setFlag(indelFlagFieldIndex, siteHasIndel);
+    }
+
+    /**
+     * Determine if the candidate reference genotype is new, and keep only those genotypes not already described by
+     * longer genotypes.
+     *
+     * @param genotype
+     */
+    private void updateReferenceSet(String genotype) {
+        if (!isIncludedIn(genotype, referenceSet)) {
+            referenceSet.add(genotype);
+        }
+        //      ObjectArrayList toRemove=new ObjectArrayList();
+        for (final String refGenotype : referenceSet) {
+            if (refGenotype != null && !genotype.equals(refGenotype) && isIncludedIn(refGenotype, genotype)) {
+                referenceSet.remove(refGenotype);
+            }
+        }
+        if (referenceSet.size() > 1) {
+            System.out.println("STOP2");
+        }
+        //   referenceSet.removeAll(toRemove);
+    }
+
+    private boolean isIncludedIn(String genotype, ObjectArraySet<String> referenceSet) {
+        for (String g : referenceSet) {
+            if (isIncludedIn(genotype, g)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if genotype a is included in b.
+     *
+     * @param a
+     * @param b
+     * @return
+     */
+    private boolean isIncludedIn(String a, String b) {
+        return b.startsWith(a);
     }
 
 

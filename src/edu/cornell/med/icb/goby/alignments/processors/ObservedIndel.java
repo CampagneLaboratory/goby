@@ -36,13 +36,42 @@ public class ObservedIndel {
     final String from;
     final String to;
     private int length;
+     /**
+     * The index of the first base in the read where the indel was observed.
+     */
+    public int readIndex;
 
-    public ObservedIndel(final int startPosition, final String from, final String to) {
-        this.startPosition = startPosition;
-        this.endPosition = startPosition + Math.max(from.length(), to.length());
+    public ObservedIndel(final int startPosition, final String from, final String to, final int readIndex) {
+        this(startPosition, startPosition + Math.max(from.length(), to.length()),  from,  to) ;
+        this.readIndex=readIndex;
+    }
+
+    public ObservedIndel(final int startPosition, final int endPosition, final String from, final String to) {
+         this.startPosition = startPosition;
+        this.endPosition = endPosition;
         this.from=from;
         this.to=to;
         this.length=Math.max(from.length(), to.length());
+    }
+
+    public boolean isHasQualityScores() {
+        return hasQualityScores;
+    }
+
+    /**
+     * Return the quality scores for bases of this indel.
+     * @return
+     */
+    public byte[] getQualityScores() {
+
+        return qualityScores;
+    }
+
+    private byte[]qualityScores;
+    private boolean hasQualityScores;
+
+    public void setQualityScores(byte[] qualityScores) {
+        this.qualityScores = qualityScores;
     }
 
     /**
@@ -70,12 +99,15 @@ public class ObservedIndel {
      * @param endPosition   The position where the indel ends, zero-based, position of the base at the right of the first gap.
      * @param from          Bases in the reference
      * @param to            Bases in the read
+     * @param readIndex     Index of the base in the read at the left of where the indel is observed.
      */
-    public ObservedIndel(final int startPosition, final int endPosition, final String from, final String to) {
+    public ObservedIndel(final int startPosition, final int endPosition, final String from, final String to,
+                         final int readIndex) {
         this.startPosition = startPosition;
         this.endPosition = endPosition;
         this.from = from;
         this.to = to;
+        this.readIndex=readIndex;
     }
 
     public int getStart() {

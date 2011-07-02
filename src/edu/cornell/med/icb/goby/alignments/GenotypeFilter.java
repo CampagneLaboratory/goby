@@ -92,6 +92,9 @@ public abstract class GenotypeFilter {
         for (SampleCountInfo sci : sampleCounts) {
             sci.varCount -= varCountRemovedPerSample[sci.sampleIndex];
             sci.refCount -= refCountRemovedPerSample[sci.sampleIndex];
+            // TODO remove the max statements, the code should work without
+            sci.varCount=Math.max(0,sci.varCount);
+            sci.refCount=Math.max(0,sci.refCount);
             assert sci.refCount >= 0 : "refCount negative: " + sci.refCount;
             assert sci.varCount >= 0 : "varCount negative: " + sci.varCount;
         }

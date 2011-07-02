@@ -34,6 +34,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -107,6 +108,10 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
         return genome;
     }
 
+    public void setOverrideReferenceWithGenome(boolean overrideReferenceWithGenome) {
+        this.overrideReferenceWithGenome = overrideReferenceWithGenome;
+    }
+
     public class PositionBaseInfo {
         public int readIndex;
         public int readerIndex;
@@ -140,28 +145,32 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
     public void observeIndel(final Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
                              final int referenceIndex,
                              final int startPosition, final String from, final String to,
-                             final int sampleIndex) {
+                             final int sampleIndex, final int readIndex) {
 
-        final ObservedIndel indel = new ObservedIndel(startPosition, from, to);
+        final ObservedIndel indel = new ObservedIndel(startPosition, from, to, readIndex);
         int flankLeftSize = 1;
         equivalentIndelRegionCalculator.setFlankLeftSize(flankLeftSize); // VCF output requires one base before the indel
-        equivalentIndelRegionCalculator.setFlankRightSize(0);
+        equivalentIndelRegionCalculator.setFlankRightSize(5);
         final EquivalentIndelRegion indelCandidateRegion = equivalentIndelRegionCalculator.determine(referenceIndex, indel);
-        // subtracts -1 to yield keyPos: the position of the first base in the indel (includes the 1 base left flank, as
-        // per VCF spec.)
-        final int keyPos = indelCandidateRegion.startPosition - flankLeftSize;
-        // assert genome.get(referenceIndex, keyPos)== indelCandidateRegion.fromInContext().charAt(0) :
-        //        "first base of context must match genome at key position";
+        if (indelCandidateRegion == null) {
+            return;
+        }
 
-       /*
-        {
+        // subtracts -1 to yield keyPos: the position of the first base in the indel (includes the 1 base left flank, as
+        // per VCF spec.) keyPos is zero-based
+        final int keyPos = indelCandidateRegion.startPosition - flankLeftSize + 1;
+        //    assert genome.get(referenceIndex, keyPos) == indelCandidateRegion.fromInContext().charAt(0) :
+        //          "first base of context must match genome at key position";
+        indelCandidateRegion.sampleIndex = sampleIndex;
+
+        /*{
             MutableString bases = new MutableString();
             genome.getRange(referenceIndex, keyPos, 10, bases);
             System.out.println(bases);
             System.out.println(indelCandidateRegion);
-        }*/
+        } */
         DiscoverVariantPositionData positionBaseInfos = positionToBases.get(keyPos);
-      //  System.out.printf("Observing indel at position %d %n", keyPos);
+        //   System.out.printf("Observing indel at position %d %n", keyPos);
         if (positionBaseInfos == null) {
             positionBaseInfos = new DiscoverVariantPositionData(keyPos);
             positionToBases.put(keyPos, positionBaseInfos);
@@ -188,9 +197,9 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
      * constraint is added to avoid allocating data structures inside this method, because it is usually called in a loop
      * over all the positions of a genome, and the data structures can be reused, saving garbage collection time.
      *
-     * @param referenceIndex  Index of the reference sequence where these bases align.
-     * @param position        position where the bases are observed
-     * @param list            list of bases observed at position.
+     * @param referenceIndex Index of the reference sequence where these bases align.
+     * @param position       position where the bases are observed
+     * @param list           list of bases observed at position.
      */
     @Override
     public void processPositions(final int referenceIndex,
@@ -202,6 +211,7 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
             genomeRefIndex = genome.getReferenceIndex(getReferenceId(referenceIndex).toString());
             previousReference = referenceIndex;
         }
+
         final char referenceBase = getReferenceAllele(genome, position, list);
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
@@ -222,7 +232,27 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
         if (list != null) {
             final IntSet distinctReadIndices = new IntArraySet();
 
+            boolean hasIndel = false;
+            if (list.getIndels() != null) {
+                for (final EquivalentIndelRegion indel : list.getIndels()) {
+
+                    if (indel.matchesReference()) {
+                        sampleCounts[indel.sampleIndex].refCount += indel.getFrequency();
+
+                    } else {
+                        sumVariantCounts++;
+                        sampleCounts[indel.sampleIndex].varCount += indel.getFrequency();
+                        sumVariantCounts += indel.getFrequency();
+                    }
+                    sampleCounts[indel.sampleIndex].distinctReadIndices.add(indel.readIndex);
+                    sampleCounts[indel.sampleIndex].addIndel(indel);
+                    hasIndel = true;
+                }
+            }
+
+
             for (final edu.cornell.med.icb.goby.alignments.PositionBaseInfo info : list) {
+
                 if (info.matchesReference && referenceBase != '\0') {
                     // from and to have to be set if the position matches the reference.
                     info.from = referenceBase;
@@ -244,21 +274,15 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                         refBaseWarning.warn(LOG, "reference base differ between variation (%c) and genome (%c) at chr %s position %d",
                                 info.from, referenceBase, getReferenceId(referenceIndex),
                                 position);
+
                     }
                     sampleCounts[sampleIndex].referenceBase = referenceBase;
                     sampleCounts[sampleIndex].distinctReadIndices.add(info.readIndex);
                     incrementBaseCounter(info.to, sampleIndex);
                 }
             }
-            boolean hasIndel = false;
-            if (list.getIndels() != null) {
-                for (final EquivalentIndelRegion indel : list.getIndels()) {
-                    sampleCounts[indel.sampleIndex].addIndel(indel);
-                    hasIndel = true;
-                }
-            }
 
-            if (hasIndel || distinctReadIndices.size() >= thresholdDistinctReadIndices && sumVariantCounts > minimumVariationSupport) {
+            if (distinctReadIndices.size() >= thresholdDistinctReadIndices && sumVariantCounts > minimumVariationSupport) {
                 final int groupIndexA = 0;
                 final int groupIndexB = 1;
                 // Do not write statistics for positions in the start flap. The flap start is used to accumulate
@@ -273,11 +297,16 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                             //       System.out.printf("filter %s removed %3g %% %n", filter.getName(), filter.getPercentFilteredOut());
                         }
                         final CountFixer fixer = new CountFixer();
-                        fixer.fix(list, sampleCounts, filteredList);
+                        try {
+                            fixer.fix(list, sampleCounts, filteredList);
+                        } catch (AssertionError e) {
+
+                            System.out.println("position:" + position);
+                            e.printStackTrace();
+                            throw e;
+                        }
                     }
-                   /* if (hasIndel) {
-                        printBasesAround(position, positionToBases);
-                    }*/
+
                     // make genotypes comparable across all samples:
                     SampleCountInfo.alignIndels(sampleCounts);
 
@@ -287,6 +316,8 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
             }
         }
     }
+
+    boolean overrideReferenceWithGenome;
 
     /**
      * Instead of this method, use the random access genome to find the reference base for all bases.
@@ -300,27 +331,34 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                                     int position,
                                     DiscoverVariantPositionData list) {
 
-        // We will find some referenceBase among the variations that do not match the reference:
-        // this procedure will not be able to determine the refBase if all samples are homzygotes matching the reference
-        final ObjectIterator<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> iterator = list.iterator();
-        char refBase = '\0';
-        // find the reference base from any variant:
-        while (iterator.hasNext()) {
-            edu.cornell.med.icb.goby.alignments.PositionBaseInfo positionBaseInfo = iterator.next();
-            if (!positionBaseInfo.matchesReference) {
-                if (positionBaseInfo.from != '-' && positionBaseInfo.from != '.') {
-                    /* skip the variant if this was an insertion in the read and we don't know the reference.*/
-                    refBase = positionBaseInfo.from;
-                    break;
+
+        if (overrideReferenceWithGenome) {
+            char refBase = genome.get(genomeRefIndex, position);
+            return refBase;
+        } else {
+            // We will find some referenceBase among the variations that do not match the reference:
+            // this procedure will not be able to determine the refBase if all samples are homzygotes matching the reference
+            final ObjectIterator<edu.cornell.med.icb.goby.alignments.PositionBaseInfo> iterator = list.iterator();
+            char refBase = '\0';
+            // find the reference base from any variant:
+            while (iterator.hasNext()) {
+                edu.cornell.med.icb.goby.alignments.PositionBaseInfo positionBaseInfo = iterator.next();
+                if (!positionBaseInfo.matchesReference) {
+                    if (positionBaseInfo.from != '-' && positionBaseInfo.from != '.') {
+                        // skip the variant if this was an insertion in the read and we don't know the reference.
+                        refBase = positionBaseInfo.from;
+                        break;
+                    }
                 }
             }
-        }
-        if (refBase == '\0' && genome != null) {
-            // look up the reference base since we have a genome:
-            refBase = genome.get(genomeRefIndex, position);
+            if (refBase == '\0' && genome != null) {
+                // look up the reference base since we have a genome:
+                refBase = genome.get(genomeRefIndex, position);
 
+            }
+            return refBase;
         }
-        return refBase;
+
     }
 
     private void incrementBaseCounter(char base, int sampleIndex) {

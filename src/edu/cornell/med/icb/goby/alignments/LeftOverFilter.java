@@ -41,8 +41,8 @@ public class LeftOverFilter extends GenotypeFilter {
                                 ObjectSet<PositionBaseInfo> filteredList) {
         resetCounters();
         initStorage(sampleCounts.length);
-        int removedBaseCount = filteredList.size() / sampleCounts.length;
-        int removedBaseCountThreshold = removedBaseCount * MULTIPLIER;
+        final int removedBaseCount = filteredList.size() / sampleCounts.length;
+        final int removedBaseCountThreshold = removedBaseCount * MULTIPLIER;
 
 
         for (PositionBaseInfo positionBaseInfo : list) {
@@ -82,8 +82,14 @@ public class LeftOverFilter extends GenotypeFilter {
             // remove candidate indels if they don't make the frequency threshold (threshold determined by bases observed
             // at that position):
             for (final EquivalentIndelRegion indel : list.getIndels()) {
-                if (indel.frequency < removedBaseCountThreshold) {
+                if (indel!=null && indel.getFrequency() < removedBaseCountThreshold) {
                     list.failIndel(indel);
+
+                 /*   if (indel.matchesReference()) {
+                        refCountRemovedPerSample[indel.sampleIndex]+=indel.frequency;
+                    } else {
+                        varCountRemovedPerSample[indel.sampleIndex]+=indel.frequency;
+                    }*/
                 }
             }
         }

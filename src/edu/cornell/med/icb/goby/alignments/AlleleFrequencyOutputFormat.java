@@ -154,7 +154,7 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
             }
         }
         assert valuesGroupAIndex + valuesGroupBIndex == numberOfSamples;
-        genotypeFormatter.writeGenotypes(statsWriter, sampleCounts);
+        genotypeFormatter.writeGenotypes(statsWriter, sampleCounts, position);
         double pValue = 1;
         try {
             if (valuesGroupAIndex >= 2 && valuesGroupBIndex >= 2) { // need two samples per group

@@ -429,8 +429,8 @@ public abstract class IterateSortedAlignments<T> {
                             observeIndel(positionToBases, referenceIndex,
                                     alignmentEntry.getPosition() + var.getPosition() - 1 /* make start position zero-based */,
                                     var.getFrom(), var.getTo(),
-                                    alignmentEntry.getSampleIndex()
-                            );
+                                    alignmentEntry.getSampleIndex(),
+                                    var.getReadIndex());
 
                     }
                 }
@@ -604,12 +604,13 @@ public abstract class IterateSortedAlignments<T> {
      * @param from            from bases (before eir calculation)
      * @param to              to bases (before eir calculation)
      * @param sampleIndex     Index of the sample where the indel was observed.
+     * @param readIndex       Index of the base in the read at the left of where the indel is observed.
      */
     public void observeIndel(final Int2ObjectMap<T> positionToBases,
                              final int referenceIndex,
                              final int startPosition,
                              final String from, final String to,
-                             final int sampleIndex) {
+                             final int sampleIndex, final int readIndex) {
     }
 
 

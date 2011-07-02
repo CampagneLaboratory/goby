@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 import java.util.Arrays;
@@ -42,22 +43,45 @@ public class QualityScoreFilter extends GenotypeFilter {
                                 ObjectSet<PositionBaseInfo> filteredList) {
         resetCounters();
         initStorage(sampleCounts.length);
-        Arrays.fill(removed, 0);
-        int removedVarCount = 0;
-        for (PositionBaseInfo info : list) {
+
+
+        for (final PositionBaseInfo info : list) {
             numScreened++;
             if (!info.matchesReference && info.qualityScore < scoreThreshold) {
                 if (!filteredList.contains(info)) {
+                    if (info.to!='-') {
+                        // deleted bases have a quality score  of zero but should not be removed at this stage.
                     filteredList.add(info);
                     final SampleCountInfo countInfo = sampleCounts[info.readerIndex];
                     final int baseIndex = countInfo.baseIndex(info.to);
                     countInfo.counts[baseIndex]--;
-                    removed[baseIndex]++;
-                    this.varCountRemovedPerSample[info.readerIndex]++;
+                    varCountRemovedPerSample[info.readerIndex]++;
                     numFiltered++;
+                    }
                 }
             }
         }
+      /*
+       TODO: enable this when we store quality score for context of indels:
+       if (list.hasCandidateIndels()) {
+            // remove candidate indels if they don't make the base quality threshold (threshold determined by bases observed
+            // at that position):
+            for (final EquivalentIndelRegion indel : list.getIndels()) {
+                for (final byte baseQuality : indel.getQualityScoresInContext()) {
+                    if (baseQuality < scoreThreshold) {
+                        list.failIndel(indel);
+                        if (indel.matchesReference()) {
+                            refCountRemovedPerSample[indel.sampleIndex]++;
+                        } else {
+                            varCountRemovedPerSample[indel.sampleIndex]++;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        */
         // adjust refCount and varCount:
         adjustRefVarCounts(sampleCounts);
     }

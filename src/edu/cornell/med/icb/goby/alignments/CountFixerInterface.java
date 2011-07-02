@@ -37,6 +37,6 @@ public interface CountFixerInterface {
      * @param sampleCounts allele frequencies per sample
      * @param likelyErrors List of suspicious variations or reference bases.
      */
-    void fix(ObjectArrayList<PositionBaseInfo> list, SampleCountInfo[] sampleCounts,
+    void fix(DiscoverVariantPositionData list, SampleCountInfo[] sampleCounts,
              ObjectSet<PositionBaseInfo> likelyErrors);
 }

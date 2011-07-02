@@ -260,7 +260,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         statWriter.setInfo(log2OddsRatioStandardErrorColumnIndex, logOddsRatioSE);
         statWriter.setInfo(log2OddsRatioZColumnIndex, log2OddsRatioZValue);
         statWriter.setInfo(fisherExactPValueColumnIndex, fisherP);
-        genotypeFormatter.writeGenotypes(statWriter, sampleCounts);
+        genotypeFormatter.writeGenotypes(statWriter, sampleCounts, position);
 
         statWriter.writeRecord();
     }

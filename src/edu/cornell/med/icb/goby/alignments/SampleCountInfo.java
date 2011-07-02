@@ -83,7 +83,7 @@ public class SampleCountInfo {
         int previousStartPosition = -1;
         for (final EquivalentIndelRegion prevIndel : indels) {
             if (prevIndel.equals(indel)) {
-                prevIndel.frequency += 1;
+                prevIndel.incrementFrequency();
             }
             previousStartPosition = prevIndel.startPosition;
 
@@ -118,7 +118,7 @@ public class SampleCountInfo {
         } else {
             if (hasIndels()) {
                 final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
-                return indels.get(indelIndex).frequency;
+                return indels.get(indelIndex).getFrequency();
             }
         }
         throw new IllegalArgumentException("The genotype index argument was out of range: " + genotypeIndex);
@@ -157,7 +157,7 @@ public class SampleCountInfo {
                     copy.sampleIndex = sample.sampleIndex;
                     // set frequency to -1 because add will increase frequency by one and this indel genotype
                     // was never observed in this sample, we just create a dummy observation to align genotypes across samples.
-                    copy.frequency = 0;
+                    copy.setFrequency(0);
                     if (sample.indels == null) {
                         sample.indels = new ObjectArrayList<EquivalentIndelRegion>();
                     }
@@ -309,18 +309,25 @@ public class SampleCountInfo {
         if (indels != null) {
             indels.clear();
         }
+
     }
 
     static final String A_BASE = "A";
-    static final String C_BASE = "C";
     static final String T_BASE = "T";
+    static final String C_BASE = "C";
     static final String G_BASE = "G";
     static final String N_BASE = "N";
-    static final String[] STRING = {A_BASE, C_BASE, T_BASE, G_BASE, N_BASE};
+    static final String[] STRING = {A_BASE, T_BASE,C_BASE,  G_BASE,N_BASE};
 
     public final String baseString(final int baseIndex) {
         return STRING[baseIndex];
     }
 
-
+    /**
+     * Remove an indel from the list of candidate indels.
+     * @param indel to remove.
+     */
+    public void removeIndel(final EquivalentIndelRegion indel) {
+      indel.markFiltered();
+    }
 }

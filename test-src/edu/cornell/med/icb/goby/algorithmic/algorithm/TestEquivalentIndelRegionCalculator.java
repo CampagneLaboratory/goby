@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNull;
 
 /**
  * @author Fabien Campagne
@@ -106,4 +107,11 @@ public class TestEquivalentIndelRegionCalculator {
         //  0123456  78
     }
 
+    @Test
+    public void testIndexLargerThanSize() throws Exception {
+        // DELETION in the read:
+        ObservedIndel indel = new ObservedIndel(600000000, 600000001, "TA", "--");
+        EquivalentIndelRegion result = equivalentIndelRegionCalculator.determine(2, indel);
+        assertNull("indel outside the genome should return null", result);
+    }
 }

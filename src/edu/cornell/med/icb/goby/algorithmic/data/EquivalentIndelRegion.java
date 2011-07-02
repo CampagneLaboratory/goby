@@ -43,14 +43,38 @@ public class EquivalentIndelRegion {
     public String to;
     public String flankLeft;
     public String flankRight;
+
+    /**
+     * Return the frequency of this indel. Filtered indels always return zero.
+     *
+     * @return frequency of the indel.
+     */
+    public int getFrequency() {
+        return filtered ? 0 : frequency;
+    }
+
     /**
      * The number of times the candidate indel was observed. Start at one, increment as needed.
      */
-    public int frequency = 1;
+    private int frequency = 1;
     /**
      * The index of the sample where these indels were observed.
      */
     public int sampleIndex;
+    private boolean matchesReference;
+    private boolean matchesRefCached;
+    /**
+     * The index of the first base in the read where the indel was observed.
+     */
+    public int readIndex;
+    /**
+     * Quality scores across the length of the indel.
+     */
+    public byte[] qualityScores;
+    /**
+     * Indicate that this indel was filtered out.
+     */
+    private boolean filtered;
 
     /**
      * Return the from bases, surrounded by flankLeft and flankRight bases.
@@ -119,16 +143,39 @@ public class EquivalentIndelRegion {
      * @return copy of this indel region.
      */
     public EquivalentIndelRegion copy() {
-       final EquivalentIndelRegion result = new EquivalentIndelRegion();
+        final EquivalentIndelRegion result = new EquivalentIndelRegion();
         result.from = from;
         result.to = to;
         result.flankLeft = flankLeft;
         result.flankRight = flankRight;
         result.referenceIndex = referenceIndex;
-        result.startPosition=startPosition;
-        result.endPosition=endPosition;
-        result.sampleIndex=sampleIndex;
+        result.startPosition = startPosition;
+        result.endPosition = endPosition;
+        result.sampleIndex = sampleIndex;
         return result;
 
+    }
+
+    public boolean matchesReference() {
+        if (!matchesRefCached) {
+            matchesReference = from.equals(to);
+            matchesRefCached = true;
+        }
+        return matchesReference;
+    }
+
+    /**
+     * Indicate that this indel was filtered out. getFrequency() will subsequently return zero.
+     */
+    public void markFiltered() {
+        filtered = true;
+    }
+
+    public void incrementFrequency() {
+        ++frequency;
+    }
+
+    public void setFrequency(int frequency) {
+        this.frequency=frequency;
     }
 }
