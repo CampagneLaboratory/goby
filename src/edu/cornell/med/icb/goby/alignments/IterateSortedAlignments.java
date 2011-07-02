@@ -556,6 +556,7 @@ public abstract class IterateSortedAlignments<T> {
             }
         }
         positionToBases.clear();
+
     }
 
     /**

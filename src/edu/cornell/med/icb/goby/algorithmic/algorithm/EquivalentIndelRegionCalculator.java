@@ -112,7 +112,9 @@ public class EquivalentIndelRegionCalculator {
         final int lastBaseIndex = indelSize - 1;
         int rewindLeft = 0;
         if (result.startPosition > genome.getLength(referenceIndex)) {
-            LOG.warn("Cannot determine sequence at position " + result.startPosition);
+            LOG.warn(String.format("Cannot determine sequence at position %d of reference %d ",
+                    result.startPosition,
+                    referenceIndex));
             return null;
         }
 
@@ -136,61 +138,58 @@ public class EquivalentIndelRegionCalculator {
         }
 
 
+        from.setLength(0);
+        to.setLength(0);
+        toFill.setLength(0);
 
-    from.setLength(0);
-    to.setLength(0);
-    toFill.setLength(0);
+        genome.getRange(referenceIndex, result.startPosition + 1, result.endPosition - result.startPosition - 1, from);
 
-    genome.getRange(referenceIndex,result.startPosition+1,result.endPosition-result.startPosition-1,from);
+        if (insertion)
 
-    if(insertion)
+        {
 
-    {
+            // construct the read sequence in the insertion region of the eir:
+            to.append(roll(leftExtensions, indel.to()));
+            to.append(from);
 
-        // construct the read sequence in the insertion region of the eir:
-        to.append(roll(leftExtensions, indel.to()));
-        to.append(from);
+            from.insert(0, GAPS.subSequence(0, indelSize));
 
-        from.insert(0, GAPS.subSequence(0, indelSize));
+        } else
+
+        {
+            // construct the read sequence in the deletion region of the eir:
+            final int length = from.length();
+            to.append(GAPS.subSequence(0, indelSize));
+            to.append(from.subSequence(Math.min(indelSize, length), length));
+
+        }
+
+        result.from = from.toString();
+        result.to = to.toString();
+        /*  gaps.setLength(0);
+        gaps.append(toFill);
+        gaps.delete(0, indelSize);
+        gaps.insert(0, GAPS.subSequence(0, indelSize));
+        */
+
+        //     debug("from: ", result);
+        flankingLeft.setLength(0);
+        genome.getRange(referenceIndex, result.startPosition - flankLeftSize + 1, flankLeftSize, flankingLeft);
+
+        result.flankLeft = flankingLeft.toString();
+
+        flankingRight.setLength(0);
+        genome.getRange(referenceIndex, result.endPosition, flankRightSize, flankingRight);
+
+        final int maxRefLength = genome.getLength(referenceIndex);
+
+        result.flankRight = flankingRight.toString();
+        //              debug("flanks: ", result);
+        return result;
 
     }
 
-    else
-
-    {
-        // construct the read sequence in the deletion region of the eir:
-        final int length = from.length();
-        to.append(GAPS.subSequence(0, indelSize));
-        to.append(from.subSequence(Math.min(indelSize, length), length));
-
-    }
-
-    result.from=from.toString();
-    result.to=to.toString();
-    /*  gaps.setLength(0);
-    gaps.append(toFill);
-    gaps.delete(0, indelSize);
-    gaps.insert(0, GAPS.subSequence(0, indelSize));
-    */
-
-    //     debug("from: ", result);
-    flankingLeft.setLength(0);
-    genome.getRange(referenceIndex,result.startPosition-flankLeftSize+1,flankLeftSize,flankingLeft);
-
-    result.flankLeft=flankingLeft.toString();
-
-    flankingRight.setLength(0);
-    genome.getRange(referenceIndex,result.endPosition,flankRightSize,flankingRight);
-
-    final int maxRefLength = genome.getLength(referenceIndex);
-
-    result.flankRight=flankingRight.toString();
-    //              debug("flanks: ", result);
-    return result;
-
-}
-
-final MutableString rollBuffer = new MutableString();
+    final MutableString rollBuffer = new MutableString();
 
     private final MutableString roll(int leftExtensions, String from) {
         rollBuffer.setLength(0);
@@ -205,8 +204,8 @@ final MutableString rollBuffer = new MutableString();
         return rollBuffer;
     }
 
-final MutableString toFill = new MutableString();
-final MutableString gaps = new MutableString();
+    final MutableString toFill = new MutableString();
+    final MutableString gaps = new MutableString();
 
     private void debug(String prefix, EquivalentIndelRegion result) {
         MutableString bases = new MutableString();
@@ -215,10 +214,10 @@ final MutableString gaps = new MutableString();
         System.out.flush();
     }
 
-MutableString from = new MutableString();
-MutableString to = new MutableString();
-MutableString flankingLeft = new MutableString();
-MutableString flankingRight = new MutableString();
+    MutableString from = new MutableString();
+    MutableString to = new MutableString();
+    MutableString flankingLeft = new MutableString();
+    MutableString flankingRight = new MutableString();
 
     private boolean insertionInRead(final ObservedIndel indel) {
         final String from = indel.from();
