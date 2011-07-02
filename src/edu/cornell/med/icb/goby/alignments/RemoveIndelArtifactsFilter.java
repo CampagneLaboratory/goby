@@ -56,9 +56,10 @@ public class RemoveIndelArtifactsFilter extends GenotypeFilter {
                             varCountRemovedPerSample[info.readerIndex]++;
                         }
                         numFiltered++;
-                        if (varCountRemovedPerSample[info.readerIndex] > sampleCount.varCount) {
+                 /*       if (varCountRemovedPerSample[info.readerIndex] > sampleCount.varCount) {
+
                             System.out.println("STOP3");
-                        }
+                        }*/
                     }
                 }
             }
