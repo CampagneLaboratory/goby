@@ -158,6 +158,8 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         numberOfGroups = groups.length;
         biomartFieldIndex = statWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
 
+        genotypeFormatter.defineInfoFields(statWriter);
+
         log2OddsRatioColumnIndex = statWriter.defineField("INFO", String.format("LOD[%s/%s]", groups[0], groups[1]),
                 1, ColumnType.Float, String.format("Log2 of the odds-ratio of observing a variant in group %s versus group %s", groups[0], groups[1]));
 

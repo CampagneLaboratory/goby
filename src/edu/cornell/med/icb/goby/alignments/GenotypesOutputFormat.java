@@ -60,16 +60,16 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
         this.statsWriter = new VCFWriter(writer);
-
+        biomartFieldIndex = statsWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
         defineInfoFields(statsWriter);
         defineGenotypeField(statsWriter);
+
         zygFieldIndex = statsWriter.defineField("FORMAT", "Zygosity", 1, ColumnType.String, "Zygosity");
         statsWriter.defineSamples(samples);
         statsWriter.writeHeader();
     }
 
     public void defineInfoFields(VCFWriter statsWriter) {
-        biomartFieldIndex = statsWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
         indelFlagFieldIndex = statsWriter.defineField("INFO", "INDEL", 1, ColumnType.Flag, "Indicates that the variation is an indel.");
 
     }
