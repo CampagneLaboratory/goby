@@ -47,7 +47,7 @@ public class RemoveIndelArtifactsFilter extends GenotypeFilter {
                         final char base = info.to;
 
                         final int baseIndex = sampleCount.baseIndex(base);
-                        sampleCount.counts[baseIndex]=Math.max(0,sampleCount.counts[baseIndex]-1);
+                        sampleCount.counts[baseIndex] = Math.max(0, sampleCount.counts[baseIndex] - 1);
                         checkCountPositive(sampleCount, baseIndex);
                         if (info.matchesReference) {
                             refCountRemovedPerSample[info.readerIndex]++;
@@ -56,7 +56,7 @@ public class RemoveIndelArtifactsFilter extends GenotypeFilter {
                             varCountRemovedPerSample[info.readerIndex]++;
                         }
                         numFiltered++;
-                 /*       if (varCountRemovedPerSample[info.readerIndex] > sampleCount.varCount) {
+                        /*       if (varCountRemovedPerSample[info.readerIndex] > sampleCount.varCount) {
 
                             System.out.println("STOP3");
                         }*/
@@ -69,8 +69,13 @@ public class RemoveIndelArtifactsFilter extends GenotypeFilter {
         adjustRefVarCounts(sampleCounts);
     }
 
+    @Override
+    public int getThresholdForSample(int sampleIndex) {
+        throw new UnsupportedOperationException("This filter does not support method getThresholdForSample()");
+    }
+
     private void checkCountPositive(SampleCountInfo sampleCount, int baseIndex) {
-        if (sampleCount.counts[baseIndex]<0) {
+        if (sampleCount.counts[baseIndex] < 0) {
             System.out.println("STOP");
         }
     }
