@@ -143,13 +143,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                     zygozity = "heterozygous";
                     break;
                 default:
-                    /*     zygozity = String.format("mixture:%d:%d:%d:%d:%d",
-                    sci.counts[SampleCountInfo.BASE_A_INDEX],
-                    sci.counts[SampleCountInfo.BASE_T_INDEX],
-                    sci.counts[SampleCountInfo.BASE_C_INDEX],
-                    sci.counts[SampleCountInfo.BASE_G_INDEX],
-                    sci.counts[SampleCountInfo.BASE_OTHER_INDEX])
-                    ;*/
+
                     zygozity = "Mixture";
                     break;
             }
