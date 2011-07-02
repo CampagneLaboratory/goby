@@ -57,16 +57,16 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
     public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
         statsWriter = new VCFWriter(writer);
+        biomartFieldIndex = statsWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
         genotypeFormatter.defineInfoFields(statsWriter);
-       // biomartFieldIndex = statsWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
         pValueIndex = statsWriter.defineField("INFO", "P", 1, ColumnType.Float, "P-values of a t-test comparing arcsin transformed values of the ratio between groups.");
-
 
         refPropFieldIndex = statsWriter.defineField("FORMAT", "RP", 1, ColumnType.Float,
                 "Proportion of reference allele in the sample (count(ref)/(sum count other alleles)");
         depthFieldIndex = statsWriter.defineField("INFO", "DP",
                 1, ColumnType.Integer, "Total depth of sequencing across groups at this site");
         genotypeFormatter.defineGenotypeField(statsWriter);
+
 
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         int countA = 0;
@@ -109,10 +109,11 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             SampleCountInfo sci = sampleCounts[sampleIndex];
             int sumInSample = 0;
-            for (int baseCount : sci.counts) {
-                totalCount += baseCount;
-                sumInSample += baseCount;
-                assert baseCount >= 0 : "counts must not be negative.";
+            for (int genotypeIndex = 0; genotypeIndex < sci.getGenotypeMaxIndex(); ++genotypeIndex) {
+                final int genotypeCount = sci.getGenotypeCount(genotypeIndex);
+                totalCount += genotypeCount;
+                sumInSample += genotypeCount;
+                assert genotypeCount >= 0 : "counts must not be negative.";
             }
             // must observe at least one base in each sample to write output for this position.
             if (sumInSample == 0) return;
@@ -135,16 +136,19 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             int numAlleles = 0;
             totalCount = 0;
-            for (int count : sampleCounts[sampleIndex].counts) {
+            final SampleCountInfo sampleCount = sampleCounts[sampleIndex];
+            for (int genotypeIndex = 0; genotypeIndex < sampleCount.getGenotypeMaxIndex(); ++genotypeIndex) {
+
+                final int count = sampleCount.getGenotypeCount(genotypeIndex);
                 if (count > 0) numAlleles++;
                 totalCount += count;
             }
 
             // estimate reference allele proportion:
             double refProportion = (double) sampleCounts[sampleIndex].refCount;
-            refProportion /= (sampleCounts[sampleIndex].refCount + sampleCounts[sampleIndex].varCount);
+            refProportion /= sampleCounts[sampleIndex].refCount + sampleCounts[sampleIndex].varCount;
             statsWriter.setSampleValue(refPropFieldIndex, sampleIndex, refProportion);
-            int groupIndex = readerIndexToGroupIndex[sampleIndex];
+            final int groupIndex = readerIndexToGroupIndex[sampleIndex];
             final double transformedValue = StrictMath.asin(StrictMath.sqrt(refProportion));
 
             if (groupIndex == groupIndexA) {
@@ -179,13 +183,13 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
     int[] readerIndexToGroupIndex;
 
     private void fillVariantCountArrays(SampleCountInfo[] sampleCounts) {
-        eventObserved=false;
+        eventObserved = false;
 
         for (SampleCountInfo csi : sampleCounts) {
             final int sampleIndex = csi.sampleIndex;
             variantsCountPerSample[sampleIndex] = csi.varCount;
             refCountsPerSample[sampleIndex] = csi.refCount;
-            eventObserved |=   variantsCountPerSample[sampleIndex] >0 &&   refCountsPerSample[sampleIndex]>0;
+            eventObserved |= variantsCountPerSample[sampleIndex] > 0 && refCountsPerSample[sampleIndex] > 0;
         }
 
 

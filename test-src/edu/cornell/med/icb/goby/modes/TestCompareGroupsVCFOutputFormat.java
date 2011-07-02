@@ -83,9 +83,9 @@ public class TestCompareGroupsVCFOutputFormat {
         statWriter = createMock("statWriter", VCFWriter.class);
 
 
-        statWriter.setInfo(eq(1), anyDouble());
         statWriter.setInfo(eq(2), anyDouble());
         statWriter.setInfo(eq(3), anyDouble());
+        statWriter.setInfo(eq(4), anyDouble());
 
 
         expectLastCall().anyTimes();
@@ -102,6 +102,8 @@ public class TestCompareGroupsVCFOutputFormat {
         statWriter.setPosition(position + 1); // position is written 1-based
         statWriter.setReferenceAllele(EasyMock.anyObject(String.class));
         expectLastCall().atLeastOnce();
+
+
         statWriter.addAlternateAllele(EasyMock.<String>anyObject());
         expectLastCall().atLeastOnce();
 
@@ -128,7 +130,7 @@ public class TestCompareGroupsVCFOutputFormat {
             expect(mode.getReaderIndexToGroupIndex()).andReturn(readerIndexToGroupIndex);
             replay(mode);
 
-            statWriter.setInfo(eq(fisherExactPValueColumnIndex = 4), eq(1d));
+            statWriter.setInfo(eq(fisherExactPValueColumnIndex = 5), eq(1d));
 
             replay(statWriter);
             format.allocateStorage(20, 2);
@@ -154,7 +156,7 @@ public class TestCompareGroupsVCFOutputFormat {
             expect(mode.getReaderIndexToGroupIndex()).andReturn(readerIndexToGroupIndex);
             replay(mode);
 
-            statWriter.setInfo(eq(fisherExactPValueColumnIndex = 4), lt(1d));
+            statWriter.setInfo(eq(fisherExactPValueColumnIndex = 5), lt(1d));
             replay(statWriter);
             format.allocateStorage(20, 2);
             format.defineColumns(output, mode);
@@ -216,7 +218,7 @@ public class TestCompareGroupsVCFOutputFormat {
         indel1.flankLeft = "T";
         indel1.flankRight = "";
         indel1.sampleIndex = 0;
-        indel1.setFrequency( 5);
+        indel1.setFrequency(5);
         EquivalentIndelRegion indel2 = new EquivalentIndelRegion();
         indel2.startPosition = 1;
         indel2.endPosition = 3;
@@ -226,12 +228,12 @@ public class TestCompareGroupsVCFOutputFormat {
         indel2.flankLeft = "T";
         indel2.flankRight = "";
         indel1.sampleIndex = 0;
-        indel2.setFrequency(  10);
+        indel2.setFrequency(10);
         sampleCounts[0].addIndel(indel1);
         sampleCounts[0].addIndel(indel2);
         EquivalentIndelRegion indel3 = indel2.copy();
         indel3.sampleIndex = 1;
-        indel3.setFrequency( 3);
+        indel3.setFrequency(3);
 
         sampleCounts[1].addIndel(indel3);
         return sampleCounts;
@@ -246,7 +248,7 @@ public class TestCompareGroupsVCFOutputFormat {
             expect(mode.getReaderIndexToGroupIndex()).andReturn(readerIndexToGroupIndex);
             replay(mode);
 
-            statWriter.setInfo(eq(fisherExactPValueColumnIndex = 4), lt(1d));
+            statWriter.setInfo(eq(fisherExactPValueColumnIndex = 5), lt(1d));
             replay(statWriter);
             format.allocateStorage(20, 2);
             format.defineColumns(output, mode);

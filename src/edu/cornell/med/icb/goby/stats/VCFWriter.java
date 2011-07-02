@@ -108,7 +108,7 @@ public class VCFWriter {
     }
 
     public void addAlternateAllele(String allele) {
-        if (!altAlleles.contains(allele) ) {
+        if (!altAlleles.contains(allele)) {
             altAlleles.add(allele);
         }
     }
@@ -268,6 +268,7 @@ public class VCFWriter {
 
         MutableString infoString = new MutableString();
         for (CharSequence infoValue : infoValues) {
+            assert infoValue != null : "value cannot be null for INFO field " + infoIds[index];
             if (infoValue.length() != 0) {
                 if (infoFlag[index]) {
                     infoString.append(infoIds[index]);
@@ -370,7 +371,7 @@ public class VCFWriter {
      */
     public void setFlag(final int infoFlagIndex, final boolean state) {
 
-        infoValues[infoFlagIndex]=state?infoIds[infoFlagIndex]:"";
+        infoValues[infoFlagIndex] = state ? infoIds[infoFlagIndex] : "";
 
     }
 
