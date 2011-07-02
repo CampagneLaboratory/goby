@@ -26,7 +26,6 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.lang.MutableString;
-
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
@@ -125,9 +124,15 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     private void writeZygozity(SampleCountInfo[] sampleCounts) {
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             SampleCountInfo sci = sampleCounts[sampleIndex];
-
+            int alleleCount = 0;
+            for (int genotypeIndex = 0; genotypeIndex < sci.getGenotypeMaxIndex(); ++genotypeIndex) {
+                final int count = sci.getGenotypeCount(genotypeIndex);
+                if (count > 0) {
+                    ++alleleCount;
+                }
+            }
             String zygozity;
-            switch (alleleSet.size()) {
+            switch (alleleCount) {
                 case 0:
                     zygozity = "not-typed";
                     break;
@@ -272,16 +277,13 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
         if (!isIncludedIn(genotype, referenceSet)) {
             referenceSet.add(genotype);
         }
-        //      ObjectArrayList toRemove=new ObjectArrayList();
+
         for (final String refGenotype : referenceSet) {
             if (refGenotype != null && !genotype.equals(refGenotype) && isIncludedIn(refGenotype, genotype)) {
                 referenceSet.remove(refGenotype);
+                alleleSet.remove(refGenotype);
             }
         }
-        if (referenceSet.size() > 1) {
-            System.out.println("STOP2");
-        }
-        //   referenceSet.removeAll(toRemove);
     }
 
     private boolean isIncludedIn(String genotype, ObjectArraySet<String> referenceSet) {
