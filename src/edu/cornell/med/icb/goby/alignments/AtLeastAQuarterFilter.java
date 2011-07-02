@@ -35,7 +35,7 @@ public class AtLeastAQuarterFilter extends GenotypeFilter {
     private int[] maxAlleleCountsPerSample;
 
     @Override
-     public String describe() {
+    public String describe() {
         return "count(allele in sample) < 1/4 * max_count over alleles in sample";
     }
 
@@ -46,6 +46,11 @@ public class AtLeastAQuarterFilter extends GenotypeFilter {
         } else {
             Arrays.fill(maxAlleleCountsPerSample, 0);
         }
+    }
+
+    @Override
+    public int getThresholdForSample(final int sampleIndex) {
+        return maxAlleleCountsPerSample[sampleIndex] / 4;
     }
 
     public void filterGenotypes(DiscoverVariantPositionData list,
@@ -66,7 +71,7 @@ public class AtLeastAQuarterFilter extends GenotypeFilter {
 
             final int sampleIndex = positionBaseInfo.readerIndex;
 
-            int removedBaseCountThreshold = maxAlleleCountsPerSample[sampleIndex] / 4;
+            final int removedBaseCountThreshold = getThresholdForSample(sampleIndex);
 
             numScreened++;
             char base = positionBaseInfo.matchesReference ? positionBaseInfo.from : positionBaseInfo.to;
@@ -94,6 +99,8 @@ public class AtLeastAQuarterFilter extends GenotypeFilter {
 
             }
         }
+        filterIndels(list);
         adjustRefVarCounts(sampleCounts);
     }
+
 }

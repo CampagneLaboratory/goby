@@ -18,7 +18,6 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 /**
@@ -34,6 +33,7 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
  */
 public class LeftOverFilter extends GenotypeFilter {
     private static final int MULTIPLIER = 2;
+    private int removedBaseCountThreshold;
 
     @Override
     public void filterGenotypes(DiscoverVariantPositionData list,
@@ -42,7 +42,7 @@ public class LeftOverFilter extends GenotypeFilter {
         resetCounters();
         initStorage(sampleCounts.length);
         final int removedBaseCount = filteredList.size() / sampleCounts.length;
-        final int removedBaseCountThreshold = removedBaseCount * MULTIPLIER;
+        removedBaseCountThreshold = removedBaseCount * MULTIPLIER;
 
 
         for (PositionBaseInfo positionBaseInfo : list) {
@@ -78,27 +78,20 @@ public class LeftOverFilter extends GenotypeFilter {
 
             }
         }
-        if (list.hasCandidateIndels()) {
-            // remove candidate indels if they don't make the frequency threshold (threshold determined by bases observed
-            // at that position):
-            for (final EquivalentIndelRegion indel : list.getIndels()) {
-                if (indel!=null && indel.getFrequency() < removedBaseCountThreshold) {
-                    list.failIndel(indel);
 
-                 /*   if (indel.matchesReference()) {
-                        refCountRemovedPerSample[indel.sampleIndex]+=indel.frequency;
-                    } else {
-                        varCountRemovedPerSample[indel.sampleIndex]+=indel.frequency;
-                    }*/
-                }
-            }
-        }
+        filterIndels(list);
         adjustRefVarCounts(sampleCounts);
     }
+
 
     @Override
     public String describe() {
         return String.format("#count(allele) < (%d *#filtered)", MULTIPLIER);
+    }
+
+    @Override
+    public int getThresholdForSample(int sampleIndex) {
+        return removedBaseCountThreshold;
     }
 
 }

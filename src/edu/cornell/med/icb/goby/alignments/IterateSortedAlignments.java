@@ -99,6 +99,11 @@ public abstract class IterateSortedAlignments<T> {
         parseIncludeReferenceArgument(includeReferenceNameCommas);
         startOffsetArgument = jsapResult.getString("start-position");
         endOffsetArgument = jsapResult.getString("end-position");
+        if (startOffsetArgument != null && endOffsetArgument == null ||
+                endOffsetArgument != null && startOffsetArgument == null) {
+            System.err.println("Start (-s) and end offset (-e) arguments must be specified together or not at all.");
+            System.exit(1);
+        }
     }
 
     /**
@@ -336,8 +341,10 @@ public abstract class IterateSortedAlignments<T> {
                 }
 
                 final int leftPadding = alignmentEntry.getQueryPosition();
-                final int rightPadding = (queryLength + numDeletions) -
-                        (alignmentEntry.getTargetAlignedLength() + numInsertions) - leftPadding;
+                final int rightPadding = Math.max(0,
+                        queryLength + numDeletions -
+                                (alignmentEntry.getTargetAlignedLength() + numInsertions)
+                                - leftPadding);
 
                 if (leftPadding > 0) {
                     if (LOG.isDebugEnabled()) {
@@ -426,11 +433,11 @@ public abstract class IterateSortedAlignments<T> {
                     //
                     if (var.getFrom().indexOf('-') >= 0 || var.getTo().indexOf('-') >= 0) {
 
-                            observeIndel(positionToBases, referenceIndex,
-                                    alignmentEntry.getPosition() + var.getPosition() - 1 /* make start position zero-based */,
-                                    var.getFrom(), var.getTo(),
-                                    alignmentEntry.getSampleIndex(),
-                                    var.getReadIndex());
+                        observeIndel(positionToBases, referenceIndex,
+                                alignmentEntry.getPosition() + var.getPosition() - 1 /* make start position zero-based */,
+                                var.getFrom(), var.getTo(),
+                                alignmentEntry.getSampleIndex(),
+                                var.getReadIndex());
 
                     }
                 }
@@ -543,7 +550,7 @@ public abstract class IterateSortedAlignments<T> {
 
         for (final int intermediatePosition : tmpPositions) {
             if (positionToBases.containsKey(intermediatePosition)) {
-                              // TODO remove positionToBases from method signature:
+                // TODO remove positionToBases from method signature:
                 processPositions(lastReferenceIndex, intermediatePosition, positionToBases.get(intermediatePosition));
                 positionToBases.remove(intermediatePosition);
                 lastRemovedPosition = intermediatePosition;

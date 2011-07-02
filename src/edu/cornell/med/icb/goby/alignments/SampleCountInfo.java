@@ -155,9 +155,9 @@ public class SampleCountInfo {
                     // make a copy again for this specific sample, set the sampleIndex:
                     final EquivalentIndelRegion copy = indel.copy();
                     copy.sampleIndex = sample.sampleIndex;
-                    // set frequency to -1 because add will increase frequency by one and this indel genotype
-                    // was never observed in this sample, we just create a dummy observation to align genotypes across samples.
-                    copy.setFrequency(0);
+                    //  we just create a dummy observation to align genotypes across samples and set its filtered state so that the frequency is always zero
+
+                    copy.markFiltered();
                     if (sample.indels == null) {
                         sample.indels = new ObjectArrayList<EquivalentIndelRegion>();
                     }
@@ -317,7 +317,7 @@ public class SampleCountInfo {
     static final String C_BASE = "C";
     static final String G_BASE = "G";
     static final String N_BASE = "N";
-    static final String[] STRING = {A_BASE, T_BASE,C_BASE,  G_BASE,N_BASE};
+    static final String[] STRING = {A_BASE, T_BASE, C_BASE, G_BASE, N_BASE};
 
     public final String baseString(final int baseIndex) {
         return STRING[baseIndex];
@@ -325,9 +325,23 @@ public class SampleCountInfo {
 
     /**
      * Remove an indel from the list of candidate indels.
+     *
      * @param indel to remove.
      */
     public void removeIndel(final EquivalentIndelRegion indel) {
-      indel.markFiltered();
+        indel.markFiltered();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("sample: %d counts A=%d C=%d T=%d G=%d N=%d FB=%d indels={ %s }%n",
+                sampleIndex,
+                counts[BASE_A_INDEX],
+                counts[BASE_C_INDEX],
+                counts[BASE_T_INDEX],
+                counts[BASE_G_INDEX],
+                counts[BASE_OTHER_INDEX],
+                failedCount,
+                indels);
     }
 }

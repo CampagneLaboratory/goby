@@ -134,7 +134,9 @@ public class EquivalentIndelRegion {
     @Override
 
     public String toString() {
-        return String.format("%s %s/%s %s %d-%d", flankLeft, from, to, flankRight, startPosition, endPosition);
+        return String.format("indel count=%d %s %s/%s %s %d-%d filtered=%b",
+                getFrequency(), flankLeft, from, to, flankRight,
+                startPosition, endPosition, filtered);
     }
 
     /**
@@ -176,6 +178,8 @@ public class EquivalentIndelRegion {
     }
 
     public void setFrequency(int frequency) {
-        this.frequency=frequency;
+        this.frequency = frequency;
     }
+
+
 }

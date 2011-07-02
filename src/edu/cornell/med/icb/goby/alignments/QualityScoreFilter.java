@@ -18,10 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-
-import java.util.Arrays;
 
 /**
  * @author Fabien Campagne
@@ -33,6 +30,11 @@ public class QualityScoreFilter extends GenotypeFilter {
 
     public String describe() {
         return "q<" + scoreThreshold;
+    }
+
+    @Override
+    public int getThresholdForSample(int sampleIndex) {
+        throw new UnsupportedOperationException("This filter does not support method getThresholdForSample()");
     }
 
     int[] removed = new int[5];
@@ -49,19 +51,19 @@ public class QualityScoreFilter extends GenotypeFilter {
             numScreened++;
             if (!info.matchesReference && info.qualityScore < scoreThreshold) {
                 if (!filteredList.contains(info)) {
-                    if (info.to!='-') {
+                    if (info.to != '-') {
                         // deleted bases have a quality score  of zero but should not be removed at this stage.
-                    filteredList.add(info);
-                    final SampleCountInfo countInfo = sampleCounts[info.readerIndex];
-                    final int baseIndex = countInfo.baseIndex(info.to);
-                    countInfo.counts[baseIndex]--;
-                    varCountRemovedPerSample[info.readerIndex]++;
-                    numFiltered++;
+                        filteredList.add(info);
+                        final SampleCountInfo countInfo = sampleCounts[info.readerIndex];
+                        final int baseIndex = countInfo.baseIndex(info.to);
+                        countInfo.counts[baseIndex]--;
+                        varCountRemovedPerSample[info.readerIndex]++;
+                        numFiltered++;
                     }
                 }
             }
         }
-      /*
+        /*
        TODO: enable this when we store quality score for context of indels:
        if (list.hasCandidateIndels()) {
             // remove candidate indels if they don't make the base quality threshold (threshold determined by bases observed

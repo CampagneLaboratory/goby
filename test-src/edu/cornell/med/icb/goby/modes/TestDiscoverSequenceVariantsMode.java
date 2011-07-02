@@ -26,8 +26,6 @@ import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.util.TestFiles;
 import edu.cornell.med.icb.io.TSVReader;
-import it.unimi.dsi.fastutil.chars.CharArraySet;
-import it.unimi.dsi.fastutil.chars.CharSet;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntIterator;
@@ -41,16 +39,14 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.*;
 import java.util.Collections;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Fabien Campagne
@@ -100,7 +96,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
     }
 
     private void configureTestGenome(DiscoverSequenceVariantsMode mode) {
-        RandomAccessSequenceTestSupport genomeForTest=new RandomAccessSequenceTestSupport(new String[]{"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}){
+        RandomAccessSequenceTestSupport genomeForTest = new RandomAccessSequenceTestSupport(new String[]{"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}) {
             @Override
             public char get(int referenceIndex, int position) {
 
@@ -287,44 +283,6 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         }
     }
 
-    @Test
-    public void testAdjuster() {
-        synchronized (GobyRengine.getInstance().getRengine()) {
-            ObjectArrayList<ReadIndexStats> readIndexStats = makeReadIndexStats();
-
-
-            FisherBaseFilter adjuster = new FisherBaseFilter(readIndexStats);
-
-            SampleCountInfo[] sampleCounts = makeSampleCounts();
-
-            DiscoverVariantPositionData list = new DiscoverVariantPositionData();
-            PositionBaseInfo info = new PositionBaseInfo();
-            list.add(info);
-            IntArrayList readIndices = IntArrayList.wrap(new int[]{1, 1, 1, 1, 2, 2, 2, 2, 3});
-
-            list = makeList(sampleCounts, readIndices);
-            adjuster.setPValueThreshold(0.5);
-            ObjectSet<PositionBaseInfo> filteredList = new ObjectArraySet<PositionBaseInfo>();
-            adjuster.filterGenotypes(list, sampleCounts, filteredList);
-
-            System.out.println("list: " + list);
-
-            CharSet toBases = new CharArraySet();
-            for (PositionBaseInfo i : filteredList) {
-                toBases.add(i.to);
-            }
-            assertTrue("Adjustment must remove T", toBases.contains('T'));
-            assertTrue("Adjustment must remove other bases", toBases.contains('N'));
-
-            CountFixer fixer = new CountFixer();
-            fixer.fix(list, sampleCounts, filteredList);
-
-            assertEquals(5, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
-            assertEquals(9, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
-            assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
-            assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_OTHER_INDEX]);
-        }
-    }
 
     private SampleCountInfo[] makeSampleCounts() {
         SampleCountInfo[] sampleCounts = new SampleCountInfo[1];
@@ -553,18 +511,6 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         return list;
     }
 
-    @Test
-    public void testEstimatePValue() {
-        FisherBaseFilter adjuster = new FisherBaseFilter(makeReadIndexStats());
-        int count00 = 1; // observedVariationCount;
-        int count10 = 10; // expectedVariationCount;
-        int count01 = 20; // observedTotalCount;
-        int count11 = 20; // expectedReferenceCount;
-        for (int i = 0; i < 30; i++) {
-            Double pValue = adjuster.estimatePValue(count00 + i, count10, count01, count11);
-            System.out.println("pvalue less variations than expected by errors: " + pValue);
-        }
-    }
 
     private int nextReadIndex() {
         return 0;  //To change body of created methods use File | Settings | File Templates.

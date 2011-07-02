@@ -18,9 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 import java.util.Arrays;
@@ -93,10 +91,25 @@ public abstract class GenotypeFilter {
             sci.varCount -= varCountRemovedPerSample[sci.sampleIndex];
             sci.refCount -= refCountRemovedPerSample[sci.sampleIndex];
             // TODO remove the max statements, the code should work without
-            sci.varCount=Math.max(0,sci.varCount);
-            sci.refCount=Math.max(0,sci.refCount);
+            sci.varCount = Math.max(0, sci.varCount);
+            sci.refCount = Math.max(0, sci.refCount);
             assert sci.refCount >= 0 : "refCount negative: " + sci.refCount;
             assert sci.varCount >= 0 : "varCount negative: " + sci.varCount;
         }
     }
+
+    protected void filterIndels(final DiscoverVariantPositionData list) {
+        if (list.hasCandidateIndels()) {
+            // remove candidate indels if they don't make the frequency threshold (threshold determined by bases observed
+            // at that position):
+            for (final EquivalentIndelRegion indel : list.getIndels()) {
+                if (indel != null && indel.getFrequency() < getThresholdForSample(indel.sampleIndex)) {
+
+                    list.failIndel(indel);
+                }
+            }
+        }
+    }
+
+    public abstract int getThresholdForSample(final int sampleIndex);
 }

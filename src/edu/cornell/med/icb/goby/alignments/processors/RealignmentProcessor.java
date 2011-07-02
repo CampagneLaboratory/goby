@@ -213,18 +213,19 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
 
     /**
      * Return true if the alignment overlaps the indel.
+     *
      * @param indel
      * @param entry
      * @return
      */
     private boolean entryOverlapsIndel(final ObservedIndel indel, final Alignments.AlignmentEntry entry) {
-        final int entryStart=entry.getPosition();
-        final int entryEnd=entryStart+entry.getTargetAlignedLength();
+        final int entryStart = entry.getPosition();
+        final int entryEnd = entryStart + entry.getTargetAlignedLength();
         final int indelStart = indel.getStart();
         final int indelEnd = indel.getEnd();
-        return entryStart<= indelStart && indelEnd <=entryEnd ||
-                entryStart< indelEnd && entryEnd> indelStart ||
-                entryEnd> indelStart && entryStart< indelEnd;
+        return entryStart <= indelStart && indelEnd <= entryEnd ||
+                entryStart < indelEnd && entryEnd > indelStart ||
+                entryEnd > indelStart && entryStart < indelEnd;
     }
 
     private Alignments.AlignmentEntry realign(Alignments.AlignmentEntry entry,
@@ -234,7 +235,12 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         Alignments.AlignmentEntry.Builder builder = Alignments.AlignmentEntry.newBuilder(entry);
         // update the score to reflect the realignment:
         builder.setScore(entry.getScore() + scoreDelta);
-        int indelLength = indel.positionSpan();
+        final int indelLength = indel.positionSpan();
+        // target aligned length increases by the length of gaps in the reads, since we support only read deletions at this time,
+        // targetAlignedLength is incremented with the length of the indel.
+        // TODO: revise to change QueryAlignedLength when implementing support for read insertions.
+        builder.setTargetAlignedLength(builder.getTargetAlignedLength() + indelLength);
+
         int entryPosition = entry.getPosition();
         final int originalEntryPosition = entryPosition;
         if (!shiftForward && indel.isReadInsertion()) {
@@ -245,12 +251,12 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
             //  when entry position changes, we need to update the pool to reflect the new entry sort order
             // this is accomplished by wrapping this processor with a LocalSortProcessor instance.
         }
-        int indelOffsetInAlignment = indel.getStart() - entryPosition;
+        final int indelOffsetInAlignment = indel.getStart() - entryPosition;
 
-        int varCount = entry.getSequenceVariationsCount();
-        int targetIndex = entry.getTargetIndex();
+        final int varCount = entry.getSequenceVariationsCount();
+        final int targetIndex = entry.getTargetIndex();
         int score = 0;
-        int direction = shiftForward ? 1 : -1;
+        final int direction = shiftForward ? 1 : -1;
         if (genome == null) {
             genomeNull.warn(LOG, "Genome must not be null outside of Junit tests.");
             return entry;
@@ -320,6 +326,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
                     int readIndex = entry.getMatchingReverseStrand() ?
                             entry.getQueryLength() - indelOffsetInAlignment + (shiftForward ? 1 : indelLength) :
                             varPosition;
+
                     varBuilder.setReadIndex(readIndex);
                     rewrittenVariations.add(varBuilder.build());
 
@@ -338,6 +345,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         int readIndex = entry.getMatchingReverseStrand() ?
                 entry.getQueryLength() - indelOffsetInAlignment + (shiftForward ? 1 : indelLength) :
                 varPosition;
+
         varBuilder.setReadIndex(readIndex);
         rewrittenVariations.add(varBuilder.build());
         builder = builder.clearSequenceVariations();
@@ -348,6 +356,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         //    System.out.printf("realigned queryIndex=%d%n", alignmentEntry.getQueryIndex());
         return alignmentEntry;
     }
+
 
     /**
      * Score the realignment of an entry with respect to a potential indel.

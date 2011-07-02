@@ -34,7 +34,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -150,7 +149,7 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
         final ObservedIndel indel = new ObservedIndel(startPosition, from, to, readIndex);
         int flankLeftSize = 1;
         equivalentIndelRegionCalculator.setFlankLeftSize(flankLeftSize); // VCF output requires one base before the indel
-        equivalentIndelRegionCalculator.setFlankRightSize(5);
+        equivalentIndelRegionCalculator.setFlankRightSize(0);
         final EquivalentIndelRegion indelCandidateRegion = equivalentIndelRegionCalculator.determine(referenceIndex, indel);
         if (indelCandidateRegion == null) {
             return;
@@ -311,6 +310,7 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                     SampleCountInfo.alignIndels(sampleCounts);
 
                     format.writeRecord(this, sampleCounts, referenceIndex, position, list, groupIndexA, groupIndexB);
+
                 }
 
             }
