@@ -112,7 +112,7 @@ public class EquivalentIndelRegionCalculator {
         final int lastBaseIndex = indelSize - 1;
         int rewindLeft = 0;
         if (result.startPosition > genome.getLength(referenceIndex)) {
-            LOG.warn(String.format("Cannot determine sequence at position %d of reference %d ",
+            LOG.warn(String.format("Cannot determine sequence at position %d of reference-index %d ",
                     result.startPosition,
                     referenceIndex));
             return null;
