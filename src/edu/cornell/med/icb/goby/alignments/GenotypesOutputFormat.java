@@ -53,7 +53,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     private int failBaseCountFieldIndex;
     private int goodBaseCountFieldIndex;
     private String[] singleton = new String[1];
-    private int indelFlagFieldIndex;
+    private int indelFlagFieldIndex = -1;
     private boolean siteObserved;
 
 
@@ -258,7 +258,9 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
 
 
         }
-        statsWriter.setFlag(indelFlagFieldIndex, siteHasIndel);
+        if (indelFlagFieldIndex != -1) {    // set indel flag only when the field is defined (i.e., client has called setInfoFields)
+            statsWriter.setFlag(indelFlagFieldIndex, siteHasIndel);
+        }
     }
 
     /**
