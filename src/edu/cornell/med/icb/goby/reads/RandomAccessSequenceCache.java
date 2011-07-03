@@ -255,6 +255,11 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         return referenceNameMap.getInt(referenceName);
     }
 
+    @Override
+    public int size() {
+        return referenceNameMap.size();
+    }
+
     public final char get(final int referenceIndex, final int position) {
         final int maxSize = sizes.getInt(referenceIndex);
         final LongArrayBitVector ignoreList = referenceIgnoreLists.get(referenceIndex);

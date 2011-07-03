@@ -56,4 +56,11 @@ public interface RandomAccessSequenceInterface {
     void getRange(final int referenceIndex, final int position, final int length, MutableString bases);
 
     int getReferenceIndex(String referenceId);
+
+    /**
+     * Return the number of sequences in the cache.
+     *
+     * @return size of the cache.
+     */
+    int size();
 }

@@ -43,6 +43,19 @@ public class EquivalentIndelRegionCalculator {
     private static final Logger LOG = Logger.getLogger(EquivalentIndelRegionCalculator.class);
 
     /**
+     * Set an array with the permutation to convert alignment reference indices to genome reference indices.
+     * Each element of the array at index alignmentTargetIndex holds the genomeTargetIndex. One element
+     * per reference sequence in the genome and alignment.
+     *
+     * @param alignmentToGenomeTargetIndices permutation.
+     */
+    public void setReferenceIndexPermutation(final int[] alignmentToGenomeTargetIndices) {
+        this.alignmentToGenomeTargetIndices = alignmentToGenomeTargetIndices;
+    }
+
+    private int[] alignmentToGenomeTargetIndices;
+
+    /**
      * Set the number of bases to record in flank-right.
      *
      * @param flankRightSize number of flanking bases on the right.
@@ -79,11 +92,32 @@ public class EquivalentIndelRegionCalculator {
         return flankLeftSize;
     }
 
-    public EquivalentIndelRegionCalculator(RandomAccessSequenceInterface genome) {
+    public EquivalentIndelRegionCalculator(
+            final RandomAccessSequenceInterface genome,
+            final int[] alignmentToGenomeTargetIndices) {
+        init(genome, alignmentToGenomeTargetIndices);
+
+    }
+
+    public EquivalentIndelRegionCalculator(final RandomAccessSequenceInterface genome) {
+        final int[] permutation = new int[genome.size()];
+        for (int i = 0; i < genome.size(); i++) {
+            permutation[i] = i;
+        }
+        init(genome, permutation);
+
+    }
+
+    private void init(RandomAccessSequenceInterface genome, int[] alignmentToGenomeTargetIndices) {
         this.genome = genome;
         if (genome == null) {
             throw new IllegalArgumentException("genome cannot be null");
         }
+        if (alignmentToGenomeTargetIndices == null) {
+            throw new IllegalArgumentException("permutation cannot be null");
+        }
+
+        this.alignmentToGenomeTargetIndices = alignmentToGenomeTargetIndices;
     }
 
     MutableString p = new MutableString();
@@ -105,20 +139,20 @@ public class EquivalentIndelRegionCalculator {
         p.setLength(0);
         final boolean insertion = insertionInRead(indel);
         p.append(insertion ? indel.to() : indel.from());
-
+        final int genomeReferenceIndex = alignmentToGenomeTargetIndices[referenceIndex];
         // extend left:
         int leftExtensions = 0;
         final int indelSize = p.length();
         final int lastBaseIndex = indelSize - 1;
         int rewindLeft = 0;
-        if (result.startPosition > genome.getLength(referenceIndex)) {
+        if (result.startPosition > genome.getLength(genomeReferenceIndex)) {
             LOG.warn(String.format("Cannot determine sequence at position %d of reference-index %d ",
                     result.startPosition,
                     referenceIndex));
             return null;
         }
 
-        while (p.charAt(lastBaseIndex - leftExtensions + rewindLeft) == genome.get(referenceIndex, result.startPosition)) {
+        while (p.charAt(lastBaseIndex - leftExtensions + rewindLeft) == genome.get(genomeReferenceIndex, result.startPosition)) {
             leftExtensions++;
             result.startPosition = indel.getStart() - leftExtensions;
             if (lastBaseIndex - leftExtensions + rewindLeft < 0) {
@@ -128,7 +162,7 @@ public class EquivalentIndelRegionCalculator {
         }
         int rightExtensions = 0;
         int rewindRight = 0;
-        while (p.charAt(rightExtensions + rewindRight) == genome.get(referenceIndex, result.endPosition)) {
+        while (p.charAt(rightExtensions + rewindRight) == genome.get(genomeReferenceIndex, result.endPosition)) {
             rightExtensions++;
             result.endPosition = indel.getEnd() + rightExtensions;
             if (rightExtensions + rewindRight >= indelSize) {
@@ -142,7 +176,7 @@ public class EquivalentIndelRegionCalculator {
         to.setLength(0);
         toFill.setLength(0);
 
-        genome.getRange(referenceIndex, result.startPosition + 1, result.endPosition - result.startPosition - 1, from);
+        genome.getRange(genomeReferenceIndex, result.startPosition + 1, result.endPosition - result.startPosition - 1, from);
 
         if (insertion)
 
@@ -174,14 +208,14 @@ public class EquivalentIndelRegionCalculator {
 
         //     debug("from: ", result);
         flankingLeft.setLength(0);
-        genome.getRange(referenceIndex, result.startPosition - flankLeftSize + 1, flankLeftSize, flankingLeft);
+        genome.getRange(genomeReferenceIndex, result.startPosition - flankLeftSize + 1, flankLeftSize, flankingLeft);
 
         result.flankLeft = flankingLeft.toString();
 
         flankingRight.setLength(0);
-        genome.getRange(referenceIndex, result.endPosition, flankRightSize, flankingRight);
+        genome.getRange(genomeReferenceIndex, result.endPosition, flankRightSize, flankingRight);
 
-        final int maxRefLength = genome.getLength(referenceIndex);
+        final int maxRefLength = genome.getLength(genomeReferenceIndex);
 
         result.flankRight = flankingRight.toString();
         //              debug("flanks: ", result);
@@ -206,13 +240,6 @@ public class EquivalentIndelRegionCalculator {
 
     final MutableString toFill = new MutableString();
     final MutableString gaps = new MutableString();
-
-    private void debug(String prefix, EquivalentIndelRegion result) {
-        MutableString bases = new MutableString();
-        genome.getRange(result.referenceIndex, result.startPosition, result.endPosition - result.startPosition, bases);
-        System.out.printf("%s %s %s%n", prefix, result, bases);
-        System.out.flush();
-    }
 
     MutableString from = new MutableString();
     MutableString to = new MutableString();

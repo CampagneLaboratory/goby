@@ -105,6 +105,14 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
     }
 
     @Override
+    protected void checkGenomeMatchAlignment(final ConcatSortedAlignmentReader sortedReaders,
+                                             final RandomAccessSequenceInterface genome) {
+        super.checkGenomeMatchAlignment(sortedReaders, genome);
+        // permutation was built by previous method, set on eir calculator:
+        equivalentIndelRegionCalculator.setReferenceIndexPermutation(alignmentToGenomeTargetIndices);
+    }
+
+    @Override
     public RandomAccessSequenceInterface getGenome() {
         return genome;
     }

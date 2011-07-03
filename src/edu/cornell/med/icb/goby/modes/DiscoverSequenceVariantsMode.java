@@ -263,7 +263,6 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
         RandomAccessSequenceInterface genome = configureGenome(testGenome, jsapResult);
 
-
         int startFlapSize = jsapResult.getInt("start-flap-size", 100);
 
         sortedPositionIterator = new DiscoverVariantIterateSortedAlignments(formatter);

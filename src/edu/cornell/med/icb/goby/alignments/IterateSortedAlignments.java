@@ -63,6 +63,10 @@ public abstract class IterateSortedAlignments<T> {
     private int startFlapLength;
 
     private AlignmentReaderFactory alignmentReaderFactory = new DefaultAlignmentReaderFactory();
+    /**
+     * Maps target indices in alignment to target indices in the genome. Null when no genome is used.
+     */
+    protected int[] alignmentToGenomeTargetIndices;
 
 
     /**
@@ -196,6 +200,7 @@ public abstract class IterateSortedAlignments<T> {
         ConcatSortedAlignmentReader sortedReaders = new ConcatSortedAlignmentReader(
                 false, basenames);
 
+        checkGenomeMatchAlignment(sortedReaders, getGenome());
         final int numberOfReferences = sortedReaders.getNumberOfTargets();
 
         referenceIds = new DoubleIndexedIdentifier(sortedReaders.getTargetIdentifiers());
@@ -494,6 +499,35 @@ public abstract class IterateSortedAlignments<T> {
 
         sortedReaders.close();
         pg.stop();
+    }
+
+    protected void checkGenomeMatchAlignment(final ConcatSortedAlignmentReader sortedReaders,
+                                             final RandomAccessSequenceInterface genome) {
+        if (genome == null) {
+            // nothing to check.
+            return;
+        }
+        DoubleIndexedIdentifier reverseMapping = new DoubleIndexedIdentifier(sortedReaders.getTargetIdentifiers());
+
+        final int numTargets = sortedReaders.getNumberOfTargets();
+
+        alignmentToGenomeTargetIndices = new int[numTargets];
+        final int[] alignmentTargetLengths = sortedReaders.getTargetLength();
+        for (int targetIndex = 0; targetIndex < numTargets; targetIndex++) {
+            final MutableString targetId = reverseMapping.getId(targetIndex);
+            final int genomeTargetIndex = genome.getReferenceIndex(targetId.toString());
+            final int genomeLength = genome.getLength(genomeTargetIndex);
+            final int alignmentTargetLength = alignmentTargetLengths[targetIndex];
+            if (alignmentTargetLength != genomeLength) {
+
+                LOG.error(String.format(
+                        "Genome reference length (%d) differs from alignment reference length (%d) for sequence at index %d",
+                        alignmentTargetLength, genomeLength, targetIndex));
+
+            }
+            alignmentToGenomeTargetIndices[targetIndex] = genomeTargetIndex;
+
+        }
     }
 
 

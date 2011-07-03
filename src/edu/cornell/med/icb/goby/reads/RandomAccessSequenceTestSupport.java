@@ -33,9 +33,8 @@ public class RandomAccessSequenceTestSupport implements RandomAccessSequenceInte
     }
 
 
-
     public char get(int referenceIndex, int position) {
-         return referenceSequences[referenceIndex].charAt(position);
+        return referenceSequences[referenceIndex].charAt(position);
     }
 
     public int getLength(int targetIndex) {
@@ -45,16 +44,22 @@ public class RandomAccessSequenceTestSupport implements RandomAccessSequenceInte
     @Override
     public void getRange(int referenceIndex, int position, int length, MutableString bases) {
         bases.setLength(0);
-        bases.append(referenceSequences[referenceIndex].substring(position, position+length));
+        bases.append(referenceSequences[referenceIndex].substring(position, position + length));
     }
 
     /**
      * Override this method to return another integer than zero.
+     *
      * @param referenceId an id
      * @return zero
      */
     @Override
     public int getReferenceIndex(String referenceId) {
         return 0;
+    }
+
+    @Override
+    public int size() {
+        return referenceSequences.length;
     }
 }
