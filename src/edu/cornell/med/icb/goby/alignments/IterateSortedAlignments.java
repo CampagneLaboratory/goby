@@ -67,6 +67,11 @@ public abstract class IterateSortedAlignments<T> {
      * Maps target indices in alignment to target indices in the genome. Null when no genome is used.
      */
     protected int[] alignmentToGenomeTargetIndices;
+    /**
+     * True when the iterator is visiting a window defined by startPostion, endPosition
+     * on startReferenceIndex and endReferenceIndex.
+     */
+    protected boolean useWindow;
 
 
     /**
@@ -248,6 +253,7 @@ public abstract class IterateSortedAlignments<T> {
 
                 startReferenceIndex = referenceIds.getIndex(startTokens[0]);
                 endReferenceIndex = referenceIds.getIndex(endTokens[0]);
+                useWindow = true;
                 sortedReaders = new ConcatSortedAlignmentReader(alignmentReaderFactory,
                         false,
                         basenames,

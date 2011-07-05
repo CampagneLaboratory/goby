@@ -297,7 +297,7 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                 // Do not write statistics for positions in the start flap. The flap start is used to accumulate
                 // base counts for reads that can overlap with the window under consideration.
 
-                if (!isWithinStartFlap(referenceIndex, position) && !isPastEnd(referenceIndex, position)) {
+                if (inRegionToWrite(referenceIndex, position)) {
 
                     if (genotypeFilters.length != 0) {
                         filteredList.clear();
@@ -318,6 +318,14 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                 }
 
             }
+        }
+    }
+
+    private boolean inRegionToWrite(final int referenceIndex, final int position) {
+        if (useWindow) {
+            return !isWithinStartFlap(referenceIndex, position) && !isPastEnd(referenceIndex, position);
+        } else {
+            return true;
         }
     }
 
