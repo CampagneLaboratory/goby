@@ -168,8 +168,8 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
         // subtracts -1 to yield keyPos: the position of the first base in the indel (includes the 1 base left flank, as
         // per VCF spec.) keyPos is zero-based
         final int keyPos = indelCandidateRegion.startPosition - flankLeftSize + 1;
-        //    assert genome.get(referenceIndex, keyPos) == indelCandidateRegion.fromInContext().charAt(0) :
-        //          "first base of context must match genome at key position";
+        assert genome.get(referenceIndex, keyPos) == indelCandidateRegion.fromInContext().charAt(0) :
+                "first base of context must match genome at key position";
         indelCandidateRegion.sampleIndex = sampleIndex;
 
         /*{
@@ -297,7 +297,7 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                 // Do not write statistics for positions in the start flap. The flap start is used to accumulate
                 // base counts for reads that can overlap with the window under consideration.
 
-                if (!isWithinStartFlap(referenceIndex, position)) {
+                if (!isWithinStartFlap(referenceIndex, position) && !isPastEnd(referenceIndex, position)) {
 
                     if (genotypeFilters.length != 0) {
                         filteredList.clear();
@@ -319,6 +319,17 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
 
             }
         }
+    }
+
+    /**
+     * Return true when position is beyond the window length.
+     *
+     * @param referenceIndex
+     * @param position
+     * @return
+     */
+    private boolean isPastEnd(int referenceIndex, int position) {
+        return (referenceIndex > endReferenceIndex || referenceIndex == endReferenceIndex && position > endPosition);
     }
 
     boolean overrideReferenceWithGenome;

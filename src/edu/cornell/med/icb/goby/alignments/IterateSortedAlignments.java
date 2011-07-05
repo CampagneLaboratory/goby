@@ -175,10 +175,11 @@ public abstract class IterateSortedAlignments<T> {
      * @return True if a position is in the flap, false otherwise.
      */
     public boolean isWithinStartFlap(int referenceIndex, int position) {
+
         if (referenceIndex == startReferenceIndex) {
-            if (position < startPosition - startFlapLength) {
-                System.out.println("returning flap true");
-                System.out.println("returning flap true");
+            if (position >= startPosition - startFlapLength && position < startPosition) {
+                //  System.out.println("returning flap true");
+
                 return true;
             }
         }
