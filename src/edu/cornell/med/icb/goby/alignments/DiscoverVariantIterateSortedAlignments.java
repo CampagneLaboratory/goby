@@ -156,6 +156,7 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                              final int startPosition, final String from, final String to,
                              final int sampleIndex, final int readIndex) {
 
+   /* Disable indels for 1.9.7.2
         final ObservedIndel indel = new ObservedIndel(startPosition, from, to, readIndex);
         int flankLeftSize = 1;
         equivalentIndelRegionCalculator.setFlankLeftSize(flankLeftSize); // VCF output requires one base before the indel
@@ -172,12 +173,6 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                 "first base of context must match genome at key position";
         indelCandidateRegion.sampleIndex = sampleIndex;
 
-        /*{
-            MutableString bases = new MutableString();
-            genome.getRange(referenceIndex, keyPos, 10, bases);
-            System.out.println(bases);
-            System.out.println(indelCandidateRegion);
-        } */
         DiscoverVariantPositionData positionBaseInfos = positionToBases.get(keyPos);
         //   System.out.printf("Observing indel at position %d %n", keyPos);
         if (positionBaseInfos == null) {
@@ -187,7 +182,7 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
 
         positionBaseInfos.observeCandidateIndel(indelCandidateRegion);
         //printBasesAround(keyPos, positionToBases);
-
+        */
 
     }
 
