@@ -2,6 +2,8 @@
 
 lib_LTLIBRARIES = libgoby.la
 
+BUILT_SOURCES = goby.timestamp
+
 AM_CXXFLAGS = @PROTOBUF_CFLAGS@ @LIBPCRECPP_CFLAGS@ ${BOOST_CPPFLAGS}
 AM_CFLAGS = @PROTOBUF_CFLAGS@ @LIBPCRECPP_CFLAGS@ ${BOOST_CPPFLAGS}
 
@@ -39,7 +41,8 @@ nobase_include_HEADERS = \
 	goby/C_Reads.h \
 	goby/C_Alignments.h \
 	goby/C_CompactHelpers.h \
-	goby/SamFlags.h
+	goby/SamFlags.h \
+	goby/timestamp.h
 
 bin_PROGRAMS = GobyAlignmentStats GobyAlignmentToText GobyReadsStats GobyFastaToCompact C_Sample_CompactReads
 
@@ -63,5 +66,20 @@ C_Sample_CompactReads_LDADD = libgoby.la ${BOOST_LDFLAGS} ${BOOST_SYSTEM_LIB} ${
 C_Sample_CompactReads_SOURCES = \
 	C_Sample_CompactReads.c
 
+#
+# TODO:
+# How to ALWAYS make this file at the top of the build?
+# but nothing should "depend" on it, so just the change of this
+# file should not trigger other things to build.
+#
+goby.timestamp:
+	echo '#define BUILD_TIMESTAMP "'`date "+%G%m%d%k%M%S"`'"' > goby/timestamp.h
+
 MAINTAINERCLEANFILES = \
-	Makefile.in
+	Makefile.in \
+	goby/timestamp.h
+
+CLEANFILES = \
+	goby/timestamp.h
+
+

@@ -46,6 +46,7 @@
 #include "common.h"
 #include "hash.h"
 #include "Alignments.h"
+#include "timestamp.h"
 
 #ifdef _MSC_VER
 // Disable Microsoft deprecation warnings for POSIX functions called from this class (open, close)
@@ -271,6 +272,8 @@ namespace goby {
   AlignmentWriter::AlignmentWriter(const string& basename, unsigned number_of_entries_per_chunk) : Alignment(basename),
     entries_chunks_writer(new MessageChunksWriter<AlignmentCollection>(getBasename(basename) + ".entries", number_of_entries_per_chunk)),
     alignment_collection(AlignmentCollection::default_instance()) {
+	  string version = string(PACKAGE_TARNAME) + "_" + PACKAGE_VERSION + " (" + BUILD_TIMESTAMP + ")";
+	  header.set_version(version);
   }
 
   AlignmentWriter::~AlignmentWriter(void) {
