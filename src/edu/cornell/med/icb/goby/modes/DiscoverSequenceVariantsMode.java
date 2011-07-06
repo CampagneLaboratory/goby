@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import edu.cornell.med.icb.goby.Release1_9_7_2;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.alignments.processors.*;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
@@ -242,13 +243,18 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
                 genotypeFilters.add(new QualityScoreFilter());
                 genotypeFilters.add(new LeftOverFilter());
-                genotypeFilters.add(new RemoveIndelArtifactsFilter());
+                if (Release1_9_7_2.callIndels) {
+                    genotypeFilters.add(new RemoveIndelArtifactsFilter());
+                }
                 break;
             case GENOTYPES:
 
                 genotypeFilters.add(new QualityScoreFilter());
                 genotypeFilters.add(new LeftOverFilter());
-                genotypeFilters.add(new RemoveIndelArtifactsFilter());
+
+                if (Release1_9_7_2.callIndels) {
+                    genotypeFilters.add(new RemoveIndelArtifactsFilter());
+                }
                 if (!disableAtLeastQuarterFilter) {
                     genotypeFilters.add(new AtLeastAQuarterFilter());
                 }

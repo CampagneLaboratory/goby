@@ -20,6 +20,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.Release1_9_7_2;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.EquivalentIndelRegionCalculator;
 import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import edu.cornell.med.icb.goby.alignments.processors.ObservedIndel;
@@ -156,8 +157,8 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                              final int startPosition, final String from, final String to,
                              final int sampleIndex, final int readIndex) {
 
-   /* Disable indels for 1.9.7.2
-        final ObservedIndel indel = new ObservedIndel(startPosition, from, to, readIndex);
+   if (Release1_9_7_2.callIndels) {
+       final ObservedIndel indel = new ObservedIndel(startPosition, from, to, readIndex);
         int flankLeftSize = 1;
         equivalentIndelRegionCalculator.setFlankLeftSize(flankLeftSize); // VCF output requires one base before the indel
         equivalentIndelRegionCalculator.setFlankRightSize(0);
@@ -182,7 +183,7 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
 
         positionBaseInfos.observeCandidateIndel(indelCandidateRegion);
         //printBasesAround(keyPos, positionToBases);
-        */
+   }
 
     }
 

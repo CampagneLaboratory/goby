@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.R.GobyRengine;
+import edu.cornell.med.icb.goby.Release1_9_7_2;
 import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import edu.cornell.med.icb.goby.alignments.DiscoverVariantIterateSortedAlignments;
 import edu.cornell.med.icb.goby.alignments.PositionBaseInfo;
@@ -239,29 +240,31 @@ public class TestCompareGroupsVCFOutputFormat {
         return sampleCounts;
     }
 
-   // @Test Disable for release 1.9.7.2 TODO enable this test
+    @Test
     public void testIndelDifferences() throws Exception {
-        synchronized (GobyRengine.getInstance().getRengine()) {
-            SampleCountInfo[] sampleCounts = makeSampleCountsWithIndels();
+        if (Release1_9_7_2.callIndels) {
+            synchronized (GobyRengine.getInstance().getRengine()) {
+                SampleCountInfo[] sampleCounts = makeSampleCountsWithIndels();
 
-            ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
-            expect(mode.getReaderIndexToGroupIndex()).andReturn(readerIndexToGroupIndex);
-            replay(mode);
+                ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
+                expect(mode.getReaderIndexToGroupIndex()).andReturn(readerIndexToGroupIndex);
+                replay(mode);
 
-            statWriter.setInfo(eq(fisherExactPValueColumnIndex = 5), lt(1d));
-            replay(statWriter);
-            format.allocateStorage(20, 2);
-            format.defineColumns(output, mode);
-            format.setStatWriter(statWriter);
-            SampleCountInfo.alignIndels(sampleCounts);
-            format.writeRecord(iterator, sampleCounts,
-                    refIndex,
-                    position,
-                    list,
-                    groupIndexA,
-                    groupIndexB);
-            verify(mode);
-            verify(statWriter);
+                statWriter.setInfo(eq(fisherExactPValueColumnIndex = 5), lt(1d));
+                replay(statWriter);
+                format.allocateStorage(20, 2);
+                format.defineColumns(output, mode);
+                format.setStatWriter(statWriter);
+                SampleCountInfo.alignIndels(sampleCounts);
+                format.writeRecord(iterator, sampleCounts,
+                        refIndex,
+                        position,
+                        list,
+                        groupIndexA,
+                        groupIndexB);
+                verify(mode);
+                verify(statWriter);
+            }
         }
     }
 
