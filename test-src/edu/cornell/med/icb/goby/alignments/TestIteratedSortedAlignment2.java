@@ -353,6 +353,9 @@ public class TestIteratedSortedAlignment2 {
             }
         }
 
+        assertEquals(12, alignmentQueryIndexes.length);
+        assertEquals(12, seqvarQueryIndexes.length);
+
         dataSetup = true;
     }
 

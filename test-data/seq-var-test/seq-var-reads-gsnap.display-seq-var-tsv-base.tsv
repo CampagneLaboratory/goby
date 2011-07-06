@@ -25,6 +25,7 @@ seq-var-reads-gsnap	24	synth1	42	12	C	A	MUTATION
 seq-var-reads-gsnap	24	synth1	62	31	A	-	READ_DELETION
 seq-var-reads-gsnap	24	synth1	63	31	G	-	READ_DELETION
 seq-var-reads-gsnap	24	synth1	64	31	T	-	READ_DELETION
+seq-var-reads-gsnap	24	synth1	80	47	T	A	MUTATION
 seq-var-reads-gsnap	25	synth1	41	11	C	A	MUTATION
 seq-var-reads-gsnap	25	synth1	42	12	C	A	MUTATION
 seq-var-reads-gsnap	25	synth1	56	27	-	A	READ_INSERTION
