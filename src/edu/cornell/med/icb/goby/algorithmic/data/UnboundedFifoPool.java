@@ -58,7 +58,7 @@ public class UnboundedFifoPool<T> {
      */
     public final void add(final T element) {
         //     System.out.printf("Adding %s pre: head-index=%d tail-index=%d %n", element, headIndex, tailIndex);
-            ++numElements;
+        ++numElements;
         capacity=Math.max(capacity,tailIndex+1);
         // grow the backing array
         while (array.size() <= capacity) {

@@ -4,6 +4,8 @@
    The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.
    After possible realignment, and filtering to remove possible errors, EIR are reported with their frequencies.
 1.9.7.2
+ - Fix realignment around indels bug that prevented reads from being realigned to the left in exome data.
+   Now correctly updates the start position of the moving window.
  - Renamed AlignmentEntry.splicedAlignmentLink to AlignmentEntry.splicedForwardAlignmentLink and added
    AlignmentEntry.splicedForwardAlignmentLink so splice links can be both bidirectional and more than
    two segments long. This change is included in the C/C++ APIs and make it possible for GSNAP to write

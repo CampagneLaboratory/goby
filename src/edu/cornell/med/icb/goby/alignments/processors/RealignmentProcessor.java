@@ -162,7 +162,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
 
             backInfo.removeIndels(previousWindowStart, lastPosition);
         }
-
+        backInfo.windowStartPosition=windowStartPosition;
         ++processedCount;
         return returnedEntry;
 
