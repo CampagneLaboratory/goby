@@ -82,12 +82,12 @@ public class FilesToAttributesMode extends AbstractGobyMode {
         suffixTransform = jsapResult.getString("suffix");
         if (suffixTransform != null) {
             String toks[] = suffixTransform.split("/");
-            suffixLookup=toks[0];
-           if (toks.length>1) {
-               suffixReplace=toks[1];
-           }   else {
-               suffixReplace="";
-           }
+            suffixLookup = toks[0];
+            if (toks.length > 1) {
+                suffixReplace = toks[1];
+            } else {
+                suffixReplace = "";
+            }
         }
         return this;
     }
@@ -118,6 +118,9 @@ public class FilesToAttributesMode extends AbstractGobyMode {
                 out.printf("%s\t", adjustSuffix(name));
                 for (int i = 0; i < attributeNames.length; i++) {
                     if (!"ignore".equals(attributeNames[i])) {
+                        if (tokens.length <= i) {
+                            continue;
+                        }
                         out.print(tokens[i]);
                         if (i != attributeNames.length) {
                             out.print('\t');
@@ -136,7 +139,7 @@ public class FilesToAttributesMode extends AbstractGobyMode {
 
     private String adjustSuffix(final String name) {
 
-        if (name.endsWith(suffixLookup)) {
+        if (suffixLookup != null && name.endsWith(suffixLookup)) {
             return name.replace(suffixLookup, suffixReplace);
         }
         return name;
