@@ -172,7 +172,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
 
         }
         alignmentReader.getStatistics();
-        progress.stop();
+        progress.done();
         // too many hits is prepared as for Merge:
         Merge.prepareMergedTooManyHits(outputFile, alignmentReader.getNumberOfQueries(), 0, basenames);
 

@@ -66,7 +66,7 @@ public class LocalSortProcessor implements AlignmentProcessorInterface {
         this.delegate = delegate;
         // heap will hold up to 10,000 elements initially, but will grow as needed:
 
-        entryHeap =  new ObjectHeapPriorityQueue<Alignments.AlignmentEntry>(10000, comparator);
+        entryHeap = new ObjectHeapPriorityQueue<Alignments.AlignmentEntry>(10000, comparator);
     }
 
     /**
@@ -101,7 +101,7 @@ public class LocalSortProcessor implements AlignmentProcessorInterface {
         }
         if (mustLoadPool) {
             Alignments.AlignmentEntry entry;
-          final int initialCurrentPosition=currentPosition;
+            final int initialCurrentPosition = currentPosition;
             do {
                 entry = delegate.nextRealignedEntry(targetIndex, position);
                 if (entry != null) {
@@ -140,9 +140,9 @@ public class LocalSortProcessor implements AlignmentProcessorInterface {
     }
 
     private void pushEntry(final Alignments.AlignmentEntry entry) {
-    //    System.out.println("Position=" + entry.getPosition());
-        if (entry.getTargetIndex() == lastTargetIndex && entry.getPosition() <lastCurrentPosition) {
-        //    System.out.println("entry to be enqueued needs to be resorted.");
+        //    System.out.println("Position=" + entry.getPosition());
+        if (entry.getTargetIndex() == lastTargetIndex && entry.getPosition() < lastCurrentPosition) {
+            //    System.out.println("entry to be enqueued needs to be resorted.");
             // entry to be enqueued will need to be resorted.
             ++modifiedCount;
         }
@@ -150,8 +150,8 @@ public class LocalSortProcessor implements AlignmentProcessorInterface {
 
         //   System.out.println("enqueuing " + entry);
         entryHeap.enqueue(entry);
-        lastCurrentPosition=Math.max(lastCurrentPosition,entry.getPosition());
-        lastTargetIndex=Math.max(lastTargetIndex,entry.getTargetIndex());
+        lastCurrentPosition = Math.max(lastCurrentPosition, entry.getPosition());
+        lastTargetIndex = Math.max(lastTargetIndex, entry.getTargetIndex());
     }
 
     @Override
@@ -161,7 +161,7 @@ public class LocalSortProcessor implements AlignmentProcessorInterface {
 
     @Override
     public int getModifiedCount() {
-   //     System.out.printf("Have locally sorted %d entries%n",modifiedCount);
+        //     System.out.printf("Have locally sorted %d entries%n",modifiedCount);
         return delegate.getModifiedCount();
     }
 

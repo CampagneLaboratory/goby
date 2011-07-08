@@ -201,6 +201,7 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
             }
             System.exit(1);
         }
+        System.exit(0);
     }
 
     /**

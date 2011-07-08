@@ -321,14 +321,17 @@ public class Merge {
 
         // numberOfReads does not include the TMH reads that are past the aligned entries.
         int maxQueryIndex = numberOfReads - 1;
+        int maxCapacity=0;
         for (final String basename : basenames) {
             final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
-            for (final int queryIndex : tmhReader.getQueryIndices()) {
+            IntSet queryIndices = tmhReader.getQueryIndices();
+            maxCapacity=Math.max(maxCapacity, queryIndices.size());
+            for (final int queryIndex : queryIndices) {
                 maxQueryIndex = Math.max(maxQueryIndex, queryIndex);
             }
         }
         numberOfReads = maxQueryIndex + 1;
-        final Int2IntMap queryIndex2MaxDepth = new Int2IntOpenHashMap();
+        final Int2IntMap queryIndex2MaxDepth = new Int2IntOpenHashMap( maxCapacity);
         queryIndex2MaxDepth.defaultReturnValue(-1);
         // calculate maxDepth for each query sequence:
         for (final String basename : basenames) {
