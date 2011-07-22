@@ -18,29 +18,23 @@
 
 package edu.cornell.med.icb.goby.modes;
 
+import com.google.protobuf.ByteString;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import com.google.protobuf.ByteString;
 import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsWriter;
 import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
 import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
+import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
+import net.sf.samtools.*;
 import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMRecordIterator;
-import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMSequenceRecord;
-import net.sf.samtools.SAMSequenceDictionary;
-import net.sf.samtools.SAMFileHeader;
 
 /**
  * Converts binary BWA alignments in the SAM format to the compact alignment format.
@@ -63,7 +57,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION = "Converts binary BWA alignments in the SAM "
-            + "format to the compact alignment format.";
+            + "format to the compact alignment format (new version).";
 
     /**
      * Native reads output from aligner.
@@ -97,6 +91,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
     /**
      * Get the quality encoding scale used for the input fastq file.
+     *
      * @return the quality encoding scale used for the input fastq file
      */
     public QualityEncoding getQualityEncoding() {
@@ -106,6 +101,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     /**
      * Set the quality encoding scale to be used for the input fastq file.
      * Acceptable values are "Illumina", "Sanger", and "Solexa".
+     *
      * @param qualityEncoding the quality encoding scale to be used for the input fastq file
      */
     public void setQualityEncoding(final QualityEncoding qualityEncoding) {
@@ -117,8 +113,9 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws java.io.IOException   error parsing
-     * @throws com.martiansoftware.jsap.JSAPException error parsing
+     * @throws java.io.IOException error parsing
+     * @throws com.martiansoftware.jsap.JSAPException
+     *                             error parsing
      */
     @Override
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
@@ -129,11 +126,13 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
         numberOfReadsFromCommandLine = jsapResult.getInt("number-of-reads");
         qualityEncoding = QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
-
+        sortedInput = jsapResult.getBoolean("sorted");
         this.largestQueryIndex = numberOfReadsFromCommandLine;
         this.smallestQueryIndex = 0;
         return this;
     }
+
+    boolean sortedInput;
 
     @Override
     protected int scan(final ReadSet readIndexFilter, final IndexedIdentifier targetIds,
@@ -152,12 +151,31 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         SamHelper samHelper = new SamHelper();
         samHelper.setQualityEncoding(qualityEncoding);
         numberOfReads = 0;
+        final SAMRecordCoordinateComparator samComparator = new SAMRecordCoordinateComparator();
 
         // int stopEarly = 0;
+        SAMRecord prevRecord = null;
+
+        if (sortedInput) {
+            // if the input is sorted, request creation of the index when writing the alignment.
+            writer.setSorted(true);
+        }
         while (samIterator.hasNext()) {
             samHelper.reset();
             numberOfReads++;
             final SAMRecord samRecord = samIterator.next();
+
+            if (sortedInput) {
+                // check that input entries are indeed in sort order. Abort otherwise.
+                if (prevRecord != null && samComparator.compare(prevRecord, samRecord) > 0) {
+                    LOG.warn(String.format("Unsorted file: %s:%d-%d is before %s:%d-%d in the file\n",
+                            prevRecord.getReferenceName(), prevRecord.getAlignmentStart(), prevRecord.getAlignmentEnd(),
+                            samRecord.getReferenceName(), samRecord.getAlignmentStart(), samRecord.getAlignmentEnd()));
+                    System.exit(0);
+                }
+            }
+
+            prevRecord = samRecord;
 
             // if SAM reports read is unmapped (we don't know how or why), skip record
             final int queryIndex = getQueryIndex(samRecord);
@@ -189,7 +207,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 // reference is provided in attribute XR
                 final String specifiedReference = (String) samRecord.getAttribute("XR");
                 final String directions = (String) samRecord.getAttribute("XS");
-                final boolean reverseStrand = directions.equals("-+") || directions.equals("+-"); 
+                final boolean reverseStrand = directions.equals("-+") || directions.equals("+-");
                 samHelper.setSourceWithReference(queryIndex, samRecord.getReadString(), samRecord.getBaseQualityString(), specifiedReference, samRecord.getAlignmentStart(), reverseStrand);
             } else {
                 samHelper.setSource(queryIndex, samRecord.getReadString(), samRecord.getBaseQualityString(), samRecord.getCigarString(), (String) samRecord.getAttribute("MD"), samRecord.getAlignmentStart(), samRecord.getReadNegativeStrandFlag());
@@ -201,14 +219,14 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             // we have a multiplicity filter. Use it to determine multiplicity.
             if (readIndexFilter != null) {
                 /* Multiplicity of a read is the number of times the (exact) sequence
-                  of the read is identically repeated across a sample file.  The filter
-                  removes duplicates to avoid repeating the same alignments.  Once
-                  aligned, these are recorded multiplicity times. */
+          of the read is identically repeated across a sample file.  The filter
+          removes duplicates to avoid repeating the same alignments.  Once
+          aligned, these are recorded multiplicity times. */
                 multiplicity = readIndexFilter.getMultiplicity(queryIndex);
             }
             largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
             smallestQueryIndex = Math.min(queryIndex, smallestQueryIndex);
-            
+
             // the record represents a mapped read..
             final Alignments.AlignmentEntry.Builder currentEntry = Alignments.AlignmentEntry.newBuilder();
 
@@ -361,8 +379,9 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
      * Main method.
      *
      * @param args command line args.
-     * @throws com.martiansoftware.jsap.JSAPException error parsing
-     * @throws java.io.IOException   error parsing or executing.
+     * @throws com.martiansoftware.jsap.JSAPException
+     *                             error parsing
+     * @throws java.io.IOException error parsing or executing.
      */
     public static void main(final String[] args) throws JSAPException, IOException {
         new SAMToCompactMode().configure(args).execute();
