@@ -18,14 +18,10 @@
 
 package edu.cornell.med.icb.goby.modes;
 
+import com.google.protobuf.ByteString;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import com.google.protobuf.ByteString;
-import edu.cornell.med.icb.goby.alignments.AlignedSequence;
-import edu.cornell.med.icb.goby.alignments.AlignmentStats;
-import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsWriter;
-import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
-import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.alignments.filters.AlignmentQualityFilter;
 import edu.cornell.med.icb.goby.alignments.filters.PercentMismatchesQualityFilter;
 import edu.cornell.med.icb.goby.reads.ReadSet;
@@ -129,6 +125,12 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
     protected int smallestQueryIndex;
     protected int largestQueryIndex = -1;
 
+    /**
+     * This method is deprecated, store read lengths directly into the alignment entry instead.
+     *
+     * @return
+     */
+    @Deprecated
     protected int[] createReadLengthArray() {
         return new int[largestQueryIndex - smallestQueryIndex + 1];
     }
@@ -174,7 +176,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
         mParameter = jsapResult.getInt("ambiguity-threshold");
         qualityFilterParameters = jsapResult.getString("quality-filter-parameters");
         thirdPartyInput = jsapResult.getBoolean("third-party-input");
-      
+
         return this;
     }
 
@@ -578,7 +580,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
                 System.out.println("Scanning query file..");
                 final ObjectArrayList<String> ids = processIds(queryReadIdsFilename);
                 this.numberOfReads = ids.size();
-             //   System.out.println("Query file had " + this.numberOfReads + " entries.");
+                //   System.out.println("Query file had " + this.numberOfReads + " entries.");
                 for (final String id : ids) {
                     if (id != null) {
                         queryIds.registerIdentifier(new MutableString(id));
