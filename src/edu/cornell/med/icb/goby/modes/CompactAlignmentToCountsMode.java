@@ -50,6 +50,12 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
      * The mode name.
      */
     private static final String MODE_NAME = "alignment-to-counts";
+
+    /**
+     * The overridden short mode name.
+     */
+    private static final String SHORT_MODE_NAME = "altc";
+
     /**
      * The mode description help text.
      */
@@ -84,6 +90,11 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
     @Override
     public String getModeName() {
         return MODE_NAME;
+    }
+
+    @Override
+    public String getShortModeName() {
+        return SHORT_MODE_NAME;
     }
 
     @Override

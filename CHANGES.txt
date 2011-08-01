@@ -5,6 +5,11 @@
    After possible realignment, and filtering to remove possible errors, EIR are reported with their frequencies.
  - SamToCompact: Generate sorted goby alignments when a sorted BAM files is provided as input (use --sorted
    flag to activate this option).
+ - Ability to support short versions of mode names, such as "compact-file-stats" has the short mode
+   name "cfs". There is a default short mode name generation implementation in
+   AbstractCommandLineMode.getShortModeName() but each mode class can override this method in the case
+   of short mode name collisions. In the case of collisions, the command line parser will not offer/accept
+   ANY short mode names for the classes in question.
 1.9.7.2
  - Fix realignment around indels bug that prevented reads from being realigned to the left in exome data.
    Now correctly updates the start position of the moving window.

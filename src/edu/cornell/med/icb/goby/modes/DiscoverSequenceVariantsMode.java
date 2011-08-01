@@ -58,6 +58,12 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
      * The mode name.
      */
     private static final String MODE_NAME = "discover-sequence-variants";
+
+    /**
+     * The overridden short mode name.
+     */
+    private static final String SHORT_MODE_NAME = "discsv";
+
     /**
      * The mode description help text.
      */
@@ -107,6 +113,11 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         return MODE_NAME;
     }
 
+    @Override
+    public String getShortModeName() {
+        return SHORT_MODE_NAME;
+    }
+    
     @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;

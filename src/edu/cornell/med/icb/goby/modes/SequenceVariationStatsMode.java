@@ -46,6 +46,11 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
     private static final String MODE_NAME = "sequence-variation-stats";
 
     /**
+     * The overridden short mode name.
+     */
+    private static final String SHORT_MODE_NAME = "svs";
+
+    /**
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION = "Evaluate statistics for sequence variations found in alignments";
@@ -69,6 +74,11 @@ public class SequenceVariationStatsMode extends AbstractGobyMode {
     @Override
     public String getModeName() {
         return MODE_NAME;
+    }
+
+    @Override
+    public String getShortModeName() {
+        return SHORT_MODE_NAME;
     }
 
     enum OutputFormat {

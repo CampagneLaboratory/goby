@@ -39,6 +39,11 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
     private static final String MODE_NAME = "annotations-to-counts";
 
     /**
+     * The overridden short mode name.
+     */
+    private static final String SHORT_MODE_NAME = "antc";
+
+    /**
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION =
@@ -68,6 +73,11 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
     @Override
     public String getModeName() {
         return MODE_NAME;
+    }
+
+    @Override
+    public String getShortModeName() {
+        return SHORT_MODE_NAME;
     }
 
     @Override

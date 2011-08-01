@@ -36,6 +36,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * When running java -jar goby.jar this is the class that is called.
@@ -68,6 +70,16 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
     private final Map<String, Class> MODES_MAP;
 
     /**
+     * Short mode name to Class map.
+     */
+    private final Map<String, Class> SHORT_MODES_MAP;
+
+    /**
+     * Short mode name to Class map (reverse).
+     */
+    private final Map<Class, String> SHORT_MODES_REVERSE_MAP;
+
+    /**
      * Map to override help / default values.
      */
     protected final Map<String, String> HELP_VALUES;
@@ -84,14 +96,23 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
 
     public GenericToolsDriver(final String jarFilename) {
         super(jarFilename);
-        MODES_MAP = loadModeMap();
+        MODES_MAP = new HashMap<String, Class>();
+        SHORT_MODES_MAP = new HashMap<String, Class>();
+        SHORT_MODES_REVERSE_MAP = new HashMap<Class, String>();
+        loadModeMap();
 
         HELP_VALUES = new HashMap<String, String>();
         final StringBuilder modesList = new StringBuilder();
         final List<String> modes = new ArrayList<String>(MODES_MAP.keySet());
         Collections.sort(modes);
         for (final String mode : modes) {
-            modesList.append("* ").append(mode).append('\n');
+            modesList.append("* ").append(mode);
+            final Class modeClass = MODES_MAP.get(mode);
+            final String shortMode = SHORT_MODES_REVERSE_MAP.get(modeClass);
+            if (shortMode != null) {
+                modesList.append(" (").append(shortMode).append(")");
+            }
+            modesList.append('\n');
         }
         HELP_VALUES.put("[MODES_LIST]", modesList.toString());
     }
@@ -162,7 +183,10 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
      */
     @Override
     public void execute() throws IOException {
-        final Class modeClass = MODES_MAP.get(mode);
+        Class modeClass = MODES_MAP.get(mode);
+        if (modeClass == null) {
+            modeClass = SHORT_MODES_MAP.get(mode);
+        }
         Exception caught = null;
         try {
             if (modeClass != null) {
@@ -206,11 +230,12 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
 
     /**
      * Load the list of concrete modes.
-     *
-     * @return the mode map
      */
-    private Map<String, Class> loadModeMap() {
-        final Map<String, Class> modeMap = new HashMap<String, Class>();
+    private void loadModeMap() {
+        final Map<String, Class> modeMap = MODES_MAP;
+        final Map<String, Class> shortModeMap = SHORT_MODES_MAP;
+        final Map<Class, String> shortModeReverseMap = SHORT_MODES_REVERSE_MAP;
+        final Set<String> allShortModes = new HashSet<String>();
         for (final String modeClassName : modesClassNamesList()) {
             try {
                 LOG.debug("About to process modeClassName: " + modeClassName);
@@ -223,9 +248,22 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
                 final Object modeInstance = modeClass.newInstance();
                 if (modeInstance instanceof AbstractCommandLineMode) {
                     final String modeName = ((AbstractCommandLineMode) modeInstance).getModeName();
+                    final String shortModeName = ((AbstractCommandLineMode) modeInstance).getShortModeName();
                     // Make sure the class has a static field "MODE_NAME"
                     if (modeName != null) {
                         modeMap.put(modeName, modeClass);
+                        if (shortModeName != null) {
+                            if (!allShortModes.contains(shortModeName)) {
+                                shortModeMap.put(shortModeName, modeClass);
+                                shortModeReverseMap.put(modeClass, shortModeName);
+                                allShortModes.add(shortModeName);
+                            } else {
+                                // Do not offer short versions for which there are duplicates. One needs
+                                // to hand write versions of getShortModeName() for these classes.
+                                shortModeReverseMap.remove(shortModeMap.get(shortModeName));
+                                shortModeMap.remove(shortModeName);
+                            }
+                        }
                     }
                 }
             } catch (ClassNotFoundException e) {
@@ -242,7 +280,6 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
                                 + " InstantiationException: " + e.getMessage());
             }
         }
-        return modeMap;
     }
 
     /**

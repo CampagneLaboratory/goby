@@ -65,6 +65,27 @@ public abstract class AbstractCommandLineMode {
     public abstract String getModeName();
 
     /**
+     * The short version of the mode name. This default implementation is based on modeName, split by "-",
+     * keeping only the first character of each split, such as "compact-file-stats" becomes "cfs".
+     * This allows a short mode name for specifying goby modes on the command line, so the following
+     * two command line options are synomymous:
+     *    goby -jar goby.jar --mode compact-file-stats
+     *    goby -jar goby.jar --mode cfs
+     * The Goby command line parser will not accept duplicate short mode names, so if two modes return
+     * the same shortModeName, the command line parser will not offer/accept a short mode name for these modes.
+     * In this case, it is recommended that you create overriding getShortModeName() methods for all of these modes.
+     * @return The short name of the mode
+     */
+    public String getShortModeName() {
+        final String[] shortModeNameParts = getModeName().split("-");
+        final StringBuilder shortModeNameBuilder = new StringBuilder(shortModeNameParts.length);
+        for (final String shortModeNamePart : shortModeNameParts) {
+            shortModeNameBuilder.append(shortModeNamePart.charAt(0));
+        }
+        return shortModeNameBuilder.toString();
+    }
+
+    /**
      * Returns the mode description defined by subclasses.
      *
      * @return A description of the mode

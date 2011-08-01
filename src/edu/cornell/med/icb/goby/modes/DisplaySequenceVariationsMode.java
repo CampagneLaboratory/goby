@@ -45,6 +45,11 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
     private static final String MODE_NAME = "display-sequence-variations";
 
     /**
+     * The overridden short mode name.
+     */
+    private static final String SHORT_MODE_NAME = "dsv";
+
+    /**
      * The mode description help text.
      */
     private static final String MODE_DESCRIPTION =
@@ -74,6 +79,11 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
         return MODE_NAME;
     }
 
+    @Override
+    public String getShortModeName() {
+        return SHORT_MODE_NAME;
+    }
+    
     enum OutputFormat {
         CONCISE,
         TSV,
