@@ -20,19 +20,10 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.reads.CompressedRead;
-import edu.cornell.med.icb.goby.reads.ReadSet;
-import edu.cornell.med.icb.goby.reads.Reads;
-import edu.cornell.med.icb.goby.reads.ReadsReader;
-import edu.cornell.med.icb.goby.reads.SequenceDigests;
+import edu.cornell.med.icb.goby.reads.*;
 import it.unimi.dsi.bits.BitVector;
 import it.unimi.dsi.bits.LongArrayBitVector;
-import it.unimi.dsi.fastutil.ints.Int2ByteMap;
-import it.unimi.dsi.fastutil.ints.Int2ByteOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.io.OutputBitStream;
@@ -85,7 +76,7 @@ public class TallyReadsMode extends AbstractGobyMode {
      *
      * @param args command line arguments
      * @return this object for chaining
-     * @throws IOException error parsing
+     * @throws IOException   error parsing
      * @throws JSAPException error parsing
      */
     @Override
@@ -107,7 +98,6 @@ public class TallyReadsMode extends AbstractGobyMode {
         final ProgressLogger progress = new ProgressLogger();
         progress.start("first pass: starting to collect inspect hash");
         progress.displayFreeMemory = true;
-
 
 
         int readLength = 0;
@@ -173,7 +163,7 @@ public class TallyReadsMode extends AbstractGobyMode {
 
             final ReadsReader readsReader = new ReadsReader(new FileInputStream(inputFilename));
             for (final Reads.ReadEntry readEntry : readsReader) {
-
+                readLength = readEntry.getReadLength();
                 byteBuffer = toByteBuffer(sequence, byteBuffer, readEntry);
 
                 final CompressedRead read = new CompressedRead(byteBuffer.clone());
@@ -252,9 +242,9 @@ public class TallyReadsMode extends AbstractGobyMode {
     }
 
     public static void toByteBuffer(final CharSequence sequence,
-                                          final byte[] byteBuffer,
-                                          final boolean colorSpace,
-                                          final int maxReadLength) throws IOException {
+                                    final byte[] byteBuffer,
+                                    final boolean colorSpace,
+                                    final int maxReadLength) throws IOException {
 
 
         final OutputBitStream compressed = new OutputBitStream(byteBuffer);
@@ -301,9 +291,9 @@ public class TallyReadsMode extends AbstractGobyMode {
             final ReadSet set = new ReadSet();
             set.smallestStoredMultiplicity(1);
             for (int readIndex = 0; readIndex < otherReadIndices.size(); ++readIndex) {
-               if (otherReadIndices.getBoolean(readIndex)) {
-                   set.add(readIndex, 1);
-               }
+                if (otherReadIndices.getBoolean(readIndex)) {
+                    set.add(readIndex, 1);
+                }
 
             }
             for (final CompressedRead read : tallies.keySet()) {
