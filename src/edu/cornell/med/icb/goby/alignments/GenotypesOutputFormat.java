@@ -160,6 +160,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
         siteObserved = false;
         boolean siteHasIndel = false;
         referenceSet.clear();
+        statsWriter.clearAlternateAlleles();
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
 
             alleleSet.clear();
@@ -178,12 +179,12 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
             genotypeBuffer.setLength(0);
 
             final MutableString baseCountString = new MutableString();
-            statsWriter.clearAlternateAlleles();
+
             for (int genotypeIndex = 0; genotypeIndex < sci.getGenotypeMaxIndex(); ++genotypeIndex) {
                 final int sampleCount = sci.getGenotypeCount(genotypeIndex);
                 String genotype = sci.getGenotypeString(genotypeIndex);
 
-                if (sampleCount > 0 && genotypeIndex!=SampleCountInfo.BASE_OTHER_INDEX) {
+                if (sampleCount > 0 && genotypeIndex != SampleCountInfo.BASE_OTHER_INDEX) {
                     siteObserved = true;
 
                     if (sci.isIndel(genotypeIndex)) {
