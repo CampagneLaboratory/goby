@@ -38,15 +38,14 @@ public class TestVCFWriter {
     public void testCodeGenotypes() {
         VCFWriter writer = new VCFWriter(new StringWriter());
 
-
         assertExpectedGenotype(writer, new String[]{"A", "C"}, 'A', "C", "0/1");
         assertExpectedGenotype(writer, new String[]{"C", "A"}, 'A', "C", "0/1");
 
         assertExpectedGenotype(writer, new String[]{"C", "A", "T"}, 'A', "C,T", "0/1/2");
         assertExpectedGenotype(writer, new String[]{"C", "A", "T"}, 'C', "A,T", "0/1/2");
 
-
     }
+
 
     private void assertExpectedGenotype(VCFWriter writer, String[] alleles, char refBase, String altBases, String expectedGenotype) {
         final ObjectArrayList<String> refAlleles = new ObjectArrayList<String>();

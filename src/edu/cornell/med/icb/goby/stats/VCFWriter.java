@@ -106,7 +106,9 @@ public class VCFWriter {
         refAlleles.clear();
         refAlleles.add(allele);
     }
-
+    public void clearAlternateAlleles() {
+        altAlleles.clear();
+    }
     public void addAlternateAllele(String allele) {
 
         if (!altAlleles.contains(allele)) {
@@ -257,8 +259,7 @@ public class VCFWriter {
         outWriter.append('\t');
         outWriter.append(constructAlleleString(refAlleles));
         outWriter.append('\t');
-        // reference alleles can never be written in the alt field, filter them out:
-        outWriter.append(constructAlleleString(altAlleles, refAlleles));
+        outWriter.append(constructAlleleString(altAlleles));
         outWriter.append('\t');
         outWriter.append(qual);
         outWriter.append('\t');
@@ -340,23 +341,14 @@ public class VCFWriter {
     }
 
     MutableString buffer = new MutableString();
-    final ObjectArrayList<String> EMPTY = new ObjectArrayList<String>();
 
-    private MutableString constructAlleleString(ObjectArrayList<String> alleles) {
-        return constructAlleleString(alleles, EMPTY);
-    }
-
-    private MutableString constructAlleleString(ObjectArrayList<String> alleles, ObjectArrayList<String> excludedAlleles) {
+    private MutableString constructAlleleString(ObjectArrayList<String> refAlleles) {
         buffer.setLength(0);
-        int max = alleles.size();
+        int max = refAlleles.size();
         int index = 0;
-        for (String allele : alleles) {
-            index++;
-            if (!excludedAlleles.contains(allele)) {
-                buffer.append(allele);
-                if (index != max) buffer.append(',');
-            }
-
+        for (String allele : refAlleles) {
+            buffer.append(allele);
+            if (++index != max) buffer.append(',');
         }
         if (buffer.length() == 0) {
             // set REF or ALT to the VCF missing value if there are no alleles to write:

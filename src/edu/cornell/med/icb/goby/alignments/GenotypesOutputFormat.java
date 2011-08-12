@@ -109,7 +109,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
         statsWriter.setChromosome(currentReferenceId);
 
         statsWriter.setPosition(position);
-        //    if (position == 154722608 + 1) {
+        //    if (position == 129285 ) {
         //       System.out.println("STOP");
         //   }
         writeGenotypes(statsWriter, sampleCounts, position);
@@ -178,6 +178,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
             genotypeBuffer.setLength(0);
 
             final MutableString baseCountString = new MutableString();
+            statsWriter.clearAlternateAlleles();
             for (int genotypeIndex = 0; genotypeIndex < sci.getGenotypeMaxIndex(); ++genotypeIndex) {
                 final int sampleCount = sci.getGenotypeCount(genotypeIndex);
                 String genotype = sci.getGenotypeString(genotypeIndex);
