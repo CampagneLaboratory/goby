@@ -182,7 +182,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                 final int sampleCount = sci.getGenotypeCount(genotypeIndex);
                 String genotype = sci.getGenotypeString(genotypeIndex);
 
-                if (sampleCount > 0) {
+                if (sampleCount > 0 && genotypeIndex!=SampleCountInfo.BASE_OTHER_INDEX) {
                     siteObserved = true;
 
                     if (sci.isIndel(genotypeIndex)) {

@@ -257,7 +257,7 @@ public class VCFWriter {
         outWriter.append('\t');
         outWriter.append(constructAlleleString(refAlleles));
         outWriter.append('\t');
-         // reference alleles can never be written in the alt field, filter them out:
+        // reference alleles can never be written in the alt field, filter them out:
         outWriter.append(constructAlleleString(altAlleles, refAlleles));
         outWriter.append('\t');
         outWriter.append(qual);
@@ -340,7 +340,8 @@ public class VCFWriter {
     }
 
     MutableString buffer = new MutableString();
-    final ObjectArrayList<String> EMPTY=new ObjectArrayList<String>();
+    final ObjectArrayList<String> EMPTY = new ObjectArrayList<String>();
+
     private MutableString constructAlleleString(ObjectArrayList<String> alleles) {
         return constructAlleleString(alleles, EMPTY);
     }
@@ -350,9 +351,10 @@ public class VCFWriter {
         int max = alleles.size();
         int index = 0;
         for (String allele : alleles) {
+            index++;
             if (!excludedAlleles.contains(allele)) {
                 buffer.append(allele);
-                if (++index != max) buffer.append(',');
+                if (index != max) buffer.append(',');
             }
 
         }

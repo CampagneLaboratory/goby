@@ -107,8 +107,8 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
 
         outputFormat.writeRecord(iterator, makeTwoSampleCounts(), 0, 0, list4(), 0, 1);
         String stringB = writer.getBuffer().toString();
-        assertTrue(stringB, stringB.contains("1/2/3:A=10,T=4,C=0,G=0,N=2:16:0:33"));
-        assertTrue(stringB, stringB.contains("0/1/2/3:A=5,T=1,C=9,G=0,N=1:16:0:0"));
+        assertTrue(stringB, stringB.contains("1/2:A=10,T=4,C=0,G=0,N=2:16:0:33"));
+        assertTrue(stringB, stringB.contains("0/1/2:A=5,T=1,C=9,G=0,N=1:16:0:0"));
         assertTrue(stringB, stringB.contains("#Cm Group[methylated]=10;"));
         assertTrue(stringB, stringB.contains("#C Group[methylated]=20;"));
         // check biomart-span included in result:
