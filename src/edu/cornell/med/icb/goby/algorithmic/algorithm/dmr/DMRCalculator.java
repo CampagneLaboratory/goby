@@ -18,6 +18,9 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 
+import edu.cornell.med.icb.goby.algorithmic.data.MethylRateInfo;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
 /**
  * User: nyasha
  * Date: 6/14/11
@@ -26,5 +29,7 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 public class DMRCalculator {
 
 
-
+    public void observe(int position, ObjectArrayList<MethylRateInfo> ratesAtPosition) {
+        //To change body of created methods use File | Settings | File Templates.
+    }
 }
