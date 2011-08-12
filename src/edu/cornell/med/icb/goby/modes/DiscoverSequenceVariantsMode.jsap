@@ -50,6 +50,12 @@
             <help>Define groups for multi-group comparisons. This option is required for some output formats. The syntax of the groups arguments is id-1=basename1,basename2/id-2=basename4,basename5 Where id-1 is the id of the first group, defined to consist of samples basename1 and basename2. basename1 must refer to a basename provided as input on the command line (see input). Multiple groups are separated by forward slashes (/). If the option is not provided, one group per sample is assumed and group1... groupN are defined corresponding to the N input basenames, in the order these appear on the command line.</help>
         </flaggedOption>
         <flaggedOption>
+            <id>group-file</id>
+            <longFlag>group-file</longFlag>
+            <required>false</required>
+            <help>Define groups for multi-group comparisons. This parameter names a file in the Java properties format. The format describes mapping between samples and groups. Each line must have the format sample-id=group-id or be a comment. Please refer to the --groups option for a description of sample/group mapping.</help>
+        </flaggedOption>
+        <flaggedOption>
             <id>compare</id>
             <longFlag>compare</longFlag>
             <required>false</required>

@@ -31,10 +31,9 @@ import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.io.TSVReader;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.*;
 import it.unimi.dsi.lang.MutableString;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
@@ -42,6 +41,7 @@ import java.io.*;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * This mode discovers sequence variants within groups of samples or between groups of samples.
@@ -58,12 +58,6 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
      * The mode name.
      */
     private static final String MODE_NAME = "discover-sequence-variants";
-
-    /**
-     * The overridden short mode name.
-     */
-    private static final String SHORT_MODE_NAME = "discsv";
-
     /**
      * The mode description help text.
      */
@@ -114,11 +108,6 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     }
 
     @Override
-    public String getShortModeName() {
-        return SHORT_MODE_NAME;
-    }
-    
-    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
@@ -145,6 +134,14 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         outWriter = "-".equals(outputFile) ? new PrintWriter(System.out) : new PrintWriter(outputFile);
 
         String groupsDefinition = jsapResult.getString("groups");
+        String groupsDefinitionFile = jsapResult.getString("group-file");
+        if (groupsDefinition != null && groupsDefinitionFile != null) {
+            System.err.println("--groups and --groups-file are mutually exclusive. Please provide only once such parameter.");
+            System.exit(1);
+        }
+        if (groupsDefinitionFile != null) {
+            groupsDefinition = parseGroupFile(groupsDefinitionFile, inputFilenames);
+        }
         String compare = jsapResult.getString("compare");
         if (compare == null) {
             // make default groups and group definitions.  Each sample becomes its own group, compare group1 and group2.
@@ -292,6 +289,75 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         return this;
     }
 
+    /**
+     * Parse the group-definition file, in the format sample-id=group-id (Java properties file)
+     *
+     * @param groupsDefinitionFile file with sample=group mapping information.
+     * @param inputFilenames
+     * @return group definition in the format expected by the --groups argument.
+     */
+    private String parseGroupFile(String groupsDefinitionFile, String[] inputFilenames) {
+        Properties groupProps = new Properties();
+        FileReader fileReader = null;
+        try {
+            fileReader = new FileReader(groupsDefinitionFile);
+            groupProps.load(fileReader);
+            Object2ObjectMap<String, MutableString> groupDefs = new Object2ObjectArrayMap<String, MutableString>();
+
+            for (final Object key : groupProps.keySet()) {
+                final String groupId = (String) groupProps.get(key);
+                MutableString groupDef = groupDefs.get(groupId);
+                if (groupDef == null) {
+                    groupDef = new MutableString();
+                    groupDefs.put(groupId, groupDef);
+                }
+                final String sampleId = (String) key;
+                if (groupDef.indexOf(sampleId) == -1) {
+                    if (isInputFilename(inputFilenames, sampleId)) {
+                        groupDef.append(sampleId);
+                        groupDef.append(',');
+                    }
+                }
+            }
+            MutableString result = new MutableString();
+            for (final String groupId : groupDefs.keySet()) {
+                result.append(groupId);
+                result.append('=');
+                result.append(groupDefs.get(groupId));
+                // remove trailing coma:
+                result.setLength(result.length() - 1);
+                result.append('/');
+            }
+            result.setLength(result.length() - 1);
+            System.out.println("generated group text: " + result);
+            return result.toString();
+        } catch (IOException e) {
+            System.err.println("Cannot open or parse groups-file parameter " + groupsDefinitionFile);
+            System.exit(1);
+        } finally {
+
+            IOUtils.closeQuietly(fileReader);
+        }
+        return null;
+    }
+
+    /**
+     * Determine if an sampleId is provided on the command line.
+     *
+     * @param inputFilenames
+     * @param sampleId
+     * @return
+     */
+    private boolean isInputFilename(String[] inputFilenames, String sampleId) {
+        for (final String input : inputFilenames) {
+            String commandLineBasename = FilenameUtils.getBaseName(input);
+            if (commandLineBasename.equals(FilenameUtils.getBaseName(sampleId))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static RandomAccessSequenceInterface configureGenome(JSAPResult jsapResult) throws IOException {
 
         return configureGenome(null, jsapResult);
@@ -402,6 +468,10 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             // since we don't need to map basename order to readerIndex to just create a samples array from basenames
             // listed on the command line:
             samples = AlignmentReaderImpl.getBasenames(inputFilenames);
+            // also remove the path to the file to keep only filenames:
+            for (int i=0;i<samples.length; i++) {
+                samples[i]=FilenameUtils.getBaseName(samples[i]);
+            }
             return samples;
         }
     }

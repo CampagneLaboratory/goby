@@ -116,7 +116,7 @@ public abstract class AbstractAlignmentReader implements Closeable,
 
     /**
      * Return the basename corresponding to the input alignment filename.  Note
-     * that if the filename does have the extension known to be a compact alignemt
+     * that if the filename does have the extension known to be a compact alignment
      * the returned value is the original filename
      *
      * @param filename The name of the file to get the basename for
