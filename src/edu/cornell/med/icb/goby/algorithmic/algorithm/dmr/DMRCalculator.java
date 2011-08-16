@@ -32,6 +32,7 @@ public class DMRCalculator {
 
     }
 
+
     public void observe(int position, ObjectArrayList<MethylRateInfo> ratesAtPosition) {
         //To change body of created methods use File | Settings | File Templates.
     }
