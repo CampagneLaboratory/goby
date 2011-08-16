@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.io.FastBufferedReader;
 import it.unimi.dsi.io.LineIterator;
 import it.unimi.dsi.lang.MutableString;
+import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
@@ -108,13 +109,16 @@ public class VCFParser implements Closeable {
     }
 
     /**
-     * Constructs a VCF parser.
-     *
+     * Constructs a VCF parser.  When the filename ends in .gz, this method attempts to decompress
+     * the file on the fly, using BlockCompressedInputStream (from samtools). BlockCompressedInputStream
+     * is used preferentially to GZipInputStream to avoid truncating bgzip input files produced with bgzip.
+     * http://biostar.stackexchange.com/questions/6112/how-to-decompress-1000genomes-bgzip-compressed-files-using-java
      * @param filename Input to parse
+     * @throws java.io.IOException when an error occurs.
      */
-    public VCFParser(String filename) throws IOException {
+    public VCFParser(final String filename) throws IOException {
         this.input = filename.endsWith(".gz") ?
-                new InputStreamReader(new GZIPInputStream(new FileInputStream(filename), 100000)) :
+                new InputStreamReader(new BlockCompressedInputStream(new FileInputStream(filename))) :
                 new FileReader(filename);
     }
 
