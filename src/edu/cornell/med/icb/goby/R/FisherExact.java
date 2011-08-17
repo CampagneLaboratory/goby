@@ -115,7 +115,7 @@ public final class FisherExact {
             fisherExpression.append(alternativeHypothesis);
             fisherExpression.append("\")");
             final boolean is2x2 = nrows == 2 && ncols == 2;
-            result = evaluteFisherExpression(rengine, fisherExpression.toString(), is2x2);
+            result = evaluateFisherExpression(rengine, fisherExpression.toString(), is2x2);
         } else {
             LOG.warn(R_NOT_AVAILABLE);
             result = new Result();
@@ -189,7 +189,7 @@ public final class FisherExact {
             fisherExpression.append("\")");
 
             final boolean is2x2 = factor1.length == 2 && factor2.length == 2;
-            result = evaluteFisherExpression(rengine, fisherExpression.toString(), is2x2);
+            result = evaluateFisherExpression(rengine, fisherExpression.toString(), is2x2);
         } else {
             LOG.warn(R_NOT_AVAILABLE);
             result = new Result();  // return an empty/default result object
@@ -203,11 +203,11 @@ public final class FisherExact {
      * @param rengine          The R engine to use to calcuate the results.
      * @param fisherExpression The string representing the expression to evaluate.
      * @param is2x2matrix      Whether or not the data being evaluated represents a 2x2 matrix
-     * @return The results of the evaluation (should never be null)
+     * @return The results of the evaluation (may be null if an exception interrupts the calculation)
      */
-    private static Result evaluteFisherExpression(final Rengine rengine,
-                                                  final String fisherExpression,
-                                                  final boolean is2x2matrix) {
+    private static Result evaluateFisherExpression(final Rengine rengine,
+                                                   final String fisherExpression,
+                                                   final boolean is2x2matrix) {
         // evaluate the R expression
         if (LOG.isDebugEnabled()) {
             LOG.debug("About to evaluate: " + fisherExpression);
@@ -216,7 +216,9 @@ public final class FisherExact {
         if (LOG.isDebugEnabled()) {
             LOG.debug(fisherResultExpression);
         }
-
+        if (fisherResultExpression==null) {
+            return null;
+        }
         // the result from R is a vector/map of values
         final RVector fisherResultVector = fisherResultExpression.asVector();
         if (LOG.isDebugEnabled()) {

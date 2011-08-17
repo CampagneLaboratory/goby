@@ -254,12 +254,7 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
                 sumInSample += genotypeCount;
                 assert genotypeCount >= 0 : "counts must not be negative.";
 
-                // build the alleleCount string for each group:
-                final int groupIndex = readerIndexToGroupIndex[sampleIndex];
-                alleleCountsMutableStrings[groupIndex].append(sci.getGenotypeString(genotypeIndex));
-                alleleCountsMutableStrings[groupIndex].append('=');
-                alleleCountsMutableStrings[groupIndex].append(genotypeCount);
-                alleleCountsMutableStrings[groupIndex].append(',');
+
             }
             // must observe at least one base in each sample to write output for this position.
             if (sumInSample == 0) {
@@ -273,7 +268,20 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         statWriter.setInfo(depthFieldIndex, totalCount);
 
         fillVariantCountArrays(sampleCounts, maxGenotypeIndexAcrossSamples);
+        // since genotypes have been aligned across all samples, we use the first one to find the genotype string
+        // corresponding to each index:
+        final int sampleIndex = 0;
+        final SampleCountInfo sci = sampleCounts[sampleIndex];
 
+        for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
+            for (int genotypeIndex = 0; genotypeIndex < maxGenotypeIndexAcrossSamples; genotypeIndex++) {
+                // build the alleleCount string for each group:
+                alleleCountsMutableStrings[groupIndex].append(sci.getGenotypeString(genotypeIndex));
+                alleleCountsMutableStrings[groupIndex].append('=');
+                alleleCountsMutableStrings[groupIndex].append(alleleCountsPerGroup[genotypeIndex][groupIndex]);
+                alleleCountsMutableStrings[groupIndex].append(',');
+            }
+        }
         final CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 
         statWriter.setChromosome(currentReferenceId);
@@ -296,6 +304,7 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
             statWriter.setInfo(refCountsIndex[groupIndex], refCountsPerGroup[groupIndex]);
             statWriter.setInfo(varCountsIndex[groupIndex], variantsCountPerGroup[groupIndex]);
         }
+
         final double denominator = (double) (refCountsPerGroup[groupIndexA] + 1) * (double) (variantsCountPerGroup[groupIndexB] + 1);
         double oddsRatio = denominator == 0 ? Double.NaN :
                 ((double) (refCountsPerGroup[groupIndexB] + 1) * (double) (variantsCountPerGroup[groupIndexA] + 1)) /
@@ -305,23 +314,30 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         if (variantsCountPerGroup[groupIndexA] < 10 ||
                 variantsCountPerGroup[groupIndexB] < 10 ||
                 refCountsPerGroup[groupIndexA] < 10 ||
-                refCountsPerGroup[groupIndexB] < 10) {
+                refCountsPerGroup[groupIndexB] < 10)
+
+        {
             // standard error estimation is unreliable when any of the counts are less than 10.
             logOddsRatioSE = Double.NaN;
-        } else {
+        } else
+
+        {
             logOddsRatioSE = Math.sqrt(1d / refCountsPerGroup[groupIndexB] +
                     1d / variantsCountPerGroup[groupIndexA] +
                     1d / variantsCountPerGroup[groupIndexB] +
                     1d / refCountsPerGroup[groupIndexA]);
         }
+
         double log2OddsRatio = Math.log(oddsRatio) / Math.log(2);
         final double log2OddsRatioZValue = log2OddsRatio / logOddsRatioSE;
 
         double fisherP = Double.NaN;
 
 
-        if (fisherRInstalled) {
-            try {
+        if (fisherRInstalled)
+
+        {
+
                 if (checkCounts()) {
                     final FisherExact.Result result = FisherExact.fexact(fisherVector, maxGenotypeIndexAcrossSamples,
                             numberOfGroups,
@@ -329,17 +345,8 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
                     fisherP = result.getPValue();
 
                 }
-            } catch (Exception e) {
-                System.err.printf("An exception was caught evaluating the Fisher Exact test P-value. Details are provided below%n" +
-
-                        "referenceId=%s referenceIndex=%d position=%d %n" +
-                        "%s",
-                        currentReferenceId, referenceIndex,
-                        position + 1,
-                        IntArrayList.wrap(fisherVector)
-                );
-            }
         }
+
         statWriter.setInfo(log2OddsRatioColumnIndex, log2OddsRatio);
         statWriter.setInfo(log2OddsRatioStandardErrorColumnIndex, logOddsRatioSE);
         statWriter.setInfo(log2OddsRatioZColumnIndex, log2OddsRatioZValue);
