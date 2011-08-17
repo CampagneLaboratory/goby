@@ -1,4 +1,5 @@
 1.9.8
+ - Fix allele frequency format to write genotype first in FORMAT per vcf spec.
  - Add new INFO fields in compare group vcf format to show allele counts in each group.
  - Preliminary support for calling indels with discover-sequence-variants.  Candidate indels are now written
    in the formats that use GenotypeOutputFormat (e.g., genotypes, compare_groups, allele_frequency).

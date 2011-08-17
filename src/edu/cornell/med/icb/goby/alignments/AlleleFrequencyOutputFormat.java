@@ -61,11 +61,11 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         genotypeFormatter.defineInfoFields(statsWriter);
         pValueIndex = statsWriter.defineField("INFO", "P", 1, ColumnType.Float, "P-values of a t-test comparing arcsin transformed values of the ratio between groups.");
 
-        refPropFieldIndex = statsWriter.defineField("FORMAT", "RP", 1, ColumnType.Float,
-                "Proportion of reference allele in the sample (count(ref)/(sum count other alleles)");
         depthFieldIndex = statsWriter.defineField("INFO", "DP",
                 1, ColumnType.Integer, "Total depth of sequencing across groups at this site");
         genotypeFormatter.defineGenotypeField(statsWriter);
+        refPropFieldIndex = statsWriter.defineField("FORMAT", "RP", 1, ColumnType.Float,
+                       "Proportion of reference allele in the sample (count(ref)/(sum count other alleles)");
 
 
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
