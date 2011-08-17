@@ -83,7 +83,7 @@ public class TestCompareGroupsVCFOutputFormat {
         format = new CompareGroupsVCFOutputFormat();
         statWriter = createMock("statWriter", VCFWriter.class);
 
-
+        statWriter.clearAlternateAlleles();
         statWriter.setInfo(eq(2), anyDouble());
         statWriter.setInfo(eq(3), anyDouble());
         statWriter.setInfo(eq(4), anyDouble());

@@ -29,6 +29,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.rosuda.JRI.Rengine;
@@ -127,6 +128,11 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
      * The vector that will be used for testing.
      */
     private long[] fisherVectorUnderTest;
+    /**
+     * Index of the VCF fields that hold allele counts.
+     */
+    private int[] alleleCountsGroupIndex;
+    private MutableString[] alleleCountsMutableStrings;
 
 
     protected void setStatWriter(VCFWriter statWriter) {
@@ -170,7 +176,10 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
                 1, ColumnType.Float, String.format("Z value of the odds-ratio of observing a variant in group %s versus group %s", groups[0], groups[1]));
         fisherExactPValueColumnIndex = statWriter.defineField("INFO", String.format("FisherP[%s/%s]", groups[0], groups[1]),
                 1, ColumnType.Float, String.format("Fisher exact P-value that the allelic frequencies (each sample contributes at least one toward the group count of each allele) differ between group %s and group %s.", groups[0], groups[1]));
-
+        for (int i = 0; i < numberOfGroups; i++) {
+            alleleCountsGroupIndex[i] = statWriter.defineField("INFO", String.format("AlleleCountsInGroup[%s]", groups[i]),
+                    1, ColumnType.String, String.format("Count of specific alleles in group %s, in the format (allele=count[,])+.", groups[i]));
+        }
         varCountsIndex = new int[groups.length];
         refCountsIndex = new int[groups.length];
 
@@ -196,7 +205,11 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         variantsCountPerGroup = new int[numberOfGroups];
         distinctReadIndexCountPerGroup = new int[numberOfGroups];
         averageVariantQualityScorePerGroup = new float[numberOfGroups];
-
+        alleleCountsGroupIndex = new int[numberOfGroups];
+        alleleCountsMutableStrings = new MutableString[numberOfGroups];
+        for (int i = 0; i < numberOfGroups; i++) {
+            alleleCountsMutableStrings[i] = new MutableString();
+        }
 
         // used for allelic fisher exact test:
         alleleCountsPerGroupBaseAllelesOnly = new int[numberOfAlleles][numberOfGroups];
@@ -225,7 +238,9 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         int totalCount = 0;
         int maxGenotypeIndexAcrossSamples = 0;
 
-
+        for (int i = 0; i < numberOfGroups; i++) {
+            alleleCountsMutableStrings[i].setLength(0);
+        }
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             final SampleCountInfo sci = sampleCounts[sampleIndex];
             int sumInSample = 0;
@@ -238,6 +253,13 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
                 totalCount += genotypeCount;
                 sumInSample += genotypeCount;
                 assert genotypeCount >= 0 : "counts must not be negative.";
+
+                // build the alleleCount string for each group:
+                final int groupIndex = readerIndexToGroupIndex[sampleIndex];
+                alleleCountsMutableStrings[groupIndex].append(sci.getGenotypeString(genotypeIndex));
+                alleleCountsMutableStrings[groupIndex].append('=');
+                alleleCountsMutableStrings[groupIndex].append(genotypeCount);
+                alleleCountsMutableStrings[groupIndex].append(',');
             }
             // must observe at least one base in each sample to write output for this position.
             if (sumInSample == 0) {
@@ -265,6 +287,12 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         statWriter.setInfo(biomartFieldIndex, biomartRegionSpan);
 
         for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
+
+            // clip the trailing ','
+            alleleCountsMutableStrings[groupIndex].setLength(alleleCountsMutableStrings[groupIndex].length() - 1);
+            // set the value to the VCFWriter:
+            statWriter.setInfo(alleleCountsGroupIndex[groupIndex], alleleCountsMutableStrings[groupIndex]);
+
             statWriter.setInfo(refCountsIndex[groupIndex], refCountsPerGroup[groupIndex]);
             statWriter.setInfo(varCountsIndex[groupIndex], variantsCountPerGroup[groupIndex]);
         }
