@@ -77,7 +77,7 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
 
         for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
             String group = mode.getGroups()[groupIndex];
-            averageRPGroupsIndex[groupIndex] = statsWriter.defineField("FORMAT", String.format("RP_GROUP[%s]", group), 1, ColumnType.Float,
+            averageRPGroupsIndex[groupIndex] = statsWriter.defineField("INFO", String.format("RP_%s", group), 1, ColumnType.Float,
                     String.format("Proportion of reference allele  (count(ref)/(sum count other alleles) averaged over group %s", group));
         }
         depthFieldIndex = statsWriter.defineField("INFO", "DP",
