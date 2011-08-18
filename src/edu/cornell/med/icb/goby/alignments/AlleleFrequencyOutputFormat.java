@@ -28,6 +28,7 @@ import org.apache.commons.math.stat.inference.TTest;
 import org.apache.commons.math.stat.inference.TTestImpl;
 
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 /**
  * @author Fabien Campagne
@@ -53,6 +54,15 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
     private double[] valuesGroupsB;
     private int pValueIndex;
     private boolean eventObserved;
+    private int averageRPGroupsIndex[];
+    /**
+     * Average RP per group.
+     */
+    private float[] averageRPPerGroup;
+    /**
+     * The number of samples in each group.
+     */
+    private float[] numSamplesPerGroup;
 
     public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
@@ -61,17 +71,23 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         genotypeFormatter.defineInfoFields(statsWriter);
         pValueIndex = statsWriter.defineField("INFO", "P", 1, ColumnType.Float, "P-values of a t-test comparing arcsin transformed values of the ratio between groups.");
 
+
+        for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
+            String group = mode.getGroups()[groupIndex];
+            averageRPGroupsIndex[groupIndex] = statsWriter.defineField("FORMAT", String.format("RP_GROUP[%s]", group), 1, ColumnType.Float,
+                    String.format("Proportion of reference allele  (count(ref)/(sum count other alleles) averaged over group %s", group));
+        }
         depthFieldIndex = statsWriter.defineField("INFO", "DP",
                 1, ColumnType.Integer, "Total depth of sequencing across groups at this site");
         genotypeFormatter.defineGenotypeField(statsWriter);
         refPropFieldIndex = statsWriter.defineField("FORMAT", "RP", 1, ColumnType.Float,
-                       "Proportion of reference allele in the sample (count(ref)/(sum count other alleles)");
+                "Proportion of reference allele in the sample (count(ref)/(sum count other alleles)");
 
 
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         int countA = 0;
         int countB = 0;
-        for (int groupIndex : readerIndexToGroupIndex) {
+        for (final int groupIndex : readerIndexToGroupIndex) {
             countA += groupIndex == 1 ? 0 : 1;
             countB += groupIndex == 1 ? 1 : 0;
         }
@@ -92,8 +108,9 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         variantsCountPerSample = new int[numberOfSamples];
         genotypeFormatter = new GenotypesOutputFormat();
         genotypeFormatter.allocateStorage(numberOfSamples, numberOfGroups);
-
-
+        numSamplesPerGroup = new float[numberOfGroups];
+        averageRPGroupsIndex = new int[numberOfGroups];
+        averageRPPerGroup = new float[numberOfGroups];
     }
 
     public void writeRecord(DiscoverVariantIterateSortedAlignments iterator, SampleCountInfo[] sampleCounts,
@@ -132,6 +149,8 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
 
         int valuesGroupAIndex = 0;
         int valuesGroupBIndex = 0;
+        Arrays.fill(valuesGroupsA, 0);
+        Arrays.fill(valuesGroupsB, 0);
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             int numAlleles = 0;
@@ -151,14 +170,27 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
             final int groupIndex = readerIndexToGroupIndex[sampleIndex];
             final double transformedValue = StrictMath.asin(StrictMath.sqrt(refProportion));
 
+            averageRPPerGroup[groupIndex] += refProportion;
+
             if (groupIndex == groupIndexA) {
                 valuesGroupsA[valuesGroupAIndex++] = transformedValue;
             } else {
                 valuesGroupsB[valuesGroupBIndex++] = transformedValue;
             }
+            numSamplesPerGroup[groupIndex]++;
         }
+
         assert valuesGroupAIndex + valuesGroupBIndex == numberOfSamples;
+        for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
+            averageRPPerGroup[groupIndex] /= numSamplesPerGroup[groupIndex];
+            statsWriter.setInfo(averageRPGroupsIndex[groupIndex], averageRPPerGroup[groupIndex]);
+        }
+
         genotypeFormatter.writeGenotypes(statsWriter, sampleCounts, position);
+        if (!statsWriter.hasAlternateAllele()) {
+            // do not write a record if the position does not have an alternate allele.
+            return;
+        }
         double pValue = 1;
         try {
             if (valuesGroupAIndex >= 2 && valuesGroupBIndex >= 2) { // need two samples per group
