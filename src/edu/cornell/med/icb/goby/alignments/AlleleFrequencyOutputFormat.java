@@ -54,9 +54,12 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
     private double[] valuesGroupsB;
     private int pValueIndex;
     private boolean eventObserved;
-    private int averageRPGroupsIndex[];
     /**
-     * Average RP per group.
+     * Index of the INFO fields that hold average reference proportions.
+     */
+    private int[] averageRPGroupsIndex;
+    /**
+     * Average referene proportion per group.
      */
     private float[] averageRPPerGroup;
     /**
@@ -151,6 +154,8 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         int valuesGroupBIndex = 0;
         Arrays.fill(valuesGroupsA, 0);
         Arrays.fill(valuesGroupsB, 0);
+        Arrays.fill(averageRPPerGroup, 0);
+        Arrays.fill(numSamplesPerGroup, 0);
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             int numAlleles = 0;

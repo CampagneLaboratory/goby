@@ -106,9 +106,11 @@ public class VCFWriter {
         refAlleles.clear();
         refAlleles.add(allele);
     }
+
     public void clearAlternateAlleles() {
         altAlleles.clear();
     }
+
     public void addAlternateAllele(String allele) {
 
         if (!altAlleles.contains(allele)) {
@@ -673,5 +675,14 @@ public class VCFWriter {
 
     public int getPosition() {
         return position;
+    }
+
+    /**
+     * Return true if the writer has at least one alternate alllele defined at the current record.
+     *
+     * @return True or False.
+     */
+    public boolean hasAlternateAllele() {
+        return !altAlleles.isEmpty();
     }
 }
