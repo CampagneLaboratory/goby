@@ -66,6 +66,10 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
      * The number of samples in each group.
      */
     private float[] numSamplesPerGroup;
+    /**
+     * Index of the INFO field that holds effect size.
+     */
+    private int effectSizeInfoIndex;
 
     public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
@@ -80,6 +84,9 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
             averageRPGroupsIndex[groupIndex] = statsWriter.defineField("INFO", String.format("RP_%s", group), 1, ColumnType.Float,
                     String.format("Proportion of reference allele  (count(ref)/(sum count other alleles) averaged over group %s", group));
         }
+        String[] groups = mode.getGroups();
+        effectSizeInfoIndex = statsWriter.defineField("INFO", String.format("ES_%s_%s", groups[0], groups[1]), 1, ColumnType.Float,
+                    String.format("Effect size between groups, expressed as the difference between average reference proportion estimated in each group. refProp[%s] - refProp[%s].", groups[0], groups[1]));
         depthFieldIndex = statsWriter.defineField("INFO", "DP",
                 1, ColumnType.Integer, "Total depth of sequencing across groups at this site");
         genotypeFormatter.defineGenotypeField(statsWriter);
@@ -190,6 +197,8 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
             averageRPPerGroup[groupIndex] /= numSamplesPerGroup[groupIndex];
             statsWriter.setInfo(averageRPGroupsIndex[groupIndex], averageRPPerGroup[groupIndex]);
         }
+        // write effect size:
+        statsWriter.setInfo(effectSizeInfoIndex, averageRPPerGroup[0]-averageRPPerGroup[1]);
 
         genotypeFormatter.writeGenotypes(statsWriter, sampleCounts, position);
         if (!statsWriter.hasAlternateAllele()) {
