@@ -5,7 +5,7 @@
 ##INFO=<ID=P,Number=1,Type=Float,Description="P-values of a t-test comparing arcsin transformed values of the ratio between groups.">
 ##INFO=<ID=RP_A,Number=1,Type=Float,Description="Proportion of reference allele  (count(ref)/(sum count other alleles) averaged over group A">
 ##INFO=<ID=RP_B,Number=1,Type=Float,Description="Proportion of reference allele  (count(ref)/(sum count other alleles) averaged over group B">
-##INFO=<ID=ES_A_B,Number=1,Type=Float,Description="Effect size between groups, expressed as the difference between average reference proportion estimated in each group. refProp[A] - refProp[B].">
+##INFO=<ID=ES_A_B,Number=1,Type=Float,Description="Effect size between groups, expressed as the absolute value of the difference between average reference proportion estimated in each group. abs(refProp[A] - refProp[B]).">
 ##INFO=<ID=DP,Number=1,Type=Integer,Description="Total depth of sequencing across groups at this site">
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 ##FORMAT=<ID=BC,Number=5,Type=String,Description="Base counts in format A=?;T=?;C=?;G=?;N=?.">
