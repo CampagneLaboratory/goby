@@ -339,13 +339,9 @@ public class VCFParser implements Closeable {
                 }
                 if (!line.startsWith("#")) {
                     if (TSV && lineNumber == 1 && headerLineNotParsed) {
+
                         // assume the file is TSV and starts directly with the header line. Parse lineIterator here.
-                        if (line.indexOf('\t')!=-1) {
-                            parseHeaderLine(new MutableString("#" + line));
-                        } else {
-                            // the file tsv header does not contain even a single tab? The file is most likely truncated
-                            throw new FileTruncatedException();
-                        }
+                        parseHeaderLine(new MutableString("#" + line));
 
                     } else {
                         // We are seeing an actual line of data. Prepare for parsing:
