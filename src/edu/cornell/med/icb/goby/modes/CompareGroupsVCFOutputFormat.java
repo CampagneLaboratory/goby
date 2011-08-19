@@ -95,7 +95,9 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
     private int varCountsIndex[];
     private int refCountsIndex[];
     /**
-     * The array used for testing, pointing to pre-allocated or dynamically allocated version.
+     * The array used for testing, pointing to pre-allocated or dynamically allocated version. Allele count is defined
+     * as the number of times a specific allele is observed in a group of samples (each sample can contribute at most
+     * one to the count).
      */
     private int[][] alleleCountsPerGroup;
     // pre-allocated array, when the site has no indels:
@@ -176,9 +178,12 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
                 1, ColumnType.Float, String.format("Z value of the odds-ratio of observing a variant in group %s versus group %s", groups[0], groups[1]));
         fisherExactPValueColumnIndex = statWriter.defineField("INFO", String.format("FisherP[%s/%s]", groups[0], groups[1]),
                 1, ColumnType.Float, String.format("Fisher exact P-value that the allelic frequencies (each sample contributes at least one toward the group count of each allele) differ between group %s and group %s.", groups[0], groups[1]));
+
         for (int i = 0; i < numberOfGroups; i++) {
             alleleCountsGroupIndex[i] = statWriter.defineField("INFO", String.format("AlleleCountsInGroup[%s]", groups[i]),
-                    1, ColumnType.String, String.format("Count of specific alleles in group %s, in the format (allele=count[,])+.", groups[i]));
+                    1, ColumnType.String, String.format("Count of specific alleles in group %s, in the format (allele=count[,])+. Allele count is defined " +
+                    " as the number of times a specific allele is observed in a group of samples (each sample can contribute at most" +
+                    " one to the count)", groups[i]));
         }
         varCountsIndex = new int[groups.length];
         refCountsIndex = new int[groups.length];

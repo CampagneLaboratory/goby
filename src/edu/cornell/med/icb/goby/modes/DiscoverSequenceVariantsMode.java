@@ -95,6 +95,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
      * between the genome and the allele.
      */
     private boolean overrideReferenceWithGenome = true;
+    private FormatConfigurator formatConfigurator;
 
     public void setDisableAtLeastQuarterFilter(boolean disableAtLeastQuarterFilter) {
         this.disableAtLeastQuarterFilter = disableAtLeastQuarterFilter;
@@ -278,7 +279,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         RandomAccessSequenceInterface genome = configureGenome(testGenome, jsapResult);
 
         int startFlapSize = jsapResult.getInt("start-flap-size", 100);
-
+        formatConfigurator.configureFormatter(formatter);
         sortedPositionIterator = new DiscoverVariantIterateSortedAlignments(formatter);
 
         sortedPositionIterator.setGenome(genome);
@@ -288,6 +289,9 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         sortedPositionIterator.setThresholdDistinctReadIndices(thresholdDistinctReadIndices);
         return this;
     }
+
+
+
 
     /**
      * Parse the group-definition file, in the format sample-id=group-id (Java properties file)
@@ -416,6 +420,14 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     public void setTestGenome(final RandomAccessSequenceTestSupport testGenome) {
         this.testGenome = testGenome;
         overrideReferenceWithGenome = false;
+    }
+
+    /**
+     * Install a format configurator, responsible for configuring the output format.
+     * @param configurator
+     */
+    public void setFormatConfigurator(FormatConfigurator configurator) {
+        this.formatConfigurator =configurator;
     }
 
 

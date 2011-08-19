@@ -70,6 +70,7 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
      * Index of the INFO field that holds effect size.
      */
     private int effectSizeInfoIndex;
+    private float minimumAllelelicDifference=0.1f;
 
     public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
@@ -202,7 +203,7 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         statsWriter.setInfo(effectSizeInfoIndex, effectSize);
 
         genotypeFormatter.writeGenotypes(statsWriter, sampleCounts, position);
-        if (!statsWriter.hasAlternateAllele() || effectSize<0.1) {
+        if (!statsWriter.hasAlternateAllele() || effectSize<minimumAllelelicDifference) {
             // do not write a record if the position does not have an alternate allele or if the effect size is negligible.
             return;
         }
@@ -242,4 +243,7 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
 
     }
 
+    public void setMinimumAllelicDifference(float minimumAllelelicDifference) {
+       this.minimumAllelelicDifference=minimumAllelelicDifference;
+    }
 }

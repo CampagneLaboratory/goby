@@ -135,6 +135,14 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.ALLELE_FREQUENCIES.toString()});
 
         configureTestGenome(mode);
+        FormatConfigurator configurator=new FormatConfigurator(){
+
+            @Override
+            public void configureFormatter(final SequenceVariationOutputFormat formatter) {
+               ((AlleleFrequencyOutputFormat)formatter).setMinimumAllelicDifference(0);
+            }
+        };
+        mode.setFormatConfigurator(configurator);
         mode.configure(args);
 
         mode.execute();
