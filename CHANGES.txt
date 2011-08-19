@@ -1,17 +1,25 @@
-1.9.8
- - Fix allele frequency format to write genotype first in FORMAT per vcf spec.
- - Add new INFO fields in compare group vcf format to show allele counts in each group.
+>>1.9.8
  - Preliminary support for calling indels with discover-sequence-variants.  Candidate indels are now written
    in the formats that use GenotypeOutputFormat (e.g., genotypes, compare_groups, allele_frequency).
    The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.
    After possible realignment, and filtering to remove possible errors, EIR are reported with their frequencies.
- - SamToCompact: Generate sorted goby alignments when a sorted BAM files is provided as input (use --sorted
-   flag to activate this option).
+ - Proof of principle that protocol buffer can seamlessly cohabit with data-specific compression schemes. The
+   --codec option on fasta-to-compact is introduced to activate compression of reads when writing compact reads.
+   The codec provided (called read-codec-1) achieves about 10% better compression of read files than pure
+   protocol-buffer encoding. This read-codec-1 codec stores bases and quality scores with an arithmetic coder in
+   the special compressed_data protocol buffer field.
+1.9.7.3
+ - Fix allele frequency format to write genotype first in FORMAT per vcf spec.
+ - Add new INFO fields in compare group vcf format to show allele counts in each group.
  - Ability to support short versions of mode names, such as "compact-file-stats" has the short mode
    name "cfs". There is a default short mode name generation implementation in
    AbstractCommandLineMode.getShortModeName() but each mode class can override this method in the case
    of short mode name collisions. In the case of collisions, the command line parser will not offer/accept
    ANY short mode names for the classes in question.
+ - SamToCompact: Generate sorted goby alignments when a sorted BAM files is provided as input (use --sorted
+   flag to activate this option). Thanks to Bradford Powell for the suggestion and draft implementation.
+ - Fixed a bug in tally-reads that was triggered by reads of different lengths. Thanks to Adrian Platts for
+   the bug report.
 1.9.7.2
  - Fix realignment around indels bug that prevented reads from being realigned to the left in exome data.
    Now correctly updates the start position of the moving window.
