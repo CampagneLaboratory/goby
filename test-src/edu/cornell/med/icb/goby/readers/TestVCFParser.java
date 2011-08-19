@@ -116,14 +116,7 @@ public class TestVCFParser {
         assertEquals("145497099", parser.getColumnValue(1).toString());
         assertEquals("1/1:25,3,0:42", parser.getColumnValue(10).toString());
     }
-      @Test
-    public void testTruncatedGZippedFile() throws FileNotFoundException, VCFParser.SyntaxException {
-        VCFParser parser = new VCFParser(new FileReader("test-data/vcf/ZXWZOEV-discover-sequence-variants-output-1.vcf.gz"));
-        parser.readHeader();
 
-
-        assertFalse(parser.hasNextDataLine());
-    }
 
     @Test
     public void testParseExample3() throws FileNotFoundException, VCFParser.SyntaxException {

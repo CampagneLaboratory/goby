@@ -95,7 +95,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
      * between the genome and the allele.
      */
     private boolean overrideReferenceWithGenome = true;
-    private FormatConfigurator formatConfigurator;
+    private FormatConfigurator formatConfigurator=new DummyFormatConfigurator();
 
     public void setDisableAtLeastQuarterFilter(boolean disableAtLeastQuarterFilter) {
         this.disableAtLeastQuarterFilter = disableAtLeastQuarterFilter;
