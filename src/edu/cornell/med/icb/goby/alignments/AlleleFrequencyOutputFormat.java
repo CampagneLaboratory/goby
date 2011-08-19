@@ -202,8 +202,8 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         statsWriter.setInfo(effectSizeInfoIndex, effectSize);
 
         genotypeFormatter.writeGenotypes(statsWriter, sampleCounts, position);
-        if (!statsWriter.hasAlternateAllele()) {
-            // do not write a record if the position does not have an alternate allele.
+        if (!statsWriter.hasAlternateAllele() || effectSize<0.1) {
+            // do not write a record if the position does not have an alternate allele or if the effect size is negligible.
             return;
         }
         double pValue = 1;
