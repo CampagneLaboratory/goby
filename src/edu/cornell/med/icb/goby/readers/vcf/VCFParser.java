@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.io.FastBufferedReader;
 import it.unimi.dsi.io.LineIterator;
 import it.unimi.dsi.lang.MutableString;
+import net.sf.samtools.FileTruncatedException;
 import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.commons.io.IOUtils;
 
@@ -113,6 +114,7 @@ public class VCFParser implements Closeable {
      * the file on the fly, using BlockCompressedInputStream (from samtools). BlockCompressedInputStream
      * is used preferentially to GZipInputStream to avoid truncating bgzip input files produced with bgzip.
      * http://biostar.stackexchange.com/questions/6112/how-to-decompress-1000genomes-bgzip-compressed-files-using-java
+     *
      * @param filename Input to parse
      * @throws java.io.IOException when an error occurs.
      */
@@ -329,34 +331,57 @@ public class VCFParser implements Closeable {
         bufferedReader = new FastBufferedReader(input);
         lineIterator = new LineIterator(bufferedReader);
         int lineNumber = 1;
-        while (lineIterator.hasNext()) {
-            line = lineIterator.next();
-            if (line.startsWith("##")) {
-                TSV = false;
-            }
-            if (!line.startsWith("#")) {
-                if (TSV && lineNumber == 1 && headerLineNotParsed) {
-                    // assume the file is TSV and starts directly with the header line. Parse lineIterator here.
-                    parseHeaderLine(new MutableString("#" + line));
-
-                } else {
-                    // We are seeing an actual line of data. Prepare for parsing:
-                    if (!TSV) {
-                        parseCurrentLine();
-                    } else {
-                        parseTSVLine();
-                    }
-                    hasNextDataLine = true;
+        try {
+            while (lineIterator.hasNext()) {
+                line = lineIterator.next();
+                if (line.startsWith("##")) {
+                    TSV = false;
                 }
-                break;
+                if (!line.startsWith("#")) {
+                    if (TSV && lineNumber == 1 && headerLineNotParsed) {
+                        // assume the file is TSV and starts directly with the header line. Parse lineIterator here.
+                        if (line.indexOf('\t')!=-1) {
+                            parseHeaderLine(new MutableString("#" + line));
+                        } else {
+                            // the file tsv header does not contain even a single tab? The file is most likely truncated
+                            throw new FileTruncatedException();
+                        }
+
+                    } else {
+                        // We are seeing an actual line of data. Prepare for parsing:
+                        if (!TSV) {
+                            parseCurrentLine();
+                        } else {
+                            parseTSVLine();
+                        }
+                        hasNextDataLine = true;
+                    }
+                    break;
+                }
+                if (line.startsWith("##")) {
+                    TSV = false;
+                    processMetaInfoLine(line);
+                } else if (line.startsWith("#")) {
+                    parseHeaderLine(line);
+                }
+                lineNumber++;
             }
-            if (line.startsWith("##")) {
-                TSV = false;
-                processMetaInfoLine(line);
-            } else if (line.startsWith("#")) {
-                parseHeaderLine(line);
-            }
-            lineNumber++;
+        } catch (net.sf.samtools.FileTruncatedException e) {
+            line = null;
+            hasNextDataLine = false;
+            // install a dummy line iteratory that always returns false when hasNext is called.
+            lineIterator = new LineIterator(bufferedReader) {
+                @Override
+                public boolean hasNext() {
+                    return false;
+                }
+
+                @Override
+                public MutableString next() {
+                    return null;
+                }
+            };
+
         }
     }
 
