@@ -18,14 +18,9 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 
-import com.sun.tools.javac.util.Position;
-import com.sun.xml.internal.bind.marshaller.MinimumEscapeHandler;
 import edu.cornell.med.icb.goby.algorithmic.data.MethylRateInfo;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import org.easymock.internal.matchers.Null;
 import org.junit.Test;
-
-import java.util.List;
 
 /**
  * User: nyasha
