@@ -4,7 +4,7 @@
 # In general, the safest way to proceed is to run ./autogen.sh
 
 AC_PREREQ(2.59)
-AC_INIT([Goby],[1.9.7.2],[icb@med.cornell.edu])
+AC_INIT([Goby],[1.9.7.3],[icb@med.cornell.edu])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
