@@ -1,3 +1,13 @@
+>>1.9.8
+ - Preliminary support for calling indels with discover-sequence-variants.  Candidate indels are now written
+   in the formats that use GenotypeOutputFormat (e.g., genotypes, compare_groups, allele_frequency).
+   The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.
+   After possible realignment, and filtering to remove possible errors, EIR are reported with their frequencies.
+ - Proof of principle that protocol buffer can seamlessly cohabit with data-specific compression schemes. The
+   --codec option on fasta-to-compact is introduced to activate compression of reads when writing compact reads.
+   The codec provided (called read-codec-1) achieves about 10% better compression of read files than pure
+   protocol-buffer encoding. This read-codec-1 codec stores bases and quality scores with an arithmetic coder in
+   the special compressed_data protocol buffer field.
 1.9.7.3
  - Fix allele frequency format to write genotype first in FORMAT per vcf spec.
  - Add new INFO fields in compare group vcf format to show allele counts in each group.
