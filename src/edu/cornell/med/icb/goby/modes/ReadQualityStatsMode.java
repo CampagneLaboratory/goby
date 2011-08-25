@@ -28,15 +28,16 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.math.fraction.ProperFractionFormat;
 import org.apache.commons.math.random.MersenneTwister;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.*;
-import java.util.logging.Logger;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Evaluate statistics for read qualities.
@@ -85,6 +86,17 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
     private OutputFormat outputFormat = OutputFormat.TSV;
 
     /**
+     * Number of samples ignored because of sampleFraction value < 1.0d.
+     */
+    private long numberOfSkippedReads;
+
+    /**
+     * Number of samples observed because of sampleFraction value < 1.0d. If sampleFraction == 1.0d
+     * this should be the total number of samples in the file.
+     */
+    private long numberOfObservedReads;
+
+    /**
      * Configure.
      *
      * @param args command line arguments
@@ -107,12 +119,12 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
     }
 
     /**
-     * The precentage of reads to process. 0.01 means 1% of reads,
+     * The percentage of reads to process. 0.01 means 1% of reads,
      * 1.0 means 100% of reads. The default of 0.01 should work fine
      * for most files but if you are dealing with a very small file
      * you should set this to 1.0.
      *
-     * @return The precentage of reads to process
+     * @return The percentage of reads to process
      */
     public double getSampleFraction() {
         return sampleFraction;
@@ -124,9 +136,9 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
      * for most files but if you are dealing with a very small file
      * you should set this to 1.0.
      *
-     * @return The precentage of reads to process
+     * @param sampleFraction The percentage of reads to process
      */
-    public void setSampleFraction(double sampleFraction) {
+    public void setSampleFraction(final double sampleFraction) {
         this.sampleFraction = sampleFraction;
     }
 
@@ -167,6 +179,23 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
     }
 
     /**
+     * Number of reads skipped because of sampleFraction value < 1.0d.
+     * @return the number of skipped samples.
+     */
+    public long getNumberOfSkippedReads() {
+        return numberOfSkippedReads;
+    }
+
+    /**
+     * Number of reads observed because of sampleFraction value < 1.0d. If sampleFraction == 1.0d
+     * this should be the total number of reads in the file.
+     * @return the number of observed samples
+     */
+    public long getNumberOfObservedReads() {
+        return numberOfObservedReads;
+    }
+
+    /**
      * Display the alignments as text files.
      *
      * @throws java.io.IOException error reading / writing
@@ -175,32 +204,36 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
     public void execute() throws IOException {
         PrintStream writer = null;
         try {
+            numberOfSkippedReads = 0;
+            numberOfObservedReads = 0;
             writer = outputFile == null ? System.out
                     : new PrintStream(new FileOutputStream(outputFile));
             final Int2ObjectMap<ReadQualityStats> qualityStats = new Int2ObjectOpenHashMap<ReadQualityStats>();
-            ProgressLogger progress = new ProgressLogger(LOG);
+            final ProgressLogger progress = new ProgressLogger(LOG);
             progress.start();
             final MersenneTwister random = new MersenneTwister();
+            final boolean doSample = sampleFraction < 1.0d;
             writer.println("basename\treadIndex\t25%-percentile\tmedian\taverageQuality\t75%-percentile");
             for (final File filename : inputFiles) {
                 final ReadsReader reader = new ReadsReader(filename);
                 final String basename = ReadsReader.getBasename(filename.toString());
                 for (final Reads.ReadEntry entry : reader) {
-                    if (random.nextDouble() < sampleFraction) {
+                    if (!doSample || random.nextDouble() < sampleFraction) {
                         final ByteString qualityScores = entry.getQualityScores();
                         final int size = qualityScores.size();
                         for (int readIndex = 0; readIndex < size; readIndex++) {
                             final byte code = qualityScores.byteAt(readIndex);
                             ReadQualityStats stats = qualityStats.get(readIndex);
                             if (stats == null) {
-                                stats = new ReadQualityStats(1d);
+                                stats = new ReadQualityStats(1.0d);
                                 qualityStats.put(readIndex, stats);
-
+                                stats.readIndex = readIndex;
                             }
-                            stats.readIndex = readIndex;
                             stats.observe(code);
                         }
-
+                        numberOfObservedReads++;
+                    } else {
+                        numberOfSkippedReads++;
                     }
                     progress.lightUpdate();
                 }
@@ -251,21 +284,17 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
         private double averageQuality;
         private int observedCount;
         private final double sampleFraction;
-        private boolean doSample;
+        private final boolean doSample;
 
         private ReadQualityStats(final double sampleFraction) {
             this.sampleFraction = sampleFraction;
-            if (sampleFraction<1.0) {
-                doSample=true;
-            }                 else {
-                doSample=false;
-            }
+            doSample = sampleFraction < 1.0;
         }
 
         void observe(final byte b) {
             averageQuality += b;
             observedCount += 1;
-            if (doSample && random.nextDouble() < sampleFraction) {
+            if (!doSample || random.nextDouble() < sampleFraction) {
                 sample.add(b);
             }
         }
@@ -275,12 +304,12 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
         }
 
         public byte percentile(final double percent) {
-            final int index = (int) (((double) sample.size()) * percent / 100d);
+            final int index = (int) ((double) sample.size() * percent / 100d);
             return sample.get(index);
         }
 
         public boolean sampleIsEmpty() {
-            return sample.size() == 0;
+            return sample.isEmpty();
         }
     }
 }

@@ -29,7 +29,7 @@
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
             <required>false</required>
-            <help>The filename to output wiggle format counts.</help>
+            <help>The filename to output bedgraph format counts.</help>
         </flaggedOption>
         <flaggedOption>
             <id>include-reference-names</id>

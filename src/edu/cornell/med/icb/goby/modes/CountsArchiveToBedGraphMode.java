@@ -82,7 +82,7 @@ public class CountsArchiveToBedGraphMode extends AbstractGobyMode {
     private ObjectSet<String> includeReferenceNames = new ObjectOpenHashSet<String>();
 
     /**
-     * The name to embed in the wiggle file.
+     * The name to embed in the bedgraph file.
      */
     private String label;
 
@@ -127,7 +127,7 @@ public class CountsArchiveToBedGraphMode extends AbstractGobyMode {
         if (includeReferenceNameCommas != null) {
             includeReferenceNames = new ObjectOpenHashSet<String>();
             includeReferenceNames.addAll(Arrays.asList(includeReferenceNameCommas.split("[,]")));
-            System.out.println("Will write wiggles for the following sequences:");
+            System.out.println("Will write bedgraph for the following sequences:");
             for (final String name : includeReferenceNames) {
                 System.out.println(name);
             }
