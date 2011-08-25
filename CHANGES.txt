@@ -8,6 +8,8 @@
    The codec provided (called read-codec-1) achieves about 10% better compression of read files than pure
    protocol-buffer encoding. This read-codec-1 codec stores bases and quality scores with an arithmetic coder in
    the special compressed_data protocol buffer field.
+ - Fixed a bug with ReadsQualityStatsMode when when SampleFraction == 1.0d, such as for files with a small
+   number of reads.
 1.9.7.3
  - Fix allele frequency format to write genotype first in FORMAT per vcf spec.
  - Add new INFO fields in compare group vcf format to show allele counts in each group.
