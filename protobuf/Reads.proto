@@ -48,7 +48,11 @@ message ReadEntry {
     Quality scores for the second sequence in a pair. Stored as the 'qualityScores' attribute.
    */
   optional bytes quality_scores_pair = 7;
-
+  /*
+    Compressed stream of data. The first byte indicates the compression/decompression method (codec). The remaining bytes are
+    content compressed with the codec.
+  */
+  optional bytes compressed_data = 8;
   /*
      Stores meta-data about the reads. Typically meta-data is stored in the very first read of a
      read collection, with the understanding that the meta-data applies to all the reads in the

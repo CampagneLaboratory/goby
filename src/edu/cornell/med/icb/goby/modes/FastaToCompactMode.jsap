@@ -152,5 +152,14 @@
             <required>false</required>
             <help>A file with key-value pairs, in the Java property format. (key=value, one per line). Any key/value pairs defined in this file will be overriden by key/value pairs defined on the command line when the same key is used.</help>
         </flaggedOption>
+        <flaggedOption>
+            <id>codec</id>
+            <longFlag>codec</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The name of a codec. When provided, the coded is used to compress reads.</help>
+        </flaggedOption>
     </parameters>
 </jsap>

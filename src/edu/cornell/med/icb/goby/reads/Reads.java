@@ -614,6 +614,10 @@ public final class Reads {
     boolean hasQualityScoresPair();
     com.google.protobuf.ByteString getQualityScoresPair();
     
+    // optional bytes compressed_data = 8;
+    boolean hasCompressedData();
+    com.google.protobuf.ByteString getCompressedData();
+    
     // repeated .goby.MetaData meta_data = 25;
     java.util.List<edu.cornell.med.icb.goby.reads.Reads.MetaData> 
         getMetaDataList();
@@ -797,6 +801,16 @@ public final class Reads {
       return qualityScoresPair_;
     }
     
+    // optional bytes compressed_data = 8;
+    public static final int COMPRESSED_DATA_FIELD_NUMBER = 8;
+    private com.google.protobuf.ByteString compressedData_;
+    public boolean hasCompressedData() {
+      return ((bitField0_ & 0x00000400) == 0x00000400);
+    }
+    public com.google.protobuf.ByteString getCompressedData() {
+      return compressedData_;
+    }
+    
     // repeated .goby.MetaData meta_data = 25;
     public static final int META_DATA_FIELD_NUMBER = 25;
     private java.util.List<edu.cornell.med.icb.goby.reads.Reads.MetaData> metaData_;
@@ -829,6 +843,7 @@ public final class Reads {
       readLengthPair_ = 0;
       qualityScores_ = com.google.protobuf.ByteString.EMPTY;
       qualityScoresPair_ = com.google.protobuf.ByteString.EMPTY;
+      compressedData_ = com.google.protobuf.ByteString.EMPTY;
       metaData_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
@@ -878,6 +893,9 @@ public final class Reads {
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
         output.writeBytes(7, qualityScoresPair_);
       }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        output.writeBytes(8, compressedData_);
+      }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeUInt32(10, barcodeIndex_);
       }
@@ -926,6 +944,10 @@ public final class Reads {
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(7, qualityScoresPair_);
+      }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(8, compressedData_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
@@ -1088,9 +1110,11 @@ public final class Reads {
         bitField0_ = (bitField0_ & ~0x00000100);
         qualityScoresPair_ = com.google.protobuf.ByteString.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000200);
+        compressedData_ = com.google.protobuf.ByteString.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000400);
         if (metaDataBuilder_ == null) {
           metaData_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000400);
+          bitField0_ = (bitField0_ & ~0x00000800);
         } else {
           metaDataBuilder_.clear();
         }
@@ -1172,10 +1196,14 @@ public final class Reads {
           to_bitField0_ |= 0x00000200;
         }
         result.qualityScoresPair_ = qualityScoresPair_;
+        if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
+          to_bitField0_ |= 0x00000400;
+        }
+        result.compressedData_ = compressedData_;
         if (metaDataBuilder_ == null) {
-          if (((bitField0_ & 0x00000400) == 0x00000400)) {
+          if (((bitField0_ & 0x00000800) == 0x00000800)) {
             metaData_ = java.util.Collections.unmodifiableList(metaData_);
-            bitField0_ = (bitField0_ & ~0x00000400);
+            bitField0_ = (bitField0_ & ~0x00000800);
           }
           result.metaData_ = metaData_;
         } else {
@@ -1227,11 +1255,14 @@ public final class Reads {
         if (other.hasQualityScoresPair()) {
           setQualityScoresPair(other.getQualityScoresPair());
         }
+        if (other.hasCompressedData()) {
+          setCompressedData(other.getCompressedData());
+        }
         if (metaDataBuilder_ == null) {
           if (!other.metaData_.isEmpty()) {
             if (metaData_.isEmpty()) {
               metaData_ = other.metaData_;
-              bitField0_ = (bitField0_ & ~0x00000400);
+              bitField0_ = (bitField0_ & ~0x00000800);
             } else {
               ensureMetaDataIsMutable();
               metaData_.addAll(other.metaData_);
@@ -1244,7 +1275,7 @@ public final class Reads {
               metaDataBuilder_.dispose();
               metaDataBuilder_ = null;
               metaData_ = other.metaData_;
-              bitField0_ = (bitField0_ & ~0x00000400);
+              bitField0_ = (bitField0_ & ~0x00000800);
               metaDataBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getMetaDataFieldBuilder() : null;
@@ -1331,6 +1362,11 @@ public final class Reads {
             case 58: {
               bitField0_ |= 0x00000200;
               qualityScoresPair_ = input.readBytes();
+              break;
+            }
+            case 66: {
+              bitField0_ |= 0x00000400;
+              compressedData_ = input.readBytes();
               break;
             }
             case 80: {
@@ -1612,13 +1648,37 @@ public final class Reads {
         return this;
       }
       
+      // optional bytes compressed_data = 8;
+      private com.google.protobuf.ByteString compressedData_ = com.google.protobuf.ByteString.EMPTY;
+      public boolean hasCompressedData() {
+        return ((bitField0_ & 0x00000400) == 0x00000400);
+      }
+      public com.google.protobuf.ByteString getCompressedData() {
+        return compressedData_;
+      }
+      public Builder setCompressedData(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000400;
+        compressedData_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearCompressedData() {
+        bitField0_ = (bitField0_ & ~0x00000400);
+        compressedData_ = getDefaultInstance().getCompressedData();
+        onChanged();
+        return this;
+      }
+      
       // repeated .goby.MetaData meta_data = 25;
       private java.util.List<edu.cornell.med.icb.goby.reads.Reads.MetaData> metaData_ =
         java.util.Collections.emptyList();
       private void ensureMetaDataIsMutable() {
-        if (!((bitField0_ & 0x00000400) == 0x00000400)) {
+        if (!((bitField0_ & 0x00000800) == 0x00000800)) {
           metaData_ = new java.util.ArrayList<edu.cornell.med.icb.goby.reads.Reads.MetaData>(metaData_);
-          bitField0_ |= 0x00000400;
+          bitField0_ |= 0x00000800;
          }
       }
       
@@ -1734,7 +1794,7 @@ public final class Reads {
       public Builder clearMetaData() {
         if (metaDataBuilder_ == null) {
           metaData_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000400);
+          bitField0_ = (bitField0_ & ~0x00000800);
           onChanged();
         } else {
           metaDataBuilder_.clear();
@@ -1790,7 +1850,7 @@ public final class Reads {
           metaDataBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               edu.cornell.med.icb.goby.reads.Reads.MetaData, edu.cornell.med.icb.goby.reads.Reads.MetaData.Builder, edu.cornell.med.icb.goby.reads.Reads.MetaDataOrBuilder>(
                   metaData_,
-                  ((bitField0_ & 0x00000400) == 0x00000400),
+                  ((bitField0_ & 0x00000800) == 0x00000800),
                   getParentForChildren(),
                   isClean());
           metaData_ = null;
@@ -2319,16 +2379,17 @@ public final class Reads {
   static {
     java.lang.String[] descriptorData = {
       "\n\013Reads.proto\022\004goby\"0\n\016ReadCollection\022\036\n" +
-      "\005reads\030\001 \003(\0132\017.goby.ReadEntry\"\224\002\n\tReadEn" +
+      "\005reads\030\001 \003(\0132\017.goby.ReadEntry\"\255\002\n\tReadEn" +
       "try\022\022\n\nread_index\030\001 \002(\r\022\025\n\rbarcode_index" +
       "\030\n \001(\r\022\027\n\017read_identifier\030\027 \001(\t\022\023\n\013descr" +
       "iption\030\026 \001(\t\022\023\n\013read_length\030\002 \002(\r\022\020\n\010seq" +
       "uence\030\003 \001(\014\022\025\n\rsequence_pair\030\005 \001(\014\022\030\n\020re" +
       "ad_length_pair\030\006 \001(\r\022\026\n\016quality_scores\030\004" +
-      " \001(\014\022\033\n\023quality_scores_pair\030\007 \001(\014\022!\n\tmet" +
-      "a_data\030\031 \003(\0132\016.goby.MetaData\"&\n\010MetaData" +
-      "\022\013\n\003key\030\001 \002(\t\022\r\n\005value\030\002 \002(\tB\"\n\036edu.corn",
-      "ell.med.icb.goby.readsH\001"
+      " \001(\014\022\033\n\023quality_scores_pair\030\007 \001(\014\022\027\n\017com" +
+      "pressed_data\030\010 \001(\014\022!\n\tmeta_data\030\031 \003(\0132\016." +
+      "goby.MetaData\"&\n\010MetaData\022\013\n\003key\030\001 \002(\t\022\r",
+      "\n\005value\030\002 \002(\tB\"\n\036edu.cornell.med.icb.gob" +
+      "y.readsH\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -2348,7 +2409,7 @@ public final class Reads {
           internal_static_goby_ReadEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_goby_ReadEntry_descriptor,
-              new java.lang.String[] { "ReadIndex", "BarcodeIndex", "ReadIdentifier", "Description", "ReadLength", "Sequence", "SequencePair", "ReadLengthPair", "QualityScores", "QualityScoresPair", "MetaData", },
+              new java.lang.String[] { "ReadIndex", "BarcodeIndex", "ReadIdentifier", "Description", "ReadLength", "Sequence", "SequencePair", "ReadLengthPair", "QualityScores", "QualityScoresPair", "CompressedData", "MetaData", },
               edu.cornell.med.icb.goby.reads.Reads.ReadEntry.class,
               edu.cornell.med.icb.goby.reads.Reads.ReadEntry.Builder.class);
           internal_static_goby_MetaData_descriptor =

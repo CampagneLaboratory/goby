@@ -82,6 +82,7 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
     public ReadsReader(final InputStream stream) {
         super();
         reader = new MessageChunksReader(stream);
+        codec=new ReadCodecImpl();
     }
 
     /**
@@ -128,6 +129,9 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
                 final CodedInputStream codedInput = CodedInputStream.newInstance(uncompressStream);
                 codedInput.setSizeLimit(Integer.MAX_VALUE);
                 collection = Reads.ReadCollection.parseFrom(codedInput);
+                if (codec!=null) {
+                    codec.newChunk();
+                }
                 if (collection.getReadsCount() == 0) {
                     return false;
                 }
@@ -159,9 +163,20 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
             }
             first = false;
         }
-
+        if (codec!=null) {
+            final Reads.ReadEntry.Builder result = codec.decode(readEntry);
+            if (result!=null) {
+                // the codec was able to decode compressed data.
+                return  result.build();
+            }
+        }
         return readEntry;
     }
+
+    /**
+     * Optional codec.
+     */
+    private ReadCodec codec;
 
     boolean first = true;
 

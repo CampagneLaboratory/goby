@@ -52,7 +52,7 @@ void protobuf_AssignDesc_Reads_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ReadCollection));
   ReadEntry_descriptor_ = file->message_type(1);
-  static const int ReadEntry_offsets_[11] = {
+  static const int ReadEntry_offsets_[12] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, read_index_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, barcode_index_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, read_identifier_),
@@ -63,6 +63,7 @@ void protobuf_AssignDesc_Reads_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, read_length_pair_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, quality_scores_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, quality_scores_pair_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, compressed_data_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReadEntry, meta_data_),
   };
   ReadEntry_reflection_ =
@@ -131,16 +132,17 @@ void protobuf_AddDesc_Reads_2eproto() {
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\013Reads.proto\022\004goby\"0\n\016ReadCollection\022\036\n"
-    "\005reads\030\001 \003(\0132\017.goby.ReadEntry\"\224\002\n\tReadEn"
+    "\005reads\030\001 \003(\0132\017.goby.ReadEntry\"\255\002\n\tReadEn"
     "try\022\022\n\nread_index\030\001 \002(\r\022\025\n\rbarcode_index"
     "\030\n \001(\r\022\027\n\017read_identifier\030\027 \001(\t\022\023\n\013descr"
     "iption\030\026 \001(\t\022\023\n\013read_length\030\002 \002(\r\022\020\n\010seq"
     "uence\030\003 \001(\014\022\025\n\rsequence_pair\030\005 \001(\014\022\030\n\020re"
     "ad_length_pair\030\006 \001(\r\022\026\n\016quality_scores\030\004"
-    " \001(\014\022\033\n\023quality_scores_pair\030\007 \001(\014\022!\n\tmet"
-    "a_data\030\031 \003(\0132\016.goby.MetaData\"&\n\010MetaData"
-    "\022\013\n\003key\030\001 \002(\t\022\r\n\005value\030\002 \002(\tB\"\n\036edu.corn"
-    "ell.med.icb.goby.readsH\001", 424);
+    " \001(\014\022\033\n\023quality_scores_pair\030\007 \001(\014\022\027\n\017com"
+    "pressed_data\030\010 \001(\014\022!\n\tmeta_data\030\031 \003(\0132\016."
+    "goby.MetaData\"&\n\010MetaData\022\013\n\003key\030\001 \002(\t\022\r"
+    "\n\005value\030\002 \002(\tB\"\n\036edu.cornell.med.icb.gob"
+    "y.readsH\001", 449);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "Reads.proto", &protobuf_RegisterTypes);
   ReadCollection::default_instance_ = new ReadCollection();
@@ -378,6 +380,7 @@ const int ReadEntry::kSequencePairFieldNumber;
 const int ReadEntry::kReadLengthPairFieldNumber;
 const int ReadEntry::kQualityScoresFieldNumber;
 const int ReadEntry::kQualityScoresPairFieldNumber;
+const int ReadEntry::kCompressedDataFieldNumber;
 const int ReadEntry::kMetaDataFieldNumber;
 #endif  // !_MSC_VER
 
@@ -407,6 +410,7 @@ void ReadEntry::SharedCtor() {
   read_length_pair_ = 0u;
   quality_scores_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   quality_scores_pair_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  compressed_data_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -432,6 +436,9 @@ void ReadEntry::SharedDtor() {
   }
   if (quality_scores_pair_ != &::google::protobuf::internal::kEmptyString) {
     delete quality_scores_pair_;
+  }
+  if (compressed_data_ != &::google::protobuf::internal::kEmptyString) {
+    delete compressed_data_;
   }
   if (this != default_instance_) {
   }
@@ -493,6 +500,11 @@ void ReadEntry::Clear() {
     if (has_quality_scores_pair()) {
       if (quality_scores_pair_ != &::google::protobuf::internal::kEmptyString) {
         quality_scores_pair_->clear();
+      }
+    }
+    if (has_compressed_data()) {
+      if (compressed_data_ != &::google::protobuf::internal::kEmptyString) {
+        compressed_data_->clear();
       }
     }
   }
@@ -603,6 +615,20 @@ bool ReadEntry::MergePartialFromCodedStream(
          parse_quality_scores_pair:
           DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
                 input, this->mutable_quality_scores_pair()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(66)) goto parse_compressed_data;
+        break;
+      }
+      
+      // optional bytes compressed_data = 8;
+      case 8: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_compressed_data:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_compressed_data()));
         } else {
           goto handle_uninterpreted;
         }
@@ -732,6 +758,12 @@ void ReadEntry::SerializeWithCachedSizes(
       7, this->quality_scores_pair(), output);
   }
   
+  // optional bytes compressed_data = 8;
+  if (has_compressed_data()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytes(
+      8, this->compressed_data(), output);
+  }
+  
   // optional uint32 barcode_index = 10;
   if (has_barcode_index()) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(10, this->barcode_index(), output);
@@ -810,6 +842,13 @@ void ReadEntry::SerializeWithCachedSizes(
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         7, this->quality_scores_pair(), target);
+  }
+  
+  // optional bytes compressed_data = 8;
+  if (has_compressed_data()) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        8, this->compressed_data(), target);
   }
   
   // optional uint32 barcode_index = 10;
@@ -927,6 +966,13 @@ int ReadEntry::ByteSize() const {
           this->quality_scores_pair());
     }
     
+    // optional bytes compressed_data = 8;
+    if (has_compressed_data()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->compressed_data());
+    }
+    
   }
   // repeated .goby.MetaData meta_data = 25;
   total_size += 2 * this->meta_data_size();
@@ -995,6 +1041,9 @@ void ReadEntry::MergeFrom(const ReadEntry& from) {
     if (from.has_quality_scores_pair()) {
       set_quality_scores_pair(from.quality_scores_pair());
     }
+    if (from.has_compressed_data()) {
+      set_compressed_data(from.compressed_data());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -1032,6 +1081,7 @@ void ReadEntry::Swap(ReadEntry* other) {
     std::swap(read_length_pair_, other->read_length_pair_);
     std::swap(quality_scores_, other->quality_scores_);
     std::swap(quality_scores_pair_, other->quality_scores_pair_);
+    std::swap(compressed_data_, other->compressed_data_);
     meta_data_.Swap(&other->meta_data_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);

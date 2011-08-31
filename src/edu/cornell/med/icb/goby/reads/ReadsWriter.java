@@ -52,6 +52,10 @@ public class ReadsWriter implements Closeable {
     private int barcodeIndex = -1;
     private CharSequence pairSequence;
     private byte[] qualityScoresPair;
+    /**
+     * An optional read codec.
+     */
+    private ReadCodec codec;
 
 
     public ReadsWriter(final OutputStream output) {
@@ -130,7 +134,7 @@ public class ReadsWriter implements Closeable {
      */
     public synchronized void appendEntry(final int readIndex) throws IOException {
 
-        final Reads.ReadEntry.Builder entryBuilder = Reads.ReadEntry.newBuilder();
+        Reads.ReadEntry.Builder entryBuilder = Reads.ReadEntry.newBuilder();
 
         entryBuilder.setReadIndex(readIndex);
 
@@ -169,7 +173,7 @@ public class ReadsWriter implements Closeable {
             qualityScoresPair = null;
         }
 
-        if (firstRead == true && keyValuePairs!=null) {
+        if (firstRead == true && keyValuePairs != null) {
             // Append meta data on the very first read of each file. This is used instead of a separate header file. 
             for (Object keyObject : keyValuePairs.keySet()) {
                 String key = keyObject.toString();
@@ -179,7 +183,17 @@ public class ReadsWriter implements Closeable {
             firstRead = false;
 
         }
+        if (codec != null) {
+            if (collectionBuilder.getReadsCount()==0) {
+                codec.newChunk();
+            }
+            Reads.ReadEntry.Builder result = codec.encode(entryBuilder);
+            if (result != null) {
+                entryBuilder = result;
+            }
+        }
         collectionBuilder.addReads(entryBuilder.build());
+
         messageChunkWriter.writeAsNeeded(collectionBuilder);
         barcodeIndex = -1;
     }
@@ -261,5 +275,9 @@ public class ReadsWriter implements Closeable {
 
     public void setMetaData(Properties keyValuePairs) {
         this.keyValuePairs = keyValuePairs;
+    }
+
+    public void setCodec(ReadCodec codec) {
+        this.codec = codec;
     }
 }

@@ -23,7 +23,9 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.readers.FastXEntry;
 import edu.cornell.med.icb.goby.readers.FastXReader;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
+import edu.cornell.med.icb.goby.reads.ReadCodec;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
+import edu.cornell.med.icb.goby.stats.NormalizationMethod;
 import edu.cornell.med.icb.goby.util.DoInParallel;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
@@ -33,6 +35,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.omg.IOP.Codec;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -41,6 +44,7 @@ import java.io.FileReader;
 import java.util.Properties;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.ServiceLoader;
 
 /**
  * Converts a <a href="http://en.wikipedia.org/wiki/FASTA_format">FASTA</a>
@@ -122,6 +126,8 @@ public class FastaToCompactMode extends AbstractGobyMode {
     private boolean apiMode = true;
     private int numThreads;
 
+    private ReadCodec codec;
+
     /**
      * Returns the mode name defined by subclasses.
      *
@@ -175,6 +181,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
     /**
      * Get the output filename. Only used when inputFilenames.length == 1.
+     *
      * @return the output filename
      */
     public String getOutputFilename() {
@@ -183,6 +190,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
     /**
      * Set the output filename. Only used when inputFilenames.length == 1.
+     *
      * @param outputFilename the output filename
      */
     public void setOutputFilename(final String outputFilename) {
@@ -191,6 +199,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
     /**
      * Get the quality encoding scale used for the input fastq file.
+     *
      * @return the quality encoding scale used for the input fastq file
      */
     public QualityEncoding getQualityEncoding() {
@@ -200,6 +209,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
     /**
      * Set the quality encoding scale to be used for the input fastq file.
      * Acceptable values are "Illumina", "Sanger", and "Solexa".
+     *
      * @param qualityEncoding the quality encoding scale to be used for the input fastq file
      */
     public void setQualityEncoding(final QualityEncoding qualityEncoding) {
@@ -209,11 +219,14 @@ public class FastaToCompactMode extends AbstractGobyMode {
     /**
      * Set the quality encoding scale to be used for the input fastq file.
      * Acceptable values are "Illumina", "Sanger", and "Solexa".
+     *
      * @param qualityEncoding the quality encoding scale to be used for the input fastq file
      */
     public void setQualityEncoding(final String qualityEncoding) {
         this.qualityEncoding = QualityEncoding.valueOf(qualityEncoding.toUpperCase());
     }
+
+    private static final ServiceLoader<ReadCodec> codecLoader = ServiceLoader.load(ReadCodec.class);
 
     /**
      * Configure.
@@ -235,7 +248,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
         excludeQuality = jsapResult.getBoolean("exclude-quality");
         verboseQualityScores = jsapResult.getBoolean("verbose-quality-scores");
         qualityEncoding = QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
-        numThreads=jsapResult.getInt("num-threads");
+        numThreads = jsapResult.getInt("num-threads");
         if (inputFilenames.length == 1) {
             outputFilename = jsapResult.getString("output");
         }
@@ -243,6 +256,19 @@ public class FastaToCompactMode extends AbstractGobyMode {
         processPairs = jsapResult.getBoolean("paired-end");
         final String tokens = jsapResult.getString("pair-indicator");
 
+        String codecName = jsapResult.getString("codec");
+
+        if (codecName != null) {
+            codecLoader.reload();
+            for (final ReadCodec c : codecLoader) {
+
+                if (c.name().equals(codecName)) {
+                    LOG.info("Will use read codec " + c.name());
+                    codec = c;
+                    break;
+                }
+            }
+        }
         if (processPairs && tokens != null) {
             final String[] tmp = tokens.split("[,]");
             if (tmp.length != 2) {
@@ -357,6 +383,9 @@ public class FastaToCompactMode extends AbstractGobyMode {
             FileUtils.forceMkdir(new File(outputPath));
         }
         final ReadsWriter writer = new ReadsWriter(new FastBufferedOutputStream(new FileOutputStream(outputFilename)));
+        if (codec != null) {
+            writer.setCodec(codec);
+        }
         try {
 
             writer.setNumEntriesPerChunk(sequencePerChunk);
@@ -398,7 +427,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
                     writer.setQualityScores(convertQualityScores(qualityEncoding, entry.getQuality(),
                             verboseQualityScores, apiMode));
                     if (pairEntry != null) {
-                        writer.setQualityScoresPair(convertQualityScores(qualityEncoding,pairEntry.getQuality(),
+                        writer.setQualityScoresPair(convertQualityScores(qualityEncoding, pairEntry.getQuality(),
                                 verboseQualityScores, apiMode));
                     }
                 }
@@ -412,11 +441,11 @@ public class FastaToCompactMode extends AbstractGobyMode {
         }
     }
 
-    static  public byte[] convertQualityScores(QualityEncoding qualityEncoding, final CharSequence quality, boolean verboseQualityScores) {
+    static public byte[] convertQualityScores(QualityEncoding qualityEncoding, final CharSequence quality, boolean verboseQualityScores) {
         return convertQualityScores(qualityEncoding, quality, verboseQualityScores, false);
     }
 
-    static  public byte[] convertQualityScores(QualityEncoding qualityEncoding, final CharSequence quality, boolean verboseQualityScores, boolean apiMode) {
+    static public byte[] convertQualityScores(QualityEncoding qualityEncoding, final CharSequence quality, boolean verboseQualityScores, boolean apiMode) {
         // Only Solexa, Sanger and Illumina encoding are supported at this time
 
         final int size = quality.length();

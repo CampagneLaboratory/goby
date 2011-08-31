@@ -271,6 +271,17 @@ class ReadEntry : public ::google::protobuf::Message {
   inline ::std::string* mutable_quality_scores_pair();
   inline ::std::string* release_quality_scores_pair();
   
+  // optional bytes compressed_data = 8;
+  inline bool has_compressed_data() const;
+  inline void clear_compressed_data();
+  static const int kCompressedDataFieldNumber = 8;
+  inline const ::std::string& compressed_data() const;
+  inline void set_compressed_data(const ::std::string& value);
+  inline void set_compressed_data(const char* value);
+  inline void set_compressed_data(const void* value, size_t size);
+  inline ::std::string* mutable_compressed_data();
+  inline ::std::string* release_compressed_data();
+  
   // repeated .goby.MetaData meta_data = 25;
   inline int meta_data_size() const;
   inline void clear_meta_data();
@@ -305,6 +316,8 @@ class ReadEntry : public ::google::protobuf::Message {
   inline void clear_has_quality_scores();
   inline void set_has_quality_scores_pair();
   inline void clear_has_quality_scores_pair();
+  inline void set_has_compressed_data();
+  inline void clear_has_compressed_data();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
@@ -318,10 +331,11 @@ class ReadEntry : public ::google::protobuf::Message {
   ::std::string* sequence_pair_;
   ::std::string* quality_scores_;
   ::std::string* quality_scores_pair_;
+  ::std::string* compressed_data_;
   ::google::protobuf::RepeatedPtrField< ::goby::MetaData > meta_data_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(11 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(12 + 31) / 32];
   
   friend void  protobuf_AddDesc_Reads_2eproto();
   friend void protobuf_AssignDesc_Reads_2eproto();
@@ -898,6 +912,64 @@ inline ::std::string* ReadEntry::release_quality_scores_pair() {
   } else {
     ::std::string* temp = quality_scores_pair_;
     quality_scores_pair_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// optional bytes compressed_data = 8;
+inline bool ReadEntry::has_compressed_data() const {
+  return (_has_bits_[0] & 0x00000400u) != 0;
+}
+inline void ReadEntry::set_has_compressed_data() {
+  _has_bits_[0] |= 0x00000400u;
+}
+inline void ReadEntry::clear_has_compressed_data() {
+  _has_bits_[0] &= ~0x00000400u;
+}
+inline void ReadEntry::clear_compressed_data() {
+  if (compressed_data_ != &::google::protobuf::internal::kEmptyString) {
+    compressed_data_->clear();
+  }
+  clear_has_compressed_data();
+}
+inline const ::std::string& ReadEntry::compressed_data() const {
+  return *compressed_data_;
+}
+inline void ReadEntry::set_compressed_data(const ::std::string& value) {
+  set_has_compressed_data();
+  if (compressed_data_ == &::google::protobuf::internal::kEmptyString) {
+    compressed_data_ = new ::std::string;
+  }
+  compressed_data_->assign(value);
+}
+inline void ReadEntry::set_compressed_data(const char* value) {
+  set_has_compressed_data();
+  if (compressed_data_ == &::google::protobuf::internal::kEmptyString) {
+    compressed_data_ = new ::std::string;
+  }
+  compressed_data_->assign(value);
+}
+inline void ReadEntry::set_compressed_data(const void* value, size_t size) {
+  set_has_compressed_data();
+  if (compressed_data_ == &::google::protobuf::internal::kEmptyString) {
+    compressed_data_ = new ::std::string;
+  }
+  compressed_data_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ReadEntry::mutable_compressed_data() {
+  set_has_compressed_data();
+  if (compressed_data_ == &::google::protobuf::internal::kEmptyString) {
+    compressed_data_ = new ::std::string;
+  }
+  return compressed_data_;
+}
+inline ::std::string* ReadEntry::release_compressed_data() {
+  clear_has_compressed_data();
+  if (compressed_data_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = compressed_data_;
+    compressed_data_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
     return temp;
   }
 }
