@@ -15,7 +15,7 @@
 
     <property name="label" value="development"/>
 
-    <import file="buildsupport/build.xml"  />
+    <import file="buildsupport/build.xml"/>
 
     <if>
         <os family="windows"/>
@@ -72,7 +72,8 @@
         </copy>
     </target>
 
-    <target name="jar" depends="jar-goby, jar-goby-api, jar-goby-spi, jar-goby-io" description="Create project jarfiles"/>
+    <target name="jar" depends="jar-goby, jar-goby-api, jar-goby-spi, jar-goby-io"
+            description="Create project jarfiles"/>
 
     <target name="jar-goby" depends="compile"
             description="Create the goby.jar file. Gobies are a large species of fish that include some of the smallest fish. Now, isn't that fitting?">
@@ -80,6 +81,8 @@
         <copy file="${config}/log4j-sample.properties" tofile="${classes}/log4j.properties" overwrite="true"
               failonerror="true"/>
         <jar jarfile="${goby-jarfile}">
+
+
             <fileset dir="${classes}"/>
             <zipgroupfileset dir="${lib}">
                 <include name="bdval-api.jar"/>
@@ -97,14 +100,16 @@
                 <include name="JSAP-2.1.jar"/>
                 <include name="log4j-1.2.15.jar"/>
                 <include name="protobuf-java-2.4.1.jar"/>
-                <include name="sam-1.43.jar"/>
+                <include name="sam-1.52.jar"/>
                 <include name="squil.jar"/>
                 <include name="tisim-api.jar"/>
                 <include name="pj*.jar"/>
                 <include name="JRI.jar"/>
+                <include name="mg4j-3.0.1.jar"/>
                 <include name="xstream-1.3.1.jar"/>
                 <!-- Required by JSAP -->
             </zipgroupfileset>
+
 
             <manifest>
                 <attribute name="Specification-Title" value="Goby"/>
@@ -116,6 +121,10 @@
                 <attribute name="Main-Class" value="edu.cornell.med.icb.goby.modes.GobyDriver"/>
                 <attribute name="Built-By" value="${user.name}"/>
             </manifest>
+
+            <service type="edu.cornell.med.icb.goby.reads.ReadCodec">
+                <provider classname="edu.cornell.med.icb.goby.reads.ReadCodecImpl"/>
+            </service>
             <!-- define the implementation of NormalizationMethods as Java ServiceProviders: -->
             <service type="edu.cornell.med.icb.goby.stats.NormalizationMethod">
                 <provider classname="edu.cornell.med.icb.goby.stats.BullardUpperQuartileNormalization"/>
@@ -165,6 +174,9 @@
                 <provider classname="edu.cornell.med.icb.goby.stats.BullardUpperQuartileNormalization"/>
                 <provider classname="edu.cornell.med.icb.goby.stats.AlignedCountNormalization"/>
             </service>
+            <service type="edu.cornell.med.icb.goby.reads.ReadCodec">
+                <provider classname="edu.cornell.med.icb.goby.reads.ReadCodecImpl"/>
+            </service>
         </jar>
     </target>
 
@@ -188,14 +200,22 @@
             <zipgroupfileset dir="${lib}">
 
 
-                <include name="fastutil-6.3.jar"/>     <!-- LGPL -->
-                <include name="dsiutils-1.0.12.jar"/>    <!-- LGPL -->
-                <include name="icb-utils.jar"/>           <!-- LGPL -->
-                <include name="protobuf-java-2.4.1.jar"/> <!-- new BSD license, compatible with LGPL? -->
-                <include name="commons-io-1.4.jar"/>         <!-- Apache version 2 license -->
-                <include name="commons-lang-2.5.jar"/>       <!-- Apache version 2 license -->
-                <include name="commons-logging-1.1.1.jar"/>  <!-- Apache version 2 license -->
-                <include name="bdval-api.jar"/>  <!-- LGPL -->
+                <include name="fastutil-6.3.jar"/>
+                <!-- LGPL -->
+                <include name="dsiutils-1.0.12.jar"/>
+                <!-- LGPL -->
+                <include name="icb-utils.jar"/>
+                <!-- LGPL -->
+                <include name="protobuf-java-2.4.1.jar"/>
+                <!-- new BSD license, compatible with LGPL? -->
+                <include name="commons-io-1.4.jar"/>
+                <!-- Apache version 2 license -->
+                <include name="commons-lang-2.5.jar"/>
+                <!-- Apache version 2 license -->
+                <include name="commons-logging-1.1.1.jar"/>
+                <!-- Apache version 2 license -->
+                <include name="bdval-api.jar"/>
+                <!-- LGPL -->
             </zipgroupfileset>
             <manifest>
                 <attribute name="Specification-Title" value="Goby IO (LGPL compatible)"/>

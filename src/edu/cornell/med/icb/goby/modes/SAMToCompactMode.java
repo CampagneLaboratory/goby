@@ -141,8 +141,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         int numAligns = 0;
 
         final ProgressLogger progress = new ProgressLogger(LOG);
+        // the following is required to set validation to SILENT before loading the header (done in the SAMFileReader constructor)
+        SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+
         final SAMFileReader parser = new SAMFileReader(new File(inputFile));
-        parser.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
 
         progress.start();
 

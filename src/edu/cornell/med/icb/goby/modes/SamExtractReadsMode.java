@@ -109,8 +109,9 @@ public class SamExtractReadsMode extends AbstractGobyMode {
         final ReadsWriter writer = new ReadsWriter(new FileOutputStream(outputFilename));
         try {
             final ProgressLogger progress = new ProgressLogger(LOG);
-            final SAMFileReader parser = new SAMFileReader(new File(inputFilename));
-            parser.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+            // the following is required to set validation to SILENT before loading the header (done in the SAMFileReader constructor)
+            SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+            final SAMFileReader parser = new SAMFileReader(new File(inputFilename), null);
 
             progress.start();
 
