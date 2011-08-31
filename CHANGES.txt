@@ -10,6 +10,10 @@
    the special compressed_data protocol buffer field.
  - Fixed a bug with ReadsQualityStatsMode when when SampleFraction == 1.0d, such as for files with a small
    number of reads.
+ - Upgraded to SAM JDK 1.52
+ - Modes sam-to-compact and sam-extract-reads now set SILENT validation before reading file header. This is required
+   because the SAM JDK validation rules are more stringent than required by the specification. This means that
+   some valid SAM files (per the SAM spec) cannot be parsed without error when the strict validation is used.
 1.9.7.3
  - Fix allele frequency format to write genotype first in FORMAT per vcf spec.
  - Add new INFO fields in compare group vcf format to show allele counts in each group.
