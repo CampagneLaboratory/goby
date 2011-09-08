@@ -307,17 +307,17 @@ public class ReformatCompactReadsMode extends AbstractGobyMode {
                                                  ReadsWriter writer, boolean processPair) {
         byte[] qualityScores = null;
         if (!processPair && entry.hasQualityScores()) {
-
             qualityScores = entry.getQualityScores().toByteArray();
         }
         if (processPair && entry.hasQualityScoresPair()) {
-
             qualityScores = entry.getQualityScoresPair().toByteArray();
         }
 
         final int readLength = processPair ? entry.getReadLengthPair() : entry.getReadLength();
-        final byte[] trimmedScores = trimQualityScores(qualityScores, trimReadStartLength,
-                trimReadLength, readLength);
+        byte[] trimmedScores = null;
+        if (qualityScores != null && qualityScores.length > 0) {
+            trimmedScores = trimQualityScores(qualityScores, trimReadStartLength, trimReadLength, readLength);
+        }
 
         if (!excludeSequences) {
 

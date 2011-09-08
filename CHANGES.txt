@@ -14,6 +14,7 @@
  - Modes sam-to-compact and sam-extract-reads now set SILENT validation before reading file header. This is required
    because the SAM JDK validation rules are more stringent than required by the specification. This means that
    some valid SAM files (per the SAM spec) cannot be parsed without error when the strict validation is used.
+ - Fixed an issue with ReformatCompactReads when no quality scores exist.
 1.9.7.3
  - Fix allele frequency format to write genotype first in FORMAT per vcf spec.
  - Add new INFO fields in compare group vcf format to show allele counts in each group.
