@@ -37,14 +37,13 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Converts a <a href="http://en.wikipedia.org/wiki/FASTA_format">FASTA</a>
- * or <a href="http://en.wikipedia.org/wiki/FASTQ_format">FASTQ</a> file to the compact reads
- * format. Compact reads are in the chunked protocol buffer file format described by Reads.proto.
- * Since Goby 1.7, this mode can load paired-end runs into single compact files.
+ * Read the first n (defaults to 10,000) entries of a compact-reads or FASTQ file and report the minimum,
+ * maximum, and average quality score value and provide a guess at the quality encoding scheme
+ * (Phred, Sanger, Illumina/Solexa). It's worth noting that compact-reads files, if created correctly,
+ * should always report Phred.
  *
- * @author Fabien Campagne
- *         Date: Apr 28, 2009
- *         Time: 6:03:56 PM
+ * @author Kevin C. Dorff
+ *         Date: Sept 13, 2011
  */
 public class SampleQualityScoresMode extends AbstractGobyMode {
     /**
@@ -60,31 +59,40 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Determines the minimum and maximum quality score values " +
-            "in a portion of a fastq file to help determine the likely quality encoding.";
+    private static final String MODE_DESCRIPTION =
+            "Read the first n (defaults to 10,000) entries of a compact-reads or FASTQ file and report the minimum, " +
+            "maximum, and average quality score value and provide a guess at the quality encoding scheme " +
+            "(Phred, Sanger, Illumina/Solexa). It's worth noting that compact-reads files, if created correctly, " +
+            "should always report Phred. ";
 
-    // The reads files to process.
+    /**
+     * The reads files to process.
+     */
     private final List<String> inputFilenames = new ArrayList<String>();
 
     /**
-     * The CURRENT min found qual score.
+     * The CURRENT min found qual score (only the last file processed).
+     * See avgQualScores and likelyEncodings file results.
      */
     private int minQualScore;
 
     /**
-     * The CURRENT max found qual score.
+     * The CURRENT max found qual score (only the last file processed).
+     * See avgQualScores and likelyEncodings file results.
      */
     private int maxQualScore;
 
     /**
-     * The CURRENT sum of all of the quality scores, so we can perform an average.
+     * The CURRENT sum of all of the quality scores, so we can perform an average (only the last file processed).
+     * See avgQualScores and likelyEncodings file results.
      */
-    private double sumQualScores;
+    private long sumQualScores;
 
     /**
-     * The CURRENT number of qual scores sampled, so we can perform an average.
+     * The CURRENT number of qual scores sampled, so we can perform an average (only the last file processed).
+     * See avgQualScores and likelyEncodings file results.
      */
-    private int numQualScoresSampled;
+    private long numQualScoresSampled;
 
     /**
      * The average qual scores for each processed file.
@@ -97,9 +105,9 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
     private final List<String> likelyEncodings = new ArrayList<String>();
 
     /**
-     * The number of reads to to read.
+     * The number of read entries from each input file to to process.
      */
-    private int numberOfReads = 10000;
+    private int numberOfReadEntriesToProcess = 10000;
 
     /**
      * Returns the mode name defined by subclasses.
@@ -137,23 +145,31 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
         inputFilenames.clear();
     }
 
-
     /**
-     * Get the number of reads to sample.
-     *
-     * @return the number of reads to sample.
+     * The list of input filenames.
+     * @return list of input filenames.
      */
-    public int getNumberOfReads() {
-        return numberOfReads;
+    public List<String> getInputFilenames() {
+        return inputFilenames;
     }
 
     /**
-     * Set the number of reads to sample.
+     * Get the number of read entries to process per input file.
      *
-     * @param numberOfReads the number of reads to sample.
+     * @return  the number of read entries to process.
      */
-    public void setNumberOfReads(final int numberOfReads) {
-        this.numberOfReads = numberOfReads;
+    public int getNumberOfReadEntriesToProcess() {
+        return numberOfReadEntriesToProcess;
+    }
+
+    /**
+     * Set the number of read entries to process per input file.
+     * Set to <= 0 to process the entire file.
+     *
+     * @param numberOfReadEntriesToProcess the number of read entries to process.
+     */
+    public void setNumberOfReadEntriesToProcess(final int numberOfReadEntriesToProcess) {
+        this.numberOfReadEntriesToProcess = numberOfReadEntriesToProcess;
     }
 
 
@@ -173,10 +189,6 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
         return likelyEncodings;
     }
 
-    public List<String> getInputFilenames() {
-        return inputFilenames;
-    }
-
     /**
      * Configure.
      *
@@ -188,10 +200,9 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
     @Override
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
-        final String[] inputFilenamesArray = jsapResult.getStringArray("input");
         inputFilenames.clear();
-        Collections.addAll(inputFilenames, inputFilenamesArray);
-        numberOfReads = jsapResult.getInt("number-of-reads");
+        Collections.addAll(inputFilenames, jsapResult.getStringArray("input"));
+        numberOfReadEntriesToProcess = jsapResult.getInt("number-of-reads");
         return this;
     }
 
@@ -218,14 +229,22 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
         }
     }
 
+    /**
+     * Before each file, reset the state, report the filename about to be processed.
+     * @param inputFilename the filename to be processed.
+     */
     private void processingStart(final String inputFilename) {
         System.out.printf("Processing %s%n", inputFilename);
         numQualScoresSampled = 0;
-        sumQualScores = 0.0d;
+        sumQualScores = 0;
         minQualScore = Integer.MAX_VALUE;
         maxQualScore = Integer.MIN_VALUE;
     }
 
+    /**
+     * After each file, report the details for the file.
+     * @param numEntries the number of read entries processed.
+     */
     private void processingEnd(final int numEntries) {
         System.out.printf("Processed %d read entries.%n", numEntries);
         final int avgQualScore = (int) (sumQualScores / numQualScoresSampled);
@@ -246,8 +265,13 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
         avgQualScores.add(avgQualScore);
     }
 
+    /**
+     * Process ONE compact-reads file.
+     * @param inputFilename the filename to process
+     * @return the number of read entries processed
+     * @throws IOException error reading file
+     */
     private int processCompactReadsFile(final String inputFilename) throws IOException {
-
         // Create directory for output file if it doesn't already exist
         int i = 0;
         for (final Reads.ReadEntry entry : new ReadsReader(inputFilename)) {
@@ -260,7 +284,7 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
                     numQualScoresSampled++;
                     sumQualScores += Math.abs(qualScore);
                 }
-                if (++i == numberOfReads) {
+                if (++i == numberOfReadEntriesToProcess) {
                     break;
                 }
             }
@@ -268,6 +292,12 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
         return i;
     }
 
+    /**
+     * Process ONE FASTQ file.
+     * @param inputFilename the filename to process
+     * @return the number of read entries processed
+     * @throws IOException error reading file
+     */
     private int processFastqFile(final String inputFilename) throws IOException {
         // Create directory for output file if it doesn't already exist
         int i = 0;
@@ -280,7 +310,7 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
                     numQualScoresSampled++;
                     sumQualScores += Math.abs(qualScore);
                 }
-                if (++i == numberOfReads) {
+                if (++i == numberOfReadEntriesToProcess) {
                     break;
                 }
             }
@@ -288,6 +318,12 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
         return i;
     }
 
+    /**
+     * Main entry point.
+     * @param args command line arguments
+     * @throws IOException error with IO
+     * @throws JSAPException error with command line processing
+     */
     public static void main(final String[] args) throws IOException, JSAPException {
         new SampleQualityScoresMode().configure(args).execute();
     }

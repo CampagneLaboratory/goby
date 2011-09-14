@@ -29,7 +29,7 @@
             <defaults>
                 <string>10000</string>
             </defaults>
-            <help>The number of reads to process or -1 to process the entire file.</help>
+            <help>The number of read entries to process for each input file (or 0 to process the entire file).</help>
         </flaggedOption>
         <unflaggedOption>
             <id>input</id>
