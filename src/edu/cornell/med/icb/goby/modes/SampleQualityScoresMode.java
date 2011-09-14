@@ -18,30 +18,23 @@
 
 package edu.cornell.med.icb.goby.modes;
 
-import com.google.protobuf.ByteString;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.readers.FastXEntry;
 import edu.cornell.med.icb.goby.readers.FastXReader;
-import edu.cornell.med.icb.goby.reads.*;
-import edu.cornell.med.icb.goby.util.DoInParallel;
-import edu.cornell.med.icb.goby.util.FileExtensionHelper;
+import edu.cornell.med.icb.goby.reads.Reads;
+import edu.cornell.med.icb.goby.reads.ReadsReader;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
 import it.unimi.dsi.lang.MutableString;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Converts a <a href="http://en.wikipedia.org/wiki/FASTA_format">FASTA</a>
@@ -71,37 +64,37 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
             "in a portion of a fastq file to help determine the likely quality encoding.";
 
     // The reads files to process.
-    private List<String> inputFilenames = new ArrayList<String>();
+    private final List<String> inputFilenames = new ArrayList<String>();
 
     /**
      * The CURRENT min found qual score.
      */
-    private int minQualScore = Integer.MAX_VALUE;
+    private int minQualScore;
 
     /**
      * The CURRENT max found qual score.
      */
-    private int maxQualScore = Integer.MIN_VALUE;
+    private int maxQualScore;
 
     /**
      * The CURRENT sum of all of the quality scores, so we can perform an average.
      */
-    double sumQualScores = 0.0d;
+    private double sumQualScores;
 
     /**
      * The CURRENT number of qual scores sampled, so we can perform an average.
      */
-    private int numQualScoresSampled = 0;
+    private int numQualScoresSampled;
 
     /**
      * The average qual scores for each processed file.
      */
-    private IntList avgQualScores = new IntArrayList();
+    private final IntList avgQualScores = new IntArrayList();
 
     /**
      * The likely encodings for each processed file.
      */
-    private List<String> likelyEncodings = new ArrayList<String>();
+    private final List<String> likelyEncodings = new ArrayList<String>();
 
     /**
      * The number of reads to to read.
@@ -131,18 +124,16 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
     /**
      * Clear the list of files to process.
      *
-     * @return The list of files.
+     * @param inputFilename The list of files.
      */
-    public synchronized void addInputFilename(final String inputFilename) {
+    public void addInputFilename(final String inputFilename) {
         inputFilenames.add(inputFilename);
     }
 
     /**
      * Clear the list of files to process.
-     *
-     * @return The list of files.
      */
-    public synchronized void clearInputFilenames() {
+    public void clearInputFilenames() {
         inputFilenames.clear();
     }
 
@@ -199,9 +190,7 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
         final JSAPResult jsapResult = parseJsapArguments(args);
         final String[] inputFilenamesArray = jsapResult.getStringArray("input");
         inputFilenames.clear();
-        for (final String inputFilename : inputFilenamesArray) {
-            inputFilenames.add(inputFilename);
-        }
+        Collections.addAll(inputFilenames, inputFilenamesArray);
         numberOfReads = jsapResult.getInt("number-of-reads");
         return this;
     }
@@ -233,6 +222,8 @@ public class SampleQualityScoresMode extends AbstractGobyMode {
         System.out.printf("Processing %s%n", inputFilename);
         numQualScoresSampled = 0;
         sumQualScores = 0.0d;
+        minQualScore = Integer.MAX_VALUE;
+        maxQualScore = Integer.MIN_VALUE;
     }
 
     private void processingEnd(final int numEntries) {
