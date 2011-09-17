@@ -20,8 +20,9 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.readers.vcf.*;
-import edu.cornell.med.icb.goby.stats.InformativeColumns;
+import edu.cornell.med.icb.goby.readers.vcf.ColumnField;
+import edu.cornell.med.icb.goby.readers.vcf.ColumnInfo;
+import edu.cornell.med.icb.goby.readers.vcf.VCFParser;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
@@ -57,9 +58,11 @@ public class VcfToTabMode extends AbstractGobyMode {
 
     private String[] inputFiles;
     private String[] selectedColumns;
-    private final ObjectArraySet<String> selectedColumnIds = new ObjectArraySet<String>();
 
     private static final Logger LOG = Logger.getLogger(VcfToTabMode.class);
+    private final ObjectArraySet<String> selectedInfoFieldIds = new ObjectArraySet<String>();
+    private final ObjectArraySet<String> selectedFormatFieldIds = new ObjectArraySet<String>();
+
 
     public VcfToTabMode() {
     }
@@ -118,31 +121,21 @@ public class VcfToTabMode extends AbstractGobyMode {
                 try {
                     parser.readHeader();
                     IntSet selectedInfoFieldGlobalIndices = new IntArraySet();
+                    IntSet selectedFormatFieldGlobalIndices = new IntArraySet();
                     ColumnInfo infoColumn = parser.getColumns().find("INFO");
                     ColumnInfo formatColumn = parser.getColumns().find("FORMAT");
-                    if (selectedColumns.length == 0) {
-
-                        // add all INFO fields:
-
-                        for (ColumnField field : infoColumn.fields) {
-                            selectedColumnIds.add(field.id);
-                        }
-                        /*  // add all FORMAT fields:
-for (ColumnField field : formatColumn.fields) {
-selectedColumnIds.add(field.id);
-}                                                                                 */
-                        selectedColumns = selectedColumnIds.toArray(new String[selectedColumnIds.size()]);
-                    }
+                    selectDefaultFields(infoColumn, formatColumn);
                     // find the global field indices for the INFO fields we need to load:
 
-                    for (String selectedFieldName : selectedColumns) {
+                    for (String selectedFieldName : selectedInfoFieldIds) {
 
                         if (infoColumn == null) {
                             System.err.printf("Could not find INFO column in file %s.",
                                     filename);
                             System.exit(1);
                         }
-                        ColumnField selectedField = findColumnField(selectedFieldName, infoColumn, formatColumn);
+                        ColumnField selectedField = infoColumn.fields.find(selectedFieldName);
+
                         if (selectedField == null) {
                             System.err.printf("Could not find selection column %s in file %s.", selectedFieldName,
                                     filename);
@@ -153,20 +146,42 @@ selectedColumnIds.add(field.id);
                         stream.write("\t");
                         selectedInfoFieldGlobalIndices.add(selectedField.globalFieldIndex);
                     }
+                    // setup global field indices for selected FORMAT fields
+                    String samples[] = parser.getColumnNamesUsingFormat();
+                    if (formatColumn == null) {
+                        System.err.printf("Could not find FORMAT column in file %s.",
+                                filename);
+                        System.exit(1);
+                    }
+
+                    for (String sample : samples) {
+                        for (String selectedGenotypeField : selectedFormatFieldIds) {
+                            final String selectedFieldName = String.format("%s[%s]", sample, selectedGenotypeField);
+                            final int selectedFieldIndex = parser.getGlobalFieldIndex(sample, selectedGenotypeField);
+                            stream.write(selectedFieldName);
+                            stream.write("\t");
+                            selectedFormatFieldGlobalIndices.add(selectedFieldIndex);
+                        }
+                    }
                     stream.write("\n");
                     ProgressLogger pg = new ProgressLogger(LOG);
-
+                    /**
+                     * This will hold global field indices for either INFO or FORMAT fields:
+                     */
+                    IntSet selectedCombinedFieldGlobalIndices = new IntArraySet();
+                    selectedCombinedFieldGlobalIndices.addAll(selectedInfoFieldGlobalIndices);
+                    selectedCombinedFieldGlobalIndices.addAll(selectedFormatFieldGlobalIndices);
                     pg.priority = org.apache.log4j.Level.INFO;
                     pg.itemsName = "line";
                     pg.displayFreeMemory = true;
                     pg.start();
                     while (parser.hasNextDataLine()) {
                         int i = 0;
-                        for (final int globalFieldIndex : selectedInfoFieldGlobalIndices) {
+                        for (final int globalFieldIndex : selectedCombinedFieldGlobalIndices) {
 
                             final String stringFieldValue = parser.getStringFieldValue(globalFieldIndex);
                             stream.write(stringFieldValue);
-                            if (i++ < selectedInfoFieldGlobalIndices.size()) {
+                            if (i++ < selectedCombinedFieldGlobalIndices.size()) {
                                 stream.write("\t");
                             }
                         }
@@ -182,6 +197,21 @@ selectedColumnIds.add(field.id);
         } finally {
             if (outputFilename != null) {
                 IOUtils.closeQuietly(stream);
+            }
+        }
+    }
+
+    private void selectDefaultFields(ColumnInfo infoColumn, ColumnInfo formatColumn) {
+        if (selectedColumns.length == 0) {
+
+            // add all INFO fields:
+
+            for (ColumnField field : infoColumn.fields) {
+                selectedInfoFieldIds.add(field.id);
+            }
+            //  add all FORMAT fields:
+            for (ColumnField field : formatColumn.fields) {
+                selectedFormatFieldIds.add(field.id);
             }
         }
     }

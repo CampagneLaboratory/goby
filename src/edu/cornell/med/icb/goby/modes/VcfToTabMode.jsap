@@ -28,17 +28,19 @@
             <id>output</id>
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
-            <required>true</required>
-            <help>The file where the TSV output will be written. If the filename ends in .gz, the output is compressed with gzip.</help>
+            <required>false</required>
+            <help>The file where the TSV output will be written. If the filename ends in .gz, the output is compressed
+                with gzip.
+            </help>
         </flaggedOption>
 
-          <flaggedOption>
+        <flaggedOption>
             <id>column</id>
             <longFlag>column</longFlag>
             <shortFlag>c</shortFlag>
             <required>false</required>
-              <allowMultipleDeclarations>true</allowMultipleDeclarations>
-              <stringParser>
+            <allowMultipleDeclarations>true</allowMultipleDeclarations>
+            <stringParser>
                 <classname>StringStringParser</classname>
             </stringParser>
             <help>Name of columns to write to the output.</help>
