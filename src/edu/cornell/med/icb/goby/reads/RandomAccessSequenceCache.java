@@ -330,7 +330,9 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
     }
 
     private int size(final int referenceIndex) {
-        return sizes.get(referenceIndex);
+
+        final LongArrayBitVector ignoreList = referenceIgnoreLists.get(referenceIndex);
+        return Math.min(ignoreList.size(), sizes.get(referenceIndex));
     }
 
     public int numberOfSequences() {
