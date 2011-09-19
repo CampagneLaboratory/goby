@@ -68,6 +68,7 @@
         <copy todir="${classes}">
             <fileset dir="${src}">
                 <include name="**/*.jsap"/>
+                <include name="**/jaxb.index"/>
             </fileset>
         </copy>
     </target>

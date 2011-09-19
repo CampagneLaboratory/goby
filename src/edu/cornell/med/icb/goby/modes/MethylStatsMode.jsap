@@ -51,7 +51,7 @@
             <longFlag>depths</longFlag>
             <required>false</required>
             <defaults>
-                <string>5,10,15,20,30</string>
+                <string>5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100,150,200,300,500</string>
             </defaults>
             <help>Depth thresholds to consider when calculating how many CpG sites have more than a given depth
                 threshold.

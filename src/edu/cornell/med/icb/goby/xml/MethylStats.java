@@ -114,10 +114,18 @@ public class MethylStats {
         numberCpGsPerFragmentBinGenome[indexToIncrement(fragmentLengthBins, fragmentLength)] += 1;
     }
 
-    private int indexToIncrement(final int[] depths, final int depth) {
-        final int r = Arrays.binarySearch(depths, depth);
-        final int indexToIncrement = r > 0 ? r : -r - 2;
-        return indexToIncrement;
+    private int indexToIncrement(final int[] array, final int depth) {
+        final int r = Arrays.binarySearch(array, depth);
+        final int indexToIncrement = r >= 0 ? r : -(r + 1);
+
+        if (indexToIncrement >= array.length) {
+            return array.length - 1;
+        } else {
+            assert indexToIncrement >= 0 && indexToIncrement < array.length :
+                    String.format("index must be within array bounds: indexToIncrement: %d r: %d %n", indexToIncrement, r);
+            return indexToIncrement;
+
+        }
     }
 
     public void setNumberCpGsInGenome(long numberCpGsInGenome) {
@@ -155,9 +163,11 @@ public class MethylStats {
      * @param fragmentLength Length of the fragment between the observed CpG and the next CpG in the genome.
      */
     public void observedInSample(final int depth, final int fragmentLength) {
-        numberCpGsPerFragmentBinObserved[indexToIncrement(fragmentLengthBins, fragmentLength)] += 1;
-        numberCpGsPerDepth[indexToIncrement(depths, depth)] += 1;
-
+        if (depth >= 1) {
+            numberCpGsPerFragmentBinObserved[indexToIncrement(fragmentLengthBins, fragmentLength)] += 1;
+            numberCpGsPerDepth[indexToIncrement(depths, depth)] += 1;
+            numberCpGsObserved++;
+        }
     }
 
     /**
