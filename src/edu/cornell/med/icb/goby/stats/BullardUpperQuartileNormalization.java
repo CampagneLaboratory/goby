@@ -94,7 +94,13 @@ public class BullardUpperQuartileNormalization extends RpkmLikeNormalizationMeth
                 countValues.add(calculator.getOverlapCount(sampleId, elementId));
             }
             Collections.sort(countValues);
-            final double upperQuartile = countValues.getDouble((int) (countValues.size() * percentile));
+            final double upperQuartile;
+            if (countValues.size() > 0) {
+                upperQuartile = countValues.getDouble((int) (countValues.size() * percentile));
+            } else {
+                upperQuartile = 0;
+            }
+
             normalizationFactors.put(sampleId, upperQuartile);
         }
         // determine total counts over all samples considered:
