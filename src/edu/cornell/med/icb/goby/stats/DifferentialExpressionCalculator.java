@@ -380,7 +380,11 @@ public class DifferentialExpressionCalculator {
         }
         final int elementIndex = elementLabels.get(elementId);
 
-        return counts.get(elementIndex);
+        if (elementIndex < counts.size()) {
+            return counts.get(elementIndex);
+        } else {
+            return 0;
+        }
     }
 
     /**
