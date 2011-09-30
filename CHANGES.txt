@@ -16,8 +16,8 @@
    some valid SAM files (per the SAM spec) cannot be parsed without error when the strict validation is used.
  - Mode sam-extract-reads now supports extracting reads from paired samples. See the new options --paired-end
    and --pair-indicator. These options work similarly to the fasta-to-compact options.
- - BaseStats: add ability to tally occurence of CpX motifs in reads. Useful as a proxy to the amount of unconverted
-   Cs in bisulfite converted reads.
+ - The BaseStats utility was transformed into a Goby mode (base-stats). The new mode has the ability to tally occurrence
+   of CpX motifs in reads. Useful as a proxy to the amount of unconverted Cs in bisulfite converted reads.
 1.9.7.3
  - Fix allele frequency format to write genotype first in FORMAT per vcf spec.
  - Add new INFO fields in compare group vcf format to show allele counts in each group.
