@@ -20,6 +20,8 @@ package edu.cornell.med.icb.goby.util;
 
 import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
+import edu.cornell.med.icb.goby.util.motifs.MotifMatcher;
+import edu.cornell.med.icb.goby.util.motifs.SubSequenceMotifMatcher;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.log4j.Logger;
@@ -46,13 +48,34 @@ public class BaseStats {
         ProgressLogger progress = new ProgressLogger(LOG);
         progress.start("Starting to analyze base stats.");
         progress.itemsName = "reads";
-        for (Reads.ReadEntry entry : reader) {
+        // stores frequencies of the CpX motifs
+        long cpFreq[] = new long[4];
 
+        final MotifMatcher matchers[] = new MotifMatcher[]{
+                new SubSequenceMotifMatcher("CG"),
+                new SubSequenceMotifMatcher("CA"),
+                new SubSequenceMotifMatcher("CT"),
+                new SubSequenceMotifMatcher("CC")
+        };
+
+        for (Reads.ReadEntry entry : reader) {
+            for (final MotifMatcher matcher : matchers) {
+                matcher.newSequence();
+            }
             ReadsReader.decodeSequence(entry, sequence);
             for (int i = 0; i < sequence.length(); i++) {
                 char c = sequence.charAt(i);
                 tallies[c]++;
+                int index = 0;
+                for (final MotifMatcher matcher : matchers) {
+                    matcher.accept(c);
+                    if (matcher.matched()) {
+                        ++cpFreq[index];
+                    }
+                    index++;
+                }
             }
+
             progress.lightUpdate();
 
         }
@@ -68,6 +91,20 @@ public class BaseStats {
                 tallies['C'], percent(tallies['C'], sum),
                 tallies['T'], percent(tallies['T'], sum),
                 tallies['G'], percent(tallies['G'], sum)
+        );
+        long sumcpX = cpFreq[0] + cpFreq[1] + cpFreq[2] + cpFreq[3];
+        System.out.printf("tally of CpX motifs: %n" +
+
+                "CpG: %d %g%% %n" +
+                "CpA: %d %g%% %n" +
+                "CpT: %d %g%% %n" +
+                "CpC: %d %g%% %n" +
+                "CpT+CpC: %d %g%% %n",
+                cpFreq[0], percent(cpFreq[0], sumcpX),
+                cpFreq[1], percent(cpFreq[1], sumcpX),
+                cpFreq[2], percent(cpFreq[2], sumcpX),
+                cpFreq[3], percent(cpFreq[3], sumcpX),
+                cpFreq[2]+cpFreq[3], percent(cpFreq[2]+cpFreq[3], sumcpX)
         );
     }
 

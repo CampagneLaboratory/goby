@@ -1,8 +1,4 @@
 >>1.9.8
- - New mode sample-quality-scores that will read the first n (defaults to 10,000) entries of a compact-reads
-   or fastq file and report the minimum, maximum, and average quality score value and provide a guess at
-   the quality encoding scheme (Phred, Sanger, Illumina/Solexa). It's worth noting that compact-reads files,
-   if created correctly, should always report Phred.
  - Preliminary support for calling indels with discover-sequence-variants.  Candidate indels are now written
    in the formats that use GenotypeOutputFormat (e.g., genotypes, compare_groups, allele_frequency).
    The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.
@@ -18,7 +14,10 @@
  - Modes sam-to-compact and sam-extract-reads now set SILENT validation before reading file header. This is required
    because the SAM JDK validation rules are more stringent than required by the specification. This means that
    some valid SAM files (per the SAM spec) cannot be parsed without error when the strict validation is used.
- - Fixed an issue with ReformatCompactReads when no quality scores exist.
+ - Mode sam-extract-reads now supports extracting reads from paired samples. See the new options --paired-end
+   and --pair-indicator. These options work similarly to the fasta-to-compact options.
+ - BaseStats: add ability to tally occurence of CpX motifs in reads. Useful as a proxy to the amount of unconverted
+   Cs in bisulfite converted reads.
 1.9.7.3
  - Fix allele frequency format to write genotype first in FORMAT per vcf spec.
  - Add new INFO fields in compare group vcf format to show allele counts in each group.
