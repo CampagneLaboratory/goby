@@ -253,6 +253,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
 
         final SummaryStatistics queryLengthStats = new SummaryStatistics();
 
+        stream.println("Query lengths stored in entries = " + reader.isQueryLengthStoredInEntries());
         stream.println("Constant query lengths = " + reader.isConstantQueryLengths());
 
         stream.printf("Has query identifiers = %s%n",
