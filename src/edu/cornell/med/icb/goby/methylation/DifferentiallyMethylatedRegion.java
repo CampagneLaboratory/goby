@@ -34,6 +34,7 @@ public class DifferentiallyMethylatedRegion {
     public int start;
     public int end;
     public String strand;
+  //  SampleInfo[] methylatedInfoPerSample
     public ObjectArrayList<MethylationRegion> [] methylatedRegionPerSample;
     public double [] meanMethylationRatePerSample;
     public double foldChange;
@@ -54,5 +55,10 @@ public class DifferentiallyMethylatedRegion {
         this.end = end;
         this.strand = strand;
         this.methylatedRegionPerSample = methylatedRegionPerSample;
+    }
+
+    private class SampleInfo {
+        ObjectArrayList<MethylationSite> sites;
+        int sampleIndex;
     }
 }

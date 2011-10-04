@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 
 import edu.cornell.med.icb.goby.algorithmic.data.MethylRateInfo;
+import edu.cornell.med.icb.goby.methylation.DifferentiallyMethylatedRegion;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 /**
@@ -35,5 +36,12 @@ public class DMRCalculator {
 
     public void observe(int position, ObjectArrayList<MethylRateInfo> ratesAtPosition) {
         //To change body of created methods use File | Settings | File Templates.
+    }
+    public DifferentiallyMethylatedRegion getCalledRegion() {
+                return null;
+    }
+
+    public boolean hasCalledRegion() {
+        return false;
     }
 }

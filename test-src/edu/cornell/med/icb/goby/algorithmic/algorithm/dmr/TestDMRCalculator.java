@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 
 import edu.cornell.med.icb.goby.algorithmic.data.MethylRateInfo;
+import edu.cornell.med.icb.goby.methylation.DifferentiallyMethylatedRegion;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.junit.Test;
 
@@ -28,6 +29,8 @@ import org.junit.Test;
  * Time: 4:03 PM
  */
 public class TestDMRCalculator {
+
+    private int maxPosition;
 
     @Test
 
@@ -50,8 +53,13 @@ public class TestDMRCalculator {
         String[] data = {m, m1};
 
         ObjectArrayList<MethylRateInfo> result = getPositionData(1, data);
-
-
+        int maxPosition=30;
+        for (position=0;position<maxPosition;position++) {
+          calculator.observe(position,getPositionData(position, data) );
+            if (calculator.hasCalledRegion()) {
+                DifferentiallyMethylatedRegion region = calculator.getCalledRegion();
+            }
+        }
 
     }
 

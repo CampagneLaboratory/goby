@@ -22,18 +22,19 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 /**
  * Defines a genomic region that encompasses several genomic sites
+ *
  * @author Nyasha Chambwe
- * Date: 10/3/11
- * Time: 2:52 PM
+ *         Date: 10/3/11
+ *         Time: 2:52 PM
  */
 public class MethylationRegion {
 
- public int chromosome;
+    public int chromosome;
 
     public final int startPosition;
     public final int endPosition;
     public char strand;
-    public ObjectArrayList<MethylationSite> sitesInRegion;
+    public ObjectArrayList<MethylationSite> sitesInRegion = new ObjectArrayList<MethylationSite>();
 
 
     public MethylationRegion(int chromosome, int startPosition, int endPosition) {
@@ -58,7 +59,7 @@ public class MethylationRegion {
         this.sitesInRegion = sitesInRegion;
     }
 
-    
+
 }
     
 
