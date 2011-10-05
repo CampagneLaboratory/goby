@@ -124,10 +124,15 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
                     pushEntryToPool(frontInfo, position, entry);
 
                     windowStartPosition = frontInfo.windowStartPosition;
+                } else if (activeTargetIndices.isEmpty()) {
+                    // entry == null and none stored in windows
+                    // we could not find anything to return at all. Return null here.
+                    return null;
                 }
             }
             while (entry != null && entry.getPosition() < windowStartPosition + windowLength);
         }
+
         // check if we still have entries in the previously active target:
         int backTargetIndex = activeTargetIndices.firstInt();
         if (targetInfo.get(backTargetIndex).entriesInWindow.isEmpty()) {
@@ -148,11 +153,13 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         if (backInfo.entriesInWindow.isEmpty()) {
             return null;
         }
+
         Alignments.AlignmentEntry returnedEntry = backInfo.entriesInWindow.remove();
 
         if (backInfo.positionsWithSpanningIndel.size() > 0) {
             returnedEntry = realign(returnedEntry, backInfo);
         }
+
         // advance the windowStartPosition
         int previousWindowStart = backInfo.windowStartPosition;
         int windowStartPosition = Math.max(backInfo.windowStartPosition, returnedEntry.getPosition());
@@ -162,9 +169,11 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
 
             backInfo.removeIndels(previousWindowStart, lastPosition);
         }
-        backInfo.windowStartPosition=windowStartPosition;
+        backInfo.windowStartPosition = windowStartPosition;
         ++processedCount;
+
         return returnedEntry;
+
 
     }
 
