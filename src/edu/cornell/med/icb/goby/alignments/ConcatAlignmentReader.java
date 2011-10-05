@@ -25,6 +25,8 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -370,13 +372,15 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
 
     public ObjectList<ReferenceLocation> getLocations(int modulo) throws IOException {
         readHeader();
-        ObjectList<ReferenceLocation> result = new ObjectArrayList<ReferenceLocation>();
+        ObjectSet<ReferenceLocation> result = new ObjectOpenHashSet<ReferenceLocation>();
 
         for (AlignmentReader reader : this.readers) {
             result.addAll(reader.getLocations(modulo));
         }
-        Collections.sort(result);
-        return result;
+        ObjectList<ReferenceLocation> list=new ObjectArrayList<ReferenceLocation>();
+        list.addAll(result);
+        Collections.sort(list);
+        return list;
     }
 
 

@@ -18,6 +18,7 @@
    and --pair-indicator. These options work similarly to the fasta-to-compact options.
  - The BaseStats utility was transformed into a Goby mode (base-stats). The new mode has the ability to tally occurrence
    of CpX motifs in reads. Useful as a proxy to the amount of unconverted Cs in bisulfite converted reads.
+ - Fix problem with suggestion-position-slices that could create empty slices.
 1.9.7.3
  - Fix allele frequency format to write genotype first in FORMAT per vcf spec.
  - Add new INFO fields in compare group vcf format to show allele counts in each group.

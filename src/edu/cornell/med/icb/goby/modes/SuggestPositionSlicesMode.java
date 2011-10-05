@@ -110,16 +110,20 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
             input.readHeader();
             DoubleIndexedIdentifier ids = new DoubleIndexedIdentifier(input.getTargetIdentifiers());
             ObjectList<ReferenceLocation> locations = input.getLocations(modulo);
-           
+            ReferenceLocation[] breakpoints = new ReferenceLocation[numberOfSlices + 1];
+
+
+            ReferenceLocation first;
+            breakpoints[0] = first=locations.get(0);
+            locations.remove(first);
             if (locations.size()<numberOfSlices) {
                 numberOfSlices=locations.size();
             }
             stream.println("targetIdStart\t%positionStart\tstart:(ref,pos)\ttargetIdEnd\t%positionEnd\tend:(ref,pos)");
-            ReferenceLocation[] breakpoints = new ReferenceLocation[numberOfSlices + 1];
             for (int i = 0; i < numberOfSlices - 1; i++) {
                 breakpoints[i + 1] = locations.get(locations.size() / (numberOfSlices - 1) * i);
             }
-            breakpoints[0] = new ReferenceLocation(0, 0);
+
             // largest position in the last reference sequence:
             final int lastTargetIndex = ids.size() - 1;
             breakpoints[breakpoints.length - 1] = new ReferenceLocation(lastTargetIndex, input.getTargetLength(lastTargetIndex));

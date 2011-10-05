@@ -26,12 +26,26 @@ package edu.cornell.med.icb.goby.alignments;
  */
 public class ReferenceLocation implements Comparable {
 
-    public int targetIndex;
-    public int position;
+    public final int targetIndex;
+    public final int position;
 
     public ReferenceLocation(int referenceIndex, int position) {
         this.targetIndex = referenceIndex;
         this.position = position;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ReferenceLocation)) {
+            return false;
+        }
+        final ReferenceLocation other= (ReferenceLocation) o;
+        return targetIndex==other.targetIndex && position==other.position;
+    }
+
+    @Override
+    public int hashCode() {
+       return targetIndex ^ position;
     }
 
     public int compareTo(Object o) {
