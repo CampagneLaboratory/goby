@@ -69,7 +69,8 @@ message AlignmentEntry {
   optional uint32 number_of_indels=9;
 
   /*
-    Number of bases that have been aligned for the query.
+    Number of bases that have been aligned for the query. Please note that query_aligned_length must be
+    less or equal to query_length.
    */
   optional uint32 query_aligned_length=11;
 
