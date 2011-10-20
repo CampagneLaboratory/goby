@@ -150,7 +150,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                 for (String filter : columnSelectionFilter) {
                     if (col.contains(filter)) {
                         selection.add(col);
-                        System.out.printf("Adding column %s to the selected columsn.%n", col);
+                        System.out.printf("Adding column %s to the selected columns.%n", col);
 
                     }
                 }
