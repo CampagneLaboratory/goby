@@ -20,14 +20,21 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
+import edu.cornell.med.icb.goby.algorithmic.data.ranges.Range;
+import edu.cornell.med.icb.goby.algorithmic.data.ranges.Ranges;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
+import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import org.apache.commons.io.IOUtils;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Map;
 
 /**
  * Converts a compact alignment to plain text.
@@ -43,7 +50,7 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Suggest how to slice an alignment by position to yield roughly equally sized slices.";
+    private static final String MODE_DESCRIPTION = "Suggest how to slice an alignment by position to yield roughly equally sized slices. ";
 
     /**
      * The output file.
@@ -57,6 +64,10 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
     private int modulo;
     private int numberOfSlices;
     private int bufferLength;
+    /**
+     * Optional: file name for an annotation file.
+     */
+    private String annotationFilename;
 
 
     @Override
@@ -85,10 +96,10 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
 
         final String[] inputFiles = jsapResult.getStringArray("input");
         basenames = AlignmentReaderImpl.getBasenames(inputFiles);
+        annotationFilename = jsapResult.getString("annotations");
         outputFilename = jsapResult.getString("output");
         modulo = jsapResult.getInt("modulo");
         numberOfSlices = jsapResult.getInt("number-of-slices");
-
 
         return this;
     }
@@ -102,22 +113,27 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
     @Override
     public void execute() throws IOException {
         PrintStream stream = null;
+
         try {
+
             stream = outputFilename == null ? System.out
                     : new PrintStream(new FileOutputStream(outputFilename));
+
 
             ConcatSortedAlignmentReader input = new ConcatSortedAlignmentReader(basenames);
             input.readHeader();
             DoubleIndexedIdentifier ids = new DoubleIndexedIdentifier(input.getTargetIdentifiers());
             ObjectList<ReferenceLocation> locations = input.getLocations(modulo);
             ReferenceLocation[] breakpoints = new ReferenceLocation[numberOfSlices + 1];
-
-
+            Ranges ranges = null;
+            if (annotationFilename != null) {
+                ranges = convertAnnotationsToRanges(annotationFilename, ids, input);
+            }
             ReferenceLocation first;
-            breakpoints[0] = first=locations.get(0);
+            breakpoints[0] = first = locations.get(0);
             locations.remove(first);
-            if (locations.size()<numberOfSlices) {
-                numberOfSlices=locations.size();
+            if (locations.size() < numberOfSlices) {
+                numberOfSlices = locations.size();
             }
             stream.println("targetIdStart\t%positionStart\tstart:(ref,pos)\ttargetIdEnd\t%positionEnd\tend:(ref,pos)");
             for (int i = 0; i < numberOfSlices - 1; i++) {
@@ -128,6 +144,9 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
             final int lastTargetIndex = ids.size() - 1;
             breakpoints[breakpoints.length - 1] = new ReferenceLocation(lastTargetIndex, input.getTargetLength(lastTargetIndex));
 
+            if (ranges != null) {
+                adjustBreakpointsWithAnnotations(breakpoints, ranges);
+            }
             for (int i = 0; i < numberOfSlices; i++) {
 
                 stream.printf(String.format("%s\t%d\t%s,%d\t%s\t%d\t%s,%d%n",
@@ -147,6 +166,59 @@ public class SuggestPositionSlicesMode extends AbstractGobyMode {
                 IOUtils.closeQuietly(stream);
             }
         }
+    }
+
+    private void adjustBreakpointsWithAnnotations(final ReferenceLocation[] breakpoints, final Ranges ranges) {
+        ranges.order();
+        for (final ReferenceLocation breakpoint : breakpoints) {
+            int referenceIndex = breakpoint.targetIndex;
+            int position = breakpoint.position;
+            Range nonOverlapping = ranges.findNonOverlappingRange(referenceIndex, position);
+
+            // change the breakpoint to a position in the middle of the non-overlapping segment:
+            breakpoint.position = (nonOverlapping.min + nonOverlapping.max) / 2;
+
+        }
+    }
+
+    private Ranges convertAnnotationsToRanges(String annotationFilename, DoubleIndexedIdentifier ids, ConcatSortedAlignmentReader input) throws IOException {
+        Ranges ranges = new Ranges();
+        if (annotationFilename == null) return null;
+        Object2ObjectMap<String, ObjectList<Annotation>> annotations = CompactAlignmentToAnnotationCountsMode.readAnnotations(annotationFilename);
+        Object2IntMap<String> starts = new Object2IntLinkedOpenHashMap<String>();
+        Object2IntMap<String> ends = new Object2IntLinkedOpenHashMap<String>();
+        Object2IntMap<String> refIndices = new Object2IntLinkedOpenHashMap<String>();
+        starts.defaultReturnValue(Integer.MAX_VALUE);
+        ends.defaultReturnValue(Integer.MIN_VALUE);
+
+        for (ObjectList<Annotation> value : annotations.values()) {
+
+            for (Annotation ann : value) {
+
+                int min = Integer.MAX_VALUE;
+                int max = Integer.MIN_VALUE;
+                String chromosome = ann.getChromosome();
+                String id = ann.getId();
+                min = starts.getInt(id);
+                max = ends.getInt(id);
+
+                starts.put(id, Math.min(min, ann.getStart()));
+                ends.put(id, Math.max(max, ann.getEnd()));
+
+                assert chromosome != null : " annotation must contain non null chromosome.";
+
+            }
+        }
+        for (final String id : starts.keySet()) {
+            final Range range = new Range();
+            final int referenceIndex = refIndices.getInt(id);
+            range.min = starts.getInt(id);
+            range.max = ends.getInt(id);
+            ranges.add(range, referenceIndex);
+        }
+
+        ranges.order();
+        return ranges;
     }
 
     /**

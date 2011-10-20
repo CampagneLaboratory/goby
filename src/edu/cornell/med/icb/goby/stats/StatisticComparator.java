@@ -40,7 +40,9 @@ public class StatisticComparator implements Comparator<DifferentialExpressionInf
 
     public StatisticComparator(final DifferentialExpressionResults list,
                                final MutableString statisticId) {
+
         this.statisticIndex = list.getStatisticIndex(statisticId);
+        assert statisticIndex != -1 : String.format("could not find statistic %s to adjust.", statisticId);
     }
 
     public int compare(final DifferentialExpressionInfo info1,

@@ -58,6 +58,7 @@ public interface AlignmentReaderFactory {
      * @param startPosition       Position on the reference for the start position.
      * @param endReferenceIndex   Index of the reference for the end position.
      * @param endPosition         Position on the reference for the end position.
+     * @return an alignment reader configured over the genomic slice/range.
      * @throws IOException Thrown if an error occurs opening or reading the alignment file.
      */
     AlignmentReader createReader(String basename,
@@ -65,13 +66,35 @@ public interface AlignmentReaderFactory {
                                  int endReferenceIndex, int endPosition) throws IOException;
 
     /**
+     * Create a reader for a specific slice of an alignment file contained exactly between a start
+     * and an end location. Start and end locations are genomic/reference positions. Entries will be returned
+     * that occur from the start position and up to the end position in range (start and end positions are inclusive).
+     * If range is null, the method defaults to createReader(basename) and opens the entire alignment.
+     * @param basename Basename for the alignemnt.
+     * @param range    Range/slice of the genome that the reader will be restricted to.
+     * @return an alignment reader configured over the genomic range.
+     * @throws IOException Thrown if an error occurs opening or reading the alignment file.
+     */
+    AlignmentReader createReader(String basename,
+                                 GenomicRange range) throws IOException;
+
+    /**
      * Create a reder for reading between the byte positions startOffset and endOffset.
      *
      * @param basename    Basename of the alignment to read.
      * @param startOffset Position in the file where reading will start (in bytes).
      * @param endOffset   Position in the file where reading will end (in bytes).
-     * @throws IOException If an error occurs opening or reading the file.
      * @return an alignment reader constrained to the offsets.
+     * @throws IOException If an error occurs opening or reading the file.
      */
     AlignmentReader createReader(String basename, long startOffset, long endOffset) throws IOException;
+
+    /**
+     * Obtain a file slice for the specified genomic range, in the specified alignment. When range is null, returns
+     * a slice corresponding to the complete file.
+     * @param basename Basename of the alignment for the slice refers to.
+     * @param range    Genomic range for which a slice should be generated.
+     * @return a suitable FileSlice.
+     */
+    FileSlice getSlice(String basename, GenomicRange range) throws IOException;
 }

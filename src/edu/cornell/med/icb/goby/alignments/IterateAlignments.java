@@ -94,7 +94,7 @@ public abstract class IterateAlignments {
      * @throws IOException If an error occured reading the input alignment.
      */
     public void iterate(final long startOffset, final long endOffset, final String basename) throws IOException {
-        iterateOverOneAlignment(startOffset, endOffset, basename);
+        iterateOverOneAlignment(new FileSlice(startOffset, endOffset, basename), basename);
     }
 
     /**
@@ -110,14 +110,23 @@ public abstract class IterateAlignments {
      */
     public void iterate(final String... basenames) throws IOException {
         for (final String basename : basenames) {
-            iterateOverOneAlignment(0, Long.MAX_VALUE, basename);
+            iterateOverOneAlignment(FileSlice.COMPLETE_FILE(basename), basename);
         }
     }
 
-    private void iterateOverOneAlignment(final long startOffset, final long endOffset, final String basename) throws IOException {
+    public void iterate(GenomicRange range, final String... basenames) throws IOException {
+        for (final String basename : basenames) {
+
+            iterateOverOneAlignment(alignmentReaderFactory.getSlice(basename, range), basename);
+        }
+    }
+
+    private void iterateOverOneAlignment(FileSlice slice, final String basename) throws IOException {
+
         final int numberOfReferences;
         {
-            final AlignmentReader reader = alignmentReaderFactory.createReader(basename, startOffset, endOffset);
+            assert slice.basename.equals(basename) : "basename must match in slice.";
+            final AlignmentReader reader = alignmentReaderFactory.createReader(basename, slice.startOffset, slice.endOffset);
             reader.readHeader();
             numberOfReferences = reader.getNumberOfTargets();
 
@@ -146,7 +155,7 @@ public abstract class IterateAlignments {
             }
         }
 
-        final AlignmentReader alignmentReader = alignmentReaderFactory.createReader(basename, startOffset, endOffset);
+        final AlignmentReader alignmentReader = alignmentReaderFactory.createReader(basename, slice.startOffset, slice.endOffset);
         alignmentReader.readHeader();
 
         // Give the client the ability to prepare data structures for each reference that will be processed.
@@ -238,7 +247,7 @@ public abstract class IterateAlignments {
         return referenceIds.getId(targetIndex);
     }
 
-    private AlignmentReaderFactory alignmentReaderFactory=new DefaultAlignmentReaderFactory();
+    private AlignmentReaderFactory alignmentReaderFactory = new DefaultAlignmentReaderFactory();
 
     public void setAlignmentReaderFactory(AlignmentReaderFactory factory) {
         this.alignmentReaderFactory = factory;

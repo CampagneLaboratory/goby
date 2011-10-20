@@ -27,7 +27,7 @@ package edu.cornell.med.icb.goby.alignments;
 public class ReferenceLocation implements Comparable {
 
     public final int targetIndex;
-    public final int position;
+    public int position;
 
     public ReferenceLocation(int referenceIndex, int position) {
         this.targetIndex = referenceIndex;

@@ -45,6 +45,7 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * Reads a compact alignment and genome annotations and output read counts that overlap with
@@ -129,7 +130,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     @Override
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
-
+        parseGenomicRange(jsapResult);
         parallel = jsapResult.getBoolean("parallel", false);
         writeAnnotationCounts = jsapResult.getBoolean("write-annotation-counts");
         omitNonInformativeColumns = jsapResult.getBoolean("omit-non-informative-columns");
@@ -169,6 +170,25 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
         weightParams = configureWeights(jsapResult);
         return this;
+    }
+
+    private void parseGenomicRange(JSAPResult jsapResult) {
+        String startOffsetArgument = jsapResult.getString("start-position");
+        String endOffsetArgument = jsapResult.getString("end-position");
+        if (startOffsetArgument != null && endOffsetArgument == null ||
+                endOffsetArgument != null && startOffsetArgument == null) {
+            System.err.println("Start (-s/--start-position) and end offset (-e/--end-posiiton) arguments must be specified together or not at all.");
+            System.exit(1);
+        }
+        genomicRange = new GenomicRange();
+        final String[] startTokens = startOffsetArgument.split("[,]");
+        final String[] endTokens = endOffsetArgument.split("[,]");
+        genomicRange.startPosition = Integer.parseInt(startTokens[1]);
+        genomicRange.endPosition = Integer.parseInt(endTokens[1]);
+
+        genomicRange.startChromosome = startTokens[0];
+        genomicRange.endChromosome = endTokens[0];
+
     }
 
     protected static WeightParameters configureWeights(final JSAPResult jsapResult) {
@@ -238,13 +258,15 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         private final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots;
         private final String[] inputFiles;
         private final BufferedWriter writer;
+        private final GenomicRange genomicRange;
 
         BasenameParallelRegion(final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots,
-                               final String[] inputFiles, final BufferedWriter writer) {
+                               final String[] inputFiles, final BufferedWriter writer, final GenomicRange genomicRange) {
             super();
             this.allAnnots = allAnnots;
             this.inputFiles = inputFiles;
             this.writer = writer;
+            this.genomicRange = genomicRange;
         }
 
         @Override
@@ -258,7 +280,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                         if (i >= 0 && i < inputFilenames.length) {
                             final String inputBasename = AlignmentReaderImpl.getBasename(inputFiles[i]);
                             try {
-                                processOneBasename(allAnnots, writer, inputFiles[i], inputBasename);
+                                processOneBasename(allAnnots, writer, inputFiles[i], inputBasename, genomicRange);
                                 Runtime.getRuntime().gc();
                             } catch (IOException e) {
                                 throw new GobyRuntimeException(e);
@@ -288,6 +310,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         return team;
     }
 
+    GenomicRange genomicRange = null;
 
     /**
      * Run the mode.
@@ -297,7 +320,17 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     @Override
     public void execute() throws IOException {
         System.out.println("Reading annotations from " + annotationFile);
-        final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots = readAnnotations(annotationFile);
+        if (genomicRange != null) {
+            // resolve chromsome ids against the alignment headers:
+
+            ConcatAlignmentReader concat = new ConcatAlignmentReader(AlignmentReaderImpl.getBasenames(inputFilenames));
+            concat.readHeader();
+
+            genomicRange.setTargetIds(concat.getTargetIdentifiers());
+            concat.close();
+        }
+        final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots = filterAnnotations(readAnnotations(annotationFile), genomicRange);
+
         final Timer timer = new Timer();
         timer.start();
         BufferedWriter writer = null;
@@ -307,7 +340,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 writer = new BufferedWriter(new FileWriter(outputFilename));
                 writer.write("basename\tmain-id\tsecondary-id\ttype\tchro\tstrand\tlength\tstart\tend\tin-count\tover-count\tRPKM\tlog2(RPKM+1)\texpression\tnum-exons\n");
             }
-            final BasenameParallelRegion region = new BasenameParallelRegion(allAnnots, inputFilenames, writer);
+
+            final BasenameParallelRegion region = new BasenameParallelRegion(allAnnots, inputFilenames, writer, genomicRange);
 
             try {
                 getParallelTeam().execute(region);
@@ -338,8 +372,41 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
     }
 
+    // Remove annotations that do not fully map within the genomic range.
+    private Object2ObjectMap<String, ObjectList<Annotation>> filterAnnotations(Object2ObjectMap<String, ObjectList<Annotation>> map, GenomicRange genomicRange) {
+        if (genomicRange == null) {
+            return map;
+        }
+        Object2ObjectMap<String, ObjectList<Annotation>> filtered = new Object2ObjectArrayMap<String, ObjectList<Annotation>>();
+        for (Map.Entry<String, ObjectList<Annotation>> entry : map.entrySet()) {
+            String key = entry.getKey();
+            String chromosome = key;
+
+
+            for (final Annotation value : entry.getValue()) {
+
+                chromosome = value.getChromosome();
+                // convert to zero-based coordinates:
+                int segmentStart = value.getStart()-1;
+                int segmentEnd = value.getEnd()-1;
+                if (genomicRange.fullyContains(chromosome, segmentStart, segmentEnd)) {
+
+                    ObjectList<Annotation> chromosomeList = filtered.get(key);
+                    if (chromosomeList == null) {
+                        chromosomeList = new ObjectArrayList<Annotation>();
+                        filtered.put(key, chromosomeList);
+                    }
+                    chromosomeList.add(value);
+                }
+            }
+
+        }
+        return filtered;
+
+    }
+
     private void processOneBasename(final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots,
-                                    BufferedWriter writer, final String inputFile, final String inputBasename) throws IOException {
+                                    BufferedWriter writer, final String inputFile, final String inputBasename, GenomicRange range) throws IOException {
 
         WeightsInfo weights = null;
         if (weightParams.useWeights) {
@@ -361,7 +428,9 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             reader.close();
         }
         System.out.println(String.format("Alignment contains %d reference sequences", numberOfReferences));
-
+        if (genomicRange != null) {
+            genomicRange.resolveChromosomeIndices(referenceIds);
+        }
         final AnnotationCountIterateAlignments iterateAlignment = new AnnotationCountIterateAlignments();
         iterateAlignment.setWeightInfo(weightParams, weights);
         iterateAlignment.parseIncludeReferenceArgument(includeReferenceNameCommas);
@@ -370,7 +439,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         // Iterate through the alignment and retrieve algs:
         System.out.println("Loading alignment " + inputBasename + "..");
         iterateAlignment.setAlignmentReaderFactory(factory);
-        iterateAlignment.iterate(inputBasename);
+        iterateAlignment.iterate(genomicRange, inputBasename);
 
         final int numAlignedReadsInSample = iterateAlignment.getNumAlignedReadsInSample();
         final AnnotationCountInterface[] algs = iterateAlignment.getAlgs();
@@ -666,6 +735,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             while ((line = reader.readLine()) != null) {
                 if (!line.startsWith("#")) {
                     final String[] linearray = line.trim().split("\t");
+
                     final String chromosome = linearray[0];
                     //           if(!chromosome.equalsIgnoreCase(chroName)) continue;
                     final String strand = linearray[1];
@@ -674,6 +744,11 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     final int segmentStart = Integer.parseInt(linearray[4]);
                     final int segmentEnd = Integer.parseInt(linearray[5]);
                     final Segment segment = new Segment(segmentStart, segmentEnd, exonID, strand);
+                    boolean ignoreElement = false;
+
+
+                    // annotation segment must be within the genomic range to be considered. Consider all segments when
+                    // we are processing the entire alignment (genomicRange==null)
                     if (annots.containsKey(transcriptID)) {
                         annots.get(transcriptID).addSegment(segment);
                     } else {
@@ -681,13 +756,14 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                         annot.addSegment(segment);
                         annots.put(transcriptID, annot);
                     }
+
                 }
             }
         } finally {
             IOUtils.closeQuietly(reader);
         }
 
-        //organize the Annotations to chromosome
+        //Group annotations by chromosome (key of the map returned)
         final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots
                 = new Object2ObjectOpenHashMap<String, ObjectList<Annotation>>();
         for (final Object2ObjectMap.Entry<String, Annotation> entry : annots.object2ObjectEntrySet()) {

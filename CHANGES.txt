@@ -1,4 +1,7 @@
 >>1.9.8
+ - Add ability to run alignment-to-annotation-counts on a specific genomic region (see --start-position and
+   --end-position).
+ - FDR mode now accepts --column-selection-filter to select columns matching string.
  - Preliminary support for calling indels with discover-sequence-variants.  Candidate indels are now written
    in the formats that use GenotypeOutputFormat (e.g., genotypes, compare_groups, allele_frequency).
    The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.

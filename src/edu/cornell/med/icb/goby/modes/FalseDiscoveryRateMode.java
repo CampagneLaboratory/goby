@@ -28,9 +28,7 @@ import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.*;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.io.IOUtils;
@@ -90,6 +88,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
      * The list of element indices to report as top hits.
      */
     private IntArraySet topHitsElementIndices;
+    private String[] columnSelectionFilter;
 
 
     @Override
@@ -121,6 +120,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         qValueThreshold = jsapResult.getDouble("q-threshold");
         topHitNum = jsapResult.getInt("top-hits", 0);
         selectedPValueColumns = jsapResult.getStringArray("column");
+        columnSelectionFilter = jsapResult.getStringArray("column-selection-filter");
         vcf = jsapResult.getBoolean("vcf");
         return this;
     }
@@ -141,10 +141,23 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                     new FileWriter(outputFilename);
             // start with an array of size 1M. This improves loading time for large datasets.
             DifferentialExpressionResults data = new DifferentialExpressionResults(10000000);
+
             ObjectList<String> columnIdList = vcf ? getVCFColumns(inputFiles) : getTSVColumns(inputFiles);
+            // supplement selectedPValueColumns with the columns that match the selection filters:
             for (String col : columnIdList) {
+                ObjectSet<String> selection = new ObjectOpenHashSet<String>();
+                selection.addAll(ObjectArrayList.wrap(selectedPValueColumns));
+                for (String filter : columnSelectionFilter) {
+                    if (col.contains(filter)) {
+                        selection.add(col);
+                        System.out.printf("Adding column %s to the selected columsn.%n", col);
+
+                    }
+                }
                 System.out.println("column: " + col);
             }
+
+
             DifferentialExpressionCalculator deCalculator = new DifferentialExpressionCalculator();
 
             if (vcf) {

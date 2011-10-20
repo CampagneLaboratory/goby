@@ -172,4 +172,7 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
    
 
     IndexedIdentifier getQueryIdentifiers();
+
+    long getStartByteOffset(int startReferenceIndex, int startPosition);
+    long getEndByteOffset(int endReferenceIndex, int endPosition);
 }

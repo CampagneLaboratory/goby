@@ -167,5 +167,23 @@
                 <string>true</string>
             </defaults>
         </flaggedOption>
+        <flaggedOption>
+            <id>start-position</id>
+            <longFlag>start-position</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The start position within the file, which should be a string in the format ref-id,ref-position (since Goby 1.9.8). Ref-position is zero-based. Only entries that have a position after the start position are considered.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>end-position</id>
+            <longFlag>end-position</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The end position within the file, which should be a string in the format ref-id,ref-position (since Goby 1.9.8). Ref-position is zero-based. Only entries that occur before the specified position are analyzed.</help>
+        </flaggedOption>
     </parameters>
 </jsap>

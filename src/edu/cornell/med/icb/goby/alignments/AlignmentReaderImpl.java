@@ -234,8 +234,8 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             final FileInputStream stream = new FileInputStream(entriesFile);
 
             alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset, endOffset, new FastBufferedInputStream(stream));
-        }  else {
-            alignmentEntryReader=null;
+        } else {
+            alignmentEntryReader = null;
         }
         LOG.trace("start offset :" + startOffset + " end offset " + endOffset);
         try {
@@ -575,7 +575,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         int offsetIndex = Arrays.binarySearch(indexAbsolutePositions.elements(), absolutePosition);
         offsetIndex = offsetIndex < 0 ? -1 - offsetIndex : offsetIndex;
         offsetIndex = offsetIndex >= indexOffsets.size() ? indexOffsets.size() - 1 : offsetIndex - 1;
-        if (offsetIndex < 0) {
+        if (offsetIndex + chunkOffset < 0) {
             // empty alignment.
             return Long.MIN_VALUE;
         }
@@ -784,6 +784,16 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
 
     public int getConstantQueryLength() {
         return constantLength;
+    }
+
+    @Override
+    public long getStartByteOffset(int startReferenceIndex, int startPosition) {
+        return getByteOffset(startReferenceIndex, startPosition, 0);
+    }
+
+    @Override
+    public long getEndByteOffset(int endReferenceIndex, int endPosition) {
+        return getByteOffset(endReferenceIndex, endPosition+1, 1);
     }
 
     /**

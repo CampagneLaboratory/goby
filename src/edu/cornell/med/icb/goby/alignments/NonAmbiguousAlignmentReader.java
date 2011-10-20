@@ -245,4 +245,15 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
     public IndexedIdentifier getQueryIdentifiers() {
         return delegate.getQueryIdentifiers();
     }
+
+    @Override
+    public long getStartByteOffset(int startReferenceIndex, int startPosition) {
+        return delegate.getStartByteOffset(startReferenceIndex, startPosition);
+    }
+
+    @Override
+    public long getEndByteOffset(int endReferenceIndex, int endPosition) {
+        return delegate.getEndByteOffset(endReferenceIndex, endPosition);
+    }
+
 }

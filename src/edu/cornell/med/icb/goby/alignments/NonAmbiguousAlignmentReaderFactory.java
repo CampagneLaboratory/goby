@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+
 import java.io.IOException;
 
 /**
@@ -46,7 +47,22 @@ public class NonAmbiguousAlignmentReaderFactory implements AlignmentReaderFactor
     }
 
     @Override
+    public AlignmentReader createReader(String basename, GenomicRange range) throws IOException {
+        if (range == null) {
+            return createReader(basename);
+        } else {
+            return createReader(basename, range.startReferenceIndex, range.startPosition,
+                    range.endReferenceIndex, range.endPosition);
+        }
+    }
+
+    @Override
     public AlignmentReader createReader(String basename, long startOffset, long endOffset) throws IOException {
         return new NonAmbiguousAlignmentReader(startOffset, endOffset, basename);
+    }
+
+    @Override
+    public FileSlice getSlice(String basename, GenomicRange range) throws IOException {
+        return FileSlice.getSlice(this, basename, range);
     }
 }

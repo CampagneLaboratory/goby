@@ -22,6 +22,7 @@ import java.io.IOException;
 
 /**
  * Returns AlignmentReader instances.
+ *
  * @author Fabien Campagne
  *         Date: Apr 9, 2011
  *         Time: 4:37:26 PM
@@ -40,9 +41,23 @@ public class DefaultAlignmentReaderFactory implements AlignmentReaderFactory {
         return new AlignmentReaderImpl(basename, startReferenceIndex, startPosition, endReferenceIndex, endPosition);
     }
 
+    @Override
+    public AlignmentReader createReader(String basename, GenomicRange range) throws IOException {
+        if (range == null) {
+            return createReader(basename);
+        } else {
+            return createReader(basename, range.startReferenceIndex, range.startPosition,
+                    range.endReferenceIndex, range.endPosition);
+        }
+    }
 
     @Override
     public AlignmentReaderImpl createReader(String basename, long startOffset, long endOffset) throws IOException {
-        return new AlignmentReaderImpl(startOffset, endOffset,basename);
-             }
+        return new AlignmentReaderImpl(startOffset, endOffset, basename);
+    }
+
+    @Override
+    public FileSlice getSlice(String basename, GenomicRange range) throws IOException {
+        return FileSlice.getSlice(this, basename, range);
+    }
 }

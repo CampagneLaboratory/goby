@@ -157,7 +157,7 @@ public final class GobyConfiguration {
         }
 
         // load "default" configurations for any properties not found elsewhere
-        // it's important that this added LAST so the user can override any settings
+        // it's important that this be added LAST so the user can override any settings
         final Configuration defaultConfiguration = getDefaultConfiguration();
         configuration.addConfiguration(defaultConfiguration);
 

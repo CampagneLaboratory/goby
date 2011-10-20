@@ -32,7 +32,13 @@
             <help>The file where slices definitions will be written (tab delimited:
                 targetIdStart	%positionStart	start:(ref,pos)	targetIdEnd    %positionEnd	end:(ref,pos).</help>
         </flaggedOption>
-
+        <flaggedOption>
+            <id>annotations</id>
+            <shortFlag>a</shortFlag>
+            <longFlag>annotations</longFlag>
+            <required>false</required>
+            <help>When provided, filename to Goby annotation file. Slices are generated such that no slice would split the external boundaries of an annotation element. </help>
+        </flaggedOption>
         <flaggedOption>
             <id>number-of-slices</id>
             <longFlag>number-of-slices</longFlag>
