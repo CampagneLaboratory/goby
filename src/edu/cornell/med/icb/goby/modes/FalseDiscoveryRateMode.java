@@ -202,7 +202,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         int num = 0;
         for (final DifferentialExpressionInfo info : data) {
             topHitsElementIndices.add(Integer.parseInt(info.getElementId().toString()));
-            if (num++ > topHitNum) {
+            if ( num++ > topHitNum) {
                 break;
             }
         }
@@ -658,7 +658,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                     if (!reader.isCommentLine()) {
                         reader.next();
                         final String elementId = Integer.toString(elementIndex);
-                        boolean keepThisLine = false;
+                        boolean keepThisLine = doubleColumnIndices.isEmpty();
                         if (elementPermutation.containsKey(elementIndex)) {
                             final int permutedIndex = elementPermutation.get(elementIndex);
                             final DifferentialExpressionInfo differentialExpressionInfo = data.get(permutedIndex);

@@ -177,7 +177,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         String endOffsetArgument = jsapResult.getString("end-position");
         if (startOffsetArgument != null && endOffsetArgument == null ||
                 endOffsetArgument != null && startOffsetArgument == null) {
-            System.err.println("Start (-s/--start-position) and end offset (-e/--end-posiiton) arguments must be specified together or not at all.");
+            System.err.println("Start (-s/--start-position) and end offset (-e/--end-position) arguments must be specified together or not at all.");
             System.exit(1);
         }
         genomicRange = new GenomicRange();
