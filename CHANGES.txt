@@ -1,4 +1,6 @@
 >>1.9.8
+ - Added the mode tab-to-column-info to read the data from TSV files to determine the the column types
+   (double/integer/string). Write a .colinfo file detailing the column names and types.
  - Add ability to run alignment-to-annotation-counts on a specific genomic region (see --start-position and
    --end-position).
  - FDR mode now accepts --column-selection-filter to select columns matching string.
