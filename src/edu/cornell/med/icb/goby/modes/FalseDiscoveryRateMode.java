@@ -202,7 +202,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         int num = 0;
         for (final DifferentialExpressionInfo info : data) {
             topHitsElementIndices.add(Integer.parseInt(info.getElementId().toString()));
-            if ( num++ > topHitNum) {
+            if (num++ > topHitNum) {
                 break;
             }
         }
@@ -610,12 +610,16 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
         int elementIndex = 0;
         // write the TSV header first:
 
+        boolean first = true;
         for (String column : columnIdList) {
+            if (!first) {
+                printer.write('\t');
+            }
             printer.print(column);
-            printer.write('\t');
+            first = false;
         }
 
-        boolean first = true;
+
         for (String column : adjustedColumnIds) {
             if (!first) {
                 printer.write('\t');
@@ -689,23 +693,28 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                                 int index = 0;
                                 final DifferentialExpressionInfo info = differentialExpressionInfo;
                                 assert info.getElementId().equals(elementId) : " elementId must match";
+                                first = true;
                                 for (int j = 0; j < reader.numTokens(); j++) {
                                     if (doubleColumnIndices.contains(j)) {
                                         reader.getString();
-
+                                        if (!first) {
+                                            printer.write('\t');
+                                        }
                                         printer.print(info.statistics().get(index));
-                                        printer.print('\t');
+                                        first = false;
                                         index++;
                                     } else {
+                                        if (!first) {
+                                            printer.write('\t');
+                                        }
                                         printer.print(reader.getString());
-                                        printer.print('\t');
+                                        first = false;
                                     }
                                 }
                                 first = true;
                                 for (final String adjustedColumn : adjustedColumnIds) {
                                     final int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
                                     final DoubleArrayList list = differentialExpressionInfo.statistics();
-
                                     if (!first) {
                                         printer.write('\t');
                                     }

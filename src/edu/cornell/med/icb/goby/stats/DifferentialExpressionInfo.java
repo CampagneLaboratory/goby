@@ -84,7 +84,12 @@ public class DifferentialExpressionInfo {
             if (informativeColumns == null || informativeColumns.isColumnInformative(i)) {
                 writer.append(delimiter);
                 final double value = statistics.get(i);
-                writer.append(String.format("%g", value));
+                final long rounded = Math.round(value);
+                if (value == rounded) {
+                    writer.append(String.format("%d", rounded));
+                } else {
+                    writer.append(String.format("%g", value));
+                }
             }
         }
     }
