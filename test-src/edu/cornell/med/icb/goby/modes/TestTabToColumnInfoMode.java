@@ -39,7 +39,7 @@ public class TestTabToColumnInfoMode {
         columnsInfo.setNoOutput(true);
         columnsInfo.execute();
         final Map<String, TabToColumnInfoMode.ColumnTypes> columnDetailsMap = columnsInfo.getFilenameToDetailsMap().get(inputFilename);
-        assertEquals("column type is wrong", "INTEGER", columnDetailsMap.get("int").toString());
+        assertEquals("column type is wrong", "INT", columnDetailsMap.get("int").toString());
         assertEquals("column type is wrong", "DOUBLE", columnDetailsMap.get("double").toString());
         assertEquals("column type is wrong", "DOUBLE", columnDetailsMap.get("double2").toString());
         assertEquals("column type is wrong", "STRING", columnDetailsMap.get("string1").toString());
@@ -55,7 +55,7 @@ public class TestTabToColumnInfoMode {
         columnsInfo.setNoOutput(true);
         columnsInfo.execute();
         final Map<String, TabToColumnInfoMode.ColumnTypes> columnDetailsMap = columnsInfo.getFilenameToDetailsMap().get(inputFilename);
-        assertEquals("column type is wrong", "INTEGER", columnDetailsMap.get("int").toString());
+        assertEquals("column type is wrong", "INT", columnDetailsMap.get("int").toString());
         assertEquals("column type is wrong", "DOUBLE", columnDetailsMap.get("double").toString());
         assertEquals("column type is wrong", "DOUBLE", columnDetailsMap.get("double2").toString());
         assertEquals("column type is wrong", "STRING", columnDetailsMap.get("string1").toString());
@@ -65,22 +65,22 @@ public class TestTabToColumnInfoMode {
 
     @Test
     public void testObserveValue() {
-        assertEquals("observed type is wrong", "INTEGER", TabToColumnInfoMode.typeFromValue("4").toString());
+        assertEquals("observed type is wrong", "INT", TabToColumnInfoMode.typeFromValue("4").toString());
         assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("3.2").toString());
-        assertEquals("observed type is wrong", "INTEGER", TabToColumnInfoMode.typeFromValue("5").toString());
+        assertEquals("observed type is wrong", "INT", TabToColumnInfoMode.typeFromValue("5").toString());
         assertEquals("observed type is wrong", "STRING", TabToColumnInfoMode.typeFromValue("3.2a").toString());
-        assertEquals("observed type is wrong", "INTEGER", TabToColumnInfoMode.typeFromValue("4").toString());
+        assertEquals("observed type is wrong", "INT", TabToColumnInfoMode.typeFromValue("4").toString());
         assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("3.2").toString());
-        assertEquals("observed type is wrong", "INTEGER", TabToColumnInfoMode.typeFromValue("93").toString());
+        assertEquals("observed type is wrong", "INT", TabToColumnInfoMode.typeFromValue("93").toString());
         assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("-2e2").toString());
         assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("-72.3e-02").toString());
         assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("+72.3e-2").toString());
         assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("-3.2").toString());
         assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("3.2").toString());
-        assertEquals("observed type is wrong", "INTEGER", TabToColumnInfoMode.typeFromValue("4").toString());
-        assertEquals("observed type is wrong", "INTEGER", TabToColumnInfoMode.typeFromValue("-32").toString());
+        assertEquals("observed type is wrong", "INT", TabToColumnInfoMode.typeFromValue("4").toString());
+        assertEquals("observed type is wrong", "INT", TabToColumnInfoMode.typeFromValue("-32").toString());
         // Values are trimmed.
-        assertEquals("observed type is wrong", "INTEGER", TabToColumnInfoMode.typeFromValue("  -32  ").toString());
+        assertEquals("observed type is wrong", "INT", TabToColumnInfoMode.typeFromValue("  -32  ").toString());
         assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("NaN").toString());
         assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("-Inf").toString());
         assertEquals("observed type is wrong", "STRING", TabToColumnInfoMode.typeFromValue("woot").toString());
@@ -90,7 +90,7 @@ public class TestTabToColumnInfoMode {
         assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("+INFINITY").toString());
         assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("-INF").toString());
         assertEquals("observed type is wrong", "STRING", TabToColumnInfoMode.typeFromValue("no").toString());
-        assertEquals("observed type is wrong", "INTEGER", TabToColumnInfoMode.typeFromValue("9").toString());
+        assertEquals("observed type is wrong", "INT", TabToColumnInfoMode.typeFromValue("9").toString());
         assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("nan").toString());
         assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("+inf").toString());
         assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("inf").toString());

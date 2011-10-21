@@ -52,13 +52,13 @@ public class TabToColumnInfoMode extends AbstractGobyMode {
     public enum ColumnTypes {
         STRING,
         DOUBLE,
-        INTEGER,
+        INT,
         UNKNOWN
     }
 
     private static final Pattern DOUBLE_PATTERN =
             Pattern.compile("[\\-\\+]?\\d+(\\.\\d*)?(e-?\\d+)?|nan|-infinity|\\+infinity|infinity|inf|-inf|\\+inf");
-    private static final Pattern INTEGER_PATTERN =
+    private static final Pattern INT_PATTERN =
             Pattern.compile("-?\\d+?");
     private static final Set<String> SPECIAL_DOUBLES = new HashSet<String>();
     static {
@@ -301,7 +301,7 @@ public class TabToColumnInfoMode extends AbstractGobyMode {
                             // Uninitialized, set to the new type
                             columnToType.put(columnName, columnType);
                         } else {
-                            if (columnType == ColumnTypes.DOUBLE && prevColumnType == ColumnTypes.INTEGER) {
+                            if (columnType == ColumnTypes.DOUBLE && prevColumnType == ColumnTypes.INT) {
                                 // We need to promote this integer to a double
                                 columnToType.put(columnName, ColumnTypes.DOUBLE);
                             }
@@ -359,12 +359,12 @@ public class TabToColumnInfoMode extends AbstractGobyMode {
         if (v.isEmpty()) {
             return ColumnTypes.UNKNOWN;
         }
-        if (INTEGER_PATTERN.matcher(v).matches()) {
+        if (INT_PATTERN.matcher(v).matches()) {
             // We first test for Integer because double would match it but not vice versa.
             try {
                 // We SHOULD have a valid Integer value, but let's make sure.
                 final Integer i = Integer.valueOf(v);
-                return ColumnTypes.INTEGER;
+                return ColumnTypes.INT;
             } catch (java.lang.NumberFormatException e) {
                 // It isn't a double. Move on to the next case.
                 System.err.println("Converting " + v + " to integer caused an exception");
