@@ -1,4 +1,7 @@
 >>1.9.8
+ - VCFParser will now set column type when reading TSV files by using TabToColumnInfoMode to scan the actual values
+   stored in the TSV file. The first time this is done for a each file, a .colinfo file will be created and then
+   used if the file is read again by VCFParser in the future.
  - Added the mode tab-to-column-info to read the data from TSV files to determine the the column types
    (double/integer/string). Write a .colinfo file detailing the column names and types.
  - Add ability to run alignment-to-annotation-counts on a specific genomic region (see --start-position and

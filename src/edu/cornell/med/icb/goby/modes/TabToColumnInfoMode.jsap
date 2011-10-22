@@ -39,5 +39,26 @@
             </defaults>
             <help>The number of input lines to read or set to a value less than or equal to 0 to read the entire file.</help>
         </flaggedOption>
+        <switch>
+            <id>do-not-create-cache</id>
+            <longFlag>do-not-create-cache</longFlag>
+            <help>If this switch is provided, the .colinfo cache file will NOT be created.</help>
+        </switch>
+        <switch>
+            <id>display</id>
+            <longFlag>display</longFlag>
+            <help>Output column details to stdout.</help>
+        </switch>
+        <switch>
+            <id>read-from-cache</id>
+            <longFlag>read-from-cache</longFlag>
+            <help>If true, the mode will attempt to read the column info from the cached .colinfo file.</help>
+        </switch>
+        <switch>
+            <id>verbose</id>
+            <shortFlag>v</shortFlag>
+            <longFlag>verbose</longFlag>
+            <help>Verbose, more output is created (info about caching, etc.).</help>
+        </switch>
     </parameters>
 </jsap>

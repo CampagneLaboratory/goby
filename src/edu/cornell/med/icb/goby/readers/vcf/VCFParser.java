@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.readers.vcf;
 
+import edu.cornell.med.icb.goby.modes.TabToColumnInfoMode;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -25,15 +26,20 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.io.FastBufferedReader;
 import it.unimi.dsi.io.LineIterator;
 import it.unimi.dsi.lang.MutableString;
-import net.sf.samtools.FileTruncatedException;
 import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.commons.io.IOUtils;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.zip.GZIPInputStream;
+import java.util.Map;
 
 /**
  * Parser for files in the <a href="http://vcftools.sourceforge.net/specs.html">Variant Call Format</a>, or in plain TSV format.
@@ -81,7 +87,8 @@ public class VCFParser implements Closeable {
      * Sorts columns in increasing columnIndex order.
      */
     public static final Comparator<ColumnInfo> COLUMN_SORT = new Comparator<ColumnInfo>() {
-        public int compare(ColumnInfo c1, ColumnInfo c2) {
+        @Override
+        public int compare(final ColumnInfo c1, final ColumnInfo c2) {
             return c1.columnIndex - c2.columnIndex;
         }
     };
@@ -89,23 +96,43 @@ public class VCFParser implements Closeable {
      * Sorts fields in increasing globalFieldIndex order.
      */
     public static final Comparator<ColumnField> FIELD_SORT = new Comparator<ColumnField>() {
-        public int compare(ColumnField c1, ColumnField c2) {
+        @Override
+        public int compare(final ColumnField c1, final ColumnField c2) {
             return c1.globalFieldIndex - c2.globalFieldIndex;
         }
     };
-    private ObjectArrayList<ColumnInfo> columnList = new ObjectArrayList<ColumnInfo>();
-    private ObjectArrayList<ColumnField> fieldList = new ObjectArrayList<ColumnField>();
+    private final ObjectArrayList<ColumnInfo> columnList = new ObjectArrayList<ColumnInfo>();
+    private final ObjectArrayList<ColumnField> fieldList = new ObjectArrayList<ColumnField>();
     private ColumnInfo formatColumn;
     private boolean headerLineNotParsed = true;
     private boolean headerParsed;
+    private File inputFile;
 
+    /**
+     * Map of column name to column type for TSV files. When reading a TSV file this is populated by
+     * readTsvColumnTypes() during parseHeaderLine() and used to set the correct types based on the
+     * data found in the TSV file.
+     */
+    private Map<String, ColumnType> tsvColumnNameToTypeMap;
+
+    /**
+     * If we should cache the TSV column types to a .colinfo file when parsing TSV files. This must be
+     * set BEFORE calling readHeader() if you want it to be used.
+     */
+    private boolean cacheTsvColumnTypes = true;
+
+    /**
+     * When scanning a TSV file to determine column types, this is the number of lines that will be checked.
+     * Set to <= 0 to scan the entire file. This must be set before calling readHeader() for the value to be used.
+     */
+    private int tsvLinesToScanForColumnType = 10000;
 
     /**
      * Constructs a VCF parser.
      *
      * @param file Input to parse
      */
-    public VCFParser(Reader file) {
+    public VCFParser(final Reader file) {
         this.input = file;
     }
 
@@ -119,9 +146,63 @@ public class VCFParser implements Closeable {
      * @throws java.io.IOException when an error occurs.
      */
     public VCFParser(final String filename) throws IOException {
-        this.input = filename.endsWith(".gz") ?
+        inputFile = new File(filename);
+        input = filename.endsWith(".gz") ?
                 new InputStreamReader(new BlockCompressedInputStream(new FileInputStream(filename))) :
                 new FileReader(filename);
+    }
+
+    /**
+     * If we should cache the TSV column types to a .colinfo file when parsing TSV files. This must be set
+     * before calling readHeader() for the value to be used.
+     * @param cacheTsvColumnTypes new cacheTsvColumnTypes value
+     */
+    public void setCacheTsvColumnTypes(final boolean cacheTsvColumnTypes) {
+        this.cacheTsvColumnTypes = cacheTsvColumnTypes;
+    }
+
+    /**
+     * If we should cache the TSV column types to a .colinfo file when parsing TSV files.
+     * @return cacheTsvColumnTypes value
+     */
+    public boolean isCacheTsvColumnTypes() {
+        return cacheTsvColumnTypes;
+    }
+
+    /**
+     * When scanning a TSV file to determine column types, this is the number of lines that will be checked.
+     * Set to <= 0 to scan the entire file. This must be set before calling readHeader() for the value to be used.
+     * @param tsvLinesToScanForColumnType the new value of tsvLinesToScanForColumnType
+     */
+    public void setTsvLinesToScanForColumnType(final int tsvLinesToScanForColumnType) {
+        this.tsvLinesToScanForColumnType = tsvLinesToScanForColumnType;
+    }
+
+    /**
+     * When scanning a TSV file to determine column types, this is the number of lines that will be checked.
+     * @return the value of tsvLinesToScanForColumnType
+     */
+    public int getTsvLinesToScanForColumnType() {
+        return tsvLinesToScanForColumnType;
+    }
+
+    /**
+     * If parsing a TSV file, this can be called to retrieve the column types map. The column types map
+     * .colinfo cache file will be created the first time this is called and read on subsequent calls.
+     * @throws IOException if error reading / creating .colinfo cache file
+     */
+    public void readTsvColumnTypes() throws IOException {
+        // TODO: Currently this will not work right if the TSV file header line DOES start with "#"
+        // TODO: which could be a problem, although current TSV files produced by DiffExp's do not do this.
+        if (tsvColumnNameToTypeMap == null && inputFile != null && inputFile.exists()) {
+            final TabToColumnInfoMode reader = new TabToColumnInfoMode();
+            reader.addInputFile(inputFile);
+            reader.setCreateCache(cacheTsvColumnTypes);
+            reader.setNumberOfLinesToProcess(tsvLinesToScanForColumnType);
+            reader.setReadFromCache(true);
+            reader.execute();
+            tsvColumnNameToTypeMap = reader.getDetailsAtIndex(0);
+        }
     }
 
     /**
@@ -143,8 +224,8 @@ public class VCFParser implements Closeable {
         return columns;
     }
 
-    public ColumnType getColumnType(int columnIndex) {
-        for (ColumnInfo col : columns) {
+    public ColumnType getColumnType(final int columnIndex) {
+        for (final ColumnInfo col : columns) {
             if (col.columnIndex == columnIndex) {
                 if (col.fields.size() == 1) {
                     return ((ColumnField) col.fields.toArray()[0]).type;
@@ -166,7 +247,7 @@ public class VCFParser implements Closeable {
      * @param globalFieldIndex global field index, from zero to countAllFields()-1
      * @return type of the specified field.
      */
-    public ColumnType getFieldType(int globalFieldIndex) {
+    public ColumnType getFieldType(final int globalFieldIndex) {
         return fieldList.get(globalFieldIndex).type;
     }
 
@@ -176,12 +257,12 @@ public class VCFParser implements Closeable {
      * @param globalFieldIndex global field index, from zero to countAllFields()-1
      * @return the number of values contained in this field.
      */
-    public int getFieldNumValues(int globalFieldIndex) {
+    public int getFieldNumValues(final int globalFieldIndex) {
         return fieldList.get(globalFieldIndex).numberOfValues;
     }
 
-    public String getColumnName(int columnIndex) {
-        for (ColumnInfo col : columns) {
+    public String getColumnName(final int columnIndex) {
+        for (final ColumnInfo col : columns) {
             if (col.columnIndex == columnIndex) {
                 return col.columnName;
 
@@ -229,7 +310,7 @@ public class VCFParser implements Closeable {
      * @param columnIndex index of the field on a line of input.
      * @return a column value as a CharSequence.
      */
-    public CharSequence getColumnValue(int columnIndex) {
+    public CharSequence getColumnValue(final int columnIndex) {
         if (hasNextDataLine) {
 
             return line.subSequence(columnStarts[columnIndex], columnEnds[columnIndex]);
@@ -244,7 +325,7 @@ public class VCFParser implements Closeable {
      */
     public int countAllFields() {
         int n = 0;
-        for (ColumnInfo column : columns) {
+        for (final ColumnInfo column : columns) {
 
             n += column.fields.size();
         }
@@ -285,7 +366,7 @@ public class VCFParser implements Closeable {
      * @param globalFieldIndex a global index that runs from zero to countAllFields()
      * @return Value of this field.
      */
-    public String getStringFieldValue(int globalFieldIndex) {
+    public String getStringFieldValue(final int globalFieldIndex) {
 
         final CharSequence value = getFieldValue(globalFieldIndex);
         return value == null ? null : value.toString();
@@ -297,7 +378,7 @@ public class VCFParser implements Closeable {
      * @param columnIndex index of the field on a line of input.
      * @return a column value as a String.
      */
-    public String getStringColumnValue(int columnIndex) {
+    public String getStringColumnValue(final int columnIndex) {
         return getColumnValue(columnIndex).toString();
     }
 
@@ -311,11 +392,11 @@ public class VCFParser implements Closeable {
      * @param globalFieldIndex index of the field across columns.
      * @return the field name
      */
-    public String getFieldName(int globalFieldIndex) {
+    public String getFieldName(final int globalFieldIndex) {
         return fieldIndexToName.get(globalFieldIndex);
     }
 
-    private FastBufferedReader bufferedReader = null;
+    private FastBufferedReader bufferedReader;
 
     /**
      * Read the header of this file. Headers in the VCF format are supported, as well as TSV single header lines (with or
@@ -324,7 +405,9 @@ public class VCFParser implements Closeable {
      * @throws SyntaxException When the syntax of the VCF file is incorrect.
      */
     public void readHeader() throws SyntaxException {
-        if (headerParsed) return;
+        if (headerParsed) {
+            return;
+        }
         headerParsed = true;
         globalFieldIndex = 0;
         fieldIndexToName = new Int2ObjectOpenHashMap<String>();
@@ -392,7 +475,7 @@ public class VCFParser implements Closeable {
 
             final char c = line.charAt(i);
             if (c == '\t') {
-                String columnName = columnList.get(columnIndex).columnName;
+                final String columnName = columnList.get(columnIndex).columnName;
 
                 columnEnds[columnIndex] = i;
                 if (columnIndex + 1 < columnStarts.length) {
@@ -423,7 +506,7 @@ public class VCFParser implements Closeable {
         int columnIndex = 0;
         int fieldIndex = 0;
         lineLength = line.length();
-        int lineFieldIndexToColumnIndex[] = new int[numberOfFields];
+        final int[] lineFieldIndexToColumnIndex = new int[numberOfFields];
         Arrays.fill(lineFieldIndexToColumnIndex, -1);
         previousColumnFieldIndices.clear();
         // determine the position of column and field delimiters:
@@ -493,14 +576,14 @@ public class VCFParser implements Closeable {
         // determine the fieldPermutation for each possible field:
         for (int lineFieldIndex = 0; lineFieldIndex <= numberOfFieldsOnLine; lineFieldIndex++) {
 
-            int start = fieldStarts[lineFieldIndex];
-            int end = fieldEnds[lineFieldIndex];
+            final int start = fieldStarts[lineFieldIndex];
+            final int end = fieldEnds[lineFieldIndex];
 
             final int cIndex = lineFieldIndexToColumnIndex[lineFieldIndex];
             if (cIndex >= columnList.size()) {
                 break;
             }
-            ColumnInfo column = columnList.get(cIndex);
+            final ColumnInfo column = columnList.get(cIndex);
 
             int colMinGlobalFieldIndex = Integer.MAX_VALUE;
             int colMaxGlobalFieldIndex = Integer.MIN_VALUE;
@@ -509,7 +592,7 @@ public class VCFParser implements Closeable {
 
             for (int fi = 0; fi < fields.size(); ++fi) {
 
-                ColumnField f = fields.get(fi);
+                final ColumnField f = fields.get(fi);
                 colMinGlobalFieldIndex = Math.min(colMinGlobalFieldIndex, f.globalFieldIndex);
                 colMaxGlobalFieldIndex = Math.max(colMaxGlobalFieldIndex, f.globalFieldIndex);
 
@@ -605,8 +688,8 @@ public class VCFParser implements Closeable {
                     ++fieldCount;
                 }
             }
-            String result[] = new String[fieldCount];
-            MutableString value = new MutableString();
+            final String[] result = new String[fieldCount];
+            final MutableString value = new MutableString();
             int last = 0;
             int j = 0;
             for (int i = 0; i < length; i++) {
@@ -642,35 +725,50 @@ public class VCFParser implements Closeable {
 
 
     private void parseHeaderLine(MutableString line) {
+        if (TSV) {
+            // Attempt to determine the column types using TabToColumnInfoMode.
+            try {
+                readTsvColumnTypes();
+            } catch (IOException e) {
+                System.err.println("Could not determine column info from tsv file " + e.getMessage());
+            }
+        }
+
         headerLineNotParsed = false;
         // System.out.printf("header line:%s%n", line);
         // drop the #
         line = line.substring(1);
-        String[] columnNames = line.toString().split("[\\t]");
+        final String[] columnNames = line.toString().split("[\\t]");
 
-        for (String columnName : columnNames) {
+        for (final String columnName : columnNames) {
 
             defineFixedColumn(columnName);
             if (!columns.hasColumnName(columnName)) {
-                ColumnInfo formatColumn = columns.find("FORMAT");
+                final ColumnInfo formatColumn = columns.find("FORMAT");
 
                 // copy the fields of the FORMAT column for each sample:
-                ColumnField[] fields;
+                final ColumnField[] fields;
                 if (formatColumn != null) {
                     fields = new ColumnField[formatColumn.fields.size()];
                     int i = 0;
-                    for (ColumnField f : formatColumn.fields) {
-                        fields[i] = (new ColumnField(f.id, f.numberOfValues,
-                                f.type, f.description));
+                    for (final ColumnField field : formatColumn.fields) {
+                        fields[i] = new ColumnField(field.id, field.numberOfValues, field.type, field.description);
                         fields[i].globalFieldIndex = -1;
                         i++;
                     }
                 } else {
-                    fields = new ColumnField[]{new ColumnField("VALUE", 1, ColumnType.String, "")};
+                    final ColumnType columnType;
+                    if (tsvColumnNameToTypeMap != null) {
+                        columnType = tsvColumnNameToTypeMap.get(columnName) == null ?
+                                ColumnType.String :
+                                tsvColumnNameToTypeMap.get(columnName);
+                    } else {
+                         columnType = ColumnType.String;
+                    }
+                    fields = new ColumnField[]{new ColumnField("VALUE", 1, columnType, "")};
                     fields[0].globalFieldIndex = -1;
                 }
-                ColumnInfo newCol = new ColumnInfo(columnName, fields);
-
+                final ColumnInfo newCol = new ColumnInfo(columnName, fields);
                 newCol.useFormat = true;
                 columns.add(newCol);
             }
@@ -680,11 +778,11 @@ public class VCFParser implements Closeable {
         // columns.remove(formatColumn);
         // columnList.remove(formatColumn);
 
-        for (ColumnInfo column : columns) {
+        for (final ColumnInfo column : columns) {
             if (column.columnIndex == -1) {
                 column.columnIndex = globalColumnIndex++;
             }
-            for (ColumnField field : column.fields) {
+            for (final ColumnField field : column.fields) {
 
                 if (field.globalFieldIndex == -1) {
                     field.globalFieldIndex = globalFieldIndex++;
@@ -711,16 +809,16 @@ public class VCFParser implements Closeable {
 
         columnList.addAll(columns);
         Collections.sort(columnList, COLUMN_SORT);
-        for (ColumnInfo column : columnList) {
+        for (final ColumnInfo column : columnList) {
             fieldList.addAll(column.fields);
         }
     }
 
-    private void defineFixedColumn(String columnName) {
-        for (ColumnInfo fixed : fixedColumns) {
+    private void defineFixedColumn(final String columnName) {
+        for (final ColumnInfo fixed : fixedColumns) {
             if (fixed.columnName.equals(columnName) && !columns.hasColumnName(columnName)) {
                 fixed.columnIndex = globalColumnIndex++;
-                for (ColumnField field : fixed.fields) {
+                for (final ColumnField field : fixed.fields) {
                     field.globalFieldIndex = globalFieldIndex++;
                 }
                 columns.add(fixed);
@@ -735,11 +833,11 @@ public class VCFParser implements Closeable {
 
         // returns a deep copy of fixed columns so that this class is not affected by possible changes to the returned
         // value.
-        ColumnInfo copy[] = new ColumnInfo[fixedColumns.length];
+        final ColumnInfo[] copy = new ColumnInfo[fixedColumns.length];
         int i = 0;
 
-        for (ColumnInfo c : fixedColumns) {
-            copy[i++] = c.copy();
+        for (final ColumnInfo fixedColumn : fixedColumns) {
+            copy[i++] = fixedColumn.copy();
         }
 
         return copy;
@@ -789,17 +887,17 @@ public class VCFParser implements Closeable {
     };
 
 
-    private void processMetaInfoLine(MutableString line) throws SyntaxException {
-        int start = 2;
-        int end = line.indexOf('=');
-        String columnName = line.substring(start, end).toString();
+    private void processMetaInfoLine(final MutableString line) throws SyntaxException {
+        final int start = 2;
+        final int end = line.indexOf('=');
+        final String columnName = line.substring(start, end).toString();
 
         final MutableString restOfLine = line.substring(end + 1);
         processMetaInfo(columnName, restOfLine);
     }
 
 
-    private void processMetaInfo(String columnName, MutableString infoDefinition) throws SyntaxException {
+    private void processMetaInfo(final String columnName, final MutableString infoDefinition) throws SyntaxException {
         if ("fileformat".equals(columnName) ||
                 "samtoolsVersion".equals(columnName)) {
             return;
@@ -808,24 +906,24 @@ public class VCFParser implements Closeable {
             // is this a syntax error? test-data/vcf/tricky.vcf would trigger errors
             return;
         }
-        ColumnInfo info;
+        final ColumnInfo info;
         if (columns.hasColumnName(columnName)) {
             info = columns.find(columnName);
         } else {
 
             info = new ColumnInfo();
-            info.columnName = columnName.toString();
+            info.columnName = columnName;
             columns.add(info);
         }
 
-        ColumnField field = new ColumnField();
+        final ColumnField field = new ColumnField();
         final MutableString insideBrackets = infoDefinition.substring(1, infoDefinition.length() - 1);
 
         try {
-            String tokens[] = insideBrackets.toString().split("(,N)|(,T)|(,D)|(,G)");
-            for (String token : tokens) {
-                String[] kv = new String[2];
-                final int firstEqualIndex = token.indexOf("=");
+            final String[] tokens = insideBrackets.toString().split("(,N)|(,T)|(,D)|(,G)");
+            for (final String token : tokens) {
+                final String[] kv = new String[2];
+                final int firstEqualIndex = token.indexOf('=');
                 kv[0] = token.substring(0, firstEqualIndex);
                 kv[1] = token.substring(firstEqualIndex + 1);
 
@@ -868,11 +966,15 @@ public class VCFParser implements Closeable {
      * @param fieldId    Identifier for field in column.
      * @return a global field index, or -1 if the column or field id are not declared.
      */
-    public int getGlobalFieldIndex(String columnName, String fieldId) {
+    public int getGlobalFieldIndex(final String columnName, final String fieldId) {
         final ColumnInfo column = columns.find(columnName);
-        if (column == null) return -1;
+        if (column == null) {
+            return -1;
+        }
         final ColumnField columnField = column.fields.find(fieldId);
-        if (columnField == null) return -1;
+        if (columnField == null) {
+            return -1;
+        }
         return columnField.globalFieldIndex;
     }
 
@@ -881,6 +983,7 @@ public class VCFParser implements Closeable {
      *
      * @throws IOException
      */
+    @Override
     public void close() throws IOException {
         if (bufferedReader != null) {
             IOUtils.closeQuietly(bufferedReader);
@@ -896,8 +999,8 @@ public class VCFParser implements Closeable {
      * @return
      */
     public String[] getColumnNamesUsingFormat() {
-        ObjectArrayList<String> columnNamesUsingFormat = new ObjectArrayList<String>();
-        for (ColumnInfo info : columns) {
+        final ObjectArrayList<String> columnNamesUsingFormat = new ObjectArrayList<String>();
+        for (final ColumnInfo info : columns) {
             if (info.useFormat) {
                 columnNamesUsingFormat.add(info.columnName);
             }
@@ -907,7 +1010,7 @@ public class VCFParser implements Closeable {
 
 
     public class SyntaxException extends Exception {
-        public SyntaxException(MutableString line) {
+        public SyntaxException(final MutableString line) {
             super(line.toString());
         }
     }

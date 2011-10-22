@@ -24,5 +24,5 @@ package edu.cornell.med.icb.goby.readers.vcf;
 *         Time: 6:23:08 PM
 */
 public enum ColumnType {
-    Integer, Float, Flag, Character, String;
+    Integer, Float, Flag, Character, String, Unknown
 }

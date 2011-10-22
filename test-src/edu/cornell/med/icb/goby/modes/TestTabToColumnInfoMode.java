@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.modes;
 
+import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import org.junit.Test;
 
 import java.io.File;
@@ -35,16 +36,16 @@ public class TestTabToColumnInfoMode {
     public void testTabToColumnInfo() throws IOException {
         final TabToColumnInfoMode columnsInfo = new TabToColumnInfoMode();
         final String inputFilename = "test-data/tsv/col-info-test.tsv";
-        columnsInfo.addInputFile(new File(inputFilename));
-        columnsInfo.setNoOutput(true);
+        columnsInfo.addInputFilename(inputFilename);
+        columnsInfo.setCreateCache(false);
         columnsInfo.execute();
-        final Map<String, TabToColumnInfoMode.ColumnTypes> columnDetailsMap = columnsInfo.getFilenameToDetailsMap().get(inputFilename);
-        assertEquals("column type is wrong", "INT", columnDetailsMap.get("int").toString());
-        assertEquals("column type is wrong", "DOUBLE", columnDetailsMap.get("double").toString());
-        assertEquals("column type is wrong", "DOUBLE", columnDetailsMap.get("double2").toString());
-        assertEquals("column type is wrong", "STRING", columnDetailsMap.get("string1").toString());
-        assertEquals("column type is wrong", "STRING", columnDetailsMap.get("string2").toString());
-        assertEquals("column type is wrong", "STRING", columnDetailsMap.get("string3").toString());
+        final Map<String, ColumnType> columnDetailsMap = columnsInfo.getFilenameToDetailsMap().get(inputFilename);
+        assertEquals("column type is wrong", ColumnType.Integer, columnDetailsMap.get("int"));
+        assertEquals("column type is wrong", ColumnType.Float, columnDetailsMap.get("double"));
+        assertEquals("column type is wrong", ColumnType.Float, columnDetailsMap.get("double2"));
+        assertEquals("column type is wrong", ColumnType.String, columnDetailsMap.get("string1"));
+        assertEquals("column type is wrong", ColumnType.String, columnDetailsMap.get("string2"));
+        assertEquals("column type is wrong", ColumnType.String, columnDetailsMap.get("string3"));
     }
 
     @Test
@@ -52,50 +53,77 @@ public class TestTabToColumnInfoMode {
         final TabToColumnInfoMode columnsInfo = new TabToColumnInfoMode();
         final String inputFilename = "test-data/tsv/col-info-test.tsv.gz";
         columnsInfo.addInputFile(new File(inputFilename));
-        columnsInfo.setNoOutput(true);
+        columnsInfo.setCreateCache(false);
         columnsInfo.execute();
-        final Map<String, TabToColumnInfoMode.ColumnTypes> columnDetailsMap = columnsInfo.getFilenameToDetailsMap().get(inputFilename);
-        assertEquals("column type is wrong", "INT", columnDetailsMap.get("int").toString());
-        assertEquals("column type is wrong", "DOUBLE", columnDetailsMap.get("double").toString());
-        assertEquals("column type is wrong", "DOUBLE", columnDetailsMap.get("double2").toString());
-        assertEquals("column type is wrong", "STRING", columnDetailsMap.get("string1").toString());
-        assertEquals("column type is wrong", "STRING", columnDetailsMap.get("string2").toString());
-        assertEquals("column type is wrong", "STRING", columnDetailsMap.get("string3").toString());
+        final Map<String, ColumnType> columnDetailsMap = columnsInfo.getDetailsAtIndex(0);
+        assertEquals("column type is wrong", ColumnType.Integer, columnDetailsMap.get("int"));
+        assertEquals("column type is wrong", ColumnType.Float, columnDetailsMap.get("double"));
+        assertEquals("column type is wrong", ColumnType.Float, columnDetailsMap.get("double2"));
+        assertEquals("column type is wrong", ColumnType.String, columnDetailsMap.get("string1"));
+        assertEquals("column type is wrong", ColumnType.String, columnDetailsMap.get("string2"));
+        assertEquals("column type is wrong", ColumnType.String, columnDetailsMap.get("string3"));
+    }
+
+    @Test
+    public void testTabToColumnInfoMultiIndex() throws IOException {
+        final TabToColumnInfoMode columnsInfo = new TabToColumnInfoMode();
+        final String inputFilename1 = "test-data/tsv/col-info-test.tsv";
+        final String inputFilename2 = "test-data/tsv/col-info-test.tsv.gz";
+        columnsInfo.addInputFilename(inputFilename1);
+        columnsInfo.addInputFile(new File(inputFilename2));
+        columnsInfo.setCreateCache(false);
+        columnsInfo.execute();
+        final Map<String, ColumnType> columnDetailsMap1 = columnsInfo.getDetailsAtIndex(0);
+        final Map<String, ColumnType> columnDetailsMap2 = columnsInfo.getDetailsAtIndex(1);
+    }
+    
+    @Test(expected=IndexOutOfBoundsException.class)
+    public void testTabToColumnInfoMultiBadIndex() throws IOException {
+        final TabToColumnInfoMode columnsInfo = new TabToColumnInfoMode();
+        final String inputFilename1 = "test-data/tsv/col-info-test.tsv";
+        final String inputFilename2 = "test-data/tsv/col-info-test.tsv.gz";
+        columnsInfo.addInputFile(new File(inputFilename1));
+        columnsInfo.addInputFile(new File(inputFilename2));
+        columnsInfo.setCreateCache(false);
+        columnsInfo.execute();
+        final Map<String, ColumnType> columnDetailsMap = columnsInfo.getDetailsAtIndex(2);
     }
 
     @Test
     public void testObserveValue() {
-        assertEquals("observed type is wrong", "INT", TabToColumnInfoMode.typeFromValue("4").toString());
-        assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("3.2").toString());
-        assertEquals("observed type is wrong", "INT", TabToColumnInfoMode.typeFromValue("5").toString());
-        assertEquals("observed type is wrong", "STRING", TabToColumnInfoMode.typeFromValue("3.2a").toString());
-        assertEquals("observed type is wrong", "INT", TabToColumnInfoMode.typeFromValue("4").toString());
-        assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("3.2").toString());
-        assertEquals("observed type is wrong", "INT", TabToColumnInfoMode.typeFromValue("93").toString());
-        assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("-2e2").toString());
-        assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("-72.3e-02").toString());
-        assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("+72.3e-2").toString());
-        assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("-3.2").toString());
-        assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("3.2").toString());
-        assertEquals("observed type is wrong", "INT", TabToColumnInfoMode.typeFromValue("4").toString());
-        assertEquals("observed type is wrong", "INT", TabToColumnInfoMode.typeFromValue("-32").toString());
+        final TabToColumnInfoMode tabToColumnInfoMode = new TabToColumnInfoMode();
+        tabToColumnInfoMode.setVerbose(true);
+        assertEquals("observed type is wrong", ColumnType.Integer, tabToColumnInfoMode.typeFromValue("4"));
+        assertEquals("observed type is wrong", ColumnType.Float, tabToColumnInfoMode.typeFromValue("3.2"));
+        assertEquals("observed type is wrong", ColumnType.Integer, tabToColumnInfoMode.typeFromValue("5"));
+        assertEquals("observed type is wrong", ColumnType.String, tabToColumnInfoMode.typeFromValue("3.2a"));
+        assertEquals("observed type is wrong", ColumnType.Integer, tabToColumnInfoMode.typeFromValue("4"));
+        assertEquals("observed type is wrong", ColumnType.Float, tabToColumnInfoMode.typeFromValue("3.2"));
+        assertEquals("observed type is wrong", ColumnType.Integer, tabToColumnInfoMode.typeFromValue("93"));
+        assertEquals("observed type is wrong", ColumnType.Float, tabToColumnInfoMode.typeFromValue("-2e2"));
+        assertEquals("observed type is wrong", ColumnType.Float, tabToColumnInfoMode.typeFromValue("-72.3e-02"));
+        assertEquals("observed type is wrong", ColumnType.Float, tabToColumnInfoMode.typeFromValue("+72.3e-2"));
+        assertEquals("observed type is wrong", ColumnType.Float, tabToColumnInfoMode.typeFromValue("-3.2"));
+        assertEquals("observed type is wrong", ColumnType.Float, tabToColumnInfoMode.typeFromValue("3.2"));
+        assertEquals("observed type is wrong", ColumnType.Integer, tabToColumnInfoMode.typeFromValue("4"));
+        assertEquals("observed type is wrong", ColumnType.Integer, tabToColumnInfoMode.typeFromValue("-32"));
         // Values are trimmed.
-        assertEquals("observed type is wrong", "INT", TabToColumnInfoMode.typeFromValue("  -32  ").toString());
-        assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("NaN").toString());
-        assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("-Inf").toString());
-        assertEquals("observed type is wrong", "STRING", TabToColumnInfoMode.typeFromValue("woot").toString());
-        assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("+Infinity").toString());
+        assertEquals("observed type is wrong", ColumnType.Integer, tabToColumnInfoMode.typeFromValue("  -32  "));
+        assertEquals("observed type is wrong", ColumnType.Float, tabToColumnInfoMode.typeFromValue("NaN"));
+        assertEquals("observed type is wrong", ColumnType.Float, tabToColumnInfoMode.typeFromValue("-Inf"));
+        assertEquals("observed type is wrong", ColumnType.String, tabToColumnInfoMode.typeFromValue("woot"));
+        assertEquals("observed type is wrong", ColumnType.Float, tabToColumnInfoMode.typeFromValue("+Infinity"));
         // Integers (parsed from String) cannot start with + but Doubles can. Strange but true.
-        assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("+32").toString());
-        assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("+INFINITY").toString());
-        assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("-INF").toString());
-        assertEquals("observed type is wrong", "STRING", TabToColumnInfoMode.typeFromValue("no").toString());
-        assertEquals("observed type is wrong", "INT", TabToColumnInfoMode.typeFromValue("9").toString());
-        assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("nan").toString());
-        assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("+inf").toString());
-        assertEquals("observed type is wrong", "DOUBLE", TabToColumnInfoMode.typeFromValue("inf").toString());
-        assertEquals("observed type is wrong", "UNKNOWN", TabToColumnInfoMode.typeFromValue("    ").toString());
-        assertEquals("observed type is wrong", "UNKNOWN", TabToColumnInfoMode.typeFromValue("").toString());
-        assertEquals("observed type is wrong", "UNKNOWN", TabToColumnInfoMode.typeFromValue(null).toString());
+        assertEquals("observed type is wrong", ColumnType.Float, tabToColumnInfoMode.typeFromValue("+32"));
+        assertEquals("observed type is wrong", ColumnType.Float, tabToColumnInfoMode.typeFromValue("+INFINITY"));
+        assertEquals("observed type is wrong", ColumnType.Float, tabToColumnInfoMode.typeFromValue("-INF"));
+        assertEquals("observed type is wrong", ColumnType.String, tabToColumnInfoMode.typeFromValue("no"));
+        assertEquals("observed type is wrong", ColumnType.Integer, tabToColumnInfoMode.typeFromValue("9"));
+        assertEquals("observed type is wrong", ColumnType.Float, tabToColumnInfoMode.typeFromValue("nan"));
+        assertEquals("observed type is wrong", ColumnType.Float, tabToColumnInfoMode.typeFromValue("+inf"));
+        assertEquals("observed type is wrong", ColumnType.Float, tabToColumnInfoMode.typeFromValue("inf"));
+        assertEquals("observed type is wrong", ColumnType.Unknown, tabToColumnInfoMode.typeFromValue("    "));
+        assertEquals("observed type is wrong", ColumnType.Unknown, tabToColumnInfoMode.typeFromValue(""));
+        assertEquals("observed type is wrong", ColumnType.Unknown, tabToColumnInfoMode.typeFromValue(null));
     }
 }

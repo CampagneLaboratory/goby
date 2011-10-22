@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.readers;
 
 import edu.cornell.med.icb.goby.readers.vcf.ColumnInfo;
+import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import edu.cornell.med.icb.goby.readers.vcf.Columns;
 import edu.cornell.med.icb.goby.readers.vcf.VCFParser;
 import org.junit.Test;
@@ -57,11 +58,26 @@ public class TestVCFParser {
                 format.getField("GL").description);
     }
 
+    /**
+     * Verify we can handle both TSV headers that contain spaces AND we correctly identify
+     * the column types.
+     * @throws IOException
+     * @throws VCFParser.SyntaxException
+     */
     @Test
-    public void tsvHeaderHasSpaces() throws IOException, VCFParser.SyntaxException {
-        VCFParser parser = new VCFParser("test-data/vcf/tsv-with-header-spaces.tsv");
+    public void tsvHeaderHasSpacesAndDetectTypes() throws IOException, VCFParser.SyntaxException {
+        final VCFParser parser = new VCFParser("test-data/vcf/tsv-with-header-spaces.tsv");
+        parser.setCacheTsvColumnTypes(false);
         parser.readHeader();
-        assertEquals(48, parser.countAllFields());
+        assertEquals("Incorrect number of columns", 48, parser.countAllFields());
+        assertEquals("Incorrect number of columns", 48, parser.getNumberOfColumns());
+        for (int i = 0; i < parser.getNumberOfColumns(); i++) {
+            if (i <= 1) {
+                assertEquals("Incorrect column type", ColumnType.String, parser.getColumnType(i));
+            } else {
+                assertEquals("Incorrect column type", ColumnType.Float, parser.getColumnType(i));
+            }
+        }
         parser.close();
     }
 
