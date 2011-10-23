@@ -25,6 +25,9 @@ import edu.cornell.med.icb.goby.algorithmic.algorithm.AnnotationCountIterateAlig
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
+import edu.cornell.med.icb.goby.algorithmic.data.xml.AnnotationLength;
+import edu.cornell.med.icb.goby.algorithmic.data.xml.InfoOutput;
+import edu.cornell.med.icb.goby.algorithmic.data.xml.SampleTotalCount;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
@@ -38,11 +41,15 @@ import edu.rit.pj.ParallelRegion;
 import edu.rit.pj.ParallelTeam;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.*;
+import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import java.io.*;
 import java.util.Arrays;
 import java.util.Map;
@@ -107,6 +114,12 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     WeightParameters weightParams;
     private String includeReferenceNameCommas;
     private boolean filterAmbiguousReads;
+    /**
+     * When not null, filename for an xml formatted output file. This file will contain information
+     * needed by stats mode.
+     */
+    private String infoOutput;
+
 
     @Override
     public String getModeName() {
@@ -166,7 +179,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         parseAnnotations(jsapResult);
         normalizationMethods = deAnalyzer.parseNormalization(jsapResult);
         parseEval(jsapResult, deAnalyzer);
-
+        infoOutput = jsapResult.getString("info-output");
 
         weightParams = configureWeights(jsapResult);
         return this;
@@ -361,6 +374,9 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     IOUtils.closeQuietly(statsWriter);
                 }
             }
+
+
+            writeInfoOutput();
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -370,6 +386,34 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         timer.stop();
         System.out.println("time spent  " + timer.toString());
 
+    }
+
+    private void writeInfoOutput() throws JAXBException, IOException {
+        if (infoOutput != null) {
+
+
+            final JAXBContext jc = JAXBContext.newInstance(InfoOutput.class);
+
+            final Marshaller m = jc.createMarshaller();
+            InfoOutput infoOutInstance = new InfoOutput();
+            for (String sampleId : deCalculator.samples()) {
+                SampleTotalCount stc = new SampleTotalCount();
+                stc.sampleId = sampleId;
+                stc.totalCount = deCalculator.getNumAlignedInSample(sampleId);
+                infoOutInstance.totalCounts.add(stc);
+            }
+            for (MutableString elementId : deCalculator.getElementIds()) {
+                AnnotationLength ae = new AnnotationLength();
+                ae.length = deCalculator.getElementLength(elementId);
+                ae.id = elementId.toString();
+                infoOutInstance.lengths.add(ae);
+            }
+            FileWriter fileWriter = new FileWriter(infoOutput);
+            m.marshal(infoOutInstance, fileWriter);
+            fileWriter.close();
+
+
+        }
     }
 
     // Remove annotations that do not fully map within the genomic range.
@@ -387,8 +431,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
                 chromosome = value.getChromosome();
                 // convert to zero-based coordinates:
-                int segmentStart = value.getStart()-1;
-                int segmentEnd = value.getEnd()-1;
+                int segmentStart = value.getStart() - 1;
+                int segmentEnd = value.getEnd() - 1;
                 if (genomicRange.fullyContains(chromosome, segmentStart, segmentEnd)) {
 
                     ObjectList<Annotation> chromosomeList = filtered.get(key);
@@ -553,7 +597,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             deCalculator.reserve(numberOfElements, inputFilenames.length);
         }
 
-        int numberOfAnottationCountsWritten = 0;
+        int numberOfAnnotationCountsWritten = 0;
         for (final int referenceIndex : referencesToProcess) {
             final String chromosomeName = referenceIds.getId(referenceIndex).toString();
             System.out.println("Writing annotation counts for reference " + chromosomeName);
@@ -609,7 +653,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                                 numExons));
 
                     }
-                    numberOfAnottationCountsWritten++;
+                    numberOfAnnotationCountsWritten++;
                     if (doComparison) {
                         deCalculator.observe(basename, geneID, geneExpression);
                     }
@@ -647,7 +691,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                                         exonRPKM,
                                         log2(exonRPKM)));
                             }
-                            numberOfAnottationCountsWritten++;
+                            numberOfAnnotationCountsWritten++;
                             if (doComparison && includeAnnotationTypes.contains("exon")) {
                                 deCalculator.observe(basename, exonID, exonOverlapReads);
                             }
@@ -680,7 +724,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                                                 intronRPKM,
                                                 log2(intronRPKM)));
                                     }
-                                    numberOfAnottationCountsWritten++;
+                                    numberOfAnnotationCountsWritten++;
                                     if (doComparison && includeAnnotationTypes.contains("other")) {
                                         deCalculator.observe(basename, intronID, intronOverlapReads);
                                     }
@@ -693,8 +737,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             algs[referenceIndex] = null;
         }
 
-        LOG.info("Wrote " + numberOfAnottationCountsWritten + " entries");
-        if (numberOfAnottationCountsWritten == 0) {
+        LOG.info("Wrote " + numberOfAnnotationCountsWritten + " entries");
+        if (numberOfAnnotationCountsWritten == 0) {
             LOG.warn("No entries were written.  This may be due to the fact that names "
                     + "in the reference dataset used do not match those in the annotation file.  "
                     + "For example, ENSEMBL names chromosomes \"1\",\"2\",\"3\" whereas UCSC "

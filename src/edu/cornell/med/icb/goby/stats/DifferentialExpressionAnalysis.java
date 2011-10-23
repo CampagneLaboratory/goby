@@ -173,23 +173,28 @@ public class DifferentialExpressionAnalysis {
             final DifferentialExpressionCalculator deCalculator, final boolean doComparison,
             final ObjectArraySet<NormalizationMethod> normalizationMethods) {
         DifferentialExpressionResults results = null;
-        if (doComparison) {
-            results = null;
-            deCalculator.setRunInParallel(runInParalell);
-            LOG.info("Evaluating statistics..");
-            for (final NormalizationMethod method : normalizationMethods) {
-                method.normalize(deCalculator, groupComparison);
 
-                // evaluate per-sample statistics:
+        if (!doComparison) {
+            deCalculator.createDefaultGroup();
+            // make groupComparison be all samples
+            groupComparison = new String[]{"all-samples"};
+        }
+        results = null;
+        deCalculator.setRunInParallel(runInParalell);
+        LOG.info("Evaluating statistics..");
+        for (final NormalizationMethod method : normalizationMethods) {
+            method.normalize(deCalculator, groupComparison);
 
-                if (eval("samples")) {
-                    results = deCalculator.compare(results, method, new SampleCountCalculator());
-                }
+            // evaluate per-sample statistics:
 
-                if (eval("counts")) {
-                    results = deCalculator.compare(results, method, new CountCalculator());
-                }
+            if (eval("samples")) {
+                results = deCalculator.compare(results, method, new SampleCountCalculator());
+            }
 
+            if (eval("counts")) {
+                results = deCalculator.compare(results, method, new CountCalculator());
+            }
+            if (doComparison) {
                 // evaluate differences between groups:
                 if (eval("fold-change")) {
                     results = deCalculator.compare(results, method, new FoldChangeCalculator(), groupComparison);
@@ -221,20 +226,22 @@ public class DifferentialExpressionAnalysis {
                 if (eval("chi-square")) {
                     results = deCalculator.compare(results, method, new ChiSquareTestCalculator(), groupComparison);
                 }
-
-                final BenjaminiHochbergAdjustment benjaminiHochbergAdjustment = new BenjaminiHochbergAdjustment();
-                final BonferroniAdjustment bonferroniAdjustment = new BonferroniAdjustment();
-
-                if (eval("Bonferroni")) {
-                    results = bonferroniAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
-                }
-                if (eval("BH")) {
-                    results = benjaminiHochbergAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
-                }
             }
+            final BenjaminiHochbergAdjustment benjaminiHochbergAdjustment = new BenjaminiHochbergAdjustment();
+            final BonferroniAdjustment bonferroniAdjustment = new BonferroniAdjustment();
+
+            if (eval("Bonferroni")) {
+                results = bonferroniAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+            }
+            if (eval("BH")) {
+                results = benjaminiHochbergAdjustment.adjust(results, method, "t-test", "fisher-exact-test", "fisher-exact-R", "chi-square-test");
+            }
+
         }
+
         return results;
     }
+
 
     public boolean eval(final String evalName) {
         return evalSet.contains(evalName.toLowerCase());
@@ -247,7 +254,7 @@ public class DifferentialExpressionAnalysis {
     }
 
     public void setRunInParallel(boolean parallel) {
-        this.runInParalell=parallel;
+        this.runInParalell = parallel;
     }
 }
 

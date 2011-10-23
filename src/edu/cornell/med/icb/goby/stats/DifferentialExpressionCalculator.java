@@ -22,15 +22,7 @@ import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntRBTreeMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.*;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -94,6 +86,15 @@ public class DifferentialExpressionCalculator {
         sampleToSumCount.clear();
     }
 
+    /**
+     * Associate each sample to the default group "all-samples".
+     */
+    public void createDefaultGroup() {
+
+        for (final String sampleId : sampleToCounts.keySet()) {
+            associateSampleToGroup(sampleId, "all-samples");
+        }
+    }
 
     public enum ElementType {
         EXON,
@@ -105,14 +106,14 @@ public class DifferentialExpressionCalculator {
     /**
      * The number of alignment entries observed in each sample.
      */
-    private final Object2IntMap<String> numAlignedInSample;
+    private final Object2LongMap<String> numAlignedInSample;
 
     public DifferentialExpressionCalculator() {
         super();
         groups = new ObjectArraySet<String>();
         elementLabels = new IndexedIdentifier();
         sampleToGroupMap = new Object2ObjectOpenHashMap<String, String>();
-        numAlignedInSample = new Object2IntOpenHashMap<String>();
+        numAlignedInSample = new Object2LongOpenHashMap<String>();
         sampleToCounts = new Object2ObjectOpenHashMap<String, IntArrayList>();
         lengths = new IntArrayList();
         elementLabelToElementType = new Int2IntOpenHashMap();
@@ -204,7 +205,7 @@ public class DifferentialExpressionCalculator {
     }
 
     /**
-     * Observe counts and RPKM for a sample.
+     * Observe counts for a specific element and sample.
      *
      * @param sample    sample id.
      * @param elementId element id.
@@ -216,7 +217,7 @@ public class DifferentialExpressionCalculator {
     }
 
     /**
-     * Observe counts and RPKM for a sample.
+     * Observe counts for a sample.
      *
      * @param sample    sample id.
      * @param elementId element id.
@@ -246,12 +247,23 @@ public class DifferentialExpressionCalculator {
     }
 
     /**
+     * Return the element index of element identified by id.
+     *
+     * @param elementId id of the element.
+     * @return index of the element.
+     */
+    public int getElementIndex(String elementId) {
+        return elementLabels.get(new MutableString(elementId));
+
+    }
+
+    /**
      * Define the number of alignment entries found in each sample.
      *
      * @param sampleId            The sample
      * @param numAlignedInSamples The number of alignment entries observed in the sample.
      */
-    public synchronized void setNumAlignedInSample(final String sampleId, final int numAlignedInSamples) {
+    public synchronized void setNumAlignedInSample(final String sampleId, final long numAlignedInSamples) {
         numAlignedInSample.put(sampleId, numAlignedInSamples);
     }
 
@@ -261,7 +273,7 @@ public class DifferentialExpressionCalculator {
      * @param sampleId Identifier of the sample.
      * @return the number of alignment entries found in the sample.
      */
-    public synchronized int getNumAlignedInSample(final String sampleId) {
+    public synchronized long getNumAlignedInSample(final String sampleId) {
         return numAlignedInSample.get(sampleId);
     }
 

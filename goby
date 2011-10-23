@@ -17,6 +17,7 @@ export other_parameters=$*
 
 export WORKING_DIR=`dirname "$0"`
 export GOBY_JAR=${WORKING_DIR}/goby.jar
+export GOBY_HOME=${WORKING_DIR}
       
 if [ "${RJAVA_HOME:-notset}" == "notset" ]; then
   echo "Trying to set RJAVA_HOME environment variable"
@@ -29,4 +30,4 @@ EOT
 fi
 
 echo java -ea -Xmx${memory_requirement} -Djava.library.path=${RJAVA_HOME} -jar ${GOBY_JAR} --mode ${other_parameters}
-java -ea -Xmx${memory_requirement} -Djava.library.path=${RJAVA_HOME} -jar ${GOBY_JAR} --mode ${other_parameters}
+java -ea -Xmx${memory_requirement} -Dlog4j.configuration=${GOBY_HOME}/config/log4j.properties.sample -Djava.library.path=${RJAVA_HOME} -jar ${GOBY_JAR} --mode ${other_parameters}

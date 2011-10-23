@@ -36,7 +36,10 @@
             <shortFlag>r</shortFlag>
             <longFlag>include-reference-names</longFlag>
             <required>false</required>
-            <help>When provided, only write counts for reference identifiers listed in this comma separated list. To process only counts for chromosome 19 and 1, if sequences are identified by 1 and 19, use: --include-reference-names 1,19 </help>
+            <help>When provided, only write counts for reference identifiers listed in this comma separated list. To
+                process only counts for chromosome 19 and 1, if sequences are identified by 1 and 19, use:
+                --include-reference-names 1,19
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>full-genome</id>
@@ -47,7 +50,12 @@
             <stringParser>
                 <classname>BooleanStringParser</classname>
             </stringParser>
-            <help>Indicates that the query sequences were aligned to a full genome. When this argument is true, counts are calculated along each reference sequence and the full count histogram is output in compressed format (basename ".counts"). When this argument is false, the alignment is assumed to have been done to many short reference sequences, and counts are output in a tab delimited format, one for each reference sequence identifier.</help>
+            <help>Indicates that the query sequences were aligned to a full genome. When this argument is true, counts
+                are calculated along each reference sequence and the full count histogram is output in compressed format
+                (basename ".counts"). When this argument is false, the alignment is assumed to have been done to many
+                short reference sequences, and counts are output in a tab delimited format, one for each reference
+                sequence identifier.
+            </help>
         </flaggedOption>
         <switch>
             <id>start-only</id>
@@ -62,7 +70,9 @@
             <defaults>
                 <string>both</string>
             </defaults>
-            <help>When provided with the --start argument, consider only start positions on the specified strand.  Valid strand choices include {positive/forward, negative/reverse, both/either}.</help>
+            <help>When provided with the --start argument, consider only start positions on the specified strand. Valid
+                strand choices include {positive/forward, negative/reverse, both/either}.
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>use-weights</id>
@@ -72,31 +82,48 @@
             <defaults>
                 <string>false</string>
             </defaults>
-            <help>When the flag is set to anything but "false" this mode will attemtpt to load a file containing weights which are used to adjust the read count for annotations.  The file loaded will be named using the basename with the extension of this parameter appended with the string"-weights" </help>
+            <help>When the flag is set to anything but "false" this mode will attemtpt to load a file containing weights
+                which are used to adjust the read count for annotations. The file loaded will be named using the
+                basename with the extension of this parameter appended with the string"-weights"
+            </help>
         </flaggedOption>
-         <flaggedOption>
-             <id>adjust-gc-bias</id>
-             <longFlag>adjust-gc-bias</longFlag>
-             <required>false</required>
-             <stringParser>
+        <flaggedOption>
+            <id>adjust-gc-bias</id>
+            <longFlag>adjust-gc-bias</longFlag>
+            <required>false</required>
+            <stringParser>
                 <classname>StringStringParser</classname>
             </stringParser>
-             <defaults>
+            <defaults>
                 <string>false</string>
             </defaults>
-                   <help>When other than false, the identifier of a formula to reweight counts (requires use-weights gc). If false, no reweighting is done. This option is available since Goby 1.7.</help>
-         </flaggedOption>
+            <help>When other than false, the identifier of a formula to reweight counts (requires use-weights gc). If
+                false, no reweighting is done. This option is available since Goby 1.7.
+            </help>
+        </flaggedOption>
         <flaggedOption>
             <id>filter-ambiguous-reads</id>
             <longFlag>filter-ambiguous-reads</longFlag>
             <required>true</required>
-            <help>If true, the reads that match more locations than the ambiguity threshold are not used to construct the histogram output. When false, all reads are considered. Please note that prior to Goby 1.9.7.1, this mode used false. The default for Goby 1.9.7.1+ is true.</help>
+            <help>If true, the reads that match more locations than the ambiguity threshold are not used to construct
+                the histogram output. When false, all reads are considered. Please note that prior to Goby 1.9.7.1, this
+                mode used false. The default for Goby 1.9.7.1+ is true.
+            </help>
             <stringParser>
                 <classname>BooleanStringParser</classname>
             </stringParser>
             <defaults>
                 <string>true</string>
             </defaults>
+        </flaggedOption>
+        <flaggedOption>
+            <id>info-output</id>
+            <longFlag>info-output</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <help>Filename where to write accessory information neded by Stats mode.</help>
         </flaggedOption>
     </parameters>
 </jsap>
