@@ -46,6 +46,7 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
     public DifferentialExpressionResults(int capacity) {
         super(capacity);
     }
+
     public DifferentialExpressionResults() {
         super();
     }
@@ -66,13 +67,19 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
      * @return the index of the statistic.
      */
     public int declareStatistic(final MutableString statisticId) {
-       final int index = statisticIds.registerIdentifier(statisticId);
-       // TODO There is no reason for this class to know anything about the name of columns it may contain. Remove this code.
-        if (statisticId.startsWith("average count group ")) {
-            averageCountPerGroupIndexes.add(sortedStatisticIds.size());
-        }
+        final int index = statisticIds.registerIdentifier(statisticId);
+
         sortedStatisticIds.add(statisticId);
         return index;
+    }
+
+    /**
+     * Indicate that the statistic at this index should be considered to determine informative rows.
+     * @param statIndex index of the statistic to consider.
+     */
+    public void recordInformativeColumnIndex(int statIndex) {
+
+       averageCountPerGroupIndexes.add(statIndex);
     }
 
     public boolean isOmitNonInformativeColumns() {
@@ -86,7 +93,8 @@ public class DifferentialExpressionResults extends ObjectArrayList<DifferentialE
     public double getStatistic(final DifferentialExpressionInfo info, final MutableString statisticId) {
         return info.statistics.get(statisticIds.get(statisticId));
     }
-     public double getStatistic(final DifferentialExpressionInfo info, final int statIndex) {
+
+    public double getStatistic(final DifferentialExpressionInfo info, final int statIndex) {
         return info.statistics.get(statIndex);
     }
 

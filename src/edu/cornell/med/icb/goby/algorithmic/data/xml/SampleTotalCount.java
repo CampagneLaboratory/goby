@@ -36,4 +36,14 @@ public class SampleTotalCount {
      * Total number of reads that mapped when sample was aligned to the reference.
      */
     public long totalCount;
+
+    @Override
+    public String toString() {
+        final StringBuffer sb=new StringBuffer();
+        sb.append("sample-id: ");
+        sb.append(sampleId);
+        sb.append("total-count: ");
+        sb.append(totalCount);
+        return sb.toString();
+    }
 }

@@ -47,7 +47,7 @@ public class AnnotationCountIterateAlignments extends IterateAlignments {
         return algs;
     }
 
-    private int numAlignedReadsInSample;
+    private long numAlignedReadsInSample=-1;
 
     public void setWeightInfo(final WeightParameters weightParams, final WeightsInfo weights) {
         this.weightParams = weightParams;
@@ -72,14 +72,16 @@ public class AnnotationCountIterateAlignments extends IterateAlignments {
         //shifted the ends populating by 1
         for (int i = 0; i < alignmentEntry.getMultiplicity(); ++i) {
             algs[referenceIndex].populate(startPosition, startPosition + alignmentLength, alignmentEntry.getQueryIndex());
-            ++numAlignedReadsInSample;
-
         }
     }
 
 
     @Override
     public void prepareDataStructuresForReference(final AlignmentReader alignmentReader, final int referenceIndex) {
+
+        if (numAlignedReadsInSample == -1) {
+            numAlignedReadsInSample = alignmentReader.getNumberOfAlignedReads();
+        }
         AnnotationCountInterface algo = new AnnotationCount();
 
         algo = chooseAlgorithm(weightParams, weights, algo);
@@ -89,9 +91,10 @@ public class AnnotationCountIterateAlignments extends IterateAlignments {
     }
 
 
-    public int getNumAlignedReadsInSample() {
+    public long getNumAlignedReadsInSample() {
         return numAlignedReadsInSample;
     }
+
     // determine which algorithm to use based on weight parameters.
     private AnnotationCountInterface chooseAlgorithm(final WeightParameters params,
                                                      final WeightsInfo weights,
@@ -110,10 +113,11 @@ public class AnnotationCountIterateAlignments extends IterateAlignments {
         }
         return algo;
     }
+
     private IntSet referencesSelected = new IntOpenHashSet();
 
-     public IntSet getReferencesSelected() {
-         return referencesSelected;
-     }
+    public IntSet getReferencesSelected() {
+        return referencesSelected;
+    }
 
 }

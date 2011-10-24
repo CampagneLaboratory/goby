@@ -45,12 +45,13 @@ public abstract class StatisticCalculator {
      * @return The index of the defined statistic.
      */
     public int defineStatisticId(final DifferentialExpressionResults results, final MutableString statisticId) {
-
-        if (!results.isStatisticDefined(statisticId)) {
             synchronized (statisticIds) {
+        if (!results.isStatisticDefined(statisticId)) {
+
                 // we test again now that we have synchronized:
                 if (!results.isStatisticDefined(statisticId)) {
                     final int index = results.declareStatistic(statisticId);
+                    results.recordInformativeColumnIndex(index);
                     statisticIds.add(statisticId);
                     return index;
                 }

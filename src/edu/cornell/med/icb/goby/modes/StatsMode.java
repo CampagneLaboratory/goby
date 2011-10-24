@@ -209,7 +209,7 @@ public class StatsMode extends AbstractGobyMode {
                 if (index != -1) {
 
                     deCalculator.defineElementLength(index, ae.length);
-                }   else {
+                } else {
 
                     // OK since some elements will yield zero counts and not be in the input.
                 }
@@ -249,10 +249,12 @@ public class StatsMode extends AbstractGobyMode {
                 numLines++;
                 final String elementId = reader.getString();
                 final String elementType = reader.getString();
-                deCalculator.defineElement(elementId, DifferentialExpressionCalculator.ElementType.valueOf(elementType));
+                if (!"element-id".equals(elementId)) {
+                    deCalculator.defineElement(elementId, DifferentialExpressionCalculator.ElementType.valueOf(elementType));
 
-                for (final String sample : sampleIds) {
-                    deCalculator.observe(sample, elementId, reader.getDouble());
+                    for (final String sample : sampleIds) {
+                        deCalculator.observe(sample, elementId, reader.getDouble());
+                    }
                 }
             }
         }

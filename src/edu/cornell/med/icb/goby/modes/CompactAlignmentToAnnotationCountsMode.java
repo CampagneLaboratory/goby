@@ -118,7 +118,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      * When not null, filename for an xml formatted output file. This file will contain information
      * needed by stats mode.
      */
-    private String infoOutput;
+    private String infoOutputFilename;
 
 
     @Override
@@ -179,7 +179,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         parseAnnotations(jsapResult);
         normalizationMethods = deAnalyzer.parseNormalization(jsapResult);
         parseEval(jsapResult, deAnalyzer);
-        infoOutput = jsapResult.getString("info-output");
+        infoOutputFilename = jsapResult.getString("info-output");
 
         weightParams = configureWeights(jsapResult);
         return this;
@@ -390,27 +390,31 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
     }
 
+    InfoOutput infoOutInstance = new InfoOutput();
+
     private void writeInfoOutput() throws JAXBException, IOException {
-        if (infoOutput != null) {
+        if (infoOutputFilename != null) {
 
 
             final JAXBContext jc = JAXBContext.newInstance(InfoOutput.class);
 
             final Marshaller m = jc.createMarshaller();
-            InfoOutput infoOutInstance = new InfoOutput();
+
             for (String sampleId : deCalculator.samples()) {
                 SampleTotalCount stc = new SampleTotalCount();
                 stc.sampleId = sampleId;
                 stc.totalCount = deCalculator.getNumAlignedInSample(sampleId);
+                System.out.println(stc);
                 infoOutInstance.totalCounts.add(stc);
             }
-            for (MutableString elementId : deCalculator.getElementIds()) {
+            // lengths have been added when filtering annotations.
+            /*for (MutableString elementId : deCalculator.getElementIds()) {
                 AnnotationLength ae = new AnnotationLength();
                 ae.length = deCalculator.getElementLength(elementId);
                 ae.id = elementId.toString();
                 infoOutInstance.lengths.add(ae);
-            }
-            FileWriter fileWriter = new FileWriter(infoOutput);
+            } */
+            FileWriter fileWriter = new FileWriter(infoOutputFilename);
             m.marshal(infoOutInstance, fileWriter);
             fileWriter.close();
 
@@ -444,6 +448,12 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                     }
                     chromosomeList.add(value);
                 }
+                // Even when the element is out of GR, we keep  the element length, used to write complete info-output:
+                AnnotationLength annotationLength = new AnnotationLength();
+                annotationLength.id = value.getId();
+                annotationLength.length = value.getLength();
+                infoOutInstance.lengths.add(annotationLength);
+
             }
 
         }
@@ -487,7 +497,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         iterateAlignment.setAlignmentReaderFactory(factory);
         iterateAlignment.iterate(genomicRange, inputBasename);
 
-        final int numAlignedReadsInSample = iterateAlignment.getNumAlignedReadsInSample();
+        final long numAlignedReadsInSample = iterateAlignment.getNumAlignedReadsInSample();
         final AnnotationCountInterface[] algs = iterateAlignment.getAlgs();
         final IntSet referencesToProcess = iterateAlignment.getReferencesSelected();
 
