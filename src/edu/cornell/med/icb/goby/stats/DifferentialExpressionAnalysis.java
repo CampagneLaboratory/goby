@@ -182,6 +182,9 @@ public class DifferentialExpressionAnalysis {
         results = null;
         deCalculator.setRunInParallel(runInParalell);
         LOG.info("Evaluating statistics..");
+        if (eval("raw-counts")) {
+            results = deCalculator.compare(results, null, new CountRawSampleIdsCalculator());
+        }
         for (final NormalizationMethod method : normalizationMethods) {
             method.normalize(deCalculator, groupComparison);
 
@@ -194,6 +197,7 @@ public class DifferentialExpressionAnalysis {
             if (eval("counts")) {
                 results = deCalculator.compare(results, method, new CountCalculator());
             }
+
             if (doComparison) {
                 // evaluate differences between groups:
                 if (eval("fold-change")) {

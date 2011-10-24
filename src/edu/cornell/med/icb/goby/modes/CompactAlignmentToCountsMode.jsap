@@ -116,14 +116,5 @@
                 <string>true</string>
             </defaults>
         </flaggedOption>
-        <flaggedOption>
-            <id>info-output</id>
-            <longFlag>info-output</longFlag>
-            <required>false</required>
-            <stringParser>
-                <classname>StringStringParser</classname>
-            </stringParser>
-            <help>Filename where to write accessory information neded by Stats mode.</help>
-        </flaggedOption>
     </parameters>
 </jsap>

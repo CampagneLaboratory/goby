@@ -242,7 +242,7 @@ public class DifferentialExpressionCalculator {
         }
 
 
-        final int elementIndex = elementLabels.get(new MutableString(elementId));
+        final int elementIndex = elementLabels.getInt(new MutableString(elementId));
         counts.set(elementIndex, count);
     }
 
@@ -253,7 +253,7 @@ public class DifferentialExpressionCalculator {
      * @return index of the element.
      */
     public int getElementIndex(String elementId) {
-        return elementLabels.get(new MutableString(elementId));
+        return elementLabels.getInt(new MutableString(elementId));
 
     }
 

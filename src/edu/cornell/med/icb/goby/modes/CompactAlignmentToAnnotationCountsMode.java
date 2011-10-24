@@ -193,14 +193,16 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             System.err.println("Start (-s/--start-position) and end offset (-e/--end-position) arguments must be specified together or not at all.");
             System.exit(1);
         }
-        genomicRange = new GenomicRange();
-        final String[] startTokens = startOffsetArgument.split("[,]");
-        final String[] endTokens = endOffsetArgument.split("[,]");
-        genomicRange.startPosition = Integer.parseInt(startTokens[1]);
-        genomicRange.endPosition = Integer.parseInt(endTokens[1]);
+        if (startOffsetArgument != null) {
+            genomicRange = new GenomicRange();
+            final String[] startTokens = startOffsetArgument.split("[,]");
+            final String[] endTokens = endOffsetArgument.split("[,]");
+            genomicRange.startPosition = Integer.parseInt(startTokens[1]);
+            genomicRange.endPosition = Integer.parseInt(endTokens[1]);
 
-        genomicRange.startChromosome = startTokens[0];
-        genomicRange.endChromosome = endTokens[0];
+            genomicRange.startChromosome = startTokens[0];
+            genomicRange.endChromosome = endTokens[0];
+        }
 
     }
 

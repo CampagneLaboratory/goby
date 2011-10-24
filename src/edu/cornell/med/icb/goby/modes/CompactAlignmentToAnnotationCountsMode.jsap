@@ -185,5 +185,14 @@
             <required>false</required>
             <help>The end position within the file, which should be a string in the format ref-id,ref-position (since Goby 1.9.8). Ref-position is zero-based. Only entries that occur before the specified position are analyzed.</help>
         </flaggedOption>
+        <flaggedOption>
+            <id>info-output</id>
+            <longFlag>info-output</longFlag>
+            <required>false</required>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <help>Filename where to write accessory information neded by Stats mode.</help>
+        </flaggedOption>
     </parameters>
 </jsap>

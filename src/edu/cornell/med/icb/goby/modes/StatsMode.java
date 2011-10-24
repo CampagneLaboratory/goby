@@ -206,7 +206,13 @@ public class StatsMode extends AbstractGobyMode {
             InfoOutput info = (InfoOutput) m.unmarshal(new File(infoFilename));
             for (AnnotationLength ae : info.lengths) {
                 int index = deCalculator.getElementIndex(ae.id);
-                deCalculator.defineElementLength(index, ae.length);
+                if (index != -1) {
+
+                    deCalculator.defineElementLength(index, ae.length);
+                }   else {
+
+                    // OK since some elements will yield zero counts and not be in the input.
+                }
             }
             for (SampleTotalCount tc : info.totalCounts) {
                 deCalculator.setNumAlignedInSample(tc.sampleId, tc.totalCount);
