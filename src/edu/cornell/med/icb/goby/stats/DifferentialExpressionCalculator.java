@@ -274,7 +274,7 @@ public class DifferentialExpressionCalculator {
      * @return the number of alignment entries found in the sample.
      */
     public synchronized long getNumAlignedInSample(final String sampleId) {
-        return numAlignedInSample.get(sampleId);
+        return numAlignedInSample.getLong(sampleId);
     }
 
     /**
