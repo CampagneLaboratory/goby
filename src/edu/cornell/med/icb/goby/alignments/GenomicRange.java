@@ -21,7 +21,6 @@ package edu.cornell.med.icb.goby.alignments;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 
-import javax.jnlp.FileSaveService;
 
 /**
  * Defines a range/slice of a genome.
