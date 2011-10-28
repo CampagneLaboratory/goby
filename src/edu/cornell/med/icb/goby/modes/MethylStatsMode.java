@@ -63,7 +63,7 @@ public class MethylStatsMode extends AbstractGobyMode {
 
     private int numThreads;
     private double[] percentiles = new double[]{0.9, .75, .5, .1, .01};
-    private int[] depths = new int[]{5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100,150,200,300,500};
+    private int[] depths = new int[]{5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200, 300, 500};
     private RandomAccessSequenceCache genome;
     private int[] fragmentLengthBins = new int[]{1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200, 250, 300, 350, 400, 450, 500};
     private static final Logger LOG = Logger.getLogger(MethylStatsMode.class);
@@ -144,7 +144,7 @@ public class MethylStatsMode extends AbstractGobyMode {
             output = statsOuputFilename.equals("-") ? new PrintWriter(System.out) : new PrintWriter(new FileWriter(statsOuputFilename));
             final MethylStats backgroundStats = new MethylStats(depths, fragmentLengthBins);
             // First process the genome to find out the background distribution of CpGs:
-
+            System.out.printf("Pre-processing genome.%n");
             scanOneStrand(backgroundStats, '+');
             scanOneStrand(backgroundStats, '-');
 
@@ -205,8 +205,10 @@ public class MethylStatsMode extends AbstractGobyMode {
                         if (fragmentLength > 0) {
                             for (i = 0; i < numSamples; i++) {
                                 final int depthInSample = Integer.parseInt(vcfParser.getFieldValue(sampleDepthGlobalFieldIndex[i]).toString());
+                                if (depthInSample > 10) {
+                                    methylStats[i].observedInSample(depthInSample, fragmentLength);
 
-                                methylStats[i].observedInSample(depthInSample, fragmentLength);
+                                }
 
                             }
                         }
@@ -298,7 +300,7 @@ public class MethylStatsMode extends AbstractGobyMode {
             }
             fragBinIndex = 0;
             for (final int fragmentLengthStart : fragmentLengthBins) {
-                output.printf("%s\tnormalizedCpGsPerFragmentBinObserved\t%s\t%3.3g%n",        sample,
+                output.printf("%s\tnormalizedCpGsPerFragmentBinObserved\t%s\t%3.3g%n", sample,
                         getRange(methylStat.getFragmentLengthBins(), fragBinIndex),
                         divide(methylStat.getNumberCpGsPerFragmentBinObserved()[fragBinIndex],
                                 methylStat.getNumberCpGsPerFragmentBinGenome()[fragBinIndex])
@@ -313,7 +315,7 @@ public class MethylStatsMode extends AbstractGobyMode {
             }
             depthIndex = 0;
             for (final int depth : depths) {
-                output.printf("%s\tnormalizedDepth\t%s\t%3.3g%n",    sample,
+                output.printf("%s\tnormalizedDepth\t%s\t%3.3g%n", sample,
                         getRange(methylStat.getDepths(), depthIndex),
                         divide(methylStat.getNumberCpGsPerDepth()[depthIndex],
                                 sum)
