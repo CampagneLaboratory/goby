@@ -92,6 +92,12 @@
             <longFlag>parallel</longFlag>
             <help>Process basenames in parallel. Use when you have many basenames to process, need the parallel speedup, and have a lot of memory to load multiple basenames in memory. You can tune the number of processors used by setting the property pj.nt. For instance, -Dpj.nt=5 will use 5 parallel threads. When --parallel is specified, one thread per processing core of the machine will be used unless specified otherwise (with pj.nt).</help>
         </switch>
+        <switch>
+            <id>remove-shared-segments</id>
+            <longFlag>remove-shared-segments</longFlag>
+            <shortFlag>N</shortFlag>
+            <help>Remove annotation segments when they partially overlap with more than one primary annotation id. When this option is selected and the primary id is a gene, and secondary id is an exon, the mode will remove exons that are associated with several genes. When the option is used with transcript id as primary and exon as secondary, exons are removed that are shared across different transcripts of the same gene.</help>
+        </switch>
         <flaggedOption>
             <id>write-annotation-counts</id>
             <longFlag>write-annotation-counts</longFlag>

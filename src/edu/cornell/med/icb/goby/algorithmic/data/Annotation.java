@@ -73,11 +73,11 @@ public class Annotation implements Comparable<Annotation> {
     }
 
     public int getStart() {
-        return segments.get(0).getStart();
+        return segments.size()==0? -1: segments.get(0).getStart();
     }
 
     public int getEnd() {
-        return segments.get(segments.size() - 1).getEnd();
+        return segments.size()==0? -1:segments.get(segments.size() - 1).getEnd();
     }
     int length = -1;
     public int getLength() {
@@ -175,5 +175,9 @@ public class Annotation implements Comparable<Annotation> {
             annotationWriter.write(Integer.toString(segment.getEnd()));
             annotationWriter.write('\n');
         }
+    }
+
+    public void remove(Segment element) {
+        segments.remove(element);
     }
 }

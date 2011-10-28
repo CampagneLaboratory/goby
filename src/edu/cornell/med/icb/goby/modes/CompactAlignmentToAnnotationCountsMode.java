@@ -39,6 +39,9 @@ import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.rit.pj.IntegerForLoop;
 import edu.rit.pj.ParallelRegion;
 import edu.rit.pj.ParallelTeam;
+import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.*;
 import it.unimi.dsi.lang.MutableString;
@@ -119,6 +122,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      * needed by stats mode.
      */
     private String infoOutputFilename;
+    private boolean removeSharedSegments;
 
 
     @Override
@@ -150,6 +154,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         inputFilenames = jsapResult.getStringArray("input");
         outputFilename = jsapResult.getString("output");
         filterAmbiguousReads = jsapResult.getBoolean("filter-ambiguous-reads");
+        removeSharedSegments = jsapResult.getBoolean("remove-shared-segments");
+
         if (filterAmbiguousReads) {
             System.out.println("Ambiguous reads will not be considered when estimating count statistics.");
         }
@@ -344,7 +350,8 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             genomicRange.setTargetIds(concat.getTargetIdentifiers());
             concat.close();
         }
-        final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots = filterAnnotations(readAnnotations(annotationFile), genomicRange);
+        final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots = filterAnnotations(removeNonConstitutiveSegments(
+                readAnnotations(annotationFile)), genomicRange);
 
         final Timer timer = new Timer();
         timer.start();
@@ -390,6 +397,42 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
     }
 
+    /**
+     * Remove segments of an annotation when they overlap with other annotations. This keep only segments that uniquely
+     * tag a gene/transcript. Single base overlaps are sufficient to trigger the exclusion of an entire segment (secondary id).
+     * @param annotations annotations read from disk
+     * @return
+     */
+    private Object2ObjectMap<String, ObjectList<Annotation>> removeNonConstitutiveSegments(final Object2ObjectMap<String,
+            ObjectList<Annotation>> annotations) {
+        if (!removeSharedSegments) {
+            return annotations;
+        }
+        final Int2ObjectMap<ObjectSet<String>> positionMap=new Int2ObjectOpenHashMap<ObjectSet<String>>();
+        positionMap.defaultReturnValue(new ObjectOpenHashSet<String>());
+
+        for (final String chromosome: annotations.keySet()) {
+                              positionMap.clear();
+            for (final Annotation annotation: annotations.get(chromosome)) {
+                for (final Segment element: annotation.getSegments()) {
+                    for (int i=element.getStart(); i<element.getEnd();i++) {
+                        final ObjectSet<String> setOfGenes = positionMap.get(i);
+                        setOfGenes.add(annotation.getId());
+                        if (setOfGenes.size()>1) {
+                            annotation.remove(element);
+                            if (annotation.getSegments().isEmpty()) {
+                                // no more segments. Remove the annotation entirely.
+                              annotations.get(chromosome).remove(annotation);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return annotations;
+    }
+
     InfoOutput infoOutInstance = new InfoOutput();
 
     private void writeInfoOutput() throws JAXBException, IOException {
@@ -423,7 +466,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     }
 
     // Remove annotations that do not fully map within the genomic range.
-    private Object2ObjectMap<String, ObjectList<Annotation>> filterAnnotations(Object2ObjectMap<String, ObjectList<Annotation>> map, GenomicRange genomicRange) {
+    private Object2ObjectMap<String, ObjectList<Annotation>> filterAnnotations(Object2ObjectMap<String, ObjectList<Annotation>>  map, GenomicRange genomicRange) {
         if (genomicRange == null) {
             return map;
         }
