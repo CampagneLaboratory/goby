@@ -96,7 +96,7 @@ public class TSVWriter {
     }
 
     public void setValue(String value, String id, String... option) {
-        MutableString idMut = new MutableString(String.format(id, option));
+        MutableString idMut = new MutableString(String.format(id, (java.lang.Object[])option));
         int columnIndex = this.columnIds.getInt(idMut);
         if (columnIndex == COLUMN_NOT_DEFINED) {
             System.out.println("col not found: " + idMut);
