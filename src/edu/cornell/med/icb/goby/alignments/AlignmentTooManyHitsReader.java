@@ -31,6 +31,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -92,7 +94,10 @@ public class AlignmentTooManyHitsReader {
                 queryIndex2Depth = new Int2IntOpenHashMap(capacity);
                 queryIndex2NumHits.defaultReturnValue(-1);
                 queryIndex2Depth.defaultReturnValue(-1);
-                for (final Alignments.AmbiguousLocation hit : tmh.getHitsList()) {
+                final List<Alignments.AmbiguousLocation> hitsList = tmh.getHitsList();
+                final Iterator<Alignments.AmbiguousLocation> iterator = hitsList.iterator();
+                while (iterator.hasNext()) {
+                    Alignments.AmbiguousLocation hit = iterator.next();
                     queryIndex2NumHits.put(hit.getQueryIndex(), hit.getAtLeastNumberOfHits());
                     if (hit.hasLengthOfMatch()) {
                         queryIndex2Depth.put(hit.getQueryIndex(), hit.getLengthOfMatch());
@@ -108,11 +113,14 @@ public class AlignmentTooManyHitsReader {
                         + basename + ".tmh does not exist)."
                         + " Assuming no queries have too many hits.");
             }
-        } finally {
+        } finally
+
+        {
             if (tmhStream != null) {
                 tmhStream.close();
             }
         }
+
     }
 
 

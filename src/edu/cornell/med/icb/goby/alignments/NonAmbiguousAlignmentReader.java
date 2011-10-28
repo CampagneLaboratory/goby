@@ -71,28 +71,30 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
         LOG.debug("start reading TMH for " + basename);
         ProgressLogger pg = new ProgressLogger(LOG);
 
+        {
+            final AlignmentTooManyHitsReader tmh = new AlignmentTooManyHitsReader(basename);
+            try {
+                LOG.debug("finished loading TMH for " + basename);
+                numQueries = tmh.getQueryIndices().size();
+                ambiguousQueryIndices = new BitSet(numQueries);
+                pg.expectedUpdates = tmh.getQueryIndices().size();
+                pg.priority = Level.DEBUG;
+                pg.info = "processed %d items";
+                pg.start("start reading TMH for " + basename);
 
-        final AlignmentTooManyHitsReader tmh = new AlignmentTooManyHitsReader(basename);
-        try {
-            LOG.debug("finished loading TMH for " + basename);
-            numQueries = tmh.getQueryIndices().size();
-            ambiguousQueryIndices = new BitSet(numQueries);
-            pg.expectedUpdates = tmh.getQueryIndices().size();
-            pg.priority = Level.DEBUG;
-            pg.info = "processed %d items";
-            pg.start("start reading TMH for " + basename);
 
-
-            for (int i = 0; i < numQueries; i++) {
-                if (tmh.isQueryAmbiguous(i)) {
-                    ambiguousQueryIndices.set(i);
+                for (int i = 0; i < numQueries; i++) {
+                    if (tmh.isQueryAmbiguous(i)) {
+                        ambiguousQueryIndices.set(i);
+                    }
+                    pg.lightUpdate();
                 }
-                pg.lightUpdate();
+                pg.stop("done reading TMH for " + basename);
+            } finally {
+                tmh.close();
             }
-            pg.stop("done reading TMH for " + basename);
-        } finally {
-            tmh.close();
         }
+        Runtime.getRuntime().gc();
 
     }
 
