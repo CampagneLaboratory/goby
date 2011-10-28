@@ -47,10 +47,6 @@ public class AlignmentTooManyHitsReader {
      */
     private static final Log LOG = LogFactory.getLog(AlignmentTooManyHitsReader.class);
 
-    /**
-     * The underlying protocol buffer stream.
-     */
-    private final InputStream tooManyHitsStream;
 
     /**
      * A map from query index to the number of hits at that index.
@@ -67,54 +63,58 @@ public class AlignmentTooManyHitsReader {
      * should be dropped.
      */
     private int alignerThreshold;
+    private boolean closed;
 
     public AlignmentTooManyHitsReader(final String basename) throws IOException {
         final String filename = basename + ".tmh";
         final File optionalFile = new File(filename);
-    
+
         InputStream tmhStream = null;
-        if (optionalFile.exists()) {
-            try {
-                tmhStream = new GZIPInputStream(new FileInputStream(optionalFile));
-            } catch (IOException e) {
-                // try not compressed for compatibility with 1.6-:
-                LOG.trace("falling back to legacy 1.6- uncompressed TMH.");
+        try {
+            if (optionalFile.exists()) {
+                try {
+                    tmhStream = new GZIPInputStream(new FileInputStream(optionalFile));
+                } catch (IOException e) {
+                    // try not compressed for compatibility with 1.6-:
+                    LOG.trace("falling back to legacy 1.6- uncompressed TMH.");
 
-                tmhStream = new FileInputStream(optionalFile);
-            }
-            tooManyHitsStream = tmhStream;
-            // accept very large too many hits messages, since these may describe more than 60 million reads:
-            final CodedInputStream codedInput = CodedInputStream.newInstance(tooManyHitsStream);
-            codedInput.setSizeLimit(Integer.MAX_VALUE);
-
-            final Alignments.AlignmentTooManyHits tmh = Alignments.AlignmentTooManyHits.parseFrom(codedInput);
-
-            int capacity = tmh.getHitsCount();
-            queryIndex2NumHits = new Int2IntOpenHashMap(capacity);
-            queryIndex2Depth = new Int2IntOpenHashMap(capacity);
-            queryIndex2NumHits.defaultReturnValue(-1);
-            queryIndex2Depth.defaultReturnValue(-1);
-            for (final Alignments.AmbiguousLocation hit : tmh.getHitsList()) {
-                queryIndex2NumHits.put(hit.getQueryIndex(), hit.getAtLeastNumberOfHits());
-                if (hit.hasLengthOfMatch()) {
-                    queryIndex2Depth.put(hit.getQueryIndex(), hit.getLengthOfMatch());
+                    tmhStream = new FileInputStream(optionalFile);
                 }
 
-            }
+                // accept very large too many hits messages, since these may describe more than 60 million reads:
+                final CodedInputStream codedInput = CodedInputStream.newInstance(tmhStream);
+                codedInput.setSizeLimit(Integer.MAX_VALUE);
 
-            this.alignerThreshold = tmh.getAlignerThreshold();
-        } else {
-            tooManyHitsStream = null;
-            // the file does not exist. Log this fact, and act as if no query had too many hits.
-            LOG.info("basename " + optionalFile + " has no 'too many hits' information ("
-                    + basename + ".tmh does not exist)."
-                    + " Assuming no queries have too many hits.");
+                final Alignments.AlignmentTooManyHits tmh = Alignments.AlignmentTooManyHits.parseFrom(codedInput);
+
+                int capacity = tmh.getHitsCount();
+                queryIndex2NumHits = new Int2IntOpenHashMap(capacity);
+                queryIndex2Depth = new Int2IntOpenHashMap(capacity);
+                queryIndex2NumHits.defaultReturnValue(-1);
+                queryIndex2Depth.defaultReturnValue(-1);
+                for (final Alignments.AmbiguousLocation hit : tmh.getHitsList()) {
+                    queryIndex2NumHits.put(hit.getQueryIndex(), hit.getAtLeastNumberOfHits());
+                    if (hit.hasLengthOfMatch()) {
+                        queryIndex2Depth.put(hit.getQueryIndex(), hit.getLengthOfMatch());
+                    }
+
+                }
+
+                this.alignerThreshold = tmh.getAlignerThreshold();
+            } else {
+
+                // the file does not exist. Log this fact, and act as if no query had too many hits.
+                LOG.info("basename " + optionalFile + " has no 'too many hits' information ("
+                        + basename + ".tmh does not exist)."
+                        + " Assuming no queries have too many hits.");
+            }
+        } finally {
+            if (tmhStream != null) {
+                tmhStream.close();
+            }
         }
     }
 
-    public AlignmentTooManyHitsReader(final InputStream tooManyHitsStream) {
-        this.tooManyHitsStream = tooManyHitsStream;
-    }
 
     /**
      * The number of hits against the reference that the aligner considered was too many to report.
@@ -136,6 +136,7 @@ public class AlignmentTooManyHitsReader {
      *         This number can be >=k.
      */
     public final int getNumberOfHits(final int queryIndex) {
+        assert !closed : "TMH reader was already closed.";
         return queryIndex2NumHits.get(queryIndex);
     }
 
@@ -148,10 +149,12 @@ public class AlignmentTooManyHitsReader {
      *         that yielded the number of hits.
      */
     public final int getLengthOfMatch(final int queryIndex) {
+        assert !closed : "TMH reader was already closed.";
         return queryIndex2Depth.get(queryIndex);
     }
 
     public final IntSet getQueryIndices() {
+        assert !closed : "TMH reader was already closed.";
         return queryIndex2NumHits.keySet();
     }
 
@@ -162,6 +165,7 @@ public class AlignmentTooManyHitsReader {
      * @return True or false.
      */
     public boolean isQueryAmbiguous(final int queryIndex) {
+        assert !closed : "TMH reader was already closed.";
         return queryIndex2NumHits.containsKey(queryIndex);
     }
 
@@ -179,6 +183,7 @@ public class AlignmentTooManyHitsReader {
      * @return True or false.
      */
     public final boolean isQueryAmbiguous(final int queryIndex, final int k) {
+        assert !closed : "TMH reader was already closed.";
         final int atLeastNumberOfHits = queryIndex2NumHits.get(queryIndex);
         if (atLeastNumberOfHits == -1) {
             return false;
@@ -206,10 +211,19 @@ public class AlignmentTooManyHitsReader {
      * @return True or false.
      */
     public final boolean isQueryAmbiguous(final int queryIndex, final int k, final int matchLength) {
+
         if (matchLength < getLengthOfMatch(queryIndex)) {
             return true;
         } else {
             return isQueryAmbiguous(queryIndex, k);
         }
+    }
+
+    public void close() {
+        this.queryIndex2Depth.clear();
+        this.queryIndex2NumHits.clear();
+        this.queryIndex2Depth = null;
+        this.queryIndex2NumHits = null;
+        closed = true;
     }
 }
