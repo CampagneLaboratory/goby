@@ -18,7 +18,7 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import edu.cornell.med.icb.goby.counts.CountsWriter;
+import edu.cornell.med.icb.goby.counts.CountsWriterI;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -90,14 +90,14 @@ public class ComputeStartCount extends ComputeCount {
      * Accumulate the number of reads that start at a given position. Write the
      * resulting histogram to the counts writer.
      *
-     * @param writer
+     * @param writerI
      * @throws IOException
      */
     @Override
-    public void baseCount(final CountsWriter writer) throws IOException {
+    public void baseCount(final CountsWriterI writerI) throws IOException {
         final IntSet startPositions = starts.keySet();
         if (starts.size() == 0) {
-            writer.close();
+            writerI.close();
             return;
         }
         final IntList sortedStartPositions = new IntArrayList();
@@ -105,7 +105,7 @@ public class ComputeStartCount extends ComputeCount {
         Collections.sort(sortedStartPositions);
 
         final int firstPosition = sortedStartPositions.get(0);
-        writer.appendCount(0, firstPosition);
+        writerI.appendCount(0, firstPosition);
         int lengthConstant = 1;
         int count;
         int prevCount = 0;
@@ -127,7 +127,7 @@ public class ComputeStartCount extends ComputeCount {
                 }
             }
 
-            writer.appendCount(count, lengthConstant);
+            writerI.appendCount(count, lengthConstant);
             prevCount = count;
             //
             if (starts.get(startPosition + lengthConstant) == 0) {
@@ -144,12 +144,12 @@ public class ComputeStartCount extends ComputeCount {
                     nextStart = sortedStartPositions.get(currentIndex + lengthConstant);
                     length = nextStart - startPosition - 1;
                 }
-                writer.appendCount(0, length);
+                writerI.appendCount(0, length);
                 prevCount = 0;
             }
         }
 
-        writer.close();
+        writerI.close();
     }
 
 }

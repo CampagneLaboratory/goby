@@ -25,7 +25,7 @@ import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.counts.CountWriterHelper;
 import edu.cornell.med.icb.goby.counts.CountsArchiveWriter;
-import edu.cornell.med.icb.goby.counts.CountsWriter;
+import edu.cornell.med.icb.goby.counts.CountsWriterI;
 import edu.cornell.med.icb.goby.util.Timer;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -284,9 +284,9 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
             }
 
             algs[referenceIndex].accumulate();
-            final CountsWriter countsWriter = countArchive.newCountWriter(referenceIndex, chromosomeName);
-            algs[referenceIndex].baseCount(countsWriter);
-            countArchive.returnWriter(countsWriter);
+            final CountsWriterI countsWriterI = countArchive.newCountWriter(referenceIndex, chromosomeName);
+            algs[referenceIndex].baseCount(countsWriterI);
+            countArchive.returnWriter(countsWriterI);
             algs[referenceIndex] = null;
             // Runtime.getRuntime().gc();
 
@@ -305,7 +305,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
     }
 
     private class IterateForCounts extends IterateSortedAlignmentsListImpl {
-        CountsWriter writer;
+        CountsWriterI writerI;
         CountsArchiveWriter archiveWriter;
         CountWriterHelper helper;
 
@@ -320,11 +320,11 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         public void processPositions(int referenceIndex, int position, DiscoverVariantPositionData positionBaseInfos) {
             try {
                 if (referenceIndex != lastReferenceIndex) {
-                    if (writer != null) {
+                    if (writerI != null) {
                         finishWriter();
                     }
-                    writer = archiveWriter.newCountWriter(referenceIndex, getReferenceId(referenceIndex).toString());
-                    helper = new CountWriterHelper(writer);
+                    writerI = archiveWriter.newCountWriter(referenceIndex, getReferenceId(referenceIndex).toString());
+                    helper = new CountWriterHelper(writerI);
                     lastReferenceIndex = referenceIndex;
                 }
                 helper.appendCountAtPosition(positionBaseInfos.size(), position);
@@ -336,9 +336,9 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
 
         public void finishWriter() throws IOException {
             helper.close();
-            archiveWriter.returnWriter(writer);
+            archiveWriter.returnWriter(writerI);
 
-            writer = null;
+            writerI = null;
         }
 
     }

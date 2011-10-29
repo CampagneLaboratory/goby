@@ -102,14 +102,14 @@ public class TestPeakAggregator {
     }
 
     private void writeSomeCounts(final String basename) throws IOException {
-        final CountsWriter writer = new CountsWriter(new FileOutputStream(basename));
-        writer.appendCount(0, lengthA);
-        writer.appendCount(1, lengthB);
-        writer.appendCount(12, lengthC);
-        writer.appendCount(0, lengthA);
-        writer.appendCount(10, lengthD);
-        writer.appendCount(0, lengthD);
-        writer.close();
+        final CountsWriterI writerI = new CountsWriter(new FileOutputStream(basename));
+        writerI.appendCount(0, lengthA);
+        writerI.appendCount(1, lengthB);
+        writerI.appendCount(12, lengthC);
+        writerI.appendCount(0, lengthA);
+        writerI.appendCount(10, lengthD);
+        writerI.appendCount(0, lengthD);
+        writerI.close();
     }
 
     @BeforeClass

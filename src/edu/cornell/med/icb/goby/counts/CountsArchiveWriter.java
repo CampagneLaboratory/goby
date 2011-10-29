@@ -40,7 +40,7 @@ import java.io.IOException;
  */
 public class CountsArchiveWriter implements Closeable {
     private final CompoundFileWriter compoundWriter;
-    private CountsWriter currentCountsWriter;
+    private CountsWriterI currentCountsWriterI;
     private String currentId;
 
     private ByteArrayOutputStream stream;
@@ -86,11 +86,11 @@ public class CountsArchiveWriter implements Closeable {
      * @return A ready CountWriter implementation.
      * @throws IOException If an error occurs.
      */
-    public CountsWriter newCountWriter(final int referenceIndex, final String identifier) throws IOException {
+    public CountsWriterI newCountWriter(final int referenceIndex, final String identifier) throws IOException {
         stream = new ByteArrayOutputStream(100000);
-        currentCountsWriter = new CountsWriter(stream);
+        currentCountsWriterI = new CountsWriter(stream);
         currentId = Integer.toString(referenceIndex) + "," + identifier;
-        return currentCountsWriter;
+        return currentCountsWriterI;
     }
 
     /**
@@ -101,7 +101,7 @@ public class CountsArchiveWriter implements Closeable {
      * @return A ready CountWriter implementation.
      * @throws IOException If an error occurs.
      */
-    public CountsWriter newCountWriter(final int countInfoIndex) throws IOException {
+    public CountsWriterI newCountWriter(final int countInfoIndex) throws IOException {
         return newCountWriter(countInfoIndex, String.valueOf(countInfoIndex));
     }
 
@@ -109,16 +109,16 @@ public class CountsArchiveWriter implements Closeable {
      * Return a count Writer to the counts archive. Count writers must be returned to the
      * archive after they have been populated with count information.
      *
-     * @param writer The countWriter being returned.
+     * @param writerI The countWriter being returned.
      * @throws IOException If an error occurs packaging the count information in the archive.
      */
-    public void returnWriter(final CountsWriter writer) throws IOException {
-        assert writer == currentCountsWriter : "You must return the current counts writer.";
-        writer.close();
-        totalBitsWritten += writer.getNumberOfBitsWritten();
-        totalTransitions += writer.getNumberOfTransitions();
-        totalBasesSeen += writer.getNumberOfBasesSeen();
-        totalSitesSeen += writer.getNumberOfSitesSeen();
+    public void returnWriter(final CountsWriterI writerI) throws IOException {
+        assert writerI == currentCountsWriterI : "You must return the current counts writer.";
+        writerI.close();
+        totalBitsWritten += writerI.getNumberOfBitsWritten();
+        totalTransitions += writerI.getNumberOfTransitions();
+        totalBasesSeen += writerI.getNumberOfBasesSeen();
+        totalSitesSeen += writerI.getNumberOfSitesSeen();
         final byte[] bytes = stream.toByteArray();
 
         final org.bdval.io.compound.CompoundDataOutput part = compoundWriter.addFile(currentId);
@@ -131,7 +131,7 @@ public class CountsArchiveWriter implements Closeable {
         indexPart.close();
         compoundWriter.finishAddFile();
         currentId = null;
-        currentCountsWriter = null;
+        currentCountsWriterI = null;
     }
 
     /**

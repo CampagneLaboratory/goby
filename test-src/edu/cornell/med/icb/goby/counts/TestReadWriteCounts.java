@@ -63,12 +63,12 @@ public class TestReadWriteCounts {
     @Test
     public void testReadWrite() throws IOException {
         final String basename = FilenameUtils.concat(BASE_TEST_DIR, "counts-101.bin");
-        final CountsWriter writer = new CountsWriter(new FileOutputStream(basename), 45);
+        final CountsWriterI writerI = new CountsWriter(new FileOutputStream(basename), 45);
 
-        writer.appendCount(10, 1);
-        writer.appendCount(15, 1);
+        writerI.appendCount(10, 1);
+        writerI.appendCount(15, 1);
 
-        writer.close();
+        writerI.close();
 
         final CountsReader reader = new CountsReader(new FileInputStream(basename));
 
@@ -89,12 +89,12 @@ public class TestReadWriteCounts {
     @SuppressWarnings("deprecation")  // We are intentionally testing a deprecated method here
     public void testReadTransitions() throws IOException {
         final String basename = FilenameUtils.concat(BASE_TEST_DIR, "counts-104.bin");
-        final CountsWriter writer = new CountsWriter(new FileOutputStream(basename), 45);
+        final CountsWriterI writerI = new CountsWriter(new FileOutputStream(basename), 45);
 
-        writer.appendCount(10, 1);
-        writer.appendCount(15, 1);
+        writerI.appendCount(10, 1);
+        writerI.appendCount(15, 1);
 
-        writer.close();
+        writerI.close();
 
         final CountsReader reader = new CountsReader(new FileInputStream(basename));
 
@@ -120,19 +120,19 @@ public class TestReadWriteCounts {
     @SuppressWarnings("deprecation")  // We are intentionally testing a deprecated method here
     public void testReadWrite2() throws IOException {
         final String basename =  FilenameUtils.concat(BASE_TEST_DIR, "counts-102.bin");
-        final CountsWriter writer = new CountsWriter(new FileOutputStream(basename), 0);
+        final CountsWriterI writerI = new CountsWriter(new FileOutputStream(basename), 0);
 
         final int lengthA = 5;
         final int lengthB = 100000;
         final int lengthC = 10;
         final int lengthD = 1;
 
-        writer.appendCount(10, lengthA);
-        writer.appendCount(11, lengthB);
-        writer.appendCount(12, lengthC);
+        writerI.appendCount(10, lengthA);
+        writerI.appendCount(11, lengthB);
+        writerI.appendCount(12, lengthC);
 
-        writer.appendCount(10, lengthD);
-        writer.close();
+        writerI.appendCount(10, lengthD);
+        writerI.close();
 
         final CountsReader reader = new CountsReader(new FileInputStream(basename));
 
@@ -159,7 +159,7 @@ public class TestReadWriteCounts {
     @SuppressWarnings("deprecation")  // We are intentionally testing a deprecated method here
     public void testReadWrite3() throws IOException {
         final String basename =  FilenameUtils.concat(BASE_TEST_DIR, "counts-103.bin");
-        final CountsWriter writer = new CountsWriter(new FileOutputStream(basename), 0);
+        final CountsWriterI writerI = new CountsWriter(new FileOutputStream(basename), 0);
 
         final Random random = new Random();
         for (int i = 0; i < 30; i++) {
@@ -168,10 +168,10 @@ public class TestReadWriteCounts {
             final int count = random.nextInt(50000);
             final int length = random.nextInt(10) + 1;
             System.out.println("Appending count: " + count + " length: " + length);
-            writer.appendCount(count, length);
+            writerI.appendCount(count, length);
         }
 
-        writer.close();
+        writerI.close();
         final CountsReader reader = new CountsReader(new FileInputStream(basename));
         int position = 0;
         while (reader.hasNextPosition()) {

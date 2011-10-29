@@ -19,7 +19,7 @@
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
-import edu.cornell.med.icb.goby.counts.CountsWriter;
+import edu.cornell.med.icb.goby.counts.CountsWriterI;
 import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntSortedSet;
@@ -84,7 +84,7 @@ public class FormulaWeightCount implements ComputeCountInterface {
         regularCounter.accumulate();
     }
 
-    public void baseCount(final CountsWriter writer) throws IOException {
+    public void baseCount(final CountsWriterI writerI) throws IOException {
         final IntSortedSet joints = new IntAVLTreeSet();
         joints.addAll(regularCounter.starts.keySet());
         joints.addAll(regularCounter.starts.keySet());
@@ -134,12 +134,12 @@ public class FormulaWeightCount implements ComputeCountInterface {
 
             if (Math.abs(count - prevCount) > 1) {
 
-                writer.appendCount((int) prevCount, lengthConstant);
+                writerI.appendCount((int) prevCount, lengthConstant);
                 prevCount = count;
                 lengthConstant = 0;
             }
         }
-        writer.close();
+        writerI.close();
 
     }
 

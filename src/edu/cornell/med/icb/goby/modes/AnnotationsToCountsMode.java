@@ -21,7 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.counts.CountsArchiveWriter;
-import edu.cornell.med.icb.goby.counts.CountsWriter;
+import edu.cornell.med.icb.goby.counts.CountsWriterI;
 import edu.cornell.med.icb.io.TSVReader;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
@@ -160,7 +160,7 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
 
 
             String previousChromosome = "k21o-k2w";
-            CountsWriter countWriter = null;
+            CountsWriterI countWriterI = null;
             int lastPosition = 0;
             int refIndex = 0;
             reader.setCommentPrefix("#");
@@ -197,17 +197,17 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
                 //   System.out.printf("size: %d %s %d-%d %n",buffer.size(), a.chromosome, a.start, a.end);
                 if (!a.chromosome.equals(previousChromosome)) {
 
-                    if (countWriter != null) {
-                        numTransitions += countWriter.getNumberOfTransitions();
-                        writer.returnWriter(countWriter);
+                    if (countWriterI != null) {
+                        numTransitions += countWriterI.getNumberOfTransitions();
+                        writer.returnWriter(countWriterI);
                         System.out.println("finished writting " + previousChromosome);
                     }
-                    countWriter = writer.newCountWriter(refIndex++, a.chromosome);
+                    countWriterI = writer.newCountWriter(refIndex++, a.chromosome);
                     lastPosition = 0;
                     previousChromosome = a.chromosome;
                 }
 
-                if (countWriter != null) {
+                if (countWriterI != null) {
                     if (a.end - a.start <= 0) {
                         System.out.printf("error: annotation has zero or negative length: %d %d %d%n",
                                 refIndex, a.start, a.end);
@@ -219,20 +219,20 @@ public class AnnotationsToCountsMode extends AbstractGobyMode {
                         if (length > 0) {
                            // System.out.printf("appending 0 for length=%d%n", length);
 
-                            countWriter.appendCount(0, length);
+                            countWriterI.appendCount(0, length);
                          //   System.out.printf("appending 1 for length=%d%n", a.end - a.start);
-                            countWriter.appendCount(1, a.end - a.start);
+                            countWriterI.appendCount(1, a.end - a.start);
                             lastPosition = a.end;
                         }
                     }
                 }
             }
 
-            if (countWriter != null) {
-                countWriter.appendCount(0,1);
-                countWriter.close();
-                numTransitions += countWriter.getNumberOfTransitions();
-                writer.returnWriter(countWriter);
+            if (countWriterI != null) {
+                countWriterI.appendCount(0,1);
+                countWriterI.close();
+                numTransitions += countWriterI.getNumberOfTransitions();
+                writer.returnWriter(countWriterI);
             }
 
             writer.close();

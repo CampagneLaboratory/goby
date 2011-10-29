@@ -30,13 +30,13 @@ import java.io.IOException;
  *         Time: 4:44:06 PM
  */
 public class CountWriterHelper implements Closeable {
-    private final CountsWriter delegate;
+    private final CountsWriterI delegate;
     private int previousPosition = -1;
     private int previousCount;
     private int lengthConstant = 1;
     private int previousPositionNotWritten;
 
-    public CountWriterHelper(final CountsWriter delegate) {
+    public CountWriterHelper(final CountsWriterI delegate) {
         this.delegate = delegate;
     }
 

@@ -18,7 +18,7 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import edu.cornell.med.icb.goby.counts.CountsWriter;
+import edu.cornell.med.icb.goby.counts.CountsWriterI;
 import it.unimi.dsi.fastutil.ints.IntList;
 
 import java.io.IOException;
@@ -47,9 +47,9 @@ public interface ComputeCountInterface {
     /**
      * Calculate base counts and write the result to the specified CountsWriter.
      *
-     * @param writer A CountsWriter to write the counts to.
+     * @param writerI A CountsWriter to write the counts to.
      */
-    void baseCount(final CountsWriter writer) throws IOException;
+    void baseCount(final CountsWriterI writerI) throws IOException;
 
     /**
      * Calculates base counts. Stores the result in the countPerBase and countKey maps.

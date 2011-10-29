@@ -25,6 +25,7 @@ import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.counts.CountsReader;
 import edu.cornell.med.icb.goby.counts.CountsWriter;
+import edu.cornell.med.icb.goby.counts.CountsWriterI;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import org.apache.commons.io.FileUtils;
@@ -157,12 +158,12 @@ public class TestAccumulate {
             }
         }
         final String countsFile = FilenameUtils.concat(testDir, "align-count");
-        CountsWriter countsWriter = null;
+        CountsWriterI countsWriterI = null;
         CountsReader countsReader = null;
         try {
-            countsWriter = new CountsWriter(new FileOutputStream(countsFile));
+            countsWriterI = new CountsWriter(new FileOutputStream(countsFile));
             computeCount.accumulate();
-            computeCount.baseCount(countsWriter);
+            computeCount.baseCount(countsWriterI);
             countsReader = new CountsReader(new FileInputStream(countsFile));
             final int[] exp = {0, 0, 0, 2, 2, 3, 3, 3, 3, 2, 2, 1, 1};
             int i = 0;
@@ -171,9 +172,9 @@ public class TestAccumulate {
                 i++;
             }
         } finally {
-            if (countsWriter != null) {
+            if (countsWriterI != null) {
                 try {
-                    countsWriter.close();
+                    countsWriterI.close();
                 } catch (IOException e) { // NOPMD
                     // nothing to do - ignore
                 }

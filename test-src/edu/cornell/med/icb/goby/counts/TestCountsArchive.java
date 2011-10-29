@@ -60,7 +60,7 @@ public class TestCountsArchive {
     public void testWriter() throws IOException {
         final String basename = FilenameUtils.concat(BASE_TEST_DIR, "101.bin");
         final CountsArchiveWriter writer = new CountsArchiveWriter(basename);
-        CountsWriter cw = writer.newCountWriter(0, "count-0");
+        CountsWriterI cw = writer.newCountWriter(0, "count-0");
         cw.appendCount(0, 10000);
         cw.appendCount(10, 10000);
         cw.appendCount(20, 10000);
@@ -129,7 +129,7 @@ public class TestCountsArchive {
     public void testIndices() throws IOException {
         final String basename = FilenameUtils.concat(BASE_TEST_DIR, "102.bin");
         final CountsArchiveWriter writer = new CountsArchiveWriter(basename);
-        CountsWriter cw = writer.newCountWriter(0);
+        CountsWriterI cw = writer.newCountWriter(0);
         writer.returnWriter(cw);
 
         cw = writer.newCountWriter(1);
@@ -147,7 +147,7 @@ public class TestCountsArchive {
     public void testNames() throws IOException {
         final String basename = FilenameUtils.concat(BASE_TEST_DIR, "103.bin");
         final CountsArchiveWriter writer = new CountsArchiveWriter(basename);
-        CountsWriter cw = writer.newCountWriter(0);
+        CountsWriterI cw = writer.newCountWriter(0);
         writer.returnWriter(cw);
 
         cw = writer.newCountWriter(1);

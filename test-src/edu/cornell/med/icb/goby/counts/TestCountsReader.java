@@ -67,16 +67,16 @@ public class TestCountsReader {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(100000);
         ByteArrayOutputStream indexByteArrayOutputStream = new ByteArrayOutputStream(100000);
         DataOutput indexOutput = new DataOutputStream(indexByteArrayOutputStream);
-        CountsWriter writer = new CountsWriter(stream);
-        writer.appendCount(0, 10); // before- Position=0  count-after=0
-        writer.appendCount(1, 10); // before- Position=10
-        writer.appendCount(2, 10); // before- Position=20
-        writer.appendCount(3, 10); // before- Position=30    count-after=3
-        writer.appendCount(10, 10); // before- Position=40   count-after=10
-        writer.appendCount(11, 10); // before- Position=50   count-after=11
-        writer.appendCount(9, 10);  // before- Position=60
-        writer.appendCount(7, 10);  // before- Position=70
-        writer.close();
+        CountsWriterI writerI = new CountsWriter(stream);
+        writerI.appendCount(0, 10); // before- Position=0  count-after=0
+        writerI.appendCount(1, 10); // before- Position=10
+        writerI.appendCount(2, 10); // before- Position=20
+        writerI.appendCount(3, 10); // before- Position=30    count-after=3
+        writerI.appendCount(10, 10); // before- Position=40   count-after=10
+        writerI.appendCount(11, 10); // before- Position=50   count-after=11
+        writerI.appendCount(9, 10);  // before- Position=60
+        writerI.appendCount(7, 10);  // before- Position=70
+        writerI.close();
 
         byte[] bytes = stream.toByteArray();
         CountIndexBuilder indexBuilder = new CountIndexBuilder(1);

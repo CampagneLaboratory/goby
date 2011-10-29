@@ -20,7 +20,7 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
 import edu.cornell.med.icb.goby.counts.CountsReader;
 import edu.cornell.med.icb.goby.counts.CountsWriter;
-import edu.cornell.med.icb.util.RandomAdapter;
+import edu.cornell.med.icb.goby.counts.CountsWriterI;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -72,9 +72,9 @@ public class TestComputeStartCount {
         computer.populate(2, 12, true);
 
         final String filename = "test-results/start-counts/101.bin";
-        final CountsWriter writer = new CountsWriter(new FileOutputStream(filename));
-        computer.baseCount(writer);
-        writer.close();
+        final CountsWriterI writerI = new CountsWriter(new FileOutputStream(filename));
+        computer.baseCount(writerI);
+        writerI.close();
 
         final CountsReader reader = new CountsReader(new FileInputStream(filename));
         assertTrue(reader.hasNextPosition());
@@ -102,9 +102,9 @@ public class TestComputeStartCount {
         computer.populate(12, 13, true);
 
         final String filename = "test-results/start-counts/101.bin";
-        final CountsWriter writer = new CountsWriter(new FileOutputStream(filename));
-        computer.baseCount(writer);
-        writer.close();
+        final CountsWriterI writerI = new CountsWriter(new FileOutputStream(filename));
+        computer.baseCount(writerI);
+        writerI.close();
 
         final CountsReader reader = new CountsReader(new FileInputStream(filename));
         assertTrue(reader.hasNextPosition());
@@ -144,9 +144,9 @@ public class TestComputeStartCount {
         computer.populate(9, 12, true);
 
         final String filename = "test-results/start-counts/101.bin";
-        final CountsWriter writer = new CountsWriter(new FileOutputStream(filename));
-        computer.baseCount(writer);
-        writer.close();
+        final CountsWriterI writerI = new CountsWriter(new FileOutputStream(filename));
+        computer.baseCount(writerI);
+        writerI.close();
 
         final CountsReader reader = new CountsReader(new FileInputStream(filename));
         assertTrue(reader.hasNextPosition());
@@ -178,9 +178,9 @@ public class TestComputeStartCount {
 
 
         final String filename = "test-results/start-counts/102.bin";
-        final CountsWriter writer = new CountsWriter(new FileOutputStream(filename));
-        computer.baseCount(writer);
-        writer.close();
+        final CountsWriterI writerI = new CountsWriter(new FileOutputStream(filename));
+        computer.baseCount(writerI);
+        writerI.close();
 
         final CountsReader reader = new CountsReader(new FileInputStream(filename));
         for (int i = 0; i < 10000; i++) {
@@ -230,9 +230,9 @@ public class TestComputeStartCount {
         computer.populate(10011, 10020, true);
 
         final String filename = "test-results/start-counts/103.bin";
-        final CountsWriter writer = new CountsWriter(new FileOutputStream(filename));
-        computer.baseCount(writer);
-        writer.close();
+        final CountsWriterI writerI = new CountsWriter(new FileOutputStream(filename));
+        computer.baseCount(writerI);
+        writerI.close();
 
         final CountsReader reader = new CountsReader(new FileInputStream(filename));
         reader.skipTo(10003);

@@ -61,7 +61,7 @@ public class TestCachingCountsArchiveReader {
         final String basename = FilenameUtils.concat(BASE_TEST_DIR, "101.bin");
         final CountsArchiveWriter writer = new CountsArchiveWriter(basename);
 
-        CountsWriter cw = writer.newCountWriter(0, "count-0");
+        CountsWriterI cw = writer.newCountWriter(0, "count-0");
         cw.appendCount(0, 10000);
         cw.appendCount(10, 10000);
         cw.appendCount(20, 10000);

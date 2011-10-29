@@ -56,7 +56,7 @@ public class TSVWriter {
      * @return
      */
     public int defineColumn(String columnId, String... option) {
-        String id = String.format(columnId, option);
+        String id = String.format(columnId, (Object[])option);
         final int index = columnIds.registerIdentifier(new MutableString(id));
         values = new CharSequence[columnIds.size()];
         return index;

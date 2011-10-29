@@ -35,7 +35,7 @@ import java.io.OutputStream;
  *         Date: May 6, 2009
  *         Time: 2:43:45 PM
  */
-public class CountsWriter implements Closeable {
+public class CountsWriter implements CountsWriterI {
     private static final Log LOG = LogFactory.getLog(CountsWriter.class);
     private OutputBitStream out;
     private int previousCount;
@@ -73,15 +73,18 @@ public class CountsWriter implements Closeable {
         bitsWritten += out.writeDelta(previousCount + 1);  // Delta cannot be zero, so add 1.
     }
 
+    @Override
     public long getNumberOfBitsWritten() {
         return bitsWritten;
 
     }
 
+    @Override
     public int getNumberOfTransitions() {
         return numberOfCountsWritten;
     }
 
+    @Override
     public void appendCount(final int count, final int lengthConstant) throws IOException {
         assert lengthConstant > 0 : "length must be greater than zero.";
         //  System.out.printf("appending %d (%d, %d)  %n", position, count, lengthConstant);
@@ -121,6 +124,7 @@ public class CountsWriter implements Closeable {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void close() throws IOException {
         if (out != null) {
             bitsWritten += out.writeGamma(CountsReader.END_OF_DATA_MARKER);
@@ -145,6 +149,7 @@ public class CountsWriter implements Closeable {
      *
      * @return number of bases seen.
      */
+    @Override
     public long getNumberOfBasesSeen() {
         return numberOfBasesSeen;
     }
@@ -154,6 +159,7 @@ public class CountsWriter implements Closeable {
      *
      * @return number of sites seen.
      */
+    @Override
     public long getNumberOfSitesSeen() {
         return numberOfSitesSeen;
     }

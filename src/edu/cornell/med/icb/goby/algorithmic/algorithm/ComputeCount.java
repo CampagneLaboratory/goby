@@ -19,7 +19,7 @@
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
 import edu.cornell.med.icb.goby.algorithmic.data.Read;
-import edu.cornell.med.icb.goby.counts.CountsWriter;
+import edu.cornell.med.icb.goby.counts.CountsWriterI;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
@@ -224,7 +224,7 @@ public class ComputeCount implements ComputeCountInterface {
     /**
      * Calculate base counts and write the result to the specified CountsWriter.
      */
-    public void baseCount(final CountsWriter writer) throws IOException {
+    public void baseCount(final CountsWriterI writerI) throws IOException {
         final IntSortedSet joints = new IntAVLTreeSet();
         joints.addAll(starts.keySet());
         joints.addAll(ends.keySet());
@@ -253,12 +253,12 @@ public class ComputeCount implements ComputeCountInterface {
             count = startValue - endValue;
             lengthConstant += curKey - prevKey;
             if (count != prevCount) {
-                writer.appendCount(prevCount, lengthConstant);
+                writerI.appendCount(prevCount, lengthConstant);
                 prevCount = count;
                 lengthConstant = 0;
             }
         }
-        writer.close();
+        writerI.close();
     }
 
 
