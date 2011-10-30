@@ -23,7 +23,7 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.*;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.goby.alignments.*;
-import edu.cornell.med.icb.goby.counts.CountWriterHelper;
+import edu.cornell.med.icb.goby.counts.CountWriterHelper2;
 import edu.cornell.med.icb.goby.counts.CountsArchiveWriter;
 import edu.cornell.med.icb.goby.counts.CountsWriterHelperI;
 import edu.cornell.med.icb.goby.counts.CountsWriterI;
@@ -196,8 +196,9 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
     private void processFullGenomeAlignment(final String basename) throws IOException {
         final AlignmentReaderFactory factory = filterAmbiguousReads ? new NonAmbiguousAlignmentReaderFactory() :
                 new DefaultAlignmentReaderFactory();
-
-        AlignmentReader reader = factory.createReader(basename);
+        System.out.println("Processing " + basename);
+        // don't use the factory here, we just need to read the header and AlignmentReaderImpl will be faster:
+        AlignmentReader reader = new AlignmentReaderImpl(basename);
 
         reader.readHeader();
         if (reader.isSorted() && reader.getNumberOfAlignedReads() > 50000000) {
@@ -205,7 +206,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
             // if the alignment is sorted and has more than 50 million aligned reads, we switch to the more scalable
             // count production method. The method scales to any size alignment, but is about 3-4 times slower than
             // directly loading the entire alignment in memory..
-            processSortedAlignmentFullGenome(basename, reader);
+            processSortedAlignmentFullGenome(basename, reader,factory);
             return;
         }
 
@@ -297,10 +298,12 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         System.out.println(timer);
     }
 
-    private void processSortedAlignmentFullGenome(final String basename, AlignmentReader reader) throws IOException {
-
+    private void processSortedAlignmentFullGenome(final String basename, AlignmentReader reader, AlignmentReaderFactory factory) throws IOException {
+        reader.close();
+        System.out.println("Processing in large alignment mode: " + basename);
         final CountsArchiveWriter countArchive = new CountsArchiveWriter(basename, countArchiveModifier);
-        final IterateForCounts sortedPositionIterator = new IterateForCounts(countArchive);
+        final IterateForCounts sortedPositionIterator = new IterateForCounts(countArchive, LOG);
+        sortedPositionIterator.setAlignmentReaderFactory(factory);
         sortedPositionIterator.iterate(basename);
         sortedPositionIterator.finishWriter();
     }
@@ -310,7 +313,8 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         CountsArchiveWriter archiveWriter;
         CountsWriterHelperI helperI;
 
-        private IterateForCounts(CountsArchiveWriter archiveWriter) {
+
+        private IterateForCounts(CountsArchiveWriter archiveWriter, Logger LOG) {
             this.archiveWriter = archiveWriter;
 
         }
@@ -325,7 +329,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
                         finishWriter();
                     }
                     writerI = archiveWriter.newCountWriter(referenceIndex, getReferenceId(referenceIndex).toString());
-                    helperI = new CountWriterHelper(writerI);
+                    helperI = new CountWriterHelper2(writerI);
                     lastReferenceIndex = referenceIndex;
                 }
                 helperI.appendCountAtPosition(positionBaseInfos.size(), position);
@@ -333,6 +337,8 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
                 LOG.error("cannot return counts writer to archive", e);
 
             }
+
+
         }
 
         public void finishWriter() throws IOException {
@@ -340,6 +346,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
             archiveWriter.returnWriter(writerI);
 
             writerI = null;
+
         }
 
     }
