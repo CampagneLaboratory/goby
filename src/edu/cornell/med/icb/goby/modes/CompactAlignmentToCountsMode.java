@@ -320,25 +320,28 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         }
 
         int lastReferenceIndex = -1;
-
+        int lastPosition=-1;
         @Override
         public void processPositions(int referenceIndex, int position, DiscoverVariantPositionData positionBaseInfos) {
             try {
                 if (referenceIndex != lastReferenceIndex) {
+                   // System.out.println("Switching reference, last position was "+lastPosition);
                     if (writerI != null) {
                         finishWriter();
                     }
                     writerI = archiveWriter.newCountWriter(referenceIndex, getReferenceId(referenceIndex).toString());
                     helperI = new CountWriterHelper2(writerI);
                     lastReferenceIndex = referenceIndex;
+                    lastPosition=-1;
                 }
-                helperI.appendCountAtPosition(positionBaseInfos.size(), position);
+                if (position>lastPosition) {
+                    helperI.appendCountAtPosition(positionBaseInfos.size(), position);
+                    lastPosition=position;
+                }
             } catch (IOException e) {
                 LOG.error("cannot return counts writer to archive", e);
 
             }
-
-
         }
 
         public void finishWriter() throws IOException {

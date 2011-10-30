@@ -74,18 +74,24 @@ public class CountWriterHelper2 implements CountsWriterHelperI {
 
                 positions.removeElements(i, j);
                 counts.removeElements(i, j);
-
-
             }
-
         }
         while (positions.size() > 2) {
-            final int diffPos = positions.getInt(1) - (positions.getInt(0) + 1);
+            int diffPos = positions.getInt(1) - (positions.getInt(0) + 1);
 
             int aCount = counts.getInt(1);
             if (aCount < 0) {
+                System.out.println(counts);
+                System.out.println(positions);
                 System.out.printf("Count can never be negative (found value=%d at position %d). Setting count to zero", aCount, positions.getInt(0));
                 aCount = 0;
+            }
+            if (diffPos < 0) {
+                System.out.printf("diffPos can never be negative (found value=%d at position[1]: %d positions[0]:%d). Setting diffPos to zero", diffPos,
+                        positions.getInt(1), positions.getInt(0));
+                System.out.println(counts);
+                System.out.println(positions);
+                diffPos = 0;
             }
             delegate.appendCount(aCount, diffPos + 1);
             positions.removeElements(0, 1);
