@@ -201,14 +201,14 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         AlignmentReader reader = new AlignmentReaderImpl(basename);
 
         reader.readHeader();
-        if (reader.isSorted() && reader.getNumberOfAlignedReads() > 50000000) {
+        /*if (reader.isSorted() && reader.getNumberOfAlignedReads() > 50000000) {
 
             // if the alignment is sorted and has more than 50 million aligned reads, we switch to the more scalable
             // count production method. The method scales to any size alignment, but is about 3-4 times slower than
             // directly loading the entire alignment in memory..
             processSortedAlignmentFullGenome(basename, reader,factory);
             return;
-        }
+        }   */
 
         final int numberOfReferences = reader.getNumberOfTargets();
 
