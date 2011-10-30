@@ -45,8 +45,14 @@ public class CountsWriter implements CountsWriterI {
     private int position;
     private long numberOfBasesSeen;
     private int numberOfSitesSeen;
+    private int initialCount;
 
-    @Deprecated
+    /**
+     * Initialize a CountsWriter with a specific initialCount.
+     * @param output Where to write the compressed counts.
+     * @param initialCount Value of count at position zero.
+     * @throws IOException
+     */
     public CountsWriter(final OutputStream output, final int initialCount) throws IOException {
         out = new OutputBitStream(output);
         setInitialCount(initialCount);
@@ -68,7 +74,7 @@ public class CountsWriter implements CountsWriterI {
         if (dataAlreadyWritten) {
             throw new IllegalStateException("Data must not have been written before setting initial count.");
         }
-
+        this.initialCount=count;
         previousCount = count;
         bitsWritten += out.writeDelta(previousCount + 1);  // Delta cannot be zero, so add 1.
     }
@@ -162,6 +168,15 @@ public class CountsWriter implements CountsWriterI {
     @Override
     public long getNumberOfSitesSeen() {
         return numberOfSitesSeen;
+    }
+
+    /**
+     * Return the initial count this writer was initialized with.
+     * @return count at zero position for this writer.
+     */
+    @Override
+    public int getInitialCount() {
+        return initialCount;
     }
 
 

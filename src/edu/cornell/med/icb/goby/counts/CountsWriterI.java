@@ -69,4 +69,6 @@ public interface CountsWriterI extends Closeable {
      * @return number of sites seen.
      */
     long getNumberOfSitesSeen();
+
+    int getInitialCount();
 }

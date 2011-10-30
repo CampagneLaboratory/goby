@@ -36,14 +36,25 @@ public class CountsReaderTestSupport implements CountsReaderI {
     private int index;
     private int size;
     private int currentPosition = 0;
-
+    private int initialCount=0;
+   /**
+     * Creates a CountsReader with arrays of counts and lengths. Paired elements of the array
+     * provide count transaction information in the format [(length,count)]+
+     * Initial count is set to one.
+     * @param format  transaction information in the format [(length,count)]+
+     */
+    public CountsReaderTestSupport(final String format) {
+      this(format,0);
+    }
     /**
      * Creates a CountsReader with arrays of counts and lengths. Paired elements of the array
-     * provide count transaction information.
+     * provide count transaction information in the format [(length,count)]+
      *
-     * @param format
+     * @param format  transaction information in the format [(length,count)]+
+     * @param initialCount count at position zero.
      */
-    public CountsReaderTestSupport(String format) {
+    public CountsReaderTestSupport(final String format, final int initialCount) {
+       this.initialCount=initialCount;
         String[] tokens = format.split("[() ]+");
         IntArrayList lengths = new IntArrayList();
         IntArrayList counts = new IntArrayList();

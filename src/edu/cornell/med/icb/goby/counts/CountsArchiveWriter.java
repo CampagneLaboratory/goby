@@ -88,7 +88,7 @@ public class CountsArchiveWriter implements Closeable {
      */
     public CountsWriterI newCountWriter(final int referenceIndex, final String identifier) throws IOException {
         stream = new ByteArrayOutputStream(100000);
-        currentCountsWriterI = new CountsWriter(stream);
+        currentCountsWriterI = new CountsWriter(stream,0);
         currentId = Integer.toString(referenceIndex) + "," + identifier;
         return currentCountsWriterI;
     }
