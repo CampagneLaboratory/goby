@@ -30,4 +30,4 @@ EOT
 fi
 
 echo java -ea -Xmx${memory_requirement} -Djava.library.path=${RJAVA_HOME} -jar ${GOBY_JAR} --mode ${other_parameters}
-java -ea -Xmx${memory_requirement} -Dlog4j.configuration=${GOBY_HOME}/config/log4j.properties.sample -Djava.library.path=${RJAVA_HOME} -jar ${GOBY_JAR} --mode ${other_parameters}
+java -ea -Xmx${memory_requirement} -Dlog4j.configuration=${GOBY_HOME}/config/log4j-sample.properties -Djava.library.path=${RJAVA_HOME} -jar ${GOBY_JAR} --mode ${other_parameters}
