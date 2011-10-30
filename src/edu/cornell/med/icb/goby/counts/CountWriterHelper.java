@@ -20,7 +20,6 @@
 
 package edu.cornell.med.icb.goby.counts;
 
-import java.io.Closeable;
 import java.io.IOException;
 
 /**
@@ -30,7 +29,7 @@ import java.io.IOException;
  *         Date: Jun 12, 2009
  *         Time: 4:44:06 PM
  */
-public class CountWriterHelper implements Closeable {
+public class CountWriterHelper implements CountsWriterHelperI {
     private final CountsWriterI delegate;
     private int previousCount;
     private int accumulatedLength = 0;
@@ -39,48 +38,55 @@ public class CountWriterHelper implements Closeable {
 
     public CountWriterHelper(final CountsWriterI delegate) {
         this.delegate = delegate;
-        previousCount = delegate.getInitialCount();
+
         firstAppend = true;
     }
 
+    @Override
     public void appendCountAtPosition(final int count, final int position) throws IOException {
         System.out.printf(" count=%d position=%d previousCount=%d length-constant=%d %n",
                 count, position, previousCount, accumulatedLength);
         if (firstAppend && count != previousCount) {
             accumulatedLength = position;
             if (accumulatedLength != 0) {
-                delegate.appendCount(delegate.getInitialCount(), accumulatedLength);
+                delegate.appendCount(0, accumulatedLength);
                 accumulatedLength = 1;
                 firstAppend = false;
                 previousPosition = position;
                 previousCount = count;
                 return;
             }
-
         }
-        if (count != previousCount && previousPosition == position - 1) {
-            delegate.appendCount(previousCount, accumulatedLength);
-            previousCount = count;
-            previousPosition = position;
-            accumulatedLength = 1;
+        if (firstAppend || (count != previousCount && previousPosition == position - 1)) {
+            if (accumulatedLength > 0) {
+                delegate.appendCount(previousCount, accumulatedLength);
+                previousCount = count;
+                previousPosition = position;
+                accumulatedLength = 1;
+            }
         } else {
 
             if (previousPosition == position - 1) {
 
                 accumulatedLength++;
             } else {
-                //return to zero:
-                delegate.appendCount(previousCount, accumulatedLength);
-                accumulatedLength = position - previousPosition - 1;
-                previousCount = 0;
-                delegate.appendCount(0, accumulatedLength);
-                previousCount = count;
-                accumulatedLength = 1;
+                if (accumulatedLength > 0) {
+                    //return to zero:
+                    delegate.appendCount(previousCount, accumulatedLength);
+                    accumulatedLength = position - previousPosition - 1;
+                    previousCount = 0;
+                    delegate.appendCount(0, accumulatedLength);
+                    previousCount = count;
+                    accumulatedLength = 1;
+                }
             }
         }
+
         previousPosition = position;
+        firstAppend = false;
     }
 
+    @Override
     public void close() throws IOException {
         delegate.appendCount(previousCount, accumulatedLength);
         if (previousCount != 0) {

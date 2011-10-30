@@ -67,8 +67,10 @@ public class CountsWriterTestSupport implements CountsWriterI {
         assert count != previousCount : " count must be different to start a new transition.";
         previousCount = count;
         numTransitions++;
-        transitionsAsText.append(String.format("(c=%d,l=%d)", count, lengthConstant));
         System.out.println(String.format(" appending (count=%d,length=%d)", count, lengthConstant));
+        transitionsAsText.append(String.format("(c=%d,l=%d)", count, lengthConstant));
+
+
     }
 
     /**

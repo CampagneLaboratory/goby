@@ -36,26 +36,26 @@ public class TestCountsWriterHelper {
 
     @Test
     public void testCase1() throws IOException {
-        CountsWriterTestSupport delegate = new CountsWriterTestSupport();
-        CountWriterHelper helper = new CountWriterHelper(delegate);
+        CountsWriterTestSupport delegate = new CountsWriterTestSupport(1);
+        CountsWriterHelperI helperI = new CountWriterHelper2(delegate);
 
         String input1 = "(1,4)(2,4)(3,4)(4,1)(5,1)(6,1)(9,3)(10,1)";
-        String expectedOutput = "initial-count=0 (c=0,l=1)(c=4,l=3)(c=1,l=3)(c=0,l=2)(c=3,l=1)(c=1,l=1)(c=0,l=1)";
-        exerciseDelegate(helper, input1);
+        String expectedOutput = "initial-count=1 (c=0,l=1)(c=4,l=3)(c=1,l=3)(c=0,l=2)(c=3,l=1)(c=1,l=1)(c=0,l=1)";
+        exerciseDelegate(helperI, input1);
         assertEquals("counts must match expected, format (length,count):", expectedOutput, delegate.countsAsText());
     }
-  //   @Test
+    @Test
     public void testCase2() throws IOException {
-        CountsWriterTestSupport delegate = new CountsWriterTestSupport(4);
-        CountWriterHelper helper = new CountWriterHelper(delegate);
+        CountsWriterTestSupport delegate = new CountsWriterTestSupport(1);
+        CountsWriterHelperI helper = new CountWriterHelper2(delegate);
 
-        String input1 = "(0,4)(1,4)(2,4)(8,3)(11,12)(14,3)(15,2)(16,0)";
-        String expectedOutput = "initial-count=0 (c=4,l=3)(c=0,l=5)(c=3,l=1)(c=0,l=2)(c=2,l=1)(c=0,l=2)(c=3,l=1)(c=2,l=1)(c=0,l=1)";
+        String input1 = "(0,4)(1,4)(2,4)(8,3)(11,2)(14,3)(15,2)(16,0)";
+        String expectedOutput = "initial-count=1 (c=4,l=3)(c=0,l=5)(c=3,l=1)(c=0,l=2)(c=2,l=1)(c=0,l=2)(c=3,l=1)(c=2,l=1)(c=0,l=1)";
         exerciseDelegate(helper, input1);
         assertEquals("counts must match expected, format (length,count):", expectedOutput, delegate.countsAsText());
     }
 
-    private void exerciseDelegate(CountWriterHelper helper, String input1) throws IOException {
+    private void exerciseDelegate(CountsWriterHelperI helperI, String input1) throws IOException {
         IntList positions = new IntArrayList();
         IntList counts = new IntArrayList();
         parse(input1, positions, counts);
@@ -65,9 +65,9 @@ public class TestCountsWriterHelper {
             int count = iterator.nextInt();
              positionIt.hasNext();
             int position = positionIt.nextInt();
-            helper.appendCountAtPosition(count, position);
+            helperI.appendCountAtPosition(count, position);
         }
-        helper.close();
+        helperI.close();
     }
 
     public int parse(String format, IntList positions, IntList counts) {

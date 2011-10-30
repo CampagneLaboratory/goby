@@ -25,6 +25,7 @@ import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.counts.CountWriterHelper;
 import edu.cornell.med.icb.goby.counts.CountsArchiveWriter;
+import edu.cornell.med.icb.goby.counts.CountsWriterHelperI;
 import edu.cornell.med.icb.goby.counts.CountsWriterI;
 import edu.cornell.med.icb.goby.util.Timer;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
@@ -307,7 +308,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
     private class IterateForCounts extends IterateSortedAlignmentsListImpl {
         CountsWriterI writerI;
         CountsArchiveWriter archiveWriter;
-        CountWriterHelper helper;
+        CountsWriterHelperI helperI;
 
         private IterateForCounts(CountsArchiveWriter archiveWriter) {
             this.archiveWriter = archiveWriter;
@@ -324,10 +325,10 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
                         finishWriter();
                     }
                     writerI = archiveWriter.newCountWriter(referenceIndex, getReferenceId(referenceIndex).toString());
-                    helper = new CountWriterHelper(writerI);
+                    helperI = new CountWriterHelper(writerI);
                     lastReferenceIndex = referenceIndex;
                 }
-                helper.appendCountAtPosition(positionBaseInfos.size(), position);
+                helperI.appendCountAtPosition(positionBaseInfos.size(), position);
             } catch (IOException e) {
                 LOG.error("cannot return counts writer to archive", e);
 
@@ -335,7 +336,7 @@ public class CompactAlignmentToCountsMode extends AbstractGobyMode {
         }
 
         public void finishWriter() throws IOException {
-            helper.close();
+            helperI.close();
             archiveWriter.returnWriter(writerI);
 
             writerI = null;
