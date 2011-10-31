@@ -214,7 +214,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
             statWriter.setInfo(methylatedCCountsIndex[groupIndex], methylatedCCountPerGroup[groupIndex]);
         }
 
-        for (int sampleIndex = 0; sampleIndex < numberOfGroups; sampleIndex++) {
+        for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             final float numerator = methylatedCCountsPerSample[sampleIndex];
             final float denominator = numerator + unmethylatedCCountPerSample[sampleIndex];
 
