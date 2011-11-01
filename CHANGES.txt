@@ -1,4 +1,5 @@
 >>1.9.8
+ - mode base-stats now support multiple input files.
  - VCFParser will now set column type when reading TSV files by using TabToColumnInfoMode to scan the actual values
    stored in the TSV file. The first time this is done for a each file, a .colinfo file will be created and then
    used if the file is read again by VCFParser in the future.
@@ -27,6 +28,8 @@
  - The BaseStats utility was transformed into a Goby mode (base-stats). The new mode has the ability to tally occurrence
    of CpX motifs in reads. Useful as a proxy to the amount of unconverted Cs in bisulfite converted reads.
  - Fix problem with suggestion-position-slices that could create empty slices.
+ - Fix bug in discover-sequence-variants methylation format that wrote methylation rates only for up to two samples.
+ - Fix bug in alignment-to-counts that caused problems with large alignments.
 1.9.7.3
  - Fix allele frequency format to write genotype first in FORMAT per vcf spec.
  - Add new INFO fields in compare group vcf format to show allele counts in each group.

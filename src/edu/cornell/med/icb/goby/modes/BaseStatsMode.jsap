@@ -22,7 +22,7 @@
         <unflaggedOption>
             <id>input</id>
             <required>true</required>
-            <!--greedy>true</greedy-->
+            <greedy>true</greedy>
             <help>The compact alignment file(s) to read as input.</help>
         </unflaggedOption>
 
