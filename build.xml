@@ -186,11 +186,13 @@
         <jar jarfile="${goby-io-jarfile}">
             <fileset dir="${classes}">
                 <include name="edu/cornell/med/icb/goby/reads/**"/>
+                <include name="edu/cornell/med/icb/goby/readers/**"/>
                 <include name="edu/cornell/med/icb/goby/alignments/**"/>
                 <include name="edu/cornell/med/icb/goby/counts/**"/>
                 <include name="edu/cornell/med/icb/goby/modes/UpgradeMode*"/>
                 <include name="edu/cornell/med/icb/goby/modes/AbstractGobyMode*"/>
                 <include name="edu/cornell/med/icb/goby/modes/AbstractCommandLineMode*"/>
+                <include name="edu/cornell/med/icb/goby/modes/TabToColumnInfoMode*"/>
                 <include name="edu/cornell/med/icb/goby/modes/GenericToolsDriver*"/>
                 <include name="edu/cornell/med/icb/goby/util/**"/>
                 <include name="edu/cornell/med/icb/goby/exception/**"/>
@@ -217,6 +219,10 @@
                 <!-- Apache version 2 license -->
                 <include name="bdval-api.jar"/>
                 <!-- LGPL -->
+                <include name="JSAP-2.1.jar"/>
+                <!-- LGPL -->
+                <include name="xstream-1.3.1.jar"/>
+                <!-- Required by JSAP, BSD. -->
             </zipgroupfileset>
             <manifest>
                 <attribute name="Specification-Title" value="Goby IO (LGPL compatible)"/>
