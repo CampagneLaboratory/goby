@@ -162,7 +162,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
 
             final AlignmentStats stats = new AlignmentStats();
             //      final int[] readLengths = createReadLengthArray();
-            int targetLengths[]=new int[targetIds.size()];
+            int targetLengths[] = new int[targetIds.size()];
             // first pass: collect minimum score to keep each queryEntry
             // second pass: write to compact alignment file for those entries with score above threshold
             for (final boolean writeAlignment : new boolean[]{false, true}) {
@@ -186,6 +186,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     final AlignedSequence query = alignedSequences.get(1);
 
                     final int queryIndex = Integer.parseInt(query.sequenceIdentifier.toString());
+                    largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
                     int targetIndex = -1;
                     targetIndex = getTargetIndex(targetIds, reference.sequenceIdentifier, thirdPartyInput);
                     final boolean reverseStrand = !(query.strand == reference.strand);
@@ -215,7 +216,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     currentEntry.setQueryIndex(queryIndex);
                     currentEntry.setScore(score);
                     currentEntry.setTargetAlignedLength(reference.alignedLength);
-                    targetLengths[targetIndex]=reference.sequenceLength;
+                    targetLengths[targetIndex] = reference.sequenceLength;
                     currentEntry.setTargetIndex(targetIndex);
                     final int queryLength = query.sequenceLength;
                     currentEntry.setQueryLength(queryLength);
@@ -251,7 +252,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                                 // TMH writer adds the alignment entry only if hits > thresh
                             } else {
                                 notBestScore++;
-                        //        System.out.println("Excluding entry "+alignmentEntry);
+                                //        System.out.println("Excluding entry "+alignmentEntry);
                             }
                         }
                     } else {
