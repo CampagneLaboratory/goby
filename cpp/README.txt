@@ -26,12 +26,13 @@
       make
       make install
 
-3. Download, build, and install Protobuf (2.3.0 or later) from
-    http://code.google.com/p/protobuf/
+3. You can use the normally distributed version of Protobuf 2.4.1,
+   but we strongly recommend you use a version of Protobuf 2.4.1
+   that we have patched to better handle large files.
 
-      wget http://protobuf.googlecode.com/files/protobuf-2.3.0.tar.gz
-      tar zxvf protobuf-2.3.0.tar.gz
-      cd protobuf-2.3.0
+      wget http://campagnelab.org/files/protobuf-2.4.1-icb.tgz
+      tar zxvf protobuf-2.4.1-icb
+      cd protobuf-2.4.1-icb
       #
       # for root or cygwin, don't use the --prefix option
       #
@@ -40,11 +41,11 @@
       make install
 
 4. Download, build, and install the PCRE (Perl Compatible Regular
-   Expressions) library (8.10 or later) from http://pcre.org
+   Expressions) library (8.20 or later) from http://pcre.org
 
-      wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.10.tar.gz
-      tar zxvf pcre-8.10.tar.gz
-      cd pcre-8.10
+      wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.20.tar.gz
+      tar zxvf pcre-8.20.tar.gz
+      cd pcre-8.20
       #
       # for root or cygwin, don't use the --prefix option
       #
@@ -55,8 +56,8 @@
 5. Build the Goby C++ API library, requires the Goby source distribution.
    The following steps install this library:
 
-      wget http://chagall.med.cornell.edu/goby/releases/goby_latest-src.zip
-      unzip goby_latest-src.zip
+      wget http://chagall.med.cornell.edu/goby/releases/goby_latest-cpp.zip
+      unzip goby_latest-cpp.zip
       cd goby_VERSION/cpp/
       chmod +x autogen.sh
       ./autogen.sh
