@@ -1,32 +1,40 @@
+ - Preliminary support for calling indels with discover-sequence-variants.  Candidate indels are now written
+   in the formats that use GenotypeOutputFormat (e.g., genotypes, compare_groups, allele_frequency).
+   The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.
+   After possible realignment, and filtering to remove possible errors, EIR are reported with their frequencies.
 >>1.9.8
- - mode base-stats now support multiple input files.
+ - The BaseStats utility was transformed into a Goby mode (base-stats). The new mode has the ability to tally occurrence
+   of CpX motifs in reads. Useful as a proxy to the amount of unconverted Cs in bisulfite converted reads.
+ - The methyl-stats mode take a VCF file produced by Goby methylation output and a genome and calculates various
+   statistics about the distribution of fragment lengths between CpG interrogated by the assay.
+ - FDR mode now accepts --column-selection-filter to select columns matching string.
+ - Proof of principle that protocol buffer can seamlessly cohabit with data-specific compression schemes. The
+   --codec option on fasta-to-compact is introduced to activate compression of reads when writing compact reads.
+   The codec provided (called read-codec-1) achieves about 10-12% better compression of read files than pure
+   protocol-buffer encoding. This read-codec-1 codec stores bases and quality scores with an arithmetic coder in
+   a protocol buffer field called 'compressed_data'. Please note that we do not recommend using this option at
+   this stage since the C/C++ APIs cannot load data encoded with this codec at this time.
+ - Add ability to run alignment-to-annotation-counts on a specific genomic region (see --start-position and
+   --end-position).
+ - alignment-to-annotation mode has a new option (--remove-shared-segments). When active, this option will remove
+   annotation segments when they partially overlap with more than one primary annotation id. When this option is
+   selected and the primary id is a gene, and secondary id is an exon, the mode will remove exons that are associated
+   with several genes. When the option is used with transcript id as primary and exon as secondary, exons are removed
+   that are shared across different transcripts of the same gene.
+ - mode base-stats now supports multiple input files.
  - VCFParser will now set column type when reading TSV files by using TabToColumnInfoMode to scan the actual values
    stored in the TSV file. The first time this is done for a each file, a .colinfo file will be created and then
    used if the file is read again by VCFParser in the future.
  - Added the mode tab-to-column-info to read the data from TSV files to determine the the column types
    (double/integer/string). Write a .colinfo file detailing the column names and types.
- - Add ability to run alignment-to-annotation-counts on a specific genomic region (see --start-position and
-   --end-position).
- - FDR mode now accepts --column-selection-filter to select columns matching string.
- - Preliminary support for calling indels with discover-sequence-variants.  Candidate indels are now written
-   in the formats that use GenotypeOutputFormat (e.g., genotypes, compare_groups, allele_frequency).
-   The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.
-   After possible realignment, and filtering to remove possible errors, EIR are reported with their frequencies.
- - Proof of principle that protocol buffer can seamlessly cohabit with data-specific compression schemes. The
-   --codec option on fasta-to-compact is introduced to activate compression of reads when writing compact reads.
-   The codec provided (called read-codec-1) achieves about 10% better compression of read files than pure
-   protocol-buffer encoding. This read-codec-1 codec stores bases and quality scores with an arithmetic coder in
-   the special compressed_data protocol buffer field.
- - Fixed a bug with ReadsQualityStatsMode when when SampleFraction == 1.0d, such as for files with a small
-   number of reads.
  - Upgraded to SAM JDK 1.52
  - Modes sam-to-compact and sam-extract-reads now set SILENT validation before reading file header. This is required
    because the SAM JDK validation rules are more stringent than required by the specification. This means that
    some valid SAM files (per the SAM spec) cannot be parsed without error when the strict validation is used.
+ - Fixed a bug with ReadsQualityStatsMode when when SampleFraction == 1.0d, such as for files with a small
+   number of reads.
  - Mode sam-extract-reads now supports extracting reads from paired samples. See the new options --paired-end
    and --pair-indicator. These options work similarly to the fasta-to-compact options.
- - The BaseStats utility was transformed into a Goby mode (base-stats). The new mode has the ability to tally occurrence
-   of CpX motifs in reads. Useful as a proxy to the amount of unconverted Cs in bisulfite converted reads.
  - Fix problem with suggestion-position-slices that could create empty slices.
  - Fix bug in discover-sequence-variants methylation format that wrote methylation rates only for up to two samples.
  - Fix bug in alignment-to-counts that caused problems with large alignments.
