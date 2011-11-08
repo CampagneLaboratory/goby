@@ -1,7 +1,3 @@
- - Preliminary support for calling indels with discover-sequence-variants.  Candidate indels are now written
-   in the formats that use GenotypeOutputFormat (e.g., genotypes, compare_groups, allele_frequency).
-   The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.
-   After possible realignment, and filtering to remove possible errors, EIR are reported with their frequencies.
 >>1.9.8
  - The BaseStats utility was transformed into a Goby mode (base-stats). The new mode has the ability to tally occurrence
    of CpX motifs in reads. Useful as a proxy to the amount of unconverted Cs in bisulfite converted reads.
