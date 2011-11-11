@@ -33,8 +33,8 @@ import edu.cornell.med.icb.io.TSVReader;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.*;
 import it.unimi.dsi.lang.MutableString;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -95,7 +95,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
      * between the genome and the allele.
      */
     private boolean overrideReferenceWithGenome = true;
-    private FormatConfigurator formatConfigurator=new DummyFormatConfigurator();
+    private FormatConfigurator formatConfigurator = new DummyFormatConfigurator();
 
     public void setDisableAtLeastQuarterFilter(boolean disableAtLeastQuarterFilter) {
         this.disableAtLeastQuarterFilter = disableAtLeastQuarterFilter;
@@ -244,8 +244,15 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         genotypeFilters = new ObjectArrayList<GenotypeFilter>();
         switch (format) {
 
-            case COMPARE_GROUPS:
             case METHYLATION:
+                // no filters at all for methylation. It seems that in some dataset quality scores are much lower for
+                //bases that are not methylation and therefore converted. We don't want to filter these bases and therefore
+                // do not install the quality score filter.
+                if (Release1_9_7_2.callIndels) {
+                    genotypeFilters.add(new RemoveIndelArtifactsFilter());
+                }
+                break;
+            case COMPARE_GROUPS:
             case ALLELE_FREQUENCIES:
             case BETWEEN_GROUPS:
             case VARIANT_DISCOVERY:
@@ -289,8 +296,6 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         sortedPositionIterator.setThresholdDistinctReadIndices(thresholdDistinctReadIndices);
         return this;
     }
-
-
 
 
     /**
@@ -372,13 +377,18 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         if (testGenome != null) {
             return testGenome;
         }
+        String startOffsetArgument = jsapResult.getString("start-position");
+        String endOffsetArgument = jsapResult.getString("end-position");
+        String minIndex = getReferenceId(startOffsetArgument, "min");
+        String maxIndex = getReferenceId(endOffsetArgument, "max");
         final String genome = jsapResult.getString("genome");
         RandomAccessSequenceCache cache = null;
         if (genome != null) {
             try {
                 System.err.println("Loading genome cache " + genome);
                 cache = new RandomAccessSequenceCache();
-                cache.load(genome);
+                cache.load(genome, minIndex, maxIndex);
+                System.err.println("Done loading genome. ");
             } catch (ClassNotFoundException e) {
                 System.err.println("Could not load genome cache");
                 e.printStackTrace();
@@ -386,6 +396,15 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             }
         }
         return cache;
+    }
+
+    private static String getReferenceId(String offsetArgument, String defaultValue) {
+        if (offsetArgument == null) {
+            return defaultValue;
+        } else {
+            String chr = offsetArgument.split(",")[0];
+            return chr;
+        }
     }
 
     public static AlignmentProcessorFactory configureProcessor(JSAPResult jsapResult) {
@@ -424,10 +443,11 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
     /**
      * Install a format configurator, responsible for configuring the output format.
+     *
      * @param configurator
      */
     public void setFormatConfigurator(FormatConfigurator configurator) {
-        this.formatConfigurator =configurator;
+        this.formatConfigurator = configurator;
     }
 
 
@@ -481,8 +501,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             // listed on the command line:
             samples = AlignmentReaderImpl.getBasenames(inputFilenames);
             // also remove the path to the file to keep only filenames:
-            for (int i=0;i<samples.length; i++) {
-                samples[i]=FilenameUtils.getBaseName(samples[i]);
+            for (int i = 0; i < samples.length; i++) {
+                samples[i] = FilenameUtils.getBaseName(samples[i]);
             }
             return samples;
         }
