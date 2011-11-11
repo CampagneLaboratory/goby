@@ -253,6 +253,13 @@ public abstract class IterateSortedAlignments<T> {
 
                 startReferenceIndex = referenceIds.getIndex(startTokens[0]);
                 endReferenceIndex = referenceIds.getIndex(endTokens[0]);
+
+                if (startReferenceIndex == -1 || endReferenceIndex == -1) {
+                    String message = String.format("One of the reference identifier specified for start and end limits does not exist %s %s. ",
+                            startTokens[0], endTokens[0]);
+                    LOG.error(message);
+                    throw new IllegalArgumentException(message);
+                }
                 useWindow = true;
                 sortedReaders = new ConcatSortedAlignmentReader(alignmentReaderFactory,
                         false,

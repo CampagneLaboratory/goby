@@ -53,6 +53,11 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
     private IntList sizes;
     private static final Logger LOG = Logger.getLogger(RandomAccessSequenceCache.class);
     private String basename;
+    /**
+     * All queries must be contained within   minRefIndex and maxRefIndex (inclusive).
+     */
+    private int maxRefIndex;
+    private int minRefIndex;
 
     public RandomAccessSequenceCache() {
         super();
@@ -165,6 +170,34 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         referenceNameMap = (Object2IntMap<String>) BinIO.loadObject(basename + ".names");
     }
 
+    /**
+     * Load a slice of this genome, contained between minReferenceId position 0 and max referenceId position 0.
+     * The special values "min" and "max" can be used for  minRefId and maxRefId respectively to retrieve the entire
+     * genome.
+     *
+     * @param basename
+     * @param minRefId
+     * @param maxRefId
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public void load(final String basename, final String minRefId, final String maxRefId) throws IOException, ClassNotFoundException {
+
+        load(basename);
+        minRefIndex = "min".equals(minRefId) ? -1 : referenceNameMap.get(minRefId);
+        maxRefIndex = "max".equals(minRefId) ? referenceNameMap.size() : referenceNameMap.get(maxRefId);
+
+        // remove sequences we won't need
+        for (int i = 0; i < minRefIndex; i++) {
+            compressedData.rem(i);
+            referenceIgnoreLists.rem(i);
+        }
+        for (int i = maxRefIndex + 1; i < referenceNameMap.size(); i++) {
+            compressedData.rem(i);
+            referenceIgnoreLists.rem(i);
+        }
+    }
+
     public boolean canLoad(final String basename) {
         final String[] extensions = {
                 ".sizes", ".bases", ".ignore", ".names"
@@ -200,6 +233,9 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
     final LongArrayBitVector bits = LongArrayBitVector.getInstance();
 
     public int getRange(final int referenceIndex, final int position, final int length) {
+        assert referenceIndex >= minRefIndex && referenceIndex <= maxRefIndex :
+                String.format("referenceindex %d out of genome slice [%d-%d].", referenceIndex,
+                        minRefIndex, maxRefIndex);
         final int maxSize = sizes.getInt(referenceIndex);
         assert position + length < maxSize : "position must be less than size of the reference sequence (" + maxSize + ")";
 
@@ -261,6 +297,10 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
     }
 
     public final char get(final int referenceIndex, final int position) {
+        assert referenceIndex >= minRefIndex && referenceIndex <= maxRefIndex :
+                String.format("referenceindex %d out of genome slice [%d-%d].", referenceIndex,
+                        minRefIndex, maxRefIndex);
+
         final int maxSize = sizes.getInt(referenceIndex);
         final LongArrayBitVector ignoreList = referenceIgnoreLists.get(referenceIndex);
 
