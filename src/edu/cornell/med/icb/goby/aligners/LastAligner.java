@@ -41,6 +41,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
 
+import javax.xml.bind.annotation.XmlElementRef;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -212,6 +213,7 @@ public class LastAligner extends AbstractAligner {
     protected int minSeedDepth = DEFAULT_MIN_SEED_DEPTH;
     protected int matchScore = -1;   // -1 indicates that value has not been set by user
     protected int misMatchCost = -1; // -1 indicates that value has not been set by user
+    protected String queryBatchSize=DEFAULT_QUERY_BATCH_SIZE;
 
     protected MatchQuality matchQuality = MatchQuality.valueOf(DEFAULT_MATCH_QUALITY);
 
@@ -293,6 +295,7 @@ public class LastAligner extends AbstractAligner {
         maxGapsAllowed = DEFAULT_MAX_GAPS_ALLOWED;
         gapOpeningCost = DEFAULT_GAP_OPENING_COST;
         matchQuality = MatchQuality.valueOf(DEFAULT_MATCH_QUALITY);
+        queryBatchSize=DEFAULT_QUERY_BATCH_SIZE;
         if (options == null) {
             return;
         }
@@ -303,6 +306,7 @@ public class LastAligner extends AbstractAligner {
         matchQuality = MatchQuality.valueOf(CLI.getOption(opts, "matchQuality", DEFAULT_MATCH_QUALITY));
         gapExtentionCost = CLI.getIntOption(opts, "b", DEFAULT_GAP_EXTENSION_COST);
         minSeedDepth = CLI.getIntOption(opts, "l", DEFAULT_MIN_SEED_DEPTH);
+        queryBatchSize=CLI.getOption(opts,"i", DEFAULT_QUERY_BATCH_SIZE);
 
         //       System.out.println("Setting matchQuality to: "+matchQuality);
         // always favor --gapOpeningCost over redundant option -a
@@ -344,7 +348,6 @@ public class LastAligner extends AbstractAligner {
         assert (!CLI.isKeywordGiven(opts, "u")) : "Currently not supporting  -u  option via alignerOptions";
         assert (!CLI.isKeywordGiven(opts, "s")) : "Currently not supporting  -s  option via alignerOptions";
         assert (!CLI.isKeywordGiven(opts, "p")) : "Currently not supporting  -p  option via alignerOptions";
-        assert (!CLI.isKeywordGiven(opts, "i")) : "Currently not supporting  -i  option via alignerOptions";
         assert (!CLI.isKeywordGiven(opts, "j")) : "Currently not supporting  -j  option via alignerOptions";
         assert (!CLI.isKeywordGiven(opts, "z")) : "Currently not supporting  -z  option via alignerOptions";
         assert (!CLI.isKeywordGiven(opts, "d")) : "Currently not supporting  -d  option via alignerOptions";
@@ -640,7 +643,7 @@ public class LastAligner extends AbstractAligner {
         commandLine.addArgument("-l" + minSeedDepth);
         commandLine.addArgument("-s" + DEFAULT_STRAND_DIRECTION);
         commandLine.addArgument("-j" + DEFAULT_OUTPUT_TYPE);
-        commandLine.addArgument("-i" + DEFAULT_QUERY_BATCH_SIZE);
+        commandLine.addArgument("-i" + queryBatchSize);
         commandLine.addArgument("-v");
         commandLine.addArgument("-f" + DEFAULT_OUTPUT_FORMAT);
         commandLine.addArgument("-Q1");  // indicate FASTQ input in SANGER format.
@@ -680,7 +683,7 @@ public class LastAligner extends AbstractAligner {
         commandLine.addArgument("-l" + minSeedDepth);
         commandLine.addArgument("-s" + DEFAULT_STRAND_DIRECTION);
         commandLine.addArgument("-j0");
-        commandLine.addArgument("-i" + DEFAULT_QUERY_BATCH_SIZE);
+        commandLine.addArgument("-i" + queryBatchSize);
         commandLine.addArgument("-v");
         commandLine.addArgument("-f" + DEFAULT_OUTPUT_FORMAT);
         commandLine.addArgument("-Q1");  // indicate FASTQ input in SANGER format
