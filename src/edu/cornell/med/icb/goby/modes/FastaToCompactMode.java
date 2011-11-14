@@ -25,7 +25,6 @@ import edu.cornell.med.icb.goby.readers.FastXReader;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.goby.reads.ReadCodec;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
-import edu.cornell.med.icb.goby.stats.NormalizationMethod;
 import edu.cornell.med.icb.goby.util.DoInParallel;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
@@ -35,16 +34,18 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.omg.IOP.Codec;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 /**
  * Converts a <a href="http://en.wikipedia.org/wiki/FASTA_format">FASTA</a>
@@ -84,7 +85,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
     /**
      * The output file or basename of the output files if there is more than one input file.
      */
-    private String outputFilename;
+    private String reqOutputFilename;
 
     /**
      * Include descriptions in the compact output.
@@ -158,7 +159,9 @@ public class FastaToCompactMode extends AbstractGobyMode {
     }
 
     /**
-     * Add the specified filename to the list of files to process.
+     * Add the specified filename to the list of files to process. If you are running with --paired-ends
+     * adding the first file in the pair is required. Adding the second file in the pair isn't necessary
+     * although it won't hurt anything to add it.
      *
      * @param inputFilename The file to process
      */
@@ -180,21 +183,85 @@ public class FastaToCompactMode extends AbstractGobyMode {
     }
 
     /**
-     * Get the output filename. Only used when inputFilenames.length == 1.
+     * Get if processPairs is enabled.
+     * @return If processPairs is enabled.
+     */
+    public boolean isProcessPairs() {
+        return processPairs;
+    }
+
+    /**
+     * Set if processPairs is enabled. See pairIndicator1 / pairIndicator2 for details on filename conventions
+     * for paired-end filenames.
+     * @param processPairs the new value for processPairs
+     */
+    public void setProcessPairs(final boolean processPairs) {
+        this.processPairs = processPairs;
+    }
+
+
+    /**
+     * Get pairIndicator1, which defaults to "_1".
+     * Assuming pairIndicator1 is "_1" and pairIndicator2 is "_2", if processPairs==true, if one of the input
+     * filenames is "s_1_sequence_1.txt.gz", this mode will look for a paired filename "s_1_sequence_2.txt.gz".
+     * @return the value of pairIndicator1
+     */
+    public String getPairIndicator1() {
+        return pairIndicator1;
+    }
+
+    /**
+     * Set pairIndicator1, which defaults to "_1".
+     * Assuming pairIndicator1 is "_1" and pairIndicator2 is "_2", if processPairs==true, if one of the input
+     * filenames is "s_1_sequence_1.txt.gz", this mode will look for a paired filename "s_1_sequence_2.txt.gz".
+     * @param pairIndicator1 the new value of pairIndicator1
+     */
+    public void setPairIndicator1(final String pairIndicator1) {
+        this.pairIndicator1 = pairIndicator1;
+    }
+
+    /**
+     * Get pairIndicator2, which defaults to "_2".
+     * Assuming pairIndicator1 is "_1" and pairIndicator2 is "_2", if processPairs==true, if one of the input
+     * filenames is "s_1_sequence_1.txt.gz", this mode will look for a paired filename "s_1_sequence_2.txt.gz".
+     * @return the value of pairIndicator2
+     */
+    public String getPairIndicator2() {
+        return pairIndicator2;
+    }
+
+    /**
+     * Set pairIndicator2, which defaults to "_2".
+     * Assuming pairIndicator1 is "_1" and pairIndicator2 is "_2", if processPairs==true, if one of the input
+     * filenames is "s_1_sequence_1.txt.gz", this mode will look for a paired filename "s_1_sequence_2.txt.gz".
+     * @param pairIndicator2 the new value of pairIndicator2
+     */
+    public void setPairIndicator2(final String pairIndicator2) {
+        this.pairIndicator2 = pairIndicator2;
+    }
+
+    /**
+     * Set the output filename. Only used when inputFilenames.length == 1. Note that if you specify
+     * processPairs=true and given inputFiles as the two files in the pair, inputFilenames.length will become 1
+     * as the second input file will be removed because it will be discovered automatically during the
+     * conversion.
      *
      * @return the output filename
      */
     public String getOutputFilename() {
-        return outputFilename;
+        return reqOutputFilename;
     }
 
     /**
-     * Set the output filename. Only used when inputFilenames.length == 1.
+     * Set the output filename. Only used when inputFilenames.length == 1. Note that if you specify
+     * processPairs=true and given inputFiles as the two files in the pair, inputFilenames.length will become 1
+     * as the second input file will be removed because it will be discovered automatically during the
+     * conversion.
      *
      * @param outputFilename the output filename
      */
     public void setOutputFilename(final String outputFilename) {
-        this.outputFilename = outputFilename;
+        this.reqOutputFilename = outputFilename;
     }
 
     /**
@@ -249,9 +316,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
         verboseQualityScores = jsapResult.getBoolean("verbose-quality-scores");
         qualityEncoding = QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
         numThreads = jsapResult.getInt("num-threads");
-        if (inputFilenames.length == 1) {
-            outputFilename = jsapResult.getString("output");
-        }
+        reqOutputFilename = jsapResult.getString("output");
         sequencePerChunk = jsapResult.getInt("sequence-per-chunk");
         processPairs = jsapResult.getBoolean("paired-end");
         final String tokens = jsapResult.getString("pair-indicator");
@@ -279,6 +344,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
             pairIndicator1 = tmp[0];
             pairIndicator2 = tmp[1];
         }
+
         keyValueProps = new Properties();
         keyValuePairsFilename = jsapResult.getFile("key-value-pairs");
 
@@ -319,6 +385,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
 
         try {
+            removePairFiles();
             if (apiMode) {
                 // Force parallel to false if in apiMode.
                 parallel = false;
@@ -349,18 +416,102 @@ public class FastaToCompactMode extends AbstractGobyMode {
     }
 
 
+    /**
+     * Potentially modifies inputFilenames only if the user specified --process-pairs.
+     * Given the array of filenames in inputFilenames, if there are any files that
+     * don't exist in inputFilenames, remove them. If there are any filenames that are the second files
+     * in a pair, remove them from inputFilenames.
+     */
+    private void removePairFiles() {
+        if (!processPairs) {
+            return;
+        }
+        final Set<String> newInputFilenames = new LinkedHashSet<String>(inputFilenames.length);
+        for (final String inputFilename : inputFilenames) {
+            try {
+                final File inputFile = new File(inputFilename);
+                if (inputFile.exists()) {
+                    newInputFilenames.add(inputFile.getCanonicalPath());
+                } else {
+                    LOG.error("Input file doesn't exist " + inputFilename);
+                }
+            } catch (IOException e) {
+                LOG.error("Could not get canonical path for " + inputFilename);
+                System.err.println("Could not get canonical path for " + inputFilename);
+            }
+        }
+        final List<String> pairFilesToRemove = new ArrayList<String>();
+        for (final String firstFile : newInputFilenames) {
+            if (!pairFilesToRemove.contains(firstFile)) {
+                final String pairFile = pairFilename(firstFile);
+                if (pairFile != null && newInputFilenames.contains(pairFile)) {
+                    System.out.println("Removing second file in pair from the input list as it will " +
+                            " automatically be discovered " + pairFile);
+                    pairFilesToRemove.add(pairFile);
+                }
+            }
+        }
+        for (final String pairFile : pairFilesToRemove) {
+            newInputFilenames.remove(pairFile);
+        }
+        inputFilenames = newInputFilenames.toArray(new String[newInputFilenames.size()]);
+    }
+
+    /**
+     * Find the LAST occurrence of pairIndicator1 in firstFilename. If it is not found,
+     * return null. If it is found, change it to pairIndicator2. If the resultant filename
+     * exists, return it, otherwise return null.
+     * @param firstFilename the possible first file in a pair
+     * @return the second file in the pair or null
+     */
+    private String pairFilename(final String firstFilename) {
+        final int firstTokenPos = firstFilename.lastIndexOf(pairIndicator1);
+        if (firstTokenPos == -1) {
+            // No pairIndicator1 token. Not the first file in a pair.
+            return null;
+        }
+        final StringBuilder pairFilenameSb = new StringBuilder();
+        pairFilenameSb.append(firstFilename.substring(0, firstTokenPos));
+        pairFilenameSb.append(pairIndicator2);
+        pairFilenameSb.append(firstFilename.substring(firstTokenPos + pairIndicator1.length()));
+        final String pairFilename = pairFilenameSb.toString();
+        if (new File(pairFilename).exists()) {
+            // The constructed pair filename didn't exist.
+            return pairFilename;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Given an input filename, remove FINAL occurrence pairIndicator1.
+     * @param baseOutputFilename the initial output filename
+     * @return the new output filename without the final occurrence of pairIndicator1.
+     */
+    private String pairOutputFilename(final String baseOutputFilename) {
+        final int firstTokenPos = baseOutputFilename.lastIndexOf(pairIndicator1);
+        if (firstTokenPos == -1) {
+            // No token found, don't change the filename.
+            return baseOutputFilename;
+        }
+        final StringBuilder outputFilename = new StringBuilder();
+        outputFilename.append(baseOutputFilename.substring(0, firstTokenPos));
+        outputFilename.append(baseOutputFilename.substring(firstTokenPos + pairIndicator1.length()));
+        return outputFilename.toString();
+    }
+
     private void processOneFile(final int loopIndex, final int length, final String inputFilename,
-                                Properties keyValueProps) throws IOException {
+                                final Properties keyValueProps) throws IOException {
         String outputFilename;
-        if (loopIndex == 0 && StringUtils.isNotBlank(this.outputFilename)) {
-            outputFilename = this.outputFilename;
+        if (loopIndex == 0 && inputFilenames.length == 1 && StringUtils.isNotBlank(reqOutputFilename)) {
+            outputFilename = reqOutputFilename;
         } else {
             outputFilename = stripFastxExtensions(inputFilename) + ".compact-reads";
-
-        }
-        if (processPairs) {
-            // remove _1 from the destination compact filename.
-            outputFilename = outputFilename.replace(pairIndicator1, "");
+            if (processPairs) {
+                // remove _1 from the destination compact filename but only if the output filename
+                // was generated automatically.
+                outputFilename = pairOutputFilename(outputFilename);
+            }
         }
 
         final File output = new File(outputFilename);
@@ -391,7 +542,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
             writer.setNumEntriesPerChunk(sequencePerChunk);
             FastXReader pairReader = null;
             if (processPairs) {
-                final String pairInputFilename = inputFilename.replace(pairIndicator1, pairIndicator2);
+                final String pairInputFilename = pairFilename(inputFilename);
                 LOG.info(String.format("Located paired-end input files (%s,%s)", inputFilename, pairInputFilename));
                 pairReader = new FastXReader(pairInputFilename);
 

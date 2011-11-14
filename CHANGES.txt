@@ -1,3 +1,4 @@
+ - Improved logic for --paired-end filename support in the fastaToCompactMode.
  - Preliminary support for calling indels with discover-sequence-variants.  Candidate indels are now written
    in the formats that use GenotypeOutputFormat (e.g., genotypes, compare_groups, allele_frequency).
    The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.
