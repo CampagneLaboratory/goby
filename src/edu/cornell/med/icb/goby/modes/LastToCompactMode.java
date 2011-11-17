@@ -84,6 +84,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
      */
     protected boolean onlyMafFile;
     protected boolean onlyCountsFile;
+    private String forceStrand;
 
     @Override
     public String getModeName() {
@@ -134,7 +135,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
             System.err.println("Only one of --only-maf or --only-counts can be specified.");
             System.exit(1);
         }
-
+        forceStrand=jsapResult.getString("force-strand");
         return this;
     }
 
@@ -184,7 +185,10 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     // retrieve alignment properties
                     final AlignedSequence reference = alignedSequences.get(0);
                     final AlignedSequence query = alignedSequences.get(1);
-
+                    if (forceStrand!=null) {
+                        // override the query strand with forceStrand if requested on the command line.
+                        query.strand=forceStrand.charAt(0);
+                    }
                     final int queryIndex = Integer.parseInt(query.sequenceIdentifier.toString());
                     largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
                     int targetIndex = -1;

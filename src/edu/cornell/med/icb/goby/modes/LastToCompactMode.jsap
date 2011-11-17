@@ -126,5 +126,13 @@
             </stringParser>
             <help>Use to import files not produced by Goby.</help>
         </flaggedOption>
+         <flaggedOption>
+            <id>force-strand</id>
+            <longFlag>force-strand</longFlag>
+             <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <help>Force the alignment strand to the specified value (+ or -).</help>
+        </flaggedOption>
     </parameters>
 </jsap>
