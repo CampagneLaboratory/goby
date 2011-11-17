@@ -20,12 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignedSequence;
-import edu.cornell.med.icb.goby.alignments.AlignmentStats;
-import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsWriter;
-import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.alignments.LastParser;
+import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.iterators.TsvLineIterator;
@@ -84,7 +79,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
      */
     protected boolean onlyMafFile;
     protected boolean onlyCountsFile;
-    private String forceStrand;
+    private boolean flipStrand;
 
     @Override
     public String getModeName() {
@@ -135,7 +130,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
             System.err.println("Only one of --only-maf or --only-counts can be specified.");
             System.exit(1);
         }
-        forceStrand=jsapResult.getString("force-strand");
+        flipStrand = jsapResult.getBoolean("flip-strand");
         return this;
     }
 
@@ -185,9 +180,11 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     // retrieve alignment properties
                     final AlignedSequence reference = alignedSequences.get(0);
                     final AlignedSequence query = alignedSequences.get(1);
-                    if (forceStrand!=null) {
+                    if (flipStrand) {
                         // override the query strand with forceStrand if requested on the command line.
-                        query.strand=forceStrand.charAt(0);
+                        query.strand = query.strand == '+' ? '-' : query.strand == '-' ? '+' : '?';
+                        flip(reference.alignment);
+                        flip(query.alignment);
                     }
                     final int queryIndex = Integer.parseInt(query.sequenceIdentifier.toString());
                     largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
@@ -300,6 +297,29 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
         }
 
         return numAligns;
+    }
+
+    private void flip(final MutableString alignment) {
+
+        for (int i = 0; i < alignment.length(); i++) {
+            char base = alignment.charAt(i);
+            switch (base) {
+                case 'A':
+                    base = 'T';
+                    break;
+
+                case 'C':
+                    base = 'G';
+                    break;
+                case 'T':
+                    base = 'A';
+                    break;
+                case 'G':
+                    base = 'C';
+                    break;
+            }
+            alignment.setCharAt(i,base);
+        }
     }
 
     private void parseSequenceVariations(final Alignments.AlignmentEntry.Builder currentEntry,

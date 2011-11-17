@@ -126,13 +126,10 @@
             </stringParser>
             <help>Use to import files not produced by Goby.</help>
         </flaggedOption>
-         <flaggedOption>
-            <id>force-strand</id>
-            <longFlag>force-strand</longFlag>
-             <stringParser>
-                <classname>StringStringParser</classname>
-            </stringParser>
-            <help>Force the alignment strand to the specified value (+ or -).</help>
-        </flaggedOption>
+        <switch>
+            <id>flip-strand</id>
+            <longFlag>flip-strand</longFlag>
+            <help>Flip the strand of the alignment strand. This option causes the strand of the query to flip between + and - and the sequence variations to be adjusted accordingly (i.e., C ~ G, A ~ T)</help>
+        </switch>
     </parameters>
 </jsap>

@@ -3,6 +3,8 @@
    in the formats that use GenotypeOutputFormat (e.g., genotypes, compare_groups, allele_frequency).
    The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.
    After possible realignment, and filtering to remove possible errors, EIR are reported with their frequencies.
+ - last-to-compact: Add an option to flip the strand of the alignment. This is useful when converting bisulfite reads
+   specifically kmatched to the reverse strand.
  - Fix a NPE in suggest-position-slices that could occur with very small alignment files.
 >>1.9.8
  - The BaseStats utility was transformed into a Goby mode (base-stats). The new mode has the ability to tally occurrence
