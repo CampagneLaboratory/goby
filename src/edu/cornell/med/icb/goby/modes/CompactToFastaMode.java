@@ -78,10 +78,12 @@ public class CompactToFastaMode extends AbstractGobyMode {
 
     public void setStartPosition(long startPosition) {
         this.startPosition = startPosition;
+        hasStartOrEndPosition =true;
     }
 
     public void setEndPosition(long endPosition) {
         this.endPosition = endPosition;
+        hasStartOrEndPosition=true;
     }
 
     private long startPosition;
