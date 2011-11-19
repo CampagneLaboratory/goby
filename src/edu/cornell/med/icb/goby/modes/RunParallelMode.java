@@ -21,7 +21,9 @@ package edu.cornell.med.icb.goby.modes;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.util.DoInParallel;
+import edu.cornell.med.icb.goby.util.IsDone;
 import edu.cornell.med.icb.goby.util.LoggingOutputStream;
+import edu.cornell.med.icb.goby.util.StreamSignal;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
@@ -131,6 +133,8 @@ public class RunParallelMode extends AbstractGobyMode {
         final ObjectOpenHashSet<String> allFastq = new ObjectOpenHashSet<String>();
 
         final DoInParallel loop = new DoInParallel(numParts) {
+            IsDone done = new IsDone();
+
             @Override
             public void action(final DoInParallel forDataAccess, final String inputBasename, final int loopIndex) {
                 try {
@@ -154,8 +158,12 @@ public class RunParallelMode extends AbstractGobyMode {
                             slices[loopIndex].endOffset, loopIndex));
                     ctfm.execute();
                     if (loopIndex > 0) {
-                        // wait a bit to give the first thread the time to load the database and establish shared memory pool
-                        sleep(60);
+                        while (!done.isDone()) {
+                            // wait a bit to give the first thread the time to load the database and establish shared memory pool
+                            System.out.println("sleep 5 thread "+loopIndex);
+                            sleep(5);
+                        }
+                        System.out.println("Thread "+loopIndex+" can now start.");
                     }
                     final Map<String, String> replacements = new HashMap<String, String>();
 
@@ -169,7 +177,7 @@ public class RunParallelMode extends AbstractGobyMode {
                     OutputStream logStream = null;
                     try {
                         logStream = new LoggingOutputStream(getClass(), Level.INFO, "");
-                        executor.setStreamHandler(new PumpStreamHandler(logStream));
+                        executor.setStreamHandler(new PumpStreamHandler(new StreamSignal(done, "scanning", logStream)));
 
                         final CommandLine parse = CommandLine.parse(transformedCommand, replacements);
                         LOG.info("About to execute: " + parse);
@@ -196,8 +204,8 @@ public class RunParallelMode extends AbstractGobyMode {
         };
         String[] parts = new String[numParts];
 
-        for (int j=0;j<numParts;j++) {
-            parts[j]=Integer.toString(j);
+        for (int j = 0; j < numParts; j++) {
+            parts[j] = Integer.toString(j);
         }
         try {
             loop.execute(true, parts);
