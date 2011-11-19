@@ -75,6 +75,15 @@ public class CompactToFastaMode extends AbstractGobyMode {
     private int largestQueryIndex = Integer.MIN_VALUE;
     private boolean processPairs;
     private boolean hasStartOrEndPosition;
+
+    public void setStartPosition(long startPosition) {
+        this.startPosition = startPosition;
+    }
+
+    public void setEndPosition(long endPosition) {
+        this.endPosition = endPosition;
+    }
+
     private long startPosition;
     private long endPosition;
 
