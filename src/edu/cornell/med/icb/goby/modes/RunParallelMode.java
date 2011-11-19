@@ -139,12 +139,14 @@ public class RunParallelMode extends AbstractGobyMode {
                     ctfm.setOutputFormat(CompactToFastaMode.OutputFormat.FASTQ);
                     ctfm.setStartPosition(slices[loopIndex].startOffset);
                     ctfm.setEndPosition(slices[loopIndex].endOffset);
+
                     String s = FilenameUtils.getBaseName(FilenameUtils.removeExtension(input));
                     String fastqFilename = s + "-" + loopIndex + ".fq";
                     allFastq.add(fastqFilename);
                     File tmp1 = File.createTempFile(s, "-tmp");
                     File output = File.createTempFile(s, "-out");
                     ctfm.setOutputFilename(fastqFilename);
+                    LOG.info(String.format("Extracting FASTQ for slice [%d-%d]%n",slices[loopIndex].startOffset,slices[loopIndex].endOffset));
                     ctfm.execute();
                     String transformedCommand = processPartCommand.replaceAll("%read.fastq%", fastqFilename);
                     transformedCommand = transformedCommand.replaceAll("%tmp1%", tmp1.getName());
