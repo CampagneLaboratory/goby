@@ -20,11 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.reads.ColorSpaceConverter;
-import edu.cornell.med.icb.goby.reads.QualityEncoding;
-import edu.cornell.med.icb.goby.reads.ReadSet;
-import edu.cornell.med.icb.goby.reads.Reads;
-import edu.cornell.med.icb.goby.reads.ReadsReader;
+import edu.cornell.med.icb.goby.reads.*;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
@@ -34,12 +30,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.util.Locale;
 
 /**
@@ -78,12 +69,12 @@ public class CompactToFastaMode extends AbstractGobyMode {
 
     public void setStartPosition(long startPosition) {
         this.startPosition = startPosition;
-        hasStartOrEndPosition =true;
+        hasStartOrEndPosition = true;
     }
 
     public void setEndPosition(long endPosition) {
         this.endPosition = endPosition;
-        hasStartOrEndPosition=true;
+        hasStartOrEndPosition = true;
     }
 
     private long startPosition;
