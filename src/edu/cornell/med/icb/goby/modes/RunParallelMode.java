@@ -148,6 +148,10 @@ public class RunParallelMode extends AbstractGobyMode {
                     ctfm.setOutputFilename(fastqFilename);
                     LOG.info(String.format("Extracting FASTQ for slice [%d-%d]%n",slices[loopIndex].startOffset,slices[loopIndex].endOffset));
                     ctfm.execute();
+                    if (loopIndex>0) {
+                       // wait a bit to give the first thread the time to load the database and establish shared memory pool
+                       sleep(30);
+                    }
                     String transformedCommand = processPartCommand.replaceAll("%read.fastq%", fastqFilename);
                     transformedCommand = transformedCommand.replaceAll("%tmp1%", tmp1.getName());
                     String outputFilename = output.getName();
@@ -193,8 +197,22 @@ public class RunParallelMode extends AbstractGobyMode {
         final ConcatenateAlignmentMode concat = new ConcatenateAlignmentMode();
         concat.setInputFileNames(allOutputs.toArray(new String[allOutputs.size()]));
         concat.setOutputFilename(output);
+        concat.setAdjustQueryIndices(false);
+        concat.setAdjustSampleIndices(false);
         concat.execute();
 
+    }
+
+    /**
+     * Sleep for the specified number of seconds.
+     * @param seconds
+     */
+    private void sleep(int seconds) {
+        try {
+            Thread.sleep(1000 *seconds);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 

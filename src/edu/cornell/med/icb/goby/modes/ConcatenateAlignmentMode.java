@@ -22,10 +22,7 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.aligners.AbstractAligner;
 import edu.cornell.med.icb.goby.alignments.*;
-import edu.cornell.med.icb.goby.alignments.processors.AlignmentProcessorFactory;
-import edu.cornell.med.icb.goby.alignments.processors.AlignmentProcessorInterface;
-import edu.cornell.med.icb.goby.alignments.processors.DummyProcessorUnsorted;
-import edu.cornell.med.icb.goby.alignments.processors.LocalSortProcessor;
+import edu.cornell.med.icb.goby.alignments.processors.*;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import it.unimi.dsi.logging.ProgressLogger;
@@ -67,9 +64,14 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
 
     private String[] inputFilenames;
     private String outputFile;
+
+    public void setAdjustSampleIndices(boolean adjustSampleIndices) {
+        this.adjustSampleIndices = adjustSampleIndices;
+    }
+
     private boolean adjustQueryIndices = true;
     private boolean realign = true;
-    private AlignmentProcessorFactory alignmentProcessorFactory;
+    private AlignmentProcessorFactory alignmentProcessorFactory=new DefaultAlignmentProcessorFactory();
     private RandomAccessSequenceInterface genome;
     private boolean adjustSampleIndices;
 
