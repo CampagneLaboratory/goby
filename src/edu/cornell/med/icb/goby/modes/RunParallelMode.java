@@ -150,7 +150,7 @@ public class RunParallelMode extends AbstractGobyMode {
                     ctfm.execute();
                     if (loopIndex>0) {
                        // wait a bit to give the first thread the time to load the database and establish shared memory pool
-                       sleep(30);
+                       sleep(60);
                     }
                     String transformedCommand = processPartCommand.replaceAll("%read.fastq%", fastqFilename);
                     transformedCommand = transformedCommand.replaceAll("%tmp1%", tmp1.getName());
