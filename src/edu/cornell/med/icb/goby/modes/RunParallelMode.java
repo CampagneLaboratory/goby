@@ -20,17 +20,9 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.GobyVersion;
-import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.alignments.ReferenceLocation;
-import edu.cornell.med.icb.goby.alignments.UpgradeTo1_9_6;
 import edu.cornell.med.icb.goby.util.DoInParallel;
 import edu.cornell.med.icb.goby.util.LoggingOutputStream;
-import edu.rit.pj.ParallelRegion;
-import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
@@ -41,6 +33,8 @@ import org.apache.log4j.Level;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Converts a compact alignment to plain text.
@@ -61,6 +55,7 @@ public class RunParallelMode extends AbstractGobyMode {
     private String processPartCommand;
     private String input;
     private String output;
+    private String[] command;
 
 
     @Override
@@ -90,7 +85,13 @@ public class RunParallelMode extends AbstractGobyMode {
 
         input = jsapResult.getString("input");
         output = jsapResult.getString("output");
-        processPartCommand = jsapResult.getString("process-part-command");
+        command = jsapResult.getStringArray("process-part-command");
+        StringBuffer sb = new StringBuffer();
+        for (String arg : command) {
+            sb.append(arg);
+            sb.append(" ");
+        }
+        processPartCommand = sb.toString();
         numParts = jsapResult.getInt("num-parts");
 
         return this;
@@ -140,43 +141,53 @@ public class RunParallelMode extends AbstractGobyMode {
                     ctfm.setStartPosition(slices[loopIndex].startOffset);
                     ctfm.setEndPosition(slices[loopIndex].endOffset);
 
-                    String s = FilenameUtils.getBaseName(FilenameUtils.removeExtension(input));
-                    String fastqFilename = s + "-" + loopIndex + ".fq";
+                    String s = FilenameUtils.getBaseName(FilenameUtils.removeExtension(input)) + "-" + Integer.toString(loopIndex);
+                    String fastqFilename = s + "-input.fq";
                     allFastq.add(fastqFilename);
-                    File tmp1 = File.createTempFile(s, "-tmp");
-                    File output = File.createTempFile(s, "-out");
+                    File tmp1 = new File(s + "-tmp");
+                    tmp1.deleteOnExit();
+                    File output = new File(s + "-out");
+                    output.deleteOnExit();
                     ctfm.setOutputFilename(fastqFilename);
-                    LOG.info(String.format("Extracting FASTQ for slice [%d-%d]%n",slices[loopIndex].startOffset,slices[loopIndex].endOffset));
+                    LOG.info(String.format("Extracting FASTQ for slice [%d-%d] loopIndex=%d %n",
+                            slices[loopIndex].startOffset,
+                            slices[loopIndex].endOffset, loopIndex));
                     ctfm.execute();
-                    if (loopIndex>0) {
-                       // wait a bit to give the first thread the time to load the database and establish shared memory pool
-                       sleep(60);
+                    if (loopIndex > 0) {
+                        // wait a bit to give the first thread the time to load the database and establish shared memory pool
+                        sleep(60);
                     }
-                    String transformedCommand = processPartCommand.replaceAll("%read.fastq%", fastqFilename);
-                    transformedCommand = transformedCommand.replaceAll("%tmp1%", tmp1.getName());
-                    String outputFilename = output.getName();
-                    transformedCommand = transformedCommand.replaceAll("%output%", outputFilename);
+                    final Map<String, String> replacements = new HashMap<String, String>();
+
+                    final String outputFilename = output.getName();
+
+                    replacements.put("%read.fastq%", fastqFilename);
+                    replacements.put("%tmp1%", tmp1.getName());
+                    replacements.put("%output%", outputFilename);
+                    final String transformedCommand = transform(processPartCommand, replacements);
                     final DefaultExecutor executor = new DefaultExecutor();
                     OutputStream logStream = null;
                     try {
                         logStream = new LoggingOutputStream(getClass(), Level.INFO, "");
                         executor.setStreamHandler(new PumpStreamHandler(logStream));
-                        LOG.info("About to execute: " + transformedCommand);
-                        final int exitValue = executor.execute(CommandLine.parse(transformedCommand));
+
+                        final CommandLine parse = CommandLine.parse(transformedCommand, replacements);
+                        LOG.info("About to execute: " + parse);
+                        final int exitValue = executor.execute(parse);
                         LOG.info("Exit value = " + exitValue);
+                        if (new File(outputFilename + ".header").exists()) {
+                            // found output alignment:
+                            System.out.println("found output file: " + outputFilename);
+                            allOutputs.add(outputFilename + ".header");
+                        } else {
+                            System.out.println("Warning: did not find output alignment: " + outputFilename);
+                        }
                     } finally {
                         IOUtils.closeQuietly(logStream);
                         // remove the fastq file
                         new File(fastqFilename).delete();
                     }
 
-                    if (new File(outputFilename + ".header").exists()) {
-                        // found output alignment:
-                        System.out.println("found output file: " + outputFilename);
-                        allOutputs.add(outputFilename);
-                    } else {
-                        System.out.println("Warning: did not find output alignment: " + outputFilename);
-                    }
 
                 } catch (IOException e) {
                     LOG.error("Error processing index " + loopIndex + ", " + inputBasename, e);
@@ -185,7 +196,9 @@ public class RunParallelMode extends AbstractGobyMode {
         };
         String[] parts = new String[numParts];
 
-
+        for (int j=0;j<numParts;j++) {
+            parts[j]=Integer.toString(j);
+        }
         try {
             loop.execute(true, parts);
         } catch (Exception e) {
@@ -203,13 +216,21 @@ public class RunParallelMode extends AbstractGobyMode {
 
     }
 
+    private String transform(String processPartCommand, Map<String, String> replacements) {
+        for (String key : replacements.keySet()) {
+            processPartCommand = processPartCommand.replaceAll(key, replacements.get(key));
+        }
+        return processPartCommand;
+    }
+
     /**
      * Sleep for the specified number of seconds.
+     *
      * @param seconds
      */
     private void sleep(int seconds) {
         try {
-            Thread.sleep(1000 *seconds);
+            Thread.sleep(1000 * seconds);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

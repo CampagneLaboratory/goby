@@ -50,12 +50,16 @@ public class DummyProcessorUnsorted implements AlignmentProcessorInterface {
      *
      * @param targetIndex
      * @param position
-     * @return
+     * @return An entry, or null when hasNext() of the delegate is false.
      * @throws java.io.IOException
      */
     public Alignments.AlignmentEntry nextRealignedEntry(int targetIndex, int position) throws IOException {
         ++processedCount;
-        return reader.next();
+        if (reader.hasNext()) {
+            return reader.next();
+        }   else {
+            return null;
+        }
     }
 
     public void setGenome(RandomAccessSequenceInterface genome) {

@@ -19,41 +19,30 @@
 <jsap>
     <parameters>
 
-        <unflaggedOption>
+        <flaggedOption>
             <id>input</id>
+            <longFlag>input</longFlag>
+            <shortFlag>i</shortFlag>
             <stringParser>
                 <classname>StringStringParser</classname>
             </stringParser>
              <required>true</required>
             <help>Name of the input compact-reads file.</help>
-        </unflaggedOption>
-        <flaggedOption>
-            <id>process-part-command</id>
-            <longFlag>process-part-command</longFlag>
-            <stringParser>
-                <classname>StringStringParser</classname>
-            </stringParser>
-            <required>true</required>
-            <help>Command to execute in parallel for each piece of the input. The symbol %read.fastq% will be replaced
-                with the filename for the fastq file of each piece. The symbol %temp1% will be available with a valid
-                and distinct filename for each part to write temporary content. The symbol %output% will be available
-                with a valid filename to write the output of this part (pre-concat output).
-            </help>
         </flaggedOption>
-
-        <!--flaggedOption>
-            <id>split-command</id>
-            <longFlag>split-command</longFlag>
+        <unflaggedOption>
+            <id>process-part-command</id>
             <stringParser>
                 <classname>StringStringParser</classname>
             </stringParser>
+            <greedy>true</greedy>
             <required>true</required>
-            <help>Command to split a compact-reads file into small parts. The symbol %part-index% will be replaced
-                with the index of the part (1 .. n). The symbol %input% will be replaced with the name of the input
-                file.
-                The symbol %split-output% will be replaced with the name of a fastq file, unique for each part.
+            <help>Command to execute in parallel for each piece of the input. The symbol %read.fastq% will be replaced with the filename for the fastq file of each piece. The symbol %tmp1% will be available with a valid
+and distinct filename for each part to write temporary content. The symbol %output% will be available
+with a valid filename to write the output of this part (pre-concat output).
             </help>
-        </flaggedOption-->
+        </unflaggedOption>
+
+
         <flaggedOption>
             <id>num-parts</id>
             <longFlag>num-parts</longFlag>
