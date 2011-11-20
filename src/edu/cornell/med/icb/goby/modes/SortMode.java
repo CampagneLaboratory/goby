@@ -39,7 +39,7 @@ public class SortMode extends AbstractGobyMode {
     /**
      * Used to log debug and informational messages.
      */
-    private static final Log LOG = LogFactory.getLog(CompactAlignmentToAnnotationCountsMode.class);
+    private static final Log LOG = LogFactory.getLog(SortMode.class);
 
     /**
      * The mode name.
