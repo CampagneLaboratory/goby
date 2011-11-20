@@ -160,7 +160,7 @@ public class RunParallelMode extends AbstractGobyMode {
                     if (loopIndex > 0) {
                         while (!done.isDone()) {
                             // wait a bit to give the first thread the time to load the database and establish shared memory pool
-                            System.out.println("sleep 5 thread "+loopIndex);
+                         //   System.out.println("sleep 5 thread "+loopIndex);
                             sleep(5);
                         }
                         System.out.println("Thread "+loopIndex+" can now start.");
@@ -214,7 +214,7 @@ public class RunParallelMode extends AbstractGobyMode {
             e.printStackTrace();
         }
 
-
+        System.out.printf("Preparing to concatenate %d outputs..%n",allOutputs.size());
         final ConcatenateAlignmentMode concat = new ConcatenateAlignmentMode();
         concat.setInputFileNames(allOutputs.toArray(new String[allOutputs.size()]));
         concat.setOutputFilename(output);
