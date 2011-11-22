@@ -1,4 +1,4 @@
-#!/bin/sh  
+#!/bin/bash
 
 # This script runs Goby with the specified amount of memory.
 # The script will find the Goby jar if it is located in the same directory as this script
@@ -13,7 +13,6 @@
 export memory_requirement=$1
 shift
 export other_parameters=$*
-
 
 export WORKING_DIR=`dirname "$0"`
 export GOBY_JAR=${WORKING_DIR}/goby.jar
