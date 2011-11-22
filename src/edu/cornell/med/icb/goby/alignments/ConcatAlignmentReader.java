@@ -228,15 +228,19 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
                 }
             }
 
-            targetLengths = readers[0].getTargetLength();
+            targetLengths = new int[targetIdentifiers.size()];
             // keep the maximum length across all readers. We do this to retrieve targetLength over alignments merged
             // from pieces that do not have entries for all target.
-            for (int targetIndex=0;targetIndex<targetIdentifiers.size();targetIndex++) {
-              int  maxLength=-1;
-                for (AlignmentReader reader: readers) {
-                    maxLength=Math.max(reader.getTargetLength()[targetIndex],maxLength);
+            for (int targetIndex = 0; targetIndex < targetIdentifiers.size(); targetIndex++) {
+                int maxLength = -1;
+                for (final AlignmentReader reader : readers) {
+                    final int[] readerLengths = reader.getTargetLength();
+                    if (readerLengths != null && readerLengths.length>targetIndex) {
+                        maxLength = Math.max(readerLengths[targetIndex], maxLength);
+                        targetLengths[targetIndex] = maxLength;
+                    }
                 }
-                targetLengths[targetIndex]=maxLength;
+
             }
             // calculate offsets needed to adjustQueryIndices
             for (int i = 0; i < queryIndexOffset.length; i++) {
@@ -386,7 +390,7 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
         for (AlignmentReader reader : this.readers) {
             result.addAll(reader.getLocations(modulo));
         }
-        ObjectList<ReferenceLocation> list=new ObjectArrayList<ReferenceLocation>();
+        ObjectList<ReferenceLocation> list = new ObjectArrayList<ReferenceLocation>();
         list.addAll(result);
         Collections.sort(list);
         return list;
