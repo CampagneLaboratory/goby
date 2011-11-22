@@ -359,10 +359,10 @@ public class AlignmentWriter implements Closeable {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void close() throws IOException {
 
         writeHeader();
-
         writeStats();
 
         IOUtils.closeQuietly(headerOutput);
@@ -543,19 +543,20 @@ public class AlignmentWriter implements Closeable {
     public void setTargetLengths(final int[] targetLengths) {
         assert targetLengths != null : "Target lengths cannot be null.";
         assert targetLengths.length > maxTargetIndex
-                : "The number of elements of targetLength is too small to accomodate targetIndex="
+                : "The number of elements of targetLength is too small to accommodate targetIndex="
                 + maxTargetIndex;
 
         // calculate the coding offset for each target index. This information will be used by recode
         targetPositionOffsets = new long[targetLengths.length];
-        targetPositionOffsets[0] = 0;
-        for (int targetIndex = 1; targetIndex < targetLengths.length; targetIndex++) {
-            targetPositionOffsets[targetIndex] =
-                    targetLengths[targetIndex - 1] +
-                            targetPositionOffsets[targetIndex - 1];
+        if (targetLengths.length > 0) {
+            targetPositionOffsets[0] = 0;
+            for (int targetIndex = 1; targetIndex < targetLengths.length; targetIndex++) {
+                targetPositionOffsets[targetIndex] =
+                        targetLengths[targetIndex - 1] +
+                                targetPositionOffsets[targetIndex - 1];
 
+            }
         }
-
         this.targetLengths = targetLengths;
     }
 

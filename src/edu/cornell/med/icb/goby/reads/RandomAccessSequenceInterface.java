@@ -56,7 +56,14 @@ public interface RandomAccessSequenceInterface {
     void getRange(final int referenceIndex, final int position, final int length, MutableString bases);
 
     int getReferenceIndex(String referenceId);
+   /**
+     * Return the reference name corresponding to this index.
+     *
+     * @param index for the specified reference
+     * @return referenceName The name of the sequence to get the index for
+     */
 
+    String getReferenceName(final int index) ;
     /**
      * Return the number of sequences in the cache.
      *

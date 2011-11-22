@@ -124,6 +124,50 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
     }
 
+
+    //not a test, just useful to run through the code.
+
+       public void testDiscoverMethylationOneGroup() throws IOException, JSAPException {
+
+        final DiscoverSequenceVariantsMode mode = new DiscoverSequenceVariantsMode();
+        int i = 1;
+        final String outputFilename = "out-methylation-" + i + ".tsv";
+        String[] args = constructArgumentString(
+                basenames, BASE_TEST_DIR + "/" + outputFilename, "methylation").split("[\\s]");
+        args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.METHYLATION.toString()});
+        for (int j = 0; j < args.length; j++) {
+            if ("--compare".equals(args[j])) {
+                // remove the compare argument:
+                args[j + 1] = null;
+                args[j] = null;
+            }
+        }
+        args = removeNulled(args);
+        configureTestGenome(mode);
+        mode.configure(args);
+        mode.execute();
+        assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
+                new File("test-data/discover-variants/expected-output-methylation.tsv"));
+
+    }
+
+    private String[] removeNulled(final String[] args) {
+        int removeCount = 0;
+        for (final String s : args) {
+            if (s == null) {
+                removeCount++;
+            }
+        }
+        final String[] dest = new String[args.length - removeCount];
+        int j = 0;
+        for (final String s : args) {
+            if (s != null) {
+                dest[j++] = s;
+            }
+        }
+        return dest;
+    }
+
     @Test
     public void testDiscoverAlleleImbalance() throws IOException, JSAPException {
 
@@ -135,11 +179,11 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
         args = add(args, new String[]{"--format", DiscoverSequenceVariantsMode.OutputFormat.ALLELE_FREQUENCIES.toString()});
 
         configureTestGenome(mode);
-        FormatConfigurator configurator=new FormatConfigurator(){
+        FormatConfigurator configurator = new FormatConfigurator() {
 
             @Override
             public void configureFormatter(final SequenceVariationOutputFormat formatter) {
-               ((AlleleFrequencyOutputFormat)formatter).setMinimumAllelicDifference(0);
+                ((AlleleFrequencyOutputFormat) formatter).setMinimumAllelicDifference(0);
             }
         };
         mode.setFormatConfigurator(configurator);

@@ -37,8 +37,8 @@ public class TestCountsWriterTestSupport {
         CountsWriterTestSupport writer = new CountsWriterTestSupport();
         writer.appendCount(10, 4);
         writer.appendCount(1, 0);
-        writer.appendCount(1, 8);
-        assertEquals("(4,10)(0,1)(8,1)", writer.countsAsText());
+        writer.appendCount(2, 8);
+        assertEquals("initial-count=0 (c=10,l=4)(c=1,l=0)(c=2,l=8)", writer.countsAsText());
     }
 
     @Test

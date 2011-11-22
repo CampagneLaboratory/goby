@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.Release1_9_7_2;
 import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
+import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.alignments.DiscoverVariantIterateSortedAlignments;
 import edu.cornell.med.icb.goby.alignments.PositionBaseInfo;
 import edu.cornell.med.icb.goby.alignments.SampleCountInfo;
@@ -36,6 +37,7 @@ import org.junit.Test;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
@@ -120,6 +122,9 @@ public class TestCompareGroupsVCFOutputFormat {
         expect(mode.getGroups()).andReturn(groups);
         expect(mode.getSamples()).andReturn(samples);
         expect(mode.getReadIndexStats()).andReturn(null);
+        ArrayList<GroupComparison> groupComparisons = new ArrayList<GroupComparison>();
+        groupComparisons.add(new GroupComparison("group1","group2",0,1,0));
+        expect(mode.getGroupComparisons()).andReturn(groupComparisons);
     }
 
 

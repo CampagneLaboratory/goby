@@ -21,12 +21,16 @@
 package edu.cornell.med.icb.goby.reads;
 
 import com.google.protobuf.ByteString;
+import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.parsers.ReaderFastaParser;
 import it.unimi.dsi.bits.BitVector;
 import it.unimi.dsi.bits.LongArrayBitVector;
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.io.BinIO;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -49,6 +53,7 @@ import java.util.zip.GZIPInputStream;
 public class RandomAccessSequenceCache implements RandomAccessSequenceInterface {
     private ObjectArrayList<LongArrayBitVector> referenceIgnoreLists;
     private Object2IntMap<String> referenceNameMap;
+    private Int2ObjectMap<String> indexToNameMap;
     private ObjectArrayList<byte[]> compressedData;
     private IntList sizes;
     private static final Logger LOG = Logger.getLogger(RandomAccessSequenceCache.class);
@@ -65,6 +70,7 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         referenceIgnoreLists = new ObjectArrayList<LongArrayBitVector>();
         referenceNameMap = new Object2IntOpenHashMap<String>();
         referenceNameMap.defaultReturnValue(-1);
+        indexToNameMap = new Int2ObjectArrayMap<String>();
         sizes = new IntArrayList();
     }
 
@@ -78,6 +84,8 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         final ReaderFastaParser parser = new ReaderFastaParser(reader);
         final MutableString description = new MutableString();
         int refIndex = 0;
+        minRefIndex=Integer.MAX_VALUE;
+        maxRefIndex=Integer.MIN_VALUE;
         while (parser.hasNextSequence()) {
             int position = 0;
             parser.nextSequence(description);
@@ -100,6 +108,8 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
             compressed.close();
             referenceIgnoreLists.add(referenceIgnoreList);
             referenceNameMap.put(referenceName, refIndex);
+            indexToNameMap.put(refIndex, referenceName);
+            updateSliceIndices(refIndex);
 
             refIndex++;
 
@@ -109,6 +119,14 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
             compressedData.add(bytes);
             sizes.add(position + 1);
         }
+
+    }
+
+    private void updateSliceIndices(final int refIndex) {
+
+         this.minRefIndex=Math.min(refIndex,minRefIndex);
+         this.maxRefIndex=Math.max(refIndex, maxRefIndex);
+
     }
 
     /**
@@ -122,7 +140,8 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         final MutableString description = new MutableString();
         int refIndex = 0;
         Reads.ReadEntry entry;
-
+         minRefIndex=Integer.MAX_VALUE;
+        maxRefIndex=Integer.MIN_VALUE;
         while (parser.hasNext()) {
             entry = parser.next();
 
@@ -144,6 +163,8 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
             compressed.close();
             referenceIgnoreLists.add(referenceIgnoreList);
             referenceNameMap.put(referenceName, refIndex);
+            indexToNameMap.put(refIndex, referenceName);
+            updateSliceIndices(refIndex);
 
             refIndex++;
 
@@ -168,6 +189,10 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         compressedData = (ObjectArrayList<byte[]>) BinIO.loadObject(basename + ".bases");
         referenceIgnoreLists = (ObjectArrayList<LongArrayBitVector>) BinIO.loadObject(basename + ".ignore");
         referenceNameMap = (Object2IntMap<String>) BinIO.loadObject(basename + ".names");
+
+        for (final String name : referenceNameMap.keySet()) {
+            indexToNameMap.put(referenceNameMap.get(name), name);
+        }
     }
 
     /**
@@ -184,8 +209,8 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
     public void load(final String basename, final String minRefId, final String maxRefId) throws IOException, ClassNotFoundException {
 
         load(basename);
-        minRefIndex = "min".equals(minRefId) ? -1 : referenceNameMap.get(minRefId);
-        maxRefIndex = "max".equals(minRefId) ? referenceNameMap.size() : referenceNameMap.get(maxRefId);
+        minRefIndex = "min".equals(minRefId) ? -1 : referenceNameMap.getInt(minRefId);
+        maxRefIndex = "max".equals(maxRefId) ? referenceNameMap.size() : referenceNameMap.getInt(maxRefId);
 
         // remove sequences we won't need
         for (int i = 0; i < minRefIndex; i++) {
@@ -196,6 +221,7 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
             compressedData.rem(i);
             referenceIgnoreLists.rem(i);
         }
+
     }
 
     public boolean canLoad(final String basename) {
@@ -289,6 +315,17 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
 
     public final int getReferenceIndex(final String referenceName) {
         return referenceNameMap.getInt(referenceName);
+    }
+
+    /**
+     * Return the reference name corresponding to this index.
+     *
+     * @param index for the specified reference
+     * @return referenceName The name of the sequence to get the index for
+     */
+
+    public final String getReferenceName(final int index) {
+        return indexToNameMap.get(index);
     }
 
     @Override

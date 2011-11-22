@@ -27,6 +27,7 @@ import edu.cornell.med.icb.goby.alignments.processors.AlignmentProcessorInterfac
 import edu.cornell.med.icb.goby.alignments.processors.DefaultAlignmentProcessorFactory;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
+import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
@@ -527,6 +528,13 @@ public abstract class IterateSortedAlignments<T> {
 
         alignmentToGenomeTargetIndices = new int[numTargets];
         final int[] alignmentTargetLengths = sortedReaders.getTargetLength();
+        IndexedIdentifier targetIds = sortedReaders.getTargetIdentifiers();
+        DoubleIndexedIdentifier reverseIds = new DoubleIndexedIdentifier(targetIds);
+        try {
+            sortedReaders.readHeader();
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
         for (int targetIndex = 0; targetIndex < numTargets; targetIndex++) {
             final MutableString targetId = reverseMapping.getId(targetIndex);
             final int genomeTargetIndex = genome.getReferenceIndex(targetId.toString());
@@ -535,8 +543,9 @@ public abstract class IterateSortedAlignments<T> {
             if (alignmentTargetLength != genomeLength) {
 
                 LOG.error(String.format(
-                        "Genome reference length (%d) differs from alignment reference length (%d) for sequence at index %d",
-                        alignmentTargetLength, genomeLength, targetIndex));
+                        "Genome reference %s length (%d) differs from alignment reference length (%d) for sequence %s at index %d",
+                        genome.getReferenceName(targetIndex), genomeLength, alignmentTargetLength,
+                        reverseIds.getId(targetIndex), targetIndex));
 
             }
             alignmentToGenomeTargetIndices[targetIndex] = genomeTargetIndex;

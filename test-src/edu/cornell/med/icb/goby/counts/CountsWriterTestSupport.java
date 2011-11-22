@@ -32,7 +32,7 @@ import java.io.IOException;
 public class CountsWriterTestSupport implements CountsWriterI {
     private int numTransitions;
     private final MutableString transitionsAsText = new MutableString();
-    private int previousCount;
+    private int previousCount=-1;
     private int initialCount = 0;
 
     /**

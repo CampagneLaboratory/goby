@@ -59,6 +59,11 @@ public class RandomAccessSequenceTestSupport implements RandomAccessSequenceInte
     }
 
     @Override
+    public String getReferenceName(int index) {
+        return "no-name";
+    }
+
+    @Override
     public int size() {
         return referenceSequences.length;
     }
