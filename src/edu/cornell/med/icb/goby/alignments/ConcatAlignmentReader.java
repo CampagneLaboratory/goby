@@ -229,6 +229,15 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
             }
 
             targetLengths = readers[0].getTargetLength();
+            // keep the maximum length across all readers. We do this to retrieve targetLength over alignments merged
+            // from pieces that do not have entries for all target.
+            for (int targetIndex=0;targetIndex<targetIdentifiers.size();targetIndex++) {
+              int  maxLength=-1;
+                for (AlignmentReader reader: readers) {
+                    maxLength=Math.max(reader.getTargetLength()[targetIndex],maxLength);
+                }
+                targetLengths[targetIndex]=maxLength;
+            }
             // calculate offsets needed to adjustQueryIndices
             for (int i = 0; i < queryIndexOffset.length; i++) {
 
