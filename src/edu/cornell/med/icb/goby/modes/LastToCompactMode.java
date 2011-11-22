@@ -22,10 +22,12 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.reads.ReadSet;
+import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.iterators.TsvLineIterator;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
@@ -158,7 +160,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
 
             final AlignmentStats stats = new AlignmentStats();
             //      final int[] readLengths = createReadLengthArray();
-            int targetLengths[] = new int[targetIds.size()];
+            IntArrayList targetLengths = new IntArrayList();
             // first pass: collect minimum score to keep each queryEntry
             // second pass: write to compact alignment file for those entries with score above threshold
             for (final boolean writeAlignment : new boolean[]{false, true}) {
@@ -217,7 +219,10 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     currentEntry.setQueryIndex(queryIndex);
                     currentEntry.setScore(score);
                     currentEntry.setTargetAlignedLength(reference.alignedLength);
-                    targetLengths[targetIndex] = reference.sequenceLength;
+                    if (targetLengths.size() <= targetIndex) {
+                        targetLengths.size(targetIndex + 1);
+                    }
+                    targetLengths.set(targetIndex, reference.sequenceLength);
                     currentEntry.setTargetIndex(targetIndex);
                     final int queryLength = query.sequenceLength;
                     currentEntry.setQueryLength(queryLength);
@@ -264,7 +269,19 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                 }
                 parser.close();
                 if (writeAlignment) {
-                    writer.setTargetLengths(targetLengths);
+                    /*System.out.println("============== LastToCompact dumping targetLengths..");
+                    final DoubleIndexedIdentifier reverse = new DoubleIndexedIdentifier(targetIds);
+                    int targetIndex = 0;
+                    for (final int length : targetLengths) {
+                        if (length != 0) {
+                            System.out.printf("target-id %s: index: %d length=%d %n", reverse.getId(targetIndex), targetIndex,
+                                    length);
+                        }
+                        targetIndex++;
+                    }
+                    System.out.println("LastToCompact dumping targetLengths done ============== ");
+                   */
+                    writer.setTargetLengths(targetLengths.toIntArray(new int[targetLengths.size()]));
                     if (readIndexFilter != null) {
                         writer.putStatistic("keep-filter-filename", readIndexFilterFile.getName());
                     }
@@ -318,7 +335,7 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                     base = 'C';
                     break;
             }
-            alignment.setCharAt(i,base);
+            alignment.setCharAt(i, base);
         }
     }
 

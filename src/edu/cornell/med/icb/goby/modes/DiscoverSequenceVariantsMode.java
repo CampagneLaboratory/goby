@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.Release1_9_7_2;
+import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.alignments.processors.*;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
@@ -38,10 +39,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * This mode discovers sequence variants within groups of samples or between groups of samples.
@@ -96,6 +94,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
      */
     private boolean overrideReferenceWithGenome = true;
     private FormatConfigurator formatConfigurator = new DummyFormatConfigurator();
+    private ArrayList<GroupComparison> groupComparisonsList=new ArrayList<GroupComparison>();
 
     public void setDisableAtLeastQuarterFilter(boolean disableAtLeastQuarterFilter) {
         this.disableAtLeastQuarterFilter = disableAtLeastQuarterFilter;
@@ -144,7 +143,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             groupsDefinition = parseGroupFile(groupsDefinitionFile, inputFilenames);
         }
         String compare = jsapResult.getString("compare");
-        if (compare == null) {
+        /*if (compare == null) {
             // make default groups and group definitions.  Each sample becomes its own group, compare group1 and group2.
 
             compare = "group1/group2";
@@ -160,9 +159,9 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             System.out.println(groupsDefinition);
         } else {
             groupsAreDefined = true;
-        }
+        }     */
         deAnalyzer.parseGroupsDefinition(groupsDefinition, deCalculator, inputFilenames);
-        deAnalyzer.parseCompare(compare);
+        groupComparisonsList = deAnalyzer.parseCompare(compare);
 
 
         boolean parallel = jsapResult.getBoolean("parallel", false);
@@ -176,6 +175,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         for (String group : groups) {
             groupIds.registerIdentifier(new MutableString(group));
         }
+
         minimumVariationSupport = jsapResult.getInt("minimum-variation-support");
         thresholdDistinctReadIndices = jsapResult.getInt("threshold-distinct-read-indices");
         CompactAlignmentToAnnotationCountsMode.parseEval(jsapResult, deAnalyzer);
@@ -429,7 +429,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     }
 
     private void stopWhenDefaultGroupOptions() {
-        if (!groupsAreDefined) {
+        if (groupComparisonsList.size()==0) {
             System.err.println("Format group_comparison requires that arguments --group and --compare be defined.");
             System.exit(1);
         }
@@ -448,6 +448,10 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
      */
     public void setFormatConfigurator(FormatConfigurator configurator) {
         this.formatConfigurator = configurator;
+    }
+
+    public ArrayList<GroupComparison> getGroupComparisons() {
+        return groupComparisonsList;
     }
 
 

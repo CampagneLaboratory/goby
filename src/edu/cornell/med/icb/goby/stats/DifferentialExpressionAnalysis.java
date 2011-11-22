@@ -19,15 +19,14 @@
 package edu.cornell.med.icb.goby.stats;
 
 import com.martiansoftware.jsap.JSAPResult;
+import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.*;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.util.ArrayList;
 import java.util.ServiceLoader;
 
 /**
@@ -48,7 +47,8 @@ public class DifferentialExpressionAnalysis {
      * The groups that should be compared, order matters.
      */
     private String[] groupComparison;
-    private final ObjectSet<String> groups = new ObjectArraySet<String>();
+
+    private String[] groups;
     private final Object2ObjectMap<String, Integer> groupSizes =
             new Object2ObjectOpenHashMap<String, Integer>();
 
@@ -81,6 +81,7 @@ public class DifferentialExpressionAnalysis {
         }
 
         final String[] groupsTmp = groupsDefinition.split("/");
+        ObjectSet<String> groupSet = new ObjectArraySet<String>();
         for (final String group : groupsTmp) {
             final String[] groupTokens = group.split("=");
             if (groupTokens.length < 2) {
@@ -91,7 +92,7 @@ public class DifferentialExpressionAnalysis {
             final String groupBasenames = groupTokens[1];
             assert groupTokens.length == 2 : "group definition must have only two elements separated by an equal sign.";
             deCalculator.defineGroup(groupId);
-            groups.add(groupId);
+            groupSet.add(groupId);
             for (final String groupString : groupBasenames.split(",")) {
 
                 final String sampleBasename = FilenameUtils.getBaseName(AlignmentReaderImpl.getBasename(groupString));
@@ -105,10 +106,11 @@ public class DifferentialExpressionAnalysis {
             final int groupSize = (groupBasenames.split(",")).length;
             groupSizes.put(groupId, groupSize);
         }
+        groups = groupSet.toArray(new String[groupSet.size()]);
     }
 
     public String[] getGroups() {
-        return groups.toArray(new String[groups.size()]);
+        return groups;
     }
 
     /**
@@ -126,16 +128,73 @@ public class DifferentialExpressionAnalysis {
         return false;
     }
 
-    public void parseCompare(final String compare) {
-        final String[] groupLanguageText = compare.split("/");
-        for (final String groupId : groupLanguageText) {
-            if (!groups.contains(groupId)) {
-                System.err.println("Group " + groupId + " used in --compare must be defined. "
+    ArrayList<GroupComparison> groupComparisons;
+
+    public ArrayList<GroupComparison> parseCompare(final String compare) {
+        groupComparisons = new ArrayList<GroupComparison>();
+        if (compare == null) {
+            return groupComparisons;
+        }
+        String comparisonPairs[] = compare.split(",");
+        ObjectSet<String> groupSet = new ObjectArraySet<String>();
+        groupSet.addAll(ObjectArrayList.wrap(groups));
+
+        int comparisonIndex = 0;
+        for (String pair : comparisonPairs) {
+            final String[] groupLanguageText = pair.split("/");
+            if (groupLanguageText.length > 2) {
+                System.err.println("Group comparison description" + pair + " used in --compare must name at most two groups. "
                         + "Please see the --groups option to define groups.");
                 System.exit(1);
             }
+            if (groupLanguageText.length == 1) {
+                // comparisons with only one group are ignored.
+                continue;
+            }
+            if (groupLanguageText.length < 1) {
+                System.err.println("Group comparison description" + pair + " used in --compare must name at least one groups. "
+                        + "Please see the --groups option to define groups.");
+                System.exit(1);
+            }
+            if (groupLanguageText[0].equals(groupLanguageText[1])) {
+                System.err.printf("Group names must be different when specifying two groups %s/%s. Use a single group %s or leave out the --compare option to disable group comparisons.%n",
+                        groupLanguageText[0],
+                        groupLanguageText[0], groupLanguageText[0]);
+                System.exit(1);
+            } else {
+                System.err.printf("Ignoring group comparison %s. Use A/B to compare two groups.%n", groupLanguageText[0]);
+            }
+            int groupIndex = -1;
+            for (final String groupId : groupLanguageText) {
+                if (!groupSet.contains(groupId)) {
+                    System.err.println("Group " + groupId + " used in --compare must be defined. "
+                            + "Please see the --groups option to define groups.");
+                    System.exit(1);
+                }
+            }
+            groupComparison = groupLanguageText;
+            int firstGroupIndex = 0;
+            int secondGroupIndex = groupLanguageText.length - 1;
+            groupComparisons.add(new GroupComparison(groupLanguageText[firstGroupIndex],
+                    groupLanguageText[secondGroupIndex],
+                    groupIndex(groupLanguageText[firstGroupIndex]),
+                    groupIndex(groupLanguageText[secondGroupIndex]),
+                    comparisonIndex++));
         }
-        groupComparison = groupLanguageText;
+        return groupComparisons;
+
+    }
+
+    private int groupIndex(final String groupName) {
+        int index = 0;
+        for (final String s : getGroups()) {
+            if (groupName.equals(s)) {
+                return index;
+            }
+            index++;
+        }
+        assert false : "group " + groupName + " must be found.";
+        return -1;
     }
 
     public ObjectArraySet<NormalizationMethod> parseNormalization(final JSAPResult jsapResult) {
@@ -186,7 +245,7 @@ public class DifferentialExpressionAnalysis {
             results = deCalculator.compare(results, null, new CountRawSampleIdsCalculator());
         }
         for (final NormalizationMethod method : normalizationMethods) {
-            method.normalize(deCalculator, groupComparison);
+            method.normalize(deCalculator, getGroupComparison());
 
             // evaluate per-sample statistics:
 
@@ -259,6 +318,14 @@ public class DifferentialExpressionAnalysis {
 
     public void setRunInParallel(boolean parallel) {
         this.runInParalell = parallel;
+    }
+
+    public String[] getGroupComparison() {
+        String[] result = new String[2];
+        GroupComparison val = groupComparisons.get(0);
+        result[0] = val.nameGroup1;
+        result[1] = val.nameGroup1;
+        return result;
     }
 }
 

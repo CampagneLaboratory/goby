@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.R.GobyRengine;
+import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
@@ -33,6 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.rosuda.JRI.Rengine;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -59,15 +61,15 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
     private String[] groups;
     private String[] samples;
     private ObjectArrayList<ReadIndexStats> readIndexStats;
-    private int log2OddsRatioColumnIndex;
-    private int fisherExactPValueColumnIndex;
+    private int log2OddsRatioColumnIndex[];
+    private int fisherExactPValueColumnIndex[];
     private int numberOfGroups;
 
     private DifferentialExpressionAnalysis deAnalyzer;
     private DifferentialExpressionCalculator deCalculator;
 
-    private int log2OddsRatioStandardErrorColumnIndex;
-    private int log2OddsRatioZColumnIndex;
+    private int log2OddsRatioStandardErrorColumnIndex[];
+    private int log2OddsRatioZColumnIndex[];
     int[] readerIndexToGroupIndex;
     private int[] unmethylatedCCountsPerGroup;
     private int[] methylatedCCountPerGroup;
@@ -87,6 +89,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
     private int methylationRateFieldIndex;
     private char strandAtSite;
     private int strandFieldIndex;
+    private ArrayList<GroupComparison> groupComparisons = new ArrayList<GroupComparison>();
 
     public void setMinimumEventThreshold(final int minimumEventThreshold) {
         this.minimumEventThreshold = minimumEventThreshold;
@@ -103,6 +106,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         final ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
         this.statWriter = new VCFWriter(writer);
+        groupComparisons = mode.getGroupComparisons();
         try {
             //activate R only if we need it:
             final Rengine rEngine = GobyRengine.getInstance().getRengine();
@@ -112,33 +116,35 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
             e.printStackTrace();
             throw e;
         }
-        if (groups.length != 2) {
-            System.err.println("CompareGroupsVCFOutputFormat requires exactly two groups.");
+        if (groups.length < 1) {
+            System.err.println("Methylation format requires at least one group.");
             System.exit(1);
         }
 
         this.readIndexStats = readIndexStats;
 
+        log2OddsRatioColumnIndex = new int[groupComparisons.size()];
+        log2OddsRatioStandardErrorColumnIndex = new int[groupComparisons.size()];
+        log2OddsRatioZColumnIndex = new int[groupComparisons.size()];
+        fisherExactPValueColumnIndex = new int[groupComparisons.size()];
 
-        log2OddsRatioColumnIndex = -1;
-        fisherExactPValueColumnIndex = -1;
         numberOfGroups = groups.length;
         biomartFieldIndex = statWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
         strandFieldIndex = statWriter.defineField("INFO", "Strand", 1, ColumnType.String, "Strand of the cytosine site on the reference sequence.");
 
+        for (GroupComparison comparison : groupComparisons) {
+            log2OddsRatioColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("LOD[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
+                    1, ColumnType.Float, String.format("Log2 of the odds-ratio of observing methylation in  group %s versus group %s", comparison.nameGroup1, comparison.nameGroup2));
 
-        log2OddsRatioColumnIndex = statWriter.defineField("INFO", String.format("LOD[%s/%s]", groups[0], groups[1]),
-                1, ColumnType.Float, String.format("Log2 of the odds-ratio of observing methylation in  group %s versus group %s", groups[0], groups[1]));
+            log2OddsRatioStandardErrorColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("LOD_SE[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
+                    1, ColumnType.Float, String.format("Standard Error of the log2 of the odds-ratio between group %s and group %s", comparison.nameGroup1, comparison.nameGroup2));
 
-        log2OddsRatioStandardErrorColumnIndex = statWriter.defineField("INFO", String.format("LOD_SE[%s/%s]", groups[0], groups[1]),
-                1, ColumnType.Float, String.format("Standard Error of the log2 of the odds-ratio between group %s and group %s", groups[0], groups[1]));
+            log2OddsRatioZColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("LOD_Z[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
+                    1, ColumnType.Float, String.format("Z value of the odds-ratio between group %s and group %s", comparison.nameGroup1, comparison.nameGroup2));
 
-        log2OddsRatioZColumnIndex = statWriter.defineField("INFO", String.format("LOD_Z[%s/%s]", groups[0], groups[1]),
-                1, ColumnType.Float, String.format("Z value of the odds-ratio between group %s and group %s", groups[0], groups[1]));
-
-        fisherExactPValueColumnIndex = statWriter.defineField("INFO", String.format("FisherP[%s/%s]", groups[0], groups[1]),
-                1, ColumnType.Float, String.format("Fisher exact P-value of observing as large a difference by chance between group %s and group %s.", groups[0], groups[1]));
-
+            fisherExactPValueColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("FisherP[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
+                    1, ColumnType.Float, String.format("Fisher exact P-value of observing as large a difference by chance between group %s and group %s.", comparison.nameGroup1, comparison.nameGroup2));
+        }
         methylatedCCountsIndex = new int[groups.length];
         notMethylatedCCountsIndex = new int[groups.length];
 
@@ -221,55 +227,59 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
             final float methylationRate = numerator * 100 / denominator;
             statWriter.setSampleValue(methylationRateFieldIndex, sampleIndex, Math.round(methylationRate));
         }
+        for (final GroupComparison comparison : groupComparisons) {
+            int  indexGroup1=comparison.indexGroup1;
+            int  indexGroup2=comparison.indexGroup1;
+            final double denominator = (double) (unmethylatedCCountsPerGroup[indexGroup1]) * (double) (methylatedCCountPerGroup[indexGroup2]);
+            final double oddsRatio = denominator == 0 ? Double.NaN :
+                    ((double) (unmethylatedCCountsPerGroup[indexGroup2]) * (double) (methylatedCCountPerGroup[indexGroup1])) /
+                            denominator;
+            final double logOddsRatioSE;
 
-        final double denominator = (double) (unmethylatedCCountsPerGroup[groupIndexA]) * (double) (methylatedCCountPerGroup[groupIndexB]);
-        final double oddsRatio = denominator == 0 ? Double.NaN :
-                ((double) (unmethylatedCCountsPerGroup[groupIndexB]) * (double) (methylatedCCountPerGroup[groupIndexA])) /
-                        denominator;
-        final double logOddsRatioSE;
-
-        if (methylatedCCountPerGroup[groupIndexA] < 10 ||
-                methylatedCCountPerGroup[groupIndexB] < 10 ||
-                unmethylatedCCountsPerGroup[groupIndexA] < 10 ||
-                unmethylatedCCountsPerGroup[groupIndexB] < 10) {
-            // standard error estimation is unreliable when any of the counts are less than 10.
-            logOddsRatioSE = Double.NaN;
-        } else {
-            logOddsRatioSE = Math.sqrt(1d / unmethylatedCCountsPerGroup[groupIndexB] +
-                    1d / methylatedCCountPerGroup[groupIndexA] +
-                    1d / methylatedCCountPerGroup[groupIndexB] +
-                    1d / unmethylatedCCountsPerGroup[groupIndexA]);
-        }
-        final double log2OddsRatio = Math.log(oddsRatio) / Math.log(2);
-        final double log2OddsRatioZValue = log2OddsRatio / logOddsRatioSE;
-        double fisherP = Double.NaN;
-        if (eventCountAtSite >= 10) {
-            // estimate Fisher only if we have seen at least 10 events.
-
-            final boolean ok = checkCounts();
-            if (ok) {
-                fisherP = fisherRInstalled ? FisherExactRCalculator.getFisherPValue(
-                        unmethylatedCCountsPerGroup[groupIndexB], methylatedCCountPerGroup[groupIndexB],
-                        unmethylatedCCountsPerGroup[groupIndexA], methylatedCCountPerGroup[groupIndexA]) : Double.NaN;
+            if (methylatedCCountPerGroup[indexGroup1] < 10 ||
+                    methylatedCCountPerGroup[indexGroup2] < 10 ||
+                    unmethylatedCCountsPerGroup[indexGroup1] < 10 ||
+                    unmethylatedCCountsPerGroup[indexGroup2] < 10) {
+                // standard error estimation is unreliable when any of the counts are less than 10.
+                logOddsRatioSE = Double.NaN;
             } else {
-                System.err.printf("An exception was caught evaluating the Fisher Exact test P-value. Details are provided below%n" +
-                        "referenceId=%s referenceIndex=%d position=%d %n" +
-                        "unmethylatedCCountsPerGroup[1]=%d methylatedCCountPerGroup[1]=%d%n" +
-                        "unmethylatedCCountsPerGroup[0]=%d, methylatedCCountPerGroup[0]=%d",
-                        currentReferenceId, referenceIndex,
-                        position,
-                        unmethylatedCCountsPerGroup[groupIndexB], methylatedCCountPerGroup[groupIndexB],
-                        unmethylatedCCountsPerGroup[groupIndexA], methylatedCCountPerGroup[groupIndexA]
-                );
+                logOddsRatioSE = Math.sqrt(1d / unmethylatedCCountsPerGroup[indexGroup2] +
+                        1d / methylatedCCountPerGroup[indexGroup1] +
+                        1d / methylatedCCountPerGroup[indexGroup2] +
+                        1d / unmethylatedCCountsPerGroup[indexGroup1]);
             }
+            final double log2OddsRatio = Math.log(oddsRatio) / Math.log(2);
+            final double log2OddsRatioZValue = log2OddsRatio / logOddsRatioSE;
+            double fisherP = Double.NaN;
+            if (eventCountAtSite >= 10) {
+                // estimate Fisher only if we have seen at least 10 events.
+
+                final boolean ok = checkCounts();
+                if (ok) {
+                    fisherP = fisherRInstalled ? FisherExactRCalculator.getFisherPValue(
+                            unmethylatedCCountsPerGroup[indexGroup2], methylatedCCountPerGroup[indexGroup2],
+                            unmethylatedCCountsPerGroup[indexGroup1], methylatedCCountPerGroup[indexGroup1]) : Double.NaN;
+                } else {
+                    System.err.printf("An exception was caught evaluating the Fisher Exact test P-value. Details are provided below%n" +
+                            "referenceId=%s referenceIndex=%d position=%d %n" +
+                            "unmethylatedCCountsPerGroup[1]=%d methylatedCCountPerGroup[1]=%d%n" +
+                            "unmethylatedCCountsPerGroup[0]=%d, methylatedCCountPerGroup[0]=%d",
+                            currentReferenceId, referenceIndex,
+                            position,
+                            unmethylatedCCountsPerGroup[indexGroup2], methylatedCCountPerGroup[indexGroup2],
+                            unmethylatedCCountsPerGroup[indexGroup1], methylatedCCountPerGroup[indexGroup1]
+                    );
+                }
+            }
+
+
+            statWriter.setInfo(log2OddsRatioColumnIndex[comparison.index], log2OddsRatio);
+            statWriter.setInfo(log2OddsRatioStandardErrorColumnIndex[comparison.index], logOddsRatioSE);
+            statWriter.setInfo(log2OddsRatioZColumnIndex[comparison.index], log2OddsRatioZValue);
+            statWriter.setInfo(fisherExactPValueColumnIndex[comparison.index], fisherP);
+
         }
-
-        statWriter.setInfo(log2OddsRatioColumnIndex, log2OddsRatio);
-        statWriter.setInfo(log2OddsRatioStandardErrorColumnIndex, logOddsRatioSE);
-        statWriter.setInfo(log2OddsRatioZColumnIndex, log2OddsRatioZValue);
-        statWriter.setInfo(fisherExactPValueColumnIndex, fisherP);
         genotypeFormatter.writeGenotypes(statWriter, sampleCounts, position);
-
         statWriter.writeRecord();
     }
 

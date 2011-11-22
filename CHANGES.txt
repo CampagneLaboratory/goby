@@ -1,3 +1,11 @@
+1.9.8.1
+ - discover-sequence-variants: add ability to describe zero, one or more group comparisons. Syntax is A/B,A/C to compare
+  group A to B and group A to C. Additional pairs can be described, separated by coma.
+ - Change goby script to request the bash shell explicitly. This is needed on systems where bin/sh is not a synonym for
+   bash. Thanks to Martin Frith for catching this on Ubuntu.
+ - Change how targetLengths are concatenated. It turns out that last-to-compact needs alignment entries matching
+   the target to record the length in the alignment. We need to keep any length seen when we concat because the first
+   chunk may just not have the length for the remaining parts..
  - Improved logic for --paired-end filename support in the fastaToCompactMode.
  - Preliminary support for calling indels with discover-sequence-variants.  Candidate indels are now written
    in the formats that use GenotypeOutputFormat (e.g., genotypes, compare_groups, allele_frequency).
@@ -6,7 +14,7 @@
  - last-to-compact: Add an option to flip the strand of the alignment. This is useful when converting bisulfite reads
    specifically kmatched to the reverse strand.
  - Fix a NPE in suggest-position-slices that could occur with very small alignment files.
->>1.9.8
+1.9.8
  - The BaseStats utility was transformed into a Goby mode (base-stats). The new mode has the ability to tally occurrence
    of CpX motifs in reads. Useful as a proxy to the amount of unconverted Cs in bisulfite converted reads.
  - The methyl-stats mode take a VCF file produced by Goby methylation output and a genome and calculates various

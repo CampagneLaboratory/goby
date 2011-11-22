@@ -59,7 +59,7 @@
             <id>compare</id>
             <longFlag>compare</longFlag>
             <required>false</required>
-            <help>Compare sequence variations across groups of samples. This option is required for some output formats. When provided, the compare flag must be followed by group ids separated by slashes. For instance, if groups group-A and group-B have been defined (see --groups option), --compare group-A/group-B will evaluate statistical tests between sequence variation in groups A and B.</help>
+            <help>Compare sequence variations across groups of samples. This option is required for some output formats. When provided, the compare flag must be followed by group ids separated by slashes. For instance, if groups group-A and group-B have been defined (see --groups option), --compare group-A/group-B will evaluate statistical tests between sequence variation in groups A and B. Starting with version 1.9.8.1, several pairs of groups can be specified. Use format A/B,A/C,A/D to compare group A to group B, C and D respectively.</help>
         </flaggedOption>
         <flaggedOption>
              <id>eval</id>

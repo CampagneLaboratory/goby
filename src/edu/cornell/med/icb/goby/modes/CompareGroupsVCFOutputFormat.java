@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.R.FisherExact;
 import edu.cornell.med.icb.goby.R.GobyRengine;
+import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
@@ -35,6 +36,7 @@ import org.apache.commons.logging.LogFactory;
 import org.rosuda.JRI.Rengine;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -71,15 +73,15 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
     private String[] groups;
     private String[] samples;
     private ObjectArrayList<ReadIndexStats> readIndexStats;
-    private int log2OddsRatioColumnIndex;
-    private int fisherExactPValueColumnIndex;
+    private int log2OddsRatioColumnIndex[];
+    private int fisherExactPValueColumnIndex[];
     private int numberOfGroups;
 
     private DifferentialExpressionAnalysis deAnalyzer;
     private DifferentialExpressionCalculator deCalculator;
 
-    private int log2OddsRatioStandardErrorColumnIndex;
-    private int log2OddsRatioZColumnIndex;
+    private int log2OddsRatioStandardErrorColumnIndex[];
+    private int log2OddsRatioZColumnIndex[];
     private int[] readerIndexToGroupIndex;
     private int[] refCountsPerGroup;
     private int[] variantsCountPerGroup;
@@ -141,6 +143,8 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         this.statWriter = statWriter;
     }
 
+    ArrayList<GroupComparison> groupComparisons;
+
     public void defineColumns(final PrintWriter writer, final DiscoverSequenceVariantsMode mode) {
         deAnalyzer = mode.getDiffExpAnalyzer();
         deCalculator = mode.getDiffExpCalculator();
@@ -154,31 +158,42 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         final Rengine rEngine = GobyRengine.getInstance().getRengine();
         fisherRInstalled = rEngine != null && rEngine.isAlive();
 
-        if (groups.length != 2) {
-            System.err.println("CompareGroupsVCFOutputFormat requires exactly two groups.");
+        if (groups.length < 1) {
+            System.err.println("CompareGroupsVCFOutputFormat requires at least one group.");
             System.exit(1);
         }
-
+        groupComparisons = mode.getGroupComparisons();
         this.readIndexStats = readIndexStats;
 
-        log2OddsRatioColumnIndex = -1;
-        fisherExactPValueColumnIndex = -1;
+        log2OddsRatioColumnIndex = new int[groupComparisons.size()];
+        log2OddsRatioStandardErrorColumnIndex = new int[groupComparisons.size()];
+        log2OddsRatioZColumnIndex = new int[groupComparisons.size()];
+        fisherExactPValueColumnIndex = new int[groupComparisons.size()];
+
         numberOfGroups = groups.length;
         biomartFieldIndex = statWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
 
         genotypeFormatter.defineInfoFields(statWriter);
 
-        log2OddsRatioColumnIndex = statWriter.defineField("INFO", String.format("LOD[%s/%s]", groups[0], groups[1]),
-                1, ColumnType.Float, String.format("Log2 of the odds-ratio of observing a variant in group %s versus group %s", groups[0], groups[1]));
+        for (GroupComparison comparison : groupComparisons) {
+            log2OddsRatioColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("LOD[%s/%s]",
+                    comparison.nameGroup1, comparison.nameGroup2),
+                    1, ColumnType.Float, String.format("Log2 of the odds-ratio of observing a variant in group %s versus group %s",
+                    comparison.nameGroup1, comparison.nameGroup2));
 
-        log2OddsRatioStandardErrorColumnIndex = statWriter.defineField("INFO", String.format("LOD_SE[%s/%s]", groups[0], groups[1]),
-                1, ColumnType.Float, String.format("Standard Error of the log2 of the odds-ratio between group %s and group %s", groups[0], groups[1]));
+            log2OddsRatioStandardErrorColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("LOD_SE[%s/%s]",
+                    comparison.nameGroup1, comparison.nameGroup2),
+                    1, ColumnType.Float, String.format("Standard Error of the log2 of the odds-ratio between group %s and group %s",
+                    comparison.nameGroup1, comparison.nameGroup2));
 
-        log2OddsRatioZColumnIndex = statWriter.defineField("INFO", String.format("LOD_Z[%s/%s]", groups[0], groups[1]),
-                1, ColumnType.Float, String.format("Z value of the odds-ratio of observing a variant in group %s versus group %s", groups[0], groups[1]));
-        fisherExactPValueColumnIndex = statWriter.defineField("INFO", String.format("FisherP[%s/%s]", groups[0], groups[1]),
-                1, ColumnType.Float, String.format("Fisher exact P-value that the allelic frequencies (each sample contributes at least one toward the group count of each allele) differ between group %s and group %s.", groups[0], groups[1]));
-
+            log2OddsRatioZColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("LOD_Z[%s/%s]",
+                    comparison.nameGroup1, comparison.nameGroup2),
+                    1, ColumnType.Float, String.format("Z value of the odds-ratio of observing a variant in group %s versus group %s",
+                    comparison.nameGroup1, comparison.nameGroup2));
+            fisherExactPValueColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("FisherP[%s/%s]",
+                    comparison.nameGroup1, comparison.nameGroup2),
+                    1, ColumnType.Float, String.format("Fisher exact P-value that the allelic frequencies (each sample contributes at least one toward the group count of each allele) differ between group %s and group %s.", comparison.nameGroup1, comparison.nameGroup2));
+        }
         for (int i = 0; i < numberOfGroups; i++) {
             alleleCountsGroupIndex[i] = statWriter.defineField("INFO", String.format("AlleleCountsInGroup[%s]", groups[i]),
                     1, ColumnType.String, String.format("Count of specific alleles in group %s, in the format (allele=count[,])+. Allele count is defined " +
@@ -202,8 +217,12 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         statWriter.writeHeader();
     }
 
+
     @Override
-    public void allocateStorage(final int numberOfSamples, final int numberOfGroups) {
+    public void allocateStorage
+            (
+                    final int numberOfSamples,
+                    final int numberOfGroups) {
         this.numberOfGroups = numberOfGroups;
         this.numberOfSamples = numberOfSamples;
         refCountsPerGroup = new int[numberOfGroups];
@@ -309,39 +328,39 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
             statWriter.setInfo(refCountsIndex[groupIndex], refCountsPerGroup[groupIndex]);
             statWriter.setInfo(varCountsIndex[groupIndex], variantsCountPerGroup[groupIndex]);
         }
+        for (final GroupComparison comparison : groupComparisons) {
+            final int indexGroup1 = comparison.indexGroup1;
+            final int indexGroup2 = comparison.indexGroup1;
+            final double denominator = (double) (refCountsPerGroup[indexGroup1] + 1) * (double) (variantsCountPerGroup[indexGroup2] + 1);
+            double oddsRatio = denominator == 0 ? Double.NaN :
+                    ((double) (refCountsPerGroup[indexGroup2] + 1) * (double) (variantsCountPerGroup[indexGroup1] + 1)) /
+                            denominator;
+            final double logOddsRatioSE;
 
-        final double denominator = (double) (refCountsPerGroup[groupIndexA] + 1) * (double) (variantsCountPerGroup[groupIndexB] + 1);
-        double oddsRatio = denominator == 0 ? Double.NaN :
-                ((double) (refCountsPerGroup[groupIndexB] + 1) * (double) (variantsCountPerGroup[groupIndexA] + 1)) /
-                        denominator;
-        final double logOddsRatioSE;
+            if (variantsCountPerGroup[indexGroup1] < 10 ||
+                    variantsCountPerGroup[indexGroup2] < 10 ||
+                    refCountsPerGroup[indexGroup1] < 10 ||
+                    refCountsPerGroup[indexGroup2] < 10)
 
-        if (variantsCountPerGroup[groupIndexA] < 10 ||
-                variantsCountPerGroup[groupIndexB] < 10 ||
-                refCountsPerGroup[groupIndexA] < 10 ||
-                refCountsPerGroup[groupIndexB] < 10)
+            {
+                // standard error estimation is unreliable when any of the counts are less than 10.
+                logOddsRatioSE = Double.NaN;
+            } else
 
-        {
-            // standard error estimation is unreliable when any of the counts are less than 10.
-            logOddsRatioSE = Double.NaN;
-        } else
+            {
+                logOddsRatioSE = Math.sqrt(1d / refCountsPerGroup[indexGroup2] +
+                        1d / variantsCountPerGroup[indexGroup1] +
+                        1d / variantsCountPerGroup[indexGroup2] +
+                        1d / refCountsPerGroup[indexGroup1]);
+            }
 
-        {
-            logOddsRatioSE = Math.sqrt(1d / refCountsPerGroup[groupIndexB] +
-                    1d / variantsCountPerGroup[groupIndexA] +
-                    1d / variantsCountPerGroup[groupIndexB] +
-                    1d / refCountsPerGroup[groupIndexA]);
-        }
+            double log2OddsRatio = Math.log(oddsRatio) / Math.log(2);
+            final double log2OddsRatioZValue = log2OddsRatio / logOddsRatioSE;
 
-        double log2OddsRatio = Math.log(oddsRatio) / Math.log(2);
-        final double log2OddsRatioZValue = log2OddsRatio / logOddsRatioSE;
-
-        double fisherP = Double.NaN;
+            double fisherP = Double.NaN;
 
 
-        if (fisherRInstalled)
-
-        {
+            if (fisherRInstalled) {
 
                 if (checkCounts()) {
                     final FisherExact.Result result = FisherExact.fexact(fisherVector, maxGenotypeIndexAcrossSamples,
@@ -350,13 +369,14 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
                     fisherP = result.getPValue();
 
                 }
+            }
+
+            statWriter.setInfo(log2OddsRatioColumnIndex[comparison.index], log2OddsRatio);
+            statWriter.setInfo(log2OddsRatioStandardErrorColumnIndex[comparison.index], logOddsRatioSE);
+            statWriter.setInfo(log2OddsRatioZColumnIndex[comparison.index], log2OddsRatioZValue);
+            statWriter.setInfo(fisherExactPValueColumnIndex[comparison.index], fisherP);
+
         }
-
-        statWriter.setInfo(log2OddsRatioColumnIndex, log2OddsRatio);
-        statWriter.setInfo(log2OddsRatioStandardErrorColumnIndex, logOddsRatioSE);
-        statWriter.setInfo(log2OddsRatioZColumnIndex, log2OddsRatioZValue);
-        statWriter.setInfo(fisherExactPValueColumnIndex, fisherP);
-
         genotypeFormatter.writeGenotypes(statWriter, sampleCounts, position);
 
         statWriter.writeRecord();
