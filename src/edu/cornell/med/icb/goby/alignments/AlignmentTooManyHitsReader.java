@@ -21,9 +21,7 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import com.google.protobuf.CodedInputStream;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -53,12 +51,12 @@ public class AlignmentTooManyHitsReader {
     /**
      * A map from query index to the number of hits at that index.
      */
-    private Int2IntMap queryIndex2NumHits = new Int2IntOpenHashMap();
+    private Int2IntMap queryIndex2NumHits = new Int2IntAVLTreeMap();
 
     /**
      * A map from query index to depth/length of match.
      */
-    private Int2IntMap queryIndex2Depth = new Int2IntOpenHashMap();
+    private Int2IntMap queryIndex2Depth = new Int2IntAVLTreeMap();
 
     /**
      * The threshold used by the aligner to determine that a query is ambiguous and

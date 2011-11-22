@@ -142,7 +142,10 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         long numLogicalEntries = 0;
         long numEntries = 0;
         final int numQueries = alignmentReader.getNumberOfQueries();
-
+        System.out.println("Concatenating TMH..");
+        // too many hits is prepared as for Merge:
+        Merge.prepareMergedTooManyHits(outputFile, alignmentReader.getNumberOfQueries(), 0, basenames);
+        System.out.println("Done.");
         progress.start("Concatenating entries");
 
         if (alignmentReader.getTargetLength() != null) {
@@ -175,8 +178,6 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         }
         alignmentReader.getStatistics();
         progress.done();
-        // too many hits is prepared as for Merge:
-        Merge.prepareMergedTooManyHits(outputFile, alignmentReader.getNumberOfQueries(), 0, basenames);
 
         writer.setSmallestSplitQueryIndex(alignmentReader.getSmallestSplitQueryIndex());
         writer.setLargestSplitQueryIndex(alignmentReader.getLargestSplitQueryIndex());
@@ -200,6 +201,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         System.out.printf("Number of alignment entries realigned in the proximity of indels: %d (%3.3g %% of total)%n",
                 processor.getModifiedCount(),
                 divide(100 * processor.getModifiedCount(), processor.getProcessedCount()));
+
     }
 
     public static boolean isAllSorted(final String[] basenames) throws IOException {

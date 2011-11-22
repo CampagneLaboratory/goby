@@ -1,4 +1,5 @@
 1.9.8.1
+ - Optimize merging of TMH when the files are large (>100M compressed).
  - discover-sequence-variants: add ability to describe zero, one or more group comparisons. Syntax is A/B,A/C to compare
   group A to B and group A to C. Additional pairs can be described, separated by coma.
  - Change goby script to request the bash shell explicitly. This is needed on systems where bin/sh is not a synonym for

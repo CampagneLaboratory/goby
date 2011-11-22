@@ -31,6 +31,7 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -314,48 +315,61 @@ public class Merge {
     public static int prepareMergedTooManyHits(
             final String outputFile, int numberOfReads, final int minQueryIndex,
             final String... basenames) throws IOException {
-        final Int2IntMap tmhMap = new Int2IntOpenHashMap();
+        final Int2IntMap tmhMap = new Int2IntAVLTreeMap();
         tmhMap.defaultReturnValue(0);
         // accumulate too many hits over all the input alignments:
         int consensusAlignerThreshold = Integer.MAX_VALUE;
+        LOG.debug("TMH first pass");
 
         // numberOfReads does not include the TMH reads that are past the aligned entries.
         int maxQueryIndex = numberOfReads - 1;
-        int maxCapacity=0;
+        int maxCapacity = 0;
         for (final String basename : basenames) {
+            LOG.debug("processing " + basename);
             final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
             IntSet queryIndices = tmhReader.getQueryIndices();
-            maxCapacity=Math.max(maxCapacity, queryIndices.size());
+            maxCapacity = Math.max(maxCapacity, queryIndices.size());
             for (final int queryIndex : queryIndices) {
                 maxQueryIndex = Math.max(maxQueryIndex, queryIndex);
             }
+            tmhReader.close();
         }
+        LOG.debug("TMH second pass");
         numberOfReads = maxQueryIndex + 1;
-        final Int2IntMap queryIndex2MaxDepth = new Int2IntOpenHashMap( maxCapacity);
+        final Int2IntMap queryIndex2MaxDepth = new Int2IntAVLTreeMap();
         queryIndex2MaxDepth.defaultReturnValue(-1);
         // calculate maxDepth for each query sequence:
         for (final String basename : basenames) {
+            LOG.debug("processing " + basename);
             final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
             //   System.out.println("Found aligner-threshold=" + tmhReader.getAlignerThreshold());
             consensusAlignerThreshold = Math.min(consensusAlignerThreshold, tmhReader.getAlignerThreshold());
 
-            for (final int queryIndex : tmhReader.getQueryIndices()) {
+            final IntSet queryIndices = tmhReader.getQueryIndices();
+            for (final int queryIndex : queryIndices) {
                 final int currentMatchLength = tmhReader.getLengthOfMatch(queryIndex);
-                final int maxDepth = Math.max(currentMatchLength, queryIndex2MaxDepth.get(queryIndex ));
+                final int maxDepth = Math.max(currentMatchLength, queryIndex2MaxDepth.get(queryIndex));
                 if (maxDepth != -1) {
-                    queryIndex2MaxDepth.put(queryIndex,maxDepth);
+                    queryIndex2MaxDepth.put(queryIndex, maxDepth);
                 }
-
             }
+            tmhReader.close();
         }
         boolean foundDepth = false;
+        LOG.debug("TMH third pass");
+        ProgressLogger pg=new ProgressLogger(LOG);
+        pg.priority= Level.DEBUG;
+        pg.expectedUpdates=numberOfReads;
+        pg.start("TMH third pass");
 
         for (final String basename : basenames) {
-
+            LOG.debug("processing " + basename);
             final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
-            for (final int queryIndex : tmhReader.getQueryIndices()) {
+            final IntSet queryIndices = tmhReader.getQueryIndices();
+            for (final int queryIndex : queryIndices) {
                 final int depthForBasename = tmhReader.getLengthOfMatch(queryIndex);
-                if (depthForBasename == queryIndex2MaxDepth.get(queryIndex )) {
+                pg.lightUpdate();
+                if (depthForBasename == queryIndex2MaxDepth.get(queryIndex)) {
                     if (depthForBasename != 1) {
                         final int newValue = tmhMap.get(queryIndex) + tmhReader.getNumberOfHits(queryIndex);
                         tmhMap.put(queryIndex, newValue);
@@ -363,12 +377,16 @@ public class Merge {
                     }
                 }
             }
+            tmhReader.close();
         }
+        pg.done();
+        LOG.debug("TMH fourth pass");
         if (!foundDepth) {
             System.out.println("Warning: could not find depth/max-length-of-match in too many hits information.");
         }
         final AlignmentTooManyHitsWriter mergedTmhWriter = new AlignmentTooManyHitsWriter(outputFile, consensusAlignerThreshold);
-        for (final int queryIndex : tmhMap.keySet()) {
+        final IntSet intSet = tmhMap.keySet();
+        for (final int queryIndex : intSet) {
             mergedTmhWriter.append(queryIndex, tmhMap.get(queryIndex), queryIndex2MaxDepth.get(queryIndex));
         }
         mergedTmhWriter.close();
