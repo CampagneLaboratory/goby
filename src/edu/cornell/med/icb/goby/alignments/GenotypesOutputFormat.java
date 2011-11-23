@@ -47,10 +47,30 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     private int chromosomeColumnIndex;
     private int idColumnIndex;
     private int biomartFieldIndex;
+
+    public int getGenotypeFieldIndex() {
+        return genotypeFieldIndex;
+    }
+
     private int genotypeFieldIndex;
+
+    public int getBaseCountFieldIndex() {
+        return baseCountFieldIndex;
+    }
+
     public int baseCountFieldIndex;
     private int zygFieldIndex;
+
+    public int getFailBaseCountFieldIndex() {
+        return failBaseCountFieldIndex;
+    }
+
     private int failBaseCountFieldIndex;
+
+    public int getGoodBaseCountFieldIndex() {
+        return goodBaseCountFieldIndex;
+    }
+
     private int goodBaseCountFieldIndex;
     private String[] singleton = new String[1];
     private int indelFlagFieldIndex = -1;

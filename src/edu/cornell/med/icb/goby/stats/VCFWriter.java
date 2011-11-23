@@ -604,6 +604,29 @@ public class VCFWriter {
     }
 
     /**
+     * Move a sample value to a new column, replace the previous value of one of the columns with some new value.
+     *
+     * @param formatFieldIndex FORMAT field to modify.
+     * @param sampleIndex      Index of the first column.
+     * @param newSampleIndex   Index of the second column
+     * @param newValueAtSampleIndex New value to fill one of the columns.
+     */
+    public void switchSampleValue(final int formatFieldIndex, final int sampleIndex, final int newSampleIndex,
+                                  final String newValueAtSampleIndex) {
+
+        int minIndex=Math.min(sampleIndex, newSampleIndex);
+        int maxIndex=Math.max(sampleIndex, newSampleIndex);
+        if (maxIndex==maxIndex) {
+          setSampleValue(formatFieldIndex, newSampleIndex, formatValues[formatFieldIndex][minIndex]);
+        }
+            // move value from sampleIndex to newSampleIndex, put newValueAtSampleIndex at sampleIndex
+             setSampleValue(formatFieldIndex, newSampleIndex, formatValues[formatFieldIndex][minIndex]);
+             setSampleValue(formatFieldIndex, sampleIndex, newValueAtSampleIndex);
+
+
+    }
+
+    /**
      * Set a value of a sample column. The sampleIndex identifies the sample in the getSampleIds()  array.
      *
      * @param formatFieldIndex Index of a FORMAT field created with defineField("FORMAT,...)
@@ -685,4 +708,5 @@ public class VCFWriter {
     public boolean hasAlternateAllele() {
         return !altAlleles.isEmpty();
     }
+
 }

@@ -156,8 +156,19 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         }
         depthFieldIndex = statWriter.defineField("INFO", "DP",
                 1, ColumnType.Integer, "Total depth of sequencing across groups at this site");
+        {
+            // define one VCF 'sample' for each strand of each input sample:
+            String[] sampleTwice = new String[samples.length * 2];
+            int sampleIndex = 0;
+            for (String sample : samples) {
+                sampleTwice[sampleIndex++] = "+|"+sample;
+            }
+            for (String sample : samples) {
+                sampleTwice[sampleIndex++] = "-|"+sample;
+            }
 
-        statWriter.defineSamples(samples);
+            statWriter.defineSamples(sampleTwice);
+        }
         // define Genotype as first field (required by VCF specification):
         genotypeFormatter.defineGenotypeField(statWriter);
         methylationRateFieldIndex = statWriter.defineField("FORMAT", "MR", 1, ColumnType.Integer, "Methylation rate. 0-100%, 100% indicate fully methylated.");
@@ -228,8 +239,8 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
             statWriter.setSampleValue(methylationRateFieldIndex, sampleIndex, Math.round(methylationRate));
         }
         for (final GroupComparison comparison : groupComparisons) {
-            int  indexGroup1=comparison.indexGroup1;
-            int  indexGroup2=comparison.indexGroup1;
+            final int indexGroup1 = comparison.indexGroup1;
+            final int indexGroup2 = comparison.indexGroup1;
             final double denominator = (double) (unmethylatedCCountsPerGroup[indexGroup1]) * (double) (methylatedCCountPerGroup[indexGroup2]);
             final double oddsRatio = denominator == 0 ? Double.NaN :
                     ((double) (unmethylatedCCountsPerGroup[indexGroup2]) * (double) (methylatedCCountPerGroup[indexGroup1])) /
@@ -280,10 +291,46 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
 
         }
         genotypeFormatter.writeGenotypes(statWriter, sampleCounts, position);
+        for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
+            final int firstIndex = sampleIndex;
+            final int secondIndex = convertIndex(sampleIndex, strandAtSite);
+            if (strandAtSite == '+') {
+                final int otherIndex = convertIndex(sampleIndex, '-');
+                statWriter.setSampleValue(methylationRateFieldIndex, otherIndex, "100");
+                statWriter.setSampleValue(genotypeFormatter.getGenotypeFieldIndex(), otherIndex, "0/0");
+                statWriter.setSampleValue(genotypeFormatter.getBaseCountFieldIndex(), otherIndex, "ignore");
+                statWriter.setSampleValue(genotypeFormatter.getFailBaseCountFieldIndex(), otherIndex, "ignore");
+                statWriter.setSampleValue(genotypeFormatter.getGoodBaseCountFieldIndex(), otherIndex, "0");
+            } else {
+                statWriter.switchSampleValue(methylationRateFieldIndex, firstIndex, secondIndex, "100");
+                statWriter.switchSampleValue(genotypeFormatter.getGenotypeFieldIndex(), firstIndex, secondIndex, "0/0");
+                statWriter.switchSampleValue(genotypeFormatter.getBaseCountFieldIndex(), firstIndex, secondIndex, "ignore");
+                statWriter.switchSampleValue(genotypeFormatter.getFailBaseCountFieldIndex(), firstIndex, secondIndex, "ignore");
+                statWriter.switchSampleValue(genotypeFormatter.getGoodBaseCountFieldIndex(), firstIndex, secondIndex, "0");
+            }
+        }
         statWriter.writeRecord();
     }
 
+    private char flipStrand(final char strandAtSite) {
+        if (strandAtSite == '+') {
+            return '-';
+        } else {
+            return '+';
+        }
+    }
 
+    private int convertIndex(final int sampleIndex, final char strandAtSite) {
+        final int numSamples = samples.length;
+        if (strandAtSite == '+') {
+            return sampleIndex;
+        } else {
+            return sampleIndex + numSamples;
+        }
+    }
+
+
+    @Override
     public void close() {
         statWriter.close();
     }
