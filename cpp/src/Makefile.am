@@ -10,6 +10,8 @@ AM_CFLAGS = @PROTOBUF_CFLAGS@ @LIBPCRECPP_CFLAGS@ ${BOOST_CPPFLAGS}
 libgoby_la_LIBADD = @PROTOBUF_LIBS@ @LIBPCRECPP_LIBS@
 libgoby_la_LDFLAGS = -version-info @version_info@ -export-dynamic # -no-undefined
 libgoby_la_SOURCES = \
+	goby/ICBFileInputStream.cc \
+	goby/ICBFileInputStream.h \
 	goby/Alignments.cc \
 	goby/Alignments.h \
 	goby/Alignments.pb.cc \
@@ -30,6 +32,7 @@ libgoby_la_SOURCES = \
 	goby/SamFlags.h
 
 nobase_include_HEADERS = \
+	goby/ICBFileInputStream.h \
 	goby/Alignments.h \
 	goby/Alignments.pb.h \
 	goby/common.h \

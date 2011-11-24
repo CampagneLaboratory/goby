@@ -39,6 +39,8 @@
 #include <unistd.h>
 #endif
 
+#include "ICBFileInputStream.h"
+
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/gzip_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
@@ -73,7 +75,8 @@ namespace goby {
     bool close_fd_on_delete;
 
     // The underlying stream
-    google::protobuf::io::ZeroCopyInputStream *input_stream;
+    goby::ICBFileInputStream *input_stream;
+
 
     // whether or not this instance created the stream and therefore should delete it
     bool owns_input_stream;
@@ -101,7 +104,7 @@ namespace goby {
         return;
       }
       std::cerr << "skipping " << startOffset << " bytes in input file" << std::endl;
-      const bool result = input_stream->Skip(startOffset);
+      const bool result = input_stream->SkipOffset(startOffset);
       if (!result) {
         std::cerr << "failed to skip bytes." << std::endl;
         current_chunk_index = -1;
@@ -152,7 +155,7 @@ namespace goby {
               delimiterAlreadySkipped = false;
               result = true;
           } else {
-              result = input_stream->Skip(GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH);
+              result = input_stream->SkipOffset(GOBY_MESSAGE_CHUNK_DELIMITER_LENGTH);
           }
           if (!result) {
             current_chunk_index = -1;
@@ -298,7 +301,7 @@ namespace goby {
         input_stream = NULL;
         current_chunk_index = -1;
       } else {
-        input_stream = new google::protobuf::io::FileInputStream(fd);
+        input_stream = new goby::ICBFileInputStream(fd);
         if (startOffset != 0) {
           initializePosition();
         }
@@ -335,7 +338,7 @@ namespace goby {
           input_stream = NULL;
           current_chunk_index = -1;
         } else {
-          input_stream = new google::protobuf::io::FileInputStream(fd);
+          input_stream = new goby::ICBFileInputStream(fd);
           if (startOffset != 0) {
             initializePosition();
           }
