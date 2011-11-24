@@ -192,6 +192,7 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
 
         for (final String name : referenceNameMap.keySet()) {
             indexToNameMap.put(referenceNameMap.get(name), name);
+            updateSliceIndices(referenceNameMap.get(name));
         }
     }
 
