@@ -22,6 +22,8 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.readers.vcf.VCFParser;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
+import edu.cornell.med.icb.goby.util.motifs.MotifMatcher;
+import edu.cornell.med.icb.goby.util.motifs.SubSequenceMotifMatcher;
 import edu.cornell.med.icb.goby.xml.MethylStats;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -69,6 +71,10 @@ public class MethylStatsMode extends AbstractGobyMode {
     private static final Logger LOG = Logger.getLogger(MethylStatsMode.class);
     private String inputFilename;
     private static final boolean QUICK = false;
+    private static final int CPG = 0;
+    private static final int CPA = 1;
+    private static final int CPT = 2;
+    private static final int CPC = 3;
 
 
     @Override
@@ -133,6 +139,8 @@ public class MethylStatsMode extends AbstractGobyMode {
 
     int positionOfNextCpG = -1;
     int refIndexOfNextCpG = -1;
+    int[] sampleDepthGlobalFieldIndex;
+    int[] methylationRateGlobalFieldIndex;
 
     /**
      * Run the mode.
@@ -155,13 +163,15 @@ public class MethylStatsMode extends AbstractGobyMode {
                 vcfParser.readHeader();
 
                 String samples[] = vcfParser.getColumnNamesUsingFormat();
-                int[] sampleDepthGlobalFieldIndex = new int[samples.length];
+                sampleDepthGlobalFieldIndex = new int[samples.length];
+                methylationRateGlobalFieldIndex = new int[samples.length];
 
                 int i = 0;
                 MethylStats[] methylStats = new MethylStats[samples.length];
 
                 for (String sample : samples) {
                     sampleDepthGlobalFieldIndex[i] = vcfParser.getGlobalFieldIndex(sample, "GB");
+                    methylationRateGlobalFieldIndex[i] = vcfParser.getGlobalFieldIndex(sample, "MR");
 
                     methylStats[i] = backgroundStats.copy();
                     methylStats[i].sampleId = sample;
@@ -178,8 +188,11 @@ public class MethylStatsMode extends AbstractGobyMode {
                 pg.itemsName = "sites";
                 pg.displayFreeMemory = true;
                 pg.start();
-                int numSamples = samples.length;
-
+                final int numSamples = samples.length;
+                final int[][] mcpXFrequencies = new int[numSamples][4];
+                for (i = 0; i < numSamples; i++) {
+                    mcpXFrequencies[i] = new int[4];
+                }
 
                 while (vcfParser.hasNextDataLine()) {
                     pg.lightUpdate();
@@ -207,12 +220,12 @@ public class MethylStatsMode extends AbstractGobyMode {
                                 final int depthInSample = Integer.parseInt(vcfParser.getFieldValue(sampleDepthGlobalFieldIndex[i]).toString());
                                 if (depthInSample > 10) {
                                     methylStats[i].observedInSample(depthInSample, fragmentLength);
-
                                 }
-
                             }
                         }
                     }
+                    updateCpXs(referenceIndex, sitePosition, strand, mcpXFrequencies, vcfParser, numSamples);
+
                     vcfParser.next();
                 }
                 pg.stop();
@@ -230,6 +243,40 @@ public class MethylStatsMode extends AbstractGobyMode {
             System.exit(1);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void updateCpXs(int referenceIndex, int sitePosition, char strand, int[][] mCpXfreqs, VCFParser vcfParser, int numSamples) {
+        if (sitePosition + 1 > referenceSequenceSize) {
+            return;
+        }
+        final char firstBase = genome.get(referenceIndex, sitePosition);
+        final char secondBase = genome.get(referenceIndex, sitePosition + 1);
+        if (firstBase == 'C') {
+
+
+            for (int i = 0; i < numSamples; i++) {
+                final int depthInSample = Integer.parseInt(vcfParser.getFieldValue(sampleDepthGlobalFieldIndex[i]).toString());
+                final float mr = Integer.parseInt(vcfParser.getFieldValue(methylationRateGlobalFieldIndex[i]).toString());
+                final int numCm = (int) (depthInSample * mr / 100f);
+
+                switch (secondBase) {
+                    case 'C':
+                        mCpXfreqs[i][CPC] += numCm;
+                        break;
+                    case 'A':
+                        mCpXfreqs[i][CPA] += numCm;
+                        break;
+                    case 'T':
+                        mCpXfreqs[i][CPT] += numCm;
+                        break;
+                    case 'G':
+                        mCpXfreqs[i][CPG] += numCm;
+                        break;
+                }
+            }
+
+
         }
     }
 
