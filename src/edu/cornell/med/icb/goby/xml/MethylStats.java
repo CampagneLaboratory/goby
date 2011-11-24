@@ -31,6 +31,9 @@ import java.util.Arrays;
 @XmlRootElement
 public class MethylStats {
 
+
+
+
     public MethylStats(final int[] depths, final int[] fragmentLengthBins) {
         this.depths = depths;
         this.fragmentLengthBins = fragmentLengthBins;
@@ -180,5 +183,20 @@ public class MethylStats {
         System.arraycopy(numberCpGsPerFragmentBinGenome, 0, copy.numberCpGsPerFragmentBinGenome, 0, numberCpGsPerFragmentBinGenome.length);
         copy.numberCpGsInGenome = numberCpGsInGenome;
         return copy;
+    }
+
+    /**
+     * Frequency of methylated C followed by G A C or T (in array order).
+     */
+    final long[] mcpXFrequencies = new long[4];
+        public static final int CPMIN = 0;
+        public static final int CPG = 0;
+        public static final int CPA = 1;
+        public static final int CPC = 2;
+        public static final int CPT = 3;
+        public static final int CPMAX = 4;
+
+    public long[] getMethylCpXFreqs() {
+        return mcpXFrequencies;
     }
 }

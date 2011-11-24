@@ -22,8 +22,6 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.readers.vcf.VCFParser;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
-import edu.cornell.med.icb.goby.util.motifs.MotifMatcher;
-import edu.cornell.med.icb.goby.util.motifs.SubSequenceMotifMatcher;
 import edu.cornell.med.icb.goby.xml.MethylStats;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -189,10 +187,7 @@ public class MethylStatsMode extends AbstractGobyMode {
                 pg.displayFreeMemory = true;
                 pg.start();
                 final int numSamples = samples.length;
-                final int[][] mcpXFrequencies = new int[numSamples][4];
-                for (i = 0; i < numSamples; i++) {
-                    mcpXFrequencies[i] = new int[4];
-                }
+
 
                 while (vcfParser.hasNextDataLine()) {
                     pg.lightUpdate();
@@ -224,7 +219,7 @@ public class MethylStatsMode extends AbstractGobyMode {
                             }
                         }
                     }
-                    updateCpXs(referenceIndex, sitePosition, strand, mcpXFrequencies, vcfParser, numSamples);
+                    updateCpXs(referenceIndex, sitePosition, strand, methylStats, vcfParser, numSamples);
 
                     vcfParser.next();
                 }
@@ -246,7 +241,7 @@ public class MethylStatsMode extends AbstractGobyMode {
         }
     }
 
-    private void updateCpXs(int referenceIndex, int sitePosition, char strand, int[][] mCpXfreqs, VCFParser vcfParser, int numSamples) {
+    private void updateCpXs(int referenceIndex, int sitePosition, char strand, MethylStats[] methylStats, VCFParser vcfParser, int numSamples) {
         if (sitePosition + 1 > referenceSequenceSize) {
             return;
         }
@@ -259,19 +254,20 @@ public class MethylStatsMode extends AbstractGobyMode {
                 final int depthInSample = Integer.parseInt(vcfParser.getFieldValue(sampleDepthGlobalFieldIndex[i]).toString());
                 final float mr = Integer.parseInt(vcfParser.getFieldValue(methylationRateGlobalFieldIndex[i]).toString());
                 final int numCm = (int) (depthInSample * mr / 100f);
-
+                final MethylStats stats = methylStats[i];
+                long[] mCpXfreqs = stats.getMethylCpXFreqs();
                 switch (secondBase) {
                     case 'C':
-                        mCpXfreqs[i][CPC] += numCm;
+                        mCpXfreqs[MethylStats.CPC] += numCm;
                         break;
                     case 'A':
-                        mCpXfreqs[i][CPA] += numCm;
+                        mCpXfreqs[MethylStats.CPA] += numCm;
                         break;
                     case 'T':
-                        mCpXfreqs[i][CPT] += numCm;
+                        mCpXfreqs[MethylStats.CPT] += numCm;
                         break;
                     case 'G':
-                        mCpXfreqs[i][CPG] += numCm;
+                        mCpXfreqs[MethylStats.CPG] += numCm;
                         break;
                 }
             }
@@ -369,8 +365,35 @@ public class MethylStatsMode extends AbstractGobyMode {
                 );
                 depthIndex++;
             }
+            double sumCmpX = 0;
+            for (int j = MethylStats.CPMIN; j < MethylStats.CPMAX; j++) {
+                sumCmpX += methylStat.getMethylCpXFreqs()[j];
+            }
+            for (int j = MethylStats.CPMIN; j < MethylStats.CPMAX; j++) {
+
+                output.printf("%s\tCPX\t%s\t%3.4g%n", sample,
+
+                        getCpString(j),
+                        100f*divide(methylStat.getMethylCpXFreqs()[j],
+                                sumCmpX)
+                );
+            }
             sampleIndex++;
         }
+    }
+
+    private String getCpString(final int cpIndex) {
+        switch (cpIndex) {
+            case CPA:
+                return "CpA";
+            case CPG:
+                return "CpG";
+            case CPC:
+                return "CpC";
+            case CPT:
+                return "CpT";
+        }
+        return "???";
     }
 
     private String getRange(final int[] array, final int index) {
