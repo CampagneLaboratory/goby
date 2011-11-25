@@ -33,7 +33,9 @@ import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.io.LineIterator;
 import org.apache.log4j.Logger;
 
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 
 /**
  * Trims adapter sequences from reads.
@@ -288,7 +290,9 @@ public class TrimMode extends AbstractGobyMode {
                     if (currentLength == length) {
                         copy(qualityScores, newQualScores);
                     }
-                    newQualScores.removeElements(currentLength - trimedLength, Math.min(currentLength + 1, newQualScores.size()));
+                    if (!qualityScores.isEmpty()) {
+                        newQualScores.removeElements(currentLength - trimedLength, Math.min(currentLength + 1, newQualScores.size()));
+                    }
                     numTrimmedRight++;
                     return sequence.substring(0, currentLength - trimedLength);
 
