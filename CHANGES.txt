@@ -1,4 +1,5 @@
 1.9.8.1
+ - Extend methyl-stats mode to estimate fraction of methylated cytosine observed in CpX contexts.
  - trim mode: Fix exception that could occur when trimming reads with no quality scores.
  - Optimize merging of TMH when the files are large (>100M compressed).
  - discover-sequence-variants: add ability to describe zero, one or more group comparisons. Syntax is A/B,A/C to compare
