@@ -318,7 +318,9 @@ public class TrimMode extends AbstractGobyMode {
                     if (currentLength == length) { // previously unchanged, we need to copy quality score to the list representation for editing.
                         copy(qualityScores, newQualScores);
                     }
-                    newQualScores.removeElements(0, trimedLength);
+                    if (!qualityScores.isEmpty()) {
+                        newQualScores.removeElements(0, trimedLength);
+                    }
                     numTrimmedLeft++;
                     return sequence.substring(trimedLength, currentLength);
 
