@@ -68,5 +68,11 @@
             </defaults>
             <help>Depth of coverage to consider when estimating percent-capture-sites-at-depth.</help>
         </flaggedOption>
+        <switch>
+            <id>fragments</id>
+            <longFlag>fragments</longFlag>
+            <shortFlag>f</shortFlag>
+            <help>Activate fragment length analysis.</help>
+         </switch>
     </parameters>
 </jsap>

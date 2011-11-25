@@ -69,10 +69,9 @@ public class MethylStatsMode extends AbstractGobyMode {
     private static final Logger LOG = Logger.getLogger(MethylStatsMode.class);
     private String inputFilename;
     private static final boolean QUICK = false;
-    private static final int CPG = 0;
-    private static final int CPA = 1;
-    private static final int CPT = 2;
-    private static final int CPC = 3;
+
+    private boolean doFragments = true;
+    private int[] baseCallGlobalFieldIndex;
 
 
     @Override
@@ -112,6 +111,7 @@ public class MethylStatsMode extends AbstractGobyMode {
                 System.exit(1);
             }
         }
+        doFragments=jsapResult.getBoolean("fragments");
         fragmentLengthBins = stringToInts(jsapResult.getString("fragment-lengths"));
         depths = stringToInts(jsapResult.getString("depths"));
         return this;
@@ -150,11 +150,15 @@ public class MethylStatsMode extends AbstractGobyMode {
             output = statsOuputFilename.equals("-") ? new PrintWriter(System.out) : new PrintWriter(new FileWriter(statsOuputFilename));
             final MethylStats backgroundStats = new MethylStats(depths, fragmentLengthBins);
             // First process the genome to find out the background distribution of CpGs:
-            System.out.printf("Pre-processing genome.%n");
-            scanOneStrand(backgroundStats, '+');
-            scanOneStrand(backgroundStats, '-');
+            if (doFragments) {
+                System.out.printf("Pre-processing genome.%n");
+                scanOneStrand(backgroundStats, '+');
+                scanOneStrand(backgroundStats, '-');
+                System.out.printf("Found %d CpG sites in genome.%n", backgroundStats.getNumberCpGsInGenome());
 
-            System.out.printf("Found %d CpG sites in genome.%n", backgroundStats.getNumberCpGsInGenome());
+            } else {
+                System.out.println("Fragment analysis is not activated (activate with --fragments/-f).");
+            }
             String VcfFilename = inputFilename;
             VCFParser vcfParser = new VCFParser(VcfFilename);
             try {
@@ -163,6 +167,7 @@ public class MethylStatsMode extends AbstractGobyMode {
                 String samples[] = vcfParser.getColumnNamesUsingFormat();
                 sampleDepthGlobalFieldIndex = new int[samples.length];
                 methylationRateGlobalFieldIndex = new int[samples.length];
+                baseCallGlobalFieldIndex = new int[samples.length];
 
                 int i = 0;
                 MethylStats[] methylStats = new MethylStats[samples.length];
@@ -170,6 +175,7 @@ public class MethylStatsMode extends AbstractGobyMode {
                 for (String sample : samples) {
                     sampleDepthGlobalFieldIndex[i] = vcfParser.getGlobalFieldIndex(sample, "GB");
                     methylationRateGlobalFieldIndex[i] = vcfParser.getGlobalFieldIndex(sample, "MR");
+                    baseCallGlobalFieldIndex[i] = vcfParser.getGlobalFieldIndex(sample, "BC");
 
                     methylStats[i] = backgroundStats.copy();
                     methylStats[i].sampleId = sample;
@@ -207,19 +213,22 @@ public class MethylStatsMode extends AbstractGobyMode {
                     // VCF positions are 1-based, but Goby genome positions are 0-based, adjust here:
                     int sitePosition = Integer.parseInt(vcfParser.getFieldValue(positionGlobalFieldIndex).toString()) - 1;
                     char strand = vcfParser.getFieldValue(strandGlobalFieldIndex).charAt(0);
-                    if (isCpG(referenceIndex, sitePosition, strand)) {
+                    if (doFragments) {
+                        if (isCpG(referenceIndex, sitePosition, strand)) {
 
-                        final int fragmentLength = calculateFragmentLength(reference, sitePosition, strand);
-                        if (fragmentLength > 0) {
-                            for (i = 0; i < numSamples; i++) {
-                                final int depthInSample = Integer.parseInt(vcfParser.getFieldValue(sampleDepthGlobalFieldIndex[i]).toString());
-                                if (depthInSample > 10) {
-                                    methylStats[i].observedInSample(depthInSample, fragmentLength);
+                            final int fragmentLength = calculateFragmentLength(reference, sitePosition, strand);
+                            if (fragmentLength > 0) {
+                                for (i = 0; i < numSamples; i++) {
+                                    final int depthInSample = Integer.parseInt(vcfParser.getFieldValue(sampleDepthGlobalFieldIndex[i]).toString());
+                                    if (depthInSample > 10) {
+                                        methylStats[i].observedInSample(depthInSample, fragmentLength);
+                                    }
                                 }
                             }
                         }
                     }
-                    updateCpXs(referenceIndex, sitePosition, strand, methylStats, vcfParser, numSamples);
+
+                    updateCpXs(reference,referenceIndex, sitePosition, strand, methylStats, vcfParser, numSamples);
 
                     vcfParser.next();
                 }
@@ -241,24 +250,36 @@ public class MethylStatsMode extends AbstractGobyMode {
         }
     }
 
-    private void updateCpXs(int referenceIndex, int sitePosition, char strand, MethylStats[] methylStats, VCFParser vcfParser, int numSamples) {
+    private void updateCpXs(String reference, int referenceIndex, int sitePosition, char strand, MethylStats[] methylStats, VCFParser vcfParser, int numSamples) {
         if (sitePosition + 1 > referenceSequenceSize) {
             return;
         }
+        if (strand=='-' && sitePosition < 1) { // there is no previous base to check
+            return;
+        }
         final char firstBase = genome.get(referenceIndex, sitePosition);
-        final char secondBase = genome.get(referenceIndex, sitePosition + 1);
-        if (firstBase == 'C') {
+        final char secondBase = genome.get(referenceIndex, sitePosition+(strand=='+'?1:-1));
+        if (isC(firstBase, strand)) {
 
 
             for (int i = 0; i < numSamples; i++) {
                 final int depthInSample = Integer.parseInt(vcfParser.getFieldValue(sampleDepthGlobalFieldIndex[i]).toString());
+
                 final float mr = Integer.parseInt(vcfParser.getFieldValue(methylationRateGlobalFieldIndex[i]).toString());
                 final int numCm = (int) (depthInSample * mr / 100f);
+                if (depthInSample<10 || mr<10) {
+                    // discard positions if less than 10 bases observed methylated or less than 10% methylation. We do this to try to avoid
+                    // sequencing errors.
+                    continue;
+                }
                 final MethylStats stats = methylStats[i];
                 long[] mCpXfreqs = stats.getMethylCpXFreqs();
-                switch (secondBase) {
+
+                switch (base(secondBase,strand)) {
                     case 'C':
                         mCpXfreqs[MethylStats.CPC] += numCm;
+                        final CharSequence baseCalls= vcfParser.getFieldValue(baseCallGlobalFieldIndex[i]);
+                     //   System.out.printf("ref: %s position: %d strand %c %c %c baseCalls=%s %n", reference, sitePosition+1, strand, firstBase, secondBase,baseCalls);
                         break;
                     case 'A':
                         mCpXfreqs[MethylStats.CPA] += numCm;
@@ -267,6 +288,7 @@ public class MethylStatsMode extends AbstractGobyMode {
                         mCpXfreqs[MethylStats.CPT] += numCm;
                         break;
                     case 'G':
+                        stats.numCTpG+=depthInSample;
                         mCpXfreqs[MethylStats.CPG] += numCm;
                         break;
                 }
@@ -274,6 +296,25 @@ public class MethylStatsMode extends AbstractGobyMode {
 
 
         }
+    }
+
+    private char base(char base, char strand) {
+        if (strand=='+') {
+            return base;
+        } else {
+            switch (base) {
+                case 'A': return 'T' ;
+                case 'C': return 'G' ;
+                case 'T': return 'A' ;
+                case 'G': return 'C' ;
+                default: return base ;
+            }
+        }
+
+    }
+
+    private boolean isC(final char firstBase, final char strand) {
+        return strand == '+' && firstBase == 'C' || strand == '-' && firstBase == 'G';
     }
 
     private void scanOneStrand(MethylStats backgroundStats, char strand) {
@@ -374,23 +415,31 @@ public class MethylStatsMode extends AbstractGobyMode {
                 output.printf("%s\tCPX\t%s\t%3.4g%n", sample,
 
                         getCpString(j),
-                        100f*divide(methylStat.getMethylCpXFreqs()[j],
+                        100.0 * divide(methylStat.getMethylCpXFreqs()[j],
                                 sumCmpX)
                 );
             }
+
+                output.printf("%s\tmethylation-rate-in-CpG-context\t%s\t%3.4g%n",
+                        sample,
+                        "",
+                        100.0 * divide(methylStat.getMethylCpXFreqs()[MethylStats.CPG],
+                                methylStat.numCTpG)
+                );
+
             sampleIndex++;
         }
     }
 
     private String getCpString(final int cpIndex) {
         switch (cpIndex) {
-            case CPA:
+            case MethylStats.CPA:
                 return "CpA";
-            case CPG:
+            case MethylStats.CPG:
                 return "CpG";
-            case CPC:
+            case MethylStats.CPC:
                 return "CpC";
-            case CPT:
+            case MethylStats.CPT:
                 return "CpT";
         }
         return "???";
