@@ -32,8 +32,6 @@ import java.util.Arrays;
 public class MethylStats {
 
 
-
-
     public MethylStats(final int[] depths, final int[] fragmentLengthBins) {
         this.depths = depths;
         this.fragmentLengthBins = fragmentLengthBins;
@@ -199,4 +197,10 @@ public class MethylStats {
     public long[] getMethylCpXFreqs() {
         return mcpXFrequencies;
     }
+
+    /**
+     * The number of cytosines in CpG or TpG in reference CpG context seen in the sample.
+     */
+    public long numCTpG;
+
 }
