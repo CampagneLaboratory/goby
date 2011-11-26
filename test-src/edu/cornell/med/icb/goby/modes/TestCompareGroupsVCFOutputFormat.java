@@ -182,7 +182,6 @@ public class TestCompareGroupsVCFOutputFormat {
     public void testAlignIndels() {
         SampleCountInfo[] sampleCounts = makeSampleCountsWithIndels();
 
-
         assertEquals(SampleCountInfo.BASE_MAX_INDEX + 2, sampleCounts[0].getGenotypeMaxIndex());
         assertEquals(SampleCountInfo.BASE_MAX_INDEX + 1, sampleCounts[1].getGenotypeMaxIndex());
         assertTrue(sampleCounts[0].hasIndels());

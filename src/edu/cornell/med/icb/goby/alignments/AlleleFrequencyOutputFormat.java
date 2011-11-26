@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
@@ -28,6 +29,7 @@ import org.apache.commons.math.stat.inference.TTest;
 import org.apache.commons.math.stat.inference.TTestImpl;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -49,10 +51,10 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
     private int biomartFieldIndex;
     GenotypesOutputFormat genotypeFormatter = new GenotypesOutputFormat();
     private int depthFieldIndex;
-
-    private double[] valuesGroupsA;
-    private double[] valuesGroupsB;
-    private int pValueIndex;
+    // values in each group, indexed by group
+    private double[][] valuesGroupsA;
+    private double[][] valuesGroupsB;
+    private int pValueIndex[];
     private boolean eventObserved;
     /**
      * Index of the INFO fields that hold average reference proportions.
@@ -70,16 +72,27 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
      * Index of the INFO field that holds effect size.
      */
     private int effectSizeInfoIndex;
-    private float minimumAllelelicDifference=0.1f;
+    private float minimumAllelelicDifference = 0.1f;
+    private ArrayList<GroupComparison> groupComparisons;
+    private int numberOfComparisons;
+
 
     public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
         statsWriter = new VCFWriter(writer);
         biomartFieldIndex = statsWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
         genotypeFormatter.defineInfoFields(statsWriter);
-        pValueIndex = statsWriter.defineField("INFO", "P", 1, ColumnType.Float, "P-values of a t-test comparing arcsin transformed values of the ratio between groups.");
+        groupComparisons = mode.getGroupComparisons();
+        numberOfComparisons = groupComparisons.size();
+        pValueIndex = new int[numberOfComparisons];
+        for (final GroupComparison comparison : groupComparisons) {
+            pValueIndex[comparison.index] = statsWriter.defineField("INFO",
+                    String.format("P[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
+                    1, ColumnType.Float,
+                    String.format("P-values of a t-test comparing arcsin transformed values of the ratio between groups %s and %s.",
+                            comparison.nameGroup1, comparison.nameGroup2));
 
-
+        }
         for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
             String group = mode.getGroups()[groupIndex];
             averageRPGroupsIndex[groupIndex] = statsWriter.defineField("INFO", String.format("RP_%s", group), 1, ColumnType.Float,
@@ -87,7 +100,7 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         }
         String[] groups = mode.getGroups();
         effectSizeInfoIndex = statsWriter.defineField("INFO", String.format("ES_%s_%s", groups[0], groups[1]), 1, ColumnType.Float,
-                    String.format("Effect size between groups, expressed as the absolute value of the difference between average reference proportion estimated in each group. abs(refProp[%s] - refProp[%s]).", groups[0], groups[1]));
+                String.format("Effect size between groups, expressed as the absolute value of the difference between average reference proportion estimated in each group. abs(refProp[%s] - refProp[%s]).", groups[0], groups[1]));
         depthFieldIndex = statsWriter.defineField("INFO", "DP",
                 1, ColumnType.Integer, "Total depth of sequencing across groups at this site");
         genotypeFormatter.defineGenotypeField(statsWriter);
@@ -102,11 +115,16 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
             countA += groupIndex == 1 ? 0 : 1;
             countB += groupIndex == 1 ? 1 : 0;
         }
-        valuesGroupsA = new double[countA];
-        valuesGroupsB = new double[countB];
+        valuesGroupsA = new double[numberOfComparisons][countA];
+        valuesGroupsB = new double[numberOfComparisons][countB];
+        for (final GroupComparison comparison : groupComparisons) {
+            valuesGroupsA[comparison.index] = new double[countA];
+            valuesGroupsB[comparison.index] = new double[countB];
+        }
         statsWriter.defineSamples(samples);
         statsWriter.writeHeader();
-
+        valuesGroupAIndex = new int[numberOfComparisons];
+        valuesGroupBIndex = new int[numberOfComparisons];
     }
 
     private final TTest mathCommonsTTest = new TTestImpl();
@@ -122,7 +140,11 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         numSamplesPerGroup = new float[numberOfGroups];
         averageRPGroupsIndex = new int[numberOfGroups];
         averageRPPerGroup = new float[numberOfGroups];
+
     }
+
+    int valuesGroupAIndex[];
+    int valuesGroupBIndex[];
 
     public void writeRecord(DiscoverVariantIterateSortedAlignments iterator, SampleCountInfo[] sampleCounts,
                             int referenceIndex, int position, ObjectArrayList<PositionBaseInfo> list,
@@ -158,10 +180,14 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         statsWriter.setChromosome(currentReferenceId);
         statsWriter.setPosition(position);
 
-        int valuesGroupAIndex = 0;
-        int valuesGroupBIndex = 0;
-        Arrays.fill(valuesGroupsA, 0);
-        Arrays.fill(valuesGroupsB, 0);
+
+        for (final GroupComparison comparison : groupComparisons) {
+            Arrays.fill(valuesGroupsA[comparison.index], 0);
+            Arrays.fill(valuesGroupsB[comparison.index], 0);
+            Arrays.fill(valuesGroupAIndex, 0);
+            Arrays.fill(valuesGroupBIndex, 0);
+
+        }
         Arrays.fill(averageRPPerGroup, 0);
         Arrays.fill(numSamplesPerGroup, 0);
 
@@ -184,16 +210,19 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
             final double transformedValue = StrictMath.asin(StrictMath.sqrt(refProportion));
 
             averageRPPerGroup[groupIndex] += refProportion;
+            for (final GroupComparison comparison : groupComparisons) {
 
-            if (groupIndex == groupIndexA) {
-                valuesGroupsA[valuesGroupAIndex++] = transformedValue;
-            } else {
-                valuesGroupsB[valuesGroupBIndex++] = transformedValue;
+                final int index = comparison.index;
+                if (groupIndex == comparison.indexGroup1) {
+                    valuesGroupsA[index][valuesGroupAIndex[index]++] = transformedValue;
+                }
+                if (groupIndex == comparison.indexGroup2) {
+                    valuesGroupsB[index][valuesGroupBIndex[index]++] = transformedValue;
+                }
             }
             numSamplesPerGroup[groupIndex]++;
         }
 
-        assert valuesGroupAIndex + valuesGroupBIndex == numberOfSamples;
         for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
             averageRPPerGroup[groupIndex] /= numSamplesPerGroup[groupIndex];
             statsWriter.setInfo(averageRPGroupsIndex[groupIndex], averageRPPerGroup[groupIndex]);
@@ -203,20 +232,23 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
         statsWriter.setInfo(effectSizeInfoIndex, effectSize);
 
         genotypeFormatter.writeGenotypes(statsWriter, sampleCounts, position);
-        if (!statsWriter.hasAlternateAllele() || effectSize<minimumAllelelicDifference) {
+        if (!statsWriter.hasAlternateAllele() || effectSize < minimumAllelelicDifference) {
             // do not write a record if the position does not have an alternate allele or if the effect size is negligible.
             return;
         }
-        double pValue = 1;
-        try {
-            if (valuesGroupAIndex >= 2 && valuesGroupBIndex >= 2) { // need two samples per group
-                pValue = mathCommonsTTest.homoscedasticTTest(valuesGroupsA, valuesGroupsB);
-            }
+        for (final GroupComparison comparison : groupComparisons) {
+            double pValue = 1;
+            final int index = comparison.index;
+            try {
+                if (valuesGroupAIndex[index] >= 2 && valuesGroupBIndex[index] >= 2) { // need two samples per group
+                    pValue = mathCommonsTTest.homoscedasticTTest(valuesGroupsA[index], valuesGroupsB[index]);
+                }
 
-        } catch (MathException e) {
-            pValue = 1;
+            } catch (MathException e) {
+                pValue = 1;
+            }
+            statsWriter.setInfo(pValueIndex[index], pValue);
         }
-        statsWriter.setInfo(pValueIndex, pValue);
         statsWriter.writeRecord();
     }
 
@@ -240,10 +272,9 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
             eventObserved |= variantsCountPerSample[sampleIndex] > 0 && refCountsPerSample[sampleIndex] > 0;
         }
 
-
     }
 
     public void setMinimumAllelicDifference(float minimumAllelelicDifference) {
-       this.minimumAllelelicDifference=minimumAllelelicDifference;
+        this.minimumAllelelicDifference = minimumAllelelicDifference;
     }
 }

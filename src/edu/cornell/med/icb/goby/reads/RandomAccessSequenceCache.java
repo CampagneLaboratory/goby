@@ -216,12 +216,12 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         // remove sequences we won't need. Don't call remove because that changes the index. Instead just set the
         // element to null to allow garbage collection..
         for (int i = 0; i < minRefIndex; i++) {
-            compressedData.set(i,null);
-            referenceIgnoreLists.set(i,null);
+            compressedData.set(i, null);
+            referenceIgnoreLists.set(i, null);
         }
         for (int i = maxRefIndex + 1; i < referenceNameMap.size(); i++) {
-            compressedData.set(i,null);
-            referenceIgnoreLists.set(i,null);
+            compressedData.set(i, null);
+            referenceIgnoreLists.set(i, null);
         }
 
     }
@@ -355,7 +355,7 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
     }
 
 
-    public int getLength(int targetIndex) {
+    public int getLength(final int targetIndex) {
         return sizes.getInt(targetIndex);
     }
 

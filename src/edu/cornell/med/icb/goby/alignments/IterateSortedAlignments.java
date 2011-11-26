@@ -540,6 +540,11 @@ public abstract class IterateSortedAlignments<T> {
         for (int targetIndex = 0; targetIndex < numTargets; targetIndex++) {
             final MutableString targetId = alignmentReverseIds.getId(targetIndex);
             final int genomeTargetIndex = genome.getReferenceIndex(targetId.toString());
+            if (genomeTargetIndex == -1) {
+                LOG.error(String.format(
+                        "Alignment reference %s index (%d) was not found in the genome.",
+                        targetId, targetIndex));
+            }
             // substracts from genome length because the size is recorded longer by one base in loadFasta
             final int genomeLength = genome.getLength(genomeTargetIndex) - 1;
             final int alignmentTargetLength = alignmentTargetLengths[targetIndex];
