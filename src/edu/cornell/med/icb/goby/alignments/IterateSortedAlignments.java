@@ -538,7 +538,8 @@ public abstract class IterateSortedAlignments<T> {
         for (int targetIndex = 0; targetIndex < numTargets; targetIndex++) {
             final MutableString targetId = reverseMapping.getId(targetIndex);
             final int genomeTargetIndex = genome.getReferenceIndex(targetId.toString());
-            final int genomeLength = genome.getLength(genomeTargetIndex);
+            // substract from genome length because the size is recorded longer by one base in loadFasta
+            final int genomeLength = genome.getLength(genomeTargetIndex)-1;
             final int alignmentTargetLength = alignmentTargetLengths[targetIndex];
             if (alignmentTargetLength != genomeLength) {
 
