@@ -213,14 +213,15 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         minRefIndex = "min".equals(minRefId) ? -1 : referenceNameMap.getInt(minRefId);
         maxRefIndex = "max".equals(maxRefId) ? referenceNameMap.size() : referenceNameMap.getInt(maxRefId);
 
-        // remove sequences we won't need
+        // remove sequences we won't need. Don't call remove because that changes the index. Instead just set the
+        // element to null to allow garbage collection..
         for (int i = 0; i < minRefIndex; i++) {
-            compressedData.rem(i);
-            referenceIgnoreLists.rem(i);
+            compressedData.set(i,null);
+            referenceIgnoreLists.set(i,null);
         }
         for (int i = maxRefIndex + 1; i < referenceNameMap.size(); i++) {
-            compressedData.rem(i);
-            referenceIgnoreLists.rem(i);
+            compressedData.set(i,null);
+            referenceIgnoreLists.set(i,null);
         }
 
     }

@@ -522,31 +522,33 @@ public abstract class IterateSortedAlignments<T> {
             // nothing to check.
             return;
         }
-        DoubleIndexedIdentifier reverseMapping = new DoubleIndexedIdentifier(sortedReaders.getTargetIdentifiers());
 
-        final int numTargets = sortedReaders.getNumberOfTargets();
-
-        alignmentToGenomeTargetIndices = new int[numTargets];
-        final int[] alignmentTargetLengths = sortedReaders.getTargetLength();
-        IndexedIdentifier targetIds = sortedReaders.getTargetIdentifiers();
-        DoubleIndexedIdentifier reverseIds = new DoubleIndexedIdentifier(targetIds);
+        // first try to read the alignment header.
         try {
             sortedReaders.readHeader();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            LOG.error("Failed to read alignment header, aborting", e);
+            throw new RuntimeException(e);
         }
+
+        final int numTargets = sortedReaders.getNumberOfTargets();
+        alignmentToGenomeTargetIndices = new int[numTargets];
+        final int[] alignmentTargetLengths = sortedReaders.getTargetLength();
+        final IndexedIdentifier alignmentTargetIds = sortedReaders.getTargetIdentifiers();
+        final DoubleIndexedIdentifier alignmentReverseIds = new DoubleIndexedIdentifier(alignmentTargetIds);
+
         for (int targetIndex = 0; targetIndex < numTargets; targetIndex++) {
-            final MutableString targetId = reverseMapping.getId(targetIndex);
+            final MutableString targetId = alignmentReverseIds.getId(targetIndex);
             final int genomeTargetIndex = genome.getReferenceIndex(targetId.toString());
-            // substract from genome length because the size is recorded longer by one base in loadFasta
-            final int genomeLength = genome.getLength(genomeTargetIndex)-1;
+            // substracts from genome length because the size is recorded longer by one base in loadFasta
+            final int genomeLength = genome.getLength(genomeTargetIndex) - 1;
             final int alignmentTargetLength = alignmentTargetLengths[targetIndex];
             if (alignmentTargetLength != genomeLength) {
 
                 LOG.error(String.format(
                         "Genome reference %s length (%d) differs from alignment reference length (%d) for sequence %s at index %d",
                         genome.getReferenceName(targetIndex), genomeLength, alignmentTargetLength,
-                        reverseIds.getId(targetIndex), targetIndex));
+                        alignmentReverseIds.getId(targetIndex), targetIndex));
 
             }
             alignmentToGenomeTargetIndices[targetIndex] = genomeTargetIndex;
@@ -555,7 +557,7 @@ public abstract class IterateSortedAlignments<T> {
     }
 
 
-    private int advanceReadIndex(boolean forwardStrand, int currentReadIndex) {
+    private int advanceReadIndex(final boolean forwardStrand, int currentReadIndex) {
         currentReadIndex += forwardStrand ? 1 : -1;
         // System.out.printf(" read-index=%d ", currentReadIndex);
 
