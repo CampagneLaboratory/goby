@@ -198,7 +198,7 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
     }
 
     /**
-     * This method is not re-entrant. The behavior is unpredictable when if multiple threads call this method. This
+     * This method is not re-entrant. The behavior is unpredictable if multiple threads call this method. This
      * constraint is added to avoid allocating data structures inside this method, because it is usually called in a loop
      * over all the positions of a genome, and the data structures can be reused, saving garbage collection time.
      *

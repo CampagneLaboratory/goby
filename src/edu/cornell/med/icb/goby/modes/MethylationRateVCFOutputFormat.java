@@ -249,8 +249,8 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
 
             final float methylationRate = numerator * 100 / denominator;
             statWriter.setSampleValue(methylationRateFieldIndex, sampleIndex, Math.round(methylationRate));
-            statWriter.setSampleValue(convertedCytosineFieldIndex, sampleIndex, methylatedCCountsPerSample[sampleIndex]);
-            statWriter.setSampleValue(unconvertedCytosineFieldIndex, sampleIndex, unmethylatedCCountPerSample[sampleIndex]);
+            statWriter.setSampleValue(unconvertedCytosineFieldIndex, sampleIndex, methylatedCCountsPerSample[sampleIndex]);
+            statWriter.setSampleValue(convertedCytosineFieldIndex, sampleIndex, unmethylatedCCountPerSample[sampleIndex]);
         }
         for (final GroupComparison comparison : groupComparisons) {
             final int indexGroup1 = comparison.indexGroup1;
@@ -311,12 +311,16 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
             if (strandAtSite == '+') {
                 final int otherIndex = convertIndex(sampleIndex, '-');
                 statWriter.setSampleValue(methylationRateFieldIndex, otherIndex, "100");
+                statWriter.setSampleValue(convertedCytosineFieldIndex, otherIndex, "0");
+                statWriter.setSampleValue(unconvertedCytosineFieldIndex, otherIndex, "0");
                 statWriter.setSampleValue(genotypeFormatter.getGenotypeFieldIndex(), otherIndex, "0/0");
                 statWriter.setSampleValue(genotypeFormatter.getBaseCountFieldIndex(), otherIndex, "ignore");
                 statWriter.setSampleValue(genotypeFormatter.getFailBaseCountFieldIndex(), otherIndex, "ignore");
                 statWriter.setSampleValue(genotypeFormatter.getGoodBaseCountFieldIndex(), otherIndex, "0");
             } else {
                 statWriter.switchSampleValue(methylationRateFieldIndex, firstIndex, secondIndex, "100");
+                statWriter.switchSampleValue(convertedCytosineFieldIndex, firstIndex, secondIndex, "0");
+                statWriter.switchSampleValue(unconvertedCytosineFieldIndex, firstIndex, secondIndex, "0");
                 statWriter.switchSampleValue(genotypeFormatter.getGenotypeFieldIndex(), firstIndex, secondIndex, "0/0");
                 statWriter.switchSampleValue(genotypeFormatter.getBaseCountFieldIndex(), firstIndex, secondIndex, "ignore");
                 statWriter.switchSampleValue(genotypeFormatter.getFailBaseCountFieldIndex(), firstIndex, secondIndex, "ignore");

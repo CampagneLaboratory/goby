@@ -31,6 +31,15 @@ import java.util.Arrays;
 @XmlRootElement
 public class MethylStats {
 
+    /**
+     * Number of cytosine in non-CpG context that were found converted.
+     */
+    public long numConvertedNotCpGContext;
+
+    /**
+     * Number of cytosine in non-CpG context that were observed in any state.
+     */
+    public long numNotCpGContext;
 
     public MethylStats(final int[] depths, final int[] fragmentLengthBins) {
         this.depths = depths;
