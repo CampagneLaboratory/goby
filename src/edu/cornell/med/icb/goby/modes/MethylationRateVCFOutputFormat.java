@@ -90,6 +90,12 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
     private char strandAtSite;
     private int strandFieldIndex;
     private ArrayList<GroupComparison> groupComparisons = new ArrayList<GroupComparison>();
+    private int convertedCytosineFieldIndex;
+    private int unconvertedCytosineFieldIndex;
+    private int convertedCytosinePlusFieldIndex;
+    private int unconvertedCytosinePlusFieldIndex;
+    private int convertedCytosineMinusFieldIndex;
+    private int unconvertedCytosineMinusFieldIndex;
 
     public void setMinimumEventThreshold(final int minimumEventThreshold) {
         this.minimumEventThreshold = minimumEventThreshold;
@@ -161,10 +167,10 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
             String[] sampleTwice = new String[samples.length * 2];
             int sampleIndex = 0;
             for (String sample : samples) {
-                sampleTwice[sampleIndex++] = "+|"+sample;
+                sampleTwice[sampleIndex++] = "+|" + sample;
             }
             for (String sample : samples) {
-                sampleTwice[sampleIndex++] = "-|"+sample;
+                sampleTwice[sampleIndex++] = "-|" + sample;
             }
 
             statWriter.defineSamples(sampleTwice);
@@ -172,7 +178,13 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         // define Genotype as first field (required by VCF specification):
         genotypeFormatter.defineGenotypeField(statWriter);
         methylationRateFieldIndex = statWriter.defineField("FORMAT", "MR", 1, ColumnType.Integer, "Methylation rate. 0-100%, 100% indicate fully methylated.");
-
+        convertedCytosineFieldIndex = statWriter.defineField("FORMAT", "C", 1, ColumnType.Integer, "Number of converted cytosines at site.");
+        unconvertedCytosineFieldIndex = statWriter.defineField("FORMAT", "Cm", 1, ColumnType.Integer, "Number of unconverted cytosines at site");
+        /*convertedCytosinePlusFieldIndex = statWriter.defineField("FORMAT", "C+", 1, ColumnType.Integer, "Number of converted cytosines at site in read matching forward strand.");
+        unconvertedCytosinePlusFieldIndex = statWriter.defineField("FORMAT", "Cm+", 1, ColumnType.Integer, "Number of unconverted cytosines at site in read matching reverse strand");
+        convertedCytosineMinusFieldIndex = statWriter.defineField("FORMAT", "C-", 1, ColumnType.Integer, "Number of converted cytosines at site in read matching forward strand.");
+        unconvertedCytosineMinusFieldIndex = statWriter.defineField("FORMAT", "Cm-", 1, ColumnType.Integer, "Number of unconverted cytosines at site in read matching reverse strand");
+          */
         statWriter.writeHeader();
     }
 
@@ -237,6 +249,8 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
 
             final float methylationRate = numerator * 100 / denominator;
             statWriter.setSampleValue(methylationRateFieldIndex, sampleIndex, Math.round(methylationRate));
+            statWriter.setSampleValue(convertedCytosineFieldIndex, sampleIndex, methylatedCCountsPerSample[sampleIndex]);
+            statWriter.setSampleValue(unconvertedCytosineFieldIndex, sampleIndex, unmethylatedCCountPerSample[sampleIndex]);
         }
         for (final GroupComparison comparison : groupComparisons) {
             final int indexGroup1 = comparison.indexGroup1;
