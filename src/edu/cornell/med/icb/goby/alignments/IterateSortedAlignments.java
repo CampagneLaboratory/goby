@@ -221,7 +221,7 @@ public abstract class IterateSortedAlignments<T> {
         LOG.info(String.format("Alignment contains %d reference sequences", numberOfReferences));
         processNumberOfReferences(numberOfReferences);
         //  CountsWriter writers[] = new CountsWriter[numberOfReferences];
-        IntSortedSet referencesToProcess = new IntLinkedOpenHashSet();
+        final IntSortedSet referencesToProcess = new IntLinkedOpenHashSet();
 
 
         // setup referencesToProcess data structure according to the command line (filterByReferenceNames and includeReferenceNames)
@@ -270,13 +270,16 @@ public abstract class IterateSortedAlignments<T> {
                         endReferenceIndex,
                         endPosition);
 
-
                 // adjust referenceIndex to contain only integers between start and end (inclusive):
-                for (int referenceIndex = 0; referenceIndex < referencesToProcess.size(); referenceIndex++) {
+                final int numRefs = referencesToProcess.size();
+                for (int referenceIndex = 0; referenceIndex < numRefs; referenceIndex++) {
                     if (referenceIndex < startReferenceIndex || referenceIndex > endReferenceIndex) {
-                        referencesToProcess.rem(referenceIndex);
+
+                      referencesToProcess.rem(referenceIndex);
                     }
                 }
+                assert !referencesToProcess.contains(startReferenceIndex-1) :"internal error";
+                assert !referencesToProcess.contains(endReferenceIndex+1) :"internal error";
 
 
             }

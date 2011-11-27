@@ -1,4 +1,9 @@
 1.9.8.1
+ - Fixed a subtle bug in IterateSortedAlignment that would cause iteration to return partial results for some alignments
+   when restricting results to a window.
+   The problem would manifest more clearly for alignments against genomes where contigs have smaller indices than
+   chromosomes and chromosome sequences are listed in non-increasing order (e.g., chr 16 appearing before chr 10) and
+   restricting to window from chr16 to MT (which should include chr 10 in that genome, but returned no result on chr 10).
  - Extend methyl-stats mode to estimate fraction of methylated cytosine observed in CpX contexts.
  - trim mode: Fix exception that could occur when trimming reads with no quality scores.
  - Optimize merging of TMH when the files are large (>100M compressed).
