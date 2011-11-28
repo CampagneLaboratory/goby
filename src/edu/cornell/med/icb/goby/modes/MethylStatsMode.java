@@ -182,7 +182,7 @@ public class MethylStatsMode extends AbstractGobyMode {
                     methylationRateGlobalFieldIndex[i] = vcfParser.getGlobalFieldIndex(sample, "MR");
                     convertedCystosineGlobalFieldIndex[i] = vcfParser.getGlobalFieldIndex(sample, "C");
                     unconvertedCystosineGlobalFieldIndex[i] = vcfParser.getGlobalFieldIndex(sample, "Cm");
-                    if (convertedCystosineGlobalFieldIndex[i]==-1 || unconvertedCystosineGlobalFieldIndex[i]==-1) {
+                    if (convertedCystosineGlobalFieldIndex[i] == -1 || unconvertedCystosineGlobalFieldIndex[i] == -1) {
                         System.err.println("Fatal: the vcf file must contain the FORMAT fields Cm and C.");
                         System.exit(1);
                     }
@@ -218,8 +218,8 @@ public class MethylStatsMode extends AbstractGobyMode {
                     if (referenceIndex != refIndexOfNextCpG) {
                         // we have change reference sequence or are past the next site.
                         // need to update next CpG position
-                        if (referenceIndex>genome.numberOfSequences() ) {
-                            System.out.printf("alignment reference %s does not exist in genome.",reference);
+                        if (referenceIndex > genome.numberOfSequences()) {
+                            System.out.printf("alignment reference %s does not exist in genome.", reference);
                             System.exit(1);
                         }
                         referenceSequenceSize = genome.getSequenceSize(referenceIndex);
@@ -267,7 +267,7 @@ public class MethylStatsMode extends AbstractGobyMode {
 
     private void updateCpXs(String reference, int referenceIndex, int sitePosition, char strand,
                             MethylStats[] methylStats, VCFParser vcfParser, int numSamples) {
-        if (sitePosition + 1 > referenceSequenceSize) {
+        if (sitePosition + 1 >= referenceSequenceSize) {
             return;
         }
         if (strand == '-' && sitePosition < 1) { // there is no previous base to check
@@ -280,7 +280,7 @@ public class MethylStatsMode extends AbstractGobyMode {
 
             for (int i = 0; i < numSamples; i++) {
                 final int depthInSample = Integer.parseInt(vcfParser.getFieldValue(sampleDepthGlobalFieldIndex[i]).toString());
-                final CharSequence baseCalls=vcfParser.getFieldValue(baseCallGlobalFieldIndex[i]);
+                final CharSequence baseCalls = vcfParser.getFieldValue(baseCallGlobalFieldIndex[i]);
                 if ("ignore".equals(baseCalls)) continue;
                 final float mr = Integer.parseInt(vcfParser.getFieldValue(methylationRateGlobalFieldIndex[i]).toString());
                 final int numCm = Integer.parseInt(vcfParser.getFieldValue(unconvertedCystosineGlobalFieldIndex[i]).toString());
@@ -289,12 +289,12 @@ public class MethylStatsMode extends AbstractGobyMode {
                 final MethylStats stats = methylStats[i];
                 if (base(secondBase, strand) != 'G') {
                     stats.numConvertedNotCpGContext += numCConverted;
-                    stats.numNotCpGContext += numCConverted+numCm;
-                 /*   System.out.printf("non CpG: pos=%d strand=%c numCm=%d numC=%d mr=%g depth=%d %c%c %n", sitePosition,
-                            strand,
-                            numCm, numCConverted, mr,
-                            depthInSample,
-                            firstBase, secondBase);      */
+                    stats.numNotCpGContext += numCConverted + numCm;
+                    /*   System.out.printf("non CpG: pos=%d strand=%c numCm=%d numC=%d mr=%g depth=%d %c%c %n", sitePosition,
+             strand,
+             numCm, numCConverted, mr,
+             depthInSample,
+             firstBase, secondBase);      */
                 }
                 if (depthInSample < 10 || mr < 10) {
                     // discard positions if less than 10 bases observed methylated or less than 10% methylation. We do this to try to avoid
@@ -307,7 +307,7 @@ public class MethylStatsMode extends AbstractGobyMode {
                 switch (base(secondBase, strand)) {
                     case 'C':
                         mCpXfreqs[MethylStats.CPC] += numCm;
-                       // final CharSequence baseCalls = vcfParser.getFieldValue(baseCallGlobalFieldIndex[i]);
+                        // final CharSequence baseCalls = vcfParser.getFieldValue(baseCallGlobalFieldIndex[i]);
                         //   System.out.printf("ref: %s position: %d strand %c %c %c baseCalls=%s %n", reference, sitePosition+1, strand, firstBase, secondBase,baseCalls);
                         break;
                     case 'A':
@@ -473,7 +473,6 @@ public class MethylStatsMode extends AbstractGobyMode {
     }
 
 
-
     private String getCpString(final int cpIndex) {
         switch (cpIndex) {
             case MethylStats.CPA:
@@ -557,7 +556,7 @@ public class MethylStatsMode extends AbstractGobyMode {
         return -1;
     }
 
-int referenceSequenceSize;
+    int referenceSequenceSize;
 
     private double sum(long[] array) {
         double sum = 0;
