@@ -290,11 +290,11 @@ public class MethylStatsMode extends AbstractGobyMode {
                 if (base(secondBase, strand) != 'G') {
                     stats.numConvertedNotCpGContext += numCConverted;
                     stats.numNotCpGContext += numCConverted+numCm;
-                    System.out.printf("non CpG: pos=%d strand=%c numCm=%d numC=%d mr=%g depth=%d %c%c %n", sitePosition,
+                 /*   System.out.printf("non CpG: pos=%d strand=%c numCm=%d numC=%d mr=%g depth=%d %c%c %n", sitePosition,
                             strand,
                             numCm, numCConverted, mr,
                             depthInSample,
-                            firstBase, secondBase);
+                            firstBase, secondBase);      */
                 }
                 if (depthInSample < 10 || mr < 10) {
                     // discard positions if less than 10 bases observed methylated or less than 10% methylation. We do this to try to avoid
