@@ -289,7 +289,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                     ++elementIndex;
                 }
                 pg.stop();
-                Runtime.getRuntime().gc();
+              //  Runtime.getRuntime().gc();
             } catch (VCFParser.SyntaxException
                     e) {
                 System.err.println("An error occured parsing VCF file " + filename);

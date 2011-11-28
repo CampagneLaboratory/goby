@@ -94,8 +94,6 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
                 tmh.close();
             }
         }
-        Runtime.getRuntime().gc();
-
     }
 
     public NonAmbiguousAlignmentReader(final long startOffset,
