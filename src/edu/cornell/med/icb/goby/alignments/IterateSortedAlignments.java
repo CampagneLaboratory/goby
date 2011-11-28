@@ -305,6 +305,7 @@ public abstract class IterateSortedAlignments<T> {
         int currentPosition;
         boolean first = true;
         ProgressLogger pg = new ProgressLogger(LOG);
+        pg.displayFreeMemory=true;
         pg.start();
 
         final AlignmentProcessorInterface realigner = alignmentProcessorFactory.create(sortedReaders);
