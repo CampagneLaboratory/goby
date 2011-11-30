@@ -233,7 +233,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 // need at least so many methylation/non-methylation event to record site in output
                 // the value configure put in minimumVariationSupport as minimum coverage for the site.
                 ((MethylationRateVCFOutputFormat) formatter).setMinimumEventThreshold(tmp);
-                System.out.println("Methylation format ignores thresholdDistinctReadIndices and minimumVariationSupport.");
+                System.out.println("Methylation format ignores thresholdDistinctReadIndices. Additionally, the minimum coverage needed for a site to be reported can be changed with --minimum-variation-support.");
                 break;
             default:
                 ObjectArrayList<OutputFormat> values = ObjectArrayList.wrap(OutputFormat.values());
