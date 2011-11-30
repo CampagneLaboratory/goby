@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.google.protobuf.ByteString;
 import com.martiansoftware.jsap.JSAPException;
+import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.util.TestFiles;
@@ -37,6 +38,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Collections;
 
 import static org.junit.Assert.assertTrue;
@@ -100,11 +102,18 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
             public int[] getReaderIndexToGroupIndex() {
                 return new int[]{0, 1}; // sample index is group index;
             }
+
+            @Override
+            public ArrayList<GroupComparison> getGroupComparisons() {
+                ArrayList<GroupComparison> list = new ArrayList<GroupComparison>();
+                list.add(new GroupComparison("methylated", "not-so", 0, 1, 0));
+                return list;
+            }
         };
         StringWriter writer = new StringWriter();
         outputFormat.allocateStorage(2, 2);
         outputFormat.defineColumns(new PrintWriter(writer), mode);
-
+        outputFormat.setMinimumEventThreshold(0);
         outputFormat.writeRecord(iterator, makeTwoSampleCounts(), 0, 0, list4(), 0, 1);
         String stringB = writer.getBuffer().toString();
         assertTrue(stringB, stringB.contains("1/2:A=10,T=4,C=0,G=0,N=2:16:0:33"));
@@ -139,12 +148,19 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
             public int[] getReaderIndexToGroupIndex() {
                 return new int[]{0, 1}; // sample index is group index;
             }
+
+            @Override
+            public ArrayList<GroupComparison> getGroupComparisons() {
+                ArrayList<GroupComparison> list = new ArrayList<GroupComparison>();
+                list.add(new GroupComparison("methylated", "not-so", 0, 1, 0));
+                return list;
+            }
         };
 
         StringWriter writer = new StringWriter();
         outputFormat.allocateStorage(2, 2);
         outputFormat.defineColumns(new PrintWriter(writer), mode);
-
+        outputFormat.setMinimumEventThreshold(0);
         outputFormat.writeRecord(iterator, makeTwoSampleCounts(), 0, 0, list1(), 0, 1);
         writer.flush();
 

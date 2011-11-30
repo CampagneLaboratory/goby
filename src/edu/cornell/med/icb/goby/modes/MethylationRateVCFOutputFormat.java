@@ -254,7 +254,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         }
         for (final GroupComparison comparison : groupComparisons) {
             final int indexGroup1 = comparison.indexGroup1;
-            final int indexGroup2 = comparison.indexGroup1;
+            final int indexGroup2 = comparison.indexGroup2;
             final double denominator = (double) (unmethylatedCCountsPerGroup[indexGroup1]) * (double) (methylatedCCountPerGroup[indexGroup2]);
             final double oddsRatio = denominator == 0 ? Double.NaN :
                     ((double) (unmethylatedCCountsPerGroup[indexGroup2]) * (double) (methylatedCCountPerGroup[indexGroup1])) /
@@ -276,7 +276,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
             final double log2OddsRatio = Math.log(oddsRatio) / Math.log(2);
             final double log2OddsRatioZValue = log2OddsRatio / logOddsRatioSE;
             double fisherP = Double.NaN;
-            if (eventCountAtSite >= 10) {
+            if (eventCountAtSite >= minimumEventThreshold) {
                 // estimate Fisher only if we have seen at least 10 events.
 
                 final boolean ok = checkCounts();
