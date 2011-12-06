@@ -1,4 +1,8 @@
 1.9.8.1
+ - Mode discover-sequence-variants now limits the maximum coverage per site in order to limit the impact on peak memory
+   of a few very high coverage sites. The default setting is set to 500,000x and can be changed with
+   option --max-coverage-per-site
+ - Switched IndexedIdentifier to an AVLTreeMap to help scale when we have millions of elements to compare in diff exp.
  - Fixed a subtle bug in IterateSortedAlignment that would cause iteration to return partial results for some alignments
    when restricting results to a window.
    The problem would manifest more clearly for alignments against genomes where contigs have smaller indices than

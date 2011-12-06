@@ -63,6 +63,7 @@
     </target>
 
     <target name="compile" depends="init" description="compiles the source code">
+
         <javac srcdir="${src}" destdir="${classes}" debug="${debug}" deprecation="${deprecation}">
             <classpath refid="compile.classpath"/>
         </javac>
@@ -83,7 +84,6 @@
         <copy file="${config}/log4j-sample.properties" tofile="${classes}/log4j.properties" overwrite="true"
               failonerror="true"/>
         <jar jarfile="${goby-jarfile}">
-
 
             <fileset dir="${classes}"/>
             <zipgroupfileset dir="${lib}">

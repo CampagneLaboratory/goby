@@ -95,6 +95,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     private boolean overrideReferenceWithGenome = true;
     private FormatConfigurator formatConfigurator = new DummyFormatConfigurator();
     private ArrayList<GroupComparison> groupComparisonsList=new ArrayList<GroupComparison>();
+    private int maxThresholdPerSite;
 
     public void setDisableAtLeastQuarterFilter(boolean disableAtLeastQuarterFilter) {
         this.disableAtLeastQuarterFilter = disableAtLeastQuarterFilter;
@@ -175,7 +176,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         for (String group : groups) {
             groupIds.registerIdentifier(new MutableString(group));
         }
-
+        maxThresholdPerSite=jsapResult.getInt("max-coverage-per-site");
         minimumVariationSupport = jsapResult.getInt("minimum-variation-support");
         thresholdDistinctReadIndices = jsapResult.getInt("threshold-distinct-read-indices");
         CompactAlignmentToAnnotationCountsMode.parseEval(jsapResult, deAnalyzer);
@@ -650,6 +651,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         sortedPositionIterator.setAlignmentReaderFactory(new NonAmbiguousAlignmentReaderFactory());
         sortedPositionIterator.setAlignmentProcessorFactory(realignmentFactory);
         sortedPositionIterator.setOverrideReferenceWithGenome(overrideReferenceWithGenome);
+        sortedPositionIterator.setMaxThreshold(maxThresholdPerSite);
         sortedPositionIterator.iterate(basenames);
 
         sortedPositionIterator.finish();

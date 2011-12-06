@@ -62,6 +62,17 @@ public abstract class IterateSortedAlignments<T> {
     private String startOffsetArgument;
     private String endOffsetArgument;
     private int startFlapLength;
+    /**
+     * Set the maximum number of variants that will be analyzed at a given position. When a site
+     * has more than maxThreshold, any variant encountered after the threshold is reached is ignored.
+     * The default value is 500,000.
+     * @param maxThreshold
+     */
+    public void setMaxThreshold(final int maxThreshold) {
+        this.maxThreshold = maxThreshold;
+    }
+
+    int maxThreshold = 500000;
 
     private AlignmentReaderFactory alignmentReaderFactory = new DefaultAlignmentReaderFactory();
     /**
@@ -594,6 +605,7 @@ public abstract class IterateSortedAlignments<T> {
             }
 
         }
+
         lastRemovedPosition = lastPosition;
     }
 

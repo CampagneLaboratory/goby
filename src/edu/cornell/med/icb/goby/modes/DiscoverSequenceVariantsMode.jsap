@@ -150,6 +150,18 @@
             </defaults>
             <help>The minimum number of distinct read indices that support a variation for this variation to be considered for statistical test. </help>
         </flaggedOption>
+        <flaggedOption>
+            <id>max-coverage-per-site</id>
+            <longFlag>max-coverage-per-site</longFlag>
+            <stringParser>
+                <classname>IntegerStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>500000</string>
+            </defaults>
+            <help>The maximum coverage per site considered for comparisons. Any bases in excess of the specified coverage at a given site is ignored.</help>
+        </flaggedOption>
          <switch>
             <id>parallel</id>
             <longFlag>parallel</longFlag>

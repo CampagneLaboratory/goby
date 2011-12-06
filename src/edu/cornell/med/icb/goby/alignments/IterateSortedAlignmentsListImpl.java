@@ -21,6 +21,7 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.apache.log4j.Logger;
 
 /**
@@ -44,7 +45,6 @@ public abstract class IterateSortedAlignmentsListImpl
      */
     @Override
     public abstract void processPositions(int referenceIndex, int intermediatePosition, DiscoverVariantPositionData positionBaseInfos);
-
 
 
     @Override
@@ -102,8 +102,6 @@ public abstract class IterateSortedAlignmentsListImpl
     }
 
 
-
-
     private void addToFuture(final Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
                              final PositionBaseInfo info) {
         DiscoverVariantPositionData list = positionToBases.get(info.position);
@@ -111,7 +109,23 @@ public abstract class IterateSortedAlignmentsListImpl
             list = new DiscoverVariantPositionData(info.position);
             positionToBases.put(info.position, list);
         }
+
+        if (list.size() > maxThreshold) {
+            /* IntOpenHashSet positions=new IntOpenHashSet();
+           for (PositionBaseInfo element:list) {
+               positions.add(element.position);
+           }
+           LOG.warn(String.format("position=%d has more variants %d than max threshold=%d. Stopped recording. Distinct position#%d ", info.position, 500000, list.size(),
+                   positions.size()));
+           LOG.warn("positions: "+positions.toString());
+            */
+            // stop accumulating if the position has more than half a million variants!
+
+            return;
+        }
         list.add(info);
+
+
     }
 
 

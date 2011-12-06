@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
+import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -111,12 +112,12 @@ public class DifferentialExpressionCalculator {
     public DifferentialExpressionCalculator() {
         super();
         groups = new ObjectArraySet<String>();
-        elementLabels = new IndexedIdentifier();
+        elementLabels = new IndexedIdentifier(100000);
         sampleToGroupMap = new Object2ObjectOpenHashMap<String, String>();
         numAlignedInSample = new Object2LongOpenHashMap<String>();
         sampleToCounts = new Object2ObjectOpenHashMap<String, IntArrayList>();
         lengths = new IntArrayList();
-        elementLabelToElementType = new Int2IntOpenHashMap();
+        elementLabelToElementType = new Int2IntAVLTreeMap();
         elementLabelToElementType.defaultReturnValue(-1);
         sampleToSumCount = new Object2IntRBTreeMap<String>();
         sampleToSumCount.defaultReturnValue(-1);

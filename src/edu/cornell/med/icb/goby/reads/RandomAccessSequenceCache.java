@@ -210,6 +210,8 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
     public void load(final String basename, final String minRefId, final String maxRefId) throws IOException, ClassNotFoundException {
 
         load(basename);
+        /**  Disable this to test if this causes the problems I observed on miklos' data chunk 23
+         *
         minRefIndex = "min".equals(minRefId) ? -1 : referenceNameMap.getInt(minRefId);
         maxRefIndex = "max".equals(maxRefId) ? referenceNameMap.size() : referenceNameMap.getInt(maxRefId);
 
@@ -223,6 +225,7 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
             compressedData.set(i, null);
             referenceIgnoreLists.set(i, null);
         }
+         */
 
     }
 
