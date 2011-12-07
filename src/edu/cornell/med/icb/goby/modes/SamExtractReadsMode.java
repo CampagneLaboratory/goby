@@ -33,6 +33,7 @@ import javax.management.RuntimeErrorException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -125,8 +126,8 @@ public class SamExtractReadsMode extends AbstractGobyMode {
 
             progress.start();
             int numReads = 0;
-            Queue<SAMRecord> queue = new ArrayBlockingQueue<SAMRecord>(3);
-            SAMRecordIterator samRecordIterator = parser.iterator();
+            final Queue<SAMRecord> queue = new ArrayDeque<SAMRecord>(3);
+            final SAMRecordIterator samRecordIterator = parser.iterator();
             boolean hasMoreElements = samRecordIterator.hasNext();
 
             while (hasMoreElements) {
