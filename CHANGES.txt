@@ -1,4 +1,11 @@
+ - Preliminary support for calling indels with discover-sequence-variants.  Candidate indels are now written
+   in the formats that use GenotypeOutputFormat (e.g., genotypes, compare_groups, allele_frequency).
+   The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.
+   After possible realignment, and filtering to remove possible errors, EIR are reported with their frequencies.
 1.9.8.1
+ - Fix sam-extract-reads for paired-end BAM files. Each BAM file contains both pairs. To convert to compact reads, the
+   input BAM file must be sorted by read name, since this is the only way we can put the pairs back together in one
+   Goby record.
  - Mode discover-sequence-variants now limits the maximum coverage per site in order to limit the impact on peak memory
    of a few very high coverage sites. The default setting is set to 500,000x and can be changed with
    option --max-coverage-per-site
@@ -19,10 +26,6 @@
    the target to record the length in the alignment. We need to keep any length seen when we concat because the first
    chunk may just not have the length for the remaining parts..
  - Improved logic for --paired-end filename support in the fastaToCompactMode.
- - Preliminary support for calling indels with discover-sequence-variants.  Candidate indels are now written
-   in the formats that use GenotypeOutputFormat (e.g., genotypes, compare_groups, allele_frequency).
-   The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.
-   After possible realignment, and filtering to remove possible errors, EIR are reported with their frequencies.
  - last-to-compact: Add an option to flip the strand of the alignment. This is useful when converting bisulfite reads
    specifically kmatched to the reverse strand.
  - Fix a NPE in suggest-position-slices that could occur with very small alignment files.

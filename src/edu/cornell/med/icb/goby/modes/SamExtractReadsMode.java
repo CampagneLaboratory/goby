@@ -29,9 +29,12 @@ import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMRecordIterator;
 import org.apache.log4j.Logger;
 
+import javax.management.RuntimeErrorException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 
 /**
  * Extract reads from a <a href="http://samtools.sourceforge.net/">SAM</a> file.
@@ -55,9 +58,9 @@ public class SamExtractReadsMode extends AbstractGobyMode {
     private static final String MODE_DESCRIPTION = "Extract reads from a SAM file.";
 
     /**
-     * The input filenames.
+     * The input filename.
      */
-    private String inputFilenames[];
+    private String inputFilename;
 
     /**
      * The output file.
@@ -77,8 +80,6 @@ public class SamExtractReadsMode extends AbstractGobyMode {
     }
 
     private boolean processPairs = false;
-    private String pairIndicator1 = null;
-    private String pairIndicator2 = null;
     int processAtMost = -1;
 
     /**
@@ -94,26 +95,15 @@ public class SamExtractReadsMode extends AbstractGobyMode {
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
-        inputFilenames = jsapResult.getStringArray("input");
+        inputFilename = jsapResult.getString("input");
         outputFilename = jsapResult.getString("output");
+
         if (!outputFilename.endsWith(".compact-reads")) {
             outputFilename = outputFilename + ".compact-reads";
         }
         qualityEncoding = QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
-
         processPairs = jsapResult.getBoolean("paired-end");
-        final String tokens = jsapResult.getString("pair-indicator");
-        if (processPairs && tokens != null) {
-            final String[] tmp = tokens.split("[,]");
-            if (tmp.length != 2) {
-                System.err.println("Pair indicator argument must have exactly two tokens, separated by " +
-                        "comma. Offending syntax: " + tokens);
-                System.exit(1);
-            }
-            pairIndicator1 = tmp[0];
-            pairIndicator2 = tmp[1];
-        }
-        processAtMost = jsapResult.getInt("process-at-most");
+        processAtMost = jsapResult.getInt("process-at-most",Integer.MAX_VALUE);
         return this;
     }
 
@@ -128,9 +118,60 @@ public class SamExtractReadsMode extends AbstractGobyMode {
     public void execute() throws IOException {
         final ReadsWriter writer = new ReadsWriter(new FileOutputStream(outputFilename));
         try {
-            for (String inputFilename : inputFilenames) {
-                if (processPairs && inputFilename.contains(pairIndicator1)) {
-                    processOneFile(inputFilename, writer);
+            final ProgressLogger progress = new ProgressLogger(LOG);
+            // the following is required to set validation to SILENT before loading the header (done in the SAMFileReader constructor)
+            SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+            final SAMFileReader parser = new SAMFileReader(new File(inputFilename), null);
+
+            progress.start();
+            int numReads = 0;
+            Queue<SAMRecord> queue = new ArrayBlockingQueue<SAMRecord>(3);
+            SAMRecordIterator samRecordIterator = parser.iterator();
+            boolean hasMoreElements = samRecordIterator.hasNext();
+
+            while (hasMoreElements) {
+                if (queue.size() < 2) {
+                    // enqueue
+                    if (samRecordIterator.hasNext()) {
+                        queue.add(samRecordIterator.next());
+                    } else {
+
+                        //we  may still have one read in the queue left to process:
+                        hasMoreElements = !queue.isEmpty();
+                    }
+                }
+                if (hasMoreElements && queue.size()>=2) {
+
+
+                    // at least one element left, dequeue it
+                    final SAMRecord first = queue.remove();
+
+                    if (!processPairs) {
+
+                        numReads = processSingleEndRead(writer, progress, numReads, first);
+                    } else {
+                        if (!queue.isEmpty()) {
+                            final SAMRecord second = queue.remove();
+                            if (first.getReadName().equals(second.getReadName())) {
+                                numReads = processPairedEndRead(writer, progress, numReads, first, second);
+                            } else {
+                                System.err.printf("Error: when processing paired-end, two reads must have the same name in sequence. After #reads: %d Offending names %s %s %n",
+                                        numReads,
+                                        first.getReadName(), second.getReadName());
+                                throw new RuntimeException();
+                            }
+                        } else {
+                            System.err.printf("Error: when processing paired-end, two reads must be found for each name. After #reads: %d %n",
+                                    numReads
+                            );
+                             throw new RuntimeException();
+                        }
+                    }
+                }
+
+                if (numReads > processAtMost) {
+                    System.err.printf("Early stop after %d reads.%n", processAtMost);
+                    break;
                 }
             }
         } finally {
@@ -138,69 +179,38 @@ public class SamExtractReadsMode extends AbstractGobyMode {
         }
     }
 
-    private void processOneFile(String inputFilename, ReadsWriter writer) throws IOException {
-        final ProgressLogger progress = new ProgressLogger(LOG);
-        // the following is required to set validation to SILENT before loading the header (done in the SAMFileReader constructor)
-        SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
-        final SAMFileReader parser = new SAMFileReader(new File(inputFilename), null);
-        final String pairInputFilename;
-        final SAMFileReader pairedParser;
-        final SAMRecordIterator pairedIterator;
-        progress.start();
-        if (processPairs) {
-            pairInputFilename = inputFilename.replace(pairIndicator1, pairIndicator2);
-            LOG.info(String.format("Located paired-end input files (%s,%s)", inputFilename, pairInputFilename));
-            pairedParser = new SAMFileReader(new File(pairInputFilename));
-            pairedIterator = pairedParser.iterator();
-        } else {
-            pairedParser = null;
-            pairedIterator = null;
-            pairInputFilename = null;
-        }
-        int readNumber = 1;
-        for (final SAMRecord samRecord : parser) {
-            final String readId = samRecord.getReadName();
-            writer.setIdentifier(readId);
-            writer.setSequence(byteToString(samRecord.getReadBases()));
+    private int processPairedEndRead(ReadsWriter writer, ProgressLogger progress, int numReads, SAMRecord first,
+                                     SAMRecord second) throws IOException {
+        final String readId = first.getReadName();
+        writer.setIdentifier(readId);
+        writer.setSequence(byteToString(first.getReadBases()));
 
-            writer.setQualityScores(FastaToCompactMode.convertQualityScores(qualityEncoding,
-                    byteToString(samRecord.getBaseQualities()),
-                    false));
+        writer.setQualityScores(FastaToCompactMode.convertQualityScores(qualityEncoding,
+                byteToString(first.getBaseQualities()),
+                false));
+        writer.setPairSequence(byteToString(second.getReadBases()));
 
-            if (processPairs) {
-                if (pairedIterator != null && !pairedIterator.hasNext()) {
-                    System.err.printf("Paired file %s must have at least as many sequences as the primary input file %s. Aborting. %n",
-                            inputFilename, pairInputFilename);
-                    System.exit(1);
-                } else {
-                    assert pairedIterator != null;
-                    final SAMRecord pairedSamRecord = pairedIterator.next();
-                    if (!pairedSamRecord.getReadName().equals(readId)) {
+        writer.setQualityScoresPair(FastaToCompactMode.convertQualityScores(qualityEncoding,
+                byteToString(second.getBaseQualities()),
+                false));
+        writer.appendEntry();
+        progress.lightUpdate();
+        numReads++;
+        return numReads;
+    }
 
-                        System.err.printf("read identifier must match between paired file %s and primary input file %s." +
-                                " Detected mismatch for read ids =%s %s at sequence number=%d. Aborting. %n",
-                                inputFilename, pairInputFilename, readId, pairedSamRecord.getReadName(), readNumber);
-                        System.exit(1);
-                    }
+    private int processSingleEndRead(ReadsWriter writer, ProgressLogger progress, int numReads, SAMRecord samRecord) throws IOException {
+        final String readId = samRecord.getReadName();
+        writer.setIdentifier(readId);
+        writer.setSequence(byteToString(samRecord.getReadBases()));
 
-                    writer.setPairSequence(byteToString(pairedSamRecord.getReadBases()));
-                    writer.setQualityScoresPair(FastaToCompactMode.convertQualityScores(qualityEncoding,
-                            byteToString(samRecord.getBaseQualities()),
-                            false));
-                }
-
-            }
-            readNumber++;
-            if (processAtMost != -1 && readNumber > processAtMost) {
-                break;
-            }
-            writer.appendEntry();
-            progress.lightUpdate();
-            parser.close();
-            if (processPairs && pairedParser != null) {
-                pairedParser.close();
-            }
-        }
+        writer.setQualityScores(FastaToCompactMode.convertQualityScores(qualityEncoding,
+                byteToString(samRecord.getBaseQualities()),
+                false));
+        writer.appendEntry();
+        progress.lightUpdate();
+        numReads++;
+        return numReads;
     }
 
 
