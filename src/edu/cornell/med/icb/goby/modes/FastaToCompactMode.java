@@ -592,11 +592,11 @@ public class FastaToCompactMode extends AbstractGobyMode {
         }
     }
 
-    static public byte[] convertQualityScores(QualityEncoding qualityEncoding, final CharSequence quality, boolean verboseQualityScores) {
+    public static byte[] convertQualityScores(final QualityEncoding qualityEncoding, final CharSequence quality, final boolean verboseQualityScores) {
         return convertQualityScores(qualityEncoding, quality, verboseQualityScores, false);
     }
 
-    static public byte[] convertQualityScores(QualityEncoding qualityEncoding, final CharSequence quality, boolean verboseQualityScores, boolean apiMode) {
+    public static byte[] convertQualityScores(final QualityEncoding qualityEncoding, final CharSequence quality, final boolean verboseQualityScores, final boolean apiMode) {
         // Only Solexa, Sanger and Illumina encoding are supported at this time
 
         final int size = quality.length();

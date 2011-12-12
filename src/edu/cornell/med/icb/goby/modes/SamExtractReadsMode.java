@@ -104,7 +104,7 @@ public class SamExtractReadsMode extends AbstractGobyMode {
         }
         qualityEncoding = QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
         processPairs = jsapResult.getBoolean("paired-end");
-        processAtMost = jsapResult.getInt("process-at-most",Integer.MAX_VALUE);
+        processAtMost = jsapResult.getInt("process-at-most", Integer.MAX_VALUE);
         return this;
     }
 
@@ -141,7 +141,7 @@ public class SamExtractReadsMode extends AbstractGobyMode {
                         hasMoreElements = !queue.isEmpty();
                     }
                 }
-                if (hasMoreElements && queue.size()>=2) {
+                if (hasMoreElements && queue.size() >= 2) {
 
 
                     // at least one element left, dequeue it
@@ -165,7 +165,7 @@ public class SamExtractReadsMode extends AbstractGobyMode {
                             System.err.printf("Error: when processing paired-end, two reads must be found for each name. After #reads: %d %n",
                                     numReads
                             );
-                             throw new RuntimeException();
+                            throw new RuntimeException();
                         }
                     }
                 }
@@ -184,15 +184,15 @@ public class SamExtractReadsMode extends AbstractGobyMode {
                                      SAMRecord second) throws IOException {
         final String readId = first.getReadName();
         writer.setIdentifier(readId);
-        writer.setSequence(byteToString(first.getReadBases()));
+        writer.setSequence(byteToString(buffer1, first.getReadBases()));
 
         writer.setQualityScores(FastaToCompactMode.convertQualityScores(qualityEncoding,
-                byteToString(first.getBaseQualities()),
+                byteToString(buffer2, first.getBaseQualities()),
                 false));
-        writer.setPairSequence(byteToString(second.getReadBases()));
+        writer.setPairSequence(byteToString(buffer3, second.getReadBases()));
 
         writer.setQualityScoresPair(FastaToCompactMode.convertQualityScores(qualityEncoding,
-                byteToString(second.getBaseQualities()),
+                byteToString(buffer4, second.getBaseQualities()),
                 false));
         writer.appendEntry();
         progress.lightUpdate();
@@ -203,10 +203,10 @@ public class SamExtractReadsMode extends AbstractGobyMode {
     private int processSingleEndRead(ReadsWriter writer, ProgressLogger progress, int numReads, SAMRecord samRecord) throws IOException {
         final String readId = samRecord.getReadName();
         writer.setIdentifier(readId);
-        writer.setSequence(byteToString(samRecord.getReadBases()));
+        writer.setSequence(byteToString(buffer1, samRecord.getReadBases()));
 
         writer.setQualityScores(FastaToCompactMode.convertQualityScores(qualityEncoding,
-                byteToString(samRecord.getBaseQualities()),
+                byteToString(buffer2, samRecord.getBaseQualities()),
                 false));
         writer.appendEntry();
         progress.lightUpdate();
@@ -214,13 +214,16 @@ public class SamExtractReadsMode extends AbstractGobyMode {
         return numReads;
     }
 
+    final MutableString buffer1 = new MutableString();
+    final MutableString buffer2 = new MutableString();
+    final MutableString buffer3 = new MutableString();
+    final MutableString buffer4 = new MutableString();
 
-    private CharSequence byteToString(final byte[] input) {
-        final MutableString buffer = new MutableString();
+    private CharSequence byteToString(final MutableString buffer, final byte[] input) {
+
         buffer.setLength(input.length);
         for (int i = 0; i < input.length; i++) {
             buffer.setCharAt(i, (char) input[i]);
-
         }
         return buffer;
     }
