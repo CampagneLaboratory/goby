@@ -3,6 +3,8 @@
    The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.
    After possible realignment, and filtering to remove possible errors, EIR are reported with their frequencies.
 1.9.8.1
+ - Fixed a major bug where NonAmbiguousAlignmentReader would stop iterating after encountering an ambiguous alignment.
+   Alignments with shorter reads were much more likely to be affected.
  - Fix sam-extract-reads for paired-end BAM files. Each BAM file contains both pairs. To convert to compact reads, the
    input BAM file must be sorted by read name, since this is the only way we can put the pairs back together in one
    Goby record.
