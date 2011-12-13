@@ -164,6 +164,9 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
                 possibleEntry = null;
                 // the query index is not ambigious.
                 return tmp;
+            }  else {
+                // the last entry was ambiguous, look for a new one that is not.
+                possibleEntry=null;
             }
         }
         return null;
