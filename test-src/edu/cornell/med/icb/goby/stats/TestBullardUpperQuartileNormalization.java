@@ -17,7 +17,7 @@ public class TestBullardUpperQuartileNormalization {
         final DifferentialExpressionCalculator deCalc = makeDiffExprCalc();
         final RpkmLikeNormalizationMethod method = new BullardUpperQuartileNormalization();
         method.normalize(deCalc, "group-A", "group-B");
-        assertTrue("", method.getDenominator(deCalc, "A-1") > 75000);
+        assertTrue("normalization denominator must be large", method.getDenominator(deCalc, "A-1") > 75000);
     }
 
     public DifferentialExpressionCalculator makeDiffExprCalc() {

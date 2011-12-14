@@ -110,6 +110,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     }
 
     IntArrayList decreasingCounts = new IntArrayList();
+    ObjectArraySet<String> sampleAlleleSet = new ObjectArraySet<String>();
     ObjectArraySet<String> alleleSet = new ObjectArraySet<String>();
     MutableString genotypeBuffer = new MutableString();
 
@@ -129,11 +130,11 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
         statsWriter.setChromosome(currentReferenceId);
 
         statsWriter.setPosition(position);
-        //   int location = 8930385;
+    /*    //   int location = 8930385;
         int location = 8930369;
         if (position == location || position - 1 == location || position + 1 == location) {
             System.out.println("STOP");
-        }
+        } */
         writeGenotypes(statsWriter, sampleCounts, position);
 
         writeZygozity(sampleCounts);
@@ -183,10 +184,11 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
         boolean siteHasIndel = false;
         referenceSet.clear();
         statsWriter.clearAlternateAlleles();
+        // clear the cross-sample allele set, which is used to determine if the VCF position should be written.
         alleleSet.clear();
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
 
-
+            sampleAlleleSet.clear();
             SampleCountInfo sci = sampleCounts[sampleIndex];
             int totalCount = 0;
             for (int genotypeIndex = 0; genotypeIndex < sci.getGenotypeMaxIndex(); ++genotypeIndex) {
@@ -228,6 +230,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
 
                     }
                     alleleSet.add(genotype);
+                    sampleAlleleSet.add(genotype);
                     genotypeBuffer.append(genotype);
                     genotypeBuffer.append('/');
 
@@ -239,7 +242,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
 
             }
 
-            if (alleleSet.size() == 1) {
+            if (sampleAlleleSet.size() == 1) {
                 // when homozygous genotype 0/ write 0/0/ (last / will be removed when length is adjusted)
                 genotypeBuffer.append(genotypeBuffer.copy());
             }
@@ -303,6 +306,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
             if (refGenotype != null && !genotype.equals(refGenotype) && isIncludedIn(refGenotype, genotype)) {
                 referenceSet.remove(refGenotype);
                 alleleSet.remove(refGenotype);
+                sampleAlleleSet.remove(refGenotype);
             }
         }
     }
