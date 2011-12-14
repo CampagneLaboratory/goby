@@ -253,7 +253,7 @@ public class DifferentialExpressionCalculator {
      * @param elementId id of the element.
      * @return index of the element.
      */
-    public int getElementIndex(String elementId) {
+    public int getElementIndex(final String elementId) {
         return elementLabels.getInt(new MutableString(elementId));
 
     }

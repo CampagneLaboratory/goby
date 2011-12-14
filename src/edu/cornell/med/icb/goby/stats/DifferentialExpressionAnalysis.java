@@ -117,6 +117,7 @@ public class DifferentialExpressionAnalysis {
      * Return true if the basename is on the command line as an input basename.
      *
      * @param basename
+     * @param inputFilenames
      * @return
      */
     private boolean isInputBasename(final String basename, final String[] inputFilenames) {
@@ -324,7 +325,7 @@ public class DifferentialExpressionAnalysis {
         String[] result = new String[2];
         GroupComparison val = groupComparisons.get(0);
         result[0] = val.nameGroup1;
-        result[1] = val.nameGroup1;
+        result[1] = val.nameGroup2;
         return result;
     }
 }
