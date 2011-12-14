@@ -129,9 +129,11 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
         statsWriter.setChromosome(currentReferenceId);
 
         statsWriter.setPosition(position);
-        //    if (position == 129285 ) {
-        //       System.out.println("STOP");
-        //   }
+        //   int location = 8930385;
+        int location = 8930369;
+        if (position == location || position - 1 == location || position + 1 == location) {
+            System.out.println("STOP");
+        }
         writeGenotypes(statsWriter, sampleCounts, position);
 
         writeZygozity(sampleCounts);
@@ -181,9 +183,10 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
         boolean siteHasIndel = false;
         referenceSet.clear();
         statsWriter.clearAlternateAlleles();
+        alleleSet.clear();
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
 
-            alleleSet.clear();
+
             SampleCountInfo sci = sampleCounts[sampleIndex];
             int totalCount = 0;
             for (int genotypeIndex = 0; genotypeIndex < sci.getGenotypeMaxIndex(); ++genotypeIndex) {
