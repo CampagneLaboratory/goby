@@ -3,6 +3,10 @@
    The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.
    After possible realignment, and filtering to remove possible errors, EIR are reported with their frequencies.
 1.9.8.1
+ - Discover-sequence-variants, genotype format: Fix a bug where alleleSet was cleared in each sample, rather than before
+   any sample is processed. This made it possible for some positions to be ignored erroneously when samples were given
+   on a specific order on the command line. Specifically, positions would be ignored if they were not typed (i.e., not
+   enough good bases) in the last sample given on the command line.
  - Fixed a major bug where NonAmbiguousAlignmentReader would stop iterating after encountering an ambiguous alignment.
    Alignments with shorter reads were much more likely to be affected.
  - Fix sam-extract-reads for paired-end BAM files. Each BAM file contains both pairs. To convert to compact reads, the
