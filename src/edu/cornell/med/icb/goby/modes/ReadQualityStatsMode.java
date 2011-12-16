@@ -211,7 +211,7 @@ public class ReadQualityStatsMode extends AbstractGobyMode {
             final Int2ObjectMap<ReadQualityStats> qualityStats = new Int2ObjectOpenHashMap<ReadQualityStats>();
             final ProgressLogger progress = new ProgressLogger(LOG);
             progress.start();
-            final MersenneTwister random = new MersenneTwister();
+            final MersenneTwister random = new MersenneTwister(37);
             final boolean doSample = sampleFraction < 1.0d;
             writer.println("basename\treadIndex\t25%-percentile\tmedian\taverageQuality\t75%-percentile");
             for (final File filename : inputFiles) {
