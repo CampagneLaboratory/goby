@@ -125,7 +125,7 @@ public class TestStatistics {
 
     @Test
     public void testTwoStats() {
-        final Random randomEngine = new Random();
+        final Random randomEngine = new Random(37);
         final DifferentialExpressionCalculator deCalc = new DifferentialExpressionCalculator() {
 
             @Override
