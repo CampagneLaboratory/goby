@@ -3,10 +3,14 @@
    The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.
    After possible realignment, and filtering to remove possible errors, EIR are reported with their frequencies.
 1.9.8.1
+ - Discover-sequence-variants: add ability to describe zero, one or more group comparisons. Syntax is A/B,A/C to compare
+   group A to B and group A to C. Additional pairs can be described, separated by coma.
+ - Extend methyl-stats mode to estimate fraction of methylated cytosine observed in CpX contexts.
  - Discover-sequence-variants, genotype format: Fix a bug where alleleSet was cleared in each sample, rather than before
    any sample is processed. This made it possible for some positions to be ignored erroneously when samples were given
    on a specific order on the command line. Specifically, positions would be ignored if they were not typed (i.e., not
    enough good bases) in the last sample given on the command line.
+ - Optimize merging of TMH when the files are large (>100M compressed).
  - Fixed a major bug where NonAmbiguousAlignmentReader would stop iterating after encountering an ambiguous alignment.
    Alignments with shorter reads were much more likely to be affected.
  - Fix sam-extract-reads for paired-end BAM files. Each BAM file contains both pairs. To convert to compact reads, the
@@ -17,23 +21,17 @@
    option --max-coverage-per-site
  - Switched IndexedIdentifier to an AVLTreeMap to help scale when we have millions of elements to compare in diff exp.
  - Fixed a subtle bug in IterateSortedAlignment that would cause iteration to return partial results for some alignments
-   when restricting results to a window.
-   The problem would manifest more clearly for alignments against genomes where contigs have smaller indices than
-   chromosomes and chromosome sequences are listed in non-increasing order (e.g., chr 16 appearing before chr 10) and
-   restricting to window from chr16 to MT (which should include chr 10 in that genome, but returned no result on chr 10).
- - Extend methyl-stats mode to estimate fraction of methylated cytosine observed in CpX contexts.
- - trim mode: Fix exception that could occur when trimming reads with no quality scores.
- - Optimize merging of TMH when the files are large (>100M compressed).
- - discover-sequence-variants: add ability to describe zero, one or more group comparisons. Syntax is A/B,A/C to compare
-  group A to B and group A to C. Additional pairs can be described, separated by coma.
+   when restricting results to a window. The problem would manifest more clearly for alignments against genomes where
+   contigs have smaller indices than chromosomes and chromosome sequences are listed in non-increasing order (e.g., chr
+   16 appearing before chr 10) and restricting to window from chr16 to MT (which should include chr 10 in that genome,
+   but returned no result on chr 10).
+ - Trim mode: Fix exception that could occur when trimming reads with no quality scores.
  - Change goby script to request the bash shell explicitly. This is needed on systems where bin/sh is not a synonym for
    bash. Thanks to Martin Frith for catching this on Ubuntu.
  - Change how targetLengths are concatenated. It turns out that last-to-compact needs alignment entries matching
    the target to record the length in the alignment. We need to keep any length seen when we concat because the first
    chunk may just not have the length for the remaining parts..
  - Improved logic for --paired-end filename support in the fastaToCompactMode.
- - last-to-compact: Add an option to flip the strand of the alignment. This is useful when converting bisulfite reads
-   specifically kmatched to the reverse strand.
  - Fix a NPE in suggest-position-slices that could occur with very small alignment files.
 1.9.8
  - The BaseStats utility was transformed into a Goby mode (base-stats). The new mode has the ability to tally occurrence
