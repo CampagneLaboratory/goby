@@ -133,6 +133,14 @@ public class FastXEntry implements Cloneable {
     }
 
     /**
+     * If true, this entry should not be used.
+     * @return true if the record should be ignored as marked by Casava 1.8.
+     */
+    public boolean isCasavaFilteredOutEntry() {
+        return sequenceHeader.indexOf(":Y:") != -1;
+    }
+
+    /**
      * Get the FASTX entry.
      * @return the FASTX entry
      */

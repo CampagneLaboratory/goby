@@ -68,6 +68,8 @@ public class FastXReader implements Iterator<FastXEntry>, Iterable<FastXEntry>, 
     /** The detected file type ("fa" or "fq"). */
     private final String fileType;
 
+    private boolean useCasavaQualityFilter;
+
     /**
      * Create the FASTX reader.
      * @param file the file that contains the FASTA / FASTQ data
@@ -202,9 +204,26 @@ public class FastXReader implements Iterator<FastXEntry>, Iterable<FastXEntry>, 
                 return;
             }
             if (nextEntry.isEntryComplete()) {
-                return;
+                if (useCasavaQualityFilter) {
+                    if (!nextEntry.isCasavaFilteredOutEntry()) {
+                        return;
+                    } else {
+                        // The entry we just read should be filtered out. Move to the next one.
+                        nextEntry.reset();
+                    }
+                } else {
+                    return;
+                }
             }
         }
+    }
+
+    public boolean isUseCasavaQualityFilter() {
+        return useCasavaQualityFilter;
+    }
+
+    public void setUseCasavaQualityFilter(final boolean useCasavaQualityFilter) {
+        this.useCasavaQualityFilter = useCasavaQualityFilter;
     }
 
     /**

@@ -156,4 +156,24 @@ public class TestFastXReader {
         assertEquals(2, entryNum);
     }
 
+    @Test
+    public void testCasavaFilter() throws IOException {
+        final FastXReader reader = new FastXReader("test-data/fastx-test-data/sample_casava18.fq.gz");
+        reader.setUseCasavaQualityFilter(true);
+        int numRead = 0;
+        for (final FastXEntry entry : reader) {
+            numRead++;
+        }
+        assertEquals("Incorrect number of records read", 48062, numRead);
+    }
+
+    @Test
+    public void testCasavaFilterDisabled() throws IOException {
+        final FastXReader reader = new FastXReader("test-data/fastx-test-data/sample_casava18.fq.gz");
+        int numRead = 0;
+        for (final FastXEntry entry : reader) {
+            numRead++;
+        }
+        assertEquals("Incorrect number of records read", 50000, numRead);
+    }
 }
