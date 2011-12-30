@@ -26,10 +26,7 @@ import edu.cornell.med.icb.goby.readers.vcf.Columns;
 import edu.cornell.med.icb.goby.readers.vcf.VCFParser;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
 import edu.cornell.med.icb.goby.util.DoInParallel;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
-import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.logging.ProgressLogger;
@@ -78,6 +75,7 @@ public class VCFSubsetMode extends AbstractGobyMode {
     private int[] sampleIndexToDestinationIndex;
     private String[] inputFilenames;
     private boolean doInParallel;
+    private boolean optimizeForContantFormat;
 
     @Override
     public String getModeName() {
@@ -110,6 +108,10 @@ public class VCFSubsetMode extends AbstractGobyMode {
         if (sampleIdsSelected.size() == 0) {
             System.err.println("You must select at least one column.");
             System.exit(1);
+        }
+        optimizeForContantFormat=jsapResult.getBoolean("constant-format");
+        if (optimizeForContantFormat) {
+            System.err.println("Optimizing for constant format string.");
         }
         return this;
     }
@@ -197,13 +199,13 @@ public class VCFSubsetMode extends AbstractGobyMode {
         final int qualFieldIndex = getGlobalFieldIndex(columns, "QUAL");
         final int filterFieldIndex = getGlobalFieldIndex(columns, "FILTER");
 
-        final IntSet infoFieldGlobalIndices = new IntArraySet();
+        final IntSet infoFieldGlobalIndices = new IntOpenHashSet();
         sampleIndexToDestinationIndex = new int[parser.countAllFields()];
         for (final ColumnField infoField : parser.getColumns().find("INFO").fields) {
             infoFieldGlobalIndices.add(infoField.globalFieldIndex);
         }
 
-        final IntSet formatFieldGlobalIndices = new IntArraySet();
+        final IntSet formatFieldGlobalIndices = new IntOpenHashSet();
         final Int2IntMap globalIndexToSampleIndex = new Int2IntOpenHashMap();
         int sampleIndex = 0;
 
@@ -227,6 +229,7 @@ public class VCFSubsetMode extends AbstractGobyMode {
 
         // transfer the reduced schema to the output writer:
         VCFWriter writer = new VCFWriter(new FileWriter(inputFilename + outputFilename + ".vcf"));
+
         writer.defineSchema(columns);
         writer.defineSamples(sampleIdList.toArray(new String[sampleIdList.size()]));
         writer.writeHeader();
@@ -236,11 +239,15 @@ public class VCFSubsetMode extends AbstractGobyMode {
         pg.displayFreeMemory = true;
         pg.start();
         final int fieldCount = parser.countAllFields();
-        final IntSet fieldsToTraverse = new IntArraySet();
+        final IntArrayList fieldsToTraverse = new IntArrayList();
         fieldsToTraverse.addAll(infoFieldGlobalIndices);
         fieldsToTraverse.addAll(formatFieldGlobalIndices);
         for (int i = 0; i < filterFieldIndex; i++) {
             fieldsToTraverse.add(i);
+        }
+        // assume the field has constant format columns. This optimization saves a lot of time.
+        if (optimizeForContantFormat) {
+            parser.setCacheFieldPermutation(true);
         }
         while (parser.hasNextDataLine()) {
             final String format = parser.getStringColumnValue(columns.find("FORMAT").columnIndex);

@@ -128,6 +128,15 @@ public class VCFParser implements Closeable {
      * Set to <= 0 to scan the entire file. This must be set before calling readHeader() for the value to be used.
      */
     private int tsvLinesToScanForColumnType = 10000;
+    /**
+     * Indicate that the field permutation has already been computed. When this field is true, the permutation
+     * of the first line computed is reused for subsequent lines.
+     */
+    private boolean computedFieldPermutation;
+    /**
+     * When this field is true, the permutation of the first line computed is reused for subsequent lines.
+     */
+    private boolean cacheFieldPermutation;
 
     /**
      * Constructs a VCF parser.
@@ -512,9 +521,9 @@ public class VCFParser implements Closeable {
         Arrays.fill(lineFieldIndexToColumnIndex, -1);
         previousColumnFieldIndices.clear();
         // determine the position of column and field delimiters:
-
+       final char[] chrs=line.toCharArray();
         for (int i = 0; i < lineLength; i++) {
-            final char c = line.charAt(i);
+            final char c = chrs[i];
             if (c == columnSeparatorCharacter) {
 
                 fieldPermutation[columnIndex] = columnIndex;
@@ -568,7 +577,7 @@ public class VCFParser implements Closeable {
         previousColumnFieldIndices.add(fieldIndex);
         push(columnIndex, lineFieldIndexToColumnIndex, previousColumnFieldIndices);
 
-
+        if (cacheFieldPermutation && computedFieldPermutation) return;
         Arrays.fill(fieldPermutation, -1);
         for (ColumnInfo c : columns) {
             c.formatIndex = 0;
@@ -670,6 +679,7 @@ public class VCFParser implements Closeable {
                 }
             }
         }
+        computedFieldPermutation=true;
     }
 
     String[] formatSplit = null;
@@ -1008,6 +1018,10 @@ public class VCFParser implements Closeable {
             }
         }
         return columnNamesUsingFormat.toArray(new String[columnNamesUsingFormat.size()]);
+    }
+
+    public void setCacheFieldPermutation(boolean cacheFieldPermutation) {
+        this.cacheFieldPermutation = cacheFieldPermutation;
     }
 
 

@@ -606,22 +606,22 @@ public class VCFWriter {
     /**
      * Move a sample value to a new column, replace the previous value of one of the columns with some new value.
      *
-     * @param formatFieldIndex FORMAT field to modify.
-     * @param sampleIndex      Index of the first column.
-     * @param newSampleIndex   Index of the second column
+     * @param formatFieldIndex      FORMAT field to modify.
+     * @param sampleIndex           Index of the first column.
+     * @param newSampleIndex        Index of the second column
      * @param newValueAtSampleIndex New value to fill one of the columns.
      */
     public void switchSampleValue(final int formatFieldIndex, final int sampleIndex, final int newSampleIndex,
                                   final String newValueAtSampleIndex) {
 
-        int minIndex=Math.min(sampleIndex, newSampleIndex);
-        int maxIndex=Math.max(sampleIndex, newSampleIndex);
-        if (maxIndex==maxIndex) {
-          setSampleValue(formatFieldIndex, newSampleIndex, formatValues[formatFieldIndex][minIndex]);
+        int minIndex = Math.min(sampleIndex, newSampleIndex);
+        int maxIndex = Math.max(sampleIndex, newSampleIndex);
+        if (maxIndex == maxIndex) {
+            setSampleValue(formatFieldIndex, newSampleIndex, formatValues[formatFieldIndex][minIndex]);
         }
-            // move value from sampleIndex to newSampleIndex, put newValueAtSampleIndex at sampleIndex
-             setSampleValue(formatFieldIndex, newSampleIndex, formatValues[formatFieldIndex][minIndex]);
-             setSampleValue(formatFieldIndex, sampleIndex, newValueAtSampleIndex);
+        // move value from sampleIndex to newSampleIndex, put newValueAtSampleIndex at sampleIndex
+        setSampleValue(formatFieldIndex, newSampleIndex, formatValues[formatFieldIndex][minIndex]);
+        setSampleValue(formatFieldIndex, sampleIndex, newValueAtSampleIndex);
 
 
     }
@@ -668,8 +668,32 @@ public class VCFWriter {
      * @param columns
      */
     public void defineSchema(Columns columns) {
+        assignColumnIndices(columns);
         columnList.clear();
         this.columns = columns;
+    }
+    // assign column order according to the CVF format.
+    private void assignColumnIndices(Columns columns) {
+        int colIndex = 9;
+        final Object2IntMap<String> colIndices = new Object2IntArrayMap<String>();
+        colIndices.put("CHROM", 0);
+        colIndices.put("POS", 1);
+        colIndices.put("ID", 2);
+        colIndices.put("REF", 3);
+        colIndices.put("ALT", 4);
+        colIndices.put("QUAL", 5);
+        colIndices.put("FILTER", 6);
+        colIndices.put("INFO", 7);
+        colIndices.put("FORMAT", 8);
+        //CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO    FORMAT
+        for (final ColumnInfo col : columns) {
+            final String columnName = col.getColumnName();
+            if (colIndices.containsKey(columnName)) {
+                col.columnIndex = colIndices.getInt(columnName);
+            } else {
+            col.columnIndex = colIndex++;
+            }
+        }
     }
 
     public void setAlternateAllele(String value) {
