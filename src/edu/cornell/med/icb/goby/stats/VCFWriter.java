@@ -329,6 +329,13 @@ public class VCFWriter {
             if (sampleIndex != max) outWriter.append('\t');
         }
         outWriter.println();
+        clear();
+    }
+
+    /**
+     * Clear the record without writing to the output and prepare for the next record.
+     */
+    public void clear() {
         Arrays.fill(formatFieldActive, false);
         for (int i = 0; i < formatFieldActive.length; i++) Arrays.fill(formatValues[i], "");
         Arrays.fill(infoValues, "");

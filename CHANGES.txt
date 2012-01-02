@@ -1,3 +1,5 @@
+ - Add a replacement for the VCF-tools VCF-subset program. The Goby tool is orders of magnitude faster.
+ - vcf-subset: Add ability to exclude positions at which all samples match the reference.
  - Preliminary support for calling indels with discover-sequence-variants.  Candidate indels are now written
    in the formats that use GenotypeOutputFormat (e.g., genotypes, compare_groups, allele_frequency).
    The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.

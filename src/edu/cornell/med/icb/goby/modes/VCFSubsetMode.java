@@ -80,6 +80,7 @@ public class VCFSubsetMode extends AbstractGobyMode {
     private String[] inputFilenames;
     private boolean doInParallel;
     private boolean optimizeForContantFormat;
+    private boolean excludeRef;
 
     @Override
     public String getModeName() {
@@ -108,15 +109,17 @@ public class VCFSubsetMode extends AbstractGobyMode {
         outputFilename = jsapResult.getString("output");
         String[] columns = jsapResult.getStringArray("column");
         this.sampleIdsSelected = new ObjectArraySet<String>(columns);
-        doInParallel=jsapResult.getBoolean("parallel");
+        doInParallel = jsapResult.getBoolean("parallel");
         if (sampleIdsSelected.size() == 0) {
             System.err.println("You must select at least one column.");
             System.exit(1);
         }
-        optimizeForContantFormat=jsapResult.getBoolean("constant-format");
+        optimizeForContantFormat = jsapResult.getBoolean("constant-format");
         if (optimizeForContantFormat) {
             System.err.println("Optimizing for constant format string.");
         }
+        excludeRef = jsapResult.getBoolean("exclude-ref");
+
         return this;
     }
 
@@ -161,7 +164,7 @@ public class VCFSubsetMode extends AbstractGobyMode {
     private void processOneFile(File inputFile) throws IOException {
         System.out.printf("Preparing to process %s..%n", inputFile);
         // eliminate lines from the header that try to define some field in ALT:
-        final GrepReader filter=new GrepReader(inputFile.getPath(), "^##ALT=");
+        final GrepReader filter = new GrepReader(inputFile.getPath(), "^##ALT=");
 
         final VCFParser parser = new VCFParser(filter);
         final Columns columns = new Columns();
@@ -257,7 +260,10 @@ public class VCFSubsetMode extends AbstractGobyMode {
         if (optimizeForContantFormat) {
             parser.setCacheFieldPermutation(true);
         }
+
         while (parser.hasNextDataLine()) {
+            boolean allGenotypeHomozygous = true;
+
             final String format = parser.getStringColumnValue(columns.find("FORMAT").columnIndex);
             final String[] formatTokens = format.split(":");
             final int numFormatFields = columns.find("FORMAT").fields.size();
@@ -292,6 +298,13 @@ public class VCFSubsetMode extends AbstractGobyMode {
                             if (includeField[globalFieldIndex]) {
                                 final int destinationSampleIndex = sampleIndexToDestinationIndex[globalIndexToSampleIndex.get(globalFieldIndex)];
                                 writer.setSampleValue(formatTokens[formatFieldIndex], destinationSampleIndex, value);
+                                if (excludeRef) {
+                                    if ("GT".equals(formatTokens[formatFieldIndex])) {
+                                        allGenotypeHomozygous &= "0|0".equals(value);
+                                    }
+                                } else {
+                                    allGenotypeHomozygous = false;
+                                }
                             }
                         }
                         formatFieldCount++;
@@ -308,7 +321,11 @@ public class VCFSubsetMode extends AbstractGobyMode {
             }
             parser.next();
             pg.lightUpdate();
-            writer.writeRecord();
+            if (!allGenotypeHomozygous) {
+                writer.writeRecord();
+            } else {
+                writer.clear();
+            }
         }
         pg.stop("Done with file " + inputFilename);
         parser.close();

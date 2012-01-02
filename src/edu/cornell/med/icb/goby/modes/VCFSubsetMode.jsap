@@ -52,5 +52,10 @@
             <longFlag>constant-format</longFlag>
             <help>Optimize for constant FORMAT fields. When the FORMAT fields are constant throughout each record of a field, providing this flag with skip some time consuming steps.  </help>
         </switch>
+        <switch>
+            <id>exclude-ref</id>
+            <longFlag>exclude-ref</longFlag>
+            <help>Remove positions that are strictly homozygous matching the reference in all subset samples.</help>
+        </switch>
     </parameters>
 </jsap>
