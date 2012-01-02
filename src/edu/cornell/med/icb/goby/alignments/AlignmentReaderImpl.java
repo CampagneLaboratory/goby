@@ -23,6 +23,7 @@ package edu.cornell.med.icb.goby.alignments;
 import com.google.protobuf.CodedInputStream;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import edu.cornell.med.icb.goby.reads.FastBufferedMessageChunksReader;
+import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -370,6 +371,15 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
 
                 LOG.trace(String.format("Returning next entry at position %s/%d", back.getId(nextEntry.getTargetIndex()), nextEntry.getPosition()));
             }
+            /*
+           TODO convert entry with alignment codec.
+            if (codec!=null) {
+            final Alignments.AlignmentEntry.Builder result = codec.decode(nextEntry);
+            if (result!=null) {
+                // the codec was able to decode compressed data.
+                return  result.build();
+            }
+        }    */
             return nextEntry;
 
         } finally {
@@ -793,7 +803,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
 
     @Override
     public long getEndByteOffset(int endReferenceIndex, int endPosition) {
-        return getByteOffset(endReferenceIndex, endPosition+1, 1);
+        return getByteOffset(endReferenceIndex, endPosition + 1, 1);
     }
 
     /**
