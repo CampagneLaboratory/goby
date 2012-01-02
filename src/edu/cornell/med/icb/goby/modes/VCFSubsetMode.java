@@ -31,6 +31,7 @@ import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.logging.ProgressLogger;
+import net.sf.samtools.util.BlockCompressedOutputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -238,7 +239,7 @@ public class VCFSubsetMode extends AbstractGobyMode {
         int previousSampleIndex = -1;
 
         // transfer the reduced schema to the output writer:
-        VCFWriter writer = new VCFWriter(new FileWriter(inputFilename + outputFilename + ".vcf"));
+        VCFWriter writer = new VCFWriter(new BlockCompressedOutputStream(inputFilename + outputFilename + ".vcf.gz"));
 
         writer.defineSchema(columns);
         writer.defineSamples(sampleIdList.toArray(new String[sampleIdList.size()]));
@@ -260,76 +261,78 @@ public class VCFSubsetMode extends AbstractGobyMode {
         if (optimizeForContantFormat) {
             parser.setCacheFieldPermutation(true);
         }
+        try {
+            while (parser.hasNextDataLine()) {
+                boolean allGenotypeHomozygous = true;
 
-        while (parser.hasNextDataLine()) {
-            boolean allGenotypeHomozygous = true;
+                final String format = parser.getStringColumnValue(columns.find("FORMAT").columnIndex);
+                final String[] formatTokens = format.split(":");
+                final int numFormatFields = columns.find("FORMAT").fields.size();
 
-            final String format = parser.getStringColumnValue(columns.find("FORMAT").columnIndex);
-            final String[] formatTokens = format.split(":");
-            final int numFormatFields = columns.find("FORMAT").fields.size();
+                int formatFieldIndex = 0;
+                infoFieldIndex = 0;
+                for (final int globalFieldIndex : fieldsToTraverse) {
+                    final String value = parser.getStringFieldValue(globalFieldIndex);
+                    if (globalFieldIndex == chromosomeFieldIndex) {
+                        writer.setChromosome(value);
+                    } else if (globalFieldIndex == positionFieldIndex) {
+                        writer.setPosition(Integer.parseInt(value));
+                    } else if (globalFieldIndex == idFieldIndex) {
+                        writer.setId(value);
+                    } else if (globalFieldIndex == refFieldIndex) {
+                        writer.setReferenceAllele(value);
+                    } else if (globalFieldIndex == altFieldIndex) {
+                        writer.setAlternateAllele(value);
+                    } else if (globalFieldIndex == qualFieldIndex) {
+                        writer.setQual(value);
+                    } else if (globalFieldIndex == filterFieldIndex) {
+                        writer.setFilter(value);
+                    }
+                    if (infoFieldGlobalIndices.contains(globalFieldIndex)) {
+                        writer.setInfo(infoFieldIndex++, value);
+                    }
 
-            int formatFieldIndex = 0;
-            infoFieldIndex = 0;
-            for (final int globalFieldIndex : fieldsToTraverse) {
-                final String value = parser.getStringFieldValue(globalFieldIndex);
-                if (globalFieldIndex == chromosomeFieldIndex) {
-                    writer.setChromosome(value);
-                } else if (globalFieldIndex == positionFieldIndex) {
-                    writer.setPosition(Integer.parseInt(value));
-                } else if (globalFieldIndex == idFieldIndex) {
-                    writer.setId(value);
-                } else if (globalFieldIndex == refFieldIndex) {
-                    writer.setReferenceAllele(value);
-                } else if (globalFieldIndex == altFieldIndex) {
-                    writer.setAlternateAllele(value);
-                } else if (globalFieldIndex == qualFieldIndex) {
-                    writer.setQual(value);
-                } else if (globalFieldIndex == filterFieldIndex) {
-                    writer.setFilter(value);
-                }
-                if (infoFieldGlobalIndices.contains(globalFieldIndex)) {
-                    writer.setInfo(infoFieldIndex++, value);
-                }
+                    if (formatFieldGlobalIndices.contains(globalFieldIndex)) {
 
-                if (formatFieldGlobalIndices.contains(globalFieldIndex)) {
-
-                    if (formatFieldIndex < formatTokens.length) {
-                        if (!"".equals(formatTokens[formatFieldIndex])) {
-                            if (includeField[globalFieldIndex]) {
-                                final int destinationSampleIndex = sampleIndexToDestinationIndex[globalIndexToSampleIndex.get(globalFieldIndex)];
-                                writer.setSampleValue(formatTokens[formatFieldIndex], destinationSampleIndex, value);
-                                if (excludeRef) {
-                                    if ("GT".equals(formatTokens[formatFieldIndex])) {
-                                        allGenotypeHomozygous &= "0|0".equals(value);
+                        if (formatFieldIndex < formatTokens.length) {
+                            if (!"".equals(formatTokens[formatFieldIndex])) {
+                                if (includeField[globalFieldIndex]) {
+                                    final int destinationSampleIndex = sampleIndexToDestinationIndex[globalIndexToSampleIndex.get(globalFieldIndex)];
+                                    writer.setSampleValue(formatTokens[formatFieldIndex], destinationSampleIndex, value);
+                                    if (excludeRef) {
+                                        if ("GT".equals(formatTokens[formatFieldIndex])) {
+                                            allGenotypeHomozygous &= "0|0".equals(value);
+                                        }
+                                    } else {
+                                        allGenotypeHomozygous = false;
                                     }
-                                } else {
-                                    allGenotypeHomozygous = false;
                                 }
                             }
-                        }
-                        formatFieldCount++;
-                        if (value.length() != 0) {
-                            formatFieldIndex++;
-                        }
-                        if (formatFieldCount == numFormatFields) {
-                            formatFieldIndex = 0;
-                            formatFieldCount = 0;
-                            sampleIndex++;
+                            formatFieldCount++;
+                            if (value.length() != 0) {
+                                formatFieldIndex++;
+                            }
+                            if (formatFieldCount == numFormatFields) {
+                                formatFieldIndex = 0;
+                                formatFieldCount = 0;
+                                sampleIndex++;
+                            }
                         }
                     }
                 }
+                parser.next();
+                pg.lightUpdate();
+                if (!allGenotypeHomozygous) {
+                    writer.writeRecord();
+                } else {
+                    writer.clear();
+                }
             }
-            parser.next();
-            pg.lightUpdate();
-            if (!allGenotypeHomozygous) {
-                writer.writeRecord();
-            } else {
-                writer.clear();
-            }
+        } finally {
+            pg.stop("Done with file " + inputFilename);
+            parser.close();
+            writer.close();
         }
-        pg.stop("Done with file " + inputFilename);
-        parser.close();
-
     }
 
     /**

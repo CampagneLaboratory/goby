@@ -29,7 +29,9 @@ import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
+import net.sf.samtools.util.BlockCompressedOutputStream;
 
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Arrays;
@@ -75,10 +77,12 @@ public class VCFWriter {
     private int numFormatFields;
 
 
-    public VCFWriter(Writer writer) {
+    public VCFWriter(final Writer writer) {
         this(new PrintWriter(writer));
     }
-
+   public VCFWriter(final BlockCompressedOutputStream stream) {
+        this(new PrintWriter(new OutputStreamWriter(stream)));
+    }
     /**
      * Indicate whether the genotypes should be recorded as phased (true) or unphased (false).
      * Default value at construction of the writer is unphased.
