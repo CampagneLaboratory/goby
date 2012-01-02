@@ -166,6 +166,7 @@ public class VCFParser implements Closeable {
     /**
      * If we should cache the TSV column types to a .colinfo file when parsing TSV files. This must be set
      * before calling readHeader() for the value to be used.
+     *
      * @param cacheTsvColumnTypes new cacheTsvColumnTypes value
      */
     public void setCacheTsvColumnTypes(final boolean cacheTsvColumnTypes) {
@@ -174,6 +175,7 @@ public class VCFParser implements Closeable {
 
     /**
      * If we should cache the TSV column types to a .colinfo file when parsing TSV files.
+     *
      * @return cacheTsvColumnTypes value
      */
     public boolean isCacheTsvColumnTypes() {
@@ -183,6 +185,7 @@ public class VCFParser implements Closeable {
     /**
      * When scanning a TSV file to determine column types, this is the number of lines that will be checked.
      * Set to <= 0 to scan the entire file. This must be set before calling readHeader() for the value to be used.
+     *
      * @param tsvLinesToScanForColumnType the new value of tsvLinesToScanForColumnType
      */
     public void setTsvLinesToScanForColumnType(final int tsvLinesToScanForColumnType) {
@@ -191,6 +194,7 @@ public class VCFParser implements Closeable {
 
     /**
      * When scanning a TSV file to determine column types, this is the number of lines that will be checked.
+     *
      * @return the value of tsvLinesToScanForColumnType
      */
     public int getTsvLinesToScanForColumnType() {
@@ -200,6 +204,7 @@ public class VCFParser implements Closeable {
     /**
      * If parsing a TSV file, this can be called to retrieve the column types map. The column types map
      * .colinfo cache file will be created the first time this is called and read on subsequent calls.
+     *
      * @throws IOException if error reading / creating .colinfo cache file
      */
     public void readTsvColumnTypes() throws IOException {
@@ -521,7 +526,7 @@ public class VCFParser implements Closeable {
         Arrays.fill(lineFieldIndexToColumnIndex, -1);
         previousColumnFieldIndices.clear();
         // determine the position of column and field delimiters:
-       final char[] chrs=line.toCharArray();
+        final char[] chrs = line.toCharArray();
         for (int i = 0; i < lineLength; i++) {
             final char c = chrs[i];
             if (c == columnSeparatorCharacter) {
@@ -679,7 +684,7 @@ public class VCFParser implements Closeable {
                 }
             }
         }
-        computedFieldPermutation=true;
+        computedFieldPermutation = true;
     }
 
     String[] formatSplit = null;
@@ -775,7 +780,7 @@ public class VCFParser implements Closeable {
                                 ColumnType.String :
                                 tsvColumnNameToTypeMap.get(columnName);
                     } else {
-                         columnType = ColumnType.String;
+                        columnType = ColumnType.String;
                     }
                     fields = new ColumnField[]{new ColumnField("VALUE", 1, columnType, "")};
                     fields[0].globalFieldIndex = -1;

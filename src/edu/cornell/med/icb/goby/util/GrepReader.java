@@ -54,7 +54,7 @@ public class GrepReader extends FilterReader {
     public GrepReader(String filename, String patternStr) throws IOException {
         super(filename.endsWith(".gz") ?
                 new BufferedReader(new InputStreamReader(new BlockCompressedInputStream(new FileInputStream(filename)))) :
-                new FileReader(filename));
+               new BufferedReader( new FileReader(filename)));
 
 
         Pattern pattern = Pattern.compile(patternStr);

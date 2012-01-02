@@ -26,6 +26,7 @@ import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.goby.reads.MessageChunksWriter;
 import edu.cornell.med.icb.goby.readers.vcf.VCFParser;
+import edu.cornell.med.icb.goby.util.GrepReader;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.rit.numeric.ListXYSeries;
 import it.unimi.dsi.lang.MutableString;
@@ -39,6 +40,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -60,7 +63,7 @@ public class VCFCompareMode extends AbstractGobyMode {
     /**
      * Used to log debug and informational messages.
      */
-    private static final Log LOG = LogFactory.getLog(VCFCompareMode.class);
+    private static final Logger LOG = Logger.getLogger(VCFCompareMode.class);
 
     /**
      * The input files.
@@ -72,10 +75,6 @@ public class VCFCompareMode extends AbstractGobyMode {
      */
     private String outputFilename;
 
-    /**
-     * sequences per chunck in the written file.
-     */
-    private int sequencePerChunk = 10000;
 
     /**
      * The mode name.
@@ -92,7 +91,9 @@ public class VCFCompareMode extends AbstractGobyMode {
 
     private String[] genotypeColumnSet;
     private ObjectArrayList<VCFLine>[] lines;
-    private Object2IntMap<VCFPosition> indices = new Object2IntArrayMap<VCFPosition>();
+    private Object2IntMap<VCFPosition>[] indices;
+    private int[] refFieldIndex;
+    private int[] altFieldIndex;
 
 
     @Override
@@ -192,9 +193,13 @@ public class VCFCompareMode extends AbstractGobyMode {
         int parserIndex = 0;
         chromosomeFieldIndex = new int[numInputFiles];
         positionFieldIndex = new int[numInputFiles];
+        refFieldIndex = new int[numInputFiles];
+        altFieldIndex = new int[numInputFiles];
         for (File inputFile : inputFiles) {
+            // eliminate lines from the header that try to define some field in ALT:
+            final GrepReader filter = new GrepReader(inputFile.getPath(), "^##ALT=");
 
-            parsers[parserIndex] = new VCFParser(inputFile.getPath());
+            parsers[parserIndex] = new VCFParser(filter);
             try {
                 parsers[parserIndex].readHeader();
             } catch (VCFParser.SyntaxException e) {
@@ -203,43 +208,72 @@ public class VCFCompareMode extends AbstractGobyMode {
             }
             chromosomeFieldIndex[parserIndex] = parsers[parserIndex].getGlobalFieldIndex("CHROM", "VALUE");
             positionFieldIndex[parserIndex] = parsers[parserIndex].getGlobalFieldIndex("POS", "VALUE");
+            refFieldIndex[parserIndex] = parsers[parserIndex].getGlobalFieldIndex("REF", "VALUE");
+            altFieldIndex[parserIndex] = parsers[parserIndex].getGlobalFieldIndex("ALT", "VALUE");
+            assert refFieldIndex[parserIndex] != -1 : "REF field must be found.";
+            assert altFieldIndex[parserIndex] != -1 : "ALT field must be found.";
             parserIndex++;
         }
         // brute force, load everything in memory:
-        IntSet[] keepGlobalGenotypeIndex = new IntSet[numInputFiles];
+        final IntSet[] keepGlobalGenotypeIndex = new IntSet[numInputFiles];
         lines = new ObjectArrayList[numInputFiles];
+        indices = new Object2IntMap[numInputFiles];
         for (parserIndex = 0; parserIndex < numInputFiles; parserIndex++) {
             keepGlobalGenotypeIndex[parserIndex] = new IntArraySet();
-            lines[parserIndex] = new ObjectArrayList<VCFLine>();
+            lines[parserIndex] = new ObjectArrayList<VCFLine>(10000000);
+            indices[parserIndex] = new Object2IntAVLTreeMap<VCFPosition>();
+
             for (String keepColumn : genotypeColumnSet) {
 
-                final int index = parsers[parserIndex].getGlobalFieldIndex(keepColumn, "GT");
+                final int index = parsers[parserIndex].getGlobalFieldIndex(getSampleColumn(parsers[parserIndex], keepColumn), "GT");
                 if (index != -1) {
                     keepGlobalGenotypeIndex[parserIndex].add(index);
                 }
 
             }
-
+            int[] indicesToKeep = keepGlobalGenotypeIndex[parserIndex].toIntArray();
             System.out.printf("Loading %s..%n", inputFiles.get(parserIndex).getName());
             int index = 0;
-            while (parsers[parserIndex].hasNextDataLine()) {
-                VCFLine line = new VCFLine();
+            ProgressLogger pg = new ProgressLogger(LOG);
+            pg.displayFreeMemory = true;
+            pg.priority = Level.INFO;
+            pg.start();
+            try {
+                // load at most three million lines:
+                int earlyStopCount = 30000;
+                int count = 0;
+                while (parsers[parserIndex].hasNextDataLine()) {
+                    final VCFLine line = new VCFLine();
 
-                final String chr = parsers[parserIndex].getFieldValue(chromosomeFieldIndex[parserIndex]).toString();
-                line.pos.chromosome = identifiers.registerIdentifier(new MutableString(chr));
-                line.pos.position = Integer.parseInt(parsers[parserIndex].
-                        getFieldValue(positionFieldIndex[parserIndex]).toString());
-                for (int fieldIndex : keepGlobalGenotypeIndex[parserIndex]) {
-                    line.genotypes.add(parsers[parserIndex].getFieldValue(fieldIndex).toString());
+                    final String chr = parsers[parserIndex].getFieldValue(chromosomeFieldIndex[parserIndex]).toString();
+                    String ref = parsers[parserIndex].getStringFieldValue(refFieldIndex[parserIndex]);
+                    String alts = parsers[parserIndex].getStringFieldValue(altFieldIndex[parserIndex]);
+                    line.pos.chromosome = identifiers.registerIdentifier(new MutableString(chr));
+                    line.pos.position = Integer.parseInt(parsers[parserIndex].
+                            getFieldValue(positionFieldIndex[parserIndex]).toString());
+                    for (final int fieldIndex : indicesToKeep) {
+                        final String genotypeCode = parsers[parserIndex].getFieldValue(fieldIndex).toString();
+                        final String genotype = convertCode(genotypeCode, parsers[parserIndex], ref, alts);
+                        line.genotypes.add(genotype);
+                    }
+                    lines[parserIndex].add(line);
+                    indices[parserIndex].put(line.pos, index++);
+                    parsers[parserIndex].next();
+                    pg.lightUpdate();
+                    if (count++ > earlyStopCount) {
+                        break;
+                    }
                 }
-                lines[parserIndex].add(line);
-                indices.put(line.pos, index++);
-                parsers[parserIndex].next();
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                pg.done();
+                parsers[parserIndex].close();
             }
-            parsers[parserIndex].close();
-            System.out.println("Line.size()" + lines[parserIndex].size());
+            System.out.println("Line.size() " + lines[parserIndex].size());
         }
-        ObjectOpenHashSet<VCFPosition> commonPositions = new ObjectOpenHashSet<VCFPosition>();
+        System.out.println("Determining common positions");
+        ObjectSet<VCFPosition> commonPositions = new ObjectAVLTreeSet<VCFPosition>();
 
         commonPositions.addAll(reduce(lines[0]));
         System.out.printf("# position parser[0] %d%n", commonPositions.size());
@@ -249,19 +283,89 @@ public class VCFCompareMode extends AbstractGobyMode {
 
             commonPositions.retainAll(reduce(lines[parserIndex]));
         }
-        System.out.printf("# common positions across files: %d%n", commonPositions.size());
+        System.out.printf("# common positions across files: %d (%g %%)%n", commonPositions.size(),
+                fraction(commonPositions.size(), maxSize(lines)));
+        System.out.println("Sorting..");
         ObjectArrayList<VCFPosition> sortedPositions = new ObjectArrayList<VCFPosition>();
         sortedPositions.addAll(commonPositions);
         Collections.sort(sortedPositions);
-        VCFLine alignedLines[] = new VCFLine[numInputFiles];
+        System.out.println("Done sorting.");
+        final VCFLine alignedLines[] = new VCFLine[numInputFiles];
         parserIndex = 0;
+        int numGenotypeAgreements = 0;
+        int numGenotypeDisagreements = 0;
+        ObjectSet<String> distinctGenotypes = new ObjectArraySet(numInputFiles);
+
         for (VCFPosition pos : sortedPositions) {
             for (parserIndex = 0; parserIndex < numInputFiles; parserIndex++) {
-                alignedLines[parserIndex] = lines[parserIndex].get(indices.get(pos));
+                alignedLines[parserIndex] = lines[parserIndex].get(indices[parserIndex].get(pos));
             }
-            
+            distinctGenotypes.clear();
+            for (final VCFLine line : alignedLines) {
+                distinctGenotypes.addAll(line.genotypes);
+            }
+            if (distinctGenotypes.size() > 1) {
+                numGenotypeDisagreements++;
+            } else {
+                numGenotypeAgreements++;
+            }
         }
+
+
+        System.out.printf("Among the common positions, %d positions (%g %%) had the same genotype, while %d positions (%g %%) had different genotypes.",
+                numGenotypeAgreements, fraction(numGenotypeAgreements, numGenotypeDisagreements),
+                numGenotypeDisagreements, fraction(numGenotypeDisagreements, numGenotypeAgreements));
         System.exit(0);
+    }
+
+    MutableString buffer = new MutableString();
+
+    private String convertCode(String genotypeCode, VCFParser parser, String ref, String alts) {
+        String[] tokens = genotypeCode.split("[|/]");
+        buffer.setLength(0);
+        String[] altArray = alts.split(",");
+        for (String token : tokens) {
+            int index = Integer.parseInt(token);
+            if (index == 0) {
+
+                buffer.append(ref);
+                buffer.append(',');
+            } else {
+
+                buffer.append(altArray[index - 1]);
+                buffer.append(',');
+            }
+        }
+
+        return buffer.toString();
+    }
+
+    private String getSampleColumn(VCFParser parser, String keepColumn) {
+        String[] samples = parser.getColumnNamesUsingFormat();
+        ObjectArraySet<String> set = new ObjectArraySet<String>();
+        for (String sample : samples) {
+            if (sample.contains(keepColumn)) {
+                set.add(sample);
+            }
+        }
+        if (set.size() == 1) {
+            return set.iterator().next();
+        } else {
+            System.err.println("Several columns match the sample keyword provided: " + keepColumn + " " + set);
+            throw new RuntimeException("Several columns match the sample keyword provided: " + set);
+        }
+    }
+
+    private double maxSize(final ObjectArrayList<VCFLine>[] lines) {
+        int max = 0;
+        for (final ObjectArrayList<VCFLine> line : lines) {
+            max = Math.max(line.size(), max);
+        }
+        return max;
+    }
+
+    private double fraction(double a, double b) {
+        return (a / (a + b)) * 100;
     }
 
     private ObjectOpenHashSet<VCFPosition> reduce(ObjectArrayList<VCFLine> lines) {
@@ -291,7 +395,7 @@ public class VCFCompareMode extends AbstractGobyMode {
         VCFPosition pos = new VCFPosition();
         String ref;
         String alt;
-        ObjectArrayList<String> genotypes = new ObjectArrayList<String>();
+        ObjectArrayList<String> genotypes = new ObjectArrayList<String>(4);
     }
 
     static IndexedIdentifier identifiers = new IndexedIdentifier();
