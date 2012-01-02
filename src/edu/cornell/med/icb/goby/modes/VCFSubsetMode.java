@@ -26,6 +26,7 @@ import edu.cornell.med.icb.goby.readers.vcf.Columns;
 import edu.cornell.med.icb.goby.readers.vcf.VCFParser;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
 import edu.cornell.med.icb.goby.util.DoInParallel;
+import edu.cornell.med.icb.goby.util.GrepReader;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
@@ -35,8 +36,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Replacement for vcf-subset tool. This mode provides a replacement for the vcf-tools vcf-subset utility.
@@ -156,7 +160,10 @@ public class VCFSubsetMode extends AbstractGobyMode {
 
     private void processOneFile(File inputFile) throws IOException {
         System.out.printf("Preparing to process %s..%n", inputFile);
-        final VCFParser parser = new VCFParser(inputFile.getPath());
+        // eliminate lines from the header that try to define some field in ALT:
+        final GrepReader filter=new GrepReader(inputFile.getPath(), "^##ALT=");
+
+        final VCFParser parser = new VCFParser(filter);
         final Columns columns = new Columns();
         final ObjectArrayList<String> sampleIdList = new ObjectArrayList<String>();
         boolean[] includeField = null;
@@ -245,6 +252,7 @@ public class VCFSubsetMode extends AbstractGobyMode {
         for (int i = 0; i < filterFieldIndex; i++) {
             fieldsToTraverse.add(i);
         }
+        Collections.sort(fieldsToTraverse);
         // assume the field has constant format columns. This optimization saves a lot of time.
         if (optimizeForContantFormat) {
             parser.setCacheFieldPermutation(true);
