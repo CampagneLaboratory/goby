@@ -17,6 +17,12 @@ message AlignmentEntry {
  */
  optional uint32 multiplicity=7;
 
+  /*
+    Compressed stream of data. The first byte indicates the compression/decompression method (codec). The remaining bytes are
+    content compressed with the codec.
+  */
+  optional bytes compressed_data = 23;
+
  /* An integer that uniquely identifies the query (a short read) in a set of alignment runs. When several
     alignment runs are made with the same set of query sequences, equality of query index means that the query
     sequences were the same. (Comparing integers for equality is much faster than comparing strings.)

@@ -191,6 +191,17 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 multiplicity() const;
   inline void set_multiplicity(::google::protobuf::uint32 value);
   
+  // optional bytes compressed_data = 23;
+  inline bool has_compressed_data() const;
+  inline void clear_compressed_data();
+  static const int kCompressedDataFieldNumber = 23;
+  inline const ::std::string& compressed_data() const;
+  inline void set_compressed_data(const ::std::string& value);
+  inline void set_compressed_data(const char* value);
+  inline void set_compressed_data(const void* value, size_t size);
+  inline ::std::string* mutable_compressed_data();
+  inline ::std::string* release_compressed_data();
+  
   // required uint32 query_index = 1;
   inline bool has_query_index() const;
   inline void clear_query_index();
@@ -350,6 +361,8 @@ class AlignmentEntry : public ::google::protobuf::Message {
  private:
   inline void set_has_multiplicity();
   inline void clear_has_multiplicity();
+  inline void set_has_compressed_data();
+  inline void clear_has_compressed_data();
   inline void set_has_query_index();
   inline void clear_has_query_index();
   inline void set_has_target_index();
@@ -393,6 +406,7 @@ class AlignmentEntry : public ::google::protobuf::Message {
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
+  ::std::string* compressed_data_;
   ::google::protobuf::uint32 multiplicity_;
   ::google::protobuf::uint32 query_index_;
   ::google::protobuf::uint32 target_index_;
@@ -417,7 +431,7 @@ class AlignmentEntry : public ::google::protobuf::Message {
   ::google::protobuf::uint32 sample_index_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(22 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(23 + 31) / 32];
   
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
@@ -1481,15 +1495,73 @@ inline void AlignmentEntry::set_multiplicity(::google::protobuf::uint32 value) {
   multiplicity_ = value;
 }
 
-// required uint32 query_index = 1;
-inline bool AlignmentEntry::has_query_index() const {
+// optional bytes compressed_data = 23;
+inline bool AlignmentEntry::has_compressed_data() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void AlignmentEntry::set_has_query_index() {
+inline void AlignmentEntry::set_has_compressed_data() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void AlignmentEntry::clear_has_query_index() {
+inline void AlignmentEntry::clear_has_compressed_data() {
   _has_bits_[0] &= ~0x00000002u;
+}
+inline void AlignmentEntry::clear_compressed_data() {
+  if (compressed_data_ != &::google::protobuf::internal::kEmptyString) {
+    compressed_data_->clear();
+  }
+  clear_has_compressed_data();
+}
+inline const ::std::string& AlignmentEntry::compressed_data() const {
+  return *compressed_data_;
+}
+inline void AlignmentEntry::set_compressed_data(const ::std::string& value) {
+  set_has_compressed_data();
+  if (compressed_data_ == &::google::protobuf::internal::kEmptyString) {
+    compressed_data_ = new ::std::string;
+  }
+  compressed_data_->assign(value);
+}
+inline void AlignmentEntry::set_compressed_data(const char* value) {
+  set_has_compressed_data();
+  if (compressed_data_ == &::google::protobuf::internal::kEmptyString) {
+    compressed_data_ = new ::std::string;
+  }
+  compressed_data_->assign(value);
+}
+inline void AlignmentEntry::set_compressed_data(const void* value, size_t size) {
+  set_has_compressed_data();
+  if (compressed_data_ == &::google::protobuf::internal::kEmptyString) {
+    compressed_data_ = new ::std::string;
+  }
+  compressed_data_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* AlignmentEntry::mutable_compressed_data() {
+  set_has_compressed_data();
+  if (compressed_data_ == &::google::protobuf::internal::kEmptyString) {
+    compressed_data_ = new ::std::string;
+  }
+  return compressed_data_;
+}
+inline ::std::string* AlignmentEntry::release_compressed_data() {
+  clear_has_compressed_data();
+  if (compressed_data_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = compressed_data_;
+    compressed_data_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+
+// required uint32 query_index = 1;
+inline bool AlignmentEntry::has_query_index() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void AlignmentEntry::set_has_query_index() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void AlignmentEntry::clear_has_query_index() {
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void AlignmentEntry::clear_query_index() {
   query_index_ = 0u;
@@ -1505,13 +1577,13 @@ inline void AlignmentEntry::set_query_index(::google::protobuf::uint32 value) {
 
 // required uint32 target_index = 2;
 inline bool AlignmentEntry::has_target_index() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void AlignmentEntry::set_has_target_index() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void AlignmentEntry::clear_has_target_index() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void AlignmentEntry::clear_target_index() {
   target_index_ = 0u;
@@ -1527,13 +1599,13 @@ inline void AlignmentEntry::set_target_index(::google::protobuf::uint32 value) {
 
 // required uint32 position = 3;
 inline bool AlignmentEntry::has_position() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void AlignmentEntry::set_has_position() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void AlignmentEntry::clear_has_position() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void AlignmentEntry::clear_position() {
   position_ = 0u;
@@ -1549,13 +1621,13 @@ inline void AlignmentEntry::set_position(::google::protobuf::uint32 value) {
 
 // required bool matching_reverse_strand = 6;
 inline bool AlignmentEntry::has_matching_reverse_strand() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void AlignmentEntry::set_has_matching_reverse_strand() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void AlignmentEntry::clear_has_matching_reverse_strand() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void AlignmentEntry::clear_matching_reverse_strand() {
   matching_reverse_strand_ = false;
@@ -1571,13 +1643,13 @@ inline void AlignmentEntry::set_matching_reverse_strand(bool value) {
 
 // optional uint32 query_position = 5;
 inline bool AlignmentEntry::has_query_position() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void AlignmentEntry::set_has_query_position() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void AlignmentEntry::clear_has_query_position() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void AlignmentEntry::clear_query_position() {
   query_position_ = 0u;
@@ -1593,13 +1665,13 @@ inline void AlignmentEntry::set_query_position(::google::protobuf::uint32 value)
 
 // optional float score = 4;
 inline bool AlignmentEntry::has_score() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void AlignmentEntry::set_has_score() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void AlignmentEntry::clear_has_score() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void AlignmentEntry::clear_score() {
   score_ = 0;
@@ -1615,13 +1687,13 @@ inline void AlignmentEntry::set_score(float value) {
 
 // optional uint32 number_of_mismatches = 8;
 inline bool AlignmentEntry::has_number_of_mismatches() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void AlignmentEntry::set_has_number_of_mismatches() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void AlignmentEntry::clear_has_number_of_mismatches() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void AlignmentEntry::clear_number_of_mismatches() {
   number_of_mismatches_ = 0u;
@@ -1637,13 +1709,13 @@ inline void AlignmentEntry::set_number_of_mismatches(::google::protobuf::uint32 
 
 // optional uint32 number_of_indels = 9;
 inline bool AlignmentEntry::has_number_of_indels() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000200u) != 0;
 }
 inline void AlignmentEntry::set_has_number_of_indels() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000200u;
 }
 inline void AlignmentEntry::clear_has_number_of_indels() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000200u;
 }
 inline void AlignmentEntry::clear_number_of_indels() {
   number_of_indels_ = 0u;
@@ -1659,13 +1731,13 @@ inline void AlignmentEntry::set_number_of_indels(::google::protobuf::uint32 valu
 
 // optional uint32 query_aligned_length = 11;
 inline bool AlignmentEntry::has_query_aligned_length() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 inline void AlignmentEntry::set_has_query_aligned_length() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000400u;
 }
 inline void AlignmentEntry::clear_has_query_aligned_length() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 inline void AlignmentEntry::clear_query_aligned_length() {
   query_aligned_length_ = 0u;
@@ -1681,13 +1753,13 @@ inline void AlignmentEntry::set_query_aligned_length(::google::protobuf::uint32 
 
 // optional uint32 target_aligned_length = 12;
 inline bool AlignmentEntry::has_target_aligned_length() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00000800u) != 0;
 }
 inline void AlignmentEntry::set_has_target_aligned_length() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00000800u;
 }
 inline void AlignmentEntry::clear_has_target_aligned_length() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00000800u;
 }
 inline void AlignmentEntry::clear_target_aligned_length() {
   target_aligned_length_ = 0u;
@@ -1728,13 +1800,13 @@ AlignmentEntry::mutable_sequence_variations() {
 
 // optional uint32 query_length = 10;
 inline bool AlignmentEntry::has_query_length() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
+  return (_has_bits_[0] & 0x00002000u) != 0;
 }
 inline void AlignmentEntry::set_has_query_length() {
-  _has_bits_[0] |= 0x00001000u;
+  _has_bits_[0] |= 0x00002000u;
 }
 inline void AlignmentEntry::clear_has_query_length() {
-  _has_bits_[0] &= ~0x00001000u;
+  _has_bits_[0] &= ~0x00002000u;
 }
 inline void AlignmentEntry::clear_query_length() {
   query_length_ = 0u;
@@ -1750,13 +1822,13 @@ inline void AlignmentEntry::set_query_length(::google::protobuf::uint32 value) {
 
 // optional int32 mapping_quality = 14;
 inline bool AlignmentEntry::has_mapping_quality() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00004000u) != 0;
 }
 inline void AlignmentEntry::set_has_mapping_quality() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00004000u;
 }
 inline void AlignmentEntry::clear_has_mapping_quality() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00004000u;
 }
 inline void AlignmentEntry::clear_mapping_quality() {
   mapping_quality_ = 0;
@@ -1772,13 +1844,13 @@ inline void AlignmentEntry::set_mapping_quality(::google::protobuf::int32 value)
 
 // optional uint32 pair_flags = 15;
 inline bool AlignmentEntry::has_pair_flags() const {
-  return (_has_bits_[0] & 0x00004000u) != 0;
+  return (_has_bits_[0] & 0x00008000u) != 0;
 }
 inline void AlignmentEntry::set_has_pair_flags() {
-  _has_bits_[0] |= 0x00004000u;
+  _has_bits_[0] |= 0x00008000u;
 }
 inline void AlignmentEntry::clear_has_pair_flags() {
-  _has_bits_[0] &= ~0x00004000u;
+  _has_bits_[0] &= ~0x00008000u;
 }
 inline void AlignmentEntry::clear_pair_flags() {
   pair_flags_ = 0u;
@@ -1794,13 +1866,13 @@ inline void AlignmentEntry::set_pair_flags(::google::protobuf::uint32 value) {
 
 // optional .goby.RelatedAlignmentEntry pair_alignment_link = 16;
 inline bool AlignmentEntry::has_pair_alignment_link() const {
-  return (_has_bits_[0] & 0x00008000u) != 0;
+  return (_has_bits_[0] & 0x00010000u) != 0;
 }
 inline void AlignmentEntry::set_has_pair_alignment_link() {
-  _has_bits_[0] |= 0x00008000u;
+  _has_bits_[0] |= 0x00010000u;
 }
 inline void AlignmentEntry::clear_has_pair_alignment_link() {
-  _has_bits_[0] &= ~0x00008000u;
+  _has_bits_[0] &= ~0x00010000u;
 }
 inline void AlignmentEntry::clear_pair_alignment_link() {
   if (pair_alignment_link_ != NULL) pair_alignment_link_->::goby::RelatedAlignmentEntry::Clear();
@@ -1823,13 +1895,13 @@ inline ::goby::RelatedAlignmentEntry* AlignmentEntry::release_pair_alignment_lin
 
 // optional uint32 fragment_index = 17;
 inline bool AlignmentEntry::has_fragment_index() const {
-  return (_has_bits_[0] & 0x00010000u) != 0;
+  return (_has_bits_[0] & 0x00020000u) != 0;
 }
 inline void AlignmentEntry::set_has_fragment_index() {
-  _has_bits_[0] |= 0x00010000u;
+  _has_bits_[0] |= 0x00020000u;
 }
 inline void AlignmentEntry::clear_has_fragment_index() {
-  _has_bits_[0] &= ~0x00010000u;
+  _has_bits_[0] &= ~0x00020000u;
 }
 inline void AlignmentEntry::clear_fragment_index() {
   fragment_index_ = 0u;
@@ -1845,13 +1917,13 @@ inline void AlignmentEntry::set_fragment_index(::google::protobuf::uint32 value)
 
 // optional .goby.RelatedAlignmentEntry spliced_forward_alignment_link = 18;
 inline bool AlignmentEntry::has_spliced_forward_alignment_link() const {
-  return (_has_bits_[0] & 0x00020000u) != 0;
+  return (_has_bits_[0] & 0x00040000u) != 0;
 }
 inline void AlignmentEntry::set_has_spliced_forward_alignment_link() {
-  _has_bits_[0] |= 0x00020000u;
+  _has_bits_[0] |= 0x00040000u;
 }
 inline void AlignmentEntry::clear_has_spliced_forward_alignment_link() {
-  _has_bits_[0] &= ~0x00020000u;
+  _has_bits_[0] &= ~0x00040000u;
 }
 inline void AlignmentEntry::clear_spliced_forward_alignment_link() {
   if (spliced_forward_alignment_link_ != NULL) spliced_forward_alignment_link_->::goby::RelatedAlignmentEntry::Clear();
@@ -1874,13 +1946,13 @@ inline ::goby::RelatedAlignmentEntry* AlignmentEntry::release_spliced_forward_al
 
 // optional .goby.RelatedAlignmentEntry spliced_backward_alignment_link = 22;
 inline bool AlignmentEntry::has_spliced_backward_alignment_link() const {
-  return (_has_bits_[0] & 0x00040000u) != 0;
+  return (_has_bits_[0] & 0x00080000u) != 0;
 }
 inline void AlignmentEntry::set_has_spliced_backward_alignment_link() {
-  _has_bits_[0] |= 0x00040000u;
+  _has_bits_[0] |= 0x00080000u;
 }
 inline void AlignmentEntry::clear_has_spliced_backward_alignment_link() {
-  _has_bits_[0] &= ~0x00040000u;
+  _has_bits_[0] &= ~0x00080000u;
 }
 inline void AlignmentEntry::clear_spliced_backward_alignment_link() {
   if (spliced_backward_alignment_link_ != NULL) spliced_backward_alignment_link_->::goby::RelatedAlignmentEntry::Clear();
@@ -1903,13 +1975,13 @@ inline ::goby::RelatedAlignmentEntry* AlignmentEntry::release_spliced_backward_a
 
 // optional uint32 spliced_flags = 19;
 inline bool AlignmentEntry::has_spliced_flags() const {
-  return (_has_bits_[0] & 0x00080000u) != 0;
+  return (_has_bits_[0] & 0x00100000u) != 0;
 }
 inline void AlignmentEntry::set_has_spliced_flags() {
-  _has_bits_[0] |= 0x00080000u;
+  _has_bits_[0] |= 0x00100000u;
 }
 inline void AlignmentEntry::clear_has_spliced_flags() {
-  _has_bits_[0] &= ~0x00080000u;
+  _has_bits_[0] &= ~0x00100000u;
 }
 inline void AlignmentEntry::clear_spliced_flags() {
   spliced_flags_ = 0u;
@@ -1925,13 +1997,13 @@ inline void AlignmentEntry::set_spliced_flags(::google::protobuf::uint32 value) 
 
 // optional uint32 insert_size = 20;
 inline bool AlignmentEntry::has_insert_size() const {
-  return (_has_bits_[0] & 0x00100000u) != 0;
+  return (_has_bits_[0] & 0x00200000u) != 0;
 }
 inline void AlignmentEntry::set_has_insert_size() {
-  _has_bits_[0] |= 0x00100000u;
+  _has_bits_[0] |= 0x00200000u;
 }
 inline void AlignmentEntry::clear_has_insert_size() {
-  _has_bits_[0] &= ~0x00100000u;
+  _has_bits_[0] &= ~0x00200000u;
 }
 inline void AlignmentEntry::clear_insert_size() {
   insert_size_ = 0u;
@@ -1947,13 +2019,13 @@ inline void AlignmentEntry::set_insert_size(::google::protobuf::uint32 value) {
 
 // optional uint32 sample_index = 21;
 inline bool AlignmentEntry::has_sample_index() const {
-  return (_has_bits_[0] & 0x00200000u) != 0;
+  return (_has_bits_[0] & 0x00400000u) != 0;
 }
 inline void AlignmentEntry::set_has_sample_index() {
-  _has_bits_[0] |= 0x00200000u;
+  _has_bits_[0] |= 0x00400000u;
 }
 inline void AlignmentEntry::clear_has_sample_index() {
-  _has_bits_[0] &= ~0x00200000u;
+  _has_bits_[0] &= ~0x00400000u;
 }
 inline void AlignmentEntry::clear_sample_index() {
   sample_index_ = 0u;
