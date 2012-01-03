@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.stats.*;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
@@ -135,7 +136,7 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
                 "distinct-read-index-count[%s]",
                 "average-variant-quality-scores[%s]");
 
-         statWriter.defineColumnAttributes(1,ColumnType.Integer, groups,
+        statWriter.defineColumnAttributes(1, ColumnType.Integer, groups,
                 "refProportion[%s]",
                 "refCountsPerGroup[%s]",
                 "varCountPerGroup[%s]",
@@ -146,11 +147,11 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
 
             if (deAnalyzer.eval("within-groups")) {
                 statWriter.defineColumn("within-group-p-value[%s]", group);
-                statWriter.defineColumnAttributes("within-group-p-value[%s]",1, ColumnType.Float, "within-group-p-value[%s]","within-group-p-value[%s]", group);
+                statWriter.defineColumnAttributes("within-group-p-value[%s]", 1, ColumnType.Float, "within-group-p-value[%s]", "within-group-p-value[%s]", group);
             }
 
             statWriter.defineColumn("observed variations at position ([frequency:from/to,]+) group %s", group);
-            statWriter.defineColumnAttributes("observed variations at position ([frequency:from/to,]+) group %s",1, ColumnType.String,
+            statWriter.defineColumnAttributes("observed variations at position ([frequency:from/to,]+) group %s", 1, ColumnType.String,
                     "observed variations at position ([frequency:from/to,]+) group %s",
                     "observed variations at position ([frequency:from/to,]+) group %s", group);
 
@@ -195,7 +196,7 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
                             int groupIndexA,
                             int groupIndexB) {
         // report 1-based positions.
-        position = position+1;
+        position = position + 1;
         fillVariantCountArrays(sampleCounts);
         CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 
@@ -297,6 +298,11 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
         statWriter.close();
     }
 
+    @Override
+    public void setGenome(RandomAccessSequenceInterface genome) {
+
+    }
+
 
     private void fillVariantCountArrays(SampleCountInfo[] sampleCounts) {
 
@@ -338,7 +344,7 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
 
     private void summarizeVariations
             (TSVWriter
-                    statWriter, ObjectArrayList<PositionBaseInfo> list,
+                     statWriter, ObjectArrayList<PositionBaseInfo> list,
              int groupIndex) {
 
         final Object2IntMap<MutableString> tally = new Object2IntArrayMap<MutableString>();

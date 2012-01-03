@@ -88,6 +88,7 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
 
         format.defineColumns(outWriter, mode);
+        format.setGenome(getGenome());
         genotypeFilters = filters.toArray(new GenotypeFilter[filters.size()]);
 
     }

@@ -23,6 +23,7 @@ import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
@@ -385,6 +386,11 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
 
     public void close() {
         statWriter.close();
+    }
+
+    @Override
+    public void setGenome(RandomAccessSequenceInterface genome) {
+
     }
 
 

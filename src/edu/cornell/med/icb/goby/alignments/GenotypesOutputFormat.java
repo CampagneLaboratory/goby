@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.alignments;
 import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -332,6 +333,11 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
 
     public void close() {
         statsWriter.close();
+    }
+
+    @Override
+    public void setGenome(RandomAccessSequenceInterface genome) {
+
     }
 
 

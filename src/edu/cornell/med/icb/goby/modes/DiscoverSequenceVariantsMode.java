@@ -97,6 +97,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     private ArrayList<GroupComparison> groupComparisonsList=new ArrayList<GroupComparison>();
     private int maxThresholdPerSite;
 
+
     public void setDisableAtLeastQuarterFilter(boolean disableAtLeastQuarterFilter) {
         this.disableAtLeastQuarterFilter = disableAtLeastQuarterFilter;
     }

@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import edu.cornell.med.icb.goby.alignments.DiscoverVariantIterateSortedAlignments;
 import edu.cornell.med.icb.goby.alignments.SampleCountInfo;
 import edu.cornell.med.icb.goby.alignments.PositionBaseInfo;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
@@ -66,4 +67,10 @@ public interface SequenceVariationOutputFormat {
 
 
     void close();
+
+    /**
+     * Optionally give access to the genome to the file format writer.
+     * @param genome
+     */
+    void setGenome(RandomAccessSequenceInterface genome);
 }

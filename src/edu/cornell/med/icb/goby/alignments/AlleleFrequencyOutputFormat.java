@@ -22,6 +22,7 @@ import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.math.MathException;
@@ -254,6 +255,11 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
 
     public void close() {
         statsWriter.close();
+    }
+
+    @Override
+    public void setGenome(RandomAccessSequenceInterface genome) {
+
     }
 
     public void outputVCF(boolean state) {

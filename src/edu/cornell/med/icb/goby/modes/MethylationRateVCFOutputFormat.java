@@ -22,6 +22,7 @@ import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
@@ -96,6 +97,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
     private int unconvertedCytosinePlusFieldIndex;
     private int convertedCytosineMinusFieldIndex;
     private int unconvertedCytosineMinusFieldIndex;
+    private RandomAccessSequenceInterface genome;
 
     public void setMinimumEventThreshold(final int minimumEventThreshold) {
         this.minimumEventThreshold = minimumEventThreshold;
@@ -109,6 +111,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         deCalculator = mode.getDiffExpCalculator();
         groups = mode.getGroups();
         samples = mode.getSamples();
+
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         final ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
         this.statWriter = new VCFWriter(writer);
@@ -215,7 +218,9 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
                             final int groupIndexA,
                             final int groupIndexB) {
 
+
         position = position + 1;
+
         final char refBase = sampleCounts[0].referenceBase;
         if (refBase != 'C' && refBase != 'G') {
             return;
@@ -351,6 +356,11 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
     @Override
     public void close() {
         statWriter.close();
+    }
+
+    @Override
+    public void setGenome(RandomAccessSequenceInterface genome) {
+        this.genome=genome;
     }
 
 
