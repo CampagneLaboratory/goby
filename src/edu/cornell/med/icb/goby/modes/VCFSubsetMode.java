@@ -45,9 +45,9 @@ import java.util.Collections;
 
 /**
  * Replacement for vcf-subset tool. This mode provides a replacement for the vcf-tools vcf-subset utility.
- * In contrast to vcf-subset (vcf-tools), this implementation can extract specific samples from GB of data
- * from the 1000g project in a few minutes (where vcf-subset would require hours of compute time for each
- * chromosome file).
+ * The Goby implementation is much faster than the vcf-tools version (thanks to the Goby VCFParser class),
+ * can run in parallel using multiple threads, and can keep records only when they have specific INFO flags
+ * (see -r argument).
  *
  * @author Fabien Campagne
  */
