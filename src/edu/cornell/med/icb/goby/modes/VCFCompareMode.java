@@ -20,42 +20,30 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.reads.Reads;
-import edu.cornell.med.icb.goby.reads.ReadsReader;
-import edu.cornell.med.icb.goby.reads.ReadsWriter;
-import edu.cornell.med.icb.goby.reads.ReadSet;
-import edu.cornell.med.icb.goby.reads.MessageChunksWriter;
 import edu.cornell.med.icb.goby.readers.vcf.VCFParser;
 import edu.cornell.med.icb.goby.util.GrepReader;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
-import edu.rit.numeric.ListXYSeries;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.*;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
-import it.unimi.dsi.fastutil.objects.*;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
-import it.unimi.dsi.fastutil.chars.Char2ShortOpenHashMap;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.FileInputStream;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Collections;
-import java.nio.channels.FileChannel;
+
 
 /**
  * Compare two VCF files. In contrast to compare-vcf (vcf-tools), this mode
- * <LI/>Can handle non diployd genotype calls.
- * <LI/>Can compare specific pairs of samples identified by their name on the command line.
+ * <LI/>Can handle non diploid genotype calls.
+ * <LI/>Can compare specific pairs of samples identified by their name (or a keyword matching one sample name) on
+ * the command line.
  *
  * @author Fabien Campagne
  */
@@ -325,6 +313,7 @@ public class VCFCompareMode extends AbstractGobyMode {
         buffer.setLength(0);
         String[] altArray = alts.split(",");
         for (String token : tokens) {
+            try {
             int index = Integer.parseInt(token);
             if (index == 0) {
 
@@ -334,6 +323,10 @@ public class VCFCompareMode extends AbstractGobyMode {
 
                 buffer.append(altArray[index - 1]);
                 buffer.append(',');
+            }  }
+            catch (NumberFormatException e) {
+               LOG.info("genotype could not be parsed: "+genotypeCode);
+                return "genotype-error";
             }
         }
 

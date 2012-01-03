@@ -42,6 +42,17 @@
             </stringParser>
             <help>Name of a column to compare.</help>
         </flaggedOption>
+
+        <flaggedOption>
+            <id>required-info-flags</id>
+            <longFlag>required-info-flags</longFlag>
+            <shortFlag>r</shortFlag>
+            <required>false</required>
+              <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <help>Name of INFO flags that must appear in a record for the record to be written in the output.</help>
+        </flaggedOption>
         <switch>
             <id>parallel</id>
             <longFlag>parallel</longFlag>
@@ -50,7 +61,7 @@
         <switch>
             <id>constant-format</id>
             <longFlag>constant-format</longFlag>
-            <help>Optimize for constant FORMAT fields. When the FORMAT fields are constant throughout each record of a field, providing this flag with skip some time consuming steps.  </help>
+            <help>Optimize for constant FORMAT fields. When the FORMAT fields are constant throughout each record of a field and the INFO field always contains the same number of fields, providing this flag with skip some time consuming steps. Since INFO is often variable, use with care, as variations in the INFO column will shift FORMAT fields from one sample to another.</help>
         </switch>
         <switch>
             <id>exclude-ref</id>

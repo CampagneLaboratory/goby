@@ -82,6 +82,8 @@ public class VCFSubsetMode extends AbstractGobyMode {
     private boolean doInParallel;
     private boolean optimizeForContantFormat;
     private boolean excludeRef;
+    private String[] requiredInfoFlags;
+
 
     @Override
     public String getModeName() {
@@ -120,7 +122,7 @@ public class VCFSubsetMode extends AbstractGobyMode {
             System.err.println("Optimizing for constant format string.");
         }
         excludeRef = jsapResult.getBoolean("exclude-ref");
-
+        requiredInfoFlags = jsapResult.getString("required-info-flags", "").split(",");
         return this;
     }
 
@@ -209,7 +211,10 @@ public class VCFSubsetMode extends AbstractGobyMode {
         final int altFieldIndex = getGlobalFieldIndex(columns, "ALT");
         final int qualFieldIndex = getGlobalFieldIndex(columns, "QUAL");
         final int filterFieldIndex = getGlobalFieldIndex(columns, "FILTER");
-
+        final int[] requiredFields = new int[requiredInfoFlags.length];
+        for (int i = 0; i < requiredInfoFlags.length; i++) {
+            requiredFields[i] = parser.getGlobalFieldIndex("INFO", requiredInfoFlags[i]);
+        }
         final IntSet infoFieldGlobalIndices = new IntOpenHashSet();
         sampleIndexToDestinationIndex = new int[parser.countAllFields()];
         for (final ColumnField infoField : parser.getColumns().find("INFO").fields) {
@@ -320,9 +325,18 @@ public class VCFSubsetMode extends AbstractGobyMode {
                         }
                     }
                 }
+                // check that all required fields are present in the record:
+                boolean requiredFlagsAllPresent = true;
+                for (final int fieldIndex : requiredFields) {
+                    final CharSequence fieldValue = parser.getFieldValue(fieldIndex);
+                    requiredFlagsAllPresent &= fieldValue != null && fieldValue.length() > 0;
+                }
                 parser.next();
                 pg.lightUpdate();
-                if (!allGenotypeHomozygous) {
+
+                final boolean keepRecord = !allGenotypeHomozygous && requiredFlagsAllPresent;
+
+                if (keepRecord) {
                     writer.writeRecord();
                 } else {
                     writer.clear();
