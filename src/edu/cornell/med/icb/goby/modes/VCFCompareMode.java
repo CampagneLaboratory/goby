@@ -228,7 +228,7 @@ public class VCFCompareMode extends AbstractGobyMode {
             pg.start();
             try {
                 // load at most three million lines:
-                int earlyStopCount = 30000;
+                int earlyStopCount = Integer.MAX_VALUE; //30000;
                 int count = 0;
                 while (parsers[parserIndex].hasNextDataLine()) {
                     final VCFLine line = new VCFLine();
