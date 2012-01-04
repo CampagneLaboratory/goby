@@ -10,14 +10,19 @@
 
 #     goby 40m version
  
-export memory_requirement=$1
+memory_requirement=$1
 shift
-export other_parameters=$*
+other_parameters=$*
 
-export WORKING_DIR=`dirname "$0"`
-export GOBY_JAR=${WORKING_DIR}/goby.jar
-export GOBY_HOME=${WORKING_DIR}
-      
+WORKING_DIR=`dirname "$0"`
+if [[ $OSTYPE == "cygwin" ]]; then
+    WORKING_DIR=`cygpath -m "${WORKING_DIR}"`
+fi
+
+GOBY_HOME=${WORKING_DIR}
+GOBY_JAR=${GOBY_HOME}/goby.jar
+LOG4J_PROPS=file:/${GOBY_HOME}/config/log4j-sample.properties
+ 
 if [ "${RJAVA_HOME:-notset}" == "notset" ]; then
   echo "Trying to set RJAVA_HOME environment variable"
   cat >/tmp/r-cmd.txt <<EOT
@@ -28,5 +33,5 @@ EOT
  
 fi
 
-echo java -ea -Xmx${memory_requirement} -Djava.library.path=${RJAVA_HOME} -jar ${GOBY_JAR} --mode ${other_parameters}
-java -ea -Xmx${memory_requirement} -Dlog4j.configuration=file://${GOBY_HOME}/config/log4j-sample.properties -Djava.library.path=${RJAVA_HOME} -jar ${GOBY_JAR} --mode ${other_parameters}
+echo java -ea -Xmx${memory_requirement} -Dlog4j.configuration=${LOG4J_PROPS} -Djava.library.path=${RJAVA_HOME} -jar ${GOBY_JAR} --mode ${other_parameters}
+java -ea -Xmx${memory_requirement} -Dlog4j.configuration=${LOG4J_PROPS} -Djava.library.path=${RJAVA_HOME} -jar ${GOBY_JAR} --mode ${other_parameters}
