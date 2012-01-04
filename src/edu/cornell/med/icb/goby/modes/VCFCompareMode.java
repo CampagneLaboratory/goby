@@ -241,6 +241,12 @@ public class VCFCompareMode extends AbstractGobyMode {
                             getFieldValue(positionFieldIndex[parserIndex]).toString());
                     for (final int fieldIndex : indicesToKeep) {
                         final String genotypeCode = parsers[parserIndex].getFieldValue(fieldIndex).toString();
+                        if (genotypeCode == null) {
+                            // skip position, not typed in some sample.
+                            parsers[parserIndex].next();
+                            pg.lightUpdate();
+                            continue;
+                        }
                         final String genotype = convertCode(genotypeCode, parsers[parserIndex], ref, alts);
                         line.genotypes.add(genotype);
                     }
@@ -248,9 +254,9 @@ public class VCFCompareMode extends AbstractGobyMode {
                     indices[parserIndex].put(line.pos, index++);
                     parsers[parserIndex].next();
                     pg.lightUpdate();
-                    if (count++ > earlyStopCount) {
+                    /*  if (count++ > earlyStopCount) {
                         break;
-                    }
+                    }*/
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -265,7 +271,6 @@ public class VCFCompareMode extends AbstractGobyMode {
 
         commonPositions.addAll(reduce(lines[0]));
         System.out.printf("# position parser[0] %d%n", commonPositions.size());
-
 
         for (parserIndex = 1; parserIndex < numInputFiles; parserIndex++) {
 
@@ -314,18 +319,21 @@ public class VCFCompareMode extends AbstractGobyMode {
         String[] altArray = alts.split(",");
         for (String token : tokens) {
             try {
-            int index = Integer.parseInt(token);
-            if (index == 0) {
+                if (".".equals(token)) {
+                    return "";
+                }
+                int index = Integer.parseInt(token);
+                if (index == 0) {
 
-                buffer.append(ref);
-                buffer.append(',');
-            } else {
+                    buffer.append(ref);
+                    buffer.append(',');
+                } else {
 
-                buffer.append(altArray[index - 1]);
-                buffer.append(',');
-            }  }
-            catch (NumberFormatException e) {
-               LOG.info("genotype could not be parsed: "+genotypeCode);
+                    buffer.append(altArray[index - 1]);
+                    buffer.append(',');
+                }
+            } catch (NumberFormatException e) {
+                LOG.info("genotype could not be parsed: " + genotypeCode);
                 return "genotype-error";
             }
         }

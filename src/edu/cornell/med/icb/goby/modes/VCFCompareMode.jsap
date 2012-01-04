@@ -35,7 +35,7 @@
             <id>column</id>
             <longFlag>column</longFlag>
             <shortFlag>c</shortFlag>
-            <required>false</required>
+            <required>true</required>
               <allowMultipleDeclarations>true</allowMultipleDeclarations>
               <stringParser>
                 <classname>StringStringParser</classname>
