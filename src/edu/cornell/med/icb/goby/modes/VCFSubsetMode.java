@@ -122,7 +122,12 @@ public class VCFSubsetMode extends AbstractGobyMode {
             System.err.println("Optimizing for constant format string.");
         }
         excludeRef = jsapResult.getBoolean("exclude-ref");
-        requiredInfoFlags = jsapResult.getString("required-info-flags", "").split(",");
+        String requiredInfoFlagsString = jsapResult.getString("required-info-flags");
+        if (requiredInfoFlagsString==null) {
+            requiredInfoFlags= new String[0];
+        } else {
+            requiredInfoFlags=requiredInfoFlagsString.split(",");
+        }
         return this;
     }
 
@@ -197,6 +202,11 @@ public class VCFSubsetMode extends AbstractGobyMode {
                         }
                     }
                 }
+            }
+            if (sampleIdList.size()==0) {
+                System.err.println("Column selection matched no samples. Only the header would be written to the output. Aborted.");
+                System.out.println("Sample names were: "+ObjectArrayList.wrap(parser.getColumnNamesUsingFormat()));
+                System.exit(1);
             }
         } catch (VCFParser.SyntaxException e) {
             e.printStackTrace();
