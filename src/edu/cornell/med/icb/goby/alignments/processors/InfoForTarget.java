@@ -18,11 +18,16 @@
 
 package edu.cornell.med.icb.goby.alignments.processors;
 
+import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.algorithmic.data.UnboundedFifoPool;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 /**
  * @author Fabien Campagne
@@ -34,14 +39,14 @@ public class InfoForTarget {
     /**
      * positionsWithSpanningIndel contains zero-based positions.
      */
-    public IntArraySet positionsWithSpanningIndel = new IntArraySet();
+    public IntSet positionsWithSpanningIndel = new IntAVLTreeSet();
     UnboundedFifoPool<Alignments.AlignmentEntry> entriesInWindow = new UnboundedFifoPool<Alignments.AlignmentEntry>();
-    public ObjectArrayList<ObservedIndel> potentialIndels = new ObjectArrayList<ObservedIndel>();
+    public ObjectAVLTreeSet<ObservedIndel> potentialIndels = new ObjectAVLTreeSet<ObservedIndel>();
     /**
      * Position of the start of the realignment window for this target sequence. Alignment entries located
      * between windowStartPosition and windowStartPosition+windowLength are stored in entriesInWindow
      */
-    public int windowStartPosition=Integer.MAX_VALUE;
+    public int windowStartPosition = Integer.MAX_VALUE;
     /**
      * The maximum entry position reached on the target sequence. If when maxEntryPosition >windowStartPosition+windowLength,
      * we do not need to keep adding to the pool, since there is enough in the pool to return another entry.
@@ -55,7 +60,7 @@ public class InfoForTarget {
         final ObservedIndel candidate = new ObservedIndel(startPosition, endPosition, from, to);
         if (!potentialIndels.contains(candidate)) {
             potentialIndels.add(candidate);
-     //    System.out.printf("Adding indel %s %n", candidate);
+            //    System.out.printf("Adding indel %s %n", candidate);
         }
 
     }
@@ -73,22 +78,22 @@ public class InfoForTarget {
      */
     public void removeIndels(int firstPosition, int lastPosition) {
 
-        for (int pos : positionsWithSpanningIndel) {
-            if (pos >= firstPosition && pos < lastPosition) {
+        for (final int pos : positionsWithSpanningIndel) {
+            //  if (pos >= firstPosition && pos < lastPosition) {
+            if (pos < lastPosition && pos < firstPosition) {
 
-               positionsWithSpanningIndel.remove(pos);
+                positionsWithSpanningIndel.remove(pos);
             }
         }
 
-        final ObjectArrayList<ObservedIndel> toRemove = new ObjectArrayList<ObservedIndel>();
-        for (ObservedIndel indel : potentialIndels) {
+        for (final ObservedIndel indel : potentialIndels) {
+
             if (indel.getEnd() <= lastPosition) {
+                potentialIndels.remove(indel);
 
-               toRemove.add(indel);
-        //        System.out.printf("lastPosition=%d removing indel %s %n",lastPosition, indel);
             }
         }
-        potentialIndels.removeAll(toRemove);
+
 
     }
 

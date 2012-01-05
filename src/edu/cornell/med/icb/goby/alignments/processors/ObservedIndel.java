@@ -24,7 +24,7 @@ package edu.cornell.med.icb.goby.alignments.processors;
  *         Date: May 14, 2011
  *         Time: 10:50:34 AM
  */
-public class ObservedIndel {
+public class ObservedIndel implements Comparable<ObservedIndel> {
     /**
      * Start position is zero-based.
      */
@@ -36,22 +36,22 @@ public class ObservedIndel {
     final String from;
     final String to;
     private int length;
-     /**
+    /**
      * The index of the first base in the read where the indel was observed.
      */
     public int readIndex;
 
     public ObservedIndel(final int startPosition, final String from, final String to, final int readIndex) {
-        this(startPosition, startPosition + Math.max(from.length(), to.length()),  from,  to) ;
-        this.readIndex=readIndex;
+        this(startPosition, startPosition + Math.max(from.length(), to.length()), from, to);
+        this.readIndex = readIndex;
     }
 
     public ObservedIndel(final int startPosition, final int endPosition, final String from, final String to) {
-         this.startPosition = startPosition;
+        this.startPosition = startPosition;
         this.endPosition = endPosition;
-        this.from=from;
-        this.to=to;
-        this.length=Math.max(from.length(), to.length());
+        this.from = from;
+        this.to = to;
+        this.length = Math.max(from.length(), to.length());
     }
 
     public boolean isHasQualityScores() {
@@ -60,6 +60,7 @@ public class ObservedIndel {
 
     /**
      * Return the quality scores for bases of this indel.
+     *
      * @return
      */
     public byte[] getQualityScores() {
@@ -67,7 +68,7 @@ public class ObservedIndel {
         return qualityScores;
     }
 
-    private byte[]qualityScores;
+    private byte[] qualityScores;
     private boolean hasQualityScores;
 
     public void setQualityScores(byte[] qualityScores) {
@@ -86,6 +87,7 @@ public class ObservedIndel {
 
     /**
      * Return the length of the indel. (e.g., --- has a length of 3)
+     *
      * @return length.
      */
     public int getLength() {
@@ -107,7 +109,7 @@ public class ObservedIndel {
         this.endPosition = endPosition;
         this.from = from;
         this.to = to;
-        this.readIndex=readIndex;
+        this.readIndex = readIndex;
     }
 
     public int getStart() {
@@ -149,5 +151,30 @@ public class ObservedIndel {
     @Override
     public String toString() {
         return String.format("%s/%s %d-%d", from, to, startPosition, endPosition);
+    }
+
+    final int BEFORE = -1;
+    final int EQUAL = 0;
+    final int AFTER = 1;
+
+    @Override
+    public int compareTo(final ObservedIndel other) {
+
+
+        if (this == other) return EQUAL;
+        /*if (!(o instanceof ObservedIndel)) {
+            return BEFORE;
+        }*/
+
+        //primitive numbers follow this form
+        if (this.startPosition < other.startPosition) return BEFORE;
+        if (this.startPosition > other.startPosition) return AFTER;
+        if (this.endPosition < other.endPosition) return BEFORE;
+        if (this.endPosition > other.endPosition) return AFTER;
+        int a = this.from.compareTo(other.to);
+        if (a != 0) return a;
+        a = this.from.compareTo(other.to);
+        return a;
+
     }
 }

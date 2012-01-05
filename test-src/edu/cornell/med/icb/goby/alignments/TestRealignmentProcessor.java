@@ -24,6 +24,7 @@ import edu.cornell.med.icb.goby.alignments.processors.RealignmentProcessor;
 import edu.cornell.med.icb.goby.modes.AbstractAlignmentToCompactMode;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
+import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
@@ -31,6 +32,7 @@ import it.unimi.dsi.lang.MutableString;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -109,10 +111,14 @@ entry.position=0
         final Alignments.AlignmentEntry entry = list.next();
         System.out.println("entry: " + entry);
         realigner.pushEntryToPool(tinfo, 0, entry);
-        assertEquals(2, tinfo.potentialIndels.get(0).getStart());
-        assertEquals(5, tinfo.potentialIndels.get(0).getEnd());
-        assertEquals(3, tinfo.potentialIndels.get(0).positionSpan());
+        assertEquals(2, getFirst(tinfo.potentialIndels).getStart());
+        assertEquals(5, getFirst(tinfo.potentialIndels).getEnd());
+        assertEquals(3, getFirst(tinfo.potentialIndels).positionSpan());
 
+    }
+
+    private ObservedIndel getFirst(ObjectAVLTreeSet<ObservedIndel> potentialIndels) {
+        return potentialIndels.first();
     }
 
     private ObjectListIterator<Alignments.AlignmentEntry> buildList0() {
@@ -139,8 +145,8 @@ entry.position=0
                     assertTrue(tinfo.positionsWithSpanningIndel.contains(32 - 1));
                     assertFalse(tinfo.positionsWithSpanningIndel.contains(33 - 1));
 
-                    assertEquals(30 - 1, tinfo.potentialIndels.get(0).getStart());
-                    assertEquals(33 - 1, tinfo.potentialIndels.get(0).getEnd());
+                    assertEquals(30 - 1, getFirst(tinfo.potentialIndels).getStart());
+                    assertEquals(33 - 1, getFirst(tinfo.potentialIndels).getEnd());
                 }
             }
         };
