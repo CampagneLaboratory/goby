@@ -123,10 +123,10 @@ public class VCFSubsetMode extends AbstractGobyMode {
         }
         excludeRef = jsapResult.getBoolean("exclude-ref");
         String requiredInfoFlagsString = jsapResult.getString("required-info-flags");
-        if (requiredInfoFlagsString==null) {
-            requiredInfoFlags= new String[0];
+        if (requiredInfoFlagsString == null) {
+            requiredInfoFlags = new String[0];
         } else {
-            requiredInfoFlags=requiredInfoFlagsString.split(",");
+            requiredInfoFlags = requiredInfoFlagsString.split(",");
         }
         return this;
     }
@@ -203,9 +203,9 @@ public class VCFSubsetMode extends AbstractGobyMode {
                     }
                 }
             }
-            if (sampleIdList.size()==0) {
+            if (sampleIdList.size() == 0) {
                 System.err.println("Column selection matched no samples. Only the header would be written to the output. Aborted.");
-                System.out.println("Sample names were: "+ObjectArrayList.wrap(parser.getColumnNamesUsingFormat()));
+                System.out.println("Sample names were: " + ObjectArrayList.wrap(parser.getColumnNamesUsingFormat()));
                 System.exit(1);
             }
         } catch (VCFParser.SyntaxException e) {
@@ -286,12 +286,15 @@ public class VCFSubsetMode extends AbstractGobyMode {
 
                 int formatFieldIndex = 0;
                 infoFieldIndex = 0;
+                int position = 0;
                 for (final int globalFieldIndex : fieldsToTraverse) {
                     final String value = parser.getStringFieldValue(globalFieldIndex);
                     if (globalFieldIndex == chromosomeFieldIndex) {
                         writer.setChromosome(value);
                     } else if (globalFieldIndex == positionFieldIndex) {
-                        writer.setPosition(Integer.parseInt(value));
+                        position = Integer.parseInt(value);
+                        writer.setPosition(position);
+
                     } else if (globalFieldIndex == idFieldIndex) {
                         writer.setId(value);
                     } else if (globalFieldIndex == refFieldIndex) {
@@ -315,8 +318,9 @@ public class VCFSubsetMode extends AbstractGobyMode {
                                     final int destinationSampleIndex = sampleIndexToDestinationIndex[globalIndexToSampleIndex.get(globalFieldIndex)];
                                     writer.setSampleValue(formatTokens[formatFieldIndex], destinationSampleIndex, value);
                                     if (excludeRef) {
+
                                         if ("GT".equals(formatTokens[formatFieldIndex])) {
-                                            allGenotypeHomozygous &= "0|0".equals(value);
+                                            allGenotypeHomozygous &= "0|0".equals(value) || "0/0".equals(value) || ".|.".equals(value)|| "./.".equals(value);
                                         }
                                     } else {
                                         allGenotypeHomozygous = false;
