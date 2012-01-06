@@ -98,6 +98,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
     private int convertedCytosineMinusFieldIndex;
     private int unconvertedCytosineMinusFieldIndex;
     private RandomAccessSequenceInterface genome;
+    private int genomicContextIndex;
 
     public void setMinimumEventThreshold(final int minimumEventThreshold) {
         this.minimumEventThreshold = minimumEventThreshold;
@@ -140,6 +141,8 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         numberOfGroups = groups.length;
         biomartFieldIndex = statWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
         strandFieldIndex = statWriter.defineField("INFO", "Strand", 1, ColumnType.String, "Strand of the cytosine site on the reference sequence.");
+        genomicContextIndex= statWriter.defineField("INFO", "Context", 1, ColumnType.String, "Site genomic context");
+        
 
         for (GroupComparison comparison : groupComparisons) {
             log2OddsRatioColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("LOD[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
@@ -243,6 +246,9 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         statWriter.setInfo(biomartFieldIndex, biomartRegionSpan);
         statWriter.setInfo(strandFieldIndex, Character.toString(strandAtSite));
 
+        final String genomicContext=findGenomicContext(position, referenceIndex);
+        statWriter.setInfo(genomicContextIndex, genomicContext);
+
         for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
             statWriter.setInfo(notMethylatedCCountsIndex[groupIndex], unmethylatedCCountsPerGroup[groupIndex]);
             statWriter.setInfo(methylatedCCountsIndex[groupIndex], methylatedCCountPerGroup[groupIndex]);
@@ -334,6 +340,34 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         }
         statWriter.writeRecord();
     }
+
+    private String findGenomicContext(int referenceIndex, int position) {
+        char currentBase= genome.get(referenceIndex, position);
+
+        char nextBase='?';
+        String tempContext="?";
+
+        if(currentBase =='C'){
+            nextBase= genome.get(referenceIndex, (position+1));
+            tempContext=new StringBuilder().append('C').append('p').append(nextBase).toString();
+        } else{
+            if(currentBase =='G')
+               nextBase=genome.get(referenceIndex, (position-1));
+                    if(nextBase=='C'){
+                        tempContext= new StringBuilder().append('C').append('p').append('G').toString();
+                    } else if(nextBase=='A'){
+                        tempContext= new StringBuilder().append('C').append('p').append('T').toString();
+                    } else if(nextBase=='T'){
+                        tempContext= new StringBuilder().append('C').append('p').append('A').toString();
+                    } else {
+                        tempContext= new StringBuilder().append('C').append('p').append('C').toString();
+                    }
+        }
+           return tempContext;
+       }
+
+
+
 
     private char flipStrand(final char strandAtSite) {
         if (strandAtSite == '+') {

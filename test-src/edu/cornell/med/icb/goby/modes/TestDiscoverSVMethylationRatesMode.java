@@ -22,6 +22,7 @@ import com.google.protobuf.ByteString;
 import com.martiansoftware.jsap.JSAPException;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.util.TestFiles;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -37,6 +38,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import javax.net.ssl.CertPathTrustManagerParameters;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -78,6 +80,18 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
             "##FORMAT=<ID=FB,Number=1,Type=String,Description=\"Number of bases that failed base filters in this sample.\">\n" +
             "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tmethylated\tnot-so\n";
 
+    RandomAccessSequenceTestSupport genome;
+
+    private String[] sequences = {
+            "ATTTACCGG", //CpG
+            "TAGATACGGAT",//CpG
+            "ACTCTAGACTA", //CpT
+            "CATTTTGCAACA", //CpA
+            "ATCTATGCCTA", //CpG - negative
+    };
+
+
+
     @Test
     public void testMethylationFormatSwap() throws IOException, JSAPException {
         final MethylationRateVCFOutputFormat outputFormat = new MethylationRateVCFOutputFormat();
@@ -113,6 +127,8 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
         StringWriter writer = new StringWriter();
         outputFormat.allocateStorage(2, 2);
         outputFormat.defineColumns(new PrintWriter(writer), mode);
+        outputFormat.setGenome(genome);
+
         outputFormat.setMinimumEventThreshold(0);
         outputFormat.writeRecord(iterator, makeTwoSampleCounts(), 0, 0, list4(), 0, 1);
         String stringB = writer.getBuffer().toString();
@@ -156,9 +172,9 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
                 return list;
             }
         };
-
         StringWriter writer = new StringWriter();
         outputFormat.allocateStorage(2, 2);
+        outputFormat.setGenome(genome);
         outputFormat.defineColumns(new PrintWriter(writer), mode);
         outputFormat.setMinimumEventThreshold(0);
         outputFormat.writeRecord(iterator, makeTwoSampleCounts(), 0, 0, list1(), 0, 1);
@@ -199,6 +215,79 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
                 "ref-id\t1\t\tC\tA,T,N\t\t\tBIOMART_COORDS=ref-id:1:1;Strand=+;LOD[methylated/not-so]=NaN;LOD_SE[methylated/not-so]=NaN;LOD_Z[methylated/not-so]=NaN;FisherP[methylated/not-so]=NaN;#C Group[methylated]=0;#Cm Group[methylated]=1;#C Group[not-so]=0;#Cm Group[not-so]=0;DP=1\tMR:GT:BC:GB:FB\t100:0/1/2/3:A=5,T=1,C=9,G=0,N=1:16:0\t0:1/2/3:A=10,T=4,C=0,G=0,N=2:16:0",
                 buffer.toString());
         */
+    }
+
+    @Test
+    public void testMethylationFormatGenomicContext() throws IOException, JSAPException {
+        final MethylationRateVCFOutputFormat outputFormat = new MethylationRateVCFOutputFormat();
+
+        DiscoverVariantIterateSortedAlignments iterator = new DiscoverVariantIterateSortedAlignments(outputFormat) {
+            @Override
+            public CharSequence getReferenceId(int targetIndex) {
+                return "ref-id";
+            }
+        };
+        DiscoverSequenceVariantsMode mode = new DiscoverSequenceVariantsMode() {
+            @Override
+            public String[] getSamples() {
+                return new String[]{"methylated", "not-so"};
+            }
+
+            @Override
+            public String[] getGroups() {
+                return new String[]{"methylated", "not-so"};
+            }
+
+            @Override
+            public int[] getReaderIndexToGroupIndex() {
+                return new int[]{0, 1}; // sample index is group index;
+            }
+
+            @Override
+            public ArrayList<GroupComparison> getGroupComparisons() {
+                ArrayList<GroupComparison> list = new ArrayList<GroupComparison>();
+                list.add(new GroupComparison("methylated", "not-so", 0, 1, 0));
+                return list;
+            }
+        };
+        outputFormat.setGenome(genome);
+        StringWriter writer = new StringWriter();
+        outputFormat.allocateStorage(2, 2);
+        outputFormat.defineColumns(new PrintWriter(writer), mode);
+        outputFormat.setMinimumEventThreshold(0);
+        outputFormat.writeRecord(iterator, makeTwoSampleCounts(), 0,6, list1(), 0, 1);
+        writer.flush();
+
+        String stringB = writer.getBuffer().toString();
+        assertTrue(stringB, stringB.contains("Context=CpA"));
+/*
+        writer = new StringWriter();
+        outputFormat.allocateStorage(2, 2);
+        outputFormat.defineColumns(new PrintWriter(writer), mode);
+
+        final SampleCountInfo[] sampleCounts = makeTwoSampleCounts();
+        sampleCounts[0].referenceBase = 'G';
+        outputFormat.writeRecord(iterator, sampleCounts, 0, 0, list2(), 0, 1);
+        writer.flush();
+        stringB = writer.getBuffer().toString();
+        assertTrue(stringB, stringB.contains("#Cm Group[methylated]=1;"));
+        assertTrue(stringB, stringB.contains("#Cm Group[not-so]=0;"));
+
+
+        writer = new StringWriter();
+
+        outputFormat.allocateStorage(2, 2);
+        outputFormat.defineColumns(new PrintWriter(writer), mode);
+
+        outputFormat.writeRecord(iterator, makeTwoSampleCounts(), 0, 0, list3(), 0, 1);
+        stringB = writer.getBuffer().toString();
+        assertTrue(stringB, stringB.contains("#Cm Group[methylated]=1;"));
+
+
+        assertTrue(stringB, stringB.contains("#C Group[methylated]=1;"));
+        assertTrue(stringB, stringB.contains("#Cm Group[not-so]=0;"));
+        assertTrue(stringB, stringB.contains("#C Group[not-so]=0;"));*/
+
     }
 
     private ObjectArrayList<PositionBaseInfo> list4() {
@@ -389,7 +478,7 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
         final File dir = new File(BASE_TEST_DIR);
         dir.mkdirs();
 
-
+         genome = new RandomAccessSequenceTestSupport(sequences);
         final ReadsWriter referenceWriter = new ReadsWriter(FileUtils.openOutputStream(
                 new File("test-results/alignments/last-to-compact/last-reference.compact-reads")));
         referenceWriter.setIdentifier("0");
