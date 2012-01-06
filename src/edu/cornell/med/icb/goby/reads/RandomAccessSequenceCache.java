@@ -189,7 +189,6 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         compressedData = (ObjectArrayList<byte[]>) BinIO.loadObject(basename + ".bases");
         referenceIgnoreLists = (ObjectArrayList<LongArrayBitVector>) BinIO.loadObject(basename + ".ignore");
         referenceNameMap = (Object2IntMap<String>) BinIO.loadObject(basename + ".names");
-
         for (final String name : referenceNameMap.keySet()) {
             indexToNameMap.put(referenceNameMap.get(name), name);
             updateSliceIndices(referenceNameMap.get(name));
@@ -347,9 +346,9 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         final LongArrayBitVector ignoreList = referenceIgnoreLists.get(referenceIndex);
 
         assert position < maxSize : "position must be less than size of the reference sequence (" + maxSize + ")";
-        assert position < ignoreList.length() : " position must be smaller than ignore list size.";
+       // assert position < ignoreList.length() : " position must be smaller than ignore list size.";
 
-        if (!ignoreList.get(position)) {
+        if (position>=ignoreList.size() || !ignoreList.get(position)) {
             return decode(compressedData.get(referenceIndex), position,
                     maxSize);
         } else {
