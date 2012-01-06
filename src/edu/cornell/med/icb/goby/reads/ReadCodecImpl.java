@@ -38,20 +38,22 @@ import java.io.IOException;
  *         Time: 2:00 PM
  */
 public class ReadCodecImpl implements ReadCodec {
-    private ArithmeticCoder sequenceCoder ;
-    private ArithmeticCoder qualityScoreCoder ;
+    private ArithmeticCoder sequenceCoder;
+    private ArithmeticCoder qualityScoreCoder;
     public static final int CODEC_REGISTRATION_CODE = 1;
+    FastByteArrayOutputStream os = new FastByteArrayOutputStream();
+    OutputBitStream out = new OutputBitStream(os);
 
     @Override
     public Reads.ReadEntry.Builder encode(final Reads.ReadEntry.Builder source) {
         final Reads.ReadEntry.Builder result = Reads.ReadEntry.newBuilder();
 
-        FastByteArrayOutputStream os = new FastByteArrayOutputStream();
         // compress sequence of the read:
 
-        OutputBitStream out = new OutputBitStream(os);
         result.mergeFrom(source.build());
         try {
+            out.flush();
+            os.reset();
             // write the codec registration code first as one byte:
             out.writeInt(CODEC_REGISTRATION_CODE, 8);
 
@@ -213,7 +215,7 @@ public class ReadCodecImpl implements ReadCodec {
     }
 
     private ArithmeticDecoder sequenceDecoder;
-    private ArithmeticDecoder qualityScoreDecoder ;
+    private ArithmeticDecoder qualityScoreDecoder;
 
     private ByteString decodeSequence(InputBitStream input, int readLength) throws IOException {
         ByteArrayList buffer = new ByteArrayList();
