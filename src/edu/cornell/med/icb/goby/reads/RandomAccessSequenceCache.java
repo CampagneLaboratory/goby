@@ -365,7 +365,9 @@ public class RandomAccessSequenceCache implements RandomAccessSequenceInterface 
         assert position < maxSize : "position must be less than size of the reference sequence (" + maxSize + ")";
 
         final int offset = position * 2;
-        final byte b = bytes[offset / 8];
+        final int index = offset / 8;
+        if (index>=bytes.length) return 'N';
+        final byte b = bytes[index];
         final int c = b >> (6 - (offset % 8)) & 0x3; // two right-most bits are left, which encode
 
         switch (c) {
