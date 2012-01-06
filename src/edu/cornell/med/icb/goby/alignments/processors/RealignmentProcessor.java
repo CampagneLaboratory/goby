@@ -435,6 +435,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
 //         String post = getGenomeSegment(genome, targetIndex, startAlignment + indelLength, endAlignment + indelLength);
         //   System.out.printf(" pre and post alignments: %n%s\n%s%n", pre, post);
         // pos is zero-based:
+        endAlignment=Math.min(endAlignment,genome.getLength(targetIndex)-1);
         for (int pos = startAlignment; pos < endAlignment; pos++) {
             // both variantPositions and pos are zero-based:
             if (!variantPositions.contains(pos)) {

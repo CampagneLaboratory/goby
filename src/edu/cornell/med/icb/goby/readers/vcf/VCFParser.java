@@ -573,8 +573,8 @@ public class VCFParser implements Closeable {
             }
 
         }
-        int numberOfFieldsOnLine = fieldIndex;
-        int numberOfColumnsOnLine = columnIndex;
+        int numberOfFieldsOnLine = Math.min(fieldIndex, fieldEnds.length-1);
+        int numberOfColumnsOnLine = Math.min(columnIndex,columnEnds.length-1);
         columnStarts[0] = 0;
         columnEnds[numberOfColumnsOnLine - (TSV ? 1 : 0)] = line.length();
         fieldStarts[0] = 0;

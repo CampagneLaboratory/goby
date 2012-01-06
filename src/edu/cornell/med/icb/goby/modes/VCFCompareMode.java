@@ -25,8 +25,6 @@ import edu.cornell.med.icb.goby.util.GrepReader;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.*;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
@@ -36,7 +34,6 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -214,7 +211,7 @@ public class VCFCompareMode extends AbstractGobyMode {
             keepGlobalGenotypeIndex[parserIndex] = new IntArrayList(numInputFiles);
             lines[parserIndex] = new ObjectArrayList<VCFLine>(10000000);
             indices[parserIndex] = new Object2IntAVLTreeMap<VCFPosition>();
-            allGenotypeFieldIndices[parserIndex]=new IntArrayList(parsers[parserIndex].getColumnNamesUsingFormat().length);
+            allGenotypeFieldIndices[parserIndex] = new IntArrayList(parsers[parserIndex].getColumnNamesUsingFormat().length);
             for (String sample : parsers[parserIndex].getColumnNamesUsingFormat()) {
                 allGenotypeFieldIndices[parserIndex].add(parsers[parserIndex].getGlobalFieldIndex(getSampleColumn(parsers[parserIndex], sample), "GT"));
             }
@@ -247,31 +244,27 @@ public class VCFCompareMode extends AbstractGobyMode {
                     line.pos.position = Integer.parseInt(parsers[parserIndex].
                             getFieldValue(positionFieldIndex[parserIndex]).toString());
 
-                    boolean notReference = false;
-
                     for (final int genotypeFieldIndex : allGenotypeFieldIndices[parserIndex]) {
 
                         final String genotypeCode = parsers[parserIndex].getFieldValue(genotypeFieldIndex).toString();
-                        if (!"0/0".equals(genotypeCode)) {
-                            notReference = true;
-                        }
+
                     }
-                    if (notReference) {
-                        // keep this line since there is a variant somewhere on it.
-                        for (final int fieldIndex : indicesToKeep) {
-                            final String genotypeCode = parsers[parserIndex].getFieldValue(fieldIndex).toString();
-                            if (genotypeCode == null) {
-                                // skip position, not typed in some sample.
-                                parsers[parserIndex].next();
-                                pg.lightUpdate();
-                                continue;
-                            }
-                            final String genotype = convertCode(genotypeCode, parsers[parserIndex], ref, alts);
-                            line.genotypes.add(genotype);
+
+                    // keep this line since there is a variant somewhere on it.
+                    for (final int fieldIndex : indicesToKeep) {
+                        final String genotypeCode = parsers[parserIndex].getFieldValue(fieldIndex).toString();
+                        if (genotypeCode == null) {
+                            // skip position, not typed in some sample.
+                            parsers[parserIndex].next();
+                            pg.lightUpdate();
+                            continue;
                         }
-                        lines[parserIndex].add(line);
-                        indices[parserIndex].put(line.pos, index++);
+                        final String genotype = convertCode(genotypeCode, parsers[parserIndex], ref, alts);
+                        line.genotypes.add(genotype);
                     }
+                    lines[parserIndex].add(line);
+                    indices[parserIndex].put(line.pos, index++);
+
                     parsers[parserIndex].next();
                     pg.lightUpdate();
                     /*  if (count++ > earlyStopCount) {
@@ -296,9 +289,10 @@ public class VCFCompareMode extends AbstractGobyMode {
 
             commonPositions.retainAll(reduce(lines[parserIndex]));
         }
-        System.out.printf("# common positions across files: %d (overlap with larger set: %g %%) " +
-                "(overlap with smaller set: %g%%) %n", commonPositions.size(),
-                fraction(commonPositions.size(), maxSize(lines)), fraction(commonPositions.size(), minSize(lines)));
+        DoubleIndexedIdentifier reverseIdentifiers = new DoubleIndexedIdentifier(identifiers);
+        for (int i = 0; i < numInputFiles; i++) {
+            dumpPositionsUniqueTo(i, inputFiles, lines, commonPositions, reverseIdentifiers);
+        }
         System.out.println("Sorting..");
         ObjectArrayList<VCFPosition> sortedPositions = new ObjectArrayList<VCFPosition>();
         sortedPositions.addAll(commonPositions);
@@ -311,7 +305,7 @@ public class VCFCompareMode extends AbstractGobyMode {
         // The number of disagreements that correspond to failure to call a variant.
         int numMissedVariantCalls = 0;
         ObjectSet<String> distinctGenotypes = new ObjectArraySet(numInputFiles);
-        DoubleIndexedIdentifier reverseIdentifiers = new DoubleIndexedIdentifier(identifiers);
+
 
         for (VCFPosition pos : sortedPositions) {
             for (parserIndex = 0; parserIndex < numInputFiles; parserIndex++) {
@@ -336,7 +330,9 @@ public class VCFCompareMode extends AbstractGobyMode {
             }
         }
 
-
+        System.out.printf("# common positions across files: %d (overlap with larger set: %g %%) " +
+                "(overlap with smaller set: %g%%) %n", commonPositions.size(),
+                fraction(commonPositions.size(), maxSize(lines)), fraction(commonPositions.size(), minSize(lines)));
         System.out.printf("Among the common positions, %d positions (%g %%) had the same genotype, while %d positions (%g %%) had different genotypes. \n" +
                 "Among the differences %g %% were failures to call a variant.",
                 numGenotypeAgreements, fraction(numGenotypeAgreements, numGenotypeDisagreements),
@@ -345,12 +341,25 @@ public class VCFCompareMode extends AbstractGobyMode {
         System.exit(0);
     }
 
+    private void dumpPositionsUniqueTo(int i, List<File> inputFiles, ObjectArrayList<VCFLine>[] lines, ObjectSet<VCFPosition> commonPositions, DoubleIndexedIdentifier reverseIdentifiers) {
+
+        System.out.printf("Unique to %s ---------:%n", inputFiles.get(i).getName());
+        for (VCFLine line : lines[i]) {
+            if (!commonPositions.contains(line.pos)) {
+                System.out.printf("%s GT=%s %n", line.pos.toString(reverseIdentifiers), line.genotypes);
+
+            }
+        }
+        System.out.printf("<---------%n");
+
+    }
+
 
     MutableString buffer = new MutableString();
     ObjectArrayList<String> list = new ObjectArrayList<String>();
 
     private String convertCode(String genotypeCode, VCFParser parser, String ref, String alts) {
-        String[] tokens = genotypeCode.split("[|/]");
+        String[] tokens = genotypeCode.split("[/|]");
         buffer.setLength(0);
         String[] altArray = alts.split(",");
         list.clear();
@@ -370,7 +379,7 @@ public class VCFCompareMode extends AbstractGobyMode {
                 }
             } catch (NumberFormatException e) {
                 LOG.info("genotype could not be parsed: " + genotypeCode);
-                return "genotype-error";
+                return "genotype-error:" + genotypeCode;
             }
 
 
@@ -443,7 +452,8 @@ public class VCFCompareMode extends AbstractGobyMode {
     }
 
     private class VCFLine {
-        VCFPosition pos = new VCFPosition();
+        VCFPosition
+                pos = new VCFPosition();
         String ref;
         String alt;
         ObjectArrayList<String> genotypes = new ObjectArrayList<String>(4);
@@ -455,6 +465,15 @@ public class VCFCompareMode extends AbstractGobyMode {
 
         int chromosome;
         int position;
+
+        @Override
+        public String toString() {
+            return String.format("%s\t%d", chromosome, position);
+        }
+
+        public String toString(DoubleIndexedIdentifier reverse) {
+            return String.format("%s\t%d", reverse.getId(chromosome), position);
+        }
 
         @Override
         public boolean equals(Object o) {
