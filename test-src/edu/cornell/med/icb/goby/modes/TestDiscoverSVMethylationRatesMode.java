@@ -86,7 +86,7 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
             "ATTTACCGG", //CpG
             "TAGATACGGAT",//CpG
             "ACTCTAGACTA", //CpT
-            "CATTTTGCAACA", //CpA
+            "CATTTTGCAAC", //CpA
             "ATCTATGCCTA", //CpG - negative
     };
 
@@ -251,42 +251,44 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
             }
         };
         outputFormat.setGenome(genome);
+
         StringWriter writer = new StringWriter();
         outputFormat.allocateStorage(2, 2);
         outputFormat.defineColumns(new PrintWriter(writer), mode);
         outputFormat.setMinimumEventThreshold(0);
-        outputFormat.writeRecord(iterator, makeTwoSampleCounts(), 0,6, list1(), 0, 1);
+        outputFormat.writeRecord(iterator, makeTwoSampleCounts(), 1,6, list1(), 0, 1);
         writer.flush();
 
         String stringB = writer.getBuffer().toString();
-        assertTrue(stringB, stringB.contains("Context=CpA"));
-/*
+        assertTrue(stringB, stringB.contains("Context=CpG"));
+
         writer = new StringWriter();
         outputFormat.allocateStorage(2, 2);
         outputFormat.defineColumns(new PrintWriter(writer), mode);
-
-        final SampleCountInfo[] sampleCounts = makeTwoSampleCounts();
-        sampleCounts[0].referenceBase = 'G';
-        outputFormat.writeRecord(iterator, sampleCounts, 0, 0, list2(), 0, 1);
+        outputFormat.setMinimumEventThreshold(0);
+        outputFormat.writeRecord(iterator, makeTwoSampleCounts(), 2, 1, list1(), 0, 1);
         writer.flush();
-        stringB = writer.getBuffer().toString();
-        assertTrue(stringB, stringB.contains("#Cm Group[methylated]=1;"));
-        assertTrue(stringB, stringB.contains("#Cm Group[not-so]=0;"));
+
+        String stringC = writer.getBuffer().toString();
+        assertTrue(stringC , stringC.contains("Context=CpT"));
 
 
         writer = new StringWriter();
-
         outputFormat.allocateStorage(2, 2);
         outputFormat.defineColumns(new PrintWriter(writer), mode);
-
-        outputFormat.writeRecord(iterator, makeTwoSampleCounts(), 0, 0, list3(), 0, 1);
+        outputFormat.setMinimumEventThreshold(0);
+        outputFormat.writeRecord(iterator, makeTwoSampleCounts(), 1, 2, list1(), 0, 1);
         stringB = writer.getBuffer().toString();
-        assertTrue(stringB, stringB.contains("#Cm Group[methylated]=1;"));
+        assertTrue(stringB, stringB.contains("CpT"));
 
+        writer = new StringWriter();
+        outputFormat.allocateStorage(2, 2);
+        outputFormat.defineColumns(new PrintWriter(writer), mode);
+        outputFormat.setMinimumEventThreshold(0);
+        outputFormat.writeRecord(iterator, makeTwoSampleCounts(), 4, 7, list1(), 0, 1);
+        stringB = writer.getBuffer().toString();
+        assertTrue(stringB, stringB.contains("CpC"));
 
-        assertTrue(stringB, stringB.contains("#C Group[methylated]=1;"));
-        assertTrue(stringB, stringB.contains("#Cm Group[not-so]=0;"));
-        assertTrue(stringB, stringB.contains("#C Group[not-so]=0;"));*/
 
     }
 

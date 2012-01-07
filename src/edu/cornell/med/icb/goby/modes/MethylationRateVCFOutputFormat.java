@@ -224,6 +224,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
 
         position = position + 1;
 
+
         final char refBase = sampleCounts[0].referenceBase;
         if (refBase != 'C' && refBase != 'G') {
             return;
@@ -246,7 +247,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         statWriter.setInfo(biomartFieldIndex, biomartRegionSpan);
         statWriter.setInfo(strandFieldIndex, Character.toString(strandAtSite));
 
-        final String genomicContext=findGenomicContext(position, referenceIndex);
+        final String genomicContext=findGenomicContext(referenceIndex, position);
         statWriter.setInfo(genomicContextIndex, genomicContext);
 
         for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
@@ -342,17 +343,20 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
     }
 
     private String findGenomicContext(int referenceIndex, int position) {
-        char currentBase= genome.get(referenceIndex, position);
+        int zeroBasedPos=position-1;
+        char currentBase= genome.get(referenceIndex, zeroBasedPos);
 
         char nextBase='?';
         String tempContext="?";
 
         if(currentBase =='C'){
-            nextBase= genome.get(referenceIndex, (position+1));
+            nextBase= genome.get(referenceIndex, (zeroBasedPos+1));
             tempContext=new StringBuilder().append('C').append('p').append(nextBase).toString();
         } else{
             if(currentBase =='G')
-               nextBase=genome.get(referenceIndex, (position-1));
+               nextBase=genome.get(referenceIndex, (zeroBasedPos-1));
+            //switch case
+            
                     if(nextBase=='C'){
                         tempContext= new StringBuilder().append('C').append('p').append('G').toString();
                     } else if(nextBase=='A'){
