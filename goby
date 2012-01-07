@@ -21,7 +21,7 @@ fi
 
 GOBY_HOME=${WORKING_DIR}
 GOBY_JAR=${GOBY_HOME}/goby.jar
-LOG4J_PROPS=file:/${GOBY_HOME}/config/log4j-sample.properties
+LOG4J_PROPS=file://${GOBY_HOME}/config/log4j-sample.properties
  
 if [ "${RJAVA_HOME:-notset}" == "notset" ]; then
   echo "Trying to set RJAVA_HOME environment variable"
