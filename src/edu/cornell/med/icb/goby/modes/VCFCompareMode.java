@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.modes;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.readers.vcf.VCFParser;
+import edu.cornell.med.icb.goby.stats.SampleStats;
 import edu.cornell.med.icb.goby.util.GrepReader;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
@@ -28,12 +29,14 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.*;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -110,6 +113,7 @@ public class VCFCompareMode extends AbstractGobyMode {
         setInputFilenames(jsapResult.getStringArray("input"));
         outputFilename = jsapResult.getString("output");
         this.genotypeColumnSet = jsapResult.getStringArray("column");
+
         return this;
     }
 
@@ -163,6 +167,8 @@ public class VCFCompareMode extends AbstractGobyMode {
         return array;
     }
 
+    Object2IntMap<String> sampleIndexToGenotypeIndex;
+
     /**
      * Compare VCF files.
      *
@@ -173,9 +179,9 @@ public class VCFCompareMode extends AbstractGobyMode {
         if (inputFiles == null || inputFiles.size() == 0) {
             throw new IOException("--input not specified");
         }
-        if (StringUtils.isBlank(outputFilename)) {
+        /*  if (StringUtils.isBlank(outputFilename)) {
             throw new IOException("--output not specified");
-        }
+        }*/
         final int numInputFiles = inputFiles.size();
         final VCFParser[] parsers = new VCFParser[numInputFiles];
         int parserIndex = 0;
@@ -183,102 +189,11 @@ public class VCFCompareMode extends AbstractGobyMode {
         positionFieldIndex = new int[numInputFiles];
         refFieldIndex = new int[numInputFiles];
         altFieldIndex = new int[numInputFiles];
-        for (final File inputFile : inputFiles) {
-            // eliminate lines from the header that try to define some field in ALT:
-            final GrepReader filter = new GrepReader(inputFile.getPath(), "^##ALT=");
 
-            parsers[parserIndex] = new VCFParser(filter);
-            try {
-                parsers[parserIndex].readHeader();
-            } catch (VCFParser.SyntaxException e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
-            chromosomeFieldIndex[parserIndex] = parsers[parserIndex].getGlobalFieldIndex("CHROM", "VALUE");
-            positionFieldIndex[parserIndex] = parsers[parserIndex].getGlobalFieldIndex("POS", "VALUE");
-            refFieldIndex[parserIndex] = parsers[parserIndex].getGlobalFieldIndex("REF", "VALUE");
-            altFieldIndex[parserIndex] = parsers[parserIndex].getGlobalFieldIndex("ALT", "VALUE");
-            assert refFieldIndex[parserIndex] != -1 : "REF field must be found.";
-            assert altFieldIndex[parserIndex] != -1 : "ALT field must be found.";
-            parserIndex++;
-        }
+        scanInput(parsers, parserIndex);
         // brute force, load everything in memory:
-        final IntArrayList[] keepGlobalGenotypeIndex = new IntArrayList[numInputFiles];
-        lines = new ObjectArrayList[numInputFiles];
-        indices = new Object2IntMap[numInputFiles];
-        IntArrayList[] allGenotypeFieldIndices = new IntArrayList[numInputFiles];
-        for (parserIndex = 0; parserIndex < numInputFiles; parserIndex++) {
-            keepGlobalGenotypeIndex[parserIndex] = new IntArrayList(numInputFiles);
-            lines[parserIndex] = new ObjectArrayList<VCFLine>(10000000);
-            indices[parserIndex] = new Object2IntAVLTreeMap<VCFPosition>();
-            allGenotypeFieldIndices[parserIndex] = new IntArrayList(parsers[parserIndex].getColumnNamesUsingFormat().length);
-            for (String sample : parsers[parserIndex].getColumnNamesUsingFormat()) {
-                allGenotypeFieldIndices[parserIndex].add(parsers[parserIndex].getGlobalFieldIndex(getSampleColumn(parsers[parserIndex], sample), "GT"));
-            }
-            for (String keepColumn : genotypeColumnSet) {
+        loadGenotypes(numInputFiles, parsers);
 
-                final int index = parsers[parserIndex].getGlobalFieldIndex(getSampleColumn(parsers[parserIndex], keepColumn), "GT");
-                if (index != -1) {
-                    keepGlobalGenotypeIndex[parserIndex].add(index);
-                }
-
-            }
-            int[] indicesToKeep = keepGlobalGenotypeIndex[parserIndex].toIntArray();
-            System.out.printf("Loading %s..%n", inputFiles.get(parserIndex).getName());
-            int index = 0;
-            ProgressLogger pg = new ProgressLogger(LOG);
-            pg.displayFreeMemory = true;
-            pg.priority = Level.INFO;
-            pg.start();
-            try {
-                // load at most three million lines:
-                int earlyStopCount = Integer.MAX_VALUE; //30000;
-                int count = 0;
-                while (parsers[parserIndex].hasNextDataLine()) {
-                    final VCFLine line = new VCFLine();
-
-                    final String chr = parsers[parserIndex].getFieldValue(chromosomeFieldIndex[parserIndex]).toString();
-                    String ref = parsers[parserIndex].getStringFieldValue(refFieldIndex[parserIndex]);
-                    String alts = parsers[parserIndex].getStringFieldValue(altFieldIndex[parserIndex]);
-                    line.pos.chromosome = identifiers.registerIdentifier(new MutableString(chr));
-                    line.pos.position = Integer.parseInt(parsers[parserIndex].
-                            getFieldValue(positionFieldIndex[parserIndex]).toString());
-
-                    for (final int genotypeFieldIndex : allGenotypeFieldIndices[parserIndex]) {
-
-                        final String genotypeCode = parsers[parserIndex].getFieldValue(genotypeFieldIndex).toString();
-
-                    }
-
-                    // keep this line since there is a variant somewhere on it.
-                    for (final int fieldIndex : indicesToKeep) {
-                        final String genotypeCode = parsers[parserIndex].getFieldValue(fieldIndex).toString();
-                        if (genotypeCode == null) {
-                            // skip position, not typed in some sample.
-                            parsers[parserIndex].next();
-                            pg.lightUpdate();
-                            continue;
-                        }
-                        final String genotype = convertCode(genotypeCode, parsers[parserIndex], ref, alts);
-                        line.genotypes.add(genotype);
-                    }
-                    lines[parserIndex].add(line);
-                    indices[parserIndex].put(line.pos, index++);
-
-                    parsers[parserIndex].next();
-                    pg.lightUpdate();
-                    /*  if (count++ > earlyStopCount) {
-                        break;
-                    }*/
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                pg.done();
-                parsers[parserIndex].close();
-            }
-            System.out.println("Line.size() " + lines[parserIndex].size());
-        }
         System.out.println("Determining common positions");
         ObjectSet<VCFPosition> commonPositions = new ObjectAVLTreeSet<VCFPosition>();
 
@@ -298,60 +213,215 @@ public class VCFCompareMode extends AbstractGobyMode {
         sortedPositions.addAll(commonPositions);
         Collections.sort(sortedPositions);
         System.out.println("Done sorting.");
+
+        printStats(numInputFiles, commonPositions, sortedPositions, reverseIdentifiers);
+        System.out.flush();
+        System.exit(0);
+    }
+
+    private void loadGenotypes(int numInputFiles, VCFParser[] parsers) throws IOException {
+        int parserIndex;
+        final IntArrayList[] keepGlobalGenotypeIndex = new IntArrayList[numInputFiles];
+        sampleIndexToGenotypeIndex = new Object2IntAVLTreeMap<String>();
+        lines = new ObjectArrayList[numInputFiles];
+        indices = new Object2IntMap[numInputFiles];
+        IntArrayList[] allGenotypeFieldIndices = new IntArrayList[numInputFiles];
+        for (parserIndex = 0; parserIndex < numInputFiles; parserIndex++) {
+            keepGlobalGenotypeIndex[parserIndex] = new IntArrayList(numInputFiles);
+            lines[parserIndex] = new ObjectArrayList<VCFLine>(10000000);
+            indices[parserIndex] = new Object2IntAVLTreeMap<VCFPosition>();
+            allGenotypeFieldIndices[parserIndex] = new IntArrayList(parsers[parserIndex].getColumnNamesUsingFormat().length);
+            for (String sample : genotypeColumnSet) {
+                allGenotypeFieldIndices[parserIndex].add(parsers[parserIndex].getGlobalFieldIndex(getSampleColumn(parsers[parserIndex], sample), "GT"));
+            }
+            sampleIndexToGenotypeIndex = new Object2IntArrayMap<String>();
+            sampleIndexToGenotypeIndex.defaultReturnValue(-1);
+
+            for (String keepColumn : genotypeColumnSet) {
+
+                String sampleId = getSampleColumn(parsers[parserIndex], keepColumn);
+                final int index = parsers[parserIndex].getGlobalFieldIndex(sampleId, "GT");
+                if (index != -1) {
+                    keepGlobalGenotypeIndex[parserIndex].add(index);
+
+                    sampleIndexToGenotypeIndex.put(sampleId, Arrays.binarySearch(genotypeColumnSet, keepColumn));
+                }
+
+            }
+            int[] indicesToKeep = keepGlobalGenotypeIndex[parserIndex].toIntArray();
+            System.out.printf("Loading %s..%n", inputFiles.get(parserIndex).getName());
+            int index = 0;
+            ProgressLogger pg = new ProgressLogger(LOG);
+            pg.displayFreeMemory = true;
+            pg.priority = Level.INFO;
+            pg.start();
+            try {
+
+                int earlyStopCount = Integer.MAX_VALUE; //30000;
+                //int earlyStopCount = 300;
+                int count = 0;
+                while (parsers[parserIndex].hasNextDataLine()) {
+                    final VCFLine line = new VCFLine();
+
+                    final String chr = parsers[parserIndex].getFieldValue(chromosomeFieldIndex[parserIndex]).toString();
+                    String ref = parsers[parserIndex].getStringFieldValue(refFieldIndex[parserIndex]);
+                    String alts = parsers[parserIndex].getStringFieldValue(altFieldIndex[parserIndex]);
+                    line.pos.chromosome = identifiers.registerIdentifier(new MutableString(chr));
+                    line.pos.position = Integer.parseInt(parsers[parserIndex].
+                            getFieldValue(positionFieldIndex[parserIndex]).toString());
+
+                    // keep this line since there is a variant somewhere on it.
+                    int sampleIndex = 0;
+                    for (final int fieldIndex : indicesToKeep) {
+                        final String genotypeCode = parsers[parserIndex].getFieldValue(fieldIndex).toString();
+                        if (genotypeCode == null) {
+                            // skip position, not typed in some sample.
+                            parsers[parserIndex].next();
+                            pg.lightUpdate();
+                            continue;
+                        }
+                        final String genotype = convertCode(genotypeCode, parsers[parserIndex], ref, alts);
+
+                        line.genotypes.add(genotype);
+
+                    }
+                    lines[parserIndex].add(line);
+                    indices[parserIndex].put(line.pos, index++);
+
+                    parsers[parserIndex].next();
+                    pg.lightUpdate();
+                    /* if (count++ > earlyStopCount) {
+                       break;
+                   } */
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                pg.done();
+                parsers[parserIndex].close();
+            }
+            System.out.println("Line.size() " + lines[parserIndex].size());
+        }
+    }
+
+    private void scanInput(VCFParser[] parsers, int parserIndex) throws IOException {
+        for (final File inputFile : inputFiles) {
+            // eliminate lines from the header that try to define some field in ALT:
+            final GrepReader filter = new GrepReader(inputFile.getPath(), "^##ALT=");
+
+            parsers[parserIndex] = new VCFParser(filter);
+            try {
+                parsers[parserIndex].readHeader();
+            } catch (VCFParser.SyntaxException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+
+            if (genotypeColumnSet.length == 0) {
+                // if no columns selected, used the list of columns from the very first command line input file:
+                genotypeColumnSet = parsers[parserIndex].getColumnNamesUsingFormat();
+                System.err.println("Using default columns from first file: " + ObjectArrayList.wrap(genotypeColumnSet));
+            }
+            chromosomeFieldIndex[parserIndex] = parsers[parserIndex].getGlobalFieldIndex("CHROM", "VALUE");
+            positionFieldIndex[parserIndex] = parsers[parserIndex].getGlobalFieldIndex("POS", "VALUE");
+            refFieldIndex[parserIndex] = parsers[parserIndex].getGlobalFieldIndex("REF", "VALUE");
+            altFieldIndex[parserIndex] = parsers[parserIndex].getGlobalFieldIndex("ALT", "VALUE");
+            assert refFieldIndex[parserIndex] != -1 : "REF field must be found.";
+            assert altFieldIndex[parserIndex] != -1 : "ALT field must be found.";
+            parserIndex++;
+        }
+    }
+
+    private void printStats(int numInputFiles,
+                            ObjectSet<VCFPosition> commonPositions,
+                            ObjectArrayList<VCFPosition> sortedPositions, DoubleIndexedIdentifier reverseIdentifiers) throws IOException {
         final VCFLine alignedLines[] = new VCFLine[numInputFiles];
-        parserIndex = 0;
-        int numGenotypeAgreements = 0;
-        int numGenotypeDisagreements = 0;
-        // The number of disagreements that correspond to failure to call a variant.
-        int numMissedVariantCalls = 0;
+        int parserIndex = 0;
+
         ObjectSet<String> distinctGenotypes = new ObjectArraySet(numInputFiles);
 
-
+        SampleStats[] sampleStats = new SampleStats[genotypeColumnSet.length];
         for (VCFPosition pos : sortedPositions) {
             for (parserIndex = 0; parserIndex < numInputFiles; parserIndex++) {
                 alignedLines[parserIndex] = lines[parserIndex].get(indices[parserIndex].get(pos));
             }
-            distinctGenotypes.clear();
-            for (final VCFLine line : alignedLines) {
-                distinctGenotypes.addAll(line.genotypes);
-            }
-            if (distinctGenotypes.size() > 1) {
-                numGenotypeDisagreements++;
-                if (!distinctGenotypes.contains("ref/ref/")) {
-                /*
-                    System.out.printf("%s\t%d\tdisagreement: %s %n",
-                            reverseIdentifiers.getId(alignedLines[0].pos.chromosome).toString(),
-                            alignedLines[0].pos.position,
-                            distinctGenotypes.toString());*/
-                    numMissedVariantCalls++;
+
+            int sampleIndex = 0;
+            for (String sample : genotypeColumnSet) {
+                SampleStats sampleStat = sampleStats[sampleIndex];
+                if (sampleStat == null) {
+                    sampleStat = new edu.cornell.med.icb.goby.stats.SampleStats();
+                    sampleStats[sampleIndex] = sampleStat;
+                    sampleStat.sampleId = sample;
                 }
-            } else {
-                numGenotypeAgreements++;
+                distinctGenotypes.clear();
+                for (final VCFLine line : alignedLines) {
+                    final String genotype = line.genotypes.get(sampleIndex);
+
+                    distinctGenotypes.add(genotype);
+                }
+
+                if (distinctGenotypes.size() > 1) {
+                    sampleStat.numGenotypeDisagreements++;
+
+                    if (distinctGenotypes.contains("")) {
+                        sampleStat.numGenotypeNotCalled++;
+                    } else {
+                        /*System.out.printf("%s\t%d\tdisagreement: %s %n",
+                                reverseIdentifiers.getId(alignedLines[0].pos.chromosome).toString(),
+                                alignedLines[0].pos.position,
+                                ObjectArrayList.wrap(distinctGenotypes.toArray()));
+                          */
+                        sampleStat.analyze(distinctGenotypes);
+                   }
+                } else {
+                    sampleStat.numGenotypeAgreements++;
+                }
+                sampleIndex++;
             }
         }
-
         System.out.printf("# common positions across files: %d (overlap with larger set: %g %%) " +
                 "(overlap with smaller set: %g%%) %n", commonPositions.size(),
                 fraction(commonPositions.size(), maxSize(lines)), fraction(commonPositions.size(), minSize(lines)));
-        System.out.printf("Among the common positions, %d positions (%g %%) had the same genotype, while %d positions (%g %%) had different genotypes. \n" +
-                "Among the differences %g %% were failures to call a variant.",
-                numGenotypeAgreements, fraction(numGenotypeAgreements, numGenotypeDisagreements),
-                numGenotypeDisagreements, fraction(numGenotypeDisagreements, numGenotypeAgreements),
-                fraction(numMissedVariantCalls, numGenotypeDisagreements));
-        System.exit(0);
+        for (final SampleStats sampleStat : sampleStats) {
+            System.out.println("Sample: " + sampleStat.sampleId);
+            final int sumErrors=sampleStat.numGenotypeNotCalled    +sampleStat.numGenotypeDisagreements;
+            System.out.printf("Among the common positions, %d positions (%g %%) had the same genotype, while %d positions (%g %%) had some disagreements (failure to call a genotype in other method, failure to call one or more alleles, or different genotype called: hard error). \n" +
+                    "Among the differences, %g %% were failures to call any genotype %g %% were failures to call one allele, %g %% to call two, and %g %% to call more than two. %g %% sites had differences in genotypes that could not be explained by a failure to call an allele (e.g., G/G vs G/T when the reference is A/A)%n",
+                    sampleStat.numGenotypeAgreements, fractionCumul(sampleStat.numGenotypeAgreements, sampleStat.numGenotypeDisagreements),
+                    sampleStat.numGenotypeDisagreements, fractionCumul(sampleStat.numGenotypeDisagreements, sampleStat.numGenotypeAgreements),
+
+                    fractionCumul(sampleStat.numGenotypeNotCalled, sumErrors),
+                    fractionCumul(sampleStat.missedOneAlleles, sumErrors),
+                    fractionCumul(sampleStat.missedTwoAlleles,sumErrors),
+                    fractionCumul(sampleStat.missedMoreThanTwoAlleles, sumErrors),
+                    fractionCumul(sampleStat.numHadDifferentAllele, sumErrors)
+                    );
+        }
+        if (outputFilename != null) {
+            PrintWriter out = new PrintWriter(new FileWriter(outputFilename));
+            out.write(SampleStats.header());
+            for (final SampleStats sampleStat : sampleStats) {
+
+                out.write(sampleStat.toString());
+            }
+            out.close();
+        }
+
+
     }
 
     private void dumpPositionsUniqueTo(int i, List<File> inputFiles, ObjectArrayList<VCFLine>[] lines, ObjectSet<VCFPosition> commonPositions, DoubleIndexedIdentifier reverseIdentifiers) {
+        /*
+   System.out.printf("Unique to %s ---------:%n", inputFiles.get(i).getName());
+   for (VCFLine line : lines[i]) {
+       if (!commonPositions.contains(line.pos)) {
+           System.out.printf("%s GT=%s %n", line.pos.toString(reverseIdentifiers), line.genotypes);
 
-        System.out.printf("Unique to %s ---------:%n", inputFiles.get(i).getName());
-        for (VCFLine line : lines[i]) {
-            if (!commonPositions.contains(line.pos)) {
-                System.out.printf("%s GT=%s %n", line.pos.toString(reverseIdentifiers), line.genotypes);
-
-            }
-        }
-        System.out.printf("<---------%n");
-
+       }
+   }
+   System.out.printf("<---------%n");
+        */
     }
 
 
@@ -425,6 +495,10 @@ public class VCFCompareMode extends AbstractGobyMode {
     }
 
     private double fraction(double a, double b) {
+        return (a / (b)) * 100;
+    }
+
+    private double fractionCumul(double a, double b) {
         return (a / (a + b)) * 100;
     }
 
@@ -456,7 +530,7 @@ public class VCFCompareMode extends AbstractGobyMode {
                 pos = new VCFPosition();
         String ref;
         String alt;
-        ObjectArrayList<String> genotypes = new ObjectArrayList<String>(4);
+        ObjectArrayList<String> genotypes = new ObjectArrayList<String>(2);
     }
 
     static IndexedIdentifier identifiers = new IndexedIdentifier();
@@ -498,4 +572,5 @@ public class VCFCompareMode extends AbstractGobyMode {
             }
         }
     }
+
 }
