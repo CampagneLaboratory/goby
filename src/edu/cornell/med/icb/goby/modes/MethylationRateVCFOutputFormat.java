@@ -345,29 +345,34 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
     private String findGenomicContext(int referenceIndex, int position) {
         int zeroBasedPos=position-1;
         char currentBase= genome.get(referenceIndex, zeroBasedPos);
-
+        int referenceLength= genome.getLength(referenceIndex);
         char nextBase='?';
-        String tempContext="?";
+        String tempContext= new StringBuilder().append('C').append('p').toString();
+
+        char concatBase='?';
 
         if(currentBase =='C'){
+            if(referenceLength==position){
+            return Character.toString(currentBase);
+            }
             nextBase= genome.get(referenceIndex, (zeroBasedPos+1));
-            tempContext=new StringBuilder().append('C').append('p').append(nextBase).toString();
-        } else{
-            if(currentBase =='G')
-               nextBase=genome.get(referenceIndex, (zeroBasedPos-1));
-            //switch case
-            
-                    if(nextBase=='C'){
-                        tempContext= new StringBuilder().append('C').append('p').append('G').toString();
-                    } else if(nextBase=='A'){
-                        tempContext= new StringBuilder().append('C').append('p').append('T').toString();
-                    } else if(nextBase=='T'){
-                        tempContext= new StringBuilder().append('C').append('p').append('A').toString();
-                    } else {
-                        tempContext= new StringBuilder().append('C').append('p').append('C').toString();
-                    }
+            concatBase= nextBase;
+        } else {
+            if(currentBase=='G'){
+                if(zeroBasedPos==0){
+                return Character.toString(currentBase);
+                }
+            nextBase=genome.get(referenceIndex, (zeroBasedPos-1));
+            switch (nextBase){
+                case 'C': concatBase='G';break;
+                case 'A': concatBase='T';break;
+                case 'T': concatBase='A';break;
+                case 'G': concatBase='C';break;
+                }
+            }
         }
-           return tempContext;
+        tempContext=tempContext.concat(Character.toString(concatBase));
+        return tempContext;
        }
 
 
