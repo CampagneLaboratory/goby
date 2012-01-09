@@ -71,6 +71,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
 
     private int log2OddsRatioStandardErrorColumnIndex[];
     private int log2OddsRatioZColumnIndex[];
+    private int deltaMRColumnIndex[];
     int[] readerIndexToGroupIndex;
     private int[] unmethylatedCCountsPerGroup;
     private int[] methylatedCCountPerGroup;
@@ -137,6 +138,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         log2OddsRatioStandardErrorColumnIndex = new int[groupComparisons.size()];
         log2OddsRatioZColumnIndex = new int[groupComparisons.size()];
         fisherExactPValueColumnIndex = new int[groupComparisons.size()];
+        deltaMRColumnIndex= new int[groupComparisons.size()];
 
         numberOfGroups = groups.length;
         biomartFieldIndex = statWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
@@ -156,6 +158,8 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
 
             fisherExactPValueColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("FisherP[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
                     1, ColumnType.Float, String.format("Fisher exact P-value of observing as large a difference by chance between group %s and group %s.", comparison.nameGroup1, comparison.nameGroup2));
+            deltaMRColumnIndex[comparison.index]=statWriter.defineField("INFO", String.format("Delta_MR[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
+                    1, ColumnType.Integer, String.format("Absolute Difference in methylation between group %s and group %s", comparison.nameGroup1, comparison.nameGroup2) );
         }
         methylatedCCountsIndex = new int[groups.length];
         notMethylatedCCountsIndex = new int[groups.length];
@@ -309,11 +313,30 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
                 }
             }
 
+            final double totalCsObservedgroup1=methylatedCCountPerGroup[indexGroup1] + unmethylatedCCountsPerGroup[indexGroup1];
+            final double totalCsObservedgroup2=methylatedCCountPerGroup[indexGroup2] + unmethylatedCCountsPerGroup[indexGroup2];
+
+            double group1MR;
+            if(totalCsObservedgroup1==0) {
+                group1MR=Double.NaN;
+            } else{
+                group1MR=methylatedCCountPerGroup[indexGroup1]*100/totalCsObservedgroup1;
+            }
+
+            double group2MR;
+            if(totalCsObservedgroup2==0){
+                group2MR=Double.NaN;
+            } else{
+                group2MR=methylatedCCountPerGroup[indexGroup2]*100/totalCsObservedgroup2;
+            }
+
+            final double deltaMR=Math.round(Math.abs(group1MR-group2MR));
 
             statWriter.setInfo(log2OddsRatioColumnIndex[comparison.index], log2OddsRatio);
             statWriter.setInfo(log2OddsRatioStandardErrorColumnIndex[comparison.index], logOddsRatioSE);
             statWriter.setInfo(log2OddsRatioZColumnIndex[comparison.index], log2OddsRatioZValue);
             statWriter.setInfo(fisherExactPValueColumnIndex[comparison.index], fisherP);
+            statWriter.setInfo(deltaMRColumnIndex[comparison.index], deltaMR);
 
         }
         genotypeFormatter.writeGenotypes(statWriter, sampleCounts, position);
