@@ -562,6 +562,8 @@ public class VCFParser implements Closeable {
 
                     previousColumnFieldIndices.add(fieldIndex);
                     fieldIndex++;
+                    fieldIndex=Math.min(fieldEnds.length-1,fieldIndex);
+                    fieldIndex=Math.min(fieldStarts.length-1,fieldIndex);
                 }
             }
             if (c == columnSeparatorCharacter) {

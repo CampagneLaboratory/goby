@@ -318,11 +318,11 @@ public class VCFCompareMode extends AbstractGobyMode {
             if (distinctGenotypes.size() > 1) {
                 numGenotypeDisagreements++;
                 if (!distinctGenotypes.contains("ref/ref/")) {
-
+                /*
                     System.out.printf("%s\t%d\tdisagreement: %s %n",
                             reverseIdentifiers.getId(alignedLines[0].pos.chromosome).toString(),
                             alignedLines[0].pos.position,
-                            distinctGenotypes.toString());
+                            distinctGenotypes.toString());*/
                     numMissedVariantCalls++;
                 }
             } else {
