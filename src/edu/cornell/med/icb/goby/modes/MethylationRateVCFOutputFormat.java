@@ -330,7 +330,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
                 group2MR=methylatedCCountPerGroup[indexGroup2]*100/totalCsObservedgroup2;
             }
 
-            final double deltaMR=Math.round(Math.abs(group1MR-group2MR));
+            final int deltaMR= (int) Math.round(Math.abs(group1MR-group2MR));
 
             statWriter.setInfo(log2OddsRatioColumnIndex[comparison.index], log2OddsRatio);
             statWriter.setInfo(log2OddsRatioStandardErrorColumnIndex[comparison.index], logOddsRatioSE);
