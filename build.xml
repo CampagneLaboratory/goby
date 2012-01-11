@@ -127,6 +127,9 @@
             <service type="edu.cornell.med.icb.goby.reads.ReadCodec">
                 <provider classname="edu.cornell.med.icb.goby.reads.ReadCodecImpl"/>
             </service>
+            <service type="edu.cornell.med.icb.goby.reads.AlignmentCodec">
+                <provider classname="edu.cornell.med.icb.goby.reads.AlignmentCodecImpl"/>
+            </service>
             <!-- define the implementation of NormalizationMethods as Java ServiceProviders: -->
             <service type="edu.cornell.med.icb.goby.stats.NormalizationMethod">
                 <provider classname="edu.cornell.med.icb.goby.stats.BullardUpperQuartileNormalization"/>
