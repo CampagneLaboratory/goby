@@ -135,6 +135,9 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
                     break;
                 }
             }
+            if (codec==null) {
+                System.out.println("Could not find codec "+codecName);
+            }
         }
         return this;
     }
