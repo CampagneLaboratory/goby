@@ -82,7 +82,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
     /** Optional codec to compress-decompress alignment entries.
      *
      */
-    AlignmentCodec codec;
+    private AlignmentCodec codec;
     private static final ServiceLoader<AlignmentCodec> codecLoader = ServiceLoader.load(AlignmentCodec.class);
 
     private boolean adjustQueryIndices = true;
@@ -130,7 +130,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
             for (final AlignmentCodec c : codecLoader) {
 
                 if (c.name().equals(codecName)) {
-                    LOG.info("Will use read codec " + c.name());
+                    LOG.info("Will use alignment codec " + c.name());
                     codec = c;
                     break;
                 }
