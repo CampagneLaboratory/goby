@@ -330,6 +330,11 @@ public class AlignmentWriter implements Closeable {
             // update the unique query length set
             uniqueQueryLengths.add(entry.getQueryLength());
         }
+        final int currentQueryIndex = entry.getQueryIndex();
+        minQueryIndex = Math.min(currentQueryIndex, minQueryIndex);
+        maxQueryIndex = Math.max(currentQueryIndex, maxQueryIndex);
+
+        maxTargetIndex = Math.max(entry.getTargetIndex(), maxTargetIndex);
         if (codec != null) {
             final Alignments.AlignmentEntry.Builder entryBuilder = entry.toBuilder();
             if (collectionBuilder.getAlignmentEntriesCount() == 0) {
@@ -337,17 +342,14 @@ public class AlignmentWriter implements Closeable {
             }
             final Alignments.AlignmentEntry.Builder result = codec.encode(entryBuilder);
             if (result != null) {
-                newEntry = result;
+                 collectionBuilder.addAlignmentEntries(result.build());
             }
+        } else {
+           collectionBuilder.addAlignmentEntries(entry);
         }
-        this.collectionBuilder.addAlignmentEntries(entry);
         writeIndexEntry(entry);
 
-        final int currentQueryIndex = entry.getQueryIndex();
-        minQueryIndex = Math.min(currentQueryIndex, minQueryIndex);
-        maxQueryIndex = Math.max(currentQueryIndex, maxQueryIndex);
 
-        maxTargetIndex = Math.max(entry.getTargetIndex(), maxTargetIndex);
         numberOfAlignedReads += 1;
     }
 
