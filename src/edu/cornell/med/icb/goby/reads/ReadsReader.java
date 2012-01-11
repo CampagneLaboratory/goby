@@ -23,6 +23,7 @@ package edu.cornell.med.icb.goby.reads;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedInputStream;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
+import edu.cornell.med.icb.goby.util.CodecHelper;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
@@ -155,6 +156,10 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
             throw new NoSuchElementException();
         }
         final Reads.ReadEntry readEntry = collection.getReads(reader.incrementEntryIndex());
+        if (readEntry.hasCompressedData() && codec==null) {
+
+            codec=CodecHelper.locateReadCodec(readEntry.getCompressedData());
+        }
         if (first) {
 
             for (int i = 0; i < readEntry.getMetaDataCount(); i++) {

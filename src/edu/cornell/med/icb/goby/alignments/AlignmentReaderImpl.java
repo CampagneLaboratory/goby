@@ -23,7 +23,9 @@ package edu.cornell.med.icb.goby.alignments;
 import com.google.protobuf.CodedInputStream;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import edu.cornell.med.icb.goby.reads.FastBufferedMessageChunksReader;
+import edu.cornell.med.icb.goby.reads.ReadCodec;
 import edu.cornell.med.icb.goby.reads.Reads;
+import edu.cornell.med.icb.goby.util.CodecHelper;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -88,6 +90,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      * The version of Goby that created the alignment file we are reading.
      */
     private String gobyVersion;
+    private AlignmentCodec codec;
 
 
     /**
@@ -369,17 +372,20 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
                     back = new DoubleIndexedIdentifier(identifiers);
                 }
 
-                LOG.trace(String.format("Returning next entry at position %s/%d", back.getId(nextEntry.getTargetIndex()), nextEntry.getPosition()));
+                LOG.trace(String.format("Returning next entry at position %s/%d", back.getId(nextEntry.getTargetIndex()),
+                        nextEntry.getPosition()));
             }
-            /*
-           TODO convert entry with alignment codec.
-            if (codec!=null) {
-            final Alignments.AlignmentEntry.Builder result = codec.decode(nextEntry);
-            if (result!=null) {
-                // the codec was able to decode compressed data.
-                return  result.build();
+            if (nextEntry.hasCompressedData() && codec == null) {
+
+                codec = CodecHelper.locateAlignmentCodec(nextEntry.getCompressedData());
             }
-        }    */
+            if (codec != null) {
+                final Alignments.AlignmentEntry.Builder result = codec.decode(nextEntry);
+                if (result != null) {
+                    // the codec was able to decode compressed data.
+                    return result.build();
+                }
+            }
             return nextEntry;
 
         } finally {

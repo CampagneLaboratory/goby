@@ -46,7 +46,8 @@ public interface AlignmentCodec {
 
     /**
      * Return the name of this codec.
-     * @return  Return the name of this codec.
+     *
+     * @return Return the name of this codec.
      */
     public String name();
 
@@ -56,4 +57,10 @@ public interface AlignmentCodec {
      */
     public void newChunk();
 
+    /**
+     * Return the registration code of this codec, a byte that uniquely identifies this codec.
+     *
+     * @return Return the registration code of this codec.
+     */
+    byte registrationCode();
 }

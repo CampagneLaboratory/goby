@@ -203,6 +203,11 @@ public class ReadCodecImpl implements ReadCodec {
     }
 
     @Override
+    public byte registrationCode() {
+        return CODEC_REGISTRATION_CODE;
+    }
+
+    @Override
     public final void newChunk() {
         sequenceCoder = new ArithmeticCoder(5);
         sequenceDecoder = new ArithmeticDecoder(5);

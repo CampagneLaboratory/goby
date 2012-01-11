@@ -49,6 +49,11 @@ public interface ReadCodec {
      * @return  Return the name of this codec.
      */
     public String name();
+    /**
+     * Return the registration code of this codec, a byte that uniquely identifies this codec.
+     * @return  Return the registration code of this codec.
+     */
+    public byte registrationCode();
 
     /**
      * This method is called when a new chunk of data is started. The event can be used by some codecs to reset

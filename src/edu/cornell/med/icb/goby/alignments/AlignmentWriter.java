@@ -262,7 +262,6 @@ public class AlignmentWriter implements Closeable {
 
         this.collectionBuilder.addAlignmentEntries(builtEntry);
 
-
         writeIndexEntry(builtEntry);
 
         newEntry = Alignments.AlignmentEntry.newBuilder();
