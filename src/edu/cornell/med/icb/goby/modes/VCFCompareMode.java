@@ -269,7 +269,7 @@ public class VCFCompareMode extends AbstractGobyMode {
                     line.pos.chromosome = identifiers.registerIdentifier(new MutableString(chr));
                     line.pos.position = Integer.parseInt(parsers[parserIndex].
                             getFieldValue(positionFieldIndex[parserIndex]).toString());
-
+                    line.ref=ref;
                     // keep this line since there is a variant somewhere on it.
                     int sampleIndex = 0;
                     for (final int fieldIndex : indicesToKeep) {
@@ -339,28 +339,35 @@ public class VCFCompareMode extends AbstractGobyMode {
         int parserIndex = 0;
 
         ObjectSet<String> distinctGenotypes = new ObjectArraySet(numInputFiles);
+        ObjectList<String> sampleGenotypes = new ObjectArrayList(numInputFiles);
 
         SampleStats[] sampleStats = new SampleStats[genotypeColumnSet.length];
         for (VCFPosition pos : sortedPositions) {
             for (parserIndex = 0; parserIndex < numInputFiles; parserIndex++) {
                 alignedLines[parserIndex] = lines[parserIndex].get(indices[parserIndex].get(pos));
+                alignedLines[parserIndex].ref=lines[parserIndex].get(indices[parserIndex].get(pos)).ref;
             }
 
             int sampleIndex = 0;
             for (String sample : genotypeColumnSet) {
                 SampleStats sampleStat = sampleStats[sampleIndex];
                 if (sampleStat == null) {
-                    sampleStat = new edu.cornell.med.icb.goby.stats.SampleStats();
+                    sampleStat = new edu.cornell.med.icb.goby.stats.SampleStats(numInputFiles);
                     sampleStats[sampleIndex] = sampleStat;
                     sampleStat.sampleId = sample;
                 }
                 distinctGenotypes.clear();
+                sampleGenotypes.clear();
+                String ref = null;
                 for (final VCFLine line : alignedLines) {
                     final String genotype = line.genotypes.get(sampleIndex);
-
+                    ref=line.ref;
                     distinctGenotypes.add(genotype);
+                    sampleGenotypes.add(genotype);
                 }
-
+                for (int fileIndex = 0; fileIndex < numInputFiles; fileIndex++) {
+                    sampleStat.observeTransitionToTransversions(fileIndex, sampleGenotypes, ref);
+                }
                 if (distinctGenotypes.size() > 1) {
                     sampleStat.numGenotypeDisagreements++;
 
@@ -372,8 +379,8 @@ public class VCFCompareMode extends AbstractGobyMode {
                                 alignedLines[0].pos.position,
                                 ObjectArrayList.wrap(distinctGenotypes.toArray()));
                           */
-                        sampleStat.analyze(distinctGenotypes);
-                   }
+                        sampleStat.analyze(distinctGenotypes, sampleGenotypes);
+                    }
                 } else {
                     sampleStat.numGenotypeAgreements++;
                 }
@@ -385,7 +392,7 @@ public class VCFCompareMode extends AbstractGobyMode {
                 fraction(commonPositions.size(), maxSize(lines)), fraction(commonPositions.size(), minSize(lines)));
         for (final SampleStats sampleStat : sampleStats) {
             System.out.println("Sample: " + sampleStat.sampleId);
-            final int sumErrors=sampleStat.numGenotypeNotCalled    +sampleStat.numGenotypeDisagreements;
+            final int sumErrors = sampleStat.numGenotypeNotCalled + sampleStat.numGenotypeDisagreements;
             System.out.printf("Among the common positions, %d positions (%g %%) had the same genotype, while %d positions (%g %%) had some disagreements (failure to call a genotype in other method, failure to call one or more alleles, or different genotype called: hard error). \n" +
                     "Among the differences, %g %% were failures to call any genotype %g %% were failures to call one allele, %g %% to call two, and %g %% to call more than two. %g %% sites had differences in genotypes that could not be explained by a failure to call an allele (e.g., G/G vs G/T when the reference is A/A)%n",
                     sampleStat.numGenotypeAgreements, fractionCumul(sampleStat.numGenotypeAgreements, sampleStat.numGenotypeDisagreements),
@@ -393,14 +400,14 @@ public class VCFCompareMode extends AbstractGobyMode {
 
                     fractionCumul(sampleStat.numGenotypeNotCalled, sumErrors),
                     fractionCumul(sampleStat.missedOneAlleles, sumErrors),
-                    fractionCumul(sampleStat.missedTwoAlleles,sumErrors),
+                    fractionCumul(sampleStat.missedTwoAlleles, sumErrors),
                     fractionCumul(sampleStat.missedMoreThanTwoAlleles, sumErrors),
                     fractionCumul(sampleStat.numHadDifferentAllele, sumErrors)
-                    );
+            );
         }
         if (outputFilename != null) {
             PrintWriter out = new PrintWriter(new FileWriter(outputFilename));
-            out.write(SampleStats.header());
+            out.write(SampleStats.header(numInputFiles));
             for (final SampleStats sampleStat : sampleStats) {
 
                 out.write(sampleStat.toString());
@@ -530,6 +537,9 @@ public class VCFCompareMode extends AbstractGobyMode {
                 pos = new VCFPosition();
         String ref;
         String alt;
+        /**
+         * One genotype per sample kept:
+         */
         ObjectArrayList<String> genotypes = new ObjectArrayList<String>(2);
     }
 

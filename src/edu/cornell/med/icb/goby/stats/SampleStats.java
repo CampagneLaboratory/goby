@@ -25,6 +25,7 @@ package edu.cornell.med.icb.goby.stats;
  */
 
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 /**
@@ -44,24 +45,48 @@ public class SampleStats {
     public int missedOneAlleles;
     public int missedMoreThanTwoAlleles;
     public int numHadDifferentAllele;
+    private int numFiles;
 
-    public static String header() {
-        return "sampleId,numGenotypeAgreements, numGenotypeDisagreements,numMissedVariantCalls,numGenotypeNotCalled,missedOneAlleles,missedTwoAlleles,missedMoreThanTwoAlleles,numHadDifferentAllele\n".replace(',', '\t');
+    public SampleStats(int numFiles) {
+        this.numFiles = numFiles;
+        transitionCount = new int[numFiles];
+        transversionCount = new int[numFiles];
+    }
+
+    public static String header(int numFiles) {
+        final StringBuffer titvheaders = new StringBuffer();
+        for (int i = 0; i < numFiles; i++) {
+            if (i != 0) {
+                titvheaders.append("\t");
+            }
+            titvheaders.append("ti/tv_ratio_file_");
+            titvheaders.append(i);
+        }
+
+        return "sampleId,numGenotypeAgreements, numGenotypeDisagreements,numMissedVariantCalls,numGenotypeNotCalled,missedOneAlleles,missedTwoAlleles,missedMoreThanTwoAlleles,numHadDifferentAllele".replace(',', '\t') + titvheaders + "\n";
     }
 
     @Override
     public String toString() {
-        return String.format("%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d%n", sampleId, numGenotypeAgreements, numGenotypeDisagreements,
+        final StringBuffer titvBuffer = new StringBuffer();
+        for (int i = 0; i < numFiles; i++) {
+            if (i != 0) {
+                titvBuffer.append("\t");
+            }
+            titvBuffer.append(getTransversionToTransitionRatio(i));
+        }
+        return String.format("%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%s%n", sampleId, numGenotypeAgreements, numGenotypeDisagreements,
                 numMissedVariantCalls, numGenotypeNotCalled,
-                missedOneAlleles, missedTwoAlleles, missedMoreThanTwoAlleles,numHadDifferentAllele
+                missedOneAlleles, missedTwoAlleles, missedMoreThanTwoAlleles, numHadDifferentAllele, titvBuffer
         );
+
     }
 
 
-    public void analyze(ObjectSet<String> distinctGenotypes) {
+    public void analyze(ObjectSet<String> distinctGenotypes, ObjectList<String> sampleGenotypes) {
         int numAllelesAgreed = 0;
         int numAllelesMissed = 0;
-        int numAlleleDifference=0;
+        int numAlleleDifference = 0;
         ObjectIterator<String> iterator = distinctGenotypes.iterator();
         String first = iterator.next();
         String second = iterator.next();
@@ -72,11 +97,11 @@ public class SampleStats {
             if (tokenFirst[i].equals(tokenSecond[i])) {
                 numAllelesAgreed++;
             } else {
-              //  System.out.println(i+" differ: "+tokenFirst[i] +" "+isRef(tokenSecond[i]));
+                //  System.out.println(i+" differ: "+tokenFirst[i] +" "+isRef(tokenSecond[i]));
                 if (isRef(tokenFirst[i]) || isRef(tokenSecond[i])) {
                     numAllelesMissed++;
                 } else {
-                   numAlleleDifference++;
+                    numAlleleDifference++;
                 }
             }
         }
@@ -94,7 +119,7 @@ public class SampleStats {
             if (numAllelesMissed > 2) {
                 missedMoreThanTwoAlleles += 1;
             }
-            if (numAlleleDifference!=0) {
+            if (numAlleleDifference != 0) {
                 numHadDifferentAllele++;
             }
         }
@@ -102,5 +127,48 @@ public class SampleStats {
 
     private boolean isRef(String allele) {
         return "ref".equals(allele);
+    }
+
+    int transitionCount[];
+    int transversionCount[];
+
+    public void observeTransitionToTransversions(int fileIndex, ObjectList<String> sampleGenotypes, String ref) {
+        String genotype = sampleGenotypes.get(fileIndex);
+        int isTransition;
+        int isTransversion;
+        String alleles[] = genotype.split("/");
+        String aBase = "A";
+        String gBase = "G";
+        transitionCount[fileIndex] += variantWithBases(ref, alleles, aBase, gBase) ? 1 : 0;
+        String cBase = "C";
+        String tBase = "T";
+        transitionCount[fileIndex] += variantWithBases(ref, alleles, cBase, tBase) ? 1 : 0;
+        transversionCount[fileIndex] += variantWithBases(ref, alleles, aBase, cBase) ? 1 : 0;
+        transversionCount[fileIndex] += variantWithBases(ref, alleles, gBase, tBase) ? 1 : 0;
+        transversionCount[fileIndex] += variantWithBases(ref, alleles, aBase, tBase) ? 1 : 0;
+        transversionCount[fileIndex] += variantWithBases(ref, alleles, cBase, gBase) ? 1 : 0;
+    }
+
+    private boolean variantWithBases(String ref, String[] alleles, String base1, String base2) {
+        return base1.equals(ref) && contains(alleles, base2, ref) || base2.equals(ref) && contains(alleles, base1, ref);
+    }
+
+    public float getTransversionToTransitionRatio(int fileIndex) {
+        return ratio(transitionCount[fileIndex], transversionCount[fileIndex]);
+    }
+
+    private float ratio(int a, int b) {
+        return ((float) a) / ((float) b);
+    }
+
+    private boolean contains(String[] alleles, String allele, String ref) {
+        for (String v : alleles) {
+            if ("ref".equals(v)) {
+                //ignore reference allele since this is not a variant.
+                continue;
+            }
+            if (v.indexOf(allele) >= 0) return true;
+        }
+        return false;
     }
 }
