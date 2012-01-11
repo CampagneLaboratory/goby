@@ -330,7 +330,16 @@ public class AlignmentWriter implements Closeable {
             // update the unique query length set
             uniqueQueryLengths.add(entry.getQueryLength());
         }
-
+        if (codec != null) {
+            final Alignments.AlignmentEntry.Builder entryBuilder = entry.toBuilder();
+            if (collectionBuilder.getAlignmentEntriesCount() == 0) {
+                codec.newChunk();
+            }
+            final Alignments.AlignmentEntry.Builder result = codec.encode(entryBuilder);
+            if (result != null) {
+                newEntry = result;
+            }
+        }
         this.collectionBuilder.addAlignmentEntries(entry);
         writeIndexEntry(entry);
 
