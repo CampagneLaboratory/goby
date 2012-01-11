@@ -23,6 +23,7 @@ package edu.cornell.med.icb.goby.alignments;
 import edu.cornell.med.icb.goby.GobyVersion;
 import edu.cornell.med.icb.goby.modes.GobyDriver;
 import edu.cornell.med.icb.goby.reads.MessageChunksWriter;
+import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.util.VersionUtils;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -111,6 +112,8 @@ public class AlignmentWriter implements Closeable {
     private final LongArrayList indexAbsolutePositions = new LongArrayList();
     private boolean indexWritten;
     private long[] targetPositionOffsets;
+
+    private AlignmentCodec codec;
 
     public AlignmentWriter(final String outputBasename) throws IOException {
         alignmentEntries = new FileOutputStream(outputBasename + ".entries");
@@ -240,15 +243,23 @@ public class AlignmentWriter implements Closeable {
     public synchronized void appendEntry() throws IOException {
         // update the unique query length set
         uniqueQueryLengths.add(newEntry.getQueryLength());
-
-
-        final Alignments.AlignmentEntry builtEntry = newEntry.build();
-
-        final int currentQueryIndex = builtEntry.getQueryIndex();
+        final int currentQueryIndex = newEntry.getQueryIndex();
         minQueryIndex = Math.min(currentQueryIndex, minQueryIndex);
         maxQueryIndex = Math.max(currentQueryIndex, maxQueryIndex);
 
-        maxTargetIndex = Math.max(builtEntry.getTargetIndex(), maxTargetIndex);
+        maxTargetIndex = Math.max(newEntry.getTargetIndex(), maxTargetIndex);
+
+        if (codec != null) {
+            if (collectionBuilder.getAlignmentEntriesCount() == 0) {
+                codec.newChunk();
+            }
+            final Alignments.AlignmentEntry.Builder result = codec.encode(newEntry);
+            if (result != null) {
+                newEntry = result;
+            }
+        }
+        final Alignments.AlignmentEntry builtEntry = newEntry.build();
+
         this.collectionBuilder.addAlignmentEntries(builtEntry);
 
 
@@ -637,5 +648,9 @@ public class AlignmentWriter implements Closeable {
 
     public void setAlignerName(String alignerName) {
         this.alignerName = alignerName;
+    }
+
+    public void setCodec(AlignmentCodec codec) {
+        this.codec = codec;
     }
 }

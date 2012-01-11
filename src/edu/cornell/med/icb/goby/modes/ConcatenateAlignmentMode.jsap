@@ -70,5 +70,14 @@
             </defaults>
             <help>The name of the alignment processor. An alignment processor can be configured to scan alignment entries before calling variants. By default, no processor is used. If you specify realign_near_indels, a processor that realigns reads in the proximity of indels will be used. Please note that this feature is experimental (Since Goby 1.9.7).</help>
         </flaggedOption>
+        <flaggedOption>
+            <id>codec</id>
+            <longFlag>codec</longFlag>
+            <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The name of a codec. When provided, the coded is used to compress alignment entries.</help>
+        </flaggedOption>
     </parameters>
 </jsap>

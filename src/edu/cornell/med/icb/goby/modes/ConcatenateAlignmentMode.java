@@ -25,10 +25,15 @@ import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.alignments.processors.*;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
+import edu.cornell.med.icb.goby.reads.ReadCodec;
 import it.unimi.dsi.logging.ProgressLogger;
+import it.unimi.dsi.mg4j.query.nodes.Align;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ServiceLoader;
 
 /**
  * Concatenate compact alignment files. Concatenation preserves
@@ -45,6 +50,11 @@ import java.io.IOException;
  *         Time: 6:03:56 PM
  */
 public class ConcatenateAlignmentMode extends AbstractGobyMode {
+    /**
+        * Used to log informational and debug messages.
+        */
+       private static final Log LOG = LogFactory.getLog(ConcatenateAlignmentMode.class);
+
     /**
      * The mode name.
      */
@@ -68,6 +78,12 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
     public void setAdjustSampleIndices(boolean adjustSampleIndices) {
         this.adjustSampleIndices = adjustSampleIndices;
     }
+
+    /** Optional codec to compress-decompress alignment entries.
+     *
+     */
+    AlignmentCodec codec;
+    private static final ServiceLoader<AlignmentCodec> codecLoader = ServiceLoader.load(AlignmentCodec.class);
 
     private boolean adjustQueryIndices = true;
     private boolean realign = true;
@@ -108,6 +124,18 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         adjustSampleIndices = jsapResult.getBoolean("adjust-sample-indices", false);
         alignmentProcessorFactory = DiscoverSequenceVariantsMode.configureProcessor(jsapResult);
         genome = DiscoverSequenceVariantsMode.configureGenome(jsapResult);
+        String codecName=jsapResult.getString("codec",null);
+        if (codecName != null) {
+            codecLoader.reload();
+            for (final AlignmentCodec c : codecLoader) {
+
+                if (c.name().equals(codecName)) {
+                    LOG.info("Will use read codec " + c.name());
+                    codec = c;
+                    break;
+                }
+            }
+        }
         return this;
     }
 
@@ -152,6 +180,9 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
             writer.setTargetLengths(alignmentReader.getTargetLength());
         }
         writer.setSorted(allSorted);
+        if (codec!=null) {
+            writer.setCodec(codec);
+        }
         AlignmentProcessorInterface processor = null;
         if (!allSorted) {
             processor = new DummyProcessorUnsorted(alignmentReader);
