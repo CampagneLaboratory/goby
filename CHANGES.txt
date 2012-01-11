@@ -1,11 +1,15 @@
- - Fix scalability problem with local realignment code. Local realignment around indels would slow down as more entries
-   were processed. This is now fixed so that speed is constant across large alignments.
- - Add a replacement for the VCF-tools VCF-subset program. The Goby tool is orders of magnitude faster.
- - vcf-subset: Add ability to exclude positions at which all samples match the reference.
  - Preliminary support for calling indels with discover-sequence-variants.  Candidate indels are now written
    in the formats that use GenotypeOutputFormat (e.g., genotypes, compare_groups, allele_frequency).
    The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.
    After possible realignment, and filtering to remove possible errors, EIR are reported with their frequencies.
+
+>to 1.9.8.2
+ - Codecs: Add support to decode alignments with a codec in AlignmentReader.
+ - Improved ReadsReader to find a suitable decoder when several codecs exist.
+ - Fix scalability problem with local realignment code. Local realignment around indels would slow down as more entries
+   were processed. This is now fixed so that speed is constant across large alignments.
+ - Add a replacement for the VCF-tools VCF-subset program. The Goby tool is orders of magnitude faster.
+ - vcf-subset: Add ability to exclude positions at which all samples match the reference.
 1.9.8.1
  - Discover-sequence-variants: add ability to describe zero, one or more group comparisons. Syntax is A/B,A/C to compare
    group A to B and group A to C. Additional pairs can be described, separated by coma.
