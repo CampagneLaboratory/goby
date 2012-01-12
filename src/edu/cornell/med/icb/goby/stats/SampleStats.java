@@ -142,8 +142,10 @@ public class SampleStats {
         transitionCount[fileIndex] += variantWithBases(ref, alleles, aBase, gBase) ? 1 : 0;
         String cBase = "C";
         String tBase = "T";
+      // two possible transitions:
         transitionCount[fileIndex] += variantWithBases(ref, alleles, cBase, tBase) ? 1 : 0;
         transversionCount[fileIndex] += variantWithBases(ref, alleles, aBase, cBase) ? 1 : 0;
+        // four possible transversions:
         transversionCount[fileIndex] += variantWithBases(ref, alleles, gBase, tBase) ? 1 : 0;
         transversionCount[fileIndex] += variantWithBases(ref, alleles, aBase, tBase) ? 1 : 0;
         transversionCount[fileIndex] += variantWithBases(ref, alleles, cBase, gBase) ? 1 : 0;
