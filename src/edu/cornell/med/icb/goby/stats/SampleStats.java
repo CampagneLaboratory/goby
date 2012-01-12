@@ -28,6 +28,8 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
+import java.util.Collections;
+
 /**
  * Keeps information about sample variation statistics. Used by vcf-compare.
  *
@@ -40,10 +42,10 @@ public class SampleStats {
     public int numMissedVariantCalls;
     public int numGenotypeAgreements;
     public String sampleId;
-    public int numGenotypeNotCalled;
-    public int missedTwoAlleles;
-    public int missedOneAlleles;
-    public int missedMoreThanTwoAlleles;
+    public int numGenotypeNotCalled[];
+    public int missedTwoAlleles[];
+    public int missedOneAlleles[];
+    public int missedMoreThanTwoAlleles[];
     public int numHadDifferentAllele;
     private int numFiles;
 
@@ -51,6 +53,10 @@ public class SampleStats {
         this.numFiles = numFiles;
         transitionCount = new int[numFiles];
         transversionCount = new int[numFiles];
+        this.numGenotypeNotCalled = new int[numFiles];
+        this.missedTwoAlleles = new int[numFiles];
+        this.missedOneAlleles = new int[numFiles];
+        this.missedMoreThanTwoAlleles = new int[numFiles];
     }
 
     public static String header(int numFiles) {
@@ -63,7 +69,22 @@ public class SampleStats {
             titvheaders.append(i);
         }
 
-        return "sampleId,numGenotypeAgreements, numGenotypeDisagreements,numMissedVariantCalls,numGenotypeNotCalled,missedOneAlleles,missedTwoAlleles,missedMoreThanTwoAlleles,numHadDifferentAllele".replace(',', '\t') + titvheaders + "\n";
+        return ("sampleId,numGenotypeAgreements, numGenotypeDisagreements,numMissedVariantCalls,numGenotypeNotCalled" +
+                formatHeader(numFiles, "missedOneAlleles,missedTwoAlleles,missedMoreThanTwoAlleles") +
+                ",numHadDifferentAllele,").replace(',', '\t') + titvheaders + "\n";
+    }
+
+    private static String formatHeader(int numFiles, String template) {
+        String[] tokens = template.split(",");
+        StringBuffer buffer = new StringBuffer();
+        for (String token : tokens) {
+            for (int sampleIndex = 0; sampleIndex < numFiles; sampleIndex++) {
+
+                buffer.append(token + "_" + sampleIndex);
+                buffer.append(",");
+            }
+        }
+        return buffer.toString();
     }
 
     @Override
@@ -75,11 +96,27 @@ public class SampleStats {
             }
             titvBuffer.append(getTransversionToTransitionRatio(i));
         }
-        return String.format("%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%s%n", sampleId, numGenotypeAgreements, numGenotypeDisagreements,
-                numMissedVariantCalls, numGenotypeNotCalled,
-                missedOneAlleles, missedTwoAlleles, missedMoreThanTwoAlleles, numHadDifferentAllele, titvBuffer
+        return String.format("%s\t%d\t%d\t%d\t%s\t%s\t%s\t%s\t%d\t%s%n", sampleId, numGenotypeAgreements,
+                numGenotypeDisagreements,
+                numMissedVariantCalls, formatSamples(numGenotypeNotCalled),
+                formatSamples(missedOneAlleles), formatSamples(missedTwoAlleles),
+                formatSamples(missedMoreThanTwoAlleles),
+                numHadDifferentAllele, titvBuffer
         );
 
+    }
+
+    private String formatSamples(int values[]) {
+        StringBuffer buffer = new StringBuffer();
+        int i = 0;
+        for (int val : values) {
+            if (i != 0) {
+                buffer.append("\t");
+            }
+            buffer.append(val);
+            i++;
+        }
+        return buffer.toString();
     }
 
 
@@ -92,7 +129,7 @@ public class SampleStats {
         String second = iterator.next();
         String[] tokenFirst = first.split("/");
         String[] tokenSecond = second.split("/");
-
+        int sampleIndex = -1;
         for (int i = 0; i < Math.min(tokenFirst.length, tokenSecond.length); i++) {
             if (tokenFirst[i].equals(tokenSecond[i])) {
                 numAllelesAgreed++;
@@ -100,6 +137,7 @@ public class SampleStats {
                 //  System.out.println(i+" differ: "+tokenFirst[i] +" "+isRef(tokenSecond[i]));
                 if (isRef(tokenFirst[i]) || isRef(tokenSecond[i])) {
                     numAllelesMissed++;
+                    sampleIndex = sampleGenotypes.indexOf("ref/ref/");
                 } else {
                     numAlleleDifference++;
                 }
@@ -109,20 +147,30 @@ public class SampleStats {
             numAllelesMissed += Math.max(tokenFirst.length, tokenSecond.length) - Math.min(tokenFirst.length, tokenSecond.length);
         }
         if (numAllelesMissed != 0) {
+            sampleIndex = getIndexWithRef(sampleGenotypes);
+            assert sampleIndex >= 0 : "sampleIndex must have been set";
 
             if (numAllelesMissed == 2) {
-                missedTwoAlleles += 1;
+                missedTwoAlleles[sampleIndex] += 1;
             }
             if (numAllelesMissed == 1) {
-                missedOneAlleles += 1;
+                missedOneAlleles[sampleIndex] += 1;
             }
             if (numAllelesMissed > 2) {
-                missedMoreThanTwoAlleles += 1;
+                missedMoreThanTwoAlleles[sampleIndex] += 1;
             }
             if (numAlleleDifference != 0) {
                 numHadDifferentAllele++;
             }
         }
+    }
+
+    private int getIndexWithRef(ObjectList<String> sampleGenotypes) {
+        int sampleIndex = 0;
+        for (String value : sampleGenotypes) {
+            if (value.indexOf("ref") >= 0) return sampleIndex;
+        }
+        return -1;
     }
 
     private boolean isRef(String allele) {
@@ -142,7 +190,7 @@ public class SampleStats {
         transitionCount[fileIndex] += variantWithBases(ref, alleles, aBase, gBase) ? 1 : 0;
         String cBase = "C";
         String tBase = "T";
-      // two possible transitions:
+        // two possible transitions:
         transitionCount[fileIndex] += variantWithBases(ref, alleles, cBase, tBase) ? 1 : 0;
         transversionCount[fileIndex] += variantWithBases(ref, alleles, aBase, cBase) ? 1 : 0;
         // four possible transversions:

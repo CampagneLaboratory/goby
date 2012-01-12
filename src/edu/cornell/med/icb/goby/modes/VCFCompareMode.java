@@ -352,7 +352,7 @@ public class VCFCompareMode extends AbstractGobyMode {
             for (String sample : genotypeColumnSet) {
                 SampleStats sampleStat = sampleStats[sampleIndex];
                 if (sampleStat == null) {
-                    sampleStat = new edu.cornell.med.icb.goby.stats.SampleStats(numInputFiles);
+                    sampleStat = new SampleStats(numInputFiles);
                     sampleStats[sampleIndex] = sampleStat;
                     sampleStat.sampleId = sample;
                 }
@@ -372,7 +372,9 @@ public class VCFCompareMode extends AbstractGobyMode {
                     sampleStat.numGenotypeDisagreements++;
 
                     if (distinctGenotypes.contains("")) {
-                        sampleStat.numGenotypeNotCalled++;
+                        final int index=sampleGenotypes.indexOf("");
+
+                        sampleStat.numGenotypeNotCalled[index]++;
                     } else {
                         /*System.out.printf("%s\t%d\tdisagreement: %s %n",
                                 reverseIdentifiers.getId(alignedLines[0].pos.chromosome).toString(),
@@ -392,17 +394,29 @@ public class VCFCompareMode extends AbstractGobyMode {
                 fraction(commonPositions.size(), maxSize(lines)), fraction(commonPositions.size(), minSize(lines)));
         for (final SampleStats sampleStat : sampleStats) {
             System.out.println("Sample: " + sampleStat.sampleId);
-            final int sumErrors = sampleStat.numGenotypeNotCalled + sampleStat.numGenotypeDisagreements;
-            System.out.printf("Among the common positions, %d positions (%g %%) had the same genotype, while %d positions (%g %%) had some disagreements (failure to call a genotype in other method, failure to call one or more alleles, or different genotype called: hard error). \n" +
-                    "Among the differences, %g %% were failures to call any genotype %g %% were failures to call one allele, %g %% to call two, and %g %% to call more than two. %g %% sites had differences in genotypes that could not be explained by a failure to call an allele (e.g., G/G vs G/T when the reference is A/A)%n",
+            int sumErrors = 0;
+            for (int sampleIndex=0; sampleIndex<numInputFiles; sampleIndex++) {
+               sumErrors+= sampleStat.numGenotypeNotCalled[sampleIndex];
+               sumErrors+= sampleStat.missedOneAlleles[sampleIndex];
+               sumErrors+= sampleStat.missedTwoAlleles[sampleIndex];
+               sumErrors+= sampleStat.missedMoreThanTwoAlleles[sampleIndex];
+            }
+            sumErrors+= sampleStat.numHadDifferentAllele;
+            System.out.println("denominator="+sumErrors);
+            System.out.printf("Among the common positions, %d positions (%g %%) had the same genotype, " +
+                    "while %d positions (%g %%) had some disagreements (failure to call a genotype in other method, " +
+                    "failure to call one or more alleles, or different genotype called: hard error). \n" +
+                    "Among the differences, %g %% were failures to call any genotype %g %% were failures to call one " +
+                    "allele, %g %% to call two, and %g %% to call more than two. %g %% sites had differences in genotypes " +
+                    "that could not be explained by a failure to call an allele (e.g., G/G vs G/T when the reference is A/A)%n",
                     sampleStat.numGenotypeAgreements, fractionCumul(sampleStat.numGenotypeAgreements, sampleStat.numGenotypeDisagreements),
                     sampleStat.numGenotypeDisagreements, fractionCumul(sampleStat.numGenotypeDisagreements, sampleStat.numGenotypeAgreements),
 
-                    fractionCumul(sampleStat.numGenotypeNotCalled, sumErrors),
-                    fractionCumul(sampleStat.missedOneAlleles, sumErrors),
-                    fractionCumul(sampleStat.missedTwoAlleles, sumErrors),
-                    fractionCumul(sampleStat.missedMoreThanTwoAlleles, sumErrors),
-                    fractionCumul(sampleStat.numHadDifferentAllele, sumErrors)
+                    fraction(sum(sampleStat.numGenotypeNotCalled), sumErrors),
+                    fraction(sum(sampleStat.missedOneAlleles), sumErrors),
+                    fraction(sum(sampleStat.missedTwoAlleles), sumErrors),
+                    fraction(sum(sampleStat.missedMoreThanTwoAlleles), sumErrors),
+                    fraction(sampleStat.numHadDifferentAllele, sumErrors)
             );
         }
         if (outputFilename != null) {
@@ -415,6 +429,15 @@ public class VCFCompareMode extends AbstractGobyMode {
             out.close();
         }
 
+
+    }
+
+    private int sum(int[] values) {
+        int sum=0;
+        for (int val: values) {
+            sum+=val;
+        }
+        return sum;
 
     }
 
