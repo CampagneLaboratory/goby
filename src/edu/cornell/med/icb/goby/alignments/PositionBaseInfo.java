@@ -28,7 +28,7 @@ package edu.cornell.med.icb.goby.alignments;
 public class PositionBaseInfo {
     public int readIndex;
     public int readerIndex;
-    public byte qualityScore;
+    public byte qualityScore=Byte.MIN_VALUE;
     public boolean matchesReference;
     public char from = ' ';
     public char to = ' ';

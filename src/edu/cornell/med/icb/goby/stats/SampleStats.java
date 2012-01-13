@@ -69,7 +69,7 @@ public class SampleStats {
             titvheaders.append(i);
         }
 
-        return ("sampleId,numGenotypeAgreements, numGenotypeDisagreements,numMissedVariantCalls,numGenotypeNotCalled" +
+        return ("sampleId,numGenotypeAgreements, numGenotypeDisagreements,numMissedVariantCalls,numGenotypeNotCalled," +
                 formatHeader(numFiles, "missedOneAlleles,missedTwoAlleles,missedMoreThanTwoAlleles") +
                 ",numHadDifferentAllele,").replace(',', '\t') + titvheaders + "\n";
     }

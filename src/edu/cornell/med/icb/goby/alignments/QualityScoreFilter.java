@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 /**
@@ -39,13 +40,21 @@ public class QualityScoreFilter extends GenotypeFilter {
 
     int[] removed = new int[5];
 
+
+
     @Override
     public void filterGenotypes(DiscoverVariantPositionData list,
                                 SampleCountInfo[] sampleCounts,
                                 ObjectSet<PositionBaseInfo> filteredList) {
         resetCounters();
         initStorage(sampleCounts.length);
-
+        /*ByteArrayList bytes = new ByteArrayList();
+        int position = 0;
+        for (final PositionBaseInfo info : list) {
+            position = info.position;
+            bytes.add(info.qualityScore);
+        }
+        System.out.println(position + ": " + bytes.toString());*/
 
         for (final PositionBaseInfo info : list) {
             numScreened++;

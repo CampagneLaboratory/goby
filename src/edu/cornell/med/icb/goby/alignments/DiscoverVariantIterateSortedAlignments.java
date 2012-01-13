@@ -158,33 +158,33 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
                              final int startPosition, final String from, final String to,
                              final int sampleIndex, final int readIndex) {
 
-   if (Release1_9_7_2.callIndels) {
-       final ObservedIndel indel = new ObservedIndel(startPosition, from, to, readIndex);
-        int flankLeftSize = 1;
-        equivalentIndelRegionCalculator.setFlankLeftSize(flankLeftSize); // VCF output requires one base before the indel
-        equivalentIndelRegionCalculator.setFlankRightSize(0);
-        final EquivalentIndelRegion indelCandidateRegion = equivalentIndelRegionCalculator.determine(referenceIndex, indel);
-        if (indelCandidateRegion == null) {
-            return;
+        if (Release1_9_7_2.callIndels) {
+            final ObservedIndel indel = new ObservedIndel(startPosition, from, to, readIndex);
+            int flankLeftSize = 1;
+            equivalentIndelRegionCalculator.setFlankLeftSize(flankLeftSize); // VCF output requires one base before the indel
+            equivalentIndelRegionCalculator.setFlankRightSize(0);
+            final EquivalentIndelRegion indelCandidateRegion = equivalentIndelRegionCalculator.determine(referenceIndex, indel);
+            if (indelCandidateRegion == null) {
+                return;
+            }
+
+            // subtracts -1 to yield keyPos: the position of the first base in the indel (includes the 1 base left flank, as
+            // per VCF spec.) keyPos is zero-based
+            final int keyPos = indelCandidateRegion.startPosition - flankLeftSize + 1;
+            assert genome.get(referenceIndex, keyPos) == indelCandidateRegion.fromInContext().charAt(0) :
+                    "first base of context must match genome at key position";
+            indelCandidateRegion.sampleIndex = sampleIndex;
+
+            DiscoverVariantPositionData positionBaseInfos = positionToBases.get(keyPos);
+            //   System.out.printf("Observing indel at position %d %n", keyPos);
+            if (positionBaseInfos == null) {
+                positionBaseInfos = new DiscoverVariantPositionData(keyPos);
+                positionToBases.put(keyPos, positionBaseInfos);
+            }
+
+            positionBaseInfos.observeCandidateIndel(indelCandidateRegion);
+            //printBasesAround(keyPos, positionToBases);
         }
-
-        // subtracts -1 to yield keyPos: the position of the first base in the indel (includes the 1 base left flank, as
-        // per VCF spec.) keyPos is zero-based
-        final int keyPos = indelCandidateRegion.startPosition - flankLeftSize + 1;
-        assert genome.get(referenceIndex, keyPos) == indelCandidateRegion.fromInContext().charAt(0) :
-                "first base of context must match genome at key position";
-        indelCandidateRegion.sampleIndex = sampleIndex;
-
-        DiscoverVariantPositionData positionBaseInfos = positionToBases.get(keyPos);
-        //   System.out.printf("Observing indel at position %d %n", keyPos);
-        if (positionBaseInfos == null) {
-            positionBaseInfos = new DiscoverVariantPositionData(keyPos);
-            positionToBases.put(keyPos, positionBaseInfos);
-        }
-
-        positionBaseInfos.observeCandidateIndel(indelCandidateRegion);
-        //printBasesAround(keyPos, positionToBases);
-   }
 
     }
 

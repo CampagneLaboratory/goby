@@ -33,6 +33,7 @@ import java.util.Arrays;
  */
 public abstract class GenotypeFilter {
 
+
     /**
      * Adjust genotypes and sampleCounts to remove/reduce the effect of sequencing errors.
      * Observations that are filtered by this strategy are added to filteredSet. When a previous
@@ -71,6 +72,7 @@ public abstract class GenotypeFilter {
     }
 
     void initStorage(int numSamples) {
+
         if (varCountRemovedPerSample == null) {
             varCountRemovedPerSample = new int[numSamples];
             refCountRemovedPerSample = new int[numSamples];

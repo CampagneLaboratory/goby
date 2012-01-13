@@ -20,6 +20,8 @@ package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
+import java.util.Arrays;
+
 /**
  * This filter considers whether the remaining base calls of each allele (left-over)
  * have a count larger than the number of call corrections done by previous filters.
@@ -33,7 +35,21 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
  */
 public class LeftOverFilter extends GenotypeFilter {
     private static final int MULTIPLIER = 2;
-    private int removedBaseCountThreshold;
+
+    @Override
+    void initStorage(int numSamples) {
+        super.initStorage(numSamples);
+        if (thresholdsPerSample == null) {
+            thresholdsPerSample = new int[numSamples];
+        } else {
+            Arrays.fill(thresholdsPerSample, 0);
+        }
+
+
+    }
+
+    private int[] thresholdsPerSample;
+
 
     @Override
     public void filterGenotypes(DiscoverVariantPositionData list,
@@ -41,9 +57,14 @@ public class LeftOverFilter extends GenotypeFilter {
                                 ObjectSet<PositionBaseInfo> filteredList) {
         resetCounters();
         initStorage(sampleCounts.length);
-        final int removedBaseCount = filteredList.size() / sampleCounts.length;
-        removedBaseCountThreshold = removedBaseCount * MULTIPLIER;
 
+        for (PositionBaseInfo positionBaseInfo : filteredList) {
+            thresholdsPerSample[positionBaseInfo.readerIndex] += 1;
+        }
+
+        for (int sampleIndex=0;sampleIndex<sampleCounts.length;sampleIndex++) {
+          thresholdsPerSample[sampleIndex] *= MULTIPLIER;
+        }
 
         for (PositionBaseInfo positionBaseInfo : list) {
 
@@ -56,12 +77,15 @@ public class LeftOverFilter extends GenotypeFilter {
             final int baseIndex = sampleCountInfo.baseIndex(base);
             final int count = sampleCountInfo.counts[baseIndex];
             if (count == 0) continue;
-            if (count < removedBaseCountThreshold) {
+            if (count < thresholdsPerSample[sampleIndex]) {
 
-                /*System.out.printf("Filtering out allele %c %d < %d %s from sample %d %n",
-                        base, count, removedBaseCountThreshold, filteredList.toString(), positionBaseInfo.readerIndex);
-                  */
-                // less counts remaining for this allele than were removed on average by previous filters, still likely
+               /* if (positionBaseInfo.position == 62579823 - 1 ) {
+                    System.out.printf("At position %d Filtering out from sample %d allele %c %d < %d  %n", positionBaseInfo.position,
+                            positionBaseInfo.readerIndex,
+                            base, count, thresholdsPerSample[sampleIndex] );
+                }*/
+
+                                // less counts remaining for this allele than were removed on average by previous filters, still likely
                 // an error.
                 // We remove this call
 
@@ -91,7 +115,7 @@ public class LeftOverFilter extends GenotypeFilter {
 
     @Override
     public int getThresholdForSample(int sampleIndex) {
-        return removedBaseCountThreshold;
+        return thresholdsPerSample[sampleIndex];
     }
 
 }

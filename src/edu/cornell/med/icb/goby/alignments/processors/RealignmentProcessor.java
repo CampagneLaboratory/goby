@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments.processors;
 
+import com.google.protobuf.ByteString;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.ConcatSortedAlignmentReader;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
@@ -291,7 +292,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
                 } else {
                     final boolean compatible = genome.get(targetIndex, newGenomicPosition + j) == toBase;
                     if (!compatible) {
-                        // we keep only sequence rewrittenVariations that continue to be  incompatible with the reference after inserting the indel:
+                        // we keep only sequence variatiations that continue to be incompatible with the reference after inserting the indel:
 
                         rewrittenVariations.add(var);
                     }
@@ -331,7 +332,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
                     varBuilder.setPosition(varPosition);
                     varBuilder.setFrom(Character.toString(fromBase));
                     varBuilder.setTo(Character.toString(toBase));
-
+                    varBuilder.setToQuality(byteArray((byte)Byte.MAX_VALUE));
                     int readIndex = entry.getMatchingReverseStrand() ?
                             entry.getQueryLength() - indelOffsetInAlignment + (shiftForward ? 1 : indelLength) :
                             varPosition;
@@ -364,6 +365,10 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         final Alignments.AlignmentEntry alignmentEntry = builder.build();
         //    System.out.printf("realigned queryIndex=%d%n", alignmentEntry.getQueryIndex());
         return alignmentEntry;
+    }
+
+    private ByteString byteArray(byte... a)  {
+    return ByteString.copyFrom(a);
     }
 
 

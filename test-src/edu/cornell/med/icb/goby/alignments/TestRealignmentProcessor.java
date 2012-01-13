@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import com.google.protobuf.ByteString;
 import edu.cornell.med.icb.goby.alignments.processors.InfoForTarget;
 import edu.cornell.med.icb.goby.alignments.processors.ObservedIndel;
 import edu.cornell.med.icb.goby.alignments.processors.RealignmentProcessor;
@@ -29,7 +30,9 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import it.unimi.dsi.lang.MutableString;
+
 import static org.junit.Assert.*;
+
 import org.junit.Test;
 
 import javax.swing.*;
@@ -363,7 +366,7 @@ entry.position=0
         }
     }
 
-  
+
     /**
      * Test case 7  TODO: enable this test for read insertion.
      */
@@ -371,9 +374,9 @@ entry.position=0
 
 
         ObjectList<Alignments.AlignmentEntry> list1 = new ObjectArrayList<Alignments.AlignmentEntry>();
-        addEntry(list1, 0, "ACTGACTGACTGAATTACTAGCTAAAGTTA",     "     CTGACTGAACTAGTTACTAG");  // this read should be realigned to the right
+        addEntry(list1, 0, "ACTGACTGACTGAATTACTAGCTAAAGTTA", "     CTGACTGAACTAGTTACTAG");  // this read should be realigned to the right
         addEntry(list1, 0, "ACTGACTGACTGAA----TTACTAGCTAAAGTTA", "     CTGACTGAACTAGTTACTAG"); // this read carries the candidate read insertion
-               // ACTGACTGACTGAA----TTACTAGCTAAAGTTA ref
+        // ACTGACTGACTGAA----TTACTAGCTAAAGTTA ref
         //      CTGACTGAACTAGTTACTAG          read with insertion.    
         ObjectListIterator<Alignments.AlignmentEntry> iterator = list1.iterator();
         RealignmentProcessor realigner = new RealignmentProcessor(iterator);
@@ -517,6 +520,22 @@ entry.position=0
         assertEquals("A", entry.getSequenceVariations(2).getTo());
     }
 
+    @Test
+    public void testQualityPassThrough() {
+        ObjectList<Alignments.AlignmentEntry> list = new ObjectArrayList<Alignments.AlignmentEntry>();
+        addIndel(list, 10, 50, 3, 20); // indel in middle of the read, would be correctly aligned.
+        addMutationWithQuality(list, 1, 50, 20, 'A', 'T', Byte.MAX_VALUE);
+
+        Alignments.AlignmentEntry entry = list.get(1);
+        assertEquals(20, entry.getSequenceVariations(0).getPosition());
+        assertEquals("A", entry.getSequenceVariations(0).getFrom());
+        assertEquals("T", entry.getSequenceVariations(0).getTo());
+        assertTrue( entry.getSequenceVariations(0).hasToQuality());
+        assertEquals(Byte.MAX_VALUE, entry.getSequenceVariations(0).getToQuality().byteAt(0));
+
+
+    }
+
 
     private void addIndel(ObjectList<Alignments.AlignmentEntry> list, int position, int alignLength, int indelLength,
                           int varPosition) {
@@ -564,5 +583,31 @@ entry.position=0
         list.add(entry.build());
     }
 
+    private void addMutationWithQuality(ObjectList<Alignments.AlignmentEntry> list,
+                                        int position, int alignLength, int varPosition, char fromBase, char toBase,
+                                        byte toQual) {
+        Alignments.AlignmentEntry.Builder entry = Alignments.AlignmentEntry.newBuilder();
+        MutableString from = new MutableString();
+        MutableString to = new MutableString();
+        from.append(fromBase);
+        to.append(toBase);
+        entry.setTargetIndex(0);
+        entry.setMatchingReverseStrand(false);
+        entry.setPosition(position);
+        entry.setQueryLength(alignLength);
+        entry.setQueryAlignedLength(alignLength);
+        entry.setQueryIndex(queryIndex++);
+        Alignments.SequenceVariation.Builder var = Alignments.SequenceVariation.newBuilder();
+        var.setFrom(from.toString());
+        var.setTo(to.toString());
+        var.setPosition(varPosition);
+        var.setReadIndex(varPosition);
+        byte[] bytes = new byte[1];
+        bytes[0]=toQual;
+        final ByteString buffer = ByteString.copyFrom(bytes);
+        var.setToQuality(buffer);
+        entry.addSequenceVariations(var);
+        list.add(entry.build());
+    }
 
 }
