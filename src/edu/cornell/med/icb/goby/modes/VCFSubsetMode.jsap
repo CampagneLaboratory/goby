@@ -20,16 +20,16 @@
     <parameters>
         <flaggedOption>
             <id>output</id>
-            <shortFlag>o</shortFlag>
-            <longFlag>output</longFlag>
+            <shortFlag>s</shortFlag>
+            <longFlag>suffix</longFlag>
             <required>false</required>
-            <help>The output suffix to construct an output filename for each input file. The output filename will be input -extensions + suffix.</help>
+            <help>The output suffix to construct an output filename for each input file. The output filename will be input-filename - extensions + suffix + vcf.gz</help>
         </flaggedOption>
         <unflaggedOption>
             <id>input</id>
             <required>true</required>
             <greedy>true</greedy>
-            <help>The basenames of the input alignments to concatenate.</help>
+            <help>The basenames of the input alignments to subset.</help>
         </unflaggedOption>
         <flaggedOption>
             <id>column</id>
@@ -40,7 +40,7 @@
               <stringParser>
                 <classname>StringStringParser</classname>
             </stringParser>
-            <help>Name of a column to compare.</help>
+            <help>Name of a column/sample to extract from the input and write in the output.</help>
         </flaggedOption>
 
         <flaggedOption>

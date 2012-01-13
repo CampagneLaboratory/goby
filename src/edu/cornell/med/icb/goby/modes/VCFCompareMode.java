@@ -75,7 +75,7 @@ public class VCFCompareMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Compare genotype calls across VCF files.";
+    private static final String MODE_DESCRIPTION = "Compare genotype calls across VCF files. This mode compares genotypes in specific samples from large input files. It does not need indexed VCF, but loads all genotypes to compare into memory.";
 
     private int[] chromosomeFieldIndex;
     private int[] positionFieldIndex;

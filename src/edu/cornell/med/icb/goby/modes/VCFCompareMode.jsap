@@ -29,7 +29,7 @@
             <id>input</id>
             <required>true</required>
             <greedy>true</greedy>
-            <help>The basenames of the input alignments to concatenate.</help>
+            <help>The basenames of the input VCF files to compare.</help>
         </unflaggedOption>
         <flaggedOption>
             <id>column</id>
@@ -40,7 +40,7 @@
               <stringParser>
                 <classname>StringStringParser</classname>
             </stringParser>
-            <help>Name of a column to compare.</help>
+            <help>Keyword matching a column to compare. The keyword must match a single sample name in each of the input files. </help>
         </flaggedOption>
     </parameters>
 </jsap>
