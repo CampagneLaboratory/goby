@@ -83,7 +83,7 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
     public ReadsReader(final InputStream stream) {
         super();
         reader = new MessageChunksReader(stream);
-        codec=new ReadCodecImpl();
+        codec=null;
     }
 
     /**
@@ -157,8 +157,11 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
         }
         final Reads.ReadEntry readEntry = collection.getReads(reader.incrementEntryIndex());
         if (readEntry.hasCompressedData() && codec==null) {
-
             codec=CodecHelper.locateReadCodec(readEntry.getCompressedData());
+            if (codec!=null) {
+                System.out.println("Using codec: "+codec.name());
+            }
+
         }
         if (first) {
 

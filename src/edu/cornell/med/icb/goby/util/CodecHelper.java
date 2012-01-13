@@ -42,7 +42,7 @@ public class CodecHelper {
     private static Byte2ObjectMap<ReadCodec> codeToReadCodec = new Byte2ObjectOpenHashMap(5);
     private static Byte2ObjectMap<AlignmentCodec> codeToAlignmentCodec = new Byte2ObjectOpenHashMap(5);
 
-    public void reload() {
+    public static void reload() {
         readCodecLoader.reload();
         alignmentCodecLoader.reload();
         for (final ReadCodec next : readCodecLoader) {
@@ -53,8 +53,13 @@ public class CodecHelper {
         }
     }
 
-
+    static {
+        reload();
+    }
     public static  ReadCodec locateReadCodec(final ByteString compressedData) {
+        if (codeToReadCodec.size()==0) {
+            reload();
+        }
         final byte codecId = compressedData.byteAt(0);
         return codeToReadCodec.get(codecId);
     }

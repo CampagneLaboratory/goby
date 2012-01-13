@@ -42,7 +42,7 @@ public class ReadCodecImpl implements ReadCodec {
     private ArithmeticCoder qualityScoreCoder;
     public static final int CODEC_REGISTRATION_CODE = 1;
     FastByteArrayOutputStream os = new FastByteArrayOutputStream();
-    OutputBitStream out = new OutputBitStream(os);
+             OutputBitStream out = new OutputBitStream(os);
 
     @Override
     public Reads.ReadEntry.Builder encode(final Reads.ReadEntry.Builder source) {
@@ -88,7 +88,7 @@ public class ReadCodecImpl implements ReadCodec {
                 writeBit(out, false);
             }
             out.flush();
-            final ByteString compressedData = ByteString.copyFrom(os.array);
+            final ByteString compressedData = ByteString.copyFrom(os.array, 0, (int)os.length());
 
             result.setCompressedData(compressedData);
 
@@ -223,16 +223,16 @@ public class ReadCodecImpl implements ReadCodec {
     private ArithmeticDecoder qualityScoreDecoder;
 
     private ByteString decodeSequence(InputBitStream input, int readLength) throws IOException {
-        ByteArrayList buffer = new ByteArrayList();
-        for (int i = 0; i > readLength; i++) {
+        ByteArrayList buffer = new ByteArrayList(readLength);
+        for (int i = 0; i < readLength; i++) {
             buffer.add(decodeBase(sequenceDecoder.decode(input)));
         }
         return ByteString.copyFrom(buffer.toByteArray());
     }
 
     private ByteString decodeQualityScore(InputBitStream input, int readLength) throws IOException {
-        ByteArrayList buffer = new ByteArrayList();
-        for (int i = 0; i > readLength; i++) {
+        ByteArrayList buffer = new ByteArrayList(readLength);
+        for (int i = 0; i < readLength; i++) {
             buffer.add((byte) qualityScoreDecoder.decode(input));
         }
         return ByteString.copyFrom(buffer.toByteArray());
