@@ -41,11 +41,11 @@
       make install
 
 4. Download, build, and install the PCRE (Perl Compatible Regular
-   Expressions) library (8.20 or later) from http://pcre.org
+   Expressions) library (8.21 or later) from http://pcre.org
 
-      wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.20.tar.gz
-      tar zxvf pcre-8.20.tar.gz
-      cd pcre-8.20
+      wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.21.tar.gz
+      tar zxvf pcre-8.21.tar.gz
+      cd pcre-8.21
       #
       # for root or cygwin, don't use the --prefix option
       #
