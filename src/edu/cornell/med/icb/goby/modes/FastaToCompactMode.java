@@ -128,6 +128,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
     private int numThreads;
 
     private ReadCodec codec;
+    private boolean force;
 
     /**
      * Returns the mode name defined by subclasses.
@@ -319,6 +320,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
         reqOutputFilename = jsapResult.getString("output");
         sequencePerChunk = jsapResult.getInt("sequence-per-chunk");
         processPairs = jsapResult.getBoolean("paired-end");
+        force=jsapResult.getBoolean("force");
         final String tokens = jsapResult.getString("pair-indicator");
 
         String codecName = jsapResult.getString("codec");
@@ -516,7 +518,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
         final File output = new File(outputFilename);
         final File readsFile = new File(inputFilename);
-        if (!output.exists() || FileUtils.isFileNewer(readsFile, output) || output.length() == 0) {
+        if (!output.exists() || FileUtils.isFileNewer(readsFile, output) || output.length() == 0  || force) {
             System.out.println("Creating file " + outputFilename);
             convert(loopIndex, length, inputFilename, outputFilename, keyValueProps);
         } else {

@@ -19,12 +19,12 @@
 package edu.cornell.med.icb.goby.reads;
 
 import com.google.protobuf.ByteString;
+import edu.cornell.med.icb.goby.algorithmic.compression.FastArithmeticCoder;
+import edu.cornell.med.icb.goby.algorithmic.compression.FastArithmeticDecoder;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.io.FastByteArrayOutputStream;
 import it.unimi.dsi.io.InputBitStream;
 import it.unimi.dsi.io.OutputBitStream;
-import it.unimi.dsi.mg4j.io.ArithmeticCoder;
-import it.unimi.dsi.mg4j.io.ArithmeticDecoder;
 
 import java.io.IOException;
 
@@ -38,11 +38,24 @@ import java.io.IOException;
  *         Time: 2:00 PM
  */
 public class ReadCodecImpl implements ReadCodec {
-    private ArithmeticCoder sequenceCoder;
-    private ArithmeticCoder qualityScoreCoder;
+    private FastArithmeticCoder sequenceCoder;
+    private FastArithmeticCoder qualityScoreCoder;
     public static final int CODEC_REGISTRATION_CODE = 1;
-    FastByteArrayOutputStream os = new FastByteArrayOutputStream();
-             OutputBitStream out = new OutputBitStream(os);
+    private boolean isFirstCode=true;
+    private boolean isFirstDecode;
+
+    @Override
+    public String name() {
+
+        return "read-codec-1";
+    }
+
+    @Override
+    public byte registrationCode() {
+        return CODEC_REGISTRATION_CODE;
+    }
+
+    int written = 0;
 
     @Override
     public Reads.ReadEntry.Builder encode(final Reads.ReadEntry.Builder source) {
@@ -52,14 +65,20 @@ public class ReadCodecImpl implements ReadCodec {
 
         result.mergeFrom(source.build());
         try {
-            out.flush();
-            os.reset();
-            // write the codec registration code first as one byte:
-            out.writeInt(CODEC_REGISTRATION_CODE, 8);
+            FastByteArrayOutputStream os = new FastByteArrayOutputStream();
+            OutputBitStream out = /*new DebugOutputBitStream(*/new OutputBitStream(os)/*)*/;
+
+            if (isFirstCode) {
+                // write the codec registration code first as one byte:
+                out.writeInt(CODEC_REGISTRATION_CODE, 8);
+                isFirstCode=false;
+            }
+            final int readLength = source.getReadLength();
 
             if (source.hasSequence()) {
+
                 writeBit(out, true);
-                compressSequence(source.getSequence(), out);
+                compressSequence(source.getSequence(), out, readLength);
                 result.clearSequence();
             } else {
                 writeBit(out, false);
@@ -67,7 +86,7 @@ public class ReadCodecImpl implements ReadCodec {
 
             if (source.hasQualityScores()) {
                 writeBit(out, true);
-                compressQuality(source.getQualityScores(), out);
+                compressQuality(source.getQualityScores(), out, readLength);
                 result.clearQualityScores();
             } else {
                 writeBit(out, false);
@@ -75,20 +94,21 @@ public class ReadCodecImpl implements ReadCodec {
 
             if (source.hasSequencePair()) {
                 writeBit(out, true);
-                compressSequence(source.getSequencePair(), out);
+                compressSequence(source.getSequencePair(), out, readLength);
                 result.clearSequencePair();
             } else {
                 writeBit(out, false);
             }
             if (source.hasQualityScoresPair()) {
+
                 writeBit(out, true);
-                compressQuality(source.getQualityScoresPair(), out);
+                compressQuality(source.getQualityScoresPair(), out, readLength);
                 result.clearQualityScoresPair();
             } else {
                 writeBit(out, false);
             }
-            out.flush();
-            final ByteString compressedData = ByteString.copyFrom(os.array, 0, (int)os.length());
+            out.close();
+            final ByteString compressedData = ByteString.copyFrom(os.array, 0, (int) os.length());
 
             result.setCompressedData(compressedData);
 
@@ -101,21 +121,30 @@ public class ReadCodecImpl implements ReadCodec {
     }
 
     private void writeBit(OutputBitStream out, boolean bit) throws IOException {
-        out.writeBit(bit);
+        final int i = out.writeBit(bit);
+        assert i == 1;
     }
 
-    private void compressQuality(final ByteString qualityScores, final OutputBitStream out) throws IOException {
-        for (int i = 0; i < qualityScores.size(); i++) {
-            qualityScoreCoder.encode(qualityScores.byteAt(i), out);
+    private void compressQuality(final ByteString qualityScores, final OutputBitStream out, int readLength) throws IOException {
+        qualityScoreCoder.reset();
+        for (int i = 0; i < readLength; i++) {
+            final byte x = qualityScores.byteAt(i);
+
+            qualityScoreCoder.encode(x, out);
         }
         qualityScoreCoder.flush(out);
+
     }
 
-    private void compressSequence(final ByteString sequence, final OutputBitStream out) throws IOException {
-        for (int i = 0; i < sequence.size(); i++) {
-            sequenceCoder.encode(codeBase(sequence.byteAt(i)), out);
+    private void compressSequence(final ByteString sequence, final OutputBitStream out, int readLength) throws IOException {
+        sequenceCoder.reset();
+        for (int i = 0; i < readLength; i++) {
+            final int x = codeBase(sequence.byteAt(i));
+
+            sequenceCoder.encode(x, out);
         }
         sequenceCoder.flush(out);
+
     }
 
     private int codeBase(final byte base) {
@@ -151,91 +180,132 @@ public class ReadCodecImpl implements ReadCodec {
     }
 
     @Override
-    public Reads.ReadEntry.Builder decode(Reads.ReadEntry source) {
+    public Reads.ReadEntry.Builder decode(final Reads.ReadEntry source) {
         if (!source.hasCompressedData()) {
             return null;
         }
-        InputBitStream input = new InputBitStream(source.getCompressedData().toByteArray());
+        byte[] bytes = new byte[source.getCompressedData().size() + 40];
+        source.getCompressedData().copyTo(bytes, 0);
+        final InputBitStream input =/* new DebugInputBitStream(*/new InputBitStream(bytes)/*)*/;
         try {
-            final int codecRegistrationStored = input.readInt(8);
-            if (codecRegistrationStored != CODEC_REGISTRATION_CODE) {
-                // this read is compressed by a different codec, indicate that we cannot handle it.
-                return null;
+
+            if (isFirstDecode) {
+                final int codecRegistrationStored = input.readInt(8);
+                if (codecRegistrationStored != CODEC_REGISTRATION_CODE) {
+                    // this read is compressed by a different codec, indicate that we cannot handle it.
+                    return null;
+                }
             }
             final Reads.ReadEntry.Builder result = Reads.ReadEntry.newBuilder();
             // get any other fields the codec does not handle:
             result.mergeFrom(source);
 
+            final int readLength = source.getReadLength();
+
+            debug("readLength=" + readLength);
+            debug("readBits= " + input.readBits());
             if (input.readBit() == 1) {
+                debug("hasSequence ");
                 // sequence was stored, decode it.
-                final ByteString sequence = decodeSequence(input, source.getReadLength());
+                debug("readBits= " + input.readBits());
+                final ByteString sequence = decodeSequence(input, readLength);
+                debug("readBits= " + input.readBits());
                 result.setSequence(sequence);
             }
             if (input.readBit() == 1) {
+                debug("hasQual ");
+                debug("readBits= " + input.readBits());
                 // quality scores were stored, decode it.
-                final ByteString qual = decodeQualityScore(input, source.getReadLength());
+                final ByteString qual = decodeQualityScore(input, readLength);
+                debug("readBits= " + input.readBits());
                 result.setQualityScores(qual);
             }
             if (input.readBit() == 1) {
+                debug("hasSequencePair ");
                 // sequence pair was stored, decode it.
-                final ByteString sequencePair = decodeSequence(input, source.getReadLength());
+                final ByteString sequencePair = decodeSequence(input, readLength);
+                debug("readBits= " + input.readBits());
                 result.setSequencePair(sequencePair);
             }
             if (input.readBit() == 1) {
+                debug("hasQualPair ");
                 // quality score pair was stored, decode it.
-                final ByteString qualPair = decodeSequence(input, source.getReadLength());
+                final ByteString qualPair = decodeQualityScore(input, readLength);
+                debug("readBits= " + input.readBits());
                 result.setQualityScoresPair(qualPair);
             }
             // the compressed data was decoded, remove it:
             result.clearCompressedData();
+            isFirstDecode = false;
+            input.close();
+
             return result;
 
         } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
             // An exception occurred decoding compressed data, return null to indicate that we cannot handle this read.
-            return null;
+            //  return null;
         }
     }
 
-    @Override
-    public String name() {
-
-        return "read-codec-1";
+    private void debug(final String text) {
+        if (false) {
+            System.out.println(text);
+        }
     }
 
-    @Override
-    public byte registrationCode() {
-        return CODEC_REGISTRATION_CODE;
-    }
 
     @Override
     public final void newChunk() {
-        sequenceCoder = new ArithmeticCoder(5);
-        sequenceDecoder = new ArithmeticDecoder(5);
-        qualityScoreCoder = new ArithmeticCoder(255);
-        qualityScoreDecoder = new ArithmeticDecoder(255);
+        reset();
+        isFirstCode = true;
+        isFirstDecode = true;
+    }
+
+    private void reset() {
+        sequenceCoder = new FastArithmeticCoder(5);
+        sequenceDecoder = new FastArithmeticDecoder(5);
+        qualityScoreCoder = new FastArithmeticCoder(255);
+        qualityScoreDecoder = new FastArithmeticDecoder(255);
     }
 
     public ReadCodecImpl() {
         newChunk();
     }
 
-    private ArithmeticDecoder sequenceDecoder;
-    private ArithmeticDecoder qualityScoreDecoder;
+    private FastArithmeticDecoder sequenceDecoder;
+    private FastArithmeticDecoder qualityScoreDecoder;
+
+    ByteArrayList buffer = new ByteArrayList();
 
     private ByteString decodeSequence(InputBitStream input, int readLength) throws IOException {
-        ByteArrayList buffer = new ByteArrayList(readLength);
+        buffer.clear();
+        sequenceDecoder.reset();
         for (int i = 0; i < readLength; i++) {
-            buffer.add(decodeBase(sequenceDecoder.decode(input)));
+            final int decoded = sequenceDecoder.decode(input);
+            buffer.add(decodeBase(decoded));
+            //     System.out.printf("i=%d readBits= %d%n", i, input.readBits());
         }
-        return ByteString.copyFrom(buffer.toByteArray());
+
+        //        System.out.printf("readBits= %d%n",  input.readBits());
+        sequenceDecoder.reposition(input);
+
+        //   long flushBits= sequenceDecoder.getWindow();
+
+        return ByteString.copyFrom(buffer.toByteArray(), 0, readLength);
     }
 
     private ByteString decodeQualityScore(InputBitStream input, int readLength) throws IOException {
-        ByteArrayList buffer = new ByteArrayList(readLength);
+        buffer.clear();
+        qualityScoreDecoder.reset();
+        //ByteArrayList buffer = new ByteArrayList(readLength);
         for (int i = 0; i < readLength; i++) {
             buffer.add((byte) qualityScoreDecoder.decode(input));
+            //   System.out.printf("i=%d readBits= %d%n", i, input.readBits());
         }
-        return ByteString.copyFrom(buffer.toByteArray());
+        qualityScoreDecoder.reposition(input);
+        return ByteString.copyFrom(buffer.toByteArray(), 0, readLength);
     }
 
 }
