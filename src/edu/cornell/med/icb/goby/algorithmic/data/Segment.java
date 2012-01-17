@@ -132,4 +132,13 @@ public class Segment implements Comparable<Segment> {
         }
         return dist;
     }
+
+    /**
+     * Determine if the segment overlaps with position. This method evaluates to position>=start && position<=end;
+     * @param position  query position.
+     * @return  True or false.
+     */
+    public final boolean overlapPosition(final int position) {
+        return position>=start && position<=end;
+    }
 }

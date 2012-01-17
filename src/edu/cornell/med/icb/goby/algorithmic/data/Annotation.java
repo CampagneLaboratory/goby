@@ -73,13 +73,15 @@ public class Annotation implements Comparable<Annotation> {
     }
 
     public int getStart() {
-        return segments.size()==0? -1: segments.get(0).getStart();
+        return segments.size() == 0 ? -1 : segments.get(0).getStart();
     }
 
     public int getEnd() {
-        return segments.size()==0? -1:segments.get(segments.size() - 1).getEnd();
+        return segments.size() == 0 ? -1 : segments.get(segments.size() - 1).getEnd();
     }
+
     int length = -1;
+
     public int getLength() {
         if (length != -1) {
             return length;
@@ -106,6 +108,25 @@ public class Annotation implements Comparable<Annotation> {
 
     public String getStrand() {
         return strand;
+    }
+
+    /**
+     * Determine if any segment overlaps with the specified position.
+     * @param chromosome
+     * @param position
+     * @return
+     */
+    public boolean overlap(final String chromosome, final int position) {
+        if (!chromosome.equals(this.chromosome)) {
+            return false;
+        }
+
+        for (final Segment element : segments) {
+            if (element.overlapPosition(position)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean overlap(final Annotation annotation2) {
