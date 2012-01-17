@@ -21,7 +21,6 @@
 package edu.cornell.med.icb.goby.algorithmic.compression;
 
 import it.unimi.dsi.io.InputBitStream;
-import it.unimi.dsi.mg4j.io.ArithmeticDecoder;
 
 import java.io.IOException;
 
@@ -82,6 +81,7 @@ public final class FastArithmeticDecoder {
      */
     private long window = 0;
     private boolean useBinarySearch = true;
+    private int maxIndexNonZeroFrequency = Integer.MIN_VALUE;
 
     /**
      * Resets the decoder before decoding a new message. The method prepares the coder for the first call
@@ -116,7 +116,6 @@ public final class FastArithmeticDecoder {
 
     private void incrementCount(int x) {
         x++;
-
         while (x <= n) {
             count[x]++;
             x += x & -x; // By chance, this gives the right next index 8^).
@@ -134,15 +133,21 @@ public final class FastArithmeticDecoder {
         return c;
     }
 
-    private int find(int a) {
-        int c = 0;
-
-        while (a != 0) {
-            c += count[a];
-            a = a & a - 1; // This cancels out the least nonzero bit.
+    private int findXBinary(final int x, final int start, final int end) {
+        if (end == start) {
+            return start - 1;
         }
+        final int middle = (start + end) / 2;
+        final int count = getCount(middle);
+        //    System.out.printf("start=%d middle=%d end=%d count=%d %n",start, middle,end, count);
+        if (x < count) {
 
-        return c;
+            return findXBinary(x, start, middle);
+        }
+        if (x > count) {
+            return findXBinary(x, middle + 1, end);
+        }
+        return middle;
     }
 
 
@@ -166,23 +171,23 @@ public final class FastArithmeticDecoder {
         }
         final int v = x;
         int xVal;
-        if (!useBinarySearch) { /* the following code, from MG4J'ArithmeticDecoder, does not scale with large numbers of symbols.    */
+        /* the following code, from MG4J'ArithmeticDecoder, does not scale with large numbers of symbols.    */
+        /*
+           for (int i = 1; i <= n; i++) {
+               int count = getCount(i);
+               if (x < count) {
+                   x = i - 1;
+                   break;
+               }
+           }
+           xVal = x;
+       } */
 
-            for (int i = 1; i <= n; i++) {
-                int count = getCount(i);
-                if (x < count) {
-                    x = i - 1;
-                    break;
-                }
-            }
-            xVal = x;
-        } else {
+        // We replace the above code with a binary search algorithm (O(log N) for alphabets of size N).
 
-            // We replace the above code with a binary search algorithm (O(log N) for alphabets of size N).
+        final int xBinary = findXBinary(v, 1, n);
+        xVal = xBinary;
 
-            final int xBinary = findXBinary(v, 1, n);
-            xVal = xBinary;
-        }
         //assert x== xBinary :String.format("binary x %d must match original value %d", xBinary, x);
         x = xVal;
 
@@ -210,24 +215,6 @@ public final class FastArithmeticDecoder {
         }
 
         return x;
-    }
-
-
-    private int findXBinary(final int x, final int start, final int end) {
-        if (end == start) {
-            return start - 1;
-        }
-        final int middle = (start + end) / 2;
-        final int count = getCount(middle);
-        //    System.out.printf("start=%d middle=%d end=%d count=%d %n",start, middle,end, count);
-        if (x < count) {
-
-            return findXBinary(x, start, middle);
-        }
-        if (x > count) {
-            return findXBinary(x, middle + 1, end);
-        }
-        return middle;
     }
 
 
@@ -287,7 +274,7 @@ public final class FastArithmeticDecoder {
      */
     public void reposition(InputBitStream input) throws IOException {
         flush(input);
-        final long position = input.readBits() - ArithmeticDecoder.BITS;
+        final long position = input.readBits() - FastArithmeticDecoder.BITS;
         //       System.out.printf("readBits= %d%n",  input.readBits());
         input.flush();
         input.position(position);

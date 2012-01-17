@@ -107,7 +107,6 @@
                 <include name="tisim-api.jar"/>
                 <include name="pj*.jar"/>
                 <include name="JRI.jar"/>
-                <include name="mg4j-3.0.1.jar"/>
                 <include name="xstream-1.3.1.jar"/>
                 <!-- Required by JSAP -->
             </zipgroupfileset>
@@ -128,7 +127,7 @@
                 <provider classname="edu.cornell.med.icb.goby.reads.ReadCodecImpl"/>
             </service>
             <service type="edu.cornell.med.icb.goby.alignments.AlignmentCodec">
-                <provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecImpl"/>
+                <!--provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecImpl"/-->
                 <provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecDummy"/>
             </service>
             <!-- define the implementation of NormalizationMethods as Java ServiceProviders: -->
@@ -186,7 +185,7 @@
             </service>
             <service type="edu.cornell.med.icb.goby.alignments.AlignmentCodec">
                 <provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecImpl"/>
-                         <provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecDummy"/>
+                <provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecDummy"/>
             </service>
         </jar>
     </target>
