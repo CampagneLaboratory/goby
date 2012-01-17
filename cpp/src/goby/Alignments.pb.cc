@@ -328,8 +328,8 @@ void protobuf_AddDesc_Alignments_2eproto() {
     "y.AlignmentEntry\"\321\005\n\016AlignmentEntry\022\024\n\014m"
     "ultiplicity\030\007 \001(\r\022\027\n\017compressed_data\030\027 \001"
     "(\014\022\023\n\013query_index\030\001 \002(\r\022\024\n\014target_index\030"
-    "\002 \002(\r\022\020\n\010position\030\003 \002(\r\022\037\n\027matching_reve"
-    "rse_strand\030\006 \002(\010\022\026\n\016query_position\030\005 \001(\r"
+    "\002 \001(\r\022\020\n\010position\030\003 \001(\r\022\037\n\027matching_reve"
+    "rse_strand\030\006 \001(\010\022\026\n\016query_position\030\005 \001(\r"
     "\022\r\n\005score\030\004 \001(\002\022\034\n\024number_of_mismatches\030"
     "\010 \001(\r\022\030\n\020number_of_indels\030\t \001(\r\022\034\n\024query"
     "_aligned_length\030\013 \001(\r\022\035\n\025target_aligned_"
@@ -783,7 +783,7 @@ bool AlignmentEntry::MergePartialFromCodedStream(
         break;
       }
       
-      // required uint32 target_index = 2;
+      // optional uint32 target_index = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
@@ -799,7 +799,7 @@ bool AlignmentEntry::MergePartialFromCodedStream(
         break;
       }
       
-      // required uint32 position = 3;
+      // optional uint32 position = 3;
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
@@ -847,7 +847,7 @@ bool AlignmentEntry::MergePartialFromCodedStream(
         break;
       }
       
-      // required bool matching_reverse_strand = 6;
+      // optional bool matching_reverse_strand = 6;
       case 6: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
@@ -1149,12 +1149,12 @@ void AlignmentEntry::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->query_index(), output);
   }
   
-  // required uint32 target_index = 2;
+  // optional uint32 target_index = 2;
   if (has_target_index()) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->target_index(), output);
   }
   
-  // required uint32 position = 3;
+  // optional uint32 position = 3;
   if (has_position()) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->position(), output);
   }
@@ -1169,7 +1169,7 @@ void AlignmentEntry::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(5, this->query_position(), output);
   }
   
-  // required bool matching_reverse_strand = 6;
+  // optional bool matching_reverse_strand = 6;
   if (has_matching_reverse_strand()) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(6, this->matching_reverse_strand(), output);
   }
@@ -1277,12 +1277,12 @@ void AlignmentEntry::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->query_index(), target);
   }
   
-  // required uint32 target_index = 2;
+  // optional uint32 target_index = 2;
   if (has_target_index()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->target_index(), target);
   }
   
-  // required uint32 position = 3;
+  // optional uint32 position = 3;
   if (has_position()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->position(), target);
   }
@@ -1297,7 +1297,7 @@ void AlignmentEntry::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(5, this->query_position(), target);
   }
   
-  // required bool matching_reverse_strand = 6;
+  // optional bool matching_reverse_strand = 6;
   if (has_matching_reverse_strand()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(6, this->matching_reverse_strand(), target);
   }
@@ -1429,21 +1429,21 @@ int AlignmentEntry::ByteSize() const {
           this->query_index());
     }
     
-    // required uint32 target_index = 2;
+    // optional uint32 target_index = 2;
     if (has_target_index()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
           this->target_index());
     }
     
-    // required uint32 position = 3;
+    // optional uint32 position = 3;
     if (has_position()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
           this->position());
     }
     
-    // required bool matching_reverse_strand = 6;
+    // optional bool matching_reverse_strand = 6;
     if (has_matching_reverse_strand()) {
       total_size += 1 + 1;
     }
@@ -1685,7 +1685,7 @@ void AlignmentEntry::CopyFrom(const AlignmentEntry& from) {
 }
 
 bool AlignmentEntry::IsInitialized() const {
-  if ((_has_bits_[0] & 0x0000003c) != 0x0000003c) return false;
+  if ((_has_bits_[0] & 0x00000004) != 0x00000004) return false;
   
   for (int i = 0; i < sequence_variations_size(); i++) {
     if (!this->sequence_variations(i).IsInitialized()) return false;

@@ -209,21 +209,21 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 query_index() const;
   inline void set_query_index(::google::protobuf::uint32 value);
   
-  // required uint32 target_index = 2;
+  // optional uint32 target_index = 2;
   inline bool has_target_index() const;
   inline void clear_target_index();
   static const int kTargetIndexFieldNumber = 2;
   inline ::google::protobuf::uint32 target_index() const;
   inline void set_target_index(::google::protobuf::uint32 value);
   
-  // required uint32 position = 3;
+  // optional uint32 position = 3;
   inline bool has_position() const;
   inline void clear_position();
   static const int kPositionFieldNumber = 3;
   inline ::google::protobuf::uint32 position() const;
   inline void set_position(::google::protobuf::uint32 value);
   
-  // required bool matching_reverse_strand = 6;
+  // optional bool matching_reverse_strand = 6;
   inline bool has_matching_reverse_strand() const;
   inline void clear_matching_reverse_strand();
   static const int kMatchingReverseStrandFieldNumber = 6;
@@ -1575,7 +1575,7 @@ inline void AlignmentEntry::set_query_index(::google::protobuf::uint32 value) {
   query_index_ = value;
 }
 
-// required uint32 target_index = 2;
+// optional uint32 target_index = 2;
 inline bool AlignmentEntry::has_target_index() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -1597,7 +1597,7 @@ inline void AlignmentEntry::set_target_index(::google::protobuf::uint32 value) {
   target_index_ = value;
 }
 
-// required uint32 position = 3;
+// optional uint32 position = 3;
 inline bool AlignmentEntry::has_position() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -1619,7 +1619,7 @@ inline void AlignmentEntry::set_position(::google::protobuf::uint32 value) {
   position_ = value;
 }
 
-// required bool matching_reverse_strand = 6;
+// optional bool matching_reverse_strand = 6;
 inline bool AlignmentEntry::has_matching_reverse_strand() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }

@@ -586,15 +586,15 @@ public final class Alignments {
     boolean hasQueryIndex();
     int getQueryIndex();
     
-    // required uint32 target_index = 2;
+    // optional uint32 target_index = 2;
     boolean hasTargetIndex();
     int getTargetIndex();
     
-    // required uint32 position = 3;
+    // optional uint32 position = 3;
     boolean hasPosition();
     int getPosition();
     
-    // required bool matching_reverse_strand = 6;
+    // optional bool matching_reverse_strand = 6;
     boolean hasMatchingReverseStrand();
     boolean getMatchingReverseStrand();
     
@@ -734,7 +734,7 @@ public final class Alignments {
       return queryIndex_;
     }
     
-    // required uint32 target_index = 2;
+    // optional uint32 target_index = 2;
     public static final int TARGET_INDEX_FIELD_NUMBER = 2;
     private int targetIndex_;
     public boolean hasTargetIndex() {
@@ -744,7 +744,7 @@ public final class Alignments {
       return targetIndex_;
     }
     
-    // required uint32 position = 3;
+    // optional uint32 position = 3;
     public static final int POSITION_FIELD_NUMBER = 3;
     private int position_;
     public boolean hasPosition() {
@@ -754,7 +754,7 @@ public final class Alignments {
       return position_;
     }
     
-    // required bool matching_reverse_strand = 6;
+    // optional bool matching_reverse_strand = 6;
     public static final int MATCHING_REVERSE_STRAND_FIELD_NUMBER = 6;
     private boolean matchingReverseStrand_;
     public boolean hasMatchingReverseStrand() {
@@ -985,18 +985,6 @@ public final class Alignments {
       if (isInitialized != -1) return isInitialized == 1;
       
       if (!hasQueryIndex()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasTargetIndex()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasPosition()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasMatchingReverseStrand()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -1655,18 +1643,6 @@ public final class Alignments {
           
           return false;
         }
-        if (!hasTargetIndex()) {
-          
-          return false;
-        }
-        if (!hasPosition()) {
-          
-          return false;
-        }
-        if (!hasMatchingReverseStrand()) {
-          
-          return false;
-        }
         for (int i = 0; i < getSequenceVariationsCount(); i++) {
           if (!getSequenceVariations(i).isInitialized()) {
             
@@ -1917,7 +1893,7 @@ public final class Alignments {
         return this;
       }
       
-      // required uint32 target_index = 2;
+      // optional uint32 target_index = 2;
       private int targetIndex_ ;
       public boolean hasTargetIndex() {
         return ((bitField0_ & 0x00000008) == 0x00000008);
@@ -1938,7 +1914,7 @@ public final class Alignments {
         return this;
       }
       
-      // required uint32 position = 3;
+      // optional uint32 position = 3;
       private int position_ ;
       public boolean hasPosition() {
         return ((bitField0_ & 0x00000010) == 0x00000010);
@@ -1959,7 +1935,7 @@ public final class Alignments {
         return this;
       }
       
-      // required bool matching_reverse_strand = 6;
+      // optional bool matching_reverse_strand = 6;
       private boolean matchingReverseStrand_ ;
       public boolean hasMatchingReverseStrand() {
         return ((bitField0_ & 0x00000020) == 0x00000020);
@@ -8390,8 +8366,8 @@ public final class Alignments {
       "y.AlignmentEntry\"\321\005\n\016AlignmentEntry\022\024\n\014m" +
       "ultiplicity\030\007 \001(\r\022\027\n\017compressed_data\030\027 \001" +
       "(\014\022\023\n\013query_index\030\001 \002(\r\022\024\n\014target_index\030" +
-      "\002 \002(\r\022\020\n\010position\030\003 \002(\r\022\037\n\027matching_reve" +
-      "rse_strand\030\006 \002(\010\022\026\n\016query_position\030\005 \001(\r" +
+      "\002 \001(\r\022\020\n\010position\030\003 \001(\r\022\037\n\027matching_reve" +
+      "rse_strand\030\006 \001(\010\022\026\n\016query_position\030\005 \001(\r" +
       "\022\r\n\005score\030\004 \001(\002\022\034\n\024number_of_mismatches\030" +
       "\010 \001(\r\022\030\n\020number_of_indels\030\t \001(\r\022\034\n\024query" +
       "_aligned_length\030\013 \001(\r\022\035\n\025target_aligned_",

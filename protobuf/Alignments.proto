@@ -32,7 +32,7 @@ message AlignmentEntry {
     alignment runs are made with the same set of target sequences, equality of target index means that the target
     sequence was the same across the runs. (Comparing integers for equality is much faster than comparing strings.)
   */
-  required uint32 target_index =2;
+  optional uint32 target_index =2;
   /*
     The position on the target of the start of the alignment between the query and the target.
     In the following example, position is 3 because the first base of the query was aligned with
@@ -43,12 +43,12 @@ message AlignmentEntry {
      AAAAGTCAAA  target
         CGTC     query
    */
-  required uint32 position=3;
+  optional uint32 position=3;
 
   /*
      True when the query matches the target on the reverse strand
   */
-  required bool matching_reverse_strand=6;
+  optional bool matching_reverse_strand=6;
 
   /*
    The position on the query where the alignment starts. This value is different from zero
