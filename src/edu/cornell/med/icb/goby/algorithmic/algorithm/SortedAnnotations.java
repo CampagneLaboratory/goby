@@ -124,26 +124,6 @@ public class SortedAnnotations {
                 annotationIndices.add(annotationIndex);
             }
 
-
-       /*     int futureAnnotationIndex=0;
-            if (annotationIndices.isEmpty()) {
-                if (futureAnnotationIndex >= annotations.length) {
-                    // done
-                    // //return false;
-                } else {
-                    Annotation newActive = null;
-                        do {
-                            newActive = annotations[futureAnnotationIndex];
-                                if (newActive.overlap(chromosome, pos)) {
-                                    annotationIndices.add(futureAnnotationIndex);
-                                }
-                                futureAnnotationIndex++;
-                        } while (futureAnnotationIndex < annotations.length &&
-                                chromosome1StrictlyBefore2(newActive.getChromosome(),chromosome) &&
-                                newActive.getStart() < pos );
-                }
-            }*/
-
             advanceToNextAnnotation();
         }
 
