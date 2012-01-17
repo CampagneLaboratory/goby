@@ -400,6 +400,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     /**
      * Remove segments of an annotation when they overlap with other annotations. This keep only segments that uniquely
      * tag a gene/transcript. Single base overlaps are sufficient to trigger the exclusion of an entire segment (secondary id).
+     *
      * @param annotations annotations read from disk
      * @return
      */
@@ -408,21 +409,21 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         if (!removeSharedSegments) {
             return annotations;
         }
-        final Int2ObjectMap<ObjectSet<String>> positionMap=new Int2ObjectOpenHashMap<ObjectSet<String>>();
+        final Int2ObjectMap<ObjectSet<String>> positionMap = new Int2ObjectOpenHashMap<ObjectSet<String>>();
         positionMap.defaultReturnValue(new ObjectOpenHashSet<String>());
 
-        for (final String chromosome: annotations.keySet()) {
-                              positionMap.clear();
-            for (final Annotation annotation: annotations.get(chromosome)) {
-                for (final Segment element: annotation.getSegments()) {
-                    for (int i=element.getStart(); i<element.getEnd();i++) {
+        for (final String chromosome : annotations.keySet()) {
+            positionMap.clear();
+            for (final Annotation annotation : annotations.get(chromosome)) {
+                for (final Segment element : annotation.getSegments()) {
+                    for (int i = element.getStart(); i < element.getEnd(); i++) {
                         final ObjectSet<String> setOfGenes = positionMap.get(i);
                         setOfGenes.add(annotation.getId());
-                        if (setOfGenes.size()>1) {
+                        if (setOfGenes.size() > 1) {
                             annotation.remove(element);
                             if (annotation.getSegments().isEmpty()) {
                                 // no more segments. Remove the annotation entirely.
-                              annotations.get(chromosome).remove(annotation);
+                                annotations.get(chromosome).remove(annotation);
                             }
                             break;
                         }
@@ -466,7 +467,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
     }
 
     // Remove annotations that do not fully map within the genomic range.
-    private Object2ObjectMap<String, ObjectList<Annotation>> filterAnnotations(Object2ObjectMap<String, ObjectList<Annotation>>  map, GenomicRange genomicRange) {
+    private Object2ObjectMap<String, ObjectList<Annotation>> filterAnnotations(Object2ObjectMap<String, ObjectList<Annotation>> map, GenomicRange genomicRange) {
         if (genomicRange == null) {
             return map;
         }
@@ -823,11 +824,23 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
      * @throws IOException
      */
     public static Object2ObjectMap<String, ObjectList<Annotation>> readAnnotations(final String annotFile) throws IOException {
+        return readAnnotations(new FileReader(annotFile));
+    }
+
+    /**
+     * Read tab delimited annotation file including 6 columns : chromosome, strand, transcriptID,
+     * segmentID, start, end each row is a segment, read each chromosome at a time.
+     *
+     * @param annotReader reader over an annotation file.
+     * @return
+     * @throws IOException
+     */
+    public static Object2ObjectMap<String, ObjectList<Annotation>> readAnnotations(final Reader annotReader) throws IOException {
 
         BufferedReader reader = null;
         final Object2ObjectMap<String, Annotation> annots = new Object2ObjectOpenHashMap<String, Annotation>();
         try {
-            reader = new BufferedReader(new FileReader(annotFile));
+            reader = new BufferedReader(annotReader);
             String line;
             final String header = reader.readLine();
 
