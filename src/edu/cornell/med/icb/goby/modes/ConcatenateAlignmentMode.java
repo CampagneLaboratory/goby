@@ -23,11 +23,8 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.aligners.AbstractAligner;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.alignments.processors.*;
-import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
-import edu.cornell.med.icb.goby.reads.ReadCodec;
 import it.unimi.dsi.logging.ProgressLogger;
-import it.unimi.dsi.mg4j.query.nodes.Align;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
