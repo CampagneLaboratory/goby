@@ -334,6 +334,28 @@ namespace goby {
   }
 
   /**
+   * Checks if a target identifier has been registered.
+   * @return returns 1 if targetName has been registered, otherwise 1.
+   */
+  int AlignmentWriter::isTargetIdentifierRegistered(const std::string& targetName) {
+      return (target_identifiers.find(targetName) != target_identifiers.end());
+  }
+
+  /**
+   * Look up the target index for the specified identifier. If a targetName is requested
+   * that isn't in target_identifiers this will return 0, but but it isn't recommended
+   * that this be called for targetName values that haven't been registered by
+   * addTargetIdentifier() as 0 is also a valid target index.
+   */
+  unsigned AlignmentWriter::targetIndexForIdentifier(const std::string& targetName) {
+      if (isTargetIdentifierRegistered(targetName)) {
+          return target_identifiers[targetName];
+      } else {
+          return 0;
+      }
+  }
+
+  /**
    * If you wish to provide the identifier and have the queryIndex generated
    * automatically. If the identifier has already been registered, you'll get
    * back the same queryIndex as before.

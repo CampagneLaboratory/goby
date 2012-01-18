@@ -63,8 +63,10 @@
 #ifdef __cplusplus
     #include "Alignments.h"
     #include "TooManyHits.h"
+    #include "C_Gsnap_structs.h"
 	#include <map>
-    // More complex structure for C++
+
+	// More complex structure for C++
     struct CSamHelper {
         int minQualValue;
         std::string *cpp_cigar;
@@ -101,6 +103,7 @@
         char *captureIgnoredBuffer;
         size_t captureIgnoredBufferSize;
         std::map<unsigned int, unsigned int> *alignerToGobyTargetIndexMap;
+        GsnapAlignment *gsnapAlignment;
     };
 #else
 	// Opaque structure for C
@@ -140,6 +143,7 @@
         char *captureIgnoredBuffer;
         size_t captureIgnoredBufferSize;
 		void *alignerToGobyTargetIndexMap;
+        void *gsnapAlignment;
 	} CAlignmentsWriterHelper;
 #endif
 

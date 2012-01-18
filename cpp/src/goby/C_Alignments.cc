@@ -7,6 +7,7 @@
 #include "C_Alignments.h"
 #include "MessageChunks.h"
 #include "SamFlags.h"
+#include "C_Gsnap.h"
 
 using namespace std;
 
@@ -67,6 +68,7 @@ extern "C" {
         writerHelper->captureIgnoredBufferSize = 0;
         writerHelper->alignerToGobyTargetIndexMap = NULL;
         writerHelper->alignmentWriter->setQueryLengthsStoredInEntries(true);
+        writerHelper->gsnapAlignment = NULL;
     }
 
     void gobyCapture_open(CAlignmentsWriterHelper *writerHelper, int openIgnoredFile) {
@@ -244,6 +246,27 @@ extern "C" {
         string targetNameStr(targetName);
         writerHelper->alignmentWriter->addTargetIdentifier(targetNameStr, targetIndex);
         writerHelper->alignmentWriter->addTargetLength(targetLength);
+    }
+
+
+    /**
+     * Checks if a target identifier has been registered.
+     * @return returns 1 if targetName has been registered, otherwise 1.
+     */
+    int gobyAlignments_isTargetIdentifierRegistered(CAlignmentsWriterHelper *writerHelper, const char *targetName) {
+        string targetNameStr(targetName);
+        return writerHelper->alignmentWriter->isTargetIdentifierRegistered(targetNameStr);
+    }
+
+    /**
+     * Look up the target index for the specified identifier. If a targetName is requested
+     * that isn't in target_identifiers this will return 0, but but it isn't recommended
+     * that this be called for targetName values that haven't been registered by
+     * addTargetIdentifier() as 0 is also a valid target index.
+     */
+    unsigned int gobyAlignments_targetIndexForIdentifier(CAlignmentsWriterHelper *writerHelper, const char *targetName) {
+        string targetNameStr(targetName);
+        return writerHelper->alignmentWriter->targetIndexForIdentifier(targetNameStr);
     }
 
     /**
@@ -772,7 +795,9 @@ extern "C" {
                 writerHelper->alignerToGobyTargetIndexMap->clear();
                 delete writerHelper->alignerToGobyTargetIndexMap;
             }
+            gobyGsnap_destoryAlignment(writerHelper);
             delete writerHelper;
+
         }
 	}
 

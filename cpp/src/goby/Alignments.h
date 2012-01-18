@@ -162,6 +162,8 @@ namespace goby {
     void setQueryLengthsStoredInEntries(bool value);
 
     void addTargetIdentifier(const std::string& targetName, const google::protobuf::uint32 targetIndex);
+    int isTargetIdentifierRegistered(const std::string& targetName);
+    unsigned targetIndexForIdentifier(const std::string& targetName);
     unsigned addQueryIdentifier(const std::string& queryIdentifier);
     void addQueryIdentifierWithIndex(const std::string& queryIdentifier, unsigned newQueryIndex);
 

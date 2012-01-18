@@ -24,6 +24,8 @@ libgoby_la_SOURCES = \
 	goby/Reads.pb.h \
 	goby/TooManyHits.cc \
 	goby/TooManyHits.h \
+	goby/C_Gsnap.cc \
+	goby/C_Gsnap.h \
 	goby/C_Reads.cc \
 	goby/C_Reads.h \
 	goby/C_Alignments.cc \
@@ -41,13 +43,14 @@ nobase_include_HEADERS = \
 	goby/Reads.h \
 	goby/Reads.pb.h \
 	goby/TooManyHits.h \
+	goby/C_Gsnap.h \
 	goby/C_Reads.h \
 	goby/C_Alignments.h \
 	goby/C_CompactHelpers.h \
 	goby/SamFlags.h \
 	goby/timestamp.h
 
-bin_PROGRAMS = GobyAlignmentStats GobyAlignmentToText GobyReadsStats GobyFastaToCompact C_Sample_CompactReads
+bin_PROGRAMS = GobyAlignmentStats GobyAlignmentToText GobyReadsStats GobyFastaToCompact C_Sample_CompactReads GsnapParseTest1
 
 GobyAlignmentStats_LDADD = libgoby.la ${BOOST_LDFLAGS} ${BOOST_SYSTEM_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_FILESYSTEM_LIB}
 GobyAlignmentStats_SOURCES = \
@@ -68,6 +71,10 @@ GobyFastaToCompact_SOURCES = \
 C_Sample_CompactReads_LDADD = libgoby.la ${BOOST_LDFLAGS} ${BOOST_SYSTEM_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_FILESYSTEM_LIB} ${BOOST_PROGRAM_OPTIONS_LIB}
 C_Sample_CompactReads_SOURCES = \
 	C_Sample_CompactReads.c
+
+GsnapParseTest1_LDADD = libgoby.la ${BOOST_LDFLAGS} ${BOOST_SYSTEM_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_FILESYSTEM_LIB}
+GsnapParseTest1_SOURCES = \
+	GsnapParseTest1.cc
 
 #
 # TODO:
