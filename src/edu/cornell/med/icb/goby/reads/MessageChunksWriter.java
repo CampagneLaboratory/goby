@@ -66,6 +66,7 @@ public class MessageChunksWriter {
     private long totalEntriesWritten;
     private long totalBytesWritten;
     private long currentChunkStartOffset;
+    private long writtenBytes = 0;
 
     /**
      * Specify the maximum number of entries to store in any given chunk.
@@ -105,7 +106,7 @@ public class MessageChunksWriter {
      * @throws IOException if there was an error writing the entries
      */
     public long writeAsNeeded(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder,
-                             final int multiplicity) throws IOException {
+                              final int multiplicity) throws IOException {
         totalEntriesWritten += multiplicity;
         if (++numAppended >= numEntriesPerChunk) {
             flush(collectionBuilder);
@@ -115,11 +116,13 @@ public class MessageChunksWriter {
 
     /**
      * Return the offset of the beginning of the current chunk (in byte, from position zero in the file).
+     *
      * @return offset of the beginning of the current chunk
      */
-    public long getCurrentChunkStartOffset () {
+    public long getCurrentChunkStartOffset() {
         return currentChunkStartOffset;
     }
+
     /**
      * Force the writing of the collection to the output stream.
      *
@@ -134,8 +137,11 @@ public class MessageChunksWriter {
         // Otherwise, only flush if we've appended entries.
         if (totalEntriesWritten == 0 || numAppended > 0) {
             // the position just before this chunk is written is recorded:
-            currentChunkStartOffset = out.size();
-      //     System.out.println("Writting new chunk at position "+currentChunkStartOffset);
+            currentChunkStartOffset = writtenBytes;
+
+            assert out.size() == Integer.MAX_VALUE || out.size() == writtenBytes;
+
+            //     System.out.println("Writting new chunk at position "+currentChunkStartOffset);
             if (LOG.isTraceEnabled()) {
                 LOG.trace("writing zero bytes length=" + DELIMITER_LENGTH);
             }
@@ -143,6 +149,7 @@ public class MessageChunksWriter {
 
             for (int i = 0; i < DELIMITER_LENGTH; i++) {
                 out.writeByte(DELIMITER_CONTENT);
+                writtenBytes += 1;
             }
             final com.google.protobuf.Message readCollection = collectionBuilder.clone().build();
 
@@ -160,8 +167,10 @@ public class MessageChunksWriter {
 
             // write the compressed size followed by the compressed stream:
             out.writeInt(serializedSize);
-            out.write(compressedStream.toByteArray());
-
+            writtenBytes += 4;
+            byte[] bytes = compressedStream.toByteArray();
+            out.write(bytes);
+            writtenBytes += bytes.length;
             totalBytesWritten += serializedSize + 4 + DELIMITER_LENGTH;
             if (LOG.isTraceEnabled()) {
                 LOG.trace("current offset: " + totalBytesWritten);
@@ -184,8 +193,10 @@ public class MessageChunksWriter {
         flush(collectionBuilder);
         for (int i = 0; i < DELIMITER_LENGTH; i++) {
             out.writeByte(DELIMITER_CONTENT);
+            writtenBytes += 1;
         }
         out.writeInt(0); // last collection is empty
+        writtenBytes += 4;
         out.flush();
         // we do not own the output stream, so we do not close it.
     }
@@ -232,6 +243,7 @@ public class MessageChunksWriter {
 
     /**
      * The number of entries appended in the current chunk. Zero indicates the start of a new chunk.
+     *
      * @return
      */
     public int getAppendedInChunk() {
