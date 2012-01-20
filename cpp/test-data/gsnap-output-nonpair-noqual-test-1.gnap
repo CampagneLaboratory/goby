@@ -1,0 +1,4 @@
+>NCAGTTAAGGCTAAGTGATCTGGACTTCCCAAACAGCCAGAATGACCTTTC	1	27
+ GCAGTTAAGGCTtAGTGATCTGGACTT------------------------	1..27	+9:50422..50448	start:0..ins:1,matches:26,sub:1	segs:2,align_score:3,mapq:40
+,----------------------------CCAAACAGCCAGAATGACCTTTC	29..51	+9:50449..50471	ins:1..end:0,matches:23,sub:0
+

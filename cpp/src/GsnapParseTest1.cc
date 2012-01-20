@@ -98,6 +98,12 @@ void testPairedEnd(CAlignmentsWriterHelper *writerHelper) {
     free(test1);
 }
 
+void testSingleEndNoQual(CAlignmentsWriterHelper *writerHelper) {
+    char *test1 = read_file("test-data/gsnap-output-nonpair-noqual-test-1.gnap");
+    gobyGsnap_parse(writerHelper, test1);
+    free(test1);
+}
+
 
 int main(int argc, const char *const argv[]) {
     CAlignmentsWriterHelper *writerHelper;
@@ -105,6 +111,7 @@ int main(int argc, const char *const argv[]) {
     registerChromosomes(writerHelper);
     targetIdentiferTest(writerHelper);
     testPairedEnd(writerHelper);
+    testSingleEndNoQual(writerHelper);
     gobyAlignments_finished(writerHelper, 1);
     goby_shutdownProtobuf();
     return 0;

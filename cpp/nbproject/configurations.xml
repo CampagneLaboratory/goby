@@ -99,8 +99,6 @@
           </ccTool>
         </makeTool>
       </makefileType>
-      <item path="config.h" ex="true" tool="3" flavor="0">
-      </item>
       <folder path="goby-cpp/src/goby">
         <ccTool>
           <preprocessorList>
@@ -119,7 +117,7 @@
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>${MAKE} -f Makefile</buildCommand>
+          <buildCommand>${MAKE} -f Makefile install</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath></executablePath>
           <cTool>
