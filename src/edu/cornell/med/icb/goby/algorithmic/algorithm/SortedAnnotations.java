@@ -17,16 +17,12 @@
  */
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
-
-import com.sun.xml.internal.bind.v2.TODO;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.modes.CompactAlignmentToAnnotationCountsMode;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 
 import java.io.IOException;
