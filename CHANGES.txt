@@ -4,8 +4,13 @@
    After possible realignment, and filtering to remove possible errors, EIR are reported with their frequencies.
 
 >to 1.9.8.2
+ - Add mechanism to upgrade/fix large alignments indices with Goby 1.9.8.2. The upgrade mechanism uses concatenate
+   alignment to rewrite an alignment index file if the size of the entries file exceeds 2GB. This is rather slow as
+   the process reads and writes large alignments, to produce the new index file. While slow, upgrading is still faster
+   than aligning the reads again. The process also requires approximately double the alignment size as the new alignment
+   files are written.  Alignments smaller than 2GB are quietly ignored since they were not affected by the bug.
  - Fixed index file writing. In some conditions, part of the alignment past the 2GB mark were not accessible
-   with skipTo when reading files larger than 2GB.
+   with skipTo when reading files larger than 2GB. Use the upgrade mode to fix old alignments.
  - vcf-compare now outputs Ti/Tv ratios for each sample in input file (in the output file only).
  - Codecs: Add support to decode alignments with a codec in AlignmentReader.
  - Improved ReadsReader to find a suitable decoder when several codecs exist.
