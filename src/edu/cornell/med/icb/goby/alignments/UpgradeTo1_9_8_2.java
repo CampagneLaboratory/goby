@@ -98,7 +98,7 @@ public class UpgradeTo1_9_8_2 {
 }
 
     private String makeTmpBasename(String basename) {
-        return basename + (new Date().getTime()) + (UUID.randomUUID());
+        return basename + "-TMP-"+ new Date().getTime() + UUID.randomUUID();
     }
 
     /**
