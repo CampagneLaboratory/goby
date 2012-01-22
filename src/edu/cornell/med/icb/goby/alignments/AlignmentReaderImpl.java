@@ -23,8 +23,6 @@ package edu.cornell.med.icb.goby.alignments;
 import com.google.protobuf.CodedInputStream;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import edu.cornell.med.icb.goby.reads.FastBufferedMessageChunksReader;
-import edu.cornell.med.icb.goby.reads.ReadCodec;
-import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.goby.util.CodecHelper;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
@@ -36,7 +34,6 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -159,6 +156,31 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
                                final int startPosition,
                                final int endReferenceIndex,
                                final int endPosition)
+            throws IOException {
+        this(basename,
+                startReferenceIndex,
+                startPosition,
+                endReferenceIndex,
+                endPosition, false);
+    }
+
+    /**
+     * A constructor that allows reading a slice of an alignment file contained exactly between a start
+     * and an end location. Start and end locations are genomic/reference positions. Entries will be returned
+     * that occur after the start position and up to the end position (start and end positions are inclusive).
+     *
+     * @param basename            Basename for the alignemnt.
+     * @param startReferenceIndex Index of the reference for the start position.
+     * @param startPosition       Position on the reference for the start position.
+     * @param endReferenceIndex   Index of the reference for the end position.
+     * @param endPosition         Position on the reference for the end position.
+     * @throws IOException Thrown if an error occurs opening or reading the alignment file.
+     */
+    public AlignmentReaderImpl(final String basename,
+                               final int startReferenceIndex,
+                               final int startPosition,
+                               final int endReferenceIndex,
+                               final int endPosition, final boolean upgrade)
             throws IOException {
 
         super(true, getBasename(basename));

@@ -36,7 +36,9 @@ import java.util.Date;
 public class GobyVersion {
     private static String[] versionPairs = {
             "1.9.5-", "20110101000000",
-            "goby_1.9.6", "20110510111716"
+            "goby_1.9.6", "20110510111716",
+            "goby_1.9.8.1", "20111217111716",
+            "goby_1.9.8.2", "20120120000000"
     };
 
     private static String now() {

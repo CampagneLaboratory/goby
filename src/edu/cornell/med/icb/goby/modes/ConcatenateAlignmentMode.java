@@ -48,9 +48,13 @@ import java.util.ServiceLoader;
  */
 public class ConcatenateAlignmentMode extends AbstractGobyMode {
     /**
-        * Used to log informational and debug messages.
-        */
-       private static final Log LOG = LogFactory.getLog(ConcatenateAlignmentMode.class);
+     * Used to log informational and debug messages.
+     */
+    private static final Log LOG = LogFactory.getLog(ConcatenateAlignmentMode.class);
+
+    public void setIgnoreTmh(boolean ignoreTmh) {
+        this.ignoreTmh = ignoreTmh;
+    }
 
     /**
      * The mode name.
@@ -71,20 +75,24 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
 
     private String[] inputFilenames;
     private String outputFile;
+    /**
+     * When this flag is true, the concatenation process does not produce a TMH file for the output alignment.
+     */
+    private boolean ignoreTmh;
 
     public void setAdjustSampleIndices(boolean adjustSampleIndices) {
         this.adjustSampleIndices = adjustSampleIndices;
     }
 
-    /** Optional codec to compress-decompress alignment entries.
-     *
+    /**
+     * Optional codec to compress-decompress alignment entries.
      */
     private AlignmentCodec codec;
     private static final ServiceLoader<AlignmentCodec> codecLoader = ServiceLoader.load(AlignmentCodec.class);
 
     private boolean adjustQueryIndices = true;
     private boolean realign = true;
-    private AlignmentProcessorFactory alignmentProcessorFactory=new DefaultAlignmentProcessorFactory();
+    private AlignmentProcessorFactory alignmentProcessorFactory = new DefaultAlignmentProcessorFactory();
     private RandomAccessSequenceInterface genome;
     private boolean adjustSampleIndices;
 
@@ -100,6 +108,17 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
 
     public void setAdjustQueryIndices(final boolean adjustQueryIndices) {
         this.adjustQueryIndices = adjustQueryIndices;
+    }
+
+    boolean upgrade = true;
+
+    /**
+     * Set this flag to false to prevent automatic alignment upgrading.
+     *
+     * @param upgrade
+     */
+    public void setUpgrade(boolean upgrade) {
+        this.upgrade = upgrade;
     }
 
     /**
@@ -121,7 +140,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         adjustSampleIndices = jsapResult.getBoolean("adjust-sample-indices", false);
         alignmentProcessorFactory = DiscoverSequenceVariantsMode.configureProcessor(jsapResult);
         genome = DiscoverSequenceVariantsMode.configureGenome(jsapResult);
-        String codecName=jsapResult.getString("codec",null);
+        String codecName = jsapResult.getString("codec", null);
         if (codecName != null) {
             codecLoader.reload();
             for (final AlignmentCodec c : codecLoader) {
@@ -132,8 +151,8 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
                     break;
                 }
             }
-            if (codec==null) {
-                System.out.println("Could not find codec "+codecName);
+            if (codec == null) {
+                System.out.println("Could not find codec " + codecName);
             }
         }
         return this;
@@ -149,7 +168,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         final String outputFilename = outputFile;
         final AlignmentWriter writer = new AlignmentWriter(outputFilename);
         final String[] basenames = AlignmentReaderImpl.getBasenames(inputFilenames);
-        final boolean allSorted = isAllSorted(basenames);
+        final boolean allSorted = isAllSorted(upgrade, basenames);
         if (allSorted) {
             System.out.println("input alignments are all sorted, the output will also be sorted.");
         } else {
@@ -157,10 +176,16 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
             System.out.println("At least one of the input alignments is not sorted, the output will NOT be sorted.");
 
         }
+        System.out.println(upgrade);
+        // honor the no upgrade flag:
+        final AlignmentReaderFactory alignmentReaderFactory = upgrade ?
+
+                new DefaultAlignmentReaderFactory() :
+                new NoUpgradeAlignmentReaderFactory();
 
         final ConcatAlignmentReader alignmentReader = allSorted ?
-                new ConcatSortedAlignmentReader(adjustQueryIndices, basenames) :
-                new ConcatAlignmentReader(adjustQueryIndices, basenames);
+                new ConcatSortedAlignmentReader(alignmentReaderFactory, adjustQueryIndices, basenames) :
+                new ConcatAlignmentReader(alignmentReaderFactory, adjustQueryIndices, basenames);
 
         alignmentReader.setAdjustSampleIndices(adjustSampleIndices);
 
@@ -170,17 +195,19 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         long numLogicalEntries = 0;
         long numEntries = 0;
         final int numQueries = alignmentReader.getNumberOfQueries();
-        System.out.println("Concatenating TMH..");
-        // too many hits is prepared as for Merge:
-        Merge.prepareMergedTooManyHits(outputFile, alignmentReader.getNumberOfQueries(), 0, basenames);
-        System.out.println("Done.");
+        if (!ignoreTmh) {
+            System.out.println("Concatenating TMH..");
+            // too many hits is prepared as for Merge:
+            Merge.prepareMergedTooManyHits(outputFile, alignmentReader.getNumberOfQueries(), 0, basenames);
+            System.out.println("Done.");
+        }
         progress.start("Concatenating entries");
 
         if (alignmentReader.getTargetLength() != null) {
             writer.setTargetLengths(alignmentReader.getTargetLength());
         }
         writer.setSorted(allSorted);
-        if (codec!=null) {
+        if (codec != null) {
             writer.setCodec(codec);
         }
         AlignmentProcessorInterface processor = null;
@@ -235,10 +262,10 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
 
     }
 
-    public static boolean isAllSorted(final String[] basenames) throws IOException {
+    public static boolean isAllSorted(boolean upgrade, final String[] basenames) throws IOException {
         boolean sorted = true;
         for (final String basename : basenames) {
-            final AlignmentReader reader = new AlignmentReaderImpl(basename);
+            final AlignmentReader reader = new AlignmentReaderImpl(basename, upgrade);
             reader.readHeader();
 
 

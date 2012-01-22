@@ -141,7 +141,7 @@ public class UpgradeTo1_9_6 {
 
         Alignments.AlignmentHeader.Builder upgradedHeader = Alignments.AlignmentHeader.newBuilder(header);
         upgradedHeader.setVersion(VersionUtils.getImplementationVersion(UpgradeTo1_9_6.class));
-        FileUtils.moveFile(new File(basename + ".header"), new File(basename + ".header.bak"));
+        FileUtils.moveFile(new File(basename + ".header"), new File(makeBackFilename(basename + ".header",".bak")));
         GZIPOutputStream headerOutput = new GZIPOutputStream(new FileOutputStream(basename + ".header"));
         try {
             upgradedHeader.build().writeTo(headerOutput);
@@ -153,7 +153,7 @@ public class UpgradeTo1_9_6 {
     private void writeIndex(String basename, LongArrayList indexOffsets, LongArrayList indexAbsolutePositions) throws IOException {
         GZIPOutputStream indexOutput = null;
         try {
-            FileUtils.moveFile(new File(basename + ".index"), new File(basename + ".index.bak"));
+            FileUtils.moveFile(new File(basename + ".index"), new File(makeBackFilename(basename + ".index",".bak")));
             indexOutput = new GZIPOutputStream(new FileOutputStream(basename + ".index"));
             final Alignments.AlignmentIndex.Builder indexBuilder = Alignments.AlignmentIndex.newBuilder();
             assert (indexOffsets.size() == indexAbsolutePositions.size()) : "index sizes must be consistent.";
@@ -166,6 +166,15 @@ public class UpgradeTo1_9_6 {
         }
     }
 
+    private String makeBackFilename(String filename, String ext) {
+            int counter=1;
+            String extCount=ext;
+            while (new File(filename+extCount).exists()) {
+                counter++;
+                extCount=ext+Integer.toString(counter);
+            }
+            return filename+extCount;
+        }
 
 
     private Alignments.AlignmentEntry fetchFirstEntry(AlignmentReaderImpl reader, long indexOffset) throws IOException {

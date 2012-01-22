@@ -23,10 +23,7 @@ package edu.cornell.med.icb.goby.modes;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.GobyVersion;
-import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.alignments.ReferenceLocation;
-import edu.cornell.med.icb.goby.alignments.UpgradeTo1_9_6;
+import edu.cornell.med.icb.goby.alignments.*;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.logging.ProgressLogger;
 
@@ -117,6 +114,14 @@ public class UpgradeMode extends AbstractGobyMode {
                 if (reader.isIndexed()) {
                     // we need to upgrade 1.9.5- alignment indices to the new indexing scheme implemented in 1.9.6+:
                     UpgradeTo1_9_6 upgrader = new UpgradeTo1_9_6();
+                    upgrader.setSilent(silent);
+                    upgrader.upgrade(basename, reader);
+                }
+            }
+            if (GobyVersion.isOlder(version, "goby_1.9.8.2")) {
+                if (reader.isIndexed()) {
+                    // we need to upgrade 1.9.5- alignment indices to the new indexing scheme implemented in 1.9.6+:
+                    UpgradeTo1_9_8_2 upgrader = new UpgradeTo1_9_8_2();
                     upgrader.setSilent(silent);
                     upgrader.upgrade(basename, reader);
                 }
