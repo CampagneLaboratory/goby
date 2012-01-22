@@ -93,6 +93,7 @@ public class UpgradeTo1_9_8_2 {
         FileUtils.deleteQuietly(new File(tmpBasename + ".entries"));
         FileUtils.deleteQuietly(new File(tmpBasename + ".tmh"));
         FileUtils.deleteQuietly(new File(tmpBasename + ".header"));
+        FileUtils.deleteQuietly(new File(tmpBasename + ".stats"));
     }
 
 }
