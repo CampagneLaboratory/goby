@@ -107,6 +107,7 @@
                 <include name="tisim-api.jar"/>
                 <include name="pj*.jar"/>
                 <include name="JRI.jar"/>
+                <include name="mg4j-3.0.1.jar"/>
                 <include name="xstream-1.3.1.jar"/>
                 <!-- Required by JSAP -->
             </zipgroupfileset>
@@ -125,10 +126,11 @@
 
             <service type="edu.cornell.med.icb.goby.reads.ReadCodec">
                 <provider classname="edu.cornell.med.icb.goby.reads.ReadCodecImpl"/>
+                <provider classname="edu.cornell.med.icb.goby.reads.ReadCodec2"/>
             </service>
             <service type="edu.cornell.med.icb.goby.alignments.AlignmentCodec">
-                <!--provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecImpl"/-->
                 <provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecDummy"/>
+                <provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecImpl"/>
             </service>
             <!-- define the implementation of NormalizationMethods as Java ServiceProviders: -->
             <service type="edu.cornell.med.icb.goby.stats.NormalizationMethod">
@@ -179,13 +181,14 @@
                 <provider classname="edu.cornell.med.icb.goby.stats.BullardUpperQuartileNormalization"/>
                 <provider classname="edu.cornell.med.icb.goby.stats.AlignedCountNormalization"/>
             </service>
+
             <service type="edu.cornell.med.icb.goby.reads.ReadCodec">
                 <provider classname="edu.cornell.med.icb.goby.reads.ReadCodecImpl"/>
-
+                <provider classname="edu.cornell.med.icb.goby.reads.ReadCodec2"/>
             </service>
             <service type="edu.cornell.med.icb.goby.alignments.AlignmentCodec">
-                <provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecImpl"/>
                 <provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecDummy"/>
+                <provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecImpl"/>
             </service>
         </jar>
     </target>
@@ -194,6 +197,7 @@
         <!-- Standalone jar file. -->
         <jar jarfile="${goby-io-jarfile}">
             <fileset dir="${classes}">
+                <include name="edu/cornell/med/icb/goby/algorithmic/compression/**"/>
                 <include name="edu/cornell/med/icb/goby/reads/**"/>
                 <include name="edu/cornell/med/icb/goby/readers/**"/>
                 <include name="edu/cornell/med/icb/goby/alignments/**"/>

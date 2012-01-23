@@ -4,20 +4,20 @@
    After possible realignment, and filtering to remove possible errors, EIR are reported with their frequencies.
 
 >to 1.9.8.2
+ - vcf-compare now outputs Ti/Tv ratios for each sample in input file (in the output file only).
+ - Add a replacement for the VCF-tools VCF-subset program. The Goby tool is orders of magnitude faster.
+ - vcf-subset: Add ability to exclude positions at which all samples match the reference.
+ - Fix scalability problem with local realignment code. Local realignment around indels would slow down as more entries
+   were processed. This is now fixed so that speed is constant across large alignments.
+ - Fixed index file writing. In some conditions, part of the alignment past the 2GB mark were not accessible
+   with skipTo when reading files larger than 2GB. Use the upgrade mode to fix old alignments.
  - Add mechanism to upgrade/fix large alignments indices with Goby 1.9.8.2. The upgrade mechanism uses concatenate
    alignment to rewrite an alignment index file if the size of the entries file exceeds 2GB. This is rather slow as
    the process reads and writes large alignments, to produce the new index file. While slow, upgrading is still faster
    than aligning the reads again. The process also requires approximately double the alignment size as the new alignment
    files are written.  Alignments smaller than 2GB are quietly ignored since they were not affected by the bug.
- - Fixed index file writing. In some conditions, part of the alignment past the 2GB mark were not accessible
-   with skipTo when reading files larger than 2GB. Use the upgrade mode to fix old alignments.
- - vcf-compare now outputs Ti/Tv ratios for each sample in input file (in the output file only).
  - Codecs: Add support to decode alignments with a codec in AlignmentReader.
  - Improved ReadsReader to find a suitable decoder when several codecs exist.
- - Fix scalability problem with local realignment code. Local realignment around indels would slow down as more entries
-   were processed. This is now fixed so that speed is constant across large alignments.
- - Add a replacement for the VCF-tools VCF-subset program. The Goby tool is orders of magnitude faster.
- - vcf-subset: Add ability to exclude positions at which all samples match the reference.
 1.9.8.1
  - Discover-sequence-variants: add ability to describe zero, one or more group comparisons. Syntax is A/B,A/C to compare
    group A to B and group A to C. Additional pairs can be described, separated by coma.
