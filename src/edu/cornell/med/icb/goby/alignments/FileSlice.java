@@ -66,7 +66,7 @@ public class FileSlice {
             reader.readIndex();
 
             long startOffset = reader.getStartByteOffset(range.startReferenceIndex, range.startPosition);
-            long endOffset = reader.getEndByteOffset(range.endReferenceIndex, range.endPosition);
+            long endOffset = reader.getEndByteOffset(range.startReferenceIndex, range.startPosition,range.endReferenceIndex, range.endPosition);
             if (startOffset==Long.MIN_VALUE) {
                 startOffset=0;
             }

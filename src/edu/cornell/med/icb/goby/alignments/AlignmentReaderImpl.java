@@ -537,6 +537,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      * @throws IOException If an error occurs repositioning.
      */
     private void repositionInternal(final int targetIndex, final int position, boolean goBack) throws IOException {
+//        assert indexLoaded : "index must be loaded to repositionInternal.";
         if (!indexLoaded) {
             return;
         }
@@ -697,6 +698,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      * @throws IOException If an error occurs loading the index or header.
      */
     public final void readIndex() throws IOException {
+
         if (indexed && !indexLoaded) {
             // header is needed to access target lengths:
             readHeader();
@@ -717,6 +719,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             // trimming is essential for the binary search to work reliably with the result of elements():
             indexAbsolutePositions.trim();
             indexOffsets.trim();
+
 // calculate the coding offset for each target index. This information will be used by recode
             targetPositionOffsets = new long[targetLengths.length];
             targetPositionOffsets[0] = 0;
@@ -727,6 +730,9 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
 
             }
             indexLoaded = true;
+        }
+        if (!indexLoaded && !indexed) {
+            LOG.warn("Trying to read index for an alignment that is not indexed.");
         }
     }
 
@@ -825,13 +831,23 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     }
 
     @Override
-    public long getStartByteOffset(int startReferenceIndex, int startPosition) {
+    public long getStartByteOffset(final int startReferenceIndex, final int startPosition) {
+      //  System.out.printf("start target: %d position: %d %n",startReferenceIndex, startPosition);
         return getByteOffset(startReferenceIndex, startPosition, 0);
     }
 
     @Override
-    public long getEndByteOffset(int endReferenceIndex, int endPosition) {
-        return getByteOffset(endReferenceIndex, endPosition + 1, 1);
+    public long getEndByteOffset(final int startReferenceIndex, final int startPosition, final int endReferenceIndex, final int endPosition) {
+        final long startByteOffset = getByteOffset(startReferenceIndex, startPosition, 0);
+        long endByteOffset = startByteOffset;
+        int i = 1;
+        while (endByteOffset == startByteOffset) {
+            endByteOffset = getByteOffset(endReferenceIndex, endPosition + 1, i);
+        //    System.out.println("i="+i);
+            ++i;
+        }
+      //  System.out.println(endByteOffset);
+        return endByteOffset;
     }
 
     /**
@@ -840,6 +856,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      *
      * @return A string in the format 1.9.5, or a timestamp YYYYMMDDHHMMSS, where YYYY is the year, MM is the month, DD is the day, HH is the hour, MM the minutes and SS the seconds (time of compilation) when the alignment was created with a development version of Goby.
      */
+
     public String getGobyVersion() {
         assert isHeaderLoaded() : "header must be loaded to query Goby version.";
         return gobyVersion == null || "".equals(gobyVersion) ? "1.9.5-" : gobyVersion;

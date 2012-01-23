@@ -39,10 +39,7 @@ import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.rit.pj.IntegerForLoop;
 import edu.rit.pj.ParallelRegion;
 import edu.rit.pj.ParallelTeam;
-import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.*;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FilenameUtils;
@@ -476,8 +473,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             String key = entry.getKey();
             String chromosome = key;
 
-
-            for (final Annotation value : entry.getValue()) {
+           for (final Annotation value : entry.getValue()) {
 
                 chromosome = value.getChromosome();
                 // convert to zero-based coordinates:
@@ -497,12 +493,9 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
                 annotationLength.id = value.getId();
                 annotationLength.length = value.getLength();
                 infoOutInstance.lengths.add(annotationLength);
-
             }
-
         }
         return filtered;
-
     }
 
     private void processOneBasename(final Object2ObjectMap<String, ObjectList<Annotation>> allAnnots,
@@ -535,7 +528,6 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
         iterateAlignment.setWeightInfo(weightParams, weights);
         iterateAlignment.parseIncludeReferenceArgument(includeReferenceNameCommas);
 
-
         // Iterate through the alignment and retrieve algs:
         System.out.println("Loading alignment " + inputBasename + "..");
         iterateAlignment.setAlignmentReaderFactory(factory);
@@ -543,7 +535,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
 
         final long numAlignedReadsInSample = iterateAlignment.getNumAlignedReadsInSample();
         final AnnotationCountInterface[] algs = iterateAlignment.getAlgs();
-        final IntSet referencesToProcess = iterateAlignment.getReferencesSelected();
+        final IntSortedSet referencesToProcess = iterateAlignment.getReferencesSelected();
 
         final String sampleId = FilenameUtils.getBaseName(inputBasename);
 
@@ -676,7 +668,9 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             final String sampleId = basename;
             for (final Annotation annot : annots) {
                 final String geneID = annot.getId();
-
+                if (geneID.equals("ENSDARG00000014830"))  {
+                    System.out.println("STOP");
+                }
                 if (includeAnnotationTypes.contains("gene")) {
                     final int geneStart = annot.getStart();
                     final int geneEnd = annot.getEnd();

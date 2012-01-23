@@ -162,11 +162,11 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
             if (!ambiguousQueryIndices.get(possibleEntry.getQueryIndex())) {
                 final Alignments.AlignmentEntry tmp = possibleEntry;
                 possibleEntry = null;
-                // the query index is not ambigious.
+                // the query index is not ambiguous.
                 return tmp;
-            }  else {
+            } else {
                 // the last entry was ambiguous, look for a new one that is not.
-                possibleEntry=null;
+                possibleEntry = null;
             }
         }
         return null;
@@ -265,8 +265,8 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
     }
 
     @Override
-    public long getEndByteOffset(int endReferenceIndex, int endPosition) {
-        return delegate.getEndByteOffset(endReferenceIndex, endPosition);
+    public long getEndByteOffset(int startReferenceIndex, int startPosition, int endReferenceIndex, int endPosition) {
+        return delegate.getEndByteOffset(startReferenceIndex, startPosition, endReferenceIndex, endPosition);
     }
 
 }

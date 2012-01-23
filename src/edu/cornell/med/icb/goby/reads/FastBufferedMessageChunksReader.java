@@ -59,7 +59,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
             throw new IllegalArgumentException("Start position ("
                     + start + ") must not be less than zero");
         }
-        if (end!= Long.MAX_VALUE && end < 0L) {
+        if (end != Long.MAX_VALUE && end < 0L) {
             throw new IllegalArgumentException("End position ("
                     + end + ") must not be less than zero");
         }
@@ -76,8 +76,8 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
     }
 
     private void reposition(final long start, final long end) throws IOException {
+        assert end > start : "end must be larger than start ";
         input.position(start);
-
 
         int b;
         int contiguousZeroBytes = 0;
@@ -85,7 +85,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
         long position = 0;
 
         // search though the input stream until a delimiter chunk or end of stream is reached
-        while (position < end && (b = input.read()) != -1) {
+        while ((b = input.read()) != -1) {
             if (b == MessageChunksWriter.DELIMITER_CONTENT) {
                 contiguousZeroBytes++;
             } else {

@@ -255,6 +255,7 @@
         <!-- Standalone jar file. -->
         <jar jarfile="${goby-io-api-jarfile}">
             <fileset dir="${classes}">
+
                 <include name="edu/cornell/med/icb/goby/reads/**"/>
                 <include name="edu/cornell/med/icb/goby/readers/**"/>
                 <include name="edu/cornell/med/icb/goby/alignments/**"/>
@@ -279,6 +280,9 @@
                            value="Institute for Computational Biomedicine (ICB), Weill Medical College of Cornell University"/>
                 <attribute name="Built-By" value="${user.name}"/>
             </manifest>
+            <service type="edu.cornell.med.icb.goby.alignments.AlignmentCodec">
+                <provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecDummy"/>
+            </service>
         </jar>
     </target>
 

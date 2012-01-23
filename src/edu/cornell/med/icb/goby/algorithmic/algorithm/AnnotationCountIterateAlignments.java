@@ -21,8 +21,10 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm;
 import edu.cornell.med.icb.goby.algorithmic.data.WeightsInfo;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.modes.WeightParameters;
+import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.IntSortedSet;
 
 import java.io.IOException;
 
@@ -114,9 +116,9 @@ public class AnnotationCountIterateAlignments extends IterateAlignments {
         return algo;
     }
 
-    private IntSet referencesSelected = new IntOpenHashSet();
+    private IntSortedSet referencesSelected = new IntAVLTreeSet();
 
-    public IntSet getReferencesSelected() {
+    public IntSortedSet getReferencesSelected() {
         return referencesSelected;
     }
 

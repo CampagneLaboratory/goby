@@ -117,11 +117,15 @@ public abstract class IterateAlignments {
     public void iterate(GenomicRange range, final String... basenames) throws IOException {
         for (final String basename : basenames) {
 
-            iterateOverOneAlignment(alignmentReaderFactory.getSlice(basename, range), basename);
+            iterateOverOneAlignment(alignmentReaderFactory.getSlice(basename, range), basename, range.startReferenceIndex, range.startPosition);
         }
     }
 
     private void iterateOverOneAlignment(FileSlice slice, final String basename) throws IOException {
+        iterateOverOneAlignment(slice, basename, 0, 0);
+    }
+
+    private void iterateOverOneAlignment(FileSlice slice, final String basename, int minTargetIndex, int minPosition) throws IOException {
 
         final int numberOfReferences;
         {
@@ -139,7 +143,7 @@ public abstract class IterateAlignments {
         referencesToProcess = new IntLinkedOpenHashSet();
 
         // setup referencesToProcess data structure according to the command line (filterByReferenceNames and includeReferenceNames)
-        for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
+        for (int referenceIndex = minTargetIndex; referenceIndex < numberOfReferences; referenceIndex++) {
 
             final MutableString referenceId = referenceIds.getId(referenceIndex);
             assert referenceId != null : "reference id cannot be null for reference index=" + referenceIndex;
@@ -153,13 +157,14 @@ public abstract class IterateAlignments {
                 // process each sequence:
                 referencesToProcess.add(referenceIndex);
             }
+
         }
 
         final AlignmentReader alignmentReader = alignmentReaderFactory.createReader(basename, slice.startOffset, slice.endOffset);
         alignmentReader.readHeader();
 
         // Give the client the ability to prepare data structures for each reference that will be processed.
-        for (int referenceIndex = 0; referenceIndex < numberOfReferences; referenceIndex++) {
+        for (int referenceIndex = minTargetIndex; referenceIndex < numberOfReferences; referenceIndex++) {
             if (referencesToProcess.contains(referenceIndex)) {
                 prepareDataStructuresForReference(alignmentReader, referenceIndex);
             }
@@ -169,6 +174,8 @@ public abstract class IterateAlignments {
 
         LOG.debug("Loading the alignment " + basename);
         if (alignmentReader.isSorted()) {
+            alignmentReader.readIndex();
+            alignmentReader.reposition(minTargetIndex,minPosition);
             LOG.debug("The alignment is sorted, iteration will use the faster skipTo method.");
             // the alignment is not sorted, we leverage skipTo to get directly to the sequence of interest.:
 
@@ -176,7 +183,7 @@ public abstract class IterateAlignments {
             // the first reference that we should skip to:
             int currentMinTargetIndex = referencesToProcess.firstInt();
             // skip to will go to the next entry in or after currentMinTargetIndex with at least position 0
-            while ((alignmentEntry = alignmentReader.skipTo(currentMinTargetIndex, 0)) != null) {
+           while ((alignmentEntry = alignmentReader.skipTo(currentMinTargetIndex, 0)) != null) {
                 final int referenceIndex = alignmentEntry.getTargetIndex();
                 if (referencesToProcess.contains(referenceIndex)) {
                     processAlignmentEntry(alignmentReader, alignmentEntry);

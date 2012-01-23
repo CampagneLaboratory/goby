@@ -133,9 +133,10 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
 
     /**
      * Returns a sample of locations covered by this alignment.
+     *
      * @param modulo Modulo to avoid sampling every position in the genome.
-     * @return  A set of positions that do occur in the genome, rounded to the specified modulo value (absoluteLocation-(absoluteLocation % modulo)).
-     *  * @throws IOException
+     * @return A set of positions that do occur in the genome, rounded to the specified modulo value (absoluteLocation-(absoluteLocation % modulo)).
+     *         * @throws IOException
      */
     ObjectList<ReferenceLocation> getLocations(int modulo) throws IOException;
 
@@ -143,12 +144,14 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
 
     /**
      * Return the name of the aligner that produced this alignment.
-    * @return the name of the aligner that produced this alignment.
-    */
+     *
+     * @return the name of the aligner that produced this alignment.
+     */
     String getAlignerName();
 
     /**
      * Return the version of the aligner that produced this alignment.
+     *
      * @return the version of the aligner that produced this alignment.
      */
     String getAlignerVersion();
@@ -166,13 +169,33 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
     int getNumberOfQueries();
 
 
-
     boolean isConstantQueryLengths();
+
     int getConstantQueryLength();
-   
+
 
     IndexedIdentifier getQueryIdentifiers();
 
+    /**
+     * Obtain the byte offset at the start of the chunk with entries at or after the given genomic position.
+     *
+     * @param startReferenceIndex Index of the reference sequence for the genomic position.
+     * @param startPosition       genomic coordinate in the reference sequence.
+     * @return byte offset in the entries file.
+     */
     long getStartByteOffset(int startReferenceIndex, int startPosition);
-    long getEndByteOffset(int endReferenceIndex, int endPosition);
+
+    /**
+     * Obtain the byte offset at the end of the chunk with entries at or before the given genomic end position.
+     * The start position is taken as an argument to ensure that the end offset contains at least one chunk.
+     * You must provide the same start arguments that you use to call getStartByteOffset. When called in this
+     * way,getStartByteOffset and getEndyteOffset provide a slice of the alignment that contain entries whose
+     * positions p are startPosition <= p < endPosition
+     * @param startReferenceIndex Index of the reference sequence for the start genomic position.
+     * @param startPosition       start genomic coordinate in the reference sequence.
+     * @param endReferenceIndex   Index of the reference sequence for the end genomic position.
+     * @param endPosition         end genomic coordinate in the reference sequence.
+     * @return byte offset in the entries file.
+     */
+    long getEndByteOffset(int startReferenceIndex, int startPosition, int endReferenceIndex, int endPosition);
 }
