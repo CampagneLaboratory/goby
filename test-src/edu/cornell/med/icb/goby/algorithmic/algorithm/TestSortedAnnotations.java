@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.Segment;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.junit.*;
 
 import java.io.IOException;
@@ -39,73 +40,330 @@ import static org.junit.Assert.assertTrue;
 
 public class TestSortedAnnotations {
 
-    SortedAnnotations testObj;
+    SortedAnnotations testObj = new SortedAnnotations();
+
     Annotation[] annotations;
 
     String[] sequences = {
-            "ATTTACCGG", //CpG
-            "TAGATACGGAT",//CpG
-            "ACTCTAGACTA", //CpT
-            "CATTTTGCAAC", //CpA
-            "ATCTATGCCTA", //CpG - negative
-
+            "Case1",
+            "Case2",
+            "Case3",
+            "Chr1",
+            "Chr2"
     };
 
-    RandomAccessSequenceTestSupport genome = new RandomAccessSequenceTestSupport(sequences);
+    RandomAccessSequenceTestSupport genome = new RandomAccessSequenceTestSupport(sequences){
+        @Override
+        public int getReferenceIndex(String referenceId) {
 
-    @Before
-    public void setUp() throws IOException {
-        /* 1       -1      ENSG00000209346 ENSE00001501617 556070  556142
-1       -1      ENSG00000209349 ENSE00001501620 556239  556304
-1       -1      ENSG00000209350 ENSE00001501621 557859  557930
-2       1       ENSG00000079263 ENSE00000843846 230843545       230843598
-8       -1      ENSG00000077782 ENSE00001289684 38390593        38390698
-8       -1      ENSG00000077782 ENSE00001527273 38390827        38390964*/
+           if(referenceId.equals("Case1")){return 0;}
+           if(referenceId.equals("Case2")){return 1;}
+           if(referenceId.equals("Case3")){return 2;}
+           if(referenceId.equals("Chr1")){return 3;}
+           if(referenceId.equals("Chr2")){return 4;}
 
-       StringReader reader=new StringReader("the string to read");
-        //1       1       ENSG00000209342 ENSE00001501613 554815  554882
-        final Annotation annot1 = new Annotation("ENSG00000209342", "no-name", "1");
-        annot1.addSegment(new Segment(554815, 554882, "ENSE00001501613", "+"));
+            return  -1;
+        }
 
-        // 1       1       ENSG00000217866 ENSE00001557252 554882  555926
-        final Annotation annot2 = new Annotation("ENSG00000217866", "no-name", "1");
-        annot2.addSegment(new Segment(554882, 555926, "ENSE00001557252", "1"));
+        @Override
+        public String getReferenceName(int index) {
+           return sequences[index];
+        }
+    };
 
-        //1       1       ENSG00000209343 ENSE00001501614 555725  555900
-        Annotation annot3 = new Annotation("ENSG00000209343", "no-name", "1");
-        annot3.addSegment(new Segment(555725, 555900, "ENSE00001501614", "1"));
+   @Before
+   public void setUp() throws IOException {
+        
+        StringReader reader=new StringReader("Chromosome\tStrand\tTranscriptID\tSegmentID\tStart\tEnd\n"+
+                "Case1\t+\tannotation0\t1\t3\t11\n" +
+                "Case1\t+\tannotation1\t2\t6\t10\n" +
+                "Case1\t+\tannotation2\t3\t7\t13\n" +
+                "Case1\t+\tannotation3\t4\t2\t4\n" +
+                "Case1\t+\tannotation3\t5\t6\t8\n" +
+                "Case1\t+\tannotation3\t6\t11\t14\n" +
+                "Case2\t+\tannotation6\t7\t5\t8\n" +
+                "Case2\t+\tannotation7\t8\t16\t19\n" +
+                "Case3\t+\tannotation8\t9\t2\t5\n" +
+                "Case3\t+\tannotation8\t10\t13\t17\n" +
+                "Case3\t+\tannotation8\t11\t26\t29\n" +
+                "Case3\t+\tannotation11\t12\t6\t9\n" +
+                "Case3\t+\tannotation11\t13\t17\t20\n" +
+                "Case3\t+\tannotation11\t14\t28\t29\n"+
+                "Chr1\t+\tannotation12\t15\t4\t7\n"+
+                "Chr2\t+\tannotation13\t15\t4\t7\n"
+        );
+        testObj.setGenome(genome);
+        testObj.loadAnnotations(reader);
 
-        annotations = new Annotation[]{annot1, annot2, annot3};
+        System.out.println("Annotations loaded");
+    }
+
+    public ObjectArrayList<Annotation> getCurrentAnnotations(int refIndex, int pos){
+        testObj.hasOverlappingAnnotations(refIndex, pos);
+        return testObj.currentAnnotations();
     }
 
     @Test
-    public void TestSortedAnnotations() {
+    public void TestSortedAnnotationsCase1() {
 
-        SortedAnnotations testObj = new SortedAnnotations();
-        testObj.setAnnotations(annotations);
-        testObj.setGenome(genome);
-       // TODO fix implementation and re-enable this test:
-       // assertFalse(testObj.hasOverlappingAnnotations("no-name", 55));
-        boolean positiveCase = testObj.hasOverlappingAnnotations("no-name", 554882);
-        assertTrue("positive",positiveCase);
-        assertEquals(testObj.currentAnnotations().size(), 2);
+        ObjectArrayList<Annotation> currentAnnotations;
+        int refIndex= genome.getReferenceIndex("Case1");
+        
+        assertTrue(testObj.currentAnnotations().isEmpty());
 
-        // order: ENSG00000209342, ENSG00000217866
-        Annotation first = testObj.currentAnnotations().peek(0);
+        currentAnnotations= getCurrentAnnotations(refIndex, 0);
+        assertEquals("Position 0: ", "[]", testObj.currentAnnotations().toString());
 
-        assertEquals("ENSG00000217866", first.getId());
+        // return set and make sure it's empty
+        assertTrue(testObj.currentAnnotations().isEmpty());
 
-        Annotation second = testObj.currentAnnotations().peek(1);
-        assertEquals("ENSG00000209342", second.getId());
 
-        boolean negativeCase = testObj.hasOverlappingAnnotations("5", 554882);
-        assertFalse(negativeCase);
+        currentAnnotations= getCurrentAnnotations(refIndex, 1);
+        assertEquals("Position 1:", "[]", currentAnnotations.toString());
 
-        boolean anotherNegativeCase = testObj.hasOverlappingAnnotations("no-name", 5882);
-        assertFalse(anotherNegativeCase);
+        assertTrue(testObj.currentAnnotations().isEmpty());
 
+        currentAnnotations= getCurrentAnnotations(refIndex, 2);
+        assertEquals("Position 2:", "[[ Case1 annotation3 2-4 6-8 11-14  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 3);
+        assertEquals("Position 3:", "[[ Case1 annotation3 2-4 6-8 11-14  ], [ Case1 annotation0 3-11  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 4);
+        assertEquals("Position 4:", "[[ Case1 annotation3 2-4 6-8 11-14  ], [ Case1 annotation0 3-11  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 5);
+        assertEquals("Position 5:", "[[ Case1 annotation0 3-11  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 6);
+        assertEquals("Position 6:", "[[ Case1 annotation3 2-4 6-8 11-14  ], [ Case1 annotation0 3-11  ], [ Case1 annotation1 6-10  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 7);
+        assertEquals("Position 7:", "[[ Case1 annotation3 2-4 6-8 11-14  ], [ Case1 annotation0 3-11  ], [ Case1 annotation1 6-10  ], [ Case1 annotation2 7-13  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 8);
+        assertEquals("Position 8:", "[[ Case1 annotation3 2-4 6-8 11-14  ], [ Case1 annotation0 3-11  ], [ Case1 annotation1 6-10  ], [ Case1 annotation2 7-13  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 9);
+        assertEquals("Position 9:", "[[ Case1 annotation0 3-11  ], [ Case1 annotation1 6-10  ], [ Case1 annotation2 7-13  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 10);
+        assertEquals("Position 10:", "[[ Case1 annotation0 3-11  ], [ Case1 annotation1 6-10  ], [ Case1 annotation2 7-13  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 11);
+        assertEquals("Position 11:", "[[ Case1 annotation3 2-4 6-8 11-14  ], [ Case1 annotation0 3-11  ], [ Case1 annotation2 7-13  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 12);
+        assertEquals("Position 12:", "[[ Case1 annotation3 2-4 6-8 11-14  ], [ Case1 annotation2 7-13  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 13);
+        assertEquals("Position 13:", "[[ Case1 annotation3 2-4 6-8 11-14  ], [ Case1 annotation2 7-13  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 14);
+        assertEquals("Position 14:", "[[ Case1 annotation3 2-4 6-8 11-14  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 15);
+        assertEquals("Position 15:", "[]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 0);
+        assertEquals("Position 0:", "[]", currentAnnotations.toString());
+        assertTrue(currentAnnotations.isEmpty());
+
+       
+    }
+
+    @Test
+    public void TestSortedAnnotationsCase2() {
+
+        int refIndex= genome.getReferenceIndex("Case2");
+        ObjectArrayList<Annotation> currentAnnotations;
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 0);
+        assertEquals("Position 0:", "[]", currentAnnotations.toString());
+        assertTrue(currentAnnotations.isEmpty());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 1);
+        assertEquals("Position 1:", "[]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 2);
+        assertEquals("Position 2:", "[]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 3);
+        assertEquals("Position 3:", "[]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 4);
+        assertEquals("Position 4:", "[]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 5);
+        assertEquals("Position 5:", "[[ Case2 annotation6 5-8  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 6);
+        assertEquals("Position 6:", "[[ Case2 annotation6 5-8  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 7);
+        assertEquals("Position 7:", "[[ Case2 annotation6 5-8  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 8);
+        assertEquals("Position 8:", "[[ Case2 annotation6 5-8  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 9);
+        assertEquals("Position 9:", "[]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 10);
+        assertEquals("Position 10:", "[]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 11);
+        assertEquals("Position 11:", "[]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 12);
+        assertEquals("Position 12:", "[]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 13);
+        assertEquals("Position 13:", "[]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 14);
+        assertEquals("Position 14:", "[]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 15);
+        assertEquals("Position 15:", "[]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 16);
+        assertEquals("Position 16:", "[[ Case2 annotation7 16-19  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 17);
+        assertEquals("Position 17:", "[[ Case2 annotation7 16-19  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 18);
+        assertEquals("Position 18:", "[[ Case2 annotation7 16-19  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 19);
+        assertEquals("Position 19:", "[[ Case2 annotation7 16-19  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 20);
+        assertEquals("Position 20:", "[]", currentAnnotations.toString());
 
     }
 
+    @Test
+    public void TestSortedAnnotationsCase3() {
 
+            int refIndex= genome.getReferenceIndex("Case3");
+            ObjectArrayList<Annotation> currentAnnotations;
+
+            currentAnnotations= getCurrentAnnotations(refIndex, 0);
+            assertEquals("Position 0:", "[]", currentAnnotations.toString());
+            assertTrue(currentAnnotations.isEmpty());
+
+            currentAnnotations= getCurrentAnnotations(refIndex, 1);
+            assertEquals("Position 1:", "[]", currentAnnotations.toString());
+
+
+         currentAnnotations= getCurrentAnnotations(refIndex, 2);
+        assertEquals("Position 2:", "[[ Case3 annotation8 2-5 13-17 26-29  ]]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 3);
+        assertEquals("Position 3:", "[[ Case3 annotation8 2-5 13-17 26-29  ]]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 4);
+        assertEquals("Position 4:", "[[ Case3 annotation8 2-5 13-17 26-29  ]]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 5);
+        assertEquals("Position 5:", "[[ Case3 annotation8 2-5 13-17 26-29  ]]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 6);
+        assertEquals("Position 6:", "[[ Case3 annotation11 6-9 17-20 28-29  ]]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 7);
+        assertEquals("Position 7:", "[[ Case3 annotation11 6-9 17-20 28-29  ]]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 8);
+        assertEquals("Position 8:", "[[ Case3 annotation11 6-9 17-20 28-29  ]]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 9);
+        assertEquals("Position 9:", "[[ Case3 annotation11 6-9 17-20 28-29  ]]", currentAnnotations.toString());
+
+         currentAnnotations= getCurrentAnnotations(refIndex, 10);
+         assertEquals("Position 10:", "[]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 11);
+         assertEquals("Position 11:", "[]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 12);
+         assertEquals("Position 12:", "[]", currentAnnotations.toString());
+
+         currentAnnotations= getCurrentAnnotations(refIndex, 13);
+        assertEquals("Position 13:", "[[ Case3 annotation8 2-5 13-17 26-29  ]]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 14);
+        assertEquals("Position 14", "[[ Case3 annotation8 2-5 13-17 26-29  ]]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 15);
+        assertEquals("Position 15:", "[[ Case3 annotation8 2-5 13-17 26-29  ]]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 16);
+        assertEquals("Position 16:", "[[ Case3 annotation8 2-5 13-17 26-29  ]]", currentAnnotations.toString());
+
+         currentAnnotations= getCurrentAnnotations(refIndex, 17);
+        assertEquals("Position 17:", "[[ Case3 annotation8 2-5 13-17 26-29  ], [ Case3 annotation11 6-9 17-20 28-29  ]]", currentAnnotations.toString());
+        
+         currentAnnotations= getCurrentAnnotations(refIndex, 18);
+        assertEquals("Position 18:", "[[ Case3 annotation11 6-9 17-20 28-29  ]]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 19);
+        assertEquals("Position 19:", "[[ Case3 annotation11 6-9 17-20 28-29  ]]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 20);
+        assertEquals("Position 20:", "[[ Case3 annotation11 6-9 17-20 28-29  ]]", currentAnnotations.toString());
+
+         currentAnnotations= getCurrentAnnotations(refIndex, 21);
+        assertEquals("Position 21:", "[]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 22);
+        assertEquals("Position 22:", "[]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 23);
+        assertEquals("Position 23:", "[]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 24);
+        assertEquals("Position 24:", "[]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 25);
+        assertEquals("Position 25:", "[]", currentAnnotations.toString());
+
+         currentAnnotations= getCurrentAnnotations(refIndex, 26);
+        assertEquals("Position 26:", "[[ Case3 annotation8 2-5 13-17 26-29  ]]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 27);
+        assertEquals("Position 27:", "[[ Case3 annotation8 2-5 13-17 26-29  ]]", currentAnnotations.toString());
+
+         currentAnnotations= getCurrentAnnotations(refIndex, 28);
+        assertEquals("Position 28:", "[[ Case3 annotation8 2-5 13-17 26-29  ], [ Case3 annotation11 6-9 17-20 28-29  ]]", currentAnnotations.toString());
+         currentAnnotations= getCurrentAnnotations(refIndex, 29);
+        assertEquals("Position 29:", "[[ Case3 annotation8 2-5 13-17 26-29  ], [ Case3 annotation11 6-9 17-20 28-29  ]]", currentAnnotations.toString());
+
+    }
+
+    @Test
+    public void TestSortedAnnotationsCase4() {
+
+            int refIndex= genome.getReferenceIndex("Chr1");
+            ObjectArrayList<Annotation> currentAnnotations;
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 2);
+        assertEquals("Position 2:", "[]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 3);
+        assertEquals("Position 3:", "[]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 4);
+        assertEquals("Position 4:", "[[ Chr1 annotation12 4-7  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 5);
+        assertEquals("Position 5:", "[[ Chr1 annotation12 4-7  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 8);
+        assertEquals("Position 8:", "[]", currentAnnotations.toString());
+
+        refIndex= genome.getReferenceIndex("Chr2");
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 2);
+        assertEquals("Position 2:", "[]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 3);
+        assertEquals("Position 3:", "[]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 4);
+        assertEquals("Position 4:", "[[ Chr2 annotation13 4-7  ]]", currentAnnotations.toString());
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 5);
+        assertEquals("Position 5:", "[[ Chr2 annotation13 4-7  ]]", currentAnnotations.toString());
+
+
+        currentAnnotations= getCurrentAnnotations(refIndex, 8);
+        assertEquals("Position 8:", "[]", currentAnnotations.toString());
+
+
+
+    }
 }

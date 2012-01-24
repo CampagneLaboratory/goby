@@ -17,6 +17,7 @@
  */
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
+
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.modes.CompactAlignmentToAnnotationCountsMode;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
@@ -25,7 +26,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -34,6 +37,7 @@ import java.util.Comparator;
  * overlap with a given position.
  *
  * @author Fabien Campagne
+ * @author Nyasha Chambwe
  *         Date: 12/12/11
  *         Time: 4:48 PM
  */
@@ -50,26 +54,35 @@ public class SortedAnnotations {
 
     private RandomAccessSequenceInterface genome;
 
-
-    public SortedAnnotations() {
-        annotationIndices = new IntAVLTreeSet();
-        annotationIndex=0;
-    }
-
-    public void setAnnotations(Annotation[] annotations) {
-            this.annotations = annotations;
-        }
-
-    public void setGenome(RandomAccessSequenceInterface genome) {
-        this.genome=genome;
-    }
-
     /**
      * Index of the active annotations. Active annotations are those with start before position and end after position.
      * All active annotations must be considered for overlap with every position. It is expected that only a subset of
      * active annotations will have segments that overlap with the position.
      */
-    private IntAVLTreeSet annotationIndices;
+    private IntAVLTreeSet annotationIndicesInRange;
+
+     /**
+     * Index of the active annotations that overlap with a given position.
+     */
+    private IntAVLTreeSet validAnnotationIndices;
+
+    public SortedAnnotations() {
+        annotationIndicesInRange = new IntAVLTreeSet();
+        validAnnotationIndices = new IntAVLTreeSet();
+    }
+
+    public void setAnnotations(Annotation[] annotations) {
+        this.annotations = annotations;
+    }
+
+    public void setGenome(RandomAccessSequenceInterface genome) {
+        this.genome = genome;
+    }
+
+    public int getAnnotationIndex() {
+        return annotationIndex;
+    }
+
 
     /**
      * Load and sort annotations by their end position.
@@ -78,12 +91,22 @@ public class SortedAnnotations {
      * @throws java.io.IOException
      */
     public void loadAnnotations(final String filename) throws IOException {
+        loadAnnotations(new FileReader(filename));
+    }
+
+    /**
+     * Load and sort annotations by their start position.
+     *
+     * @param annotReader
+     * @throws java.io.IOException
+     */
+    public void loadAnnotations(final Reader annotReader) throws IOException {
 
         final ObjectArrayList<Annotation> result = new ObjectArrayList<Annotation>();
-        final Object2ObjectMap<String, ObjectList<Annotation>> map = CompactAlignmentToAnnotationCountsMode.readAnnotations(filename);
+        final Object2ObjectMap<String, ObjectList<Annotation>> map = CompactAlignmentToAnnotationCountsMode.readAnnotations(annotReader);
         for (int referenceIndex = 0; referenceIndex < genome.size(); referenceIndex++) {
             final ObjectList<Annotation> list = map.get(genome.getReferenceName(referenceIndex));
-            Collections.sort(list, compareAnnotationEnd);
+            Collections.sort(list, compareAnnotationStart);
             result.addAll(list);
         }
         annotations = new Annotation[result.size()];
@@ -96,40 +119,96 @@ public class SortedAnnotations {
      * @return
      */
     public boolean hasMoreAnnotations() {
-        return annotationIndex < annotations.length;
+        return annotationIndex < annotations.length - 1;
     }
 
     public Annotation nextAnnotation() {
         return annotations[annotationIndex];
     }
 
-    public void advanceToPosition(final String chromosome, final int pos) {
-        while (hasMoreAnnotations()) {
-            final Annotation ann = nextAnnotation();
-            if (chromosome1StrictlyBefore2(ann.getChromosome(), chromosome)) {
-                continue;
+    /**
+     * * Method that populates the validAnnotationIndices
+     * with annotations that overlap a given position
+     * @param refIndex
+     * @param pos
+     */
+    public void advanceToPosition(final int refIndex, final int pos) {
+        Annotation annNew = nextAnnotation();
+        int annNewRefIndex = genome.getReferenceIndex(annNew.getChromosome());
+
+        final String referenceName = genome.getReferenceName(refIndex);
+        if (annNewRefIndex != refIndex) {
+            advanceToChromosome(refIndex);
+        }
+
+        // both the annotation and query position are on the same chromosome
+        while (annNew.getStart() <= pos && annNewRefIndex == refIndex) {
+            if (annNew.overlap(referenceName, pos)) {
+                annotationIndicesInRange.add(annotationIndex);
             }
-            if (chromosome1StrictlyBefore2(chromosome, ann.getChromosome())) {
-                // we are past chromosome. Stop immediately and backup.
-                annotationIndex -= 1;
+            if (hasMoreAnnotations()) {
+                advanceToNextAnnotation();
+                annNew = nextAnnotation();
+                annNewRefIndex = genome.getReferenceIndex(annNew.getChromosome());
+            } else {
+                // there are no more annotations
                 break;
             }
+        }
+        validAnnotationIndices.clear();
+        validAnnotationIndices.addAll(annotationIndicesInRange);
 
-            // ann is located on the query chromosome.
-            if (ann.overlap(chromosome, pos)) {
-                annotationIndices.add(annotationIndex);
+        if (!annotationIndicesInRange.isEmpty()) {
+            for (int index : annotationIndicesInRange) {
+                // annotation does not overlap the current position
+                if (!(annotations[index].overlap(referenceName, pos))) {
+                    validAnnotationIndices.remove(index);
+                    // check that the segments are not out of range
+                    if (!annotations[index].withinRange(referenceName, pos)) {
+                        annotationIndicesInRange.remove(index);
+                    }
+                }
             }
-
-            advanceToNextAnnotation();
         }
 
     }
 
 
-    public boolean hasOverlappingAnnotations(String chrom, int pos) {
-        annotationIndices.clear();
-        advanceToPosition(chrom, pos);
-        return !(annotationIndices.isEmpty());
+    /**
+     * This method sets the annotationIndex to the index of the first occurrence
+     * of annotations on this chromosome
+     * @param refIndex
+     */
+    public void advanceToChromosome(int refIndex) {
+
+        while (hasMoreAnnotations()) {
+            final Annotation ann = nextAnnotation();
+
+            if (chromosome1StrictlyBefore2(genome.getReferenceIndex(ann.getChromosome()), refIndex)) {
+                advanceToNextAnnotation();
+            } else {
+                if (chromosome1StrictlyBefore2(refIndex, genome.getReferenceIndex(ann.getChromosome()))) {
+                    // we are past chromosome. Stop immediately and backup.
+                    annotationIndex -= 1;
+                    break;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Returns whether or not the given chromosome and position has overlapping annotations
+     *
+     * @param refIndex
+     * @param pos
+     * @return
+     */
+    public boolean hasOverlappingAnnotations(int refIndex, int pos) {
+        advanceToPosition(refIndex, pos);
+        return !(validAnnotationIndices.isEmpty());
     }
 
     private ObjectArrayList<Annotation> set = new ObjectArrayList<Annotation>();
@@ -141,7 +220,7 @@ public class SortedAnnotations {
      */
     public ObjectArrayList<Annotation> currentAnnotations() {
         set.clear();
-        for (final int index : annotationIndices) {
+        for (final int index : validAnnotationIndices) {
             set.add(annotations[index]);
         }
         return set;
@@ -159,7 +238,7 @@ public class SortedAnnotations {
 
         if (!annotation.getChromosome().equals(currentChromosome)) {
             // chromosome differ:
-            if (chromosome1StrictlyBefore2(annotation.getChromosome(), currentChromosome)) {
+            if (chromosome1StrictlyBefore2(genome.getReferenceIndex(annotation.getChromosome()), genome.getReferenceIndex(currentChromosome))) {
                 // currentChromosome is past the chromosome of the current annotation.
                 return true;
             } else {
@@ -176,13 +255,11 @@ public class SortedAnnotations {
     /**
      * Returns true if chromosome c1 occurs strictly before chromosome c2 in the genome.
      *
-     * @param c1 chromosome 1
-     * @param c2 chromosome 2
+     * @param c1Index index of chromosome 1
+     * @param c2Index index of chromosome 2
      * @return true when c1 occurs strictly before c2
      */
-    private boolean chromosome1StrictlyBefore2(final String c1, final String c2) {
-        final int c1Index = genome.getReferenceIndex(c1);
-        final int c2Index = genome.getReferenceIndex(c2);
+    private boolean chromosome1StrictlyBefore2(final int c1Index, final int c2Index) {
         return c1Index < c2Index;
     }
 
@@ -191,10 +268,10 @@ public class SortedAnnotations {
         annotationIndex += 1;
     }
 
-    private final Comparator<? super Annotation> compareAnnotationEnd = new Comparator<Annotation>() {
+    private final Comparator<? super Annotation> compareAnnotationStart = new Comparator<Annotation>() {
         @Override
         public int compare(final Annotation annotation, final Annotation annotation1) {
-            return annotation.getEnd() - annotation1.getEnd();
+            return annotation.getStart() - annotation1.getStart();
         }
     };
 

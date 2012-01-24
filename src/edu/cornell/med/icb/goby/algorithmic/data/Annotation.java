@@ -129,6 +129,24 @@ public class Annotation implements Comparable<Annotation> {
         return false;
     }
 
+    /**
+     * Determines if the specified position overlaps within the interval of this annotation
+     * Does not necessarily imply segment overlap
+     *@param chromosome
+     *@param position
+     *@return
+     */
+    public boolean withinRange(final String chromosome, final int position){
+        if (!chromosome.equals(this.chromosome)) {
+                    return false;
+                }
+        if(this.getStart()<=position && this.getEnd() >= position){
+                return true;
+        }else{
+            return false;
+        }
+    }
+
     public boolean overlap(final Annotation annotation2) {
         boolean overlap = false;
         // 4-cases to consider
