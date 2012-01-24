@@ -24,10 +24,13 @@ package edu.cornell.med.icb.goby.stats;
  *         Time: 2:08 PM
  */
 
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
+import edu.cornell.med.icb.goby.modes.VCFCompareMode;
+import edu.cornell.med.icb.goby.util.LongNamedCounter;
+import edu.cornell.med.icb.goby.util.NamedCounters;
+import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
+import it.unimi.dsi.fastutil.objects.*;
 
+import java.io.PrintWriter;
 import java.util.Collections;
 
 /**
@@ -42,10 +45,10 @@ public class SampleStats {
     public int numMissedVariantCalls;
     public int numGenotypeAgreements;
     public String sampleId;
-    public int numGenotypeNotCalled[];
-    public int missedTwoAlleles[];
-    public int missedOneAlleles[];
-    public int missedMoreThanTwoAlleles[];
+    /**
+     * Matrix of counters. One counter for each type of error, times the number of files.
+     */
+    NamedCounters namedCounters;
     public int numHadDifferentAllele;
     private int numFiles;
 
@@ -53,39 +56,20 @@ public class SampleStats {
         this.numFiles = numFiles;
         transitionCount = new int[numFiles];
         transversionCount = new int[numFiles];
-        this.numGenotypeNotCalled = new int[numFiles];
-        this.missedTwoAlleles = new int[numFiles];
-        this.missedOneAlleles = new int[numFiles];
-        this.missedMoreThanTwoAlleles = new int[numFiles];
+        namedCounters = new NamedCounters(numFiles);
+        namedCounters.register("numGenotypeNotInFile", numFiles);
+        namedCounters.register("missedOneAllele", numFiles);
+        namedCounters.register("missedTwoAlleles", numFiles);
+        namedCounters.register("missedMoreThanTwoAlleles", numFiles);
+        namedCounters.register("numGenotypeDisagreements", 1);
+        namedCounters.register("numGenotypeAgreements", 1);
+
     }
 
-    public static String header(int numFiles) {
-        final StringBuffer titvheaders = new StringBuffer();
-        for (int i = 0; i < numFiles; i++) {
-            if (i != 0) {
-                titvheaders.append("\t");
-            }
-            titvheaders.append("ti/tv_ratio_file_");
-            titvheaders.append(i);
-        }
-
-        return ("sampleId,numGenotypeAgreements, numGenotypeDisagreements,numMissedVariantCalls,numGenotypeNotCalled," +
-                formatHeader(numFiles, "missedOneAlleles,missedTwoAlleles,missedMoreThanTwoAlleles") +
-                ",numHadDifferentAllele,").replace(',', '\t') + titvheaders + "\n";
+    public NamedCounters counters() {
+        return namedCounters;
     }
 
-    private static String formatHeader(int numFiles, String template) {
-        String[] tokens = template.split(",");
-        StringBuffer buffer = new StringBuffer();
-        for (String token : tokens) {
-            for (int sampleIndex = 0; sampleIndex < numFiles; sampleIndex++) {
-
-                buffer.append(token + "_" + sampleIndex);
-                buffer.append(",");
-            }
-        }
-        return buffer.toString();
-    }
 
     @Override
     public String toString() {
@@ -97,19 +81,33 @@ public class SampleStats {
             titvBuffer.append(getTransversionToTransitionRatio(i));
         }
         return String.format("%s\t%d\t%d\t%d\t%s\t%s\t%s\t%s\t%d\t%s%n", sampleId, numGenotypeAgreements,
-                numGenotypeDisagreements,
-                numMissedVariantCalls, formatSamples(numGenotypeNotCalled),
-                formatSamples(missedOneAlleles), formatSamples(missedTwoAlleles),
-                formatSamples(missedMoreThanTwoAlleles),
+                namedCounters.get("numGenotypeDisagreements", 0).getCount(),
+                numMissedVariantCalls,
+                formatSamples(namedCounters.getArray("numGenotypeNotInFile")),
+                formatSamples(namedCounters.getArray("missedOneAlleles")),
+                formatSamples(namedCounters.getArray("missedTwoAlleles")),
+                formatSamples(namedCounters.getArray("missedMoreThanTwoAlleles")),
                 numHadDifferentAllele, titvBuffer
         );
-
     }
 
-    private String formatSamples(int values[]) {
+    public String toStringSample(int fileIndex) {
+
+        return String.format("%d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%g%n",
+                fileIndex, sampleId, numGenotypeAgreements,
+                namedCounters.get("numGenotypeDisagreements", 0).getCount(),
+                namedCounters.get("numGenotypeNotInFile", fileIndex).getCount(),
+                namedCounters.get("missedOneAllele", fileIndex).getCount(),
+                namedCounters.get("missedTwoAlleles", fileIndex).getCount(),
+                namedCounters.get("missedMoreThanTwoAlleles", fileIndex).getCount(),
+                numHadDifferentAllele, getTransversionToTransitionRatio(fileIndex)
+        );
+    }
+
+    private String formatSamples(LongNamedCounter[] counters) {
         StringBuffer buffer = new StringBuffer();
         int i = 0;
-        for (int val : values) {
+        for (int val : LongNamedCounter.valuesInt(counters)) {
             if (i != 0) {
                 buffer.append("\t");
             }
@@ -120,7 +118,7 @@ public class SampleStats {
     }
 
 
-    public void analyze(ObjectSet<String> distinctGenotypes, ObjectList<String> sampleGenotypes) {
+    public void analyze(ObjectSet<String> distinctGenotypes, ObjectList<String> sampleGenotypes, VCFCompareMode.VCFPosition position) {
         int numAllelesAgreed = 0;
         int numAllelesMissed = 0;
         int numAlleleDifference = 0;
@@ -129,7 +127,7 @@ public class SampleStats {
         String second = iterator.next();
         String[] tokenFirst = first.split("/");
         String[] tokenSecond = second.split("/");
-        int sampleIndex = -1;
+        int fileIndex = -1;
         for (int i = 0; i < Math.min(tokenFirst.length, tokenSecond.length); i++) {
             if (tokenFirst[i].equals(tokenSecond[i])) {
                 numAllelesAgreed++;
@@ -137,7 +135,7 @@ public class SampleStats {
                 //  System.out.println(i+" differ: "+tokenFirst[i] +" "+isRef(tokenSecond[i]));
                 if (isRef(tokenFirst[i]) || isRef(tokenSecond[i])) {
                     numAllelesMissed++;
-                    sampleIndex = sampleGenotypes.indexOf("ref/ref/");
+                    fileIndex = sampleGenotypes.indexOf("ref/ref/");
                 } else {
                     numAlleleDifference++;
                 }
@@ -147,17 +145,17 @@ public class SampleStats {
             numAllelesMissed += Math.max(tokenFirst.length, tokenSecond.length) - Math.min(tokenFirst.length, tokenSecond.length);
         }
         if (numAllelesMissed != 0) {
-            sampleIndex = getIndexWithRef(sampleGenotypes);
-            assert sampleIndex >= 0 : "sampleIndex must have been set";
+            fileIndex = getIndexWithRef(sampleGenotypes);
+            assert fileIndex >= 0 : "fileIndex must have been set";
 
             if (numAllelesMissed == 2) {
-                missedTwoAlleles[sampleIndex] += 1;
+                namedCounters.get("missedTwoAlleles", fileIndex).increment(position);
             }
             if (numAllelesMissed == 1) {
-                missedOneAlleles[sampleIndex] += 1;
+                namedCounters.get("missedOneAllele", fileIndex).increment(position);
             }
             if (numAllelesMissed > 2) {
-                missedMoreThanTwoAlleles[sampleIndex] += 1;
+                namedCounters.get("missedMoreThanTwoAlleles", fileIndex).increment(position);
             }
             if (numAlleleDifference != 0) {
                 numHadDifferentAllele++;
@@ -167,8 +165,21 @@ public class SampleStats {
 
     private int getIndexWithRef(ObjectList<String> sampleGenotypes) {
         int sampleIndex = 0;
+        int indexhasRef = -1;
         for (String value : sampleGenotypes) {
-            if (value.indexOf("ref") >= 0) return sampleIndex;
+            ObjectSet<String> unique = new ObjectOpenHashSet<String>();
+            for (String token : value.split("/")) {
+                unique.add(token);
+            }
+            if (unique.size() == 1 && "ref".equals(unique.iterator().next())) {
+                return sampleIndex;
+            } else if (unique.size() >= 1 && value.contains("ref")) {
+                indexhasRef = sampleIndex;
+            }
+            sampleIndex++;
+        }
+        if (indexhasRef != -1) {
+            return indexhasRef;
         }
         return -1;
     }
@@ -220,5 +231,34 @@ public class SampleStats {
             if (v.indexOf(allele) >= 0) return true;
         }
         return false;
+    }
+
+    /**
+     * Return text describing the random sample of positions for each counter.
+     *
+     * @param fileIndex
+     * @param reverseIdentifiers
+     * @return
+     */
+    public String toStringExamples(int fileIndex, DoubleIndexedIdentifier reverseIdentifiers) {
+        StringBuffer randomSampleText = new StringBuffer();
+        String counterNames[] = {
+                "numGenotypeNotInFile", "missedOneAllele", "missedTwoAlleles", "missedMoreThanTwoAlleles", "missedTwoAlleles"
+        };
+        for (String counterName : counterNames) {
+            LongNamedCounter counter = namedCounters.get(counterName, fileIndex);
+            ObjectArrayList<Object> randomSample = counter.getRandomSample();
+            long count = counter.getCount();
+            if (count != 0) {
+                randomSampleText.append("File " + fileIndex + ", out of a total of " + count + ", random sample of positions for counter " + counterName + " (chromosome tab position): \n");
+                for (Object o : randomSample) {
+                    VCFCompareMode.VCFPosition pos = (VCFCompareMode.VCFPosition) o;
+                    randomSampleText.append(pos.toString(reverseIdentifiers));
+                    randomSampleText.append("\n");
+                }
+            }
+        }
+
+        return randomSampleText.toString();
     }
 }

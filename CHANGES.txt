@@ -4,6 +4,9 @@
    After possible realignment, and filtering to remove possible errors, EIR are reported with their frequencies.
 
 >to 1.9.8.2
+ - Improve vcf-compare mode. Now has the ability to provide a random samples of the positions that differ between the
+   files being compared. Random samples are calculated for each kind of difference (missing from one file, missing
+   one allele, two alleles, different genotypes)
  - vcf-compare now outputs Ti/Tv ratios for each sample in input file (in the output file only).
  - Add a replacement for the VCF-tools VCF-subset program. The Goby tool is orders of magnitude faster.
  - vcf-subset: Add ability to exclude positions at which all samples match the reference.

@@ -23,6 +23,7 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.readers.vcf.VCFParser;
 import edu.cornell.med.icb.goby.stats.SampleStats;
 import edu.cornell.med.icb.goby.util.GrepReader;
+import edu.cornell.med.icb.goby.util.LongNamedCounter;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -269,7 +270,7 @@ public class VCFCompareMode extends AbstractGobyMode {
                     line.pos.chromosome = identifiers.registerIdentifier(new MutableString(chr));
                     line.pos.position = Integer.parseInt(parsers[parserIndex].
                             getFieldValue(positionFieldIndex[parserIndex]).toString());
-                    line.ref=ref;
+                    line.ref = ref;
                     // keep this line since there is a variant somewhere on it.
                     int sampleIndex = 0;
                     for (final int fieldIndex : indicesToKeep) {
@@ -332,6 +333,8 @@ public class VCFCompareMode extends AbstractGobyMode {
         }
     }
 
+    SampleStats[] sampleStats;
+
     private void printStats(int numInputFiles,
                             ObjectSet<VCFPosition> commonPositions,
                             ObjectArrayList<VCFPosition> sortedPositions, DoubleIndexedIdentifier reverseIdentifiers) throws IOException {
@@ -341,11 +344,11 @@ public class VCFCompareMode extends AbstractGobyMode {
         ObjectSet<String> distinctGenotypes = new ObjectArraySet(numInputFiles);
         ObjectList<String> sampleGenotypes = new ObjectArrayList(numInputFiles);
 
-        SampleStats[] sampleStats = new SampleStats[genotypeColumnSet.length];
+        sampleStats = new SampleStats[genotypeColumnSet.length];
         for (VCFPosition pos : sortedPositions) {
             for (parserIndex = 0; parserIndex < numInputFiles; parserIndex++) {
                 alignedLines[parserIndex] = lines[parserIndex].get(indices[parserIndex].get(pos));
-                alignedLines[parserIndex].ref=lines[parserIndex].get(indices[parserIndex].get(pos)).ref;
+                alignedLines[parserIndex].ref = lines[parserIndex].get(indices[parserIndex].get(pos)).ref;
             }
 
             int sampleIndex = 0;
@@ -359,32 +362,39 @@ public class VCFCompareMode extends AbstractGobyMode {
                 distinctGenotypes.clear();
                 sampleGenotypes.clear();
                 String ref = null;
+                VCFPosition position = null;
                 for (final VCFLine line : alignedLines) {
                     final String genotype = line.genotypes.get(sampleIndex);
-                    ref=line.ref;
+                    ref = line.ref;
                     distinctGenotypes.add(genotype);
+                    // index in this list is the file in which the given sample genotype was observed.
                     sampleGenotypes.add(genotype);
+                    position = line.pos;
                 }
                 for (int fileIndex = 0; fileIndex < numInputFiles; fileIndex++) {
                     sampleStat.observeTransitionToTransversions(fileIndex, sampleGenotypes, ref);
                 }
                 if (distinctGenotypes.size() > 1) {
-                    sampleStat.numGenotypeDisagreements++;
+                    sampleStat.counters().get("numGenotypeDisagreements", 0).increment(position);
 
                     if (distinctGenotypes.contains("")) {
-                        final int index=sampleGenotypes.indexOf("");
+                        final int fileIndex = indexNot(sampleGenotypes, "");
+                        //  System.out.printf("position %s sample %s incrementing numGenotypeNotInFile[fileIndex=%d] %s %n",position, sample, fileIndex,sampleGenotypes);
+                        assert fileIndex != -1 : "some sample must not have not called a genotype";
+                        sampleStat.counters().get("numGenotypeNotInFile", fileIndex).increment(position);
 
-                        sampleStat.numGenotypeNotCalled[index]++;
+
                     } else {
                         /*System.out.printf("%s\t%d\tdisagreement: %s %n",
                                 reverseIdentifiers.getId(alignedLines[0].pos.chromosome).toString(),
                                 alignedLines[0].pos.position,
                                 ObjectArrayList.wrap(distinctGenotypes.toArray()));
                           */
-                        sampleStat.analyze(distinctGenotypes, sampleGenotypes);
+                        sampleStat.analyze(distinctGenotypes, sampleGenotypes, position);
                     }
                 } else {
-                    sampleStat.numGenotypeAgreements++;
+                    sampleStat.counters().get("numGenotypeAgreements", 0).increment();
+
                 }
                 sampleIndex++;
             }
@@ -392,50 +402,81 @@ public class VCFCompareMode extends AbstractGobyMode {
         System.out.printf("# common positions across files: %d (overlap with larger set: %g %%) " +
                 "(overlap with smaller set: %g%%) %n", commonPositions.size(),
                 fraction(commonPositions.size(), maxSize(lines)), fraction(commonPositions.size(), minSize(lines)));
+        int sampleIndex = 0;
         for (final SampleStats sampleStat : sampleStats) {
             System.out.println("Sample: " + sampleStat.sampleId);
             int sumErrors = 0;
-            for (int sampleIndex=0; sampleIndex<numInputFiles; sampleIndex++) {
-               sumErrors+= sampleStat.numGenotypeNotCalled[sampleIndex];
-               sumErrors+= sampleStat.missedOneAlleles[sampleIndex];
-               sumErrors+= sampleStat.missedTwoAlleles[sampleIndex];
-               sumErrors+= sampleStat.missedMoreThanTwoAlleles[sampleIndex];
+            for (int fileIndex = 0; fileIndex < numInputFiles; fileIndex++) {
+
+
+                sumErrors += value(sampleIndex, "numGenotypeNotInFile", fileIndex);
+                sumErrors += value(sampleIndex, "missedOneAllele", fileIndex);
+                sumErrors += value(sampleIndex, "missedTwoAlleles", fileIndex);
+                sumErrors += value(sampleIndex, "missedMoreThanTwoAlleles", fileIndex);
+
             }
-            sumErrors+= sampleStat.numHadDifferentAllele;
-            System.out.println("denominator="+sumErrors);
+            sumErrors += sampleStat.numHadDifferentAllele;
+            System.out.println("denominator=" + sumErrors);
+            long numGenotypeAgreements = sampleStat.counters().get("numGenotypeAgreements", 0).getCount();
+            long numGenotypeDisagreements = sampleStat.counters().get("numGenotypeDisagreements", 0).getCount();
             System.out.printf("Among the common positions, %d positions (%g %%) had the same genotype, " +
-                    "while %d positions (%g %%) had some disagreements (failure to call a genotype in other method, " +
+                    "while %d positions (%g %%) had some disagreements (site not found in the other file, " +
                     "failure to call one or more alleles, or different genotype called: hard error). \n" +
-                    "Among the differences, %g %% were failures to call any genotype %g %% were failures to call one " +
+                    "Among the differences, %g %% were sites that were not in the other file for that sample, %g %% were failures to call one " +
                     "allele, %g %% to call two, and %g %% to call more than two. %g %% sites had differences in genotypes " +
                     "that could not be explained by a failure to call an allele (e.g., G/G vs G/T when the reference is A/A)%n",
-                    sampleStat.numGenotypeAgreements, fractionCumul(sampleStat.numGenotypeAgreements, sampleStat.numGenotypeDisagreements),
-                    sampleStat.numGenotypeDisagreements, fractionCumul(sampleStat.numGenotypeDisagreements, sampleStat.numGenotypeAgreements),
+                    numGenotypeAgreements, fractionCumul(numGenotypeAgreements, numGenotypeDisagreements),
+                    numGenotypeDisagreements, fractionCumul(numGenotypeDisagreements, numGenotypeAgreements),
 
-                    fraction(sum(sampleStat.numGenotypeNotCalled), sumErrors),
-                    fraction(sum(sampleStat.missedOneAlleles), sumErrors),
-                    fraction(sum(sampleStat.missedTwoAlleles), sumErrors),
-                    fraction(sum(sampleStat.missedMoreThanTwoAlleles), sumErrors),
+                    fraction(sum(values(sampleIndex, "numGenotypeNotInFile")), sumErrors),
+                    fraction(sum(values(sampleIndex, "missedOneAllele")), sumErrors),
+                    fraction(sum(values(sampleIndex, "missedTwoAlleles")), sumErrors),
+                    fraction(sum(values(sampleIndex, "missedMoreThanTwoAlleles")), sumErrors),
                     fraction(sampleStat.numHadDifferentAllele, sumErrors)
             );
+            sampleIndex++;
         }
         if (outputFilename != null) {
             PrintWriter out = new PrintWriter(new FileWriter(outputFilename));
-            out.write(SampleStats.header(numInputFiles));
-            for (final SampleStats sampleStat : sampleStats) {
 
-                out.write(sampleStat.toString());
+            out.write("file\tsample\tnumGenotypeAgreements\tnumGenotypeDisagreements\tnumGenotypeNotInFile\tmissedOneAllele\tmissedTwoAlleles\tmissedMoreThanTwoAlleles\tnumHadDifferentAllele\tti/tv_ratio\n");
+            for (int fileIndex = 0; fileIndex < numInputFiles; fileIndex++) {
+                for (final SampleStats sampleStat : sampleStats) {
+
+                    out.write(sampleStat.toStringSample(fileIndex));
+                }
+            }
+            for (int fileIndex = 0; fileIndex < numInputFiles; fileIndex++) {
+                for (final SampleStats sampleStat : sampleStats) {
+
+                    out.write(sampleStat.toStringExamples(fileIndex, reverseIdentifiers));
+                }
             }
             out.close();
         }
+    }
 
+    private int indexNot(ObjectList<String> sampleGenotypes, String s) {
+        int i = 0;
+        for (String v : sampleGenotypes) {
+            if (!s.equals(v)) return i;
+            i++;
+        }
+        return -1;
+    }
 
+    private int[] values(int sampleIndex, String label) {
+        return LongNamedCounter.valuesInt(sampleStats[sampleIndex].counters().getArray(label));
+    }
+
+    private int value(int sampleIndex, String label, int fileIndex) {
+        return (int) sampleStats[sampleIndex].counters().get(label, fileIndex).getCount();
     }
 
     private int sum(int[] values) {
-        int sum=0;
-        for (int val: values) {
-            sum+=val;
+        int sum = 0;
+        for (int val : values) {
+            sum += val;
         }
         return sum;
 
@@ -568,7 +609,7 @@ public class VCFCompareMode extends AbstractGobyMode {
 
     static IndexedIdentifier identifiers = new IndexedIdentifier();
 
-    private class VCFPosition implements Comparable {
+    public class VCFPosition implements Comparable {
 
         int chromosome;
         int position;
