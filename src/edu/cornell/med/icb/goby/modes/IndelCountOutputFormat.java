@@ -37,6 +37,8 @@ import java.io.PrintWriter;
 public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
     private int[] sampleIndelCounts;
     private int[] groupIndelCounts;
+    private long[] sampleSitesObserved;
+    private long[] groupSitesObserved;
     int[] readerIndexToGroupIndex;
     private String[] sampleIds;
     private String[] groupIds;
@@ -56,6 +58,8 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
         if (!allocated) {
             sampleIndelCounts = new int[numberOfSamples];
             groupIndelCounts = new int[numberOfGroups];
+            sampleSitesObserved = new long[numberOfSamples];
+            groupSitesObserved = new long[numberOfGroups];
             allocated = true;
         }
     }
@@ -66,11 +70,22 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
                             final DiscoverVariantPositionData list, final int groupIndexA,
                             final int groupIndexB) {
 
+        for (SampleCountInfo sci : sampleCounts) {
+            int totalCount = 0;
+            for (int count : sci.counts) {
+                totalCount += count;
+            }
+            if (totalCount > 0) {
+                sampleSitesObserved[sci.sampleIndex]++;
+                groupSitesObserved[readerIndexToGroupIndex[sci.sampleIndex]]++;
+            }
+        }
         if (list.hasCandidateIndels()) {
             for (final EquivalentIndelRegion indel : list.getIndels()) {
 
-                if (indel.getFrequency() >= Math.max(5,list.size()/3)) {
-                   // System.out.printf("sample %d referenceIndex %d position: %d %s %n", indel.sampleIndex, referenceIndex, position, indel);
+                if (indel.getFrequency() >= Math.max(5, list.size() / 3)) {
+                    // frequency must be at least 5 or a third of the number of bases at position, whichever is smaller.
+                    // System.out.printf("sample %d referenceIndex %d position: %d %s %n", indel.sampleIndex, referenceIndex, position, indel);
                     sampleIndelCounts[indel.sampleIndex]++;
                     final int groupIndex = readerIndexToGroupIndex[indel.sampleIndex];
                     groupIndelCounts[groupIndex]++;
@@ -83,14 +98,20 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
     public void close() {
         try {
             PrintWriter output = new PrintWriter(new FileWriter("indel-counts.tsv"));
+            output.write("STAT-TYPE\tID\tindel-count\t#sites-observed\n");
             int sampleIndex = 0;
             for (String sample : sampleIds) {
-                output.write(String.format("SAMPLE\t%s\t%d%n", sample, sampleIndelCounts[sampleIndex]));
+                output.write(String.format("SAMPLE\t%s\t%d\t%d%n", sample,
+                        sampleIndelCounts[sampleIndex],
+                        sampleSitesObserved[sampleIndex]));
                 sampleIndex++;
             }
             int groupIndex = 0;
             for (String group : groupIds) {
-                output.write(String.format("GROUP\t%s\t%d%n", group, groupIndelCounts[readerIndexToGroupIndex[groupIndex]]));
+
+                output.write(String.format("GROUP\t%s\t%d\t%d%n", group,
+                        groupIndelCounts[groupIndex],
+                        groupSitesObserved[groupIndex]));
                 groupIndex++;
             }
             output.close();
