@@ -211,6 +211,7 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
             targetIdentifiers = new IndexedIdentifier();
             // target information may have more or less targets depending on the reader, but indices must match across
             // all readers:
+            boolean error = false;
             for (final AlignmentReader reader : readers) {
                 IndexedIdentifier targetIds = reader.getTargetIdentifiers();
                 for (MutableString key : targetIds.keySet()) {
@@ -220,14 +221,17 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
                         final int globalValue = targetIdentifiers.getInt(key);
                         final int localValue = targetIds.getInt(key);
                         if (globalValue != localValue) {
-                            throw new RuntimeException(
-                                    String.format("target indices must match across input alignments. Key was found with the distinct values %d %d",
-                                            globalValue, localValue));
+                            error = true;
+                            LOG.error(
+                                    String.format("target indices must match across input alignments. Key %s was found with the distinct values global: %d local %d in alignment %s",
+                                            key, globalValue, localValue, reader.basename()));
                         }
                     }
                 }
             }
-
+            if (error) {
+                throw new RuntimeException("target indices must match across input alignments.");
+            }
             targetLengths = new int[targetIdentifiers.size()];
             // keep the maximum length across all readers. We do this to retrieve targetLength over alignments merged
             // from pieces that do not have entries for all target.
@@ -235,7 +239,7 @@ public class ConcatAlignmentReader extends AbstractConcatAlignmentReader {
                 int maxLength = -1;
                 for (final AlignmentReader reader : readers) {
                     final int[] readerLengths = reader.getTargetLength();
-                    if (readerLengths != null && readerLengths.length>targetIndex) {
+                    if (readerLengths != null && readerLengths.length > targetIndex) {
                         maxLength = Math.max(readerLengths[targetIndex], maxLength);
                         targetLengths[targetIndex] = maxLength;
                     }
