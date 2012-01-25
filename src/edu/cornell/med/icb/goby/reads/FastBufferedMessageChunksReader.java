@@ -76,7 +76,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
     }
 
     private void reposition(final long start, final long end) throws IOException {
-        assert end > start : "end must be larger than start ";
+        assert end >= start : "end must be larger than start ";
         input.position(start);
 
         int b;
