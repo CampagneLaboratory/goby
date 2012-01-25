@@ -98,26 +98,32 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
     public void close() {
         try {
             PrintWriter output = new PrintWriter(new FileWriter("indel-counts.tsv"));
-            output.write("STAT-TYPE\tID\tindel-count\t#sites-observed\n");
+            output.write("STAT-TYPE\tID\tindel-count\t#sites-observed\tindels/100k-bases\n");
             int sampleIndex = 0;
             for (String sample : sampleIds) {
-                output.write(String.format("SAMPLE\t%s\t%d\t%d%n", sample,
+                output.write(String.format("SAMPLE\t%s\t%d\t%d\t%g%n", sample,
                         sampleIndelCounts[sampleIndex],
-                        sampleSitesObserved[sampleIndex]));
+                        sampleSitesObserved[sampleIndex],
+                        100000d*fraction(sampleIndelCounts[sampleIndex], sampleSitesObserved[sampleIndex])));
                 sampleIndex++;
             }
             int groupIndex = 0;
             for (String group : groupIds) {
 
-                output.write(String.format("GROUP\t%s\t%d\t%d%n", group,
+                output.write(String.format("GROUP\t%s\t%d\t%d\t%g%n", group,
                         groupIndelCounts[groupIndex],
-                        groupSitesObserved[groupIndex]));
+                        groupSitesObserved[groupIndex],
+                        100000d*fraction(groupIndelCounts[groupIndex], groupSitesObserved[groupIndex])));
                 groupIndex++;
             }
             output.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private double fraction(int a, long b) {
+        return ((double) a) / ((double) b);
     }
 
     @Override
