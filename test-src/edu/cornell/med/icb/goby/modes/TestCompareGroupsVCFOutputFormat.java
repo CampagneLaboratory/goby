@@ -23,6 +23,7 @@ import edu.cornell.med.icb.goby.Release1_9_7_2;
 import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.alignments.DiscoverVariantIterateSortedAlignments;
+import edu.cornell.med.icb.goby.alignments.DiscoverVariantPositionData;
 import edu.cornell.med.icb.goby.alignments.PositionBaseInfo;
 import edu.cornell.med.icb.goby.alignments.SampleCountInfo;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
@@ -123,7 +124,7 @@ public class TestCompareGroupsVCFOutputFormat {
         expect(mode.getSamples()).andReturn(samples);
         expect(mode.getReadIndexStats()).andReturn(null);
         ArrayList<GroupComparison> groupComparisons = new ArrayList<GroupComparison>();
-        groupComparisons.add(new GroupComparison("group1","group2",0,1,0));
+        groupComparisons.add(new GroupComparison("group1", "group2", 0, 1, 0));
         expect(mode.getGroupComparisons()).andReturn(groupComparisons);
     }
 
@@ -132,7 +133,7 @@ public class TestCompareGroupsVCFOutputFormat {
     public void testNoDifference() throws Exception {
         synchronized (GobyRengine.getInstance().getRengine()) {
             SampleCountInfo[] sampleCounts = makeSampleCounts(1, 30, 5, 30, 6, 2, 60, 10, 60, 12);
-            ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
+            DiscoverVariantPositionData list = new DiscoverVariantPositionData();
             expect(mode.getReaderIndexToGroupIndex()).andReturn(readerIndexToGroupIndex);
             replay(mode);
 
@@ -158,7 +159,7 @@ public class TestCompareGroupsVCFOutputFormat {
     public void testAllelicDifference() throws Exception {
         synchronized (GobyRengine.getInstance().getRengine()) {
             SampleCountInfo[] sampleCounts = makeSampleCounts(1, 30, 5, 30, 6, 2 /* this value would have been 60 is no difference existed for this allele */, 0, 10, 60, 12);
-            ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
+            DiscoverVariantPositionData list = new DiscoverVariantPositionData();
             expect(mode.getReaderIndexToGroupIndex()).andReturn(readerIndexToGroupIndex);
             replay(mode);
 
@@ -250,7 +251,7 @@ public class TestCompareGroupsVCFOutputFormat {
             synchronized (GobyRengine.getInstance().getRengine()) {
                 SampleCountInfo[] sampleCounts = makeSampleCountsWithIndels();
 
-                ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
+                DiscoverVariantPositionData list = new DiscoverVariantPositionData();
                 expect(mode.getReaderIndexToGroupIndex()).andReturn(readerIndexToGroupIndex);
                 replay(mode);
 

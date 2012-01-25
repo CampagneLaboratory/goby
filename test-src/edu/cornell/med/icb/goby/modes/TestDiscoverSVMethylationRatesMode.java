@@ -292,8 +292,8 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
 
     }
 
-    private ObjectArrayList<PositionBaseInfo> list4() {
-        ObjectArrayList<PositionBaseInfo> result = new ObjectArrayList<PositionBaseInfo>();
+    private DiscoverVariantPositionData list4() {
+        DiscoverVariantPositionData result = new DiscoverVariantPositionData();
         PositionBaseInfo info;
         // make 33% methylation in sampleIndex=1 "methylated"
         for (int i = 0; i < 10; i++) {
@@ -317,8 +317,8 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
         return result;
     }
 
-    private ObjectArrayList<PositionBaseInfo> list3() {
-        ObjectArrayList<PositionBaseInfo> result = new ObjectArrayList<PositionBaseInfo>();
+    private DiscoverVariantPositionData list3() {
+        DiscoverVariantPositionData result = new DiscoverVariantPositionData();
         PositionBaseInfo info = new PositionBaseInfo();
         info.matchesReference = true;
         info.matchesForwardStrand = true;
@@ -338,8 +338,8 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
         return result;
     }
 
-    private ObjectArrayList<PositionBaseInfo> list2() {
-        ObjectArrayList<PositionBaseInfo> result = new ObjectArrayList<PositionBaseInfo>();
+    private DiscoverVariantPositionData list2() {
+        DiscoverVariantPositionData result = new DiscoverVariantPositionData();
         PositionBaseInfo info = new PositionBaseInfo();
         info.matchesReference = true;
         info.matchesForwardStrand = false;
@@ -352,8 +352,8 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
         return result;
     }
 
-    private ObjectArrayList<PositionBaseInfo> list1() {
-        ObjectArrayList<PositionBaseInfo> result = new ObjectArrayList<PositionBaseInfo>();
+    private DiscoverVariantPositionData list1() {
+        DiscoverVariantPositionData result = new DiscoverVariantPositionData();
         final PositionBaseInfo info = new PositionBaseInfo();
         info.matchesReference = true;
         info.matchesForwardStrand = true;
@@ -410,9 +410,9 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
     }
 
 
-    private ObjectArrayList<PositionBaseInfo> makeList(SampleCountInfo[] sampleCounts, IntArrayList readIndices) {
+    private DiscoverVariantPositionData makeList(SampleCountInfo[] sampleCounts, IntArrayList readIndices) {
         IntIterator nextReadIndexIterator = readIndices.iterator();
-        ObjectArrayList<PositionBaseInfo> list = new ObjectArrayList<PositionBaseInfo>();
+        DiscoverVariantPositionData list = new DiscoverVariantPositionData();
         for (SampleCountInfo sampleInfo : sampleCounts) {
             for (int baseIndex = 0; baseIndex < SampleCountInfo.BASE_MAX_INDEX; baseIndex++) {
 
