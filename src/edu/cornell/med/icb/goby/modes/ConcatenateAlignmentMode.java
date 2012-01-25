@@ -262,7 +262,17 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
 
     }
 
-    public static boolean isAllSorted(boolean upgrade, final String[] basenames) throws IOException {
+    /**
+     * Determine if all the alignments are sorted.
+     * @param basenames  Basenames of a set of alignments.
+     * @return True when all alignments are sorted, False otherwise.
+     * @throws IOException If an error occurs reading an alignment.
+     */
+    public static boolean isAllSorted(final String[] basenames) throws IOException {
+        return isAllSorted(true, basenames);
+    }
+
+    public static boolean isAllSorted(final boolean upgrade, final String[] basenames) throws IOException {
         boolean sorted = true;
         for (final String basename : basenames) {
             final AlignmentReader reader = new AlignmentReaderImpl(basename, upgrade);
