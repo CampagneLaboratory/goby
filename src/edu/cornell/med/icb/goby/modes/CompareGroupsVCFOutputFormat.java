@@ -27,7 +27,6 @@ import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -254,7 +253,7 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
                             final SampleCountInfo[] sampleCounts,
                             final int referenceIndex,
                             int position,
-                            final ObjectArrayList<PositionBaseInfo> list,
+                            final DiscoverVariantPositionData list,
                             final int groupIndexA,
                             final int groupIndexB) {
 

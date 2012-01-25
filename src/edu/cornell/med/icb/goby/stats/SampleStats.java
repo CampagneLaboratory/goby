@@ -63,6 +63,7 @@ public class SampleStats {
         namedCounters.register("missedMoreThanTwoAlleles", numFiles);
         namedCounters.register("numGenotypeDisagreements", 1);
         namedCounters.register("numGenotypeAgreements", 1);
+        namedCounters.register("otherDifferencesInGenotype", 1);
 
     }
 
@@ -80,7 +81,7 @@ public class SampleStats {
             }
             titvBuffer.append(getTransversionToTransitionRatio(i));
         }
-        return String.format("%s\t%d\t%d\t%d\t%s\t%s\t%s\t%s\t%d\t%s%n", sampleId, numGenotypeAgreements,
+        return String.format("STATS\t%s\t%d\t%d\t%d\t%s\t%s\t%s\t%s\t%d\t%s%n", sampleId, numGenotypeAgreements,
                 namedCounters.get("numGenotypeDisagreements", 0).getCount(),
                 numMissedVariantCalls,
                 formatSamples(namedCounters.getArray("numGenotypeNotInFile")),
@@ -91,17 +92,9 @@ public class SampleStats {
         );
     }
 
-    public String toStringSample(int fileIndex) {
 
-        return String.format("%d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%g%n",
-                fileIndex, sampleId, numGenotypeAgreements,
-                namedCounters.get("numGenotypeDisagreements", 0).getCount(),
-                namedCounters.get("numGenotypeNotInFile", fileIndex).getCount(),
-                namedCounters.get("missedOneAllele", fileIndex).getCount(),
-                namedCounters.get("missedTwoAlleles", fileIndex).getCount(),
-                namedCounters.get("missedMoreThanTwoAlleles", fileIndex).getCount(),
-                numHadDifferentAllele, getTransversionToTransitionRatio(fileIndex)
-        );
+    private double fraction(double a, double b) {
+        return (a / (b)) * 100;
     }
 
     private String formatSamples(LongNamedCounter[] counters) {
@@ -158,8 +151,13 @@ public class SampleStats {
                 namedCounters.get("missedMoreThanTwoAlleles", fileIndex).increment(position);
             }
             if (numAlleleDifference != 0) {
-                numHadDifferentAllele++;
+                System.out.println(sampleGenotypes);
+                namedCounters.get("otherDifferencesInGenotype", 0).increment(position);
             }
+        } else {
+            System.out.println(sampleGenotypes);
+            namedCounters.get("otherDifferencesInGenotype", 0).increment(position);
+            System.out.println("STOP");
         }
     }
 
@@ -242,23 +240,66 @@ public class SampleStats {
      */
     public String toStringExamples(int fileIndex, DoubleIndexedIdentifier reverseIdentifiers) {
         StringBuffer randomSampleText = new StringBuffer();
-        String counterNames[] = {
-                "numGenotypeNotInFile", "missedOneAllele", "missedTwoAlleles", "missedMoreThanTwoAlleles", "missedTwoAlleles"
+        String counterNamesByFile[] = {
+                "numGenotypeNotInFile", "missedOneAllele", "missedTwoAlleles", "missedMoreThanTwoAlleles", "missedTwoAlleles",
         };
-        for (String counterName : counterNames) {
-            LongNamedCounter counter = namedCounters.get(counterName, fileIndex);
-            ObjectArrayList<Object> randomSample = counter.getRandomSample();
-            long count = counter.getCount();
-            if (count != 0) {
-                randomSampleText.append("File " + fileIndex + ", out of a total of " + count + ", random sample of positions for counter " + counterName + " (chromosome tab position): \n");
-                for (Object o : randomSample) {
-                    VCFCompareMode.VCFPosition pos = (VCFCompareMode.VCFPosition) o;
-                    randomSampleText.append(pos.toString(reverseIdentifiers));
-                    randomSampleText.append("\n");
-                }
+        for (String counterName : counterNamesByFile) {
+
+            printRandomSampleForOneCounter(fileIndex, reverseIdentifiers, randomSampleText, counterName);
+        }
+        String counterNamesConstant[] = {
+                "numGenotypeDisagreements", "otherDifferencesInGenotype"
+        };
+        for (String counterName : counterNamesConstant) {
+
+
+            printRandomSampleForOneCounter(0, reverseIdentifiers, randomSampleText, counterName);
+        }
+        return randomSampleText.toString();
+    }
+
+    private void printRandomSampleForOneCounter(int fileIndex, DoubleIndexedIdentifier reverseIdentifiers, StringBuffer randomSampleText, String counterName) {
+        LongNamedCounter counter = namedCounters.get(counterName, fileIndex);
+        ObjectArrayList<Object> randomSample = counter.getRandomSample();
+        long count = counter.getCount();
+        if (count != 0) {
+            randomSampleText.append("File " + fileIndex + ", out of a total of " + count + ", random sample of positions for counter " + counterName + " (chromosome tab position): \n");
+            for (Object o : randomSample) {
+                VCFCompareMode.VCFPosition pos = (VCFCompareMode.VCFPosition) o;
+                randomSampleText.append(pos.toString(reverseIdentifiers));
+                randomSampleText.append("\n");
             }
         }
+    }
 
-        return randomSampleText.toString();
+    public String toStringSample(int fileIndex) {
+        String a =
+                String.format("COUNT_STATS\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%g%n",
+                        fileIndex, sampleId,
+                        namedCounters.get("numGenotypeAgreements", 0).getCount(),
+                        namedCounters.get("numGenotypeDisagreements", 0).getCount(),
+                        namedCounters.get("numGenotypeNotInFile", fileIndex).getCount(),
+                        namedCounters.get("missedOneAllele", fileIndex).getCount(),
+                        namedCounters.get("missedTwoAlleles", fileIndex).getCount(),
+                        namedCounters.get("missedMoreThanTwoAlleles", fileIndex).getCount(),
+                        namedCounters.get("otherDifferencesInGenotype", 0).getCount(),
+                        getTransversionToTransitionRatio(fileIndex)
+                );
+        long disagreementDenominator = namedCounters.get("numGenotypeDisagreements", 0).getCount();
+        long observedDenominator = namedCounters.get("numGenotypeDisagreements", 0).getCount() +
+                namedCounters.get("numGenotypeAgreements", 0).getCount();
+
+        String b = String.format("FREQ_STATS\t%d\t%s\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g%n",
+                fileIndex, sampleId,
+                fraction(namedCounters.get("numGenotypeAgreements", 0).getCount(), observedDenominator),
+                fraction(namedCounters.get("numGenotypeDisagreements", 0).getCount(), observedDenominator),
+                fraction(namedCounters.get("numGenotypeNotInFile", fileIndex).getCount(), disagreementDenominator),
+                fraction(namedCounters.get("missedOneAllele", fileIndex).getCount(), disagreementDenominator),
+                fraction(namedCounters.get("missedTwoAlleles", fileIndex).getCount(), disagreementDenominator),
+                fraction(namedCounters.get("missedMoreThanTwoAlleles", fileIndex).getCount(), disagreementDenominator),
+                fraction(namedCounters.get("otherDifferencesInGenotype", 0).getCount(), disagreementDenominator),
+                getTransversionToTransitionRatio(fileIndex)
+        );
+        return a + b;
     }
 }

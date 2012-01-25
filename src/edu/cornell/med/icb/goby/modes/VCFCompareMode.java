@@ -439,7 +439,7 @@ public class VCFCompareMode extends AbstractGobyMode {
         if (outputFilename != null) {
             PrintWriter out = new PrintWriter(new FileWriter(outputFilename));
 
-            out.write("file\tsample\tnumGenotypeAgreements\tnumGenotypeDisagreements\tnumGenotypeNotInFile\tmissedOneAllele\tmissedTwoAlleles\tmissedMoreThanTwoAlleles\tnumHadDifferentAllele\tti/tv_ratio\n");
+            out.write("key\tfile\tsample\tnumGenotypeAgreements\tnumGenotypeDisagreements\tnumGenotypeNotInFile\tmissedOneAllele\tmissedTwoAlleles\tmissedMoreThanTwoAlleles\totherDifferenceInGenotype\tti/tv_ratio\n");
             for (int fileIndex = 0; fileIndex < numInputFiles; fileIndex++) {
                 for (final SampleStats sampleStat : sampleStats) {
 

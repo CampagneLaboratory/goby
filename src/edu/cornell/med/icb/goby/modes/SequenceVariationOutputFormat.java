@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.alignments.DiscoverVariantIterateSortedAlignments;
+import edu.cornell.med.icb.goby.alignments.DiscoverVariantPositionData;
 import edu.cornell.med.icb.goby.alignments.SampleCountInfo;
 import edu.cornell.med.icb.goby.alignments.PositionBaseInfo;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
@@ -50,7 +51,7 @@ public interface SequenceVariationOutputFormat {
     public void allocateStorage(int numberOfSamples, int numberOfGroups);
 
     /**
-     * Write statistics to the statsWriter for each position that should be reported. 
+     * Write statistics to the statsWriter for each position that should be reported.
      * @param iterator
      * @param sampleCounts
      * @param referenceIndex
@@ -62,7 +63,7 @@ public interface SequenceVariationOutputFormat {
     public void writeRecord(DiscoverVariantIterateSortedAlignments iterator,
                             SampleCountInfo[] sampleCounts, int referenceIndex,
                             int position,
-                            ObjectArrayList<PositionBaseInfo> list,
+                            DiscoverVariantPositionData list,
                             int groupIndexA, int groupIndexB);
 
 

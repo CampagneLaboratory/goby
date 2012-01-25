@@ -221,7 +221,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
                             final SampleCountInfo[] sampleCounts,
                             final int referenceIndex,
                             int position,
-                            final ObjectArrayList<PositionBaseInfo> list,
+                            final DiscoverVariantPositionData list,
                             final int groupIndexA,
                             final int groupIndexB) {
 

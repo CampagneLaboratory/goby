@@ -24,7 +24,6 @@ import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.stat.inference.TTest;
 import org.apache.commons.math.stat.inference.TTestImpl;
@@ -148,7 +147,7 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
     int valuesGroupBIndex[];
 
     public void writeRecord(DiscoverVariantIterateSortedAlignments iterator, SampleCountInfo[] sampleCounts,
-                            int referenceIndex, int position, ObjectArrayList<PositionBaseInfo> list,
+                            int referenceIndex, int position, DiscoverVariantPositionData list,
                             int groupIndexA, int groupIndexB) {
         // report 1-based positions
         position = position + 1;

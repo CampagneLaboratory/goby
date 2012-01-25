@@ -192,7 +192,7 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
                             SampleCountInfo[] sampleCounts,
                             int referenceIndex,
                             int position,
-                            ObjectArrayList<PositionBaseInfo> list,
+                            DiscoverVariantPositionData list,
                             int groupIndexA,
                             int groupIndexB) {
         // report 1-based positions.

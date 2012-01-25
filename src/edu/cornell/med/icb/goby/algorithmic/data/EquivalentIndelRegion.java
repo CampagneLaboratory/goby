@@ -173,6 +173,10 @@ public class EquivalentIndelRegion {
         filtered = true;
     }
 
+    public boolean isFiltered() {
+        return filtered;
+    }
+
     public void incrementFrequency() {
         ++frequency;
     }

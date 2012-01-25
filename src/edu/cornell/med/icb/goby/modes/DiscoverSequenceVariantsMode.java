@@ -94,7 +94,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
      */
     private boolean overrideReferenceWithGenome = true;
     private FormatConfigurator formatConfigurator = new DummyFormatConfigurator();
-    private ArrayList<GroupComparison> groupComparisonsList=new ArrayList<GroupComparison>();
+    private ArrayList<GroupComparison> groupComparisonsList = new ArrayList<GroupComparison>();
     private int maxThresholdPerSite;
 
 
@@ -177,7 +177,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         for (String group : groups) {
             groupIds.registerIdentifier(new MutableString(group));
         }
-        maxThresholdPerSite=jsapResult.getInt("max-coverage-per-site");
+        maxThresholdPerSite = jsapResult.getInt("max-coverage-per-site");
         minimumVariationSupport = jsapResult.getInt("minimum-variation-support");
         thresholdDistinctReadIndices = jsapResult.getInt("threshold-distinct-read-indices");
         CompactAlignmentToAnnotationCountsMode.parseEval(jsapResult, deAnalyzer);
@@ -229,13 +229,16 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             case METHYLATION:
                 formatter = new MethylationRateVCFOutputFormat();
                 // methylated bases match the reference. Do not filter on minimum variation support.
-                int tmp=minimumVariationSupport;
+                int tmp = minimumVariationSupport;
                 this.minimumVariationSupport = -1;
                 this.thresholdDistinctReadIndices = 1;
                 // need at least so many methylation/non-methylation event to record site in output
                 // the value configure put in minimumVariationSupport as minimum coverage for the site.
                 ((MethylationRateVCFOutputFormat) formatter).setMinimumEventThreshold(tmp);
                 System.out.println("Methylation format ignores thresholdDistinctReadIndices. Additionally, the minimum coverage needed for a site to be reported can be changed with --minimum-variation-support.");
+                break;
+            case INDEL_COUNTS:
+                formatter = new IndelCountOutputFormat();
                 break;
             default:
                 ObjectArrayList<OutputFormat> values = ObjectArrayList.wrap(OutputFormat.values());
@@ -275,6 +278,14 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 if (Release1_9_7_2.callIndels) {
                     genotypeFilters.add(new RemoveIndelArtifactsFilter());
                 }
+                if (!disableAtLeastQuarterFilter) {
+                    genotypeFilters.add(new AtLeastAQuarterFilter());
+                }
+                break;
+            case INDEL_COUNTS:
+                genotypeFilters.add(new QualityScoreFilter());
+                genotypeFilters.add(new LeftOverFilter());
+                genotypeFilters.add(new RemoveIndelArtifactsFilter());
                 if (!disableAtLeastQuarterFilter) {
                     genotypeFilters.add(new AtLeastAQuarterFilter());
                 }
@@ -433,7 +444,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     }
 
     private void stopWhenDefaultGroupOptions() {
-        if (groupComparisonsList.size()==0) {
+        if (groupComparisonsList.size() == 0) {
             System.err.println("Format group_comparison requires that arguments --group and --compare be defined.");
             System.exit(1);
         }
@@ -465,7 +476,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         GENOTYPES,
         COMPARE_GROUPS,
         METHYLATION,
-        BETWEEN_GROUPS
+        BETWEEN_GROUPS,
+        INDEL_COUNTS
     }
 
     enum AlignmentProcessorNames {

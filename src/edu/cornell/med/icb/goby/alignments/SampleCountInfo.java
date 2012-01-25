@@ -201,7 +201,15 @@ public class SampleCountInfo {
      * @return True or false.
      */
     public boolean hasIndels() {
-        return !(indels == null || indels.isEmpty());
+        return !(indels == null || indels.isEmpty() || allMarkedRemoved() );
+    }
+
+    private boolean allMarkedRemoved() {
+        boolean allRemoved=true;
+        for (EquivalentIndelRegion eir: indels) {
+             allRemoved &=eir.isFiltered();
+        }
+        return allRemoved;
     }
 
     public final char base(final int baseIndex) {
@@ -236,6 +244,20 @@ public class SampleCountInfo {
 
     public ObjectArrayList<EquivalentIndelRegion> getEquivalentIndelRegions() {
         return indels;
+    }
+
+    /**
+     * Return the indel at a given genotype index.
+     * @param genotypeIndex index of the indel genotype
+     * @return indel EIR.
+     */
+    public EquivalentIndelRegion getIndelGenotype(int genotypeIndex) {
+
+        assert genotypeIndex >= BASE_MAX_INDEX : "genotype index must not refer to a base when fetching an indel.";
+        assert hasIndels() : "SampleCountInfo must have indels to fetch an indel";
+
+        final int indelIndex = genotypeIndex - BASE_MAX_INDEX;
+        return indels.get(indelIndex);
     }
 
     public final void getGenotype(final int genotypeIndex, final MutableString destination) {

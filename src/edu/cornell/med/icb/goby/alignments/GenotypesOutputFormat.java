@@ -24,7 +24,6 @@ import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.log4j.Logger;
@@ -117,7 +116,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
 
     @Override
     public void writeRecord(final DiscoverVariantIterateSortedAlignments iterator, final SampleCountInfo[] sampleCounts,
-                            final int referenceIndex, int position, final ObjectArrayList<PositionBaseInfo> list, final int groupIndexA, final int groupIndexB) {
+                            final int referenceIndex, int position, final DiscoverVariantPositionData list, final int groupIndexA, final int groupIndexB) {
 
         position = position + 1; // report  1-based position
         fillVariantCountArrays(sampleCounts);
