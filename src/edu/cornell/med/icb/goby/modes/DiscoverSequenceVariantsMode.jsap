@@ -194,5 +194,17 @@
             </defaults>
             <help>The name of the alignment processor. An alignment processor can be configured to scan alignment entries before calling variants. By default, no processor is used. If you specify realign_near_indels, a processor that realigns reads in the proximity of indels will be used. Please note that this feature is experimental (Since Goby 1.9.7).</help>
         </flaggedOption>
+         <flaggedOption>
+            <id>call-indels</id>
+            <longFlag>call-indels</longFlag>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>false</string>
+            </defaults>
+            <help>Activate or disable indel calling. As of Goby 1.9.8.2, with default false (do not call indels). </help>
+        </flaggedOption>
     </parameters>
 </jsap>

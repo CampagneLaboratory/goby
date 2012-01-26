@@ -152,13 +152,22 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
     private int previousReference = -1;
     WarningCounter refBaseWarning = new WarningCounter();
 
+    /**
+     * Enable or disable calling indels.
+     * @param callIndels True will enable calling indels.
+     */
+    public void setCallIndels(final boolean callIndels) {
+        this.callIndels = callIndels;
+    }
+
+    private boolean callIndels=false;
     @Override
     public void observeIndel(final Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
                              final int referenceIndex,
                              final int startPosition, final String from, final String to,
                              final int sampleIndex, final int readIndex) {
 
-        if (Release1_9_7_2.callIndels) {
+        if (callIndels) {
             final ObservedIndel indel = new ObservedIndel(startPosition, from, to, readIndex);
             int flankLeftSize = 1;
             equivalentIndelRegionCalculator.setFlankLeftSize(flankLeftSize); // VCF output requires one base before the indel

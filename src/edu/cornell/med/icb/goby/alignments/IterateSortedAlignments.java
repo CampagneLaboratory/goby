@@ -615,7 +615,7 @@ public abstract class IterateSortedAlignments<T> {
     IntArrayList tmpPositions = new IntArrayList();
 
     /**
-     * Process positions on the previous target, which may still be in positionToBases. Note that this method is no
+     * Process positions on the previous target, which may still be in positionToBases. Note that this method is not
      * re-entrant.
      *
      * @param lastReferenceIndex the last referenceIndex?

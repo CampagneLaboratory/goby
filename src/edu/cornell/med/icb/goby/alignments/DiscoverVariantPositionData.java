@@ -88,6 +88,12 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
         failedIndels.add(indel);
     }
 
+    @Override
+    public void clear() {
+        super.clear();
+        failedIndels=null;
+    }
+
     /**
      * Test if this set of genotype observation includes indels.
      *

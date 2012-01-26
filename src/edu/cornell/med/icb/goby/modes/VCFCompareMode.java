@@ -378,7 +378,7 @@ public class VCFCompareMode extends AbstractGobyMode {
                     sampleStat.counters().get("numGenotypeDisagreements", 0).increment(position);
 
                     if (distinctGenotypes.contains("")) {
-                        final int fileIndex = indexNot(sampleGenotypes, "");
+                        final int fileIndex = sampleGenotypes.indexOf("");
                         //  System.out.printf("position %s sample %s incrementing numGenotypeNotInFile[fileIndex=%d] %s %n",position, sample, fileIndex,sampleGenotypes);
                         assert fileIndex != -1 : "some sample must not have not called a genotype";
                         sampleStat.counters().get("numGenotypeNotInFile", fileIndex).increment(position);

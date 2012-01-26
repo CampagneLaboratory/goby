@@ -96,6 +96,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     private FormatConfigurator formatConfigurator = new DummyFormatConfigurator();
     private ArrayList<GroupComparison> groupComparisonsList = new ArrayList<GroupComparison>();
     private int maxThresholdPerSite;
+    private boolean callIndels = Release1_9_7_2.callIndels;
 
 
     public void setDisableAtLeastQuarterFilter(boolean disableAtLeastQuarterFilter) {
@@ -202,6 +203,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             }
 
         }
+        callIndels = jsapResult.getBoolean("call-indels");
+
 
         realignmentFactory = configureProcessor(jsapResult);
         final String formatString = jsapResult.getString("format");
@@ -239,6 +242,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 break;
             case INDEL_COUNTS:
                 formatter = new IndelCountOutputFormat();
+                callIndels = true;
                 break;
             default:
                 ObjectArrayList<OutputFormat> values = ObjectArrayList.wrap(OutputFormat.values());
@@ -253,9 +257,9 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
             case METHYLATION:
                 // no filters at all for methylation. It seems that in some dataset quality scores are much lower for
-                //bases that are not methylation and therefore converted. We don't want to filter these bases and therefore
+                //bases that are not methylated and therefore converted. We don't want to filter these bases and therefore
                 // do not install the quality score filter.
-                if (Release1_9_7_2.callIndels) {
+                if (callIndels) {
                     genotypeFilters.add(new RemoveIndelArtifactsFilter());
                 }
                 break;
@@ -266,7 +270,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
                 genotypeFilters.add(new QualityScoreFilter());
                 genotypeFilters.add(new LeftOverFilter());
-                if (Release1_9_7_2.callIndels) {
+                if (callIndels) {
                     genotypeFilters.add(new RemoveIndelArtifactsFilter());
                 }
                 break;
@@ -275,7 +279,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 genotypeFilters.add(new QualityScoreFilter());
                 genotypeFilters.add(new LeftOverFilter());
 
-                if (Release1_9_7_2.callIndels) {
+                if (callIndels) {
                     genotypeFilters.add(new RemoveIndelArtifactsFilter());
                 }
                 if (!disableAtLeastQuarterFilter) {
@@ -301,9 +305,12 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         RandomAccessSequenceInterface genome = configureGenome(testGenome, jsapResult);
 
         int startFlapSize = jsapResult.getInt("start-flap-size", 100);
+        if (callIndels) {
+            System.err.println("Indel calling was activated.");
+        }
         formatConfigurator.configureFormatter(formatter);
         sortedPositionIterator = new DiscoverVariantIterateSortedAlignments(formatter);
-
+        sortedPositionIterator.setCallIndels(callIndels);
         sortedPositionIterator.setGenome(genome);
         sortedPositionIterator.setStartFlapLength(startFlapSize);
         sortedPositionIterator.parseIncludeReferenceArgument(jsapResult);
@@ -396,6 +403,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         String endOffsetArgument = jsapResult.getString("end-position");
         String minIndex = getReferenceId(startOffsetArgument, "min");
         String maxIndex = getReferenceId(endOffsetArgument, "max");
+
         final String genome = jsapResult.getString("genome");
         RandomAccessSequenceCache cache = null;
         if (genome != null) {
@@ -467,6 +475,19 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
     public ArrayList<GroupComparison> getGroupComparisons() {
         return groupComparisonsList;
+    }
+
+    /**
+     * Set call indel.
+     *
+     * @param flag When flag is true, call indels in data. When false, only call SNPs.
+     */
+    public void setCallIndels(boolean flag) {
+        this.callIndels = flag;
+    }
+
+    public boolean getCallIndels() {
+        return callIndels;
     }
 
 

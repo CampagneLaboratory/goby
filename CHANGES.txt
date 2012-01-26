@@ -1,9 +1,14 @@
+>to 1.9.8.2
+ - Make it possible to activate indel calling without recompilation. Mode discover-sequence-variants now accepts
+   the boolean argument --call-indels true/false.
  - Preliminary support for calling indels with discover-sequence-variants.  Candidate indels are now written
    in the formats that use GenotypeOutputFormat (e.g., genotypes, compare_groups, allele_frequency).
    The method of Krawitz et al is used to determine the equivalent indel region for each possible candidate.
    After possible realignment, and filtering to remove possible errors, EIR are reported with their frequencies.
-
->to 1.9.8.2
+   Please be advised that the VCF spec(s) are rather vague and as a result often interpreted differently by different
+   programmers.This is especially true of the part of the specification(s) that describe how to report indels. As a
+   result of this situation, so you should expect to run into problems when trying to loading indel containing VCF
+   files generated with Goby into other tools.
  - Improve vcf-compare mode. Now has the ability to provide a random samples of the positions that differ between the
    files being compared. Random samples are calculated for each kind of difference (missing from one file, missing
    one allele, two alleles, different genotypes)
