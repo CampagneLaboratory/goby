@@ -51,7 +51,7 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
     private int maxPosition;
     private int maxRefIndex;
     private CharSequence minRefId;
-    private int previousMaxRefIndex;
+    private int previousMaxRefIndex=-1;
     private CharSequence maxRefId;
     private final int MIN_COVERAGE_THRESHOLD = 5;
     private boolean headerWritten;
@@ -64,8 +64,9 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         sampleIds = mode.getSamples();
         groupIds = mode.getGroups();
-        // force Goby to call indels:
-        Release1_9_7_2.callIndels = true;
+
+        assert mode.getCallIndels() == true : "indel calling must be active.";
+
     }
 
     @Override
@@ -86,10 +87,10 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
                             final int groupIndexB) {
         writeHeader();
         minPosition = Math.min(position, minPosition);
-        minRefIndex = Math.min(position, minRefIndex);
-        maxPosition = Math.min(position, maxPosition);
-        maxRefIndex = Math.min(position, maxRefIndex);
-        if (maxRefIndex != previousMaxRefIndex) {
+        minRefIndex = Math.min(referenceIndex, minRefIndex);
+        maxPosition = Math.max(position, maxPosition);
+        maxRefIndex = Math.max(referenceIndex, maxRefIndex);
+        if (maxRefIndex != previousMaxRefIndex || maxRefId==null) {
             maxRefId = iterator.getReferenceId(maxRefIndex);
         }
         previousMaxRefIndex = maxRefIndex;
@@ -130,56 +131,56 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
             maxRefId=null;
         }
     }
-
     @Override
-    public void close() {
+      public void close() {
 
 
-        writeHeader();
-        flushToDisk();
-        output.close();
+          writeHeader();
+          flushToDisk();
+          output.close();
 
-    }
+      }
 
-    private void flushToDisk() {
+   private void flushToDisk() {
 
-        int sampleIndex = 0;
-        for (String sample : sampleIds) {
-            output.write(String.format("SAMPLE\t%s\t%s:%d-%s:%d\t%d\t%d\t%g%n", sample,
-                    minRefId, minPosition, maxRefId, maxPosition,
-                    sampleIndelCounts[sampleIndex],
-                    sampleSitesObserved[sampleIndex],
-                    100000d * fraction(sampleIndelCounts[sampleIndex], sampleSitesObserved[sampleIndex])));
-            sampleIndex++;
-        }
-        int groupIndex = 0;
-        for (String group : groupIds) {
+           int sampleIndex = 0;
+           for (String sample : sampleIds) {
+               output.write(String.format("SAMPLE\t%s\t%s:%d-%s:%d\t%d\t%d\t%g%n", sample,
+                       minRefId, minPosition, maxRefId, maxPosition,
+                       sampleIndelCounts[sampleIndex],
+                       sampleSitesObserved[sampleIndex],
+                       100000d * fraction(sampleIndelCounts[sampleIndex], sampleSitesObserved[sampleIndex])));
+               sampleIndex++;
+           }
+           int groupIndex = 0;
+           for (String group : groupIds) {
 
-            output.write(String.format("GROUP\t%s\t%s:%d-%s:%d\t%d\t%d\t%g%n", group,
-                    minRefId, minPosition, maxRefId, maxPosition,
-                    groupIndelCounts[groupIndex],
-                    groupSitesObserved[groupIndex],
-                    100000d * fraction(groupIndelCounts[groupIndex], groupSitesObserved[groupIndex])));
-            groupIndex++;
-        }
-        output.flush();
-        Arrays.fill(sampleIndelCounts, 0);
-        Arrays.fill(groupIndelCounts, 0);
-        Arrays.fill(sampleSitesObserved, 0);
-        Arrays.fill(groupSitesObserved, 0);
-    }
+               output.write(String.format("GROUP\t%s\t%s:%d-%s:%d\t%d\t%d\t%g%n", group,
+                       minRefId, minPosition, maxRefId, maxPosition,
+                       groupIndelCounts[groupIndex],
+                       groupSitesObserved[groupIndex],
+                       100000d * fraction(groupIndelCounts[groupIndex], groupSitesObserved[groupIndex])));
+               groupIndex++;
+           }
+           output.flush();
+           Arrays.fill(sampleIndelCounts, 0);
+           Arrays.fill(groupIndelCounts, 0);
+           Arrays.fill(sampleSitesObserved, 0);
+           Arrays.fill(groupSitesObserved, 0);
+       }
 
-    private void writeHeader() {
-        if (!headerWritten) {
-            try {
-                output = new PrintWriter(new FileWriter("indel-counts.tsv"));
-                output.write("STAT-TYPE\tID\tslice-id\tindel-count\t#sites-observed\tindels/100k-bases\n");
-                headerWritten = true;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+       private void writeHeader() {
+           if (!headerWritten) {
+               try {
+                   output = new PrintWriter(new FileWriter("indel-counts.tsv"));
+                   output.write("STAT-TYPE\tID\tslice-id\tindel-count\t#sites-observed\tindels/100k-bases\n");
+                   headerWritten = true;
+               } catch (IOException e) {
+                   e.printStackTrace();
+               }
+           }
+       }
+
 
     private double fraction(int a, long b) {
         return ((double) a) / ((double) b);
