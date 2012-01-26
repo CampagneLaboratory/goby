@@ -46,8 +46,8 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
     private String[] sampleIds;
     private String[] groupIds;
     private boolean allocated;
-    private int minPosition;
-    private int minRefIndex;
+    private int minPosition=Integer.MAX_VALUE;
+    private int minRefIndex=Integer.MAX_VALUE;
     private int maxPosition;
     private int maxRefIndex;
     private CharSequence minRefId;
