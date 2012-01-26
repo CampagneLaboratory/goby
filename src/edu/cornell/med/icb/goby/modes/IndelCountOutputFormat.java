@@ -173,7 +173,7 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
     private void writeHeader() {
         if (!headerWritten) {
 
-            output.write("STAT-TYPE\tID\tslice-id\tindel-count\t#sites-observed\tindels/100k-bases\n");
+            output.write("STAT-TYPE\tlabel\tslice-id\tindel-count\t#sites-observed\tindels/100k-bases\n");
             headerWritten = true;
 
         }
