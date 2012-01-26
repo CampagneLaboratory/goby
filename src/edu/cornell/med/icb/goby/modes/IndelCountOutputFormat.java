@@ -50,6 +50,7 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
     private CharSequence minRefId;
     private int previousMaxRefIndex;
     private CharSequence maxRefId;
+    private final int MIN_COVERAGE_THRESHOLD=5;
 
     @Override
     public void defineColumns(PrintWriter statsWriter, DiscoverSequenceVariantsMode mode) {
@@ -92,7 +93,8 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
             for (int count : sci.counts) {
                 totalCount += count;
             }
-            if (totalCount > 0) {
+
+            if (totalCount >= MIN_COVERAGE_THRESHOLD) {
                 sampleSitesObserved[sci.sampleIndex]++;
                 groupSitesObserved[readerIndexToGroupIndex[sci.sampleIndex]]++;
             }
@@ -100,7 +102,7 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
         if (list.hasCandidateIndels()) {
             for (final EquivalentIndelRegion indel : list.getIndels()) {
 
-                if (indel.getFrequency() >= Math.max(5, list.size() / 3)) {
+                if (indel.getFrequency() >= Math.max(MIN_COVERAGE_THRESHOLD, list.size() / 3)) {
                     // frequency must be at least 5 or a third of the number of bases at position, whichever is smaller.
                     // System.out.printf("sample %d referenceIndex %d position: %d %s %n", indel.sampleIndex, referenceIndex, position, indel);
                     sampleIndelCounts[indel.sampleIndex]++;
