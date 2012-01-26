@@ -122,6 +122,12 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
         if (numSites++ > maxSitesPerAccumulation) {
             flushToDisk();
             numSites = 0;
+            minPosition=-1;
+            maxPosition=-1;
+            minRefIndex=-1;
+            maxRefIndex=-1;
+            minRefId=null;
+            maxRefId=null;
         }
     }
 
