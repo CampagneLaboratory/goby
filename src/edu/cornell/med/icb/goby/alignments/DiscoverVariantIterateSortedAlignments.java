@@ -84,7 +84,8 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
     String[] samples;
 
     public void initialize(DiscoverSequenceVariantsMode mode,
-                           PrintWriter outWriter, ObjectArrayList<GenotypeFilter> filters) {
+                           PrintWriter outWriter,
+                           ObjectArrayList<GenotypeFilter> filters) {
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
 
         format.defineColumns(outWriter, mode);
