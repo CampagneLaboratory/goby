@@ -52,10 +52,10 @@ public abstract class IterateSortedAlignmentsListImpl
                                            final Alignments.AlignmentEntry alignmentEntry,
                                            final Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
                                            final int currentReferenceIndex, final int currentRefPosition, final int currentReadIndex) {
-        if (LOG.isTraceEnabled()) {
+        /*if (LOG.isTraceEnabled()) {
             LOG.trace(String.format("RB: queryIndex=%d\tref_position=%d\tread_index=%d",
                     alignmentEntry.getQueryIndex(), currentRefPosition, currentReadIndex));
-        }
+        } */
 
         final PositionBaseInfo info = new PositionBaseInfo();
 
@@ -82,11 +82,11 @@ public abstract class IterateSortedAlignmentsListImpl
                                    final int currentRefPosition,
                                    final int currentReadIndex) {
 
-        if (LOG.isTraceEnabled()) {
+      /*  if (LOG.isTraceEnabled()) {
             LOG.trace(String.format("VB: queryIndex=%d\tref_position=%d\tread_index=%d\tfromChar=%c\ttoChar=%c",
                     alignmentEntry.getQueryIndex(), currentRefPosition, currentReadIndex, fromChar, toChar));
         }
-
+        */
         final PositionBaseInfo info = new PositionBaseInfo();
         info.readerIndex = alignmentEntry.getSampleIndex();
         //    System.out.printf("observing var readerIndex=%d%n",info.readerIndex);
