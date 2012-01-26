@@ -43,6 +43,13 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
     private String[] sampleIds;
     private String[] groupIds;
     private boolean allocated;
+    private int minPosition;
+    private int minRefIndex;
+    private int maxPosition;
+    private int maxRefIndex;
+    private CharSequence minRefId;
+    private int previousMaxRefIndex;
+    private CharSequence maxRefId;
 
     @Override
     public void defineColumns(PrintWriter statsWriter, DiscoverSequenceVariantsMode mode) {
@@ -69,7 +76,17 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
                             final int referenceIndex, final int position,
                             final DiscoverVariantPositionData list, final int groupIndexA,
                             final int groupIndexB) {
-
+        minPosition=Math.min(position,minPosition);
+        minRefIndex=Math.min(position,minRefIndex);
+        maxPosition=Math.min(position,maxPosition);
+        maxRefIndex=Math.min(position,maxRefIndex);
+        if (maxRefIndex!=previousMaxRefIndex) {
+              maxRefId=iterator.getReferenceId(maxRefIndex);
+        }
+        previousMaxRefIndex=maxRefIndex;
+        if (minRefId==null) {
+            minRefId=iterator.getReferenceId(minRefIndex);
+        }
         for (SampleCountInfo sci : sampleCounts) {
             int totalCount = 0;
             for (int count : sci.counts) {
@@ -98,10 +115,11 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
     public void close() {
         try {
             PrintWriter output = new PrintWriter(new FileWriter("indel-counts.tsv"));
-            output.write("STAT-TYPE\tID\tindel-count\t#sites-observed\tindels/100k-bases\n");
+            output.write("STAT-TYPE\tID\tslice-id\tindel-count\t#sites-observed\tindels/100k-bases\n");
             int sampleIndex = 0;
             for (String sample : sampleIds) {
-                output.write(String.format("SAMPLE\t%s\t%d\t%d\t%g%n", sample,
+                output.write(String.format("SAMPLE\t%s\t%s:%d-%s:%d\t%d\t%d\t%g%n", sample,
+                        minRefId, minPosition, maxRefId,maxPosition,
                         sampleIndelCounts[sampleIndex],
                         sampleSitesObserved[sampleIndex],
                         100000d*fraction(sampleIndelCounts[sampleIndex], sampleSitesObserved[sampleIndex])));
@@ -110,7 +128,8 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
             int groupIndex = 0;
             for (String group : groupIds) {
 
-                output.write(String.format("GROUP\t%s\t%d\t%d\t%g%n", group,
+                output.write(String.format("GROUP\t%s\t%s:%d-%s:%d\t%d\t%d\t%g%n", group,
+                        minRefId, minPosition, maxRefId,maxPosition,
                         groupIndelCounts[groupIndex],
                         groupSitesObserved[groupIndex],
                         100000d*fraction(groupIndelCounts[groupIndex], groupSitesObserved[groupIndex])));
