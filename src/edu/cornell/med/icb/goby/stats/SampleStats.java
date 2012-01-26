@@ -285,7 +285,16 @@ public class SampleStats {
                         namedCounters.get("otherDifferencesInGenotype", 0).getCount(),
                         getTransversionToTransitionRatio(fileIndex)
                 );
-        long disagreementDenominator = namedCounters.get("numGenotypeDisagreements", 0).getCount();
+        int sumErrors = 0;
+
+
+        sumErrors += namedCounters.get("numGenotypeNotInFile", fileIndex).getCount();
+        sumErrors += namedCounters.get("missedOneAllele", fileIndex).getCount();
+        sumErrors += namedCounters.get("missedTwoAlleles", fileIndex).getCount();
+        sumErrors += namedCounters.get("missedMoreThanTwoAlleles", fileIndex).getCount();
+        sumErrors += namedCounters.get("otherDifferencesInGenotype", 0).getCount();
+
+        long disagreementDenominator = sumErrors;
         long observedDenominator = namedCounters.get("numGenotypeDisagreements", 0).getCount() +
                 namedCounters.get("numGenotypeAgreements", 0).getCount();
 

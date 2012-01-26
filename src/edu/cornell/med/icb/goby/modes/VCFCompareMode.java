@@ -413,9 +413,9 @@ public class VCFCompareMode extends AbstractGobyMode {
                 sumErrors += value(sampleIndex, "missedOneAllele", fileIndex);
                 sumErrors += value(sampleIndex, "missedTwoAlleles", fileIndex);
                 sumErrors += value(sampleIndex, "missedMoreThanTwoAlleles", fileIndex);
+                sumErrors += sampleStat.counters().get("otherDifferencesInGenotype", 0).getCount();
 
             }
-            sumErrors += sampleStat.numHadDifferentAllele;
             System.out.println("denominator=" + sumErrors);
             long numGenotypeAgreements = sampleStat.counters().get("numGenotypeAgreements", 0).getCount();
             long numGenotypeDisagreements = sampleStat.counters().get("numGenotypeDisagreements", 0).getCount();
@@ -432,7 +432,7 @@ public class VCFCompareMode extends AbstractGobyMode {
                     fraction(sum(values(sampleIndex, "missedOneAllele")), sumErrors),
                     fraction(sum(values(sampleIndex, "missedTwoAlleles")), sumErrors),
                     fraction(sum(values(sampleIndex, "missedMoreThanTwoAlleles")), sumErrors),
-                    fraction(sampleStat.numHadDifferentAllele, sumErrors)
+                    fraction(sum(values(sampleIndex, "otherDifferencesInGenotype")), sumErrors)
             );
             sampleIndex++;
         }
