@@ -28,8 +28,11 @@ import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 /**
+ * Format that estimates the number of called indels per hundred thousands bases observed.
+ *
  * @author Fabien Campagne
  *         Date: 1/25/12
  *         Time: 12:39 PM
@@ -50,7 +53,11 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
     private CharSequence minRefId;
     private int previousMaxRefIndex;
     private CharSequence maxRefId;
-    private final int MIN_COVERAGE_THRESHOLD=5;
+    private final int MIN_COVERAGE_THRESHOLD = 5;
+    private boolean headerWritten;
+    private PrintWriter output;
+    private int numSites;
+    private int maxSitesPerAccumulation = 10000000;
 
     @Override
     public void defineColumns(PrintWriter statsWriter, DiscoverSequenceVariantsMode mode) {
@@ -77,16 +84,17 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
                             final int referenceIndex, final int position,
                             final DiscoverVariantPositionData list, final int groupIndexA,
                             final int groupIndexB) {
-        minPosition=Math.min(position,minPosition);
-        minRefIndex=Math.min(position,minRefIndex);
-        maxPosition=Math.min(position,maxPosition);
-        maxRefIndex=Math.min(position,maxRefIndex);
-        if (maxRefIndex!=previousMaxRefIndex) {
-              maxRefId=iterator.getReferenceId(maxRefIndex);
+        writeHeader();
+        minPosition = Math.min(position, minPosition);
+        minRefIndex = Math.min(position, minRefIndex);
+        maxPosition = Math.min(position, maxPosition);
+        maxRefIndex = Math.min(position, maxRefIndex);
+        if (maxRefIndex != previousMaxRefIndex) {
+            maxRefId = iterator.getReferenceId(maxRefIndex);
         }
-        previousMaxRefIndex=maxRefIndex;
-        if (minRefId==null) {
-            minRefId=iterator.getReferenceId(minRefIndex);
+        previousMaxRefIndex = maxRefIndex;
+        if (minRefId == null) {
+            minRefId = iterator.getReferenceId(minRefIndex);
         }
         for (SampleCountInfo sci : sampleCounts) {
             int totalCount = 0;
@@ -111,35 +119,59 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
                 }
             }
         }
+        if (numSites++ > maxSitesPerAccumulation) {
+            flushToDisk();
+            numSites = 0;
+        }
     }
 
     @Override
     public void close() {
-        try {
-            PrintWriter output = new PrintWriter(new FileWriter("indel-counts.tsv"));
-            output.write("STAT-TYPE\tID\tslice-id\tindel-count\t#sites-observed\tindels/100k-bases\n");
-            int sampleIndex = 0;
-            for (String sample : sampleIds) {
-                output.write(String.format("SAMPLE\t%s\t%s:%d-%s:%d\t%d\t%d\t%g%n", sample,
-                        minRefId, minPosition, maxRefId,maxPosition,
-                        sampleIndelCounts[sampleIndex],
-                        sampleSitesObserved[sampleIndex],
-                        100000d*fraction(sampleIndelCounts[sampleIndex], sampleSitesObserved[sampleIndex])));
-                sampleIndex++;
-            }
-            int groupIndex = 0;
-            for (String group : groupIds) {
 
-                output.write(String.format("GROUP\t%s\t%s:%d-%s:%d\t%d\t%d\t%g%n", group,
-                        minRefId, minPosition, maxRefId,maxPosition,
-                        groupIndelCounts[groupIndex],
-                        groupSitesObserved[groupIndex],
-                        100000d*fraction(groupIndelCounts[groupIndex], groupSitesObserved[groupIndex])));
-                groupIndex++;
+
+        writeHeader();
+        flushToDisk();
+        output.close();
+
+    }
+
+    private void flushToDisk() {
+
+        int sampleIndex = 0;
+        for (String sample : sampleIds) {
+            output.write(String.format("SAMPLE\t%s\t%s:%d-%s:%d\t%d\t%d\t%g%n", sample,
+                    minRefId, minPosition, maxRefId, maxPosition,
+                    sampleIndelCounts[sampleIndex],
+                    sampleSitesObserved[sampleIndex],
+                    100000d * fraction(sampleIndelCounts[sampleIndex], sampleSitesObserved[sampleIndex])));
+            sampleIndex++;
+        }
+        int groupIndex = 0;
+        for (String group : groupIds) {
+
+            output.write(String.format("GROUP\t%s\t%s:%d-%s:%d\t%d\t%d\t%g%n", group,
+                    minRefId, minPosition, maxRefId, maxPosition,
+                    groupIndelCounts[groupIndex],
+                    groupSitesObserved[groupIndex],
+                    100000d * fraction(groupIndelCounts[groupIndex], groupSitesObserved[groupIndex])));
+            groupIndex++;
+        }
+        output.flush();
+        Arrays.fill(sampleIndelCounts, 0);
+        Arrays.fill(groupIndelCounts, 0);
+        Arrays.fill(sampleSitesObserved, 0);
+        Arrays.fill(groupSitesObserved, 0);
+    }
+
+    private void writeHeader() {
+        if (!headerWritten) {
+            try {
+                output = new PrintWriter(new FileWriter("indel-counts.tsv"));
+                output.write("STAT-TYPE\tID\tslice-id\tindel-count\t#sites-observed\tindels/100k-bases\n");
+                headerWritten = true;
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            output.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
