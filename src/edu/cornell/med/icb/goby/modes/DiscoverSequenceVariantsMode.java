@@ -273,7 +273,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 if (callIndels) {
                     genotypeFilters.add(new RemoveIndelArtifactsFilter());
                 }
-                if (!disableAtLeastQuarterFilter || callIndels)  {
+                if (!disableAtLeastQuarterFilter && callIndels)  {
                     System.out.println("Active: AtLeastAQuarterFilter.");
 
                     genotypeFilters.add(new AtLeastAQuarterFilter());

@@ -69,7 +69,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
     public static void init() {
 
         GobyRengine.getInstance();
-    //    assertNotNull("R engine must be available", GobyRengine.getInstance().getRengine());
+        //    assertNotNull("R engine must be available", GobyRengine.getInstance().getRengine());
     }
 
     @Test
@@ -86,7 +86,8 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
             configureTestGenome(mode);
             mode.configure(args);
-
+            mode.setCallIndels(false);
+            mode.setDisableAtLeastQuarterFilter(true);
             mode.execute();
 
             assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
@@ -118,6 +119,8 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
         configureTestGenome(mode);
         mode.configure(args);
+        mode.setCallIndels(false);
+        mode.setDisableAtLeastQuarterFilter(true);
         mode.execute();
         assertEquals(new File(BASE_TEST_DIR + "/" + outputFilename),
                 new File("test-data/discover-variants/expected-output-samples.tsv"));
@@ -127,7 +130,7 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
     //not a test, just useful to run through the code.
 
-       public void testDiscoverMethylationOneGroup() throws IOException, JSAPException {
+    public void testDiscoverMethylationOneGroup() throws IOException, JSAPException {
 
         final DiscoverSequenceVariantsMode mode = new DiscoverSequenceVariantsMode();
         int i = 1;
