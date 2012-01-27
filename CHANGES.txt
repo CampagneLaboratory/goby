@@ -26,6 +26,8 @@
    files are written.  Alignments smaller than 2GB are quietly ignored since they were not affected by the bug.
  - Codecs: Add support to decode alignments with a codec in AlignmentReader.
  - Improved ReadsReader to find a suitable decoder when several codecs exist.
+ - Prevents local realignment from running out of memory when processing positions where clonal reads create huge peaks.
+
 1.9.8.1
  - Discover-sequence-variants: add ability to describe zero, one or more group comparisons. Syntax is A/B,A/C to compare
    group A to B and group A to C. Additional pairs can be described, separated by coma.
