@@ -434,7 +434,7 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
             variantsCountPerGroup[groupIndex] += csi.varCount;
             refCountsPerGroup[groupIndex] += csi.refCount;
             distinctReadIndicesCountPerGroup[groupIndex].addAll(csi.distinctReadIndices);
-            for (int genotypeIndex = 0; genotypeIndex < maxGenotypeIndexAcrossSamples; genotypeIndex++) {
+            for (int genotypeIndex = 0; genotypeIndex < csi.getGenotypeMaxIndex(); genotypeIndex++) {
 
                 final int alleleCount = csi.getGenotypeCount(genotypeIndex) > 0 ? 1 : 0;
                 alleleCountsPerGroup[genotypeIndex][groupIndex] += alleleCount;
