@@ -505,7 +505,9 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         boolean add = true;
         if (tinfo.entriesInWindow.size() > MAX_ENTRIES_IN_WINDOW) {
             tinfo.pastMaxCount++;
-            if (random.nextDouble() > (1.0 / tinfo.pastMaxCount)) {
+            final double randomChoice = random.nextDouble();
+            final double threshold = 1.0 / tinfo.pastMaxCount;
+            if (randomChoice > threshold) {
                 // we make it increasingly hard to add new entries past the max_entries threshold. This prevents from
                 // running out of memory in the realignment step at positions that have clonal peaks (see this with RRBS).
                 add = false;
