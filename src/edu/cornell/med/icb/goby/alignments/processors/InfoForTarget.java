@@ -29,6 +29,8 @@ import edu.cornell.med.icb.goby.algorithmic.data.UnboundedFifoPool;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
+import java.util.Random;
+
 /**
  * @author Fabien Campagne
  *         Date: May 14, 2011
@@ -52,8 +54,12 @@ public class InfoForTarget {
      * we do not need to keep adding to the pool, since there is enough in the pool to return another entry.
      */
     public int maxEntryPosition;
-    /** The number of entries encountered pas the maximum threshold. */
+    /**
+     * The number of entries encountered pas the maximum threshold.
+     */
     protected int pastMaxCount;
+    private static final int MAX_ENTRIES_IN_WINDOW = 500000;
+
 
     public void addIndel(int startPosition, int endPosition, String from, String to) {
         for (int p = startPosition; p < endPosition; p++) {
@@ -101,6 +107,44 @@ public class InfoForTarget {
         potentialIndels.clear();
         positionsWithSpanningIndel.clear();
         entriesInWindow.clear();
-        pastMaxCount=0;
+        pastMaxCount = 0;
+    }
+
+    public Alignments.AlignmentEntry remove() {
+        final Alignments.AlignmentEntry tmp = entriesInWindow.remove();
+        if (entriesInWindow.size() < MAX_ENTRIES_IN_WINDOW) {
+            // when we have removed enough entries, make sure the next very high peak get the initial behavior:
+            pastMaxCount = 0;
+        }
+        return tmp;
+    }
+
+    private static final long SPECIAL_SEED = 238927383682638267L;
+    private Random random = new Random(SPECIAL_SEED);
+
+
+    /**
+     * Consider adding an entry. Entries are added unless we have reached the max count for the window.
+     *
+     * @param entry
+     * @return True when the entry was added. False otherwise.
+     */
+    public boolean add(Alignments.AlignmentEntry entry) {
+        boolean add = true;
+        if (entriesInWindow.size() > MAX_ENTRIES_IN_WINDOW) {
+            pastMaxCount++;
+            final double randomChoice = random.nextDouble();
+            final double threshold = 1.0 / pastMaxCount;
+            if (randomChoice > threshold) {
+                // we make it increasingly hard to add new entries past the max_entries threshold. This prevents from
+                // running out of memory in the realignment step at positions that have clonal peaks (see this with RRBS).
+                add = false;
+            }
+        }
+        if (add) {
+            entriesInWindow.add(entry);
+
+        }
+        return add;
     }
 }

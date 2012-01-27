@@ -106,7 +106,7 @@ public abstract class GenotypeFilter {
             // at that position):
             for (final EquivalentIndelRegion indel : list.getIndels()) {
                 if (indel != null && indel.getFrequency() < getThresholdForSample(indel.sampleIndex)) {
-
+                    indel.markFiltered();
                     list.failIndel(indel);
                 }
             }

@@ -51,7 +51,6 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
 
     private int processedCount;
     private int numEntriesRealigned;
-    private static final int MAX_ENTRIES_IN_WINDOW = 500000;
 
     @Override
     public int getModifiedCount() {
@@ -160,7 +159,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
             return null;
         }
 
-        Alignments.AlignmentEntry returnedEntry = backInfo.entriesInWindow.remove();
+        Alignments.AlignmentEntry returnedEntry = backInfo.remove();
 
         if (backInfo.positionsWithSpanningIndel.size() > 0) {
             returnedEntry = realign(returnedEntry, backInfo);
@@ -478,8 +477,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         return sequence.toString();
     }
 
-    private static final long SPECIAL_SEED = 238927383682638267L;
-    private Random random = new Random(SPECIAL_SEED);
+
 
     public void pushEntryToPool(InfoForTarget tinfo, int position, Alignments.AlignmentEntry entry) {
         // the window start is only decreased in the pushing step, never increased.
@@ -502,21 +500,9 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
 
             }
         }
-        boolean add = true;
-        if (tinfo.entriesInWindow.size() > MAX_ENTRIES_IN_WINDOW) {
-            tinfo.pastMaxCount++;
-            final double randomChoice = random.nextDouble();
-            final double threshold = 1.0 / tinfo.pastMaxCount;
-            if (randomChoice > threshold) {
-                // we make it increasingly hard to add new entries past the max_entries threshold. This prevents from
-                // running out of memory in the realignment step at positions that have clonal peaks (see this with RRBS).
-                add = false;
-            }
-        }
-        if (add) {
-            tinfo.entriesInWindow.add(entry);
-            ++enqueuedCount;
-        }
+
+        enqueuedCount += tinfo.add(entry) ? 1 : 0;
+
     }
 
     private boolean isIndel(Alignments.SequenceVariation var) {
