@@ -95,8 +95,6 @@ public class InfoForTarget {
 
             }
         }
-
-
     }
 
     public void clear() {

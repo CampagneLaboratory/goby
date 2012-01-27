@@ -273,6 +273,11 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 if (callIndels) {
                     genotypeFilters.add(new RemoveIndelArtifactsFilter());
                 }
+                if (!disableAtLeastQuarterFilter || callIndels)  {
+                    System.out.println("Active: AtLeastAQuarterFilter.");
+
+                    genotypeFilters.add(new AtLeastAQuarterFilter());
+                }
                 break;
             case GENOTYPES:
 
@@ -298,13 +303,13 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 throw new InternalError("Filters must be configured for new output format.");
         }
         System.out.println("Filtering reads that have these criteria:");
-        for (GenotypeFilter filter : genotypeFilters) {
+        for (final GenotypeFilter filter : genotypeFilters) {
             System.out.println(filter.describe());
         }
 
-        RandomAccessSequenceInterface genome = configureGenome(testGenome, jsapResult);
+        final RandomAccessSequenceInterface genome = configureGenome(testGenome, jsapResult);
 
-        int startFlapSize = jsapResult.getInt("start-flap-size", 100);
+        final int startFlapSize = jsapResult.getInt("start-flap-size", 100);
         if (callIndels) {
             System.err.println("Indel calling was activated.");
         }
