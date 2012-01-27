@@ -100,7 +100,7 @@ public class AtLeastAQuarterFilter extends GenotypeFilter {
 
             }
         }
-        filterIndels(list);
+        filterIndels(list, sampleCounts);
         adjustRefVarCounts(sampleCounts);
     }
 

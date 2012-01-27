@@ -103,7 +103,7 @@ public class LeftOverFilter extends GenotypeFilter {
             }
         }
 
-        filterIndels(list);
+        filterIndels(list,sampleCounts);
         adjustRefVarCounts(sampleCounts);
     }
 

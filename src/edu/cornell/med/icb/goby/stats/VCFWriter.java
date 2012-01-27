@@ -21,10 +21,7 @@ package edu.cornell.med.icb.goby.stats;
 import edu.cornell.med.icb.goby.modes.GobyDriver;
 import edu.cornell.med.icb.goby.readers.vcf.*;
 import edu.cornell.med.icb.util.VersionUtils;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -80,9 +77,11 @@ public class VCFWriter {
     public VCFWriter(final Writer writer) {
         this(new PrintWriter(writer));
     }
-   public VCFWriter(final BlockCompressedOutputStream stream) {
+
+    public VCFWriter(final BlockCompressedOutputStream stream) {
         this(new PrintWriter(new OutputStreamWriter(stream)));
     }
+
     /**
      * Indicate whether the genotypes should be recorded as phased (true) or unphased (false).
      * Default value at construction of the writer is unphased.
@@ -392,7 +391,7 @@ public class VCFWriter {
     }
 
     private final MutableString codedGenotypeBuffer = new MutableString();
-    private final IntList genotypeIndexList = new IntArrayList();
+    private final IntSortedSet genotypeIndexList = new IntAVLTreeSet();
 
     /**
      * Encode the list of alleles as a VCF genotype.
@@ -432,9 +431,9 @@ public class VCFWriter {
     protected MutableString codeGenotype(final String[] alleles,
                                          final ObjectArrayList<String> refAlleles,
                                          final ObjectArrayList<String> altAlleles) {
+
         codedGenotypeBuffer.setLength(0);
         boolean alleleFound;
-
         genotypeIndexList.clear();
         for (String allele : alleles) {
             alleleFound = false;
@@ -467,9 +466,9 @@ public class VCFWriter {
                 throw new IllegalArgumentException(String.format("Allele %s was not found in REF or ALT", allele));
             }
         }
-        Collections.sort(genotypeIndexList);
+        //    Collections.sort(genotypeIndexList);
 
-        for (int alleleIndex : genotypeIndexList) {
+        for (final int alleleIndex : genotypeIndexList) {
             codedGenotypeBuffer.append(Integer.toString(alleleIndex));
             codedGenotypeBuffer.append(genotypeDelimiterCharacter);
         }
@@ -683,6 +682,7 @@ public class VCFWriter {
         columnList.clear();
         this.columns = columns;
     }
+
     // assign column order according to the CVF format.
     private void assignColumnIndices(Columns columns) {
         int colIndex = 9;
@@ -702,7 +702,7 @@ public class VCFWriter {
             if (colIndices.containsKey(columnName)) {
                 col.columnIndex = colIndices.getInt(columnName);
             } else {
-            col.columnIndex = colIndex++;
+                col.columnIndex = colIndex++;
             }
         }
     }

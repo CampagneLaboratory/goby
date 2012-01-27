@@ -286,6 +286,7 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
 
 
         }
+
         if (indelFlagFieldIndex != -1) {    // set indel flag only when the field is defined (i.e., client has called setInfoFields)
             statsWriter.setFlag(indelFlagFieldIndex, siteHasIndel);
         }

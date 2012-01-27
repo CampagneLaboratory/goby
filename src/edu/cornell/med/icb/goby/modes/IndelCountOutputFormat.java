@@ -65,7 +65,7 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
         sampleIds = mode.getSamples();
         groupIds = mode.getGroups();
         output = statsWriter;
-        assert mode.getCallIndels() == true : "indel calling must be active.";
+        assert mode.getCallIndels() : "indel calling must be active.";
 
     }
 

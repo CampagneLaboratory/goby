@@ -100,7 +100,7 @@ public abstract class GenotypeFilter {
         }
     }
 
-    protected void filterIndels(final DiscoverVariantPositionData list) {
+    protected void filterIndels(final DiscoverVariantPositionData list, SampleCountInfo[] sampleCounts) {
         if (list.hasCandidateIndels()) {
             // remove candidate indels if they don't make the frequency threshold (threshold determined by bases observed
             // at that position):
@@ -108,6 +108,7 @@ public abstract class GenotypeFilter {
                 if (indel != null && indel.getFrequency() < getThresholdForSample(indel.sampleIndex)) {
                     indel.markFiltered();
                     list.failIndel(indel);
+                    sampleCounts[indel.sampleIndex].removeIndel(indel);
                 }
             }
         }
