@@ -31,9 +31,13 @@ import it.unimi.dsi.lang.MutableString;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.util.Random;
 
 /**
- * Support to realign reads on the fly in the proximity of indels.
+ * Support to realign reads on the fly in the proximity of indels. This implementation starts randomly filtering out alignments
+ * from the source if more than 500,000 entries make it into the sliding realignment window. The more alignments are added
+ * past the threshold the more difficult it become to add new ones. This strategy helps consuming all memory in the realignment
+ * step working with alignments that have artefactual peaks of very high coverage.
  *
  * @author Fabien Campagne
  *         Date: Apr 30, 2011
@@ -47,6 +51,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
 
     private int processedCount;
     private int numEntriesRealigned;
+    private static final int MAX_ENTRIES_IN_WINDOW = 500000;
 
     @Override
     public int getModifiedCount() {
@@ -332,7 +337,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
                     varBuilder.setPosition(varPosition);
                     varBuilder.setFrom(Character.toString(fromBase));
                     varBuilder.setTo(Character.toString(toBase));
-                    varBuilder.setToQuality(byteArray((byte)Byte.MAX_VALUE));
+                    varBuilder.setToQuality(byteArray((byte) Byte.MAX_VALUE));
                     int readIndex = entry.getMatchingReverseStrand() ?
                             entry.getQueryLength() - indelOffsetInAlignment + (shiftForward ? 1 : indelLength) :
                             varPosition;
@@ -367,8 +372,8 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         return alignmentEntry;
     }
 
-    private ByteString byteArray(byte... a)  {
-    return ByteString.copyFrom(a);
+    private ByteString byteArray(byte... a) {
+        return ByteString.copyFrom(a);
     }
 
 
@@ -440,7 +445,7 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
 //         String post = getGenomeSegment(genome, targetIndex, startAlignment + indelLength, endAlignment + indelLength);
         //   System.out.printf(" pre and post alignments: %n%s\n%s%n", pre, post);
         // pos is zero-based:
-        endAlignment=Math.min(endAlignment,genome.getLength(targetIndex)-1);
+        endAlignment = Math.min(endAlignment, genome.getLength(targetIndex) - 1);
         for (int pos = startAlignment; pos < endAlignment; pos++) {
             // both variantPositions and pos are zero-based:
             if (!variantPositions.contains(pos)) {
@@ -473,6 +478,9 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
         return sequence.toString();
     }
 
+    private static final long SPECIAL_SEED = 238927383682638267L;
+    private Random random = new Random(SPECIAL_SEED);
+
     public void pushEntryToPool(InfoForTarget tinfo, int position, Alignments.AlignmentEntry entry) {
         // the window start is only decreased in the pushing step, never increased.
         final int entryPosition = entry.getPosition();
@@ -494,9 +502,19 @@ public class RealignmentProcessor implements AlignmentProcessorInterface {
 
             }
         }
-
-        tinfo.entriesInWindow.add(entry);
-        ++enqueuedCount;
+        boolean add = true;
+        if (tinfo.entriesInWindow.size() > MAX_ENTRIES_IN_WINDOW) {
+            tinfo.pastMaxCount++;
+            if (random.nextDouble() > (1.0 / tinfo.pastMaxCount)) {
+                // we make it increasingly hard to add new entries past the max_entries threshold. This prevents from
+                // running out of memory in the realignment step at positions that have clonal peaks (see this with RRBS).
+                add = false;
+            }
+        }
+        if (add) {
+            tinfo.entriesInWindow.add(entry);
+            ++enqueuedCount;
+        }
     }
 
     private boolean isIndel(Alignments.SequenceVariation var) {

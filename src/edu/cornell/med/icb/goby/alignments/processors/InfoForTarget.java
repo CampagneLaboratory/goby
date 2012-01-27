@@ -52,6 +52,8 @@ public class InfoForTarget {
      * we do not need to keep adding to the pool, since there is enough in the pool to return another entry.
      */
     public int maxEntryPosition;
+    /** The number of entries encountered pas the maximum threshold. */
+    protected int pastMaxCount;
 
     public void addIndel(int startPosition, int endPosition, String from, String to) {
         for (int p = startPosition; p < endPosition; p++) {
@@ -101,5 +103,6 @@ public class InfoForTarget {
         potentialIndels.clear();
         positionsWithSpanningIndel.clear();
         entriesInWindow.clear();
+        pastMaxCount=0;
     }
 }
