@@ -27,7 +27,9 @@
  - Codecs: Add support to decode alignments with a codec in AlignmentReader.
  - Improved ReadsReader to find a suitable decoder when several codecs exist.
  - Prevents local realignment from running out of memory when processing positions where clonal reads create huge peaks.
-
+ - Make filterIndels remove from sample count info object, not just form list of bases.
+ - Fix VCF genotypes that could look like 0/0/1/1 to be 0/1 (seen with indels only).
+ - only write allele base count in VCF BC field when the count is not zero (useful with indels).
 1.9.8.1
  - Discover-sequence-variants: add ability to describe zero, one or more group comparisons. Syntax is A/B,A/C to compare
    group A to B and group A to C. Additional pairs can be described, separated by coma.
