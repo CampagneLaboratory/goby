@@ -155,13 +155,15 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
 
     /**
      * Enable or disable calling indels.
+     *
      * @param callIndels True will enable calling indels.
      */
     public void setCallIndels(final boolean callIndels) {
         this.callIndels = callIndels;
     }
 
-    private boolean callIndels=false;
+    private boolean callIndels = false;
+
     @Override
     public void observeIndel(final Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
                              final int referenceIndex,
@@ -251,18 +253,20 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
             boolean hasIndel = false;
             if (list.getIndels() != null) {
                 for (final EquivalentIndelRegion indel : list.getIndels()) {
+                    // only add indels to sample counts info if they were not removed by a previous base filter.
+                    if (!indel.isFiltered()) {
+                        if (indel.matchesReference()) {
+                            sampleCounts[indel.sampleIndex].refCount += indel.getFrequency();
 
-                    if (indel.matchesReference()) {
-                        sampleCounts[indel.sampleIndex].refCount += indel.getFrequency();
-
-                    } else {
-                        sumVariantCounts++;
-                        sampleCounts[indel.sampleIndex].varCount += indel.getFrequency();
-                        sumVariantCounts += indel.getFrequency();
+                        } else {
+                            sumVariantCounts++;
+                            sampleCounts[indel.sampleIndex].varCount += indel.getFrequency();
+                            sumVariantCounts += indel.getFrequency();
+                        }
+                        sampleCounts[indel.sampleIndex].distinctReadIndices.add(indel.readIndex);
+                        sampleCounts[indel.sampleIndex].addIndel(indel);
+                        hasIndel = true;
                     }
-                    sampleCounts[indel.sampleIndex].distinctReadIndices.add(indel.readIndex);
-                    sampleCounts[indel.sampleIndex].addIndel(indel);
-                    hasIndel = true;
                 }
             }
 

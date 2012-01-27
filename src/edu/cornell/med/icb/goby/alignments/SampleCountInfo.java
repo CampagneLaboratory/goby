@@ -76,24 +76,28 @@ public class SampleCountInfo {
      * @param indel eir observed starting at the position this sampleCountInfo is associated with.
      */
     public void addIndel(final EquivalentIndelRegion indel) {
-
-        if (indels == null) {
-            indels = new ObjectArrayList<EquivalentIndelRegion>();
-        }
-        int previousStartPosition = -1;
-        for (final EquivalentIndelRegion prevIndel : indels) {
-            if (prevIndel.equals(indel)) {
-                prevIndel.incrementFrequency();
+        if (!indel.isFiltered()) {
+            // only add indels that were not filtered.
+            if (indels == null) {
+                indels = new ObjectArrayList<EquivalentIndelRegion>();
             }
-            previousStartPosition = prevIndel.startPosition;
+            int previousStartPosition = -1;
+            for (final EquivalentIndelRegion prevIndel : indels) {
+                if (prevIndel.equals(indel)) {
+                    prevIndel.incrementFrequency();
+                }
+                previousStartPosition = prevIndel.startPosition;
 
-        }
-        if (previousStartPosition != -1) {
-            assert indel.startPosition == previousStartPosition : "You can only add indels with the same start position in any given SampleCountInfo ";
-        }
+            }
+            if (previousStartPosition != -1) {
+                assert indel.startPosition == previousStartPosition : "You can only add indels with the same start position in any given SampleCountInfo ";
+            }
 
-        indels.add(indel);
+            indels.add(indel);
+        }
     }
+
+
 
     /**
      * Return the maximum index for genotypes observed in this sample.
@@ -102,7 +106,6 @@ public class SampleCountInfo {
      */
     public final int getGenotypeMaxIndex() {
         return BASE_MAX_INDEX + (hasIndels() ? indels.size() : 0);
-
     }
 
     /**
@@ -168,6 +171,7 @@ public class SampleCountInfo {
         }
     }
 
+
     /**
      * Sort genotypes in a predefined order. Indels are sorted by increasing to field (alphabetically).
      */
@@ -196,18 +200,31 @@ public class SampleCountInfo {
     }
 
     /**
-     * Return true if this sample has indel observations.
+     * Return true if this sample has indel observations (at least one indel with frequency>0).
      *
      * @return True or false.
      */
     public boolean hasIndels() {
-        return !(indels == null || indels.isEmpty() || allMarkedRemoved() );
+        return !(indels == null || indels.isEmpty()/*|| allMarkedRemoved() */);
     }
+    /**
+     * Return true if this sample has any indel (even with frequency=0).
+     *
+     * @return True or false.
 
+    private boolean hasSomeIndels() {
+    return !(indels == null || indels.isEmpty() );
+    }
+     */
+    /**
+     * Determine if the indels are all marked removed.
+     *
+     * @return True when all indels were marked removed. False if any indel exists such that markRemoved=false.
+     */
     private boolean allMarkedRemoved() {
-        boolean allRemoved=true;
-        for (EquivalentIndelRegion eir: indels) {
-             allRemoved &=eir.isFiltered();
+        boolean allRemoved = true;
+        for (EquivalentIndelRegion eir : indels) {
+            allRemoved &= eir.isFiltered();
         }
         return allRemoved;
     }
@@ -248,6 +265,7 @@ public class SampleCountInfo {
 
     /**
      * Return the indel at a given genotype index.
+     *
      * @param genotypeIndex index of the indel genotype
      * @return indel EIR.
      */
@@ -334,12 +352,12 @@ public class SampleCountInfo {
 
     }
 
-    static final String A_BASE = "A";
-    static final String T_BASE = "T";
-    static final String C_BASE = "C";
-    static final String G_BASE = "G";
-    static final String N_BASE = "N";
-    static final String[] STRING = {A_BASE, T_BASE, C_BASE, G_BASE, N_BASE};
+static final String A_BASE = "A";
+static final String T_BASE = "T";
+static final String C_BASE = "C";
+static final String G_BASE = "G";
+static final String N_BASE = "N";
+static final String[] STRING = {A_BASE, T_BASE, C_BASE, G_BASE, N_BASE};
 
     public final String baseString(final int baseIndex) {
         return STRING[baseIndex];
