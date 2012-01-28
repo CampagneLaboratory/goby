@@ -147,7 +147,7 @@ public class SampleCountInfo {
             }
         }
         if (!hasSomeIndels) {
-            // not indels, done aligning.
+            // no indels, done aligning.
             return;
         }
 
