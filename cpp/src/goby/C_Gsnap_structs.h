@@ -10,19 +10,34 @@
  */
 #ifdef __cplusplus
     #include <vector>
+
+    enum SegmentStartEndType {
+        START, END, INS, DEL, TERM, DONOR, ACCEPTOR, UNKNOWN };
+
     struct GsnapAlignmentSegment {
-        char *readSequence;
-        unsigned int readStart;
-        unsigned int readEnd;
+        string *referenceSequence;   // Will be generated during merge
+        string *querySequence;       // The query sequence
+        string *queryQuality;        // If !reverseStrand this will be null, use value in alignment
+        string *segmentSequence;     // If reverseStrand, this will be reverseComplemented to be in the direction of the reference
+        string *deletesSequence;     // If this sequence has deletes, they will be stored here otherwise NULL.
+        string *insertsSequence;     // If this sequence has deletes, they will be stored here otherwise NULL.
+        int queryStart;              // 0-based. Will be adjusted if reverseStrand
+        int queryEnd;                // 0-based. Will be adjusted if reverseStrand
         int reverseStrand;
         char *targetIdentifier;
-        unsigned int targetIndex;
-        char *startType;
+        unsigned int targetIndex;    // 0-based
+        unsigned int targetStart;    // 0-based
+        unsigned int targetEnd;      // 0-based
+        SegmentStartEndType startType;
         int startClip;
-        char *endType;
+        int startProb;
+        SegmentStartEndType endType;
         int endClip;
-        int matches;
-        int subs;
+        int endProb;
+        int matches;  // Comes intially from gsnap, but we re-calculate
+        int subs;     // Comes intially from gsnap, but we re-calculate
+        int inserts;  // Number of inserts (calculated, doesn't come from Gsnap)
+        int deletes;   // Number of deletes (calculated, doesn't come from Gsnap)
     };
 
     struct GsnapAlignmentEntry {
@@ -33,8 +48,8 @@
         int lineNum;
         int pairedEnd;
         char *pairType;
-        char *referenceSequence;
-        char *referenceQuality;
+        string *querySequence;    // ONLY for parsing, use the version in Segment during output
+        string *queryQuality;     // ONLY for parsing, use the version in Segment during output
         unsigned queryIndex;
         int numAlignmentEntries;
         std::vector<GsnapAlignmentEntry*> *alignmentEntries;
@@ -45,7 +60,7 @@
         int mapq;
         int pairScore;
         int insertLength;
-        char *pairSubType;
+        string *pairSubType;
     };
 #endif
 

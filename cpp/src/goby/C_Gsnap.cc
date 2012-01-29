@@ -2,15 +2,23 @@
 #include <iostream>
 #include <vector>
 #include <stdlib.h>
+#include <algorithm>
 
 #include "C_Gsnap.h"
 #include "C_Gsnap_structs.h"
 #include "C_Alignments.h"
 #include "hash.h"
+#include "pcrecpp.h"
 
 using namespace std;
 
-#undef C_GSNAP_DEBUG
+using pcrecpp::StringPiece;
+using pcrecpp::RE;
+using pcrecpp::RE_Options;
+
+#define MIN_QUAL '_'
+
+#define C_GSNAP_DEBUG
 #ifdef C_GSNAP_DEBUG
 #define debug(x) x
 #else
@@ -21,6 +29,8 @@ using namespace std;
  * C API and functions to support GSNAP alignment / parsing.
  */
 extern "C" {
+
+    static char *complCode = "???????????????????????????????? ??#$%&')(*+,-./0123456789:;>=<??TVGHEFCDIJMLKNOPQYSAABWXRZ]?[^_`tvghefcdijmlknopqysaabwxrz}|{~?";
 
     /**
      * Take a string and a set of one or more delimiters and split the string
@@ -60,17 +70,40 @@ extern "C" {
         delete targets;
     }
 
+    void destroyAlignmentSegment(GsnapAlignmentSegment *seg) {
+        if (seg->segmentSequence != NULL) {
+            delete seg->segmentSequence;
+        }
+        if (seg->querySequence != NULL) {
+            delete seg->querySequence;
+        }
+        if (seg->queryQuality != NULL) {
+            delete seg->queryQuality;
+        }
+        if (seg->referenceSequence != NULL) {
+            delete seg->referenceSequence;
+        }
+        if (seg->deletesSequence != NULL) {
+            delete seg->deletesSequence;
+        }
+        if (seg->insertsSequence != NULL) {
+            delete seg->insertsSequence;
+        }
+        delete seg;
+    }
+
     /**
      * Delete existing alignment segments that might exist from a previous
      * alignment.
      * @param alignmentSegments the vector of alignment segments to clear out.
      */
-    void clearAlignmentSegments(
-            vector<GsnapAlignmentSegment*> *alignmentSegments)  {
-        int size = alignmentSegments->size();
+    void destroyAlignmentSegments(
+            vector<GsnapAlignmentSegment*> *segs)  {
+        int size = segs->size();
         for (int i = 0; i < size; i++) {
-            delete alignmentSegments->at(i);
+            destroyAlignmentSegment(segs->at(i));
         }
+        delete segs;
     }
 
     /**
@@ -86,10 +119,7 @@ extern "C" {
             vector<GsnapAlignmentSegment*> *alignmentSegments =
                     alignmentEntry->alignmentSegments;
             if (alignmentSegments != NULL) {
-                // Delete the elements of the alignmentSegments vector
-                clearAlignmentSegments(alignmentSegments);
-                // Delete the the alignmentSegments vector
-                delete alignmentSegments;
+                destroyAlignmentSegments(alignmentSegments);
             }
             delete alignmentEntry;
         }
@@ -104,18 +134,27 @@ extern "C" {
      * to initialize.
      */
     void initializeAlignmentSegment(GsnapAlignmentSegment *alignmentSegment) {
-        alignmentSegment->readSequence = NULL;
-        alignmentSegment->readStart = 0;
-        alignmentSegment->readEnd = 0;
+        alignmentSegment->segmentSequence = NULL;
+        alignmentSegment->referenceSequence = NULL;
+        alignmentSegment->querySequence = NULL;
+        alignmentSegment->queryQuality = NULL;
+        alignmentSegment->deletesSequence = NULL;
+        alignmentSegment->insertsSequence = NULL;
+        alignmentSegment->queryStart = 0;
+        alignmentSegment->queryEnd = 0;
         alignmentSegment->reverseStrand = 0;
         alignmentSegment->targetIdentifier = NULL;
         alignmentSegment->targetIndex = 0;
-        alignmentSegment->startType = NULL;
+        alignmentSegment->targetStart = 0;
+        alignmentSegment->targetEnd = 0;
+        alignmentSegment->startType = UNKNOWN;
         alignmentSegment->startClip = 0;
-        alignmentSegment->endType = NULL;
+        alignmentSegment->endType = UNKNOWN;
         alignmentSegment->endClip = 0;
         alignmentSegment->matches = 0;
         alignmentSegment->subs = 0;
+        alignmentSegment->inserts = 0;
+        alignmentSegment->deletes = 0;
     }
 
     /**
@@ -127,8 +166,8 @@ extern "C" {
         alignment->lineNum = 0;
         alignment->pairedEnd = 0;
         alignment->pairType = NULL;
-        alignment->referenceSequence = NULL;
-        alignment->referenceQuality = NULL;
+        alignment->querySequence->resize(0);
+        alignment->queryQuality->resize(0);
         alignment->queryIndex = 0;
         alignment->numAlignmentEntries = 0;
         clearAlignmentEntries(alignment->alignmentEntries);
@@ -138,7 +177,10 @@ extern "C" {
         alignment->mapq = 0;
         alignment->pairScore = 0;
         alignment->insertLength = 0;
-        alignment->pairSubType = NULL;
+        if (alignment->pairSubType != NULL) {
+            delete alignment->pairSubType;
+            alignment->pairSubType = NULL;
+        }
     }
 
     /**
@@ -149,6 +191,9 @@ extern "C" {
     void initializeAlignment(GsnapAlignment *alignment) {
         alignment->alignmentEntries = new vector<GsnapAlignmentEntry*>;
         alignment->alignmentEntriesPair = new vector<GsnapAlignmentEntry*>;
+        alignment->querySequence = new string("");
+        alignment->queryQuality = new string("");
+        alignment->pairSubType = NULL;
         resetAlignment(alignment);
     }
 
@@ -164,6 +209,8 @@ extern "C" {
             resetAlignment(alignment);
             delete alignment->alignmentEntries;
             delete alignment->alignmentEntriesPair;
+            delete alignment->querySequence;
+            delete alignment->queryQuality;
             delete alignment;
             writerHelper->gsnapAlignment = NULL;
         }
@@ -175,25 +222,24 @@ extern "C" {
      * @param whichMap The map to obtain the value for
      * @param toFind The key to lookup in the map
      */
-    int mapHasKey(LIBGOBY_HASH_MAP<string, char*> *whichMap, string toFind) {
-        return (whichMap->find(toFind) != whichMap->end());
+    bool mapHasKey(LIBGOBY_HASH_MAP<string, string> whichMap, string toFind) {
+        return (whichMap.find(toFind) != whichMap.end());
     }
 
     /**
      * Given a map created by createMap(), return the value for the key
-     * toFind as a string (char*). If the key isn't found, NULL is returned.
+     * toFind as a string*. If the key isn't found, NULL is returned.
+     * IF NOT NULL YOU MUST DELETE THIS VALUE WHEN YOU ARE DONE WITH IT.
      * @param whichMap The map to obtain the value for
      * @param toFind The key to lookup in the map
      * @param defaultVal the default value to use if the key toFind isn't found.
      * @return the value for the key toFind (or defaultVal)
      */
-    char *mapValueForKey(LIBGOBY_HASH_MAP<string, char*> *whichMap,
-            char *toFind) {
-        if (whichMap) {
-            string keyToFind(toFind);
-            if (mapHasKey(whichMap, keyToFind)) {
-                return whichMap->at(keyToFind);
-            }
+    string *mapValueForKey(
+            LIBGOBY_HASH_MAP<string, string> whichMap, string toFind) {
+        string keyToFind(toFind);
+        if (mapHasKey(whichMap, keyToFind)) {
+            return new string(whichMap[keyToFind].c_str());
         }
         return NULL;
     }
@@ -206,15 +252,13 @@ extern "C" {
      * @param defaultVal the default value to use if the key toFind isn't found.
      * @return the value for the key toFind (or defaultVal)
      */
-    int mapValueForKeyInt(LIBGOBY_HASH_MAP<string, char*> *whichMap,
-            char *toFind, int defaultVal = 0) {
-        if (whichMap) {
-            string keyToFind(toFind);
-            if (mapHasKey(whichMap, keyToFind)) {
-                return atoi(whichMap->at(keyToFind));
-            }
+    int mapValueForKeyInt(
+            LIBGOBY_HASH_MAP<string, string> whichMap, string toFind) {
+        string keyToFind(toFind);
+        if (mapHasKey(whichMap, keyToFind)) {
+            return atoi(whichMap[keyToFind].c_str());
         }
-        return defaultVal;
+        return 0;
     }
 
     /**
@@ -227,51 +271,82 @@ extern "C" {
      * @return the value for the key toFind (or defaultVal)
      */
     unsigned int mapValueForKeyUnsignedInt(
-            LIBGOBY_HASH_MAP<string, char*> *whichMap, char *toFind,
-            unsigned int defaultVal = 0) {
-        if (whichMap) {
-            string keyToFind(toFind);
-            if (mapHasKey(whichMap, keyToFind)) {
-                return (unsigned) strtoul(whichMap->at(keyToFind), NULL, 10);
-            }
+        LIBGOBY_HASH_MAP<string, string> whichMap, const char *toFind) {
+        string keyToFind(toFind);
+        if (mapHasKey(whichMap, keyToFind)) {
+            return (unsigned) strtoul(whichMap.at(keyToFind).c_str(), NULL, 10);
         }
-        return defaultVal;
+        return 0;
     }
 
-    /**
-     * Parses key:value from the input string (a). key-values are
-     * deparated by "," or ".". and ":" separates keys from values.
-     * Returns a pair of values:
-     * - The list of keys, in the order they are found in the input
-     * - A map of key to value.
-     * Calling createMap("ins:1..end:0,matches:23,sub:0") will return
-     * [  ["ins", "end", "matches", "sub"],
-     *    ["ins" : "1", "end" : "0", "matches" : "23", "sub" : "0"]  ]
-     * @param a the input string that is being split into the map
-     * @return the pair of (keys in parsed order, map of the key/valu pairs)
-     */
-    pair<vector<char *>*, LIBGOBY_HASH_MAP<string, char*>*> *createMap(
-            char *a) {
-        LIBGOBY_HASH_MAP<string, char*> *result =
-            new LIBGOBY_HASH_MAP<string, char*>();
-        vector<char *> *keys = new vector<char *>();
+    pair<vector<string>, LIBGOBY_HASH_MAP<string, string> > createMap(char *a) {
+        LIBGOBY_HASH_MAP<string, string> result;
+        vector<string> keys;
+
         if (a != NULL) {
-            vector<char *> *aParts = gobyGsnap_split(a, ",.");
-            int size = aParts->size();
-            for (int i = 0; i < size; i++) {
-                vector<char *> *kvParts = gobyGsnap_split(aParts->at(i), ":");
-                char *value = "1";
-                if (kvParts->size() > 1) {
-                    value = kvParts->at(1);
+        
+            string temp1;
+            string da;     string daClip;   string daProb;
+            string temp2;
+            string std;    string stdClip;
+
+            pcrecpp::StringPiece input(a);  // Wrap in a StringPiece
+            pcrecpp::RE re("(([A-Za-z_\\-]+):(\\d+)\\.(\\d+))|(([A-Za-z_\\-]+):(\\d+))");
+
+            while (re.FindAndConsume(&input, &temp1,
+                                     &da, &daClip, &daProb,
+                                     &temp2,
+                                     &std, &stdClip)) {
+                if (da.length() > 0) {
+                    keys.push_back(da);
+                    result[da] = daClip;
+                    result[da + "-prob"] = daProb;
+                } else {
+                    keys.push_back(std);
+                    result[std] = stdClip;
                 }
-                (*result)[kvParts->at(0)] = value;
-                keys->push_back(kvParts->at(0));
-                delete kvParts;
             }
-            delete aParts;
         }
-        return new pair<vector<char *>*, LIBGOBY_HASH_MAP<string, char*>*>(
-                keys, result);
+        return pair<vector<string>,
+                    LIBGOBY_HASH_MAP<string, string> >(keys, result);
+    }
+
+    
+    SegmentStartEndType segmentStartEndTypeFromString(string type) {
+        //START, END, INS, DEL, TERM, DONOR, ACCEPTOR, UNKNOWN
+        
+        if (type == "start") {
+            return START;
+        } else if (type == "end") {
+            return END;
+        } else if (type == "ins") {
+            return INS;
+        } else if (type == "del") {
+            return DEL;
+        } else if (type == "term") {
+            return TERM;
+        } else if (type == "donor") {
+            return DONOR;
+        } else if (type == "acceptor") {
+            return ACCEPTOR;
+        }
+        return UNKNOWN;
+    }
+    
+    string *reverseCharArray(const char *toReverse, int size, bool complement) {
+        if (toReverse == NULL) {
+            return NULL;
+        }
+        string *result = new string("");
+        for (int i = size - 1; i >= 0; i--) {
+            const char current = toReverse[i];
+            result->append(1, complement ? complCode[current] : current);
+        }
+        return result;
+    }
+
+    string *reverseString(string *toReverse, bool complement) {
+        return reverseCharArray(toReverse->c_str(), toReverse->size(), complement);
     }
 
     /**
@@ -286,13 +361,10 @@ extern "C" {
             vector<char *> *parts, GsnapAlignmentEntry *alignmentEntry) {
         GsnapAlignment *alignment = writerHelper->gsnapAlignment;
 
-        char *querySeq = parts->at(0);
-        querySeq++; // Skip first char of query sequence
-
-        vector<char *> *readStartEndParts = gobyGsnap_split(parts->at(1), ".");
-        char *readStartStr = readStartEndParts->at(0);
-        char *readEndStr = readStartEndParts->at(1);
-        delete readStartEndParts;
+        vector<char *> *queryStartEndParts = gobyGsnap_split(parts->at(1), ".");
+        char *queryStartStr = queryStartEndParts->at(0);
+        char *queryEndStr = queryStartEndParts->at(1);
+        delete queryStartEndParts;
         
         vector<char *> *targetParts = gobyGsnap_split(parts->at(2), ":.");
         char *targetIdentifier = targetParts->at(0);
@@ -307,38 +379,110 @@ extern "C" {
         char *targetStartStr = targetParts->at(1);
         char *targetEndStr = targetParts->at(2);
         delete targetParts;
+
+        char *segmentSeqBuf = parts->at(0);
+        segmentSeqBuf++; // Skip first char of query sequence
+        string *segmentSeq = NULL;
+        string *querySequence = NULL;
+        string *queryQuality = NULL;
+        if (reverseStrand) {
+            segmentSeq = reverseCharArray(segmentSeqBuf, strlen(segmentSeqBuf), true);
+            querySequence = reverseString(alignment->querySequence, true);
+            if (alignment->queryQuality->size() > 0) {
+                queryQuality = reverseString(alignment->queryQuality, false);
+            }
+        } else {
+            segmentSeq = new string(segmentSeqBuf);
+            querySequence = new string(*(alignment->querySequence));
+            if (alignment->queryQuality->size() > 0) {
+                queryQuality = new string(*(alignment->queryQuality));
+            }
+        }
+        int queryLength = segmentSeq->size();
         
-        pair<vector<char *>*, LIBGOBY_HASH_MAP<string, char*>*>
-            *settingsMapTuple = NULL;
-        vector<char *>* settingsMapKeys = NULL;
-        LIBGOBY_HASH_MAP<string, char*>* settingsMap = NULL;
-        settingsMapTuple = createMap(parts->at(3));
-        settingsMapKeys = settingsMapTuple->first;
-        settingsMap = settingsMapTuple->second;
+        pair<vector<string>, LIBGOBY_HASH_MAP<string, string> >
+                settingsMapTuple = createMap(parts->at(3));
+        vector<string> settingsMapKeys = settingsMapTuple.first;
+        LIBGOBY_HASH_MAP<string, string> settingsMap = settingsMapTuple.second;
 
         GsnapAlignmentSegment *newSegment = new GsnapAlignmentSegment;
         initializeAlignmentSegment(newSegment);
         alignmentEntry->alignmentSegments->push_back(newSegment);
-
-        newSegment->readSequence = querySeq;
-        newSegment->readStart = (unsigned) strtoul(readStartStr, NULL, 10);
-        newSegment->readEnd = (unsigned) strtoul(readEndStr, NULL, 10);
+        
+        newSegment->segmentSequence = segmentSeq;
+        newSegment->querySequence = querySequence;
+        newSegment->queryQuality = queryQuality;      
+        
         newSegment->reverseStrand = reverseStrand;
         newSegment->targetIdentifier = targetIdentifier;
         newSegment->targetIndex = gobyAlignments_targetIndexForIdentifier(
                 writerHelper, targetIdentifier);
-        newSegment->startType = settingsMapKeys->at(0);
-        newSegment->startClip = mapValueForKeyInt(
-                settingsMap, settingsMapKeys->at(0));
-        newSegment->endType = settingsMapKeys->at(1);
-        newSegment->endClip = mapValueForKeyInt(
-                settingsMap, settingsMapKeys->at(1));
+
+        // Make targetStart, targetEnd 0-based
+        unsigned targetStart = (unsigned) strtoul(targetStartStr, NULL, 10) - 1;
+        unsigned targetEnd = (unsigned) strtoul(targetEndStr, NULL, 10) - 1;
+        if (reverseStrand) {
+            newSegment->targetStart = targetEnd;
+            newSegment->targetEnd = targetStart;
+        } else {
+            newSegment->targetStart = targetStart;
+            newSegment->targetEnd = targetEnd;
+        }
+
+        if (reverseStrand) {
+            newSegment->startType =  segmentStartEndTypeFromString(settingsMapKeys.at(1));
+            newSegment->startClip = mapValueForKeyInt(settingsMap, settingsMapKeys.at(1));
+            newSegment->startProb = mapValueForKeyInt(settingsMap, settingsMapKeys.at(1) + "-prob");
+            newSegment->endType = segmentStartEndTypeFromString(settingsMapKeys.at(0));
+            newSegment->endClip = mapValueForKeyInt(settingsMap, settingsMapKeys.at(0));
+            newSegment->endProb = mapValueForKeyInt(settingsMap, settingsMapKeys.at(0) + "-prob");
+        } else {
+            newSegment->startType = segmentStartEndTypeFromString(settingsMapKeys.at(0));
+            newSegment->startClip = mapValueForKeyInt(settingsMap, settingsMapKeys.at(0));
+            newSegment->startProb = mapValueForKeyInt(settingsMap, settingsMapKeys.at(0) + "-prob");
+            newSegment->endType =  segmentStartEndTypeFromString(settingsMapKeys.at(1));
+            newSegment->endClip = mapValueForKeyInt(settingsMap, settingsMapKeys.at(1));
+            newSegment->endProb = mapValueForKeyInt(settingsMap, settingsMapKeys.at(1) + "-prob");
+        }
+
+        
+        // Change to 0-based
+        int queryStart = atoi(queryStartStr) - 1;
+        int queryEnd = atoi(queryEndStr) - 1;
+        if (reverseStrand) {
+            newSegment->queryStart = queryLength - queryEnd - 1;
+            newSegment->queryEnd = queryLength - queryStart - 1;
+            if (newSegment->startType == DEL) {
+                newSegment->deletesSequence = new string(
+                        newSegment->segmentSequence->substr(
+                            newSegment->queryStart - newSegment->startClip, newSegment->startClip));
+                newSegment->segmentSequence->erase(
+                        newSegment->queryStart - newSegment->startClip, newSegment->startClip);
+                newSegment->queryStart -= newSegment->startClip;
+                newSegment->queryEnd -= newSegment->startClip;
+            } else if (newSegment->startType == INS) {
+                newSegment->insertsSequence = new string(
+                        newSegment->querySequence->substr(
+                            newSegment->queryStart - newSegment->startClip, newSegment->startClip));
+            }
+        } else {
+            newSegment->queryStart = queryStart;
+            newSegment->queryEnd = queryEnd;
+            if (newSegment->endType == DEL) {
+                newSegment->deletesSequence = new string(
+                        newSegment->segmentSequence->substr(
+                            newSegment->queryEnd + 1, newSegment->endClip));
+                newSegment->segmentSequence->erase(
+                        newSegment->queryEnd + 1, newSegment->endClip);
+            } else if (newSegment->endType == INS) {
+                newSegment->insertsSequence = new string(
+                        newSegment->querySequence->substr(
+                            newSegment->queryEnd + 1, newSegment->endClip));
+            }
+        }
+
         newSegment->matches = mapValueForKeyInt(settingsMap, "matches");
         newSegment->subs = mapValueForKeyInt(settingsMap, "sub");
-        
-        delete settingsMapKeys;
-        delete settingsMap;
-        delete settingsMapTuple;
     }
 
     /**
@@ -353,41 +497,34 @@ extern "C" {
             vector<char *> *lines, int isPair) {
         GsnapAlignment *alignment = writerHelper->gsnapAlignment;
         char *line = lines->at(alignment->lineNum++);
+        debug(printf("%s\n", line);)
         vector<char *> *parts = gobyGsnap_split(line, "\t");
         int numParts = parts->size();
         if (numParts < 5) {
-            fprintf(stderr, "Unrecoverable error: Gsnap alignment entry (first) line contains more than <5 (%d).\n", numParts);
+            fprintf(stderr, "Unrecoverable error: Gsnap alignment entry (first) line contains < 5 parts (%d).\n", numParts);
             exit(99);
         }
-        pair<vector<char *>*, LIBGOBY_HASH_MAP<string, char*>*>
-            *settingsMapTuple = NULL;
-        vector<char *>* settingsMapKeys = NULL;
-        LIBGOBY_HASH_MAP<string, char*>* settingsMap = NULL;
-        settingsMapTuple = createMap(parts->at(4));
-        settingsMapKeys = settingsMapTuple->first;
-        settingsMap = settingsMapTuple->second;
+        pair<vector<string>, LIBGOBY_HASH_MAP<string, string> > settingsMapTuple = createMap(parts->at(4));
+        vector<string> settingsMapKey = settingsMapTuple.first;
+        LIBGOBY_HASH_MAP<string, string> settingsMap = settingsMapTuple.second;
 
-        pair<vector<char *>*,LIBGOBY_HASH_MAP<string, char*>*>
-            *pairSettingsMapTuple = NULL;
-        vector<char *>* pairSettingsMapKeys = NULL;
-        LIBGOBY_HASH_MAP<string, char*>* pairSettingsMap = NULL;
+
+        pair<vector<string>,LIBGOBY_HASH_MAP<string, string> > pairSettingsMapTuple;
+        vector<string> pairSettingsMapKeys;
+        LIBGOBY_HASH_MAP<string, string> pairSettingsMap;
         if (numParts >= 6) {
             pairSettingsMapTuple = createMap(parts->at(5));
-            pairSettingsMapKeys = pairSettingsMapTuple->first;
-            pairSettingsMap = pairSettingsMapTuple->second;
+            pairSettingsMapKeys = pairSettingsMapTuple.first;
+            pairSettingsMap = pairSettingsMapTuple.second;
         }
         
         if (!isPair) {
             // Don't set this if we are parsing the second in a pair
-            alignment->alignScore = mapValueForKeyInt(
-                    settingsMap, "align_score");
+            alignment->alignScore = mapValueForKeyInt(settingsMap, "align_score");
             alignment->mapq = mapValueForKeyInt(settingsMap, "mapq");
-            alignment->pairScore = mapValueForKeyInt(
-                    pairSettingsMap, "pair_score");
-            alignment->insertLength = mapValueForKeyInt(
-                    pairSettingsMap, "insert_length");
-            alignment->pairSubType = mapValueForKey(
-                    pairSettingsMap, "pairtype");
+            alignment->pairScore = mapValueForKeyInt(pairSettingsMap, "pair_score");
+            alignment->insertLength = mapValueForKeyInt(pairSettingsMap, "insert_length");
+            alignment->pairSubType = mapValueForKey(pairSettingsMap, "pairtype");
         }
         
         int numSegs = mapValueForKeyInt(settingsMap, "segs");
@@ -403,18 +540,28 @@ extern "C" {
                         new vector<GsnapAlignmentSegment*>();
             } else {
                 line = lines->at(alignment->lineNum++);
+                debug(printf("%s\n", line);)
                 parts = gobyGsnap_split(line, "\t");
             }
             parseSegment(writerHelper, parts, newAlignmentEntry);
             delete parts;
         }
-        delete settingsMapKeys;
-        delete settingsMap;
-        delete settingsMapTuple;
-        if (pairSettingsMapTuple != NULL) {
-            delete pairSettingsMapKeys;
-            delete pairSettingsMap;
-            delete pairSettingsMapTuple;
+
+        if ((numSegs > 1) &&
+                (newAlignmentEntry->alignmentSegments->at(0)->reverseStrand)) {
+            reverse(newAlignmentEntry->alignmentSegments->begin(),
+                    newAlignmentEntry->alignmentSegments->end());
+            for (int segNum = 0; segNum < numSegs - 1; segNum++) {
+                GsnapAlignmentSegment *cur =
+                        newAlignmentEntry->alignmentSegments->at(segNum);
+                GsnapAlignmentSegment *next =
+                        newAlignmentEntry->alignmentSegments->at(segNum + 1);
+                cur->deletesSequence = next->deletesSequence;
+                next->deletesSequence = NULL;
+                cur->insertsSequence = next->insertsSequence;
+                next->insertsSequence = NULL;
+                
+            }
         }
     }
 
@@ -429,14 +576,15 @@ extern "C" {
             vector<char *> *lines, int isPair) {
         GsnapAlignment *alignment = writerHelper->gsnapAlignment;
         char *line = lines->at(alignment->lineNum++);
+        debug(printf("%s\n", line);)
         vector<char *> *parts = gobyGsnap_split(line, "\t");
         int numParts = parts->size();
         if (numParts < 3 || numParts > 4) {
             fprintf(stderr, "Unrecoverable error: Gsnap alignment header line contains more than <3 or >4 fields (%d).\n", numParts);
             exit(99);
         }
-        char *refSeq = parts->at(0);
-        refSeq++; // Remove the initial character
+        char *querySeq = parts->at(0);
+        querySeq++; // Remove the initial character
         vector<char *> *numEntriesParts = gobyGsnap_split(parts->at(1), " ");
         char *numEntriesStr = numEntriesParts->at(0);
         char *pairType = NULL;
@@ -454,8 +602,16 @@ extern "C" {
 
         alignment->pairedEnd = pairType != NULL;
         alignment->pairType = pairType;
-        alignment->referenceSequence = refSeq;
-        alignment->referenceQuality = qual;
+        alignment->querySequence->resize(0);
+        alignment->querySequence->append(querySeq);
+        alignment->queryQuality->resize(0);
+        if (qual != NULL) {
+            /*
+             * TODO: Convert the qualities HERE from GSnap-scale
+             * TODO: to Phred-scale.
+             */
+            alignment->queryQuality->append(qual);
+        }
         alignment->queryIndex = (unsigned) strtoul(queryIndexStr, NULL, 10);
         if (isPair) {
             alignment->numAlignmentEntriesPair = atoi(numEntriesStr);
@@ -499,9 +655,347 @@ extern "C" {
                 parseEntries(writerHelper, lines, 1);
             }
         }
+        // Throw these away so one isn't tempted to use them. The
+        // versions you are looking for exist in Segment.
+        alignment->querySequence->resize(0);
+        alignment->queryQuality->resize(0);
         delete lines;
     }
+
+    bool contiguousSegment(GsnapAlignmentSegment *seg) {
+        SegmentStartEndType startType = seg->startType;
+        SegmentStartEndType endType = seg->endType;
+        // Check of segments are contiguous
+        return ((startType == START || startType == END || startType == INS || 
+                startType == DEL || startType == TERM)  &&
+                (endType == START || endType == END || endType == INS || 
+                endType == DEL || endType == TERM));
+    }
+
+    bool splicedSegment(GsnapAlignmentSegment *seg) {
+        SegmentStartEndType startType = seg->startType;
+        SegmentStartEndType endType = seg->endType;
+        // Check if segments are spliced
+        return (startType == DONOR || startType == ACCEPTOR ||
+                endType == DONOR || endType == ACCEPTOR);
+    }
+
+    /**
+     * When >= 1 segment are contiguous (all startType and endTypes are
+     * STAR,END,INS,DEL,TERM) this should be called to merge them. This will
+     * build the reference sequence. All of the work is done in the first
+     * segment of segs and that segment will be returned, now this this
+     * single segment is representative of all of the segments in segs.
+     * This should be called even if these is just one segment.
+     * @param segs the segements of the match. If the segments are reverseStrand,
+     * seg->querySequence, seg->segmentSequence, seg->queryQuality have already
+     * been reversed (complemented).
+     * @return  the merged segments (the first of segs modified to be the
+     * merged version).
+     */
+    GsnapAlignmentSegment *mergeSegs(vector<GsnapAlignmentSegment*> *segs) {
+        GsnapAlignmentSegment *merged = segs->at(0);
+        int numSegs = segs->size();
+        int origLength = merged->segmentSequence->size();
+        string *mergedRef = new string("");
+        string *mergedQuery = new string("");
+        string *mergedQuality = NULL;
+        if (merged->queryQuality != NULL) {
+            mergedQuality = new string("");
+        }
+        bool reverseStrand = (merged->reverseStrand != 0);
+        string *query = merged->querySequence;
+        
+        int deletes = 0;
+        for (int segNum = 0; segNum < numSegs; segNum++) {
+            GsnapAlignmentSegment *seg = segs->at(segNum);
+            int startPos;
+            int endPos;
+
+            debug(
+                cout << "c=";
+                for (int i = 0; i < seg->segmentSequence->size(); i++) {
+                    cout << (i % 10);
+                }
+                cout << endl;
+                cout << "q=" << *query << endl;
+                cout << "s=" << *(seg->segmentSequence) << endl;
+            )
+
+            if (segNum == 0) {
+                startPos = seg->queryStart - seg->startClip;
+                endPos = seg->queryStart;
+                debug(cout << "before" << endl;)
+                for (int pos = startPos; pos < endPos; pos++) {
+                    mergedRef->append(1, seg->segmentSequence->at(pos));
+                    mergedQuery->append(1, query->at(pos));
+                    if (mergedQuality != NULL) {
+                        mergedQuality->append(1, merged->queryQuality->at(pos));
+                    }
+                }
+            }
+
+            startPos = seg->queryStart;
+            endPos = seg->queryEnd + 1;
+            debug(cout << "----" << endl;)
+            debug(cout << "in" << endl;)
+            for (int pos = startPos; pos < endPos; pos++) {
+                mergedRef->append(1, seg->segmentSequence->at(pos));
+                mergedQuery->append(1, query->at(pos));
+                if (mergedQuality != NULL) {
+                    mergedQuality->append(1, merged->queryQuality->at(pos));
+                }
+            }
+
+            debug(cout << "----" << endl;)
+            debug(cout << "after" << endl;)
+            if (seg->deletesSequence != NULL) {
+                int numDeletes = seg->deletesSequence->size();
+                mergedRef->append(*(seg->deletesSequence));
+                mergedQuery->append(numDeletes, '-');
+                if (mergedQuality != NULL) {
+                    // TODO: A better value for this!!
+                    mergedQuality->append(numDeletes, MIN_QUAL);
+                }
+                deletes += numDeletes;
+            } else if (seg->insertsSequence != NULL) {
+                int numInserts = seg->insertsSequence->size();
+                mergedRef->append(numInserts, '-');
+                mergedQuery->append(*(seg->insertsSequence));
+                if (mergedQuality != NULL) {
+                    mergedQuality->append(merged->queryQuality->substr(
+                        seg->queryEnd + 1, numInserts));
+                }
+            }
+
+            if (segNum == numSegs - 1) {
+                merged->queryEnd = seg->queryEnd;
+                merged->endClip = seg->endClip;
+                merged->endType = seg->endType;
+                merged->endProb = seg->endProb;
+            }
+        }
+
+        merged->referenceSequence = mergedRef;
+
+        string *temp = merged->segmentSequence;
+        merged->segmentSequence = mergedQuery;
+        delete temp;
+
+        temp = merged->queryQuality;
+        merged->queryQuality = mergedQuality;
+        if (temp != NULL) {
+            delete temp;
+        }
+        
+        return merged;
+    }
+
+    void outputSequenceVariations(CAlignmentsWriterHelper *writerHelper,
+            GsnapAlignmentSegment *merged) {
+        
+        string *mergedQuery = merged->segmentSequence;
+        string *mergedRef = merged->referenceSequence;
+        string *mergedQual = merged->queryQuality;
+
+        int refPosition = 0;
+        int readIndex = 0;
+        bool reverseStrand = (merged->reverseStrand == 1);
+        int hasQualChar;
+        if (mergedQual != NULL) {
+            hasQualChar = 1;
+        } else {
+            hasQualChar = 0;
+        }
+
+        int mergedSize = mergedRef->size();
+        unsigned int refPositions[mergedSize];
+        unsigned int readIndexes[mergedSize];
+        for (int i = 0; i < mergedSize; i++) {
+            char refChar = mergedRef->at(i);
+            if (refChar != '-') {
+                refPosition++;
+            }
+            refPositions[i] = refPosition;
+            int readIndexI = reverseStrand ? mergedSize - i - 1 : i;
+            char queryChar = mergedQuery->at(readIndexI);
+            if (queryChar != '-') {
+                readIndex++;
+            }
+            readIndexes[readIndexI] = readIndex;
+        }
+
+        debug(
+            cout << "r=";
+            for (int i = 0; i < mergedSize; i++) {
+                cout << (refPositions[i] % 10);
+            }
+            cout << endl;
+            cout << "r=" << *mergedRef << endl;
+            cout << "q=" << *mergedQuery << endl;
+            cout << "q=";
+            for (int i = 0; i < mergedSize; i++) {
+                cout << (readIndexes[i] % 10);
+            }
+            cout << endl;
+        )
+
+        int subs = 0;
+        int inserts = 0;
+        int deletes = 0;
+        int matches = 0;
+        for (int i = merged->queryStart + merged->startClip; 
+                 i <= merged->queryEnd - merged->endClip; i++) {
+            char refChar = toupper(mergedRef->at(i));
+            char queryChar = toupper(mergedQuery->at(i));
+            char qualChar = 0;
+            if (hasQualChar) {
+                qualChar = toupper(mergedQual->at(i));
+            }
+            
+            if (refChar != queryChar) {
+                if (refChar == '-') {
+                    inserts++;
+                } else if (queryChar == '-') {
+                    deletes++;
+                } else if (queryChar == 'N') {
+                    // Done penalize for query=N
+                    matches++;
+                } else {
+                    subs++;
+                }
+                debug(
+                    cout << "Seqvar refPosition=" << refPositions[i] << " " <<
+                            "readIndex=" << readIndexes[i] << " " << 
+                            "from=" << refChar << " " <<
+                            "to=" << queryChar << endl;
+                )
+                gobyAlEntry_addSequenceVariation(writerHelper,
+                    readIndexes[i], refPositions[i], refChar, queryChar,
+                    hasQualChar, qualChar);
+            } else {
+                matches++;
+            }
+        }
+
+        debug(
+            cout << "matches=" << matches << " " << 
+                    "subs=" << subs << " " << 
+                    "inserts=" << inserts << " " <<
+                    "deletes=" << deletes << endl;
+        )
+        merged->matches = matches;
+        merged->subs = subs;
+        merged->inserts = inserts;
+        merged->deletes = deletes;
+    }
+
+    void writeAlignmentSegment(CAlignmentsWriterHelper *writerHelper,
+            GsnapAlignmentSegment *mergedSeg, int fragmentIndex) {
+
+        GsnapAlignment *alignment = writerHelper->gsnapAlignment;
+
+        gobyAlignments_appendEntry(writerHelper);    // checked
+
+        // This will output sequence variations && calculate actual subs, matches, index.
+        outputSequenceVariations(writerHelper, mergedSeg);
+
+        gobyAlEntry_setMultiplicity(writerHelper, 1);    // checked
+        gobyAlEntry_setQueryIndex(writerHelper, alignment->queryIndex); // checked
+        gobyAlEntry_setTargetIndex(writerHelper,
+                mergedSeg->targetIndex);  //checked
+        gobyAlEntry_setPosition(writerHelper,
+                mergedSeg->targetStart + mergedSeg->startClip);  // Checked
+        gobyAlEntry_setMatchingReverseStrand(writerHelper,
+                mergedSeg->reverseStrand); // Checked
+        gobyAlEntry_setQueryPosition(writerHelper, mergedSeg->startClip);  //
+        gobyAlEntry_setScoreInt(writerHelper, mergedSeg->matches);
+        gobyAlEntry_setNumberOfMismatches(writerHelper, mergedSeg->subs);
+        gobyAlEntry_setNumberOfIndels(writerHelper,
+                mergedSeg->inserts + mergedSeg->deletes);
+        gobyAlEntry_setQueryAlignedLength(writerHelper,
+                mergedSeg->queryEnd - mergedSeg->queryStart -
+                mergedSeg->deletes);
+        gobyAlEntry_setTargetAlignedLength(writerHelper,
+                mergedSeg->referenceSequence->size() -
+                mergedSeg->startClip - mergedSeg->endClip - 
+                mergedSeg->inserts);
+        gobyAlEntry_setQueryLength(writerHelper,
+                alignment->querySequence->size());
+        gobyAlEntry_setFragmentIndex(writerHelper, fragmentIndex);
+        gobyAlEntry_setMappingQuality(writerHelper, alignment->mapq);
+    }
     
+    void writePairAlignment(CAlignmentsWriterHelper *writerHelper) {
+        //
+        // TODO: FINISH THIS. Currently implementation isn't right.
+        //
+        GsnapAlignment *alignment = writerHelper->gsnapAlignment;
+        int size = alignment->alignmentEntries->size();
+        for (int i = 0; i < size; i++) {
+            GsnapAlignmentEntry *alignmentEntry =
+                    alignment->alignmentEntries->at(i);
+            if (alignmentEntry->alignmentSegments == NULL ||
+                    alignmentEntry->alignmentSegments->size() == 0) {
+                continue;
+            }
+            
+            if (splicedSegment(alignmentEntry->alignmentSegments->at(0))) {
+                // Splices not yet supported
+                continue;
+            }
+            
+            GsnapAlignmentSegment *mergedSeg = mergeSegs(
+                    alignmentEntry->alignmentSegments);
+
+            writeAlignmentSegment(writerHelper, mergedSeg, 0);
+        }
+
+        size = alignment->alignmentEntriesPair->size();
+        for (int i = 0; i < size; i++) {
+            GsnapAlignmentEntry *alignmentEntry =
+                    alignment->alignmentEntries->at(i);
+            if (alignmentEntry->alignmentSegments == NULL ||
+                    alignmentEntry->alignmentSegments->size() == 0) {
+                continue;
+            }
+            
+            if (splicedSegment(alignmentEntry->alignmentSegments->at(0))) {
+                // Splices not yet supported
+                continue;
+            }
+            
+            GsnapAlignmentSegment *mergedSeg = mergeSegs(
+                    alignmentEntry->alignmentSegments);
+
+            writeAlignmentSegment(writerHelper, mergedSeg, 1);
+        }
+}
+
+    void writeSingleAlignment(CAlignmentsWriterHelper *writerHelper) {
+        GsnapAlignment *alignment = writerHelper->gsnapAlignment;
+        int size = alignment->alignmentEntries->size();
+        for (int i = 0; i < size; i++) {
+            GsnapAlignmentEntry *alignmentEntry =
+                    alignment->alignmentEntries->at(i);
+            if (alignmentEntry->alignmentSegments == NULL ||
+                    alignmentEntry->alignmentSegments->size() == 0) {
+                continue;
+            }
+            
+            if (splicedSegment(alignmentEntry->alignmentSegments->at(0))) {
+                // Splices not yet supported
+                continue;
+            }
+
+            
+            GsnapAlignmentSegment *mergedSeg = mergeSegs(
+                    alignmentEntry->alignmentSegments);
+
+            writeAlignmentSegment(writerHelper, mergedSeg, 0);
+        }
+    }
+
     /**
      * Write the Gsnap alignment from the Gsnap data structures into Goby
      * compact-alignment format.
@@ -510,8 +1004,13 @@ extern "C" {
      */
     void writeGobyAlignment(CAlignmentsWriterHelper *writerHelper) {
         GsnapAlignment *alignment = writerHelper->gsnapAlignment;
+        if (alignment->pairedEnd) {
+            // writePairAlignment(writerHelper);
+        } else {
+            writeSingleAlignment(writerHelper);
+        }
     }
-    
+
     /**
      * Parse and save a single gsnap alignment entry. Supports single or
      * paired end. Supports spliced alighments.
@@ -522,9 +1021,8 @@ extern "C" {
      * @param writerHelper the Goby writer helper
      * @param alignmentStr the lines that make up a single Gsnap alignment
      */
-    void gobyGsnap_parse(CAlignmentsWriterHelper *writerHelper,
-            char *alignmentStr) {
-        parseToGsnapDataStructures(writerHelper, alignmentStr);
+    void gobyGsnap_parse(CAlignmentsWriterHelper *writerHelper, char *alignment) {
+        parseToGsnapDataStructures(writerHelper, alignment);
         writeGobyAlignment(writerHelper);
     }
 }

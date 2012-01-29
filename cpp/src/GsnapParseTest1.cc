@@ -32,6 +32,7 @@
 #include "goby/C_Gsnap.h"
 #include "goby/C_Alignments.h"
 #include "goby/C_Reads.h"
+#include <pcrecpp.h>
 
 using namespace std;
 
@@ -92,6 +93,13 @@ void targetIdentiferTest(CAlignmentsWriterHelper *writerHelper) {
     cout << "z?" << gobyAlignments_isTargetIdentifierRegistered(writerHelper, "Z") << endl;
 }
 
+void testSingleForwardDel(CAlignmentsWriterHelper *writerHelper) {
+    char *test1 = read_file("test-data/gsnap-output-single-qual-del.gsnap");
+    gobyGsnap_parse(writerHelper, test1);
+    free(test1);
+}
+
+
 void testPairedEnd(CAlignmentsWriterHelper *writerHelper) {
     char *test1 = read_file("test-data/gsnap-output-pair-test-1.gsnap");
     gobyGsnap_parse(writerHelper, test1);
@@ -104,15 +112,82 @@ void testSingleEndNoQual(CAlignmentsWriterHelper *writerHelper) {
     free(test1);
 }
 
+void testSingleReverseInsQual(CAlignmentsWriterHelper *writerHelper) {
+    char *test1 = read_file("test-data/gsnap-output-single-reverse-ins.gsnap");
+    gobyGsnap_parse(writerHelper, test1);
+    free(test1);
+}
 
-int main(int argc, const char *const argv[]) {
+void testSeqvarX(CAlignmentsWriterHelper *writerHelper, int which) {
+    char buffer[256];
+    sprintf(buffer, "test-data/%02d-seq-var-reads-gsnap.gsnap", which);
+    char *test1 = read_file(buffer);
+    gobyGsnap_parse(writerHelper, test1);
+    free(test1);
+}
+
+void testSeqvar() {
+    CAlignmentsWriterHelper *writerHelper;
+    gobyAlignments_openAlignmentsWriterDefaultEntriesPerChunk("deleteme", &writerHelper);
+
+    char *test1 = read_file("test-data/synth.chromosome.list.txt");
+    gobyGsnap_test_registerTargets(writerHelper, test1);
+    free(test1);
+
+    //testSeqvarX(writerHelper, 7);
+    //testSeqvarX(writerHelper, 26);
+    testSeqvarX(writerHelper, 4);
+
+    gobyAlignments_finished(writerHelper, 1);
+    goby_shutdownProtobuf();
+}
+
+void pcreTest() {
+    char *a = "s-reads:3.2..b:5.1,l_reads:3,c:3,d:5,a:0..b:2.8";
+    string temp1;
+    string da;     string daClip;   string daProb;
+    string temp2;
+    string std;    string stdClip;
+
+    pcrecpp::StringPiece input(a);  // Wrap in a StringPiece
+    pcrecpp::RE re("(([A-Za-z_\\-]+):(\\d+)\\.(\\d))|(([A-Za-z_\\-]+):(\\d))");
+
+    printf("pcre start\n");
+    while (re.FindAndConsume(&input,
+            &temp1,
+            &da, &daClip, &daProb,
+            &temp2,
+            &std, &stdClip)) {
+
+        if (da.length() > 0) {
+            cout << "da=" << da << " ";
+            cout << "daClip=" << daClip << " ";
+            cout << "daProb=" << daProb << endl;
+        } else {
+            cout << "std=" << std << " ";
+            cout << "stdClip=" << stdClip << endl;
+        }
+
+    }
+    printf("done\n");
+}
+
+void sequenceTests() {
     CAlignmentsWriterHelper *writerHelper;
     gobyAlignments_openAlignmentsWriterDefaultEntriesPerChunk("deleteme", &writerHelper);
     registerChromosomes(writerHelper);
     targetIdentiferTest(writerHelper);
+    testSingleForwardDel(writerHelper);
+    testSingleReverseInsQual(writerHelper);
     testPairedEnd(writerHelper);
     testSingleEndNoQual(writerHelper);
     gobyAlignments_finished(writerHelper, 1);
     goby_shutdownProtobuf();
+}
+
+int main(int argc, const char *const argv[]) {
+    pcreTest();
+    //sequenceTests();
+    testSeqvar();
     return 0;
 }

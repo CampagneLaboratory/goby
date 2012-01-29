@@ -1,0 +1,4 @@
+>ACAGGGTGGGGCCAGGACTCCGAAAGAGGGAGGAAGGGCAAGGGCGG	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456	7 7  deletion on reverse strand
+ ACAGGGTGGGGCCAGGACTCCGAAAGgga---------------------	1..26	-synth1:80..55	start:0..del:3,matches:26,sub:0	segs:2,align_score:2,mapq:26
+,--------------------------AGGGAGGAAGGGCAAGGGCGG	27..47	-synth1:51..31	del:3..end:0,matches:21,sub:0
+
