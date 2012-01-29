@@ -29,7 +29,7 @@
             <id>input</id>
             <required>true</required>
             <greedy>true</greedy>
-            <help>The basenames of the input alignments to subset.</help>
+            <help>The filenames of the input VCF files to subset.</help>
         </unflaggedOption>
         <flaggedOption>
             <id>column</id>
@@ -51,12 +51,12 @@
               <stringParser>
                 <classname>StringStringParser</classname>
             </stringParser>
-            <help>Name of INFO flags that must appear in a record for the record to be written in the output.</help>
+            <help>Name of INFO flags that must appear in a record for the record to be written in the output. This argument acts as a filter on the input.</help>
         </flaggedOption>
         <switch>
             <id>parallel</id>
             <longFlag>parallel</longFlag>
-            <help>Process input files in parallel. By default, uses as many threads as avaialble in the server. Adjust the number of threads with -Dpj.nt=x, where x is the desired number of threads. </help>
+            <help>Process input files in parallel. By default, uses as many threads as available in the server. Adjust the number of threads with -Dpj.nt=x, where x is the desired number of threads. </help>
         </switch>
         <switch>
             <id>constant-format</id>
