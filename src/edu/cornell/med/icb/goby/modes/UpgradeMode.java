@@ -27,11 +27,12 @@ import edu.cornell.med.icb.goby.alignments.*;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.logging.ProgressLogger;
 
-
 import java.io.IOException;
 
 /**
- * Converts a compact alignment to plain text.
+ * Upgrade goby files to a new version of Goby. We try to devise Goby format to avoid upgrade steps, but sometimes
+ * upgrading the data structures cannot be avoided (e.g., when we fix bugs that existed in earlier versions).
+ * This tool converts data structures to the latest Goby format.
  *
  * @author Fabien Campagne
  */
@@ -44,8 +45,7 @@ public class UpgradeMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Upgrade goby files to a new version of Goby. We try to devise Goby format to avoid upgrade steps, but sometimes upgrading the data structures cannot be avoided. This tool converts data structures to the latest Goby format.";
-
+    private static final String MODE_DESCRIPTION = "Upgrade goby files to a new version of Goby. We try to devise Goby format to avoid upgrade steps, but sometimes upgrading the data structures cannot be avoided (e.g., when we fix bugs that existed in earlier versions). This tool converts data structures to the latest Goby format.";
 
     /**
      * The basename of the compact alignment.
@@ -82,7 +82,7 @@ public class UpgradeMode extends AbstractGobyMode {
 
         final String[] inputFiles = jsapResult.getStringArray("input");
         basenames = AlignmentReaderImpl.getBasenames(inputFiles);
-     //   check = jsapResult.getBoolean("check");
+        //   check = jsapResult.getBoolean("check");
         return this;
 
 
@@ -146,7 +146,7 @@ public class UpgradeMode extends AbstractGobyMode {
                     System.out.println("Checking..");
                     ProgressLogger progress = new ProgressLogger();
                     progress.expectedUpdates = locations.size();
-                  //  progress.priority = Level.INFO;
+                    //  progress.priority = Level.INFO;
                     progress.start();
                     for (ReferenceLocation location : locations) {
                         Alignments.AlignmentEntry entry = reader.skipTo(location.targetIndex, location.position);
