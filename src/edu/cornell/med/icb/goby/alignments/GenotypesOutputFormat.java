@@ -248,8 +248,9 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
                 // when homozygous genotype 0/ write 0/0/ (last / will be removed when length is adjusted)
                 genotypeBuffer.append(genotypeBuffer.copy());
             }
-
-            baseCountString.setLength(baseCountString.length() - 1);
+            if (baseCountString.length() >= 1) {
+                baseCountString.setLength(baseCountString.length() - 1);
+            }
             statsWriter.setSampleValue(baseCountFieldIndex, sampleIndex, baseCountString);
 
             if (siteObserved) {
