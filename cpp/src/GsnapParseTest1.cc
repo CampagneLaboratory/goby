@@ -134,19 +134,18 @@ void testSeqvar() {
     gobyGsnap_test_registerTargets(writerHelper, test1);
     free(test1);
 
-    // testSeqvarX(writerHelper, 2);
-    // testSeqvarX(writerHelper, 4);
-    /*
-    testSeqvarX(writerHelper, 7);
-    testSeqvarX(writerHelper, 12);
-    testSeqvarX(writerHelper, 13);
-    testSeqvarX(writerHelper, 14);
-    testSeqvarX(writerHelper, 24);
-    testSeqvarX(writerHelper, 25);
-    */
-    testSeqvarX(writerHelper, 26);
+    int x = 0;
+    testSeqvarX(writerHelper, 2); x++;
+    testSeqvarX(writerHelper, 4); x++;
+    testSeqvarX(writerHelper, 7); x++;
+    testSeqvarX(writerHelper, 12); x++;
+    testSeqvarX(writerHelper, 13); x++;
+    testSeqvarX(writerHelper, 14); x++;
+    testSeqvarX(writerHelper, 24); x++;
+    testSeqvarX(writerHelper, 25); x++;
+    testSeqvarX(writerHelper, 26); x++;
 
-    gobyAlignments_finished(writerHelper, 1);
+    gobyAlignments_finished(writerHelper, x);
     goby_shutdownProtobuf();
 }
 
