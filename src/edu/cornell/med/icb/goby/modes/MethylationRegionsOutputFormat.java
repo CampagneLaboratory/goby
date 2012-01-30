@@ -34,19 +34,20 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 
 /**
- * A Variant Call Format to estimate average methylation rates over parts of the genome that overlap annotations.
+ * A Variant Call Format to estimate average methylation rates over parts of the genome that overlap annotations or other
+ * regions.
  * Skeleton for Nyasha to wire her implementation in.
  *
  * @author Fabien Campagne
  *         Date: Jan 28 2012
  *         Time: 1:50:13 PM
  */
-public class MethylationOverAnnotationsVCFOutputFormat implements SequenceVariationOutputFormat {
+public class MethylationRegionsOutputFormat implements SequenceVariationOutputFormat {
 
     /**
      * Used to log debug and informational messages.
      */
-    private static final Log LOG = LogFactory.getLog(MethylationOverAnnotationsVCFOutputFormat.class);
+    private static final Log LOG = LogFactory.getLog(MethylationRegionsOutputFormat.class);
 
     VCFWriter statWriter;
     private int numberOfSamples;
@@ -93,6 +94,9 @@ public class MethylationOverAnnotationsVCFOutputFormat implements SequenceVariat
         mci = new MethylCountInfo(numberOfSamples, numberOfGroups);
 
     }
+    private String chromosome;
+    private int referenceIndex;
+    private int position;
 
     @Override
     public void writeRecord(final DiscoverVariantIterateSortedAlignments iterator,
@@ -112,9 +116,22 @@ public class MethylationOverAnnotationsVCFOutputFormat implements SequenceVariat
         }
         MethylationRateVCFOutputFormat.fillMethylationCountArrays(sampleCounts, list, position, refBase, mci, readerIndexToGroupIndex);
         //TODO: hook the averaging writer in here (C and Cm are in mci):
+        this.position=position;
+        if (referenceIndex!=this.referenceIndex) {
+            this.referenceIndex=referenceIndex;
+            chromosome=genome.getReferenceName(referenceIndex);
+        }
         statWriter.writeRecord();
     }
 
+    public int getPosition() {
+        return position;
+    }
+
+    public String getChromosome() {
+
+        return chromosome;
+    }
 
     @Override
     public void close() {

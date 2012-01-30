@@ -229,16 +229,13 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             case GENOTYPES:
                 formatter = new GenotypesOutputFormat();
                 break;
+            case METHYLATION_REGIONS:
+                formatter = new MethylationRegionsOutputFormat();
+                methylFormat((MethylationRateVCFOutputFormat) formatter);
+                break;
             case METHYLATION:
                 formatter = new MethylationRateVCFOutputFormat();
-                // methylated bases match the reference. Do not filter on minimum variation support.
-                int tmp = minimumVariationSupport;
-                this.minimumVariationSupport = -1;
-                this.thresholdDistinctReadIndices = 1;
-                // need at least so many methylation/non-methylation event to record site in output
-                // the value configure put in minimumVariationSupport as minimum coverage for the site.
-                ((MethylationRateVCFOutputFormat) formatter).setMinimumEventThreshold(tmp);
-                System.out.println("Methylation format ignores thresholdDistinctReadIndices. Additionally, the minimum coverage needed for a site to be reported can be changed with --minimum-variation-support.");
+                methylFormat((MethylationRateVCFOutputFormat) formatter);
                 break;
             case INDEL_COUNTS:
                 formatter = new IndelCountOutputFormat();
@@ -256,6 +253,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         switch (format) {
 
             case METHYLATION:
+            case METHYLATION_REGIONS:
                 // no filters at all for methylation. It seems that in some dataset quality scores are much lower for
                 //bases that are not methylated and therefore converted. We don't want to filter these bases and therefore
                 // do not install the quality score filter.
@@ -273,7 +271,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 if (callIndels) {
                     genotypeFilters.add(new RemoveIndelArtifactsFilter());
                 }
-                if (!disableAtLeastQuarterFilter && callIndels)  {
+                if (!disableAtLeastQuarterFilter && callIndels) {
                     System.out.println("Active: AtLeastAQuarterFilter.");
 
                     genotypeFilters.add(new AtLeastAQuarterFilter());
@@ -322,6 +320,17 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         sortedPositionIterator.setMinimumVariationSupport(minimumVariationSupport);
         sortedPositionIterator.setThresholdDistinctReadIndices(thresholdDistinctReadIndices);
         return this;
+    }
+
+    private void methylFormat(MethylationRateVCFOutputFormat formatter) {
+        // methylated bases match the reference. Do not filter on minimum variation support.
+        int tmp = minimumVariationSupport;
+        this.minimumVariationSupport = -1;
+        this.thresholdDistinctReadIndices = 1;
+        // need at least so many methylation/non-methylation event to record site in output
+        // the value configure put in minimumVariationSupport as minimum coverage for the site.
+        ((MethylationRateVCFOutputFormat) formatter).setMinimumEventThreshold(tmp);
+        System.out.println("Methylation format ignores thresholdDistinctReadIndices. Additionally, the minimum coverage needed for a site to be reported can be changed with --minimum-variation-support.");
     }
 
 
@@ -503,7 +512,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         COMPARE_GROUPS,
         METHYLATION,
         BETWEEN_GROUPS,
-        INDEL_COUNTS
+        INDEL_COUNTS,
+        METHYLATION_REGIONS
     }
 
     enum AlignmentProcessorNames {
