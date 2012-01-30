@@ -16,8 +16,6 @@ using pcrecpp::StringPiece;
 using pcrecpp::RE;
 using pcrecpp::RE_Options;
 
-#define MIN_QUAL '_'
-
 #define C_GSNAP_DEBUG
 #ifdef C_GSNAP_DEBUG
 #define debug(x) x
@@ -36,7 +34,7 @@ extern "C" {
      * Take a string and a set of one or more delimiters and split the string
      * into a vector of strings (char*'s). This method allocates no new
      * memory (except for the vector). As this method uses strtok,
-     * IS DESTRUCTIVE TO THE STRING (it inserts '\0' in place of the)
+     * IS DESTRUCTIVE TO THE STRING -- it inserts '\0' in place of the
      * delimieters. Repeated delimiters ARE IGNORED, such as if you
      * want to parse "a::b::c:d:e" delimited by ":" this will return
      * ["a","b","c","d","e"].
@@ -497,7 +495,7 @@ extern "C" {
             vector<char *> *lines, int isPair) {
         GsnapAlignment *alignment = writerHelper->gsnapAlignment;
         char *line = lines->at(alignment->lineNum++);
-        debug(printf("%s\n", line);)
+        debug(printf("%s\n", line););
         vector<char *> *parts = gobyGsnap_split(line, "\t");
         int numParts = parts->size();
         if (numParts < 5) {
@@ -540,7 +538,7 @@ extern "C" {
                         new vector<GsnapAlignmentSegment*>();
             } else {
                 line = lines->at(alignment->lineNum++);
-                debug(printf("%s\n", line);)
+                debug(printf("%s\n", line););
                 parts = gobyGsnap_split(line, "\t");
             }
             parseSegment(writerHelper, parts, newAlignmentEntry);
@@ -576,7 +574,7 @@ extern "C" {
             vector<char *> *lines, int isPair) {
         GsnapAlignment *alignment = writerHelper->gsnapAlignment;
         char *line = lines->at(alignment->lineNum++);
-        debug(printf("%s\n", line);)
+        debug(printf("%s\n", line););
         vector<char *> *parts = gobyGsnap_split(line, "\t");
         int numParts = parts->size();
         if (numParts < 3 || numParts > 4) {
@@ -606,11 +604,12 @@ extern "C" {
         alignment->querySequence->append(querySeq);
         alignment->queryQuality->resize(0);
         if (qual != NULL) {
-            /*
-             * TODO: Convert the qualities HERE from GSnap-scale
-             * TODO: to Phred-scale.
-             */
-            alignment->queryQuality->append(qual);
+            int qualSize = strlen(qual);
+            char convertedChar;
+            for (int qualPos = 0; qualPos < qualSize; qualPos++) {
+                // Convert from Gsnap's SANGER to Phred
+                alignment->queryQuality->append(1, qual[qualPos]);
+            }
         }
         alignment->queryIndex = (unsigned) strtoul(queryIndexStr, NULL, 10);
         if (isPair) {
@@ -657,8 +656,6 @@ extern "C" {
         }
         // Throw these away so one isn't tempted to use them. The
         // versions you are looking for exist in Segment.
-        alignment->querySequence->resize(0);
-        alignment->queryQuality->resize(0);
         delete lines;
     }
 
@@ -680,6 +677,22 @@ extern "C" {
                 endType == DONOR || endType == ACCEPTOR);
     }
 
+    void buildMerged(int startPos, int endPos,
+            GsnapAlignmentSegment *merged, GsnapAlignmentSegment *seg,
+            string *mergedRef, string *mergedQuery, string *mergedQuality) {
+        for (int pos = startPos; pos < endPos; pos++) {
+            char refChar = seg->segmentSequence->at(pos);
+            if (refChar == '.') {
+                refChar = 'C';
+            }
+            mergedRef->append(1, refChar);
+            mergedQuery->append(1, merged->querySequence->at(pos));
+            if (mergedQuality != NULL) {
+                mergedQuality->append(1, merged->queryQuality->at(pos));
+            }
+        }
+    }
+    
     /**
      * When >= 1 segment are contiguous (all startType and endTypes are
      * STAR,END,INS,DEL,TERM) this should be called to merge them. This will
@@ -704,7 +717,6 @@ extern "C" {
             mergedQuality = new string("");
         }
         bool reverseStrand = (merged->reverseStrand != 0);
-        string *query = merged->querySequence;
         
         int deletes = 0;
         for (int segNum = 0; segNum < numSegs; segNum++) {
@@ -718,44 +730,37 @@ extern "C" {
                     cout << (i % 10);
                 }
                 cout << endl;
-                cout << "q=" << *query << endl;
+                cout << "q=" << *(merged->querySequence) << endl;
                 cout << "s=" << *(seg->segmentSequence) << endl;
-            )
+            );
 
             if (segNum == 0) {
                 startPos = seg->queryStart - seg->startClip;
                 endPos = seg->queryStart;
-                debug(cout << "before" << endl;)
-                for (int pos = startPos; pos < endPos; pos++) {
-                    mergedRef->append(1, seg->segmentSequence->at(pos));
-                    mergedQuery->append(1, query->at(pos));
-                    if (mergedQuality != NULL) {
-                        mergedQuality->append(1, merged->queryQuality->at(pos));
-                    }
-                }
+                debug(cout << "before" << endl;);
+                buildMerged(startPos, endPos, merged, seg,
+                    mergedRef, mergedQuery, mergedQuality);
             }
 
             startPos = seg->queryStart;
             endPos = seg->queryEnd + 1;
-            debug(cout << "----" << endl;)
-            debug(cout << "in" << endl;)
-            for (int pos = startPos; pos < endPos; pos++) {
-                mergedRef->append(1, seg->segmentSequence->at(pos));
-                mergedQuery->append(1, query->at(pos));
-                if (mergedQuality != NULL) {
-                    mergedQuality->append(1, merged->queryQuality->at(pos));
-                }
-            }
+            debug(
+                    cout << "----" << endl;
+                    cout << "in" << endl;
+            );
+            buildMerged(startPos, endPos, merged, seg,
+                mergedRef, mergedQuery, mergedQuality);
 
-            debug(cout << "----" << endl;)
-            debug(cout << "after" << endl;)
+            debug(
+                cout << "----" << endl;
+                cout << "after" << endl;
+            );
             if (seg->deletesSequence != NULL) {
                 int numDeletes = seg->deletesSequence->size();
                 mergedRef->append(*(seg->deletesSequence));
                 mergedQuery->append(numDeletes, '-');
                 if (mergedQuality != NULL) {
-                    // TODO: A better value for this!!
-                    mergedQuality->append(numDeletes, MIN_QUAL);
+                    mergedQuality->append(numDeletes, GOBY_NO_QUAL);
                 }
                 deletes += numDeletes;
             } else if (seg->insertsSequence != NULL) {
@@ -769,7 +774,11 @@ extern "C" {
             }
 
             if (segNum == numSegs - 1) {
-                merged->queryEnd = seg->queryEnd;
+                startPos = seg->queryEnd + 1;
+                endPos = startPos + seg->endClip;
+                buildMerged(startPos, endPos, merged, seg,
+                    mergedRef, mergedQuery, mergedQuality);
+                merged->queryEnd = seg->queryEnd + deletes;
                 merged->endClip = seg->endClip;
                 merged->endType = seg->endType;
                 merged->endProb = seg->endProb;
@@ -791,103 +800,25 @@ extern "C" {
         return merged;
     }
 
-    void outputSequenceVariations(CAlignmentsWriterHelper *writerHelper,
+    void outputSequenceVariations(
+            CAlignmentsWriterHelper *writerHelper,
             GsnapAlignmentSegment *merged) {
-        
-        string *mergedQuery = merged->segmentSequence;
-        string *mergedRef = merged->referenceSequence;
-        string *mergedQual = merged->queryQuality;
 
-        int refPosition = 0;
-        int readIndex = 0;
-        bool reverseStrand = (merged->reverseStrand == 1);
-        int hasQualChar;
-        if (mergedQual != NULL) {
-            hasQualChar = 1;
-        } else {
-            hasQualChar = 0;
-        }
-
-        int mergedSize = mergedRef->size();
-        unsigned int refPositions[mergedSize];
-        unsigned int readIndexes[mergedSize];
-        for (int i = 0; i < mergedSize; i++) {
-            char refChar = mergedRef->at(i);
-            if (refChar != '-') {
-                refPosition++;
-            }
-            refPositions[i] = refPosition;
-            int readIndexI = reverseStrand ? mergedSize - i - 1 : i;
-            char queryChar = mergedQuery->at(readIndexI);
-            if (queryChar != '-') {
-                readIndex++;
-            }
-            readIndexes[readIndexI] = readIndex;
-        }
+        gobyAlignments_outputSequenceVariations(writerHelper,
+                merged->referenceSequence->c_str(),
+                merged->segmentSequence->c_str(),
+                merged->queryQuality == NULL ? NULL : merged->queryQuality->c_str(),
+                merged->queryStart, merged->queryEnd,
+                merged->reverseStrand, -33 /*qualityShift*/,
+                &(merged->matches), &(merged->subs),
+                &(merged->inserts), &(merged->deletes));
 
         debug(
-            cout << "r=";
-            for (int i = 0; i < mergedSize; i++) {
-                cout << (refPositions[i] % 10);
-            }
-            cout << endl;
-            cout << "r=" << *mergedRef << endl;
-            cout << "q=" << *mergedQuery << endl;
-            cout << "q=";
-            for (int i = 0; i < mergedSize; i++) {
-                cout << (readIndexes[i] % 10);
-            }
-            cout << endl;
-        )
-
-        int subs = 0;
-        int inserts = 0;
-        int deletes = 0;
-        int matches = 0;
-        for (int i = merged->queryStart + merged->startClip; 
-                 i <= merged->queryEnd - merged->endClip; i++) {
-            char refChar = toupper(mergedRef->at(i));
-            char queryChar = toupper(mergedQuery->at(i));
-            char qualChar = 0;
-            if (hasQualChar) {
-                qualChar = toupper(mergedQual->at(i));
-            }
-            
-            if (refChar != queryChar) {
-                if (refChar == '-') {
-                    inserts++;
-                } else if (queryChar == '-') {
-                    deletes++;
-                } else if (queryChar == 'N') {
-                    // Done penalize for query=N
-                    matches++;
-                } else {
-                    subs++;
-                }
-                debug(
-                    cout << "Seqvar refPosition=" << refPositions[i] << " " <<
-                            "readIndex=" << readIndexes[i] << " " << 
-                            "from=" << refChar << " " <<
-                            "to=" << queryChar << endl;
-                )
-                gobyAlEntry_addSequenceVariation(writerHelper,
-                    readIndexes[i], refPositions[i], refChar, queryChar,
-                    hasQualChar, qualChar);
-            } else {
-                matches++;
-            }
-        }
-
-        debug(
-            cout << "matches=" << matches << " " << 
-                    "subs=" << subs << " " << 
-                    "inserts=" << inserts << " " <<
-                    "deletes=" << deletes << endl;
-        )
-        merged->matches = matches;
-        merged->subs = subs;
-        merged->inserts = inserts;
-        merged->deletes = deletes;
+            cout << "matches=" << merged->matches << " " << 
+                    "subs=" << merged->subs << " " << 
+                    "inserts=" << merged->inserts << " " <<
+                    "deletes=" << merged->deletes << endl;
+        );
     }
 
     void writeAlignmentSegment(CAlignmentsWriterHelper *writerHelper,
@@ -905,7 +836,7 @@ extern "C" {
         gobyAlEntry_setTargetIndex(writerHelper,
                 mergedSeg->targetIndex);  //checked
         gobyAlEntry_setPosition(writerHelper,
-                mergedSeg->targetStart + mergedSeg->startClip);  // Checked
+                mergedSeg->targetStart - mergedSeg->startClip);  // Checked
         gobyAlEntry_setMatchingReverseStrand(writerHelper,
                 mergedSeg->reverseStrand); // Checked
         gobyAlEntry_setQueryPosition(writerHelper, mergedSeg->startClip);  //
@@ -914,7 +845,8 @@ extern "C" {
         gobyAlEntry_setNumberOfIndels(writerHelper,
                 mergedSeg->inserts + mergedSeg->deletes);
         gobyAlEntry_setQueryAlignedLength(writerHelper,
-                mergedSeg->queryEnd - mergedSeg->queryStart -
+                mergedSeg->referenceSequence->size() -
+                mergedSeg->startClip - mergedSeg->endClip - 
                 mergedSeg->deletes);
         gobyAlEntry_setTargetAlignedLength(writerHelper,
                 mergedSeg->referenceSequence->size() -

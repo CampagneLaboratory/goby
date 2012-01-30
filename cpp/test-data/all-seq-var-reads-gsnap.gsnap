@@ -1,0 +1,88 @@
+>CCGCCCTTGCCCTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTGT	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	0 0  perfect match
+ CCGCCCTTGCCCTTCCTCCCTTCCCTTTCGGAGTCCTGGCCCCACCCTGT	1..50	+synth1:31..80	start:0..end:0,matches:50,sub:0	segs:1,align_score:0,mapq:26
+
+>ACAGGGTGGGGCCAGGACTCCGAAAGGGAAGGGAGGAAGGGCAAGGGCGG	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	1 1  perfect match on reverse strand
+ ACAGGGTGGGGCCAGGACTCCGAAAGGGAAGGGAGGAAGGGCAAGGGCGG	1..50	-synth1:80..31	start:0..end:0,matches:50,sub:0	segs:1,align_score:0,mapq:26
+
+>CCGCCCTTGCCCTTCCTCCCTTCCCTCGTGGAGTCCTGGCCCCACCCTGT	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	2 2  mutation
+ CCGCCCTTGCCCTTCCTCCCTTCCCTttcGGAGTCCTGGCCCCACCCTGT	1..50	+synth1:31..80	start:0..end:0,matches:47,sub:3	segs:1,align_score:3,mapq:26
+
+>ACAGGGTGGGGCCAGGACTCCGAAAGTAGAGGGAGGAAGGGCAAGGGCGG	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	3 3  mutation on reverse strand
+ ACAGGGTGGGGCCAGGACTCCGAAAGggaAGGGAGGAAGGGCAAGGGCGG	1..50	-synth1:80..31	start:0..end:0,matches:47,sub:3	segs:1,align_score:3,mapq:26
+
+>CCGCCCTTGCCCTTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACCC	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	4 4  insertion
+ CCGCCCTTGCCCTTCCTCCCTTCCCT------------------------	1..26	+synth1:31..56	start:0..ins:3,matches:26,sub:0	segs:2,align_score:2,mapq:26
+,-----------------------------TTCGGAGTCCTGGCCCCACCC	30..50	+synth1:57..77	ins:3..end:0,matches:21,sub:0
+
+>ACAGGGTGGGGCCAGGACTCCGAAAGATCGGAAGGGAGGAAGGGCAAGGG	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	5 5  insertion on reverse strand
+ ACAGGGTGGGGCCAGGACTCCGAAAG------------------------	1..26	-synth1:80..55	start:0..ins:3,matches:26,sub:0	segs:2,align_score:2,mapq:26
+,-----------------------------GGAAGGGAGGAAGGGCAAGGG	30..50	-synth1:54..34	ins:3..end:0,matches:21,sub:0
+
+>CCGCCCTTGCCCTTCCTCCCTTCCCTGGAGTCCTGGCCCCACCCTGT	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456	6 6  deletion
+ CCGCCCTTGCCCTTCCTCCCTTCCCTttc---------------------	1..26	+synth1:31..56	start:0..del:3,matches:26,sub:0	segs:2,align_score:2,mapq:26
+,--------------------------GGAGTCCTGGCCCCACCCTGT	27..47	+synth1:60..80	del:3..end:0,matches:21,sub:0
+
+>ACAGGGTGGGGCCAGGACTCCGAAAGAGGGAGGAAGGGCAAGGGCGG	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456	7 7  deletion on reverse strand
+ ACAGGGTGGGGCCAGGACTCCGAAAGgga---------------------	1..26	-synth1:80..55	start:0..del:3,matches:26,sub:0	segs:2,align_score:2,mapq:26
+,--------------------------AGGGAGGAAGGGCAAGGGCGG	27..47	-synth1:51..31	del:3..end:0,matches:21,sub:0
+
+>CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	8 8 perfect start of ref
+ CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC	1..50	+synth1:1..50	start:0..end:0,matches:50,sub:0	segs:1,align_score:0,mapq:26
+
+>GGGAGGAAGGGCAAGGGCGGCCGCGGGCACTGGGTCCAGCCCTGCCTCAG	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	9 9 perfect start of ref reverse strand
+ GGGAGGAAGGGCAAGGGCGGCCGCGGGCACTGGGTCCAGCCCTGCCTCAG	1..50	-synth1:50..1	start:0..end:0,matches:50,sub:0	segs:1,align_score:0,mapq:26
+
+>GAGTCCTGGCCCCACCCTGTGCTTCCCCTCCGCCTGCTGCACAGGCGCCC	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	10 10 perfect end of ref
+ GAGTCCTGGCCCCACCCTGTGCTTCCCCTCCGCCTGCTGCACAGGCGCCC	1..50	+synth1:61..110	start:0..end:0,matches:50,sub:0	segs:1,align_score:0,mapq:26
+
+>GGGCGCCTGTGCAGCAGGCGGAGGGGAAGCACAGGGTGGGGCCAGGACTC	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	11 11 perfect end of ref reverse strand
+ GGGCGCCTGTGCAGCAGGCGGAGGGGAAGCACAGGGTGGGGCCAGGACTC	1..50	-synth1:110..61	start:0..end:0,matches:50,sub:0	segs:1,align_score:0,mapq:26
+
+>ATGAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	12 12 mismatch at beginning x1, starting at 1, with mutation at 20
+ cTGAGGCAGGGCTGGACCCaGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC	2..50	+synth1:2..50	start:1..end:0,matches:48,sub:1	segs:1,align_score:2,mapq:26
+
+>AAGAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	13 13 mismatch at beginning x2, starting at 1, with mutation at 20
+ ctGAGGCAGGGCTGGACCCaGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC	3..50	+synth1:3..50	start:2..end:0,matches:47,sub:1	segs:1,align_score:3,mapq:26
+
+>AAAAAGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	14 14 mismatch at beginning x5, starting at 1 (pos 4 actually does match), with mutation at 20
+ ctgAgGCAGGGCTGGACCCaGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC	6..50	+synth1:6..50	start:5..end:0,matches:45,sub:1	segs:1,align_score:5,mapq:26
+
+>CAGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	15 15 mismatch at beginning x1, starting at 2
+ CtGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC	3..50	+synth1:3..50	start:2..end:0,matches:49,sub:0	segs:1,align_score:1,mapq:26
+
+>CAAAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	16 16 mismatch at beginning x2, starting at 2
+ CtgAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC	4..50	+synth1:4..50	start:3..end:0,matches:48,sub:0	segs:1,align_score:2,mapq:26
+
+>CAAAAACAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	17 17 mismatch at beginning x5, starting at 2 (pos 4 actually does match)
+ CtgAggCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC	7..50	+synth1:7..50	start:6..end:0,matches:46,sub:0	segs:1,align_score:4,mapq:26
+
+>CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCA	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	18 18 mismatch at end x1, starting at -1
+ CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCCc	1..49	+synth1:1..49	start:0..end:1,matches:49,sub:0	segs:1,align_score:1,mapq:26
+
+>CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCAA	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	19 19 mismatch at end x2, starting at -1
+ CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCcc	1..48	+synth1:1..48	start:0..end:2,matches:48,sub:0	segs:1,align_score:2,mapq:26
+
+>CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCAAAAA	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	20 20 mismatch at end x5, starting at -1
+ CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCctccc	1..45	+synth1:1..45	start:0..end:5,matches:45,sub:0	segs:1,align_score:5,mapq:26
+
+>CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCAC	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	21 21 mismatch at end x1, starting at -2
+ CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTCcC	1..48	+synth1:1..48	start:0..end:2,matches:49,sub:0	segs:1,align_score:1,mapq:26
+
+>CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTAAC	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	22 22 mismatch at end x2, starting at -2
+ CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTCCTccC	1..47	+synth1:1..47	start:0..end:3,matches:48,sub:0	segs:1,align_score:2,mapq:26
+
+>CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTAAAAAC	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	23 23 mismatch at end x5, starting at -2
+ CTGAGGCAGGGCTGGACCCAGTGCCCGCGGCCGCCCTTGCCCTTcctccC	1..44	+synth1:1..44	start:0..end:6,matches:45,sub:0	segs:1,align_score:5,mapq:26
+
+>ACGCCCTTGCAATTCCTCCCTTCCCTTTCGGCCTGGCCCCACCCTGA	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456	24 24 padding left & right, mutation, deletion
+ cCGCCCTTGCccTTCCTCCCTTCCCTTTCGGagt----------------	2..31	+synth1:32..61	start:1..del:3,matches:28,sub:2	segs:2,align_score:6,mapq:26
+,-------------------------------CCTGGCCCCACCCTGt	32..46	+synth1:65..79	del:3..end:1,matches:15,sub:0
+
+>ACGCCCTTGCAATTCCTCCCTTCCCTATCTTCGGAGTCCTGGCCCCACCA	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	25 25 padding left & right, mutation, insertion
+ cCGCCCTTGCccTTCCTCCCTTCCCT------------------------	2..26	+synth1:32..56	start:1..ins:3,matches:23,sub:2	segs:2,align_score:6,mapq:26
+,-----------------------------TTCGGAGTCCTGGCCCCACCc	30..49	+synth1:57..76	ins:3..end:1,matches:20,sub:0
+
+>TGGTGGGGCCAGGACTCCGAAGATAGGGAAGGGAGGAATTGCAAGGGCGT	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	26 26 padding left & right, mutation, insertion, reverse complemented
+ gGGTGGGGCCAGGACTCCGAA-----------------------------	2..21	-synth1:76..57	start:1..ins:3,matches:20,sub:0	segs:2,align_score:6,mapq:26
+,------------------------AGGGAAGGGAGGAAggGCAAGGGCGg	25..49	-synth1:56..32	ins:3..end:1,matches:23,sub:2
+

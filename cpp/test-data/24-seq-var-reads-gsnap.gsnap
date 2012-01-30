@@ -1,0 +1,3 @@
+>ACGCCCTTGCAATTCCTCCCTTCCCTTTCGGCCTGGCCCCACCCTGA	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456	24 24 padding left & right, mutation, deletion
+ cCGCCCTTGCccTTCCTCCCTTCCCTTTCGGagt----------------	2..31	+synth1:32..61	start:1..del:3,matches:28,sub:2	segs:2,align_score:6,mapq:26
+,-------------------------------CCTGGCCCCACCCTGt	32..46	+synth1:65..79	del:3..end:1,matches:15,sub:0

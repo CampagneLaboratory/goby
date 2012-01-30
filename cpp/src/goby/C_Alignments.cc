@@ -11,7 +11,7 @@
 
 using namespace std;
 
-#undef C_WRITE_API_WRITE_ALIGNMENT_DEBUG
+#define C_WRITE_API_WRITE_ALIGNMENT_DEBUG
 #ifdef C_WRITE_API_WRITE_ALIGNMENT_DEBUG
 #define debug(x) x
 #else
@@ -438,6 +438,142 @@ extern "C" {
             string *toQuality = writerHelper->sequenceVariation->mutable_to_quality();
             (*toQuality) += (readQualChar + writerHelper->qualityAdjustment);
         }
+    }
+
+        /**
+     * !! Before calling thisgoby Alignments_appendEntry(writerHelper) should
+     * !! have already been called to start a new alignment entry.
+     * This will output the sequence variations given reference, query,
+     * and optional quality string. Upon completion, the sequence variations
+     * will be outputted to goby alignment AND outMatches, outSubs, outInserts,
+     * and outDeletes will be populated by the number of the same found.
+     * Only positions between queryStart and queryEnd (0-based) will be
+     * oberseved which leads to a slight deviation in the number of matches
+     * found with respect to the number of matches reported by Gsnap,
+     * in the Gsnap considers matches even outside of the queryStart/queryEnd
+     * boundries (left and right clipping) to still be counted as matches,
+     * even though it says to clip them in the alignment.
+     * !! IMPORTANT !! The mergedRef, mergedQuery, and mergedQual should all
+     * be in the DIRECTION OF THE REFERENCE, NOT the direction of the read.
+     * By default, Gsnap outputs data in the direction of the READ, so if
+     * the data comes from Gsnap, the reference and query would need be
+     * reverse complemented and the quality would need to be reversed before
+     * calling this method.
+     * @param writerHelper the Goby writer helper
+     * @param mergedRef the reference, note that if there are insertions, there
+     * should be "-" characters in the appropriate places in mergedRef
+     * @param mergedQuery the query/read, note that if there are deletions,
+     * there should be "-" characters in the appropriate places in mergedQuery
+     * @param mergedQual the merged quality scores or NULL, if there are no
+     * quality scores. If there are  deletions, there should be "\0" characters
+     * in the appropriate places in mergedQual
+     * @param queryStart the inclusive, 0-based start point to start observing
+     * for sequence variations. This is also known as the left clip value.
+     * @param queryEnd the inclusive, 0-based start point to stop observing
+     * for sequence variations. This is also known as the right clip value.
+     * @param reverseStrand set to 1 of this query was matched on the
+     * reverse strand
+     * @param qualityShift the quality shift value to be ADDED TO all quality
+     * values that have sequence variations (that aren't 0). If you are
+     * starting with SANGER values, this should be set to -33 as Goby stores
+     * all quality values as Phred scores.
+     * @param outMatches output value, the nubmer of matches found
+     * @param outSubs output value, the number of substitutions found
+     * @param outInserts output value, the number of insert bases found
+     * @param outDeletes output value, the number of delete bases found
+     */
+    void gobyAlignments_outputSequenceVariations(
+            CAlignmentsWriterHelper *writerHelper,
+            const char *reference, const char *query, const char *quality,
+            int queryStart, int queryEnd,
+            int reverseStrand, int qualityShift,
+            int *outMatches, int *outSubs, int *outInserts, int *outDeletes) {
+
+        int refPosition = 0;
+        int readIndex = 0;
+        int hasQualChar;
+
+        int mergedSize = strlen(reference);
+        unsigned int refPositions[mergedSize];
+        unsigned int readIndexes[mergedSize];
+        for (int i = 0; i < mergedSize; i++) {
+            char refChar = reference[i];
+            if (refChar != '-') {
+                refPosition++;
+            }
+            refPositions[i] = refPosition;
+            int readIndexI = reverseStrand ? mergedSize - i - 1 : i;
+            char queryChar = query[readIndexI];
+            if (queryChar != '-') {
+                readIndex++;
+            }
+            readIndexes[readIndexI] = readIndex;
+        }
+
+        debug(
+            cout << "r=";
+            for (int i = 0; i < mergedSize; i++) {
+                cout << (refPositions[i] % 10);
+            }
+            cout << endl;
+            cout << "r=" << reference << endl;
+            cout << "q=" << query << endl;
+            cout << "q=";
+            for (int i = 0; i < mergedSize; i++) {
+                cout << (readIndexes[i] % 10);
+            }
+            cout << endl;
+        )
+
+        int matches = 0;
+        int subs = 0;
+        int inserts = 0;
+        int deletes = 0;
+//        for (int i = merged->queryStart + merged->startClip; 
+//                 i <= merged->queryEnd - merged->endClip; i++) {
+        for (int i = queryStart;  i <= queryEnd; i++) {
+            char refChar = toupper(reference[i]);
+            char queryChar = toupper(query[i]);
+            char qualChar;
+            if (quality != NULL) {
+                qualChar = quality[i];
+                if (qualChar > GOBY_NO_QUAL) {
+                    qualChar += qualityShift;
+                }
+            } else {
+                qualChar = GOBY_NO_QUAL;
+            }
+            
+            if (refChar == queryChar) {
+                matches++;
+            } else {
+                if (refChar == '-') {
+                    inserts++;
+                } else if (queryChar == '-') {
+                    deletes++;
+                } else if (queryChar == 'N') {
+                    // Done penalize for query=N
+                    matches++;
+                } else {
+                    subs++;
+                }
+                debug(
+                    cout << "Seqvar refPosition=" << refPositions[i] << " " <<
+                            "readIndex=" << readIndexes[i] << " " << 
+                            "from=" << refChar << " " <<
+                            "to=" << queryChar << endl;
+                )
+                hasQualChar = (qualChar == GOBY_NO_QUAL ? false : true);
+                gobyAlEntry_addSequenceVariation(writerHelper,
+                    readIndexes[i], refPositions[i], 
+                    refChar, queryChar, hasQualChar, qualChar);
+            }
+        }
+
+        *outMatches = matches;
+        *outSubs = subs;
+        *outInserts = inserts;
+        *outDeletes = deletes;
     }
 
     /**

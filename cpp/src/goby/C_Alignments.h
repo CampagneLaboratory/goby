@@ -7,6 +7,8 @@
 
 #include "C_CompactHelpers.h"
 
+#define GOBY_NO_QUAL '\0'
+
 // CAPTURE results are mutable. If you want a copy that will live
 // beyond the next gobyCapture_startNew(), use CAPTURE_DUPE.
 // which will duplicate the string returned by CAPTURE().
@@ -100,6 +102,7 @@ extern "C" {
 
     void gobyAlEntry_appendTooManyHits(CAlignmentsWriterHelper *writerHelper, unsigned int queryIndex, unsigned int alignedLength, int numberOfHits);
     void gobyAlEntry_addSequenceVariation(CAlignmentsWriterHelper *writerHelper, unsigned int readIndex, unsigned int refPosition, char refChar, char readChar, int hasQualCharInt /* bool */, char readQualChar);
+    void gobyAlignments_outputSequenceVariations(CAlignmentsWriterHelper *writerHelper, const char *reference, const char *query, const char *quality, int queryStart, int queryEnd, int reverseStrand, int qualityShift, int *outMatches, int *outSubs, int *outInserts, int *outDeletes);
 
     /**
      * Methods to assist reconstructing query and reference for SAM data.

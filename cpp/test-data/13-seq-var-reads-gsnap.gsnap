@@ -1,0 +1,2 @@
+>AAGAGGCAGGGCTGGACCCGGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC	1	"#$%&'()*+,-./0123456789:;"#$%&'()*+,-./0123456789	13 13 mismatch at beginning x2, starting at 1, with mutation at 20
+ ctGAGGCAGGGCTGGACCCaGTGCCCGCGGCCGCCCTTGCCCTTCCTCCC	3..50	+synth1:3..50	start:2..end:0,matches:47,sub:1	segs:1,align_score:3,mapq:26
