@@ -98,7 +98,6 @@ public class SampleCountInfo {
     }
 
 
-
     /**
      * Return the maximum index for genotypes observed in this sample.
      *
@@ -352,12 +351,12 @@ public class SampleCountInfo {
 
     }
 
-static final String A_BASE = "A";
-static final String T_BASE = "T";
-static final String C_BASE = "C";
-static final String G_BASE = "G";
-static final String N_BASE = "N";
-static final String[] STRING = {A_BASE, T_BASE, C_BASE, G_BASE, N_BASE};
+    static final String A_BASE = "A";
+    static final String T_BASE = "T";
+    static final String C_BASE = "C";
+    static final String G_BASE = "G";
+    static final String N_BASE = "N";
+    static final String[] STRING = {A_BASE, T_BASE, C_BASE, G_BASE, N_BASE};
 
     public final String baseString(final int baseIndex) {
         return STRING[baseIndex];
@@ -369,7 +368,12 @@ static final String[] STRING = {A_BASE, T_BASE, C_BASE, G_BASE, N_BASE};
      * @param indel to remove.
      */
     public void removeIndel(final EquivalentIndelRegion indel) {
-        indel.markFiltered();
+
+        for (final EquivalentIndelRegion eir : indels) {
+            if (!eir.isFiltered() && indel.equals(eir)) {
+                eir.markFiltered();
+            }
+        }
     }
 
     @Override
