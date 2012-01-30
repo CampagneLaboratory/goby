@@ -16,7 +16,7 @@ using pcrecpp::StringPiece;
 using pcrecpp::RE;
 using pcrecpp::RE_Options;
 
-#define C_GSNAP_DEBUG
+#undef C_GSNAP_DEBUG
 #ifdef C_GSNAP_DEBUG
 #define debug(x) x
 #else

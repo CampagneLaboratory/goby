@@ -11,7 +11,7 @@
 
 using namespace std;
 
-#define C_WRITE_API_WRITE_ALIGNMENT_DEBUG
+#undef C_WRITE_API_WRITE_ALIGNMENT_DEBUG
 #ifdef C_WRITE_API_WRITE_ALIGNMENT_DEBUG
 #define debug(x) x
 #else
