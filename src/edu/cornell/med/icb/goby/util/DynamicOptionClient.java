@@ -19,6 +19,9 @@
 package edu.cornell.med.icb.goby.util;
 
 /**
+ * Dynamic option clients are used by classes that need to obtain parameters from the command line without
+ * adding extraneous methods.
+ *
  * @author Fabien Campagne
  *         Date: 1/29/12
  *         Time: 5:00 PM
@@ -29,7 +32,11 @@ public class DynamicOptionClient {
     String[] defaultValues;
     String[] values;
 
-
+    /**
+     * Define the set of dynamic options the client recognizes. A empty default string is substituted by null.
+     *
+     * @param optionDefinition option definition in the format key:help:default-value
+     */
     public DynamicOptionClient(final String... optionDefinition) {
         supportedKeys = new String[optionDefinition.length];
         defaultValues = new String[optionDefinition.length];
@@ -37,12 +44,16 @@ public class DynamicOptionClient {
         int index = 0;
         for (final String def : optionDefinition) {
             final String[] tuple = def.split(":");
-            if (tuple.length!=3) {
+            if (tuple.length != 3) {
                 throw new RuntimeException("option definition must have three elements separated by colon: key:help:default");
             }
             supportedKeys[index] = tuple[0];
             helpMessages[index] = tuple[1];
             defaultValues[index] = tuple[2];
+            if (defaultValues[index].length() == 0) {
+                // replace default emptry strings with null for getters work better.
+                defaultValues[index] = null;
+            }
             index++;
         }
 
@@ -73,15 +84,31 @@ public class DynamicOptionClient {
 
     }
 
+    /**
+     * Obtain the value corresponding to the key. The default value is returned if the key was not associated with a
+     * value previously by calling acceptsOption.
+     *
+     * @param key option key.
+     * @return Value/default value for option.
+     */
     public String getString(final String key) {
         for (int keyIndex = 0; keyIndex < supportedKeys.length; keyIndex++) {
             if (key.equals(supportedKeys[keyIndex])) {
-                return values[keyIndex];
+
+                final String value = values[keyIndex];
+                return value != null ? value : defaultValues[keyIndex];
             }
         }
         return null;
     }
 
+    /**
+     * Obtain the Integer value corresponding to the key. The default value is returned if the key was not associated with a
+     * value previously by calling acceptsOption.
+     *
+     * @param key option key.
+     * @return Value/default value for option, or null if the value and the default were missing.
+     */
     public Integer getInteger(final String key) {
         final String val = getString(key);
         if (val != null) {
@@ -90,6 +117,12 @@ public class DynamicOptionClient {
         return null;
     }
 
+    /**
+     * Obtain the Byte value corresponding to the key.
+     *
+     * @param key option key.
+     * @return Value/default value for option, or null if the value and the default were missing.
+     */
     public Byte getByte(final String key) {
         final String val = getString(key);
         if (val != null) {
@@ -98,6 +131,12 @@ public class DynamicOptionClient {
         return null;
     }
 
+    /**
+     * Obtain the Float value corresponding to the key.
+     *
+     * @param key option key.
+     * @return Value/default value for option, or null if the value and the default were missing.
+     */
     public Float getFloat(final String key) {
         final String val = getString(key);
         if (val != null) {
@@ -106,6 +145,12 @@ public class DynamicOptionClient {
         return null;
     }
 
+    /**
+     * Obtain the Double value corresponding to the key.
+     *
+     * @param key option key.
+     * @return Value/default value for option, or null if the value and the default were missing.
+     */
     public Double getDouble(final String key) {
         final String val = getString(key);
         if (val != null) {
