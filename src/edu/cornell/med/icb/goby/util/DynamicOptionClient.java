@@ -39,18 +39,19 @@ public class DynamicOptionClient {
      */
     public DynamicOptionClient(final String... optionDefinition) {
         supportedKeys = new String[optionDefinition.length];
+        helpMessages = new String[optionDefinition.length];
         defaultValues = new String[optionDefinition.length];
         values = new String[optionDefinition.length];
         int index = 0;
         for (final String def : optionDefinition) {
-            final String[] tuple = def.split(":");
-            if (tuple.length != 3) {
+            final String[] tuple = def.split("[:]");
+            if (tuple.length < 2) {
                 throw new RuntimeException("option definition must have three elements separated by colon: key:help:default");
             }
             supportedKeys[index] = tuple[0];
             helpMessages[index] = tuple[1];
-            defaultValues[index] = tuple[2];
-            if (defaultValues[index].length() == 0) {
+            defaultValues[index] = tuple.length>=3?tuple[2]:null;
+            if (defaultValues[index]!=null && defaultValues[index].length() == 0) {
                 // replace default emptry strings with null for getters work better.
                 defaultValues[index] = null;
             }
