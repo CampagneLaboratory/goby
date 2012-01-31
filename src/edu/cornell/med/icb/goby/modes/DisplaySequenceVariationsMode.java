@@ -20,7 +20,10 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
+import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.IterateAlignments;
 import edu.cornell.med.icb.goby.util.DynamicOptionClient;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
@@ -125,28 +128,10 @@ public class DisplaySequenceVariationsMode extends AbstractGobyMode {
             firstPassIterator = new FirstPassIterateAlignments();
             firstPassIterator.parseIncludeReferenceArgument(jsapResult);
         }
-        registeredDOClients.add(QualityScoreFilter.doc);
 
-        // parse dynamic options:
-        dymamicOptions = jsapResult.getStringArray("dynamic-options");
-        for (final String dymamicOption : dymamicOptions) {
-            boolean parsed = false;
-            for (final DynamicOptionClient doc : registeredDOClients) {
-
-                if (doc.acceptsOption(dymamicOption)) {
-                    parsed = true;
-                    break;
-                }
-            }
-            if (!parsed) {
-                System.err.println("Error: none of the installed tools could parse dynamic option: " + dymamicOption);
-                System.exit(1);
-            }
-        }
         return this;
     }
 
-    static ObjectArrayList<DynamicOptionClient> registeredDOClients = new ObjectArrayList<DynamicOptionClient>();
 
     /**
      * Display sequence variations.

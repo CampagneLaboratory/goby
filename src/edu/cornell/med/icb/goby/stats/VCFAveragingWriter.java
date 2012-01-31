@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.stats;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.SortedAnnotations;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
+import edu.cornell.med.icb.goby.util.DynamicOptionClient;
 import it.unimi.dsi.fastutil.ints.*;
 import org.apache.commons.io.output.NullWriter;
 
@@ -46,6 +47,7 @@ public class VCFAveragingWriter extends VCFWriter {
     String[] chosenFormatFields;
     private MethylCountProvider provider;
     private String annotationFilename = null;
+    public static final DynamicOptionClient doc=new DynamicOptionClient("annotations:annotation filename:");
 
     public VCFAveragingWriter(final Writer writer, RandomAccessSequenceInterface genome, MethylCountProvider provider) {
         super(new NullWriter());

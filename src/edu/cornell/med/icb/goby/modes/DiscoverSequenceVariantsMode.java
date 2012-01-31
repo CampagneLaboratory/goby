@@ -29,6 +29,8 @@ import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
+import edu.cornell.med.icb.goby.stats.VCFAveragingWriter;
+import edu.cornell.med.icb.goby.util.DynamicOptionClient;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.io.TSVReader;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -97,6 +99,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     private ArrayList<GroupComparison> groupComparisonsList = new ArrayList<GroupComparison>();
     private int maxThresholdPerSite;
     private boolean callIndels = Release1_9_7_2.callIndels;
+    private String[] dymamicOptions;
 
 
     public void setDisableAtLeastQuarterFilter(boolean disableAtLeastQuarterFilter) {
@@ -118,6 +121,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     private final DifferentialExpressionCalculator deCalculator = new DifferentialExpressionCalculator();
     private final DifferentialExpressionAnalysis deAnalyzer = new DifferentialExpressionAnalysis();
 
+    static ObjectArrayList<DynamicOptionClient> registeredDOClients = new ObjectArrayList<DynamicOptionClient>();
 
     /**
      * Configure.
@@ -130,7 +134,29 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
      */
     @Override
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
+
+
         final JSAPResult jsapResult = parseJsapArguments(args);
+
+        registeredDOClients.add(QualityScoreFilter.doc);
+        registeredDOClients.add(VCFAveragingWriter.doc);
+
+        // parse dynamic options:
+        dymamicOptions = jsapResult.getStringArray("dynamic-options");
+        for (final String dymamicOption : dymamicOptions) {
+            boolean parsed = false;
+            for (final DynamicOptionClient doc : registeredDOClients) {
+
+                if (doc.acceptsOption(dymamicOption)) {
+                    parsed = true;
+                    break;
+                }
+            }
+            if (!parsed) {
+                System.err.println("Error: none of the installed tools could parse dynamic option: " + dymamicOption);
+                System.exit(1);
+            }
+        }
         inputFilenames = jsapResult.getStringArray("input");
 
         outputFile = jsapResult.getString("output");
