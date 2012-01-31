@@ -50,8 +50,8 @@
             <longFlag>column</longFlag>
             <shortFlag>c</shortFlag>
             <required>false</required>
-              <allowMultipleDeclarations>true</allowMultipleDeclarations>
-              <stringParser>
+            <allowMultipleDeclarations>true</allowMultipleDeclarations>
+            <stringParser>
                 <classname>StringStringParser</classname>
             </stringParser>
             <help>Name of a column containing a P-value to adjust.</help>
