@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.stats;
 
+import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.modes.GobyDriver;
 import edu.cornell.med.icb.goby.readers.vcf.*;
 import edu.cornell.med.icb.util.VersionUtils;
@@ -70,11 +71,15 @@ public class VCFWriter {
      * flag is true if info field at index is of type Flag.
      */
     private boolean[] infoFlag;
-    private Object2IntMap<String> formatTypeToFormatFieldIndex = new Object2IntArrayMap<String>();
+    protected Object2IntMap<String> formatTypeToFormatFieldIndex = new Object2IntArrayMap<String>();
     private int numFormatFields;
 
 
-    public VCFWriter(final Writer writer) {
+    protected CharSequence getChromosome() {
+        return this.chrom;
+    }
+
+    public VCFWriter(Writer writer) {
         this(new PrintWriter(writer));
     }
 
@@ -597,11 +602,13 @@ public class VCFWriter {
      * @param sampleIndex      Index of the sample
      * @param value            Value to set the field to for the current record.
      */
-    public void setSampleValue(int formatFieldIndex, int sampleIndex, CharSequence value) {
+    public void setSampleValue(final int formatFieldIndex, final int sampleIndex, final CharSequence value) {
         formatFieldActive[formatFieldIndex] = true;
         formatValues[formatFieldIndex][sampleIndex] = value;
     }
-
+    protected CharSequence getSampleValue(final int formatFieldIndex, final int sampleIndex) {
+        return  formatValues[formatFieldIndex][sampleIndex];
+    }
     /**
      * Set a value of a sample column. The sampleIndex identifies the sample in the getSampleIds()  array.
      *

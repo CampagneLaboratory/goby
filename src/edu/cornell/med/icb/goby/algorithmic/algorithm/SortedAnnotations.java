@@ -61,7 +61,11 @@ public class SortedAnnotations {
      */
     private IntAVLTreeSet annotationIndicesInRange;
 
-     /**
+    public IntAVLTreeSet getValidAnnotationIndices() {
+        return validAnnotationIndices;
+    }
+
+    /**
      * Index of the active annotations that overlap with a given position.
      */
     private IntAVLTreeSet validAnnotationIndices;
@@ -139,6 +143,8 @@ public class SortedAnnotations {
         final String referenceName = genome.getReferenceName(refIndex);
         if (annNewRefIndex != refIndex) {
             advanceToChromosome(refIndex);
+            annNew=nextAnnotation();
+            annNewRefIndex = genome.getReferenceIndex(annNew.getChromosome());
         }
 
         // both the annotation and query position are on the same chromosome
@@ -226,6 +232,30 @@ public class SortedAnnotations {
         return set;
     }
 
+    public Annotation getAnnotation(int annoIndex){
+        return annotations[annoIndex];
+    }
+
+    /**
+     * Determine if (currentChromosome,pos) is a position past the end of the given annotation
+     */
+    public boolean pastChosenAnnotation(int annoIndex, final String currentChromosome, final int pos){
+        final Annotation annotation = annotations[annoIndex];
+
+        if (!annotation.getChromosome().equals(currentChromosome)) {
+            // chromosome differ:
+            if (chromosome1StrictlyBefore2(genome.getReferenceIndex(annotation.getChromosome()), genome.getReferenceIndex(currentChromosome))) {
+                // currentChromosome is past the chromosome of the current annotation.
+                return true;
+            } else {
+                // position is past the end of the current annotation.
+                return pos > annotation.getEnd();
+            }
+        } else {
+            // chromosomes match
+            // is position past the end of the current annotation?
+            return pos > annotation.getEnd();
+        }    }
     /**
      * Determine if (currentChromosome,pos) is a position past the end of the current annotation.
      *
@@ -274,5 +304,10 @@ public class SortedAnnotations {
             return annotation.getStart() - annotation1.getStart();
         }
     };
+
+    public String getAnnotationsLastChromosome(){
+        int size=annotations.length;
+        return annotations[size-1].getChromosome();
+    }
 
 }
