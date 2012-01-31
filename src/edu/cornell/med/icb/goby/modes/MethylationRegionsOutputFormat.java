@@ -26,6 +26,7 @@ import edu.cornell.med.icb.goby.alignments.ReadIndexStats;
 import edu.cornell.med.icb.goby.alignments.SampleCountInfo;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
+import edu.cornell.med.icb.goby.util.DynamicOptionClient;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,6 +49,8 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
      * Used to log debug and informational messages.
      */
     private static final Log LOG = LogFactory.getLog(MethylationRegionsOutputFormat.class);
+    public static DynamicOptionClient doc = new DynamicOptionClient("annotations:filename to a tab delimited annotation file:");
+    private String annotationFilename;
 
     VCFWriter statWriter;
     private int numberOfSamples;
@@ -59,12 +62,22 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
      */
     int[] readerIndexToGroupIndex;
 
+    public MethylationRegionsOutputFormat() {
+        final String annotations = doc.getString("annotations");
+        if (annotations.length() > 0) {
+            annotationFilename = annotations;
+        } else {
+            // there is no annotation file. Future, to use direct discovery of regions.
+            annotationFilename = null;
+        }
+    }
+
     private ArrayList<GroupComparison> groupComparisons = new ArrayList<GroupComparison>();
 
     private RandomAccessSequenceInterface genome;
     /**
-       Where number of methylated and un-methylated bases are stored for each sample and
-       group under investigation:
+     * Where number of methylated and un-methylated bases are stored for each sample and
+     * group under investigation:
      */
     private MethylCountInfo mci;
 
@@ -94,6 +107,7 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
         mci = new MethylCountInfo(numberOfSamples, numberOfGroups);
 
     }
+
     private String chromosome;
     private int referenceIndex;
     private int position;
@@ -116,10 +130,10 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
         }
         MethylationRateVCFOutputFormat.fillMethylationCountArrays(sampleCounts, list, position, refBase, mci, readerIndexToGroupIndex);
         //TODO: hook the averaging writer in here (C and Cm are in mci):
-        this.position=position;
-        if (referenceIndex!=this.referenceIndex) {
-            this.referenceIndex=referenceIndex;
-            chromosome=genome.getReferenceName(referenceIndex);
+        this.position = position;
+        if (referenceIndex != this.referenceIndex) {
+            this.referenceIndex = referenceIndex;
+            chromosome = genome.getReferenceName(referenceIndex);
         }
         statWriter.writeRecord();
     }

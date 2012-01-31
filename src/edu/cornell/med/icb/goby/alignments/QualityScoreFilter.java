@@ -18,7 +18,7 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import it.unimi.dsi.fastutil.bytes.ByteArrayList;
+import edu.cornell.med.icb.goby.util.DynamicOptionClient;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 /**
@@ -26,8 +26,13 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
  *         Date: Mar 23, 2011
  *         Time: 11:16:18 AM
  */
-public class QualityScoreFilter extends GenotypeFilter {
+public class QualityScoreFilter extends GenotypeFilter  {
     private byte scoreThreshold = 30;
+    public static DynamicOptionClient doc=new DynamicOptionClient("scoreThreshold:Phred score threshold to keep bases.:30");
+
+    public QualityScoreFilter() {
+       scoreThreshold=doc.getByte("scoreThreshold");
+    }
 
     public String describe() {
         return "q<" + scoreThreshold;

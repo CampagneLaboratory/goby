@@ -206,5 +206,12 @@
             </defaults>
             <help>Activate or disable indel calling. As of Goby 1.9.8.2, with default false (do not call indels). </help>
         </flaggedOption>
+        <flaggedOption>
+            <id>dynamic-option</id>
+            <shortFlag>x</shortFlag>
+            <required>false</required>
+            <greedy>true</greedy>
+            <help>Set a dynamic option, in the format classname:key=value. Classname is the the name of the class that exposes the option (without short class name without package), key identifies the option to change and value is the new value for the option. </help>
+        </flaggedOption>
     </parameters>
 </jsap>
