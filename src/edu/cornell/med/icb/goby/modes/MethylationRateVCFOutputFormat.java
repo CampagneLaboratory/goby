@@ -27,8 +27,6 @@ import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
-import edu.cornell.med.icb.goby.stats.MethylCountProviderFromVCFWriter;
-import edu.cornell.med.icb.goby.stats.VCFAveragingWriter;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -98,7 +96,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
     private int unconvertedCytosineMinusFieldIndex;
     private RandomAccessSequenceInterface genome;
     private int genomicContextIndex;
-    private boolean aggregate=true;
+    private CharSequence chromosome;
 
     public void setMinimumEventThreshold(final int minimumEventThreshold) {
         this.minimumEventThreshold = minimumEventThreshold;
@@ -116,9 +114,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         final ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
         final VCFWriter vcfWriter = new VCFWriter(writer);
-        this.statWriter = aggregate? new VCFAveragingWriter(writer, genome,
-                new MethylCountProviderFromVCFWriter(vcfWriter)):
-                vcfWriter;
+        this.statWriter =  vcfWriter;
         groupComparisons = mode.getGroupComparisons();
         try {
             //activate R only if we need it:
@@ -493,6 +489,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         }
         return ok;
     }
+
 
 
 }

@@ -18,19 +18,11 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import com.sun.corba.se.spi.logging.LogWrapperFactory;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.LogGCCorrectionWeight;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.SortedAnnotations;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
-import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.*;
 import org.apache.commons.io.output.NullWriter;
-import sun.rmi.runtime.Log;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -39,6 +31,7 @@ import java.io.Writer;
  * A VCF Writer that averages values of some fields over a set of annotations,
  * then writes the result to IGV file format.
  *
+ * @author Nyasha Chambwe
  * @author Fabien Campagne
  *         Date: 12/12/11
  *         Time: 1:39 PM
@@ -52,6 +45,7 @@ public class VCFAveragingWriter extends VCFWriter {
     private RandomAccessSequenceInterface genome;
     String[] chosenFormatFields;
     private MethylCountProvider provider;
+    private String annotationFilename = null;
 
     public VCFAveragingWriter(final Writer writer, RandomAccessSequenceInterface genome, MethylCountProvider provider) {
         super(new NullWriter());
@@ -61,6 +55,14 @@ public class VCFAveragingWriter extends VCFWriter {
         initialized = false;
     }
 
+    /**
+     * Set the annotation filename.
+     *
+     * @param annotationFilename
+     */
+    public void setAnnotationFilename(String annotationFilename) {
+        this.annotationFilename = annotationFilename;
+    }
 
     /**
      * Select the FORMAT fields whose values will be averaged per sample.
@@ -81,7 +83,7 @@ public class VCFAveragingWriter extends VCFWriter {
     @Override
     public void writeRecord() {
         init();
-        provider.feedFrom(this);
+
         addValuesAndAverage();
         provider.next();
     }
@@ -99,9 +101,10 @@ public class VCFAveragingWriter extends VCFWriter {
 
             // load annotations
             annotations.setGenome(this.genome);
-            String filename = "/Users/nyasha/Dropbox/Professional/DMR-caller/testVCFAveragingWriter.txt";
+
             try {
-                annotations.loadAnnotations(filename);
+                assert annotationFilename != null : "annotation filename cannot be null";
+                annotations.loadAnnotations(annotationFilename);
                 System.out.println("annotations loaded");
             } catch (IOException e) {
                 System.err.println("An error occurred loading the annotation file. ");
@@ -133,8 +136,8 @@ public class VCFAveragingWriter extends VCFWriter {
         }
     }
 
-    SortedAnnotations annotations = new SortedAnnotations();
-    Int2ObjectMap<FormatFieldCounter> counterMap = new Int2ObjectAVLTreeMap<FormatFieldCounter>();
+    private SortedAnnotations annotations = new SortedAnnotations();
+    private Int2ObjectMap<FormatFieldCounter> counterMap = new Int2ObjectAVLTreeMap<FormatFieldCounter>();
 
     private void addValuesAndAverage() {
 
@@ -156,8 +159,8 @@ public class VCFAveragingWriter extends VCFWriter {
                         counterMap.put(each, cntr);
                     }
 
-                    cntr.unmethylatedCounter[sampleIndex] += provider.getC(sampleIndex, provider.getIndex());
-                    cntr.methylatedCounter[sampleIndex] += provider.getCm(sampleIndex, provider.getIndex());
+                    cntr.unmethylatedCounter[sampleIndex] += provider.getC(sampleIndex);
+                    cntr.methylatedCounter[sampleIndex] += provider.getCm(sampleIndex);
                     cntr.numberOfSites[sampleIndex] += 1;
                     System.out.println("sample " + samples[sampleIndex] + " " + "position: " + pos + " " + cntr.toString(sampleIndex));
                 }

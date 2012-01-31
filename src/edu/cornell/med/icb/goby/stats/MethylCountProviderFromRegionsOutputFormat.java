@@ -18,69 +18,55 @@
 
 package edu.cornell.med.icb.goby.stats;
 
+import edu.cornell.med.icb.goby.algorithmic.data.MethylCountInfo;
+import edu.cornell.med.icb.goby.modes.MethylationRegionsOutputFormat;
+
 /**
- * User: nyasha
- * Date: 1/27/12
- * Time: 4:08 PM
+ * A provider that fetches methylation counts from a region output format.
+ * @author Fabien Campagne
+ *         Date: 1/31/12
+ *         Time: 1:09 PM
  */
-public class MethylCountProviderTestSupport implements MethylCountProvider {
+public class MethylCountProviderFromRegionsOutputFormat implements MethylCountProvider {
+    private MethylCountInfo mci;
 
-
-    private String[] samples;
-    private int[] positions;
-    private String chromosome;
-    private int[][] C;
-    private int[][] Cm;
-
-    public int getIndex() {
-        return index;
+    public MethylCountProviderFromRegionsOutputFormat(MethylationRegionsOutputFormat regionFormat) {
+        this.regionFormat = regionFormat;
+        mci=regionFormat.getMci();
     }
 
-    private int index;
-
+    MethylationRegionsOutputFormat regionFormat;
 
     @Override
     public CharSequence getChromosome() {
-        return chromosome;
+        return regionFormat.getChromosome();
     }
 
     @Override
     public int getPosition() {
-        return positions[index];
+        return regionFormat.getPosition();
     }
 
     @Override
     public String[] getSamples() {
-        return samples;
-    }
-
-    public MethylCountProviderTestSupport(String samples[],
-                                          int positions[], String chromosome,
-                                          int[][] C, int[][] Cm) {
-
-        this.samples = samples;
-
-        this.positions = positions;
-        this.chromosome = chromosome;
-        this.C = C;
-        this.Cm = Cm;
+        return regionFormat.getSamples();
     }
 
     @Override
     public int getC(int sampleIndex) {
-        return C[sampleIndex][index];
+        return mci.unmethylatedCCountPerSample[sampleIndex];
     }
 
     @Override
     public int getCm(int sampleIndex) {
-        return Cm[sampleIndex][index];
+         return mci.methylatedCCountsPerSample[sampleIndex];
     }
-
 
     @Override
     public void next() {
-        index++;
+       mci.reset();
     }
+
 
 
 }

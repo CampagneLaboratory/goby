@@ -25,6 +25,8 @@ import edu.cornell.med.icb.goby.alignments.DiscoverVariantPositionData;
 import edu.cornell.med.icb.goby.alignments.ReadIndexStats;
 import edu.cornell.med.icb.goby.alignments.SampleCountInfo;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
+import edu.cornell.med.icb.goby.stats.MethylCountProviderFromRegionsOutputFormat;
+import edu.cornell.med.icb.goby.stats.VCFAveragingWriter;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
 import edu.cornell.med.icb.goby.util.DynamicOptionClient;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -61,6 +63,10 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
      * Maps sampleIndex to group index.
      */
     int[] readerIndexToGroupIndex;
+    /**
+     * The averaging writer that overlaps sites with annotations and writes averages:
+     */
+    private VCFAveragingWriter averagingWriter;
 
     public MethylationRegionsOutputFormat() {
         final String annotations = doc.getString("annotations");
@@ -70,6 +76,7 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
             // there is no annotation file. Future, to use direct discovery of regions.
             annotationFilename = null;
         }
+
     }
 
     private ArrayList<GroupComparison> groupComparisons = new ArrayList<GroupComparison>();
@@ -86,7 +93,9 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
 
         groups = mode.getGroups();
         samples = mode.getSamples();
-
+        averagingWriter = new VCFAveragingWriter(writer, genome, new MethylCountProviderFromRegionsOutputFormat(this));
+        assert annotationFilename!=null: "annotation filename must have been set";
+        averagingWriter.setAnnotationFilename(annotationFilename);
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         final ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
         this.statWriter = new VCFWriter(writer);
@@ -129,13 +138,15 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
             return;
         }
         MethylationRateVCFOutputFormat.fillMethylationCountArrays(sampleCounts, list, position, refBase, mci, readerIndexToGroupIndex);
-        //TODO: hook the averaging writer in here (C and Cm are in mci):
+
         this.position = position;
         if (referenceIndex != this.referenceIndex) {
             this.referenceIndex = referenceIndex;
             chromosome = genome.getReferenceName(referenceIndex);
         }
         statWriter.writeRecord();
+        averagingWriter.writeRecord();
+
     }
 
     public int getPosition() {
@@ -149,8 +160,9 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
 
     @Override
     public void close() {
-        //TODO: hook the averaging writer in here:
+
         statWriter.close();
+        averagingWriter.close();
     }
 
     @Override
@@ -159,4 +171,11 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
     }
 
 
+    public String[] getSamples() {
+        return samples;
+    }
+
+    public MethylCountInfo getMci() {
+        return mci;
+    }
 }

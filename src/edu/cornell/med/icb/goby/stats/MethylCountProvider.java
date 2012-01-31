@@ -19,25 +19,50 @@
 package edu.cornell.med.icb.goby.stats;
 
 /**
-* User: nyasha
-* Date: 1/27/12
-* Time: 4:06 PM
-*/
-public interface MethylCountProvider
-{
+ * @author Fabien Campagne
+ * @author Nyasha Chambwe
+ * Date: 1/27/12
+ * Time: 4:06 PM
+ */
+public interface MethylCountProvider {
+    /**
+     * Get the chromosome for which the counts are returned.
+     * @return reference sequence identifier.
+     */
     public CharSequence getChromosome();
 
+    /**
+     * Get the position for which the counts are returned.
+     * @return position one-based position in chromosome.
+     */
     public int getPosition();
 
+    /**
+     * Get the sample ids for each index.
+     * @return array of sample identifiers.
+     */
     public String[] getSamples();
 
-    public int getC(int sampleIndex, int positionIndex);
+    /**
+     * Get the count of unmethylated cytosines in a given sample.
+     *
+     * @param sampleIndex index of the sample.
+     * @return number of unmethylated cytosine bases.
+     */
+    public int getC(int sampleIndex);
 
-    public int getCm(int sampleIndex, int positionIndex);
+    /**
+     * Get the count of methylated cytosines in a given sample.
+     *
+     * @param sampleIndex index of the sample.
+     * @return number of methylated cytosine bases.
+     */
+    public int getCm(int sampleIndex);
 
+    /**
+     * Advance to the next position.
+     */
     public void next();
 
-    void feedFrom(VCFWriter vcfAveragingWriter);
 
-    public int getIndex();
 }
