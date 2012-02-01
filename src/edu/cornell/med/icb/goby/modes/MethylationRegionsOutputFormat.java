@@ -51,7 +51,7 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
      * Used to log debug and informational messages.
      */
     private static final Log LOG = LogFactory.getLog(MethylationRegionsOutputFormat.class);
-    public static DynamicOptionClient doc = new DynamicOptionClient("annotations:filename to a tab delimited annotation file:");
+    public static DynamicOptionClient doc = new DynamicOptionClient(MethylationRegionsOutputFormat.class, "annotations:filename to a tab delimited annotation file:");
     private String annotationFilename;
 
     VCFWriter statWriter;

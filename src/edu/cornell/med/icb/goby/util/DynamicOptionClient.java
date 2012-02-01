@@ -31,13 +31,16 @@ public class DynamicOptionClient {
     private String[] helpMessages;
     String[] defaultValues;
     String[] values;
+    Class enclosingClass;
 
     /**
      * Define the set of dynamic options the client recognizes. A empty default string is substituted by null.
      *
+     * @param enclosingClass Enclosing class. Simple name will be used to parse options.
      * @param optionDefinition option definition in the format key:help:default-value
      */
-    public DynamicOptionClient(final String... optionDefinition) {
+    public DynamicOptionClient(Class enclosingClass, final String... optionDefinition) {
+        this.enclosingClass = enclosingClass;
         supportedKeys = new String[optionDefinition.length];
         helpMessages = new String[optionDefinition.length];
         defaultValues = new String[optionDefinition.length];
@@ -50,8 +53,8 @@ public class DynamicOptionClient {
             }
             supportedKeys[index] = tuple[0];
             helpMessages[index] = tuple[1];
-            defaultValues[index] = tuple.length>=3?tuple[2]:null;
-            if (defaultValues[index]!=null && defaultValues[index].length() == 0) {
+            defaultValues[index] = tuple.length >= 3 ? tuple[2] : null;
+            if (defaultValues[index] != null && defaultValues[index].length() == 0) {
                 // replace default emptry strings with null for getters work better.
                 defaultValues[index] = null;
             }
@@ -67,9 +70,9 @@ public class DynamicOptionClient {
      * @return True when the client can accept the option.
      */
     public boolean acceptsOption(final String option) {
-        final String[] tokens = option.split(":");
+        final String[] tokens = option.split("[:=]");
         if (tokens.length != 3) return false;
-        final String shortClassname = this.getClass().getName();
+        final String shortClassname = enclosingClass.getSimpleName();
         if (!tokens[0].equals(shortClassname)) {
             return false;
         }

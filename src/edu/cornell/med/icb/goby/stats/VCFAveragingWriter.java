@@ -47,7 +47,7 @@ public class VCFAveragingWriter extends VCFWriter {
     String[] chosenFormatFields;
     private MethylCountProvider provider;
     private String annotationFilename = null;
-    public static final DynamicOptionClient doc=new DynamicOptionClient("annotations:annotation filename:");
+    public static final DynamicOptionClient doc=new DynamicOptionClient(VCFAveragingWriter.class, "annotations:annotation filename:");
 
     public VCFAveragingWriter(final Writer writer, RandomAccessSequenceInterface genome, MethylCountProvider provider) {
         super(new NullWriter());
