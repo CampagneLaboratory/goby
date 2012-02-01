@@ -47,7 +47,7 @@ import java.util.ArrayList;
  *         Date: April 4 2011
  *         Time: 2:38:13 AM
  */
-public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFormat {
+public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFormat, MethylationFormat {
 
     /**
      * Used to log debug and informational messages.
@@ -98,6 +98,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
     private int genomicContextIndex;
     private CharSequence chromosome;
 
+    @Override
     public void setMinimumEventThreshold(final int minimumEventThreshold) {
         this.minimumEventThreshold = minimumEventThreshold;
     }

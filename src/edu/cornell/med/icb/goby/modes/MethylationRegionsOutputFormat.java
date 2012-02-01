@@ -45,7 +45,7 @@ import java.util.ArrayList;
  *         Date: Jan 28 2012
  *         Time: 1:50:13 PM
  */
-public class MethylationRegionsOutputFormat implements SequenceVariationOutputFormat {
+public class MethylationRegionsOutputFormat implements SequenceVariationOutputFormat, MethylationFormat {
 
     /**
      * Used to log debug and informational messages.
@@ -67,10 +67,11 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
      * The averaging writer that overlaps sites with annotations and writes averages:
      */
     private VCFAveragingWriter averagingWriter;
+    private int minimumEventThreshold;
 
     public MethylationRegionsOutputFormat() {
         final String annotations = doc.getString("annotations");
-        if (annotations.length() > 0) {
+        if (annotations != null) {
             annotationFilename = annotations;
         } else {
             // there is no annotation file. Future, to use direct discovery of regions.
@@ -93,8 +94,9 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
 
         groups = mode.getGroups();
         samples = mode.getSamples();
-        averagingWriter = new VCFAveragingWriter(writer, genome, new MethylCountProviderFromRegionsOutputFormat(this));
-        assert annotationFilename!=null: "annotation filename must have been set";
+        averagingWriter = new VCFAveragingWriter(writer, new MethylCountProviderFromRegionsOutputFormat(this));
+        assert annotationFilename != null : "annotation filename must have been set";
+
         averagingWriter.setAnnotationFilename(annotationFilename);
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         final ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
@@ -132,19 +134,21 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
 
 
         position = position + 1;
-
+        averagingWriter.setGenome(genome);
         final char refBase = sampleCounts[0].referenceBase;
         if (refBase != 'C' && refBase != 'G') {
             return;
         }
         MethylationRateVCFOutputFormat.fillMethylationCountArrays(sampleCounts, list, position, refBase, mci, readerIndexToGroupIndex);
-
+        if (mci.eventCountAtSite < minimumEventThreshold) {
+            return;
+        }
         this.position = position;
         if (referenceIndex != this.referenceIndex) {
             this.referenceIndex = referenceIndex;
             chromosome = genome.getReferenceName(referenceIndex);
         }
-        statWriter.writeRecord();
+        //   statWriter.writeRecord();
         averagingWriter.writeRecord();
 
     }
@@ -177,5 +181,10 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
 
     public MethylCountInfo getMci() {
         return mci;
+    }
+
+    @Override
+    public void setMinimumEventThreshold(int minimumEventThreshold) {
+        this.minimumEventThreshold = minimumEventThreshold;
     }
 }

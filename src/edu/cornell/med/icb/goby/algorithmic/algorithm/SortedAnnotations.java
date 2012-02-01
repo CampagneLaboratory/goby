@@ -110,8 +110,10 @@ public class SortedAnnotations {
         final Object2ObjectMap<String, ObjectList<Annotation>> map = CompactAlignmentToAnnotationCountsMode.readAnnotations(annotReader);
         for (int referenceIndex = 0; referenceIndex < genome.size(); referenceIndex++) {
             final ObjectList<Annotation> list = map.get(genome.getReferenceName(referenceIndex));
-            Collections.sort(list, compareAnnotationStart);
-            result.addAll(list);
+            if (list != null) {
+                Collections.sort(list, compareAnnotationStart);
+                result.addAll(list);
+            }
         }
         annotations = new Annotation[result.size()];
         result.toArray(annotations);
@@ -133,6 +135,7 @@ public class SortedAnnotations {
     /**
      * * Method that populates the validAnnotationIndices
      * with annotations that overlap a given position
+     *
      * @param refIndex
      * @param pos
      */
@@ -143,7 +146,7 @@ public class SortedAnnotations {
         final String referenceName = genome.getReferenceName(refIndex);
         if (annNewRefIndex != refIndex) {
             advanceToChromosome(refIndex);
-            annNew=nextAnnotation();
+            annNew = nextAnnotation();
             annNewRefIndex = genome.getReferenceIndex(annNew.getChromosome());
         }
 
@@ -183,6 +186,7 @@ public class SortedAnnotations {
     /**
      * This method sets the annotationIndex to the index of the first occurrence
      * of annotations on this chromosome
+     *
      * @param refIndex
      */
     public void advanceToChromosome(int refIndex) {
@@ -196,6 +200,7 @@ public class SortedAnnotations {
                 if (chromosome1StrictlyBefore2(refIndex, genome.getReferenceIndex(ann.getChromosome()))) {
                     // we are past chromosome. Stop immediately and backup.
                     annotationIndex -= 1;
+                    annotationIndex=Math.max(0,annotationIndex);
                     break;
                 } else {
                     break;
@@ -232,14 +237,14 @@ public class SortedAnnotations {
         return set;
     }
 
-    public Annotation getAnnotation(int annoIndex){
+    public Annotation getAnnotation(int annoIndex) {
         return annotations[annoIndex];
     }
 
     /**
      * Determine if (currentChromosome,pos) is a position past the end of the given annotation
      */
-    public boolean pastChosenAnnotation(int annoIndex, final String currentChromosome, final int pos){
+    public boolean pastChosenAnnotation(int annoIndex, final String currentChromosome, final int pos) {
         final Annotation annotation = annotations[annoIndex];
 
         if (!annotation.getChromosome().equals(currentChromosome)) {
@@ -255,7 +260,9 @@ public class SortedAnnotations {
             // chromosomes match
             // is position past the end of the current annotation?
             return pos > annotation.getEnd();
-        }    }
+        }
+    }
+
     /**
      * Determine if (currentChromosome,pos) is a position past the end of the current annotation.
      *
@@ -305,9 +312,9 @@ public class SortedAnnotations {
         }
     };
 
-    public String getAnnotationsLastChromosome(){
-        int size=annotations.length;
-        return annotations[size-1].getChromosome();
+    public String getAnnotationsLastChromosome() {
+        int size = annotations.length;
+        return annotations[size - 1].getChromosome();
     }
 
 }

@@ -47,7 +47,15 @@ public class VCFAveragingWriter extends VCFWriter {
     String[] chosenFormatFields;
     private MethylCountProvider provider;
     private String annotationFilename = null;
-    public static final DynamicOptionClient doc=new DynamicOptionClient(VCFAveragingWriter.class, "annotations:annotation filename:");
+    public static final DynamicOptionClient doc = new DynamicOptionClient(VCFAveragingWriter.class, "annotations:annotation filename:");
+
+    public void setGenome(RandomAccessSequenceInterface genome) {
+        this.genome = genome;
+    }
+
+    public VCFAveragingWriter(final Writer writer, MethylCountProvider provider) {
+        this(writer, null, provider);
+    }
 
     public VCFAveragingWriter(final Writer writer, RandomAccessSequenceInterface genome, MethylCountProvider provider) {
         super(new NullWriter());
@@ -85,7 +93,6 @@ public class VCFAveragingWriter extends VCFWriter {
     @Override
     public void writeRecord() {
         init();
-
         addValuesAndAverage();
         provider.next();
     }
@@ -150,6 +157,8 @@ public class VCFAveragingWriter extends VCFWriter {
         if (annotations.hasOverlappingAnnotations(refIndex, pos)) {
             System.out.println(chromosome + " position: " + pos + " has overlapping annotations");
             final IntAVLTreeSet overlappers = annotations.getValidAnnotationIndices();
+
+            // process each individual sample
             for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
                 for (int each : overlappers) {
                     // increment counters for each annotation overlapping at this position
@@ -167,6 +176,9 @@ public class VCFAveragingWriter extends VCFWriter {
                     System.out.println("sample " + samples[sampleIndex] + " " + "position: " + pos + " " + cntr.toString(sampleIndex));
                 }
             }
+
+            // process groups
+
         } else {
             System.out.println("Did not find overlapping annotations for " + chromosome + " : position: " + pos);
         }
@@ -185,22 +197,23 @@ public class VCFAveragingWriter extends VCFWriter {
             // this annotation is ready to be written
             Annotation annoOut = annotations.getAnnotation(anno);
             FormatFieldCounter temp = counterMap.get(anno);
-
+            StringBuilder lineToOutput= new StringBuilder("");
             try {
-                outputWriter.append(annoOut.getChromosome());
-                outputWriter.append("\t");
-                outputWriter.append(String.valueOf(annoOut.getStart()));
-                outputWriter.append("\t");
-                outputWriter.append(String.valueOf(annoOut.getEnd())).append("\t");
-                outputWriter.append(annoOut.getId());
-                outputWriter.append("\t");
+                lineToOutput.append(annoOut.getChromosome());
+                lineToOutput.append("\t");
+                lineToOutput.append(String.valueOf(annoOut.getStart()));
+                lineToOutput.append("\t");
+                lineToOutput.append(String.valueOf(annoOut.getEnd())).append("\t");
+                lineToOutput.append(annoOut.getId());
+                lineToOutput.append("\t");
                 for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
                     temp.CalculateSampleMethylationRate(sampleIndex);
-                    outputWriter.append(String.format("%g", temp.getMethylationRate()[sampleIndex]));
+                    lineToOutput.append(String.format("%g", temp.getMethylationRate()[sampleIndex]));
                     if (sampleIndex != (numSamples - 1)) {
-                        outputWriter.append("\t");
+                        lineToOutput.append("\t");
                     }
                 }
+                outputWriter.append(lineToOutput.toString());
                 outputWriter.append("\n");
                 counterMap.remove(anno);
             } catch (IOException e) {

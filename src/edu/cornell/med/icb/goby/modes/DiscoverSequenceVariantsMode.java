@@ -140,6 +140,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
         registeredDOClients.add(QualityScoreFilter.doc);
         registeredDOClients.add(VCFAveragingWriter.doc);
+        registeredDOClients.add(MethylationRegionsOutputFormat.doc);
 
         // parse dynamic options:
         dymamicOptions = jsapResult.getStringArray("dynamic-options");
@@ -148,6 +149,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             for (final DynamicOptionClient doc : registeredDOClients) {
 
                 if (doc.acceptsOption(dymamicOption)) {
+                    
                     parsed = true;
                     break;
                 }
@@ -257,11 +259,11 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 break;
             case METHYLATION_REGIONS:
                 formatter = new MethylationRegionsOutputFormat();
-                methylFormat((MethylationRateVCFOutputFormat) formatter);
+                methylFormat((MethylationFormat)formatter);
                 break;
             case METHYLATION:
                 formatter = new MethylationRateVCFOutputFormat();
-                methylFormat((MethylationRateVCFOutputFormat) formatter);
+                methylFormat((MethylationFormat)formatter);
                 break;
             case INDEL_COUNTS:
                 formatter = new IndelCountOutputFormat();
@@ -348,14 +350,14 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         return this;
     }
 
-    private void methylFormat(MethylationRateVCFOutputFormat formatter) {
+    private void methylFormat(MethylationFormat formatter) {
         // methylated bases match the reference. Do not filter on minimum variation support.
         int tmp = minimumVariationSupport;
         this.minimumVariationSupport = -1;
         this.thresholdDistinctReadIndices = 1;
         // need at least so many methylation/non-methylation event to record site in output
         // the value configure put in minimumVariationSupport as minimum coverage for the site.
-        ((MethylationRateVCFOutputFormat) formatter).setMinimumEventThreshold(tmp);
+       formatter.setMinimumEventThreshold(tmp);
         System.out.println("Methylation format ignores thresholdDistinctReadIndices. Additionally, the minimum coverage needed for a site to be reported can be changed with --minimum-variation-support.");
     }
 

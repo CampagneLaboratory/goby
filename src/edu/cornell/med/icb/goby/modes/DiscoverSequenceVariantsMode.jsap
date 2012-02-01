@@ -207,7 +207,7 @@
             <help>Activate or disable indel calling. As of Goby 1.9.8.2, with default false (do not call indels). </help>
         </flaggedOption>
         <flaggedOption>
-            <id>dynamic-option</id>
+            <id>dynamic-options</id>
             <shortFlag>x</shortFlag>
             <required>false</required>
             <allowMultipleDeclarations>true</allowMultipleDeclarations>

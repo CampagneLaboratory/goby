@@ -78,7 +78,7 @@ public class DynamicOptionClient {
         }
         int keyIndex = 0;
         for (final String supportedId : supportedKeys) {
-            if (!tokens[1].equals(supportedId)) {
+            if (tokens[1].equals(supportedId)) {
                 values[keyIndex] = tokens[2];
                 return true;
             }

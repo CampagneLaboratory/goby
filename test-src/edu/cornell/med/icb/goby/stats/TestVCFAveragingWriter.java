@@ -125,6 +125,7 @@ public class TestVCFAveragingWriter {
         testWriter.writeRecord();
         testWriter.writeRecord();
         testWriter.close();
+
         assertEquals("Test Case 3 result: ", "Chromosome\tStart\tEnd\tFeature\tMR[sample1]\n" +
                 "Case3\t4\t21\tannotation4\t52.7778\n" +
                 "Case3\t11\t26\tannotation6\t35.8209\n" +
