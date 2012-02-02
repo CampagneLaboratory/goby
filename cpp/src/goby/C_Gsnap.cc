@@ -10,6 +10,14 @@
 #include "hash.h"
 #include "pcrecpp.h"
 
+/*
+ * TODO: Make sure the fields I moved from segment to alignment really
+ *       DO belong in alignment.
+ * TODO: Support paired writing. This might involve supporting more than
+ *       one pair target in the proto.
+ * TODO: Support spliced writing. Probably need to grab more gsnap fields.
+ */
+
 using namespace std;
 
 using pcrecpp::StringPiece;
