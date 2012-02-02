@@ -1,5 +1,6 @@
+  - Fix bug that prevented methylation vcf-output from writing any line.
 1.9.8.2.1
- - Fix bug in GenotypesOutputFormat that caused GenotypesOutputFormat at some sites.
+ - Fix bug in GenotypesOutputFormat that caused GenotypesOutputFormat to throw an exception when processing some sites.
 1.9.8.2
  - Make it possible to activate indel calling without recompilation. Mode discover-sequence-variants now accepts
    the boolean argument --call-indels true/false.
