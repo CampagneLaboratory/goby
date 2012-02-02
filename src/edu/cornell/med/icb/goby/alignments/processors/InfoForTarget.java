@@ -55,10 +55,10 @@ public class InfoForTarget {
      */
     public int maxEntryPosition;
     /**
-     * The number of entries encountered pas the maximum threshold.
+     * The number of entries encountered past the maximum threshold.
      */
     protected int pastMaxCount;
-    private static final int MAX_ENTRIES_IN_WINDOW = 500000;
+    private static final int MAX_ENTRIES_IN_WINDOW = 250000;
 
 
     public void addIndel(int startPosition, int endPosition, String from, String to) {
