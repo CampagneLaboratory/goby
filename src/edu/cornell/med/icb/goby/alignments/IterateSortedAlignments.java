@@ -62,10 +62,12 @@ public abstract class IterateSortedAlignments<T> {
     private String startOffsetArgument;
     private String endOffsetArgument;
     private int startFlapLength;
+
     /**
      * Set the maximum number of variants that will be analyzed at a given position. When a site
      * has more than maxThreshold, any variant encountered after the threshold is reached is ignored.
      * The default value is 500,000.
+     *
      * @param maxThreshold
      */
     public void setMaxThreshold(final int maxThreshold) {
@@ -286,11 +288,11 @@ public abstract class IterateSortedAlignments<T> {
                 for (int referenceIndex = 0; referenceIndex < numRefs; referenceIndex++) {
                     if (referenceIndex < startReferenceIndex || referenceIndex > endReferenceIndex) {
 
-                      referencesToProcess.rem(referenceIndex);
+                        referencesToProcess.rem(referenceIndex);
                     }
                 }
-                assert !referencesToProcess.contains(startReferenceIndex-1) :"internal error";
-                assert !referencesToProcess.contains(endReferenceIndex+1) :"internal error";
+                assert !referencesToProcess.contains(startReferenceIndex - 1) : "internal error";
+                assert !referencesToProcess.contains(endReferenceIndex + 1) : "internal error";
 
 
             }
@@ -316,7 +318,7 @@ public abstract class IterateSortedAlignments<T> {
         int currentPosition;
         boolean first = true;
         ProgressLogger pg = new ProgressLogger(LOG);
-        pg.displayFreeMemory=true;
+        pg.displayFreeMemory = true;
         pg.start();
 
         final AlignmentProcessorInterface realigner = alignmentProcessorFactory.create(sortedReaders);
@@ -559,20 +561,20 @@ public abstract class IterateSortedAlignments<T> {
                 LOG.error(String.format(
                         "Alignment reference %s index (%d) was not found in the genome.",
                         targetId, targetIndex));
+            } else {
+                // substracts from genome length because the size is recorded longer by one base in loadFasta
+                final int genomeLength = genome.getLength(genomeTargetIndex) - 1;
+                final int alignmentTargetLength = alignmentTargetLengths[targetIndex];
+                if (alignmentTargetLength != genomeLength) {
+
+                    LOG.error(String.format(
+                            "Genome reference %s length (%d) differs from alignment reference length (%d) for sequence %s at index %d",
+                            genome.getReferenceName(targetIndex), genomeLength, alignmentTargetLength,
+                            alignmentReverseIds.getId(targetIndex), targetIndex));
+
+                }
+                alignmentToGenomeTargetIndices[targetIndex] = genomeTargetIndex;
             }
-            // substracts from genome length because the size is recorded longer by one base in loadFasta
-            final int genomeLength = genome.getLength(genomeTargetIndex) - 1;
-            final int alignmentTargetLength = alignmentTargetLengths[targetIndex];
-            if (alignmentTargetLength != genomeLength) {
-
-                LOG.error(String.format(
-                        "Genome reference %s length (%d) differs from alignment reference length (%d) for sequence %s at index %d",
-                        genome.getReferenceName(targetIndex), genomeLength, alignmentTargetLength,
-                        alignmentReverseIds.getId(targetIndex), targetIndex));
-
-            }
-            alignmentToGenomeTargetIndices[targetIndex] = genomeTargetIndex;
-
         }
     }
 
