@@ -83,9 +83,9 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
     private int depthFieldIndex;
     private int[] methylatedCCountsIndex;
     private int[] notMethylatedCCountsIndex;
-    private int eventCountAtSite;
+
     private int methylationRateFieldIndex;
-    private char strandAtSite;
+
     private int strandFieldIndex;
     private ArrayList<GroupComparison> groupComparisons = new ArrayList<GroupComparison>();
     private int convertedCytosineFieldIndex;
@@ -228,7 +228,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
             return;
         }
         fillMethylationCountArrays(sampleCounts, list, position, refBase, mci,readerIndexToGroupIndex);
-        if (eventCountAtSite < minimumEventThreshold) {
+        if (mci.eventCountAtSite < minimumEventThreshold) {
             return;
         }
         statWriter.setInfo(depthFieldIndex, list.size());
@@ -243,7 +243,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
                 position);
 
         statWriter.setInfo(biomartFieldIndex, biomartRegionSpan);
-        statWriter.setInfo(strandFieldIndex, Character.toString(strandAtSite));
+        statWriter.setInfo(strandFieldIndex, Character.toString(mci.strandAtSite));
 
         final String genomicContext = findGenomicContext(referenceIndex, position);
         statWriter.setInfo(genomicContextIndex, genomicContext);
@@ -286,7 +286,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
             final double log2OddsRatio = Math.log(oddsRatio) / Math.log(2);
             final double log2OddsRatioZValue = log2OddsRatio / logOddsRatioSE;
             double fisherP = Double.NaN;
-            if (eventCountAtSite >= minimumEventThreshold) {
+            if (mci.eventCountAtSite >= minimumEventThreshold) {
                 // estimate Fisher only if we have seen at least 10 events.
 
                 final boolean ok = checkCounts();
@@ -336,8 +336,8 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         genotypeFormatter.writeGenotypes(statWriter, sampleCounts, position);
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             final int firstIndex = sampleIndex;
-            final int secondIndex = convertIndex(sampleIndex, strandAtSite);
-            if (strandAtSite == '+') {
+            final int secondIndex = convertIndex(sampleIndex, mci.strandAtSite);
+            if (mci.strandAtSite == '+') {
                 final int otherIndex = convertIndex(sampleIndex, '-');
                 statWriter.setSampleValue(methylationRateFieldIndex, otherIndex, "100");
                 statWriter.setSampleValue(convertedCytosineFieldIndex, otherIndex, "0");
