@@ -67,6 +67,9 @@ public class MethylCountProviderFromRegionsOutputFormat implements MethylCountPr
        mci.reset();
     }
 
-
+@Override
+    public String[] getGroups(){
+    return regionFormat.getGroups();
+}
 
 }

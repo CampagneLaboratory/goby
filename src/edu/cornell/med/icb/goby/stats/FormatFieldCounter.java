@@ -29,42 +29,71 @@ public class FormatFieldCounter {
 
     private int annotationIndex;
     private int numSamples;
-    int[] methylatedCounter;
-    int[] unmethylatedCounter;
+    int[] methylatedCCounterPerSample;
+    int[] unmethylatedCCounterPerSample;
+    int[] methylatedCCounterPerGroup;
+    int[] unmethylatedCcounterPerGroup;
     int[] numberOfSites;
 
-    public double[] getMethylationRate() {
-        return methylationRate;
+    public double[] getMethylationRatePerSample() {
+        return methylationRatePerSample;
     }
 
-    private double [] methylationRate;
+    private double[] methylationRatePerSample;
+    private double[] methylationRatePerGroup;
 
     public int getAnnotationIndex() {
         return annotationIndex;
     }
 
+    public FormatFieldCounter(int annotationIndex, int numSamples, int numGroups) {
+        this(annotationIndex, numSamples);
+        methylatedCCounterPerGroup = new int[numGroups];
+        unmethylatedCcounterPerGroup = new int[numGroups];
+        methylationRatePerGroup = new double[numGroups];
+    }
 
     public FormatFieldCounter(int annotationIndex, int numSamples) {
         this.annotationIndex = annotationIndex;
         this.numSamples = numSamples;
-        methylatedCounter= new int[numSamples];
-        unmethylatedCounter= new int[numSamples];
-        numberOfSites=new int[numSamples];
-        methylationRate=new double[numSamples];
+        methylatedCCounterPerSample = new int[numSamples];
+        unmethylatedCCounterPerSample = new int[numSamples];
+        numberOfSites = new int[numSamples];
+        methylationRatePerSample = new double[numSamples];
     }
 
-    public void CalculateSampleMethylationRate(int sampleIndex){
-        double denominator= methylatedCounter[sampleIndex] + unmethylatedCounter[sampleIndex];
-        double MR= ((methylatedCounter[sampleIndex]/denominator)*100);
-        methylationRate[sampleIndex]=MR;
+    public void CalculateSampleMethylationRate(int sampleIndex) {
+        double denominator = methylatedCCounterPerSample[sampleIndex] + unmethylatedCCounterPerSample[sampleIndex];
+        double MR;
+        if(denominator==0){
+            MR=Double.NaN;
+        }else{
+        MR = ((methylatedCCounterPerSample[sampleIndex] / denominator) * 100);
+        }
+        methylationRatePerSample[sampleIndex] = MR;
+    }
+
+    public void CalculateGroupMethylationRate(int groupIndex) {
+        double denominator = methylatedCCounterPerGroup[groupIndex] + unmethylatedCcounterPerGroup[groupIndex];
+        double MR;
+        if (denominator == 0) {
+            MR = Double.NaN;
+        } else {
+            MR = ((methylatedCCounterPerGroup[groupIndex] / denominator) * 100);
+        }
+        methylationRatePerGroup[groupIndex] = MR;
     }
 
     public String toString(int sampleIndex) {
         StringBuilder result = new StringBuilder();
         result.append("C: ");
-        result.append(unmethylatedCounter[sampleIndex]);
+        result.append(unmethylatedCCounterPerSample[sampleIndex]);
         result.append(" Cm: ");
-        result.append(methylatedCounter[sampleIndex]);
+        result.append(methylatedCCounterPerSample[sampleIndex]);
         return result.toString();
+    }
+
+    public double[] getMethylationRatePerGroup() {
+        return methylationRatePerGroup;
     }
 }

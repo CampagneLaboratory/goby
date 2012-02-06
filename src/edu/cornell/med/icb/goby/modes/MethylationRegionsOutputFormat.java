@@ -90,6 +90,10 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
     private MethylCountInfo mci;
 
 
+    public String[] getGroups() {
+        return groups;
+    }
+
     public void defineColumns(final PrintWriter writer, final DiscoverSequenceVariantsMode mode) {
 
         groups = mode.getGroups();
@@ -99,6 +103,7 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
 
         averagingWriter.setAnnotationFilename(annotationFilename);
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
+        averagingWriter.setSampleIndexToGroupIndex(readerIndexToGroupIndex);
         final ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
         this.statWriter = new VCFWriter(writer);
         groupComparisons = mode.getGroupComparisons();

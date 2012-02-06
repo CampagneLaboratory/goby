@@ -24,9 +24,11 @@ import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.util.DynamicOptionClient;
 import it.unimi.dsi.fastutil.ints.*;
 import org.apache.commons.io.output.NullWriter;
+import org.apache.commons.lang.ArrayUtils;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.reflect.Array;
 
 /**
  * A VCF Writer that averages values of some fields over a set of annotations,
@@ -41,13 +43,16 @@ public class VCFAveragingWriter extends VCFWriter {
     Writer outputWriter;
     private boolean initialized;
     private int numSamples;
-    private int numFields;
     private String chromosome;
     private RandomAccessSequenceInterface genome;
     String[] chosenFormatFields;
     private MethylCountProvider provider;
     private String annotationFilename = null;
     public static final DynamicOptionClient doc = new DynamicOptionClient(VCFAveragingWriter.class, "annotations:annotation filename:");
+    private String[] groups;
+    private int numGroups;
+    private int[] sampleIndexToGroupIndex;
+    private boolean processGroups;
 
     public void setGenome(RandomAccessSequenceInterface genome) {
         this.genome = genome;
@@ -63,6 +68,7 @@ public class VCFAveragingWriter extends VCFWriter {
         outputWriter = writer;
         this.genome = genome;
         initialized = false;
+        processGroups=false;
     }
 
     /**
@@ -74,17 +80,7 @@ public class VCFAveragingWriter extends VCFWriter {
         this.annotationFilename = annotationFilename;
     }
 
-    /**
-     * Select the FORMAT fields whose values will be averaged per sample.
-     *
-     * @param selectedFormatFieldNames names for the FORMAT fields whose values will be averaged per sample and annotation.
-     */
-    public void selectFormatFields(final String[] selectedFormatFieldNames) {
-        selectedFormatColumnIndices = new IntArrayList();
-        for (final String fieldName : selectedFormatFieldNames) {
-            selectedFormatColumnIndices.add(formatTypeToFormatFieldIndex.get(fieldName));
-        }
-    }
+
 
     private IntList selectedFormatColumnIndices;
     private String[] samples;
@@ -105,9 +101,13 @@ public class VCFAveragingWriter extends VCFWriter {
         if (!initialized) {
             initialized = true;
             samples = provider.getSamples();
-            numSamples = samples.length;
-            numFields = 2;
+            groups = provider.getGroups();
 
+            numSamples = samples.length;
+           if(groups != null){
+               processGroups=true;
+            numGroups= groups.length;
+           }
             // load annotations
             annotations.setGenome(this.genome);
 
@@ -125,14 +125,16 @@ public class VCFAveragingWriter extends VCFWriter {
                 //  IGV format - maintain fidelity
                 outputWriter.append("Chromosome\tStart\tEnd\tFeature\t");
                 int i = 0;
-                for (final String sample : samples) {
+
+                String[] outputTracks= (String[]) ArrayUtils.addAll(samples, groups);
+                for (final String trackName : outputTracks) {
                     StringBuilder columnName = new StringBuilder();
                     columnName.append("MR[");
-                    columnName.append(sample);
+                    columnName.append(trackName);
                     columnName.append("]");
                     outputWriter.append(columnName.toString());
                     i++;
-                    if (i != samples.length) {
+                    if (i != outputTracks.length) {
                         outputWriter.append('\t');
                     }
                 }
@@ -156,28 +158,32 @@ public class VCFAveragingWriter extends VCFWriter {
 
         if (annotations.hasOverlappingAnnotations(refIndex, pos)) {
             System.out.println(chromosome + " position: " + pos + " has overlapping annotations");
-            final IntAVLTreeSet overlappers = annotations.getValidAnnotationIndices();
+            final IntAVLTreeSet validOverlappingAnnotations = annotations.getValidAnnotationIndices();
 
             // process each individual sample
             for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
-                for (int each : overlappers) {
+                for (int each : validOverlappingAnnotations) {
                     // increment counters for each annotation overlapping at this position
                     FormatFieldCounter cntr;
                     if (counterMap.containsKey(each)) {
                         cntr = counterMap.get(each);
                     } else {
-                        cntr = new FormatFieldCounter(each, numSamples);
+                        cntr = new FormatFieldCounter(each, numSamples, numGroups);
                         counterMap.put(each, cntr);
                     }
 
-                    cntr.unmethylatedCounter[sampleIndex] += provider.getC(sampleIndex);
-                    cntr.methylatedCounter[sampleIndex] += provider.getCm(sampleIndex);
+                    cntr.unmethylatedCCounterPerSample[sampleIndex] += provider.getC(sampleIndex);
+                    cntr.methylatedCCounterPerSample[sampleIndex] += provider.getCm(sampleIndex);
+                    if(processGroups){
+                    cntr.unmethylatedCcounterPerGroup[sampleIndexToGroupIndex[sampleIndex]] += provider.getC(sampleIndex);
+                    cntr.methylatedCCounterPerGroup[sampleIndexToGroupIndex[sampleIndex]] += provider.getCm(sampleIndex);
+                    }
                     cntr.numberOfSites[sampleIndex] += 1;
                     System.out.println("sample " + samples[sampleIndex] + " " + "position: " + pos + " " + cntr.toString(sampleIndex));
                 }
             }
 
-            // process groups
+
 
         } else {
             System.out.println("Did not find overlapping annotations for " + chromosome + " : position: " + pos);
@@ -208,8 +214,15 @@ public class VCFAveragingWriter extends VCFWriter {
                 lineToOutput.append("\t");
                 for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
                     temp.CalculateSampleMethylationRate(sampleIndex);
-                    lineToOutput.append(String.format("%g", temp.getMethylationRate()[sampleIndex]));
-                    if (sampleIndex != (numSamples - 1)) {
+                    lineToOutput.append(String.format("%g", temp.getMethylationRatePerSample()[sampleIndex]));
+                    if ((sampleIndex != (numSamples - 1)) || numGroups > 0 ) {
+                        lineToOutput.append("\t");
+                    }
+                }
+                for(int groupIndex=0; groupIndex < numGroups; groupIndex++){
+                    temp.CalculateGroupMethylationRate(groupIndex);
+                    lineToOutput.append(String.format("%g", temp.getMethylationRatePerGroup()[groupIndex]));
+                    if (groupIndex != (numGroups - 1)) {
                         lineToOutput.append("\t");
                     }
                 }
@@ -240,4 +253,22 @@ public class VCFAveragingWriter extends VCFWriter {
         return Integer.parseInt(getSampleValue(formatFieldIndex, sampleIndex).toString());
     }
 */
+
+
+    /**
+     * Select the FORMAT fields whose values will be averaged per sample.
+     *
+     * @param selectedFormatFieldNames names for the FORMAT fields whose values will be averaged per sample and annotation.
+     */
+   /** public void selectFormatFields(final String[] selectedFormatFieldNames) {
+        selectedFormatColumnIndices = new IntArrayList();
+        for (final String fieldName : selectedFormatFieldNames) {
+            selectedFormatColumnIndices.add(formatTypeToFormatFieldIndex.get(fieldName));
+        }
+    }
+    * @param readerIndexToGroupIndex
+    */
+    public void setSampleIndexToGroupIndex(int[] readerIndexToGroupIndex) {
+        sampleIndexToGroupIndex= readerIndexToGroupIndex;
+    }
 }

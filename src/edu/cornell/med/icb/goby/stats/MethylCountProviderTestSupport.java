@@ -31,6 +31,7 @@ public class MethylCountProviderTestSupport implements MethylCountProvider {
     private String chromosome;
     private int[][] C;
     private int[][] Cm;
+    private String[] groups;
 
     public int getIndex() {
         return index;
@@ -54,6 +55,11 @@ public class MethylCountProviderTestSupport implements MethylCountProvider {
         return samples;
     }
 
+    @Override
+    public String[] getGroups(){
+        return groups;
+    }
+
     public MethylCountProviderTestSupport(String samples[],
                                           int positions[], String chromosome,
                                           int[][] C, int[][] Cm) {
@@ -66,6 +72,13 @@ public class MethylCountProviderTestSupport implements MethylCountProvider {
         this.Cm = Cm;
     }
 
+
+    public MethylCountProviderTestSupport(String[]groups, String samples[],
+                                          int positions[], String chromosome,
+                                          int[][] C, int[][] Cm) {
+        this(samples,positions, chromosome, C, Cm);
+        this.groups= groups;
+    }
     @Override
     public int getC(int sampleIndex) {
         return C[sampleIndex][index];

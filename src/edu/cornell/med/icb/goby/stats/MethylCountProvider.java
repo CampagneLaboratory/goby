@@ -64,5 +64,9 @@ public interface MethylCountProvider {
      */
     public void next();
 
-
+    /**
+     * Get the group ids for each group index
+     * @return array of group indentifiers
+     */
+    public String[] getGroups();
 }
