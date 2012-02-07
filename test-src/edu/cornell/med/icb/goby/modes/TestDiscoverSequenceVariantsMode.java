@@ -300,6 +300,86 @@ public class TestDiscoverSequenceVariantsMode extends TestFiles {
 
     }
 
+    @Test
+    public void testDiploidFilter() {
+        DiploidFilter atLeastAQuarterFilter = new DiploidFilter();
+
+
+        DiscoverVariantPositionData list = new DiscoverVariantPositionData();
+
+        appendInfo(list, 1, (byte) 40, false, 'A', 'T', 0);  // will be filtered
+        appendInfo(list, 4, (byte) 40, false, 'A', 'C', 0);  // will be kept
+        appendInfo(list, 2, (byte) 40, false, 'A', 'G', 0);  // will be filtered, two bases
+        appendInfo(list, 3, (byte) 40, true, 'A', 'A', 0);  // allele will be kept
+
+        ObjectSet<PositionBaseInfo> removed = new ObjectArraySet<PositionBaseInfo>();
+        SampleCountInfo[] sampleCounts = sampleCounts(list);
+        atLeastAQuarterFilter.filterGenotypes(list, sampleCounts, removed);
+        assertEquals(3, removed.size());
+        CountFixer fixer = new CountFixer();
+        fixer.fix(list, sampleCounts, removed);
+
+        assertEquals(7, list.size());
+        assertEquals(3, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
+        assertEquals(4, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
+        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_G_INDEX]);
+        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
+
+    }
+
+    @Test
+    public void testDiploidFilter2() {
+        DiploidFilter atLeastAQuarterFilter = new DiploidFilter();
+
+
+        DiscoverVariantPositionData list = new DiscoverVariantPositionData();
+
+        appendInfo(list, 13, (byte) 40, false, 'A', 'T', 0);  // will be filtered
+        appendInfo(list, 12, (byte) 40, false, 'A', 'C', 0);  // will be kept
+        appendInfo(list, 13, (byte) 40, false, 'A', 'G', 0);  // will be filtered, two bases
+        appendInfo(list, 11, (byte) 40, true, 'A', 'A', 0);  // allele will be kept
+
+        ObjectSet<PositionBaseInfo> removed = new ObjectArraySet<PositionBaseInfo>();
+        SampleCountInfo[] sampleCounts = sampleCounts(list);
+        atLeastAQuarterFilter.filterGenotypes(list, sampleCounts, removed);
+        assertEquals(23, removed.size());
+        CountFixer fixer = new CountFixer();
+        fixer.fix(list, sampleCounts, removed);
+
+        assertEquals(26, list.size());
+        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
+        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
+        assertEquals(13, sampleCounts[0].counts[SampleCountInfo.BASE_G_INDEX]);
+        assertEquals(13, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
+
+    }
+
+    @Test
+    public void testDiploidFilter3() {
+        DiploidFilter atLeastAQuarterFilter = new DiploidFilter();
+
+
+        DiscoverVariantPositionData list = new DiscoverVariantPositionData();
+
+        appendInfo(list, 13, (byte) 40, false, 'A', 'T', 0);  // will be filtered
+        appendInfo(list, 12, (byte) 40, false, 'A', 'C', 0);  // will be kept
+        appendInfo(list, 11, (byte) 40, false, 'A', 'G', 0);  // will be filtered, two bases
+        appendInfo(list, 10, (byte) 40, true, 'A', 'A', 0);  // allele will be kept
+
+        ObjectSet<PositionBaseInfo> removed = new ObjectArraySet<PositionBaseInfo>();
+        SampleCountInfo[] sampleCounts = sampleCounts(list);
+        atLeastAQuarterFilter.filterGenotypes(list, sampleCounts, removed);
+        assertEquals(21, removed.size());
+        CountFixer fixer = new CountFixer();
+        fixer.fix(list, sampleCounts, removed);
+
+        assertEquals(25, list.size());
+        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_A_INDEX]);
+        assertEquals(12, sampleCounts[0].counts[SampleCountInfo.BASE_C_INDEX]);
+        assertEquals(0, sampleCounts[0].counts[SampleCountInfo.BASE_G_INDEX]);
+        assertEquals(13, sampleCounts[0].counts[SampleCountInfo.BASE_T_INDEX]);
+
+    }
 
     // construct a SampleCountInfo array holding counts for list
     private SampleCountInfo[] sampleCounts(DiscoverVariantPositionData list) {

@@ -100,6 +100,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
     private int maxThresholdPerSite;
     private boolean callIndels = Release1_9_7_2.callIndels;
     private String[] dymamicOptions;
+    private boolean diploid;
 
 
     public void setDisableAtLeastQuarterFilter(boolean disableAtLeastQuarterFilter) {
@@ -232,6 +233,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
         }
         callIndels = jsapResult.getBoolean("call-indels");
+        diploid = jsapResult.getBoolean("diploid");
 
 
         realignmentFactory = configureProcessor(jsapResult);
@@ -304,6 +306,10 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
                     genotypeFilters.add(new AtLeastAQuarterFilter());
                 }
+                if (diploid) {
+                    genotypeFilters.add(new DiploidFilter());
+                }
+
                 break;
             case GENOTYPES:
 
@@ -316,6 +322,9 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 if (!disableAtLeastQuarterFilter) {
                     genotypeFilters.add(new AtLeastAQuarterFilter());
                 }
+                if (diploid) {
+                   genotypeFilters.add(new DiploidFilter());
+                }
                 break;
             case INDEL_COUNTS:
                 genotypeFilters.add(new QualityScoreFilter());
@@ -323,6 +332,9 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 genotypeFilters.add(new RemoveIndelArtifactsFilter());
                 if (!disableAtLeastQuarterFilter) {
                     genotypeFilters.add(new AtLeastAQuarterFilter());
+                }
+                if (diploid) {
+                   genotypeFilters.add(new DiploidFilter());
                 }
                 break;
             default:

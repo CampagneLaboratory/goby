@@ -1,4 +1,6 @@
-  - Fix bug that prevented methylation vcf-output from writing any line.
+ - add a diploid genotype filter to use when calling genotypes in a diploid genome.
+ - discover-sequence-variants format compare_groups: Write distinct fisher p-values for each comparison pair
+ - Fix bug that prevented methylation vcf-output from writing any line.
 1.9.8.2.1
  - Fix bug in GenotypesOutputFormat that caused GenotypesOutputFormat to throw an exception when processing some sites.
 1.9.8.2

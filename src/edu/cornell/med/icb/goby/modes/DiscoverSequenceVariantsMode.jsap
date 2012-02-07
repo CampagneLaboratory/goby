@@ -207,6 +207,18 @@
             <help>Activate or disable indel calling. As of Goby 1.9.8.2, with default false (do not call indels). </help>
         </flaggedOption>
         <flaggedOption>
+            <id>diploid</id>
+            <longFlag>diploid</longFlag>
+            <stringParser>
+                <classname>BooleanStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>false</string>
+            </defaults>
+            <help>Force diploid genotypes. Use when you know the genome you are trying to call genotypes against are diploid. </help>
+        </flaggedOption>
+        <flaggedOption>
             <id>dynamic-options</id>
             <shortFlag>x</shortFlag>
             <required>false</required>
