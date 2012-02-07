@@ -36,7 +36,7 @@ public class DynamicOptionClient {
     /**
      * Define the set of dynamic options the client recognizes. A empty default string is substituted by null.
      *
-     * @param enclosingClass Enclosing class. Simple name will be used to parse options.
+     * @param enclosingClass   Enclosing class. Simple name will be used to parse options.
      * @param optionDefinition option definition in the format key:help:default-value
      */
     public DynamicOptionClient(Class enclosingClass, final String... optionDefinition) {
@@ -159,6 +159,19 @@ public class DynamicOptionClient {
         final String val = getString(key);
         if (val != null) {
             return Double.parseDouble(val);
+        }
+        return null;
+    }
+    /**
+     * Obtain the Boolean value corresponding to the key.
+     *
+     * @param key option key.
+     * @return Value/default value for option, or null if the value and the default were missing.
+     */
+    public Boolean getBoolean(final String key) {
+        final String val = getString(key);
+        if (val != null) {
+            return Boolean.parseBoolean(val);
         }
         return null;
     }

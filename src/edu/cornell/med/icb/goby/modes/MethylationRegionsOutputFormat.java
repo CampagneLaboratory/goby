@@ -51,7 +51,7 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
      * Used to log debug and informational messages.
      */
     private static final Log LOG = LogFactory.getLog(MethylationRegionsOutputFormat.class);
-    public static DynamicOptionClient doc = new DynamicOptionClient(MethylationRegionsOutputFormat.class, "annotations:filename to a tab delimited annotation file:");
+    public static DynamicOptionClient doc = new DynamicOptionClient(MethylationRegionsOutputFormat.class, "annotations:filename to a tab delimited annotation file:","do-indel-rate:boolean, true value indicates that the indel rate shoiuld be output in the MR field:false");
     private String annotationFilename;
 
     VCFWriter statWriter;
@@ -68,16 +68,18 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
      */
     private VCFAveragingWriter averagingWriter;
     private int minimumEventThreshold;
+    private Boolean doIndels;
 
     public MethylationRegionsOutputFormat() {
         final String annotations = doc.getString("annotations");
+
         if (annotations != null) {
             annotationFilename = annotations;
         } else {
             // there is no annotation file. Future, to use direct discovery of regions.
             annotationFilename = null;
         }
-
+        doIndels = doc.getBoolean("do-indel-rate");
     }
 
     private ArrayList<GroupComparison> groupComparisons = new ArrayList<GroupComparison>();
@@ -125,7 +127,7 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
     }
 
     private String chromosome;
-    private int referenceIndex;
+    private int referenceIndex=-1;
     private int position;
 
     @Override
@@ -144,7 +146,11 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
         if (refBase != 'C' && refBase != 'G') {
             return;
         }
-        MethylationRateVCFOutputFormat.fillMethylationCountArrays(sampleCounts, list, position, refBase, mci, readerIndexToGroupIndex);
+        if (doIndels) {
+            IndelCountOutputFormat.fillMethylationCountArrays(sampleCounts, list, position, refBase, mci, readerIndexToGroupIndex);
+        } else {
+            MethylationRateVCFOutputFormat.fillMethylationCountArrays(sampleCounts, list, position, refBase, mci, readerIndexToGroupIndex);
+        }
         if (mci.eventCountAtSite < minimumEventThreshold) {
             return;
         }

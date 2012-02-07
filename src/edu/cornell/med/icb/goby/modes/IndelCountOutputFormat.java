@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.Release1_9_7_2;
 import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
+import edu.cornell.med.icb.goby.algorithmic.data.MethylCountInfo;
 import edu.cornell.med.icb.goby.alignments.DiscoverVariantIterateSortedAlignments;
 import edu.cornell.med.icb.goby.alignments.DiscoverVariantPositionData;
 import edu.cornell.med.icb.goby.alignments.SampleCountInfo;
@@ -53,7 +54,7 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
     private CharSequence minRefId;
     private int previousMaxRefIndex = -1;
     private CharSequence maxRefId;
-    private final int MIN_COVERAGE_THRESHOLD = 5;
+    private static final int MIN_COVERAGE_THRESHOLD = 5;
     private boolean headerWritten;
     private PrintWriter output;
     private int numSites;
@@ -187,5 +188,36 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
     @Override
     public void setGenome(RandomAccessSequenceInterface genome) {
 
+    }
+
+    public static void fillMethylationCountArrays(SampleCountInfo[] sampleCounts, DiscoverVariantPositionData list, int position, char refBase, MethylCountInfo mci, int[] readerIndexToGroupIndex) {
+        // don't use threshold on events at site for indel rates:
+        mci.eventCountAtSite=0;
+        for (SampleCountInfo sci : sampleCounts) {
+            int totalCount = 0;
+            for (int count : sci.counts) {
+                totalCount += count;
+            }
+
+            if (totalCount >= MIN_COVERAGE_THRESHOLD) {
+
+                mci.unmethylatedCCountPerSample[sci.sampleIndex]++;
+                mci.unmethylatedCCountsPerGroup[readerIndexToGroupIndex[sci.sampleIndex]]++;
+                mci.eventCountAtSite+=totalCount;
+                if (list.hasCandidateIndels()) {
+                    for (final EquivalentIndelRegion indel : list.getIndels()) {
+
+                        if (indel.getFrequency() >= Math.max(MIN_COVERAGE_THRESHOLD, list.size() / 3)) {
+                            // frequency must be at least 5 or a third of the number of bases at position, whichever is smaller.
+                            // System.out.printf("sample %d referenceIndex %d position: %d %s %n", indel.sampleIndex, referenceIndex, position, indel);
+
+                            final int groupIndex = readerIndexToGroupIndex[indel.sampleIndex];
+                            mci.methylatedCCountsPerSample[sci.sampleIndex]++;
+                            mci.methylatedCCountPerGroup[groupIndex]++;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
