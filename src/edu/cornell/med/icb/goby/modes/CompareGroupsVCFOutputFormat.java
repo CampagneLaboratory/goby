@@ -27,6 +27,7 @@ import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -359,15 +360,27 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
 
             double fisherP = Double.NaN;
 
-
             if (fisherRInstalled) {
 
+
+                updateFisherVector(maxGenotypeIndexAcrossSamples, comparison);
                 if (checkCounts()) {
                     final FisherExact.Result result = FisherExact.fexact(fisherVector, maxGenotypeIndexAcrossSamples,
-                            numberOfGroups,
+                            2,
                             FisherExact.AlternativeHypothesis.twosided, true);
                     fisherP = result.getPValue();
 
+                    /*
+                    // print the counts and p-value:
+
+                    final IntArrayList wrap = IntArrayList.wrap(fisherVector);
+                    System.out.printf("fisherVector %s/%s%n" +
+                            "[0-%d]   %s%n" +
+                            "[%d-%d]  %s%n" +
+                            "p-value= %g%n%n", comparison.nameGroup1, comparison.nameGroup2,
+                            maxGenotypeIndexAcrossSamples, wrap.subList(0, maxGenotypeIndexAcrossSamples),
+                            maxGenotypeIndexAcrossSamples + 1, fisherVector.length, wrap.subList(maxGenotypeIndexAcrossSamples, wrap.size()),
+                            fisherP);*/
                 }
             }
 
@@ -381,7 +394,39 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
 
         statWriter.writeRecord();
     }
+    int [] cacheFisherVector;
+    private void updateFisherVector(int maxGenotypeIndexAcrossSamples, GroupComparison comparison) {
 
+        if (maxGenotypeIndexAcrossSamples == SampleCountInfo.BASE_MAX_INDEX) {
+            // reuse the vector if we have only SNPs at that site:
+            if (cacheFisherVector==null) {
+                cacheFisherVector=new int[SampleCountInfo.BASE_MAX_INDEX*2];
+            }
+            fisherVector = cacheFisherVector;
+            Arrays.fill(fisherVector, 0);
+
+        } else {
+            // allocate a new custom-size array if the site has indels:
+
+            fisherVector = new int[maxGenotypeIndexAcrossSamples * 2];
+        }
+
+        // reorder allelic counts for fisher exact test for this specific pair:
+        int j = 0;
+
+        for (int genotypeIndex = 0; genotypeIndex < maxGenotypeIndexAcrossSamples; genotypeIndex++) {
+
+            fisherVector[j] = alleleCountsPerGroup[genotypeIndex][comparison.indexGroup1];
+            ++j;
+        }
+        for (int genotypeIndex = 0; genotypeIndex < maxGenotypeIndexAcrossSamples; genotypeIndex++) {
+
+            fisherVector[j] = alleleCountsPerGroup[genotypeIndex][comparison.indexGroup2];
+            ++j;
+        }
+
+
+    }
 
     public void close() {
         statWriter.close();
@@ -402,8 +447,6 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         if (maxGenotypeIndexAcrossSamples == SampleCountInfo.BASE_MAX_INDEX) {
             // reuse the vector if we have only SNPs at that site:
 
-            fisherVector = vectorBaseAllelesOnly;
-            Arrays.fill(fisherVector, 0);
             alleleCountsPerGroup = alleleCountsPerGroupBaseAllelesOnly;
             for (int alleleIndex = 0; alleleIndex < numberOfAlleles; alleleIndex++) {
                 Arrays.fill(alleleCountsPerGroup[alleleIndex], 0);
@@ -411,7 +454,6 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         } else {
             // allocate a new custom-size array if the site has indels:
 
-            fisherVector = new int[maxGenotypeIndexAcrossSamples * numberOfGroups];
             alleleCountsPerGroup = new int[maxGenotypeIndexAcrossSamples][numberOfGroups];
 
             for (int genotypeIndex = 0; genotypeIndex < maxGenotypeIndexAcrossSamples; genotypeIndex++) {
@@ -441,15 +483,6 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
             }
         }
 
-        // reorder allelic counts for fisher exact test:
-        int j = 0;
-        for (int groupIndex = 0; groupIndex < numberOfGroups; ++groupIndex) {
-            for (int genotypeIndex = 0; genotypeIndex < maxGenotypeIndexAcrossSamples; genotypeIndex++) {
-
-                fisherVector[j] = alleleCountsPerGroup[genotypeIndex][groupIndex];
-                ++j;
-            }
-        }
 
         //fisher.test(matrix(c(10,10,10,0,0,10,10,10,0,0),5,2), hybrid="TRUE")
         for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
@@ -461,15 +494,12 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
         boolean ok = true;
         int totalCount = 0;
         // detect if any count is negative
-        for (final int count : refCountsPerGroup) {
+        for (final int count : fisherVector) {
 
             if (count < 0) ok = false;
             totalCount += count;
         }
-        for (final int count : variantsCountPerGroup) {
-            if (count < 0) ok = false;
-            totalCount += count;
-        }
+
         // skip fisher if all counts are zero:
         if (totalCount == 0) return false;
         return ok;
