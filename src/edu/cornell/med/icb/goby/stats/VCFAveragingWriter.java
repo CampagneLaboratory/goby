@@ -25,10 +25,10 @@ import edu.cornell.med.icb.goby.util.DynamicOptionClient;
 import it.unimi.dsi.fastutil.ints.*;
 import org.apache.commons.io.output.NullWriter;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.lang.reflect.Array;
 
 /**
  * A VCF Writer that averages values of some fields over a set of annotations,
@@ -81,7 +81,6 @@ public class VCFAveragingWriter extends VCFWriter {
     }
 
 
-
     private IntList selectedFormatColumnIndices;
     private String[] samples;
 
@@ -114,10 +113,10 @@ public class VCFAveragingWriter extends VCFWriter {
             try {
                 assert annotationFilename != null : "annotation filename cannot be null";
                 annotations.loadAnnotations(annotationFilename);
-                System.out.println("annotations loaded");
+                LOG.info("annotations loaded");
             } catch (IOException e) {
-                System.err.println("An error occurred loading the annotation file. ");
-                System.exit(1);
+                LOG.warn("An error occurred loading the annotation file:  "+annotationFilename);
+                return;
             }
 
             //write header
@@ -149,6 +148,10 @@ public class VCFAveragingWriter extends VCFWriter {
 
     private SortedAnnotations annotations = new SortedAnnotations();
     private Int2ObjectMap<FormatFieldCounter> counterMap = new Int2ObjectAVLTreeMap<FormatFieldCounter>();
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Logger LOG = Logger.getLogger(VCFAveragingWriter.class);
 
     private void addValuesAndAverage() {
 
@@ -157,7 +160,7 @@ public class VCFAveragingWriter extends VCFWriter {
         final int refIndex = genome.getReferenceIndex(chromosome);
 
         if (annotations.hasOverlappingAnnotations(refIndex, pos)) {
-            System.out.println(chromosome + " position: " + pos + " has overlapping annotations");
+            // System.out.println(chromosome + " position: " + pos + " has overlapping annotations");
             final IntAVLTreeSet validOverlappingAnnotations = annotations.getValidAnnotationIndices();
 
             // process each individual sample
@@ -179,14 +182,14 @@ public class VCFAveragingWriter extends VCFWriter {
                     cntr.methylatedCCounterPerGroup[sampleIndexToGroupIndex[sampleIndex]] += provider.getCm(sampleIndex);
                     }
                     cntr.numberOfSites[sampleIndex] += 1;
-                    System.out.println("sample " + samples[sampleIndex] + " " + "position: " + pos + " " + cntr.toString(sampleIndex));
+                    LOG.debug("sample " + samples[sampleIndex] + " " + "position: " + pos + " " + cntr.toString(sampleIndex));
                 }
             }
 
 
 
         } else {
-            System.out.println("Did not find overlapping annotations for " + chromosome + " : position: " + pos);
+            LOG.debug("Did not find overlapping annotations for " + chromosome + " : position: " + pos);
         }
 
 
@@ -203,7 +206,7 @@ public class VCFAveragingWriter extends VCFWriter {
             // this annotation is ready to be written
             Annotation annoOut = annotations.getAnnotation(anno);
             FormatFieldCounter temp = counterMap.get(anno);
-            StringBuilder lineToOutput= new StringBuilder("");
+            StringBuilder lineToOutput = new StringBuilder("");
             try {
                 lineToOutput.append(annoOut.getChromosome());
                 lineToOutput.append("\t");
