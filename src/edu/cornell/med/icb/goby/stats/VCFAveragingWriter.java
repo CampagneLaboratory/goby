@@ -18,17 +18,21 @@
 
 package edu.cornell.med.icb.goby.stats;
 
+import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.SortedAnnotations;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
+import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.util.DynamicOptionClient;
 import it.unimi.dsi.fastutil.ints.*;
 import org.apache.commons.io.output.NullWriter;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
+import org.rosuda.JRI.Rengine;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 
 /**
  * A VCF Writer that averages values of some fields over a set of annotations,
@@ -43,7 +47,6 @@ public class VCFAveragingWriter extends VCFWriter {
     Writer outputWriter;
     private boolean initialized;
     private int numSamples;
-    private String chromosome;
     private RandomAccessSequenceInterface genome;
     String[] chosenFormatFields;
     private MethylCountProvider provider;
@@ -52,7 +55,7 @@ public class VCFAveragingWriter extends VCFWriter {
     private String[] groups;
     private int numGroups;
     private int[] sampleIndexToGroupIndex;
-    private boolean processGroups;
+    private boolean fisherRInstalled;
 
     public void setGenome(RandomAccessSequenceInterface genome) {
         this.genome = genome;
@@ -68,9 +71,10 @@ public class VCFAveragingWriter extends VCFWriter {
         outputWriter = writer;
         this.genome = genome;
         initialized = false;
-        processGroups=false;
+        processGroups=true;
     }
 
+    boolean processGroups;
     /**
      * Set the annotation filename.
      *
@@ -100,67 +104,133 @@ public class VCFAveragingWriter extends VCFWriter {
         if (!initialized) {
             initialized = true;
             samples = provider.getSamples();
+            numSamples = samples.length;
             groups = provider.getGroups();
 
-            numSamples = samples.length;
-           if(groups != null){
-               processGroups=true;
-            numGroups= groups.length;
-           }
+            if(groups == null){
+                processGroups= false;
+            }else{
+            if (groups.length < 1) {
+                System.err.println("Methylation format requires at least one group.");
+                System.exit(1);
+            }
+            numGroups = groups.length;
+            }
+
             // load annotations
             annotations.setGenome(this.genome);
-
             try {
                 assert annotationFilename != null : "annotation filename cannot be null";
                 annotations.loadAnnotations(annotationFilename);
                 LOG.info("annotations loaded");
             } catch (IOException e) {
-                LOG.warn("An error occurred loading the annotation file:  "+annotationFilename);
+                LOG.warn("An error occurred loading the annotation file:  " + annotationFilename);
                 return;
             }
 
             //write header
+            writeHeaders();
             try {
-                //  IGV format - maintain fidelity
-                outputWriter.append("Chromosome\tStart\tEnd\tFeature\t");
-                int i = 0;
+                //activate R only if we need it:
+                final Rengine rEngine = GobyRengine.getInstance().getRengine();
+                fisherRInstalled = rEngine != null && rEngine.isAlive();
+            } catch (java.lang.UnsatisfiedLinkError e) {
+                System.out.println("Cannot initialize R");
+                e.printStackTrace();
+                throw e;
+            }
+        }
+    }
 
-                String[] outputTracks= (String[]) ArrayUtils.addAll(samples, groups);
-                for (final String trackName : outputTracks) {
+    private void writeHeaders() {
+        try {
+            //  IGV format - maintain fidelity
+            outputWriter.append("Chromosome\tStart\tEnd\tFeature\t");
+            int i = 1;
+            int j = 1;
+            String[] outputTracks = (String[]) ArrayUtils.addAll(samples, groups);
+
+            for (String trackName : outputTracks) {
+             for (String context : contexts) {
                     StringBuilder columnName = new StringBuilder();
                     columnName.append("MR[");
                     columnName.append(trackName);
                     columnName.append("]");
+                    columnName.append("[");
+                    columnName.append(context);
+                    columnName.append("]");
                     outputWriter.append(columnName.toString());
-                    i++;
-                    if (i != outputTracks.length) {
+                    if (groupComparisons.isEmpty() & i == outputTracks.length & j == contexts.length*outputTracks.length) {
+                      outputWriter.append('\n');
+                    } else {
                         outputWriter.append('\t');
                     }
+                j++;
                 }
-                outputWriter.append("\n");
-                outputWriter.flush();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                i++;
             }
+               i=1;   j=1;
 
+            for (final GroupComparison comparison : groupComparisons) {
+                for (String context : contexts) {
+                    StringBuilder comparisonName = new StringBuilder();
+                    comparisonName.append("fisherP[");
+                    comparisonName.append(comparison.nameGroup1);
+                    comparisonName.append("-vs-");
+                    comparisonName.append(comparison.nameGroup2);
+                    comparisonName.append("]");
+                    comparisonName.append("[");
+                    comparisonName.append(context);
+                    comparisonName.append("]");
+                    outputWriter.append(comparisonName.toString());
+                    if(i==groupComparisons.size() & j==contexts.length){
+                        outputWriter.append('\n');
+                    }else{
+                    outputWriter.append('\t');
+                    }
+                j++;
+                }
+                i++;
+            }
+           // outputWriter.append("\n");
+            outputWriter.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
     private SortedAnnotations annotations = new SortedAnnotations();
     private Int2ObjectMap<FormatFieldCounter> counterMap = new Int2ObjectAVLTreeMap<FormatFieldCounter>();
+
     /**
      * Used to log debug and informational messages.
      */
     private static final Logger LOG = Logger.getLogger(VCFAveragingWriter.class);
 
+
+    /**
+     * An array that enumerates the sequence contexts under consideration
+     */
+    String[] contexts = {"CpG", "CpA", "CpC", "CpT", "CpN"};
+
+
+    /**
+     * Increment counters for methylated and non-methylated cytosines across
+     * sequence contexts, samples and groups
+     */
     private void addValuesAndAverage() {
 
         final String chromosome = provider.getChromosome().toString();
         final int pos = provider.getPosition();
         final int refIndex = genome.getReferenceIndex(chromosome);
 
+        String currentContext = findGenomicContext(refIndex, pos);
+        int contextIndex = codeIndex(currentContext);
+
+        if (contextIndex == -1) {
+            return;
+        }
         if (annotations.hasOverlappingAnnotations(refIndex, pos)) {
-            // System.out.println(chromosome + " position: " + pos + " has overlapping annotations");
             final IntAVLTreeSet validOverlappingAnnotations = annotations.getValidAnnotationIndices();
 
             // process each individual sample
@@ -171,23 +241,16 @@ public class VCFAveragingWriter extends VCFWriter {
                     if (counterMap.containsKey(each)) {
                         cntr = counterMap.get(each);
                     } else {
-                        cntr = new FormatFieldCounter(each, numSamples, numGroups);
+                        cntr = new FormatFieldCounter(each, numSamples, numGroups, contexts.length);
                         counterMap.put(each, cntr);
                     }
+                    cntr.incrementCounts(sampleIndex, sampleIndexToGroupIndex,
+                            provider.getC(sampleIndex),
+                            provider.getCm(sampleIndex), contextIndex, processGroups);
 
-                    cntr.unmethylatedCCounterPerSample[sampleIndex] += provider.getC(sampleIndex);
-                    cntr.methylatedCCounterPerSample[sampleIndex] += provider.getCm(sampleIndex);
-                    if(processGroups){
-                    cntr.unmethylatedCcounterPerGroup[sampleIndexToGroupIndex[sampleIndex]] += provider.getC(sampleIndex);
-                    cntr.methylatedCCounterPerGroup[sampleIndexToGroupIndex[sampleIndex]] += provider.getCm(sampleIndex);
-                    }
-                    cntr.numberOfSites[sampleIndex] += 1;
-                    LOG.debug("sample " + samples[sampleIndex] + " " + "position: " + pos + " " + cntr.toString(sampleIndex));
+                    LOG.debug("sample " + samples[sampleIndex] + " " + "position: " + pos );
                 }
             }
-
-
-
         } else {
             LOG.debug("Did not find overlapping annotations for " + chromosome + " : position: " + pos);
         }
@@ -200,12 +263,27 @@ public class VCFAveragingWriter extends VCFWriter {
         }
     }
 
+    private int codeIndex(String currentContext) {
+        int contextIndex = -1;
+        for (int i = 0; i < contexts.length; i++) {
+            if (currentContext.equals(contexts[i])) {
+                contextIndex = i;
+            }
+        }
+        if (contextIndex == -1) {
+            LOG.warn("context was not recognized: " + currentContext);
+
+        }
+        return contextIndex;
+    }
+
     private void outputMethylationRate(String chromosome, int pos, int anno) {
 
         if (annotations.pastChosenAnnotation(anno, chromosome, pos)) {
             // this annotation is ready to be written
             Annotation annoOut = annotations.getAnnotation(anno);
             FormatFieldCounter temp = counterMap.get(anno);
+
             StringBuilder lineToOutput = new StringBuilder("");
             try {
                 lineToOutput.append(annoOut.getChromosome());
@@ -216,19 +294,51 @@ public class VCFAveragingWriter extends VCFWriter {
                 lineToOutput.append(annoOut.getId());
                 lineToOutput.append("\t");
                 for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
-                    temp.CalculateSampleMethylationRate(sampleIndex);
-                    lineToOutput.append(String.format("%g", temp.getMethylationRatePerSample()[sampleIndex]));
-                    if ((sampleIndex != (numSamples - 1)) || numGroups > 0 ) {
-                        lineToOutput.append("\t");
+                    for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
+                        temp.CalculateSampleMethylationRate(sampleIndex, currentContext);
+                        lineToOutput.append(String.format("%g", temp.getMethylationRatePerSample(currentContext)[sampleIndex]));
+                        if ((sampleIndex != (numSamples - 1)) || numGroups > 0 || currentContext != contexts.length - 1) {
+                            lineToOutput.append("\t");
+                        }
                     }
                 }
-                for(int groupIndex=0; groupIndex < numGroups; groupIndex++){
-                    temp.CalculateGroupMethylationRate(groupIndex);
-                    lineToOutput.append(String.format("%g", temp.getMethylationRatePerGroup()[groupIndex]));
-                    if (groupIndex != (numGroups - 1)) {
-                        lineToOutput.append("\t");
+                for (int groupIndex = 0; groupIndex < numGroups; groupIndex++) {
+                    for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
+                        temp.CalculateGroupMethylationRate(groupIndex, currentContext);
+                        lineToOutput.append(String.format("%g", temp.getMethylationRatePerGroup(currentContext)[groupIndex]));
+                        if (!(groupIndex == numGroups - 1) || currentContext != contexts.length - 1|| !groupComparisons.isEmpty()) {
+                            lineToOutput.append("\t");
+                        }
                     }
                 }
+                for (final GroupComparison comparison : groupComparisons) {
+                    final int indexGroup1 = comparison.indexGroup1;
+                    final int indexGroup2 = comparison.indexGroup2;
+                    double fisherP = Double.NaN;
+                    for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
+                        //TODO determine threshold at which you can calculate significance
+                        final boolean ok = checkCounts(temp, currentContext);
+                        if (ok) {
+                            fisherP = fisherRInstalled ? FisherExactRCalculator.getFisherPValue(
+                                    temp.getUnmethylatedCcounterPerGroup(currentContext)[indexGroup1],
+                                    temp.getMethylatedCCounterPerGroup(currentContext)[indexGroup1],
+                                    temp.getUnmethylatedCcounterPerGroup(currentContext)[indexGroup2],
+                                    temp.getMethylatedCCounterPerGroup(currentContext)[indexGroup2]) : Double.NaN;
+                            lineToOutput.append(String.format("%g", fisherP));
+
+                            lineToOutput.append("\t");
+                        } else {
+                            System.err.printf("An exception was caught evaluation the Fisther Exact test P-value. " +
+                                    "Details are provided below%n" +
+                                    temp.getUnmethylatedCcounterPerGroup(currentContext)[indexGroup1],
+                                    temp.getMethylatedCCounterPerGroup(currentContext)[indexGroup1],
+                                    temp.getUnmethylatedCcounterPerGroup(currentContext)[indexGroup2],
+                                    temp.getMethylatedCCounterPerGroup(currentContext)[indexGroup2]
+                            );
+                        }
+                    }
+                }
+
                 outputWriter.append(lineToOutput.toString());
                 outputWriter.append("\n");
                 counterMap.remove(anno);
@@ -237,6 +347,24 @@ public class VCFAveragingWriter extends VCFWriter {
             }
         }
     }
+
+    private boolean checkCounts(FormatFieldCounter tempCounter, int currentContext) {
+        boolean ok = true;
+        // detect if any count is negative (that's a bug)
+        for (final int count : tempCounter.getUnmethylatedCcounterPerGroup(currentContext)) {
+
+            if (count < 0) {
+                ok = false;
+            }
+        }
+        for (final int count : tempCounter.getMethylatedCCounterPerGroup(currentContext)) {
+            if (count < 0) {
+                ok = false;
+            }
+        }
+        return ok;
+    }
+
 
     @Override
     public void close() {
@@ -263,15 +391,63 @@ public class VCFAveragingWriter extends VCFWriter {
      *
      * @param selectedFormatFieldNames names for the FORMAT fields whose values will be averaged per sample and annotation.
      */
-   /** public void selectFormatFields(final String[] selectedFormatFieldNames) {
-        selectedFormatColumnIndices = new IntArrayList();
-        for (final String fieldName : selectedFormatFieldNames) {
-            selectedFormatColumnIndices.add(formatTypeToFormatFieldIndex.get(fieldName));
-        }
-    }
-    * @param readerIndexToGroupIndex
-    */
+    /**
+     * public void selectFormatFields(final String[] selectedFormatFieldNames) {
+     * selectedFormatColumnIndices = new IntArrayList();
+     * for (final String fieldName : selectedFormatFieldNames) {
+     * selectedFormatColumnIndices.add(formatTypeToFormatFieldIndex.get(fieldName));
+     * }
+     * }
+     *
+     * @param readerIndexToGroupIndex
+     */
     public void setSampleIndexToGroupIndex(int[] readerIndexToGroupIndex) {
-        sampleIndexToGroupIndex= readerIndexToGroupIndex;
+        sampleIndexToGroupIndex = readerIndexToGroupIndex;
+    }
+
+    private String findGenomicContext(int referenceIndex, int position) {
+        int zeroBasedPos = position - 1;
+        char currentBase = genome.get(referenceIndex, zeroBasedPos);
+        int referenceLength = genome.getLength(referenceIndex);
+        char nextBase = '?';
+        String tempContext = new StringBuilder().append('C').append('p').toString();
+        char concatBase = '?';
+
+        if (currentBase == 'C') {
+            if (referenceLength == position) {
+                return Character.toString(currentBase);
+            }
+            nextBase = genome.get(referenceIndex, (zeroBasedPos + 1));
+            concatBase = nextBase;
+        } else {
+            if (currentBase == 'G') {
+                if (zeroBasedPos == 0) {
+                    return Character.toString(currentBase);
+                }
+                nextBase = genome.get(referenceIndex, (zeroBasedPos - 1));
+                switch (nextBase) {
+                    case 'C':
+                        concatBase = 'G';
+                        break;
+                    case 'A':
+                        concatBase = 'T';
+                        break;
+                    case 'T':
+                        concatBase = 'A';
+                        break;
+                    case 'G':
+                        concatBase = 'C';
+                        break;
+                }
+            }
+        }
+        tempContext = tempContext.concat(Character.toString(concatBase));
+        return tempContext;
+    }
+
+    private ArrayList<GroupComparison> groupComparisons = new ArrayList<GroupComparison>();
+
+    public void setGroupComparisons(ArrayList<GroupComparison> groupComparisons) {
+        this.groupComparisons = groupComparisons;
     }
 }

@@ -109,7 +109,7 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
         final ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
         this.statWriter = new VCFWriter(writer);
         groupComparisons = mode.getGroupComparisons();
-
+        averagingWriter.setGroupComparisons(groupComparisons);
         if (groups.length < 1) {
             System.err.println("Methylation format requires at least one group.");
             System.exit(1);
