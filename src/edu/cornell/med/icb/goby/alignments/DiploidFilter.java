@@ -55,20 +55,21 @@ public class DiploidFilter extends GenotypeFilter {
         initStorage(sampleCounts.length);
         for (final SampleCountInfo sci : sampleCounts) {
             final int sampleIndex = sci.sampleIndex;
-            final int maxIndex = sci.getGenotypeMaxIndex();
+            int maxIndex = sci.getGenotypeMaxIndex();
+
             for (int genotypeIndex = 0; genotypeIndex < maxIndex; genotypeIndex++) {
-                final int count = sci.counts[genotypeIndex];
+                final int count = sci.getGenotypeCount(genotypeIndex);
                 firstMaxFrequency[sampleIndex] = Math.max(firstMaxFrequency[sampleIndex], count);
             }
             for (int genotypeIndex = 0; genotypeIndex < maxIndex; genotypeIndex++) {
-                final int count = sci.counts[genotypeIndex];
+                final int count = sci.getGenotypeCount(genotypeIndex);
                 if (count < firstMaxFrequency[sampleIndex]) {
                     secondMaxFrequency[sampleIndex] = Math.max(secondMaxFrequency[sampleIndex], count);
                 }
             }
             int genotypesWithFirstOrSecondMax = 0;
             for (int genotypeIndex = 0; genotypeIndex < maxIndex; genotypeIndex++) {
-                final int count = sci.counts[genotypeIndex];
+                final int count = sci.getGenotypeCount(genotypeIndex);
                 if (count == firstMaxFrequency[sampleIndex] || count == secondMaxFrequency[sampleIndex]) {
                     genotypesWithFirstOrSecondMax++;
                 }
