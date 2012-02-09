@@ -36,7 +36,7 @@ import java.util.ArrayList;
 
 /**
  * A VCF Writer that averages values of some fields over a set of annotations,
- * then writes the result to IGV file format.
+ * then writes the result to an IGV file format.
  *
  * @author Nyasha Chambwe
  * @author Fabien Campagne
@@ -56,10 +56,28 @@ public class VCFAveragingWriter extends VCFWriter {
     private int numGroups;
     private int[] sampleIndexToGroupIndex;
     private boolean fisherRInstalled;
+    private SortedAnnotations annotations = new SortedAnnotations();
+    private Int2ObjectMap<FormatFieldCounter> counterMap = new Int2ObjectAVLTreeMap<FormatFieldCounter>();
 
-    public void setGenome(RandomAccessSequenceInterface genome) {
-        this.genome = genome;
-    }
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Logger LOG = Logger.getLogger(VCFAveragingWriter.class);
+
+
+    /**
+     * An array that enumerates the sequence contexts under consideration
+     */
+    String[] contexts = {"CpG", "CpA", "CpC", "CpT", "CpN"};
+
+    boolean processGroups;
+
+
+    private IntList selectedFormatColumnIndices;
+    private String[] samples;
+
+    private ArrayList<GroupComparison> groupComparisons = new ArrayList<GroupComparison>();
+
 
     public VCFAveragingWriter(final Writer writer, MethylCountProvider provider) {
         this(writer, null, provider);
@@ -71,22 +89,8 @@ public class VCFAveragingWriter extends VCFWriter {
         outputWriter = writer;
         this.genome = genome;
         initialized = false;
-        processGroups=true;
+        processGroups = true;
     }
-
-    boolean processGroups;
-    /**
-     * Set the annotation filename.
-     *
-     * @param annotationFilename
-     */
-    public void setAnnotationFilename(String annotationFilename) {
-        this.annotationFilename = annotationFilename;
-    }
-
-
-    private IntList selectedFormatColumnIndices;
-    private String[] samples;
 
 
     @Override
@@ -107,14 +111,14 @@ public class VCFAveragingWriter extends VCFWriter {
             numSamples = samples.length;
             groups = provider.getGroups();
 
-            if(groups == null){
-                processGroups= false;
-            }else{
-            if (groups.length < 1) {
-                System.err.println("Methylation format requires at least one group.");
-                System.exit(1);
-            }
-            numGroups = groups.length;
+            if (groups == null) {
+                processGroups = false;
+            } else {
+                if (groups.length < 1) {
+                    System.err.println("Methylation format requires at least one group.");
+                    System.exit(1);
+                }
+                numGroups = groups.length;
             }
 
             // load annotations
@@ -128,10 +132,11 @@ public class VCFAveragingWriter extends VCFWriter {
                 return;
             }
 
-            //write header
+            //write headers
             writeHeaders();
+
+            //activate R 
             try {
-                //activate R only if we need it:
                 final Rengine rEngine = GobyRengine.getInstance().getRengine();
                 fisherRInstalled = rEngine != null && rEngine.isAlive();
             } catch (java.lang.UnsatisfiedLinkError e) {
@@ -151,7 +156,7 @@ public class VCFAveragingWriter extends VCFWriter {
             String[] outputTracks = (String[]) ArrayUtils.addAll(samples, groups);
 
             for (String trackName : outputTracks) {
-             for (String context : contexts) {
+                for (String context : contexts) {
                     StringBuilder columnName = new StringBuilder();
                     columnName.append("MR[");
                     columnName.append(trackName);
@@ -160,16 +165,17 @@ public class VCFAveragingWriter extends VCFWriter {
                     columnName.append(context);
                     columnName.append("]");
                     outputWriter.append(columnName.toString());
-                    if (groupComparisons.isEmpty() & i == outputTracks.length & j == contexts.length*outputTracks.length) {
-                      outputWriter.append('\n');
+                    if (groupComparisons.isEmpty() & i == outputTracks.length & j == contexts.length * outputTracks.length) {
+                        outputWriter.append('\n');
                     } else {
                         outputWriter.append('\t');
                     }
-                j++;
+                    j++;
                 }
                 i++;
             }
-               i=1;   j=1;
+            i = 1;
+            j = 1;
 
             for (final GroupComparison comparison : groupComparisons) {
                 for (String context : contexts) {
@@ -183,35 +189,20 @@ public class VCFAveragingWriter extends VCFWriter {
                     comparisonName.append(context);
                     comparisonName.append("]");
                     outputWriter.append(comparisonName.toString());
-                    if(i==groupComparisons.size() & j==contexts.length){
+                    if (i == groupComparisons.size() & j == contexts.length) {
                         outputWriter.append('\n');
-                    }else{
-                    outputWriter.append('\t');
+                    } else {
+                        outputWriter.append('\t');
                     }
-                j++;
+                    j++;
                 }
                 i++;
             }
-           // outputWriter.append("\n");
             outputWriter.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-
-    private SortedAnnotations annotations = new SortedAnnotations();
-    private Int2ObjectMap<FormatFieldCounter> counterMap = new Int2ObjectAVLTreeMap<FormatFieldCounter>();
-
-    /**
-     * Used to log debug and informational messages.
-     */
-    private static final Logger LOG = Logger.getLogger(VCFAveragingWriter.class);
-
-
-    /**
-     * An array that enumerates the sequence contexts under consideration
-     */
-    String[] contexts = {"CpG", "CpA", "CpC", "CpT", "CpN"};
 
 
     /**
@@ -248,7 +239,7 @@ public class VCFAveragingWriter extends VCFWriter {
                             provider.getC(sampleIndex),
                             provider.getCm(sampleIndex), contextIndex, processGroups);
 
-                    LOG.debug("sample " + samples[sampleIndex] + " " + "position: " + pos );
+                    LOG.debug("sample " + samples[sampleIndex] + " " + "position: " + pos);
                 }
             }
         } else {
@@ -258,8 +249,8 @@ public class VCFAveragingWriter extends VCFWriter {
 
         IntSet currentAnnotations = counterMap.keySet();
 
-        for (int anno : currentAnnotations) {
-            outputMethylationRate(chromosome, pos, anno);
+        for (final int annot : currentAnnotations) {
+            buildAnnotationRecordForOutput(chromosome, pos, annot);
         }
     }
 
@@ -272,12 +263,11 @@ public class VCFAveragingWriter extends VCFWriter {
         }
         if (contextIndex == -1) {
             LOG.warn("context was not recognized: " + currentContext);
-
         }
         return contextIndex;
     }
 
-    private void outputMethylationRate(String chromosome, int pos, int anno) {
+    private void buildAnnotationRecordForOutput(String chromosome, int pos, int anno) {
 
         if (annotations.pastChosenAnnotation(anno, chromosome, pos)) {
             // this annotation is ready to be written
@@ -306,7 +296,7 @@ public class VCFAveragingWriter extends VCFWriter {
                     for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
                         temp.CalculateGroupMethylationRate(groupIndex, currentContext);
                         lineToOutput.append(String.format("%g", temp.getMethylationRatePerGroup(currentContext)[groupIndex]));
-                        if (!(groupIndex == numGroups - 1) || currentContext != contexts.length - 1|| !groupComparisons.isEmpty()) {
+                        if (!(groupIndex == numGroups - 1) || currentContext != contexts.length - 1 || !groupComparisons.isEmpty()) {
                             lineToOutput.append("\t");
                         }
                     }
@@ -316,7 +306,6 @@ public class VCFAveragingWriter extends VCFWriter {
                     final int indexGroup2 = comparison.indexGroup2;
                     double fisherP = Double.NaN;
                     for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
-                        //TODO determine threshold at which you can calculate significance
                         final boolean ok = checkCounts(temp, currentContext);
                         if (ok) {
                             fisherP = fisherRInstalled ? FisherExactRCalculator.getFisherPValue(
@@ -325,20 +314,18 @@ public class VCFAveragingWriter extends VCFWriter {
                                     temp.getUnmethylatedCcounterPerGroup(currentContext)[indexGroup2],
                                     temp.getMethylatedCCounterPerGroup(currentContext)[indexGroup2]) : Double.NaN;
                             lineToOutput.append(String.format("%g", fisherP));
-
                             lineToOutput.append("\t");
                         } else {
-                            System.err.printf("An exception was caught evaluation the Fisther Exact test P-value. " +
-                                    "Details are provided below%n" +
+                            LOG.error(String.format("An exception was caught evaluation the Fisher Exact test P-value. " +
+                                    "Details are provided below%n" + "[[%s  %s] [%s   %s]]",
                                     temp.getUnmethylatedCcounterPerGroup(currentContext)[indexGroup1],
                                     temp.getMethylatedCCounterPerGroup(currentContext)[indexGroup1],
                                     temp.getUnmethylatedCcounterPerGroup(currentContext)[indexGroup2],
                                     temp.getMethylatedCCounterPerGroup(currentContext)[indexGroup2]
-                            );
+                            ));
                         }
                     }
                 }
-
                 outputWriter.append(lineToOutput.toString());
                 outputWriter.append("\n");
                 counterMap.remove(anno);
@@ -372,38 +359,13 @@ public class VCFAveragingWriter extends VCFWriter {
             IntSet currentAnnotations = counterMap.keySet();
 
             for (int anno : currentAnnotations) {
-                outputMethylationRate(annotations.getAnnotationsLastChromosome(), Integer.MAX_VALUE, anno);
+                buildAnnotationRecordForOutput(annotations.getAnnotationsLastChromosome(), Integer.MAX_VALUE, anno);
             }
 
             outWriter.close();
         }
     }
-/*
-    private int getFormatFieldValue(int orderInColumnIndices, int sampleIndex) {
-        int formatFieldIndex = selectedFormatColumnIndices.getInt(orderInColumnIndices);
-        return Integer.parseInt(getSampleValue(formatFieldIndex, sampleIndex).toString());
-    }
-*/
 
-
-    /**
-     * Select the FORMAT fields whose values will be averaged per sample.
-     *
-     * @param selectedFormatFieldNames names for the FORMAT fields whose values will be averaged per sample and annotation.
-     */
-    /**
-     * public void selectFormatFields(final String[] selectedFormatFieldNames) {
-     * selectedFormatColumnIndices = new IntArrayList();
-     * for (final String fieldName : selectedFormatFieldNames) {
-     * selectedFormatColumnIndices.add(formatTypeToFormatFieldIndex.get(fieldName));
-     * }
-     * }
-     *
-     * @param readerIndexToGroupIndex
-     */
-    public void setSampleIndexToGroupIndex(int[] readerIndexToGroupIndex) {
-        sampleIndexToGroupIndex = readerIndexToGroupIndex;
-    }
 
     private String findGenomicContext(int referenceIndex, int position) {
         int zeroBasedPos = position - 1;
@@ -445,9 +407,32 @@ public class VCFAveragingWriter extends VCFWriter {
         return tempContext;
     }
 
-    private ArrayList<GroupComparison> groupComparisons = new ArrayList<GroupComparison>();
 
     public void setGroupComparisons(ArrayList<GroupComparison> groupComparisons) {
         this.groupComparisons = groupComparisons;
     }
+
+    public void setGenome(RandomAccessSequenceInterface genome) {
+        this.genome = genome;
+    }
+
+    /**
+     * Set the annotation filename.
+     *
+     * @param annotationFilename
+     */
+    public void setAnnotationFilename(String annotationFilename) {
+        this.annotationFilename = annotationFilename;
+    }
+
+    /**
+     * Set the sample index to group index array
+     *
+     * @param readerIndexToGroupIndex
+     */
+    public void setSampleIndexToGroupIndex(int[] readerIndexToGroupIndex) {
+        sampleIndexToGroupIndex = readerIndexToGroupIndex;
+    }
+
+
 }
