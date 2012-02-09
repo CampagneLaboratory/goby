@@ -185,9 +185,11 @@ public class VCFAveragingWriter extends VCFWriter {
         comparisonName.append("/");
         comparisonName.append(comparison.nameGroup2);
         comparisonName.append("]");
-        comparisonName.append("[");
-        comparisonName.append(context);
-        comparisonName.append("]");
+        if (!aggregateAllContexts) {
+            comparisonName.append("[");
+            comparisonName.append(context);
+            comparisonName.append("]");
+        }
         outputWriter.append(comparisonName.toString());
         if (i == groupComparisons.size() & j == contexts.length) {
             outputWriter.append('\n');
@@ -203,9 +205,11 @@ public class VCFAveragingWriter extends VCFWriter {
         columnName.append("MR[");
         columnName.append(trackName);
         columnName.append("]");
-        columnName.append("[");
-        columnName.append(context);
-        columnName.append("]");
+        if (!aggregateAllContexts) {
+            columnName.append("[");
+            columnName.append(context);
+            columnName.append("]");
+        }
         outputWriter.append(columnName.toString());
         if (groupComparisons.isEmpty() & i == outputTracks.length & j == contexts.length * outputTracks.length) {
             outputWriter.append('\n');
@@ -298,27 +302,28 @@ public class VCFAveragingWriter extends VCFWriter {
                 lineToOutput.append("\t");
                 lineToOutput.append(String.valueOf(annoOut.getEnd())).append("\t");
                 lineToOutput.append(annoOut.getId());
-                lineToOutput.append("\t");
+
                 for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
 
-                        for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
-                            temp.calculateSampleMethylationRate(sampleIndex, currentContext);
-                            lineToOutput.append(String.format("%g", temp.getMethylationRatePerSample(currentContext, sampleIndex)));
-                            if ((sampleIndex != (numSamples - 1)) || numGroups > 0 || currentContext != contexts.length - 1) {
-                                lineToOutput.append("\t");
-                            }
-                        }
+                    for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
+
+                        lineToOutput.append("\t");
+                        temp.calculateSampleMethylationRate(sampleIndex, currentContext);
+                        lineToOutput.append(String.format("%g", temp.getMethylationRatePerSample(currentContext, sampleIndex)));
+                    }
 
                 }
+
+
                 for (int groupIndex = 0; groupIndex < numGroups; groupIndex++) {
 
-                        for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
-                            temp.calculateGroupMethylationRate(groupIndex, currentContext);
-                            lineToOutput.append(String.format("%g", temp.getMethylationRatePerGroup(currentContext, groupIndex)));
-                            if (!(groupIndex == numGroups - 1) || currentContext != contexts.length - 1 || !groupComparisons.isEmpty()) {
-                                lineToOutput.append("\t");
-                            }
-                        }
+                    for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
+
+                        lineToOutput.append("\t");
+
+                        temp.calculateGroupMethylationRate(groupIndex, currentContext);
+                        lineToOutput.append(String.format("%g", temp.getMethylationRatePerGroup(currentContext, groupIndex)));
+                    }
 
                 }
                 for (final GroupComparison comparison : groupComparisons) {
@@ -334,8 +339,7 @@ public class VCFAveragingWriter extends VCFWriter {
                                     temp.getMethylatedCCounterPerGroup(currentContext, indexGroup1),
                                     temp.getUnmethylatedCcounterPerGroup(currentContext, indexGroup2),
                                     temp.getMethylatedCCounterPerGroup(currentContext, indexGroup2)) : Double.NaN;
-                            lineToOutput.append(String.format("%g", fisherP));
-                            lineToOutput.append("\t");
+
                         } else {
                             LOG.error(String.format("An exception was caught evaluation the Fisher Exact test P-value. " +
                                     "Details are provided below%n" + "[[%s  %s] [%s   %s]]",
@@ -345,6 +349,8 @@ public class VCFAveragingWriter extends VCFWriter {
                                     temp.getMethylatedCCounterPerGroup(currentContext, indexGroup2)
                             ));
                         }
+                        lineToOutput.append("\t");
+                        lineToOutput.append(String.format("%g", fisherP));
                     }
                 }
                 outputWriter.append(lineToOutput.toString());
@@ -459,7 +465,7 @@ public class VCFAveragingWriter extends VCFWriter {
     public void setAggregateAllContexts(boolean aggregateAllContexts) {
         this.aggregateAllContexts = aggregateAllContexts;
         if (aggregateAllContexts) {
-            contexts=new String[]{"ALL"};
+            contexts = new String[]{"ALL"};
         }
     }
 }

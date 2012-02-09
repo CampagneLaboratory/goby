@@ -1,3 +1,4 @@
+ - Fix FDR mode output for TSV format. Make open --column-selection-filter work.
  - add a diploid genotype filter to use when calling genotypes in a diploid genome.
  - discover-sequence-variants format compare_groups: Write distinct fisher p-values for each comparison pair
  - Fix bug that prevented methylation vcf-output from writing any line.

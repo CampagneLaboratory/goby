@@ -144,8 +144,9 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
 
             ObjectList<String> columnIdList = vcf ? getVCFColumns(inputFiles) : getTSVColumns(inputFiles);
             // supplement selectedPValueColumns with the columns that match the selection filters:
+            ObjectSet<String> selection = new ObjectOpenHashSet<String>();
+
             for (String col : columnIdList) {
-                ObjectSet<String> selection = new ObjectOpenHashSet<String>();
                 selection.addAll(ObjectArrayList.wrap(selectedPValueColumns));
                 for (String filter : columnSelectionFilter) {
                     if (col.contains(filter)) {
@@ -157,7 +158,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                 System.out.println("column: " + col);
             }
 
-
+            selectedPValueColumns = selection.toArray(new String[selection.size()]);
             DifferentialExpressionCalculator deCalculator = new DifferentialExpressionCalculator();
 
             if (vcf) {
@@ -169,7 +170,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
             BenjaminiHochbergAdjustment fdr = new BenjaminiHochbergAdjustment();
             fdr.setNumberAboveThreshold(numIgnoredObservations);
             for (String column : selectedPValueColumns) {
-
+                System.out.println("adjusting column: " + column);
                 fdr.adjust(data, column.toLowerCase());
             }
             recordTopHits(data);
@@ -289,7 +290,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                     ++elementIndex;
                 }
                 pg.stop();
-              //  Runtime.getRuntime().gc();
+                //  Runtime.getRuntime().gc();
             } catch (VCFParser.SyntaxException
                     e) {
                 System.err.println("An error occured parsing VCF file " + filename);
@@ -658,7 +659,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                 }
 
                 while (reader.hasNext()) {
-
+                    first=true;
                     if (!reader.isCommentLine()) {
                         reader.next();
                         final String elementId = Integer.toString(elementIndex);
@@ -711,7 +712,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
                                         first = false;
                                     }
                                 }
-                                first = true;
+                                first = false;
                                 for (final String adjustedColumn : adjustedColumnIds) {
                                     final int adjustedColumnIndex = data.getStatisticIndex(adjustedColumn);
                                     final DoubleArrayList list = differentialExpressionInfo.statistics();
