@@ -58,26 +58,27 @@ public class FormatFieldCounter {
         methylationRatePerSample = new double[numContexts][numSamples];
     }
 
-    public void CalculateSampleMethylationRate(int sampleIndex, int contextIndex) {
-        double denominator = methylatedCCounterPerSample[contextIndex][sampleIndex] +
+    public void calculateSampleMethylationRate(int sampleIndex, int contextIndex) {
+        final double denominator = methylatedCCounterPerSample[contextIndex][sampleIndex] +
+
                 unmethylatedCCounterPerSample[contextIndex][sampleIndex];
-        double MR;
+        final double MR;
         if (denominator == 0) {
             MR = Double.NaN;
         } else {
-            MR = ((methylatedCCounterPerSample[contextIndex][sampleIndex] / denominator) * 100);
+            MR = (((double) methylatedCCounterPerSample[contextIndex][sampleIndex]) / denominator) * 100.0;
         }
         methylationRatePerSample[contextIndex][sampleIndex] = MR;
     }
 
-    public void CalculateGroupMethylationRate(int groupIndex, int contextIndex) {
+    public void calculateGroupMethylationRate(int groupIndex, int contextIndex) {
         double denominator = methylatedCCounterPerGroup[contextIndex][groupIndex] +
                 unmethylatedCCounterPerGroup[contextIndex][groupIndex];
         double MR;
         if (denominator == 0) {
             MR = Double.NaN;
         } else {
-            MR = ((methylatedCCounterPerGroup[contextIndex][groupIndex] / denominator) * 100);
+            MR = ((((double) methylatedCCounterPerGroup[contextIndex][groupIndex]) / denominator) * 100.0);
         }
         methylationRatePerGroup[contextIndex][groupIndex] = MR;
     }
@@ -96,32 +97,79 @@ public class FormatFieldCounter {
                                 int cm, int contextIndex, boolean processGroups) {
         unmethylatedCCounterPerSample[contextIndex][sampleIndex] += c;
         methylatedCCounterPerSample[contextIndex][sampleIndex] += cm;
-        if(processGroups){
-        unmethylatedCCounterPerGroup[contextIndex][sampleIndexToGroupIndex[sampleIndex]] += c;
-        methylatedCCounterPerGroup[contextIndex][sampleIndexToGroupIndex[sampleIndex]] += cm;
+        if (processGroups) {
+            unmethylatedCCounterPerGroup[contextIndex][sampleIndexToGroupIndex[sampleIndex]] += c;
+            methylatedCCounterPerGroup[contextIndex][sampleIndexToGroupIndex[sampleIndex]] += cm;
         }
         numberOfSites[contextIndex][sampleIndex] += 1;
     }
 
-    public int[] getUnmethylatedCcounterPerGroup(int contextIndex) {
-        return unmethylatedCCounterPerGroup[contextIndex];
+    public int getUnmethylatedCcounterPerGroup(int contextIndex, int indexGroup) {
+        return unmethylatedCCounterPerGroup[contextIndex][indexGroup];
     }
 
-    public int[] getMethylatedCCounterPerGroup(int contextIndex) {
-        return methylatedCCounterPerGroup[contextIndex];
+    public int getMethylatedCCounterPerGroup(int contextIndex, int indexGroup) {
+        return methylatedCCounterPerGroup[contextIndex][indexGroup];
     }
 
 
-    public double[] getMethylationRatePerSample(int contextIndex) {
-        return methylationRatePerSample[contextIndex];
+    public double getMethylationRatePerSample(int contextIndex, int sampleIndex) {
+        return methylationRatePerSample[contextIndex][sampleIndex];
     }
 
-    public double[] getMethylationRatePerGroup(int contextIndex) {
-        return methylationRatePerGroup[contextIndex];
+
+    public double getMethylationRatePerGroup(int contextIndex, int groupIndex) {
+        return methylationRatePerGroup[contextIndex][groupIndex];
     }
 
     public int getAnnotationIndex() {
         return annotationIndex;
+    }
+
+    /**
+     * Return the rate in a sample, irrespective of contexts.
+     *
+     * @param sampleIndex index of the sample.
+     * @return methylation rate estimate in the group.
+     */
+    public double getMethylationRatePerSample(final int sampleIndex) {
+        double MR;
+        double numerator = 0;
+        double denominator = 0;
+        for (int contextIndex = 0; contextIndex < methylatedCCounterPerSample.length; contextIndex++) {
+            denominator += methylatedCCounterPerSample[contextIndex][sampleIndex] +
+                    unmethylatedCCounterPerSample[contextIndex][sampleIndex];
+            numerator += methylatedCCounterPerSample[contextIndex][sampleIndex];
+        }
+        if (denominator == 0) {
+            MR = Double.NaN;
+        } else {
+            MR = numerator / denominator * 100.0;
+        }
+        return MR;
+    }
+
+    /**
+     * Return the rate in a group, irrespective of contexts.
+     *
+     * @param groupIndex index of the group.
+     * @return methylation rate estimate in the group.
+     */
+    public double getMethylationRatePerGroup(final int groupIndex) {
+        double MR;
+        double numerator = 0;
+        double denominator = 0;
+        for (int contextIndex = 0; contextIndex < methylatedCCounterPerGroup.length; contextIndex++) {
+            denominator += methylatedCCounterPerGroup[contextIndex][groupIndex] +
+                    unmethylatedCCounterPerGroup[contextIndex][groupIndex];
+            numerator += methylatedCCounterPerGroup[contextIndex][groupIndex];
+        }
+        if (denominator == 0) {
+            MR = Double.NaN;
+        } else {
+            MR = numerator / denominator * 100.0;
+        }
+        return MR;
     }
 
 }

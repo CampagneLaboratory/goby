@@ -51,7 +51,7 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
      * Used to log debug and informational messages.
      */
     private static final Log LOG = LogFactory.getLog(MethylationRegionsOutputFormat.class);
-    public static DynamicOptionClient doc = new DynamicOptionClient(MethylationRegionsOutputFormat.class, "annotations:filename to a tab delimited annotation file:","do-indel-rate:boolean, true value indicates that the indel rate shoiuld be output in the MR field:false");
+    public static DynamicOptionClient doc = new DynamicOptionClient(MethylationRegionsOutputFormat.class, "annotations:filename to a tab delimited annotation file:", "do-indel-rate:boolean, true value indicates that the indel rate shoiuld be output in the MR field:false");
     private String annotationFilename;
 
     VCFWriter statWriter;
@@ -104,6 +104,9 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
         assert annotationFilename != null : "annotation filename must have been set";
 
         averagingWriter.setAnnotationFilename(annotationFilename);
+        if (doIndels) {
+            averagingWriter.setAggregateAllContexts(true);
+        }
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         averagingWriter.setSampleIndexToGroupIndex(readerIndexToGroupIndex);
         final ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
@@ -124,10 +127,11 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
         this.numberOfSamples = numberOfSamples;
         mci = new MethylCountInfo(numberOfSamples, numberOfGroups);
 
+
     }
 
     private String chromosome;
-    private int referenceIndex=-1;
+    private int referenceIndex = -1;
     private int position;
 
     @Override
@@ -147,6 +151,7 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
             return;
         }
         if (doIndels) {
+
             IndelCountOutputFormat.fillMethylationCountArrays(sampleCounts, list, position, refBase, mci, readerIndexToGroupIndex);
         } else {
             MethylationRateVCFOutputFormat.fillMethylationCountArrays(sampleCounts, list, position, refBase, mci, readerIndexToGroupIndex);
