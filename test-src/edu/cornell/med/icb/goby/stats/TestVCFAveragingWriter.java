@@ -18,10 +18,12 @@
 
 package edu.cornell.med.icb.goby.stats;
 
+import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import org.junit.Test;
 
 import java.io.StringWriter;
+import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
 
@@ -325,5 +327,126 @@ public class TestVCFAveragingWriter {
 
     }
 
+    @Test
+    public void testCase8() {
+        // Test multiple samples, multiple groups, one comparison
+        String[] groups = new String[]{"group1", "group2"};
+        String[] samples = new String[]{"sample1", "sample2", "sample3", "sample4"};
+        int[] positions = new int[]{6, 8, 14, 16};
+        int[][] C = {{5, 3, 9, 8}, {4, 6, 3, 2}, {8, 3, 8, 9}, {7, 4, 9, 7}};
+        int[][] Cm = {{9, 7, 1, 5}, {9, 7, 9, 3}, {2, 3, 2, 8}, {4, 1, 3, 6}};
+        testSupport = new MethylCountProviderTestSupport(groups, samples, positions, "Case4", C, Cm);
+        final StringWriter stringWriter = new StringWriter();
+        VCFAveragingWriter testWriter = new VCFAveragingWriter(stringWriter, genome, testSupport);
+        testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
+        int[] a = {0, 0, 1, 1};
+        testWriter.setSampleIndexToGroupIndex(a);
+        ArrayList<GroupComparison> groupComparisons = new ArrayList<GroupComparison>();
+        GroupComparison case8 = new GroupComparison("group1", "group2", 0, 1, 0);
+        groupComparisons.add(case8);
+        testWriter.setGroupComparisons(groupComparisons);
+        testWriter.writeRecord();
+        testWriter.writeRecord();
+        testWriter.writeRecord();
+        testWriter.writeRecord();
+        testWriter.close();
+        assertEquals("Test Case 8 result: ",
+                "Chromosome\tStart\tEnd\tFeature\t" +
+                        "MR[sample1][CpG]\tMR[sample1][CpA]\tMR[sample1][CpC]\tMR[sample1][CpT]\tMR[sample1][CpN]\t" +
+                        "MR[sample2][CpG]\tMR[sample2][CpA]\tMR[sample2][CpC]\tMR[sample2][CpT]\tMR[sample2][CpN]\t" +
+                        "MR[sample3][CpG]\tMR[sample3][CpA]\tMR[sample3][CpC]\tMR[sample3][CpT]\tMR[sample3][CpN]\t" +
+                        "MR[sample4][CpG]\tMR[sample4][CpA]\tMR[sample4][CpC]\tMR[sample4][CpT]\tMR[sample4][CpN]\t" +
+                        "MR[group1][CpG]\tMR[group1][CpA]\tMR[group1][CpC]\tMR[group1][CpT]\tMR[group1][CpN]\t" +
+                        "MR[group2][CpG]\tMR[group2][CpA]\tMR[group2][CpC]\tMR[group2][CpT]\tMR[group2][CpN]\t" +
+                        "fisherP[group1/group2][CpG]\tfisherP[group1/group2][CpA]\tfisherP[group1/group2][CpC]\t" +
+                        "fisherP[group1/group2][CpT]\tfisherP[group1/group2][CpN]\n" +
+                        "Case4\t5\t9\tannotation7\t" +
+                        "NaN\tNaN\tNaN\t66.6667\tNaN\t" +
+                        "NaN\tNaN\tNaN\t61.5385\tNaN\t" +
+                        "NaN\tNaN\tNaN\t31.2500\tNaN\t" +
+                        "NaN\tNaN\tNaN\t31.2500\tNaN\t" +
+                        "NaN\tNaN\tNaN\t64.0000\tNaN\t" +
+                        "NaN\tNaN\tNaN\t31.2500\tNaN\t" +
+                        "1.00000\t1.00000\t1.00000\t0.00622665\t1.00000\n"+
+                        "Case4\t13\t17\tannotation8\t" +
+                        "NaN\t26.0870\tNaN\tNaN\tNaN\t" +
+                        "NaN\t70.5882\tNaN\tNaN\tNaN\t" +
+                        "NaN\t37.0370\tNaN\tNaN\tNaN\t" +
+                        "NaN\t36.0000\tNaN\tNaN\tNaN\t" +
+                        "NaN\t45.0000\tNaN\tNaN\tNaN\t" +
+                        "NaN\t36.5385\tNaN\tNaN\tNaN\t" +
+                        "1.00000\t0.520511\t1.00000\t1.00000\t1.00000\n", stringWriter.getBuffer().toString());
+    }
 
+     @Test
+    public void testCase9() {
+     // test multiple samples, 4 groups, 3 comparisons
+       // Test multiple samples, multiple groups, one comparison
+        String[] groups = new String[]{"group1", "group2", "group3", "group4"};
+        String[] samples = new String[]{"sample1", "sample2", "sample3", "sample4"};
+        int[] positions = new int[]{6, 8, 14, 16};
+        int[][] C = {{5, 3, 9, 8}, {4, 6, 3, 2}, {8, 3, 8, 9}, {7, 4, 9, 7}};
+        int[][] Cm = {{9, 7, 1, 5}, {9, 7, 9, 3}, {2, 3, 2, 8}, {4, 1, 3, 6}};
+        testSupport = new MethylCountProviderTestSupport(groups, samples, positions, "Case4", C, Cm);
+        final StringWriter stringWriter = new StringWriter();
+        VCFAveragingWriter testWriter = new VCFAveragingWriter(stringWriter, genome, testSupport);
+        testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
+        int[] a = {0, 1, 2, 3};
+        testWriter.setSampleIndexToGroupIndex(a);
+        ArrayList<GroupComparison> groupComparisons = new ArrayList<GroupComparison>();
+        GroupComparison comparisonToMake = new GroupComparison("group1", "group2", 0, 1, 0);
+        groupComparisons.add(comparisonToMake);
+        comparisonToMake= new GroupComparison("group1", "group3", 0, 2, 1);
+        groupComparisons.add(comparisonToMake);
+        comparisonToMake= new GroupComparison("group1", "group4", 0, 3, 2);
+        groupComparisons.add(comparisonToMake);
+        testWriter.setGroupComparisons(groupComparisons);
+        testWriter.writeRecord();
+        testWriter.writeRecord();
+        testWriter.writeRecord();
+        testWriter.writeRecord();
+        testWriter.close();
+        assertEquals("Test Case 9 result: ",
+                "Chromosome\tStart\tEnd\tFeature\t" +
+                        "MR[sample1][CpG]\tMR[sample1][CpA]\tMR[sample1][CpC]\tMR[sample1][CpT]\tMR[sample1][CpN]\t" +
+                        "MR[sample2][CpG]\tMR[sample2][CpA]\tMR[sample2][CpC]\tMR[sample2][CpT]\tMR[sample2][CpN]\t" +
+                        "MR[sample3][CpG]\tMR[sample3][CpA]\tMR[sample3][CpC]\tMR[sample3][CpT]\tMR[sample3][CpN]\t" +
+                        "MR[sample4][CpG]\tMR[sample4][CpA]\tMR[sample4][CpC]\tMR[sample4][CpT]\tMR[sample4][CpN]\t" +
+                        "MR[group1][CpG]\tMR[group1][CpA]\tMR[group1][CpC]\tMR[group1][CpT]\tMR[group1][CpN]\t" +
+                        "MR[group2][CpG]\tMR[group2][CpA]\tMR[group2][CpC]\tMR[group2][CpT]\tMR[group2][CpN]\t" +
+                        "MR[group3][CpG]\tMR[group3][CpA]\tMR[group3][CpC]\tMR[group3][CpT]\tMR[group3][CpN]\t" +
+                        "MR[group4][CpG]\tMR[group4][CpA]\tMR[group4][CpC]\tMR[group4][CpT]\tMR[group4][CpN]\t" +
+                        "fisherP[group1/group2][CpG]\tfisherP[group1/group2][CpA]\tfisherP[group1/group2][CpC]\t" +
+                        "fisherP[group1/group2][CpT]\tfisherP[group1/group2][CpN]\t" +
+                        "fisherP[group1/group3][CpG]\tfisherP[group1/group3][CpA]\tfisherP[group1/group3][CpC]\t" +
+                        "fisherP[group1/group3][CpT]\tfisherP[group1/group3][CpN]\t" +
+                        "fisherP[group1/group4][CpG]\tfisherP[group1/group4][CpA]\tfisherP[group1/group4][CpC]\t" +
+                        "fisherP[group1/group4][CpT]\tfisherP[group1/group4][CpN]\n" +
+                        "Case4\t5\t9\tannotation7\t" +
+                        "NaN\tNaN\tNaN\t66.6667\tNaN\t" +
+                        "NaN\tNaN\tNaN\t61.5385\tNaN\t" +
+                        "NaN\tNaN\tNaN\t31.2500\tNaN\t" +
+                        "NaN\tNaN\tNaN\t31.2500\tNaN\t" +
+                        "NaN\tNaN\tNaN\t66.6667\tNaN\t" +
+                        "NaN\tNaN\tNaN\t61.5385\tNaN\t" +
+                        "NaN\tNaN\tNaN\t31.2500\tNaN\t" +
+                        "NaN\tNaN\tNaN\t31.2500\tNaN\t" +
+                        "1.00000\t1.00000\t1.00000\t0.773708\t1.00000\t" +
+                        "1.00000\t1.00000\t1.00000\t0.0514794\t1.00000\t" +
+                        "1.00000\t1.00000\t1.00000\t0.0514794\t1.00000" +
+                        "\n"+
+                        "Case4\t13\t17\tannotation8\t" +
+                        "NaN\t26.0870\tNaN\tNaN\tNaN\t" +
+                        "NaN\t70.5882\tNaN\tNaN\tNaN\t" +
+                        "NaN\t37.0370\tNaN\tNaN\tNaN\t" +
+                        "NaN\t36.0000\tNaN\tNaN\tNaN\t" +
+                        "NaN\t26.0870\tNaN\tNaN\tNaN\t" +
+                        "NaN\t70.5882\tNaN\tNaN\tNaN\t" +
+                        "NaN\t37.0370\tNaN\tNaN\tNaN\t" +
+                        "NaN\t36.0000\tNaN\tNaN\tNaN\t" +
+                        "1.00000\t0.00952120\t1.00000\t1.00000\t1.00000\t" +
+                        "1.00000\t0.545556\t1.00000\t1.00000\t1.00000\t" +
+                        "1.00000\t0.541875\t1.00000\t1.00000\t1.00000\n", stringWriter.getBuffer().toString());
+
+     }
 }

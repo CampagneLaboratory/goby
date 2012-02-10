@@ -191,7 +191,7 @@ public class VCFAveragingWriter extends VCFWriter {
             comparisonName.append("]");
         }
         outputWriter.append(comparisonName.toString());
-        if (i == groupComparisons.size() & j == contexts.length) {
+        if (i == groupComparisons.size() & j == contexts.length*groupComparisons.size()) {
             outputWriter.append('\n');
         } else {
             outputWriter.append('\t');
