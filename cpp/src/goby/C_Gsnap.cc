@@ -1051,7 +1051,7 @@ extern "C" {
                 
                 splicedAlignment = true;
                     
-                if (alignmentEntry->alignmentSegments->size() > 1)) {
+                if (alignmentEntry->alignmentSegments->size() > 1) {
                     // Splice but not a half splice... We'll output half
                     // splices as non-splices, see below.
 
