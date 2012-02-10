@@ -128,7 +128,7 @@ void testSeqvarX(CAlignmentsWriterHelper *writerHelper, int which) {
 
 void testSeqvar() {
     CAlignmentsWriterHelper *writerHelper;
-    gobyAlignments_openAlignmentsWriterDefaultEntriesPerChunk("deleteme", &writerHelper);
+    gobyAlignments_openAlignmentsWriterDefaultEntriesPerChunk("deleteme-seqvar", &writerHelper);
 
     char *test1 = read_file("test-data/synth.chromosome.list.txt");
     gobyGsnap_test_registerTargets(writerHelper, test1);
@@ -179,10 +179,22 @@ void pcreTest() {
     printf("done\n");
 }
 
+void spliceTests(CAlignmentsWriterHelper *writerHelper) {
+    char *test1 = read_file("test-data/splice-sense.gsnap");
+    gobyGsnap_parse(writerHelper, test1);
+    free(test1);
+
+    test1 = read_file("test-data/splice-antisense.gsnap");
+    gobyGsnap_parse(writerHelper, test1);
+    free(test1);
+
+}
+
 void sequenceTests() {
     CAlignmentsWriterHelper *writerHelper;
-    gobyAlignments_openAlignmentsWriterDefaultEntriesPerChunk("deleteme", &writerHelper);
+    gobyAlignments_openAlignmentsWriterDefaultEntriesPerChunk("deleteme-seq", &writerHelper);
     registerChromosomes(writerHelper);
+    spliceTests(writerHelper);
     targetIdentiferTest(writerHelper);
     testSingleForwardDel(writerHelper);
     testSingleReverseInsQual(writerHelper);
@@ -194,7 +206,7 @@ void sequenceTests() {
 
 int main(int argc, const char *const argv[]) {
     pcreTest();
-    //sequenceTests();
+    sequenceTests();
     testSeqvar();
     return 0;
 }

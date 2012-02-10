@@ -142,6 +142,8 @@
           </ccTool>
         </makeTool>
       </makefileType>
+      <item path="config.h" ex="true" tool="3" flavor="0">
+      </item>
       <folder path="goby-cpp/src/goby">
         <ccTool>
           <preprocessorList>

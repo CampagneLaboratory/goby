@@ -12,7 +12,33 @@
     #include <vector>
 
     enum SegmentStartEndType {
-        START, END, INS, DEL, TERM, DONOR, ACCEPTOR, UNKNOWN };
+        STARTENDTYPE_START,
+        STARTENDTYPE_END,
+        STARTENDTYPE_INS,
+        STARTENDTYPE_DEL,
+        STARTENDTYPE_TERM,
+        STARTENDTYPE_DONOR,
+        STARTENDTYPE_ACCEPTOR,
+        STARTENDTYPE_UNKNOWN
+    };
+
+    enum SegmentSpliceDir {
+            //"sense", "antisense"
+        SPLICEDIR_NONE, 
+        SPLICEDIR_SENSE, 
+        SPLICEDIR_ANTISENSE, 
+        SPLICEDIR_UNKNOWN 
+    };
+
+    enum SegmentSpliceType {
+           //"consistent", "inversion", "scramble", "translocation"
+        SPLICETYPE_NONE,
+        SPLICETYPE_CONSISTENT,
+        SPLICETYPE_INVERSION,
+        SPLICETYPE_SCRAMBLE,
+        SPLICETYPE_TRANSLOCATION,
+        SPLICETYPE_UNKNOWN
+    };
 
     struct GsnapAlignmentSegment {
         string *referenceSequence;   // Will be generated during merge
@@ -30,10 +56,13 @@
         unsigned int targetEnd;      // 0-based
         SegmentStartEndType startType;
         int startClip;
-        int startProb;
+        double startProb;             // Only if spliced
         SegmentStartEndType endType;
         int endClip;
-        int endProb;
+        double endProb;               // Only if spliced
+        SegmentSpliceDir spliceDir;   // Only if spliced
+        SegmentSpliceType spliceType; // Only if spliced
+        unsigned int spliceDistance;  // Only if spliced
         int matches;  // Comes intially from gsnap, but we re-calculate
         int subs;     // Comes intially from gsnap, but we re-calculate
         int inserts;  // Number of inserts (calculated, doesn't come from Gsnap)
