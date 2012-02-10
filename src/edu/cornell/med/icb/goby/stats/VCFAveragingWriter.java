@@ -191,8 +191,8 @@ public class VCFAveragingWriter extends VCFWriter {
             comparisonName.append("]");
         }
         outputWriter.append(comparisonName.toString());
-        if (i == groupComparisons.size() & j == contexts.length*groupComparisons.size()) {
-            outputWriter.append('\n');
+        if (i == groupComparisons.size() && j == contexts.length*groupComparisons.size()) {
+                      outputWriter.append('\n');
         } else {
             outputWriter.append('\t');
         }
@@ -211,7 +211,7 @@ public class VCFAveragingWriter extends VCFWriter {
             columnName.append("]");
         }
         outputWriter.append(columnName.toString());
-        if (groupComparisons.isEmpty() & i == outputTracks.length & j == contexts.length * outputTracks.length) {
+        if (groupComparisons.isEmpty() && i == outputTracks.length && j == contexts.length * outputTracks.length) {
             outputWriter.append('\n');
         } else {
             outputWriter.append('\t');
