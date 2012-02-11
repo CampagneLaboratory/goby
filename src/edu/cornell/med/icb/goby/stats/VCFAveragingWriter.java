@@ -150,7 +150,7 @@ public class VCFAveragingWriter extends VCFWriter {
     private void writeHeaders() {
         try {
             //  IGV format - maintain fidelity
-            outputWriter.append("Chromosome\tStart\tEnd\tFeature\t");
+            outputWriter.append("Chromosome\tStart\tEnd\tFeature");
             int i = 1;
             int j = 1;
             String[] outputTracks = (String[]) ArrayUtils.addAll(samples, groups);
@@ -172,7 +172,7 @@ public class VCFAveragingWriter extends VCFWriter {
 
                 i++;
             }
-            outputWriter.flush();
+            outputWriter.append('\n');
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -180,6 +180,7 @@ public class VCFAveragingWriter extends VCFWriter {
 
     private int writeFisherColumn(int i, int j, GroupComparison comparison, String context) throws IOException {
         StringBuilder comparisonName = new StringBuilder();
+        outputWriter.append('\t');
         comparisonName.append("fisherP[");
         comparisonName.append(comparison.nameGroup1);
         comparisonName.append("/");
@@ -191,17 +192,14 @@ public class VCFAveragingWriter extends VCFWriter {
             comparisonName.append("]");
         }
         outputWriter.append(comparisonName.toString());
-        if (i == groupComparisons.size() && j == contexts.length*groupComparisons.size()) {
-                      outputWriter.append('\n');
-        } else {
-            outputWriter.append('\t');
-        }
+
         j++;
         return j;
     }
 
     private int writeRateColumn(int i, int j, String[] outputTracks, String trackName, String context) throws IOException {
         StringBuilder columnName = new StringBuilder();
+         outputWriter.append('\t');
         columnName.append("MR[");
         columnName.append(trackName);
         columnName.append("]");
@@ -211,11 +209,7 @@ public class VCFAveragingWriter extends VCFWriter {
             columnName.append("]");
         }
         outputWriter.append(columnName.toString());
-        if (groupComparisons.isEmpty() && i == outputTracks.length && j == contexts.length * outputTracks.length) {
-            outputWriter.append('\n');
-        } else {
-            outputWriter.append('\t');
-        }
+
         j++;
         return j;
     }
