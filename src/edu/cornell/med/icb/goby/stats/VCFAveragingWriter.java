@@ -301,9 +301,9 @@ public class VCFAveragingWriter extends VCFWriter {
                     for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
                         lineToOutput.append("\t");
                         temp.calculateSampleMethylationRate(sampleIndex, currentContext);
-                        lineToOutput.append(String.format("%g", temp.getMethylationRatePerSample(currentContext, sampleIndex)));
+                        final double methylationRatePerSample = temp.getMethylationRatePerSample(currentContext, sampleIndex);
+                        lineToOutput.append(formatDouble(methylationRatePerSample));
                     }
-
                 }
 
                 for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
@@ -313,9 +313,8 @@ public class VCFAveragingWriter extends VCFWriter {
                         lineToOutput.append("\t");
 
                         temp.calculateGroupMethylationRate(groupIndex, currentContext);
-                        lineToOutput.append(String.format("%g", temp.getMethylationRatePerGroup(currentContext, groupIndex)));
+                        lineToOutput.append(formatDouble(temp.getMethylationRatePerGroup(currentContext, groupIndex)));
                     }
-
                 }
                 for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
 
@@ -342,7 +341,7 @@ public class VCFAveragingWriter extends VCFWriter {
                             ));
                         }
                         lineToOutput.append("\t");
-                        lineToOutput.append(String.format("%g", fisherP));
+                        lineToOutput.append(formatDouble(fisherP));
                     }
                 }
                 outputWriter.append(lineToOutput.toString());
@@ -351,6 +350,20 @@ public class VCFAveragingWriter extends VCFWriter {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    /**
+     * Format double, rendering NaN as empty string.
+     * @param value
+     * @return
+     */
+    private String formatDouble(double value) {
+        if (value != value) {
+            // value is NaN
+           return "";
+        } else {
+            return String.format("%g", value);
         }
     }
 
