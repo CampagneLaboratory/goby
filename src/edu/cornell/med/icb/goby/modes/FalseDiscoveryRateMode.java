@@ -145,7 +145,7 @@ public class FalseDiscoveryRateMode extends AbstractGobyMode {
             ObjectList<String> columnIdList = vcf ? getVCFColumns(inputFiles) : getTSVColumns(inputFiles);
             // supplement selectedPValueColumns with the columns that match the selection filters:
             ObjectSet<String> selection = new ObjectOpenHashSet<String>();
-
+            selection.addAll(ObjectArrayList.wrap(selectedPValueColumns));
             for (String col : columnIdList) {
                 selection.addAll(ObjectArrayList.wrap(selectedPValueColumns));
                 for (String filter : columnSelectionFilter) {
