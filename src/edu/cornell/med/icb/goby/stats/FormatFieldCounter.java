@@ -58,7 +58,7 @@ public class FormatFieldCounter {
         methylationRatePerSample = new double[numContexts][numSamples];
     }
 
-    public void calculateSampleMethylationRate(int sampleIndex, int contextIndex) {
+    public void calculateSampleMethylationRate(int contextIndex, int sampleIndex) {
         final double denominator = methylatedCCounterPerSample[contextIndex][sampleIndex] +
 
                 unmethylatedCCounterPerSample[contextIndex][sampleIndex];
@@ -71,7 +71,7 @@ public class FormatFieldCounter {
         methylationRatePerSample[contextIndex][sampleIndex] = MR;
     }
 
-    public void calculateGroupMethylationRate(int groupIndex, int contextIndex) {
+    public void calculateGroupMethylationRate(int contextIndex, int groupIndex) {
         double denominator = methylatedCCounterPerGroup[contextIndex][groupIndex] +
                 unmethylatedCCounterPerGroup[contextIndex][groupIndex];
         double MR;
@@ -94,12 +94,12 @@ public class FormatFieldCounter {
 
 
     public void incrementCounts(int sampleIndex, int[] sampleIndexToGroupIndex, int c,
-                                int cm, int contextIndex, boolean processGroups) {
+                                int cm, int contextIndex) {
         unmethylatedCCounterPerSample[contextIndex][sampleIndex] += c;
         methylatedCCounterPerSample[contextIndex][sampleIndex] += cm;
-        if (processGroups) {
-            unmethylatedCCounterPerGroup[contextIndex][sampleIndexToGroupIndex[sampleIndex]] += c;
-            methylatedCCounterPerGroup[contextIndex][sampleIndexToGroupIndex[sampleIndex]] += cm;
+        if (sampleIndexToGroupIndex!=null) {
+        unmethylatedCCounterPerGroup[contextIndex][sampleIndexToGroupIndex[sampleIndex]] += c;
+        methylatedCCounterPerGroup[contextIndex][sampleIndexToGroupIndex[sampleIndex]] += cm;
         }
         numberOfSites[contextIndex][sampleIndex] += 1;
     }
@@ -114,11 +114,13 @@ public class FormatFieldCounter {
 
 
     public double getMethylationRatePerSample(int contextIndex, int sampleIndex) {
+        calculateSampleMethylationRate(contextIndex, sampleIndex);
         return methylationRatePerSample[contextIndex][sampleIndex];
     }
 
 
     public double getMethylationRatePerGroup(int contextIndex, int groupIndex) {
+        calculateGroupMethylationRate(contextIndex, groupIndex);
         return methylationRatePerGroup[contextIndex][groupIndex];
     }
 

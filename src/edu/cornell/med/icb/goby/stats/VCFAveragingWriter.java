@@ -172,6 +172,14 @@ public class VCFAveragingWriter extends VCFWriter {
 
                 i++;
             }
+
+
+            for (String context : contexts) {
+                for (final GroupComparison comparison : groupComparisons) {
+
+                    writeDeltaMRColumn( comparison, context);
+                }
+            }
             outputWriter.append('\n');
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -195,6 +203,24 @@ public class VCFAveragingWriter extends VCFWriter {
 
         j++;
         return j;
+    }
+
+    private void writeDeltaMRColumn(GroupComparison comparison, String context) throws IOException {
+        StringBuilder comparisonName = new StringBuilder();
+        outputWriter.append('\t');
+        comparisonName.append("deltaMR[");
+        comparisonName.append(comparison.nameGroup1);
+        comparisonName.append("/");
+        comparisonName.append(comparison.nameGroup2);
+        comparisonName.append("]");
+        if (!aggregateAllContexts) {
+            comparisonName.append("[");
+            comparisonName.append(context);
+            comparisonName.append("]");
+        }
+        outputWriter.append(comparisonName.toString());
+
+
     }
 
     private int writeRateColumn(int i, int j, String[] outputTracks, String trackName, String context) throws IOException {
@@ -238,16 +264,15 @@ public class VCFAveragingWriter extends VCFWriter {
             for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
                 for (int each : validOverlappingAnnotations) {
                     // increment counters for each annotation overlapping at this position
-                    FormatFieldCounter cntr;
-                    if (counterMap.containsKey(each)) {
-                        cntr = counterMap.get(each);
-                    } else {
+                    FormatFieldCounter cntr = counterMap.get(each);
+
+                    if (cntr==null) {
                         cntr = new FormatFieldCounter(each, numSamples, numGroups, contexts.length);
                         counterMap.put(each, cntr);
                     }
                     cntr.incrementCounts(sampleIndex, sampleIndexToGroupIndex,
                             provider.getC(sampleIndex),
-                            provider.getCm(sampleIndex), contextIndex, processGroups);
+                            provider.getCm(sampleIndex), contextIndex);
 
                     LOG.debug("sample " + samples[sampleIndex] + " " + "position: " + pos);
                 }
@@ -300,8 +325,9 @@ public class VCFAveragingWriter extends VCFWriter {
 
                     for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
                         lineToOutput.append("\t");
-                        temp.calculateSampleMethylationRate(sampleIndex, currentContext);
+
                         final double methylationRatePerSample = temp.getMethylationRatePerSample(currentContext, sampleIndex);
+                       // System.out.printf("context=%s sample=%s mr=%g %n",contexts[currentContext], samples[sampleIndex], methylationRatePerSample);
                         lineToOutput.append(formatDouble(methylationRatePerSample));
                     }
                 }
@@ -312,7 +338,6 @@ public class VCFAveragingWriter extends VCFWriter {
 
                         lineToOutput.append("\t");
 
-                        temp.calculateGroupMethylationRate(groupIndex, currentContext);
                         lineToOutput.append(formatDouble(temp.getMethylationRatePerGroup(currentContext, groupIndex)));
                     }
                 }
@@ -344,6 +369,19 @@ public class VCFAveragingWriter extends VCFWriter {
                         lineToOutput.append(formatDouble(fisherP));
                     }
                 }
+                for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
+
+                    for (final GroupComparison comparison : groupComparisons) {
+                        final int indexGroup1 = comparison.indexGroup1;
+                        final int indexGroup2 = comparison.indexGroup2;
+                        double deltaMR = Double.NaN;
+
+                        deltaMR = Math.abs(temp.getMethylationRatePerGroup(currentContext, indexGroup1) - temp.getMethylationRatePerGroup(currentContext, indexGroup2));
+
+                        lineToOutput.append("\t");
+                        lineToOutput.append(formatDouble(deltaMR));
+                    }
+                }
                 outputWriter.append(lineToOutput.toString());
                 outputWriter.append("\n");
                 counterMap.remove(anno);
@@ -355,13 +393,14 @@ public class VCFAveragingWriter extends VCFWriter {
 
     /**
      * Format double, rendering NaN as empty string.
+     *
      * @param value
      * @return
      */
     private String formatDouble(double value) {
         if (value != value) {
             // value is NaN
-           return "";
+            return "";
         } else {
             return String.format("%g", value);
         }
