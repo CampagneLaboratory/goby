@@ -154,9 +154,9 @@ public class VCFAveragingWriter extends VCFWriter {
             int i = 1;
             int j = 1;
             String[] outputTracks = (String[]) ArrayUtils.addAll(samples, groups);
+            for (String context : contexts) {
+                for (String trackName : outputTracks) {
 
-            for (String trackName : outputTracks) {
-                for (String context : contexts) {
                     j = writeRateColumn(i, j, outputTracks, trackName, context);
                 }
 
@@ -164,9 +164,9 @@ public class VCFAveragingWriter extends VCFWriter {
             }
             i = 1;
             j = 1;
+            for (String context : contexts) {
+                for (final GroupComparison comparison : groupComparisons) {
 
-            for (final GroupComparison comparison : groupComparisons) {
-                for (String context : contexts) {
                     j = writeFisherColumn(i, j, comparison, context);
                 }
 
@@ -199,7 +199,7 @@ public class VCFAveragingWriter extends VCFWriter {
 
     private int writeRateColumn(int i, int j, String[] outputTracks, String trackName, String context) throws IOException {
         StringBuilder columnName = new StringBuilder();
-         outputWriter.append('\t');
+        outputWriter.append('\t');
         columnName.append("MR[");
         columnName.append(trackName);
         columnName.append("]");
@@ -296,11 +296,9 @@ public class VCFAveragingWriter extends VCFWriter {
                 lineToOutput.append("\t");
                 lineToOutput.append(String.valueOf(annoOut.getEnd())).append("\t");
                 lineToOutput.append(annoOut.getId());
+                for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
 
-                for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
-
-                    for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
-
+                    for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
                         lineToOutput.append("\t");
                         temp.calculateSampleMethylationRate(sampleIndex, currentContext);
                         lineToOutput.append(String.format("%g", temp.getMethylationRatePerSample(currentContext, sampleIndex)));
@@ -308,10 +306,9 @@ public class VCFAveragingWriter extends VCFWriter {
 
                 }
 
+                for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
 
-                for (int groupIndex = 0; groupIndex < numGroups; groupIndex++) {
-
-                    for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
+                    for (int groupIndex = 0; groupIndex < numGroups; groupIndex++) {
 
                         lineToOutput.append("\t");
 
@@ -320,12 +317,13 @@ public class VCFAveragingWriter extends VCFWriter {
                     }
 
                 }
-                for (final GroupComparison comparison : groupComparisons) {
-                    final int indexGroup1 = comparison.indexGroup1;
-                    final int indexGroup2 = comparison.indexGroup2;
-                    double fisherP = Double.NaN;
+                for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
 
-                    for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
+                    for (final GroupComparison comparison : groupComparisons) {
+                        final int indexGroup1 = comparison.indexGroup1;
+                        final int indexGroup2 = comparison.indexGroup2;
+                        double fisherP = Double.NaN;
+
                         final boolean ok = checkCounts(temp, currentContext);
                         if (ok) {
                             fisherP = fisherRInstalled ? FisherExactRCalculator.getFisherPValue(
