@@ -87,9 +87,8 @@ public class TestVCFAveragingWriter {
         testWriter.writeRecord();
         testWriter.writeRecord();
         testWriter.close();
-        assertEquals("Test Case 1 result: ", "Chromosome\tStart\tEnd\tFeature\tMR[sample1][CpG]\tMR[sample1][CpA]\t" +
-                "MR[sample1][CpC]\tMR[sample1][CpT]\tMR[sample1][CpN]\n" +
-                "Case1\t4\t8\tannotation0\t68.0000\tNaN\tNaN\tNaN\tNaN\n", stringWriter.getBuffer().toString());
+        assertEquals("Test Case 1 result: ", "Chromosome\tStart\tEnd\tFeature\tMR[sample1][CpG]\tMR[sample1][CpA]\tMR[sample1][CpC]\tMR[sample1][CpT]\tMR[sample1][CpN]\n" +
+                "Case1\t4\t8\tannotation0\t68.0000\t\t\t\t\n", stringWriter.getBuffer().toString());
     }
 
     @Test
@@ -109,10 +108,9 @@ public class TestVCFAveragingWriter {
         testWriter.writeRecord();
         testWriter.close();
         assertEquals("Test Case 2 result: ",
-                "Chromosome\tStart\tEnd\tFeature\tMR[sample1][CpG]\tMR[sample1][CpA]\t" +
-                        "MR[sample1][CpC]\tMR[sample1][CpT]\tMR[sample1][CpN]\n" +
-                        "Case2\t5\t9\tannotation1\t66.6667\tNaN\tNaN\tNaN\tNaN\n" +
-                        "Case2\t13\t17\tannotation2\t26.0870\tNaN\tNaN\tNaN\tNaN\n", stringWriter.getBuffer().toString());
+                "Chromosome\tStart\tEnd\tFeature\tMR[sample1][CpG]\tMR[sample1][CpA]\tMR[sample1][CpC]\tMR[sample1][CpT]\tMR[sample1][CpN]\n" +
+                        "Case2\t5\t9\tannotation1\t66.6667\t\t\t\t\n" +
+                        "Case2\t13\t17\tannotation2\t26.0870\t\t\t\t\n", stringWriter.getBuffer().toString());
     }
 
     @Test
@@ -134,12 +132,11 @@ public class TestVCFAveragingWriter {
         testWriter.writeRecord();
         testWriter.writeRecord();
         testWriter.close();
-        assertEquals("Test Case 3 result: ", "Chromosome\tStart\tEnd\tFeature\tMR[sample1][CpG]\tMR[sample1][CpA]\t" +
-                "MR[sample1][CpC]\tMR[sample1][CpT]\tMR[sample1][CpN]\n" +
-                "Case3\t4\t21\tannotation4\t52.7778\tNaN\tNaN\tNaN\tNaN\n" +
-                "Case3\t11\t26\tannotation6\t35.8209\tNaN\tNaN\tNaN\tNaN\n" +
-                "Case3\t4\t30\tannotation3\t43.0000\tNaN\tNaN\tNaN\tNaN\n" +
-                "Case3\t11\t30\tannotation5\t28.1250\tNaN\tNaN\tNaN\tNaN\n", stringWriter.getBuffer().toString());
+        assertEquals("Test Case 3 result: ", "Chromosome\tStart\tEnd\tFeature\tMR[sample1][CpG]\tMR[sample1][CpA]\tMR[sample1][CpC]\tMR[sample1][CpT]\tMR[sample1][CpN]\n" +
+                "Case3\t4\t21\tannotation4\t52.7778\t\t\t\t\n" +
+                "Case3\t11\t26\tannotation6\t35.8209\t\t\t\t\n" +
+                "Case3\t4\t30\tannotation3\t43.0000\t\t\t\t\n" +
+                "Case3\t11\t30\tannotation5\t28.1250\t\t\t\t\n", stringWriter.getBuffer().toString());
     }
 
     @Test
@@ -159,8 +156,8 @@ public class TestVCFAveragingWriter {
         testWriter.close();
         assertEquals("Test Case 4 result: ",
                 "Chromosome\tStart\tEnd\tFeature\tMR[sample1][CpG]\tMR[sample2][CpG]\tMR[sample3][CpG]\tMR[sample1][CpA]\tMR[sample2][CpA]\tMR[sample3][CpA]\tMR[sample1][CpC]\tMR[sample2][CpC]\tMR[sample3][CpC]\tMR[sample1][CpT]\tMR[sample2][CpT]\tMR[sample3][CpT]\tMR[sample1][CpN]\tMR[sample2][CpN]\tMR[sample3][CpN]\n" +
-                        "Case2\t5\t9\tannotation1\t66.6667\t61.5385\t31.2500\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\n" +
-                        "Case2\t13\t17\tannotation2\t26.0870\t70.5882\t37.0370\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\n", stringWriter.getBuffer().toString());
+                        "Case2\t5\t9\tannotation1\t66.6667\t61.5385\t31.2500\t\t\t\t\t\t\t\t\t\t\t\t\n" +
+                        "Case2\t13\t17\tannotation2\t26.0870\t70.5882\t37.0370\t\t\t\t\t\t\t\t\t\t\t\t\n", stringWriter.getBuffer().toString());
     }
 
     @Test
@@ -183,8 +180,8 @@ public class TestVCFAveragingWriter {
         testWriter.close();
         assertEquals("Test Case 5 result: ",
                 "Chromosome\tStart\tEnd\tFeature\tMR[sample1][CpG]\tMR[sample2][CpG]\tMR[sample3][CpG]\tMR[group1][CpG]\tMR[sample1][CpA]\tMR[sample2][CpA]\tMR[sample3][CpA]\tMR[group1][CpA]\tMR[sample1][CpC]\tMR[sample2][CpC]\tMR[sample3][CpC]\tMR[group1][CpC]\tMR[sample1][CpT]\tMR[sample2][CpT]\tMR[sample3][CpT]\tMR[group1][CpT]\tMR[sample1][CpN]\tMR[sample2][CpN]\tMR[sample3][CpN]\tMR[group1][CpN]\n" +
-                        "Case2\t5\t9\tannotation1\t66.6667\t61.5385\t31.2500\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\t56.0606\tNaN\tNaN\tNaN\tNaN\n" +
-                        "Case2\t13\t17\tannotation2\t26.0870\t70.5882\t37.0370\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\t41.7910\tNaN\tNaN\tNaN\tNaN\n", stringWriter.getBuffer().toString());
+                        "Case2\t5\t9\tannotation1\t66.6667\t61.5385\t31.2500\t\t\t\t\t\t\t\t\t\t\t\t\t56.0606\t\t\t\t\n" +
+                        "Case2\t13\t17\tannotation2\t26.0870\t70.5882\t37.0370\t\t\t\t\t\t\t\t\t\t\t\t\t41.7910\t\t\t\t\n", stringWriter.getBuffer().toString());
 
     }
 
@@ -214,11 +211,12 @@ public class TestVCFAveragingWriter {
         testWriter.writeRecord();
         testWriter.writeRecord();
         testWriter.close();
-        assertEquals("Test Case 6 result: ", "Chromosome\tStart\tEnd\tFeature\tMR[sample1][CpG]\tMR[sample2][CpG]\tMR[sample3][CpG]\tMR[sample4][CpG]\tMR[sample5][CpG]\tMR[sample6][CpG]\tMR[group1][CpG]\tMR[group2][CpG]\tMR[sample1][CpA]\tMR[sample2][CpA]\tMR[sample3][CpA]\tMR[sample4][CpA]\tMR[sample5][CpA]\tMR[sample6][CpA]\tMR[group1][CpA]\tMR[group2][CpA]\tMR[sample1][CpC]\tMR[sample2][CpC]\tMR[sample3][CpC]\tMR[sample4][CpC]\tMR[sample5][CpC]\tMR[sample6][CpC]\tMR[group1][CpC]\tMR[group2][CpC]\tMR[sample1][CpT]\tMR[sample2][CpT]\tMR[sample3][CpT]\tMR[sample4][CpT]\tMR[sample5][CpT]\tMR[sample6][CpT]\tMR[group1][CpT]\tMR[group2][CpT]\tMR[sample1][CpN]\tMR[sample2][CpN]\tMR[sample3][CpN]\tMR[sample4][CpN]\tMR[sample5][CpN]\tMR[sample6][CpN]\tMR[group1][CpN]\tMR[group2][CpN]\n" +
-                "Case3\t4\t21\tannotation4\t59.3750\t48.4848\t60.5263\t41.3793\t60.0000\t62.0690\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\t56.3107\t54.2169\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\n" +
-                "Case3\t11\t26\tannotation6\t37.2093\t33.3333\t38.8060\t38.5714\t47.0588\t40.0000\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\t36.5269\t41.9192\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\n" +
-                "Case3\t4\t30\tannotation3\t45.4545\t38.2022\t47.3118\t43.9560\t48.8372\t51.8519\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\t43.6293\t48.0620\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\n" +
-                "Case3\t11\t30\tannotation5\t32.1429\t29.7297\t26.0870\t43.3333\t41.3793\t40.9091\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\t29.5455\t41.9753\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\n", stringWriter.getBuffer().toString());
+        assertEquals("Test Case 6 result: ",
+                "Chromosome\tStart\tEnd\tFeature\tMR[sample1][CpG]\tMR[sample2][CpG]\tMR[sample3][CpG]\tMR[sample4][CpG]\tMR[sample5][CpG]\tMR[sample6][CpG]\tMR[group1][CpG]\tMR[group2][CpG]\tMR[sample1][CpA]\tMR[sample2][CpA]\tMR[sample3][CpA]\tMR[sample4][CpA]\tMR[sample5][CpA]\tMR[sample6][CpA]\tMR[group1][CpA]\tMR[group2][CpA]\tMR[sample1][CpC]\tMR[sample2][CpC]\tMR[sample3][CpC]\tMR[sample4][CpC]\tMR[sample5][CpC]\tMR[sample6][CpC]\tMR[group1][CpC]\tMR[group2][CpC]\tMR[sample1][CpT]\tMR[sample2][CpT]\tMR[sample3][CpT]\tMR[sample4][CpT]\tMR[sample5][CpT]\tMR[sample6][CpT]\tMR[group1][CpT]\tMR[group2][CpT]\tMR[sample1][CpN]\tMR[sample2][CpN]\tMR[sample3][CpN]\tMR[sample4][CpN]\tMR[sample5][CpN]\tMR[sample6][CpN]\tMR[group1][CpN]\tMR[group2][CpN]\n" +
+                        "Case3\t4\t21\tannotation4\t59.3750\t48.4848\t60.5263\t41.3793\t60.0000\t62.0690\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t56.3107\t54.2169\t\t\t\t\t\t\t\t\n" +
+                        "Case3\t11\t26\tannotation6\t37.2093\t33.3333\t38.8060\t38.5714\t47.0588\t40.0000\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t36.5269\t41.9192\t\t\t\t\t\t\t\t\n" +
+                        "Case3\t4\t30\tannotation3\t45.4545\t38.2022\t47.3118\t43.9560\t48.8372\t51.8519\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t43.6293\t48.0620\t\t\t\t\t\t\t\t\n" +
+                        "Case3\t11\t30\tannotation5\t32.1429\t29.7297\t26.0870\t43.3333\t41.3793\t40.9091\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t29.5455\t41.9753\t\t\t\t\t\t\t\t\n", stringWriter.getBuffer().toString());
 
     }
 
@@ -243,8 +241,8 @@ public class TestVCFAveragingWriter {
         testWriter.close();
         assertEquals("Test Case 7 result: ",
                 "Chromosome\tStart\tEnd\tFeature\tMR[sample1][CpG]\tMR[sample2][CpG]\tMR[sample3][CpG]\tMR[group1][CpG]\tMR[sample1][CpA]\tMR[sample2][CpA]\tMR[sample3][CpA]\tMR[group1][CpA]\tMR[sample1][CpC]\tMR[sample2][CpC]\tMR[sample3][CpC]\tMR[group1][CpC]\tMR[sample1][CpT]\tMR[sample2][CpT]\tMR[sample3][CpT]\tMR[group1][CpT]\tMR[sample1][CpN]\tMR[sample2][CpN]\tMR[sample3][CpN]\tMR[group1][CpN]\n" +
-                        "Case4\t5\t9\tannotation7\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\t66.6667\t61.5385\t31.2500\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\t56.0606\tNaN\n" +
-                        "Case4\t13\t17\tannotation8\tNaN\tNaN\tNaN\t26.0870\t70.5882\t37.0370\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\t41.7910\tNaN\tNaN\tNaN\n", stringWriter.getBuffer().toString());
+                        "Case4\t5\t9\tannotation7\t\t\t\t\t\t\t\t\t\t66.6667\t61.5385\t31.2500\t\t\t\t\t\t\t56.0606\t\n" +
+                        "Case4\t13\t17\tannotation8\t\t\t\t26.0870\t70.5882\t37.0370\t\t\t\t\t\t\t\t\t\t\t41.7910\t\t\t\n", stringWriter.getBuffer().toString());
 
     }
 
@@ -273,8 +271,8 @@ public class TestVCFAveragingWriter {
         testWriter.close();
         assertEquals("Test Case 8 result: ",
                 "Chromosome\tStart\tEnd\tFeature\tMR[sample1][CpG]\tMR[sample2][CpG]\tMR[sample3][CpG]\tMR[sample4][CpG]\tMR[group1][CpG]\tMR[group2][CpG]\tMR[sample1][CpA]\tMR[sample2][CpA]\tMR[sample3][CpA]\tMR[sample4][CpA]\tMR[group1][CpA]\tMR[group2][CpA]\tMR[sample1][CpC]\tMR[sample2][CpC]\tMR[sample3][CpC]\tMR[sample4][CpC]\tMR[group1][CpC]\tMR[group2][CpC]\tMR[sample1][CpT]\tMR[sample2][CpT]\tMR[sample3][CpT]\tMR[sample4][CpT]\tMR[group1][CpT]\tMR[group2][CpT]\tMR[sample1][CpN]\tMR[sample2][CpN]\tMR[sample3][CpN]\tMR[sample4][CpN]\tMR[group1][CpN]\tMR[group2][CpN]\tfisherP[group1/group2][CpG]\tfisherP[group1/group2][CpA]\tfisherP[group1/group2][CpC]\tfisherP[group1/group2][CpT]\tfisherP[group1/group2][CpN]\n" +
-                        "Case4\t5\t9\tannotation7\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\t66.6667\t61.5385\t31.2500\t31.2500\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\t64.0000\t31.2500\tNaN\tNaN\t1.00000\t1.00000\t1.00000\t0.00622665\t1.00000\n" +
-                        "Case4\t13\t17\tannotation8\tNaN\tNaN\tNaN\tNaN\t26.0870\t70.5882\t37.0370\t36.0000\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\t45.0000\t36.5385\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\t1.00000\t0.520511\t1.00000\t1.00000\t1.00000\n", stringWriter.getBuffer().toString());
+                        "Case4\t5\t9\tannotation7\t\t\t\t\t\t\t\t\t\t\t\t\t66.6667\t61.5385\t31.2500\t31.2500\t\t\t\t\t\t\t\t\t\t\t64.0000\t31.2500\t\t\t1.00000\t1.00000\t1.00000\t0.00622665\t1.00000\n" +
+                        "Case4\t13\t17\tannotation8\t\t\t\t\t26.0870\t70.5882\t37.0370\t36.0000\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t45.0000\t36.5385\t\t\t\t\t\t\t1.00000\t0.520511\t1.00000\t1.00000\t1.00000\n", stringWriter.getBuffer().toString());
     }
 
      @Test
@@ -307,8 +305,8 @@ public class TestVCFAveragingWriter {
         testWriter.close();
         assertEquals("Test Case 9 result: ",
                 "Chromosome\tStart\tEnd\tFeature\tMR[sample1][CpG]\tMR[sample2][CpG]\tMR[sample3][CpG]\tMR[sample4][CpG]\tMR[group1][CpG]\tMR[group2][CpG]\tMR[group3][CpG]\tMR[group4][CpG]\tMR[sample1][CpA]\tMR[sample2][CpA]\tMR[sample3][CpA]\tMR[sample4][CpA]\tMR[group1][CpA]\tMR[group2][CpA]\tMR[group3][CpA]\tMR[group4][CpA]\tMR[sample1][CpC]\tMR[sample2][CpC]\tMR[sample3][CpC]\tMR[sample4][CpC]\tMR[group1][CpC]\tMR[group2][CpC]\tMR[group3][CpC]\tMR[group4][CpC]\tMR[sample1][CpT]\tMR[sample2][CpT]\tMR[sample3][CpT]\tMR[sample4][CpT]\tMR[group1][CpT]\tMR[group2][CpT]\tMR[group3][CpT]\tMR[group4][CpT]\tMR[sample1][CpN]\tMR[sample2][CpN]\tMR[sample3][CpN]\tMR[sample4][CpN]\tMR[group1][CpN]\tMR[group2][CpN]\tMR[group3][CpN]\tMR[group4][CpN]\tfisherP[group1/group2][CpG]\tfisherP[group1/group3][CpG]\tfisherP[group1/group4][CpG]\tfisherP[group1/group2][CpA]\tfisherP[group1/group3][CpA]\tfisherP[group1/group4][CpA]\tfisherP[group1/group2][CpC]\tfisherP[group1/group3][CpC]\tfisherP[group1/group4][CpC]\tfisherP[group1/group2][CpT]\tfisherP[group1/group3][CpT]\tfisherP[group1/group4][CpT]\tfisherP[group1/group2][CpN]\tfisherP[group1/group3][CpN]\tfisherP[group1/group4][CpN]\n" +
-                        "Case4\t5\t9\tannotation7\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\t66.6667\t61.5385\t31.2500\t31.2500\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\t66.6667\t61.5385\t31.2500\t31.2500\tNaN\tNaN\tNaN\tNaN\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t0.773708\t0.0514794\t0.0514794\t1.00000\t1.00000\t1.00000\n" +
-                        "Case4\t13\t17\tannotation8\tNaN\tNaN\tNaN\tNaN\t26.0870\t70.5882\t37.0370\t36.0000\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\t26.0870\t70.5882\t37.0370\t36.0000\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\tNaN\t1.00000\t1.00000\t1.00000\t0.00952120\t0.545556\t0.541875\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\n", stringWriter.getBuffer().toString());
+                        "Case4\t5\t9\tannotation7\t\t\t\t\t\t\t\t\t\t\t\t\t66.6667\t61.5385\t31.2500\t31.2500\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t66.6667\t61.5385\t31.2500\t31.2500\t\t\t\t\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t0.773708\t0.0514794\t0.0514794\t1.00000\t1.00000\t1.00000\n" +
+                        "Case4\t13\t17\tannotation8\t\t\t\t\t26.0870\t70.5882\t37.0370\t36.0000\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t26.0870\t70.5882\t37.0370\t36.0000\t\t\t\t\t\t\t\t\t\t\t\t\t1.00000\t1.00000\t1.00000\t0.00952120\t0.545556\t0.541875\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\n", stringWriter.getBuffer().toString());
 
      }
 }
