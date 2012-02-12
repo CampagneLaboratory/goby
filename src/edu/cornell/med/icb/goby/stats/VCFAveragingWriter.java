@@ -26,7 +26,6 @@ import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.util.DynamicOptionClient;
 import it.unimi.dsi.fastutil.ints.*;
 import org.apache.commons.io.output.NullWriter;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.rosuda.JRI.Rengine;
 
@@ -78,7 +77,6 @@ public class VCFAveragingWriter extends VCFWriter {
 
     private ArrayList<GroupComparison> groupComparisons = new ArrayList<GroupComparison>();
     private boolean aggregateAllContexts;
-
 
     public VCFAveragingWriter(final Writer writer, MethylCountProvider provider) {
         this(writer, null, provider);
@@ -151,33 +149,34 @@ public class VCFAveragingWriter extends VCFWriter {
         try {
             //  IGV format - maintain fidelity
             outputWriter.append("Chromosome\tStart\tEnd\tFeature");
-            int i = 1;
-            int j = 1;
-            String[] outputTracks = (String[]) ArrayUtils.addAll(samples, groups);
+
             for (String context : contexts) {
-                for (String trackName : outputTracks) {
+                for (String sample : samples) {
 
-                    j = writeRateColumn(i, j, outputTracks, trackName, context);
+                    writeRateColumn(sample, context);
                 }
-
-                i++;
             }
-            i = 1;
-            j = 1;
+            if (groups !=null){
+                for (String context : contexts) {
+                    for (String group : groups) {
+
+                        writeRateColumn(group, context);
+                    }
+                }
+            }
             for (String context : contexts) {
                 for (final GroupComparison comparison : groupComparisons) {
 
-                    j = writeFisherColumn(i, j, comparison, context);
+                    writeFisherColumn(comparison, context);
                 }
 
-                i++;
             }
 
 
             for (String context : contexts) {
                 for (final GroupComparison comparison : groupComparisons) {
 
-                    writeDeltaMRColumn( comparison, context);
+                    writeDeltaMRColumn(comparison, context);
                 }
             }
             outputWriter.append('\n');
@@ -186,7 +185,7 @@ public class VCFAveragingWriter extends VCFWriter {
         }
     }
 
-    private int writeFisherColumn(int i, int j, GroupComparison comparison, String context) throws IOException {
+    private void writeFisherColumn(GroupComparison comparison, String context) throws IOException {
         StringBuilder comparisonName = new StringBuilder();
         outputWriter.append('\t');
         comparisonName.append("fisherP[");
@@ -201,8 +200,7 @@ public class VCFAveragingWriter extends VCFWriter {
         }
         outputWriter.append(comparisonName.toString());
 
-        j++;
-        return j;
+
     }
 
     private void writeDeltaMRColumn(GroupComparison comparison, String context) throws IOException {
@@ -223,7 +221,7 @@ public class VCFAveragingWriter extends VCFWriter {
 
     }
 
-    private int writeRateColumn(int i, int j, String[] outputTracks, String trackName, String context) throws IOException {
+    private void writeRateColumn(String trackName, String context) throws IOException {
         StringBuilder columnName = new StringBuilder();
         outputWriter.append('\t');
         columnName.append("MR[");
@@ -236,8 +234,6 @@ public class VCFAveragingWriter extends VCFWriter {
         }
         outputWriter.append(columnName.toString());
 
-        j++;
-        return j;
     }
 
 
@@ -266,8 +262,8 @@ public class VCFAveragingWriter extends VCFWriter {
                     // increment counters for each annotation overlapping at this position
                     FormatFieldCounter cntr = counterMap.get(each);
 
-                    if (cntr==null) {
-                        cntr = new FormatFieldCounter(each, numSamples, numGroups, contexts.length);
+                    if (cntr == null) {
+                        cntr = new FormatFieldCounter(each, numSamples, numGroups, contexts);
                         counterMap.put(each, cntr);
                     }
                     cntr.incrementCounts(sampleIndex, sampleIndexToGroupIndex,
@@ -325,9 +321,8 @@ public class VCFAveragingWriter extends VCFWriter {
 
                     for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
                         lineToOutput.append("\t");
-
                         final double methylationRatePerSample = temp.getMethylationRatePerSample(currentContext, sampleIndex);
-                       // System.out.printf("context=%s sample=%s mr=%g %n",contexts[currentContext], samples[sampleIndex], methylationRatePerSample);
+                   //     System.out.printf("context=%s sample=%s mr=%g %n", contexts[currentContext], samples[sampleIndex], methylationRatePerSample);
                         lineToOutput.append(formatDouble(methylationRatePerSample));
                     }
                 }
@@ -337,7 +332,6 @@ public class VCFAveragingWriter extends VCFWriter {
                     for (int groupIndex = 0; groupIndex < numGroups; groupIndex++) {
 
                         lineToOutput.append("\t");
-
                         lineToOutput.append(formatDouble(temp.getMethylationRatePerGroup(currentContext, groupIndex)));
                     }
                 }
@@ -401,6 +395,7 @@ public class VCFAveragingWriter extends VCFWriter {
         if (value != value) {
             // value is NaN
             return "";
+
         } else {
             return String.format("%g", value);
         }

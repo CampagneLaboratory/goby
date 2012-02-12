@@ -40,18 +40,24 @@ public class FormatFieldCounter {
 
     private double[][] methylationRatePerSample;
     private double[][] methylationRatePerGroup;
+    private String[] contexts;
 
 
-    public FormatFieldCounter(int annotationIndex, int numSamples, int numGroups, int numContexts) {
-        this(annotationIndex, numSamples, numContexts);
+    public FormatFieldCounter(int annotationIndex, int numSamples, int numGroups, String contexts[]) {
+
+        this(annotationIndex, numSamples, contexts);
+        int numContexts = contexts.length;
         methylatedCCounterPerGroup = new int[numContexts][numGroups];
         unmethylatedCCounterPerGroup = new int[numContexts][numGroups];
         methylationRatePerGroup = new double[numContexts][numGroups];
     }
 
-    public FormatFieldCounter(int annotationIndex, int numSamples, int numContexts) {
+    public FormatFieldCounter(int annotationIndex, int numSamples, String[] contexts) {
         this.annotationIndex = annotationIndex;
         this.numSamples = numSamples;
+        this.contexts = contexts;
+        int numContexts = contexts.length;
+
         methylatedCCounterPerSample = new int[numContexts][numSamples];
         unmethylatedCCounterPerSample = new int[numContexts][numSamples];
         numberOfSites = new int[numContexts][numSamples];
@@ -60,7 +66,6 @@ public class FormatFieldCounter {
 
     public void calculateSampleMethylationRate(int contextIndex, int sampleIndex) {
         final double denominator = methylatedCCounterPerSample[contextIndex][sampleIndex] +
-
                 unmethylatedCCounterPerSample[contextIndex][sampleIndex];
         final double MR;
         if (denominator == 0) {
@@ -97,9 +102,12 @@ public class FormatFieldCounter {
                                 int cm, int contextIndex) {
         unmethylatedCCounterPerSample[contextIndex][sampleIndex] += c;
         methylatedCCounterPerSample[contextIndex][sampleIndex] += cm;
-        if (sampleIndexToGroupIndex!=null) {
-        unmethylatedCCounterPerGroup[contextIndex][sampleIndexToGroupIndex[sampleIndex]] += c;
-        methylatedCCounterPerGroup[contextIndex][sampleIndexToGroupIndex[sampleIndex]] += cm;
+        if (sampleIndexToGroupIndex != null) {
+
+            final int groupIndex = sampleIndexToGroupIndex[sampleIndex];
+           // System.out.printf("increment: context=%s sampleIndex=%d groupIndex=%d c=%d cm=%d %n", contexts[contextIndex], sampleIndex, groupIndex, c, cm);
+            unmethylatedCCounterPerGroup[contextIndex][groupIndex] += c;
+            methylatedCCounterPerGroup[contextIndex][groupIndex] += cm;
         }
         numberOfSites[contextIndex][sampleIndex] += 1;
     }
