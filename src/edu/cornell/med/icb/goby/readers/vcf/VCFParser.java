@@ -127,7 +127,7 @@ public class VCFParser implements Closeable {
      * When scanning a TSV file to determine column types, this is the number of lines that will be checked.
      * Set to <= 0 to scan the entire file. This must be set before calling readHeader() for the value to be used.
      */
-    private int tsvLinesToScanForColumnType = 10000;
+    private int tsvLinesToScanForColumnType = -1;
     /**
      * Indicate that the field permutation has already been computed. When this field is true, the permutation
      * of the first line computed is reused for subsequent lines.
