@@ -101,7 +101,7 @@ void testSingleForwardDel(CAlignmentsWriterHelper *writerHelper) {
 
 
 void testPairedEnd(CAlignmentsWriterHelper *writerHelper) {
-    char *test1 = read_file("test-data/gsnap-output-pair-test-1.gsnap");
+char *test1 = read_file("test-data/gsnap-output-pair-test-1.gsnap");
     gobyGsnap_parse(writerHelper, test1);
     free(test1);
 }
@@ -194,11 +194,11 @@ void sequenceTests() {
     CAlignmentsWriterHelper *writerHelper;
     gobyAlignments_openAlignmentsWriterDefaultEntriesPerChunk("deleteme-seq", &writerHelper);
     registerChromosomes(writerHelper);
+    testPairedEnd(writerHelper);
     spliceTests(writerHelper);
     targetIdentiferTest(writerHelper);
     testSingleForwardDel(writerHelper);
     testSingleReverseInsQual(writerHelper);
-    testPairedEnd(writerHelper);
     testSingleEndNoQual(writerHelper);
     gobyAlignments_finished(writerHelper, 1);
     goby_shutdownProtobuf();

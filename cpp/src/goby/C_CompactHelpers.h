@@ -94,6 +94,7 @@
         unsigned int smallestQueryIndex;
         unsigned int largestQueryIndex;
         unsigned int numberOfAlignedReads;
+        unsigned int numberOfMisParsedReads;
         CSamHelper *samHelper;
         int qualityAdjustment;
         FILE *captureFile;

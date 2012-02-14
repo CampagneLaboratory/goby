@@ -55,6 +55,7 @@ extern "C" {
         writerHelper->smallestQueryIndex = -1;
         writerHelper->largestQueryIndex = -1;
         writerHelper->numberOfAlignedReads = 0;
+        writerHelper->numberOfMisParsedReads = 0;
         // Adjust this if the incoming quality scores are
         // Illumina (-64) or Sanger (-33), otherwise Phred
         // scores (0-based) will be assumed.
@@ -155,7 +156,7 @@ extern "C" {
     }
 
     void gobyCapture_close(CAlignmentsWriterHelper *writerHelper) {
-	    if (writerHelper->captureFile || writerHelper->captureIgnoredFile) {
+        if (writerHelper->captureFile || writerHelper->captureIgnoredFile) {
 #ifdef GOBY_CAPTURE_VIA_OPEN_MEMSTREAM
             debug(fprintf(stderr, "Closing gobyCapture via open_memstream()\n");)
 #else
@@ -904,6 +905,10 @@ extern "C" {
     }
     
 	void gobyAlignments_finished(CAlignmentsWriterHelper *writerHelper, unsigned int numberOfReads) {
+        if (writerHelper->numberOfMisParsedReads > 0) {
+            fprintf(stderr, "Number of mis-parsed reads: %d\n",
+                    writerHelper->numberOfMisParsedReads);
+        }
         debug(fprintf(stderr,"gobyAlignments_finished\n"));
         if (writerHelper != NULL) {
             // Stats for the alignment
