@@ -1,7 +1,10 @@
- - Fix FDR mode output for TSV format. Make open --column-selection-filter work.
- - add a diploid genotype filter to use when calling genotypes in a diploid genome.
+dev ->1.9.8.3
+ - Added a methylation_region format capable of averaging methylation rates for different cytosine contexts over
+   arbitrarily defined regions.
+ - Added a diploid genotype filter to use when calling genotypes in a diploid genome.
  - discover-sequence-variants format compare_groups: Write distinct fisher p-values for each comparison pair
- - Fix bug that prevented methylation vcf-output from writing any line.
+ - Fix FDR mode output for TSV format. Make open --column-selection-filter work.
+ - Fix bug that prevented methylation vcf output from writing any line.
 1.9.8.2.1
  - Fix bug in GenotypesOutputFormat that caused GenotypesOutputFormat to throw an exception when processing some sites.
 1.9.8.2
