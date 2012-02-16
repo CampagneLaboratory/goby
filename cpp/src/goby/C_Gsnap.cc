@@ -22,6 +22,9 @@
  *       pool. This should be a difference in parse speed. If none are in
  *       the pool, create a new one. This also means don't check for NULL
  *       strings, check for empty strings. 
+ * TODO: In places pairSize or sizePair is the number of alignment entires
+ *       and some places it is number of entry segments. Verify these are
+ *       correct.
  */
 
 using namespace std;
@@ -30,7 +33,7 @@ using pcrecpp::StringPiece;
 using pcrecpp::RE;
 using pcrecpp::RE_Options;
 
-#undef C_GSNAP_DEBUG
+#define C_GSNAP_DEBUG
 #ifdef C_GSNAP_DEBUG
 #define debug(x) x
 #else
@@ -172,6 +175,7 @@ extern "C" {
         alignmentSegment->spliceDir = SPLICEDIR_UNKNOWN;
         alignmentSegment->spliceType = SPLICETYPE_UNKNOWN;
         alignmentSegment->merged = false;
+        alignmentSegment->fragmentIndex = 0;
 
     }
 
@@ -195,6 +199,7 @@ extern "C" {
         alignment->mapq = 0;
         alignment->pairScore = 0;
         alignment->insertLength = 0;
+        alignment->nextFragmentIndex = 0;
         if (alignment->pairSubType != NULL) {
             delete alignment->pairSubType;
             alignment->pairSubType = NULL;
@@ -452,7 +457,7 @@ extern "C" {
      * @param alignmentEntry the alignmentEntry that this new segment
      * belongs to.
      */
-    void parseSegment(CAlignmentsWriterHelper *writerHelper,
+    void parseOneSegment(CAlignmentsWriterHelper *writerHelper,
             vector<char *> *parts, GsnapAlignmentEntry *alignmentEntry) {
         GsnapAlignment *alignment = writerHelper->gsnapAlignment;
 
@@ -587,28 +592,31 @@ extern "C" {
     }
 
     /**
-     * Parse the entries for an alignment (for a single side of the pair if
-     * the alignment is paired end).
+     * Parse all segments for a single alignment entry. For a single alignment,
+     * this may be called multiple times. For indels and splices, this
+     * will parse multiple segments. For an alignment with just clipping
+     * or mutations this will only parse on segment.
      * @param writerHelper the Goby writer helper
      * @param lines the vector which contains the lines of the alignment.
      * @param isPair true if we are parsing entries for the paired end
      * portion of the alignment, otherwise 0.
      */
-    bool parseEntries(CAlignmentsWriterHelper *writerHelper,
+    bool parseOneSetOfSegments(CAlignmentsWriterHelper *writerHelper,
             vector<char *> *lines, bool isPair) {
         GsnapAlignment *alignment = writerHelper->gsnapAlignment;
         if (lines->size() <= alignment->lineNum) {
-            // Not enough lines to parse ?
-            debug(printf("Expected more lines in Gsnap output, but they weren't found.\n"););
+            // No more entries to parse
             return false;
         }
         char *line = lines->at(alignment->lineNum++);
-        debug(printf("%s\n", line););
         char firstChar = line[0];
         if (!(firstChar == ',' || firstChar == ' ')) {
-            debug(printf("Expected an entry line, but didn't find it.\n"););
+            // No more entries to parse for this alignment.
+            // Probably starting mate of this alignment
+            alignment->lineNum--;
             return false;
         }
+        debug(printf("%s\n", line););
         vector<char *> *parts = gobyGsnap_split(line, "\t");
         int numParts = parts->size();
         if (numParts < 5) {
@@ -658,7 +666,7 @@ extern "C" {
                 debug(printf("%s\n", line););
                 parts = gobyGsnap_split(line, "\t");
             }
-            parseSegment(writerHelper, parts, newAlignmentEntry);
+            parseOneSegment(writerHelper, parts, newAlignmentEntry);
             delete parts;
         }
 
@@ -677,6 +685,12 @@ extern "C" {
                 next->insertsSequence = NULL;
                 
             }
+        }
+        // Assign the fragmentId's AFTER so they are in order of
+        // genomic position (in case of reverseStrand).
+        for (int i = 0; i < numSegs; i++) {
+            newAlignmentEntry->alignmentSegments->at(i)->fragmentIndex =
+                alignment->nextFragmentIndex++;
         }
         return true; /* parseEntries() */
     }
@@ -754,6 +768,40 @@ extern "C" {
         return true; /* parseEntryHeader() */
     }
 
+    bool splicedSegment(GsnapAlignmentSegment *seg) {
+        SegmentStartEndType startType = seg->startType;
+        SegmentStartEndType endType = seg->endType;
+        // Check if segments are spliced
+        return (startType == STARTENDTYPE_DONOR || 
+                startType == STARTENDTYPE_ACCEPTOR ||
+                endType == STARTENDTYPE_DONOR || 
+                endType == STARTENDTYPE_ACCEPTOR);
+    }
+
+    bool segmentsComparator(
+            const GsnapAlignmentSegment *s1,
+            const GsnapAlignmentSegment *s2) {
+        return (s1->targetStart) < (s2->targetStart);
+    }
+
+
+    void dumpSegment(unsigned queryIndex, GsnapAlignmentSegment *seg) {
+        cout << "[";
+        cout << "queryIndex:" << queryIndex;
+        cout << ", fragmentIndex:" << seg->fragmentIndex;
+        cout << ", querySequence:" << *(seg->querySequence);
+        cout << ",targetIndex: " << seg->targetIndex;
+        cout << ",targetStart: "<< seg->targetStart;
+        cout << "]" << endl;
+        
+    }
+
+    void dumpSegments(unsigned queryIndex, vector<GsnapAlignmentSegment*> *segments) {
+        for (int i = 0; i < segments->size(); i++) {
+            dumpSegment(queryIndex, segments->at(i));
+        }
+    }
+    
     /**
      * Parse a single Gsnap alignment into Gsnap data structures.
      * @param writerHelper the Goby writer helper
@@ -772,27 +820,28 @@ extern "C" {
         }
 
         if (!parseEntryHeader(writerHelper, lines, false)) {
+            // Cannot process this, no header line
             return false;
         }
-        int numEntries;
-        for (numEntries = 0;
-                numEntries < alignment->numAlignmentEntries;
-                numEntries++) {
-            if (!parseEntries(writerHelper, lines, false)) {
-                return false;
+        int numEntries = 0;
+        while (true) {
+            if (!parseOneSetOfSegments(writerHelper, lines, false)) {
+                // Processed last entry
+                break;
             }
+            numEntries++;
         }
         if (alignment->pairedEnd) {
             // If a paired-end alignment
             if (!parseEntryHeader(writerHelper, lines, true)) {
                 return false;
             }
-            for (numEntries = 0;
-                    numEntries < alignment->numAlignmentEntriesPair;
-                    numEntries++) {
-                if (!parseEntries(writerHelper, lines, true)) {
-                    return false;
+            numEntries = 0;
+            while(true) {
+                if (!parseOneSetOfSegments(writerHelper, lines, true)) {
+                    break;
                 }
+                numEntries++;
             }
         }
         // Throw these away so one isn't tempted to use them. The
@@ -815,16 +864,6 @@ extern "C" {
                     endType == STARTENDTYPE_INS || 
                     endType == STARTENDTYPE_DEL ||
                     endType == STARTENDTYPE_TERM));
-    }
-
-    bool splicedSegment(GsnapAlignmentSegment *seg) {
-        SegmentStartEndType startType = seg->startType;
-        SegmentStartEndType endType = seg->endType;
-        // Check if segments are spliced
-        return (startType == STARTENDTYPE_DONOR || 
-                startType == STARTENDTYPE_ACCEPTOR ||
-                endType == STARTENDTYPE_DONOR || 
-                endType == STARTENDTYPE_ACCEPTOR);
     }
 
     void buildMerged(int startPos, int endPos,
@@ -1054,7 +1093,7 @@ extern "C" {
             bool firstInPair) {
 
         int size = alignmentEntries->size();
-        int sizePair = alignmentEntriesPair->size();
+        int sizePair = alignmentEntriesPair == NULL ? 0 : alignmentEntriesPair->size();
         
         int flags = 0;
         flags |= PAIRFLAG_PAIRED;
@@ -1086,51 +1125,50 @@ extern "C" {
         }
         return flags;
     }
-    
+
     void writeAlignment(CAlignmentsWriterHelper *writerHelper, 
             vector<GsnapAlignmentEntry*> *alignmentEntries,
             vector<GsnapAlignmentEntry*> *alignmentEntriesPair,
             bool firstInPair) {
         GsnapAlignment *alignment = writerHelper->gsnapAlignment;
         int size = alignmentEntries->size();
-        int pairSize = alignmentEntriesPair != NULL ? alignmentEntriesPair->size() : 0;
+        int pairSize = 0;
+        if (alignmentEntriesPair != NULL && alignmentEntriesPair->size() > 0) {
+            pairSize = alignmentEntriesPair->at(0)->alignmentSegments->size();
+        }
         int pairFlags = 0;
-        int fragmentIndex = 0; // Fragment index of THIS read
-        int pairFragmentIndex = 0;  // Fragment index of the pair of this read, if paired
-        int spliceFragmentIndex = 1;  // // Fragment index of THIS read's associated splice
         GsnapAlignmentSegment *pairSegment = NULL;
-
         if (alignment->pairedEnd) {
             pairFlags = calculatePairFlags(alignment,
                     alignmentEntries, alignmentEntriesPair, firstInPair);
 
             vector<GsnapAlignmentSegment*> *segments = size > 0 ? alignmentEntries->at(0)->alignmentSegments : NULL;
-            GsnapAlignmentSegment *segment = segments != NULL ? segments->at(0) : NULL;
-            bool spliced = segment != NULL ? splicedSegment(segment) : false;
-            vector<GsnapAlignmentSegment*> *pairSegments = pairSize > 0 ? alignmentEntriesPair->at(0)->alignmentSegments : NULL;
-            pairSegment = pairSegments != NULL ? pairSegments->at(0) : NULL;
-
-            bool splicedPair = pairSegment != NULL ? splicedSegment(pairSegment) : false;
-            if (pairSize > 0 && splicedPair) {
-                // If spliced, see if they need to be re-ordered
-                if (pairSegment->targetStart >
-                        pairSegments->at(1)->targetStart) {
-                    pairSegment = pairSegments->at(1);
-                }
-            }
-
-            if (firstInPair) {
-                fragmentIndex = 0;
-                pairFragmentIndex = 1;
-                spliceFragmentIndex = 2;
-            } else {
-                fragmentIndex = 1;
-                pairFragmentIndex = 0;
-                if (splicedPair) {
-                    spliceFragmentIndex = 3;
+            GsnapAlignmentSegment *segment = segments == NULL ? NULL : segments->at(0);
+            bool spliced = segment == NULL ? false : splicedSegment(segment);
+            vector<GsnapAlignmentSegment*> *pairSegments = pairSize == 0 ? NULL : alignmentEntriesPair->at(0)->alignmentSegments;
+            bool splicedPair = pairSegments == NULL ? false : splicedSegment(pairSegments->at(0));
+            debug(
+                    cout << "queryIndex=" << alignment->queryIndex << endl;
+                    cout << "firstInPair=" << firstInPair << endl;
+                    cout << "splicedPair=" << splicedPair << endl;
+                    cout << "pairSize=" << pairSize << endl;
+                    cout << "fragmentIndex=" << segment->fragmentIndex << endl;
+            );
+            if (pairSize > 0) {
+                if (firstInPair) {
+                    // We are writing first in pair, the pairSegment is the first node
+                    // of the pair segments
+                    pairSegment = pairSegments != NULL ? pairSegments->at(0) : NULL;
                 } else {
-                    spliceFragmentIndex = 2;
+                    if (splicedPair) {
+                        // Pair spliced and we're not firstInPair, take LAST node of spliced
+                        pairSegment = pairSegments != NULL ? pairSegments->at(pairSize - 1) : NULL;
+                    } else {
+                        // Pair isn't spliced, so all segments will merge to one. Take first
+                        pairSegment = pairSegments != NULL ? pairSegments->at(0) : NULL;
+                    }
                 }
+                cout << "pairSegment->fi=" << pairSegment->fragmentIndex << endl;
             }
         }
 
@@ -1146,60 +1184,53 @@ extern "C" {
             if (splicedSegment(alignmentEntry->alignmentSegments->at(0))) {
                 
                 splicedAlignment = true;
-                    
-                if (alignmentEntry->alignmentSegments->size() > 1) {
-                    // Splice but not a half splice... We'll output half
-                    // splices as non-splices, see below.
-
-                    GsnapAlignmentSegment *firstSegment;
-                    GsnapAlignmentSegment *secondSegment;
-                    if (alignmentEntry->alignmentSegments->at(0)->targetStart < 
-                            alignmentEntry->alignmentSegments->at(1)->targetStart) {
-                        firstSegment = alignmentEntry->alignmentSegments->at(0);
-                        secondSegment = alignmentEntry->alignmentSegments->at(1);
-                    } else {
-                        firstSegment = alignmentEntry->alignmentSegments->at(1);
-                        secondSegment = alignmentEntry->alignmentSegments->at(0);
+                int numSegs = alignmentEntry->alignmentSegments->size();
+                if (numSegs > 1) {
+                    int j;
+                    for (j = 0; j < numSegs; j++) {
+                        processSpliceSegment(alignmentEntry->alignmentSegments->at(j));
                     }
-
-                    processSpliceSegment(firstSegment);
-                    processSpliceSegment(secondSegment);
-
-                    writeAlignmentSegment(writerHelper, firstSegment, fragmentIndex);
-                    // TODO: How to determine novel from non-novel splices
-                    gobyAlEntry_setSplicedFlags(writerHelper, 1 /* normal splice, non-novel*/);
-                    gobyAlEntry_setSplicedForwardFragmentIndex(writerHelper, spliceFragmentIndex);
-                    gobyAlEntry_setSplicedForwardPosition(writerHelper, secondSegment->targetStart);
-                    gobyAlEntry_setSplicedForwardTargetIndex(writerHelper, secondSegment->targetIndex);
-                    // Different values for splicing. No need to adjust for indels
-                    // as Gsnap doesn't support indels in spliced alignments
-                    gobyAlEntry_setQueryAlignedLength(writerHelper,
-                            firstSegment->queryEnd - firstSegment->queryStart + 1);
-                    gobyAlEntry_setTargetAlignedLength(writerHelper,
-                            firstSegment->queryEnd - firstSegment->queryStart + 1);
-                    if (alignment->pairedEnd) {
-                        // PAIR
-                        gobyAlEntry_setPairFlags(writerHelper, pairFlags);
-                        if (pairSegment != NULL) {
-                            gobyAlEntry_setPairFragmentIndex(writerHelper, pairFragmentIndex);
-                            gobyAlEntry_setPairPosition(writerHelper, pairSegment->targetStart);
-                            gobyAlEntry_setPairTargetIndex(writerHelper, pairSegment->targetIndex);
+                    GsnapAlignmentSegment *prevSeg = NULL;
+                    for (j = 0; j < numSegs; j++) {
+                        GsnapAlignmentSegment *curSeg = alignmentEntry->alignmentSegments->at(j);
+                        GsnapAlignmentSegment *nextSeg = NULL;
+                        if (j != numSegs - 1) {
+                            nextSeg = alignmentEntry->alignmentSegments->at(j + 1);
                         }
+                        writeAlignmentSegment(writerHelper, curSeg, curSeg->fragmentIndex);
+                        // TODO: How to determine novel from non-novel splices
+                        gobyAlEntry_setSplicedFlags(writerHelper, 1 /* normal splice, non-novel*/);
+
+                        if (nextSeg != NULL) {
+                            gobyAlEntry_setSplicedForwardFragmentIndex(writerHelper, nextSeg->fragmentIndex);
+                            gobyAlEntry_setSplicedForwardPosition(writerHelper, nextSeg->targetStart);
+                            gobyAlEntry_setSplicedForwardTargetIndex(writerHelper, nextSeg->targetIndex);
+                        }
+                        if (prevSeg != NULL) {
+                            gobyAlEntry_setSplicedBackwardFragmentIndex(writerHelper, prevSeg->fragmentIndex);
+                            gobyAlEntry_setSplicedBackwardPosition(writerHelper, prevSeg->targetStart);
+                            gobyAlEntry_setSplicedBackwardTargetIndex(writerHelper, prevSeg->targetIndex);
+                        }
+
+                        // Write pair relationships
+                        //    [splice frag][splice frag]<->[splice frag][splice frag] 
+                        if (alignment->pairedEnd) {
+                            gobyAlEntry_setPairFlags(writerHelper, pairFlags);
+                            if ((firstInPair && (j == numSegs - 1)) ||
+                                    (!firstInPair && alignment->pairedEnd && (j == 0))) {
+                                if (pairSegment != NULL) {
+                                    gobyAlEntry_setPairFragmentIndex(writerHelper, pairSegment->fragmentIndex);
+                                    gobyAlEntry_setPairPosition(writerHelper, pairSegment->targetStart);
+                                    gobyAlEntry_setPairTargetIndex(writerHelper, pairSegment->targetIndex);
+                                }
+                            }
+                        }
+                        
+                        prevSeg = curSeg;
                     }
-                    
-                    writeAlignmentSegment(writerHelper, secondSegment, spliceFragmentIndex);
-                    gobyAlEntry_setSplicedFlags(writerHelper, 1 /* normal splice, non-novel*/);
-                    gobyAlEntry_setSplicedBackwardFragmentIndex(writerHelper, fragmentIndex);
-                    gobyAlEntry_setSplicedBackwardPosition(writerHelper, firstSegment->targetStart);
-                    gobyAlEntry_setSplicedBackwardTargetIndex(writerHelper, firstSegment->targetIndex);
-                    // Different values for splicing. No need to adjust for indels
-                    // as Gsnap doesn't support indels in spliced alignments
-                    gobyAlEntry_setQueryAlignedLength(writerHelper,
-                            secondSegment->queryEnd - secondSegment->queryStart + 1);
-                    gobyAlEntry_setTargetAlignedLength(writerHelper,
-                            secondSegment->queryEnd - secondSegment->queryStart + 1);
-                    
-                    // Next loop interation
+                    // We wrote the > 1 splice segments. No more writing
+                    // necessary, so let's continue the loop (not write
+                    // in the below segment of code).
                     continue;
                 }
             }
@@ -1208,11 +1239,11 @@ extern "C" {
             GsnapAlignmentSegment *mergedSeg = mergeSegments(
                     alignmentEntry->alignmentSegments, splicedAlignment);
 
-            writeAlignmentSegment(writerHelper, mergedSeg, fragmentIndex);
+            writeAlignmentSegment(writerHelper, mergedSeg, mergedSeg->fragmentIndex);
             if (alignment->pairedEnd) {
                 gobyAlEntry_setPairFlags(writerHelper, pairFlags);
                 if (pairSegment != NULL) {
-                    gobyAlEntry_setPairFragmentIndex(writerHelper, pairFragmentIndex);
+                    gobyAlEntry_setPairFragmentIndex(writerHelper, pairSegment->fragmentIndex);
                     gobyAlEntry_setPairPosition(writerHelper, pairSegment->targetStart);
                     gobyAlEntry_setPairTargetIndex(writerHelper, pairSegment->targetIndex);
                 }
@@ -1239,40 +1270,52 @@ extern "C" {
     void writeGobyAlignment(CAlignmentsWriterHelper *writerHelper) {
         GsnapAlignment *alignment = writerHelper->gsnapAlignment;
         if (alignment->pairedEnd) {
-            // At this time, Goby only supports storing 1-to-1 pairs not
-            // n-to-n pairs, which the Gsnap output provides when running
-            // with -n > 1. So, we'll keep a random alignmentEntry from
-            // the read and it's mate.
-            int size = alignment->alignmentEntries->size();
-            int sizePair = alignment->alignmentEntriesPair->size();
-            vector<GsnapAlignmentEntry *> *tempEntries;
-            vector<GsnapAlignmentEntry *> *tempEntriesPair;
-            if (size > 1) {
-                tempEntries = new vector<GsnapAlignmentEntry *>();
-                int indexToKeep = rand() % size;
-                tempEntries->push_back(alignment->alignmentEntries->at(indexToKeep));
+            if (alignment->pairType == PAIRTYPE_UNPAIRED) {
+                writeAlignment(writerHelper,
+                        alignment->alignmentEntries, NULL, false /*firstInPair*/);
+                writeAlignment(writerHelper,
+                        alignment->alignmentEntriesPair, NULL, false /*firstInPair*/);
             } else {
-                tempEntries = alignment->alignmentEntries;
-            }
-            
-            if (sizePair > 1) {
-                tempEntriesPair = new vector<GsnapAlignmentEntry *>();
-                int indexToKeep = rand() % sizePair;
-                tempEntriesPair->push_back(alignment->alignmentEntriesPair->at(indexToKeep));
-            } else {
-                tempEntriesPair = alignment->alignmentEntriesPair;
-            }
-            
-            writeAlignment(writerHelper, 
-                    tempEntries, tempEntriesPair, true /*firstInPair*/);
-            writeAlignment(writerHelper,
-                    tempEntriesPair, tempEntries, false /*firstInPair*/);
+                
+                // TODO: there should now be n segments in both alignmentEntries
+                // TODO: and alignmentEntriesPair, output them paired
+                // TODO: one from each instead of one random one
+                
+                // At this time, Goby only supports storing 1-to-1 pairs not
+                // n-to-n pairs, which the Gsnap output provides when running
+                // with -n > 1. So, we'll keep a random alignmentEntry from
+                // the read and it's mate.
+                int size = alignment->alignmentEntries->size();
+                int sizePair = alignment->alignmentEntriesPair->size();
+                vector<GsnapAlignmentEntry *> *tempEntries;
+                vector<GsnapAlignmentEntry *> *tempEntriesPair;
+                if (size > 1) {
+                    tempEntries = new vector<GsnapAlignmentEntry *>();
+                    int indexToKeep = rand() % size;
+                    tempEntries->push_back(alignment->alignmentEntries->at(indexToKeep));
+                } else {
+                    tempEntries = alignment->alignmentEntries;
+                }
 
-            if (size > 1) {
-                delete tempEntries;
-            }
-            if (sizePair > 1) {
-                delete tempEntriesPair;
+                if (sizePair > 1) {
+                    tempEntriesPair = new vector<GsnapAlignmentEntry *>();
+                    int indexToKeep = rand() % sizePair;
+                    tempEntriesPair->push_back(alignment->alignmentEntriesPair->at(indexToKeep));
+                } else {
+                    tempEntriesPair = alignment->alignmentEntriesPair;
+                }
+
+                writeAlignment(writerHelper, 
+                        tempEntries, tempEntriesPair, true /*firstInPair*/);
+                writeAlignment(writerHelper,
+                        tempEntriesPair, tempEntries, false /*firstInPair*/);
+
+                if (size > 1) {
+                    delete tempEntries;
+                }
+                if (sizePair > 1) {
+                    delete tempEntriesPair;
+                }
             }
         } else {
             writeAlignment(writerHelper,
@@ -1295,8 +1338,10 @@ extern "C" {
             // Couldn't parse this read.
             writerHelper->numberOfAlignedReads--;
             writerHelper->numberOfMisParsedReads++;
+            debug(printf("Rejected alignment.\n"));
             return;
         }
         writeGobyAlignment(writerHelper);
+        debug(printf("Write alignment.\n"));
     }
 }

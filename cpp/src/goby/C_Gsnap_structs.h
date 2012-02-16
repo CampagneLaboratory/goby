@@ -98,6 +98,7 @@
         int inserts;  // Number of inserts (calculated, doesn't come from Gsnap)
         int deletes;   // Number of deletes (calculated, doesn't come from Gsnap)
         bool merged;
+        int fragmentIndex;
     };
 
     struct GsnapAlignmentEntry {
@@ -121,6 +122,7 @@
         int pairScore;
         int insertLength;
         string *pairSubType;
+        int nextFragmentIndex;
     };
 #endif
 

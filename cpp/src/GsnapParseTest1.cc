@@ -180,10 +180,32 @@ void pcreTest() {
 }
 
 void spliceTests(CAlignmentsWriterHelper *writerHelper) {
-    char *test1 = read_file("test-data/splice-sense.gsnap");
+    cout << "test-data/spliced-pair.gsnap" << endl;
+    char *test1 = read_file("test-data/spliced-pair.gsnap");
     gobyGsnap_parse(writerHelper, test1);
     free(test1);
 
+    cout << "test-data/shortexon-forward.gsnap" << endl;
+    test1 = read_file("test-data/shortexon-forward.gsnap");
+    gobyGsnap_parse(writerHelper, test1);
+    free(test1);
+
+    cout << "test-data/shortexon-reverse.gsnap" << endl;
+    test1 = read_file("test-data/shortexon-reverse.gsnap");
+    gobyGsnap_parse(writerHelper, test1);
+    free(test1);
+    
+    cout << "test-data/splice-two-hits-reverse.gsnap" << endl;
+    test1 = read_file("test-data/splice-two-hits-reverse.gsnap");
+    gobyGsnap_parse(writerHelper, test1);
+    free(test1);
+
+    cout << "test-data/splice-sense.gsnap" << endl;
+    test1 = read_file("test-data/splice-sense.gsnap");
+    gobyGsnap_parse(writerHelper, test1);
+    free(test1);
+
+    cout << "test-data/splice-antisense.gsnap" << endl;
     test1 = read_file("test-data/splice-antisense.gsnap");
     gobyGsnap_parse(writerHelper, test1);
     free(test1);
