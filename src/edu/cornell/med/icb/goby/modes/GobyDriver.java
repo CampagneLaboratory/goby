@@ -44,9 +44,9 @@ public class GobyDriver extends GenericToolsDriver {
 
     public static void main(final String[] args) throws IOException, JSAPException {
         final String version = VersionUtils.getImplementationVersion(GobyDriver.class);
-        LOG.info(GobyDriver.class.getName() + " Implementation-Version: " + version);
 
         if (LOG.isDebugEnabled()) {
+            LOG.debug(GobyDriver.class.getName() + " Implementation-Version: " + version);
             LOG.debug("Running with: " + ArrayUtils.toString(args));
         }
         int status = 0;
