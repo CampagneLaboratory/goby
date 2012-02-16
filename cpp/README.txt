@@ -26,13 +26,11 @@
       make
       make install
 
-3. You can use the normally distributed version of Protobuf 2.4.1,
-   but we strongly recommend you use a version of Protobuf 2.4.1
-   that we have patched to better handle large files.
+3. Install Protobuf 2.4.1.
 
-      wget http://campagnelab.org/files/protobuf-2.4.1-icb.tgz
-      tar zxvf protobuf-2.4.1-icb
-      cd protobuf-2.4.1-icb
+      wget http://protobuf.googlecode.com/files/protobuf-2.4.1.tar.gz
+      tar zxvf protobuf-2.4.1.tar.gz
+      cd protobuf-2.4.1
       #
       # for root or cygwin, don't use the --prefix option
       #
@@ -67,5 +65,3 @@
       ./configure --prefix=${LOCAL_LIB}
       make
       make install
-
-   
