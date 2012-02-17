@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -347,6 +348,9 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 htmlBuilder.append("    .odd { background-color: #def; }").append("\n");
                 htmlBuilder.append("    .right {text-align: right;}").append("\n");
                 htmlBuilder.append("    .center {text-align: center;}").append("\n");
+                htmlBuilder.append("    table td {font-size:80%; }").append("\n");
+                htmlBuilder.append("    tfoot input { width:60px; }").append("\n");
+                htmlBuilder.append("    tfoot input.search_init { color:#777777; font-style:italic; }").append("\n");
                 htmlBuilder.append("</style>").append("\n");
                 htmlBuilder.append("<link rel='stylesheet' type='text/css' href='http://yui.yahooapis.com/3.3.0/build/cssreset/reset-min.css' />").append("\n");
                 htmlBuilder.append("<link rel='stylesheet' type='text/css' href='http://yui.yahooapis.com/3.3.0/build/cssreset/reset-context-min.css' />").append("\n");
@@ -366,6 +370,28 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 htmlBuilder.append("            'aLengthMenu': [[10, 15, 20, 25, 30, 35, 40, 45, 50, -1], [10, 15, 20, 25, 30, 35, 40, 45, 50, 'All']],").append("\n");
                 htmlBuilder.append("            'sPaginationType': 'full_numbers',").append("\n");
                 htmlBuilder.append("            'sScrollX': '200px',").append("\n");
+                htmlBuilder.append("            'oLanguage': {").append("\n");
+                htmlBuilder.append("                'sSearch': 'Search all columns:'").append("\n");
+                htmlBuilder.append("            },").append("\n");
+                htmlBuilder.append("        });").append("\n");
+                htmlBuilder.append("        var asInitVals = new Array();").append("\n");
+                htmlBuilder.append("        jQuery('tfoot input').keyup( function () {").append("\n");
+                htmlBuilder.append("            dt.fnFilter( this.value, jQuery('tfoot input').index(this) );").append("\n");
+                htmlBuilder.append("        });").append("\n");
+                htmlBuilder.append("        jQuery('tfoot input').each( function (i) {").append("\n");
+                htmlBuilder.append("            asInitVals[i] = this.value;").append("\n");
+                htmlBuilder.append("        });").append("\n");
+                htmlBuilder.append("        jQuery('tfoot input').focus( function () {").append("\n");
+                htmlBuilder.append("            if (this.className == 'search_init') {").append("\n");
+                htmlBuilder.append("                this.className = '';").append("\n");
+                htmlBuilder.append("                this.value = '';").append("\n");
+                htmlBuilder.append("            }").append("\n");
+                htmlBuilder.append("        });").append("\n");
+                htmlBuilder.append("        jQuery('tfoot input').blur( function (i) {").append("\n");
+                htmlBuilder.append("            if ( this.value == '' ) {").append("\n");
+                htmlBuilder.append("                this.className = 'search_init';").append("\n");
+                htmlBuilder.append("                this.value = asInitVals[jQuery('tfoot input').index(this)];").append("\n");
+                htmlBuilder.append("            }").append("\n");
                 htmlBuilder.append("        });").append("\n");
                 htmlBuilder.append("    });").append("\n");
                 htmlBuilder.append("    jQuery(window).bind('resize', function() {").append("\n");
@@ -374,7 +400,6 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 htmlBuilder.append("</script>").append("\n");
                 htmlBuilder.append("</head>").append("\n");
                 htmlBuilder.append("<html>").append("\n");
-                htmlBuilder.append("<table cellpadding='0' cellspacing='0' border='0' class='display' id='alignment'>").append("\n");
                 htmlBuilder.append("<script type='text/javascript'>").append("\n");
                 htmlBuilder.append("   function formatNumber(o, val) {").append("\n");
                 htmlBuilder.append("        x1 = val + '';").append("\n");
@@ -386,11 +411,13 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 htmlBuilder.append("   }").append("\n");
                 htmlBuilder.append("   var columns = [").append("\n");
                 int fieldNum = 0;
+                List<String> columnNames = new LinkedList<String>();
                 while (fieldNum < fields.length) {
                     if (fieldNum > 0) {
                         htmlBuilder.append(",");
                     }
                     final String fieldName = (String) fields[fieldNum++];
+                    columnNames.add(fieldName);
                     final Map<String, String> attributes = stringToMap((String) fields[fieldNum++]);
                     fieldAttributes.add(attributes);
                     htmlBuilder.append("{'sTitle':'").append(fieldName).append("'");
@@ -405,6 +432,15 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                     htmlBuilder.append("}");
                 }
                 htmlBuilder.append("];\n");
+                htmlBuilder.append("</script>\n");
+                htmlBuilder.append("<table cellpadding='0' cellspacing='0' border='0' class='display' id='alignment'>").append("\n");
+                htmlBuilder.append("<tfoot><tr>\n");
+                for (final String columnName : columnNames) {
+                    htmlBuilder.append("<td><input type='text' name='search_").append(columnName).append("' value='filter' class='search_init'/></td>");
+                }
+                htmlBuilder.append("</tr></tfoot>\n");
+                htmlBuilder.append("</table>").append("\n");
+                htmlBuilder.append("<script type='text/javascript'>").append("\n");
                 htmlBuilder.append("   var data = [\n");
             } else {
                 if (maxToOutput != -1 && numWritten >= maxToOutput) {
