@@ -116,8 +116,13 @@ public abstract class IterateAlignments {
 
     public void iterate(GenomicRange range, final String... basenames) throws IOException {
         for (final String basename : basenames) {
-
             iterateOverOneAlignment(alignmentReaderFactory.getSlice(basename, range), basename, range.startReferenceIndex, range.startPosition);
+        }
+    }
+
+    public void iterate(FileSlice slice, final String... basenames) throws IOException {
+        for (final String basename : basenames) {
+            iterateOverOneAlignment(slice, basename);
         }
     }
 

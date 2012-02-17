@@ -38,7 +38,11 @@
             <defaults>
                 <string>plain</string>
             </defaults>
-            <help>Format of the output file (plain, SAM).</help>
+            <help>Format of the output file (plain, html, sam). Especially if writing to HTML,  you should consider
+                  using the -s and -e flags to limit how much of the alignment file will be processed and the -n flag
+                  to control how many alignment entries to output. Realistically, most browsers probably cannot
+                  handle more than about 50,000 entries. For HTML, it is recommended that you only output
+                  the first portion of the file, which can be accomplished with "-e 1"</help>
         </flaggedOption>
         <flaggedOption>
             <id>constant-read-length</id>
@@ -59,6 +63,45 @@
             <longFlag>include-reference-names</longFlag>
             <required>false</required>
             <help>When provided, only write counts for reference identifiers listed in this comma separated list. To process only counts for chromosome 19 and 1, if sequences are identified by 1 and 19, use: --include-reference-names 1,19</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>start-position</id>
+            <shortFlag>s</shortFlag>
+            <longFlag>start-position</longFlag>
+            <stringParser>
+                <classname>LongStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <help>The start position within the file, which should be number of bytes into the file to start
+                  reading from. The read will actually start at the first record on or after start-position.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>end-position</id>
+            <shortFlag>e</shortFlag>
+            <longFlag>end-position</longFlag>
+            <stringParser>
+                <classname>LongStringParser</classname>
+            </stringParser>
+            <defaults>
+                <string>1</string>
+            </defaults>
+            <required>false</required>
+            <help>The end position within the file, which should be number of bytes into the file to end reading from.
+                  The read will actually end at the end of the record on or after end-position.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>max-to-output</id>
+            <shortFlag>n</shortFlag>
+            <longFlag>max-to-output</longFlag>
+            <stringParser>
+                <classname>LongStringParser</classname>
+            </stringParser>
+            <required>false</required>
+            <defaults>
+                <string>-1</string>
+            </defaults>
+            <help>The maximum number of alignment entries to output or -1 to output all entries. The default
+                  is to output the entire alignment.</help>
         </flaggedOption>
     </parameters>
 </jsap>
