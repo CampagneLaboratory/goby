@@ -42,7 +42,7 @@ import java.util.ArrayList;
  *         Date: 12/12/11
  *         Time: 1:39 PM
  */
-public class VCFAveragingWriter extends VCFWriter {
+public class AnnotationAveragingWriter extends VCFWriter {
     Writer outputWriter;
     private boolean initialized;
     private int numSamples;
@@ -50,7 +50,7 @@ public class VCFAveragingWriter extends VCFWriter {
     String[] chosenFormatFields;
     private MethylCountProvider provider;
     private String annotationFilename = null;
-    public static final DynamicOptionClient doc = new DynamicOptionClient(VCFAveragingWriter.class, "annotations:annotation filename:");
+    public static final DynamicOptionClient doc = new DynamicOptionClient(AnnotationAveragingWriter.class, "annotations:annotation filename:");
     private String[] groups;
     private int numGroups;
     private int[] sampleIndexToGroupIndex;
@@ -61,7 +61,7 @@ public class VCFAveragingWriter extends VCFWriter {
     /**
      * Used to log debug and informational messages.
      */
-    private static final Logger LOG = Logger.getLogger(VCFAveragingWriter.class);
+    private static final Logger LOG = Logger.getLogger(AnnotationAveragingWriter.class);
 
 
     /**
@@ -78,11 +78,11 @@ public class VCFAveragingWriter extends VCFWriter {
     private ArrayList<GroupComparison> groupComparisons = new ArrayList<GroupComparison>();
     private boolean aggregateAllContexts;
 
-    public VCFAveragingWriter(final Writer writer, MethylCountProvider provider) {
+    public AnnotationAveragingWriter(final Writer writer, MethylCountProvider provider) {
         this(writer, null, provider);
     }
 
-    public VCFAveragingWriter(final Writer writer, RandomAccessSequenceInterface genome, MethylCountProvider provider) {
+    public AnnotationAveragingWriter(final Writer writer, RandomAccessSequenceInterface genome, MethylCountProvider provider) {
         super(new NullWriter());
         this.provider = provider;
         outputWriter = writer;

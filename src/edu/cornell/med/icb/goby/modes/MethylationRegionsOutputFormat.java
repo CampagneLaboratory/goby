@@ -26,7 +26,7 @@ import edu.cornell.med.icb.goby.alignments.ReadIndexStats;
 import edu.cornell.med.icb.goby.alignments.SampleCountInfo;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.stats.MethylCountProviderFromRegionsOutputFormat;
-import edu.cornell.med.icb.goby.stats.VCFAveragingWriter;
+import edu.cornell.med.icb.goby.stats.AnnotationAveragingWriter;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
 import edu.cornell.med.icb.goby.util.DynamicOptionClient;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -66,7 +66,7 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
     /**
      * The averaging writer that overlaps sites with annotations and writes averages:
      */
-    private VCFAveragingWriter averagingWriter;
+    private AnnotationAveragingWriter averagingWriter;
     private int minimumEventThreshold;
     private Boolean doIndels;
 
@@ -100,7 +100,7 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
 
         groups = mode.getGroups();
         samples = mode.getSamples();
-        averagingWriter = new VCFAveragingWriter(writer, new MethylCountProviderFromRegionsOutputFormat(this));
+        averagingWriter = new AnnotationAveragingWriter(writer, new MethylCountProviderFromRegionsOutputFormat(this));
         assert annotationFilename != null : "annotation filename must have been set";
 
         averagingWriter.setAnnotationFilename(annotationFilename);

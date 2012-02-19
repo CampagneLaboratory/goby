@@ -29,7 +29,7 @@ import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
-import edu.cornell.med.icb.goby.stats.VCFAveragingWriter;
+import edu.cornell.med.icb.goby.stats.AnnotationAveragingWriter;
 import edu.cornell.med.icb.goby.util.DynamicOptionClient;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.io.TSVReader;
@@ -140,7 +140,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
         registeredDOClients.add(QualityScoreFilter.doc);
-        registeredDOClients.add(VCFAveragingWriter.doc);
+        registeredDOClients.add(AnnotationAveragingWriter.doc);
         registeredDOClients.add(MethylationRegionsOutputFormat.doc);
 
         // parse dynamic options:

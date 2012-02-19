@@ -32,7 +32,7 @@ import static org.junit.Assert.assertEquals;
  *         Date: 1/25/12
  *         Time: 12:06 PM
  */
-public class TestVCFAveragingWriter {
+public class TestAnnotationAveragingWriter {
 
 
     String[] sequences = {
@@ -82,7 +82,7 @@ public class TestVCFAveragingWriter {
         int[][] Cm = {{9, 8}};
         testSupport = new MethylCountProviderTestSupport(samples, positions, "Case1", C, Cm);
         final StringWriter stringWriter = new StringWriter();
-        VCFAveragingWriter testWriter = new VCFAveragingWriter(stringWriter, genome, testSupport);
+        AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
         testWriter.writeRecord();
         testWriter.writeRecord();
@@ -100,7 +100,7 @@ public class TestVCFAveragingWriter {
 
         testSupport = new MethylCountProviderTestSupport(samples, positions, "Case2", C, Cm);
         final StringWriter stringWriter = new StringWriter();
-        VCFAveragingWriter testWriter = new VCFAveragingWriter(stringWriter, genome, testSupport);
+        AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
         testWriter.writeRecord();
         testWriter.writeRecord();
@@ -121,7 +121,7 @@ public class TestVCFAveragingWriter {
         int[][] Cm = {{9, 7, 1, 5, 3, 7, 8, 3}};
         testSupport = new MethylCountProviderTestSupport(samples, positions, "Case3", C, Cm);
         final StringWriter stringWriter = new StringWriter();
-        VCFAveragingWriter testWriter = new VCFAveragingWriter(stringWriter, genome, testSupport);
+        AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
         testWriter.writeRecord();
         testWriter.writeRecord();
@@ -147,7 +147,7 @@ public class TestVCFAveragingWriter {
         int[][] Cm = {{9, 7, 1, 5}, {9, 7, 9, 3}, {2, 3, 2, 8}};
         testSupport = new MethylCountProviderTestSupport(samples, positions, "Case2", C, Cm);
         final StringWriter stringWriter = new StringWriter();
-        VCFAveragingWriter testWriter = new VCFAveragingWriter(stringWriter, genome, testSupport);
+        AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
         testWriter.writeRecord();
         testWriter.writeRecord();
@@ -169,7 +169,7 @@ public class TestVCFAveragingWriter {
         int[][] Cm = {{9, 7, 1, 5}, {9, 7, 9, 3}, {2, 3, 2, 8}};
         testSupport = new MethylCountProviderTestSupport(groups, samples, positions, "Case2", C, Cm);
         final StringWriter stringWriter = new StringWriter();
-        VCFAveragingWriter testWriter = new VCFAveragingWriter(stringWriter, genome, testSupport);
+        AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
         int[] a = {0, 0, 0};
         testWriter.setSampleIndexToGroupIndex(a);
@@ -197,7 +197,7 @@ public class TestVCFAveragingWriter {
         testSupport = new MethylCountProviderTestSupport(groups, samples, positions, "Case3", C, Cm);
 
         final StringWriter stringWriter = new StringWriter();
-        VCFAveragingWriter testWriter = new VCFAveragingWriter(stringWriter, genome, testSupport);
+        AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
         int[] a = {0, 0, 0, 1, 1, 1};
         testWriter.setSampleIndexToGroupIndex(a);
@@ -230,7 +230,7 @@ public class TestVCFAveragingWriter {
         int[][] Cm = {{9, 7, 1, 5}, {9, 7, 9, 3}, {2, 3, 2, 8}};
         testSupport = new MethylCountProviderTestSupport(groups, samples, positions, "Case4", C, Cm);
         final StringWriter stringWriter = new StringWriter();
-        VCFAveragingWriter testWriter = new VCFAveragingWriter(stringWriter, genome, testSupport);
+        AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
         int[] a = {0, 0, 0};
         testWriter.setSampleIndexToGroupIndex(a);
@@ -256,7 +256,7 @@ public class TestVCFAveragingWriter {
         int[][] Cm = {{9, 7, 1, 5}, {9, 7, 9, 3}, {2, 3, 2, 8}, {4, 1, 3, 6}};
         testSupport = new MethylCountProviderTestSupport(groups, samples, positions, "Case4", C, Cm);
         final StringWriter stringWriter = new StringWriter();
-        VCFAveragingWriter testWriter = new VCFAveragingWriter(stringWriter, genome, testSupport);
+        AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
         int[] a = {0, 0, 1, 1};
         testWriter.setSampleIndexToGroupIndex(a);
@@ -299,7 +299,7 @@ public class TestVCFAveragingWriter {
         int[][] Cm = {{9, 7, 1, 5}, {9, 7, 9, 3}, {2, 3, 2, 8}, {4, 1, 3, 6}};
         testSupport = new MethylCountProviderTestSupport(groups, samples, positions, "Case4", C, Cm);
         final StringWriter stringWriter = new StringWriter();
-        VCFAveragingWriter testWriter = new VCFAveragingWriter(stringWriter, genome, testSupport);
+        AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
         int[] a = {0, 1, 2, 3};
         testWriter.setSampleIndexToGroupIndex(a);
