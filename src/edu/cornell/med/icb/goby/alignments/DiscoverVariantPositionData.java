@@ -37,6 +37,10 @@ public class DiscoverVariantPositionData extends ObjectArrayList<PositionBaseInf
     private ObjectArraySet<EquivalentIndelRegion> failedIndels;
     private static final ObjectArraySet<EquivalentIndelRegion> EMPTY_SET = new ObjectArraySet<EquivalentIndelRegion>();
 
+    public int getZeroBasedPosition() {
+        return position;
+    }
+
     public DiscoverVariantPositionData() {
         super();
         position = -1;

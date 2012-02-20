@@ -21,7 +21,6 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.apache.log4j.Logger;
 
 /**
@@ -61,6 +60,9 @@ public abstract class IterateSortedAlignmentsListImpl
 
         info.readerIndex = alignmentEntry.getSampleIndex();
         //     System.out.printf("observing ref readerIndex=%d%n",info.readerIndex);
+        /* if (currentRefPosition==3661601-1 && !alignmentEntry.getMatchingReverseStrand()) {
+            System.out.println("STOP1");
+        } */
         info.readIndex = currentReadIndex;
         info.from = '\0';
         info.to = '\0';
@@ -68,6 +70,7 @@ public abstract class IterateSortedAlignmentsListImpl
         info.position = currentRefPosition - 1; // store 0-based position
         info.qualityScore = 40;
         info.matchesForwardStrand = !alignmentEntry.getMatchingReverseStrand();
+        //System.out.printf("position=%d %s%n", currentRefPosition, info);
         addToFuture(positionToBases, info);
     }
 
@@ -104,12 +107,15 @@ public abstract class IterateSortedAlignmentsListImpl
 
     private void addToFuture(final Int2ObjectMap<DiscoverVariantPositionData> positionToBases,
                              final PositionBaseInfo info) {
+
         DiscoverVariantPositionData list = positionToBases.get(info.position);
         if (list == null) {
             list = new DiscoverVariantPositionData(info.position);
             positionToBases.put(info.position, list);
         }
-
+        else {
+           assert list.getZeroBasedPosition()==info.position : "info position must match list position.";
+        }
         if (list.size() > maxThreshold) {
             /* IntOpenHashSet positions=new IntOpenHashSet();
            for (PositionBaseInfo element:list) {

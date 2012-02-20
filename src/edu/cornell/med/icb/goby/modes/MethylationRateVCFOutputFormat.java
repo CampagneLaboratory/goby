@@ -164,9 +164,9 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         notMethylatedCCountsIndex = new int[groups.length];
 
         for (int groupIndex = 0; groupIndex < groups.length; groupIndex++) {
-            notMethylatedCCountsIndex[groupIndex] = statWriter.defineField("INFO", String.format("#C Group[%s]", groups[groupIndex]),
+            notMethylatedCCountsIndex[groupIndex] = statWriter.defineField("INFO", String.format("#C_Group[%s]", groups[groupIndex]),
                     1, ColumnType.Integer, String.format("Number of unmethylated Cytosines at site in group %s.", groups[groupIndex]));
-            methylatedCCountsIndex[groupIndex] = statWriter.defineField("INFO", String.format("#Cm Group[%s]", groups[groupIndex]),
+            methylatedCCountsIndex[groupIndex] = statWriter.defineField("INFO", String.format("#Cm_Group[%s]", groups[groupIndex]),
                     1, ColumnType.Integer, String.format("Number of methylated Cytosines at site in group %s.", groups[groupIndex]));
         }
         depthFieldIndex = statWriter.defineField("INFO", "DP",
@@ -219,15 +219,18 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
                             final int groupIndexA,
                             final int groupIndexB) {
 
+        final int oneBasedPosition=position+1;
 
-        position = position + 1;
-
-
+        /*if (oneBasedPosition==3661602) {
+            System.out.println("STOP");
+        }
+          */
         final char refBase = sampleCounts[0].referenceBase;
         if (refBase != 'C' && refBase != 'G') {
+            mci.reset();
             return;
         }
-        fillMethylationCountArrays(sampleCounts, list, position, refBase, mci,readerIndexToGroupIndex);
+        fillMethylationCountArrays(sampleCounts, list, oneBasedPosition, refBase, mci,readerIndexToGroupIndex);
         if (mci.eventCountAtSite < minimumEventThreshold) {
             return;
         }
@@ -235,17 +238,17 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         final CharSequence currentReferenceId = iterator.getReferenceId(referenceIndex);
 
         statWriter.setChromosome(currentReferenceId);
-        statWriter.setPosition(position);
+        statWriter.setPosition(oneBasedPosition);
         statWriter.setReferenceAllele(Character.toString(sampleCounts[0].referenceBase));
 
         // construct a biomart region span in the format chr:pos1:chr:pos
-        final String biomartRegionSpan = String.format("%s:%s:%s", currentReferenceId, position,
-                position);
+        final String biomartRegionSpan = String.format("%s:%s:%s", currentReferenceId, oneBasedPosition,
+                oneBasedPosition);
 
         statWriter.setInfo(biomartFieldIndex, biomartRegionSpan);
         statWriter.setInfo(strandFieldIndex, Character.toString(mci.strandAtSite));
 
-        final String genomicContext = findGenomicContext(referenceIndex, position);
+        final String genomicContext = findGenomicContext(referenceIndex, oneBasedPosition);
         statWriter.setInfo(genomicContextIndex, genomicContext);
 
         for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
@@ -300,7 +303,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
                             "unmethylatedCCountsPerGroup[1]=%d methylatedCCountPerGroup[1]=%d%n" +
                             "unmethylatedCCountsPerGroup[0]=%d, methylatedCCountPerGroup[0]=%d",
                             currentReferenceId, referenceIndex,
-                            position,
+                            oneBasedPosition,
                             mci.unmethylatedCCountsPerGroup[indexGroup2], mci.methylatedCCountPerGroup[indexGroup2],
                             mci.unmethylatedCCountsPerGroup[indexGroup1], mci.methylatedCCountPerGroup[indexGroup1]
                     );
@@ -333,7 +336,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
             statWriter.setInfo(deltaMRColumnIndex[comparison.index], deltaMR);
 
         }
-        genotypeFormatter.writeGenotypes(statWriter, sampleCounts, position);
+        genotypeFormatter.writeGenotypes(statWriter, sampleCounts, oneBasedPosition);
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
             final int firstIndex = sampleIndex;
             final int secondIndex = convertIndex(sampleIndex, mci.strandAtSite);

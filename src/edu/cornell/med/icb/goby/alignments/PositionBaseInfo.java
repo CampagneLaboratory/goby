@@ -32,11 +32,15 @@ public class PositionBaseInfo {
     public boolean matchesReference;
     public char from = ' ';
     public char to = ' ';
+    /**
+     * Zero-based position on the reference sequence.
+     */
     public int position;
     public boolean matchesForwardStrand;
     @Override
     public String toString() {
-        return matchesReference ? String.format("ref: %c s=%d", from, readerIndex) :
-                String.format("%c/%c q=%d s=%d", from, to, qualityScore, readerIndex);
+        final char strand = matchesForwardStrand ? '+' : '-';
+        return matchesReference ? String.format("%c ref: %c s=%d", strand, from, readerIndex) :
+                String.format("%c %c/%c q=%d s=%d", strand, from, to, qualityScore, readerIndex);
     }
 }
