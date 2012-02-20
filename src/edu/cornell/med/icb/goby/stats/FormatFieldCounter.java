@@ -36,7 +36,9 @@ public class FormatFieldCounter {
     private int[][] methylatedCCounterPerGroup;
     private int[][] unmethylatedCCounterPerGroup;
 
-    private int[][] numberOfSites;
+
+    private int[][] numberOfSitesPerSample;
+    private int[][] numberOfSitesPerGroup;
 
     private double[][] methylationRatePerSample;
     private double[][] methylationRatePerGroup;
@@ -50,6 +52,8 @@ public class FormatFieldCounter {
         methylatedCCounterPerGroup = new int[numContexts][numGroups];
         unmethylatedCCounterPerGroup = new int[numContexts][numGroups];
         methylationRatePerGroup = new double[numContexts][numGroups];
+        numberOfSitesPerGroup = new int[numContexts][numGroups];
+
     }
 
     public FormatFieldCounter(int annotationIndex, int numSamples, String[] contexts) {
@@ -60,7 +64,7 @@ public class FormatFieldCounter {
 
         methylatedCCounterPerSample = new int[numContexts][numSamples];
         unmethylatedCCounterPerSample = new int[numContexts][numSamples];
-        numberOfSites = new int[numContexts][numSamples];
+        numberOfSitesPerSample = new int[numContexts][numSamples];
         methylationRatePerSample = new double[numContexts][numSamples];
     }
 
@@ -98,18 +102,50 @@ public class FormatFieldCounter {
     }
 
 
+    public boolean countsAreNotNull(int c, int cm) {
+        boolean flag = false;
+        double doubleC= (double ) c;
+        double doubleCm= (double) cm;
+        if (doubleC != doubleC && doubleCm != doubleCm) {
+            // value is NaN
+        } else {
+            flag = true;
+        }
+        return flag;
+    }
+
+
     public void incrementCounts(int sampleIndex, int[] sampleIndexToGroupIndex, int c,
                                 int cm, int contextIndex) {
-        unmethylatedCCounterPerSample[contextIndex][sampleIndex] += c;
-        methylatedCCounterPerSample[contextIndex][sampleIndex] += cm;
-        if (sampleIndexToGroupIndex != null) {
-
-            final int groupIndex = sampleIndexToGroupIndex[sampleIndex];
-           // System.out.printf("increment: context=%s sampleIndex=%d groupIndex=%d c=%d cm=%d %n", contexts[contextIndex], sampleIndex, groupIndex, c, cm);
-            unmethylatedCCounterPerGroup[contextIndex][groupIndex] += c;
-            methylatedCCounterPerGroup[contextIndex][groupIndex] += cm;
+        // only increment counters if any cytosines are observed to pass the threshold
+        if (countsAreNotNull(c, cm)) {
+            unmethylatedCCounterPerSample[contextIndex][sampleIndex] += c;
+            methylatedCCounterPerSample[contextIndex][sampleIndex] += cm;
+            numberOfSitesPerSample[contextIndex][sampleIndex] += 1;
+            if (sampleIndexToGroupIndex != null) {
+                final int groupIndex = sampleIndexToGroupIndex[sampleIndex];
+                // System.out.printf("increment: context=%s sampleIndex=%d groupIndex=%d c=%d cm=%d %n", contexts[contextIndex], sampleIndex, groupIndex, c, cm);
+                unmethylatedCCounterPerGroup[contextIndex][groupIndex] += c;
+                methylatedCCounterPerGroup[contextIndex][groupIndex] += cm;
+                numberOfSitesPerGroup[contextIndex][groupIndex] += 1;
+            }
         }
-        numberOfSites[contextIndex][sampleIndex] += 1;
+    }
+
+    public int getNumberOfSitesPerSample(int contextIndex, int sampleIndex) {
+        return numberOfSitesPerSample[contextIndex][sampleIndex];
+    }
+
+    public int getNumberOfSitesPerGroup(int contextIndex, int indexGroup) {
+        return numberOfSitesPerGroup[contextIndex][indexGroup];
+    }
+
+    public int getMethylatedCCounterPerSample(int contextIndex, int sampleIndex) {
+        return methylatedCCounterPerSample[contextIndex][sampleIndex];
+    }
+
+    public int getUnmethylatedCCounterPerSample(int contextIndex, int sampleIndex) {
+        return unmethylatedCCounterPerSample[contextIndex][sampleIndex];
     }
 
     public int getUnmethylatedCcounterPerGroup(int contextIndex, int indexGroup) {
@@ -120,12 +156,10 @@ public class FormatFieldCounter {
         return methylatedCCounterPerGroup[contextIndex][indexGroup];
     }
 
-
     public double getMethylationRatePerSample(int contextIndex, int sampleIndex) {
         calculateSampleMethylationRate(contextIndex, sampleIndex);
         return methylationRatePerSample[contextIndex][sampleIndex];
     }
-
 
     public double getMethylationRatePerGroup(int contextIndex, int groupIndex) {
         calculateGroupMethylationRate(contextIndex, groupIndex);

@@ -152,14 +152,18 @@ public class AnnotationAveragingWriter extends VCFWriter {
 
             for (String context : contexts) {
                 for (String sample : samples) {
-
+                    writeCColumn(sample, context);
+                    writeCmColumn(sample, context);
+                    writeNumSitesColumn(sample, context);
                     writeRateColumn(sample, context);
                 }
             }
-            if (groups !=null){
+            if (groups != null) {
                 for (String context : contexts) {
                     for (String group : groups) {
-
+                        writeCColumn(group, context);
+                        writeCmColumn(group, context);
+                        writeNumSitesColumn(group, context);
                         writeRateColumn(group, context);
                     }
                 }
@@ -183,6 +187,49 @@ public class AnnotationAveragingWriter extends VCFWriter {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void writeCColumn(String trackName, String context) throws IOException {
+        StringBuilder columnName = new StringBuilder();
+        outputWriter.append('\t');
+        columnName.append("#C[");
+        columnName.append(trackName);
+        columnName.append("]");
+        if (!aggregateAllContexts) {
+            columnName.append("[");
+            columnName.append(context);
+            columnName.append("]");
+        }
+        outputWriter.append(columnName.toString());
+
+    }
+
+    private void writeCmColumn(String trackName, String context) throws IOException {
+        StringBuilder columnName = new StringBuilder();
+        outputWriter.append('\t');
+        columnName.append("#Cm[");
+        columnName.append(trackName);
+        columnName.append("]");
+        if (!aggregateAllContexts) {
+            columnName.append("[");
+            columnName.append(context);
+            columnName.append("]");
+        }
+        outputWriter.append(columnName.toString());
+    }
+
+    private void writeNumSitesColumn(String trackName, String context) throws IOException {
+        StringBuilder columnName = new StringBuilder();
+        outputWriter.append('\t');
+        columnName.append("#Sites[");
+        columnName.append(trackName);
+        columnName.append("]");
+        if (!aggregateAllContexts) {
+            columnName.append("[");
+            columnName.append(context);
+            columnName.append("]");
+        }
+        outputWriter.append(columnName.toString());
     }
 
     private void writeFisherColumn(GroupComparison comparison, String context) throws IOException {
@@ -320,9 +367,23 @@ public class AnnotationAveragingWriter extends VCFWriter {
                 for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
 
                     for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
+
+                        lineToOutput.append("\t");
+                        final int unMethylatedCCounterPerSample = temp.getUnmethylatedCCounterPerSample(currentContext, sampleIndex);
+                        lineToOutput.append(unMethylatedCCounterPerSample);
+
+                        lineToOutput.append("\t");
+                        final int methylatedCCounterPerSample = temp.getMethylatedCCounterPerSample(currentContext, sampleIndex);
+                        lineToOutput.append(methylatedCCounterPerSample);
+
+                        lineToOutput.append("\t");
+                        final int numSitesPerSample = temp.getNumberOfSitesPerSample(currentContext, sampleIndex);
+                        lineToOutput.append(numSitesPerSample);
+
+
                         lineToOutput.append("\t");
                         final double methylationRatePerSample = temp.getMethylationRatePerSample(currentContext, sampleIndex);
-                   //     System.out.printf("context=%s sample=%s mr=%g %n", contexts[currentContext], samples[sampleIndex], methylationRatePerSample);
+                        //     System.out.printf("context=%s sample=%s mr=%g %n", contexts[currentContext], samples[sampleIndex], methylationRatePerSample);
                         lineToOutput.append(formatDouble(methylationRatePerSample));
                     }
                 }
@@ -330,6 +391,19 @@ public class AnnotationAveragingWriter extends VCFWriter {
                 for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
 
                     for (int groupIndex = 0; groupIndex < numGroups; groupIndex++) {
+                        lineToOutput.append("\t");
+                        final int unMethylatedCCounterPerGroup = temp.getUnmethylatedCcounterPerGroup(currentContext, groupIndex);
+                        lineToOutput.append(unMethylatedCCounterPerGroup);
+
+                        lineToOutput.append("\t");
+                        final int methylatedCCounterPerGroup = temp.getMethylatedCCounterPerGroup(currentContext, groupIndex);
+                        lineToOutput.append(methylatedCCounterPerGroup);
+
+
+                        lineToOutput.append("\t");
+                        final int numSitesPerGroup = temp.getNumberOfSitesPerGroup(currentContext, groupIndex);
+                        lineToOutput.append(numSitesPerGroup);
+
 
                         lineToOutput.append("\t");
                         lineToOutput.append(formatDouble(temp.getMethylationRatePerGroup(currentContext, groupIndex)));
