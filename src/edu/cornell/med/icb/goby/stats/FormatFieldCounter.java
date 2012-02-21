@@ -102,23 +102,14 @@ public class FormatFieldCounter {
     }
 
 
-    public boolean countsAreNotNull(int c, int cm) {
-        boolean flag = false;
-        double doubleC = (double) c;
-        double doubleCm = (double) cm;
-        if (doubleC != doubleC && doubleCm != doubleCm) {
-            // value is NaN
-        } else {
-            flag = true;
-        }
-        return flag;
+    public final boolean siteWithCoverageInSample(final int c, final int cm) {
+        return c + cm != 0;
     }
-
 
     public void incrementCounts(int sampleIndex, int[] sampleIndexToGroupIndex, int c,
                                 int cm, int contextIndex) {
         // only increment counters if any cytosines are observed to pass the threshold
-        if (countsAreNotNull(c, cm)) {
+        if (siteWithCoverageInSample(c, cm)) {
             unmethylatedCCountPerSample[contextIndex][sampleIndex] += c;
             methylatedCCountPerSample[contextIndex][sampleIndex] += cm;
             numberOfSitesPerSample[contextIndex][sampleIndex] += 1;
