@@ -38,7 +38,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.net.ssl.CertPathTrustManagerParameters;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -134,8 +133,8 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
         String stringB = writer.getBuffer().toString();
         assertTrue(stringB, stringB.contains("1/2:A=10,T=4,N=2:16:0:33"));
         assertTrue(stringB, stringB.contains("0/1/2:A=5,T=1,C=9,N=1:16:0:0"));
-        assertTrue(stringB, stringB.contains("#Cm Group[methylated]=10;"));
-        assertTrue(stringB, stringB.contains("#C Group[methylated]=20;"));
+        assertTrue(stringB, stringB.contains("#Cm_Group[methylated]=10;"));
+        assertTrue(stringB, stringB.contains("#C_Group[methylated]=20;"));
         // check biomart-span included in result:
         assertTrue("biomart span must be included in result: " + stringB, stringB.contains("ref-id:1:1"));
     }
@@ -181,8 +180,8 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
         writer.flush();
 
         String stringB = writer.getBuffer().toString();
-        assertTrue(stringB, stringB.contains("#Cm Group[methylated]=1;"));
-        assertTrue(stringB, stringB.contains("#Cm Group[not-so]=0;"));
+        assertTrue(stringB, stringB.contains("#Cm_Group[methylated]=1;"));
+        assertTrue(stringB, stringB.contains("#Cm_Group[not-so]=0;"));
 
 
         writer = new StringWriter();
@@ -194,8 +193,8 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
         outputFormat.writeRecord(iterator, sampleCounts, 0, 0, list2(), 0, 1);
         writer.flush();
         stringB = writer.getBuffer().toString();
-        assertTrue(stringB, stringB.contains("#Cm Group[methylated]=1;"));
-        assertTrue(stringB, stringB.contains("#Cm Group[not-so]=0;"));
+        assertTrue(stringB, stringB.contains("#Cm_Group[methylated]=1;"));
+        assertTrue(stringB, stringB.contains("#Cm_Group[not-so]=0;"));
 
 
         writer = new StringWriter();
@@ -205,10 +204,10 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
 
         outputFormat.writeRecord(iterator, makeTwoSampleCounts(), 0, 0, list3(), 0, 1);
         stringB = writer.getBuffer().toString();
-        assertTrue(stringB, stringB.contains("#Cm Group[methylated]=1;"));
-        assertTrue(stringB, stringB.contains("#C Group[methylated]=1;"));
-        assertTrue(stringB, stringB.contains("#Cm Group[not-so]=0;"));
-        assertTrue(stringB, stringB.contains("#C Group[not-so]=0;"));
+        assertTrue(stringB, stringB.contains("#Cm_Group[methylated]=1;"));
+        assertTrue(stringB, stringB.contains("#C_Group[methylated]=1;"));
+        assertTrue(stringB, stringB.contains("#Cm_Group[not-so]=0;"));
+        assertTrue(stringB, stringB.contains("#C_Group[not-so]=0;"));
 
 
         /*  org.junit.Assert.assertEquals("content must match", header+
