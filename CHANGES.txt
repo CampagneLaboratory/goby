@@ -2,6 +2,7 @@ dev >
  - vcf methylation format: removed space in name of C and Cm group INFO fields.
  - Added the ability in alignment-to-text mode to output HTML (-f html), to start/end at offsets (-s/-e) in the alignments and
    to limit the number of alignment entries to output (-n).
+ - Fixed a bug related aligning Paired-End with Gsnap.
 1.9.8.3
  - Added a methylation_region format capable of averaging methylation rates for different cytosine contexts over
    arbitrarily defined regions.
