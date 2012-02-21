@@ -18,16 +18,14 @@
 
 package edu.cornell.med.icb.goby.modes;
 
-import edu.cornell.med.icb.goby.Release1_9_7_2;
 import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import edu.cornell.med.icb.goby.algorithmic.data.MethylCountInfo;
 import edu.cornell.med.icb.goby.alignments.DiscoverVariantIterateSortedAlignments;
 import edu.cornell.med.icb.goby.alignments.DiscoverVariantPositionData;
 import edu.cornell.med.icb.goby.alignments.SampleCountInfo;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
+import edu.cornell.med.icb.goby.util.OutputInfo;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 
@@ -61,11 +59,11 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
     private int maxSitesPerAccumulation = 10000000;
 
     @Override
-    public void defineColumns(PrintWriter statsWriter, DiscoverSequenceVariantsMode mode) {
+    public void defineColumns(OutputInfo outputInfo, DiscoverSequenceVariantsMode mode) {
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         sampleIds = mode.getSamples();
         groupIds = mode.getGroups();
-        output = statsWriter;
+        output = outputInfo.getPrintWriter();
         assert mode.getCallIndels() : "indel calling must be active.";
 
     }
@@ -202,7 +200,7 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
             if (totalCount >= MIN_COVERAGE_THRESHOLD) {
 
                 mci.unmethylatedCCountPerSample[sci.sampleIndex]++;
-                mci.unmethylatedCCountsPerGroup[readerIndexToGroupIndex[sci.sampleIndex]]++;
+                mci.unmethylatedCCountPerGroup[readerIndexToGroupIndex[sci.sampleIndex]]++;
                 mci.eventCountAtSite+=totalCount;
                 if (list.hasCandidateIndels()) {
                     for (final EquivalentIndelRegion indel : list.getIndels()) {
@@ -212,7 +210,7 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
                             // System.out.printf("sample %d referenceIndex %d position: %d %s %n", indel.sampleIndex, referenceIndex, position, indel);
 
                             final int groupIndex = readerIndexToGroupIndex[indel.sampleIndex];
-                            mci.methylatedCCountsPerSample[sci.sampleIndex]++;
+                            mci.methylatedCCountPerSample[sci.sampleIndex]++;
                             mci.methylatedCCountPerGroup[groupIndex]++;
                         }
                     }

@@ -20,13 +20,13 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import edu.cornell.med.icb.goby.Release1_9_7_2;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.EquivalentIndelRegionCalculator;
 import edu.cornell.med.icb.goby.algorithmic.data.EquivalentIndelRegion;
 import edu.cornell.med.icb.goby.alignments.processors.ObservedIndel;
 import edu.cornell.med.icb.goby.modes.DiscoverSequenceVariantsMode;
 import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
+import edu.cornell.med.icb.goby.util.OutputInfo;
 import edu.cornell.med.icb.goby.util.WarningCounter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
@@ -37,8 +37,6 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import java.io.PrintWriter;
 
 /**
  * Helper class to implement the logic of discovering sequence variations in and across groups of samples.
@@ -84,7 +82,7 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
     String[] samples;
 
     public void initialize(DiscoverSequenceVariantsMode mode,
-                           PrintWriter outWriter,
+                           OutputInfo outWriter,
                            ObjectArrayList<GenotypeFilter> filters) {
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
 

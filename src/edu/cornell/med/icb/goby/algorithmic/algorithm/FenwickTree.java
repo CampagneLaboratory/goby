@@ -18,37 +18,62 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
+import java.io.Serializable;
+
 /**
  * Fenwick tree implementation.
  */
-public class FenwickTree {
+public class FenwickTree implements Serializable {
+    private static final long serialVersionUID = -7830133715336861385L;
     private int n;
+    private long totalCount;
 
     public FenwickTree(int n) {
-        this.cumCount = new long[n+1];
+        this.cumCount = new long[n + 1];
         this.n = n;
     }
 
     /* The following methods implement a Fenwick tree. See http://community.topcoder.com/tc?module=Static&d1=tutorials&d2=binaryIndexedTrees#reada
     * */
     long[] cumCount;
-    void incrementCount(int index) {
-        index++;
 
+    /**
+     * Increment the count of an element.
+     *
+     * @param index index of the element.
+     */
+    public void incrementCount(int index) {
+        ++index;
+        ++totalCount;
         while (index <= n) {
             cumCount[index]++;
             index += index & -index; // By chance, this gives the right next index 8^).
         }
     }
 
-     int getCount(int index) {
+    /**
+     * Get the cumulative count for elements between [0-index].
+     *
+     * @param index index of the element.
+     * @return count for element at index.
+     */
+    public int getCumulativeCount(int index) {
         int count = 0;
-
+        index++;
         while (index != 0) {
             count += cumCount[index];
             index = index & index - 1; // This cancels out the least nonzero bit.
         }
 
         return count;
+    }
+
+    /**
+     * Get the cumulative count over all the elements. This is exactly the number of times increment count has
+     * been called.
+     * @return
+     */
+    public long getTotalCount() {
+        return totalCount;
     }
 }

@@ -23,12 +23,11 @@ import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
+import edu.cornell.med.icb.goby.util.OutputInfo;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.log4j.Logger;
-
-import java.io.PrintWriter;
 
 /**
  * @author Fabien Campagne
@@ -77,9 +76,9 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
     private boolean siteObserved;
 
 
-    public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
+    public void defineColumns(OutputInfo writer, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
-        this.statsWriter = new VCFWriter(writer);
+        this.statsWriter = new VCFWriter(writer.getPrintWriter());
         biomartFieldIndex = statsWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
         defineInfoFields(statsWriter);
         defineGenotypeField(statsWriter);

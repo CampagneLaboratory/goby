@@ -24,11 +24,11 @@ import edu.cornell.med.icb.goby.modes.SequenceVariationOutputFormat;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
+import edu.cornell.med.icb.goby.util.OutputInfo;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.stat.inference.TTest;
 import org.apache.commons.math.stat.inference.TTestImpl;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -77,9 +77,9 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
     private int numberOfComparisons;
 
 
-    public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
+    public void defineColumns(OutputInfo outputInfo, DiscoverSequenceVariantsMode mode) {
         samples = mode.getSamples();
-        statsWriter = new VCFWriter(writer);
+        statsWriter = new VCFWriter(outputInfo.getPrintWriter());
         biomartFieldIndex = statsWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
         genotypeFormatter.defineInfoFields(statsWriter);
         groupComparisons = mode.getGroupComparisons();

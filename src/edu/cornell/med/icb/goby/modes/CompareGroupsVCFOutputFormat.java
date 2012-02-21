@@ -24,10 +24,11 @@ import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
+import edu.cornell.med.icb.goby.stats.AbstractOutputFormat;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.stats.VCFWriter;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import edu.cornell.med.icb.goby.util.OutputInfo;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -36,7 +37,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.rosuda.JRI.Rengine;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -59,7 +59,7 @@ import java.util.Arrays;
  *         Date: April 4 2011
  *         Time: 2:38:13 AM
  */
-public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputFormat {
+public class CompareGroupsVCFOutputFormat extends AbstractOutputFormat  implements SequenceVariationOutputFormat {
 
     /**
      * Used to log debug and informational messages.
@@ -146,14 +146,15 @@ public class CompareGroupsVCFOutputFormat implements SequenceVariationOutputForm
 
     ArrayList<GroupComparison> groupComparisons;
 
-    public void defineColumns(final PrintWriter writer, final DiscoverSequenceVariantsMode mode) {
+
+    public void defineColumns(final OutputInfo outputInfo, final DiscoverSequenceVariantsMode mode) {
         deAnalyzer = mode.getDiffExpAnalyzer();
         deCalculator = mode.getDiffExpCalculator();
         groups = mode.getGroups();
         samples = mode.getSamples();
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         final ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
-        this.statWriter = new VCFWriter(writer);
+        this.statWriter = new VCFWriter(outputInfo.getPrintWriter());
 
         //activate R only if we need it:
         final Rengine rEngine = GobyRengine.getInstance().getRengine();

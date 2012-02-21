@@ -21,13 +21,8 @@ package edu.cornell.med.icb.goby.modes;
 import edu.cornell.med.icb.goby.alignments.DiscoverVariantIterateSortedAlignments;
 import edu.cornell.med.icb.goby.alignments.DiscoverVariantPositionData;
 import edu.cornell.med.icb.goby.alignments.SampleCountInfo;
-import edu.cornell.med.icb.goby.alignments.PositionBaseInfo;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
-import edu.cornell.med.icb.goby.stats.VCFWriter;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
-import java.io.Writer;
-import java.io.PrintWriter;
+import edu.cornell.med.icb.goby.util.OutputInfo;
 
 /**
  * Interface to support different kinds of outputs for discover sequence variants mode.
@@ -41,7 +36,7 @@ public interface SequenceVariationOutputFormat {
      * @param statsWriter where output will be written.
      * @param mode The discover mode provides arguments that the format may need to define columns.
      */
-    public void defineColumns(PrintWriter statsWriter, DiscoverSequenceVariantsMode mode);
+    public void defineColumns(OutputInfo statsWriter, DiscoverSequenceVariantsMode mode);
 
     /**
      * Allocate storate needed to estimate the statistics the format outputs.

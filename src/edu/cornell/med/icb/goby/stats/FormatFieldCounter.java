@@ -30,11 +30,11 @@ public class FormatFieldCounter {
     private int annotationIndex;
     private int numSamples;
 
-    private int[][] methylatedCCounterPerSample;
-    private int[][] unmethylatedCCounterPerSample;
+    private int[][] methylatedCCountPerSample;
+    private int[][] unmethylatedCCountPerSample;
 
-    private int[][] methylatedCCounterPerGroup;
-    private int[][] unmethylatedCCounterPerGroup;
+    private int[][] methylatedCCountPerGroup;
+    private int[][] unmethylatedCCountPerGroup;
 
 
     private int[][] numberOfSitesPerSample;
@@ -49,8 +49,8 @@ public class FormatFieldCounter {
 
         this(annotationIndex, numSamples, contexts);
         int numContexts = contexts.length;
-        methylatedCCounterPerGroup = new int[numContexts][numGroups];
-        unmethylatedCCounterPerGroup = new int[numContexts][numGroups];
+        methylatedCCountPerGroup = new int[numContexts][numGroups];
+        unmethylatedCCountPerGroup = new int[numContexts][numGroups];
         methylationRatePerGroup = new double[numContexts][numGroups];
         numberOfSitesPerGroup = new int[numContexts][numGroups];
 
@@ -62,32 +62,32 @@ public class FormatFieldCounter {
         this.contexts = contexts;
         int numContexts = contexts.length;
 
-        methylatedCCounterPerSample = new int[numContexts][numSamples];
-        unmethylatedCCounterPerSample = new int[numContexts][numSamples];
+        methylatedCCountPerSample = new int[numContexts][numSamples];
+        unmethylatedCCountPerSample = new int[numContexts][numSamples];
         numberOfSitesPerSample = new int[numContexts][numSamples];
         methylationRatePerSample = new double[numContexts][numSamples];
     }
 
     public void calculateSampleMethylationRate(int contextIndex, int sampleIndex) {
-        final double denominator = methylatedCCounterPerSample[contextIndex][sampleIndex] +
-                unmethylatedCCounterPerSample[contextIndex][sampleIndex];
+        final double denominator = methylatedCCountPerSample[contextIndex][sampleIndex] +
+                unmethylatedCCountPerSample[contextIndex][sampleIndex];
         final double MR;
         if (denominator == 0) {
             MR = Double.NaN;
         } else {
-            MR = (((double) methylatedCCounterPerSample[contextIndex][sampleIndex]) / denominator) * 100.0;
+            MR = (((double) methylatedCCountPerSample[contextIndex][sampleIndex]) / denominator) * 100.0;
         }
         methylationRatePerSample[contextIndex][sampleIndex] = MR;
     }
 
     public void calculateGroupMethylationRate(int contextIndex, int groupIndex) {
-        double denominator = methylatedCCounterPerGroup[contextIndex][groupIndex] +
-                unmethylatedCCounterPerGroup[contextIndex][groupIndex];
+        double denominator = methylatedCCountPerGroup[contextIndex][groupIndex] +
+                unmethylatedCCountPerGroup[contextIndex][groupIndex];
         double MR;
         if (denominator == 0) {
             MR = Double.NaN;
         } else {
-            MR = ((((double) methylatedCCounterPerGroup[contextIndex][groupIndex]) / denominator) * 100.0);
+            MR = ((((double) methylatedCCountPerGroup[contextIndex][groupIndex]) / denominator) * 100.0);
         }
         methylationRatePerGroup[contextIndex][groupIndex] = MR;
     }
@@ -95,17 +95,17 @@ public class FormatFieldCounter {
     public String toString(int contextIndex, int sampleIndex) {
         StringBuilder result = new StringBuilder();
         result.append("C: ");
-        result.append(unmethylatedCCounterPerSample[contextIndex][sampleIndex]);
+        result.append(unmethylatedCCountPerSample[contextIndex][sampleIndex]);
         result.append(" Cm: ");
-        result.append(methylatedCCounterPerSample[contextIndex][sampleIndex]);
+        result.append(methylatedCCountPerSample[contextIndex][sampleIndex]);
         return result.toString();
     }
 
 
     public boolean countsAreNotNull(int c, int cm) {
         boolean flag = false;
-        double doubleC= (double ) c;
-        double doubleCm= (double) cm;
+        double doubleC = (double) c;
+        double doubleCm = (double) cm;
         if (doubleC != doubleC && doubleCm != doubleCm) {
             // value is NaN
         } else {
@@ -119,14 +119,14 @@ public class FormatFieldCounter {
                                 int cm, int contextIndex) {
         // only increment counters if any cytosines are observed to pass the threshold
         if (countsAreNotNull(c, cm)) {
-            unmethylatedCCounterPerSample[contextIndex][sampleIndex] += c;
-            methylatedCCounterPerSample[contextIndex][sampleIndex] += cm;
+            unmethylatedCCountPerSample[contextIndex][sampleIndex] += c;
+            methylatedCCountPerSample[contextIndex][sampleIndex] += cm;
             numberOfSitesPerSample[contextIndex][sampleIndex] += 1;
             if (sampleIndexToGroupIndex != null) {
                 final int groupIndex = sampleIndexToGroupIndex[sampleIndex];
                 // System.out.printf("increment: context=%s sampleIndex=%d groupIndex=%d c=%d cm=%d %n", contexts[contextIndex], sampleIndex, groupIndex, c, cm);
-                unmethylatedCCounterPerGroup[contextIndex][groupIndex] += c;
-                methylatedCCounterPerGroup[contextIndex][groupIndex] += cm;
+                unmethylatedCCountPerGroup[contextIndex][groupIndex] += c;
+                methylatedCCountPerGroup[contextIndex][groupIndex] += cm;
                 numberOfSitesPerGroup[contextIndex][groupIndex] += 1;
             }
         }
@@ -140,20 +140,20 @@ public class FormatFieldCounter {
         return numberOfSitesPerGroup[contextIndex][indexGroup];
     }
 
-    public int getMethylatedCCounterPerSample(int contextIndex, int sampleIndex) {
-        return methylatedCCounterPerSample[contextIndex][sampleIndex];
+    public int getUnmethylatedCCountPerSample(int contextIndex, int sampleIndex) {
+        return unmethylatedCCountPerSample[contextIndex][sampleIndex];
     }
 
-    public int getUnmethylatedCCounterPerSample(int contextIndex, int sampleIndex) {
-        return unmethylatedCCounterPerSample[contextIndex][sampleIndex];
+    public int getUnmethylatedCcountPerGroup(int contextIndex, int indexGroup) {
+        return unmethylatedCCountPerGroup[contextIndex][indexGroup];
     }
 
-    public int getUnmethylatedCcounterPerGroup(int contextIndex, int indexGroup) {
-        return unmethylatedCCounterPerGroup[contextIndex][indexGroup];
+    public int getMethylatedCCountPerGroup(int contextIndex, int indexGroup) {
+        return methylatedCCountPerGroup[contextIndex][indexGroup];
     }
 
-    public int getMethylatedCCounterPerGroup(int contextIndex, int indexGroup) {
-        return methylatedCCounterPerGroup[contextIndex][indexGroup];
+    public int getMethylatedCCountPerSample(int contextIndex, int sampleIndex) {
+        return methylatedCCountPerSample[contextIndex][sampleIndex];
     }
 
     public double getMethylationRatePerSample(int contextIndex, int sampleIndex) {
@@ -180,10 +180,10 @@ public class FormatFieldCounter {
         double MR;
         double numerator = 0;
         double denominator = 0;
-        for (int contextIndex = 0; contextIndex < methylatedCCounterPerSample.length; contextIndex++) {
-            denominator += methylatedCCounterPerSample[contextIndex][sampleIndex] +
-                    unmethylatedCCounterPerSample[contextIndex][sampleIndex];
-            numerator += methylatedCCounterPerSample[contextIndex][sampleIndex];
+        for (int contextIndex = 0; contextIndex < methylatedCCountPerSample.length; contextIndex++) {
+            denominator += methylatedCCountPerSample[contextIndex][sampleIndex] +
+                    unmethylatedCCountPerSample[contextIndex][sampleIndex];
+            numerator += methylatedCCountPerSample[contextIndex][sampleIndex];
         }
         if (denominator == 0) {
             MR = Double.NaN;
@@ -203,10 +203,10 @@ public class FormatFieldCounter {
         double MR;
         double numerator = 0;
         double denominator = 0;
-        for (int contextIndex = 0; contextIndex < methylatedCCounterPerGroup.length; contextIndex++) {
-            denominator += methylatedCCounterPerGroup[contextIndex][groupIndex] +
-                    unmethylatedCCounterPerGroup[contextIndex][groupIndex];
-            numerator += methylatedCCounterPerGroup[contextIndex][groupIndex];
+        for (int contextIndex = 0; contextIndex < methylatedCCountPerGroup.length; contextIndex++) {
+            denominator += methylatedCCountPerGroup[contextIndex][groupIndex] +
+                    unmethylatedCCountPerGroup[contextIndex][groupIndex];
+            numerator += methylatedCCountPerGroup[contextIndex][groupIndex];
         }
         if (denominator == 0) {
             MR = Double.NaN;
@@ -215,5 +215,6 @@ public class FormatFieldCounter {
         }
         return MR;
     }
+
 
 }

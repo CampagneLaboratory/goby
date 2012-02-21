@@ -20,11 +20,16 @@ package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.SortedAnnotations;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
+import edu.cornell.med.icb.goby.algorithmic.data.IntraGroupEnumerator;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.util.DynamicOptionClient;
+import edu.cornell.med.icb.goby.util.OutputInfo;
+import edu.cornell.med.icb.goby.util.OutputInfoFromWriter;
 import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.io.output.NullWriter;
 import org.apache.log4j.Logger;
 import org.rosuda.JRI.Rengine;
@@ -42,7 +47,7 @@ import java.util.ArrayList;
  *         Date: 12/12/11
  *         Time: 1:39 PM
  */
-public class AnnotationAveragingWriter extends VCFWriter {
+public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter {
     Writer outputWriter;
     private boolean initialized;
     private int numSamples;
@@ -50,7 +55,10 @@ public class AnnotationAveragingWriter extends VCFWriter {
     String[] chosenFormatFields;
     private MethylCountProvider provider;
     private String annotationFilename = null;
-    public static final DynamicOptionClient doc = new DynamicOptionClient(AnnotationAveragingWriter.class, "annotations:annotation filename:");
+    public static final DynamicOptionClient doc = new DynamicOptionClient(AnnotationAveragingWriter.class,
+            "annotations:annotation filename:",
+            "write-counts:boolean, when true write C and Cm for regions:false",
+            "estimate-intra-group-differences: boolean, true indicates that pair-wise differences for sample in the same group should be tallied and written to the output. False indicates regular output.:false");
     private String[] groups;
     private int numGroups;
     private int[] sampleIndexToGroupIndex;
@@ -77,15 +85,31 @@ public class AnnotationAveragingWriter extends VCFWriter {
 
     private ArrayList<GroupComparison> groupComparisons = new ArrayList<GroupComparison>();
     private boolean aggregateAllContexts;
+    private Boolean estimateIntraGroupDifferences;
+    private OutputInfo outputInfo;
+    private Boolean writeCounts;
 
-    public AnnotationAveragingWriter(final Writer writer, MethylCountProvider provider) {
-        this(writer, null, provider);
+
+    public AnnotationAveragingWriter(OutputInfo outputInfo, MethylCountProvider provider) {
+        this(outputInfo, null, provider);
     }
 
     public AnnotationAveragingWriter(final Writer writer, RandomAccessSequenceInterface genome, MethylCountProvider provider) {
+        this(new OutputInfoFromWriter(writer), genome, provider);
+
+    }
+
+    public AnnotationAveragingWriter(final OutputInfo outputInfo, RandomAccessSequenceInterface genome, MethylCountProvider provider) {
         super(new NullWriter());
+        estimateIntraGroupDifferences = doc.getBoolean("estimate-intra-group-differences");
+        writeCounts = doc.getBoolean("write-counts");
         this.provider = provider;
-        outputWriter = writer;
+        this.outputInfo = outputInfo;
+        if (!estimateIntraGroupDifferences) {
+            outputWriter = outputInfo.getPrintWriter();
+        } else {
+            outputWriter = new NullWriter();
+        }
         this.genome = genome;
         initialized = false;
         processGroups = true;
@@ -142,6 +166,9 @@ public class AnnotationAveragingWriter extends VCFWriter {
                 e.printStackTrace();
                 throw e;
             }
+            if (estimateIntraGroupDifferences) {
+                estimator = new DensityEstimator(contexts.length);
+            }
         }
     }
 
@@ -152,18 +179,22 @@ public class AnnotationAveragingWriter extends VCFWriter {
 
             for (String context : contexts) {
                 for (String sample : samples) {
-                    writeCColumn(sample, context);
-                    writeCmColumn(sample, context);
-                    writeNumSitesColumn(sample, context);
+                    if (writeCounts) {
+                        writeCColumn(sample, context);
+                        writeCmColumn(sample, context);
+                        writeNumSitesColumn(sample, context);
+                    }
                     writeRateColumn(sample, context);
                 }
             }
             if (groups != null) {
                 for (String context : contexts) {
                     for (String group : groups) {
-                        writeCColumn(group, context);
-                        writeCmColumn(group, context);
-                        writeNumSitesColumn(group, context);
+                        if (writeCounts) {
+                            writeCColumn(group, context);
+                            writeCmColumn(group, context);
+                            writeNumSitesColumn(group, context);
+                        }
                         writeRateColumn(group, context);
                     }
                 }
@@ -183,11 +214,21 @@ public class AnnotationAveragingWriter extends VCFWriter {
                     writeDeltaMRColumn(comparison, context);
                 }
             }
+            if (estimateIntraGroupDifferences) {
+                groupEnumerator = new IntraGroupEnumerator(sampleIndexToGroupIndex, numSamples, numGroups);
+
+                for (final GroupComparison comparison : groupComparisons) {
+                    groupEnumerator.recordPairForGroup(comparison.indexGroup1);
+                    groupEnumerator.recordPairForGroup(comparison.indexGroup2);
+                }
+            }
             outputWriter.append('\n');
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
+    private IntraGroupEnumerator groupEnumerator;
 
     private void writeCColumn(String trackName, String context) throws IOException {
         StringBuilder columnName = new StringBuilder();
@@ -354,7 +395,7 @@ public class AnnotationAveragingWriter extends VCFWriter {
         if (annotations.pastChosenAnnotation(anno, chromosome, pos)) {
             // this annotation is ready to be written
             Annotation annoOut = annotations.getAnnotation(anno);
-            FormatFieldCounter temp = counterMap.get(anno);
+            FormatFieldCounter counter = counterMap.get(anno);
 
             StringBuilder lineToOutput = new StringBuilder("");
             try {
@@ -367,22 +408,22 @@ public class AnnotationAveragingWriter extends VCFWriter {
                 for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
 
                     for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
+                        if (writeCounts) {
+                            lineToOutput.append("\t");
+                            final int unMethylatedCCounterPerSample = counter.getUnmethylatedCCountPerSample(currentContext, sampleIndex);
+                            lineToOutput.append(unMethylatedCCounterPerSample);
+
+                            lineToOutput.append("\t");
+                            final int methylatedCCounterPerSample = counter.getMethylatedCCountPerSample(currentContext, sampleIndex);
+                            lineToOutput.append(methylatedCCounterPerSample);
+
+                            lineToOutput.append("\t");
+                            final int numSitesPerSample = counter.getNumberOfSitesPerSample(currentContext, sampleIndex);
+                            lineToOutput.append(numSitesPerSample);
+                        }
 
                         lineToOutput.append("\t");
-                        final int unMethylatedCCounterPerSample = temp.getUnmethylatedCCounterPerSample(currentContext, sampleIndex);
-                        lineToOutput.append(unMethylatedCCounterPerSample);
-
-                        lineToOutput.append("\t");
-                        final int methylatedCCounterPerSample = temp.getMethylatedCCounterPerSample(currentContext, sampleIndex);
-                        lineToOutput.append(methylatedCCounterPerSample);
-
-                        lineToOutput.append("\t");
-                        final int numSitesPerSample = temp.getNumberOfSitesPerSample(currentContext, sampleIndex);
-                        lineToOutput.append(numSitesPerSample);
-
-
-                        lineToOutput.append("\t");
-                        final double methylationRatePerSample = temp.getMethylationRatePerSample(currentContext, sampleIndex);
+                        final double methylationRatePerSample = counter.getMethylationRatePerSample(currentContext, sampleIndex);
                         //     System.out.printf("context=%s sample=%s mr=%g %n", contexts[currentContext], samples[sampleIndex], methylationRatePerSample);
                         lineToOutput.append(formatDouble(methylationRatePerSample));
                     }
@@ -391,22 +432,23 @@ public class AnnotationAveragingWriter extends VCFWriter {
                 for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
 
                     for (int groupIndex = 0; groupIndex < numGroups; groupIndex++) {
+                        if (writeCounts) {
+                            lineToOutput.append("\t");
+                            final int unMethylatedCCounterPerGroup = counter.getUnmethylatedCcountPerGroup(currentContext, groupIndex);
+                            lineToOutput.append(unMethylatedCCounterPerGroup);
+
+                            lineToOutput.append("\t");
+                            final int methylatedCCounterPerGroup = counter.getMethylatedCCountPerGroup(currentContext, groupIndex);
+                            lineToOutput.append(methylatedCCounterPerGroup);
+
+
+                            lineToOutput.append("\t");
+                            final int numSitesPerGroup = counter.getNumberOfSitesPerGroup(currentContext, groupIndex);
+                            lineToOutput.append(numSitesPerGroup);
+
+                        }
                         lineToOutput.append("\t");
-                        final int unMethylatedCCounterPerGroup = temp.getUnmethylatedCcounterPerGroup(currentContext, groupIndex);
-                        lineToOutput.append(unMethylatedCCounterPerGroup);
-
-                        lineToOutput.append("\t");
-                        final int methylatedCCounterPerGroup = temp.getMethylatedCCounterPerGroup(currentContext, groupIndex);
-                        lineToOutput.append(methylatedCCounterPerGroup);
-
-
-                        lineToOutput.append("\t");
-                        final int numSitesPerGroup = temp.getNumberOfSitesPerGroup(currentContext, groupIndex);
-                        lineToOutput.append(numSitesPerGroup);
-
-
-                        lineToOutput.append("\t");
-                        lineToOutput.append(formatDouble(temp.getMethylationRatePerGroup(currentContext, groupIndex)));
+                        lineToOutput.append(formatDouble(counter.getMethylationRatePerGroup(currentContext, groupIndex)));
                     }
                 }
                 for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
@@ -416,21 +458,21 @@ public class AnnotationAveragingWriter extends VCFWriter {
                         final int indexGroup2 = comparison.indexGroup2;
                         double fisherP = Double.NaN;
 
-                        final boolean ok = checkCounts(temp, currentContext);
+                        final boolean ok = checkCounts(counter, currentContext);
                         if (ok) {
                             fisherP = fisherRInstalled ? FisherExactRCalculator.getFisherPValue(
-                                    temp.getUnmethylatedCcounterPerGroup(currentContext, indexGroup1),
-                                    temp.getMethylatedCCounterPerGroup(currentContext, indexGroup1),
-                                    temp.getUnmethylatedCcounterPerGroup(currentContext, indexGroup2),
-                                    temp.getMethylatedCCounterPerGroup(currentContext, indexGroup2)) : Double.NaN;
+                                    counter.getUnmethylatedCcountPerGroup(currentContext, indexGroup1),
+                                    counter.getMethylatedCCountPerGroup(currentContext, indexGroup1),
+                                    counter.getUnmethylatedCcountPerGroup(currentContext, indexGroup2),
+                                    counter.getMethylatedCCountPerGroup(currentContext, indexGroup2)) : Double.NaN;
 
                         } else {
                             LOG.error(String.format("An exception was caught evaluation the Fisher Exact test P-value. " +
                                     "Details are provided below%n" + "[[%s  %s] [%s   %s]]",
-                                    temp.getUnmethylatedCcounterPerGroup(currentContext, indexGroup1),
-                                    temp.getMethylatedCCounterPerGroup(currentContext, indexGroup1),
-                                    temp.getUnmethylatedCcounterPerGroup(currentContext, indexGroup2),
-                                    temp.getMethylatedCCounterPerGroup(currentContext, indexGroup2)
+                                    counter.getUnmethylatedCcountPerGroup(currentContext, indexGroup1),
+                                    counter.getMethylatedCCountPerGroup(currentContext, indexGroup1),
+                                    counter.getUnmethylatedCcountPerGroup(currentContext, indexGroup2),
+                                    counter.getMethylatedCCountPerGroup(currentContext, indexGroup2)
                             ));
                         }
                         lineToOutput.append("\t");
@@ -444,10 +486,20 @@ public class AnnotationAveragingWriter extends VCFWriter {
                         final int indexGroup2 = comparison.indexGroup2;
                         double deltaMR = Double.NaN;
 
-                        deltaMR = Math.abs(temp.getMethylationRatePerGroup(currentContext, indexGroup1) - temp.getMethylationRatePerGroup(currentContext, indexGroup2));
+                        deltaMR = Math.abs(counter.getMethylationRatePerGroup(currentContext, indexGroup1) - counter.getMethylationRatePerGroup(currentContext, indexGroup2));
 
                         lineToOutput.append("\t");
                         lineToOutput.append(formatDouble(deltaMR));
+                    }
+                }
+                if (estimateIntraGroupDifferences) {
+                    for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
+
+                        for (final GroupComparison comparison : groupComparisons) {
+
+                            collectWithinGroupEstimates(currentContext, comparison.indexGroup1, counter);
+                            collectWithinGroupEstimates(currentContext, comparison.indexGroup2, counter);
+                        }
                     }
                 }
                 outputWriter.append(lineToOutput.toString());
@@ -458,6 +510,24 @@ public class AnnotationAveragingWriter extends VCFWriter {
             }
         }
     }
+
+    private void collectWithinGroupEstimates(final int contextIndex, final int groupIndex,
+                                             final FormatFieldCounter counter) {
+        if (estimateIntraGroupDifferences) {
+            // enumerate sample pairs that belong to the group of interest:
+            final ObjectArrayList<SamplePair> pairs = groupEnumerator.getPairs(groupIndex);
+            for (final SamplePair next : pairs) {
+                final int Cma = counter.getMethylatedCCountPerSample(contextIndex, next.sampleIndexA);
+                final int Ca = counter.getUnmethylatedCCountPerSample(contextIndex, next.sampleIndexA);
+                final int Cmb = counter.getMethylatedCCountPerSample(contextIndex, next.sampleIndexB);
+                final int Cb = counter.getUnmethylatedCCountPerSample(contextIndex, next.sampleIndexB);
+
+                estimator.observe(contextIndex, Cma, Ca, Cmb, Cb);
+            }
+        }
+    }
+
+    DensityEstimator estimator;
 
     /**
      * Format double, rendering NaN as empty string.
@@ -480,11 +550,11 @@ public class AnnotationAveragingWriter extends VCFWriter {
         // detect if any count is negative (that's a bug)
         for (int indexGroup = 0; indexGroup < numGroups; indexGroup++) {
 
-            if (tempCounter.getUnmethylatedCcounterPerGroup(currentContext, indexGroup) < 0) {
+            if (tempCounter.getUnmethylatedCcountPerGroup(currentContext, indexGroup) < 0) {
                 ok = false;
             }
 
-            if (tempCounter.getMethylatedCCounterPerGroup(currentContext, indexGroup) < 0) {
+            if (tempCounter.getMethylatedCCountPerGroup(currentContext, indexGroup) < 0) {
                 ok = false;
             }
         }
@@ -503,6 +573,15 @@ public class AnnotationAveragingWriter extends VCFWriter {
             }
 
             outWriter.close();
+            if (estimateIntraGroupDifferences) {
+                // when estimating intra group differences, we  serialize the estimator to the output.
+                try {
+                    DensityEstimator.store(estimator, outputInfo.getFilename());
+                } catch (IOException e) {
+                    LOG.error("Unable to write estimator to file", e);
+                }
+            }
+
         }
     }
 
@@ -548,10 +627,12 @@ public class AnnotationAveragingWriter extends VCFWriter {
     }
 
 
+    @Override
     public void setGroupComparisons(ArrayList<GroupComparison> groupComparisons) {
         this.groupComparisons = groupComparisons;
     }
 
+    @Override
     public void setGenome(RandomAccessSequenceInterface genome) {
         this.genome = genome;
     }
@@ -561,6 +642,7 @@ public class AnnotationAveragingWriter extends VCFWriter {
      *
      * @param annotationFilename
      */
+    @Override
     public void setAnnotationFilename(String annotationFilename) {
         this.annotationFilename = annotationFilename;
     }
@@ -570,15 +652,21 @@ public class AnnotationAveragingWriter extends VCFWriter {
      *
      * @param readerIndexToGroupIndex
      */
+    @Override
     public void setSampleIndexToGroupIndex(int[] readerIndexToGroupIndex) {
         sampleIndexToGroupIndex = readerIndexToGroupIndex;
     }
 
 
+    @Override
     public void setAggregateAllContexts(boolean aggregateAllContexts) {
         this.aggregateAllContexts = aggregateAllContexts;
         if (aggregateAllContexts) {
             contexts = new String[]{"ALL"};
         }
+    }
+
+    public void setWriteCounts(boolean b) {
+        writeCounts=b;
     }
 }

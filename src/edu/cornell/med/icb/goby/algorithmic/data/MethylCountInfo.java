@@ -35,11 +35,11 @@ public class MethylCountInfo {
     /**
      * One count per sample for the number of bases that are methylated at this position.
      */
-    public int[] methylatedCCountsPerSample;
+    public int[] methylatedCCountPerSample;
     /**
      * One count per group for the number of bases that are not methylated at this position.
      */
-    public int[] unmethylatedCCountsPerGroup;
+    public int[] unmethylatedCCountPerGroup;
     /**
      * One count per group for the number of bases that are methylated at this position.
      */
@@ -59,9 +59,9 @@ public class MethylCountInfo {
      * @param numberOfGroups  The number of groups analyzed.
      */
     public MethylCountInfo(final int numberOfSamples, final int numberOfGroups) {
-        unmethylatedCCountsPerGroup = new int[numberOfGroups];
+        unmethylatedCCountPerGroup = new int[numberOfGroups];
         methylatedCCountPerGroup = new int[numberOfGroups];
-        methylatedCCountsPerSample = new int[numberOfSamples];
+        methylatedCCountPerSample = new int[numberOfSamples];
         unmethylatedCCountPerSample = new int[numberOfSamples];
     }
 
@@ -70,8 +70,8 @@ public class MethylCountInfo {
      */
     public void reset() {
         Arrays.fill(methylatedCCountPerGroup, 0);
-        Arrays.fill(unmethylatedCCountsPerGroup, 0);
-        Arrays.fill(methylatedCCountsPerSample, 0);
+        Arrays.fill(unmethylatedCCountPerGroup, 0);
+        Arrays.fill(methylatedCCountPerSample, 0);
         Arrays.fill(unmethylatedCCountPerSample, 0);
         eventCountAtSite = 0;
 

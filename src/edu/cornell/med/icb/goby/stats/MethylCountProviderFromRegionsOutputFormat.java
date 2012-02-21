@@ -59,7 +59,7 @@ public class MethylCountProviderFromRegionsOutputFormat implements MethylCountPr
 
     @Override
     public int getCm(int sampleIndex) {
-         return mci.methylatedCCountsPerSample[sampleIndex];
+         return mci.methylatedCCountPerSample[sampleIndex];
     }
 
     @Override

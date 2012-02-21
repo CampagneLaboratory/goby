@@ -20,9 +20,13 @@ package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.alignments.*;
-import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
-import edu.cornell.med.icb.goby.stats.*;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
+import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
+import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
+import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
+import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
+import edu.cornell.med.icb.goby.stats.TSVWriter;
+import edu.cornell.med.icb.goby.util.OutputInfo;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.*;
@@ -34,7 +38,6 @@ import org.rosuda.JRI.Rengine;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.io.PrintWriter;
 
 /**
  * Implements the Goby 1.9.3 discover sequence variants format.
@@ -79,14 +82,14 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
     private int biomartRegionSpanIndex;
 
 
-    public void defineColumns(PrintWriter writer, DiscoverSequenceVariantsMode mode) {
+    public void defineColumns(OutputInfo outputInfo, DiscoverSequenceVariantsMode mode) {
         deAnalyzer = mode.getDiffExpAnalyzer();
         deCalculator = mode.getDiffExpCalculator();
         groups = mode.getGroups();
         samples = mode.getSamples();
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
-        this.statWriter = new TSVWriter(writer);
+        this.statWriter = new TSVWriter(outputInfo.getPrintWriter());
 
         if (deAnalyzer.eval("within-groups") || deAnalyzer.eval("between-groups")) {
             //activate R only if we need it:

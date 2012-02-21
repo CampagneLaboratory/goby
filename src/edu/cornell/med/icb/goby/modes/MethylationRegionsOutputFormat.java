@@ -25,15 +25,15 @@ import edu.cornell.med.icb.goby.alignments.DiscoverVariantPositionData;
 import edu.cornell.med.icb.goby.alignments.ReadIndexStats;
 import edu.cornell.med.icb.goby.alignments.SampleCountInfo;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
-import edu.cornell.med.icb.goby.stats.MethylCountProviderFromRegionsOutputFormat;
 import edu.cornell.med.icb.goby.stats.AnnotationAveragingWriter;
-import edu.cornell.med.icb.goby.stats.VCFWriter;
+import edu.cornell.med.icb.goby.stats.MethylCountProviderFromRegionsOutputFormat;
+import edu.cornell.med.icb.goby.stats.RegionWriter;
 import edu.cornell.med.icb.goby.util.DynamicOptionClient;
+import edu.cornell.med.icb.goby.util.OutputInfo;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 
 /**
@@ -51,10 +51,13 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
      * Used to log debug and informational messages.
      */
     private static final Log LOG = LogFactory.getLog(MethylationRegionsOutputFormat.class);
-    public static DynamicOptionClient doc = new DynamicOptionClient(MethylationRegionsOutputFormat.class, "annotations:filename to a tab delimited annotation file:", "do-indel-rate:boolean, true value indicates that the indel rate shoiuld be output in the MR field:false");
+    public static DynamicOptionClient doc = new DynamicOptionClient(MethylationRegionsOutputFormat.class, "annotations:filename to a tab delimited annotation file:",
+            "do-indel-rate:boolean, true value indicates that the indel rate should be output in the MR field:false",
+            "de-novo-regions:boolean, true indicates that regions should be discovered de-novo, false indicates that regions are defined by annotations:false"
+            );
     private String annotationFilename;
 
-    VCFWriter statWriter;
+
     private int numberOfSamples;
     private int numberOfGroups;
     private String[] samples;
@@ -66,18 +69,23 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
     /**
      * The averaging writer that overlaps sites with annotations and writes averages:
      */
-    private AnnotationAveragingWriter averagingWriter;
+    private RegionWriter averagingWriter;
     private int minimumEventThreshold;
     private Boolean doIndels;
+    private Boolean deNovoRegions;
 
     public MethylationRegionsOutputFormat() {
-        final String annotations = doc.getString("annotations");
+        deNovoRegions = doc.getBoolean("de-novo-regions");
+        assert !deNovoRegions : "de novo regions are not currently supported.";
+        if (deNovoRegions == false) {
+            final String annotations = doc.getString("annotations");
 
-        if (annotations != null) {
-            annotationFilename = annotations;
-        } else {
-            // there is no annotation file. Future, to use direct discovery of regions.
-            annotationFilename = null;
+            if (annotations != null) {
+                annotationFilename = annotations;
+            } else {
+                // there is no annotation file. Future, to use direct discovery of regions.
+                annotationFilename = null;
+            }
         }
         doIndels = doc.getBoolean("do-indel-rate");
     }
@@ -96,11 +104,13 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
         return groups;
     }
 
-    public void defineColumns(final PrintWriter writer, final DiscoverSequenceVariantsMode mode) {
+    public void defineColumns(final OutputInfo outputInfo, final DiscoverSequenceVariantsMode mode) {
 
         groups = mode.getGroups();
         samples = mode.getSamples();
-        averagingWriter = new AnnotationAveragingWriter(writer, new MethylCountProviderFromRegionsOutputFormat(this));
+        final MethylCountProviderFromRegionsOutputFormat provider = new MethylCountProviderFromRegionsOutputFormat(this);
+        averagingWriter = new AnnotationAveragingWriter(outputInfo, provider);
+
         assert annotationFilename != null : "annotation filename must have been set";
 
         averagingWriter.setAnnotationFilename(annotationFilename);
@@ -110,7 +120,7 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         averagingWriter.setSampleIndexToGroupIndex(readerIndexToGroupIndex);
         final ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
-        this.statWriter = new VCFWriter(writer);
+
         groupComparisons = mode.getGroupComparisons();
         averagingWriter.setGroupComparisons(groupComparisons);
         if (groups.length < 1) {
@@ -181,7 +191,7 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
     @Override
     public void close() {
 
-        statWriter.close();
+
         averagingWriter.close();
     }
 

@@ -27,10 +27,11 @@ import edu.cornell.med.icb.goby.alignments.processors.*;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
+import edu.cornell.med.icb.goby.stats.AnnotationAveragingWriter;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
-import edu.cornell.med.icb.goby.stats.AnnotationAveragingWriter;
 import edu.cornell.med.icb.goby.util.DynamicOptionClient;
+import edu.cornell.med.icb.goby.util.OutputInfo;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.io.TSVReader;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -40,7 +41,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -68,14 +72,14 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
     private static final Logger LOG = Logger.getLogger(DiscoverSequenceVariantsMode.class);
     private String[] inputFilenames;
-    private String outputFile;
+
     private int[] readerIndexToGroupIndex;
     private int numberOfGroups;
     private CharSequence currentReferenceId;
     private int thresholdDistinctReadIndices = 3;
     private int minimumVariationSupport = 10;
-    private PrintWriter outWriter;
 
+    OutputInfo outputInfo;
     private String[] groups;
     /**
      * The maximum value of read index, indexed by readerIndex;
@@ -150,7 +154,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
             for (final DynamicOptionClient doc : registeredDOClients) {
 
                 if (doc.acceptsOption(dymamicOption)) {
-                    
+
                     parsed = true;
                     break;
                 }
@@ -162,9 +166,8 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         }
         inputFilenames = jsapResult.getStringArray("input");
 
-        outputFile = jsapResult.getString("output");
-        outWriter = "-".equals(outputFile) ? new PrintWriter(System.out) : new PrintWriter(outputFile);
-
+        String outputFile = jsapResult.getString("output");
+        outputInfo = new OutputInfo(outputFile);
         String groupsDefinition = jsapResult.getString("groups");
         String groupsDefinitionFile = jsapResult.getString("group-file");
         if (groupsDefinition != null && groupsDefinitionFile != null) {
@@ -261,11 +264,11 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                 break;
             case METHYLATION_REGIONS:
                 formatter = new MethylationRegionsOutputFormat();
-                methylFormat((MethylationFormat)formatter);
+                methylFormat((MethylationFormat) formatter);
                 break;
             case METHYLATION:
                 formatter = new MethylationRateVCFOutputFormat();
-                methylFormat((MethylationFormat)formatter);
+                methylFormat((MethylationFormat) formatter);
                 break;
             case INDEL_COUNTS:
                 formatter = new IndelCountOutputFormat();
@@ -323,7 +326,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                     genotypeFilters.add(new AtLeastAQuarterFilter());
                 }
                 if (diploid) {
-                   genotypeFilters.add(new DiploidFilter());
+                    genotypeFilters.add(new DiploidFilter());
                 }
                 break;
             case INDEL_COUNTS:
@@ -334,7 +337,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
                     genotypeFilters.add(new AtLeastAQuarterFilter());
                 }
                 if (diploid) {
-                   genotypeFilters.add(new DiploidFilter());
+                    genotypeFilters.add(new DiploidFilter());
                 }
                 break;
             default:
@@ -369,7 +372,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         this.thresholdDistinctReadIndices = 1;
         // need at least so many methylation/non-methylation event to record site in output
         // the value configure put in minimumVariationSupport as minimum coverage for the site.
-       formatter.setMinimumEventThreshold(tmp);
+        formatter.setMinimumEventThreshold(tmp);
         System.out.println("Methylation format ignores thresholdDistinctReadIndices. Additionally, the minimum coverage needed for a site to be reported can be changed with --minimum-variation-support.");
     }
 
@@ -735,7 +738,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
 
         sortedPositionIterator.allocateStorage(basenames.length, numberOfGroups);
-        sortedPositionIterator.initialize(this, outWriter, genotypeFilters);
+        sortedPositionIterator.initialize(this, outputInfo, genotypeFilters);
         // install a reader factory that filters out ambiguous reads:
         sortedPositionIterator.setAlignmentReaderFactory(new NonAmbiguousAlignmentReaderFactory());
         sortedPositionIterator.setAlignmentProcessorFactory(realignmentFactory);

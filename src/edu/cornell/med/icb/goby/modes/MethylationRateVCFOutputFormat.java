@@ -24,10 +24,8 @@ import edu.cornell.med.icb.goby.algorithmic.data.MethylCountInfo;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
-import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
-import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
-import edu.cornell.med.icb.goby.stats.FisherExactRCalculator;
-import edu.cornell.med.icb.goby.stats.VCFWriter;
+import edu.cornell.med.icb.goby.stats.*;
+import edu.cornell.med.icb.goby.util.OutputInfo;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -35,7 +33,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.rosuda.JRI.Rengine;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 
 /**
@@ -47,7 +44,7 @@ import java.util.ArrayList;
  *         Date: April 4 2011
  *         Time: 2:38:13 AM
  */
-public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFormat, MethylationFormat {
+public class MethylationRateVCFOutputFormat extends AbstractOutputFormat implements SequenceVariationOutputFormat, MethylationFormat {
 
     /**
      * Used to log debug and informational messages.
@@ -106,7 +103,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
     private int minimumEventThreshold = 1;
 
 
-    public void defineColumns(final PrintWriter writer, final DiscoverSequenceVariantsMode mode) {
+    public void defineColumns(final OutputInfo outputInfo, final DiscoverSequenceVariantsMode mode) {
         deAnalyzer = mode.getDiffExpAnalyzer();
         deCalculator = mode.getDiffExpCalculator();
         groups = mode.getGroups();
@@ -114,7 +111,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
 
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         final ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
-        final VCFWriter vcfWriter = new VCFWriter(writer);
+        final VCFWriter vcfWriter = new VCFWriter(outputInfo.getPrintWriter());
         this.statWriter =  vcfWriter;
         groupComparisons = mode.getGroupComparisons();
         try {
@@ -252,39 +249,39 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
         statWriter.setInfo(genomicContextIndex, genomicContext);
 
         for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
-            statWriter.setInfo(notMethylatedCCountsIndex[groupIndex], mci.unmethylatedCCountsPerGroup[groupIndex]);
+            statWriter.setInfo(notMethylatedCCountsIndex[groupIndex], mci.unmethylatedCCountPerGroup[groupIndex]);
             statWriter.setInfo(methylatedCCountsIndex[groupIndex], mci.methylatedCCountPerGroup[groupIndex]);
         }
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
-            final float numerator = mci.methylatedCCountsPerSample[sampleIndex];
+            final float numerator = mci.methylatedCCountPerSample[sampleIndex];
             final float denominator = numerator + mci.unmethylatedCCountPerSample[sampleIndex];
 
             final float methylationRate = numerator * 100 / denominator;
             statWriter.setSampleValue(methylationRateFieldIndex, sampleIndex, Math.round(methylationRate));
-            statWriter.setSampleValue(unconvertedCytosineFieldIndex, sampleIndex, mci.methylatedCCountsPerSample[sampleIndex]);
+            statWriter.setSampleValue(unconvertedCytosineFieldIndex, sampleIndex, mci.methylatedCCountPerSample[sampleIndex]);
             statWriter.setSampleValue(convertedCytosineFieldIndex, sampleIndex, mci.unmethylatedCCountPerSample[sampleIndex]);
         }
         for (final GroupComparison comparison : groupComparisons) {
             final int indexGroup1 = comparison.indexGroup1;
             final int indexGroup2 = comparison.indexGroup2;
-            final double denominator = (double) (mci.unmethylatedCCountsPerGroup[indexGroup1]) * (double) (mci.methylatedCCountPerGroup[indexGroup2]);
+            final double denominator = (double) (mci.unmethylatedCCountPerGroup[indexGroup1]) * (double) (mci.methylatedCCountPerGroup[indexGroup2]);
             final double oddsRatio = denominator == 0 ? Double.NaN :
-                    ((double) (mci.unmethylatedCCountsPerGroup[indexGroup2]) * (double) (mci.methylatedCCountPerGroup[indexGroup1])) /
+                    ((double) (mci.unmethylatedCCountPerGroup[indexGroup2]) * (double) (mci.methylatedCCountPerGroup[indexGroup1])) /
                             denominator;
             final double logOddsRatioSE;
 
             if (mci.methylatedCCountPerGroup[indexGroup1] < 10 ||
                     mci.methylatedCCountPerGroup[indexGroup2] < 10 ||
-                    mci.unmethylatedCCountsPerGroup[indexGroup1] < 10 ||
-                    mci.unmethylatedCCountsPerGroup[indexGroup2] < 10) {
+                    mci.unmethylatedCCountPerGroup[indexGroup1] < 10 ||
+                    mci.unmethylatedCCountPerGroup[indexGroup2] < 10) {
                 // standard error estimation is unreliable when any of the counts are less than 10.
                 logOddsRatioSE = Double.NaN;
             } else {
-                logOddsRatioSE = Math.sqrt(1d / mci.unmethylatedCCountsPerGroup[indexGroup2] +
+                logOddsRatioSE = Math.sqrt(1d / mci.unmethylatedCCountPerGroup[indexGroup2] +
                         1d / mci.methylatedCCountPerGroup[indexGroup1] +
                         1d / mci.methylatedCCountPerGroup[indexGroup2] +
-                        1d / mci.unmethylatedCCountsPerGroup[indexGroup1]);
+                        1d / mci.unmethylatedCCountPerGroup[indexGroup1]);
             }
             final double log2OddsRatio = Math.log(oddsRatio) / Math.log(2);
             final double log2OddsRatioZValue = log2OddsRatio / logOddsRatioSE;
@@ -295,23 +292,23 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
                 final boolean ok = checkCounts();
                 if (ok) {
                     fisherP = fisherRInstalled ? FisherExactRCalculator.getFisherPValue(
-                            mci.unmethylatedCCountsPerGroup[indexGroup2], mci.methylatedCCountPerGroup[indexGroup2],
-                            mci.unmethylatedCCountsPerGroup[indexGroup1], mci.methylatedCCountPerGroup[indexGroup1]) : Double.NaN;
+                            mci.unmethylatedCCountPerGroup[indexGroup2], mci.methylatedCCountPerGroup[indexGroup2],
+                            mci.unmethylatedCCountPerGroup[indexGroup1], mci.methylatedCCountPerGroup[indexGroup1]) : Double.NaN;
                 } else {
                     System.err.printf("An exception was caught evaluating the Fisher Exact test P-value. Details are provided below%n" +
                             "referenceId=%s referenceIndex=%d position=%d %n" +
                             "unmethylatedCCountsPerGroup[1]=%d methylatedCCountPerGroup[1]=%d%n" +
                             "unmethylatedCCountsPerGroup[0]=%d, methylatedCCountPerGroup[0]=%d",
                             currentReferenceId, referenceIndex,
-                            oneBasedPosition,
-                            mci.unmethylatedCCountsPerGroup[indexGroup2], mci.methylatedCCountPerGroup[indexGroup2],
-                            mci.unmethylatedCCountsPerGroup[indexGroup1], mci.methylatedCCountPerGroup[indexGroup1]
+                            position,
+                            mci.unmethylatedCCountPerGroup[indexGroup2], mci.methylatedCCountPerGroup[indexGroup2],
+                            mci.unmethylatedCCountPerGroup[indexGroup1], mci.methylatedCCountPerGroup[indexGroup1]
                     );
                 }
             }
 
-            final double totalCsObservedgroup1 = mci.methylatedCCountPerGroup[indexGroup1] + mci.unmethylatedCCountsPerGroup[indexGroup1];
-            final double totalCsObservedgroup2 = mci.methylatedCCountPerGroup[indexGroup2] + mci.unmethylatedCCountsPerGroup[indexGroup2];
+            final double totalCsObservedgroup1 = mci.methylatedCCountPerGroup[indexGroup1] + mci.unmethylatedCCountPerGroup[indexGroup1];
+            final double totalCsObservedgroup2 = mci.methylatedCCountPerGroup[indexGroup2] + mci.unmethylatedCCountPerGroup[indexGroup2];
 
             double group1MR;
             if (totalCsObservedgroup1 == 0) {
@@ -462,13 +459,13 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
 
                 if (readBase == refBase) {
                     // C staying C on forward strand stayed so because they were either (1) methylated or (2) not converted.
-                    ++mci.methylatedCCountsPerSample[sampleIndex];
+                    ++mci.methylatedCCountPerSample[sampleIndex];
                     ++mci.methylatedCCountPerGroup[groupIndex];
                     ++mci.eventCountAtSite;
                 } else {
                     // C became T on forward strand (G->A on reverse) indicates that the Cytosine was not methylated and was converted.
                     ++mci.unmethylatedCCountPerSample[sampleIndex];
-                    ++mci.unmethylatedCCountsPerGroup[groupIndex];
+                    ++mci.unmethylatedCCountPerGroup[groupIndex];
                     ++mci.eventCountAtSite;
                 }
 
@@ -480,7 +477,7 @@ public class MethylationRateVCFOutputFormat implements SequenceVariationOutputFo
     private boolean checkCounts() {
         boolean ok = true;
         // detect if any count is negative (that's a bug)
-        for (final int count : mci.unmethylatedCCountsPerGroup) {
+        for (final int count : mci.unmethylatedCCountPerGroup) {
 
             if (count < 0) {
                 ok = false;
