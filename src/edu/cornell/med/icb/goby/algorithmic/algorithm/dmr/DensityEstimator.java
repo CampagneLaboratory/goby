@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 
 import edu.cornell.med.icb.goby.algorithmic.algorithm.FenwickTree;
 import it.unimi.dsi.fastutil.io.BinIO;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -29,17 +30,16 @@ import java.io.Serializable;
  *         Date: 2/19/12
  *         Time: 3:01 PM
  */
-public class DensityEstimator implements Serializable{
+public class DensityEstimator implements Serializable {
 
     private static final long serialVersionUID = -4803501043413548993L;
     private static final int MAX_ITEMS = 10000;
-    FenwickTree density[];
+    private ObjectArrayList<FenwickTree> densities;
+    private int BIN_SIZE_SUM_TOTAL = 50;
 
     public DensityEstimator(int numberOfContexts) {
-        density = new FenwickTree[numberOfContexts];
-        for (int contextIndex = 0; contextIndex < numberOfContexts; contextIndex++) {
-            density[contextIndex] = new FenwickTree(MAX_ITEMS);
-        }
+        densities = new ObjectArrayList<FenwickTree>();
+
     }
 
     /**
@@ -83,21 +83,36 @@ public class DensityEstimator implements Serializable{
     }
 
     private FenwickTree getDensity(final int contextIndex, final int sumTotal) {
-        return density[contextIndex];
+        final int index = sumTotal / BIN_SIZE_SUM_TOTAL;
+        while (densities.size() <= index) {
+            densities.add(null);
+        }
+        final FenwickTree tree = densities.get(index);
+        if (tree != null) {
+            return tree;
+        } else {
+            // grow the array as needed:
+
+            final FenwickTree newTree = new FenwickTree(MAX_ITEMS);
+            densities.set(index, newTree);
+            return newTree;
+        }
     }
 
     public static void store(final DensityEstimator estimator, final String filename) throws IOException {
-        BinIO.storeObject(estimator,filename);
+        BinIO.storeObject(estimator, filename);
     }
-    public static DensityEstimator load( final String filename) throws IOException, ClassNotFoundException {
+
+    public static DensityEstimator load(final String filename) throws IOException, ClassNotFoundException {
         return (DensityEstimator) BinIO.loadObject(filename);
     }
 
     /**
      * Get the cumulative count for observations with delta between zero and the argument value.
-     * @param  contextIndex index of the context.
-     * @param  sumTotal     total sum.
-     * @param  delta upper-bound on delta for counting observations.
+     *
+     * @param contextIndex index of the context.
+     * @param sumTotal     total sum.
+     * @param delta        upper-bound on delta for counting observations.
      * @return
      */
     public long getCumulativeCount(int contextIndex, int sumTotal, int delta) {

@@ -572,16 +572,17 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 buildAnnotationRecordForOutput(annotations.getAnnotationsLastChromosome(), Integer.MAX_VALUE, anno);
             }
 
-            outWriter.close();
-            if (estimateIntraGroupDifferences) {
-                // when estimating intra group differences, we  serialize the estimator to the output.
-                try {
-                    DensityEstimator.store(estimator, outputInfo.getFilename());
-                } catch (IOException e) {
-                    LOG.error("Unable to write estimator to file", e);
-                }
-            }
 
+        }
+        outWriter.close();
+
+        if (estimateIntraGroupDifferences) {
+            // when estimating intra-group differences, we  serialize the estimator to the output.
+            try {
+                DensityEstimator.store(estimator, outputInfo.getFilename());
+            } catch (IOException e) {
+                LOG.error("Unable to write estimator to file", e);
+            }
         }
     }
 
@@ -667,6 +668,6 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
     }
 
     public void setWriteCounts(boolean b) {
-        writeCounts=b;
+        writeCounts = b;
     }
 }

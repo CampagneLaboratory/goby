@@ -58,4 +58,22 @@ public class TestDensityEstimator {
         assertEquals("", 2l, estimator.getCumulativeCount(0, 0, 0));
         assertEquals("", 3l, estimator.getCumulativeCount(0, 0, 2));
     }
+
+    @Test
+    public void testObserveLargeSumTotals() throws Exception {
+        final DensityEstimator estimator = new DensityEstimator(2);
+        final value[] observations = {
+                new value(0, 500, 130, 4, 12), // sumTotal= 646
+                new value(0, 0, 1000, 1, 2),   // sumTotal= 1003
+                new value(0, 0, 10000, 0, 3),  // sumTotal= 10003
+        };
+        for (final value obs : observations) {
+            estimator.observe(obs.context, obs.cma, obs.ca, obs.cmb, obs.cb);
+        }
+        assertEquals("", 1l, estimator.getCumulativeCount(0, 646, 378));
+        assertEquals("", 1l, estimator.getCumulativeCount(0, 647, 378));  // sumTotal is binned, and 647 goes in same bin as 646.
+        assertEquals("", 0l, estimator.getCumulativeCount(0, 647, 377));  // cumulative count before observation is zero
+        assertEquals("", 1l, estimator.getCumulativeCount(0, 1003, 999));
+        assertEquals("", 1l, estimator.getCumulativeCount(0, 10003, 9997));
+    }
 }
