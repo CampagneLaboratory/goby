@@ -1168,7 +1168,7 @@ extern "C" {
                         pairSegment = pairSegments != NULL ? pairSegments->at(0) : NULL;
                     }
                 }
-                cout << "pairSegment->fi=" << pairSegment->fragmentIndex << endl;
+                debug(cout << "pairSegment->fi=" << pairSegment->fragmentIndex << endl;);
             }
         }
 
