@@ -26,10 +26,12 @@ import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.algorithmic.data.IntraGroupEnumerator;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.util.DynamicOptionClient;
+import edu.cornell.med.icb.goby.util.IOUtil;
 import edu.cornell.med.icb.goby.util.OutputInfo;
 import edu.cornell.med.icb.goby.util.OutputInfoFromWriter;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullWriter;
 import org.apache.log4j.Logger;
 import org.rosuda.JRI.Rengine;
@@ -116,12 +118,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
     }
 
 
-    @Override
-    public void writeRecord() {
-        init();
-        addValuesAndAverage();
-        provider.next();
-    }
+
 
     /**
      * Initialize variables for each declared sample. Write header to output. Executes exactly once per output file.
@@ -324,7 +321,12 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
 
     }
 
-
+     @Override
+    public void writeRecord() {
+        init();
+        addValuesAndAverage();
+        provider.next();
+    }
     /**
      * Increment counters for methylated and non-methylated cytosines across
      * sequence contexts, samples and groups
@@ -521,8 +523,12 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 final int Ca = counter.getUnmethylatedCCountPerSample(contextIndex, next.sampleIndexA);
                 final int Cmb = counter.getMethylatedCCountPerSample(contextIndex, next.sampleIndexB);
                 final int Cb = counter.getUnmethylatedCCountPerSample(contextIndex, next.sampleIndexB);
-
-                estimator.observe(contextIndex, Cma, Ca, Cmb, Cb);
+                if ((Cma + Ca) == 0 || (Cmb + Cb) == 0) {
+                    System.out.printf("Zero in one intra-group sample for %d %d %d %d samplexIndexA=%d sampleIndexB=%d %n",
+                            Cma, Ca, Cmb, Cb,next.sampleIndexA, next.sampleIndexB);
+                } else {
+                    estimator.observe(contextIndex, Cma, Ca, Cmb, Cb);
+                }
             }
         }
     }
@@ -575,7 +581,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
 
         }
         outWriter.close();
-
+        IOUtils.closeQuietly(outputWriter);
         if (estimateIntraGroupDifferences) {
             // when estimating intra-group differences, we  serialize the estimator to the output.
             try {
