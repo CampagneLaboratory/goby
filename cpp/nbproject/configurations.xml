@@ -153,6 +153,40 @@
       </folder>
       <item path="src/TestReadCompactReads.c" ex="true" tool="0" flavor="0">
       </item>
+      <item path="src/goby/Alignments.h" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="src/goby/Alignments.pb.h" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="src/goby/C_Alignments.h" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="src/goby/C_CompactHelpers.h" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="src/goby/C_Gsnap.h" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="src/goby/C_Gsnap_structs.h" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="src/goby/C_Reads.h" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="src/goby/ICBFileInputStream.h" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="src/goby/MessageChunks.h" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="src/goby/Reads.h" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="src/goby/Reads.pb.h" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="src/goby/SamFlags.h" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="src/goby/TooManyHits.h" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="src/goby/common.h" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="src/goby/hash.h" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="src/goby/timestamp.h" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="src/kseq.h" ex="true" tool="3" flavor="0">
+      </item>
     </conf>
   </confs>
 </configurationDescriptor>

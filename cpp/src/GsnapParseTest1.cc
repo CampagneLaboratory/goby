@@ -101,7 +101,11 @@ void testSingleForwardDel(CAlignmentsWriterHelper *writerHelper) {
 
 
 void testPairedEnd(CAlignmentsWriterHelper *writerHelper) {
-char *test1 = read_file("test-data/gsnap-output-pair-test-1.gsnap");
+    char *test1 = read_file("test-data/gsnap-output-pair-test-1.gsnap");
+    gobyGsnap_parse(writerHelper, test1);
+    free(test1);
+
+    test1 = read_file("test-data/gsnap-paired-multi.gsnap");
     gobyGsnap_parse(writerHelper, test1);
     free(test1);
 }

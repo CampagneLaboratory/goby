@@ -33,7 +33,7 @@ using pcrecpp::StringPiece;
 using pcrecpp::RE;
 using pcrecpp::RE_Options;
 
-#define C_GSNAP_DEBUG
+#undef C_GSNAP_DEBUG
 #ifdef C_GSNAP_DEBUG
 #define debug(x) x
 #else
@@ -686,7 +686,7 @@ extern "C" {
                 
             }
         }
-        // Assign the fragmentId's AFTER so they are in order of
+        // Assign the fragmentId's AFTER so they are in orderni of
         // genomic position (in case of reverseStrand).
         for (int i = 0; i < numSegs; i++) {
             newAlignmentEntry->alignmentSegments->at(i)->fragmentIndex =
@@ -1277,43 +1277,41 @@ extern "C" {
                         alignment->alignmentEntriesPair, NULL, false /*firstInPair*/);
             } else {
                 
-                // TODO: there should now be n segments in both alignmentEntries
-                // TODO: and alignmentEntriesPair, output them paired
-                // TODO: one from each instead of one random one
-                
-                // At this time, Goby only supports storing 1-to-1 pairs not
-                // n-to-n pairs, which the Gsnap output provides when running
-                // with -n > 1. So, we'll keep a random alignmentEntry from
-                // the read and it's mate.
                 int size = alignment->alignmentEntries->size();
                 int sizePair = alignment->alignmentEntriesPair->size();
-                vector<GsnapAlignmentEntry *> *tempEntries;
-                vector<GsnapAlignmentEntry *> *tempEntriesPair;
-                if (size > 1) {
-                    tempEntries = new vector<GsnapAlignmentEntry *>();
-                    int indexToKeep = rand() % size;
-                    tempEntries->push_back(alignment->alignmentEntries->at(indexToKeep));
-                } else {
-                    tempEntries = alignment->alignmentEntries;
+                if (size != sizePair) {
+                    // We cannot write this entry, if this is a PAIRED
+                    // alignment, the number of entries for both halfs of
+                    // the pair need to be the same.
+                    return;
                 }
 
-                if (sizePair > 1) {
-                    tempEntriesPair = new vector<GsnapAlignmentEntry *>();
-                    int indexToKeep = rand() % sizePair;
-                    tempEntriesPair->push_back(alignment->alignmentEntriesPair->at(indexToKeep));
-                } else {
-                    tempEntriesPair = alignment->alignmentEntriesPair;
-                }
+                vector<GsnapAlignmentEntry *> *tempEntries = NULL;
+                vector<GsnapAlignmentEntry *> *tempEntriesPair = NULL;
+                for (int i = 0; i < size; i++) {
+                    if (size > 1) {
+                        if (tempEntries == NULL) {
+                            tempEntries = new vector<GsnapAlignmentEntry *>();
+                            tempEntriesPair = new vector<GsnapAlignmentEntry *>();
+                        } else {
+                            tempEntries->clear();
+                            tempEntriesPair->clear();
+                        }
+                        tempEntries->push_back(alignment->alignmentEntries->at(i));
+                        tempEntriesPair->push_back(alignment->alignmentEntriesPair->at(i));
+                    } else {
+                        tempEntries = alignment->alignmentEntries;
+                        tempEntriesPair = alignment->alignmentEntriesPair;
+                    }
 
-                writeAlignment(writerHelper, 
-                        tempEntries, tempEntriesPair, true /*firstInPair*/);
-                writeAlignment(writerHelper,
-                        tempEntriesPair, tempEntries, false /*firstInPair*/);
+                    writeAlignment(writerHelper, 
+                            tempEntries, tempEntriesPair, true /*firstInPair*/);
+                    writeAlignment(writerHelper,
+                            tempEntriesPair, tempEntries, false /*firstInPair*/);
+                }
 
                 if (size > 1) {
                     delete tempEntries;
-                }
-                if (sizePair > 1) {
                     delete tempEntriesPair;
                 }
             }
