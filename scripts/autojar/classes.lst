@@ -12,6 +12,7 @@ edu.cornell.med.icb.goby.counts.CountsArchiveReader.class
 edu.cornell.med.icb.goby.counts.CachingCountsArchiveReader.class
 edu.cornell.med.icb.goby.counts.CountAdaptiveBinningAdaptor.class
 edu.cornell.med.icb.goby.counts.CountsReaderI.class
+it.unimi.dsi.fastutil.io.RepositionableStream.class
 it.unimi.dsi.fastutil.bytes.ByteList.class
 it.unimi.dsi.fastutil.bytes.ByteArrayList.class
 it/unimi/dsi/io/*.in.*
