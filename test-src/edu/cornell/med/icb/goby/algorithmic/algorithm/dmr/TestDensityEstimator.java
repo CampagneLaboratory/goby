@@ -76,4 +76,18 @@ public class TestDensityEstimator {
         assertEquals("", 1l, estimator.getCumulativeCount(0, 1003, 999));
         assertEquals("", 1l, estimator.getCumulativeCount(0, 10003, 9997));
     }
+
+    @Test
+    public void testFastIndex() {
+        DensityEstimator estimator = new DensityEstimator(1);
+        int [] sumTotalValues={
+                0, 1, 3,50, 99, 101, 502, 1050, 2000, 1000010
+        }    ;
+        for (int sumTotal=0; sumTotal<10000; sumTotal++) {
+            int theIndex = estimator.getTheIndex(sumTotal);
+            int theIndexFast = estimator.getTheIndexFast(sumTotal);
+            assertEquals(  String.format("theIndex=%d must match theIndexFast=%d for sumTotal=%d.", theIndex, theIndexFast, sumTotal), theIndex ,theIndexFast);
+        }
+
+    }
 }

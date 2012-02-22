@@ -27,7 +27,9 @@ public class FenwickTree implements Serializable {
     private static final long serialVersionUID = -7830133715336861385L;
     private int n;
     private long totalCount;
-
+    public int size() {
+        return n;
+    }
     public FenwickTree(int n) {
         this.cumCount = new long[n + 1];
         this.n = n;

@@ -19,10 +19,13 @@
 package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 
 import edu.cornell.med.icb.goby.algorithmic.algorithm.FenwickTree;
+import edu.mssm.crover.cli.CLI;
 import it.unimi.dsi.fastutil.io.BinIO;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Serializable;
 
 /**
@@ -35,7 +38,8 @@ public class DensityEstimator implements Serializable {
     private static final long serialVersionUID = -4803501043413548993L;
     private static final int MAX_ITEMS = 10000;
     private ObjectArrayList<FenwickTree> densities;
-    private int BIN_SIZE_SUM_TOTAL = 50;
+    private int BIN_SIZE_SUM_TOTAL = 1000;
+
 
     public DensityEstimator(int numberOfContexts) {
         densities = new ObjectArrayList<FenwickTree>();
@@ -75,15 +79,18 @@ public class DensityEstimator implements Serializable {
         final int diffA = maxA - minA;
         final int diffB = maxB - minB;
         final int delta = Math.abs(diffA - diffB);
-        final int elementIndex = delta;
+
         int sumTotal = cma + ca + cmb + cb;
-        System.out.printf("observing context=%d sumTotal=%d delta=%d%n", contextIndex, sumTotal, delta);
+        final int elementIndex = delta;//(int) (((((double)delta)/(1.0+sumTotal)*MAX_ITEMS*0.9)));
+        System.out.printf("observing context=%d sumTotal=%d delta=%d elementIndex=%d %n", contextIndex, sumTotal, delta, elementIndex);
         getDensity(contextIndex, sumTotal).incrementCount(elementIndex);
 
     }
 
     private FenwickTree getDensity(final int contextIndex, final int sumTotal) {
-        final int index = sumTotal / BIN_SIZE_SUM_TOTAL;
+
+
+        final int index = getTheIndexFast(sumTotal);
         while (densities.size() <= index) {
             densities.add(null);
         }
@@ -97,6 +104,41 @@ public class DensityEstimator implements Serializable {
             densities.set(index, newTree);
             return newTree;
         }
+    }
+
+    protected final int getTheIndexFast(final int sumTotal) {
+       return sumTotal < 100 ? 0 : sumTotal / BIN_SIZE_SUM_TOTAL + 1   ;
+    }
+
+    protected final int getTheIndex(final int sumTotal) {
+        final int theIndex;
+        for (int index=0;;index++) {
+            if (getLowerBound(index)<=sumTotal && sumTotal <getUpperBound(index)) {
+                theIndex=index;
+                break;
+            }
+        }
+        return theIndex;
+    }
+
+    public int getLowerBound(int index) {
+        if (index == 0) {
+            return 0;
+        }
+        if (index == 1) {
+            return 100;
+        }
+
+        return BIN_SIZE_SUM_TOTAL * (index - 1);
+
+    }
+
+    public int getUpperBound(int index) {
+        if (index == 0) {
+            return 100;
+        }
+        return BIN_SIZE_SUM_TOTAL * index ;
+
     }
 
     public static void store(final DensityEstimator estimator, final String filename) throws IOException {
@@ -119,4 +161,47 @@ public class DensityEstimator implements Serializable {
         final FenwickTree tree = getDensity(contextIndex, sumTotal);
         return tree.getCumulativeCount(delta);
     }
+
+    public static void main(final String[] args) throws IOException {
+        boolean printDensity = CLI.isKeywordGiven(args, "--print-density");
+        String filename = CLI.getOption(args, "-f", null);
+        String outputFilename = CLI.getOption(args, "-o", "out.tsv");
+        PrintWriter outWriter = new PrintWriter(new FileWriter(outputFilename));
+        if (printDensity) {
+            DensityEstimator estimated = null;
+            try {
+                estimated = load(filename);
+                int index = 0;
+                outWriter.println("midPointSumTotal\tdelta\tcount-at-delta");
+                for (final FenwickTree tree : estimated.densities) {
+                    if (tree != null) {
+                        int low = estimated.getLowerBound(index);
+                        int high = estimated.getUpperBound(index);
+
+                        int midPointSumTotal = low+((high - low) / 2);
+                         System.out.printf("low=%d high=%d midPoint=%d %n", low, high, midPointSumTotal);
+                        final int maxCumulative = tree.getCumulativeCount(tree.size() - 2);
+                        for (int delta = 0; delta < tree.size() - 1; delta++) {
+                            final int cumulativeCountAt = tree.getCumulativeCount(delta);
+                            final int cumulativeCountAfter = tree.getCumulativeCount(delta + 1);
+
+                            outWriter.printf("%d\t%d\t%d%n", midPointSumTotal, delta, cumulativeCountAfter - cumulativeCountAt);
+                            if (cumulativeCountAfter == maxCumulative) {
+                                break;
+                            }
+                        }
+
+                    }
+                    index++;
+
+                }
+                outWriter.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+
+        }
+    }
+
 }
