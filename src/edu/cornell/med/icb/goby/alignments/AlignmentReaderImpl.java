@@ -28,6 +28,7 @@ import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
+import it.unimi.dsi.fastutil.io.RepositionableStream;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
@@ -37,7 +38,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import javax.management.RuntimeErrorException;
 import java.io.*;
+import java.net.*;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -187,19 +190,19 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         this.basename = getBasename(basename);
 
         try {
-            headerStream = new GZIPInputStream(new FileInputStream(this.basename + ".header"));
+            headerStream = new GZIPInputStream(new RepositionableInputStream((this.basename + ".header")));
         } catch (IOException e) {
             // try not compressed for compatibility with 1.4-:
             LOG.trace("falling back to legacy 1.4- uncompressed header.");
 
-            headerStream = new FileInputStream(this.basename + ".header");
+            headerStream = new RepositionableInputStream(this.basename + ".header");
         }
 
         readHeader();
         if (!indexed)
             throw new UnsupportedOperationException("The alignment must be sorted and indexed to read slices of data by reference position.");
         readIndex();
-        final FileInputStream stream = new FileInputStream(this.basename + ".entries");
+        final InputStream stream = new RepositionableInputStream(this.basename + ".entries");
         final long startOffset = getByteOffset(startReferenceIndex, startPosition, 0);
         long endOffset = getByteOffset(endReferenceIndex, endPosition + 1, 1);
 
@@ -214,8 +217,10 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         LOG.trace("start offset :" + startOffset + " end offset " + endOffset);
 
         stats = new Properties();
-        final File statsFile = new File(basename + ".stats");
-        if (statsFile.exists()) {
+        String statsFilename = basename + ".stats";
+
+        if (RepositionableInputStream.resourceExist(statsFilename)) {
+            final File statsFile = new File(statsFilename);
             Reader statsFileReader = null;
             try {
                 statsFileReader = new FileReader(statsFile);
@@ -228,6 +233,9 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             }
         }
     }
+
+
+
 
     /**
      * Open a Goby alignment file for reading between the byte positions startOffset and endOffset.
@@ -255,9 +263,9 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         super(upgrade, getBasename(basename));
         this.basename = getBasename(basename);
         final String entriesFile = basename + ".entries";
-        boolean entriesFileExist = new File(entriesFile).exists();
+        boolean entriesFileExist = RepositionableInputStream.resourceExist(entriesFile);
         if (entriesFileExist) {
-            final FileInputStream stream = new FileInputStream(entriesFile);
+            final InputStream stream = new RepositionableInputStream(entriesFile);
 
             alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset, endOffset, new FastBufferedInputStream(stream));
         } else {
@@ -265,19 +273,22 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         }
         LOG.trace("start offset :" + startOffset + " end offset " + endOffset);
         try {
-            headerStream = new GZIPInputStream(new FileInputStream(this.basename + ".header"));
+            headerStream = new GZIPInputStream(new RepositionableInputStream(this.basename + ".header"));
         } catch (IOException e) {
+            e.printStackTrace();
             // try not compressed for compatibility with 1.4-:
             LOG.trace("falling back to legacy 1.4- uncompressed header.");
 
-            headerStream = new FileInputStream(this.basename + ".header");
+            headerStream = new RepositionableInputStream(this.basename + ".header");
         }
         stats = new Properties();
-        final File statsFile = new File(this.basename + ".stats");
-        if (statsFile.exists()) {
+        String statsFilename = this.basename + ".stats";
+
+        if (RepositionableInputStream.resourceExist(statsFilename)) {
+            final File statsFile = new File(statsFilename);
             Reader statsFileReader = null;
             try {
-                statsFileReader = new FileReader(statsFile);
+                statsFileReader = new InputStreamReader(new RepositionableInputStream(statsFilename));
                 stats.load(statsFileReader);
             } catch (IOException e) {
                 LOG.warn("cannot load properties for basename: " + this.basename, e);
@@ -290,6 +301,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         endReferenceIndex = Integer.MAX_VALUE;
         endPosition = Integer.MAX_VALUE;
     }
+
 
     public AlignmentReaderImpl(final String basename) throws IOException {
         this(0, Long.MAX_VALUE, getBasename(basename), true);
@@ -589,7 +601,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
 
     /**
      * Calculate the offset (in bytes) in the compact entries file for a specific targetIndex and position.
-     * Entries that can be read after this position are garanteed to have targetIndex larger or equal to targetIndex
+     * Entries that can be read after this position are guaranteed to have targetIndex larger or equal to targetIndex
      * and positions larger or equal to position.
      * The parameter chunkOffset can be used to iterate through successive protocol buffer compressed chunks.
      * A typical usage is to call getByteOffset with startReference and startPosition. A second call to getByteOffset
@@ -686,7 +698,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     }
 
     private boolean indexExists(String basename) {
-        return new File(basename + ".index").exists();
+        return RepositionableInputStream.resourceExist(basename + ".index");
     }
 
     private LongArrayList indexOffsets = new LongArrayList();
@@ -702,7 +714,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         if (indexed && !indexLoaded) {
             // header is needed to access target lengths:
             readHeader();
-            final GZIPInputStream indexStream = new GZIPInputStream(new FileInputStream(basename + ".index"));
+            final GZIPInputStream indexStream = new GZIPInputStream(new RepositionableInputStream(basename + ".index"));
 
             final CodedInputStream codedInput = CodedInputStream.newInstance(indexStream);
             codedInput.setSizeLimit(Integer.MAX_VALUE);
@@ -832,7 +844,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
 
     @Override
     public long getStartByteOffset(final int startReferenceIndex, final int startPosition) {
-      //  System.out.printf("start target: %d position: %d %n",startReferenceIndex, startPosition);
+        //  System.out.printf("start target: %d position: %d %n",startReferenceIndex, startPosition);
         return getByteOffset(startReferenceIndex, startPosition, 0);
     }
 
@@ -843,10 +855,10 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         int i = 1;
         while (endByteOffset == startByteOffset) {
             endByteOffset = getByteOffset(endReferenceIndex, endPosition + 1, i);
-        //    System.out.println("i="+i);
+            //    System.out.println("i="+i);
             ++i;
         }
-      //  System.out.println(endByteOffset);
+        //  System.out.println(endByteOffset);
         return endByteOffset;
     }
 

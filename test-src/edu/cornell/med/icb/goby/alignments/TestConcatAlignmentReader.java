@@ -23,7 +23,9 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
+
 import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -155,7 +157,7 @@ public class TestConcatAlignmentReader {
 
         while (reader.hasNext()) {
             final Alignments.AlignmentEntry alignmentEntry = reader.next();
-            //   System.out.println("found entry: " + alignmentEntry);
+            System.out.println("found entry: " + alignmentEntry);
             assert alignmentEntry.hasPosition();
             count++;
         }
@@ -241,6 +243,47 @@ public class TestConcatAlignmentReader {
             tmhWriter.close();
         }
 
+
+    }
+
+    @Test
+    public void testLoadTwoFromFileURLs() throws IOException {
+        final int count;
+
+        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader("file://./" + outputBasename1, "file://./" + outputBasename2);
+        count = countAlignmentEntries(concatReader);
+        assertEquals(count101 + count102, count);
+        concatReader.readHeader();
+
+        assertEquals(numQueries101 + numQueries102, concatReader.getNumberOfQueries());
+        assertEquals(numTargets, concatReader.getNumberOfTargets());
+
+    }
+
+    // this test does URL connections to DropBox, so we give it up to 10 seconds before failing:
+    @Test(timeout = 60000)
+    public void testLoadTwoFromHttpURLs() throws IOException {
+        final int count;
+        /*
+        final AlignmentReaderFactory alignmentReaderFactory,
+                                 final boolean adjustQueryIndices,
+                                 final int startReferenceIndex,
+                                 final int startPosition,
+                                 final int endReferenceIndex,
+                                 final int endPosition,
+                                 final String... basenames
+         */
+        // There are exactly 12 entries between position 33031693 and 33031798
+        final ConcatAlignmentReader concatReader = new ConcatAlignmentReader(new DefaultAlignmentReaderFactory(),
+                false, 21, 33031693, 21, 33031798,
+                "http://dl.dropbox.com/u/357497/KHTFWNT-419-bis6-chr22-simulated-flat.entries",
+                "http://dl.dropbox.com/u/357497/MCQPRWA-419-bis6-chr22-simulated-spikes.entries");
+        count = countAlignmentEntries(concatReader);
+        assertEquals(12, count);
+        concatReader.readHeader();
+
+        assertEquals(976, concatReader.getNumberOfQueries());
+        assertEquals(84, concatReader.getNumberOfTargets());
 
     }
 }

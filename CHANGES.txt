@@ -1,4 +1,7 @@
-dev >
+dev > 1.9.8.4
+ - Make it possible to open Goby alignments through HTTP. Simply specify a URL as a basename as argument to the goby
+   tools. This is supported broadly by the API, so the concatenation reader also supports URLs, for instance. TMH files
+   currently cannot be loaded remotely. Alignments that require upgrading will also fail to load remotely.
  - vcf methylation format: removed space in name of C and Cm group INFO fields.
  - Added the ability in alignment-to-text mode to output HTML (-f html), to start/end at offsets (-s/-e) in the alignments and
    to limit the number of alignment entries to output (-n).

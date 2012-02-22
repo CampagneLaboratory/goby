@@ -41,7 +41,7 @@ public class UpgradeTo1_9_6 {
     public void upgrade(String basename, AlignmentReaderImpl reader) throws IOException {
         if (!"1.9.5-".equals(reader.getGobyVersion())) return;
 
-        final GZIPInputStream indexStream = new GZIPInputStream(new FileInputStream(basename + ".index"));
+        final GZIPInputStream indexStream = new GZIPInputStream(new RepositionableInputStream(basename + ".index"));
 
         final CodedInputStream codedInput = CodedInputStream.newInstance(indexStream);
         codedInput.setSizeLimit(Integer.MAX_VALUE);
@@ -127,7 +127,7 @@ public class UpgradeTo1_9_6 {
     private void upgradeHeaderVersion(String basename) throws IOException {
         InputStream headerStream;
         try {
-            headerStream = new GZIPInputStream(new FileInputStream(basename + ".header"));
+            headerStream = new GZIPInputStream(new RepositionableInputStream(basename + ".header"));
         } catch (IOException e) {
             // try not compressed for compatibility with 1.4-:
             LOG.trace("falling back to legacy 1.4- uncompressed header.");
