@@ -1,4 +1,8 @@
 dev > 1.9.8.4
+ - methylation region can now estimate empirical p-values. Empirical P-values require biological replicates in at least
+   one of the groups under analysis. Two passes over the data are required. In the first pass, the empirical null
+   distribution is observed by comparing pairs of samples in the same group. In the second pass, this distribution is
+   used to estimate the p-value of observing the between group differences.
  - Make it possible to open Goby alignments through HTTP. Simply specify a URL as a basename as argument to the goby
    tools. This is supported broadly by the API, so the concatenation reader also supports URLs, for instance. TMH files
    currently cannot be loaded remotely. Alignments that require upgrading will also fail to load remotely.

@@ -32,12 +32,15 @@ public class IntraGroupEnumerator {
     private int[] sampleIndexToGroupIndex;
     private int numSamples;
     private int numGroups;
+    private ObjectArrayList<SamplePair>[] samplePairsForGroup;
+    private ObjectArrayList<SamplePair>[] samplePairsForGroupComparisons;
 
-    public IntraGroupEnumerator(final int[] sampleIndexToGroupIndex, int numSamples, int numGroups) {
+    public IntraGroupEnumerator(final int[] sampleIndexToGroupIndex, int numSamples, int numGroups, int numPairComparisons) {
         samplePairsForGroup = new ObjectArrayList[numGroups];
         this.sampleIndexToGroupIndex = sampleIndexToGroupIndex;
         this.numSamples = numSamples;
         this.numGroups = numGroups;
+        this.samplePairsForGroupComparisons=new ObjectArrayList[numPairComparisons];
 
     }
 
@@ -46,6 +49,11 @@ public class IntraGroupEnumerator {
         assert samplePairs != null : "sample pairs must have been defined for group " + groupIndex;
         return samplePairs;
     }
+    public ObjectArrayList<SamplePair> getPairs(GroupComparison comparison) {
+            final ObjectArrayList<SamplePair> samplePairs = samplePairsForGroupComparisons[comparison.index];
+            assert samplePairs != null : "sample pairs must have been defined for group comparison "+comparison.toString();
+            return samplePairs;
+        }
 
     public void recordPairForGroup(int groupIndex) {
         samplePairsForGroup[groupIndex] = new ObjectArrayList<SamplePair>();
@@ -64,5 +72,32 @@ public class IntraGroupEnumerator {
         }
     }
 
-    private ObjectArrayList<SamplePair>[] samplePairsForGroup;
+    /**
+     * Record all the between-group sample pairs that exist for the given group comparison.
+     * @param comparison group comparison of interest.
+     */
+    public void recordPairForGroupComparison(GroupComparison comparison) {
+        samplePairsForGroupComparisons[comparison.index] = new ObjectArrayList<SamplePair>();
+        final IntSet sampleIndicesInGroup1 = new IntAVLTreeSet();
+        final IntSet sampleIndicesInGroup2 = new IntAVLTreeSet();
+        for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
+            if (sampleIndexToGroupIndex[sampleIndex] == comparison.indexGroup1) {
+                sampleIndicesInGroup1.add(sampleIndex);
+            }
+        }
+        for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
+            if (sampleIndexToGroupIndex[sampleIndex] == comparison.indexGroup2) {
+                sampleIndicesInGroup2.add(sampleIndex);
+            }
+        }
+        for (final int sampleIndexA : sampleIndicesInGroup1) {
+            for (final int sampleIndexB : sampleIndicesInGroup2) {
+                if (sampleIndexA < sampleIndexB) {
+                    samplePairsForGroupComparisons[comparison.index].add(new SamplePair(sampleIndexA, sampleIndexB));
+                }
+            }
+        }
+    }
+
+
 }

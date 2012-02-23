@@ -18,10 +18,15 @@
 
 package edu.cornell.med.icb.goby.stats;
 
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 
@@ -34,6 +39,12 @@ import static org.junit.Assert.assertEquals;
  */
 public class TestAnnotationAveragingWriter {
 
+    /**
+       * Used to log debug and informational messages.
+       */
+      private static final Log LOG = LogFactory.getLog(TestAnnotationAveragingWriter.class);
+
+      private static final String BASE_TEST_DIR = "test-results/stats-writer";
 
     String[] sequences = {
             "GTTACGCGATGATTTAAGAAT",
@@ -338,7 +349,7 @@ public class TestAnnotationAveragingWriter {
                         "deltaMR[group1/group2][CpC]\tdeltaMR[group1/group3][CpC]\tdeltaMR[group1/group4][CpC]\t" +
                         "deltaMR[group1/group2][CpT]\tdeltaMR[group1/group3][CpT]\tdeltaMR[group1/group4][CpT]\t" +
                         "deltaMR[group1/group2][CpN]\tdeltaMR[group1/group3][CpN]\tdeltaMR[group1/group4][CpN]\n" +
-                        "Case4\t5\t9\tannotation7\t\t\t\t\t\t\t\t\t\t\t\t\t66.6667\t61.5385\t31.2500\t31.2500\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t66.6667\t61.5385\t31.2500\t31.2500\t\t\t\t\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t0.773708\t0.0514794\t0.0514794\t1.00000\t1.00000\t1.00000\t\t\t\t\t\t\t\t\t\t5.12821\t35.4167\t35.4167\t\t\t\n"+
+                        "Case4\t5\t9\tannotation7\t\t\t\t\t\t\t\t\t\t\t\t\t66.6667\t61.5385\t31.2500\t31.2500\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t66.6667\t61.5385\t31.2500\t31.2500\t\t\t\t\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t0.773708\t0.0514794\t0.0514794\t1.00000\t1.00000\t1.00000\t\t\t\t\t\t\t\t\t\t5.12821\t35.4167\t35.4167\t\t\t\n" +
                         "Case4\t13\t17\tannotation8\t\t\t\t\t26.0870\t70.5882\t37.0370\t36.0000\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t26.0870\t70.5882\t37.0370\t36.0000\t\t\t\t\t\t\t\t\t\t\t\t\t1.00000\t1.00000\t1.00000\t0.00952120\t0.545556\t0.541875\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t1.00000\t\t\t\t44.5013\t10.9501\t9.91304\t\t\t\t\t\t\t\t\t\n",
                 stringWriter.getBuffer().toString());
 
@@ -346,30 +357,78 @@ public class TestAnnotationAveragingWriter {
 
     @Test
     // test writing counts
-     public void testCase10() {
-         String[] samples = new String[]{"sample1"};
-         int[] positions = new int[]{5, 7};
-         int[][] C = {{5, 3}};
-         int[][] Cm = {{9, 8}};
-         testSupport = new MethylCountProviderTestSupport(samples, positions, "Case1", C, Cm);
-         final StringWriter stringWriter = new StringWriter();
-         AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
+    public void testCase10() {
+        String[] samples = new String[]{"sample1"};
+        int[] positions = new int[]{5, 7};
+        int[][] C = {{5, 3}};
+        int[][] Cm = {{9, 8}};
+        testSupport = new MethylCountProviderTestSupport(samples, positions, "Case1", C, Cm);
+        final StringWriter stringWriter = new StringWriter();
+        AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
         testWriter.setWriteCounts(true);
-         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
-         testWriter.writeRecord();
-         testWriter.writeRecord();
-         testWriter.close();
-         assertEquals("Test Case 1 result: ", "Chromosome\tStart\tEnd\tFeature\t" +
-                 "#C[sample1][CpG]\t#Cm[sample1][CpG]\t#Sites[sample1][CpG]\tMR[sample1][CpG]\t" +
-                 "#C[sample1][CpA]\t#Cm[sample1][CpA]\t#Sites[sample1][CpA]\tMR[sample1][CpA]\t" +
-                 "#C[sample1][CpC]\t#Cm[sample1][CpC]\t#Sites[sample1][CpC]\tMR[sample1][CpC]\t" +
-                 "#C[sample1][CpT]\t#Cm[sample1][CpT]\t#Sites[sample1][CpT]\tMR[sample1][CpT]\t" +
-                 "#C[sample1][CpN]\t#Cm[sample1][CpN]\t#Sites[sample1][CpN]\tMR[sample1][CpN]\n" +
-                 "Case1\t4\t8\tannotation0\t8\t17\t2\t68.0000\t" +
-                 "0\t0\t0\t\t" +
-                 "0\t0\t0\t\t" +
-                 "0\t0\t0\t\t" +
-                 "0\t0\t0\t\n", stringWriter.getBuffer().toString());
-     }
+        testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
+        testWriter.writeRecord();
+        testWriter.writeRecord();
+        testWriter.close();
+        assertEquals("Test Case 1 result: ", "Chromosome\tStart\tEnd\tFeature\t" +
+                "#C[sample1][CpG]\t#Cm[sample1][CpG]\t#Sites[sample1][CpG]\tMR[sample1][CpG]\t" +
+                "#C[sample1][CpA]\t#Cm[sample1][CpA]\t#Sites[sample1][CpA]\tMR[sample1][CpA]\t" +
+                "#C[sample1][CpC]\t#Cm[sample1][CpC]\t#Sites[sample1][CpC]\tMR[sample1][CpC]\t" +
+                "#C[sample1][CpT]\t#Cm[sample1][CpT]\t#Sites[sample1][CpT]\tMR[sample1][CpT]\t" +
+                "#C[sample1][CpN]\t#Cm[sample1][CpN]\t#Sites[sample1][CpN]\tMR[sample1][CpN]\n" +
+                "Case1\t4\t8\tannotation0\t8\t17\t2\t68.0000\t" +
+                "0\t0\t0\t\t" +
+                "0\t0\t0\t\t" +
+                "0\t0\t0\t\t" +
+                "0\t0\t0\t\n", stringWriter.getBuffer().toString());
+    }
+
+    @Test
+    // test writing counts
+    public void testCaseEstimateP() throws IOException {
+
+        String[] groups = new String[]{"group1", "group1", "group2", "group2"};
+        String[] samples = new String[]{"sample1", "sample2", "sample3", "sample4"};
+        int[] positions = new int[]{6, 8, 14, 16};
+        int[][] C = {{5, 3, 9, 8}, {4, 6, 3, 2}, {8, 3, 8, 9}, {7, 4, 9, 7}};
+        int[][] Cm = {{9, 7, 1, 5}, {9, 7, 9, 3}, {2, 3, 2, 8}, {4, 1, 3, 6}};
+        testSupport = new MethylCountProviderTestSupport(groups, samples, positions, "Case4", C, Cm);
+        final StringWriter stringWriter = new StringWriter();
+        AnnotationAveragingWriter.doc.setValue("estimate-empirical-P", true);
+        AnnotationAveragingWriter.doc.setValue("serialized-estimator-filename", makeDensityEstimator());
+
+        AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
+        testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
+        testWriter.setAggregateAllContexts(true);
+        testWriter.setSampleIndexToGroupIndex(new int[]{0, 0, 1, 1});
+        ArrayList<GroupComparison> groupComparisons = new ArrayList<GroupComparison>();
+        GroupComparison comparisonToMake = new GroupComparison("group1", "group2", 0, 1, 0);
+        groupComparisons.add(comparisonToMake);
+        testWriter.setGroupComparisons(groupComparisons);
+        testWriter.writeRecord();
+        testWriter.writeRecord();
+        testWriter.writeRecord();
+        testWriter.writeRecord();
+        testWriter.close();
+        assertEquals("Test Case 1 result: ",
+                "Chromosome\tStart\tEnd\tFeature\tMR[sample1]\tMR[sample2]\tMR[sample3]\tMR[sample4]\tMR[group1]\tMR[group1]\tMR[group2]\tMR[group2]\tfisherP[group1/group2]\tdeltaMR[group1/group2]\tempiricalP[group1/group2]\n" +
+                        "Case4\t5\t9\tannotation7\t66.6667\t61.5385\t31.2500\t31.2500\t64.0000\t31.2500\t\t\t0.00622665\t32.7500\t0.00199900\n" +
+                        "Case4\t13\t17\tannotation8\t26.0870\t70.5882\t37.0370\t36.0000\t45.0000\t36.5385\t\t\t0.520511\t8.46154\t0.00199900\n", stringWriter.getBuffer().toString());
+    }
+
+    private String makeDensityEstimator() throws IOException {
+        DensityEstimator estimator = new DensityEstimator(1);
+        int[] delta = {0000, 001, 002, 003, 004, 49};
+        int[] frequencies = {1000, 900, 800, 700, 600, 1};
+        for (int index = 0; index < delta.length; index++) {
+
+            for (int i = 0; i < frequencies[index]; i++) {
+                estimator.observe(0, delta[index], 50);
+            }
+        }
+        String filename= FilenameUtils.concat(BASE_TEST_DIR, "density.bin");
+        DensityEstimator.store(estimator, filename);
+        return filename;
+    }
 
 }

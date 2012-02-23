@@ -40,4 +40,9 @@ public class GroupComparison {
         this.indexGroup2 = indexGroup2;
         this.index=comparisonIndex;
     }
+
+    @Override
+    public String toString() {
+        return String.format("[group-comparison index=%d group1=%s/%d group2=%s/%d]",index,nameGroup1,indexGroup1, nameGroup2, indexGroup2);
+    }
 }

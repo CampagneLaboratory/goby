@@ -162,6 +162,7 @@ public class DynamicOptionClient {
         }
         return null;
     }
+
     /**
      * Obtain the Boolean value corresponding to the key.
      *
@@ -174,5 +175,22 @@ public class DynamicOptionClient {
             return Boolean.parseBoolean(val);
         }
         return null;
+    }
+
+    /**
+     * Set a value for a parameter identified by a key.
+     * @param key   option key.
+     * @param value option new value.
+     */
+    public void setValue(final String key, final Object value) {
+        if (value == null) {
+            return;
+        }
+        for (int keyIndex = 0; keyIndex < supportedKeys.length; keyIndex++) {
+            if (key.equals(supportedKeys[keyIndex])) {
+
+                values[keyIndex] = value.toString();
+            }
+        }
     }
 }
