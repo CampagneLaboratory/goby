@@ -18,6 +18,9 @@
 
 package edu.cornell.med.icb.goby.util;
 
+
+import org.apache.log4j.Logger;
+
 /**
  * Dynamic option clients are used by classes that need to obtain parameters from the command line without
  * adding extraneous methods.
@@ -32,6 +35,7 @@ public class DynamicOptionClient {
     String[] defaultValues;
     String[] values;
     Class enclosingClass;
+    private static final Logger LOG = Logger.getLogger(DynamicOptionClient.class);
 
     /**
      * Define the set of dynamic options the client recognizes. A empty default string is substituted by null.
@@ -70,6 +74,7 @@ public class DynamicOptionClient {
      * @return True when the client can accept the option.
      */
     public boolean acceptsOption(final String option) {
+        LOG.trace(this.getClass().getName() + " trying to accept option " + option);
         final String[] tokens = option.split("[:=]");
         if (tokens.length != 3) return false;
         final String shortClassname = enclosingClass.getSimpleName();
@@ -179,6 +184,7 @@ public class DynamicOptionClient {
 
     /**
      * Set a value for a parameter identified by a key.
+     *
      * @param key   option key.
      * @param value option new value.
      */
