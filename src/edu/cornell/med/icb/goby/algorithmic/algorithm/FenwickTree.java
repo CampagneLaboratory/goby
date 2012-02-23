@@ -60,7 +60,7 @@ public class FenwickTree implements Serializable {
      * @return count for element at index.
      */
     public long getCumulativeCount(int index) {
-        if (index>=n+1) {
+        if (index>=cumCount.length-1) {
             // past the capacity of the array is all the counts we have seen:
             return totalCount;
         }
