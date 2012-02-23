@@ -37,7 +37,8 @@ public interface EvidenceCombinator {
     void reset();
 
     /**
-     * Derive the adjusted p-value across the test(s) observed.
+     * Derive the adjusted p-value across the test(s) observed. By convention, when no p-values were observed, the adjust method
+     * will return 1.0.
      * @return q-value or adjusted p-value.
      */
     double adjust();

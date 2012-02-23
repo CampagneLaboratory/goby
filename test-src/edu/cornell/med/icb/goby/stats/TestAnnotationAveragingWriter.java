@@ -21,11 +21,15 @@ package edu.cornell.med.icb.goby.stats;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -40,11 +44,11 @@ import static org.junit.Assert.assertEquals;
 public class TestAnnotationAveragingWriter {
 
     /**
-       * Used to log debug and informational messages.
-       */
-      private static final Log LOG = LogFactory.getLog(TestAnnotationAveragingWriter.class);
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(TestAnnotationAveragingWriter.class);
 
-      private static final String BASE_TEST_DIR = "test-results/stats-writer";
+    private static final String BASE_TEST_DIR = "test-results/stats";
 
     String[] sequences = {
             "GTTACGCGATGATTTAAGAAT",
@@ -426,9 +430,27 @@ public class TestAnnotationAveragingWriter {
                 estimator.observe(0, delta[index], 50);
             }
         }
-        String filename= FilenameUtils.concat(BASE_TEST_DIR, "density.bin");
+        String filename = FilenameUtils.concat(BASE_TEST_DIR, "density.bin");
         DensityEstimator.store(estimator, filename);
         return filename;
     }
+
+    @BeforeClass
+    public static void initializeTestDirectory() throws IOException {
+        System.out.println("Creating base test directory: " + BASE_TEST_DIR);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Creating base test directory: " + BASE_TEST_DIR);
+        }
+        FileUtils.forceMkdir(new File(BASE_TEST_DIR));
+    }
+
+    @Before
+    public void setUp() throws IOException {
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Using test directory: " + BASE_TEST_DIR);
+        }
+    }
+
 
 }
