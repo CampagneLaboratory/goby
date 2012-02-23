@@ -26,6 +26,7 @@ libgoby_la_SOURCES = \
 	goby/TooManyHits.h \
 	goby/C_Gsnap.cc \
 	goby/C_Gsnap.h \
+	goby/C_Gsnap_structs.h \
 	goby/C_Reads.cc \
 	goby/C_Reads.h \
 	goby/C_Alignments.cc \
