@@ -36,10 +36,12 @@ public class SummedCombinator implements EvidenceCombinator {
         if (accumulate)
             if (sum + pValue <= 1) {
                 sum += pValue;
+
             } else {
                 //we stop accumulating if adding the p-value would result in q>1.
                 accumulate = false;
             }
+        numP++;
     }
 
     @Override

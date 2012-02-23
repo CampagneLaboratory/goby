@@ -143,7 +143,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
             }
         } catch (IllegalArgumentException e) {
             LOG.error(String.format("The combinator name %s was not recognized, using the default combinator instead", combinatorName));
-            combinator=new SummedCombinator();
+            combinator = new SummedCombinator();
         }
         this.provider = provider;
         this.outputInfo = outputInfo;
@@ -527,8 +527,9 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 double pOverPair = 0;
                 double logProduct = 0;
                 int numP = 0;
-                combinator.reset();
+
                 for (final GroupComparison comparison : groupComparisons) {
+                    combinator.reset();
                     final ObjectArrayList<SamplePair> pairs = groupEnumerator.getPairs(comparison);
                     for (final SamplePair pair : pairs) {
                         final int Cma = counter.getMethylatedCCountPerSample(contextIndex, pair.sampleIndexA);
@@ -549,10 +550,9 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                         }
 
                     }
+                    lineToOutput.append("\t");
+                    lineToOutput.append(formatDouble(combinator.adjust()));
                 }
-
-                lineToOutput.append("\t");
-                lineToOutput.append(formatDouble(combinator.adjust()));
             }
         }
 
