@@ -94,6 +94,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
     private OutputInfo outputInfo;
     private Boolean writeCounts;
     private Boolean estimateIntraGroupP;
+    private Boolean writeNumSites = true;
 
 
     public AnnotationAveragingWriter(OutputInfo outputInfo, MethylCountProvider provider) {
@@ -103,6 +104,10 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
     public AnnotationAveragingWriter(final Writer writer, RandomAccessSequenceInterface genome, MethylCountProvider provider) {
         this(new OutputInfoFromWriter(writer), genome, provider);
 
+    }
+
+    public void setWriteNumSites(boolean b) {
+        writeNumSites = b;
     }
 
     enum combinatorNames {
@@ -217,7 +222,6 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                     if (writeCounts) {
                         writeStatForSample(sample, context, "#C");
                         writeStatForSample(sample, context, "#Cm");
-                        writeStatForSample(sample, context, "#Sites");
                     }
                     writeStatForSample(sample, context, "MR");
 
@@ -230,11 +234,23 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                         if (writeCounts) {
                             writeStatForSample(group, context, "#C");
                             writeStatForSample(group, context, "#Cm");
-                            writeStatForSample(group, context, "#Sites");
-
                         }
                         writeStatForSample(group, context, "MR");
 
+                    }
+                }
+            }
+            if (writeNumSites) {
+                for (String context : contexts) {
+                    for (String sample : samples) {
+                        writeStatForSample(sample, context, "#Sites");
+                    }
+                }
+                if (groups != null) {
+                    for (String context : contexts) {
+                        for (String group : groups) {
+                            writeStatForSample(group, context, "#Sites");
+                        }
                     }
                 }
             }
@@ -412,9 +428,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                             final int methylatedCCounterPerSample = counter.getMethylatedCCountPerSample(currentContext, sampleIndex);
                             lineToOutput.append(methylatedCCounterPerSample);
 
-                            lineToOutput.append("\t");
-                            final int numSitesPerSample = counter.getNumberOfSitesPerSample(currentContext, sampleIndex);
-                            lineToOutput.append(numSitesPerSample);
+
                         }
 
                         lineToOutput.append("\t");
@@ -437,13 +451,29 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                             lineToOutput.append(methylatedCCounterPerGroup);
 
 
-                            lineToOutput.append("\t");
-                            final int numSitesPerGroup = counter.getNumberOfSitesPerGroup(currentContext, groupIndex);
-                            lineToOutput.append(numSitesPerGroup);
-
                         }
                         lineToOutput.append("\t");
                         lineToOutput.append(formatDouble(counter.getMethylationRatePerGroup(currentContext, groupIndex)));
+                    }
+                }
+                if (writeNumSites) {
+                    for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
+
+                        for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
+
+                            lineToOutput.append("\t");
+                            final int numSitesPerSample = counter.getNumberOfSitesPerSample(currentContext, sampleIndex);
+                            lineToOutput.append(numSitesPerSample);
+                        }
+                    }
+                    for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
+
+                        for (int groupIndex = 0; groupIndex < numGroups; groupIndex++) {
+
+                            lineToOutput.append("\t");
+                            final int numSitesPerGroup = counter.getNumberOfSitesPerGroup(currentContext, groupIndex);
+                            lineToOutput.append(numSitesPerGroup);
+                        }
                     }
                 }
                 for (int currentContext = 0; currentContext < contexts.length; currentContext++) {

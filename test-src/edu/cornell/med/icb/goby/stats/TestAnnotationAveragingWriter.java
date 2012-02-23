@@ -99,6 +99,7 @@ public class TestAnnotationAveragingWriter {
         final StringWriter stringWriter = new StringWriter();
         AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
+        testWriter.setWriteNumSites(false);
         testWriter.writeRecord();
         testWriter.writeRecord();
         testWriter.close();
@@ -117,6 +118,7 @@ public class TestAnnotationAveragingWriter {
         final StringWriter stringWriter = new StringWriter();
         AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
+        testWriter.setWriteNumSites(false);
         testWriter.writeRecord();
         testWriter.writeRecord();
         testWriter.writeRecord();
@@ -137,6 +139,7 @@ public class TestAnnotationAveragingWriter {
         testSupport = new MethylCountProviderTestSupport(samples, positions, "Case3", C, Cm);
         final StringWriter stringWriter = new StringWriter();
         AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
+        testWriter.setWriteNumSites(false);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
         testWriter.writeRecord();
         testWriter.writeRecord();
@@ -163,6 +166,7 @@ public class TestAnnotationAveragingWriter {
         testSupport = new MethylCountProviderTestSupport(samples, positions, "Case2", C, Cm);
         final StringWriter stringWriter = new StringWriter();
         AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
+        testWriter.setWriteNumSites(false);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
         testWriter.writeRecord();
         testWriter.writeRecord();
@@ -185,6 +189,7 @@ public class TestAnnotationAveragingWriter {
         testSupport = new MethylCountProviderTestSupport(groups, samples, positions, "Case2", C, Cm);
         final StringWriter stringWriter = new StringWriter();
         AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
+        testWriter.setWriteNumSites(false);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
         int[] a = {0, 0, 0};
         testWriter.setSampleIndexToGroupIndex(a);
@@ -213,6 +218,7 @@ public class TestAnnotationAveragingWriter {
 
         final StringWriter stringWriter = new StringWriter();
         AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
+        testWriter.setWriteNumSites(false);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
         int[] a = {0, 0, 0, 1, 1, 1};
         testWriter.setSampleIndexToGroupIndex(a);
@@ -246,6 +252,7 @@ public class TestAnnotationAveragingWriter {
         testSupport = new MethylCountProviderTestSupport(groups, samples, positions, "Case4", C, Cm);
         final StringWriter stringWriter = new StringWriter();
         AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
+        testWriter.setWriteNumSites(false);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
         int[] a = {0, 0, 0};
         testWriter.setSampleIndexToGroupIndex(a);
@@ -272,6 +279,7 @@ public class TestAnnotationAveragingWriter {
         testSupport = new MethylCountProviderTestSupport(groups, samples, positions, "Case4", C, Cm);
         final StringWriter stringWriter = new StringWriter();
         AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
+        testWriter.setWriteNumSites(false);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
         int[] a = {0, 0, 1, 1};
         testWriter.setSampleIndexToGroupIndex(a);
@@ -315,6 +323,7 @@ public class TestAnnotationAveragingWriter {
         testSupport = new MethylCountProviderTestSupport(groups, samples, positions, "Case4", C, Cm);
         final StringWriter stringWriter = new StringWriter();
         AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
+        testWriter.setWriteNumSites(false);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
         int[] a = {0, 1, 2, 3};
         testWriter.setSampleIndexToGroupIndex(a);
@@ -360,7 +369,7 @@ public class TestAnnotationAveragingWriter {
     }
 
     @Test
-    // test writing counts
+    // test writing counts and sites
     public void testCase10() {
         String[] samples = new String[]{"sample1"};
         int[] positions = new int[]{5, 7};
@@ -369,22 +378,21 @@ public class TestAnnotationAveragingWriter {
         testSupport = new MethylCountProviderTestSupport(samples, positions, "Case1", C, Cm);
         final StringWriter stringWriter = new StringWriter();
         AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
+        testWriter.setWriteNumSites(true);
         testWriter.setWriteCounts(true);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
         testWriter.writeRecord();
         testWriter.writeRecord();
         testWriter.close();
-        assertEquals("Test Case 1 result: ", "Chromosome\tStart\tEnd\tFeature\t" +
-                "#C[sample1][CpG]\t#Cm[sample1][CpG]\t#Sites[sample1][CpG]\tMR[sample1][CpG]\t" +
-                "#C[sample1][CpA]\t#Cm[sample1][CpA]\t#Sites[sample1][CpA]\tMR[sample1][CpA]\t" +
-                "#C[sample1][CpC]\t#Cm[sample1][CpC]\t#Sites[sample1][CpC]\tMR[sample1][CpC]\t" +
-                "#C[sample1][CpT]\t#Cm[sample1][CpT]\t#Sites[sample1][CpT]\tMR[sample1][CpT]\t" +
-                "#C[sample1][CpN]\t#Cm[sample1][CpN]\t#Sites[sample1][CpN]\tMR[sample1][CpN]\n" +
-                "Case1\t4\t8\tannotation0\t8\t17\t2\t68.0000\t" +
-                "0\t0\t0\t\t" +
-                "0\t0\t0\t\t" +
-                "0\t0\t0\t\t" +
-                "0\t0\t0\t\n", stringWriter.getBuffer().toString());
+        assertEquals("Test Case 1 result: ",
+                "Chromosome\tStart\tEnd\tFeature\t" +
+                "#C[sample1][CpG]\t#Cm[sample1][CpG]\tMR[sample1][CpG]\t" +
+                "#C[sample1][CpA]\t#Cm[sample1][CpA]\tMR[sample1][CpA]\t" +
+                "#C[sample1][CpC]\t#Cm[sample1][CpC]\tMR[sample1][CpC]\t" +
+                "#C[sample1][CpT]\t#Cm[sample1][CpT]\tMR[sample1][CpT]\t" +
+                "#C[sample1][CpN]\t#Cm[sample1][CpN]\tMR[sample1][CpN]\t" +
+                "#Sites[sample1][CpG]\t#Sites[sample1][CpA]\t#Sites[sample1][CpC]\t#Sites[sample1][CpT]\t#Sites[sample1][CpN]\n" +
+                "Case1\t4\t8\tannotation0\t8\t17\t68.0000\t0\t0\t\t0\t0\t\t0\t0\t\t0\t0\t\t2\t0\t0\t0\t0\n", stringWriter.getBuffer().toString());
     }
 
     @Test
@@ -402,6 +410,7 @@ public class TestAnnotationAveragingWriter {
         AnnotationAveragingWriter.doc.setValue("serialized-estimator-filename", makeDensityEstimator());
 
         AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
+        testWriter.setWriteNumSites(false);
         testWriter.setAnnotationFilename("test-data/vcf-averaging/annotations-1.tsv");
         testWriter.setAggregateAllContexts(true);
         testWriter.setSampleIndexToGroupIndex(new int[]{0, 0, 1, 1});
