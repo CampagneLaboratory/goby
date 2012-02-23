@@ -686,7 +686,7 @@ extern "C" {
                 
             }
         }
-        // Assign the fragmentId's AFTER so they are in orderni of
+        // Assign the fragmentId's AFTER so they are in order of
         // genomic position (in case of reverseStrand).
         for (int i = 0; i < numSegs; i++) {
             newAlignmentEntry->alignmentSegments->at(i)->fragmentIndex =
