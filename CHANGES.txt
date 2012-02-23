@@ -6,6 +6,8 @@ dev > 1.9.8.4
  - Added the ability in alignment-to-text mode to output HTML (-f html), to start/end at offsets (-s/-e) in the alignments and
    to limit the number of alignment entries to output (-n).
  - Fixed a bug related aligning Paired-End with Gsnap.
+1.9.8.3.1
+ - Fix a bug related to writing paired end alignments in the Gsnap parser (C API)
 1.9.8.3
  - Added a methylation_region format capable of averaging methylation rates for different cytosine contexts over
    arbitrarily defined regions.
