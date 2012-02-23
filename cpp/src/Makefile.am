@@ -44,6 +44,7 @@ nobase_include_HEADERS = \
 	goby/Reads.pb.h \
 	goby/TooManyHits.h \
 	goby/C_Gsnap.h \
+	goby/C_Gsnap_structs.h \
 	goby/C_Reads.h \
 	goby/C_Alignments.h \
 	goby/C_CompactHelpers.h \
