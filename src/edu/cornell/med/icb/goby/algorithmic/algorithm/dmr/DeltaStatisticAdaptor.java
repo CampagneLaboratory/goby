@@ -65,10 +65,11 @@ public final class DeltaStatisticAdaptor implements StatisticAdaptor {
 
     @Override
     /**
-     * Simply divide delta by the sumTotal covariate.
+     *
      */
     public double calculateWithCovariate(int covariate, int... a) {
-        return calculate(a)/(double)covariate;
+        double stat = calculate(a);
+        return stat /(covariate+stat+1);
     }
 
     @Override

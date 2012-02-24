@@ -252,7 +252,7 @@ public class DensityEstimator implements Serializable {
         return statAdaptor;
     }
 
-    public void setBinningStrategy(LinearBinningStrategy theBinningStrategy) {
+    public void setBinningStrategy(BinningStrategy theBinningStrategy) {
         binningStrategy = theBinningStrategy;
     }
 }
