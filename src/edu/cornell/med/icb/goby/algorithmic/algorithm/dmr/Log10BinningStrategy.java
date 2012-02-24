@@ -16,39 +16,35 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.cornell.med.icb.goby.algorithmic.algorithm;
-
-import org.junit.Test;
-
-import static junit.framework.Assert.assertEquals;
+package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 
 /**
  * @author Fabien Campagne
- *         Date: 2/23/12
- *         Time: 2:20 PM
+ *         Date: 2/24/12
+ *         Time: 4:14 PM
  */
-public class TestQFast {
+public class Log10BinningStrategy implements BinningStrategy {
+    private static final long serialVersionUID = 9153261064066006838L;
 
-    @Test
-    public void test1() {
-        double product=1;
-        product*=0.01;
-        product*=0.01;
-        assertEquals(0.0001, QFast.qfast(2, product), 1e-6);
-
-        product=1;
-        product*=0.1;
-        product*=0.001;
-        assertEquals(0.0001, QFast.qfast(2, product), 1e-6);
-
-        product=1;
-        product*=0.1;
-        product*=0.001;
-        product*=0.5;
-        product*=0.5;
-        //System.out.printf("product="+product);
-        assertEquals(0.001693524214160628, QFast.qfast(4, product), 1e-6);
+    @Override
+    public int getBinIndex(double covariate) {
+        return (int) (StrictMath.log1p(covariate+1)/StrictMath.log(10));
     }
 
+    @Override
+    public int getLowerBound(int binIndex) {
+        return (int) (Math.pow(10,binIndex)-1);
+    }
 
+    @Override
+    public int getUpperBound(int binIndex) {
+        return (int) (Math.pow(10,binIndex+1)-1);
+    }
+
+    @Override
+    public int getMidpoint(int binIndex) {
+        int lowerBound = getLowerBound(binIndex);
+        int upperBound = getUpperBound(binIndex);
+        return (upperBound - lowerBound)/2 + lowerBound ;
+    }
 }

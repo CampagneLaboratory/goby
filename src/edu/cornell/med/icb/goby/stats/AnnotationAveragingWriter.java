@@ -21,6 +21,8 @@ package edu.cornell.med.icb.goby.stats;
 import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.*;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.MethylationRateDifferenceStatisticAdaptor;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.StatisticAdaptor;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.algorithmic.data.IntraGroupEnumerator;
@@ -95,6 +97,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
     private Boolean writeCounts;
     private Boolean estimateIntraGroupP;
     private Boolean writeNumSites = true;
+    private StatisticAdaptor statAdaptor;
 
 
     public AnnotationAveragingWriter(OutputInfo outputInfo, MethylCountProvider provider) {
@@ -111,7 +114,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
     }
 
     enum combinatorNames {
-        max, sum, qfast, average
+        max, sum, qfast, median
     }
 
     public AnnotationAveragingWriter(final OutputInfo outputInfo, RandomAccessSequenceInterface genome, MethylCountProvider provider) {
@@ -123,6 +126,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
         if (serializedFilename != null) {
             try {
                 estimator = DensityEstimator.load(serializedFilename);
+                statAdaptor = estimator.getStatAdaptor();
                 estimateIntraGroupDifferences = false;
             } catch (Exception e) {
                 throw new RuntimeException("Unable to load serialized density with filename=" + serializedFilename);
@@ -140,8 +144,8 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 case qfast:
                     combinator = new QFast();
                     break;
-                case average:
-                    combinator = new AverageCombinator();
+                case median:
+                    combinator = new MedianCombinator();
                     break;
                 default:
                     new InternalError("This combinator name is not proporly handled: " + combinatorName);
@@ -207,7 +211,8 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 throw e;
             }
             if (estimateIntraGroupDifferences) {
-                estimator = new DensityEstimator(contexts.length);
+                statAdaptor = new MethylationRateDifferenceStatisticAdaptor();
+                estimator = new DensityEstimator(contexts.length, statAdaptor);
             }
         }
     }
@@ -574,7 +579,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                             pOverPair = 1.0;
                         } else {
                             final int sumTotal = Cma + Ca + Cmb + Cb;
-                            final int deltaBetweenGroup = estimator.getDelta(Cma, Ca, Cmb, Cb);
+                            final double deltaBetweenGroup = statAdaptor.calculate(Cma, Ca, Cmb, Cb);
                             final double p = estimator.getP(contextIndex, sumTotal, deltaBetweenGroup);
                             combinator.observe(p);
                         }

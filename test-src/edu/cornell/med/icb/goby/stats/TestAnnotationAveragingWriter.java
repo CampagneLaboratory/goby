@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.PassThroughStatisticAdaptor;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import org.apache.commons.io.FileUtils;
@@ -425,18 +426,18 @@ public class TestAnnotationAveragingWriter {
         testWriter.close();
         assertEquals("Test Case 1 result: ",
                 "Chromosome\tStart\tEnd\tFeature\tMR[sample1]\tMR[sample2]\tMR[sample3]\tMR[sample4]\tMR[group1]\tMR[group1]\tMR[group2]\tMR[group2]\tfisherP[group1/group2]\tdeltaMR[group1/group2]\tempiricalP[group1/group2]\n" +
-                        "Case4\t5\t9\tannotation7\t66.6667\t61.5385\t31.2500\t31.2500\t64.0000\t31.2500\t\t\t0.00622665\t32.7500\t0.00199900\n" +
-                        "Case4\t13\t17\tannotation8\t26.0870\t70.5882\t37.0370\t36.0000\t45.0000\t36.5385\t\t\t0.520511\t8.46154\t0.00199900\n", stringWriter.getBuffer().toString());
+                        "Case4\t5\t9\tannotation7\t66.6667\t61.5385\t31.2500\t31.2500\t64.0000\t31.2500\t\t\t0.00622665\t32.7500\t0.000999500\n" +
+                        "Case4\t13\t17\tannotation8\t26.0870\t70.5882\t37.0370\t36.0000\t45.0000\t36.5385\t\t\t0.520511\t8.46154\t0.000999500\n", stringWriter.getBuffer().toString());
     }
 
     private String makeDensityEstimator() throws IOException {
-        DensityEstimator estimator = new DensityEstimator(1);
-        int[] delta = {0000, 001, 002, 003, 004, 49};
+        DensityEstimator estimator = new DensityEstimator(1, new PassThroughStatisticAdaptor(100));
+        int[] delta = {0000, 001, 002, 003, 004, 5};
         int[] frequencies = {1000, 900, 800, 700, 600, 1};
         for (int index = 0; index < delta.length; index++) {
 
             for (int i = 0; i < frequencies[index]; i++) {
-                estimator.observe(0, delta[index], 50);
+                estimator.observeWithCovariate(0, 40, delta[index]);
             }
         }
         String filename = FilenameUtils.concat(BASE_TEST_DIR, "density.bin");

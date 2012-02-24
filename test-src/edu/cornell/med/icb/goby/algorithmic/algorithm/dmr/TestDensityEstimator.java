@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 
+import edu.rit.draw.item.Line;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -46,7 +47,8 @@ public class TestDensityEstimator {
 
     @Test
     public void testObserve() throws Exception {
-        final DensityEstimator estimator = new DensityEstimator(2);
+        final DensityEstimator estimator = new DensityEstimator(2, new BuggyDeltaStatisticAdaptor());
+        estimator.setBinningStrategy(new LinearBinningStrategy());
         final value[] observations = {
                 new value(0, 5, 13, 4, 12),
                 new value(0, 0, 1, 1, 2),
@@ -61,7 +63,7 @@ public class TestDensityEstimator {
 
     @Test
     public void testObserveLargeSumTotals() throws Exception {
-        final DensityEstimator estimator = new DensityEstimator(2);
+        final DensityEstimator estimator = new DensityEstimator(2,new BuggyDeltaStatisticAdaptor());
         final value[] observations = {
                 new value(0, 500, 130, 4, 12), // sumTotal= 646
                 new value(0, 0, 1000, 1, 2),   // sumTotal= 1003
@@ -79,15 +81,66 @@ public class TestDensityEstimator {
 
     @Test
     public void testFastIndex() {
-        DensityEstimator estimator = new DensityEstimator(1);
-        int [] sumTotalValues={
-                0, 1, 3,50, 99, 101, 502, 1050, 2000, 1000010
-        }    ;
-        for (int sumTotal=0; sumTotal<10000; sumTotal++) {
-            int theIndex = estimator.getTheIndex(sumTotal);
-            int theIndexFast = estimator.getTheIndexFast(sumTotal);
-            assertEquals(  String.format("theIndex=%d must match theIndexFast=%d for sumTotal=%d.", theIndex, theIndexFast, sumTotal), theIndex ,theIndexFast);
+        LinearBinningStrategy binning=new LinearBinningStrategy();
+        int[] sumTotalValues = {
+                0, 1, 3, 50, 99, 101, 502, 1050, 2000, 1000010
+        };
+        for (int sumTotal = 0; sumTotal < 10000; sumTotal++) {
+            int theIndex = binning.getBinIndex(sumTotal);
+            int theIndexFast = binning.getTheIndex(sumTotal);
+            assertEquals(String.format("theIndex=%d must match theIndexFast=%d for sumTotal=%d.", theIndex, theIndexFast, sumTotal), theIndex, theIndexFast);
         }
 
     }
+
+
+    @Test
+    public void testScaling() {
+        StatisticAdaptor adapter = new StatisticAdaptor() {
+
+            private static final long serialVersionUID = 8506302569020149425L;
+
+            @Override
+            public double calculate(final int... a) {
+                return a[0];
+            }
+
+            @Override
+            public double getMaximumStatistic() {
+                return 10;
+            }
+
+            @Override
+            public double getRange() {
+                return 10;
+            }
+        };
+        DensityEstimator estimator = new DensityEstimator(1, adapter);
+        int[] statistics = {1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3};
+
+        for (int stat : statistics) {
+            estimator.observe(0, stat);
+        }
+        assertEquals(0, estimator.getCumulativeCount(0, 1, 0.0));
+        assertEquals(6, estimator.getCumulativeCount(0, 1, 1.0));
+        assertEquals(10, estimator.getCumulativeCount(0, 2, 2.0));
+        assertEquals(13, estimator.getCumulativeCount(0, 3, 3.0));
+        assertEquals(13, estimator.getCumulativeCount(0, 4, 4.0));
+        assertEquals(13, estimator.getCumulativeCount(0, 5, 5.0));
+    }
+
+    @Test
+    public void printDeltas() {
+        DeltaStatisticAdaptor adaptor = new DeltaStatisticAdaptor();
+        assertEquals(180.0, adaptor.calculate(495, 405, 95, 5),0.1);
+        assertEquals(0.0, adaptor.calculate(250, 250, 250, 250),0.1);
+    }
+
+    @Test
+    public void printdMR() {
+        StatisticAdaptor adaptor = new MethylationRateDifferenceStatisticAdaptor();
+        assertEquals(40.0, adaptor.calculate(495, 405, 95, 5),.1);
+        assertEquals(0.0, adaptor.calculate(250, 250, 250, 250),0.1);
+    }
+
 }

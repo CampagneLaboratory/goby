@@ -18,37 +18,41 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm;
 
-import org.junit.Test;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 
-import static junit.framework.Assert.assertEquals;
+import java.util.Collections;
 
 /**
+ * A combinator that returns the median of a set of p-values.
+ *
  * @author Fabien Campagne
  *         Date: 2/23/12
- *         Time: 2:20 PM
+ *         Time: 2:49 PM
  */
-public class TestQFast {
+public class MedianCombinator implements EvidenceCombinator {
 
-    @Test
-    public void test1() {
-        double product=1;
-        product*=0.01;
-        product*=0.01;
-        assertEquals(0.0001, QFast.qfast(2, product), 1e-6);
+    private DoubleArrayList list = new DoubleArrayList();
 
-        product=1;
-        product*=0.1;
-        product*=0.001;
-        assertEquals(0.0001, QFast.qfast(2, product), 1e-6);
+    @Override
+    public void observe(double pValue) {
+        list.add(pValue);
 
-        product=1;
-        product*=0.1;
-        product*=0.001;
-        product*=0.5;
-        product*=0.5;
-        //System.out.printf("product="+product);
-        assertEquals(0.001693524214160628, QFast.qfast(4, product), 1e-6);
     }
 
+    @Override
+    public void reset() {
+        list.clear();
 
+    }
+
+    @Override
+    public double adjust() {
+        Collections.sort(list);
+        int size = list.size();
+        if (size > 0) {
+            return list.get(size / 2);
+        } else {
+            return 1.0;
+        }
+    }
 }

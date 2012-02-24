@@ -16,39 +16,35 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.cornell.med.icb.goby.algorithmic.algorithm;
-
-import org.junit.Test;
-
-import static junit.framework.Assert.assertEquals;
+package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 
 /**
  * @author Fabien Campagne
- *         Date: 2/23/12
- *         Time: 2:20 PM
+ *         Date: 2/24/12
+ *         Time: 4:37 PM
  */
-public class TestQFast {
+public class PassThroughStatisticAdaptor implements StatisticAdaptor {
 
-    @Test
-    public void test1() {
-        double product=1;
-        product*=0.01;
-        product*=0.01;
-        assertEquals(0.0001, QFast.qfast(2, product), 1e-6);
 
-        product=1;
-        product*=0.1;
-        product*=0.001;
-        assertEquals(0.0001, QFast.qfast(2, product), 1e-6);
-
-        product=1;
-        product*=0.1;
-        product*=0.001;
-        product*=0.5;
-        product*=0.5;
-        //System.out.printf("product="+product);
-        assertEquals(0.001693524214160628, QFast.qfast(4, product), 1e-6);
+    private static final long serialVersionUID = 8506302569020149425L;
+    private int maxValue;
+    public PassThroughStatisticAdaptor(int maxValue) {
+        this.maxValue=maxValue;
     }
 
+    @Override
+    public double calculate(final int... a) {
+        return a[0];
+    }
+
+    @Override
+    public double getMaximumStatistic() {
+        return maxValue;
+    }
+
+    @Override
+    public double getRange() {
+        return maxValue;
+    }
 
 }

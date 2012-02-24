@@ -16,37 +16,39 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.cornell.med.icb.goby.algorithmic.algorithm;
+package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
+
+import java.io.Serializable;
 
 /**
- * A combinator that takes the average of a set of p-values.
- *
  * @author Fabien Campagne
- *         Date: 2/23/12
- *         Time: 2:49 PM
+ *         Date: 2/24/12
+ *         Time: 4:11 PM
  */
-public class AverageCombinator implements EvidenceCombinator {
-    int numP;
-    double sum;
+public interface BinningStrategy  extends Serializable {
+    public int getBinIndex(double covariate);
 
-    @Override
-    public void observe(double pValue) {
-        sum += pValue;
-        numP += 1;
-    }
+    /**
+     * Get the lower bound on the covariate in the given bin.
+     *
+     * @param binIndex
+     * @return
+     */
+    public int getLowerBound(int binIndex);
 
-    @Override
-    public void reset() {
-        numP = 0;
-        sum = 0;
-    }
+    /**
+     * Get the upper bound on the covariate in the given bin (exclusive).
+     *
+     * @param binIndex
+     * @return
+     */
+    public int getUpperBound(int binIndex);
 
-    @Override
-    public double adjust() {
-        if (numP > 0) {
-            return sum / ((double) numP);
-        } else {
-            return 1.0;
-        }
-    }
+    /**
+     * Get the midPoint on the covariate in the given bin.
+     *
+     * @param binIndex
+     * @return
+     */
+    public int getMidpoint(int binIndex);
 }

@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
 
+
 /**
  * @author Fabien Campagne
  *         Date: 2/19/12
@@ -38,12 +39,30 @@ public class DensityEstimator implements Serializable {
     private static final long serialVersionUID = -4803501043413548993L;
     private static final int MAX_ITEMS = 10000;
     private ObjectArrayList<FenwickTree> densities;
-    private int BIN_SIZE_SUM_TOTAL = 1000;
-
+    BinningStrategy binningStrategy = new Log10BinningStrategy();
+    private StatisticAdaptor statAdaptor;
 
     public DensityEstimator(int numberOfContexts) {
         densities = new ObjectArrayList<FenwickTree>();
+        statAdaptor = new DeltaStatisticAdaptor();
+        SCALING_FACTOR = (int) Math.round(MAX_ITEMS / statAdaptor.getRange());
+        binningStrategy = new Log10BinningStrategy();
+    }
 
+    public DensityEstimator(int numberOfContexts, StatisticAdaptor statAdaptor) {
+        densities = new ObjectArrayList<FenwickTree>();
+        this.statAdaptor = statAdaptor;
+        SCALING_FACTOR = (int) Math.round(MAX_ITEMS / statAdaptor.getRange());
+        binningStrategy = new Log10BinningStrategy();
+    }
+
+    /**
+     * Factor by which the statistic will be scaled to use MAX_ITEMS buckets.
+     */
+    final int SCALING_FACTOR;
+
+    public BinningStrategy getBinningStrategy() {
+        return binningStrategy;
     }
 
     /**
@@ -56,50 +75,43 @@ public class DensityEstimator implements Serializable {
      * diffA,B= 5- -7=13
      *
      * @param contextIndex
-     * @param cma
-     * @param ca
-     * @param cmb
-     * @param cb
      */
-    public void observe(int contextIndex, int cma, int ca, int cmb, int cb) {
-        final int delta = getDelta(cma, ca, cmb, cb);
+    public void observe(int contextIndex, int... a) {
 
-        int sumTotal = cma + ca + cmb + cb;
+        final int delta = (int) Math.round(statAdaptor.calculate(a) * SCALING_FACTOR);
+
+        int sumTotal = 0;
+        for (int val : a) {
+            sumTotal += val;
+
+        }
         final int elementIndex = delta;//(int) (((((double)delta)/(1.0+sumTotal)*MAX_ITEMS*0.9)));
         //System.out.printf("observing context=%d sumTotal=%d delta=%d elementIndex=%d %n", contextIndex, sumTotal, delta, elementIndex);
         getDensity(contextIndex, sumTotal).incrementCount(elementIndex);
 
     }
+
+    public void observeWithCovariate(int contextIndex, int sumTotal, int... a) {
+
+        final int delta = (int) Math.round(statAdaptor.calculate(a) * SCALING_FACTOR);
+        final int elementIndex = delta;//(int) (((((double)delta)/(1.0+sumTotal)*MAX_ITEMS*0.9)));
+        //System.out.printf("observing context=%d sumTotal=%d delta=%d elementIndex=%d %n", contextIndex, sumTotal, delta, elementIndex);
+        getDensity(contextIndex, sumTotal).incrementCount(elementIndex);
+
+    }
+
     public void observe(int contextIndex, int delta, int sumTotal) {
 
-       // System.out.printf("observing context=%d sumTotal=%d delta=%d elementIndex=%d %n", contextIndex, sumTotal, delta, delta);
+        // System.out.printf("observing context=%d sumTotal=%d delta=%d elementIndex=%d %n", contextIndex, sumTotal, delta, delta);
         getDensity(contextIndex, sumTotal).incrementCount(delta);
 
     }
-    public int getDelta(int cma, int ca, int cmb, int cb) {
-        int maxA, maxB;
-        int minA, minB;
 
-        if (cma > ca) {
-            maxA = cma;
-            minA = ca;
-            maxB = cmb;
-            minB = cb;
-        } else {
-            maxA = ca;
-            maxB = cb;
-            minA = cma;
-            minB = cmb;
-        }
-        final int diffA = maxA - minA;
-        final int diffB = maxB - minB;
-        return Math.abs(diffA - diffB);
-    }
 
     private FenwickTree getDensity(final int contextIndex, final int sumTotal) {
 
 
-        final int index = getTheIndexFast(sumTotal);
+        final int index = binningStrategy.getBinIndex(sumTotal);
         while (densities.size() <= index) {
             densities.add(null);
         }
@@ -115,40 +127,6 @@ public class DensityEstimator implements Serializable {
         }
     }
 
-    protected final int getTheIndexFast(final int sumTotal) {
-        return sumTotal < 100 ? 0 : sumTotal / BIN_SIZE_SUM_TOTAL + 1;
-    }
-
-    protected final int getTheIndex(final int sumTotal) {
-        final int theIndex;
-        for (int index = 0; ; index++) {
-            if (getLowerBound(index) <= sumTotal && sumTotal < getUpperBound(index)) {
-                theIndex = index;
-                break;
-            }
-        }
-        return theIndex;
-    }
-
-    public int getLowerBound(int index) {
-        if (index == 0) {
-            return 0;
-        }
-        if (index == 1) {
-            return 100;
-        }
-
-        return BIN_SIZE_SUM_TOTAL * (index - 1);
-
-    }
-
-    public int getUpperBound(int index) {
-        if (index == 0) {
-            return 100;
-        }
-        return BIN_SIZE_SUM_TOTAL * index;
-
-    }
 
     public static void store(final DensityEstimator estimator, final String filename) throws IOException {
         BinIO.storeObject(estimator, filename);
@@ -161,32 +139,46 @@ public class DensityEstimator implements Serializable {
     /**
      * Get the cumulative count for observations with delta between zero and the argument value.
      *
-     * @param contextIndex index of the context.
-     * @param sumTotal     total sum.
-     * @param delta        upper-bound on delta for counting observations.
+     * @param contextIndex    index of the context.
+     * @param sumTotal        total sum.
+     * @param scaledStatistic upper-bound on the scaledStatistic for counting observations.
      * @return
      */
-    public long getCumulativeCount(int contextIndex, int sumTotal, int delta) {
+    public long getCumulativeCount(int contextIndex, int sumTotal, int scaledStatistic) {
         final FenwickTree tree = getDensity(contextIndex, sumTotal);
-        return tree.getCumulativeCount(delta);
+        return tree.getCumulativeCount(scaledStatistic);
     }
 
     /**
-     * Get the empirical estimate of the probability that the delta could have been generated by the distribution
+     * Get the cumulative count for observations with delta between zero and the argument value (inclusive).
+     *
+     * @param contextIndex index of the context.
+     * @param sumTotal     total sum.
+     * @param statistic    upper-bound on the statistic for counting observations.
+     * @return
+     */
+    public long getCumulativeCount(int contextIndex, int sumTotal, double statistic) {
+        final FenwickTree tree = getDensity(contextIndex, sumTotal);
+        return tree.getCumulativeCount(scale(statistic));
+    }
+
+    /**
+     * Get the empirical estimate of the probability that the statistic could have been generated by the distribution
      * represented in the estimator.
      *
      * @param contextIndex index of the context.
      * @param sumTotal     total sum.
-     * @param delta        value of delta under test.
+     * @param statistic    value of statistic under test.
      * @return
      */
-    public double getP(final int contextIndex, final int sumTotal, final int delta) {
+    public double getP(final int contextIndex, final int sumTotal, final double statistic) {
+        final int scaledStatistic = (int) Math.round(statistic * SCALING_FACTOR);
         final FenwickTree tree = getDensity(contextIndex, sumTotal);
         final long totalCount = tree.getTotalCount();
-        final double r=totalCount- tree.getCumulativeCount(delta) ;
-        final double n= totalCount;
+        final double r = totalCount - tree.getCumulativeCount(scaledStatistic);
+        final double n = totalCount;
         // estimated as per Morgan, Linda Am. J. Hum. Genet. 71:439–441, 2002
-        final double p=(r+1.0d) / (n+1.0d);
+        final double p = (r + 1.0d) / (n + 1.0d);
         return p;
     }
 
@@ -197,23 +189,27 @@ public class DensityEstimator implements Serializable {
         PrintWriter outWriter = new PrintWriter(new FileWriter(outputFilename));
         if (printDensity) {
             DensityEstimator estimated = null;
+
             try {
                 estimated = load(filename);
                 int index = 0;
-                outWriter.println("midPointSumTotal\tdelta\tcount-at-delta");
+                String statName = estimated.getStatAdaptor().statName();
+                outWriter.println("midPointSumTotal\tsumTotal range\t"+ statName +"\tcount-at-"+statName);
+                final BinningStrategy binningStrategy = estimated.getBinningStrategy();
                 for (final FenwickTree tree : estimated.densities) {
                     if (tree != null) {
-                        int low = estimated.getLowerBound(index);
-                        int high = estimated.getUpperBound(index);
+                        int low = binningStrategy.getLowerBound(index);
+                        int high = binningStrategy.getUpperBound(index);
 
-                        int midPointSumTotal = low + ((high - low) / 2);
+                        int midPointSumTotal = binningStrategy.getMidpoint(index);
                         System.out.printf("low=%d high=%d midPoint=%d %n", low, high, midPointSumTotal);
                         final long maxCumulative = tree.getCumulativeCount(tree.size() - 2);
-                        for (int delta = 0; delta < tree.size() - 1; delta++) {
-                            final long cumulativeCountAt = tree.getCumulativeCount(delta);
-                            final long cumulativeCountAfter = tree.getCumulativeCount(delta + 1);
+                        for (int scaledStatistic = 0; scaledStatistic < tree.size() - 1; scaledStatistic++) {
+                            final long cumulativeCountAt = tree.getCumulativeCount(scaledStatistic);
+                            final long cumulativeCountAfter = tree.getCumulativeCount(scaledStatistic + 1);
 
-                            outWriter.printf("%d\t%d\t%d%n", midPointSumTotal, delta, cumulativeCountAfter - cumulativeCountAt);
+                            outWriter.printf("%d\t[%d-%d]\t%g\t%d%n", midPointSumTotal, binningStrategy.getLowerBound(index),
+                                    binningStrategy.getUpperBound(index), estimated.unscale(scaledStatistic), cumulativeCountAfter - cumulativeCountAt);
                             if (cumulativeCountAfter == maxCumulative) {
                                 break;
                             }
@@ -232,4 +228,31 @@ public class DensityEstimator implements Serializable {
         }
     }
 
+    /**
+     * unscale a scaled statistic.
+     *
+     * @param scaledStatistic Value of the statistic scaled with SCALING_FACTOR.
+     * @return the raw statistic that was observed.
+     */
+    public double unscale(final int scaledStatistic) {
+        return ((double) scaledStatistic) / (double) SCALING_FACTOR;
+    }
+
+    /**
+     * unscale a scaled statistic.
+     *
+     * @param statistic Value of the statistic to scale.
+     * @return the scaled statistic value.
+     */
+    public int scale(final double statistic) {
+        return (int) Math.round(statistic * SCALING_FACTOR);
+    }
+
+    public StatisticAdaptor getStatAdaptor() {
+        return statAdaptor;
+    }
+
+    public void setBinningStrategy(LinearBinningStrategy theBinningStrategy) {
+        binningStrategy = theBinningStrategy;
+    }
 }

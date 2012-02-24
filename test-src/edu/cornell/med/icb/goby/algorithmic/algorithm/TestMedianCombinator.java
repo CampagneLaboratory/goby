@@ -24,31 +24,27 @@ import static junit.framework.Assert.assertEquals;
 
 /**
  * @author Fabien Campagne
- *         Date: 2/23/12
- *         Time: 2:20 PM
+ *         Date: 2/24/12
+ *         Time: 4:02 PM
  */
-public class TestQFast {
-
+public class TestMedianCombinator   {
     @Test
-    public void test1() {
-        double product=1;
-        product*=0.01;
-        product*=0.01;
-        assertEquals(0.0001, QFast.qfast(2, product), 1e-6);
-
-        product=1;
-        product*=0.1;
-        product*=0.001;
-        assertEquals(0.0001, QFast.qfast(2, product), 1e-6);
-
-        product=1;
-        product*=0.1;
-        product*=0.001;
-        product*=0.5;
-        product*=0.5;
-        //System.out.printf("product="+product);
-        assertEquals(0.001693524214160628, QFast.qfast(4, product), 1e-6);
+    public void test1(){
+        double[] ps={0.01,0.2,0.4,0.5,0.01};
+        MedianCombinator medianC=new MedianCombinator();
+        for (double p: ps) {
+            medianC.observe(p);
+        }
+        assertEquals(0.2, medianC.adjust());
     }
 
-
+    @Test
+    public void test2(){
+        double[] ps={1,1,1,1,1,0.1};
+        MedianCombinator medianC=new MedianCombinator();
+        for (double p: ps) {
+            medianC.observe(p);
+        }
+        assertEquals(1.0, medianC.adjust());
+    }
 }
