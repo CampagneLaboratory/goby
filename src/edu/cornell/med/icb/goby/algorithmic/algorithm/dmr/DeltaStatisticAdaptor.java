@@ -26,7 +26,7 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
  *         Time: 2:14 PM
  */
 public final class DeltaStatisticAdaptor implements StatisticAdaptor {
-    private static final double MAXIMUM_BOUND = 10000.0;
+    private static final double MAXIMUM_BOUND = 10.0;
     private static final long serialVersionUID = 2934190953936250446L;
     public String statName() {
         return "delta";
@@ -59,16 +59,30 @@ public final class DeltaStatisticAdaptor implements StatisticAdaptor {
         }
         final int diffA = maxA - minA;
         final int diffB = maxB - minB;
-        return Math.min(Math.abs(diffA) + Math.abs(diffB), MAXIMUM_BOUND);
+        return Math.abs(diffA) + Math.abs(diffB);
 
     }
 
     @Override
+    /**
+     * Simply divide delta by the sumTotal covariate.
+     */
+    public double calculateWithCovariate(int covariate, int... a) {
+        return calculate(a)/(double)covariate;
+    }
+
+    @Override
+    /**
+     * Get the upper bound on the stat adjusted for covariate.
+     */
     public double getMaximumStatistic() {
         return MAXIMUM_BOUND;
     }
 
     @Override
+    /**
+     * Get the range on the stat adjusted for covariate.
+     */
     public double getRange() {
         return MAXIMUM_BOUND;
     }

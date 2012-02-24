@@ -21,40 +21,44 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 /**
  * @author Fabien Campagne
  *         Date: 2/24/12
- *         Time: 4:37 PM
+ *         Time: 4:14 PM
  */
-public class PassThroughStatisticAdaptor implements StatisticAdaptor {
+public final class SmallAndLog10BinningStrategy implements BinningStrategy {
+    private static final long serialVersionUID = 9153261064066006838L;
 
-
-    private static final long serialVersionUID = 8506302569020149425L;
-    private int maxValue;
-    public PassThroughStatisticAdaptor(int maxValue) {
-        this.maxValue=maxValue;
+    @Override
+    public int getBinIndex(final double covariate) {
+        if (covariate < 100) {
+            return 0;
+        } else {
+            return (int) (StrictMath.log10(covariate)-1);
+        }
     }
 
     @Override
-    public String statName() {
-        return "pass-through";
+    public int getLowerBound(final int binIndex) {
+        if (binIndex == 0) {
+            return 0;
+        }
+        else {
+            return (int) StrictMath.pow(10, binIndex + 1);
+        }
     }
 
     @Override
-    public double calculate(final int... a) {
-        return a[0];
+    public int getUpperBound(final int binIndex) {
+        if (binIndex == 0) {
+            return 99;
+        }
+        else {
+            return (int) StrictMath.pow(10, binIndex + 2);
+        }
     }
 
     @Override
-    public double calculateWithCovariate(int covariate, int... a) {
-        return calculate(a);
+    public int getMidpoint(int binIndex) {
+        final int lowerBound = getLowerBound(binIndex);
+        final int upperBound = getUpperBound(binIndex);
+        return (upperBound - lowerBound) / 2 + lowerBound;
     }
-
-    @Override
-    public double getMaximumStatistic() {
-        return maxValue;
-    }
-
-    @Override
-    public double getRange() {
-        return maxValue;
-    }
-
 }

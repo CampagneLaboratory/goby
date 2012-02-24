@@ -40,6 +40,16 @@ public interface StatisticAdaptor extends Serializable {
      */
 
     public double calculate(int... a);
+     /**
+     * Estimate a statistic given a covariate and some integers.
+     *
+     * @param covariate a relevant covariate of the statistic. Some calculator may use the covariate to normalize the
+      * value of the statistic.
+      * @param a values used to calculate the statistic. The meaning of the values and their order is implementation dependent.
+     * @return the calculated statistic.
+     */
+
+    public double calculateWithCovariate(int covariate, int... a);
 
     /**
      * Return the maximum value that the statistic can attain.

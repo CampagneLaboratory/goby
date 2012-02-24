@@ -39,7 +39,7 @@ public class DensityEstimator implements Serializable {
     private static final long serialVersionUID = -4803501043413548993L;
     private static final int MAX_ITEMS = 10000;
     private ObjectArrayList<FenwickTree> densities;
-    BinningStrategy binningStrategy = new Log10BinningStrategy();
+    BinningStrategy binningStrategy = new SmallAndLog10BinningStrategy();
     private StatisticAdaptor statAdaptor;
 
     public DensityEstimator(int numberOfContexts) {
@@ -77,14 +77,14 @@ public class DensityEstimator implements Serializable {
      * @param contextIndex
      */
     public void observe(int contextIndex, int... a) {
-
-        final int delta = (int) Math.round(statAdaptor.calculate(a) * SCALING_FACTOR);
-
-        int sumTotal = 0;
+         int sumTotal = 0;
         for (int val : a) {
             sumTotal += val;
 
         }
+        final int delta = (int) Math.round(statAdaptor.calculateWithCovariate(sumTotal, a) * SCALING_FACTOR);
+
+
         final int elementIndex = delta;//(int) (((((double)delta)/(1.0+sumTotal)*MAX_ITEMS*0.9)));
         //System.out.printf("observing context=%d sumTotal=%d delta=%d elementIndex=%d %n", contextIndex, sumTotal, delta, elementIndex);
         getDensity(contextIndex, sumTotal).incrementCount(elementIndex);

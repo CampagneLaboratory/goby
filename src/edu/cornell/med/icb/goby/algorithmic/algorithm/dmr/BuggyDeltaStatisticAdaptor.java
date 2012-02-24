@@ -67,6 +67,11 @@ public final class BuggyDeltaStatisticAdaptor implements StatisticAdaptor {
     }
 
     @Override
+    public double calculateWithCovariate(int covariate, int... a) {
+        return calculate(a);
+    }
+
+    @Override
     public double getMaximumStatistic() {
         return MAXIMUM_BOUND;
     }

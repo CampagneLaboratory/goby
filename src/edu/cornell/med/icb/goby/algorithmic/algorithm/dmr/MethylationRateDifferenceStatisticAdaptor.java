@@ -56,6 +56,14 @@ public final class MethylationRateDifferenceStatisticAdaptor implements Statisti
     }
 
     @Override
+    /**
+     * Same as covariate, dMR is already normalized with respect to sumTotal.
+     */
+    public double calculateWithCovariate(int covariate, int... a) {
+        return calculate(a);
+    }
+
+    @Override
     public double getMaximumStatistic() {
         return 100.0;
     }

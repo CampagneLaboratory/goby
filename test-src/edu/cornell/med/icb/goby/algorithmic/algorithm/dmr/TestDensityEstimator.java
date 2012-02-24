@@ -101,8 +101,18 @@ public class TestDensityEstimator {
             private static final long serialVersionUID = 8506302569020149425L;
 
             @Override
+            public String statName() {
+                return "dummy";  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            @Override
             public double calculate(final int... a) {
                 return a[0];
+            }
+
+            @Override
+            public double calculateWithCovariate(int covariate, int... a) {
+                return calculate(a);
             }
 
             @Override
