@@ -65,7 +65,8 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
             "estimate-intra-group-differences: boolean, true indicates that pair-wise differences for sample in the same group should be tallied and written to the output. False indicates regular output.:false",
             "estimate-empirical-P: boolean, true: activates estimation of the empirical p-value.:false",
             "combinator: string, the method to combine p-values, one of qfast, average, sum, max.:sum",
-            "serialized-estimator-filename: string, the path to a serialized version of the density estimator populated with the empirical null-distribution.:"
+            "serialized-estimator-filename: string, the path to a serialized version of the density estimator populated with the empirical null-distribution.:",
+            "contexts:string, coma delimited list of contexts for which to evaluate methylation rate. Contexts can be CpG, CpA,CpC,CpT,CpN. Default is CpG only:CpG"
     );
     private String[] groups;
     private int numGroups;
@@ -120,6 +121,12 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
 
     public AnnotationAveragingWriter(final OutputInfo outputInfo, RandomAccessSequenceInterface genome, MethylCountProvider provider) {
         super(new NullWriter());
+        String contextString= doc.getString("contexts");
+        String[] contextTokens = contextString.split(",");
+        if (contextTokens.length!=0) {
+            LOG.info("registering user defined contexts: "+ObjectArrayList.wrap(contextTokens));
+            contexts=contextTokens;
+        }
         estimateIntraGroupDifferences = doc.getBoolean("estimate-intra-group-differences");
         estimateIntraGroupP = doc.getBoolean("estimate-empirical-P");
         writeCounts = doc.getBoolean("write-counts");
@@ -403,7 +410,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
             return 0;
         }
         if (contextIndex == -1) {
-            LOG.warn("context was not recognized: " + currentContext);
+            if (LOG.isDebugEnabled()) LOG.debug("context was not recognized: " + currentContext);
         }
         return contextIndex;
     }
@@ -621,7 +628,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
         }
     }
 
-    DensityEstimator estimator;
+    private DensityEstimator estimator;
 
     /**
      * Format double, rendering NaN as empty string.
