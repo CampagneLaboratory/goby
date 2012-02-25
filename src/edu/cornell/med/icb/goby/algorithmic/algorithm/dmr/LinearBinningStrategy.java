@@ -69,8 +69,8 @@ public class LinearBinningStrategy implements BinningStrategy {
 
     @Override
     public int getMidpoint(int binIndex) {
-        int lowerBound = getLowerBound(binIndex);
-        int upperBound = getUpperBound(binIndex);
+      final  int lowerBound = getLowerBound(binIndex);
+      final  int upperBound = getUpperBound(binIndex);
         return (upperBound - lowerBound) / 2 + lowerBound;
     }
 }

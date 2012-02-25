@@ -139,26 +139,34 @@ public class TestDensityEstimator {
     }
 
     @Test
-    public void printDeltas() {
+    public void testDeltas() {
         DeltaStatisticAdaptor adaptor = new DeltaStatisticAdaptor();
         assertEquals(180.0, adaptor.calculate(495, 405, 95, 5),0.1);
         assertEquals(0.0, adaptor.calculate(250, 250, 250, 250),0.1);
     }
 
     @Test
-    public void printdMR() {
+    public void testdMR() {
         StatisticAdaptor adaptor = new MethylationRateDifferenceStatisticAdaptor();
         assertEquals(40.0, adaptor.calculate(495, 405, 95, 5),.1);
         assertEquals(0.0, adaptor.calculate(250, 250, 250, 250),0.1);
     }
 
     @Test
-    public void printdStat3() {
+    public void testStat3() {
         StatisticAdaptor adaptor = new Stat3StatisticAdaptor();
         assertEquals(90.0, adaptor.calculate(495, 405, 95, 5),.1);
         assertEquals(180.0, adaptor.calculate(405, 495, 95, 5),.1);
         assertEquals(0.0, adaptor.calculate(250, 250, 250, 250),0.1);
         assertEquals(2.0, adaptor.calculate(251, 250, 252, 250),0.1);
+    }
+    @Test
+    public void testStat4() {
+        StatisticAdaptor adaptor = new Stat4StatisticAdaptor();
+        assertEquals(1.8, adaptor.calculateWithCovariate(30,495, 405, 95, 5),.1);
+        assertEquals(0.12, adaptor.calculateWithCovariate(1100, 405, 495, 95, 5),.1);
+        assertEquals(0, adaptor.calculateWithCovariate(1100,250, 250, 250, 250),0.001);
+        assertEquals(0.0013333333333333333, adaptor.calculateWithCovariate(1100,251, 250, 252, 250),0.001);
     }
 
 }
