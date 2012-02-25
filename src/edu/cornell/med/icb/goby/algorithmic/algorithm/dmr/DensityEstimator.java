@@ -184,7 +184,7 @@ public class DensityEstimator implements Serializable {
         final long totalCount = tree.getTotalCount();
         final double r = totalCount - tree.getCumulativeCount(scaledStatistic);
         final double n = totalCount;
-        // estimated as per Morgan, Linda Am. J. Hum. Genet. 71:439–441, 2002
+        // estimated as per Morgan, Linda Am. J. Hum. Genet. 71 439-441, 2002
         final double p = (r + 1.0d) / (n + 1.0d);
         return p;
     }
