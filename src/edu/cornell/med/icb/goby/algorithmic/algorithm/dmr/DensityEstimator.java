@@ -76,41 +76,33 @@ public class DensityEstimator implements Serializable {
      * diffA,B= 5- -7=13
      *
      * @param contextIndex
+     * @param a
+
      */
-    public void observe(int contextIndex, int... a) {
+    public final void observe(final int contextIndex, final int... a) {
         int sumTotal = 0;
-        for (int val : a) {
+        for (final int val : a) {
             sumTotal += val;
-
         }
-        final int delta = (int) Math.round(statAdaptor.calculate(a) * SCALING_FACTOR);
-
-
-        final int elementIndex = delta;//(int) (((((double)delta)/(1.0+sumTotal)*MAX_ITEMS*0.9)));
-        //System.out.printf("observing context=%d sumTotal=%d delta=%d elementIndex=%d %n", contextIndex, sumTotal, delta, elementIndex);
-        getDensity(contextIndex, sumTotal).incrementCount(elementIndex);
-        if (DEBUG) {
-            observations.add(new Observation(contextIndex, delta, sumTotal));
-        }
+        observeWithCovariate(contextIndex, sumTotal,a);
     }
 
     ObjectArrayList<Observation> observations = new ObjectArrayList<Observation>();
 
-    public void observeWithCovariate(int contextIndex, int sumTotal, int... a) {
+    public final void observeWithCovariate(final int contextIndex, final int sumTotal, final int... a) {
 
-        final int delta = (int) Math.round(statAdaptor.calculate(a) * SCALING_FACTOR);
-        final int elementIndex = delta;//(int) (((((double)delta)/(1.0+sumTotal)*MAX_ITEMS*0.9)));
-        //System.out.printf("observing context=%d sumTotal=%d delta=%d elementIndex=%d %n", contextIndex, sumTotal, delta, elementIndex);
-        getDensity(contextIndex, sumTotal).incrementCount(elementIndex);
+        final int scaledStatistic = (int) Math.round(statAdaptor.calculateWithCovariate(sumTotal,a) * SCALING_FACTOR);
+        //System.out.printf("observing context=%d sumTotal=%d scaledStatistic=%d elementIndex=%d %n", contextIndex, sumTotal, scaledStatistic, elementIndex);
+        getDensity(contextIndex, sumTotal).incrementCount(scaledStatistic);
         if (DEBUG) {
-            observations.add(new Observation(contextIndex, delta, sumTotal));
+            observations.add(new Observation(contextIndex, scaledStatistic, sumTotal));
         }
     }
 
-    public void observe(int contextIndex, int delta, int sumTotal) {
+    public void observe(int contextIndex, int unscaledStatistic, int sumTotal) {
 
-        // System.out.printf("observing context=%d sumTotal=%d delta=%d elementIndex=%d %n", contextIndex, sumTotal, delta, delta);
-        getDensity(contextIndex, sumTotal).incrementCount(delta);
+        // System.out.printf("observing context=%d sumTotal=%d unscaledStatistic=%d elementIndex=%d %n", contextIndex, sumTotal, unscaledStatistic, unscaledStatistic);
+        getDensity(contextIndex, sumTotal).incrementCount(unscaledStatistic);
 
     }
 
