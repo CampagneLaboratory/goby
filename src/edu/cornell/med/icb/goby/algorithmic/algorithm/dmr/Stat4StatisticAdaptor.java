@@ -31,7 +31,7 @@ public final class Stat4StatisticAdaptor implements StatisticAdaptor {
     private static final long serialVersionUID = 2934190953936250446L;
 
     public String statName() {
-        return "stat3";
+        return "stat4";
     }
      LinearBinningStrategy linearBinner=new LinearBinningStrategy();
     @Override
