@@ -19,8 +19,6 @@
 package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 
 
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-
 /**
  * Estimate the delta statistic, normalize by the midPoint of the sumTotal bin to remove scale effects.
  *
@@ -82,7 +80,7 @@ Cb = 250
         final double stat = calculate(a);
         final int binIndex = linearBinner.getBinIndex(covariate);
         final int midpoint = linearBinner.getMidpoint(binIndex);
-        System.out.printf("stat4: stat=%g midPoint=%d %s %n", stat, midpoint, IntArrayList.wrap(a));
+      //  System.out.printf("stat4: stat=%g midPoint=%d %s %n", stat, midpoint, IntArrayList.wrap(a));
         return Math.min(stat / midpoint,MAXIMUM_BOUND);
     }
 
