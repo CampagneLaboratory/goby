@@ -580,7 +580,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                                             Cma, Ca, Cmb, Cb, pair.sampleIndexA, pair.sampleIndexB));
                                 }
                             }
-                            pOverPair = 1.0;
+                           combinator.observe(1.0);
                         } else {
                             final int sumTotal = Cma + Ca + Cmb + Cb;
                             final double deltaBetweenGroup = statAdaptor.calculateWithCovariate(sumTotal, Cma, Ca, Cmb, Cb);
