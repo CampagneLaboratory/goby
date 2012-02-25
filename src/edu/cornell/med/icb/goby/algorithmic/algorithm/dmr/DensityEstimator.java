@@ -41,7 +41,7 @@ public class DensityEstimator implements Serializable {
     private ObjectArrayList<FenwickTree> densities;
     BinningStrategy binningStrategy = new SmallAndLog10BinningStrategy();
     private StatisticAdaptor statAdaptor;
-    private static boolean DEBUG = true;
+    private static boolean DEBUG = false;
 
     public DensityEstimator(int numberOfContexts) {
         densities = new ObjectArrayList<FenwickTree>();
@@ -77,21 +77,20 @@ public class DensityEstimator implements Serializable {
      *
      * @param contextIndex
      * @param a
-
      */
     public final void observe(final int contextIndex, final int... a) {
         int sumTotal = 0;
         for (final int val : a) {
             sumTotal += val;
         }
-        observeWithCovariate(contextIndex, sumTotal,a);
+        observeWithCovariate(contextIndex, sumTotal, a);
     }
 
     ObjectArrayList<Observation> observations = new ObjectArrayList<Observation>();
 
     public final void observeWithCovariate(final int contextIndex, final int sumTotal, final int... a) {
 
-        final int scaledStatistic = (int) Math.round(statAdaptor.calculateWithCovariate(sumTotal,a) * SCALING_FACTOR);
+        final int scaledStatistic = (int) Math.round(statAdaptor.calculateWithCovariate(sumTotal, a) * SCALING_FACTOR);
         //System.out.printf("observing context=%d sumTotal=%d scaledStatistic=%d elementIndex=%d %n", contextIndex, sumTotal, scaledStatistic, elementIndex);
         getDensity(contextIndex, sumTotal).incrementCount(scaledStatistic);
         if (DEBUG) {
@@ -193,8 +192,8 @@ public class DensityEstimator implements Serializable {
 
             try {
                 estimated = load(filename);
-                int index = 0;
                 String statName = estimated.getStatAdaptor().statName();
+                int index = 0;
                 outWriter.println("midPointSumTotal\tsumTotal range\t" + statName + "\tcount-at-" + statName);
                 final BinningStrategy binningStrategy = estimated.getBinningStrategy();
                 for (final FenwickTree tree : estimated.densities) {
@@ -228,14 +227,16 @@ public class DensityEstimator implements Serializable {
 
         }
         if (printObservations) {
-            outWriter.println("contextIndex\tstatistic\tsumTotal\n");
+
             DensityEstimator estimated = null;
 
             try {
                 estimated = load(filename);
+                String statName = estimated.getStatAdaptor().statName();
+                outWriter.println("contextIndex\tscaled-"+statName+"\t" + statName + "\tsumTotal\n");
                 for (final Observation observation : estimated.getObservations()) {
-                    outWriter.printf("%d\t%d\t%d%n", observation.contextIndex,
-                            observation.delta, observation.sumTotal);
+                    outWriter.printf("%d\t%d\t%g\t%d%n", observation.contextIndex,    observation.delta,
+                            estimated.unscale(observation.delta), observation.sumTotal);
                 }
                 outWriter.close();
             } catch (ClassNotFoundException e) {
@@ -283,9 +284,9 @@ public class DensityEstimator implements Serializable {
         private int delta;
         private int contextIndex;
 
-        public Observation(int contextIndex, int sumTotal, int delta) {
+        public Observation(int contextIndex, int sumTotal, int scaledStatistic) {
             this.sumTotal = sumTotal;
-            this.delta = delta;
+            this.delta = scaledStatistic;
             this.contextIndex = contextIndex;
         }
 

@@ -20,10 +20,13 @@ package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.*;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.*;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.FastSmallAndLog10BinningStrategy;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.Stat4StatisticAdaptor;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.StatisticAdaptor;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
-import edu.cornell.med.icb.goby.algorithmic.data.IntraGroupEnumerator;
+import edu.cornell.med.icb.goby.algorithmic.data.SamplePairEnumerator;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.util.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.OutputInfo;
@@ -276,7 +279,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 }
             }
             if (estimateIntraGroupDifferences) {
-                groupEnumerator = new IntraGroupEnumerator(sampleIndexToGroupIndex, numSamples, numGroups, 0);
+                groupEnumerator = new SamplePairEnumerator(sampleIndexToGroupIndex, numSamples, numGroups, 0);
 
                 for (final GroupComparison comparison : groupComparisons) {
                     groupEnumerator.recordPairForGroup(comparison.indexGroup1);
@@ -284,7 +287,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 }
             }
             if (estimateIntraGroupP) {
-                groupEnumerator = new IntraGroupEnumerator(sampleIndexToGroupIndex, numSamples, numGroups, groupComparisons.size());
+                groupEnumerator = new SamplePairEnumerator(sampleIndexToGroupIndex, numSamples, numGroups, groupComparisons.size());
                 for (String context : contexts) {
                     for (final GroupComparison comparison : groupComparisons) {
                         groupEnumerator.recordPairForGroupComparison(comparison);
@@ -301,7 +304,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
     }
 
 
-    private IntraGroupEnumerator groupEnumerator;
+    private SamplePairEnumerator groupEnumerator;
 
     private void writeStatForSample(String trackName, String context, String statName) throws IOException {
         StringBuilder columnName = new StringBuilder();
@@ -572,8 +575,10 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                         final int Cb = counter.getUnmethylatedCCountPerSample(contextIndex, pair.sampleIndexB);
                         if ((Cma + Ca) == 0 || (Cmb + Cb) == 0) {
                             if (Cma + Ca + Cmb + Cb != 0) {
-                                System.out.printf("Zero in one intra-group sample for %d %d %d %d samplexIndexA=%d sampleIndexB=%d %n",
-                                        Cma, Ca, Cmb, Cb, pair.sampleIndexA, pair.sampleIndexB);
+                                if (LOG.isTraceEnabled()) {
+                                    LOG.trace(String.format("Zero in one intra-group sample for %d %d %d %d samplexIndexA=%d sampleIndexB=%d %n",
+                                            Cma, Ca, Cmb, Cb, pair.sampleIndexA, pair.sampleIndexB));
+                                }
                             }
                             pOverPair = 1.0;
                         } else {
@@ -604,8 +609,10 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 final int Cb = counter.getUnmethylatedCCountPerSample(contextIndex, next.sampleIndexB);
                 if ((Cma + Ca) == 0 || (Cmb + Cb) == 0) {
                     if (Cma + Ca + Cmb + Cb != 0) {
-                        System.out.printf("Zero in one intra-group sample for %d %d %d %d samplexIndexA=%d sampleIndexB=%d %n",
-                                Cma, Ca, Cmb, Cb, next.sampleIndexA, next.sampleIndexB);
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace(String.format("Zero in one intra-group sample for %d %d %d %d samplexIndexA=%d sampleIndexB=%d %n",
+                                    Cma, Ca, Cmb, Cb, next.sampleIndexA, next.sampleIndexB));
+                        }
                     }
                 } else {
                     estimator.observe(contextIndex, Cma, Ca, Cmb, Cb);
