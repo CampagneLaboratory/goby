@@ -99,7 +99,7 @@ public class PicardFastaIndexedSequence implements RandomAccessSequenceInterface
     @Override
     public void getRange(int referenceIndex, int position, int length, MutableString bases) {
         bases.setLength(0);
-        final int stop = Math.min(position + length, lengths[referenceIndex] - position);
+        final int stop = Math.max(position + length, lengths[referenceIndex] - position);
         ReferenceSequence seq = delegate.getSubsequenceAt(names[referenceIndex], position, stop);
         assert seq.getContigIndex() == referenceIndex : " contig index and reference index must match.";
 
