@@ -209,7 +209,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 throw e;
             }
             if (estimateIntraGroupDifferences) {
-                statAdaptor = new DeltaStatisticAdaptor();
+                statAdaptor = new Stat3StatisticAdaptor();
                 estimator = new DensityEstimator(contexts.length, statAdaptor);
                 estimator.setBinningStrategy(new LinearBinningStrategy());
             }

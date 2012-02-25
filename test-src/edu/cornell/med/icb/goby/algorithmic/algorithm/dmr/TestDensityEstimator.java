@@ -18,7 +18,6 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 
-import edu.rit.draw.item.Line;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -151,6 +150,15 @@ public class TestDensityEstimator {
         StatisticAdaptor adaptor = new MethylationRateDifferenceStatisticAdaptor();
         assertEquals(40.0, adaptor.calculate(495, 405, 95, 5),.1);
         assertEquals(0.0, adaptor.calculate(250, 250, 250, 250),0.1);
+    }
+
+    @Test
+    public void printdStat3() {
+        StatisticAdaptor adaptor = new Stat3StatisticAdaptor();
+        assertEquals(90.0, adaptor.calculate(495, 405, 95, 5),.1);
+        assertEquals(180.0, adaptor.calculate(405, 495, 95, 5),.1);
+        assertEquals(0.0, adaptor.calculate(250, 250, 250, 250),0.1);
+        assertEquals(2.0, adaptor.calculate(251, 250, 252, 250),0.1);
     }
 
 }

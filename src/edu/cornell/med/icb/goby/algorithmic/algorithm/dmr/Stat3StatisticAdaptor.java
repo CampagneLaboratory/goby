@@ -26,12 +26,12 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
  *         Date: 2/24/12
  *         Time: 2:14 PM
  */
-public final class DeltaStatisticAdaptor implements StatisticAdaptor {
+public final class Stat3StatisticAdaptor implements StatisticAdaptor {
     private static final double MAXIMUM_BOUND = 10000;
     private static final long serialVersionUID = 2934190953936250446L;
 
     public String statName() {
-        return "delta";
+        return "stat3";
     }
 
     @Override
@@ -43,8 +43,11 @@ public final class DeltaStatisticAdaptor implements StatisticAdaptor {
         final int ca = a[1];
         final int cmb = a[2];
         final int cb = a[3];
+        final int diffA = cma - ca;
+        final int diffB = cmb - cb;
+
         /*
-        Cma=495     -90
+       Cma=495     -90
 Ca=405
 Cmb=95              -90
 Cb=5
@@ -55,26 +58,17 @@ Cma = 250
 Ca = 250
 Cmb= 250
 Cb = 250
-         */
-        final int maxA;
-        final int maxB;
-        final int minA;
-        final int minB;
-
-        if (cma > ca) {
-            maxA = cma;
-            minA = ca;
-            maxB = cmb;
-            minB = cb;
+        */
+        final int stat3;
+        if (diffA * diffB > 0) {
+            // change in the same direction:
+            stat3 = Math.max(Math.abs(diffA) , Math.abs(diffB));
         } else {
-            maxA = ca;
-            maxB = cb;
-            minA = cma;
-            minB = cmb;
+            //change in  opposite directions:
+            stat3 = Math.abs(diffA) + Math.abs(diffB);
         }
-        final int diffA = maxA - minA;
-        final int diffB = maxB - minB;
-        return Math.min(Math.abs(diffA) + Math.abs(diffB), MAXIMUM_BOUND);
+
+        return Math.min(stat3, MAXIMUM_BOUND);
 
     }
 
