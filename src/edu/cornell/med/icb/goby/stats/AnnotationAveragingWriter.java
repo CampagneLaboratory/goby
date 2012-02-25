@@ -211,7 +211,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
             if (estimateIntraGroupDifferences) {
                 statAdaptor = new Stat4StatisticAdaptor();
                 estimator = new DensityEstimator(contexts.length, statAdaptor);
-                estimator.setBinningStrategy(new SmallAndLog10BinningStrategy());
+                estimator.setBinningStrategy(new FastSmallAndLog10BinningStrategy());
             }
         }
     }

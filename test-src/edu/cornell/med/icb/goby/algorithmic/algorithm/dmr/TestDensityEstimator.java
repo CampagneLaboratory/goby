@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * @author Fabien Campagne
@@ -62,7 +63,7 @@ public class TestDensityEstimator {
 
     @Test
     public void testObserveLargeSumTotals() throws Exception {
-        final DensityEstimator estimator = new DensityEstimator(2,new BuggyDeltaStatisticAdaptor());
+        final DensityEstimator estimator = new DensityEstimator(2, new BuggyDeltaStatisticAdaptor());
         final value[] observations = {
                 new value(0, 500, 130, 4, 12), // sumTotal= 646
                 new value(0, 0, 1000, 1, 2),   // sumTotal= 1003
@@ -80,7 +81,7 @@ public class TestDensityEstimator {
 
     @Test
     public void testFastIndex() {
-        LinearBinningStrategy binning=new LinearBinningStrategy();
+        LinearBinningStrategy binning = new LinearBinningStrategy();
         int[] sumTotalValues = {
                 0, 1, 3, 50, 99, 101, 502, 1050, 2000, 1000010
         };
@@ -141,32 +142,47 @@ public class TestDensityEstimator {
     @Test
     public void testDeltas() {
         DeltaStatisticAdaptor adaptor = new DeltaStatisticAdaptor();
-        assertEquals(180.0, adaptor.calculate(495, 405, 95, 5),0.1);
-        assertEquals(0.0, adaptor.calculate(250, 250, 250, 250),0.1);
+        assertEquals(180.0, adaptor.calculate(495, 405, 95, 5), 0.1);
+        assertEquals(0.0, adaptor.calculate(250, 250, 250, 250), 0.1);
     }
 
     @Test
     public void testdMR() {
         StatisticAdaptor adaptor = new MethylationRateDifferenceStatisticAdaptor();
-        assertEquals(40.0, adaptor.calculate(495, 405, 95, 5),.1);
-        assertEquals(0.0, adaptor.calculate(250, 250, 250, 250),0.1);
+        assertEquals(40.0, adaptor.calculate(495, 405, 95, 5), .1);
+        assertEquals(0.0, adaptor.calculate(250, 250, 250, 250), 0.1);
     }
 
     @Test
     public void testStat3() {
         StatisticAdaptor adaptor = new Stat3StatisticAdaptor();
-        assertEquals(90.0, adaptor.calculate(495, 405, 95, 5),.1);
-        assertEquals(180.0, adaptor.calculate(405, 495, 95, 5),.1);
-        assertEquals(0.0, adaptor.calculate(250, 250, 250, 250),0.1);
-        assertEquals(2.0, adaptor.calculate(251, 250, 252, 250),0.1);
+        assertEquals(90.0, adaptor.calculate(495, 405, 95, 5), .1);
+        assertEquals(180.0, adaptor.calculate(405, 495, 95, 5), .1);
+        assertEquals(0.0, adaptor.calculate(250, 250, 250, 250), 0.1);
+        assertEquals(2.0, adaptor.calculate(251, 250, 252, 250), 0.1);
     }
+
     @Test
     public void testStat4() {
         StatisticAdaptor adaptor = new Stat4StatisticAdaptor();
-        assertEquals(1.8, adaptor.calculateWithCovariate(30,495, 405, 95, 5),.1);
-        assertEquals(0.12, adaptor.calculateWithCovariate(1100, 405, 495, 95, 5),.1);
-        assertEquals(0, adaptor.calculateWithCovariate(1100,250, 250, 250, 250),0.001);
-        assertEquals(0.0013333333333333333, adaptor.calculateWithCovariate(1100,251, 250, 252, 250),0.001);
+        assertEquals(1.8, adaptor.calculateWithCovariate(30, 495, 405, 95, 5), .1);
+        assertEquals(0.12, adaptor.calculateWithCovariate(1100, 405, 495, 95, 5), .1);
+        assertEquals(0, adaptor.calculateWithCovariate(1100, 250, 250, 250, 250), 0.001);
+        assertEquals(0.0013333333333333333, adaptor.calculateWithCovariate(1100, 251, 250, 252, 250), 0.001);
     }
 
+    @Test
+    public void testFastLog10Binning() {
+        FastSmallAndLog10BinningStrategy binner = new FastSmallAndLog10BinningStrategy();
+        double covariates[] =    {0, 1, 10, 40, 99, 100, 150, 1200, 10001, 100001, 1000001,10000001,100000001, 1000000001};
+        int expectedBinIndex[] = {0, 0, 0,   0,  0,   1,   1,    2,     3,      4,       5,       6,        7, 8};
+        assertEquals(covariates.length, expectedBinIndex.length);
+        for (int i = 0; i < covariates.length; i++) {
+            final int binIndex = binner.getBinIndex(covariates[i]);
+            assertEquals(expectedBinIndex[i], binIndex);
+            assertTrue(covariates[i]>=binner.getLowerBound(binIndex));
+            assertTrue(covariates[i]<=binner.getUpperBound(binIndex));
+        }
+
+    }
 }
