@@ -235,8 +235,8 @@ public class DensityEstimator implements Serializable {
                 String statName = estimated.getStatAdaptor().statName();
                 outWriter.println("contextIndex\tscaled-"+statName+"\t" + statName + "\tsumTotal\n");
                 for (final Observation observation : estimated.getObservations()) {
-                    outWriter.printf("%d\t%d\t%g\t%d%n", observation.contextIndex,    observation.delta,
-                            estimated.unscale(observation.delta), observation.sumTotal);
+                    outWriter.printf("%d\t%d\t%g\t%d%n", observation.contextIndex,    observation.scaledStatistic,
+                            estimated.unscale(observation.scaledStatistic), observation.sumTotal);
                 }
                 outWriter.close();
             } catch (ClassNotFoundException e) {
@@ -281,12 +281,12 @@ public class DensityEstimator implements Serializable {
     private class Observation implements Serializable {
         private static final long serialVersionUID = -4121254491478932557L;
         private int sumTotal;
-        private int delta;
+        private int scaledStatistic;
         private int contextIndex;
 
         public Observation(int contextIndex, int sumTotal, int scaledStatistic) {
             this.sumTotal = sumTotal;
-            this.delta = scaledStatistic;
+            this.scaledStatistic = scaledStatistic;
             this.contextIndex = contextIndex;
         }
 
