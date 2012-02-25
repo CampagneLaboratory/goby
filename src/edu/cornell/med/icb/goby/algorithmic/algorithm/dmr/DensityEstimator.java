@@ -41,6 +41,7 @@ public class DensityEstimator implements Serializable {
     private ObjectArrayList<FenwickTree> densities;
     BinningStrategy binningStrategy = new SmallAndLog10BinningStrategy();
     private StatisticAdaptor statAdaptor;
+    private static boolean DEBUG = true;
 
     public DensityEstimator(int numberOfContexts) {
         densities = new ObjectArrayList<FenwickTree>();
@@ -77,19 +78,23 @@ public class DensityEstimator implements Serializable {
      * @param contextIndex
      */
     public void observe(int contextIndex, int... a) {
-         int sumTotal = 0;
+        int sumTotal = 0;
         for (int val : a) {
             sumTotal += val;
 
         }
-        final int delta = (int) Math.round(statAdaptor.calculateWithCovariate(sumTotal, a) * SCALING_FACTOR);
+        final int delta = (int) Math.round(statAdaptor.calculate(a) * SCALING_FACTOR);
 
 
         final int elementIndex = delta;//(int) (((((double)delta)/(1.0+sumTotal)*MAX_ITEMS*0.9)));
         //System.out.printf("observing context=%d sumTotal=%d delta=%d elementIndex=%d %n", contextIndex, sumTotal, delta, elementIndex);
         getDensity(contextIndex, sumTotal).incrementCount(elementIndex);
-
+        if (DEBUG) {
+            observations.add(new Observation(contextIndex, delta, sumTotal));
+        }
     }
+
+    ObjectArrayList<Observation> observations = new ObjectArrayList<Observation>();
 
     public void observeWithCovariate(int contextIndex, int sumTotal, int... a) {
 
@@ -97,7 +102,9 @@ public class DensityEstimator implements Serializable {
         final int elementIndex = delta;//(int) (((((double)delta)/(1.0+sumTotal)*MAX_ITEMS*0.9)));
         //System.out.printf("observing context=%d sumTotal=%d delta=%d elementIndex=%d %n", contextIndex, sumTotal, delta, elementIndex);
         getDensity(contextIndex, sumTotal).incrementCount(elementIndex);
-
+        if (DEBUG) {
+            observations.add(new Observation(contextIndex, delta, sumTotal));
+        }
     }
 
     public void observe(int contextIndex, int delta, int sumTotal) {
@@ -184,7 +191,9 @@ public class DensityEstimator implements Serializable {
 
     public static void main(final String[] args) throws IOException {
         boolean printDensity = CLI.isKeywordGiven(args, "--print-density");
-        String filename = CLI.getOption(args, "-f", null);
+        boolean printObservations = CLI.isKeywordGiven(args, "--print-observations");
+        String filename = CLI.getOption(args,
+                "-f", null);
         String outputFilename = CLI.getOption(args, "-o", "out.tsv");
         PrintWriter outWriter = new PrintWriter(new FileWriter(outputFilename));
         if (printDensity) {
@@ -194,7 +203,7 @@ public class DensityEstimator implements Serializable {
                 estimated = load(filename);
                 int index = 0;
                 String statName = estimated.getStatAdaptor().statName();
-                outWriter.println("midPointSumTotal\tsumTotal range\t"+ statName +"\tcount-at-"+statName);
+                outWriter.println("midPointSumTotal\tsumTotal range\t" + statName + "\tcount-at-" + statName);
                 final BinningStrategy binningStrategy = estimated.getBinningStrategy();
                 for (final FenwickTree tree : estimated.densities) {
                     if (tree != null) {
@@ -226,6 +235,22 @@ public class DensityEstimator implements Serializable {
             }
 
         }
+        if (printObservations) {
+            outWriter.println("contextIndex\tstatistic\tsumTotal\n");
+            DensityEstimator estimated = null;
+
+            try {
+                estimated = load(filename);
+                for (final Observation observation : estimated.getObservations()) {
+                    outWriter.printf("%d\t%d\t%d%n", observation.contextIndex,
+                            observation.delta, observation.sumTotal);
+                }
+                outWriter.close();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+        }
     }
 
     /**
@@ -254,5 +279,24 @@ public class DensityEstimator implements Serializable {
 
     public void setBinningStrategy(BinningStrategy theBinningStrategy) {
         binningStrategy = theBinningStrategy;
+    }
+
+    public ObjectArrayList<Observation> getObservations() {
+        return observations;
+    }
+
+    private class Observation implements Serializable {
+        private static final long serialVersionUID = -4121254491478932557L;
+        private int sumTotal;
+        private int delta;
+        private int contextIndex;
+
+        public Observation(int contextIndex, int sumTotal, int delta) {
+            this.sumTotal = sumTotal;
+            this.delta = delta;
+            this.contextIndex = contextIndex;
+        }
+
+
     }
 }
