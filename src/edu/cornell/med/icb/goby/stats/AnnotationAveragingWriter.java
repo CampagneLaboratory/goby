@@ -22,7 +22,7 @@ import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.*;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.FastSmallAndLog10BinningStrategy;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.Stat4StatisticAdaptor;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.Stat5StatisticAdaptor;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.StatisticAdaptor;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
@@ -223,7 +223,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 throw e;
             }
             if (estimateIntraGroupDifferences) {
-                statAdaptor = new Stat4StatisticAdaptor();
+                statAdaptor = new Stat5StatisticAdaptor();
                 estimator = new DensityEstimator(contexts.length, statAdaptor);
                 estimator.setBinningStrategy(new FastSmallAndLog10BinningStrategy());
             }

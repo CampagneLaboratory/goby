@@ -26,12 +26,12 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
  *         Date: 2/24/12
  *         Time: 2:14 PM
  */
-public final class Stat4StatisticAdaptor implements StatisticAdaptor {
+public final class Stat5StatisticAdaptor implements StatisticAdaptor {
     private static final double MAXIMUM_BOUND = 20;
     private static final long serialVersionUID = 2934190953936250446L;
 
     public String statName() {
-        return "stat4";
+        return "stat5";
     }
      LinearBinningStrategy linearBinner=new LinearBinningStrategy();
     @Override
@@ -61,16 +61,16 @@ Ca = 250
 Cmb= 250
 Cb = 250
         */
-        final int stat3;
+        final int stat5;
         if (diffA * diffB > 0) {
             // change in the same direction:
-            stat3 = Math.max(Math.abs(diffA) , Math.abs(diffB));
+            stat5 = Math.max(Math.abs(cma-cmb) , Math.abs(ca-cb));
         } else {
             //change in  opposite directions:
-            stat3 = Math.abs(diffA) + Math.abs(diffB);
+            stat5 = Math.abs(cma-cmb) + Math.abs(ca-cb);
         }
 
-        return stat3;
+        return stat5;
 
     }
 

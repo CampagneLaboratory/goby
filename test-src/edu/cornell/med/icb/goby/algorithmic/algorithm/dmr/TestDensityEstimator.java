@@ -170,6 +170,14 @@ public class TestDensityEstimator {
         assertEquals(0, adaptor.calculateWithCovariate(1100, 250, 250, 250, 250), 0.001);
         assertEquals(0.0013333333333333333, adaptor.calculateWithCovariate(1100, 251, 250, 252, 250), 0.001);
     }
+    @Test
+       public void testStat5() {
+           StatisticAdaptor adaptor = new Stat5StatisticAdaptor();
+           assertEquals(400.0/1500.0, adaptor.calculateWithCovariate(1000, 495, 405, 95, 5), .1);   // 55->90
+           assertEquals(800.0/1500.0, adaptor.calculateWithCovariate(1100, 405, 495, 95, 5), .1);  //45->95
+           assertEquals(0.0, adaptor.calculateWithCovariate(1100, 250, 250, 250, 250), 0.001);
+           assertEquals(2.0/1500.0, adaptor.calculateWithCovariate(1100, 251, 250, 252, 250), 0.001);
+       }
 
     @Test
     public void testFastLog10Binning() {
