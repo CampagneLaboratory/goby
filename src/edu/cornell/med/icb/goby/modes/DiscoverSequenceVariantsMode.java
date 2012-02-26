@@ -147,6 +147,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         registeredDOClients.add(AnnotationAveragingWriter.doc);
         registeredDOClients.add(MethylationRegionsOutputFormat.doc);
 
+
         // parse dynamic options:
         dymamicOptions = jsapResult.getStringArray("dynamic-options");
         for (final String dymamicOption : dymamicOptions) {
@@ -157,6 +158,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
                     parsed = true;
                     break;
+
                 }
             }
             if (!parsed) {

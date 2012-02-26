@@ -99,7 +99,7 @@ public class SamplePairEnumerator {
      * Record all the between-group sample pairs that exist for the given group comparison.
      * @param comparison group comparison of interest.
      */
-    public void recordPairForGroupComparison(GroupComparison comparison) {
+    public void recordPairForGroupComparison(final GroupComparison comparison) {
         samplePairsForGroupComparisons[comparison.index] = new ObjectArrayList<SamplePair>();
         final IntSet sampleIndicesInGroup1 = new IntAVLTreeSet();
         final IntSet sampleIndicesInGroup2 = new IntAVLTreeSet();

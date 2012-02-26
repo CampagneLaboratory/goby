@@ -19,11 +19,10 @@
 package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.goby.R.GobyRengine;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.*;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.SortedAnnotations;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.FastSmallAndLog10BinningStrategy;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.Stat5StatisticAdaptor;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.StatisticAdaptor;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.algorithmic.data.SamplePairEnumerator;
@@ -60,12 +59,9 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
     private MethylCountProvider provider;
     private String annotationFilename = null;
     public static final DynamicOptionClient doc = new DynamicOptionClient(AnnotationAveragingWriter.class,
+            EmpiricalPValueEstimator.LOCAL_DYNAMIC_OPTIONS,
             "annotations:annotation filename:",
             "write-counts:boolean, when true write C and Cm for regions:false",
-            "estimate-intra-group-differences: boolean, true indicates that pair-wise differences for sample in the same group should be tallied and written to the output. False indicates regular output.:false",
-            "estimate-empirical-P: boolean, true: activates estimation of the empirical p-value.:false",
-            "combinator: string, the method to combine p-values, one of qfast, average, sum, max.:sum",
-            "serialized-estimator-filename: string, the path to a serialized version of the density estimator populated with the empirical null-distribution.:",
             "contexts:string, coma delimited list of contexts for which to evaluate methylation rate. Contexts can be CpG, CpA,CpC,CpT,CpN. Default is CpG only:CpG"
     );
     private String[] groups;
@@ -99,7 +95,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
     private Boolean writeCounts;
     private Boolean estimateIntraGroupP;
     private Boolean writeNumSites = true;
-    private StatisticAdaptor statAdaptor;
+    final EmpiricalPValueEstimator empiricalPValueEstimator = new EmpiricalPValueEstimator();
 
 
     public AnnotationAveragingWriter(OutputInfo outputInfo, MethylCountProvider provider) {
@@ -116,56 +112,23 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
     }
 
     public void setContexts(String[] strings) {
-        contexts=strings;
+        contexts = strings;
     }
 
-    enum combinatorNames {
-        max, sum, qfast, median
-    }
 
     public AnnotationAveragingWriter(final OutputInfo outputInfo, RandomAccessSequenceInterface genome, MethylCountProvider provider) {
         super(new NullWriter());
-        String contextString= doc.getString("contexts");
+        String contextString = doc.getString("contexts");
         String[] contextTokens = contextString.split(",");
-        if (contextTokens.length!=0) {
+        if (contextTokens.length != 0) {
             LOG.info("registering user defined contexts: " + ObjectArrayList.wrap(contextTokens));
-            contexts=contextTokens;
+            contexts = contextTokens;
         }
         estimateIntraGroupDifferences = doc.getBoolean("estimate-intra-group-differences");
         estimateIntraGroupP = doc.getBoolean("estimate-empirical-P");
         writeCounts = doc.getBoolean("write-counts");
-        final String serializedFilename = doc.getString("serialized-estimator-filename");
-        if (serializedFilename != null) {
-            try {
-                estimator = DensityEstimator.load(serializedFilename);
-                statAdaptor = estimator.getStatAdaptor();
-                estimateIntraGroupDifferences = false;
-            } catch (Exception e) {
-                throw new RuntimeException("Unable to load serialized density with filename=" + serializedFilename);
-            }
-        }
-        String combinatorName = doc.getString("combinator");
-        try {
-            switch (combinatorNames.valueOf(combinatorName)) {
-                case max:
-                    combinator = new MaxCombinator();
-                    break;
-                case sum:
-                    combinator = new SummedCombinator();
-                    break;
-                case qfast:
-                    combinator = new QFast();
-                    break;
-                case median:
-                    combinator = new MedianCombinator();
-                    break;
-                default:
-                    new InternalError("This combinator name is not proporly handled: " + combinatorName);
-            }
-        } catch (IllegalArgumentException e) {
-            LOG.error(String.format("The combinator name %s was not recognized, using the default combinator instead", combinatorName));
-            combinator = new SummedCombinator();
-        }
+
+
         this.provider = provider;
         this.outputInfo = outputInfo;
         if (!estimateIntraGroupDifferences) {
@@ -176,6 +139,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
         this.genome = genome;
         initialized = false;
         processGroups = true;
+
     }
 
 
@@ -191,6 +155,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
 
             if (groups == null) {
                 processGroups = false;
+                numGroups=0;
             } else {
                 if (groups.length < 1) {
                     System.err.println("Methylation format requires at least one group.");
@@ -198,6 +163,8 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 }
                 numGroups = groups.length;
             }
+            empiricalPValueEstimator.configure(contexts.length, doc);
+            empiricalPValueEstimator.setGroupEnumerator(new SamplePairEnumerator(sampleIndexToGroupIndex, numSamples, numGroups, groupComparisons.size()));
 
             // load annotations
             annotations.setGenome(this.genome);
@@ -222,10 +189,11 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 e.printStackTrace();
                 throw e;
             }
+
             if (estimateIntraGroupDifferences) {
-                statAdaptor = new Stat5StatisticAdaptor();
-                estimator = new DensityEstimator(contexts.length, statAdaptor);
-                estimator.setBinningStrategy(new FastSmallAndLog10BinningStrategy());
+                empiricalPValueEstimator.setStatAdaptor(new Stat5StatisticAdaptor());
+                empiricalPValueEstimator.setEstimator(new DensityEstimator(contexts.length, empiricalPValueEstimator.getStatAdaptor()));
+                empiricalPValueEstimator.getEstimator().setBinningStrategy(new FastSmallAndLog10BinningStrategy());
             }
         }
     }
@@ -290,23 +258,17 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 }
             }
             if (estimateIntraGroupDifferences) {
-                groupEnumerator = new SamplePairEnumerator(sampleIndexToGroupIndex, numSamples, numGroups, 0);
-
                 for (final GroupComparison comparison : groupComparisons) {
-                    groupEnumerator.recordPairForGroup(comparison.indexGroup1);
-                    groupEnumerator.recordPairForGroup(comparison.indexGroup2);
+                    empiricalPValueEstimator.observeIntraGroupPairs(comparison);
                 }
             }
             if (estimateIntraGroupP) {
-                groupEnumerator = new SamplePairEnumerator(sampleIndexToGroupIndex, numSamples, numGroups, groupComparisons.size());
-                for (String context : contexts) {
+                for (final String context : contexts) {
                     for (final GroupComparison comparison : groupComparisons) {
-                        groupEnumerator.recordPairForGroupComparison(comparison);
-
+                        empiricalPValueEstimator.observeBetweenGroupPair(comparison);
                         writeStatForGroupComparison(comparison, context, "empiricalP");
                     }
                 }
-
             }
             outputWriter.append('\n');
         } catch (IOException e) {
@@ -314,8 +276,17 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
         }
     }
 
+    private void observeBetweenGroupPair(GroupComparison comparison) {
+        empiricalPValueEstimator.observeBetweenGroupPair(comparison);
+    }
 
-    private SamplePairEnumerator groupEnumerator;
+
+    private void observeIntraGroupPairs(GroupComparison comparison) {
+        //   groupEnumerator = new SamplePairEnumerator(this.sampleIndexToGroupIndex, numSamples, numGroups, 0);
+
+        empiricalPValueEstimator.observeIntraGroupPairs(comparison);
+    }
+
 
     private void writeStatForSample(String trackName, String context, String statName) throws IOException {
         StringBuilder columnName = new StringBuilder();
@@ -538,14 +509,20 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                     for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
 
                         for (final GroupComparison comparison : groupComparisons) {
-                            collectWithinGroupEstimates(currentContext, comparison.indexGroup1, counter);
-                            collectWithinGroupEstimates(currentContext, comparison.indexGroup2, counter);
+                            empiricalPValueEstimator.estimateNullDensity(currentContext, comparison.indexGroup1, counter);
+                            empiricalPValueEstimator.estimateNullDensity(currentContext, comparison.indexGroup2, counter);
                         }
                     }
                 }
                 if (estimateIntraGroupP) {
-                    estimateIntraGroupPValue(lineToOutput, counter);
+                    for (int contextIndex = 0; contextIndex < contexts.length; contextIndex++) {
 
+                        for (final GroupComparison comparison : groupComparisons) {
+                            final double p = empiricalPValueEstimator.estimateEmpiricalPValue(contextIndex, comparison, counter);
+                            lineToOutput.append("\t");
+                            lineToOutput.append(formatDouble(p));
+                        }
+                    }
                 }
                 outputWriter.append(lineToOutput.toString());
                 outputWriter.append("\n");
@@ -556,83 +533,27 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
         }
     }
 
-    EvidenceCombinator combinator;
-
     /**
      * Return the p-value that the difference observed between any of the pair could have been generated
      * by the distribution represented in estimator. In this method, we compare samples across groups,
      * and use a distribution derived from pairs of samples in the same group. We therefore estimate a p-value
      * where the null-hypothesis is that the difference observed was generated by intra-group variations.
      *
-     * @param lineToOutput
      * @param counter
      * @return p-value.
      */
-    private void estimateIntraGroupPValue(final StringBuilder lineToOutput, final FormatFieldCounter counter) {
-
-        if (estimateIntraGroupP) {
-            for (int contextIndex = 0; contextIndex < contexts.length; contextIndex++) {
-                double pOverPair = 0;
-                double logProduct = 0;
-                int numP = 0;
-
-                for (final GroupComparison comparison : groupComparisons) {
-                    combinator.reset();
-                    final ObjectArrayList<SamplePair> pairs = groupEnumerator.getPairs(comparison);
-                    for (final SamplePair pair : pairs) {
-                        final int Cma = counter.getMethylatedCCountPerSample(contextIndex, pair.sampleIndexA);
-                        final int Ca = counter.getUnmethylatedCCountPerSample(contextIndex, pair.sampleIndexA);
-                        final int Cmb = counter.getMethylatedCCountPerSample(contextIndex, pair.sampleIndexB);
-                        final int Cb = counter.getUnmethylatedCCountPerSample(contextIndex, pair.sampleIndexB);
-                        if ((Cma + Ca) == 0 || (Cmb + Cb) == 0) {
-                            if (Cma + Ca + Cmb + Cb != 0) {
-                                if (LOG.isTraceEnabled()) {
-                                    LOG.trace(String.format("Zero in one intra-group sample for %d %d %d %d samplexIndexA=%d sampleIndexB=%d %n",
-                                            Cma, Ca, Cmb, Cb, pair.sampleIndexA, pair.sampleIndexB));
-                                }
-                            }
-                           combinator.observe(1.0);
-                        } else {
-                            final int sumTotal = Cma + Ca + Cmb + Cb;
-                            final double deltaBetweenGroup = statAdaptor.calculateWithCovariate(sumTotal, Cma, Ca, Cmb, Cb);
-                            final double p = estimator.getP(contextIndex, sumTotal, deltaBetweenGroup);
-                            combinator.observe(p);
-                        }
-
-                    }
-                    lineToOutput.append("\t");
-                    lineToOutput.append(formatDouble(combinator.adjust()));
-                }
-            }
-        }
-
+    private double estimateIntraGroupPValue(final int contextIndex, final GroupComparison comparison, final FormatFieldCounter counter) {
+        return empiricalPValueEstimator.estimateEmpiricalPValue(contextIndex, comparison, counter);
     }
+
 
     private void collectWithinGroupEstimates(final int contextIndex, final int groupIndex,
                                              final FormatFieldCounter counter) {
-        if (estimateIntraGroupDifferences) {
-            // enumerate sample pairs that belong to the group of interest:
-            final ObjectArrayList<SamplePair> pairs = groupEnumerator.getPairs(groupIndex);
-            for (final SamplePair next : pairs) {
-                final int Cma = counter.getMethylatedCCountPerSample(contextIndex, next.sampleIndexA);
-                final int Ca = counter.getUnmethylatedCCountPerSample(contextIndex, next.sampleIndexA);
-                final int Cmb = counter.getMethylatedCCountPerSample(contextIndex, next.sampleIndexB);
-                final int Cb = counter.getUnmethylatedCCountPerSample(contextIndex, next.sampleIndexB);
-                if ((Cma + Ca) == 0 || (Cmb + Cb) == 0) {
-                    if (Cma + Ca + Cmb + Cb != 0) {
-                        if (LOG.isTraceEnabled()) {
-                            LOG.trace(String.format("Zero in one intra-group sample for %d %d %d %d samplexIndexA=%d sampleIndexB=%d %n",
-                                    Cma, Ca, Cmb, Cb, next.sampleIndexA, next.sampleIndexB));
-                        }
-                    }
-                } else {
-                    estimator.observe(contextIndex, Cma, Ca, Cmb, Cb);
-                }
-            }
-        }
-    }
 
-    private DensityEstimator estimator;
+        // enumerate sample pairs that belong to the group of interest:
+
+        empiricalPValueEstimator.estimateNullDensity(contextIndex, groupIndex, counter);
+    }
 
     /**
      * Format double, rendering NaN as empty string.
@@ -684,7 +605,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
         if (estimateIntraGroupDifferences) {
             // when estimating intra-group differences, we  serialize the estimator to the output.
             try {
-                DensityEstimator.store(estimator, outputInfo.getFilename());
+                DensityEstimator.store(empiricalPValueEstimator.getEstimator(), outputInfo.getFilename());
             } catch (IOException e) {
                 LOG.error("Unable to write estimator to file", e);
             }
@@ -736,6 +657,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
     @Override
     public void setGroupComparisons(ArrayList<GroupComparison> groupComparisons) {
         this.groupComparisons = groupComparisons;
+
     }
 
     @Override

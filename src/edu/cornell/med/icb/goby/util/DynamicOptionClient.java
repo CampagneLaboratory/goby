@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.util;
 
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -36,6 +37,11 @@ public class DynamicOptionClient {
     String[] values;
     Class enclosingClass;
     private static final Logger LOG = Logger.getLogger(DynamicOptionClient.class);
+
+    public DynamicOptionClient(Class enclosingClass, final String[] otherDefinitions, final String... optionDefinition) {
+
+        this(enclosingClass, (String[])ArrayUtils.addAll(otherDefinitions, optionDefinition));
+    }
 
     /**
      * Define the set of dynamic options the client recognizes. A empty default string is substituted by null.
