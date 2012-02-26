@@ -115,6 +115,10 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
         writeNumSites = b;
     }
 
+    public void setContexts(String[] strings) {
+        contexts=strings;
+    }
+
     enum combinatorNames {
         max, sum, qfast, median
     }
@@ -124,7 +128,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
         String contextString= doc.getString("contexts");
         String[] contextTokens = contextString.split(",");
         if (contextTokens.length!=0) {
-            LOG.info("registering user defined contexts: "+ObjectArrayList.wrap(contextTokens));
+            LOG.info("registering user defined contexts: " + ObjectArrayList.wrap(contextTokens));
             contexts=contextTokens;
         }
         estimateIntraGroupDifferences = doc.getBoolean("estimate-intra-group-differences");
