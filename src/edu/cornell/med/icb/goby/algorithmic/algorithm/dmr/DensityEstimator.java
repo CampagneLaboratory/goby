@@ -97,9 +97,7 @@ public class DensityEstimator implements Serializable {
         final int scaledStatistic = (int) Math.round(statAdaptor.calculateWithCovariate(sumTotal, a) * SCALING_FACTOR);
         //System.out.printf("observing context=%d sumTotal=%d scaledStatistic=%d elementIndex=%d %n", contextIndex, sumTotal, scaledStatistic, elementIndex);
         getDensity(sumTotal).incrementCount(scaledStatistic);
-        if (DEBUG) {
-            observations.add(new Observation(contextIndex, scaledStatistic, sumTotal));
-        }
+
     }
 
 

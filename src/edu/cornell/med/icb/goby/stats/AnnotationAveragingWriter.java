@@ -22,6 +22,7 @@ import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.SortedAnnotations;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.FastSmallAndLog10BinningStrategy;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.ObservationWriter;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.Stat5StatisticAdaptor;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
@@ -32,14 +33,17 @@ import edu.cornell.med.icb.goby.util.OutputInfo;
 import edu.cornell.med.icb.goby.util.OutputInfoFromWriter;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullWriter;
 import org.apache.log4j.Logger;
 import org.rosuda.JRI.Rengine;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * A VCF Writer that averages values of some fields over a set of annotations,
@@ -96,6 +100,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
     private Boolean estimateIntraGroupP;
     private Boolean writeNumSites = true;
     final EmpiricalPValueEstimator empiricalPValueEstimator = new EmpiricalPValueEstimator();
+    private final String[] identifiers = new String[4];
 
 
     public AnnotationAveragingWriter(OutputInfo outputInfo, MethylCountProvider provider) {
@@ -127,7 +132,21 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
         estimateIntraGroupDifferences = doc.getBoolean("estimate-intra-group-differences");
         estimateIntraGroupP = doc.getBoolean("estimate-empirical-P");
         writeCounts = doc.getBoolean("write-counts");
-
+        if (estimateIntraGroupDifferences || estimateIntraGroupP) {
+            String basename = FilenameUtils.removeExtension(outputInfo.getFilename());
+            if (basename == null) {
+                basename = Long.toString(new Date().getTime());
+            }
+            String filename = basename + "-observations.tsv";
+            try {
+                obsWriter = new ObservationWriter(new FileWriter(filename));
+                obsWriter.setHeaderIds(new String[]{"chromosome", "start", "end", "annotation-id"});
+            } catch (IOException e) {
+                LOG.error("Cannot open observation file for writing: " + filename);
+            }
+        } else {
+            obsWriter = new DummyObservationWriter();
+        }
 
         this.provider = provider;
         this.outputInfo = outputInfo;
@@ -155,7 +174,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
 
             if (groups == null) {
                 processGroups = false;
-                numGroups=0;
+                numGroups = 0;
             } else {
                 if (groups.length < 1) {
                     System.err.println("Methylation format requires at least one group.");
@@ -194,6 +213,9 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 empiricalPValueEstimator.setStatAdaptor(new Stat5StatisticAdaptor());
                 empiricalPValueEstimator.setEstimator(new DensityEstimator(contexts.length, empiricalPValueEstimator.getStatAdaptor()));
                 empiricalPValueEstimator.getEstimator().setBinningStrategy(new FastSmallAndLog10BinningStrategy());
+                if (!(obsWriter instanceof DummyObservationWriter)) {
+                    empiricalPValueEstimator.getStatAdaptor().setObservationWriter(obsWriter);
+                }
             }
         }
     }
@@ -210,8 +232,6 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                         writeStatForSample(sample, context, "#Cm");
                     }
                     writeStatForSample(sample, context, "MR");
-
-
                 }
             }
             if (groups != null) {
@@ -222,7 +242,6 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                             writeStatForSample(group, context, "#Cm");
                         }
                         writeStatForSample(group, context, "MR");
-
                     }
                 }
             }
@@ -245,16 +264,13 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
 
                     writeStatForGroupComparison(comparison, context, "fisherP");
                 }
-
-            }
+             }
 
 
             for (String context : contexts) {
                 for (final GroupComparison comparison : groupComparisons) {
 
                     writeStatForGroupComparison(comparison, context, "deltaMR");
-
-
                 }
             }
             if (estimateIntraGroupDifferences) {
@@ -275,18 +291,6 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
             throw new RuntimeException(e);
         }
     }
-
-    private void observeBetweenGroupPair(GroupComparison comparison) {
-        empiricalPValueEstimator.observeBetweenGroupPair(comparison);
-    }
-
-
-    private void observeIntraGroupPairs(GroupComparison comparison) {
-        //   groupEnumerator = new SamplePairEnumerator(this.sampleIndexToGroupIndex, numSamples, numGroups, 0);
-
-        empiricalPValueEstimator.observeIntraGroupPairs(comparison);
-    }
-
 
     private void writeStatForSample(String trackName, String context, String statName) throws IOException {
         StringBuilder columnName = new StringBuilder();
@@ -366,7 +370,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
         }
 
 
-        IntSet currentAnnotations = counterMap.keySet();
+        final IntSet currentAnnotations = counterMap.keySet();
 
         for (final int annot : currentAnnotations) {
             buildAnnotationRecordForOutput(chromosome, pos, annot);
@@ -390,6 +394,8 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
         return contextIndex;
     }
 
+    private ObservationWriter obsWriter;
+
     private void buildAnnotationRecordForOutput(String chromosome, int pos, int anno) {
 
         if (annotations.pastChosenAnnotation(anno, chromosome, pos)) {
@@ -399,6 +405,13 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
 
             StringBuilder lineToOutput = new StringBuilder("");
             try {
+
+                identifiers[0] = annoOut.getChromosome();
+                identifiers[1] = String.valueOf(annoOut.getStart());
+                identifiers[2] = String.valueOf(annoOut.getEnd());
+                identifiers[3] = annoOut.getId();
+                obsWriter.setElementIds(identifiers);
+
                 lineToOutput.append(annoOut.getChromosome());
                 lineToOutput.append("\t");
                 lineToOutput.append(String.valueOf(annoOut.getStart()));
@@ -416,8 +429,6 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                             lineToOutput.append("\t");
                             final int methylatedCCounterPerSample = counter.getMethylatedCCountPerSample(currentContext, sampleIndex);
                             lineToOutput.append(methylatedCCounterPerSample);
-
-
                         }
 
                         lineToOutput.append("\t");
@@ -438,8 +449,6 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                             lineToOutput.append("\t");
                             final int methylatedCCounterPerGroup = counter.getMethylatedCCountPerGroup(currentContext, groupIndex);
                             lineToOutput.append(methylatedCCounterPerGroup);
-
-
                         }
                         lineToOutput.append("\t");
                         lineToOutput.append(formatDouble(counter.getMethylationRatePerGroup(currentContext, groupIndex)));
@@ -506,6 +515,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                     }
                 }
                 if (estimateIntraGroupDifferences) {
+                    obsWriter.setTypeOfPair(ObservationWriter.TypeOfPair.WITHIN_GROUP_PAIR);
                     for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
 
                         for (final GroupComparison comparison : groupComparisons) {
@@ -515,10 +525,11 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                     }
                 }
                 if (estimateIntraGroupP) {
+                    obsWriter.setTypeOfPair(ObservationWriter.TypeOfPair.BETWEEN_GROUP_PAIR);
                     for (int contextIndex = 0; contextIndex < contexts.length; contextIndex++) {
 
                         for (final GroupComparison comparison : groupComparisons) {
-                            final double p = empiricalPValueEstimator.estimateEmpiricalPValue(contextIndex, comparison,counter);
+                            final double p = empiricalPValueEstimator.estimateEmpiricalPValue(contextIndex, comparison, counter);
                             lineToOutput.append("\t");
                             lineToOutput.append(formatDouble(p));
                         }
@@ -610,16 +621,22 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 LOG.error("Unable to write estimator to file", e);
             }
         }
+        if (obsWriter != null) {
+            obsWriter.close();
+
+        }
+
     }
 
 
     private String findGenomicContext(int referenceIndex, int position) {
+        int referenceLength = genome.getLength(referenceIndex);
         int zeroBasedPos = position - 1;
         char currentBase = genome.get(referenceIndex, zeroBasedPos);
-        int referenceLength = genome.getLength(referenceIndex);
+
         char nextBase = '?';
         String tempContext = new StringBuilder().append('C').append('p').toString();
-        char concatBase = '?';
+        char concatBase = 'N';
 
         if (currentBase == 'C') {
             if (referenceLength == position) {

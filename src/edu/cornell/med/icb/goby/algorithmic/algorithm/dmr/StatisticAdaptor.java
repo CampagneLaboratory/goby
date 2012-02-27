@@ -18,6 +18,8 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+
 import java.io.Serializable;
 
 /**
@@ -27,11 +29,12 @@ import java.io.Serializable;
  */
 public interface StatisticAdaptor extends Serializable {
     /**
-     *
      * Return the name of the statistic estimated by this adaptor.
+     *
      * @return
      */
     public String statName();
+
     /**
      * Estimate a statistic given some integers.
      *
@@ -40,19 +43,27 @@ public interface StatisticAdaptor extends Serializable {
      */
 
     public double calculateNoCovariate(int... a);
-     /**
+
+    /**
      * Estimate a statistic given a covariate and some integers.
      *
      * @param covariate a relevant covariate of the statistic. Some calculator may use the covariate to normalize the
-      * value of the statistic.
-      * @param a values used to calculate the statistic. The meaning of the values and their order is implementation dependent.
+     *                  value of the statistic.
+     * @param a         values used to calculate the statistic. The meaning of the values and their order is implementation dependent.
      * @return the calculated statistic.
      */
 
     public double calculateWithCovariate(int covariate, int... a);
 
     /**
+     * Estimate a statistic given values and covariates for two samples A and B.
+     */
+
+    public double calculate(IntArrayList valuesSampleA, IntArrayList valuesSampleB, IntArrayList covariatesSampleA, IntArrayList covariatesSampleB);
+
+    /**
      * Return the maximum value that the statistic can attain.
+     *
      * @return a maximum bound on statistic.
      */
     double getMaximumStatistic();
@@ -60,27 +71,36 @@ public interface StatisticAdaptor extends Serializable {
     /**
      * Get the range of this statistic. The difference between the maximum statistic that can be calculated and the
      * minimum value.
+     *
      * @return range of the statistic.
      */
     double getRange();
 
     /**
-     *  Calculate a statistic.
+     * Calculate a statistic.
+     *
      * @param dataProvider
      * @param sampleIndexA
      * @param sampleIndexB
      * @param covariate
      * @return NaN if the pair of samples should be ignored.
      */
-    double calculate(Object dataProvider, int sampleIndexA, int sampleIndexB, int ... covariate);
+    double calculate(Object dataProvider, int sampleIndexA, int sampleIndexB, int... covariate);
 
     /**
-     * Return the covariates associated with the statistic.
+     * Return the covariates associated with the pair for which the statistic is estimated.
+     *
      * @return an array of integers, where each element is a covariate associated with a pair of samples.
      */
-    int[] covariates();
+    int[] pairCovariates();
 
     void reset();
 
     boolean ignorePair();
+
+    /**
+     * Set an optional observation writer on this statistic. Observations will be written if a writer is set.
+     * @param obsWriter
+     */
+    public void setObservationWriter(ObservationWriter obsWriter);
 }
