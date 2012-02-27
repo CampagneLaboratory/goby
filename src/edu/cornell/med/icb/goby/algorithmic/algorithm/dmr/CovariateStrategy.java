@@ -18,43 +18,19 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 
+import java.io.Serializable;
+
 /**
+ * Strategies to determine how to map covariates to discrete distributions.
  * @author Fabien Campagne
- *         Date: 2/24/12
- *         Time: 4:37 PM
+ *         Date: 2/26/12
+ *         Time: 12:43 PM
  */
-public class PassThroughStatisticAdaptor extends AbstractMethylationAdapter{
-
-
-    private static final long serialVersionUID = 8506302569020149425L;
-    private int maxValue;
-    public PassThroughStatisticAdaptor(int maxValue) {
-        this.maxValue=maxValue;
-    }
-
-    @Override
-    public String statName() {
-        return "pass-through";
-    }
-
-    @Override
-    public double calculateNoCovariate(final int... a) {
-        return a[0];
-    }
-
-    @Override
-    public double calculateWithCovariate(int covariate, int... a) {
-        return calculateNoCovariate(a);
-    }
-
-    @Override
-    public double getMaximumStatistic() {
-        return maxValue;
-    }
-
-    @Override
-    public double getRange() {
-        return maxValue;
-    }
-
+public abstract class CovariateStrategy implements Serializable {
+    /**
+     * Take a set of covariates and return the index of the distribution that the covariates map to.
+     * @param covariates list of covariates associated with an observation.
+     * @return an index between zero and the number of discrete distributions.
+     */
+    public abstract int getIndex(int... covariates);
 }

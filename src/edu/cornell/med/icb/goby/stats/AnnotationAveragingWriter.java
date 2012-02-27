@@ -518,7 +518,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                     for (int contextIndex = 0; contextIndex < contexts.length; contextIndex++) {
 
                         for (final GroupComparison comparison : groupComparisons) {
-                            final double p = empiricalPValueEstimator.estimateEmpiricalPValue(contextIndex, comparison, counter);
+                            final double p = empiricalPValueEstimator.estimateEmpiricalPValue(contextIndex, comparison,counter);
                             lineToOutput.append("\t");
                             lineToOutput.append(formatDouble(p));
                         }
@@ -542,13 +542,13 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
      * @param counter
      * @return p-value.
      */
-    private double estimateIntraGroupPValue(final int contextIndex, final GroupComparison comparison, final FormatFieldCounter counter) {
+    private double estimateIntraGroupPValue(final int contextIndex, final GroupComparison comparison, final DataProvider counter) {
         return empiricalPValueEstimator.estimateEmpiricalPValue(contextIndex, comparison, counter);
     }
 
 
     private void collectWithinGroupEstimates(final int contextIndex, final int groupIndex,
-                                             final FormatFieldCounter counter) {
+                                             final DataProvider counter) {
 
         // enumerate sample pairs that belong to the group of interest:
 

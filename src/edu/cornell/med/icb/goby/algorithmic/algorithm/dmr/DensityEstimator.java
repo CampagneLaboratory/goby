@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 
 import edu.cornell.med.icb.goby.algorithmic.algorithm.FenwickTree;
 import edu.mssm.crover.cli.CLI;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.io.BinIO;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
@@ -39,7 +40,7 @@ public class DensityEstimator implements Serializable {
     private static final long serialVersionUID = -4803501043413548993L;
     private static final int MAX_ITEMS = 10000;
     private ObjectArrayList<FenwickTree> densities;
-    BinningStrategy binningStrategy = new SmallAndLog10BinningStrategy();
+    private BinningStrategy binningStrategy = new SmallAndLog10BinningStrategy();
     private StatisticAdaptor statAdaptor;
     private static boolean DEBUG = false;
 
@@ -48,6 +49,10 @@ public class DensityEstimator implements Serializable {
         statAdaptor = new DeltaStatisticAdaptor();
         SCALING_FACTOR = (int) Math.round(MAX_ITEMS / statAdaptor.getRange());
         binningStrategy = new Log10BinningStrategy();
+    }
+
+    public double getScalingFactor() {
+        return SCALING_FACTOR;
     }
 
     public DensityEstimator(int numberOfContexts, StatisticAdaptor statAdaptor) {
@@ -65,6 +70,7 @@ public class DensityEstimator implements Serializable {
     public BinningStrategy getBinningStrategy() {
         return binningStrategy;
     }
+
 
     /**
      * ca=5 cma=10  diffA=10-5=5
@@ -86,30 +92,37 @@ public class DensityEstimator implements Serializable {
         observeWithCovariate(contextIndex, sumTotal, a);
     }
 
-    ObjectArrayList<Observation> observations = new ObjectArrayList<Observation>();
-
     public final void observeWithCovariate(final int contextIndex, final int sumTotal, final int... a) {
 
         final int scaledStatistic = (int) Math.round(statAdaptor.calculateWithCovariate(sumTotal, a) * SCALING_FACTOR);
         //System.out.printf("observing context=%d sumTotal=%d scaledStatistic=%d elementIndex=%d %n", contextIndex, sumTotal, scaledStatistic, elementIndex);
-        getDensity(contextIndex, sumTotal).incrementCount(scaledStatistic);
+        getDensity(sumTotal).incrementCount(scaledStatistic);
         if (DEBUG) {
             observations.add(new Observation(contextIndex, scaledStatistic, sumTotal));
         }
     }
 
-    public void observe(int contextIndex, int unscaledStatistic, int sumTotal) {
 
-        // System.out.printf("observing context=%d sumTotal=%d unscaledStatistic=%d elementIndex=%d %n", contextIndex, sumTotal, unscaledStatistic, unscaledStatistic);
-        getDensity(contextIndex, sumTotal).incrementCount(unscaledStatistic);
+    // TODO support configurable covariate strategies.
+    private final CovariateStrategy covariateStrategy = new CovariateStrategy() {
+        private static final long serialVersionUID = 8748910738772304161L;
 
-    }
+        @Override
+        public final int getIndex(final int... covariates) {
+            if (covariates.length == 0) {
+                return 0;
+            }
+            if (covariates.length == 1) {
+                // the first covariate is sumTotal, and for now we only bin based on it.
+                return binningStrategy.getBinIndex(covariates[0]);
+            }
+            throw new InternalError("more than one covariate is not supported at this time.");
+        }
+    };
 
+    public FenwickTree getDensity(int... covariates) {
+        final int index = covariateStrategy.getIndex(covariates);
 
-    private FenwickTree getDensity(final int contextIndex, final int sumTotal) {
-
-
-        final int index = binningStrategy.getBinIndex(sumTotal);
         while (densities.size() <= index) {
             densities.add(null);
         }
@@ -125,6 +138,8 @@ public class DensityEstimator implements Serializable {
         }
     }
 
+    private ObjectArrayList<Observation> observations = new ObjectArrayList<Observation>();
+
 
     public static void store(final DensityEstimator estimator, final String filename) throws IOException {
         BinIO.storeObject(estimator, filename);
@@ -137,26 +152,24 @@ public class DensityEstimator implements Serializable {
     /**
      * Get the cumulative count for observations with delta between zero and the argument value.
      *
-     * @param contextIndex    index of the context.
-     * @param sumTotal        total sum.
      * @param scaledStatistic upper-bound on the scaledStatistic for counting observations.
-     * @return
+     * @param covariates      covariates of the scaled statistic.
+     * @return the number of observations with similar covariates for which the statistic is less than the specified value.
      */
-    public long getCumulativeCount(int contextIndex, int sumTotal, int scaledStatistic) {
-        final FenwickTree tree = getDensity(contextIndex, sumTotal);
+    public long getCumulativeCount(final int scaledStatistic, final int... covariates) {
+        final FenwickTree tree = getDensity(covariates);
         return tree.getCumulativeCount(scaledStatistic);
     }
 
     /**
      * Get the cumulative count for observations with delta between zero and the argument value (inclusive).
      *
-     * @param contextIndex index of the context.
-     * @param sumTotal     total sum.
-     * @param statistic    upper-bound on the statistic for counting observations.
-     * @return
+     * @param statistic  upper-bound on the statistic for counting observations.
+     * @param covariates covariates of the scaled statistic.
+     * @return the number of observations with similar covariates for which the unscaled statistic is less than the specified value.
      */
-    public long getCumulativeCount(int contextIndex, int sumTotal, double statistic) {
-        final FenwickTree tree = getDensity(contextIndex, sumTotal);
+    public long getCumulativeCount(final double statistic, final int... covariates) {
+        final FenwickTree tree = getDensity(covariates);
         return tree.getCumulativeCount(scale(statistic));
     }
 
@@ -164,14 +177,13 @@ public class DensityEstimator implements Serializable {
      * Get the empirical estimate of the probability that the statistic could have been generated by the distribution
      * represented in the estimator.
      *
-     * @param contextIndex index of the context.
-     * @param sumTotal     total sum.
-     * @param statistic    value of statistic under test.
+     * @param statistic  value of statistic under test.
+     * @param covariates covariates of the statistic.
      * @return
      */
-    public double getP(final int contextIndex, final int sumTotal, final double statistic) {
+    public double getP(final double statistic, final int... covariates) {
         final int scaledStatistic = (int) Math.round(statistic * SCALING_FACTOR);
-        final FenwickTree tree = getDensity(contextIndex, sumTotal);
+        final FenwickTree tree = getDensity(covariates);
         final long totalCount = tree.getTotalCount();
         final double r = totalCount - tree.getCumulativeCount(scaledStatistic);
         final double n = totalCount;
@@ -214,7 +226,6 @@ public class DensityEstimator implements Serializable {
                                 break;
                             }
                         }
-
                     }
                     index++;
 
@@ -233,10 +244,10 @@ public class DensityEstimator implements Serializable {
             try {
                 estimated = load(filename);
                 String statName = estimated.getStatAdaptor().statName();
-                outWriter.println("contextIndex\tscaled-"+statName+"\t" + statName + "\tsumTotal\n");
+                outWriter.println("tscaled-" + statName + "\t" + statName + "\tcovariates\n");
                 for (final Observation observation : estimated.getObservations()) {
-                    outWriter.printf("%d\t%d\t%g\t%d%n", observation.contextIndex,    observation.scaledStatistic,
-                            estimated.unscale(observation.scaledStatistic), observation.sumTotal);
+                    outWriter.printf("%d\t%d\t%g\t%s%n", observation.scaledStatistic,
+                            estimated.unscale(observation.scaledStatistic), IntArrayList.wrap(observation.covariates));
                 }
                 outWriter.close();
             } catch (ClassNotFoundException e) {
@@ -278,16 +289,16 @@ public class DensityEstimator implements Serializable {
         return observations;
     }
 
-    private class Observation implements Serializable {
-        private static final long serialVersionUID = -4121254491478932557L;
-        private int sumTotal;
-        private int scaledStatistic;
-        private int contextIndex;
 
-        public Observation(int contextIndex, int sumTotal, int scaledStatistic) {
-            this.sumTotal = sumTotal;
+    private static class Observation implements Serializable {
+        private static final long serialVersionUID = -4121254491478932557L;
+        private int scaledStatistic;
+        private int[] covariates;
+
+        public Observation(int scaledStatistic, int... covariates) {
+
             this.scaledStatistic = scaledStatistic;
-            this.contextIndex = contextIndex;
+            this.covariates = covariates;
         }
 
 

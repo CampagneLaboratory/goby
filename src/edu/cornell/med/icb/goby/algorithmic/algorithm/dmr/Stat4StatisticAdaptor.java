@@ -26,7 +26,7 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
  *         Date: 2/24/12
  *         Time: 2:14 PM
  */
-public final class Stat4StatisticAdaptor implements StatisticAdaptor {
+public final class Stat4StatisticAdaptor extends AbstractMethylationAdapter {
     private static final double MAXIMUM_BOUND = 20;
     private static final long serialVersionUID = 2934190953936250446L;
 
@@ -38,7 +38,7 @@ public final class Stat4StatisticAdaptor implements StatisticAdaptor {
     /**
      * Arguments must be provided in this order: Cma, Ca, Cmb, Cb.
      */
-    public double calculate(final int... a) {
+    public double calculateNoCovariate(final int... a) {
         final int cma = a[0];
         final int ca = a[1];
         final int cmb = a[2];
@@ -79,7 +79,7 @@ Cb = 250
      *
      */
     public double calculateWithCovariate(final int covariate, final int... a) {
-        final double stat = calculate(a);
+        final double stat = calculateNoCovariate(a);
         final int binIndex = linearBinner.getBinIndex(covariate);
         final int midpoint = linearBinner.getMidpoint(binIndex);
       //  System.out.printf("stat4: stat=%g midPoint=%d %s %n", stat, midpoint, IntArrayList.wrap(a));
@@ -101,4 +101,6 @@ Cb = 250
     public double getRange() {
         return MAXIMUM_BOUND;
     }
+
+
 }

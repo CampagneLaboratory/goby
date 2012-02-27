@@ -39,7 +39,7 @@ public interface StatisticAdaptor extends Serializable {
      * @return the calculated statistic.
      */
 
-    public double calculate(int... a);
+    public double calculateNoCovariate(int... a);
      /**
      * Estimate a statistic given a covariate and some integers.
      *
@@ -63,4 +63,24 @@ public interface StatisticAdaptor extends Serializable {
      * @return range of the statistic.
      */
     double getRange();
+
+    /**
+     *  Calculate a statistic.
+     * @param dataProvider
+     * @param sampleIndexA
+     * @param sampleIndexB
+     * @param covariate
+     * @return NaN if the pair of samples should be ignored.
+     */
+    double calculate(Object dataProvider, int sampleIndexA, int sampleIndexB, int ... covariate);
+
+    /**
+     * Return the covariates associated with the statistic.
+     * @return an array of integers, where each element is a covariate associated with a pair of samples.
+     */
+    int[] covariates();
+
+    void reset();
+
+    boolean ignorePair();
 }

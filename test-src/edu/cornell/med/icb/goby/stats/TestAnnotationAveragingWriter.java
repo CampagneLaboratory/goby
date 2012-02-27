@@ -448,7 +448,7 @@ public class TestAnnotationAveragingWriter {
         for (int index = 0; index < delta.length; index++) {
 
             for (int i = 0; i < frequencies[index]; i++) {
-                estimator.observeWithCovariate(0, 40, delta[index]);
+                estimator.observe(0, 40, delta[index]);
             }
         }
         String filename = FilenameUtils.concat(BASE_TEST_DIR, "density.bin");

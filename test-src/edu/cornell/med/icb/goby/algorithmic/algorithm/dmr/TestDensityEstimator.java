@@ -57,8 +57,8 @@ public class TestDensityEstimator {
         for (final value obs : observations) {
             estimator.observe(obs.context, obs.cma, obs.ca, obs.cmb, obs.cb);
         }
-        assertEquals("", 2l, estimator.getCumulativeCount(0, 0, 0));
-        assertEquals("", 3l, estimator.getCumulativeCount(0, 0, 2));
+        assertEquals("", 2l, estimator.getCumulativeCount(0, 0));
+        assertEquals("", 3l, estimator.getCumulativeCount(2, 0));
     }
 
     @Test
@@ -72,11 +72,11 @@ public class TestDensityEstimator {
         for (final value obs : observations) {
             estimator.observe(obs.context, obs.cma, obs.ca, obs.cmb, obs.cb);
         }
-        assertEquals("", 1l, estimator.getCumulativeCount(0, 646, 378));
-        assertEquals("", 1l, estimator.getCumulativeCount(0, 647, 378));  // sumTotal is binned, and 647 goes in same bin as 646.
-        assertEquals("", 0l, estimator.getCumulativeCount(0, 647, 377));  // cumulative count before observation is zero
-        assertEquals("", 1l, estimator.getCumulativeCount(0, 1003, 999));
-        assertEquals("", 1l, estimator.getCumulativeCount(0, 10003, 9997));
+        assertEquals("", 1l, estimator.getCumulativeCount( 378,646));
+        assertEquals("", 1l, estimator.getCumulativeCount( 378,647));  // sumTotal is binned, and 647 goes in same bin as 646.
+        assertEquals("", 0l, estimator.getCumulativeCount(  377,647));  // cumulative count before observation is zero
+        assertEquals("", 1l, estimator.getCumulativeCount( 999,1003));
+        assertEquals("", 1l, estimator.getCumulativeCount(9997,10003));
     }
 
     @Test
@@ -96,8 +96,7 @@ public class TestDensityEstimator {
 
     @Test
     public void testScaling() {
-        StatisticAdaptor adapter = new StatisticAdaptor() {
-
+        StatisticAdaptor adapter = new AbstractMethylationAdapter() {
             private static final long serialVersionUID = 8506302569020149425L;
 
             @Override
@@ -106,13 +105,13 @@ public class TestDensityEstimator {
             }
 
             @Override
-            public double calculate(final int... a) {
+            public double calculateNoCovariate(final int... a) {
                 return a[0];
             }
 
             @Override
             public double calculateWithCovariate(int covariate, int... a) {
-                return calculate(a);
+                return calculateNoCovariate(a);
             }
 
             @Override
@@ -131,35 +130,35 @@ public class TestDensityEstimator {
         for (int stat : statistics) {
             estimator.observe(0, stat);
         }
-        assertEquals(0, estimator.getCumulativeCount(0, 1, 0.0));
-        assertEquals(6, estimator.getCumulativeCount(0, 1, 1.0));
-        assertEquals(10, estimator.getCumulativeCount(0, 2, 2.0));
-        assertEquals(13, estimator.getCumulativeCount(0, 3, 3.0));
-        assertEquals(13, estimator.getCumulativeCount(0, 4, 4.0));
-        assertEquals(13, estimator.getCumulativeCount(0, 5, 5.0));
+        assertEquals(0, estimator.getCumulativeCount(0.0, 1));
+        assertEquals(6, estimator.getCumulativeCount(1.0, 1));
+        assertEquals(10, estimator.getCumulativeCount(2.0, 2));
+        assertEquals(13, estimator.getCumulativeCount(3.0, 3));
+        assertEquals(13, estimator.getCumulativeCount(4.0, 4));
+        assertEquals(13, estimator.getCumulativeCount(5.0, 5));
     }
 
     @Test
     public void testDeltas() {
         DeltaStatisticAdaptor adaptor = new DeltaStatisticAdaptor();
-        assertEquals(180.0, adaptor.calculate(495, 405, 95, 5), 0.1);
-        assertEquals(0.0, adaptor.calculate(250, 250, 250, 250), 0.1);
+        assertEquals(180.0, adaptor.calculateNoCovariate(495, 405, 95, 5), 0.1);
+        assertEquals(0.0, adaptor.calculateNoCovariate(250, 250, 250, 250), 0.1);
     }
 
     @Test
     public void testdMR() {
         StatisticAdaptor adaptor = new MethylationRateDifferenceStatisticAdaptor();
-        assertEquals(40.0, adaptor.calculate(495, 405, 95, 5), .1);
-        assertEquals(0.0, adaptor.calculate(250, 250, 250, 250), 0.1);
+        assertEquals(40.0, adaptor.calculateNoCovariate(495, 405, 95, 5), .1);
+        assertEquals(0.0, adaptor.calculateNoCovariate(250, 250, 250, 250), 0.1);
     }
 
     @Test
     public void testStat3() {
         StatisticAdaptor adaptor = new Stat3StatisticAdaptor();
-        assertEquals(90.0, adaptor.calculate(495, 405, 95, 5), .1);
-        assertEquals(180.0, adaptor.calculate(405, 495, 95, 5), .1);
-        assertEquals(0.0, adaptor.calculate(250, 250, 250, 250), 0.1);
-        assertEquals(2.0, adaptor.calculate(251, 250, 252, 250), 0.1);
+        assertEquals(90.0, adaptor.calculateNoCovariate(495, 405, 95, 5), .1);
+        assertEquals(180.0, adaptor.calculateNoCovariate(405, 495, 95, 5), .1);
+        assertEquals(0.0, adaptor.calculateNoCovariate(250, 250, 250, 250), 0.1);
+        assertEquals(2.0, adaptor.calculateNoCovariate(251, 250, 252, 250), 0.1);
     }
 
     @Test
@@ -170,26 +169,27 @@ public class TestDensityEstimator {
         assertEquals(0, adaptor.calculateWithCovariate(1100, 250, 250, 250, 250), 0.001);
         assertEquals(0.0013333333333333333, adaptor.calculateWithCovariate(1100, 251, 250, 252, 250), 0.001);
     }
+
     @Test
-       public void testStat5() {
-           StatisticAdaptor adaptor = new Stat5StatisticAdaptor();
-           assertEquals(400.0/1500.0, adaptor.calculateWithCovariate(1000, 495, 405, 95, 5), .1);   // 55->90
-           assertEquals(800.0/1500.0, adaptor.calculateWithCovariate(1100, 405, 495, 95, 5), .1);  //45->95
-           assertEquals(0.0, adaptor.calculateWithCovariate(1100, 250, 250, 250, 250), 0.001);
-           assertEquals(2.0/1500.0, adaptor.calculateWithCovariate(1100, 251, 250, 252, 250), 0.001);
-       }
+    public void testStat5() {
+        StatisticAdaptor adaptor = new Stat5StatisticAdaptor();
+        assertEquals(400.0 / 1500.0, adaptor.calculateWithCovariate(1000, 495, 405, 95, 5), .1);   // 55->90
+        assertEquals(800.0 / 1500.0, adaptor.calculateWithCovariate(1100, 405, 495, 95, 5), .1);  //45->95
+        assertEquals(0.0, adaptor.calculateWithCovariate(1100, 250, 250, 250, 250), 0.001);
+        assertEquals(2.0 / 1500.0, adaptor.calculateWithCovariate(1100, 251, 250, 252, 250), 0.001);
+    }
 
     @Test
     public void testFastLog10Binning() {
         FastSmallAndLog10BinningStrategy binner = new FastSmallAndLog10BinningStrategy();
-        double covariates[] =    {0, 1, 10, 40, 99, 100, 150, 1200, 10001, 100001, 1000001,10000001,100000001, 1000000001};
-        int expectedBinIndex[] = {0, 0, 0,   0,  0,   1,   1,    2,     3,      4,       5,       6,        7, 8};
+        double covariates[] = {0, 1, 10, 40, 99, 100, 150, 1200, 10001, 100001, 1000001, 10000001, 100000001, 1000000001};
+        int expectedBinIndex[] = {0, 0, 0, 0, 0, 1, 1, 2, 3, 4, 5, 6, 7, 8};
         assertEquals(covariates.length, expectedBinIndex.length);
         for (int i = 0; i < covariates.length; i++) {
             final int binIndex = binner.getBinIndex(covariates[i]);
             assertEquals(expectedBinIndex[i], binIndex);
-            assertTrue(covariates[i]>=binner.getLowerBound(binIndex));
-            assertTrue(covariates[i]<=binner.getUpperBound(binIndex));
+            assertTrue(covariates[i] >= binner.getLowerBound(binIndex));
+            assertTrue(covariates[i] <= binner.getUpperBound(binIndex));
         }
 
     }

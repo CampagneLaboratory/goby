@@ -25,7 +25,7 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
  *         Date: 2/24/12
  *         Time: 2:16 PM
  */
-public final class MethylationRateDifferenceStatisticAdaptor implements StatisticAdaptor {
+public final class MethylationRateDifferenceStatisticAdaptor extends AbstractMethylationAdapter {
 
     private static final long serialVersionUID = 3208125998662041904L;
 
@@ -38,7 +38,7 @@ public final class MethylationRateDifferenceStatisticAdaptor implements Statisti
     /**
      * Arguments must be provided in this order: Cma, Ca, Cmb, Cb.
      */
-    public double calculate(final int... a) {
+    public double calculateNoCovariate(final int... a) {
         final int cma = a[0];
         final int ca = a[1];
         final int cmb = a[2];
@@ -60,7 +60,7 @@ public final class MethylationRateDifferenceStatisticAdaptor implements Statisti
      * Same as covariate, dMR is already normalized with respect to sumTotal.
      */
     public double calculateWithCovariate(int covariate, int... a) {
-        return calculate(a);
+        return calculateNoCovariate(a);
     }
 
     @Override

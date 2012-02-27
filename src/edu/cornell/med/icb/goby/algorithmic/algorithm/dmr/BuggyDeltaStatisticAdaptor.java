@@ -25,7 +25,7 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
  *         Date: 2/24/12
  *         Time: 2:14 PM
  */
-public final class BuggyDeltaStatisticAdaptor implements StatisticAdaptor {
+public final class BuggyDeltaStatisticAdaptor extends AbstractMethylationAdapter{
     private static final double MAXIMUM_BOUND = 10000.0;
     private static final long serialVersionUID = 2934190953936250446L;
 
@@ -38,7 +38,7 @@ public final class BuggyDeltaStatisticAdaptor implements StatisticAdaptor {
     /**
      * Arguments must be provided in this order: Cma, Ca, Cmb, Cb.
      */
-    public double calculate(final int... a) {
+    public double calculateNoCovariate(final int... a) {
         final int cma = a[0];
         final int ca = a[1];
         final int cmb = a[2];
@@ -68,7 +68,7 @@ public final class BuggyDeltaStatisticAdaptor implements StatisticAdaptor {
 
     @Override
     public double calculateWithCovariate(int covariate, int... a) {
-        return calculate(a);
+        return calculateNoCovariate(a);
     }
 
     @Override
