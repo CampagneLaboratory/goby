@@ -438,6 +438,11 @@ public class CompareGroupsVCFOutputFormat extends AbstractOutputFormat  implemen
 
     }
 
+    @Override
+    public void setGenomeReferenceIndex(int index) {
+
+    }
+
 
     private void fillVariantCountArrays(final SampleCountInfo[] sampleCounts, int maxGenotypeIndexAcrossSamples) {
 

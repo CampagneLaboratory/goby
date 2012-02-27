@@ -73,6 +73,7 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
     private int minimumEventThreshold;
     private Boolean doIndels;
     private Boolean deNovoRegions;
+    private int genomeReferenceIndex;
 
     public MethylationRegionsOutputFormat() {
         deNovoRegions = doc.getBoolean("de-novo-regions");
@@ -172,7 +173,7 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
         this.position = position;
         if (referenceIndex != this.referenceIndex) {
             this.referenceIndex = referenceIndex;
-            chromosome = genome.getReferenceName(referenceIndex);
+            chromosome = genome.getReferenceName(genomeReferenceIndex);
         }
         //   statWriter.writeRecord();
         averagingWriter.writeRecord();
@@ -198,6 +199,11 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
     @Override
     public void setGenome(RandomAccessSequenceInterface genome) {
         this.genome = genome;
+    }
+
+    @Override
+    public void setGenomeReferenceIndex(int index) {
+        genomeReferenceIndex=index;
     }
 
 

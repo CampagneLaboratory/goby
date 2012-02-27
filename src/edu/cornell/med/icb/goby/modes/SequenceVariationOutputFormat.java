@@ -69,4 +69,6 @@ public interface SequenceVariationOutputFormat {
      * @param genome
      */
     void setGenome(RandomAccessSequenceInterface genome);
+
+    void setGenomeReferenceIndex(int index);
 }

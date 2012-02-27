@@ -306,6 +306,11 @@ public class BetweenGroupSequenceVariationOutputFormat implements SequenceVariat
 
     }
 
+    @Override
+    public void setGenomeReferenceIndex(int index) {
+
+    }
+
 
     private void fillVariantCountArrays(SampleCountInfo[] sampleCounts) {
 

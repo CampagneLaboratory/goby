@@ -342,6 +342,11 @@ public class GenotypesOutputFormat implements SequenceVariationOutputFormat {
 
     }
 
+    @Override
+    public void setGenomeReferenceIndex(int index) {
+
+    }
+
 
     private void fillVariantCountArrays
             (SampleCountInfo[] sampleCounts) {

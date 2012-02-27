@@ -261,6 +261,11 @@ public class AlleleFrequencyOutputFormat implements SequenceVariationOutputForma
 
     }
 
+    @Override
+    public void setGenomeReferenceIndex(int index) {
+
+    }
+
     public void outputVCF(boolean state) {
         outputVCF = state;
     }

@@ -94,6 +94,7 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
     private RandomAccessSequenceInterface genome;
     private int genomicContextIndex;
     private CharSequence chromosome;
+    private int genomeReferenceIndex;
 
     @Override
     public void setMinimumEventThreshold(final int minimumEventThreshold) {
@@ -245,7 +246,7 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
         statWriter.setInfo(biomartFieldIndex, biomartRegionSpan);
         statWriter.setInfo(strandFieldIndex, Character.toString(mci.strandAtSite));
 
-        final String genomicContext = findGenomicContext(referenceIndex, oneBasedPosition);
+        final String genomicContext = findGenomicContext(genomeReferenceIndex, oneBasedPosition);
         statWriter.setInfo(genomicContextIndex, genomicContext);
 
         for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
@@ -427,6 +428,11 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
     @Override
     public void setGenome(RandomAccessSequenceInterface genome) {
         this.genome = genome;
+    }
+
+    @Override
+    public void setGenomeReferenceIndex(int index) {
+        genomeReferenceIndex=index;
     }
 
     public static void fillMethylationCountArrays(final SampleCountInfo[] sampleCounts, final ObjectArrayList<PositionBaseInfo> list,

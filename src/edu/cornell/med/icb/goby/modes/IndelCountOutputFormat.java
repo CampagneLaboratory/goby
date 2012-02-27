@@ -188,6 +188,11 @@ public class IndelCountOutputFormat implements SequenceVariationOutputFormat {
 
     }
 
+    @Override
+    public void setGenomeReferenceIndex(int index) {
+
+    }
+
     public static void fillMethylationCountArrays(SampleCountInfo[] sampleCounts, DiscoverVariantPositionData list, int position, char refBase, MethylCountInfo mci, int[] readerIndexToGroupIndex) {
         // don't use threshold on events at site for indel rates:
         mci.eventCountAtSite=0;

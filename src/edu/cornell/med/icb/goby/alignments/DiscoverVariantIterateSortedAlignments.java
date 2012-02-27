@@ -88,6 +88,7 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
 
         format.defineColumns(outWriter, mode);
         format.setGenome(getGenome());
+        format.setGenomeReferenceIndex(genomeRefIndex);
         genotypeFilters = filters.toArray(new GenotypeFilter[filters.size()]);
 
     }
@@ -225,6 +226,7 @@ public class DiscoverVariantIterateSortedAlignments extends IterateSortedAlignme
 
         if (referenceIndex != previousReference && genome != null) {
             genomeRefIndex = genome.getReferenceIndex(getReferenceId(referenceIndex).toString());
+            format.setGenomeReferenceIndex(genomeRefIndex);
             previousReference = referenceIndex;
         }
 
