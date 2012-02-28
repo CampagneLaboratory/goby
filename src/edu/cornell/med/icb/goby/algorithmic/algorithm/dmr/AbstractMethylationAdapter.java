@@ -64,6 +64,11 @@ public abstract class AbstractMethylationAdapter implements StatisticAdaptor {
         return calculateWithCovariate(sumTotal, cma, ca, cmb, cb);
     }
 
+    public void setIgnorePair(boolean b) {
+        ignorePair = b;
+
+    }
+
     @Override
     public double calculate(Object dataProvider, int sampleIndexA, int sampleIndexB, int... covariate) {
         if (!(dataProvider instanceof FormatFieldCounter)) {

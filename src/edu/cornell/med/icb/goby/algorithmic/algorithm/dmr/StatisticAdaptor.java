@@ -31,7 +31,7 @@ public interface StatisticAdaptor extends Serializable {
     /**
      * Return the name of the statistic estimated by this adaptor.
      *
-     * @return
+     * @return the name of the statistic estimated by this adaptor.
      */
     public String statName();
 
@@ -57,22 +57,27 @@ public interface StatisticAdaptor extends Serializable {
 
     /**
      * Estimate a statistic given values and covariates for two samples A and B.
+     * @param valuesSampleA
+     * @param valuesSampleB
+     * @param covariatesSampleA
+     * @param covariatesSampleB
+     * @return
      */
 
     public double calculate(IntArrayList valuesSampleA, IntArrayList valuesSampleB, IntArrayList covariatesSampleA, IntArrayList covariatesSampleB);
 
     /**
-     * Return the maximum value that the statistic can attain.
+     * Return the maximum value that the scaled statistic can attain.
      *
      * @return a maximum bound on statistic.
      */
     double getMaximumStatistic();
 
     /**
-     * Get the range of this statistic. The difference between the maximum statistic that can be calculated and the
+     * Get the range of the scaled statistic. The difference between the maximum scaled statistic that can be calculated and the
      * minimum value.
      *
-     * @return range of the statistic.
+     * @return range of the scaled statistic.
      */
     double getRange();
 
@@ -94,8 +99,15 @@ public interface StatisticAdaptor extends Serializable {
      */
     int[] pairCovariates();
 
+    /**
+     * Reset the adaptor to accept a new pair of observations.
+     */
     void reset();
 
+    /**
+     * Indicate whether the pair of observation was ignored (e.g., because data was missing in one sample for instance).
+     * @return
+     */
     boolean ignorePair();
 
     /**

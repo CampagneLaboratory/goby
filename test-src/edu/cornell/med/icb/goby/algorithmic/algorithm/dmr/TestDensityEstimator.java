@@ -180,6 +180,16 @@ public class TestDensityEstimator {
     }
 
     @Test
+       public void testFisherExact() {
+           StatisticAdaptor adaptor = new FisherExactTestAdaptor();
+           assertEquals(16.789604574725345, adaptor.calculateNoCovariate( 495, 405, 95, 5), .1);   // 55->90
+           assertEquals(16.789604574725345, adaptor.calculateWithCovariate(1000, 495, 405, 95, 5), .1);   // 55->90
+           assertEquals(23.839098600218055, adaptor.calculateWithCovariate(1100, 405, 495, 95, 5), .1);  //45->95
+           assertEquals(0.0d, adaptor.calculateWithCovariate(1100, 250, 250, 250, 250), 0.001d);
+           assertEquals(0.00d, adaptor.calculateWithCovariate(1100, 251, 250, 252, 250), 0.001d);
+       }
+
+    @Test
     public void testFastLog10Binning() {
         FastSmallAndLog10BinningStrategy binner = new FastSmallAndLog10BinningStrategy();
         double covariates[] = {0, 1, 10, 40, 99, 100, 150, 1200, 10001, 100001, 1000001, 10000001, 100000001, 1000000001};
