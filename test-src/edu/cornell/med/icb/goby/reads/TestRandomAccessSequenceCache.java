@@ -35,7 +35,7 @@ public class TestRandomAccessSequenceCache {
     public void testEncodeDecodeOneSequence() throws IOException {
 
         final String seqs = ">1\n" +
-                "ACTGNNNACTG\n";
+                "ACTGNNNACTGMARARRAQA\n";
         final RandomAccessSequenceCache cache = new RandomAccessSequenceCache();
         cache.loadFasta(new StringReader(seqs));
         int i = 0;
@@ -50,6 +50,18 @@ public class TestRandomAccessSequenceCache {
         assertEquals('C', cache.get(0, i++));
         assertEquals('T', cache.get(0, i++));
         assertEquals('G', cache.get(0, i++));
+
+        // Non GATC bases become N's
+        assertEquals('N', cache.get(0, i++));
+        assertEquals('A', cache.get(0, i++));
+        assertEquals('N', cache.get(0, i++));
+        assertEquals('A', cache.get(0, i++));
+        assertEquals('N', cache.get(0, i++));
+        assertEquals('N', cache.get(0, i++));
+        assertEquals('A', cache.get(0, i++));
+        assertEquals('N', cache.get(0, i++));
+        assertEquals('A', cache.get(0, i++));
+
         try {
             // past the end of the sequence.
             cache.get(0, i++);
