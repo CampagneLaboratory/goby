@@ -104,7 +104,7 @@ public abstract class AbstractMethylationAdapter implements StatisticAdaptor {
     private IntArrayList valuesB = new IntArrayList();
     private IntArrayList covariatesA = new IntArrayList();
     private IntArrayList covariatesB = new IntArrayList();
-    private ObservationWriter obsWriter;
+    private transient ObservationWriter obsWriter;
     String[] zero = new String[0];
 
     public void setObservationWriter(ObservationWriter obsWriter) {

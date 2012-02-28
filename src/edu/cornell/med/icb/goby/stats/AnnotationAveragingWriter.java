@@ -134,7 +134,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
             if (basename == null) {
                 basename = Long.toString(new Date().getTime());
             }
-            String filename = basename + "-observations.tsv";
+            String filename = basename + "-" + (estimateIntraGroupDifferences ? "null" : "test") + "-observations.tsv";
             try {
                 obsWriter = new ObservationWriter(new FileWriter(filename));
                 obsWriter.setHeaderIds(new String[]{"chromosome", "start", "end", "annotation-id"});
@@ -210,9 +210,10 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 empiricalPValueEstimator.setStatAdaptor(new Stat5StatisticAdaptor());
                 empiricalPValueEstimator.setEstimator(new DensityEstimator(contexts.length, empiricalPValueEstimator.getStatAdaptor()));
 
-                if (!(obsWriter instanceof DummyObservationWriter)) {
-                    empiricalPValueEstimator.getStatAdaptor().setObservationWriter(obsWriter);
-                }
+
+            }
+            if ((estimateIntraGroupDifferences || estimateIntraGroupP) && !(obsWriter instanceof DummyObservationWriter)) {
+                empiricalPValueEstimator.getStatAdaptor().setObservationWriter(obsWriter);
             }
         }
     }
@@ -261,7 +262,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
 
                     writeStatForGroupComparison(comparison, context, "fisherP");
                 }
-             }
+            }
 
 
             for (String context : contexts) {
