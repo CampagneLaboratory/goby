@@ -223,7 +223,7 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
         DiscoverVariantIterateSortedAlignments iterator = new DiscoverVariantIterateSortedAlignments(outputFormat) {
             @Override
             public CharSequence getReferenceId(int targetIndex) {
-                return "ref-id";
+               return Integer.toString(targetIndex);
             }
         };
         DiscoverSequenceVariantsMode mode = new DiscoverSequenceVariantsMode() {
@@ -265,7 +265,10 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
         outputFormat.allocateStorage(2, 2);
         outputFormat.defineColumns(new PrintWriter(writer), mode);
         outputFormat.setMinimumEventThreshold(0);
-        outputFormat.writeRecord(iterator, makeTwoSampleCounts(), 2, 1, list1(), 0, 1);
+
+        final int referenceIndex = 2;
+        outputFormat.setGenomeReferenceIndex(referenceIndex);
+        outputFormat.writeRecord(iterator, makeTwoSampleCounts(), referenceIndex, 1, list1(), 0, 1);
         writer.flush();
 
         String stringC = writer.getBuffer().toString();
@@ -276,7 +279,9 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
         outputFormat.allocateStorage(2, 2);
         outputFormat.defineColumns(new PrintWriter(writer), mode);
         outputFormat.setMinimumEventThreshold(0);
-        outputFormat.writeRecord(iterator, makeTwoSampleCounts(), 1, 2, list1(), 0, 1);
+        final int referenceIndex1 = 1;
+        outputFormat.setGenomeReferenceIndex(referenceIndex1);
+        outputFormat.writeRecord(iterator, makeTwoSampleCounts(), referenceIndex1, 2, list1(), 0, 1);
         stringB = writer.getBuffer().toString();
         assertTrue(stringB, stringB.contains("CpT"));
 
@@ -284,7 +289,9 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
         outputFormat.allocateStorage(2, 2);
         outputFormat.defineColumns(new PrintWriter(writer), mode);
         outputFormat.setMinimumEventThreshold(0);
-        outputFormat.writeRecord(iterator, makeTwoSampleCounts(), 4, 7, list1(), 0, 1);
+        final int referenceIndex4 = 4;
+        outputFormat.setGenomeReferenceIndex(referenceIndex4);
+        outputFormat.writeRecord(iterator, makeTwoSampleCounts(), referenceIndex4, 7, list1(), 0, 1);
         stringB = writer.getBuffer().toString();
         assertTrue(stringB, stringB.contains("CpC"));
 
