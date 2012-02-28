@@ -61,4 +61,9 @@ public final class SmallAndLog10BinningStrategy implements BinningStrategy {
         final int upperBound = getUpperBound(binIndex);
         return (upperBound - lowerBound) / 2 + lowerBound;
     }
+
+    @Override
+    public String getName() {
+        return "s100log10";
+    }
 }

@@ -29,11 +29,12 @@ import edu.cornell.med.icb.goby.util.DynamicOptionClient;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.io.FastBufferedReader;
+import it.unimi.dsi.logging.ProgressLogger;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.LineIterator;
+import org.apache.log4j.Logger;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * @author Fabien Campagne
@@ -41,6 +42,7 @@ import java.io.IOException;
  *         Time: 11:00 AM
  */
 public class EmpiricalPMode extends AbstractGobyMode {
+
     /**
      * The mode name.
      */
@@ -61,6 +63,10 @@ public class EmpiricalPMode extends AbstractGobyMode {
                     " - integer codes for covariates for sample A" +
                     " - COVARIATES_B keyword" +
                     " - integer codes for covariates for sample B";
+    /**
+       * Used to log debug and informational messages.
+       */
+      private static final Logger LOG = Logger.getLogger(EmpiricalPValueEstimator.class);
 
     private String inputFilename;
     private String outputFilename;
@@ -73,6 +79,7 @@ public class EmpiricalPMode extends AbstractGobyMode {
     private String densityFilename;
     private boolean useExistingDensity;
     private boolean forceEstimation;
+    private PrintWriter outputWriter;
 
     @Override
     public String getModeName() {
@@ -101,16 +108,31 @@ public class EmpiricalPMode extends AbstractGobyMode {
             if (densityFilename != null) {
 
                 if (new File(densityFilename).exists()) {
+                    try {
+                        // if we are given a serialized statistic, we override the stat name with that of the actual
+                        // statistic used to estimate the density:
+                        density=DensityEstimator.load(densityFilename);
+                        statisticName=density.getStatAdaptor().statName();
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                        System.exit(1);
+                    }
                     useExistingDensity = true;
                     // force loading of the pre-existing density and estimation of p-values:
                     doc.acceptsOption("EmpiricalPMode:serialized-estimator-filename=" + densityFilename);
                     if (forceEstimation) {
                         doc.acceptsOption("EmpiricalPMode:estimate-empirical-P=true");
+                        doc.acceptsOption("EmpiricalPMode:estimate-intra-group-differences=false");
+                    } else {
+                        doc.acceptsOption("EmpiricalPMode:estimate-empirical-P=false");
+                        doc.acceptsOption("EmpiricalPMode:estimate-intra-group-differences=true");
                     }
                 }
-
             }
+
+
         }
+
         if (statisticName != null) {
             boolean result = doc.acceptsOption("EmpiricalPMode:statistic=" + statisticName);
             assert result : "EmpiricalPMode:statistic= definition must be accepted.";
@@ -133,7 +155,22 @@ public class EmpiricalPMode extends AbstractGobyMode {
                 System.exit(1);
             }
         }
+        if (outputFilename == null) {
+            outputFilename = FilenameUtils.getBaseName(inputFilename) + "-" + statisticName + "-" + doc.getString("combinator") + ".tsv";
+            System.out.println("Output will be written to "+outputFilename);
+        }
+        outputWriter = new PrintWriter(outputFilename);
         return this;
+    }
+
+    private void constructDensityFilename(String densityFilename) {
+        if (this.densityFilename == null) {
+            // construct a density filename that reflects the arguments that control the density:
+            String binningName = estimator.getEstimator().getBinningStrategy().getName();
+            this.densityFilename = FilenameUtils.getBaseName(inputFilename) + "-" + statisticName + "-" + binningName + "-density.bin";
+        } else {
+            this.densityFilename = densityFilename;
+        }
     }
 
 
@@ -142,6 +179,17 @@ public class EmpiricalPMode extends AbstractGobyMode {
 
     @Override
     public void execute() throws IOException {
+        scan();
+        if (!useExistingDensity) {
+
+            constructDensityFilename(densityFilename);
+            System.err.println("Writing estimated statistic to: " + densityFilename);
+            DensityEstimator.store(estimator.getEstimator(), densityFilename);
+        }
+
+    }
+
+    private void scan() throws FileNotFoundException {
         LineIterator iterator = new LineIterator(new FastBufferedReader(new FileReader(inputFilename)));
         int lineNumber = 0;
         ObjectArrayList<String> elementIds = new ObjectArrayList<String>();
@@ -156,6 +204,11 @@ public class EmpiricalPMode extends AbstractGobyMode {
         counter = new FormatFieldCounter(0, 2, 2, new String[]{"ALL"});
         // ignore the header line:
         iterator.next();
+        ProgressLogger pg=new ProgressLogger(LOG);
+        pg.displayFreeMemory=true;
+        pg.itemsName="pairs";
+        pg.expectedUpdates=countLines(inputFilename)-1;
+        pg.start("Starting to scan pairs.");
         while (iterator.hasNext()) {
             String next = iterator.nextLine();
             String[] tokens = next.split("\t");
@@ -228,12 +281,20 @@ public class EmpiricalPMode extends AbstractGobyMode {
             }
             lineNumber++;
             process(typeOfPair, elementIds, valuesA, valuesB, covariatesA, covariatesB);
+            pg.lightUpdate();
         }
-        if (!useExistingDensity) {
-            System.err.println("Writting estimated statistic to: " + densityFilename);
-            DensityEstimator.store(estimator.getEstimator(), densityFilename);
-        }
+        pg.done(lineNumber);
+    }
 
+    private int countLines(String inputFilename) throws FileNotFoundException {
+        int lineCount=0;
+        LineIterator it=new LineIterator(new FileReader(inputFilename));
+        while (it.hasNext()) {
+            Object next = it.next();
+            lineCount++;
+        }
+        it.close();
+        return lineCount;
     }
 
 
@@ -273,13 +334,13 @@ public class EmpiricalPMode extends AbstractGobyMode {
         if (first) {
             previousElementId = elementIds.toString();
             first = false;
-            System.out.print("ignore");
-            int index=1;
-            for (String id: elementIds) {
+            outputWriter.print("ignore");
+            int index = 1;
+            for (String id : elementIds) {
 
-                System.out.print("\tid"+index++);
+                outputWriter.print("\tid" + index++);
             }
-            System.out.println("\tp-value");
+            outputWriter.println("\tp-value");
         }
         if (!previousElementId.equals(elementIds.toString())) {
 
@@ -290,13 +351,13 @@ public class EmpiricalPMode extends AbstractGobyMode {
                     covariatesBCollector.toArray(new IntArrayList[covariatesBCollector.size()]));
 
 
-            System.out.print("P-VALUE");
+            outputWriter.print("P-VALUE");
             for (final String elementId : elementIds) {
 
-                System.out.print('\t');
-                System.out.print(elementId);
+                outputWriter.print('\t');
+                outputWriter.print(elementId);
             }
-            System.out.printf("\t%g%n", p);
+            outputWriter.printf("\t%g%n", p);
             valuesACollector.clear();
             valuesBCollector.clear();
             covariatesACollector.clear();

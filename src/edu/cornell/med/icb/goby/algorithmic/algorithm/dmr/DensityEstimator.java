@@ -48,7 +48,7 @@ public class DensityEstimator implements Serializable {
         densities = new ObjectArrayList<FenwickTree>();
         statAdaptor = new DeltaStatisticAdaptor();
         SCALING_FACTOR = (int) Math.round(MAX_ITEMS / statAdaptor.getRange());
-        binningStrategy = new Log10BinningStrategy();
+
     }
 
     public double getScalingFactor() {
@@ -59,7 +59,7 @@ public class DensityEstimator implements Serializable {
         densities = new ObjectArrayList<FenwickTree>();
         this.statAdaptor = statAdaptor;
         SCALING_FACTOR = (int) Math.round(MAX_ITEMS / statAdaptor.getRange());
-        binningStrategy = new Log10BinningStrategy();
+
     }
 
     /**

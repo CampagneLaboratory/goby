@@ -47,4 +47,9 @@ public class Log10BinningStrategy implements BinningStrategy {
         int upperBound = getUpperBound(binIndex);
         return (upperBound - lowerBound)/2 + lowerBound ;
     }
+
+    @Override
+    public String getName() {
+        return "log10";
+    }
 }

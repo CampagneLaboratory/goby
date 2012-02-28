@@ -28,8 +28,8 @@
             <id>output</id>
             <shortFlag>o</shortFlag>
             <longFlag>output</longFlag>
-            <required>true</required>
-            <help>The file where the combined output will be written. If the filename ends in .gz, the output is compressed with gzip.</help>
+            <required>false</required>
+            <help>The file where the combined output will be written. If no output is provided, the output filename is constructed from a relevant subset of the arguments.</help>
         </flaggedOption>
         <flaggedOption>
             <id>dynamic-options</id>

@@ -51,4 +51,11 @@ public interface BinningStrategy  extends Serializable {
      * @return
      */
     public int getMidpoint(int binIndex);
+
+    /**
+     * Return a short name for this strategy.
+     *
+     * @return
+     */
+    public String getName();
 }

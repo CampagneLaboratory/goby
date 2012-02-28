@@ -104,4 +104,9 @@ public final class FastSmallAndLog10BinningStrategy implements BinningStrategy {
         final int upperBound = getUpperBound(binIndex);
         return (upperBound - lowerBound) / 2 + lowerBound;
     }
+
+    @Override
+    public String getName() {
+        return "fs100log10";
+    }
 }

@@ -55,14 +55,14 @@ public class EmpiricalPValueEstimator {
     }
 
     enum statisticNames {
-        delta, stat4, stat5, dMR
+        delta, stat4, stat5, dMR, fisher
     }
 
     static public final String[] LOCAL_DYNAMIC_OPTIONS = {
 
             "estimate-intra-group-differences: boolean, true indicates that pair-wise differences for sample in the same group should be tallied and written to the output. False indicates regular output.:false",
             "estimate-empirical-P: boolean, true: activates estimation of the empirical p-value.:false",
-            "combinator: string, the method to combine p-values, one of qfast, average, sum, max.:sum",
+            "combinator: string, the method to combine p-values, one of qfast, average, sum, max.:max",
             "serialized-estimator-filename: string, the path to a serialized version of the density estimator populated with the empirical null-distribution.:",
             "statistic: string, the name of the statistic to evaluate between pairs of samples, one of stat4,stat5,dMR:stat5"
 
@@ -129,6 +129,9 @@ public class EmpiricalPValueEstimator {
                         break;
                     case dMR:
                         statAdaptor = new MethylationRateDifferenceStatisticAdaptor();
+                        break;
+                    case fisher:
+                        statAdaptor = new FisherExactTestAdaptor();
                         break;
 
                     default:
@@ -214,7 +217,7 @@ public class EmpiricalPValueEstimator {
             if (!statAdaptor.ignorePair()) {
                 final int[] covariates = statAdaptor.pairCovariates();
                 final double p = estimator.getP(unscaledStatistic, covariates);
-              //  System.out.println("Observing " + p);
+                //  System.out.println("Observing " + p);
                 combinator.observe(p);
 
             } else {
