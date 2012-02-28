@@ -20,10 +20,7 @@ package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.SortedAnnotations;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.FastSmallAndLog10BinningStrategy;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.ObservationWriter;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.Stat5StatisticAdaptor;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.*;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.algorithmic.data.SamplePairEnumerator;
@@ -212,7 +209,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
             if (estimateIntraGroupDifferences) {
                 empiricalPValueEstimator.setStatAdaptor(new Stat5StatisticAdaptor());
                 empiricalPValueEstimator.setEstimator(new DensityEstimator(contexts.length, empiricalPValueEstimator.getStatAdaptor()));
-                empiricalPValueEstimator.getEstimator().setBinningStrategy(new FastSmallAndLog10BinningStrategy());
+
                 if (!(obsWriter instanceof DummyObservationWriter)) {
                     empiricalPValueEstimator.getStatAdaptor().setObservationWriter(obsWriter);
                 }

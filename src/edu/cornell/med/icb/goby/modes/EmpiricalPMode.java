@@ -64,16 +64,17 @@ public class EmpiricalPMode extends AbstractGobyMode {
                     " - COVARIATES_B keyword" +
                     " - integer codes for covariates for sample B";
     /**
-       * Used to log debug and informational messages.
-       */
-      private static final Logger LOG = Logger.getLogger(EmpiricalPValueEstimator.class);
+     * Used to log debug and informational messages.
+     */
+    private static final Logger LOG = Logger.getLogger(EmpiricalPValueEstimator.class);
 
     private String inputFilename;
     private String outputFilename;
     private String[] dymamicOptions;
     private String statisticName;
     public static final DynamicOptionClient doc = new DynamicOptionClient(EmpiricalPMode.class,
-            EmpiricalPValueEstimator.LOCAL_DYNAMIC_OPTIONS
+            EmpiricalPValueEstimator.LOCAL_DYNAMIC_OPTIONS,
+            "binning-strategy: name of the binning strategy:fastslog10"
     );
     private DensityEstimator density;
     private String densityFilename;
@@ -111,8 +112,8 @@ public class EmpiricalPMode extends AbstractGobyMode {
                     try {
                         // if we are given a serialized statistic, we override the stat name with that of the actual
                         // statistic used to estimate the density:
-                        density=DensityEstimator.load(densityFilename);
-                        statisticName=density.getStatAdaptor().statName();
+                        density = DensityEstimator.load(densityFilename);
+                        statisticName = density.getStatAdaptor().statName();
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                         System.exit(1);
@@ -155,12 +156,17 @@ public class EmpiricalPMode extends AbstractGobyMode {
                 System.exit(1);
             }
         }
+
+        return this;
+    }
+
+    private void setupOutput() throws FileNotFoundException {
         if (outputFilename == null) {
-            outputFilename = FilenameUtils.getBaseName(inputFilename) + "-" + statisticName + "-" + doc.getString("combinator") + ".tsv";
-            System.out.println("Output will be written to "+outputFilename);
+            String binningName = estimator.getEstimator().getBinningStrategy().getName();
+            outputFilename = FilenameUtils.getBaseName(inputFilename) + "-" + statisticName + "-" + binningName + "-" + doc.getString("combinator") + ".tsv";
+            System.out.println("Output will be written to " + outputFilename);
         }
         outputWriter = new PrintWriter(outputFilename);
-        return this;
     }
 
     private void constructDensityFilename(String densityFilename) {
@@ -202,12 +208,13 @@ public class EmpiricalPMode extends AbstractGobyMode {
         estimator = new EmpiricalPValueEstimator();
         estimator.configure(1, doc);
         counter = new FormatFieldCounter(0, 2, 2, new String[]{"ALL"});
+        setupOutput();
         // ignore the header line:
         iterator.next();
-        ProgressLogger pg=new ProgressLogger(LOG);
-        pg.displayFreeMemory=true;
-        pg.itemsName="pairs";
-        pg.expectedUpdates=countLines(inputFilename)-1;
+        ProgressLogger pg = new ProgressLogger(LOG);
+        pg.displayFreeMemory = true;
+        pg.itemsName = "pairs";
+        pg.expectedUpdates = countLines(inputFilename) - 1;
         pg.start("Starting to scan pairs.");
         while (iterator.hasNext()) {
             String next = iterator.nextLine();
@@ -287,8 +294,8 @@ public class EmpiricalPMode extends AbstractGobyMode {
     }
 
     private int countLines(String inputFilename) throws FileNotFoundException {
-        int lineCount=0;
-        LineIterator it=new LineIterator(new FileReader(inputFilename));
+        int lineCount = 0;
+        LineIterator it = new LineIterator(new FileReader(inputFilename));
         while (it.hasNext()) {
             Object next = it.next();
             lineCount++;

@@ -49,6 +49,7 @@ public class EmpiricalPValueEstimator {
     private SamplePairEnumerator groupEnumerator;
     private EvidenceCombinator combinator = new MaxCombinator();
     private DensityEstimator estimator;
+    private boolean densityLoadedFromDisk;
 
     enum combinatorNames {
         max, sum, qfast, median
@@ -56,6 +57,10 @@ public class EmpiricalPValueEstimator {
 
     enum statisticNames {
         delta, stat4, stat5, dMR, fisher
+    }
+
+    enum binningStrategyNames {
+        fastslog10, log2, s100linear
     }
 
     static public final String[] LOCAL_DYNAMIC_OPTIONS = {
@@ -84,6 +89,7 @@ public class EmpiricalPValueEstimator {
             try {
                 estimator = DensityEstimator.load(serializedFilename);
                 statAdaptor = estimator.getStatAdaptor();
+                densityLoadedFromDisk = true;
             } catch (Exception e) {
                 throw new RuntimeException("Unable to load serialized density with filename=" + serializedFilename);
             }
@@ -124,17 +130,14 @@ public class EmpiricalPValueEstimator {
                     case stat4:
                         statAdaptor = new Stat4StatisticAdaptor();
                         break;
-                    case stat5:
-                        statAdaptor = new Stat5StatisticAdaptor();
-                        break;
                     case dMR:
                         statAdaptor = new MethylationRateDifferenceStatisticAdaptor();
                         break;
                     case fisher:
                         statAdaptor = new FisherExactTestAdaptor();
                         break;
-
                     default:
+                    case stat5:
                         statAdaptor = new Stat5StatisticAdaptor();
                         break;
                 }
@@ -143,10 +146,42 @@ public class EmpiricalPValueEstimator {
                 statAdaptor = new Stat5StatisticAdaptor();
             }
         }
+        BinningStrategy binningStrategy = null;
+        if (!densityLoadedFromDisk) {
 
+            String binningStrategyName = clientDoc.getString("binning-strategy");
+            if (binningStrategyName != null) {
+
+                try {
+                    switch (binningStrategyNames.valueOf(binningStrategyName)) {
+                        case log2:
+                            binningStrategy = new Log2BinningStrategy();
+                            break;
+                        case s100linear:
+                            binningStrategy = new LinearBinningStrategy();
+                            break;
+                        default:
+                        case fastslog10:
+                            binningStrategy = new FastSmallAndLog10BinningStrategy();
+                            break;
+
+
+                    }
+
+                } catch (IllegalArgumentException e) {
+                    LOG.error(String.format("The statistic name %s was not recognized, using the default statistic instead (stat5).", combinatorName));
+                    binningStrategy = new FastSmallAndLog10BinningStrategy();
+                }
+            }
+        } else {
+            binningStrategy = estimator.getBinningStrategy();
+        }
         if (estimator == null) {
 
             estimator = new DensityEstimator(numberOfContexts, statAdaptor);
+            if (!densityLoadedFromDisk) {
+                estimator.setBinningStrategy(binningStrategy);
+            }
         }
     }
 

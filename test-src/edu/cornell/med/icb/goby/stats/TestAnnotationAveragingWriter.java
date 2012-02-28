@@ -18,8 +18,7 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.PassThroughStatisticAdaptor;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.*;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import org.apache.commons.io.FileUtils;
@@ -420,6 +419,7 @@ public class TestAnnotationAveragingWriter {
         final StringWriter stringWriter = new StringWriter();
         AnnotationAveragingWriter.doc.setValue("estimate-empirical-P", true);
         AnnotationAveragingWriter.doc.setValue("serialized-estimator-filename", makeDensityEstimator());
+        AnnotationAveragingWriter.doc.setValue("combinator", "sum");
 
         AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
         testWriter.setWriteNumSites(false);
@@ -443,6 +443,7 @@ public class TestAnnotationAveragingWriter {
 
     private String makeDensityEstimator() throws IOException {
         DensityEstimator estimator = new DensityEstimator(1, new PassThroughStatisticAdaptor(100));
+        estimator.setBinningStrategy(new FastSmallAndLog10BinningStrategy());
         int[] delta = {0000, 001, 002, 003, 004, 5};
         int[] frequencies = {1000, 900, 800, 700, 600, 1};
         for (int index = 0; index < delta.length; index++) {
