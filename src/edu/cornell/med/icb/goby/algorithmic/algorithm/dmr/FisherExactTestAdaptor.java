@@ -68,7 +68,7 @@ public class FisherExactTestAdaptor extends AbstractMethylationAdapter {
                 cma,
                 cb,
                 cmb) : Double.NaN;
-        return -Math.log10(fisherP);
+        return -StrictMath.log10(fisherP);
     }
 
 
