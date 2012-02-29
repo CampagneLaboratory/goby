@@ -60,7 +60,7 @@ public class EmpiricalPValueEstimator {
     }
 
     enum binningStrategyNames {
-        fastslog10, log2, s100linear
+        fastslog10, fasts100log10, log2, s100linear
     }
 
     static public final String[] LOCAL_DYNAMIC_OPTIONS = {
@@ -144,7 +144,7 @@ public class EmpiricalPValueEstimator {
                         break;
                 }
             } catch (IllegalArgumentException e) {
-                LOG.error(String.format("The statistic name %s was not recognized, using the default statistic instead (stat5).", combinatorName));
+                LOG.error(String.format("The statistic name %s was not recognized, using the default statistic instead (stat5).", statisticName));
                 statAdaptor = new Stat5StatisticAdaptor();
             }
         }
@@ -164,13 +164,14 @@ public class EmpiricalPValueEstimator {
                             binningStrategy = new LinearBinningStrategy();
                             break;
                         default:
+                        case fasts100log10:
                         case fastslog10:
                             binningStrategy = new FastSmallAndLog10BinningStrategy();
                             break;
                     }
 
                 } catch (IllegalArgumentException e) {
-                    LOG.error(String.format("The statistic name %s was not recognized, using the default statistic instead (stat5).", combinatorName));
+                    LOG.error(String.format("The binning strategy name %s was not recognized, using the default binning instead (fastslog10).", binningStrategyName));
                     binningStrategy = new FastSmallAndLog10BinningStrategy();
                 }
             }

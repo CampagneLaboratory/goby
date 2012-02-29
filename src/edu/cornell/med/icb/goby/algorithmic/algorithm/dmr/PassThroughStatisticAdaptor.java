@@ -28,15 +28,20 @@ public class PassThroughStatisticAdaptor extends AbstractMethylationAdapter{
 
     private static final long serialVersionUID = 8506302569020149425L;
     private int maxValue;
-    public PassThroughStatisticAdaptor(int maxValue) {
+    private double fixedValue;
+
+    public PassThroughStatisticAdaptor(int maxValue, double fixedValue) {
         this.maxValue=maxValue;
+        this.fixedValue=fixedValue;
     }
 
     @Override
     public String statName() {
         return "pass-through";
     }
-
+    public double calculate(Object dataProvider, int sampleIndexA, int sampleIndexB, int... covariate) {
+     return fixedValue;
+    }
     @Override
     public double calculateNoCovariate(final int... a) {
         return a[0];

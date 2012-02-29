@@ -83,6 +83,7 @@ public class EmpiricalPMode extends AbstractGobyMode {
     private boolean forceEstimation;
     private PrintWriter outputWriter;
     private ObjectArrayList<String> previousElementIdList;
+    private String label;
 
     @Override
     public String getModeName() {
@@ -102,6 +103,7 @@ public class EmpiricalPMode extends AbstractGobyMode {
         final JSAPResult jsapResult = parseJsapArguments(args);
 
         inputFilename = jsapResult.getString("input");
+        label = jsapResult.getString("label");
         outputFilename = jsapResult.getString("output");
         statisticName = jsapResult.getString("statistic");
         forceEstimation = jsapResult.getBoolean("force-estimation");
@@ -348,10 +350,11 @@ public class EmpiricalPMode extends AbstractGobyMode {
     private void estimateP(ObjectArrayList<String> elementIds, IntArrayList valuesA, IntArrayList valuesB, IntArrayList covariatesA, IntArrayList covariatesB) {
         //  System.out.println(elementIds);
         if (first) {
+            outputWriter.print("LABEL");
             previousElementId = elementIds.toString();
             previousElementIdList = elementIds.clone();
             first = false;
-            outputWriter.print("ignore");
+            outputWriter.print("\tignore");
             int index = 1;
             for (String id : elementIds) {
 
@@ -381,8 +384,8 @@ public class EmpiricalPMode extends AbstractGobyMode {
     }
 
     private void write(ObjectArrayList<String> elementIds) {
-
-        outputWriter.print("P-VALUE");
+        outputWriter.print(label);
+        outputWriter.print("\tP-VALUE");
         boolean stop = false;
         for (final String elementId : elementIds) {
 

@@ -442,14 +442,15 @@ public class TestAnnotationAveragingWriter {
     }
 
     private String makeDensityEstimator() throws IOException {
-        DensityEstimator estimator = new DensityEstimator(1, new PassThroughStatisticAdaptor(100));
+        int fixedValue = 40;
+        DensityEstimator estimator = new DensityEstimator(1, new PassThroughStatisticAdaptor(100, fixedValue));
         estimator.setBinningStrategy(new FastSmallAndLog10BinningStrategy());
         int[] delta = {0000, 001, 002, 003, 004, 5};
         int[] frequencies = {1000, 900, 800, 700, 600, 1};
         for (int index = 0; index < delta.length; index++) {
 
             for (int i = 0; i < frequencies[index]; i++) {
-                estimator.observe(0, 40, delta[index]);
+                estimator.observe(0, fixedValue, delta[index]);
             }
         }
         String filename = FilenameUtils.concat(BASE_TEST_DIR, "density.bin");
