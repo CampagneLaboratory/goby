@@ -668,9 +668,7 @@ public class CompactAlignmentToAnnotationCountsMode extends AbstractGobyMode {
             final String sampleId = basename;
             for (final Annotation annot : annots) {
                 final String geneID = annot.getId();
-                if (geneID.equals("ENSDARG00000014830"))  {
-                    System.out.println("STOP");
-                }
+
                 if (includeAnnotationTypes.contains("gene")) {
                     final int geneStart = annot.getStart();
                     final int geneEnd = annot.getEnd();

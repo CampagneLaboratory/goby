@@ -386,18 +386,18 @@ public class EmpiricalPMode extends AbstractGobyMode {
         boolean stop = false;
         for (final String elementId : elementIds) {
 
-            if ("ENSMUST00000034529_NM_027807".equals(elementId)) {
+          /*  if ("ENSMUST00000034529_NM_027807".equals(elementId)) {
                 System.out.println("STOP");
                 stop = true;
             } else {
                 stop = false;
-            }
+            } */
             outputWriter.print('\t');
             outputWriter.print(elementId);
-        }
+        }      /*
         if (stop) {
             System.out.println("STOP");
-        }
+        }        */
         final double p = estimator.estimateEmpiricalPValue(
                 valuesACollector.toArray(new IntArrayList[valuesACollector.size()]),
                 valuesBCollector.toArray(new IntArrayList[valuesBCollector.size()]),

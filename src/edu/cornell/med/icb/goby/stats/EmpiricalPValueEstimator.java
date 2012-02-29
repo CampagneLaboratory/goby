@@ -216,17 +216,18 @@ public class EmpiricalPValueEstimator {
         combinator.reset();
         final ObjectArrayList<SamplePair> pairs = groupEnumerator.getPairs(comparison);
         for (final SamplePair pair : pairs) {
+            statAdaptor.reset();
+            final double unscaledStatistic = statAdaptor.calculate(dataProvider, pair.sampleIndexA, pair.sampleIndexB, contextIndex);
 
-            final int scaledStatistic = calculateScaledStatistic(dataProvider, pair.sampleIndexA, pair.sampleIndexB, contextIndex);
-            if (!statAdaptor.ignorePair()) {
+             if (!statAdaptor.ignorePair()) {
                 final int[] covariates = statAdaptor.pairCovariates();
-                final double p = estimator.getP(scaledStatistic, covariates);
+                final double p = estimator.getP(unscaledStatistic, covariates);
+                //  System.out.println("Observing " + p);
                 combinator.observe(p);
 
             } else {
                 combinator.observe(1.0);
             }
-
         }
         return combinator.adjust();
     }

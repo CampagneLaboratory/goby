@@ -75,8 +75,8 @@ public class RemoveIndelArtifactsFilter extends GenotypeFilter {
     }
 
     private void checkCountPositive(SampleCountInfo sampleCount, int baseIndex) {
-        if (sampleCount.counts[baseIndex] < 0) {
+       /* if (sampleCount.counts[baseIndex] < 0) {
             System.out.println("STOP");
-        }
+        } */
     }
 }

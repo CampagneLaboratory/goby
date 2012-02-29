@@ -361,11 +361,15 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                             provider.getC(sampleIndex),
                             provider.getCm(sampleIndex), contextIndex);
 
-                    LOG.debug("sample " + samples[sampleIndex] + " " + "position: " + pos);
+                    if (LOG.isTraceEnabled()) {
+                        LOG.debug("sample " + samples[sampleIndex] + " " + "position: " + pos);
+                    }
                 }
             }
         } else {
-            LOG.debug("Did not find overlapping annotations for " + chromosome + " : position: " + pos);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Did not find overlapping annotations for " + chromosome + " : position: " + pos);
+            }
         }
 
 
@@ -388,7 +392,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
             return 0;
         }
         if (contextIndex == -1) {
-            if (LOG.isDebugEnabled()) LOG.debug("context was not recognized: " + currentContext);
+            if (LOG.isTraceEnabled()) LOG.trace("context was not recognized: " + currentContext);
         }
         return contextIndex;
     }
@@ -536,7 +540,6 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                             final double p = empiricalPValueEstimator.estimateEmpiricalPValue(contextIndex, comparison, counter);
                             lineToOutput.append("\t");
                             lineToOutput.append(formatDouble(p));
-
                         }
                     }
                 }
