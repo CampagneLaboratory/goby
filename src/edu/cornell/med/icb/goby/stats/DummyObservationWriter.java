@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.ObservationWriter;
+import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.apache.commons.io.output.NullWriter;
 
@@ -33,6 +34,15 @@ import java.io.Writer;
  */
 
 public class DummyObservationWriter extends ObservationWriter {
+    @Override
+    public void setComparison(GroupComparison comparison) {
+
+    }
+
+    @Override
+    public void setNullComparison(String nameGroup) {
+      }
+
     @Override
     public void close() {
 

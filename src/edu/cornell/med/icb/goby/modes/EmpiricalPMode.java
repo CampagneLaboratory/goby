@@ -54,6 +54,7 @@ public class EmpiricalPMode extends AbstractGobyMode {
     private static final String MODE_DESCRIPTION =
             "Estimate null distribution or empirical p-values based on a recorded null distribution. The input file must be tab delimited with the following fields: " +
                     " - WITHIN_GROUP_PAIR|BETWEEN_GROUP_PAIR keyword" +
+                    " - comparison_description "+
                     " - [element identifier]*" +
                     " - VALUES_A " +
                     " - [integer value to evaluate the statistic for element in sample A]+" +
@@ -73,14 +74,15 @@ public class EmpiricalPMode extends AbstractGobyMode {
     private String[] dymamicOptions;
     private String statisticName;
     public static final DynamicOptionClient doc = new DynamicOptionClient(EmpiricalPMode.class,
-            EmpiricalPValueEstimator.LOCAL_DYNAMIC_OPTIONS,
-            "binning-strategy: name of the binning strategy:fastslog10"
+            EmpiricalPValueEstimator.LOCAL_DYNAMIC_OPTIONS
+
     );
     private DensityEstimator density;
     private String densityFilename;
     private boolean useExistingDensity;
     private boolean forceEstimation;
     private PrintWriter outputWriter;
+    private ObjectArrayList<String> previousElementIdList;
 
     @Override
     public String getModeName() {
@@ -186,6 +188,10 @@ public class EmpiricalPMode extends AbstractGobyMode {
     @Override
     public void execute() throws IOException {
         scan();
+        if (forceEstimation) {
+            write(previousElementIdList);
+        }
+        outputWriter.flush();
         if (!useExistingDensity) {
 
             constructDensityFilename(densityFilename);
@@ -240,7 +246,9 @@ public class EmpiricalPMode extends AbstractGobyMode {
                 covariatesA.clear();
                 covariatesB.clear();
                 int j;
-                for (j = 1; !"VALUES_A".equals(tokens[j]); j++) {
+                String groupComparison = tokens[1];
+                elementIds.add(groupComparison);
+                for (j = 2; !"VALUES_A".equals(tokens[j]); j++) {
                     if (j == tokens.length) {
                         break;
                     }
@@ -330,6 +338,7 @@ public class EmpiricalPMode extends AbstractGobyMode {
     }
 
     String previousElementId = "";
+
     ObjectArrayList<IntArrayList> valuesACollector = new ObjectArrayList<IntArrayList>();
     ObjectArrayList<IntArrayList> valuesBCollector = new ObjectArrayList<IntArrayList>();
     ObjectArrayList<IntArrayList> covariatesACollector = new ObjectArrayList<IntArrayList>();
@@ -340,6 +349,7 @@ public class EmpiricalPMode extends AbstractGobyMode {
         //  System.out.println(elementIds);
         if (first) {
             previousElementId = elementIds.toString();
+            previousElementIdList = elementIds.clone();
             first = false;
             outputWriter.print("ignore");
             int index = 1;
@@ -351,26 +361,13 @@ public class EmpiricalPMode extends AbstractGobyMode {
         }
         if (!previousElementId.equals(elementIds.toString())) {
 
-            final double p = estimator.estimateEmpiricalPValue(
-                    valuesACollector.toArray(new IntArrayList[valuesACollector.size()]),
-                    valuesBCollector.toArray(new IntArrayList[valuesBCollector.size()]),
-                    covariatesACollector.toArray(new IntArrayList[covariatesACollector.size()]),
-                    covariatesBCollector.toArray(new IntArrayList[covariatesBCollector.size()]));
-
-
-            outputWriter.print("P-VALUE");
-            for (final String elementId : elementIds) {
-
-                outputWriter.print('\t');
-                outputWriter.print(elementId);
-            }
-            outputWriter.printf("\t%g%n", p);
+            write(previousElementIdList);
             valuesACollector.clear();
             valuesBCollector.clear();
             covariatesACollector.clear();
             covariatesBCollector.clear();
             previousElementId = elementIds.toString();
-
+            previousElementIdList = elementIds.clone();
         }
 
 
@@ -381,6 +378,35 @@ public class EmpiricalPMode extends AbstractGobyMode {
         covariatesBCollector.add(covariatesB.clone());
 
 
+    }
+
+    private void write(ObjectArrayList<String> elementIds) {
+
+        outputWriter.print("P-VALUE");
+        boolean stop = false;
+        for (final String elementId : elementIds) {
+
+            if ("ENSMUST00000034529_NM_027807".equals(elementId)) {
+                System.out.println("STOP");
+                stop = true;
+            } else {
+                stop = false;
+            }
+            outputWriter.print('\t');
+            outputWriter.print(elementId);
+        }
+        if (stop) {
+            System.out.println("STOP");
+        }
+        final double p = estimator.estimateEmpiricalPValue(
+                valuesACollector.toArray(new IntArrayList[valuesACollector.size()]),
+                valuesBCollector.toArray(new IntArrayList[valuesBCollector.size()]),
+                covariatesACollector.toArray(new IntArrayList[covariatesACollector.size()]),
+                covariatesBCollector.toArray(new IntArrayList[covariatesBCollector.size()]));
+        if (p < 0.01) {
+            System.out.println(elementIds);
+        }
+        outputWriter.printf("\t%g%n", p);
     }
 
     protected EmpiricalPMode(final String jarFilename) {

@@ -40,7 +40,7 @@ public class DensityEstimator implements Serializable {
     private static final long serialVersionUID = -4803501043413548993L;
     private static final int MAX_ITEMS = 10000;
     private ObjectArrayList<FenwickTree> densities;
-    private BinningStrategy binningStrategy = new SmallAndLog10BinningStrategy();
+    private BinningStrategy binningStrategy = new FastSmallAndLog10BinningStrategy();
     private StatisticAdaptor statAdaptor;
     private static boolean DEBUG = false;
 
@@ -193,8 +193,7 @@ public class DensityEstimator implements Serializable {
     public static void main(final String[] args) throws IOException {
         boolean printDensity = CLI.isKeywordGiven(args, "--print-density");
         boolean printObservations = CLI.isKeywordGiven(args, "--print-observations");
-        String filename = CLI.getOption(args,
-                "-f", null);
+        String filename = CLI.getOption(args, "-f", null);
         String outputFilename = CLI.getOption(args, "-o", "out.tsv");
         PrintWriter outWriter = new PrintWriter(new FileWriter(outputFilename));
         if (printDensity) {
@@ -203,6 +202,8 @@ public class DensityEstimator implements Serializable {
             try {
                 estimated = load(filename);
                 String statName = estimated.getStatAdaptor().statName();
+                System.out.println("Statistic=" + statName);
+                System.out.println("binning strategy=" + estimated.getBinningStrategy().getName());
                 int index = 0;
                 outWriter.println("midPointSumTotal\tsumTotal range\t" + statName + "\tcount-at-" + statName);
                 final BinningStrategy binningStrategy = estimated.getBinningStrategy();

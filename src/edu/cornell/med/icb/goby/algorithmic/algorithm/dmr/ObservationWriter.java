@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 
+import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 import java.io.PrintWriter;
@@ -37,6 +38,11 @@ public class ObservationWriter {
 
     public void close() {
         outputWriter.close();
+    }
+
+
+    public void setNullComparison(String nameGroup) {
+        comparison=nameGroup+"/"+nameGroup;
     }
 
     public static enum TypeOfPair {
@@ -67,7 +73,9 @@ public class ObservationWriter {
             return;
         } else {
             assert headerIds != null : " setHeaderIds must be called before calling writeHeader";
+
             outputWriter.write("PAIR_TYPE");
+            outputWriter.write("\tCOMPARISON");
             writeHeaderColumns(headerIds);
             outputWriter.write("\tDELIMITER1");
             writeHeaderColumns(headerValuesA);
@@ -89,9 +97,18 @@ public class ObservationWriter {
         }
     }
 
+    public void setComparison(GroupComparison comparison) {
+        this.comparison = comparison.nameGroup1+"/"+comparison.nameGroup2;
+    }
+
+    String comparison;
+
     public void observed(final IntArrayList valuesA, final IntArrayList valuesB,
                          final IntArrayList covariatesA, final IntArrayList covariatesB) {
+
         outputWriter.write(typeOfPair.toString());
+        outputWriter.write('\t');
+        outputWriter.write(comparison);
 
         for (final String elementId : elementIds) {
             outputWriter.write("\t");

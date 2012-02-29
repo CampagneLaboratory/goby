@@ -69,8 +69,8 @@ public class EmpiricalPValueEstimator {
             "estimate-empirical-P: boolean, true: activates estimation of the empirical p-value.:false",
             "combinator: string, the method to combine p-values, one of qfast, average, sum, max.:max",
             "serialized-estimator-filename: string, the path to a serialized version of the density estimator populated with the empirical null-distribution.:",
-            "statistic: string, the name of the statistic to evaluate between pairs of samples, one of stat4,stat5,dMR:stat5"
-
+            "statistic: string, the name of the statistic to evaluate between pairs of samples, one of stat4,stat5,dMR:stat5",
+            "binning-strategy: string, name of the binning strategy:fastslog10"
     };
 
     /**
@@ -215,6 +215,7 @@ public class EmpiricalPValueEstimator {
         combinator.reset();
         final ObjectArrayList<SamplePair> pairs = groupEnumerator.getPairs(comparison);
         for (final SamplePair pair : pairs) {
+
             int scaledStatistic = calculateScaledStatistic(dataProvider, pair.sampleIndexA, pair.sampleIndexB, contextIndex);
             if (!statAdaptor.ignorePair()) {
                 final int[] covariates = statAdaptor.pairCovariates();
@@ -310,7 +311,7 @@ public class EmpiricalPValueEstimator {
             final int scaledStatistic = (int) Math.round(unscaledStatistic * estimator.getScalingFactor());
 
             //System.out.printf("observing context=%d sumTotal=%d scaledStatistic=%d elementIndex=%d %n", contextIndex, sumTotal, scaledStatistic, elementIndex);
-            estimator.getDensity(contextIndex).incrementCount(scaledStatistic);
+            estimator.getDensity(statAdaptor.pairCovariates()).incrementCount(scaledStatistic);
         }
     }
 

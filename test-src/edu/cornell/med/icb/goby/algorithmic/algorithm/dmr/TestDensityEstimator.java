@@ -188,7 +188,20 @@ public class TestDensityEstimator {
            assertEquals(0.0d, adaptor.calculateWithCovariate(1100, 250, 250, 250, 250), 0.001d);
            assertEquals(0.00d, adaptor.calculateWithCovariate(1100, 251, 250, 252, 250), 0.001d);
        }
+    @Test
+    public void testSmallLog10Binning() {
+        SmallAndLog10BinningStrategy binner = new SmallAndLog10BinningStrategy();
+        double covariates[] = {0, 1, 10, 40, 99, 100, 150, 1200, 10001, 100001, 1000001, 10000001, 100000001, 1000000001};
+        int expectedBinIndex[] = {0, 0, 0, 0, 0, 1, 1, 2, 3, 4, 5, 6, 7, 8};
+        assertEquals(covariates.length, expectedBinIndex.length);
+        for (int i = 0; i < covariates.length; i++) {
+            final int binIndex = binner.getBinIndex(covariates[i]);
+            assertEquals(expectedBinIndex[i], binIndex);
+            assertTrue(covariates[i] >= binner.getLowerBound(binIndex));
+            assertTrue(covariates[i] <= binner.getUpperBound(binIndex));
+        }
 
+    }
     @Test
     public void testFastLog10Binning() {
         FastSmallAndLog10BinningStrategy binner = new FastSmallAndLog10BinningStrategy();

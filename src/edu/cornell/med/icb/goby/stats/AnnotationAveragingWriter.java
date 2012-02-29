@@ -97,7 +97,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
     private Boolean estimateIntraGroupP;
     private Boolean writeNumSites = true;
     final EmpiricalPValueEstimator empiricalPValueEstimator = new EmpiricalPValueEstimator();
-    private final String[] identifiers = new String[4];
+    private final String[] identifiers = new String[5];
 
 
     public AnnotationAveragingWriter(OutputInfo outputInfo, MethylCountProvider provider) {
@@ -137,7 +137,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
             String filename = basename + "-" + (estimateIntraGroupDifferences ? "null" : "test") + "-observations.tsv";
             try {
                 obsWriter = new ObservationWriter(new FileWriter(filename));
-                obsWriter.setHeaderIds(new String[]{"chromosome", "start", "end", "annotation-id"});
+                obsWriter.setHeaderIds(new String[]{"context", "chromosome", "start", "end", "annotation-id"});
             } catch (IOException e) {
                 LOG.error("Cannot open observation file for writing: " + filename);
             }
@@ -280,6 +280,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 for (final String context : contexts) {
                     for (final GroupComparison comparison : groupComparisons) {
                         empiricalPValueEstimator.observeBetweenGroupPair(comparison);
+
                         writeStatForGroupComparison(comparison, context, "empiricalP");
                     }
                 }
@@ -404,10 +405,11 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
             StringBuilder lineToOutput = new StringBuilder("");
             try {
 
-                identifiers[0] = annoOut.getChromosome();
-                identifiers[1] = String.valueOf(annoOut.getStart());
-                identifiers[2] = String.valueOf(annoOut.getEnd());
-                identifiers[3] = annoOut.getId();
+                identifiers[0]= "context"; // will be filled below.
+                identifiers[1] = annoOut.getChromosome();
+                identifiers[2] = String.valueOf(annoOut.getStart());
+                identifiers[3] = String.valueOf(annoOut.getEnd());
+                identifiers[4] = annoOut.getId();
                 obsWriter.setElementIds(identifiers);
 
                 lineToOutput.append(annoOut.getChromosome());
@@ -515,9 +517,11 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 if (estimateIntraGroupDifferences) {
                     obsWriter.setTypeOfPair(ObservationWriter.TypeOfPair.WITHIN_GROUP_PAIR);
                     for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
-
+                        identifiers[0] = contexts[currentContext];
                         for (final GroupComparison comparison : groupComparisons) {
+                            obsWriter.setNullComparison(comparison.nameGroup1);
                             empiricalPValueEstimator.estimateNullDensity(currentContext, comparison.indexGroup1, counter);
+                            obsWriter.setNullComparison(comparison.nameGroup2);
                             empiricalPValueEstimator.estimateNullDensity(currentContext, comparison.indexGroup2, counter);
                         }
                     }
@@ -525,11 +529,14 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 if (estimateIntraGroupP) {
                     obsWriter.setTypeOfPair(ObservationWriter.TypeOfPair.BETWEEN_GROUP_PAIR);
                     for (int contextIndex = 0; contextIndex < contexts.length; contextIndex++) {
-
+                        identifiers[0] = contexts[contextIndex];
                         for (final GroupComparison comparison : groupComparisons) {
+
+                            obsWriter.setComparison(comparison);
                             final double p = empiricalPValueEstimator.estimateEmpiricalPValue(contextIndex, comparison, counter);
                             lineToOutput.append("\t");
                             lineToOutput.append(formatDouble(p));
+
                         }
                     }
                 }
