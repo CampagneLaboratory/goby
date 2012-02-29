@@ -87,6 +87,7 @@ public class EmpiricalPValueEstimator {
         serializedFilename = clientDoc.getString("serialized-estimator-filename");
         if (estimateIntraGroupP && serializedFilename != null) {
             try {
+                LOG.debug("Loading density from disk at " + serializedFilename);
                 estimator = DensityEstimator.load(serializedFilename);
                 statAdaptor = estimator.getStatAdaptor();
                 densityLoadedFromDisk = true;
@@ -97,7 +98,7 @@ public class EmpiricalPValueEstimator {
         String combinatorName = clientDoc.getString("combinator");
 
         try {
-
+            LOG.debug("Setting combinator from dynamic option: " + combinatorName);
             switch (combinatorNames.valueOf(combinatorName)) {
                 case max:
                     combinator = new MaxCombinator();
@@ -122,6 +123,7 @@ public class EmpiricalPValueEstimator {
             LOG.info("StatAdaptor was obtained from loaded density: " + statAdaptor.statName());
         } else {
             String statisticName = clientDoc.getString("statistic");
+            LOG.info("Setting statistic from dynamic option: " + statisticName);
             try {
                 switch (statisticNames.valueOf(statisticName)) {
                     case delta:
@@ -150,6 +152,7 @@ public class EmpiricalPValueEstimator {
         if (!densityLoadedFromDisk) {
 
             String binningStrategyName = clientDoc.getString("binning-strategy");
+            LOG.debug("Setting binning strategy from dynamic options: " + binningStrategyName);
             if (binningStrategyName != null) {
 
                 try {
@@ -164,8 +167,6 @@ public class EmpiricalPValueEstimator {
                         case fastslog10:
                             binningStrategy = new FastSmallAndLog10BinningStrategy();
                             break;
-
-
                     }
 
                 } catch (IllegalArgumentException e) {
@@ -216,7 +217,7 @@ public class EmpiricalPValueEstimator {
         final ObjectArrayList<SamplePair> pairs = groupEnumerator.getPairs(comparison);
         for (final SamplePair pair : pairs) {
 
-            int scaledStatistic = calculateScaledStatistic(dataProvider, pair.sampleIndexA, pair.sampleIndexB, contextIndex);
+            final int scaledStatistic = calculateScaledStatistic(dataProvider, pair.sampleIndexA, pair.sampleIndexB, contextIndex);
             if (!statAdaptor.ignorePair()) {
                 final int[] covariates = statAdaptor.pairCovariates();
                 final double p = estimator.getP(scaledStatistic, covariates);
