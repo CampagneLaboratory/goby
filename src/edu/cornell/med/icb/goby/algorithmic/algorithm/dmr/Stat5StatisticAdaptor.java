@@ -26,7 +26,7 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
  *         Date: 2/24/12
  *         Time: 2:14 PM
  */
-public final class Stat5StatisticAdaptor extends AbstractMethylationAdapter {
+public class Stat5StatisticAdaptor extends AbstractMethylationAdapter {
     private static final double MAXIMUM_BOUND = 20;
     private static final long serialVersionUID = 2934190953936250446L;
 

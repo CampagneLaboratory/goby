@@ -19,26 +19,31 @@
 package edu.cornell.med.icb.goby.modes;
 
 import edu.cornell.med.icb.goby.R.GobyRengine;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.SitesInFixedWindow;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.algorithmic.data.MethylCountInfo;
+import edu.cornell.med.icb.goby.algorithmic.data.SamplePairEnumerator;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.readers.vcf.ColumnType;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.stats.*;
+import edu.cornell.med.icb.goby.util.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.OutputInfo;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.apache.commons.io.output.NullWriter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.rosuda.JRI.Rengine;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
  * A Variant Call Format output to estimate methylation rates for a set of samples and find methylation rate differences
  * between group.
- * TODO evaluate if supporting indel genotypes would make any difference.
  *
  * @author Fabien Campagne
  *         Date: April 4 2011
@@ -50,7 +55,11 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
      * Used to log debug and informational messages.
      */
     private static final Log LOG = LogFactory.getLog(MethylationRateVCFOutputFormat.class);
-
+    public static final DynamicOptionClient doc = new DynamicOptionClient(MethylationRateVCFOutputFormat.class,
+            EmpiricalPValueEstimator.LOCAL_DYNAMIC_OPTIONS,
+            "window-length: int, length of the fixed genomic window used to detect DMR. Default 1000 bp:1000",
+            "significance-threshold: double, significance threshold to consider a site significant for DMR detection purposes. Default 0.01:0.01"
+    );
     VCFWriter statWriter;
     private int refIdColumnIndex;
     private int positionColumnIndex;
@@ -70,7 +79,7 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
     private int log2OddsRatioZColumnIndex[];
     private int deltaMRColumnIndex[];
     int[] readerIndexToGroupIndex;
-
+    SitesInFixedWindow fixedWindow;
     private IntSet[] distinctReadIndicesCountPerGroup;
 
     private MethylCountInfo mci;
@@ -95,6 +104,12 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
     private int genomicContextIndex;
     private CharSequence chromosome;
     private int genomeReferenceIndex;
+    private int[] empiricalPValueColumnIndex;
+    private boolean estimateIntraGroupDifferences;
+    private boolean estimateIntraGroupP;
+    private OutputInfo outputInfo;
+    private int[] lastOfDMRIndex;
+    private double fixedWindowEmpiricalPSignificanceThreshold;
 
     @Override
     public void setMinimumEventThreshold(final int minimumEventThreshold) {
@@ -110,10 +125,17 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
         groups = mode.getGroups();
         samples = mode.getSamples();
 
+        this.outputInfo = outputInfo;
+        estimateIntraGroupDifferences = doc.getBoolean("estimate-intra-group-differences");
+        estimateIntraGroupP = doc.getBoolean("estimate-empirical-P");
+        fixedWindowEmpiricalPSignificanceThreshold = doc.getDouble("significance-threshold");
+        final int windowLength = doc.getInteger("window-length");
+        fixedWindow = new SitesInFixedWindow(windowLength);
+
         readerIndexToGroupIndex = mode.getReaderIndexToGroupIndex();
         final ObjectArrayList<ReadIndexStats> readIndexStats = mode.getReadIndexStats();
-        final VCFWriter vcfWriter = new VCFWriter(outputInfo.getPrintWriter());
-        this.statWriter =  vcfWriter;
+        final VCFWriter vcfWriter = new VCFWriter(estimateIntraGroupDifferences ? new NullWriter() : outputInfo.getPrintWriter());
+        this.statWriter = vcfWriter;
         groupComparisons = mode.getGroupComparisons();
         try {
             //activate R only if we need it:
@@ -135,13 +157,14 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
         log2OddsRatioStandardErrorColumnIndex = new int[groupComparisons.size()];
         log2OddsRatioZColumnIndex = new int[groupComparisons.size()];
         fisherExactPValueColumnIndex = new int[groupComparisons.size()];
+        empiricalPValueColumnIndex = new int[groupComparisons.size()];
         deltaMRColumnIndex = new int[groupComparisons.size()];
+        lastOfDMRIndex = new int[groupComparisons.size()];
 
         numberOfGroups = groups.length;
         biomartFieldIndex = statWriter.defineField("INFO", "BIOMART_COORDS", 1, ColumnType.String, "Coordinates for use with Biomart.");
         strandFieldIndex = statWriter.defineField("INFO", "Strand", 1, ColumnType.String, "Strand of the cytosine site on the reference sequence.");
         genomicContextIndex = statWriter.defineField("INFO", "Context", 1, ColumnType.String, "Site genomic context");
-
 
         for (GroupComparison comparison : groupComparisons) {
             log2OddsRatioColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("LOD[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
@@ -157,6 +180,12 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
                     1, ColumnType.Float, String.format("Fisher exact P-value of observing as large a difference by chance between group %s and group %s.", comparison.nameGroup1, comparison.nameGroup2));
             deltaMRColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("Delta_MR[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
                     1, ColumnType.Integer, String.format("Absolute Difference in methylation between group %s and group %s", comparison.nameGroup1, comparison.nameGroup2));
+            if (estimateIntraGroupP) {
+                empiricalPValueColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("empiricalP[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
+                        1, ColumnType.Float, String.format("Empirical P-value of observing as large a difference by chance between group %s and group %s.", comparison.nameGroup1, comparison.nameGroup2));
+            }
+            lastOfDMRIndex[comparison.index] = statWriter.defineField("INFO", "DMR", 1, ColumnType.Integer, String.format("Number of significant sites observed in a fixed window of length %d before this significant site (inclusive).", windowLength));
+
         }
         methylatedCCountsIndex = new int[groups.length];
         notMethylatedCCountsIndex = new int[groups.length];
@@ -187,11 +216,22 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
         methylationRateFieldIndex = statWriter.defineField("FORMAT", "MR", 1, ColumnType.Integer, "Methylation rate. 0-100%, 100% indicate fully methylated.");
         convertedCytosineFieldIndex = statWriter.defineField("FORMAT", "C", 1, ColumnType.Integer, "Number of converted cytosines at site.");
         unconvertedCytosineFieldIndex = statWriter.defineField("FORMAT", "Cm", 1, ColumnType.Integer, "Number of unconverted cytosines at site");
-        /*convertedCytosinePlusFieldIndex = statWriter.defineField("FORMAT", "C+", 1, ColumnType.Integer, "Number of converted cytosines at site in read matching forward strand.");
-        unconvertedCytosinePlusFieldIndex = statWriter.defineField("FORMAT", "Cm+", 1, ColumnType.Integer, "Number of unconverted cytosines at site in read matching reverse strand");
-        convertedCytosineMinusFieldIndex = statWriter.defineField("FORMAT", "C-", 1, ColumnType.Integer, "Number of converted cytosines at site in read matching forward strand.");
-        unconvertedCytosineMinusFieldIndex = statWriter.defineField("FORMAT", "Cm-", 1, ColumnType.Integer, "Number of unconverted cytosines at site in read matching reverse strand");
-          */
+
+        // setup empirical p-value estimator:
+        String statName = doc.getString("statistic");
+        statName = statName + "_mci";
+        // override the stat name with the mci provider variant:
+        doc.setValue("statistic", statName);
+        empiricalPValueEstimator = new EmpiricalPValueEstimator();
+        empiricalPValueEstimator.configure(1, doc);
+        empiricalPValueEstimator.setGroupEnumerator(new SamplePairEnumerator(readerIndexToGroupIndex, samples.length, groups.length, groupComparisons.size()));
+
+        if (estimateIntraGroupDifferences || estimateIntraGroupP) {
+            for (final GroupComparison comparison : groupComparisons) {
+                empiricalPValueEstimator.recordWithinGroupSamplePairs(comparison);
+                empiricalPValueEstimator.recordBetweenGroupsSamplePairs(comparison);
+            }
+        }
         statWriter.writeHeader();
     }
 
@@ -217,7 +257,7 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
                             final int groupIndexA,
                             final int groupIndexB) {
 
-        final int oneBasedPosition=position+1;
+        final int oneBasedPosition = position + 1;
 
         /*if (oneBasedPosition==3661602) {
             System.out.println("STOP");
@@ -228,7 +268,11 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
             mci.reset();
             return;
         }
-        fillMethylationCountArrays(sampleCounts, list, oneBasedPosition, refBase, mci,readerIndexToGroupIndex);
+        fillMethylationCountArrays(sampleCounts, list, oneBasedPosition, refBase, mci, readerIndexToGroupIndex);
+        doEmpiricalP(mci, referenceIndex, position);
+        if (estimateIntraGroupDifferences) {
+            return;
+        }
         if (mci.eventCountAtSite < minimumEventThreshold) {
             return;
         }
@@ -308,6 +352,7 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
                 }
             }
 
+
             final double totalCsObservedgroup1 = mci.methylatedCCountPerGroup[indexGroup1] + mci.unmethylatedCCountPerGroup[indexGroup1];
             final double totalCsObservedgroup2 = mci.methylatedCCountPerGroup[indexGroup2] + mci.unmethylatedCCountPerGroup[indexGroup2];
 
@@ -358,6 +403,34 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
             }
         }
         statWriter.writeRecord();
+    }
+
+    EmpiricalPValueEstimator empiricalPValueEstimator;
+
+    private void doEmpiricalP(final MethylCountInfo mci, int referenceIndex, int position) {
+        if (estimateIntraGroupDifferences) {
+
+            for (final GroupComparison comparison : groupComparisons) {
+                empiricalPValueEstimator.estimateNullDensity(0, comparison.indexGroup1, mci);
+                empiricalPValueEstimator.estimateNullDensity(0, comparison.indexGroup2, mci);
+
+            }
+        }
+        if (estimateIntraGroupP) {
+            for (final GroupComparison comparison : groupComparisons) {
+
+                final double p = empiricalPValueEstimator.estimateEmpiricalPValue(0, comparison, mci);
+                statWriter.setInfo(empiricalPValueColumnIndex[comparison.index], p);
+                // update the moving window with the significant sites
+                if (p <= fixedWindowEmpiricalPSignificanceThreshold) {
+                    fixedWindow.add(referenceIndex, position);
+                } else {
+                    fixedWindow.prune(referenceIndex, position);
+                }
+                // record how many significant sites in the window before this site
+                statWriter.setInfo(lastOfDMRIndex[comparison.index], fixedWindow.n());
+            }
+        }
     }
 
     private String findGenomicContext(int referenceIndex, int position) {
@@ -423,6 +496,15 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
     @Override
     public void close() {
         statWriter.close();
+        if (estimateIntraGroupDifferences) {
+            // when estimating intra-group differences, we  serialize the estimator to the output.
+            try {
+                LOG.debug("Storing density to filename: " + outputInfo.getFilename());
+                DensityEstimator.store(empiricalPValueEstimator.getEstimator(), outputInfo.getFilename());
+            } catch (IOException e) {
+                LOG.error("Unable to write estimator to file", e);
+            }
+        }
     }
 
     @Override
@@ -432,7 +514,7 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
 
     @Override
     public void setGenomeReferenceIndex(int index) {
-        genomeReferenceIndex=index;
+        genomeReferenceIndex = index;
     }
 
     public static void fillMethylationCountArrays(final SampleCountInfo[] sampleCounts, final ObjectArrayList<PositionBaseInfo> list,
@@ -496,7 +578,6 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
         }
         return ok;
     }
-
 
 
 }

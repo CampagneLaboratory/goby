@@ -70,16 +70,13 @@ public abstract class AbstractMethylationAdapter implements StatisticAdaptor {
     }
 
     @Override
-    public double calculate(Object dataProvider, int sampleIndexA, int sampleIndexB, int... covariate) {
-        if (!(dataProvider instanceof FormatFieldCounter)) {
-            throw new InternalError();
-        }
-        FormatFieldCounter sampleDataPool = (FormatFieldCounter) dataProvider;
+    public double calculate(final Object dataProvider, final int sampleIndexA, final int sampleIndexB, final int... covariate) {
+        checkProviderType(dataProvider);
         final int contextIndex = covariate[0];
-        final int cma = sampleDataPool.getMethylatedCCountPerSample(contextIndex, sampleIndexA);
-        final int ca = sampleDataPool.getUnmethylatedCCountPerSample(contextIndex, sampleIndexA);
-        final int cmb = sampleDataPool.getMethylatedCCountPerSample(contextIndex, sampleIndexB);
-        final int cb = sampleDataPool.getUnmethylatedCCountPerSample(contextIndex, sampleIndexB);
+        final int cma = getCm(sampleIndexA, dataProvider, contextIndex);
+        final int ca = getC(sampleIndexA, dataProvider, contextIndex);
+        final int cmb = getCm(sampleIndexB, dataProvider, contextIndex);
+        final int cb = getC(sampleIndexB, dataProvider, contextIndex);
         recordObservation(cma, ca, cmb, cb);
         if ((cma + ca) == 0 || (cmb + cb) == 0) {
             if (cma + ca + cmb + cb != 0) {
@@ -99,6 +96,23 @@ public abstract class AbstractMethylationAdapter implements StatisticAdaptor {
         COVARIATES[0] = sumTotal;
         return calculateWithCovariate(sumTotal, cma, ca, cmb, cb);
     }
+
+    protected void checkProviderType(Object dataProvider) {
+        if (!(dataProvider instanceof FormatFieldCounter)) {
+            throw new InternalError();
+        }
+    }
+
+    protected int getC(int sampleIndexA, Object sampleDataPool, int contextIndex) {
+        final FormatFieldCounter counter = (FormatFieldCounter) sampleDataPool;
+        return counter.getUnmethylatedCCountPerSample(contextIndex, sampleIndexA);
+    }
+
+    protected int getCm(int sampleIndexA, Object sampleDataPool, int contextIndex) {
+        final FormatFieldCounter counter = (FormatFieldCounter) sampleDataPool;
+        return counter.getMethylatedCCountPerSample(contextIndex, sampleIndexA);
+    }
+
 
     private IntArrayList valuesA = new IntArrayList();
     private IntArrayList valuesB = new IntArrayList();

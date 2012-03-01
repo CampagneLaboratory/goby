@@ -56,7 +56,7 @@ public class EmpiricalPValueEstimator {
     }
 
     enum statisticNames {
-        delta, stat4, stat5, dMR, fisher
+        delta, stat4, stat5, stat5_mci, dMR, fisher
     }
 
     enum binningStrategyNames {
@@ -138,6 +138,9 @@ public class EmpiricalPValueEstimator {
                     case fisher:
                         statAdaptor = new FisherExactTestAdaptor();
                         break;
+                    case stat5_mci:
+                        statAdaptor = new Stat5MciProviderStatisticAdaptor();
+                        break;
                     default:
                     case stat5:
                         statAdaptor = new Stat5StatisticAdaptor();
@@ -188,11 +191,11 @@ public class EmpiricalPValueEstimator {
     }
 
 
-    void observeBetweenGroupPair(final GroupComparison comparison) {
+    public void recordBetweenGroupsSamplePairs(final GroupComparison comparison) {
         groupEnumerator.recordPairForGroupComparison(comparison);
     }
 
-    void observeIntraGroupPairs(final GroupComparison comparison) {
+    public void recordWithinGroupSamplePairs(final GroupComparison comparison) {
         //   groupEnumerator = new SamplePairEnumerator(this.sampleIndexToGroupIndex, numSamples, numGroups, 0);
 
         groupEnumerator.recordPairForGroup(comparison.indexGroup1);

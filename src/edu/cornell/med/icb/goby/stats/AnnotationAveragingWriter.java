@@ -273,13 +273,13 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
             }
             if (estimateIntraGroupDifferences) {
                 for (final GroupComparison comparison : groupComparisons) {
-                    empiricalPValueEstimator.observeIntraGroupPairs(comparison);
+                    empiricalPValueEstimator.recordWithinGroupSamplePairs(comparison);
                 }
             }
             if (estimateIntraGroupP) {
                 for (final String context : contexts) {
                     for (final GroupComparison comparison : groupComparisons) {
-                        empiricalPValueEstimator.observeBetweenGroupPair(comparison);
+                        empiricalPValueEstimator.recordBetweenGroupsSamplePairs(comparison);
 
                         writeStatForGroupComparison(comparison, context, "empiricalP");
                     }

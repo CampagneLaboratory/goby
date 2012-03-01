@@ -146,6 +146,7 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
         registeredDOClients.add(QualityScoreFilter.doc);
         registeredDOClients.add(AnnotationAveragingWriter.doc);
         registeredDOClients.add(MethylationRegionsOutputFormat.doc);
+        registeredDOClients.add(MethylationRateVCFOutputFormat.doc);
 
 
         // parse dynamic options:
