@@ -63,7 +63,7 @@ public class TestFaidxSequenceCache {
 
 
         final RandomAccessSequenceInterface cache = new PicardFastaIndexedSequence("test-data/faidx/file1.fasta");
-              int i = 0;
+        int i = 0;
         assertEquals('A', cache.get(0, i++));
         assertEquals('C', cache.get(0, i++));
         assertEquals('T', cache.get(0, i++));
@@ -89,5 +89,35 @@ public class TestFaidxSequenceCache {
         assertEquals('N', cache.get(1, i++));
         assertEquals('N', cache.get(1, i++));
         assertEquals('N', cache.get(1, i++));
+    }
+
+    @Test
+    public void testRemoveNewLines() throws IOException {
+
+
+        final PicardFastaIndexedSequence cache = new PicardFastaIndexedSequence("test-data/faidx/file2.fasta");
+        cache.print(0);
+        int i = 0;
+        do {
+            i = testPattern(cache, i);
+        } while (i < cache.getLength(0));
+    }
+
+    private int j = 0;
+
+    private int testPattern(PicardFastaIndexedSequence cache, int i) {
+        char[] bases = {'A', 'C', 'T', 'G'};
+
+        if (j >= bases.length) {
+            j = 0;
+        }
+        final char expected = bases[j++];
+        assertEquals('A', cache.get(0, i++));
+
+        final char actual = cache.get(0, i++);
+        assertEquals(String.format("middle base (actual=%c) differs from expected (%c) at position %d", actual, expected, i), expected, actual);
+
+        assertEquals('C', cache.get(0, i++));
+        return i;
     }
 }

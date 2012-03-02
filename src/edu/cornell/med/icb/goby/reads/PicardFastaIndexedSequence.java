@@ -45,6 +45,7 @@ public class PicardFastaIndexedSequence implements RandomAccessSequenceInterface
     private ReferenceSequence cachedSeq;
     private final MutableString baseBuffer = new MutableString();
     private FastaSequenceIndex indexDelegate;
+    private int[] basesPerLine;
 
 
     public PicardFastaIndexedSequence(String filename) throws FileNotFoundException {
@@ -57,6 +58,7 @@ public class PicardFastaIndexedSequence implements RandomAccessSequenceInterface
 
         lengths = new int[numContigs];
         names = new String[numContigs];
+        basesPerLine = new int[numContigs];
 
         final LineIterator lineIt = new LineIterator(new FileReader(filename + ".fai"));
 
@@ -70,6 +72,7 @@ public class PicardFastaIndexedSequence implements RandomAccessSequenceInterface
             names[index] = tokens[0];
             namesToIndices.put(tokens[0], index);
             lengths[index] = Integer.parseInt(tokens[1]);
+            basesPerLine[index] = Integer.parseInt(tokens[2]);
             index++;
         }
 
@@ -92,7 +95,7 @@ public class PicardFastaIndexedSequence implements RandomAccessSequenceInterface
         return (int) lengths[targetIndex];
     }
 
-    private int cachedReferenceIndex=-1;
+    private int cachedReferenceIndex = -1;
     int cachedStart = -1;
     int cachedStop = -1;
 
@@ -102,7 +105,7 @@ public class PicardFastaIndexedSequence implements RandomAccessSequenceInterface
         final int stop = Math.max(position + length, lengths[referenceIndex] - position);
         ReferenceSequence seq = delegate.getSubsequenceAt(names[referenceIndex], position, stop);
         assert seq.getContigIndex() == referenceIndex : " contig index and reference index must match.";
-
+        int i=0;
         for (final byte b : seq.getBases()) {
             char c = (char) b;
 
@@ -113,7 +116,7 @@ public class PicardFastaIndexedSequence implements RandomAccessSequenceInterface
         cachedStart = position;
         cachedStop = stop;
         cachedSeq = seq;
-        cachedReferenceIndex=referenceIndex;
+        cachedReferenceIndex = referenceIndex;
         //System.out.println("got: " + bases);
     }
 
@@ -130,5 +133,15 @@ public class PicardFastaIndexedSequence implements RandomAccessSequenceInterface
     @Override
     public int size() {
         return names.length;
+    }
+
+    public void print(int referenceIndex) {
+        for (int i=0;i<getLength(referenceIndex);i++ ){
+           if (i % basesPerLine[referenceIndex]==0) {
+                System.out.println(" "+i+ " ");
+            }
+            System.out.print(get(referenceIndex, i));
+
+        }
     }
 }

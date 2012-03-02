@@ -2,7 +2,8 @@ dev > 1.9.8.4
  - methylation region can now estimate empirical p-values. Empirical P-values require biological replicates in at least
    one of the groups under analysis. Two passes over the data are required. In the first pass, the empirical null
    distribution is observed by comparing pairs of samples in the same group. In the second pass, this distribution is
-   used to estimate the p-value of observing the between group differences.
+   used to estimate the p-value of observing the between group differences. Such empirical p-values can control FWER
+   in the strong sense.
  - Support empirical p-value for individual bases (VCF output). Write a DMR INFO field that stores how many significant
    sites were found in a moving window that ends at the site (significance is judged according to a configurable
    threshold on the empirical p-value).
@@ -12,16 +13,16 @@ dev > 1.9.8.4
    tools. This is supported broadly by the API, so the concatenation reader also supports URLs, for instance. TMH files
    currently cannot be loaded remotely. Alignments that require upgrading will also fail to load remotely.
  - vcf methylation format: removed space in name of C and Cm group INFO fields.
+ - Add a draft implementation of random access sequence interface that can read a fasta file indexed with faidx.
  - Added the ability in alignment-to-text mode to output HTML (-f html), to start/end at offsets (-s/-e) in the alignments and
    to limit the number of alignment entries to output (-n).
- - Add a draft implementation of random access sequence interface that can read a fasta file indexed with faidx. Not yet
-   reliable, better tests are needed.
  - The RandomAccessSequenceCache had problems with bases that weren't G/A/T/C/N. Such bases would be skipped silently,
    causing rare, but potentially significant, problems (such as on human chr 3 of the 1000g genome reference where a
    R base appears). Bases not in the group G/A/T/C/N would introduce position shifts for bases immediately following
    the offending character. Now bases other than G/A/T/C are stored as N and maintain the position of the following
    bases. Please note that the problem was in a library used by RandomAccessSequenceCache, we updated the library in
    this release, and no change to the code of RandomAccessSequenceCache was needed to fix the problem.
+
  - Fixed a bug related aligning Paired-End with Gsnap.
 1.9.8.3.1
  - Fix a bug related to writing paired end alignments in the Gsnap parser (C API)
