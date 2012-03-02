@@ -129,6 +129,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
         estimateIntraGroupDifferences = doc.getBoolean("estimate-intra-group-differences");
         estimateIntraGroupP = doc.getBoolean("estimate-empirical-P");
         writeCounts = doc.getBoolean("write-counts");
+
         if (estimateIntraGroupDifferences || estimateIntraGroupP) {
             String basename = FilenameUtils.removeExtension(outputInfo.getFilename());
             if (basename == null) {
@@ -223,22 +224,43 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
             //  IGV format - maintain fidelity
             outputWriter.append("Chromosome\tStart\tEnd\tFeature");
 
-            for (String context : contexts) {
-                for (String sample : samples) {
-                    if (writeCounts) {
+            if (writeCounts) {
+                for (String context : contexts) {
+                    for (String sample : samples) {
                         writeStatForSample(sample, context, "#C");
+                    }
+                }
+
+                for (String context : contexts) {
+                    for (String sample : samples) {
                         writeStatForSample(sample, context, "#Cm");
                     }
+                }
+            }
+
+            for (String context : contexts) {
+                for (String sample : samples) {
                     writeStatForSample(sample, context, "MR");
                 }
             }
+
             if (groups != null) {
-                for (String context : contexts) {
-                    for (String group : groups) {
-                        if (writeCounts) {
+
+                if (writeCounts) {
+                    for (String context : contexts) {
+                        for (String group : groups) {
                             writeStatForSample(group, context, "#C");
+                        }
+                    }
+
+                    for (String context : contexts) {
+                        for (String group : groups) {
                             writeStatForSample(group, context, "#Cm");
                         }
+                    }
+                }
+                for (String context : contexts) {
+                    for (String group : groups) {
                         writeStatForSample(group, context, "MR");
                     }
                 }
@@ -286,12 +308,17 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 }
             }
             outputWriter.append('\n');
-        } catch (IOException e) {
+        } catch (IOException
+                e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void writeStatForSample(String trackName, String context, String statName) throws IOException {
+    private void writeStatForSample
+            (String
+                     trackName, String
+                    context, String
+                    statName) throws IOException {
         StringBuilder columnName = new StringBuilder();
         outputWriter.append('\t');
         columnName.append(statName + "[");
@@ -305,7 +332,11 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
         outputWriter.append(columnName.toString());
     }
 
-    private void writeStatForGroupComparison(GroupComparison comparison, String context, String statName) throws IOException {
+    private void writeStatForGroupComparison
+            (GroupComparison
+                     comparison, String
+                    context, String
+                    statName) throws IOException {
         StringBuilder comparisonName = new StringBuilder();
         outputWriter.append('\t');
         comparisonName.append(statName + "[");
@@ -322,7 +353,8 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
     }
 
     @Override
-    public void writeRecord() {
+    public void writeRecord
+            () {
         init();
         addValuesAndAverage();
         provider.next();
@@ -332,7 +364,8 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
      * Increment counters for methylated and non-methylated cytosines across
      * sequence contexts, samples and groups
      */
-    private void addValuesAndAverage() {
+    private void addValuesAndAverage
+    () {
 
         final String chromosome = provider.getChromosome().toString();
         final int pos = provider.getPosition();
@@ -380,7 +413,9 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
         }
     }
 
-    private int codeIndex(String currentContext) {
+    private int codeIndex
+            (String
+                     currentContext) {
         int contextIndex = -1;
         for (int i = 0; i < contexts.length; i++) {
             if (currentContext.equals(contexts[i])) {
@@ -409,7 +444,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
             StringBuilder lineToOutput = new StringBuilder("");
             try {
 
-                identifiers[0]= "context"; // will be filled below.
+                identifiers[0] = "context"; // will be filled below.
                 identifiers[1] = annoOut.getChromosome();
                 identifiers[2] = String.valueOf(annoOut.getStart());
                 identifiers[3] = String.valueOf(annoOut.getEnd());
@@ -422,19 +457,27 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                 lineToOutput.append("\t");
                 lineToOutput.append(String.valueOf(annoOut.getEnd())).append("\t");
                 lineToOutput.append(annoOut.getId());
-                for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
 
-                    for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
-                        if (writeCounts) {
+                if (writeCounts) {
+                    for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
+                        for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
                             lineToOutput.append("\t");
                             final int unMethylatedCCounterPerSample = counter.getUnmethylatedCCountPerSample(currentContext, sampleIndex);
                             lineToOutput.append(unMethylatedCCounterPerSample);
+                        }
+                    }
 
+                    for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
+                        for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
                             lineToOutput.append("\t");
                             final int methylatedCCounterPerSample = counter.getMethylatedCCountPerSample(currentContext, sampleIndex);
                             lineToOutput.append(methylatedCCounterPerSample);
                         }
+                    }
+                }
 
+                for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
+                    for (int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
                         lineToOutput.append("\t");
                         final double methylationRatePerSample = counter.getMethylationRatePerSample(currentContext, sampleIndex);
                         //     System.out.printf("context=%s sample=%s mr=%g %n", contexts[currentContext], samples[sampleIndex], methylationRatePerSample);
@@ -442,18 +485,28 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
                     }
                 }
 
-                for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
-
-                    for (int groupIndex = 0; groupIndex < numGroups; groupIndex++) {
-                        if (writeCounts) {
+                if (writeCounts) {
+                    for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
+                        for (int groupIndex = 0; groupIndex < numGroups; groupIndex++) {
                             lineToOutput.append("\t");
                             final int unMethylatedCCounterPerGroup = counter.getUnmethylatedCcountPerGroup(currentContext, groupIndex);
                             lineToOutput.append(unMethylatedCCounterPerGroup);
+                        }
+                    }
 
+                    for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
+                        for (int groupIndex = 0; groupIndex < numGroups; groupIndex++) {
                             lineToOutput.append("\t");
                             final int methylatedCCounterPerGroup = counter.getMethylatedCCountPerGroup(currentContext, groupIndex);
                             lineToOutput.append(methylatedCCounterPerGroup);
                         }
+                    }
+                }
+
+                for (int currentContext = 0; currentContext < contexts.length; currentContext++) {
+
+                    for (int groupIndex = 0; groupIndex < numGroups; groupIndex++) {
+
                         lineToOutput.append("\t");
                         lineToOutput.append(formatDouble(counter.getMethylationRatePerGroup(currentContext, groupIndex)));
                     }
@@ -559,7 +612,9 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
      * @param value
      * @return
      */
-    private String formatDouble(double value) {
+    private String formatDouble
+    (
+            double value) {
         if (value != value) {
             // value is NaN
             return "";
@@ -569,7 +624,9 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
         }
     }
 
-    private boolean checkCounts(FormatFieldCounter tempCounter, int currentContext) {
+    private boolean checkCounts
+            (FormatFieldCounter
+                     tempCounter, int currentContext) {
         boolean ok = true;
         // detect if any count is negative (that's a bug)
         for (int indexGroup = 0; indexGroup < numGroups; indexGroup++) {
@@ -588,20 +645,22 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
 
 
     @Override
-    public void close() {
+    public void close
+            () {
         if (!counterMap.isEmpty()) {
             IntSet currentAnnotations = counterMap.keySet();
 
             for (int anno : currentAnnotations) {
                 buildAnnotationRecordForOutput(annotations.getAnnotationsLastChromosome(), Integer.MAX_VALUE, anno);
             }
-       }
+        }
         outWriter.close();
         IOUtils.closeQuietly(outputWriter);
+        
         if (estimateIntraGroupDifferences) {
             // when estimating intra-group differences, we  serialize the estimator to the output.
             try {
-                LOG.debug("Storing density to filename: "+outputInfo.getFilename());
+                LOG.debug("Storing density to filename: " + outputInfo.getFilename());
                 DensityEstimator.store(empiricalPValueEstimator.getEstimator(), outputInfo.getFilename());
             } catch (IOException e) {
                 LOG.error("Unable to write estimator to file", e);
@@ -615,7 +674,10 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
     }
 
 
-    private String findGenomicContext(int referenceIndex, int position) {
+    private String findGenomicContext
+            (
+                    int referenceIndex,
+                    int position) {
         int referenceLength = genome.getLength(referenceIndex);
         int zeroBasedPos = position - 1;
         char currentBase = genome.get(referenceIndex, zeroBasedPos);
@@ -658,13 +720,16 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
 
 
     @Override
-    public void setGroupComparisons(ArrayList<GroupComparison> groupComparisons) {
+    public void setGroupComparisons
+            (ArrayList<GroupComparison> groupComparisons) {
         this.groupComparisons = groupComparisons;
 
     }
 
     @Override
-    public void setGenome(RandomAccessSequenceInterface genome) {
+    public void setGenome
+            (RandomAccessSequenceInterface
+                     genome) {
         this.genome = genome;
     }
 
@@ -674,7 +739,9 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
      * @param annotationFilename
      */
     @Override
-    public void setAnnotationFilename(String annotationFilename) {
+    public void setAnnotationFilename
+    (String
+             annotationFilename) {
         this.annotationFilename = annotationFilename;
     }
 
@@ -684,20 +751,26 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
      * @param readerIndexToGroupIndex
      */
     @Override
-    public void setSampleIndexToGroupIndex(int[] readerIndexToGroupIndex) {
+    public void setSampleIndexToGroupIndex
+    (
+            int[] readerIndexToGroupIndex) {
         sampleIndexToGroupIndex = readerIndexToGroupIndex;
     }
 
 
     @Override
-    public void setAggregateAllContexts(boolean aggregateAllContexts) {
+    public void setAggregateAllContexts
+            (
+                    boolean aggregateAllContexts) {
         this.aggregateAllContexts = aggregateAllContexts;
         if (aggregateAllContexts) {
             contexts = new String[]{"ALL"};
         }
     }
 
-    public void setWriteCounts(boolean b) {
+    public void setWriteCounts
+            (
+                    boolean b) {
         writeCounts = b;
     }
 }

@@ -397,13 +397,11 @@ public class TestAnnotationAveragingWriter {
         testWriter.close();
         assertEquals("Test Case 1 result: ",
                 "Chromosome\tStart\tEnd\tFeature\t" +
-                        "#C[sample1][CpG]\t#Cm[sample1][CpG]\tMR[sample1][CpG]\t" +
-                        "#C[sample1][CpA]\t#Cm[sample1][CpA]\tMR[sample1][CpA]\t" +
-                        "#C[sample1][CpC]\t#Cm[sample1][CpC]\tMR[sample1][CpC]\t" +
-                        "#C[sample1][CpT]\t#Cm[sample1][CpT]\tMR[sample1][CpT]\t" +
-                        "#C[sample1][CpN]\t#Cm[sample1][CpN]\tMR[sample1][CpN]\t" +
+                        "#C[sample1][CpG]\t#C[sample1][CpA]\t#C[sample1][CpC]\t#C[sample1][CpT]\t#C[sample1][CpN]\t" +
+                        "#Cm[sample1][CpG]\t#Cm[sample1][CpA]\t#Cm[sample1][CpC]\t#Cm[sample1][CpT]\t#Cm[sample1][CpN]\t" +
+                        "MR[sample1][CpG]\tMR[sample1][CpA]\tMR[sample1][CpC]\tMR[sample1][CpT]\tMR[sample1][CpN]\t" +
                         "#Sites[sample1][CpG]\t#Sites[sample1][CpA]\t#Sites[sample1][CpC]\t#Sites[sample1][CpT]\t#Sites[sample1][CpN]\n" +
-                        "Case1\t4\t8\tannotation0\t8\t17\t68.0000\t0\t0\t\t0\t0\t\t0\t0\t\t0\t0\t\t2\t0\t0\t0\t0\n", stringWriter.getBuffer().toString());
+                        "Case1\t4\t8\tannotation0\t8\t0\t0\t0\t0\t17\t0\t0\t0\t0\t68.0000\t\t\t\t\t2\t0\t0\t0\t0\n", stringWriter.getBuffer().toString());
     }
 
     @Test
