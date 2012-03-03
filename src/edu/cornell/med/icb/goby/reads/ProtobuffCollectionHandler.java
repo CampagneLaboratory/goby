@@ -18,28 +18,34 @@
 
 package edu.cornell.med.icb.goby.reads;
 
-import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 /**
+ * A mechanism to obtain a protobuff collection from a stream of data. Parsers must know the type of protobuff messages
+ * contained in the collection.
+ *
  * @author Fabien Campagne
  *         Date: 3/3/12
- *         Time: 11:48 AM
+ *         Time: 11:37 AM
  */
-public class ReadProtobuffCollectionParser implements ProtobuffCollectionParser {
-    @Override
-    public int getType() {
-        return TYPE_READS;
-    }
+public interface ProtobuffCollectionHandler {
+    public final int TYPE_READS = 0;
+    public final int TYPE_ALIGNMENTS = 1;
 
-    @Override
-    public GeneratedMessage parse(final InputStream compressedBytes) throws IOException {
-        final CodedInputStream codedInput = CodedInputStream.newInstance(compressedBytes);
-        codedInput.setSizeLimit(Integer.MAX_VALUE);
+    /**
+     * Returns the type of the collection elements.
+     * @return One of the pre-defined types, TYPE_READS or TYPE_ALIGNMENTS.
+     */
+    public int getType();
 
-        return Reads.ReadCollection.parseFrom(compressedBytes);
-    }
+    public GeneratedMessage parse(InputStream uncompressedStream) throws IOException;
+
+    Message compressCollection(Message readCollection, ByteArrayOutputStream compressedBits) throws IOException;
+
+    Message decompressCollection(Message reducedProtoBuff, byte[] compressedBytes);
 }

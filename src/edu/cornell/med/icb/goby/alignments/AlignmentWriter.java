@@ -20,10 +20,8 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import edu.cornell.med.icb.goby.GobyVersion;
 import edu.cornell.med.icb.goby.modes.GobyDriver;
 import edu.cornell.med.icb.goby.reads.MessageChunksWriter;
-import edu.cornell.med.icb.goby.reads.Reads;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.util.VersionUtils;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -122,6 +120,7 @@ public class AlignmentWriter implements Closeable {
         this.basename = outputBasename;
         collectionBuilder = Alignments.AlignmentCollection.newBuilder();
         entriesChunkWriter = new MessageChunksWriter(alignmentEntries);
+        entriesChunkWriter.setParser(new AlignmentCollectionHandler());
         newEntry = Alignments.AlignmentEntry.newBuilder();
         queryIdentifiers = new IndexedIdentifier();
         targetIdentifiers = new IndexedIdentifier();

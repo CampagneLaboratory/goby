@@ -51,7 +51,7 @@ public class MessageChunksReader implements Closeable {
     }
 
     protected byte[] compressedBytes;
-    private ProtobuffCollectionParser parser;
+    private ProtobuffCollectionHandler parser;
 
     protected MessageChunksReader() {
 
@@ -87,14 +87,14 @@ public class MessageChunksReader implements Closeable {
                 }
                 // read the codec registration id:
                 final byte codecRegistrationCode = in.readByte();
-                if (chunkCodec == null || codecRegistrationCode != chunkCodec.registrationCode()) {
-                    installCodec(codecRegistrationCode);
-                }
+                // confirm the delimiter before trying to install a chunk codec. If the delimited is absent, we may be done already.
                 if (!confirmDelimiter(in)) {
                     compressedBytes = null;
                     return false;
                 }
-
+                if (chunkCodec == null || codecRegistrationCode != chunkCodec.registrationCode()) {
+                    installCodec(codecRegistrationCode);
+                }
 
                 // read the number of compressed bytes to follow:
                 final int numBytes = in.readInt();
@@ -125,11 +125,11 @@ public class MessageChunksReader implements Closeable {
         return entryIndex < collectionSize;
     }
 
-    // check that the nxt bytes contain a chunk delimiter
+    // check that the next bytes contain a chunk delimiter
     private boolean confirmDelimiter(DataInputStream in) throws IOException {
 
         for (int i = 0; i < MessageChunksWriter.DELIMITER_LENGTH; i++) {
-            if (in.available()==0) {
+            if (in.available() == 0) {
                 return false;
             }
             final byte b = in.readByte();
@@ -142,14 +142,20 @@ public class MessageChunksReader implements Closeable {
         return true;
     }
 
-    private void installCodec(byte registrationCode) {
+    private void installCodec(final byte registrationCode) {
         switch (registrationCode) {
+            case AlignmentChunkCodec1.REGISTRATION_CODE:
 
-            case GZipChunkCodec.REGISTRATION_CODE:
-            default:
-                chunkCodec = new GZipChunkCodec();
-                chunkCodec.setParser(parser);
+                chunkCodec = new AlignmentChunkCodec1();
+                chunkCodec.setHandler(parser);
                 break;
+            case GZipChunkCodec.REGISTRATION_CODE:
+
+                chunkCodec = new GZipChunkCodec();
+                chunkCodec.setHandler(parser);
+                break;
+            default:
+                throw new InternalError("Codec registration code not recognized: " + registrationCode);
         }
     }
 
@@ -193,11 +199,17 @@ public class MessageChunksReader implements Closeable {
         this.chunkCodec = chunkCodec;
     }
 
-    public void setParser(ProtobuffCollectionParser collectionParser) {
+    public void setParser(ProtobuffCollectionHandler collectionParser) {
         parser = collectionParser;
+        if (chunkCodec != null) {
+            chunkCodec.setHandler(collectionParser);
+        }
     }
 
     public ChunkCodec getChunkCodec() {
+        if (chunkCodec != null) {
+            chunkCodec.setHandler(parser);
+        }
         return chunkCodec;
     }
 }

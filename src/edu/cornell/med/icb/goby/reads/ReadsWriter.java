@@ -61,6 +61,7 @@ public class ReadsWriter implements Closeable {
     public ReadsWriter(final OutputStream output) {
         collectionBuilder = Reads.ReadCollection.newBuilder();
         messageChunkWriter = new MessageChunksWriter(output);
+        messageChunkWriter.setParser(new ReadProtobuffCollectionHandler());
         readIndex = 0;
     }
 

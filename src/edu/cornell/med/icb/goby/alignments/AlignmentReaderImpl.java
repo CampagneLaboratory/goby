@@ -211,7 +211,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset > 0 ? startOffset : 0,
                 endOffset > 0 ? endOffset : Long.MAX_VALUE,
                 new FastBufferedInputStream(stream));
-        alignmentEntryReader.setParser(new AlignmentCollectionParser());
+        alignmentEntryReader.setParser(new AlignmentCollectionHandler());
         LOG.trace("start offset :" + startOffset + " end offset " + endOffset);
 
         stats = new Properties();
@@ -266,7 +266,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             final InputStream stream = new RepositionableInputStream(entriesFile);
 
             alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset, endOffset, new FastBufferedInputStream(stream));
-            alignmentEntryReader.setParser(new AlignmentCollectionParser());
+            alignmentEntryReader.setParser(new AlignmentCollectionHandler());
         } else {
             alignmentEntryReader = null;
         }
@@ -325,7 +325,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     public AlignmentReaderImpl(final InputStream entriesStream) throws IOException {
         super(true, null);
         alignmentEntryReader = new FastBufferedMessageChunksReader(0, Long.MAX_VALUE, new FastBufferedInputStream(entriesStream));
-        alignmentEntryReader.setParser(new AlignmentCollectionParser());
+        alignmentEntryReader.setParser(new AlignmentCollectionHandler());
     }
 
     /**
@@ -342,7 +342,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             throws IOException {
         super(true, null);
         alignmentEntryReader = new FastBufferedMessageChunksReader(start, end, stream);
-        alignmentEntryReader.setParser(new AlignmentCollectionParser());
+        alignmentEntryReader.setParser(new AlignmentCollectionHandler());
     }
 
     private int numberOfEntries() {

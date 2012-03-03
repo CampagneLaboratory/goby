@@ -16,27 +16,44 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.cornell.med.icb.goby.alignments;
+package edu.cornell.med.icb.goby.reads;
 
+import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.GeneratedMessage;
-import edu.cornell.med.icb.goby.reads.ProtobuffCollectionParser;
+import com.google.protobuf.Message;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 /**
+ * A handler for collections that contain read entries.
+ *
  * @author Fabien Campagne
  *         Date: 3/3/12
- *         Time: 11:45 AM
+ *         Time: 11:48 AM
  */
-public class AlignmentCollectionParser implements ProtobuffCollectionParser {
+public class ReadProtobuffCollectionHandler implements ProtobuffCollectionHandler {
     @Override
     public int getType() {
-        return TYPE_ALIGNMENTS;
+        return TYPE_READS;
     }
 
     @Override
-    public GeneratedMessage parse(InputStream uncompressedStream) throws IOException {
-           return Alignments.AlignmentCollection.parseFrom(uncompressedStream);
+    public GeneratedMessage parse(final InputStream compressedBytes) throws IOException {
+        final CodedInputStream codedInput = CodedInputStream.newInstance(compressedBytes);
+        codedInput.setSizeLimit(Integer.MAX_VALUE);
+
+        return Reads.ReadCollection.parseFrom(compressedBytes);
+    }
+
+    @Override
+    public Message compressCollection(Message readCollection, ByteArrayOutputStream compressedBits) {
+        return readCollection;
+    }
+
+    @Override
+    public Message decompressCollection(Message reducedProtoBuff, byte[] compressedBytes) {
+        return reducedProtoBuff;
     }
 }

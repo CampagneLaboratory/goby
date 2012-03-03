@@ -80,7 +80,7 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
     public ReadsReader(final InputStream stream) {
         super();
         reader = new MessageChunksReader(stream);
-        reader.setParser(new ReadProtobuffCollectionParser());
+        reader.setParser(new ReadProtobuffCollectionHandler());
         codec = null;
     }
 
@@ -112,7 +112,7 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
             throws IOException {
         super();
         reader = new FastBufferedMessageChunksReader(start, end, stream);
-        reader.setParser(new ReadProtobuffCollectionParser());
+        reader.setParser(new ReadProtobuffCollectionHandler());
     }
 
     /**

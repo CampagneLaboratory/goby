@@ -87,6 +87,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
         // search though the input stream until a delimiter chunk or end of stream is reached
         while ((b = input.read()) != -1) {
             final byte c = (byte) b;
+
             if (c == MessageChunksWriter.DELIMITER_CONTENT) {
                 contiguousDelimiterBytes++;
             } else {
@@ -94,14 +95,29 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
             }
             ++skipped;
             if (contiguousDelimiterBytes == MessageChunksWriter.DELIMITER_LENGTH) {
-                // a delimiter was found, start reading data from here
-                in = new DataInputStream(input);
-                final long seekPosition = start + skipped - contiguousDelimiterBytes; // -1 positions  before the codec registration code.
-                input.position(seekPosition);
-                break;
+                if (hasFF(input)) {
+                    skipped++;
+                }
+                if (skipped >=  MessageChunksWriter.DELIMITER_LENGTH+1) {
+                    // make sure we have seen the delimited AND the codec registration code since start, otherwise continue looking
+                    // a delimiter was found, start reading data from here
+                    in = new DataInputStream(input);
+                    final long seekPosition = start + skipped - MessageChunksWriter.DELIMITER_LENGTH - 1; // positions  before the codec registration code.
+                    input.position(seekPosition);
+                    break;
+                }
             }
             position = start + skipped;
         }
+    }
+
+    private boolean hasFF(FastBufferedInputStream input) throws IOException {
+        if (input.available() >= 1) {
+            int b = input.read();
+            byte code = (byte) b;
+            if (code == -1) return true;
+        }
+        return false;
     }
 
     /**

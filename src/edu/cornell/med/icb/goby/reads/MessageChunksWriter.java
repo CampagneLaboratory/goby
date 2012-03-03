@@ -38,10 +38,10 @@ import java.io.*;
 public class MessageChunksWriter {
     private static final Log LOG = LogFactory.getLog(MessageChunksWriter.class);
 
-    public static final byte DELIMITER_CONTENT =(byte) 0xFF;
+    public static final byte DELIMITER_CONTENT = (byte) 0xFF;
     public static final int DELIMITER_LENGTH = 7;
     public static final int SIZE_OF_MESSAGE_LENGTH = 4;
-    private final ChunkCodec chunkCodec;
+    private ChunkCodec chunkCodec = null;
     /**
      * Default number of entries per chunk.
      */
@@ -73,7 +73,9 @@ public class MessageChunksWriter {
 
     public MessageChunksWriter(final OutputStream output) {
         this.out = new DataOutputStream(output);
-        chunkCodec = new GZipChunkCodec();
+
+        // chunkCodec = new GZipChunkCodec();
+        // chunkCodec = new AlignmentChunkCodec1();
     }
 
     /**
@@ -243,5 +245,15 @@ public class MessageChunksWriter {
      */
     public int getAppendedInChunk() {
         return numAppended;
+    }
+
+    public void setParser(ProtobuffCollectionHandler protobuffCollectionParser) {
+       /* if (protobuffCollectionParser instanceof AlignmentCollectionHandler) {
+            chunkCodec = new AlignmentChunkCodec1();
+        } else {
+            chunkCodec = new GZipChunkCodec();
+        }*/
+        chunkCodec = new GZipChunkCodec();
+        chunkCodec.setHandler(protobuffCollectionParser);
     }
 }

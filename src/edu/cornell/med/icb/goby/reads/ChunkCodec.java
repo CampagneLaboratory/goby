@@ -18,7 +18,6 @@
 
 package edu.cornell.med.icb.goby.reads;
 
-import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 
 import java.io.ByteArrayOutputStream;
@@ -54,8 +53,8 @@ public interface ChunkCodec {
      */
     ByteArrayOutputStream encode(Message readCollection) throws IOException;
 
-    GeneratedMessage decode(byte[] bytes) throws IOException;
+    Message decode(byte[] bytes) throws IOException;
 
 
-    public void setParser(ProtobuffCollectionParser parser) ;
+    public void setHandler(ProtobuffCollectionHandler parser) ;
 }

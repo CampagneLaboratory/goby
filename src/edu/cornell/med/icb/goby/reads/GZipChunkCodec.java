@@ -18,7 +18,6 @@
 
 package edu.cornell.med.icb.goby.reads;
 
-import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 
 import java.io.ByteArrayInputStream;
@@ -36,10 +35,10 @@ import java.util.zip.GZIPOutputStream;
  */
 public class GZipChunkCodec implements ChunkCodec {
 
-    private ProtobuffCollectionParser parser;
+    private ProtobuffCollectionHandler parser;
 
     @Override
-    public void setParser(final ProtobuffCollectionParser parser) {
+    public void setHandler(final ProtobuffCollectionHandler parser) {
         this.parser = parser;
     }
 
@@ -50,7 +49,7 @@ public class GZipChunkCodec implements ChunkCodec {
 
     @Override
     public byte registrationCode() {
-        return (byte) 0xFF;
+        return  REGISTRATION_CODE;
     }
 
     public static final byte REGISTRATION_CODE = (byte) 0xFF;
@@ -68,7 +67,7 @@ public class GZipChunkCodec implements ChunkCodec {
     }
 
     @Override
-    public GeneratedMessage decode(final byte[] bytes) throws IOException {
+    public Message decode(final byte[] bytes) throws IOException {
         final GZIPInputStream uncompressStream = new GZIPInputStream(new ByteArrayInputStream(bytes));
         try {
             return parser.parse(uncompressStream);
