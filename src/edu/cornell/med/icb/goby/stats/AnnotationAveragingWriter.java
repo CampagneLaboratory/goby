@@ -20,7 +20,9 @@ package edu.cornell.med.icb.goby.stats;
 
 import edu.cornell.med.icb.goby.R.GobyRengine;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.SortedAnnotations;
-import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.*;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.ObservationWriter;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.Stat5StatisticAdaptor;
 import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.algorithmic.data.SamplePairEnumerator;
@@ -63,6 +65,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
             EmpiricalPValueEstimator.LOCAL_DYNAMIC_OPTIONS,
             "annotations:annotation filename:",
             "write-counts:boolean, when true write C and Cm for regions:false",
+            "write-observations:boolean, when true write oservations to disk: false",
             "contexts:string, coma delimited list of contexts for which to evaluate methylation rate. Contexts can be CpG, CpA,CpC,CpT,CpN. Default is CpG only:CpG"
     );
     private String[] groups;
@@ -98,6 +101,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
     private Boolean writeNumSites = true;
     final EmpiricalPValueEstimator empiricalPValueEstimator = new EmpiricalPValueEstimator();
     private final String[] identifiers = new String[5];
+    private Boolean writeObservations;
 
 
     public AnnotationAveragingWriter(OutputInfo outputInfo, MethylCountProvider provider) {
@@ -129,21 +133,23 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
         estimateIntraGroupDifferences = doc.getBoolean("estimate-intra-group-differences");
         estimateIntraGroupP = doc.getBoolean("estimate-empirical-P");
         writeCounts = doc.getBoolean("write-counts");
+        writeObservations = doc.getBoolean("write-observations");
 
         if (estimateIntraGroupDifferences || estimateIntraGroupP) {
             String basename = FilenameUtils.removeExtension(outputInfo.getFilename());
             if (basename == null) {
                 basename = Long.toString(new Date().getTime());
             }
-            String filename = basename + "-" + (estimateIntraGroupDifferences ? "null" : "test") + "-observations.tsv";
-            try {
-                obsWriter = new ObservationWriter(new FileWriter(filename));
-                obsWriter.setHeaderIds(new String[]{"context", "chromosome", "start", "end", "annotation-id"});
-            } catch (IOException e) {
-                LOG.error("Cannot open observation file for writing: " + filename);
+            if (writeObservations) {
+                String filename = basename + "-" + (estimateIntraGroupDifferences ? "null" : "test") + "-observations.tsv";
+                try {
+                    obsWriter = new ObservationWriter(new FileWriter(filename));
+                    obsWriter.setHeaderIds(new String[]{"context", "chromosome", "start", "end", "annotation-id"});
+                } catch (IOException e) {
+                    LOG.error("Cannot open observation file for writing: " + filename);
+                }
+
             }
-        } else {
-            obsWriter = new DummyObservationWriter();
         }
 
         this.provider = provider;
@@ -432,7 +438,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
         return contextIndex;
     }
 
-    private ObservationWriter obsWriter;
+    private ObservationWriter obsWriter = new DummyObservationWriter();
 
     private void buildAnnotationRecordForOutput(String chromosome, int pos, int anno) {
 
@@ -443,14 +449,14 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
 
             StringBuilder lineToOutput = new StringBuilder("");
             try {
-
-                identifiers[0] = "context"; // will be filled below.
-                identifiers[1] = annoOut.getChromosome();
-                identifiers[2] = String.valueOf(annoOut.getStart());
-                identifiers[3] = String.valueOf(annoOut.getEnd());
-                identifiers[4] = annoOut.getId();
-                obsWriter.setElementIds(identifiers);
-
+                if (writeObservations) {
+                    identifiers[0] = "context"; // will be filled below.
+                    identifiers[1] = annoOut.getChromosome();
+                    identifiers[2] = String.valueOf(annoOut.getStart());
+                    identifiers[3] = String.valueOf(annoOut.getEnd());
+                    identifiers[4] = annoOut.getId();
+                    obsWriter.setElementIds(identifiers);
+                }
                 lineToOutput.append(annoOut.getChromosome());
                 lineToOutput.append("\t");
                 lineToOutput.append(String.valueOf(annoOut.getStart()));
@@ -656,7 +662,7 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
         }
         outWriter.close();
         IOUtils.closeQuietly(outputWriter);
-        
+
         if (estimateIntraGroupDifferences) {
             // when estimating intra-group differences, we  serialize the estimator to the output.
             try {

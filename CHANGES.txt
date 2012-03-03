@@ -14,6 +14,7 @@ dev > 1.9.8.4
    currently cannot be loaded remotely. Alignments that require upgrading will also fail to load remotely.
  - vcf methylation format: removed space in name of C and Cm group INFO fields.
  - Add a draft implementation of random access sequence interface that can read a fasta file indexed with faidx.
+ - Introduce chunk codecs for protocol buffer encoded collection messages (supports both reads and alignments).
  - Added the ability in alignment-to-text mode to output HTML (-f html), to start/end at offsets (-s/-e) in the alignments and
    to limit the number of alignment entries to output (-n).
  - The RandomAccessSequenceCache had problems with bases that weren't G/A/T/C/N. Such bases would be skipped silently,

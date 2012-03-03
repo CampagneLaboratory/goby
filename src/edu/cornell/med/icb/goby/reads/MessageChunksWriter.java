@@ -23,13 +23,7 @@ package edu.cornell.med.icb.goby.reads;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.util.zip.GZIPOutputStream;
+import java.io.*;
 
 /**
  * Helper class to write many messages concatenated to a large output file. This helper
@@ -44,10 +38,10 @@ import java.util.zip.GZIPOutputStream;
 public class MessageChunksWriter {
     private static final Log LOG = LogFactory.getLog(MessageChunksWriter.class);
 
-    public static final int DELIMITER_CONTENT = 0xFF;
-    public static final int DELIMITER_LENGTH = 8;
+    public static final byte DELIMITER_CONTENT =(byte) 0xFF;
+    public static final int DELIMITER_LENGTH = 7;
     public static final int SIZE_OF_MESSAGE_LENGTH = 4;
-
+    private final ChunkCodec chunkCodec;
     /**
      * Default number of entries per chunk.
      */
@@ -79,6 +73,7 @@ public class MessageChunksWriter {
 
     public MessageChunksWriter(final OutputStream output) {
         this.out = new DataOutputStream(output);
+        chunkCodec = new GZipChunkCodec();
     }
 
     /**
@@ -146,31 +141,29 @@ public class MessageChunksWriter {
                 LOG.trace("writing zero bytes length=" + DELIMITER_LENGTH);
             }
 
-
+            out.writeByte(chunkCodec.registrationCode());
+            writtenBytes += 1;
             for (int i = 0; i < DELIMITER_LENGTH; i++) {
                 out.writeByte(DELIMITER_CONTENT);
                 writtenBytes += 1;
             }
-            final com.google.protobuf.Message readCollection = collectionBuilder.clone().build();
-
+            final com.google.protobuf.Message protobuffCollection = collectionBuilder.clone().build();
             // compress the read collection:
-            final ByteArrayOutputStream compressedStream = new ByteArrayOutputStream();
-            final OutputStream byteArrayOutputStream = new GZIPOutputStream(compressedStream);
-            readCollection.writeTo(byteArrayOutputStream);
-            byteArrayOutputStream.close();
 
-            final int serializedSize = compressedStream.size();
+            final ByteArrayOutputStream compressedBytes = chunkCodec.encode(protobuffCollection);
+            final int serializedSize = compressedBytes.size();
+
             if (LOG.isTraceEnabled()) {
                 LOG.trace("serialized compressed size: " + serializedSize);
-
             }
 
             // write the compressed size followed by the compressed stream:
             out.writeInt(serializedSize);
             writtenBytes += 4;
-            byte[] bytes = compressedStream.toByteArray();
+            final byte[] bytes = compressedBytes.toByteArray();
             out.write(bytes);
             writtenBytes += bytes.length;
+            compressedBytes.close();
             totalBytesWritten += serializedSize + 4 + DELIMITER_LENGTH;
             if (LOG.isTraceEnabled()) {
                 LOG.trace("current offset: " + totalBytesWritten);
@@ -191,6 +184,8 @@ public class MessageChunksWriter {
     public void close(final com.google.protobuf.GeneratedMessage.Builder collectionBuilder)
             throws IOException {
         flush(collectionBuilder);
+        out.writeByte(chunkCodec.registrationCode());
+        writtenBytes += 1;
         for (int i = 0; i < DELIMITER_LENGTH; i++) {
             out.writeByte(DELIMITER_CONTENT);
             writtenBytes += 1;

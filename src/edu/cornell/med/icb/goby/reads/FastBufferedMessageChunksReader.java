@@ -37,7 +37,7 @@ import java.io.IOException;
  */
 public class FastBufferedMessageChunksReader extends MessageChunksReader {
     private final long end;
-    private FastBufferedInputStream input;
+    private final FastBufferedInputStream input;
 
     /**
      * Support for splitting the entries on the file system.
@@ -80,22 +80,23 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
         input.position(start);
 
         int b;
-        int contiguousZeroBytes = 0;
+        int contiguousDelimiterBytes = 0;
         long skipped = 0;
         long position = 0;
 
         // search though the input stream until a delimiter chunk or end of stream is reached
         while ((b = input.read()) != -1) {
-            if (b == MessageChunksWriter.DELIMITER_CONTENT) {
-                contiguousZeroBytes++;
+            final byte c = (byte) b;
+            if (c == MessageChunksWriter.DELIMITER_CONTENT) {
+                contiguousDelimiterBytes++;
             } else {
-                contiguousZeroBytes = 0;
+                contiguousDelimiterBytes = 0;
             }
             ++skipped;
-            if (contiguousZeroBytes == MessageChunksWriter.DELIMITER_LENGTH) {
+            if (contiguousDelimiterBytes == MessageChunksWriter.DELIMITER_LENGTH) {
                 // a delimiter was found, start reading data from here
                 in = new DataInputStream(input);
-                final long seekPosition = start + skipped - contiguousZeroBytes;
+                final long seekPosition = start + skipped - contiguousDelimiterBytes; // -1 positions  before the codec registration code.
                 input.position(seekPosition);
                 break;
             }
@@ -135,7 +136,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
             }
             return in != null && super.hasNext(collection, collectionSize);
         } else {
-            uncompressStream = null;
+            compressedBytes = null;
         }
 
         return entryIndex < collectionSize;
@@ -153,4 +154,6 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
     public long position() throws IOException {
         return input.position();
     }
+
+
 }

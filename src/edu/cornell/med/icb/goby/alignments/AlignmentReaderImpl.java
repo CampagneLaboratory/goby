@@ -22,13 +22,13 @@ package edu.cornell.med.icb.goby.alignments;
 
 import com.google.protobuf.CodedInputStream;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
+import edu.cornell.med.icb.goby.reads.ChunkCodec;
 import edu.cornell.med.icb.goby.reads.FastBufferedMessageChunksReader;
 import edu.cornell.med.icb.goby.util.CodecHelper;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
-import it.unimi.dsi.fastutil.io.RepositionableStream;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
@@ -38,9 +38,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import javax.management.RuntimeErrorException;
 import java.io.*;
-import java.net.*;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -213,6 +211,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
         alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset > 0 ? startOffset : 0,
                 endOffset > 0 ? endOffset : Long.MAX_VALUE,
                 new FastBufferedInputStream(stream));
+        alignmentEntryReader.setParser(new AlignmentCollectionParser());
         LOG.trace("start offset :" + startOffset + " end offset " + endOffset);
 
         stats = new Properties();
@@ -267,6 +266,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             final InputStream stream = new RepositionableInputStream(entriesFile);
 
             alignmentEntryReader = new FastBufferedMessageChunksReader(startOffset, endOffset, new FastBufferedInputStream(stream));
+            alignmentEntryReader.setParser(new AlignmentCollectionParser());
         } else {
             alignmentEntryReader = null;
         }
@@ -325,6 +325,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     public AlignmentReaderImpl(final InputStream entriesStream) throws IOException {
         super(true, null);
         alignmentEntryReader = new FastBufferedMessageChunksReader(0, Long.MAX_VALUE, new FastBufferedInputStream(entriesStream));
+        alignmentEntryReader.setParser(new AlignmentCollectionParser());
     }
 
     /**
@@ -341,6 +342,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             throws IOException {
         super(true, null);
         alignmentEntryReader = new FastBufferedMessageChunksReader(start, end, stream);
+        alignmentEntryReader.setParser(new AlignmentCollectionParser());
     }
 
     private int numberOfEntries() {
@@ -445,10 +447,11 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             collection = null;
             final boolean hasNext = alignmentEntryReader.hasNext(collection, numberOfEntries());
 
-            final GZIPInputStream uncompressStream = alignmentEntryReader.getUncompressStream();
+            final ChunkCodec codec= alignmentEntryReader.getChunkCodec();
             try {
-                if (uncompressStream != null) {
-                    collection = Alignments.AlignmentCollection.parseFrom(uncompressStream);
+               final  byte[] compressedBytes=alignmentEntryReader.getCompressedBytes();
+                if (compressedBytes != null) {
+                    collection = (Alignments.AlignmentCollection) codec.decode(compressedBytes);
                     if (collection.getAlignmentEntriesCount() == 0) {
                         return false;
                     }

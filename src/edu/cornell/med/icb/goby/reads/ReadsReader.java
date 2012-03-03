@@ -21,7 +21,6 @@
 package edu.cornell.med.icb.goby.reads;
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.CodedInputStream;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import edu.cornell.med.icb.goby.util.CodecHelper;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
@@ -30,7 +29,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.Closeable;
@@ -40,7 +38,6 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Properties;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Reads sequences in the compact format from a stream produced with MessageChunkWriter.
@@ -83,7 +80,8 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
     public ReadsReader(final InputStream stream) {
         super();
         reader = new MessageChunksReader(stream);
-        codec=null;
+        reader.setParser(new ReadProtobuffCollectionParser());
+        codec = null;
     }
 
     /**
@@ -114,6 +112,7 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
             throws IOException {
         super();
         reader = new FastBufferedMessageChunksReader(start, end, stream);
+        reader.setParser(new ReadProtobuffCollectionParser());
     }
 
     /**
@@ -124,13 +123,13 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
     public boolean hasNext() {
         final boolean hasNext =
                 reader.hasNext(collection, collection != null ? collection.getReadsCount() : 0);
-        final GZIPInputStream uncompressStream = reader.getUncompressStream();
+        final byte[] compressedBytes = reader.getCompressedBytes();
+        final ChunkCodec chunkCodec=reader.getChunkCodec();
         try {
-            if (uncompressStream != null) {
-                final CodedInputStream codedInput = CodedInputStream.newInstance(uncompressStream);
-                codedInput.setSizeLimit(Integer.MAX_VALUE);
-                collection = Reads.ReadCollection.parseFrom(codedInput);
-                if (codec!=null) {
+            if (compressedBytes != null) {
+
+                collection = (Reads.ReadCollection) chunkCodec.decode(compressedBytes);
+                if (codec != null) {
                     codec.newChunk();
                 }
                 if (collection.getReadsCount() == 0) {
@@ -139,8 +138,6 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
             }
         } catch (IOException e) {
             throw new GobyRuntimeException(e);
-        } finally {
-            IOUtils.closeQuietly(uncompressStream);
         }
         return hasNext;
     }
@@ -156,10 +153,10 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
             throw new NoSuchElementException();
         }
         final Reads.ReadEntry readEntry = collection.getReads(reader.incrementEntryIndex());
-        if (readEntry.hasCompressedData() && codec==null) {
-            codec=CodecHelper.locateReadCodec(readEntry.getCompressedData());
-            if (codec!=null) {
-                System.out.println("Using codec: "+codec.name());
+        if (readEntry.hasCompressedData() && codec == null) {
+            codec = CodecHelper.locateReadCodec(readEntry.getCompressedData());
+            if (codec != null) {
+                System.out.println("Using codec: " + codec.name());
             }
 
         }
@@ -171,11 +168,11 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
             }
             first = false;
         }
-        if (codec!=null) {
+        if (codec != null) {
             final Reads.ReadEntry.Builder result = codec.decode(readEntry);
-            if (result!=null) {
+            if (result != null) {
                 // the codec was able to decode compressed data.
-                return  result.build();
+                return result.build();
             }
         }
         return readEntry;

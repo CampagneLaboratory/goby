@@ -25,17 +25,13 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Fabien Campagne
@@ -91,6 +87,7 @@ public class TestReadWriteAlignments {
                 new AlignmentReaderImpl(FilenameUtils.concat(BASE_TEST_DIR, "align-101"));
         int maxQueryIndex = -1;
         int maxTargetIndex = -1;
+        reader.readHeader();
         while (reader.hasNext()) {
             final Alignments.AlignmentEntry alignmentEntry = reader.next();
             assert alignmentEntry.hasPosition();

@@ -123,22 +123,20 @@ public abstract class AbstractMethylationAdapter implements StatisticAdaptor {
 
     public void setObservationWriter(ObservationWriter obsWriter) {
         this.obsWriter = obsWriter;
-
+       if (obsWriter!=null) {
         obsWriter.writeHeader(new String[]{"Cma", "Ca"}, new String[]{"Cmb", "Cb"}, zero, zero);
+       }
     }
 
     void recordObservation(int cma, int ca, int cmb, int cb) {
         if (obsWriter != null) {
-
 
             valuesA.add(cma);
             valuesA.add(ca);
             valuesB.add(cmb);
             valuesB.add(cb);
             obsWriter.observed(valuesA, valuesB, covariatesA, covariatesB);
-
         }
-
     }
 
     private final int[] COVARIATES = new int[1];
