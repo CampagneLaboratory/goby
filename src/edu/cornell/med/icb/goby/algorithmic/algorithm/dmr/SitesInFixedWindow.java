@@ -61,20 +61,20 @@ public class SitesInFixedWindow {
      * @param position       position of the site where the window should be moved.
      */
     public void prune(final int referenceIndex, final int position) {
-       int size=n();
+        int size = n();
         if (size == 0) {
             return;
         }
         int pruneIndex = 0;
-        int i=0;
+        int i = 0;
 
-        while (i<size && outsideOfWindow(refIndices.getInt(i), positions.getInt(i), referenceIndex, position) ) {
+        while (i < size && outsideOfWindow(refIndices.getInt(i), positions.getInt(i), referenceIndex, position)) {
             pruneIndex++;
-            i++ ;
+            i++;
         }
-        if (pruneIndex>0) {
-        refIndices.removeElements(0, pruneIndex);
-        positions.removeElements(0, pruneIndex);
+        if (pruneIndex > 0) {
+            refIndices.removeElements(0, pruneIndex);
+            positions.removeElements(0, pruneIndex);
         }
     }
 
