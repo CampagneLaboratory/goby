@@ -23,7 +23,7 @@ dev > 1.9.8.4
    the offending character. Now bases other than G/A/T/C are stored as N and maintain the position of the following
    bases. Please note that the problem was in a library used by RandomAccessSequenceCache, we updated the library in
    this release, and no change to the code of RandomAccessSequenceCache was needed to fix the problem.
-
+ - last-to-compact: add option to substitute some bases with others in the aligned read.
  - Fixed a bug related aligning Paired-End with Gsnap.
 1.9.8.3.1
  - Fix a bug related to writing paired end alignments in the Gsnap parser (C API)
