@@ -27,7 +27,7 @@ message AlignmentEntry {
     alignment runs are made with the same set of query sequences, equality of query index means that the query
     sequences were the same. (Comparing integers for equality is much faster than comparing strings.)
   */
-  required uint32 query_index =1;
+  optional uint32 query_index =1;
   /* An integer that uniquely identifies the target (e.g., a chromosome) in a set of alignment runs. When several
     alignment runs are made with the same set of target sequences, equality of target index means that the target
     sequence was the same across the runs. (Comparing integers for equality is much faster than comparing strings.)
@@ -223,17 +223,17 @@ message SequenceVariation {
   /* The reference bases. Can include one or more gap characters '-', to indicate that the reference sequence has
      no base at this alignment position.
     */
-  required string from=2;
+  optional string from=2;
   /* The read bases that differ from the reference sequence.  Can include one or more gap characters '-', to indicate
      that the query sequence has no base at this alignment position.
     */
-  required string to=1;
+  optional string to=1;
   /*
     The position of the variation on the read, as if the read always matched on the forward strand.
     Adding position to the index where the reference starts aligning the read yields the position of the variation
     in reference/target sequence space. Since position starts at one the resulting position will also be one based.
     */
-  required uint32 position=3;
+  optional uint32 position=3;
     /*
     The position of the variation, starting from the beginning of the aligned read (position 1), and up to the length
     of the read (inclusive). Use this index if you need to know  how far the variation is observed from the beginning
@@ -242,7 +242,7 @@ message SequenceVariation {
     When the read has a deletion, read_index records the position in the read after which the bases that would align
     in the reference are missing (these bases are in the from field).
     */
-  required uint32 read_index=5;
+  optional uint32 read_index=5;
 
   /**
     The read base quality scores for those bases that are given in the to field. This field

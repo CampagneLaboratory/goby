@@ -19,6 +19,8 @@
 package edu.cornell.med.icb.goby.reads;
 
 import com.google.protobuf.Message;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
 
@@ -28,6 +30,8 @@ import java.io.*;
  *         Time: 2:35 PM
  */
 public class AlignmentChunkCodec1 implements ChunkCodec {
+    private boolean debug = false;
+
     @Override
     public String name() {
         return "alignment1";
@@ -42,6 +46,11 @@ public class AlignmentChunkCodec1 implements ChunkCodec {
         return REGISTRATION_CODE;
     }
 
+    /**
+     * Used to log informational and debug messages.
+     */
+    private static final Log LOG = LogFactory.getLog(AlignmentChunkCodec1.class);
+
     @Override
     public ByteArrayOutputStream encode(final Message readCollection) throws IOException {
         if (readCollection == null) {
@@ -53,12 +62,27 @@ public class AlignmentChunkCodec1 implements ChunkCodec {
         final ByteArrayOutputStream compressedBits = new ByteArrayOutputStream();
         final Message reducedProtoBuff = handler.compressCollection(readCollection, compressedBits);
 
-        completeChunkData.writeInt(compressedBits.size());
+        final int compressedBitSize = compressedBits.size();
+        completeChunkData.writeInt(compressedBitSize);
         completeChunkData.write(compressedBits.toByteArray());
+
         final ByteArrayOutputStream out = gzipCodec.encode(reducedProtoBuff);
 
-        completeChunkData.write(out.toByteArray());
+        final byte[] gzipBytes = out.toByteArray();
+        int gzipBytesSize = gzipBytes.length;
+        completeChunkData.write(gzipBytes);
         completeChunkData.flush();
+        if (debug) {
+
+            //TODO remove compression of original collection. Only useful for stat collection
+            int originalGzipSize = gzipCodec.encode(readCollection).toByteArray().length;
+
+            final int gain = originalGzipSize - (gzipBytesSize + compressedBitSize);
+            LOG.info(String.format("compressed size=%d gzip size=%d (original gzip=%d) percent compressed/(compressed+gzip) %g gain=%d, %g%% ",
+                    compressedBitSize, gzipBytesSize, originalGzipSize,
+                    100d * ((double) compressedBitSize) / (compressedBitSize + gzipBytesSize),
+                    gain, gain * 100d / originalGzipSize));
+        }
         return result;
     }
 
@@ -69,10 +93,10 @@ public class AlignmentChunkCodec1 implements ChunkCodec {
         final byte[] compressedBytes = new byte[compressedSize];
         final int read = completeChunkData.read(compressedBytes, 0, compressedSize);
         assert read == compressedSize : "read size must match recorded size.";
-        final int bytesLeft = bytes.length -4 - compressedSize;
+        final int bytesLeft = bytes.length - 4 - compressedSize;
         final byte[] leftOver = new byte[bytesLeft];
         // 4 is the number of bytes to encode the length of the compressed chunk.
-        System.arraycopy(bytes, 4+compressedSize, leftOver, 0, bytesLeft);
+        System.arraycopy(bytes, 4 + compressedSize, leftOver, 0, bytesLeft);
         final Message reducedProtoBuff = gzipCodec.decode(leftOver);
         return handler.decompressCollection(reducedProtoBuff, compressedBytes);
     }

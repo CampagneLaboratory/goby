@@ -56,4 +56,36 @@ public class TestAlignmentChunkCodec1 {
         assertNotNull(encoded);
        // assertEquals(collectionBuilder.getAlignmentEntriesCount(), encoded.);
     }
+     @Test
+    public void testMore() throws IOException {
+        final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
+        codec.setHandler(new AlignmentCollectionHandler());
+        final AlignmentReader reader = new AlignmentReaderImpl("test-data/seq-var-test/kevin-synth/sorted-seq-var-reads-gsnap.entries");
+        final Alignments.AlignmentCollection.Builder collectionBuilder = Alignments.AlignmentCollection.newBuilder();
+        for (Alignments.AlignmentEntry entry : reader) {
+            collectionBuilder.addAlignmentEntries(entry);
+        }
+
+        final ByteArrayOutputStream encoded = codec.encode(collectionBuilder.build());
+        assertNotNull(encoded);
+       // assertEquals(collectionBuilder.getAlignmentEntriesCount(), encoded.);
+    }
+    // @Test
+    public void testLarge() throws IOException {
+        final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
+        codec.setHandler(new AlignmentCollectionHandler());
+        final AlignmentReader reader = new AlignmentReaderImpl("/data/rrbs/AJPBRWE.entries");
+        final Alignments.AlignmentCollection.Builder collectionBuilder = Alignments.AlignmentCollection.newBuilder();
+       int i=0;
+        for (Alignments.AlignmentEntry entry : reader) {
+            collectionBuilder.addAlignmentEntries(entry);
+            if (i++>10000) {
+                break;
+            }
+        }
+
+        final ByteArrayOutputStream encoded = codec.encode(collectionBuilder.build());
+        assertNotNull(encoded);
+       // assertEquals(collectionBuilder.getAlignmentEntriesCount(), encoded.);
+    }
 }

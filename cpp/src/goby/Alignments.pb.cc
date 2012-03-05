@@ -327,7 +327,7 @@ void protobuf_AddDesc_Alignments_2eproto() {
     "lection\022/\n\021alignment_entries\030\001 \003(\0132\024.gob"
     "y.AlignmentEntry\"\321\005\n\016AlignmentEntry\022\024\n\014m"
     "ultiplicity\030\007 \001(\r\022\027\n\017compressed_data\030\027 \001"
-    "(\014\022\023\n\013query_index\030\001 \002(\r\022\024\n\014target_index\030"
+    "(\014\022\023\n\013query_index\030\001 \001(\r\022\024\n\014target_index\030"
     "\002 \001(\r\022\020\n\010position\030\003 \001(\r\022\037\n\027matching_reve"
     "rse_strand\030\006 \001(\010\022\026\n\016query_position\030\005 \001(\r"
     "\022\r\n\005score\030\004 \001(\002\022\034\n\024number_of_mismatches\030"
@@ -346,8 +346,8 @@ void protobuf_AddDesc_Alignments_2eproto() {
     "\n\014sample_index\030\025 \001(\r\"W\n\025RelatedAlignment"
     "Entry\022\024\n\014target_index\030\001 \002(\r\022\020\n\010position\030"
     "\002 \002(\r\022\026\n\016fragment_index\030\003 \002(\r\"g\n\021Sequenc"
-    "eVariation\022\014\n\004from\030\002 \002(\t\022\n\n\002to\030\001 \002(\t\022\020\n\010"
-    "position\030\003 \002(\r\022\022\n\nread_index\030\005 \002(\r\022\022\n\nto"
+    "eVariation\022\014\n\004from\030\002 \001(\t\022\n\n\002to\030\001 \001(\t\022\020\n\010"
+    "position\030\003 \001(\r\022\022\n\nread_index\030\005 \001(\r\022\022\n\nto"
     "_quality\030\004 \001(\014\"\215\004\n\017AlignmentHeader\022\"\n\032sm"
     "allest_split_query_index\030\t \001(\r\022!\n\031larges"
     "t_split_query_index\030\013 \001(\r\0223\n\022query_name_"
@@ -768,7 +768,7 @@ bool AlignmentEntry::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // required uint32 query_index = 1;
+      // optional uint32 query_index = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
@@ -1144,7 +1144,7 @@ bool AlignmentEntry::MergePartialFromCodedStream(
 
 void AlignmentEntry::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // required uint32 query_index = 1;
+  // optional uint32 query_index = 1;
   if (has_query_index()) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->query_index(), output);
   }
@@ -1272,7 +1272,7 @@ void AlignmentEntry::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* AlignmentEntry::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // required uint32 query_index = 1;
+  // optional uint32 query_index = 1;
   if (has_query_index()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->query_index(), target);
   }
@@ -1422,7 +1422,7 @@ int AlignmentEntry::ByteSize() const {
           this->compressed_data());
     }
     
-    // required uint32 query_index = 1;
+    // optional uint32 query_index = 1;
     if (has_query_index()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
@@ -1685,11 +1685,7 @@ void AlignmentEntry::CopyFrom(const AlignmentEntry& from) {
 }
 
 bool AlignmentEntry::IsInitialized() const {
-  if ((_has_bits_[0] & 0x00000004) != 0x00000004) return false;
   
-  for (int i = 0; i < sequence_variations_size(); i++) {
-    if (!this->sequence_variations(i).IsInitialized()) return false;
-  }
   if (has_pair_alignment_link()) {
     if (!this->pair_alignment_link().IsInitialized()) return false;
   }
@@ -2132,7 +2128,7 @@ bool SequenceVariation::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // required string to = 1;
+      // optional string to = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -2148,7 +2144,7 @@ bool SequenceVariation::MergePartialFromCodedStream(
         break;
       }
       
-      // required string from = 2;
+      // optional string from = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -2165,7 +2161,7 @@ bool SequenceVariation::MergePartialFromCodedStream(
         break;
       }
       
-      // required uint32 position = 3;
+      // optional uint32 position = 3;
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
@@ -2195,7 +2191,7 @@ bool SequenceVariation::MergePartialFromCodedStream(
         break;
       }
       
-      // required uint32 read_index = 5;
+      // optional uint32 read_index = 5;
       case 5: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
@@ -2229,7 +2225,7 @@ bool SequenceVariation::MergePartialFromCodedStream(
 
 void SequenceVariation::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // required string to = 1;
+  // optional string to = 1;
   if (has_to()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->to().data(), this->to().length(),
@@ -2238,7 +2234,7 @@ void SequenceVariation::SerializeWithCachedSizes(
       1, this->to(), output);
   }
   
-  // required string from = 2;
+  // optional string from = 2;
   if (has_from()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->from().data(), this->from().length(),
@@ -2247,7 +2243,7 @@ void SequenceVariation::SerializeWithCachedSizes(
       2, this->from(), output);
   }
   
-  // required uint32 position = 3;
+  // optional uint32 position = 3;
   if (has_position()) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->position(), output);
   }
@@ -2258,7 +2254,7 @@ void SequenceVariation::SerializeWithCachedSizes(
       4, this->to_quality(), output);
   }
   
-  // required uint32 read_index = 5;
+  // optional uint32 read_index = 5;
   if (has_read_index()) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(5, this->read_index(), output);
   }
@@ -2271,7 +2267,7 @@ void SequenceVariation::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* SequenceVariation::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // required string to = 1;
+  // optional string to = 1;
   if (has_to()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->to().data(), this->to().length(),
@@ -2281,7 +2277,7 @@ void SequenceVariation::SerializeWithCachedSizes(
         1, this->to(), target);
   }
   
-  // required string from = 2;
+  // optional string from = 2;
   if (has_from()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->from().data(), this->from().length(),
@@ -2291,7 +2287,7 @@ void SequenceVariation::SerializeWithCachedSizes(
         2, this->from(), target);
   }
   
-  // required uint32 position = 3;
+  // optional uint32 position = 3;
   if (has_position()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->position(), target);
   }
@@ -2303,7 +2299,7 @@ void SequenceVariation::SerializeWithCachedSizes(
         4, this->to_quality(), target);
   }
   
-  // required uint32 read_index = 5;
+  // optional uint32 read_index = 5;
   if (has_read_index()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(5, this->read_index(), target);
   }
@@ -2319,28 +2315,28 @@ int SequenceVariation::ByteSize() const {
   int total_size = 0;
   
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required string from = 2;
+    // optional string from = 2;
     if (has_from()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->from());
     }
     
-    // required string to = 1;
+    // optional string to = 1;
     if (has_to()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->to());
     }
     
-    // required uint32 position = 3;
+    // optional uint32 position = 3;
     if (has_position()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
           this->position());
     }
     
-    // required uint32 read_index = 5;
+    // optional uint32 read_index = 5;
     if (has_read_index()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
@@ -2413,7 +2409,6 @@ void SequenceVariation::CopyFrom(const SequenceVariation& from) {
 }
 
 bool SequenceVariation::IsInitialized() const {
-  if ((_has_bits_[0] & 0x0000000f) != 0x0000000f) return false;
   
   return true;
 }

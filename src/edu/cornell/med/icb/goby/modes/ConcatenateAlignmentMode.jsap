@@ -79,5 +79,12 @@
             <required>false</required>
             <help>The name of a codec. When provided, the coded is used to compress alignment entries.</help>
         </flaggedOption>
+         <flaggedOption>
+            <id>dynamic-options</id>
+            <shortFlag>x</shortFlag>
+            <required>false</required>
+            <allowMultipleDeclarations>true</allowMultipleDeclarations>
+            <help>Set a dynamic option, in the format classname:key=value. Classname is the the name of the class that exposes the option (without short class name without package), key identifies the option to change and value is the new value for the option. </help>
+        </flaggedOption>
     </parameters>
 </jsap>

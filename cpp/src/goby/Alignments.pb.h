@@ -202,7 +202,7 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::std::string* mutable_compressed_data();
   inline ::std::string* release_compressed_data();
   
-  // required uint32 query_index = 1;
+  // optional uint32 query_index = 1;
   inline bool has_query_index() const;
   inline void clear_query_index();
   static const int kQueryIndexFieldNumber = 1;
@@ -598,7 +598,7 @@ class SequenceVariation : public ::google::protobuf::Message {
   
   // accessors -------------------------------------------------------
   
-  // required string from = 2;
+  // optional string from = 2;
   inline bool has_from() const;
   inline void clear_from();
   static const int kFromFieldNumber = 2;
@@ -609,7 +609,7 @@ class SequenceVariation : public ::google::protobuf::Message {
   inline ::std::string* mutable_from();
   inline ::std::string* release_from();
   
-  // required string to = 1;
+  // optional string to = 1;
   inline bool has_to() const;
   inline void clear_to();
   static const int kToFieldNumber = 1;
@@ -620,14 +620,14 @@ class SequenceVariation : public ::google::protobuf::Message {
   inline ::std::string* mutable_to();
   inline ::std::string* release_to();
   
-  // required uint32 position = 3;
+  // optional uint32 position = 3;
   inline bool has_position() const;
   inline void clear_position();
   static const int kPositionFieldNumber = 3;
   inline ::google::protobuf::uint32 position() const;
   inline void set_position(::google::protobuf::uint32 value);
   
-  // required uint32 read_index = 5;
+  // optional uint32 read_index = 5;
   inline bool has_read_index() const;
   inline void clear_read_index();
   static const int kReadIndexFieldNumber = 5;
@@ -1553,7 +1553,7 @@ inline ::std::string* AlignmentEntry::release_compressed_data() {
   }
 }
 
-// required uint32 query_index = 1;
+// optional uint32 query_index = 1;
 inline bool AlignmentEntry::has_query_index() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -2113,7 +2113,7 @@ inline void RelatedAlignmentEntry::set_fragment_index(::google::protobuf::uint32
 
 // SequenceVariation
 
-// required string from = 2;
+// optional string from = 2;
 inline bool SequenceVariation::has_from() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -2171,7 +2171,7 @@ inline ::std::string* SequenceVariation::release_from() {
   }
 }
 
-// required string to = 1;
+// optional string to = 1;
 inline bool SequenceVariation::has_to() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -2229,7 +2229,7 @@ inline ::std::string* SequenceVariation::release_to() {
   }
 }
 
-// required uint32 position = 3;
+// optional uint32 position = 3;
 inline bool SequenceVariation::has_position() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -2251,7 +2251,7 @@ inline void SequenceVariation::set_position(::google::protobuf::uint32 value) {
   position_ = value;
 }
 
-// required uint32 read_index = 5;
+// optional uint32 read_index = 5;
 inline bool SequenceVariation::has_read_index() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }

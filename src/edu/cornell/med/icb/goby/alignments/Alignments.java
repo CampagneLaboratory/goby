@@ -582,7 +582,7 @@ public final class Alignments {
     boolean hasCompressedData();
     com.google.protobuf.ByteString getCompressedData();
     
-    // required uint32 query_index = 1;
+    // optional uint32 query_index = 1;
     boolean hasQueryIndex();
     int getQueryIndex();
     
@@ -724,7 +724,7 @@ public final class Alignments {
       return compressedData_;
     }
     
-    // required uint32 query_index = 1;
+    // optional uint32 query_index = 1;
     public static final int QUERY_INDEX_FIELD_NUMBER = 1;
     private int queryIndex_;
     public boolean hasQueryIndex() {
@@ -984,16 +984,6 @@ public final class Alignments {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
       
-      if (!hasQueryIndex()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      for (int i = 0; i < getSequenceVariationsCount(); i++) {
-        if (!getSequenceVariations(i).isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
       if (hasPairAlignmentLink()) {
         if (!getPairAlignmentLink().isInitialized()) {
           memoizedIsInitialized = 0;
@@ -1639,16 +1629,6 @@ public final class Alignments {
       }
       
       public final boolean isInitialized() {
-        if (!hasQueryIndex()) {
-          
-          return false;
-        }
-        for (int i = 0; i < getSequenceVariationsCount(); i++) {
-          if (!getSequenceVariations(i).isInitialized()) {
-            
-            return false;
-          }
-        }
         if (hasPairAlignmentLink()) {
           if (!getPairAlignmentLink().isInitialized()) {
             
@@ -1872,7 +1852,7 @@ public final class Alignments {
         return this;
       }
       
-      // required uint32 query_index = 1;
+      // optional uint32 query_index = 1;
       private int queryIndex_ ;
       public boolean hasQueryIndex() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
@@ -3175,19 +3155,19 @@ public final class Alignments {
   public interface SequenceVariationOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
     
-    // required string from = 2;
+    // optional string from = 2;
     boolean hasFrom();
     String getFrom();
     
-    // required string to = 1;
+    // optional string to = 1;
     boolean hasTo();
     String getTo();
     
-    // required uint32 position = 3;
+    // optional uint32 position = 3;
     boolean hasPosition();
     int getPosition();
     
-    // required uint32 read_index = 5;
+    // optional uint32 read_index = 5;
     boolean hasReadIndex();
     int getReadIndex();
     
@@ -3224,7 +3204,7 @@ public final class Alignments {
     }
     
     private int bitField0_;
-    // required string from = 2;
+    // optional string from = 2;
     public static final int FROM_FIELD_NUMBER = 2;
     private java.lang.Object from_;
     public boolean hasFrom() {
@@ -3256,7 +3236,7 @@ public final class Alignments {
       }
     }
     
-    // required string to = 1;
+    // optional string to = 1;
     public static final int TO_FIELD_NUMBER = 1;
     private java.lang.Object to_;
     public boolean hasTo() {
@@ -3288,7 +3268,7 @@ public final class Alignments {
       }
     }
     
-    // required uint32 position = 3;
+    // optional uint32 position = 3;
     public static final int POSITION_FIELD_NUMBER = 3;
     private int position_;
     public boolean hasPosition() {
@@ -3298,7 +3278,7 @@ public final class Alignments {
       return position_;
     }
     
-    // required uint32 read_index = 5;
+    // optional uint32 read_index = 5;
     public static final int READ_INDEX_FIELD_NUMBER = 5;
     private int readIndex_;
     public boolean hasReadIndex() {
@@ -3330,22 +3310,6 @@ public final class Alignments {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
       
-      if (!hasFrom()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasTo()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasPosition()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasReadIndex()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -3625,22 +3589,6 @@ public final class Alignments {
       }
       
       public final boolean isInitialized() {
-        if (!hasFrom()) {
-          
-          return false;
-        }
-        if (!hasTo()) {
-          
-          return false;
-        }
-        if (!hasPosition()) {
-          
-          return false;
-        }
-        if (!hasReadIndex()) {
-          
-          return false;
-        }
         return true;
       }
       
@@ -3698,7 +3646,7 @@ public final class Alignments {
       
       private int bitField0_;
       
-      // required string from = 2;
+      // optional string from = 2;
       private java.lang.Object from_ = "";
       public boolean hasFrom() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
@@ -3734,7 +3682,7 @@ public final class Alignments {
         onChanged();
       }
       
-      // required string to = 1;
+      // optional string to = 1;
       private java.lang.Object to_ = "";
       public boolean hasTo() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
@@ -3770,7 +3718,7 @@ public final class Alignments {
         onChanged();
       }
       
-      // required uint32 position = 3;
+      // optional uint32 position = 3;
       private int position_ ;
       public boolean hasPosition() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
@@ -3791,7 +3739,7 @@ public final class Alignments {
         return this;
       }
       
-      // required uint32 read_index = 5;
+      // optional uint32 read_index = 5;
       private int readIndex_ ;
       public boolean hasReadIndex() {
         return ((bitField0_ & 0x00000008) == 0x00000008);
@@ -8365,7 +8313,7 @@ public final class Alignments {
       "lection\022/\n\021alignment_entries\030\001 \003(\0132\024.gob" +
       "y.AlignmentEntry\"\321\005\n\016AlignmentEntry\022\024\n\014m" +
       "ultiplicity\030\007 \001(\r\022\027\n\017compressed_data\030\027 \001" +
-      "(\014\022\023\n\013query_index\030\001 \002(\r\022\024\n\014target_index\030" +
+      "(\014\022\023\n\013query_index\030\001 \001(\r\022\024\n\014target_index\030" +
       "\002 \001(\r\022\020\n\010position\030\003 \001(\r\022\037\n\027matching_reve" +
       "rse_strand\030\006 \001(\010\022\026\n\016query_position\030\005 \001(\r" +
       "\022\r\n\005score\030\004 \001(\002\022\034\n\024number_of_mismatches\030" +
@@ -8384,8 +8332,8 @@ public final class Alignments {
       "\n\014sample_index\030\025 \001(\r\"W\n\025RelatedAlignment" +
       "Entry\022\024\n\014target_index\030\001 \002(\r\022\020\n\010position\030" +
       "\002 \002(\r\022\026\n\016fragment_index\030\003 \002(\r\"g\n\021Sequenc" +
-      "eVariation\022\014\n\004from\030\002 \002(\t\022\n\n\002to\030\001 \002(\t\022\020\n\010" +
-      "position\030\003 \002(\r\022\022\n\nread_index\030\005 \002(\r\022\022\n\nto" +
+      "eVariation\022\014\n\004from\030\002 \001(\t\022\n\n\002to\030\001 \001(\t\022\020\n\010" +
+      "position\030\003 \001(\r\022\022\n\nread_index\030\005 \001(\r\022\022\n\nto" +
       "_quality\030\004 \001(\014\"\215\004\n\017AlignmentHeader\022\"\n\032sm" +
       "allest_split_query_index\030\t \001(\r\022!\n\031larges" +
       "t_split_query_index\030\013 \001(\r\0223\n\022query_name_" +

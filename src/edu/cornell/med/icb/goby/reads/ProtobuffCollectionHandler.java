@@ -47,5 +47,5 @@ public interface ProtobuffCollectionHandler {
 
     Message compressCollection(Message readCollection, ByteArrayOutputStream compressedBits) throws IOException;
 
-    Message decompressCollection(Message reducedProtoBuff, byte[] compressedBytes);
+    Message decompressCollection(Message reducedProtoBuff, byte[] compressedBytes) throws IOException;
 }

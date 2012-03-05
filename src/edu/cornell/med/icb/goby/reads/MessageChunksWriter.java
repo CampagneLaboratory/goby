@@ -20,6 +20,8 @@
 
 package edu.cornell.med.icb.goby.reads;
 
+import edu.cornell.med.icb.goby.alignments.AlignmentCollectionHandler;
+import edu.cornell.med.icb.goby.util.DynamicOptionClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -61,6 +63,11 @@ public class MessageChunksWriter {
     private long totalBytesWritten;
     private long currentChunkStartOffset;
     private long writtenBytes = 0;
+    private final boolean compressingCodec;
+    public static DynamicOptionClient doc = new DynamicOptionClient(MessageChunksWriter.class,
+            "compressing-codec:boolean, when true compress protocol buffers with new chunk codec.:false",
+            "chunk-size:integer, the number of entries per chunk. :10000");
+
 
     /**
      * Specify the maximum number of entries to store in any given chunk.
@@ -73,9 +80,8 @@ public class MessageChunksWriter {
 
     public MessageChunksWriter(final OutputStream output) {
         this.out = new DataOutputStream(output);
-
-        // chunkCodec = new GZipChunkCodec();
-        // chunkCodec = new AlignmentChunkCodec1();
+        compressingCodec = doc.getBoolean("compressing-codec");
+        numEntriesPerChunk=doc.getInteger("chunk-size");
     }
 
     /**
@@ -248,12 +254,14 @@ public class MessageChunksWriter {
     }
 
     public void setParser(ProtobuffCollectionHandler protobuffCollectionParser) {
-       /* if (protobuffCollectionParser instanceof AlignmentCollectionHandler) {
-            chunkCodec = new AlignmentChunkCodec1();
+        if (protobuffCollectionParser instanceof AlignmentCollectionHandler) {
+
+            chunkCodec = compressingCodec ? new AlignmentChunkCodec1() : new GZipChunkCodec();
         } else {
             chunkCodec = new GZipChunkCodec();
-        }*/
-        chunkCodec = new GZipChunkCodec();
+        }
+        System.out.println("Using handler: " + chunkCodec.getClass().getName());
+        //     chunkCodec = new GZipChunkCodec();
         chunkCodec.setHandler(protobuffCollectionParser);
     }
 }

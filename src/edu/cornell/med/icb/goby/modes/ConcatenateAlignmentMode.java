@@ -23,7 +23,10 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.aligners.AbstractAligner;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.alignments.processors.*;
+import edu.cornell.med.icb.goby.reads.MessageChunksWriter;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
+import edu.cornell.med.icb.goby.util.DynamicOptionClient;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -134,13 +137,33 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
         inputFilenames = jsapResult.getStringArray("input");
+        final String[] dymamicOptions =  jsapResult.getStringArray("dynamic-options");
+        ObjectArrayList<DynamicOptionClient> registeredDOClients = new ObjectArrayList<DynamicOptionClient>();
+        registeredDOClients.add(MessageChunksWriter.doc);
+        for (final String dymamicOption : dymamicOptions) {
+            boolean parsed = false;
+
+            for (final DynamicOptionClient doc : registeredDOClients) {
+
+                if (doc.acceptsOption(dymamicOption)) {
+
+                    parsed = true;
+                    break;
+
+                }
+            }
+            if (!parsed) {
+                System.err.println("Error: none of the installed tools could parse dynamic option: " + dymamicOption);
+                System.exit(1);
+            }
+        }
 
         outputFile = jsapResult.getString("output");
         adjustQueryIndices = jsapResult.getBoolean("adjust-query-indices", true);
         adjustSampleIndices = jsapResult.getBoolean("adjust-sample-indices", false);
         alignmentProcessorFactory = DiscoverSequenceVariantsMode.configureProcessor(jsapResult);
         genome = DiscoverSequenceVariantsMode.configureGenome(jsapResult);
-        String codecName = jsapResult.getString("codec", null);
+        final String codecName = jsapResult.getString("codec", null);
         if (codecName != null) {
             codecLoader.reload();
             for (final AlignmentCodec c : codecLoader) {
@@ -207,6 +230,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
             writer.setTargetLengths(alignmentReader.getTargetLength());
         }
         writer.setSorted(allSorted);
+
         if (codec != null) {
             writer.setCodec(codec);
         }
@@ -264,7 +288,8 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
 
     /**
      * Determine if all the alignments are sorted.
-     * @param basenames  Basenames of a set of alignments.
+     *
+     * @param basenames Basenames of a set of alignments.
      * @return True when all alignments are sorted, False otherwise.
      * @throws IOException If an error occurs reading an alignment.
      */
