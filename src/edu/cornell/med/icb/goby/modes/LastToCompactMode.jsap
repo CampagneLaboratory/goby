@@ -131,5 +131,14 @@
             <longFlag>flip-strand</longFlag>
             <help>Flip the strand of the alignment strand. This option causes the strand of the query to flip between + and - and the sequence variations to be adjusted accordingly (i.e., C ~ G, A ~ T)</help>
         </switch>
+        <flaggedOption>
+            <id>substitutions</id>
+            <longFlag>substitutions</longFlag>
+
+             <stringParser>
+                <classname>StringStringParser</classname>
+            </stringParser>
+            <help>Substitute characters in the aligned read by other characters. Provide substitutions in the format a/b, where a and b are characters. Character a will be replaced by character b. For instance, --substitions t/C will replace lower case t with C. Multiple substitutions can be provided separated by coma. They will be applied in the order they appear on the command line.</help>
+        </flaggedOption>
     </parameters>
 </jsap>

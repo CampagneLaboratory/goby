@@ -183,7 +183,9 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
             if (estimateIntraGroupP) {
                 empiricalPValueColumnIndex[comparison.index] = statWriter.defineField("INFO", String.format("empiricalP[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
                         1, ColumnType.Float, String.format("Empirical P-value of observing as large a difference by chance between group %s and group %s.", comparison.nameGroup1, comparison.nameGroup2));
-                lastOfDMRIndex[comparison.index] = statWriter.defineField("INFO", "DMR", 1, ColumnType.Integer, String.format("Number of significant sites observed in a fixed window of length %d before this significant site (inclusive).", windowLength));
+                lastOfDMRIndex[comparison.index] = statWriter.defineField("INFO", String.format("DMR[%s/%s]", comparison.nameGroup1, comparison.nameGroup2),
+                        1, ColumnType.Integer, String.format("Number of significant sites observed in a fixed window of length %d before this significant site (inclusive). Comparing group %s and group %s.",
+                        windowLength, comparison.nameGroup1, comparison.nameGroup2));
             }
 
         }

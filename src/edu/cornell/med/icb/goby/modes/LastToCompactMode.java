@@ -82,6 +82,8 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
     protected boolean onlyMafFile;
     protected boolean onlyCountsFile;
     private boolean flipStrand;
+    private boolean substituteCharacter;
+    private Substitution[] substitutions;
 
     @Override
     public String getModeName() {
@@ -133,6 +135,27 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
             System.exit(1);
         }
         flipStrand = jsapResult.getBoolean("flip-strand");
+        final String substitutionString = jsapResult.getString("substitutions");
+        if (substitutionString != null) {
+            final String[] tokens = substitutionString.split(",");
+            substitutions = new Substitution[tokens.length];
+            int i = 0;
+            for (final String token : tokens) {
+                substitutions[i] = new Substitution();
+                final String[] parts = token.split("/");
+                if (parts[0].length() != 1 || parts[1].length() != 1) {
+                    System.err.println("Substitutions must have length 1. Error parsing " + token);
+                    System.exit(1);
+                }
+                substitutions[i].from = parts[0].charAt(0);
+                substitutions[i].to = parts[1].charAt(0);
+                i++;
+            }
+            substituteCharacter = true;
+        } else {
+            substitutions = new Substitution[0];
+            substituteCharacter = false;
+        }
         return this;
     }
 
@@ -187,6 +210,11 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
                         query.strand = query.strand == '+' ? '-' : query.strand == '-' ? '+' : '?';
                         flip(reference.alignment);
                         flip(query.alignment);
+                    }
+                    if (substituteCharacter) {
+                        for (final Substitution sub : substitutions) {
+                            query.alignment.replace(sub.from, sub.to);
+                        }
                     }
                     final int queryIndex = Integer.parseInt(query.sequenceIdentifier.toString());
                     largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
@@ -360,5 +388,12 @@ public class LastToCompactMode extends AbstractAlignmentToCompactMode {
      */
     public static void main(final String[] args) throws JSAPException, IOException {
         new LastToCompactMode().configure(args).execute();
+    }
+
+    private class Substitution {
+        // substitute this character
+        char from;
+        // by this one:
+        char to;
     }
 }
