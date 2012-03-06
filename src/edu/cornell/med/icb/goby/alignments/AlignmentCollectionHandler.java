@@ -32,6 +32,8 @@ import it.unimi.dsi.fastutil.objects.Object2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2LongAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.io.DebugInputBitStream;
+import it.unimi.dsi.io.DebugOutputBitStream;
 import it.unimi.dsi.io.InputBitStream;
 import it.unimi.dsi.io.OutputBitStream;
 import org.apache.commons.logging.Log;
@@ -92,7 +94,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                 //            System.out.println("STOP");
             }
         }
-        final OutputBitStream outputBitStream = new OutputBitStream(compressedBits);
+        final DebugOutputBitStream outputBitStream = new DebugOutputBitStream(new OutputBitStream(compressedBits));
 
         writeCompressed(outputBitStream);
         outputBitStream.flush();
@@ -104,35 +106,27 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     @Override
     public Message decompressCollection(Message reducedCollection, byte[] compressedBytes) throws IOException {
+        //TODO optimize away the copy:
+        byte[] moreRoom = new byte[compressedBytes.length + 100];
+        System.arraycopy(compressedBytes, 0, moreRoom, 0, compressedBytes.length);
+
         final Alignments.AlignmentCollection alignmentCollection = (Alignments.AlignmentCollection) reducedCollection;
         final Alignments.AlignmentCollection.Builder result = Alignments.AlignmentCollection.newBuilder();
-        final InputBitStream bitInput = new InputBitStream(new FastByteArrayInputStream(compressedBytes));
+        final InputBitStream bitInput = new DebugInputBitStream(new InputBitStream(new FastByteArrayInputStream(moreRoom)));
         reset();
         final int numEntriesInChunk = alignmentCollection.getAlignmentEntriesCount();
-        decodeArithmetic(numEntriesInChunk, bitInput, deltaPositions);
-        decodeArithmetic(numEntriesInChunk, bitInput, deltaTargetIndices);
+
+        decompressBits(bitInput, numEntriesInChunk);
+
         for (int index = 0; index < numEntriesInChunk; index++) {
-            result.addAlignmentEntries(
-                    andBack(index, alignmentCollection.getAlignmentEntries(index)));
+            while (multiplicities.get(index) >= 1) {
+                result.addAlignmentEntries(
+                        andBack(index, alignmentCollection.getAlignmentEntries(index)));
+            }
         }
         return result.build();
     }
 
-    private void decodeArithmetic(final int numEntriesInChunk, final InputBitStream bitInput, final IntList list) throws IOException {
-        if (numEntriesInChunk <= 1) {
-            return;
-        }
-        final int numTokens = bitInput.readNibble();
-        final int[] distinctvalue = new int[numTokens];
-        for (int i = 0; i < numTokens; i++) {
-            distinctvalue[i] = bitInput.readNibble();
-        }
-        final FastArithmeticDecoder decoder = new FastArithmeticDecoder(numTokens);
-        for (int i = 0; i < numEntriesInChunk; i++) {
-            final int tokenValue = distinctvalue[decoder.decode(bitInput)];
-            list.add(tokenValue);
-        }
-    }
 
     public void displayStats() {
         for (String label : typeToNumEntries.keySet()) {
@@ -195,28 +189,59 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     Object2IntMap<String> typeToNumEntries = new Object2IntAVLTreeMap<String>();
     Object2LongMap<String> typeToWrittenBits = new Object2LongAVLTreeMap<String>();
 
-    private void writeArithmetic(String label, final IntList list, OutputBitStream out) throws IOException {
-        long writtenStart = out.writtenBits();
-        if (list.size() == 0) {
+    private void decodeArithmetic(String label, final int numEntriesInChunk, final InputBitStream bitInput, final IntList list) throws IOException {
+        System.err.flush();
+        System.err.println("\nreading " + label + " with available=" + bitInput.available());
+        System.err.flush();
+        if (numEntriesInChunk == 0) {
+            return;
+        }
+        final int numTokens = bitInput.readNibble();
+        final int[] distinctvalue = new int[numTokens];
+        for (int i = 0; i < numTokens; i++) {
+            distinctvalue[i] = bitInput.readNibble();
+        }
+        // TODO see if we can avoid reading the number of elements in some cases.
+        int size = bitInput.readNibble();
+        final FastArithmeticDecoder decoder = new FastArithmeticDecoder(numTokens);
+        for (int i = 0; i < size; i++) {
+            final int tokenValue = distinctvalue[decoder.decode(bitInput)];
+            list.add(tokenValue);
+        }
+        decoder.reposition(bitInput);
+
+    }
+
+    private void writeArithmetic(final String label, final IntList list, OutputBitStream out) throws IOException {
+        System.err.flush();
+        System.err.println("\nwriting " + label);
+        System.err.flush();
+
+        final long writtenStart = out.writtenBits();
+        if (list.isEmpty()) {
             // no list to write.
             return;
         }
-        final IntAVLTreeSet distinctDeltaPos = getTokens(list);
+        final IntAVLTreeSet distinctSymbols = getTokens(list);
 
-        int[] symbolValues = distinctDeltaPos.toIntArray();
-        out.writeNibble(distinctDeltaPos.size());
-        for (final int token : distinctDeltaPos) {
+        final int[] symbolValues = distinctSymbols.toIntArray();
+        // TODO see if we can avoid writing the number of elements in some cases.
+        out.writeNibble(distinctSymbols.size());
+        for (final int token : distinctSymbols) {
             out.writeNibble(token);
         }
-        final FastArithmeticCoder coder = new FastArithmeticCoder(distinctDeltaPos.size());
+        out.writeNibble(list.size());
+        final FastArithmeticCoder coder = new FastArithmeticCoder(distinctSymbols.size());
         for (final int dp : list) {
             final int symbolCode = Arrays.binarySearch(symbolValues, dp);
             assert symbolCode >= 0 : "symbol code must exist.";
             coder.encode(symbolCode, out);
         }
         coder.flush(out);
-        long writtenStop = out.writtenBits();
-        long written = writtenStop - writtenStart;
+
+        System.err.flush();
+        final long writtenStop = out.writtenBits();
+        final long written = writtenStop - writtenStart;
         recordStats(label, list, written);
     }
 
@@ -248,7 +273,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private IntList queryIndices = new IntArrayList();
     private IntList queryPositions = new IntArrayList();
     private IntList fragmentIndex = new IntArrayList();
-    private IntList hasVariations = new IntArrayList();
+    private IntList variationCount = new IntArrayList();
 
     private IntList varLengths = new IntArrayList();
     private IntList varPositions = new IntArrayList();
@@ -258,28 +283,53 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     IntArrayList multiplicities = new IntArrayList();
 
-    private void writeCompressed(final OutputBitStream out) throws IOException {
+    private void decompressBits(InputBitStream bitInput, final int numEntriesInChunk) throws IOException {
 
-        writeQueryIndices("queryIndices", queryIndices, out);
+        decodeArithmetic("deltaPositions", numEntriesInChunk, bitInput, deltaPositions);
+        decodeArithmetic("deltaTargetIndices", numEntriesInChunk, bitInput, deltaTargetIndices);
+        decodeArithmetic("queryLengths", numEntriesInChunk, bitInput, queryLengths);
+        decodeArithmetic("mappingQualities", numEntriesInChunk, bitInput, mappingQualities);
+        decodeArithmetic("matchingReverseStrand", numEntriesInChunk, bitInput, matchingReverseStrand);
+        decodeArithmetic("numberOfIndels", numEntriesInChunk, bitInput, numberOfIndels);
+        decodeArithmetic("numberOfMismatches", numEntriesInChunk, bitInput, numberOfMismatches);
+        decodeArithmetic("queryAlignedLength", numEntriesInChunk, bitInput, queryAlignedLength);
+        decodeArithmetic("targetAlignedLength", numEntriesInChunk, bitInput, targetAlignedLength);
+        decodeArithmetic("queryPositions", numEntriesInChunk, bitInput, queryPositions);
+        decodeArithmetic("fragmentIndex", numEntriesInChunk, bitInput, fragmentIndex);
+        decodeArithmetic("variationCount", numEntriesInChunk, bitInput, variationCount);
+        decodeArithmetic("varPositions", numEntriesInChunk, bitInput, varPositions);
+        decodeArithmetic("varLengths", numEntriesInChunk, bitInput, varLengths);
+        decodeArithmetic("varReadIndex", numEntriesInChunk, bitInput, varReadIndex);
+        decodeArithmetic("varFromTo", numEntriesInChunk, bitInput, varFromTo);
+        decodeArithmetic("varQuals", numEntriesInChunk, bitInput, varQuals);
+        decodeArithmetic("multiplicities", numEntriesInChunk, bitInput, multiplicities);
+
+        // decodeQueryIndices(numEntriesInChunk,bitInput, queryIndices);
+    }
+
+    private void writeCompressed(final OutputBitStream out) throws IOException {
+        //   out.writeNibble(0);
+
         writeArithmetic("positions", deltaPositions, out);
         writeArithmetic("targets", deltaTargetIndices, out);
         writeArithmetic("queryLengths", queryLengths, out);
         writeArithmetic("mappingQualities", mappingQualities, out);
         writeArithmetic("matchingReverseStrand", matchingReverseStrand, out);
-        writeArithmetic("multiplicity", multiplicity, out);
         writeArithmetic("numberOfIndels", numberOfIndels, out);
         writeArithmetic("numberOfMismatches", numberOfMismatches, out);
         writeArithmetic("queryAlignedLength", queryAlignedLength, out);
         writeArithmetic("targetAlignedLength", targetAlignedLength, out);
-        writeArithmetic("queryPosition", queryPositions, out);
+        writeArithmetic("queryPositions", queryPositions, out);
         writeArithmetic("fragmentIndex", fragmentIndex, out);
-        writeArithmetic("hasVariations", hasVariations, out);
+        writeArithmetic("variationCount", variationCount, out);
         writeArithmetic("varPositions", varPositions, out);
         writeArithmetic("varLengths", varLengths, out);
         writeArithmetic("varReadIndex", varReadIndex, out);
         writeArithmetic("varFromTo", varFromTo, out);
         writeArithmetic("varQuals", varQuals, out);
+        writeArithmetic("multiplicities", multiplicities, out);
 
+        writeQueryIndices("queryIndices", queryIndices, out);
 
     }
 
@@ -298,7 +348,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         queryPositions.clear();
         fragmentIndex.clear();
         queryIndices.clear();
-        hasVariations.clear();
+        variationCount.clear();
         varPositions.clear();
         varLengths.clear();
         varReadIndex.clear();
@@ -351,19 +401,18 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             return null;
         } else {
             previousPartial = partial;
-            multiplicities.add(source.getMultiplicity());
+            multiplicities.add(Math.max(1, source.getMultiplicity()));
         }
         queryLengths.add(source.getQueryLength());
         mappingQualities.add(source.getMappingQuality());
         matchingReverseStrand.add(source.getMatchingReverseStrand() ? 0 : 1);
-        //  multiplicity.add(source.getMultiplicity());
         numberOfIndels.add(source.getNumberOfIndels());
         numberOfMismatches.add(source.getNumberOfMismatches());
         queryAlignedLength.add(source.getQueryAlignedLength());
         targetAlignedLength.add(source.getTargetAlignedLength());
         fragmentIndex.add(source.getFragmentIndex());
-        hasVariations.add(source.getSequenceVariationsCount());
-
+        variationCount.add(source.getSequenceVariationsCount());
+        queryPositions.add(source.getQueryPosition());
 
         result.clearQueryLength();
         result.clearMappingQuality();
@@ -449,7 +498,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final boolean hasToQuals = seqVar.hasToQuality();
         varPositions.add(seqVar.getPosition());
         varReadIndex.add(seqVar.getReadIndex());
-           varLengths.add(length);
+        varLengths.add(length);
         for (int i = 0; i < length; i++) {
 
             final char baseFrom = from.charAt(i);
@@ -470,6 +519,29 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private Alignments.AlignmentEntry andBack(final int index, final Alignments.AlignmentEntry reduced) {
         final Alignments.AlignmentEntry.Builder result = Alignments.AlignmentEntry.newBuilder(reduced);
         // TODO put position and targetIndex back in the entry from compressed stream.
+        final int multiplicity = multiplicities.get(index);
+        final int k = multiplicity - 1;
+
+        multiplicities.set(index, k);
+        if (k > 1) {
+            result.setMultiplicity(multiplicity);
+        }
+        result.setQueryIndex(queryIndices.get(index));
+
+
+        if (index == 0) {
+            previousPosition = reduced.getPosition();
+            previousTargetIndex = reduced.getTargetIndex();
+        } else {
+            final int position = previousPosition + deltaPositions.getInt(index);
+            final int targetIndex = previousTargetIndex + deltaTargetIndices.get(index);
+            result.setPosition(position);
+            result.setTargetIndex(targetIndex);
+        }
+
+
+        result.setMappingQuality(mappingQualities.getInt(index));
+
         return result.build();
     }
 }
