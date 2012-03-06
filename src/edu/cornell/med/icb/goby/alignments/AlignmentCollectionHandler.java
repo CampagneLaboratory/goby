@@ -161,21 +161,21 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     private void writeQueryIndices(final String label, final IntList list, final OutputBitStream out) throws IOException {
         int min = Integer.MAX_VALUE;
-        int max=Integer.MIN_VALUE;
-                      int mean=0;
-        int num=0;
+        int max = Integer.MIN_VALUE;
+        int mean = 0;
+        int num = 0;
 
         for (final int value : list) {
-          mean+=value;
+            mean += value;
             min = Math.min(value, min);
             max = Math.max(value, max);
             num++;
         }
-        mean/=num;
+        mean /= num;
         final long writtenStart = out.writtenBits();
         for (final int value : list) {
-            out.writeMinimalBinary(value-min,max-min+1);
-           // out.writeLongMinimalBinary(value-min, max-min+1);
+            out.writeMinimalBinary(value - min, max - min + 1);
+            // out.writeLongMinimalBinary(value-min, max-min+1);
         }
         final long writtenStop = out.writtenBits();
         final long written = writtenStop - writtenStart;
@@ -249,6 +249,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private IntList queryPositions = new IntArrayList();
     private IntList fragmentIndex = new IntArrayList();
     private IntList hasVariations = new IntArrayList();
+
+    private IntList varLengths = new IntArrayList();
     private IntList varPositions = new IntArrayList();
     private IntList varReadIndex = new IntArrayList();
     private IntList varFromTo = new IntArrayList();
@@ -273,6 +275,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         writeArithmetic("fragmentIndex", fragmentIndex, out);
         writeArithmetic("hasVariations", hasVariations, out);
         writeArithmetic("varPositions", varPositions, out);
+        writeArithmetic("varLengths", varLengths, out);
         writeArithmetic("varReadIndex", varReadIndex, out);
         writeArithmetic("varFromTo", varFromTo, out);
         writeArithmetic("varQuals", varQuals, out);
@@ -297,6 +300,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         queryIndices.clear();
         hasVariations.clear();
         varPositions.clear();
+        varLengths.clear();
         varReadIndex.clear();
         varFromTo.clear();
         varQuals.clear();
@@ -416,8 +420,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             final ByteString toQualities = seqVar.getToQuality();
             final int length = from.length();
             final boolean hasToQuals = seqVar.hasToQuality();
+
             for (int i = 0; i < length; i++) {
-                if (hasToQuals) {
+                if (hasToQuals && i < toQualities.size()) {
                     varQuals.add(toQualities.byteAt(i));
                 } else {
                     varQuals.add(NO_VALUE);
@@ -442,9 +447,11 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final ByteString toQualities = seqVar.getToQuality();
         final int length = from.length();
         final boolean hasToQuals = seqVar.hasToQuality();
+        varPositions.add(seqVar.getPosition());
+        varReadIndex.add(seqVar.getReadIndex());
+           varLengths.add(length);
         for (int i = 0; i < length; i++) {
-            varPositions.add(seqVar.getPosition() + i);
-            varReadIndex.add(seqVar.getReadIndex());
+
             final char baseFrom = from.charAt(i);
             final char baseTo = to.charAt(i);
             final byte byteFrom = (byte) baseFrom;
