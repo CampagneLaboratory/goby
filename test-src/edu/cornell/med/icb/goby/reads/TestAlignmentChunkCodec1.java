@@ -101,12 +101,11 @@ public class TestAlignmentChunkCodec1 {
         assertNotNull(encoded);
         // assertEquals(collectionBuilder.getAlignmentEntriesCount(), encoded.);
     }
-
-    @Test
+    // @Test
     public void testLarge() throws IOException {
         final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
-        final AlignmentReader reader = new AlignmentReaderImpl("/data/rrbs/AJPBRWE.entries");
+        final AlignmentReader reader = new AlignmentReaderImpl("/data/rrbs/EMNWFIL.entries");
         final Alignments.AlignmentCollection.Builder collectionBuilder = Alignments.AlignmentCollection.newBuilder();
         int i = 0;
         for (Alignments.AlignmentEntry entry : reader) {
