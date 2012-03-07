@@ -140,6 +140,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         final String[] dymamicOptions =  jsapResult.getStringArray("dynamic-options");
         ObjectArrayList<DynamicOptionClient> registeredDOClients = new ObjectArrayList<DynamicOptionClient>();
         registeredDOClients.add(MessageChunksWriter.doc);
+        registeredDOClients.add(AlignmentWriter.doc);
         for (final String dymamicOption : dymamicOptions) {
             boolean parsed = false;
 

@@ -32,10 +32,9 @@ import it.unimi.dsi.fastutil.objects.Object2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2LongAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
-import it.unimi.dsi.io.DebugInputBitStream;
-import it.unimi.dsi.io.DebugOutputBitStream;
 import it.unimi.dsi.io.InputBitStream;
 import it.unimi.dsi.io.OutputBitStream;
+import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -62,6 +61,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private int previousPosition;
     private int previousTargetIndex;
     private static final int NO_VALUE = 0;
+    private final boolean debug = false;
 
 
     @Override
@@ -82,19 +82,20 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final Alignments.AlignmentCollection alignmentCollection = (Alignments.AlignmentCollection) collection;
         final Alignments.AlignmentCollection.Builder remainingCollection = Alignments.AlignmentCollection.newBuilder();
         final int size = alignmentCollection.getAlignmentEntriesCount();
-        int remainingIndex = 0;
+        int indexInReducedCollection = 0;
         for (int index = 0; index < size; index++) {
             final Alignments.AlignmentEntry entry = alignmentCollection.getAlignmentEntries(index);
 
-            final Alignments.AlignmentEntry transformed = transform(index, remainingIndex, entry);
+            final Alignments.AlignmentEntry transformed = transform(index, indexInReducedCollection, entry);
             if (transformed != null) {
                 remainingCollection.addAlignmentEntries(transformed);
-                remainingIndex++;
+                indexInReducedCollection++;
+      //          System.out.println("not a duplicate");
             } else {
-                //            System.out.println("STOP");
+
             }
         }
-        final DebugOutputBitStream outputBitStream = new DebugOutputBitStream(new OutputBitStream(compressedBits));
+        final OutputBitStream outputBitStream = new OutputBitStream(compressedBits);
 
         writeCompressed(outputBitStream);
         outputBitStream.flush();
@@ -106,22 +107,30 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     @Override
     public Message decompressCollection(Message reducedCollection, byte[] compressedBytes) throws IOException {
+        reset();
         //TODO optimize away the copy:
         byte[] moreRoom = new byte[compressedBytes.length + 100];
         System.arraycopy(compressedBytes, 0, moreRoom, 0, compressedBytes.length);
 
         final Alignments.AlignmentCollection alignmentCollection = (Alignments.AlignmentCollection) reducedCollection;
         final Alignments.AlignmentCollection.Builder result = Alignments.AlignmentCollection.newBuilder();
-        final InputBitStream bitInput = new DebugInputBitStream(new InputBitStream(new FastByteArrayInputStream(moreRoom)));
-        reset();
+        final InputBitStream bitInput = new InputBitStream(new FastByteArrayInputStream(moreRoom));
         final int numEntriesInChunk = alignmentCollection.getAlignmentEntriesCount();
 
         decompressBits(bitInput, numEntriesInChunk);
-
-        for (int index = 0; index < numEntriesInChunk; index++) {
-            while (multiplicities.get(index) >= 1) {
+        int originalIndex=0;
+        for (int templateIndex = 0; templateIndex < numEntriesInChunk; templateIndex++) {
+            final int templatePositionIndex = varPositionIndex;
+            final int templateVarFromToIndex = varFromToIndex;
+            while (multiplicities.get(templateIndex) >= 1) {
                 result.addAlignmentEntries(
-                        andBack(index, alignmentCollection.getAlignmentEntries(index)));
+                        andBack(templateIndex, originalIndex, alignmentCollection.getAlignmentEntries(templateIndex)));
+                if (multiplicities.get(templateIndex) >= 1) {
+                    // go back to the indices for the template:
+                    varPositionIndex = templatePositionIndex;
+                    varFromToIndex = templateVarFromToIndex;
+                }
+                originalIndex++;
             }
         }
         return result.build();
@@ -138,7 +147,6 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                             written, average));
         }
         LOG.info(String.format("entries aggregated with multiplicity= %d", countAggregatedWithMultiplicity));
-
     }
 
 
@@ -156,24 +164,40 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private void writeQueryIndices(final String label, final IntList list, final OutputBitStream out) throws IOException {
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
-        int mean = 0;
-        int num = 0;
 
         for (final int value : list) {
-            mean += value;
+
             min = Math.min(value, min);
             max = Math.max(value, max);
-            num++;
+
         }
-        mean /= num;
+
+        out.writeNibble(min);
+        out.writeNibble(max);
+        // add one to each value, since we cannot write zeroes in minimal binary.
+        out.writeNibble(list.size());
         final long writtenStart = out.writtenBits();
         for (final int value : list) {
-            out.writeMinimalBinary(value - min, max - min + 1);
+            final int a = value - min;
+            final int b = max - min + 1;
+
+            out.writeMinimalBinary(a, b);
             // out.writeLongMinimalBinary(value-min, max-min+1);
         }
         final long writtenStop = out.writtenBits();
         final long written = writtenStop - writtenStart;
         recordStats(label, list, written);
+    }
+
+    private void decodeQueryIndices(final String label, final int numEntriesInChunk, final InputBitStream bitInput, final IntList list) throws IOException {
+        final int min = bitInput.readNibble();
+        final int max = bitInput.readNibble();
+        final int size=bitInput.readNibble();
+        for (int i = 0; i < size; i++) {
+            final int reducedReadIndex = bitInput.readMinimalBinary(max - min + 1);
+            list.add(reducedReadIndex + min);
+        }
+
     }
 
     private void writeNibble(String label, IntList list, OutputBitStream out) throws IOException {
@@ -190,9 +214,11 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     Object2LongMap<String> typeToWrittenBits = new Object2LongAVLTreeMap<String>();
 
     private void decodeArithmetic(String label, final int numEntriesInChunk, final InputBitStream bitInput, final IntList list) throws IOException {
-        System.err.flush();
-        System.err.println("\nreading " + label + " with available=" + bitInput.available());
-        System.err.flush();
+        if (debug) {
+            System.err.flush();
+            System.err.println("\nreading " + label + " with available=" + bitInput.available());
+            System.err.flush();
+        }
         if (numEntriesInChunk == 0) {
             return;
         }
@@ -213,10 +239,11 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     }
 
     private void writeArithmetic(final String label, final IntList list, OutputBitStream out) throws IOException {
-        System.err.flush();
-        System.err.println("\nwriting " + label);
-        System.err.flush();
-
+        if (debug) {
+            System.err.flush();
+            System.err.println("\nwriting " + label);
+            System.err.flush();
+        }
         final long writtenStart = out.writtenBits();
         if (list.isEmpty()) {
             // no list to write.
@@ -268,19 +295,20 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private IntList multiplicity = new IntArrayList();
     private IntList numberOfIndels = new IntArrayList();
     private IntList numberOfMismatches = new IntArrayList();
-    private IntList queryAlignedLength = new IntArrayList();
-    private IntList targetAlignedLength = new IntArrayList();
+    private IntList queryAlignedLengths = new IntArrayList();
+    private IntList targetAlignedLengths = new IntArrayList();
     private IntList queryIndices = new IntArrayList();
     private IntList queryPositions = new IntArrayList();
     private IntList fragmentIndex = new IntArrayList();
     private IntList variationCount = new IntArrayList();
 
-    private IntList varLengths = new IntArrayList();
+    private IntList fromLengths = new IntArrayList();
+    private IntList toLengths = new IntArrayList();
     private IntList varPositions = new IntArrayList();
     private IntList varReadIndex = new IntArrayList();
     private IntList varFromTo = new IntArrayList();
     private IntList varQuals = new IntArrayList();
-
+    private IntList varHasToQuals = new IntArrayList();
     IntArrayList multiplicities = new IntArrayList();
 
     private void decompressBits(InputBitStream bitInput, final int numEntriesInChunk) throws IOException {
@@ -292,19 +320,21 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         decodeArithmetic("matchingReverseStrand", numEntriesInChunk, bitInput, matchingReverseStrand);
         decodeArithmetic("numberOfIndels", numEntriesInChunk, bitInput, numberOfIndels);
         decodeArithmetic("numberOfMismatches", numEntriesInChunk, bitInput, numberOfMismatches);
-        decodeArithmetic("queryAlignedLength", numEntriesInChunk, bitInput, queryAlignedLength);
-        decodeArithmetic("targetAlignedLength", numEntriesInChunk, bitInput, targetAlignedLength);
+        decodeArithmetic("queryAlignedLength", numEntriesInChunk, bitInput, queryAlignedLengths);
+        decodeArithmetic("targetAlignedLength", numEntriesInChunk, bitInput, targetAlignedLengths);
         decodeArithmetic("queryPositions", numEntriesInChunk, bitInput, queryPositions);
         decodeArithmetic("fragmentIndex", numEntriesInChunk, bitInput, fragmentIndex);
         decodeArithmetic("variationCount", numEntriesInChunk, bitInput, variationCount);
         decodeArithmetic("varPositions", numEntriesInChunk, bitInput, varPositions);
-        decodeArithmetic("varLengths", numEntriesInChunk, bitInput, varLengths);
+        decodeArithmetic("fromLengths", numEntriesInChunk, bitInput, fromLengths);
+        decodeArithmetic("toLengths", numEntriesInChunk, bitInput, toLengths);
         decodeArithmetic("varReadIndex", numEntriesInChunk, bitInput, varReadIndex);
         decodeArithmetic("varFromTo", numEntriesInChunk, bitInput, varFromTo);
         decodeArithmetic("varQuals", numEntriesInChunk, bitInput, varQuals);
+        decodeArithmetic("varHasToQuals", numEntriesInChunk, bitInput, varHasToQuals);
         decodeArithmetic("multiplicities", numEntriesInChunk, bitInput, multiplicities);
 
-        // decodeQueryIndices(numEntriesInChunk,bitInput, queryIndices);
+        decodeQueryIndices("queryIndices", numEntriesInChunk, bitInput, queryIndices);
     }
 
     private void writeCompressed(final OutputBitStream out) throws IOException {
@@ -317,16 +347,18 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         writeArithmetic("matchingReverseStrand", matchingReverseStrand, out);
         writeArithmetic("numberOfIndels", numberOfIndels, out);
         writeArithmetic("numberOfMismatches", numberOfMismatches, out);
-        writeArithmetic("queryAlignedLength", queryAlignedLength, out);
-        writeArithmetic("targetAlignedLength", targetAlignedLength, out);
+        writeArithmetic("queryAlignedLength", queryAlignedLengths, out);
+        writeArithmetic("targetAlignedLength", targetAlignedLengths, out);
         writeArithmetic("queryPositions", queryPositions, out);
         writeArithmetic("fragmentIndex", fragmentIndex, out);
         writeArithmetic("variationCount", variationCount, out);
         writeArithmetic("varPositions", varPositions, out);
-        writeArithmetic("varLengths", varLengths, out);
+        writeArithmetic("fromLengths", fromLengths, out);
+        writeArithmetic("toLengths", toLengths, out);
         writeArithmetic("varReadIndex", varReadIndex, out);
         writeArithmetic("varFromTo", varFromTo, out);
         writeArithmetic("varQuals", varQuals, out);
+        writeArithmetic("varHasToQuals", varHasToQuals, out);
         writeArithmetic("multiplicities", multiplicities, out);
 
         writeQueryIndices("queryIndices", queryIndices, out);
@@ -334,6 +366,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     }
 
     private void reset() {
+        previousPosition = 0;
+        previousTargetIndex = 0;
         deltaPositions.clear();
         deltaTargetIndices.clear();
         queryLengths.clear();
@@ -341,8 +375,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         matchingReverseStrand.clear();
         multiplicity.clear();
         numberOfIndels.clear();
-        queryAlignedLength.clear();
-        targetAlignedLength.clear();
+        queryAlignedLengths.clear();
+        targetAlignedLengths.clear();
         numberOfMismatches.clear();
         queryIndices.clear();
         queryPositions.clear();
@@ -350,13 +384,18 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         queryIndices.clear();
         variationCount.clear();
         varPositions.clear();
-        varLengths.clear();
+        fromLengths.clear();
+        toLengths.clear();
         varReadIndex.clear();
         varFromTo.clear();
         varQuals.clear();
-
+        varQualIndex = 0;
+        varPositionIndex = 0;
+        varFromToIndex = 0;
+        varHasToQuals.clear();
         multiplicities.clear();
         countAggregatedWithMultiplicity = 0;
+        previousPartial=null;
     }
 
     /**
@@ -366,22 +405,22 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private Alignments.AlignmentEntry previousPartial;
     private int countAggregatedWithMultiplicity;
 
-    private Alignments.AlignmentEntry transform(final int index, int remainingIndex, final Alignments.AlignmentEntry source) {
+    private Alignments.AlignmentEntry transform(final int index, int indexInReducedCollection, final Alignments.AlignmentEntry source) {
         final Alignments.AlignmentEntry.Builder result = Alignments.AlignmentEntry.newBuilder(source);
         final int position = source.getPosition();
         final int targetIndex = source.getTargetIndex();
 
-        if (index > 0) {
+        if (index > 0 && targetIndex == previousTargetIndex) {
             result.clearPosition();
             result.clearTargetIndex();
-            if (targetIndex != previousTargetIndex) {          // reset previous position to keep delta always positive:
-                previousPosition = 0;
-            }
+
             deltaPositions.add(position - previousPosition);
             deltaTargetIndices.add(targetIndex - previousTargetIndex);
 
         }
-        queryIndices.add(source.getQueryIndex());
+
+        final int queryIndex = source.getQueryIndex();
+        queryIndices.add(queryIndex);
 
         previousPosition = position;
         previousTargetIndex = targetIndex;
@@ -391,25 +430,29 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         recordVariationQualitiesAndClear(result, result.getSequenceVariationsList());
 
         final Alignments.AlignmentEntry partial = result.clone().build();
-        if (previousPartial != null && remainingIndex > 0 && previousPartial.equals(partial)) {
+
+        if (previousPartial != null && indexInReducedCollection >=1 && previousPartial.equals(partial)) {
             //   System.out.println("same");
             //  print(partial);
-            int m = multiplicities.get(remainingIndex - 1);
-            multiplicities.set(remainingIndex - 1, m + 1);
+            int m = multiplicities.get(indexInReducedCollection-1 );
+            multiplicities.set(indexInReducedCollection-1, m + 1);
             // do not add this one, we just increased the multiplicity of the previous one.
             countAggregatedWithMultiplicity++;
+      //      System.out.printf("Returning for template match to previous, current queryIndex=%d%n",queryIndex);
             return null;
         } else {
             previousPartial = partial;
             multiplicities.add(Math.max(1, source.getMultiplicity()));
         }
+        //System.out.printf("encoding query-index=%d varPositionIndex=%d %n",queryIndex, varPositionIndex);
+
         queryLengths.add(source.getQueryLength());
         mappingQualities.add(source.getMappingQuality());
-        matchingReverseStrand.add(source.getMatchingReverseStrand() ? 0 : 1);
+        matchingReverseStrand.add(source.getMatchingReverseStrand() ? 1 : 0);
         numberOfIndels.add(source.getNumberOfIndels());
         numberOfMismatches.add(source.getNumberOfMismatches());
-        queryAlignedLength.add(source.getQueryAlignedLength());
-        targetAlignedLength.add(source.getTargetAlignedLength());
+        queryAlignedLengths.add(source.getQueryAlignedLength());
+        targetAlignedLengths.add(source.getTargetAlignedLength());
         fragmentIndex.add(source.getFragmentIndex());
         variationCount.add(source.getSequenceVariationsCount());
         queryPositions.add(source.getQueryPosition());
@@ -432,8 +475,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         int seqVarIndex = 0;
 
         for (final Alignments.SequenceVariation seqVar : result.getSequenceVariationsList()) {
+
+
             encodeVar(seqVar);
-            Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder(seqVar);
+             Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder(seqVar);
             varBuilder.clearPosition();
             varBuilder.clearFrom();
             varBuilder.clearTo();
@@ -469,7 +514,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             final ByteString toQualities = seqVar.getToQuality();
             final int length = from.length();
             final boolean hasToQuals = seqVar.hasToQuality();
-
+            varHasToQuals.add(hasToQuals ? 1 : 0);
             for (int i = 0; i < length; i++) {
                 if (hasToQuals && i < toQualities.size()) {
                     varQuals.add(toQualities.byteAt(i));
@@ -489,20 +534,25 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         System.out.println(result);
     }
 
-    private void encodeVar(Alignments.SequenceVariation seqVar) {
+    private void encodeVar(final Alignments.SequenceVariation seqVar) {
 
         final String from = seqVar.getFrom();
         final String to = seqVar.getTo();
         final ByteString toQualities = seqVar.getToQuality();
-        final int length = from.length();
+        final int fromLength = from.length();
+        final int toLength = to.length();
         final boolean hasToQuals = seqVar.hasToQuality();
         varPositions.add(seqVar.getPosition());
-        varReadIndex.add(seqVar.getReadIndex());
-        varLengths.add(length);
-        for (int i = 0; i < length; i++) {
 
-            final char baseFrom = from.charAt(i);
-            final char baseTo = to.charAt(i);
+        varPositionIndex++;
+        varReadIndex.add(seqVar.getReadIndex());
+        fromLengths.add(fromLength);
+        toLengths.add(toLength);
+        final int maxLength = Math.max(fromLength, toLength);
+        for (int i = 0; i < maxLength; i++) {
+
+            final char baseFrom = i < fromLength ? from.charAt(i) : '\0';
+            final char baseTo = i < toLength ? to.charAt(i) : '\0';
             final byte byteFrom = (byte) baseFrom;
             final byte byteTo = (byte) baseTo;
             varFromTo.add(byteFrom << 8 | byteTo);
@@ -512,36 +562,100 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                 varQuals.add(NO_VALUE);
             }
         }
-
-
     }
 
-    private Alignments.AlignmentEntry andBack(final int index, final Alignments.AlignmentEntry reduced) {
+    MutableString from = new MutableString();
+    MutableString to = new MutableString();
+
+    private Alignments.AlignmentEntry andBack(final int index, int originalIndex, final Alignments.AlignmentEntry reduced) {
         final Alignments.AlignmentEntry.Builder result = Alignments.AlignmentEntry.newBuilder(reduced);
-        // TODO put position and targetIndex back in the entry from compressed stream.
+
         final int multiplicity = multiplicities.get(index);
         final int k = multiplicity - 1;
 
         multiplicities.set(index, k);
-        if (k > 1) {
-            result.setMultiplicity(multiplicity);
-        }
-        result.setQueryIndex(queryIndices.get(index));
+        //if (k > 1) {
+        result.setMultiplicity(multiplicity);
 
+        final int queryIndex = queryIndices.getInt(originalIndex);
+        result.setQueryIndex(queryIndex);
+        // System.out.printf("decoding query-index=%d (originalIndex=%d) varPositionIndex=%d %n",queryIndex,originalIndex, varPositionIndex);
 
-        if (index == 0) {
+        if (originalIndex == 0 || reduced.hasTargetIndex()) {
             previousPosition = reduced.getPosition();
             previousTargetIndex = reduced.getTargetIndex();
         } else {
-            final int position = previousPosition + deltaPositions.getInt(index);
-            final int targetIndex = previousTargetIndex + deltaTargetIndices.get(index);
+            final int iMinus1 = originalIndex - 1;
+            final int deltaPos = deltaPositions.getInt(iMinus1);
+            final int deltaTarget = deltaTargetIndices.getInt(iMinus1);
+            final int position = previousPosition + deltaPos;
+            final int targetIndex = previousTargetIndex + deltaTarget;
             result.setPosition(position);
             result.setTargetIndex(targetIndex);
+            previousPosition += deltaPos;
+            previousTargetIndex += deltaTarget;
+
         }
 
-
         result.setMappingQuality(mappingQualities.getInt(index));
+        result.setMatchingReverseStrand(matchingReverseStrand.getInt(index) == 1);
+        result.setNumberOfMismatches(numberOfMismatches.getInt(index));
+        result.setNumberOfIndels(numberOfIndels.getInt(index));
+        result.setQueryLength(queryLengths.getInt(index));
+        result.setQueryAlignedLength(queryAlignedLengths.getInt(index));
+        result.setQueryPosition(queryPositions.getInt(index));
+        result.setTargetAlignedLength(targetAlignedLengths.getInt(index));
+        final boolean templateHasSequenceVariations = reduced.getSequenceVariationsCount() > 0;
+        final int numVariations = variationCount.getInt(index);
 
+        for (int varIndex = 0; varIndex < numVariations; varIndex++) {
+            final Alignments.SequenceVariation template = templateHasSequenceVariations ? reduced.getSequenceVariations(varIndex) : null;
+            final Alignments.SequenceVariation.Builder varBuilder = templateHasSequenceVariations ?
+                    Alignments.SequenceVariation.newBuilder(template) : Alignments.SequenceVariation.newBuilder();
+
+            from.setLength(0);
+            to.setLength(0);
+
+            final int fromLength = fromLengths.getInt(varPositionIndex);
+            final int toLength = toLengths.getInt(varPositionIndex);
+            varBuilder.setPosition(varPositions.get(varPositionIndex));
+            varBuilder.setReadIndex(varReadIndex.get(varPositionIndex));
+            final boolean hasToQual = varHasToQuals.get(varPositionIndex) == 1;
+            final byte[] quals = hasToQual ? new byte[toLength] : null;
+            ++varPositionIndex;
+            final int maxLength = Math.max(fromLength, toLength);
+            for (int i = 0; i < maxLength; i++) {
+
+                final int fromTo = varFromTo.getInt(varFromToIndex++);
+                if (i < fromLength) {
+                    from.append((char) (fromTo >> 8));
+                }
+                if (i < toLength) {
+                    to.append((char) (fromTo & 0xFF));
+                }
+                if (hasToQual) {
+                    quals[i] = (byte) varQuals.getInt(varQualIndex);
+
+                    ++varQualIndex;
+                }
+            }
+            varBuilder.setFrom(from.toString());
+            varBuilder.setTo(to.toString());
+            if (hasToQual) {
+                varBuilder.setToQuality(ByteString.copyFrom(quals));
+            }
+            if (templateHasSequenceVariations) {
+                result.setSequenceVariations(varIndex, varBuilder);
+            } else {
+                result.addSequenceVariations(varBuilder);
+            }
+
+        }
         return result.build();
     }
+
+    private int varQualIndex = 0;
+    private int varPositionIndex = 0;
+    private int varFromToIndex = 0;
+
 }
