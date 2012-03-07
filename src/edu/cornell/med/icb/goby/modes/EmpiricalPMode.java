@@ -20,7 +20,6 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import com.sun.org.apache.xpath.internal.operations.Mod;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.ObservationWriter;
 import edu.cornell.med.icb.goby.stats.EmpiricalPValueEstimator;
