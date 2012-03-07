@@ -20,8 +20,12 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.goby.alignments.perms.NoOpPermutation;
+import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutation;
+import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutationImpl;
 import edu.cornell.med.icb.goby.modes.GobyDriver;
 import edu.cornell.med.icb.goby.reads.MessageChunksWriter;
+import edu.cornell.med.icb.goby.util.DynamicOptionClient;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.util.VersionUtils;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -63,6 +67,9 @@ public class AlignmentWriter implements Closeable {
     private final GZIPOutputStream headerOutput;
     private boolean entriesHaveQueryLength;
 
+    public static DynamicOptionClient doc = new DynamicOptionClient(AlignmentWriter.class,
+            "permutate-query-indices:boolean, when true permutates query indices to small values (improves compression, but looses the ability to track alignments back to reads):false"
+    );
 
     /**
      * Details about aligner.
@@ -112,6 +119,7 @@ public class AlignmentWriter implements Closeable {
     private long[] targetPositionOffsets;
 
     private AlignmentCodec codec;
+    private QueryIndexPermutation permutator;
 
     public AlignmentWriter(final String outputBasename) throws IOException {
         alignmentEntries = new FileOutputStream(outputBasename + ".entries");
@@ -127,7 +135,16 @@ public class AlignmentWriter implements Closeable {
         stats = new Properties();
         // we assume stats were written until a client puts stats in this writer.
         statsWritten = true;
+        setPermutation(doc.getBoolean("permutate-query-indices"));
 
+    }
+
+    public void setPermutation(boolean state) {
+        if (state) {
+            permutator = new QueryIndexPermutationImpl();
+        } else {
+            permutator = new NoOpPermutation();
+        }
     }
 
     public void setSorted(final boolean sortedState) {
@@ -243,8 +260,6 @@ public class AlignmentWriter implements Closeable {
         // update the unique query length set
         uniqueQueryLengths.add(newEntry.getQueryLength());
         final int currentQueryIndex = newEntry.getQueryIndex();
-        minQueryIndex = Math.min(currentQueryIndex, minQueryIndex);
-        maxQueryIndex = Math.max(currentQueryIndex, maxQueryIndex);
 
         maxTargetIndex = Math.max(newEntry.getTargetIndex(), maxTargetIndex);
 
@@ -257,6 +272,7 @@ public class AlignmentWriter implements Closeable {
                 newEntry = result;
             }
         }
+        permutator.makeSmallIndices(newEntry);
         final Alignments.AlignmentEntry builtEntry = newEntry.build();
 
         this.collectionBuilder.addAlignmentEntries(builtEntry);
@@ -324,14 +340,11 @@ public class AlignmentWriter implements Closeable {
      * @param entry The entry to append
      * @throws IOException If an error occurs writing this entry.
      */
-    public synchronized void appendEntry(final Alignments.AlignmentEntry entry) throws IOException {
+    public synchronized void appendEntry(Alignments.AlignmentEntry entry) throws IOException {
         if (entry.hasQueryLength()) {
             // update the unique query length set
             uniqueQueryLengths.add(entry.getQueryLength());
         }
-        final int currentQueryIndex = entry.getQueryIndex();
-        minQueryIndex = Math.min(currentQueryIndex, minQueryIndex);
-        maxQueryIndex = Math.max(currentQueryIndex, maxQueryIndex);
 
         maxTargetIndex = Math.max(entry.getTargetIndex(), maxTargetIndex);
         if (codec != null) {
@@ -341,10 +354,12 @@ public class AlignmentWriter implements Closeable {
             }
             final Alignments.AlignmentEntry.Builder result = codec.encode(entryBuilder);
             if (result != null) {
-                 collectionBuilder.addAlignmentEntries(result.build());
+                permutator.makeSmallIndices(result);
+                collectionBuilder.addAlignmentEntries(result.build());
             }
         } else {
-           collectionBuilder.addAlignmentEntries(entry);
+            entry = permutator.makeSmallIndices(entry);
+            collectionBuilder.addAlignmentEntries(entry);
         }
         writeIndexEntry(entry);
 
@@ -423,8 +438,8 @@ public class AlignmentWriter implements Closeable {
             final String version = VersionUtils.getImplementationVersion(GobyDriver.class);
             headerBuilder.setVersion(version);
 
-            headerBuilder.setLargestSplitQueryIndex(maxQueryIndex);
-            headerBuilder.setSmallestSplitQueryIndex(minQueryIndex);
+            headerBuilder.setLargestSplitQueryIndex(permutator.getBiggestSmallIndex());
+            headerBuilder.setSmallestSplitQueryIndex(permutator.getSmallestIndex());
             headerBuilder.setNumberOfTargets(maxTargetIndex + 1);
             headerBuilder.setNumberOfQueries(getNumQueries());
             headerBuilder.setSorted(sortedState);
@@ -469,8 +484,8 @@ public class AlignmentWriter implements Closeable {
     private synchronized void writeStats() throws IOException {
         if (!statsWritten) {
             stats.put("basename", FilenameUtils.getBaseName(basename));
-            stats.put("min.query.index", Integer.toString(minQueryIndex));
-            stats.put("max.query.index", Integer.toString(maxQueryIndex));
+            stats.put("min.query.index", Integer.toString(permutator.getBiggestSmallIndex()));
+            stats.put("max.query.index", Integer.toString(permutator.getSmallestIndex()));
             stats.put("number.of.queries", Integer.toString(getNumQueries()));
 
             stats.put("basename.full", basename);
@@ -599,10 +614,8 @@ public class AlignmentWriter implements Closeable {
         if (actualNumberOfQueries != Integer.MIN_VALUE) {
             return actualNumberOfQueries;
         } else {
-            if (minQueryIndex == Integer.MAX_VALUE) {
-                minQueryIndex = 0;
-            }
-            return maxQueryIndex - minQueryIndex + 1;
+
+            return permutator.getBiggestSmallIndex() - permutator.getSmallestIndex() + 1;
         }
     }
 
@@ -635,11 +648,11 @@ public class AlignmentWriter implements Closeable {
     }
 
     public void setSmallestSplitQueryIndex(final int smallestQueryIndex) {
-        minQueryIndex = smallestQueryIndex;
+        permutator.setSmallestIndex(smallestQueryIndex);
     }
 
     public void setLargestSplitQueryIndex(final int largestQueryIndex) {
-        maxQueryIndex = largestQueryIndex;
+        permutator.setBiggestSmallIndex(largestQueryIndex);
     }
 
 
