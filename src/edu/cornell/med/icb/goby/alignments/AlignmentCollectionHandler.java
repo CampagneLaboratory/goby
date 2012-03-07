@@ -63,7 +63,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private int previousTargetIndex;
     int deltaPosIndex = 0;
     private static final int NO_VALUE = 0;
-    private final int debug = 1;
+    private final int debug = 0;
     /**
      * This variable keeps track of the number of chunks compressed or decompressed.
      */
