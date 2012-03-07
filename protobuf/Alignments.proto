@@ -178,14 +178,14 @@ message AlignmentEntry {
   */
  message RelatedAlignmentEntry {
   /* Target index of the location where the other alignment entry is mapped. */
-   required uint32 target_index=1;
+   optional uint32 target_index=1;
    /* Position on the reference where the other alignment entry is mapped. */
-   required uint32 position=2;
+   optional uint32 position=2;
    /* Index of the fragment for the related alignment entry. This index
       makes it possible to identify which of the read fragments mapped to the given
       location is related to the source alignment entry.
    */
-   required uint32 fragment_index=3;
+   optional uint32 fragment_index=3;
  }
 
 /*

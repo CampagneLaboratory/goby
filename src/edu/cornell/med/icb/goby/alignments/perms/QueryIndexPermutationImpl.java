@@ -99,6 +99,10 @@ public class QueryIndexPermutationImpl implements QueryIndexPermutation {
 
     private int getSmallIndex(final int queryIndex) {
         final int result = queryIndexPermutation.get(queryIndex);
+        // TODO! remove this statement and flush to disk instead:
+        if (queryIndexPermutation.size() > 100000) {
+            queryIndexPermutation.clear();
+        }
         if (result == -1) {
             final int smallIndex = smallIndexCounter++;
             queryIndexPermutation.put(queryIndex, smallIndex);

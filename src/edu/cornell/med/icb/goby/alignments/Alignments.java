@@ -78,12 +78,6 @@ public final class Alignments {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
       
-      for (int i = 0; i < getAlignmentEntriesCount(); i++) {
-        if (!getAlignmentEntries(i).isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -330,12 +324,6 @@ public final class Alignments {
       }
       
       public final boolean isInitialized() {
-        for (int i = 0; i < getAlignmentEntriesCount(); i++) {
-          if (!getAlignmentEntries(i).isInitialized()) {
-            
-            return false;
-          }
-        }
         return true;
       }
       
@@ -984,24 +972,6 @@ public final class Alignments {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
       
-      if (hasPairAlignmentLink()) {
-        if (!getPairAlignmentLink().isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
-      if (hasSplicedForwardAlignmentLink()) {
-        if (!getSplicedForwardAlignmentLink().isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
-      if (hasSplicedBackwardAlignmentLink()) {
-        if (!getSplicedBackwardAlignmentLink().isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -1629,24 +1599,6 @@ public final class Alignments {
       }
       
       public final boolean isInitialized() {
-        if (hasPairAlignmentLink()) {
-          if (!getPairAlignmentLink().isInitialized()) {
-            
-            return false;
-          }
-        }
-        if (hasSplicedForwardAlignmentLink()) {
-          if (!getSplicedForwardAlignmentLink().isInitialized()) {
-            
-            return false;
-          }
-        }
-        if (hasSplicedBackwardAlignmentLink()) {
-          if (!getSplicedBackwardAlignmentLink().isInitialized()) {
-            
-            return false;
-          }
-        }
         return true;
       }
       
@@ -2679,15 +2631,15 @@ public final class Alignments {
   public interface RelatedAlignmentEntryOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
     
-    // required uint32 target_index = 1;
+    // optional uint32 target_index = 1;
     boolean hasTargetIndex();
     int getTargetIndex();
     
-    // required uint32 position = 2;
+    // optional uint32 position = 2;
     boolean hasPosition();
     int getPosition();
     
-    // required uint32 fragment_index = 3;
+    // optional uint32 fragment_index = 3;
     boolean hasFragmentIndex();
     int getFragmentIndex();
   }
@@ -2720,7 +2672,7 @@ public final class Alignments {
     }
     
     private int bitField0_;
-    // required uint32 target_index = 1;
+    // optional uint32 target_index = 1;
     public static final int TARGET_INDEX_FIELD_NUMBER = 1;
     private int targetIndex_;
     public boolean hasTargetIndex() {
@@ -2730,7 +2682,7 @@ public final class Alignments {
       return targetIndex_;
     }
     
-    // required uint32 position = 2;
+    // optional uint32 position = 2;
     public static final int POSITION_FIELD_NUMBER = 2;
     private int position_;
     public boolean hasPosition() {
@@ -2740,7 +2692,7 @@ public final class Alignments {
       return position_;
     }
     
-    // required uint32 fragment_index = 3;
+    // optional uint32 fragment_index = 3;
     public static final int FRAGMENT_INDEX_FIELD_NUMBER = 3;
     private int fragmentIndex_;
     public boolean hasFragmentIndex() {
@@ -2760,18 +2712,6 @@ public final class Alignments {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
       
-      if (!hasTargetIndex()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasPosition()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasFragmentIndex()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -3019,18 +2959,6 @@ public final class Alignments {
       }
       
       public final boolean isInitialized() {
-        if (!hasTargetIndex()) {
-          
-          return false;
-        }
-        if (!hasPosition()) {
-          
-          return false;
-        }
-        if (!hasFragmentIndex()) {
-          
-          return false;
-        }
         return true;
       }
       
@@ -3078,7 +3006,7 @@ public final class Alignments {
       
       private int bitField0_;
       
-      // required uint32 target_index = 1;
+      // optional uint32 target_index = 1;
       private int targetIndex_ ;
       public boolean hasTargetIndex() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
@@ -3099,7 +3027,7 @@ public final class Alignments {
         return this;
       }
       
-      // required uint32 position = 2;
+      // optional uint32 position = 2;
       private int position_ ;
       public boolean hasPosition() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
@@ -3120,7 +3048,7 @@ public final class Alignments {
         return this;
       }
       
-      // required uint32 fragment_index = 3;
+      // optional uint32 fragment_index = 3;
       private int fragmentIndex_ ;
       public boolean hasFragmentIndex() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
@@ -8330,8 +8258,8 @@ public final class Alignments {
       "\026 \001(\0132\033.goby.RelatedAlignmentEntry\022\025\n\rsp" +
       "liced_flags\030\023 \001(\r\022\023\n\013insert_size\030\024 \001(\r\022\024",
       "\n\014sample_index\030\025 \001(\r\"W\n\025RelatedAlignment" +
-      "Entry\022\024\n\014target_index\030\001 \002(\r\022\020\n\010position\030" +
-      "\002 \002(\r\022\026\n\016fragment_index\030\003 \002(\r\"g\n\021Sequenc" +
+      "Entry\022\024\n\014target_index\030\001 \001(\r\022\020\n\010position\030" +
+      "\002 \001(\r\022\026\n\016fragment_index\030\003 \001(\r\"g\n\021Sequenc" +
       "eVariation\022\014\n\004from\030\002 \001(\t\022\n\n\002to\030\001 \001(\t\022\020\n\010" +
       "position\030\003 \001(\r\022\022\n\nread_index\030\005 \001(\r\022\022\n\nto" +
       "_quality\030\004 \001(\014\"\215\004\n\017AlignmentHeader\022\"\n\032sm" +

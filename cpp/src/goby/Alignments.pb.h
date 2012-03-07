@@ -496,21 +496,21 @@ class RelatedAlignmentEntry : public ::google::protobuf::Message {
   
   // accessors -------------------------------------------------------
   
-  // required uint32 target_index = 1;
+  // optional uint32 target_index = 1;
   inline bool has_target_index() const;
   inline void clear_target_index();
   static const int kTargetIndexFieldNumber = 1;
   inline ::google::protobuf::uint32 target_index() const;
   inline void set_target_index(::google::protobuf::uint32 value);
   
-  // required uint32 position = 2;
+  // optional uint32 position = 2;
   inline bool has_position() const;
   inline void clear_position();
   static const int kPositionFieldNumber = 2;
   inline ::google::protobuf::uint32 position() const;
   inline void set_position(::google::protobuf::uint32 value);
   
-  // required uint32 fragment_index = 3;
+  // optional uint32 fragment_index = 3;
   inline bool has_fragment_index() const;
   inline void clear_fragment_index();
   static const int kFragmentIndexFieldNumber = 3;
@@ -2043,7 +2043,7 @@ inline void AlignmentEntry::set_sample_index(::google::protobuf::uint32 value) {
 
 // RelatedAlignmentEntry
 
-// required uint32 target_index = 1;
+// optional uint32 target_index = 1;
 inline bool RelatedAlignmentEntry::has_target_index() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -2065,7 +2065,7 @@ inline void RelatedAlignmentEntry::set_target_index(::google::protobuf::uint32 v
   target_index_ = value;
 }
 
-// required uint32 position = 2;
+// optional uint32 position = 2;
 inline bool RelatedAlignmentEntry::has_position() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -2087,7 +2087,7 @@ inline void RelatedAlignmentEntry::set_position(::google::protobuf::uint32 value
   position_ = value;
 }
 
-// required uint32 fragment_index = 3;
+// optional uint32 fragment_index = 3;
 inline bool RelatedAlignmentEntry::has_fragment_index() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }

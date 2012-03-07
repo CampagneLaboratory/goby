@@ -22,6 +22,8 @@ import edu.cornell.med.icb.goby.alignments.AlignmentCollectionHandler;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutation;
+import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutationImpl;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.junit.Before;
 import org.junit.Test;
@@ -110,6 +112,17 @@ public class TestAlignmentChunkCodec1 {
         assertRoundTripMatchExpected(codec, collection);
     }
 
+
+  // @Test
+       // will not run on server.
+    public void roundTripPairedEnd() throws IOException {
+        final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
+        codec.setHandler(new AlignmentCollectionHandler());
+        Alignments.AlignmentCollection.Builder collection = loadCollection("/data/CRAM/VJDQTEI-C1.entries",0, 1000);
+
+        assertRoundTripMatchExpected(codec, collection);
+    }
+
   //  @Test
       // will not run on server.
     public void roundTripBug() throws IOException {
@@ -127,11 +140,12 @@ public class TestAlignmentChunkCodec1 {
     private Alignments.AlignmentCollection.Builder loadCollection(String filename, int firstElementToLoad, int maxElementsToLoad) throws IOException {
         final Alignments.AlignmentCollection.Builder collectionBuilder = Alignments.AlignmentCollection.newBuilder();
         AlignmentReaderImpl reader = new AlignmentReaderImpl(filename);
+        QueryIndexPermutation permutator=new QueryIndexPermutationImpl();
         try {
             int counter = 0;
             for (Alignments.AlignmentEntry entry : reader) {
                 if (counter >= firstElementToLoad) {
-                    collectionBuilder.addAlignmentEntries(entry);
+                    collectionBuilder.addAlignmentEntries(permutator.makeSmallIndices(entry));
                     if (counter++ > maxElementsToLoad) {
                         break;
                     }
