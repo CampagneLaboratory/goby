@@ -24,6 +24,7 @@ import com.google.protobuf.Message;
 import edu.cornell.med.icb.goby.algorithmic.compression.FastArithmeticCoder;
 import edu.cornell.med.icb.goby.algorithmic.compression.FastArithmeticDecoder;
 import edu.cornell.med.icb.goby.reads.ProtobuffCollectionHandler;
+import it.unimi.dsi.bits.Fast;
 import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -177,11 +178,11 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         // add one to each value, since we cannot write zeroes in minimal binary.
         out.writeNibble(list.size());
         final long writtenStart = out.writtenBits();
-        for (final int value : list) {
-            final int a = value - min;
             final int b = max - min + 1;
+        final int log2b= Fast.mostSignificantBit(b);
+        for (final int value : list) {
 
-            out.writeMinimalBinary(a, b);
+            out.writeMinimalBinary(value - min, b,log2b);
             // out.writeLongMinimalBinary(value-min, max-min+1);
         }
         final long writtenStop = out.writtenBits();
