@@ -71,6 +71,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     //Two types of encoding currently supported for query indices:
     private static final int DELTA_ENCODING_SCHEME = 0;
     private static final int MINIMAL_BINARY_ENCODING_SCHEME = 1;
+    private static final int MISSING_VALUE = -1;
+    private boolean multiplicityFieldsAllMissing = true;
 
     @Override
     public int getType() {
@@ -231,7 +233,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
      * @throws java.io.IOException
      */
     private boolean tryWriteDeltas(String label, IntList list, OutputBitStream out) throws IOException {
-
+        if (list.size()==0) {
+            return false;
+        }
         final IntArrayList deltas = new IntArrayList();
         int first = list.getInt(0);
         // write the first value as is:
@@ -246,11 +250,11 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
 
         final IntAVLTreeSet tokens = getTokens(deltas);
-     //   System.out.printf("tokenSize=%d listSize=%d%n", tokens.size(), list.size());
+        //   System.out.printf("tokenSize=%d listSize=%d%n", tokens.size(), list.size());
         if (tokens.size() > list.size() / 10) {
             return false;
         } else {
-       //     System.out.println("Using delta encoding scheme");
+            //     System.out.println("Using delta encoding scheme");
             out.writeDelta(DELTA_ENCODING_SCHEME);
             out.writeNibble(first);
             writeArithmetic(label, deltas, out);
@@ -324,7 +328,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final int numTokens = bitInput.readNibble();
         final int[] distinctvalue = new int[numTokens];
         for (int i = 0; i < numTokens; i++) {
-            distinctvalue[i] = bitInput.readNibble();
+            // -1 makes 0 symbol -1 (missing value) again
+            distinctvalue[i] = bitInput.readNibble() - 1;
         }
         // TODO see if we can avoid reading the number of elements in some cases.
         int size = bitInput.readNibble();
@@ -354,7 +359,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         // TODO see if we can avoid writing the number of elements in some cases.
         out.writeNibble(distinctSymbols.size());
         for (final int token : distinctSymbols) {
-            out.writeNibble(token);
+            // +1 makes -1 (missing value) symbol 0 so it can be written Nibble:
+            out.writeNibble(token + 1);
         }
         out.writeNibble(list.size());
         final FastArithmeticCoder coder = new FastArithmeticCoder(distinctSymbols.size());
@@ -415,6 +421,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
 
     private void decompressBits(InputBitStream bitInput, final int numEntriesInChunk) throws IOException {
+        multiplicityFieldsAllMissing = bitInput.readBit() == 1;
 
         decodeArithmetic("deltaPositions", numEntriesInChunk, bitInput, deltaPositions);
         decodeArithmetic("deltaTargetIndices", numEntriesInChunk, bitInput, deltaTargetIndices);
@@ -443,6 +450,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private void writeCompressed(final OutputBitStream out) throws IOException {
         //   out.writeNibble(0);
 
+        out.writeBit(multiplicityFieldsAllMissing);
+
         writeArithmetic("positions", deltaPositions, out);
         writeArithmetic("targets", deltaTargetIndices, out);
         writeArithmetic("queryLengths", queryLengths, out);
@@ -469,6 +478,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     }
 
     private void reset() {
+        multiplicityFieldsAllMissing = true;
+
         previousPosition = -1;
         previousTargetIndex = -1;
         deltaPositions.clear();
@@ -546,20 +557,21 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             return null;
         } else {
             previousPartial = partial;
+            multiplicityFieldsAllMissing &= !source.hasMultiplicity();
             multiplicities.add(Math.max(1, source.getMultiplicity()));
         }
         //System.out.printf("encoding query-index=%d varPositionIndex=%d %n",queryIndex, varPositionIndex);
 
-        queryLengths.add(source.getQueryLength());
-        mappingQualities.add(source.getMappingQuality());
-        matchingReverseStrand.add(source.getMatchingReverseStrand() ? 1 : 0);
-        numberOfIndels.add(source.getNumberOfIndels());
-        numberOfMismatches.add(source.getNumberOfMismatches());
-        queryAlignedLengths.add(source.getQueryAlignedLength());
-        targetAlignedLengths.add(source.getTargetAlignedLength());
-        fragmentIndex.add(source.getFragmentIndex());
+        queryLengths.add(source.hasQueryLength() ? source.getQueryLength() : MISSING_VALUE);
+        mappingQualities.add(source.hasMappingQuality() ? source.getMappingQuality() : MISSING_VALUE);
+        matchingReverseStrand.add(source.hasMatchingReverseStrand() ? source.getMatchingReverseStrand() ? 1 : 0 : MISSING_VALUE);
+        numberOfIndels.add(source.hasNumberOfIndels() ? source.getNumberOfIndels() : MISSING_VALUE);
+        numberOfMismatches.add(source.hasNumberOfMismatches() ? source.getNumberOfMismatches() : MISSING_VALUE);
+        queryAlignedLengths.add(source.hasQueryAlignedLength() ? source.getQueryAlignedLength() : MISSING_VALUE);
+        targetAlignedLengths.add(source.hasTargetAlignedLength() ? source.getTargetAlignedLength() : MISSING_VALUE);
+        fragmentIndex.add(source.hasFragmentIndex() ? source.getFragmentIndex() : MISSING_VALUE);
         variationCount.add(source.getSequenceVariationsCount());
-        queryPositions.add(source.getQueryPosition());
+        queryPositions.add(source.hasQueryPosition() ? source.getQueryPosition() : MISSING_VALUE);
 
         result.clearQueryLength();
         result.clearMappingQuality();
@@ -579,7 +591,6 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         int seqVarIndex = 0;
 
         for (final Alignments.SequenceVariation seqVar : result.getSequenceVariationsList()) {
-
 
             encodeVar(seqVar);
             Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder(seqVar);
@@ -647,7 +658,6 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final int toLength = to.length();
         final boolean hasToQuals = seqVar.hasToQuality();
         varPositions.add(seqVar.getPosition());
-
         varPositionIndex++;
         varReadIndex.add(seqVar.getReadIndex());
         fromLengths.add(fromLength);
@@ -660,11 +670,11 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             final byte byteFrom = (byte) baseFrom;
             final byte byteTo = (byte) baseTo;
             varFromTo.add(byteFrom << 8 | byteTo);
-            if (hasToQuals) {
+           /* if (hasToQuals) {
                 varQuals.add(toQualities.byteAt(i));
             } else {
                 varQuals.add(NO_VALUE);
-            }
+            }*/
         }
     }
 
@@ -680,8 +690,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
         multiplicities.set(index, k);
         //if (k > 1) {
-        result.setMultiplicity(multiplicity);
-
+        if (!multiplicityFieldsAllMissing) {
+            result.setMultiplicity(1);
+        }
         final int queryIndex = queryIndices.getInt(originalIndex);
         result.setQueryIndex(queryIndex);
         // System.out.printf("decoding query-index=%d (originalIndex=%d) varPositionIndex=%d %n",queryIndex,originalIndex, varPositionIndex);
@@ -703,14 +714,39 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             deltaPosIndex++;
         }
 
-        result.setMappingQuality(mappingQualities.getInt(index));
-        result.setMatchingReverseStrand(matchingReverseStrand.getInt(index) == 1);
-        result.setNumberOfMismatches(numberOfMismatches.getInt(index));
-        result.setNumberOfIndels(numberOfIndels.getInt(index));
-        result.setQueryLength(queryLengths.getInt(index));
-        result.setQueryAlignedLength(queryAlignedLengths.getInt(index));
-        result.setQueryPosition(queryPositions.getInt(index));
-        result.setTargetAlignedLength(targetAlignedLengths.getInt(index));
+        int anInt = mappingQualities.getInt(index);
+        if (anInt != MISSING_VALUE) {
+            result.setMappingQuality(anInt);
+        }
+        anInt = matchingReverseStrand.getInt(index);
+        if (anInt != MISSING_VALUE) {
+            result.setMatchingReverseStrand(anInt == 1);
+        }
+        anInt = numberOfMismatches.getInt(index);
+        if (anInt != MISSING_VALUE) {
+            result.setNumberOfMismatches(anInt);
+        }
+        anInt = numberOfIndels.getInt(index);
+        if (anInt != MISSING_VALUE) {
+            result.setNumberOfIndels(anInt);
+
+        }
+        anInt = queryLengths.getInt(index);
+        if (anInt != MISSING_VALUE) {
+            result.setQueryLength(anInt);
+        }
+        anInt = queryAlignedLengths.getInt(index);
+        if (anInt != MISSING_VALUE) {
+            result.setQueryAlignedLength(anInt);
+        }
+        anInt = queryPositions.getInt(index);
+        if (anInt != MISSING_VALUE) {
+            result.setQueryPosition(anInt);
+        }
+        anInt = targetAlignedLengths.getInt(index);
+        if (anInt != MISSING_VALUE) {
+            result.setTargetAlignedLength(anInt);
+        }
         final boolean templateHasSequenceVariations = reduced.getSequenceVariationsCount() > 0;
         final int numVariations = variationCount.getInt(index);
 
