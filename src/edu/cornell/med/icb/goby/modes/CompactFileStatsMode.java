@@ -333,8 +333,12 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         stream.printf("Avg score alignment = %f%n", avgScore);
         stream.printf("Avg number of variations per query sequence = %3.2f %n",
                 avgNumVariationsPerQuery);
+        // size, the number of bytes in the file.
         final long size = file.length();
         stream.printf("Average bytes per entry = %f%n", divide(size, numLogicalAlignmentEntries));
+        final int averageReadLength = (minReadLength + maxReadLength) / 2;
+        stream.printf("Average bits per read base, assuming average read length %d = %f%n",averageReadLength,
+                divide(size, numLogicalAlignmentEntries * averageReadLength));
 
         stream.printf("Min query length = %,d%n", (int) queryLengthStats.getMin());
         stream.printf("Max query length = %,d%n", (int) queryLengthStats.getMax());

@@ -563,6 +563,7 @@ public class AlignmentWriter implements Closeable {
     public void setQueryIdentifiers(final IndexedIdentifier queryIdentifiers) {
         this.queryIdentifiers = queryIdentifiers;
         for (final int index : queryIdentifiers.values()) {
+          int  permIndex= permutator.permutate(index);
             maxQueryIndex = Math.max(maxQueryIndex, index);
         }
     }

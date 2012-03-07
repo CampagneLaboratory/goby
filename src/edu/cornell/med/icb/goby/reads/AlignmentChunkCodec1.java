@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import java.io.*;
 
 /**
+ * A codec that writes highly compressed alignment data in one pool, but keeps protobuf message in a separate pool.
  * @author Fabien Campagne
  *         Date: 3/3/12
  *         Time: 2:35 PM
@@ -39,7 +40,7 @@ public class AlignmentChunkCodec1 implements ChunkCodec {
 
     public static final byte REGISTRATION_CODE = -2;
     private ProtobuffCollectionHandler handler;
-    private GZipChunkCodec gzipCodec = new GZipChunkCodec();
+    private final GZipChunkCodec gzipCodec = new GZipChunkCodec();
 
     @Override
     public byte registrationCode() {
@@ -50,6 +51,7 @@ public class AlignmentChunkCodec1 implements ChunkCodec {
      * Used to log informational and debug messages.
      */
     private static final Log LOG = LogFactory.getLog(AlignmentChunkCodec1.class);
+    private int chunkIndex = 0;
 
     @Override
     public ByteArrayOutputStream encode(final Message readCollection) throws IOException {
@@ -69,10 +71,10 @@ public class AlignmentChunkCodec1 implements ChunkCodec {
         final ByteArrayOutputStream out = gzipCodec.encode(reducedProtoBuff);
 
         final byte[] gzipBytes = out.toByteArray();
-        int gzipBytesSize = gzipBytes.length;
+        final int gzipBytesSize = gzipBytes.length;
         completeChunkData.write(gzipBytes);
         completeChunkData.flush();
-        if (debug) {
+        if (debug && chunkIndex % 100 == 0) {
 
             //TODO remove compression of original collection. Only useful for stat collection
             int originalGzipSize = gzipCodec.encode(readCollection).toByteArray().length;
@@ -82,7 +84,9 @@ public class AlignmentChunkCodec1 implements ChunkCodec {
                     compressedBitSize, gzipBytesSize, originalGzipSize,
                     100d * ((double) compressedBitSize) / (compressedBitSize + gzipBytesSize),
                     gain, gain * 100d / originalGzipSize));
+
         }
+        chunkIndex++;
         return result;
     }
 

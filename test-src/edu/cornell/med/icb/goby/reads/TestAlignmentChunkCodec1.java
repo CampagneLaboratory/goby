@@ -60,32 +60,114 @@ public class TestAlignmentChunkCodec1 {
     }
 
 
-    // @Test
-    // TODO enable to debug decoding:
+    @Test
+
     public void testRoundTrip() throws IOException {
         final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
-        Alignments.AlignmentCollection.Builder collection = buildCollection();
+        Alignments.AlignmentCollection.Builder collection = buildCollection(examples);
 
-        final ByteArrayOutputStream encoded = codec.encode(collection.build());
-        Alignments.AlignmentCollection decodedCollection = (Alignments.AlignmentCollection) codec.decode(encoded.toByteArray());
 
-        for (int i=0;i<decodedCollection.getAlignmentEntriesCount(); i++) {
+        testRoundTripWithBuiltEntries(codec, collection);
+    }
 
-            Alignments.AlignmentEntry decodedEntry = decodedCollection.getAlignmentEntries(i);
-            final String expected = builtEntries.get(i).build().toString();
-            final String actual = decodedEntry.toString();
-            assertEquals("entry " + i, expected, actual);
+    AlignmentExample[] examplesWithDuplicates = {
+            new AlignmentExample(0, 1, 33, 1, "TA", "GG", 27, 31, "--", "TA", 3, 1000),    // R1
+            new AlignmentExample(0, 2, 33, 2, "TA", "GG", 27, 31, "--", "TA", 3, 1000),    // R1
+            new AlignmentExample(0, 3, 33, 3, "TA", "GG", 27, 31, "--", "TA", 3, 1000),    // R1
+            new AlignmentExample(0, 15, 33, 4, "TA", "GG", 27, 31, "--", "TA", 3, 1000),   // R1
+            new AlignmentExample(0, 101, 9, 5, "..", "AA", 42, 24, "T-", "G.", 5, 1001),     // R2
+            new AlignmentExample(0, 112, 9, 6, "..", "AA", 42, 24, "T-", "G.", 5, 1001),    // R2
+            new AlignmentExample(0, 112, 9, 7, "..", "AA", 42, 24, "T-", "G.", 5, 1001),    // R2
+            new AlignmentExample(1, 1111, 9, 8, "AA--AA", "CCCC", 13, 24, "T-", "G.", 5, 3)   //R3
+    };
+
+    @Test
+    public void testRoundTripMultipleEntriesDuplicate() throws IOException {
+        final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
+        codec.setHandler(new AlignmentCollectionHandler());
+        Alignments.AlignmentCollection.Builder collection = buildCollection(examplesWithDuplicates);
+      //  System.out.println(collection.build().toString());
+        assertRoundTripMatchExpected(codec, collection);
+    }
+
+    @Test
+    public void roundTripMore() throws IOException {
+        final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
+        codec.setHandler(new AlignmentCollectionHandler());
+        Alignments.AlignmentCollection.Builder collection = loadCollection("test-data/seq-var-test/kevin-synth/sorted-seq-var-reads-gsnap.entries");
+
+        assertRoundTripMatchExpected(codec, collection);
+    }
+
+    @Test
+    public void roundTripLarge() throws IOException {
+        final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
+        codec.setHandler(new AlignmentCollectionHandler());
+        Alignments.AlignmentCollection.Builder collection = loadCollection("/data/rrbs/EMNWFIL.entries",0, 100);
+
+        assertRoundTripMatchExpected(codec, collection);
+    }
+
+    @Test
+    public void roundTripBug() throws IOException {
+        final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
+        codec.setHandler(new AlignmentCollectionHandler());
+        Alignments.AlignmentCollection.Builder collection = loadCollection("/data/CRAM/WZLFUIH-paper-combined-NA18853.entries", 10000*117-5000, 10000);
+
+        assertRoundTripMatchExpected(codec, collection);
+    }
+
+    private Alignments.AlignmentCollection.Builder loadCollection(String filename) throws IOException {
+        return loadCollection(filename,0, Integer.MAX_VALUE);
+    }
+
+    private Alignments.AlignmentCollection.Builder loadCollection(String filename, int firstElementToLoad, int maxElementsToLoad) throws IOException {
+        final Alignments.AlignmentCollection.Builder collectionBuilder = Alignments.AlignmentCollection.newBuilder();
+        AlignmentReaderImpl reader = new AlignmentReaderImpl(filename);
+        try {
+            int counter = 0;
+            for (Alignments.AlignmentEntry entry : reader) {
+                if (counter >= firstElementToLoad) {
+                    collectionBuilder.addAlignmentEntries(entry);
+                    if (counter++ > maxElementsToLoad) {
+                        break;
+                    }
+                }
+            }
+            return collectionBuilder;
+        } finally {
+            reader.close();
         }
     }
 
-    private Alignments.AlignmentCollection.Builder buildCollection() {
+    private void testRoundTripWithBuiltEntries(AlignmentChunkCodec1 codec, Alignments.AlignmentCollection.Builder collection) throws IOException {
+        final ByteArrayOutputStream encoded = codec.encode(collection.build());
+        Alignments.AlignmentCollection decodedCollection = (Alignments.AlignmentCollection) codec.decode(encoded.toByteArray());
+        Alignments.AlignmentCollection.Builder expected = Alignments.AlignmentCollection.newBuilder();
+        for (final Alignments.AlignmentEntry.Builder entryBuilder : builtEntries) {
+            expected.addAlignmentEntries(entryBuilder);
+        }
+        assertEquals("collection", expected.build().toString(), decodedCollection.toString());
+
+    }
+
+    private void assertRoundTripMatchExpected(AlignmentChunkCodec1 codec, Alignments.AlignmentCollection.Builder expected) throws IOException {
+        final ByteArrayOutputStream encoded = codec.encode(expected.build());
+        Alignments.AlignmentCollection decodedCollection = (Alignments.AlignmentCollection) codec.decode(encoded.toByteArray());
+
+        assertEquals("collection", expected.build().toString(), decodedCollection.toString());
+
+    }
+
+    private Alignments.AlignmentCollection.Builder buildCollection(AlignmentExample[] builtEntries) {
         final Alignments.AlignmentCollection.Builder collectionBuilder = Alignments.AlignmentCollection.newBuilder();
-        for (Alignments.AlignmentEntry.Builder entry : builtEntries) {
+        for (Alignments.AlignmentEntry.Builder entry : buildEntriesCollection(builtEntries)) {
             collectionBuilder.addAlignmentEntries(entry);
         }
         return collectionBuilder;
     }
+
 
     @Test
     public void testMore() throws IOException {
@@ -101,7 +183,8 @@ public class TestAlignmentChunkCodec1 {
         assertNotNull(encoded);
         // assertEquals(collectionBuilder.getAlignmentEntriesCount(), encoded.);
     }
-    // @Test
+
+    @Test
     public void testLarge() throws IOException {
         final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
@@ -125,6 +208,7 @@ public class TestAlignmentChunkCodec1 {
         int position;
         int mappingQuality;
         int query_index;
+        int targetIndex;
 
         String var1_to;
         String var1_from;
@@ -137,9 +221,10 @@ public class TestAlignmentChunkCodec1 {
         int var2_readIndex;
 
 
-        AlignmentExample(int position, int mappingQuality, int query_index, String var1_to, String var1_from, int var1_position, int var1_readIndex,
+        AlignmentExample(int targetIndex, int position, int mappingQuality, int query_index, String var1_to, String var1_from, int var1_position, int var1_readIndex,
                          String var2_to, String var2_from, int var2_position, int var2_readIndex) {
 
+            this.targetIndex = targetIndex;
             this.position = position;
             this.mappingQuality = mappingQuality;
 
@@ -159,20 +244,28 @@ public class TestAlignmentChunkCodec1 {
     }
 
     AlignmentExample[] examples = new AlignmentExample[]{
-            new AlignmentExample(1, 33, 1, "TA", "GG", 27, 31, "--", "TA", 3, 1000),
-            new AlignmentExample(1, 9, 1, "..", "AA", 42, 24, "T-", "G.", 5, 1001)
+            new AlignmentExample(0, 1, 33, 1, "TA", "GG", 27, 31, "--", "TA", 3, 1000),
+            new AlignmentExample(0, 1, 9, 1, "..", "AA", 42, 24, "T-", "G.", 5, 1001),
+            new AlignmentExample(1, 1, 9, 1, "AA--AA", "CCCC", 13, 24, "T-", "G.", 5, 3)
     };
     ObjectArrayList<Alignments.AlignmentEntry.Builder> builtEntries;
 
     @Before
     public void setup() {
-        builtEntries = new ObjectArrayList<Alignments.AlignmentEntry.Builder>();
+        builtEntries = buildEntriesCollection(examples);
+
+
+    }
+
+    private ObjectArrayList<Alignments.AlignmentEntry.Builder> buildEntriesCollection(AlignmentExample[] examples) {
+        ObjectArrayList<Alignments.AlignmentEntry.Builder> list = new ObjectArrayList<Alignments.AlignmentEntry.Builder>();
         for (AlignmentExample entry : examples) {
             Alignments.AlignmentEntry.Builder alignmentBuilder = Alignments.AlignmentEntry.newBuilder();
             alignmentBuilder.setPosition(entry.position);
             alignmentBuilder.setMappingQuality(entry.mappingQuality);
             alignmentBuilder.setQueryIndex(entry.query_index);
-
+            alignmentBuilder.setMatchingReverseStrand(true);
+            alignmentBuilder.setTargetIndex(entry.targetIndex);
             Alignments.SequenceVariation.Builder sequenceVariation1 = Alignments.SequenceVariation.newBuilder();
             sequenceVariation1.setFrom(entry.var1_from);
             sequenceVariation1.setTo(entry.var1_to);
@@ -187,9 +280,9 @@ public class TestAlignmentChunkCodec1 {
             sequenceVariation2.setReadIndex(entry.var2_readIndex);
             alignmentBuilder.addSequenceVariations(sequenceVariation2.build());
 
-            builtEntries.add(alignmentBuilder);
+            list.add(alignmentBuilder);
         }
-
+        return list;
     }
 
 

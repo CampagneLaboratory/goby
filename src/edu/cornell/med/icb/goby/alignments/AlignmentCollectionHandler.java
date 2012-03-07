@@ -61,9 +61,16 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
     private int previousPosition;
     private int previousTargetIndex;
+    int deltaPosIndex = 0;
     private static final int NO_VALUE = 0;
-    private final boolean debug = false;
-
+    private final int debug = 1;
+    /**
+     * This variable keeps track of the number of chunks compressed or decompressed.
+     */
+    private int chunkIndex = 0;
+    //Two types of encoding currently supported for query indices:
+    private static final int DELTA_ENCODING_SCHEME = 0;
+    private static final int MINIMAL_BINARY_ENCODING_SCHEME = 1;
 
     @Override
     public int getType() {
@@ -91,7 +98,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             if (transformed != null) {
                 remainingCollection.addAlignmentEntries(transformed);
                 indexInReducedCollection++;
-      //          System.out.println("not a duplicate");
+                //          System.out.println("not a duplicate");
             } else {
 
             }
@@ -103,6 +110,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         if (numChunksProcessed++ % 200 == 0) {
             displayStats();
         }
+        ++chunkIndex;
         return remainingCollection.build();
     }
 
@@ -119,7 +127,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final int numEntriesInChunk = alignmentCollection.getAlignmentEntriesCount();
 
         decompressBits(bitInput, numEntriesInChunk);
-        int originalIndex=0;
+        int originalIndex = 0;
         for (int templateIndex = 0; templateIndex < numEntriesInChunk; templateIndex++) {
             final int templatePositionIndex = varPositionIndex;
             final int templateVarFromToIndex = varFromToIndex;
@@ -134,20 +142,27 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                 originalIndex++;
             }
         }
+        ++chunkIndex;
         return result.build();
     }
 
 
     public void displayStats() {
-        for (String label : typeToNumEntries.keySet()) {
-            int n = typeToNumEntries.getInt(label);
-            long written = typeToWrittenBits.getLong(label);
-            double average = (double) written / (double) n;
-            LOG.info
-                    (String.format("encoded %d %s in %d bits, average %g bits /element. ", n, label,
-                            written, average));
+        if (debug(1)) {
+            for (String label : typeToNumEntries.keySet()) {
+                int n = typeToNumEntries.getInt(label);
+                long written = typeToWrittenBits.getLong(label);
+                double average = (double) written / (double) n;
+                LOG.info
+                        (String.format("encoded %d %s in %d bits, average %g bits /element. ", n, label,
+                                written, average));
+            }
+            LOG.info(String.format("entries aggregated with multiplicity= %d", countAggregatedWithMultiplicity));
         }
-        LOG.info(String.format("entries aggregated with multiplicity= %d", countAggregatedWithMultiplicity));
+    }
+
+    private boolean debug(int level) {
+        return debug >= level;
     }
 
 
@@ -163,9 +178,17 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     }
 
     private void writeQueryIndices(final String label, final IntList list, final OutputBitStream out) throws IOException {
+        boolean success = tryWriteDeltas(label, list, out);
+        if (success) {
+            return;
+        } else {
+            out.writeDelta(MINIMAL_BINARY_ENCODING_SCHEME);
+        }
+
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
-
+        final int size = list.size();
+        //   System.out.printf("encoding, chunk=%d delta-positions.size=%d%n", chunkIndex, deltaPositions.size());
         for (final int value : list) {
 
             min = Math.min(value, min);
@@ -173,27 +196,102 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
         }
 
+        out.writeNibble(size);
+        if (size == 0) {
+            return;
+        }
         out.writeNibble(min);
         out.writeNibble(max);
         // add one to each value, since we cannot write zeroes in minimal binary.
-        out.writeNibble(list.size());
+
         final long writtenStart = out.writtenBits();
-            final int b = max - min + 1;
-        final int log2b= Fast.mostSignificantBit(b);
+        final int b = max - min + 1;
+        final int log2b = Fast.mostSignificantBit(b);
         for (final int value : list) {
 
-            out.writeMinimalBinary(value - min, b,log2b);
+            out.writeMinimalBinary(value - min, b, log2b);
             // out.writeLongMinimalBinary(value-min, max-min+1);
         }
-        final long writtenStop = out.writtenBits();
-        final long written = writtenStop - writtenStart;
-        recordStats(label, list, written);
+        if (debug(1)) {
+            //   out.flush();
+            final long writtenStop = out.writtenBits();
+            final long written = writtenStop - writtenStart;
+            recordStats(label, list, written);
+        }
+    }
+
+    /**
+     * Try to write query indices as delta. If the number of unique deltas is larger than 10% of list size, do not
+     * write anything and return false. Otherwise, write as delta and return true.
+     *
+     * @param label
+     * @param list
+     * @param out
+     * @return
+     * @throws java.io.IOException
+     */
+    private boolean tryWriteDeltas(String label, IntList list, OutputBitStream out) throws IOException {
+
+        final IntArrayList deltas = new IntArrayList();
+        int first = list.getInt(0);
+        // write the first value as is:
+        int previous = first;
+        int index = 0;
+        for (int value : list) {
+            if (index > 0) {
+                deltas.add(Fast.int2nat(value - previous));
+                previous = value;
+            }
+            ++index;
+        }
+
+        final IntAVLTreeSet tokens = getTokens(deltas);
+     //   System.out.printf("tokenSize=%d listSize=%d%n", tokens.size(), list.size());
+        if (tokens.size() > list.size() / 10) {
+            return false;
+        } else {
+       //     System.out.println("Using delta encoding scheme");
+            out.writeDelta(DELTA_ENCODING_SCHEME);
+            out.writeNibble(first);
+            writeArithmetic(label, deltas, out);
+            return true;
+        }
+
     }
 
     private void decodeQueryIndices(final String label, final int numEntriesInChunk, final InputBitStream bitInput, final IntList list) throws IOException {
+        switch (bitInput.readDelta()) {
+            case MINIMAL_BINARY_ENCODING_SCHEME:
+                readMinimalUnary(label, numEntriesInChunk, bitInput, list);
+                break;
+            case DELTA_ENCODING_SCHEME:
+                readAsDeltas(label, numEntriesInChunk, bitInput, list);
+                break;
+        }
+    }
+
+    private void readAsDeltas(String label, int numEntriesInChunk, InputBitStream bitInput, IntList list) throws IOException {
+        IntArrayList deltas = new IntArrayList();
+        int previous = bitInput.readNibble();
+        list.add(previous);
+        decodeArithmetic(label, numEntriesInChunk - 1, bitInput, deltas);
+
+        for (int delta : deltas) {
+            final int newValue = Fast.nat2int(delta) + previous;
+            list.add(newValue);
+            previous = newValue;
+        }
+
+    }
+
+    private void readMinimalUnary(final String label, final int numEntriesInChunk, final InputBitStream bitInput, final IntList list) throws IOException {
+        final int size = bitInput.readNibble();
+        if (size == 0) {
+            return;
+        }
         final int min = bitInput.readNibble();
         final int max = bitInput.readNibble();
-        final int size=bitInput.readNibble();
+
         for (int i = 0; i < size; i++) {
             final int reducedReadIndex = bitInput.readMinimalBinary(max - min + 1);
             list.add(reducedReadIndex + min);
@@ -215,7 +313,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     Object2LongMap<String> typeToWrittenBits = new Object2LongAVLTreeMap<String>();
 
     private void decodeArithmetic(String label, final int numEntriesInChunk, final InputBitStream bitInput, final IntList list) throws IOException {
-        if (debug) {
+        if (debug(2)) {
             System.err.flush();
             System.err.println("\nreading " + label + " with available=" + bitInput.available());
             System.err.flush();
@@ -240,7 +338,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     }
 
     private void writeArithmetic(final String label, final IntList list, OutputBitStream out) throws IOException {
-        if (debug) {
+        if (debug(2)) {
             System.err.flush();
             System.err.println("\nwriting " + label);
             System.err.flush();
@@ -266,17 +364,20 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             coder.encode(symbolCode, out);
         }
         coder.flush(out);
-
-        System.err.flush();
-        final long writtenStop = out.writtenBits();
-        final long written = writtenStop - writtenStart;
-        recordStats(label, list, written);
+        if (debug(1)) {
+            System.err.flush();
+            final long writtenStop = out.writtenBits();
+            final long written = writtenStop - writtenStart;
+            recordStats(label, list, written);
+        }
     }
 
     private void recordStats(String label, IntList list, long written) {
-        double average = ((double) written) / list.size();
-        typeToNumEntries.put(label, list.size() + typeToNumEntries.getInt(label));
-        typeToWrittenBits.put(label, written + typeToWrittenBits.getLong(label));
+        if (debug(1)) {
+            double average = ((double) written) / list.size();
+            typeToNumEntries.put(label, list.size() + typeToNumEntries.getInt(label));
+            typeToWrittenBits.put(label, written + typeToWrittenBits.getLong(label));
+        }
     }
 
     private IntAVLTreeSet getTokens(IntList list) {
@@ -311,6 +412,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private IntList varQuals = new IntArrayList();
     private IntList varHasToQuals = new IntArrayList();
     IntArrayList multiplicities = new IntArrayList();
+
 
     private void decompressBits(InputBitStream bitInput, final int numEntriesInChunk) throws IOException {
 
@@ -367,8 +469,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     }
 
     private void reset() {
-        previousPosition = 0;
-        previousTargetIndex = 0;
+        previousPosition = -1;
+        previousTargetIndex = -1;
         deltaPositions.clear();
         deltaTargetIndices.clear();
         queryLengths.clear();
@@ -396,7 +498,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         varHasToQuals.clear();
         multiplicities.clear();
         countAggregatedWithMultiplicity = 0;
-        previousPartial=null;
+        previousPartial = null;
+        deltaPosIndex = 0;
     }
 
     /**
@@ -432,14 +535,14 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
         final Alignments.AlignmentEntry partial = result.clone().build();
 
-        if (previousPartial != null && indexInReducedCollection >=1 && previousPartial.equals(partial)) {
+        if (previousPartial != null && indexInReducedCollection >= 1 && previousPartial.equals(partial)) {
             //   System.out.println("same");
             //  print(partial);
-            int m = multiplicities.get(indexInReducedCollection-1 );
-            multiplicities.set(indexInReducedCollection-1, m + 1);
+            int m = multiplicities.get(indexInReducedCollection - 1);
+            multiplicities.set(indexInReducedCollection - 1, m + 1);
             // do not add this one, we just increased the multiplicity of the previous one.
             countAggregatedWithMultiplicity++;
-      //      System.out.printf("Returning for template match to previous, current queryIndex=%d%n",queryIndex);
+            //      System.out.printf("Returning for template match to previous, current queryIndex=%d%n",queryIndex);
             return null;
         } else {
             previousPartial = partial;
@@ -479,7 +582,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
 
             encodeVar(seqVar);
-             Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder(seqVar);
+            Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder(seqVar);
             varBuilder.clearPosition();
             varBuilder.clearFrom();
             varBuilder.clearTo();
@@ -568,6 +671,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     MutableString from = new MutableString();
     MutableString to = new MutableString();
 
+
     private Alignments.AlignmentEntry andBack(final int index, int originalIndex, final Alignments.AlignmentEntry reduced) {
         final Alignments.AlignmentEntry.Builder result = Alignments.AlignmentEntry.newBuilder(reduced);
 
@@ -582,20 +686,21 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         result.setQueryIndex(queryIndex);
         // System.out.printf("decoding query-index=%d (originalIndex=%d) varPositionIndex=%d %n",queryIndex,originalIndex, varPositionIndex);
 
-        if (originalIndex == 0 || reduced.hasTargetIndex()) {
+        if (originalIndex == 0 || reduced.hasPosition() || reduced.hasTargetIndex()) {
             previousPosition = reduced.getPosition();
             previousTargetIndex = reduced.getTargetIndex();
         } else {
-            final int iMinus1 = originalIndex - 1;
-            final int deltaPos = deltaPositions.getInt(iMinus1);
-            final int deltaTarget = deltaTargetIndices.getInt(iMinus1);
+
+
+            final int deltaPos = deltaPositions.getInt(deltaPosIndex);
+            final int deltaTarget = deltaTargetIndices.getInt(deltaPosIndex);
             final int position = previousPosition + deltaPos;
             final int targetIndex = previousTargetIndex + deltaTarget;
             result.setPosition(position);
             result.setTargetIndex(targetIndex);
             previousPosition += deltaPos;
             previousTargetIndex += deltaTarget;
-
+            deltaPosIndex++;
         }
 
         result.setMappingQuality(mappingQualities.getInt(index));

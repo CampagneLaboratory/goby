@@ -78,12 +78,20 @@ public class QueryIndexPermutationImpl implements QueryIndexPermutation {
 
     @Override
     public void setSmallestIndex(int value) {
-        smallestIndex=value;
+        smallestIndex = value;
     }
 
     @Override
     public void setBiggestSmallIndex(int value) {
-      biggestSmallIndex=value;
+        biggestSmallIndex = value;
+    }
+
+    @Override
+    public int permutate(int queryIndex) {
+        int smallIndex = getSmallIndex(queryIndex);
+        smallestIndex = Math.min(smallestIndex, smallIndex);
+        biggestSmallIndex = Math.max(biggestSmallIndex, smallIndex);
+        return smallIndex;
     }
 
     private int smallIndexCounter = 0;

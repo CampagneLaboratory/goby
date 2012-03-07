@@ -41,4 +41,11 @@ public interface QueryIndexPermutation {
     void setSmallestIndex(int value);
 
     void setBiggestSmallIndex(int value);
+
+    /**
+     * Permutate a query index and return the smaller value.
+     * @param index
+     * @return
+     */
+    int permutate(int index);
 }

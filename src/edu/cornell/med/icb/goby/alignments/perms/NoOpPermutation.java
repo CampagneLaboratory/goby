@@ -50,11 +50,16 @@ public class NoOpPermutation implements QueryIndexPermutation {
     }
 
     @Override
-    public Alignments.AlignmentEntry makeSmallIndices(final Alignments.AlignmentEntry entry) {
-        final int queryIndex = entry.getQueryIndex();
+    public int permutate(int queryIndex) {
         smallestIndex = Math.min(smallestIndex, queryIndex);
         biggestSmallIndex = Math.max(biggestSmallIndex, queryIndex);
 
+        return queryIndex;
+    }
+
+    @Override
+    public Alignments.AlignmentEntry makeSmallIndices(final Alignments.AlignmentEntry entry) {
+        permutate(entry.getQueryIndex());
         return entry;
     }
 
