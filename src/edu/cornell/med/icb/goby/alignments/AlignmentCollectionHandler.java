@@ -76,7 +76,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private long writtenBits;
     private long writtenBases;
     private static final int NO_VALUE = MISSING_VALUE;
-    private int varHasToQualsIndex=0;
+    private int varHasToQualsIndex = 0;
+    private boolean useTemplateBasedCompression;
 
     @Override
     public int getType() {
@@ -152,6 +153,11 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
         ++chunkIndex;
         return result.build();
+    }
+
+    @Override
+    public void setUseTemplateCompression(final boolean useTemplateCompression) {
+        useTemplateBasedCompression = useTemplateCompression;
     }
 
 
@@ -534,7 +540,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         varPositionIndex = 0;
         varFromToIndex = 0;
         varHasToQuals.clear();
-        varHasToQualsIndex=0;
+        varHasToQualsIndex = 0;
         multiplicities.clear();
         countAggregatedWithMultiplicity = 0;
         previousPartial = null;
@@ -603,7 +609,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
         final Alignments.AlignmentEntry partial = result.clone().build();
 
-        if (previousPartial != null && indexInReducedCollection >= 1 && previousPartial.equals(partial)) {
+        if (previousPartial != null && indexInReducedCollection >= 1 && fastEquals(previousPartial, partial)) {
             //   System.out.println("same");
             //  print(partial);
             int m = multiplicities.get(indexInReducedCollection - 1);
@@ -656,7 +662,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             varBuilder.clearTo();
             varBuilder.clearToQuality();
             varBuilder.clearReadIndex();
-            if (!EMPTY_SEQ_VAR.equals(varBuilder.build())) {
+            if (!fastEquals(EMPTY_SEQ_VAR, varBuilder.build())) {
                 canFullyRemoveThisOne = false;
                 canFullyRemoveCollection = false;
             }
@@ -675,6 +681,11 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final Alignments.AlignmentEntry alignmentEntry = result.build();
         //    System.out.println(alignmentEntry);
         return alignmentEntry;
+    }
+
+    private boolean fastEquals(final Object o1, final Object o2) {
+        return useTemplateBasedCompression && o1.equals(o2);
+
     }
 
 
@@ -846,10 +857,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                     to.append((char) (fromTo & 0xFF));
                 }
                 if (hasToQual /*&& i < toLength*/) {
-                    quals[i] =(byte) varQuals.getInt(varQualIndex) ;
-                  //  if (quals[i] != NO_VALUE) {
-                        ++varQualIndex;
-                   // }
+                    quals[i] = (byte) varQuals.getInt(varQualIndex);
+                    //  if (quals[i] != NO_VALUE) {
+                    ++varQualIndex;
+                    // }
                 }
             }
             varBuilder.setFrom(from.toString());

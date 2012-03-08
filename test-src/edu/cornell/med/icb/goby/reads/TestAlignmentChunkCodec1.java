@@ -103,14 +103,14 @@ public class TestAlignmentChunkCodec1 {
         assertRoundTripMatchExpected(codec, collection);
     }
 
-   // @Test
+ //  @Test
        // will not run on server.
     public void roundTripLarge() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
         Alignments.AlignmentCollection.Builder collection = loadCollection("/data/rrbs/EMNWFIL.entries",0, 100);
 
-        assertRoundTripMatchExpected(codec, collection);
+        assertRoundTripMatchExpected(codec, collection,false);
     }
 
 
@@ -169,12 +169,17 @@ public class TestAlignmentChunkCodec1 {
         assertEquals("collection", expected.build().toString(), decodedCollection.toString());
 
     }
-
     private void assertRoundTripMatchExpected(HybridChunkCodec1 codec, Alignments.AlignmentCollection.Builder expected) throws IOException {
+              assertRoundTripMatchExpected(codec,expected,true);
+    }
+
+    private void assertRoundTripMatchExpected(HybridChunkCodec1 codec, Alignments.AlignmentCollection.Builder expected, boolean doAssert) throws IOException {
         final ByteArrayOutputStream encoded = codec.encode(expected.build());
         Alignments.AlignmentCollection decodedCollection = (Alignments.AlignmentCollection) codec.decode(encoded.toByteArray());
 
-        assertEquals("collection", expected.build().toString(), decodedCollection.toString());
+      if (doAssert){
+          assertEquals("collection", expected.build().toString(), decodedCollection.toString());
+      }
 
     }
 

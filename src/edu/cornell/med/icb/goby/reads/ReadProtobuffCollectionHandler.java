@@ -57,4 +57,9 @@ public class ReadProtobuffCollectionHandler implements ProtobuffCollectionHandle
     public Message decompressCollection(Message reducedProtoBuff, byte[] compressedBytes) {
         return reducedProtoBuff;
     }
+
+    @Override
+    public void setUseTemplateCompression(boolean useTemplateCompression) {
+
+    }
 }

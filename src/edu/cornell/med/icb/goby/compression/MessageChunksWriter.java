@@ -66,8 +66,10 @@ public class MessageChunksWriter {
     private final boolean compressingCodec;
     public static DynamicOptionClient doc = new DynamicOptionClient(MessageChunksWriter.class,
             "compressing-codec:boolean, when true compress protocol buffers with new chunk codec.:false",
+            "template-compression:boolean, when true use template compression.:true",
             "codec:string, name of the chunk codec to use.:gzip",
             "chunk-size:integer, the number of entries per chunk. :10000");
+    private boolean useTemplateCompression;
 
 
     /**
@@ -85,6 +87,7 @@ public class MessageChunksWriter {
         numEntriesPerChunk = doc.getInteger("chunk-size");
         final String codecName = doc.getString("codec");
         chunkCodec = ChunkCodecHelper.load(codecName);
+        useTemplateCompression=doc.getBoolean("template-compression");
     }
 
     /**
@@ -265,6 +268,7 @@ public class MessageChunksWriter {
                 chunkCodec = new GZipChunkCodec();
             }
         }
+        protobuffCollectionHandler.setUseTemplateCompression(useTemplateCompression);
         chunkCodec.setHandler(protobuffCollectionHandler);
         System.out.println("Using codec: " + chunkCodec.name());
         //     chunkCodec = new GZipChunkCodec();
