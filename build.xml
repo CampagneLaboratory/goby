@@ -16,6 +16,13 @@
 
     <property name="label" value="development"/>
 
+    <!--
+      * The target named by this task will be called before tests
+      * are run (but after dependencies are met). If one doesn't
+      * define "pre-test-task" nothing special will happen.
+      -->
+    <property name="pre-test-task" value="pre-test-task"/>
+
     <import file="buildsupport/build.xml"/>
 
     <if>
@@ -73,6 +80,15 @@
                 <include name="**/jaxb.index"/>
             </fileset>
         </copy>
+    </target>
+
+    <!--
+      * Before tests, compile goby-spi jar then place it it in
+      * test-lib/ - for this target to be called, we've defined
+      * a property named "pre-test-task" that points to this target.
+      -->
+    <target name="pre-test-task" depends="jar-goby-spi">
+        <copy file="${goby-spi-jarfile}" todir="${test-lib}" overwrite="true" failonerror="true"/>
     </target>
 
     <target name="jar" depends="jar-goby, jar-goby-api, jar-goby-spi, jar-goby-io, jar-goby-io-api"
