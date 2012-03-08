@@ -31,7 +31,7 @@ import java.io.*;
  *         Time: 2:35 PM
  */
 public class AlignmentChunkCodec1 implements ChunkCodec {
-    private boolean debug = true;
+    private boolean debug = false;
 
     @Override
     public String name() {

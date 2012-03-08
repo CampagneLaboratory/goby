@@ -113,12 +113,12 @@ public class TestAlignmentChunkCodec1 {
     }
 
 
-  // @Test
+   //@Test
        // will not run on server.
     public void roundTripPairedEnd() throws IOException {
         final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
-        Alignments.AlignmentCollection.Builder collection = loadCollection("/data/CRAM/VJDQTEI-C1.entries",0, 1000);
+        Alignments.AlignmentCollection.Builder collection = loadCollection("/data/CRAM/VJDQTEI-C1.entries",600, 700);
 
         assertRoundTripMatchExpected(codec, collection);
     }
@@ -146,10 +146,11 @@ public class TestAlignmentChunkCodec1 {
             for (Alignments.AlignmentEntry entry : reader) {
                 if (counter >= firstElementToLoad) {
                     collectionBuilder.addAlignmentEntries(permutator.makeSmallIndices(entry));
-                    if (counter++ > maxElementsToLoad) {
+                    if (counter > maxElementsToLoad) {
                         break;
                     }
                 }
+                counter++;
             }
             return collectionBuilder;
         } finally {

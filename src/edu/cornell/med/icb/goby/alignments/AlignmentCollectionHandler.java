@@ -62,7 +62,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private int previousPosition;
     private int previousTargetIndex;
     int deltaPosIndex = 0;
-    private static final int NO_VALUE = 0;
+
     private final int debug = 0;
     /**
      * This variable keeps track of the number of chunks compressed or decompressed.
@@ -75,6 +75,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private boolean multiplicityFieldsAllMissing = true;
     private long writtenBits;
     private long writtenBases;
+    private static final int NO_VALUE = MISSING_VALUE;
+    private int varHasToQualsIndex=0;
 
     @Override
     public int getType() {
@@ -532,7 +534,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         varPositionIndex = 0;
         varFromToIndex = 0;
         varHasToQuals.clear();
-
+        varHasToQualsIndex=0;
         multiplicities.clear();
         countAggregatedWithMultiplicity = 0;
         previousPartial = null;
@@ -571,6 +573,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
         previousPosition = position;
         previousTargetIndex = targetIndex;
+
         if (debug(1) && source.hasQueryLength()) {
             writtenBases += source.getQueryLength();
         }
@@ -688,8 +691,6 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             for (int i = 0; i < length; i++) {
                 if (hasToQuals && i < toQualities.size()) {
                     varQuals.add(toQualities.byteAt(i));
-                } else {
-                    varQuals.add(NO_VALUE);
                 }
             }
             Alignments.SequenceVariation.Builder varBuilder = Alignments.SequenceVariation.newBuilder(seqVar);
@@ -713,7 +714,6 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final int toLength = to.length();
         final boolean hasToQuals = seqVar.hasToQuality();
         varPositions.add(seqVar.getPosition());
-        varPositionIndex++;
         varReadIndex.add(seqVar.getReadIndex());
         fromLengths.add(fromLength);
         toLengths.add(toLength);
@@ -725,11 +725,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             final byte byteFrom = (byte) baseFrom;
             final byte byteTo = (byte) baseTo;
             varFromTo.add(byteFrom << 8 | byteTo);
-            /* if (hasToQuals) {
-                varQuals.add(toQualities.byteAt(i));
-            } else {
-                varQuals.add(NO_VALUE);
-            }*/
+
         }
     }
 
@@ -821,9 +817,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
         final boolean templateHasSequenceVariations = reduced.getSequenceVariationsCount() > 0;
         final int numVariations = variationCount.getInt(index);
-        if (queryIndex==72) {
-            System.out.println("STOP");
-        }
+
         for (int varIndex = 0; varIndex < numVariations; varIndex++) {
             final Alignments.SequenceVariation template = templateHasSequenceVariations ? reduced.getSequenceVariations(varIndex) : null;
             final Alignments.SequenceVariation.Builder varBuilder = templateHasSequenceVariations ?
@@ -836,8 +830,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             final int toLength = toLengths.getInt(varPositionIndex);
             varBuilder.setPosition(varPositions.getInt(varPositionIndex));
             varBuilder.setReadIndex(varReadIndex.getInt(varPositionIndex));
-            final boolean hasToQual = varHasToQuals.getInt(varPositionIndex) == 1;
-           // TODO optimize away array creation.
+            final boolean hasToQual = varHasToQuals.getInt(varHasToQualsIndex) == 1;
+            varHasToQualsIndex++;
+            // TODO optimize away array creation.
             final byte[] quals = hasToQual ? new byte[toLength] : null;
             ++varPositionIndex;
             final int maxLength = Math.max(fromLength, toLength);
@@ -850,10 +845,11 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                 if (i < toLength) {
                     to.append((char) (fromTo & 0xFF));
                 }
-                if (hasToQual) {
-                    quals[i] = (byte) varQuals.getInt(varQualIndex);
-
-                    ++varQualIndex;
+                if (hasToQual /*&& i < toLength*/) {
+                    quals[i] =(byte) varQuals.getInt(varQualIndex) ;
+                  //  if (quals[i] != NO_VALUE) {
+                        ++varQualIndex;
+                   // }
                 }
             }
             varBuilder.setFrom(from.toString());
