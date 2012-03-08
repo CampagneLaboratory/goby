@@ -24,6 +24,7 @@ import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutation;
 import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutationImpl;
+import edu.cornell.med.icb.goby.compression.HybridChunkCodec1;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,13 +43,13 @@ import static junit.framework.Assert.assertNotNull;
 public class TestAlignmentChunkCodec1 {
     @Test
     public void nullCollection() throws IOException {
-        final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
+        final HybridChunkCodec1 codec = new HybridChunkCodec1();
         assertEquals(null, codec.encode(null));
     }
 
     @Test
     public void smallCollection() throws IOException {
-        final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
+        final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
         final AlignmentReader reader = new AlignmentReaderImpl("test-data/alignments/mantis-1355/mantis-1355.entries");
         final Alignments.AlignmentCollection.Builder collectionBuilder = Alignments.AlignmentCollection.newBuilder();
@@ -65,7 +66,7 @@ public class TestAlignmentChunkCodec1 {
     @Test
 
     public void testRoundTrip() throws IOException {
-        final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
+        final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
         Alignments.AlignmentCollection.Builder collection = buildCollection(examples);
 
@@ -86,7 +87,7 @@ public class TestAlignmentChunkCodec1 {
 
     @Test
     public void testRoundTripMultipleEntriesDuplicate() throws IOException {
-        final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
+        final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
         Alignments.AlignmentCollection.Builder collection = buildCollection(examplesWithDuplicates);
       //  System.out.println(collection.build().toString());
@@ -95,7 +96,7 @@ public class TestAlignmentChunkCodec1 {
 
     @Test
     public void roundTripMore() throws IOException {
-        final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
+        final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
         Alignments.AlignmentCollection.Builder collection = loadCollection("test-data/seq-var-test/kevin-synth/sorted-seq-var-reads-gsnap.entries");
 
@@ -105,7 +106,7 @@ public class TestAlignmentChunkCodec1 {
    // @Test
        // will not run on server.
     public void roundTripLarge() throws IOException {
-        final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
+        final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
         Alignments.AlignmentCollection.Builder collection = loadCollection("/data/rrbs/EMNWFIL.entries",0, 100);
 
@@ -116,7 +117,7 @@ public class TestAlignmentChunkCodec1 {
    //@Test
        // will not run on server.
     public void roundTripPairedEnd() throws IOException {
-        final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
+        final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
         Alignments.AlignmentCollection.Builder collection = loadCollection("/data/CRAM/VJDQTEI-C1.entries",600, 700);
 
@@ -126,7 +127,7 @@ public class TestAlignmentChunkCodec1 {
   //  @Test
       // will not run on server.
     public void roundTripBug() throws IOException {
-        final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
+        final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
         Alignments.AlignmentCollection.Builder collection = loadCollection("/data/CRAM/WZLFUIH-paper-combined-NA18853.entries", 10000*117-5000, 10000);
 
@@ -158,7 +159,7 @@ public class TestAlignmentChunkCodec1 {
         }
     }
 
-    private void testRoundTripWithBuiltEntries(AlignmentChunkCodec1 codec, Alignments.AlignmentCollection.Builder collection) throws IOException {
+    private void testRoundTripWithBuiltEntries(HybridChunkCodec1 codec, Alignments.AlignmentCollection.Builder collection) throws IOException {
         final ByteArrayOutputStream encoded = codec.encode(collection.build());
         Alignments.AlignmentCollection decodedCollection = (Alignments.AlignmentCollection) codec.decode(encoded.toByteArray());
         Alignments.AlignmentCollection.Builder expected = Alignments.AlignmentCollection.newBuilder();
@@ -169,7 +170,7 @@ public class TestAlignmentChunkCodec1 {
 
     }
 
-    private void assertRoundTripMatchExpected(AlignmentChunkCodec1 codec, Alignments.AlignmentCollection.Builder expected) throws IOException {
+    private void assertRoundTripMatchExpected(HybridChunkCodec1 codec, Alignments.AlignmentCollection.Builder expected) throws IOException {
         final ByteArrayOutputStream encoded = codec.encode(expected.build());
         Alignments.AlignmentCollection decodedCollection = (Alignments.AlignmentCollection) codec.decode(encoded.toByteArray());
 
@@ -188,7 +189,7 @@ public class TestAlignmentChunkCodec1 {
 
     @Test
     public void testMore() throws IOException {
-        final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
+        final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
         final AlignmentReader reader = new AlignmentReaderImpl("test-data/seq-var-test/kevin-synth/sorted-seq-var-reads-gsnap.entries");
         final Alignments.AlignmentCollection.Builder collectionBuilder = Alignments.AlignmentCollection.newBuilder();
@@ -204,7 +205,7 @@ public class TestAlignmentChunkCodec1 {
    // @Test
     // will not run on server.
     public void testLarge() throws IOException {
-        final AlignmentChunkCodec1 codec = new AlignmentChunkCodec1();
+        final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
         final AlignmentReader reader = new AlignmentReaderImpl("/data/rrbs/EMNWFIL.entries");
         final Alignments.AlignmentCollection.Builder collectionBuilder = Alignments.AlignmentCollection.newBuilder();

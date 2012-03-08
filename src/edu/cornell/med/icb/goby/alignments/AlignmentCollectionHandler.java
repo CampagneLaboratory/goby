@@ -23,7 +23,7 @@ import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import edu.cornell.med.icb.goby.algorithmic.compression.FastArithmeticCoder;
 import edu.cornell.med.icb.goby.algorithmic.compression.FastArithmeticDecoder;
-import edu.cornell.med.icb.goby.reads.ProtobuffCollectionHandler;
+import edu.cornell.med.icb.goby.compression.ProtobuffCollectionHandler;
 import it.unimi.dsi.bits.Fast;
 import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
 import it.unimi.dsi.fastutil.ints.IntArrayList;

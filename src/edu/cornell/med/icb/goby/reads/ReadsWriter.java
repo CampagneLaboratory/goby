@@ -21,6 +21,7 @@
 package edu.cornell.med.icb.goby.reads;
 
 import com.google.protobuf.ByteString;
+import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
 
 import java.io.Closeable;
 import java.io.IOException;

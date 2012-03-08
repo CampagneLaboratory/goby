@@ -18,7 +18,7 @@
  *     along with the Goby IO API.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.cornell.med.icb.goby.reads;
+package edu.cornell.med.icb.goby.compression;
 
 import edu.cornell.med.icb.goby.alignments.AlignmentCollectionHandler;
 import edu.cornell.med.icb.goby.util.DynamicOptionClient;
@@ -66,6 +66,7 @@ public class MessageChunksWriter {
     private final boolean compressingCodec;
     public static DynamicOptionClient doc = new DynamicOptionClient(MessageChunksWriter.class,
             "compressing-codec:boolean, when true compress protocol buffers with new chunk codec.:false",
+            "codec:string, name of the chunk codec to use.:gzip",
             "chunk-size:integer, the number of entries per chunk. :10000");
 
 
@@ -81,7 +82,9 @@ public class MessageChunksWriter {
     public MessageChunksWriter(final OutputStream output) {
         this.out = new DataOutputStream(output);
         compressingCodec = doc.getBoolean("compressing-codec");
-        numEntriesPerChunk=doc.getInteger("chunk-size");
+        numEntriesPerChunk = doc.getInteger("chunk-size");
+        final String codecName = doc.getString("codec");
+        chunkCodec = ChunkCodecHelper.load(codecName);
     }
 
     /**
@@ -253,15 +256,18 @@ public class MessageChunksWriter {
         return numAppended;
     }
 
-    public void setParser(ProtobuffCollectionHandler protobuffCollectionParser) {
-        if (protobuffCollectionParser instanceof AlignmentCollectionHandler) {
+    public void setParser(final ProtobuffCollectionHandler protobuffCollectionHandler) {
+        if (chunkCodec == null) {
+            if (protobuffCollectionHandler instanceof AlignmentCollectionHandler) {
 
-            chunkCodec = compressingCodec ? new AlignmentChunkCodec1() : new GZipChunkCodec();
-        } else {
-            chunkCodec = new GZipChunkCodec();
+                chunkCodec = compressingCodec ? new HybridChunkCodec1() : new GZipChunkCodec();
+            } else {
+                chunkCodec = new GZipChunkCodec();
+            }
         }
-        System.out.println("Using handler: " + chunkCodec.getClass().getName());
+        chunkCodec.setHandler(protobuffCollectionHandler);
+        System.out.println("Using codec: " + chunkCodec.name());
         //     chunkCodec = new GZipChunkCodec();
-        chunkCodec.setHandler(protobuffCollectionParser);
+
     }
 }

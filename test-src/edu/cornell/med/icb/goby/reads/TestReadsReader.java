@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.reads;
 
+import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
 import org.apache.commons.io.input.NullInputStream;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

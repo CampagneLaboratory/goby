@@ -21,6 +21,9 @@
 package edu.cornell.med.icb.goby.reads;
 
 import com.google.protobuf.ByteString;
+import edu.cornell.med.icb.goby.compression.ChunkCodec;
+import edu.cornell.med.icb.goby.compression.FastBufferedMessageChunksReader;
+import edu.cornell.med.icb.goby.compression.MessageChunksReader;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import edu.cornell.med.icb.goby.util.CodecHelper;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
@@ -80,7 +83,7 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
     public ReadsReader(final InputStream stream) {
         super();
         reader = new MessageChunksReader(stream);
-        reader.setParser(new ReadProtobuffCollectionHandler());
+        reader.setHandler(new ReadProtobuffCollectionHandler());
         codec = null;
     }
 
@@ -112,7 +115,7 @@ public class ReadsReader implements Iterator<Reads.ReadEntry>, Iterable<Reads.Re
             throws IOException {
         super();
         reader = new FastBufferedMessageChunksReader(start, end, stream);
-        reader.setParser(new ReadProtobuffCollectionHandler());
+        reader.setHandler(new ReadProtobuffCollectionHandler());
     }
 
     /**

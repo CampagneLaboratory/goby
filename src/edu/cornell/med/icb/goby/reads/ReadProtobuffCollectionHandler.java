@@ -21,6 +21,7 @@ package edu.cornell.med.icb.goby.reads;
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
+import edu.cornell.med.icb.goby.compression.ProtobuffCollectionHandler;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

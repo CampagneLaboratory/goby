@@ -20,8 +20,8 @@ package edu.cornell.med.icb.goby.alignments;
 
 import com.google.protobuf.CodedInputStream;
 import edu.cornell.med.icb.goby.GobyVersion;
+import edu.cornell.med.icb.goby.compression.MessageChunksReader;
 import edu.cornell.med.icb.goby.modes.ConcatenateAlignmentMode;
-import edu.cornell.med.icb.goby.reads.MessageChunksReader;
 import edu.cornell.med.icb.util.VersionUtils;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import org.apache.commons.io.FileUtils;

@@ -16,36 +16,45 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.cornell.med.icb.goby.reads;
+package edu.cornell.med.icb.goby.compression;
 
-import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
- * A mechanism to obtain a protobuff collection from a stream of data. Parsers must know the type of protobuff messages
- * contained in the collection.
+ * Encode/decode whole chunks of protocol buffer data to a stream of bytes.
  *
  * @author Fabien Campagne
  *         Date: 3/3/12
- *         Time: 11:37 AM
+ *         Time: 10:27 AM
  */
-public interface ProtobuffCollectionHandler {
-    public final int TYPE_READS = 0;
-    public final int TYPE_ALIGNMENTS = 1;
+public interface ChunkCodec {
+    /**
+     * Return the name of this codec.
+     *
+     * @return Return the name of this codec.
+     */
+    public String name();
+
 
     /**
-     * Returns the type of the collection elements.
-     * @return One of the pre-defined types, TYPE_READS or TYPE_ALIGNMENTS.
+     * Return the registration code of this codec, a byte that uniquely identifies this codec.
+     *
+     * @return Return the registration code of this codec.
      */
-    public int getType();
+    byte registrationCode();
 
-    public GeneratedMessage parse(InputStream uncompressedStream) throws IOException;
+    /**
+     * Encode the protobuff collection to a byte of stream.
+     *
+     * @param readCollection
+     */
+    ByteArrayOutputStream encode(Message readCollection) throws IOException;
 
-    Message compressCollection(Message readCollection, ByteArrayOutputStream compressedBits) throws IOException;
+    Message decode(byte[] bytes) throws IOException;
 
-    Message decompressCollection(Message reducedProtoBuff, byte[] compressedBytes) throws IOException;
+
+    public void setHandler(ProtobuffCollectionHandler parser) ;
 }

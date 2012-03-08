@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.cornell.med.icb.goby.reads;
+package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.Message;
 

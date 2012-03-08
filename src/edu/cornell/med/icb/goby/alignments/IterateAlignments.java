@@ -85,7 +85,7 @@ public abstract class IterateAlignments {
     /**
      * Iterate through one alignment, restricting the iteration to the alignment records 'within'
      * the bytes startOffset and endOffset. In this context, within is defined by the chunk semantic
-     * of the Goby files. See {@link edu.cornell.med.icb.goby.reads.FastBufferedMessageChunksReader}
+     * of the Goby files. See {@link edu.cornell.med.icb.goby.compression.FastBufferedMessageChunksReader}
      * for details about this semantic.
      *
      * @param startOffset Start of the allowed window, in bytes in the compressed entries file.

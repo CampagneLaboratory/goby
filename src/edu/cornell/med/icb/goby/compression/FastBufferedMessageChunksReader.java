@@ -18,9 +18,11 @@
  *     along with the Goby IO API.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.cornell.med.icb.goby.reads;
+package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.GeneratedMessage;
+import edu.cornell.med.icb.goby.compression.MessageChunksReader;
+import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import org.apache.commons.io.IOUtils;
@@ -29,7 +31,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 /**
- * Reads from a stream produced with {@link edu.cornell.med.icb.goby.reads.MessageChunksWriter}.
+ * Reads from a stream produced with {@link edu.cornell.med.icb.goby.compression.MessageChunksWriter}.
  *
  * @author Fabien Campagne
  *         Date: Apr 30, 2009

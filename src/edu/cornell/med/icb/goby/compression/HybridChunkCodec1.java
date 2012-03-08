@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.cornell.med.icb.goby.reads;
+package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.Message;
 import org.apache.commons.logging.Log;
@@ -25,17 +25,17 @@ import org.apache.commons.logging.LogFactory;
 import java.io.*;
 
 /**
- * A codec that writes highly compressed alignment data in one pool, but keeps protobuf message in a separate pool.
+ * A codec that writes highly compressed data in one pool, but keeps protobuf message in a separate pool.
  * @author Fabien Campagne
  *         Date: 3/3/12
  *         Time: 2:35 PM
  */
-public class AlignmentChunkCodec1 implements ChunkCodec {
+public class HybridChunkCodec1 implements ChunkCodec {
     private boolean debug = false;
 
     @Override
     public String name() {
-        return "alignment1";
+        return "hybrid-1";
     }
 
     public static final byte REGISTRATION_CODE = -2;
@@ -50,7 +50,7 @@ public class AlignmentChunkCodec1 implements ChunkCodec {
     /**
      * Used to log informational and debug messages.
      */
-    private static final Log LOG = LogFactory.getLog(AlignmentChunkCodec1.class);
+    private static final Log LOG = LogFactory.getLog(HybridChunkCodec1.class);
     private int chunkIndex = 0;
 
     @Override

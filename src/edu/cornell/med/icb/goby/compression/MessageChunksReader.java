@@ -18,7 +18,7 @@
  *     along with the Goby IO API.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.cornell.med.icb.goby.reads;
+package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.GeneratedMessage;
 import edu.cornell.med.icb.goby.exception.GobyRuntimeException;
@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Read from a stream produced with {@link edu.cornell.med.icb.goby.reads.MessageChunksWriter}.
+ * Read from a stream produced with {@link MessageChunksWriter}.
  *
  * @author Fabien Campagne
  *         Date: Apr 30, 2009
@@ -51,7 +51,7 @@ public class MessageChunksReader implements Closeable {
     }
 
     protected byte[] compressedBytes;
-    private ProtobuffCollectionHandler parser;
+    private ProtobuffCollectionHandler handler;
 
     protected MessageChunksReader() {
 
@@ -143,20 +143,9 @@ public class MessageChunksReader implements Closeable {
     }
 
     private void installCodec(final byte registrationCode) {
-        switch (registrationCode) {
-            case AlignmentChunkCodec1.REGISTRATION_CODE:
+        chunkCodec = ChunkCodecHelper.withRegistrationCode(registrationCode);
+        chunkCodec.setHandler(handler);
 
-                chunkCodec = new AlignmentChunkCodec1();
-                chunkCodec.setHandler(parser);
-                break;
-            case GZipChunkCodec.REGISTRATION_CODE:
-
-                chunkCodec = new GZipChunkCodec();
-                chunkCodec.setHandler(parser);
-                break;
-            default:
-                throw new InternalError("Codec registration code not recognized: " + registrationCode);
-        }
     }
 
 
@@ -199,8 +188,8 @@ public class MessageChunksReader implements Closeable {
         this.chunkCodec = chunkCodec;
     }
 
-    public void setParser(ProtobuffCollectionHandler collectionParser) {
-        parser = collectionParser;
+    public void setHandler(ProtobuffCollectionHandler collectionParser) {
+        handler = collectionParser;
         if (chunkCodec != null) {
             chunkCodec.setHandler(collectionParser);
         }
@@ -208,7 +197,7 @@ public class MessageChunksReader implements Closeable {
 
     public ChunkCodec getChunkCodec() {
         if (chunkCodec != null) {
-            chunkCodec.setHandler(parser);
+            chunkCodec.setHandler(handler);
         }
         return chunkCodec;
     }

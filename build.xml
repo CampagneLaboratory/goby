@@ -96,6 +96,7 @@
                 <include name="commons-logging-1.1.1.jar"/>
                 <include name="commons-math-2.1.jar"/>
                 <include name="edu.mssm.crover.cli.jar"/>
+                <include name="bzip2.jar"/>
                 <include name="fastutil-6.3.jar"/>
                 <include name="dsiutils-1.0.12.jar"/>
                 <include name="icb-utils.jar"/>
@@ -127,6 +128,11 @@
             <service type="edu.cornell.med.icb.goby.reads.ReadCodec">
                 <provider classname="edu.cornell.med.icb.goby.reads.ReadCodecImpl"/>
                 <provider classname="edu.cornell.med.icb.goby.reads.ReadCodec2"/>
+            </service>
+            <service type="edu.cornell.med.icb.goby.compression.ChunkCodec">
+                <provider classname="edu.cornell.med.icb.goby.compression.GZipChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.BZip2ChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.HybridChunkCodec1"/>
             </service>
             <service type="edu.cornell.med.icb.goby.alignments.AlignmentCodec">
                 <provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecDummy"/>
@@ -185,6 +191,11 @@
             <service type="edu.cornell.med.icb.goby.reads.ReadCodec">
                 <provider classname="edu.cornell.med.icb.goby.reads.ReadCodecImpl"/>
                 <provider classname="edu.cornell.med.icb.goby.reads.ReadCodec2"/>
+            </service>
+            <service type="edu.cornell.med.icb.goby.compression.ChunkCodec">
+                <provider classname="edu.cornell.med.icb.goby.compression.GZipChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.BZip2ChunkCodec"/>
+                <provider classname="edu.cornell.med.icb.goby.compression.HybridChunkCodec1"/>
             </service>
             <service type="edu.cornell.med.icb.goby.alignments.AlignmentCodec">
                 <provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecDummy"/>
