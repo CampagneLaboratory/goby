@@ -19,15 +19,12 @@
 package edu.cornell.med.icb.goby.alignments.perms;
 
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
-import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntSortedMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
-import net.sf.samtools.util.IOUtil;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import sun.misc.IOUtils;
 
 import java.io.*;
 import java.util.Arrays;
