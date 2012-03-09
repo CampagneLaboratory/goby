@@ -22,7 +22,6 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
  * Class that populates a cumulative count array of a predetermined size
  * Faciliates adding new counts to the rightmost element in the array without changing
  *
- *
  * @Author: Nyasha Chambwe
  * Date: 3/1/12
  * Time: 4:14 PM
@@ -45,12 +44,12 @@ public class CumulativeArrayKeeper {
     private int capacity;
 
     public CumulativeArrayKeeper(final int n) {
-        if(!(n > 0))
-        throw new IllegalArgumentException("The declared size of the cumulative count array must be at least 1");
+        if (!(n > 0))
+            throw new IllegalArgumentException("The declared size of the cumulative count array must be at least 1");
         cumC = new int[n];
         capacityMonitor = 0;
+        capacity = n;
         indexAtLast = capacity - 1;
-        capacity =n;
     }
 
     public void addToRight(final int countAtNewSite) {
@@ -67,16 +66,16 @@ public class CumulativeArrayKeeper {
     private void shift(final int countAtNewSite) {
         int removedCount = cumC[0];
         // update cumulative total
-        for(int i=0; i < capacity; i++){
-            cumC[i]=cumC[i]-removedCount;
+        for (int i = 0; i < capacity; i++) {
+            cumC[i] = cumC[i] - removedCount;
         }
-        if(capacity==1){
-            cumC[0]= countAtNewSite;
-        }else{
-        int[] cumCCopy= new int[capacity];
-        System.arraycopy(cumC, 1, cumCCopy, 0, indexAtLast);
-        cumC= cumCCopy;
-        cumCCopy[indexAtLast]=cumCCopy[indexAtLast-1]+countAtNewSite;
+        if (capacity == 1) {
+            cumC[0] = countAtNewSite;
+        } else {
+            int[] cumCCopy = new int[capacity];
+            System.arraycopy(cumC, 1, cumCCopy, 0, indexAtLast);
+            cumC = cumCCopy;
+            cumCCopy[indexAtLast] = cumCCopy[indexAtLast - 1] + countAtNewSite;
         }
     }
 
@@ -90,7 +89,8 @@ public class CumulativeArrayKeeper {
 
     /**
      * Returns true if the cumulativeSum array is full
-     * @return 
+     *
+     * @return
      */
     private boolean checkCumulativeCapacityReached() {
         if (capacityMonitor == capacity) return true;
