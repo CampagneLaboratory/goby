@@ -25,9 +25,7 @@ import edu.cornell.med.icb.goby.algorithmic.compression.FastArithmeticCoder;
 import edu.cornell.med.icb.goby.algorithmic.compression.FastArithmeticDecoder;
 import edu.cornell.med.icb.goby.compression.ProtobuffCollectionHandler;
 import it.unimi.dsi.bits.Fast;
-import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.io.FastByteArrayInputStream;
 import it.unimi.dsi.fastutil.objects.Object2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -78,6 +76,12 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private static final int NO_VALUE = MISSING_VALUE;
     private int varToQualsLength = 0;
     private boolean useTemplateBasedCompression;
+
+    public AlignmentCollectionHandler() {
+        for (int length = 0; length < qualArrays.length; length++) {
+            qualArrays[length] = new byte[length];
+        }
+    }
 
     @Override
     public int getType() {
@@ -269,7 +273,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             ++index;
         }
 
-        final IntAVLTreeSet tokens = getTokens(deltas);
+        final IntSet tokens = getTokens(deltas);
         //   System.out.printf("tokenSize=%d listSize=%d%n", tokens.size(), list.size());
         if (divide(tokens.size(), list.size()) > 0.2f) {
             return false;
@@ -383,7 +387,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             // no list to write.
             return;
         }
-        final IntAVLTreeSet distinctSymbols = getTokens(list);
+        final IntSet distinctSymbols = getTokens(list);
 
         final int[] symbolValues = distinctSymbols.toIntArray();
         out.writeNibble(distinctSymbols.size());
@@ -415,12 +419,14 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
     }
 
-    private IntAVLTreeSet getTokens(IntList list) {
-        IntAVLTreeSet result = new IntAVLTreeSet();
+    IntSortedSet tokenSet = new IntAVLTreeSet();
+
+    private IntSortedSet getTokens(IntList list) {
+        tokenSet.clear();
         for (int value : list) {
-            result.add(value);
+            tokenSet.add(value);
         }
-        return result;
+        return tokenSet;
     }
 
 
@@ -847,7 +853,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             final int toQualLength = varToQualLength.getInt(varToQualsLength);
             varToQualsLength++;
             // TODO optimize away array creation.
-            final byte[] quals = new byte[toQualLength];
+            final byte[] quals = getQualArray(toQualLength);
             ++varPositionIndex;
             final int maxLength = Math.max(fromLength, toLength);
             for (int i = 0; i < maxLength; i++) {
@@ -859,22 +865,19 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                 if (i < toLength) {
                     to.append((char) (fromTo & 0xFF));
                 }
-                if ( i < toQualLength) {
-                    if (varQualIndex <varQuals.size()) {
+                if (i < toQualLength) {
+                    if (varQualIndex < varQuals.size()) {
 
-                    quals[i] = (byte) varQuals.getInt(varQualIndex);
-                    //  if (quals[i] != NO_VALUE) {
-                    ++varQualIndex;
-                    } else {
-                          System.out.println("STOP");
-
+                        quals[i] = (byte) varQuals.getInt(varQualIndex);
+                        //  if (quals[i] != NO_VALUE) {
+                        ++varQualIndex;
                     }
                     // }
                 }
             }
             varBuilder.setFrom(from.toString());
             varBuilder.setTo(to.toString());
-            if (toQualLength>0) {
+            if (toQualLength > 0) {
                 varBuilder.setToQuality(ByteString.copyFrom(quals));
             }
             if (templateHasSequenceVariations) {
@@ -885,6 +888,13 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
         }
         return result.build();
+    }
+
+    // pre-allocated arrays, size 1 to 100.
+    byte[][] qualArrays = new byte[100][];
+
+    private byte[] getQualArray(final int toQualLength) {
+        return qualArrays[toQualLength];
     }
 
     private int varQualIndex = 0;
