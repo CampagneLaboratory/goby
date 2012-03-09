@@ -22,8 +22,8 @@ import edu.cornell.med.icb.goby.alignments.AlignmentCollectionHandler;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutationInterface;
 import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutation;
-import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutationImpl;
 import edu.cornell.med.icb.goby.compression.HybridChunkCodec1;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.junit.Before;
@@ -103,7 +103,7 @@ public class TestAlignmentChunkCodec1 {
         assertRoundTripMatchExpected(codec, collection);
     }
 
- //  @Test
+   @Test
        // will not run on server.
     public void roundTripLarge() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
@@ -114,17 +114,17 @@ public class TestAlignmentChunkCodec1 {
     }
 
 
-   //@Test
+   @Test
        // will not run on server.
     public void roundTripPairedEnd() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
-        Alignments.AlignmentCollection.Builder collection = loadCollection("/data/CRAM/VJDQTEI-C1.entries",600, 700);
+        Alignments.AlignmentCollection.Builder collection = loadCollection("/data/CRAM/VJDQTEI-C1.entries",600, 900);
 
         assertRoundTripMatchExpected(codec, collection);
     }
 
-  //  @Test
+    @Test
       // will not run on server.
     public void roundTripBug() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
@@ -141,7 +141,7 @@ public class TestAlignmentChunkCodec1 {
     private Alignments.AlignmentCollection.Builder loadCollection(String filename, int firstElementToLoad, int maxElementsToLoad) throws IOException {
         final Alignments.AlignmentCollection.Builder collectionBuilder = Alignments.AlignmentCollection.newBuilder();
         AlignmentReaderImpl reader = new AlignmentReaderImpl(filename);
-        QueryIndexPermutation permutator=new QueryIndexPermutationImpl();
+        QueryIndexPermutationInterface permutator=new QueryIndexPermutation(filename);
         try {
             int counter = 0;
             for (Alignments.AlignmentEntry entry : reader) {

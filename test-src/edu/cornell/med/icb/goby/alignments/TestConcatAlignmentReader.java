@@ -157,7 +157,7 @@ public class TestConcatAlignmentReader {
 
         while (reader.hasNext()) {
             final Alignments.AlignmentEntry alignmentEntry = reader.next();
-            System.out.println("found entry: " + alignmentEntry);
+            //System.out.println("found entry: " + alignmentEntry);
             assert alignmentEntry.hasPosition();
             count++;
         }
@@ -260,7 +260,7 @@ public class TestConcatAlignmentReader {
 
     }
 
-    // this test does URL connections to DropBox, so we give it up to 10 seconds before failing:
+    // this test does URL connections to DropBox, so we give it up to 60 seconds before failing:
     @Test(timeout = 60000)
     public void testLoadTwoFromHttpURLs() throws IOException {
         final int count;

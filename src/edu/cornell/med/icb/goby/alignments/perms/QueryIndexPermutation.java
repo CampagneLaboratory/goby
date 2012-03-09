@@ -18,34 +18,197 @@
 
 package edu.cornell.med.icb.goby.alignments.perms;
 
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import it.unimi.dsi.fastutil.ints.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.io.IOException;
+import java.util.BitSet;
 
 /**
- * An interface for implementations that replace query indices with small values.
+ * Builds a permutation of query indices to small values.
  *
  * @author Fabien Campagne
  *         Date: 3/5/12
- *         Time: 5:31 PM
+ *         Time: 5:10 PM
  */
-public interface QueryIndexPermutation {
-    void reset();
+public class QueryIndexPermutation implements QueryIndexPermutationInterface {
+    /**
+     * Used to log informational and debug messages.
+     */
+    private static final Log LOG = LogFactory.getLog(QueryIndexPermutation.class);
 
-    Alignments.AlignmentEntry makeSmallIndices(Alignments.AlignmentEntry entry);
+    private int smallestIndex = Integer.MAX_VALUE;
+    private int biggestSmallIndex = Integer.MIN_VALUE;
+    private PermutationWriter permutationWriter;
+    private final String basename;
+    private byte MAX_OBSERVATIONS = 2;
+    private Int2IntMap offlinePermutation = new Int2IntLinkedOpenHashMap();
+    private static final int MAX_OFFLINE_CAPACITY = 100000;
 
-    void makeSmallIndices(Alignments.AlignmentEntry.Builder entry);
 
-    int getSmallestIndex();
+    public void reset() {
+        smallestIndex = Integer.MAX_VALUE;
+        biggestSmallIndex = Integer.MIN_VALUE;
+        smallIndexCounter = 0;
+        queryIndexPermutation.clear();
+        queryIndexPermutation.defaultReturnValue(-1);
+        if (permutationWriter != null) {
+            permutationWriter.close();
+        }
+        permutationWriter = new PermutationWriter(basename);
+    }
 
-    int getBiggestSmallIndex();
+    public QueryIndexPermutation(String filename) {
+        this.basename = AlignmentReaderImpl.getBasename(filename);
+        reset();
 
-    void setSmallestIndex(int value);
+    }
 
-    void setBiggestSmallIndex(int value);
+    @Override
+    public Alignments.AlignmentEntry makeSmallIndices(final Alignments.AlignmentEntry entry) {
+        final Alignments.AlignmentEntry.Builder merged = Alignments.AlignmentEntry.newBuilder(entry);
+        makeSmallIndices(merged);
+        return merged.build();
+    }
+
+    @Override
+    public void makeSmallIndices(final Alignments.AlignmentEntry.Builder entry) {
+        final int smallIndex = getSmallIndex(entry.getQueryIndex());
+        entry.setQueryIndex(smallIndex);
+        smallestIndex = Math.min(smallestIndex, smallIndex);
+        biggestSmallIndex = Math.max(biggestSmallIndex, smallIndex);
+
+    }
+
+    @Override
+    public int getSmallestIndex() {
+        if (smallestIndex == Integer.MAX_VALUE) {
+            return 0;
+        }
+        return smallestIndex;
+    }
+
+    @Override
+    public int getBiggestSmallIndex() {
+        return biggestSmallIndex;
+    }
+
+    @Override
+    public final void setSmallestIndex(final int value) {
+        smallestIndex = value;
+    }
+
+    @Override
+    public final void setBiggestSmallIndex(final int value) {
+        biggestSmallIndex = value;
+    }
+
+    @Override
+    public int permutate(final int queryIndex) {
+        final int smallIndex = getSmallIndex(queryIndex);
+        smallestIndex = Math.min(smallestIndex, smallIndex);
+        biggestSmallIndex = Math.max(biggestSmallIndex, smallIndex);
+        return smallIndex;
+    }
+
+    private int smallIndexCounter = 0;
+    private final Int2IntMap queryIndexPermutation = new Int2IntOpenHashMap();
+    private final BitSet queryIndicesAlreadySeen = new BitSet();
+    private final Int2ByteMap timesRequested = new Int2ByteOpenHashMap();
+
+    private int getSmallIndex(final int queryIndex) {
+        if (!queryIndicesAlreadySeen.get(queryIndex)) {
+
+            // not seen before, let's associate the next small index for this new query index
+            final int result = queryIndexPermutation.get(queryIndex);
+
+
+            if (result == -1) {
+                final int smallIndex = smallIndexCounter++;
+                queryIndexPermutation.put(queryIndex, smallIndex);
+                queryIndicesAlreadySeen.set(queryIndex, true);
+                timesRequested.put(queryIndex, (byte) 1);
+                return smallIndex;
+            } else {
+                return result;
+            }
+        } else {
+            // the query index was seen before, and we need to return the small index previously associated with
+            // that large index.
+            final int smallIndex = queryIndexPermutation.get(queryIndex);
+            final byte timesSeen = (byte) (timesRequested.get(queryIndex) + 1);
+            // decide if we have reached max observations for this query index:
+            if (timesSeen >= MAX_OBSERVATIONS) {
+                // if yes, remove the index from the map, it will not be asked again.
+                queryIndexPermutation.remove(queryIndex);
+
+                moveIndexToPreOffline(queryIndex, smallIndex);
+                if (offlinePermutation.size() > MAX_OFFLINE_CAPACITY) {
+                    save();
+                }
+            } else {
+                // if not, keep it in the map until requested that many times.
+                timesRequested.put(queryIndex, timesSeen);
+            }
+            return smallIndex;
+        }
+        //    return fetchExternal(queryIndex);
+    }
 
     /**
-     * Permutate a query index and return the smaller value.
-     * @param index
+     * Take a query index and associated small index and move to pre-offline (immediate state before write).
+     * @param queryIndex
+     * @param smallIndex
+     */
+    private void moveIndexToPreOffline(final int queryIndex, final int smallIndex) {
+        offlinePermutation.put(queryIndex, smallIndex);
+
+    }
+
+    public void setPruneLimit(byte limit) {
+        MAX_OBSERVATIONS = limit;
+    }
+
+    @Override
+    public void close() {
+        // move everything left to pre-offline state:
+        for (int queryIndex : queryIndexPermutation.keySet()) {
+
+            moveIndexToPreOffline(queryIndex, queryIndexPermutation.get(queryIndex));
+        }
+
+        queryIndexPermutation.clear();
+        // now save it:
+        save();
+        permutationWriter.close();
+    }
+
+    /**
+     * Return true if the query index is kept in memory with its small index, false otherwise.
+     *
+     * @param queryIndex
      * @return
      */
-    int permutate(int index);
+    public boolean isInMap(int queryIndex) {
+        return queryIndexPermutation.containsKey(queryIndex);
+    }
+
+    private void save() {
+        LOG.info("Saving new permutation chunk ");
+        try {
+            permutationWriter.append(offlinePermutation);
+            offlinePermutation.clear();
+
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to write permutation component.", e);
+        }
+
+
+    }
+
+
 }
+

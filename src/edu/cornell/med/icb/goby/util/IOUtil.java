@@ -23,6 +23,7 @@ import edu.cornell.med.icb.goby.counts.CountsReader;
 import edu.cornell.med.icb.goby.reads.ReadsReader;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * @author campagne
@@ -36,7 +37,7 @@ public class IOUtil {
      * @param reader
      */
     public static void closeQuietly(ReadsReader reader) {
-        if (reader==null) {
+        if (reader == null) {
             return;
         }
 
@@ -54,7 +55,7 @@ public class IOUtil {
      * @param reader
      */
     public static void closeQuietly(AlignmentReader reader) {
-     if (reader==null) {
+        if (reader == null) {
             return;
         }
         reader.close();
@@ -67,11 +68,28 @@ public class IOUtil {
      * @param reader
      */
     public static void closeQuietly(CountsReader reader) {
-        if (reader==null) {
+        if (reader == null) {
             return;
         }
         try {
             reader.close();
+        } catch (IOException e) {
+
+        }
+
+    }
+
+    /**
+     * Close quietly an output stream.
+     *
+     * @param output
+     */
+    public static void closeQuietly(OutputStream output) {
+        if (output == null) {
+            return;
+        }
+        try {
+            output.close();
         } catch (IOException e) {
 
         }

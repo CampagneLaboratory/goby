@@ -146,7 +146,7 @@ void protobuf_AssignDesc_Alignments_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(SequenceVariation));
   AlignmentHeader_descriptor_ = file->message_type(4);
-  static const int AlignmentHeader_offsets_[17] = {
+  static const int AlignmentHeader_offsets_[18] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, smallest_split_query_index_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, largest_split_query_index_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, query_name_mapping_),
@@ -164,6 +164,7 @@ void protobuf_AssignDesc_Alignments_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, aligner_version_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, version_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, sample_basename_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AlignmentHeader, query_indices_were_permuted_),
   };
   AlignmentHeader_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -348,7 +349,7 @@ void protobuf_AddDesc_Alignments_2eproto() {
     "\002 \001(\r\022\026\n\016fragment_index\030\003 \001(\r\"g\n\021Sequenc"
     "eVariation\022\014\n\004from\030\002 \001(\t\022\n\n\002to\030\001 \001(\t\022\020\n\010"
     "position\030\003 \001(\r\022\022\n\nread_index\030\005 \001(\r\022\022\n\nto"
-    "_quality\030\004 \001(\014\"\215\004\n\017AlignmentHeader\022\"\n\032sm"
+    "_quality\030\004 \001(\014\"\262\004\n\017AlignmentHeader\022\"\n\032sm"
     "allest_split_query_index\030\t \001(\r\022!\n\031larges"
     "t_split_query_index\030\013 \001(\r\0223\n\022query_name_"
     "mapping\030\001 \001(\0132\027.goby.IdentifierMapping\0224"
@@ -361,18 +362,19 @@ void protobuf_AddDesc_Alignments_2eproto() {
     "ndexed\030\016 \001(\010\022\'\n\037query_lengths_stored_in_"
     "entries\030\017 \001(\010\022\024\n\014aligner_name\030\021 \001(\t\022\027\n\017a"
     "ligner_version\030\022 \001(\t\022\017\n\007version\030\031 \001(\t\022\027\n"
-    "\017sample_basename\030\036 \003(\t\";\n\021IdentifierMapp"
-    "ing\022&\n\010mappings\030\001 \003(\0132\024.goby.IdentifierI"
-    "nfo\"-\n\016IdentifierInfo\022\014\n\004name\030\001 \002(\t\022\r\n\005i"
-    "ndex\030\002 \002(\r\"X\n\024AlignmentTooManyHits\022\031\n\021al"
-    "igner_threshold\030\002 \002(\r\022%\n\004hits\030\001 \003(\0132\027.go"
-    "by.AmbiguousLocation\"b\n\021AmbiguousLocatio"
-    "n\022\023\n\013query_index\030\001 \002(\r\022\037\n\027at_least_numbe"
-    "r_of_hits\030\002 \002(\r\022\027\n\017length_of_match\030\003 \001(\r"
-    "\"j\n\016AlignmentIndex\022#\n\027target_position_of"
-    "fsets\030\001 \003(\rB\002\020\001\022\023\n\007offsets\030\002 \003(\004B\002\020\001\022\036\n\022"
-    "absolute_positions\030\003 \003(\004B\002\020\001B\'\n#edu.corn"
-    "ell.med.icb.goby.alignmentsH\001", 1989);
+    "\017sample_basename\030\036 \003(\t\022#\n\033query_indices_"
+    "were_permuted\030\032 \001(\010\";\n\021IdentifierMapping"
+    "\022&\n\010mappings\030\001 \003(\0132\024.goby.IdentifierInfo"
+    "\"-\n\016IdentifierInfo\022\014\n\004name\030\001 \002(\t\022\r\n\005inde"
+    "x\030\002 \002(\r\"X\n\024AlignmentTooManyHits\022\031\n\021align"
+    "er_threshold\030\002 \002(\r\022%\n\004hits\030\001 \003(\0132\027.goby."
+    "AmbiguousLocation\"b\n\021AmbiguousLocation\022\023"
+    "\n\013query_index\030\001 \002(\r\022\037\n\027at_least_number_o"
+    "f_hits\030\002 \002(\r\022\027\n\017length_of_match\030\003 \001(\r\"j\n"
+    "\016AlignmentIndex\022#\n\027target_position_offse"
+    "ts\030\001 \003(\rB\002\020\001\022\023\n\007offsets\030\002 \003(\004B\002\020\001\022\036\n\022abs"
+    "olute_positions\030\003 \003(\004B\002\020\001B\'\n#edu.cornell"
+    ".med.icb.goby.alignmentsH\001", 2026);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "Alignments.proto", &protobuf_RegisterTypes);
   AlignmentCollection::default_instance_ = new AlignmentCollection();
@@ -2442,6 +2444,7 @@ const int AlignmentHeader::kAlignerNameFieldNumber;
 const int AlignmentHeader::kAlignerVersionFieldNumber;
 const int AlignmentHeader::kVersionFieldNumber;
 const int AlignmentHeader::kSampleBasenameFieldNumber;
+const int AlignmentHeader::kQueryIndicesWerePermutedFieldNumber;
 #endif  // !_MSC_VER
 
 AlignmentHeader::AlignmentHeader()
@@ -2476,6 +2479,7 @@ void AlignmentHeader::SharedCtor() {
   aligner_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   aligner_version_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   version_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  query_indices_were_permuted_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -2553,6 +2557,9 @@ void AlignmentHeader::Clear() {
         version_->clear();
       }
     }
+  }
+  if (_has_bits_[17 / 32] & (0xffu << (17 % 32))) {
+    query_indices_were_permuted_ = false;
   }
   query_length_.Clear();
   target_length_.Clear();
@@ -2829,6 +2836,22 @@ bool AlignmentHeader::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(208)) goto parse_query_indices_were_permuted;
+        break;
+      }
+      
+      // optional bool query_indices_were_permuted = 26;
+      case 26: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_query_indices_were_permuted:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &query_indices_were_permuted_)));
+          set_has_query_indices_were_permuted();
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectTag(242)) goto parse_sample_basename;
         break;
       }
@@ -2965,6 +2988,11 @@ void AlignmentHeader::SerializeWithCachedSizes(
       25, this->version(), output);
   }
   
+  // optional bool query_indices_were_permuted = 26;
+  if (has_query_indices_were_permuted()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(26, this->query_indices_were_permuted(), output);
+  }
+  
   // repeated string sample_basename = 30;
   for (int i = 0; i < this->sample_basename_size(); i++) {
   ::google::protobuf::internal::WireFormat::VerifyUTF8String(
@@ -3083,6 +3111,11 @@ void AlignmentHeader::SerializeWithCachedSizes(
         25, this->version(), target);
   }
   
+  // optional bool query_indices_were_permuted = 26;
+  if (has_query_indices_were_permuted()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(26, this->query_indices_were_permuted(), target);
+  }
+  
   // repeated string sample_basename = 30;
   for (int i = 0; i < this->sample_basename_size(); i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
@@ -3198,6 +3231,13 @@ int AlignmentHeader::ByteSize() const {
     }
     
   }
+  if (_has_bits_[17 / 32] & (0xffu << (17 % 32))) {
+    // optional bool query_indices_were_permuted = 26;
+    if (has_query_indices_were_permuted()) {
+      total_size += 2 + 1;
+    }
+    
+  }
   // repeated uint32 query_length = 3 [deprecated = true];
   {
     int data_size = 0;
@@ -3299,6 +3339,11 @@ void AlignmentHeader::MergeFrom(const AlignmentHeader& from) {
       set_version(from.version());
     }
   }
+  if (from._has_bits_[17 / 32] & (0xffu << (17 % 32))) {
+    if (from.has_query_indices_were_permuted()) {
+      set_query_indices_were_permuted(from.query_indices_were_permuted());
+    }
+  }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
@@ -3344,6 +3389,7 @@ void AlignmentHeader::Swap(AlignmentHeader* other) {
     std::swap(aligner_version_, other->aligner_version_);
     std::swap(version_, other->version_);
     sample_basename_.Swap(&other->sample_basename_);
+    std::swap(query_indices_were_permuted_, other->query_indices_were_permuted_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

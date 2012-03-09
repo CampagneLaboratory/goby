@@ -884,6 +884,13 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& sample_basename() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_sample_basename();
   
+  // optional bool query_indices_were_permuted = 26;
+  inline bool has_query_indices_were_permuted() const;
+  inline void clear_query_indices_were_permuted();
+  static const int kQueryIndicesWerePermutedFieldNumber = 26;
+  inline bool query_indices_were_permuted() const;
+  inline void set_query_indices_were_permuted(bool value);
+  
   // @@protoc_insertion_point(class_scope:goby.AlignmentHeader)
  private:
   inline void set_has_smallest_split_query_index();
@@ -914,6 +921,8 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline void clear_has_aligner_version();
   inline void set_has_version();
   inline void clear_has_version();
+  inline void set_has_query_indices_were_permuted();
+  inline void clear_has_query_indices_were_permuted();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
@@ -934,9 +943,10 @@ class AlignmentHeader : public ::google::protobuf::Message {
   bool sorted_;
   bool indexed_;
   bool query_lengths_stored_in_entries_;
+  bool query_indices_were_permuted_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(17 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(18 + 31) / 32];
   
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
@@ -2857,6 +2867,28 @@ AlignmentHeader::sample_basename() const {
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 AlignmentHeader::mutable_sample_basename() {
   return &sample_basename_;
+}
+
+// optional bool query_indices_were_permuted = 26;
+inline bool AlignmentHeader::has_query_indices_were_permuted() const {
+  return (_has_bits_[0] & 0x00020000u) != 0;
+}
+inline void AlignmentHeader::set_has_query_indices_were_permuted() {
+  _has_bits_[0] |= 0x00020000u;
+}
+inline void AlignmentHeader::clear_has_query_indices_were_permuted() {
+  _has_bits_[0] &= ~0x00020000u;
+}
+inline void AlignmentHeader::clear_query_indices_were_permuted() {
+  query_indices_were_permuted_ = false;
+  clear_has_query_indices_were_permuted();
+}
+inline bool AlignmentHeader::query_indices_were_permuted() const {
+  return query_indices_were_permuted_;
+}
+inline void AlignmentHeader::set_query_indices_were_permuted(bool value) {
+  set_has_query_indices_were_permuted();
+  query_indices_were_permuted_ = value;
 }
 
 // -------------------------------------------------------------------

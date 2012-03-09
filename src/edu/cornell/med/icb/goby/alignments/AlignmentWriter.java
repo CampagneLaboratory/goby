@@ -21,8 +21,8 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import edu.cornell.med.icb.goby.alignments.perms.NoOpPermutation;
+import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutationInterface;
 import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutation;
-import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutationImpl;
 import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
 import edu.cornell.med.icb.goby.modes.GobyDriver;
 import edu.cornell.med.icb.goby.util.DynamicOptionClient;
@@ -119,7 +119,8 @@ public class AlignmentWriter implements Closeable {
     private long[] targetPositionOffsets;
 
     private AlignmentCodec codec;
-    private QueryIndexPermutation permutator;
+    private QueryIndexPermutationInterface permutator;
+    private boolean queryIndicesWerePermuted;
 
     public AlignmentWriter(final String outputBasename) throws IOException {
         alignmentEntries = new FileOutputStream(outputBasename + ".entries");
@@ -141,9 +142,11 @@ public class AlignmentWriter implements Closeable {
 
     public void setPermutation(boolean state) {
         if (state) {
-            permutator = new QueryIndexPermutationImpl();
+            permutator = new QueryIndexPermutation(basename);
+            queryIndicesWerePermuted = true;
         } else {
             permutator = new NoOpPermutation();
+            queryIndicesWerePermuted = false;
         }
     }
 
@@ -155,6 +158,10 @@ public class AlignmentWriter implements Closeable {
                         + " knowning target lengths before entries are appended. setTargetLength"
                         + " must be called before setSorted(true).");
             }
+        } else {
+            // unsorted alignments are never permuted since the original query indices are already monotonically
+            // increasing in each chunk.
+            setPermutation(false);
         }
     }
 
@@ -443,6 +450,7 @@ public class AlignmentWriter implements Closeable {
             headerBuilder.setNumberOfTargets(maxTargetIndex + 1);
             headerBuilder.setNumberOfQueries(getNumQueries());
             headerBuilder.setSorted(sortedState);
+            headerBuilder.setQueryIndicesWerePermuted(queryIndicesWerePermuted);
             // The Java implementation always indexes an index written in sorted order.
             headerBuilder.setIndexed(sortedState);
 
@@ -563,7 +571,7 @@ public class AlignmentWriter implements Closeable {
     public void setQueryIdentifiers(final IndexedIdentifier queryIdentifiers) {
         this.queryIdentifiers = queryIdentifiers;
         for (final int index : queryIdentifiers.values()) {
-          int  permIndex= permutator.permutate(index);
+            int permIndex = permutator.permutate(index);
             maxQueryIndex = Math.max(maxQueryIndex, index);
         }
     }

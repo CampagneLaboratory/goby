@@ -270,7 +270,7 @@ public class MessageChunksWriter {
         }
         protobuffCollectionHandler.setUseTemplateCompression(useTemplateCompression);
         chunkCodec.setHandler(protobuffCollectionHandler);
-        System.out.println("Using codec: " + chunkCodec.name());
+
         //     chunkCodec = new GZipChunkCodec();
 
     }

@@ -27,11 +27,11 @@ import edu.cornell.med.icb.goby.alignments.Alignments;
  *         Date: 3/5/12
  *         Time: 5:32 PM
  */
-public class NoOpPermutation implements QueryIndexPermutation {
+public class NoOpPermutation implements QueryIndexPermutationInterface {
     private int smallestIndex = Integer.MAX_VALUE;
     private int biggestSmallIndex = Integer.MIN_VALUE;
 
-    @Override
+
     public void reset() {
         smallestIndex = Integer.MAX_VALUE;
         biggestSmallIndex = Integer.MIN_VALUE;
@@ -55,6 +55,16 @@ public class NoOpPermutation implements QueryIndexPermutation {
         biggestSmallIndex = Math.max(biggestSmallIndex, queryIndex);
 
         return queryIndex;
+    }
+
+    @Override
+    public void setPruneLimit(byte x) {
+
+    }
+
+    @Override
+    public void close() {
+
     }
 
     @Override

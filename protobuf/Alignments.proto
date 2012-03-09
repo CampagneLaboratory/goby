@@ -347,6 +347,15 @@ message AlignmentHeader {
    */
 
    repeated string sample_basename=30;
+
+   /**
+      This field is true when the query indices of alignment entries were permuted to smaller indices. Only sorted
+      alignments can have query_indices_were_permuted=true. When the field is true, and you need to retrieve the
+      original query-index of an alignment (because you want to retrieve the specific read(s) from a read file for
+      instance), you will need the information in the permutation file (extension basename.perm) and transform back
+      each small index of interest to the original query index.
+   */
+   optional bool query_indices_were_permuted=26;
 }
 
 message IdentifierMapping {
