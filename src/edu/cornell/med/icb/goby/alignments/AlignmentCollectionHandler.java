@@ -76,7 +76,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private long writtenBits;
     private long writtenBases;
     private static final int NO_VALUE = MISSING_VALUE;
-    private int varHasToQualsIndex = 0;
+    private int varToQualsLength = 0;
     private boolean useTemplateBasedCompression;
 
     @Override
@@ -140,6 +140,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         for (int templateIndex = 0; templateIndex < numEntriesInChunk; templateIndex++) {
             final int templatePositionIndex = varPositionIndex;
             final int templateVarFromToIndex = varFromToIndex;
+            final int templateVarHasToQualsIndex = varToQualsLength;
             while (multiplicities.get(templateIndex) >= 1) {
                 result.addAlignmentEntries(
                         andBack(templateIndex, originalIndex, alignmentCollection.getAlignmentEntries(templateIndex)));
@@ -147,6 +148,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                     // go back to the indices for the template:
                     varPositionIndex = templatePositionIndex;
                     varFromToIndex = templateVarFromToIndex;
+                    varToQualsLength = templateVarHasToQualsIndex;
                 }
                 originalIndex++;
             }
@@ -443,7 +445,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
     private IntList varReadIndex = new IntArrayList();
     private IntList varFromTo = new IntArrayList();
     private IntList varQuals = new IntArrayList();
-    private IntList varHasToQuals = new IntArrayList();
+    private IntList varToQualLength = new IntArrayList();
 
     IntArrayList multiplicities = new IntArrayList();
 
@@ -469,7 +471,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         decodeArithmetic("varReadIndex", numEntriesInChunk, bitInput, varReadIndex);
         decodeArithmetic("varFromTo", numEntriesInChunk, bitInput, varFromTo);
         decodeArithmetic("varQuals", numEntriesInChunk, bitInput, varQuals);
-        decodeArithmetic("varHasToQuals", numEntriesInChunk, bitInput, varHasToQuals);
+        decodeArithmetic("varHasToQuals", numEntriesInChunk, bitInput, varToQualLength);
         decodeArithmetic("multiplicities", numEntriesInChunk, bitInput, multiplicities);
         pairLinks.read(numEntriesInChunk, bitInput);
         forwardSpliceLinks.read(numEntriesInChunk, bitInput);
@@ -501,7 +503,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         writeArithmetic("varReadIndex", varReadIndex, out);
         writeArithmetic("varFromTo", varFromTo, out);
         writeArithmetic("varQuals", varQuals, out);
-        writeArithmetic("varHasToQuals", varHasToQuals, out);
+        writeArithmetic("varHasToQuals", varToQualLength, out);
         writeArithmetic("multiplicities", multiplicities, out);
         pairLinks.write(out);
         forwardSpliceLinks.write(out);
@@ -539,8 +541,8 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         varQualIndex = 0;
         varPositionIndex = 0;
         varFromToIndex = 0;
-        varHasToQuals.clear();
-        varHasToQualsIndex = 0;
+        varToQualLength.clear();
+        varToQualsLength = 0;
         multiplicities.clear();
         countAggregatedWithMultiplicity = 0;
         previousPartial = null;
@@ -696,11 +698,12 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             final String from = seqVar.getFrom();
 
             final ByteString toQualities = seqVar.getToQuality();
-            final int length = from.length();
             final boolean hasToQuals = seqVar.hasToQuality();
-            varHasToQuals.add(hasToQuals ? 1 : 0);
-            for (int i = 0; i < length; i++) {
-                if (hasToQuals && i < toQualities.size()) {
+            final int toQualSize = toQualities.size();
+            varToQualLength.add(toQualSize);
+            final int toQualsLength = hasToQuals ? seqVar.getToQuality().size() : 0;
+            for (int i = 0; i < toQualsLength; i++) {
+                if (hasToQuals && i < toQualSize) {
                     varQuals.add(toQualities.byteAt(i));
                 }
             }
@@ -841,10 +844,10 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             final int toLength = toLengths.getInt(varPositionIndex);
             varBuilder.setPosition(varPositions.getInt(varPositionIndex));
             varBuilder.setReadIndex(varReadIndex.getInt(varPositionIndex));
-            final boolean hasToQual = varHasToQuals.getInt(varHasToQualsIndex) == 1;
-            varHasToQualsIndex++;
+            final int toQualLength = varToQualLength.getInt(varToQualsLength);
+            varToQualsLength++;
             // TODO optimize away array creation.
-            final byte[] quals = hasToQual ? new byte[toLength] : null;
+            final byte[] quals = new byte[toQualLength];
             ++varPositionIndex;
             final int maxLength = Math.max(fromLength, toLength);
             for (int i = 0; i < maxLength; i++) {
@@ -856,16 +859,22 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
                 if (i < toLength) {
                     to.append((char) (fromTo & 0xFF));
                 }
-                if (hasToQual /*&& i < toLength*/) {
+                if ( i < toQualLength) {
+                    if (varQualIndex <varQuals.size()) {
+
                     quals[i] = (byte) varQuals.getInt(varQualIndex);
                     //  if (quals[i] != NO_VALUE) {
                     ++varQualIndex;
+                    } else {
+                          System.out.println("STOP");
+
+                    }
                     // }
                 }
             }
             varBuilder.setFrom(from.toString());
             varBuilder.setTo(to.toString());
-            if (hasToQual) {
+            if (toQualLength>0) {
                 varBuilder.setToQuality(ByteString.copyFrom(quals));
             }
             if (templateHasSequenceVariations) {
