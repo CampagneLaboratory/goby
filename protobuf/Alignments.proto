@@ -179,7 +179,7 @@ message AlignmentEntry {
       been seen (see QueryIndexPermutation class).
       This field is required (enforced by semantic validation in Goby 2.0+).
   */
-  optional uint32 query_index_occurrences=22;
+  optional uint32 query_index_occurrences=25;
 }
 
 /* A link to another alignment entry. This message type is used to represent relations
@@ -195,7 +195,7 @@ message AlignmentEntry {
 
    /* Position on the reference where the other alignment entry is mapped. *
       This field is required (enforced by semantic validation in Goby 2.0+).
-      /
+   */
    optional uint32 position=2;
 
    /* Index of the fragment for the related alignment entry. This index

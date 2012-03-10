@@ -357,6 +357,13 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 sample_index() const;
   inline void set_sample_index(::google::protobuf::uint32 value);
   
+  // optional uint32 query_index_occurrences = 25;
+  inline bool has_query_index_occurrences() const;
+  inline void clear_query_index_occurrences();
+  static const int kQueryIndexOccurrencesFieldNumber = 25;
+  inline ::google::protobuf::uint32 query_index_occurrences() const;
+  inline void set_query_index_occurrences(::google::protobuf::uint32 value);
+  
   // @@protoc_insertion_point(class_scope:goby.AlignmentEntry)
  private:
   inline void set_has_multiplicity();
@@ -403,6 +410,8 @@ class AlignmentEntry : public ::google::protobuf::Message {
   inline void clear_has_insert_size();
   inline void set_has_sample_index();
   inline void clear_has_sample_index();
+  inline void set_has_query_index_occurrences();
+  inline void clear_has_query_index_occurrences();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
@@ -429,9 +438,10 @@ class AlignmentEntry : public ::google::protobuf::Message {
   ::goby::RelatedAlignmentEntry* spliced_backward_alignment_link_;
   ::google::protobuf::uint32 insert_size_;
   ::google::protobuf::uint32 sample_index_;
+  ::google::protobuf::uint32 query_index_occurrences_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(23 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(24 + 31) / 32];
   
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
@@ -2047,6 +2057,28 @@ inline ::google::protobuf::uint32 AlignmentEntry::sample_index() const {
 inline void AlignmentEntry::set_sample_index(::google::protobuf::uint32 value) {
   set_has_sample_index();
   sample_index_ = value;
+}
+
+// optional uint32 query_index_occurrences = 25;
+inline bool AlignmentEntry::has_query_index_occurrences() const {
+  return (_has_bits_[0] & 0x00800000u) != 0;
+}
+inline void AlignmentEntry::set_has_query_index_occurrences() {
+  _has_bits_[0] |= 0x00800000u;
+}
+inline void AlignmentEntry::clear_has_query_index_occurrences() {
+  _has_bits_[0] &= ~0x00800000u;
+}
+inline void AlignmentEntry::clear_query_index_occurrences() {
+  query_index_occurrences_ = 0u;
+  clear_has_query_index_occurrences();
+}
+inline ::google::protobuf::uint32 AlignmentEntry::query_index_occurrences() const {
+  return query_index_occurrences_;
+}
+inline void AlignmentEntry::set_query_index_occurrences(::google::protobuf::uint32 value) {
+  set_has_query_index_occurrences();
+  query_index_occurrences_ = value;
 }
 
 // -------------------------------------------------------------------
