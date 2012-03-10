@@ -20,11 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
-import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.alignments.FileSlice;
-import edu.cornell.med.icb.goby.alignments.IterateAlignments;
+import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.util.VersionUtils;
@@ -35,11 +31,7 @@ import org.apache.commons.lang.ArrayUtils;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Converts a compact alignment to plain text.
@@ -146,8 +138,8 @@ public class AlignmentToTextMode extends AbstractGobyMode {
             hasStartOrEndPosition = true;
             startPosition = jsapResult.getLong("start-position", 0L);
             endPosition = jsapResult.getLong("end-position", Long.MAX_VALUE);
-            if (startPosition==0 && endPosition==0) {
-                endPosition= Long.MAX_VALUE;
+            if (startPosition == 0 && endPosition == 0) {
+                endPosition = Long.MAX_VALUE;
             }
         }
 
@@ -213,27 +205,28 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                     case HTML:
                         if (outputHtml(outputStream, false,
                                 hasReadIds ? readIds.getId(queryIndex) : queryIndex,
+                                getReferenceId(alignmentEntry.getTargetIndex()),
+                                startPosition,
+                                alignmentEntry.getQueryLength(),
+                                alignmentLength,
+                                alignmentEntry.getMatchingReverseStrand() ? "-" : "+",
+                                alignmentEntry.getScore(),
+                                alignmentEntry.hasMappingQuality() ? alignmentEntry.getMappingQuality() : 255,
+                                alignmentEntry.hasPairFlags() ? EntryFlagHelper.pairToString(alignmentEntry): "",
                                 alignmentEntry.hasFragmentIndex() ? alignmentEntry.getFragmentIndex() : 0,
-                                alignmentEntry.hasPairFlags() ? zeroPad(Integer.toBinaryString(alignmentEntry.getPairFlags()), 9) : "",
                                 alignmentEntry.hasPairAlignmentLink() ? alignmentEntry.getPairAlignmentLink().getFragmentIndex() : "",
                                 alignmentEntry.hasPairAlignmentLink() ? getReferenceId(alignmentEntry.getPairAlignmentLink().getTargetIndex()) : "",
                                 alignmentEntry.hasPairAlignmentLink() ? alignmentEntry.getPairAlignmentLink().getPosition() : "",
-                                alignmentEntry.hasSplicedFlags() ? zeroPad(Integer.toBinaryString(alignmentEntry.getSplicedFlags()), 9) : "",
+                                alignmentEntry.hasSplicedFlags() ?  EntryFlagHelper.spliceToString(alignmentEntry): "",
                                 alignmentEntry.hasSplicedForwardAlignmentLink() ? alignmentEntry.getSplicedForwardAlignmentLink().getFragmentIndex() : "",
                                 alignmentEntry.hasSplicedForwardAlignmentLink() ? getReferenceId(alignmentEntry.getSplicedForwardAlignmentLink().getTargetIndex()) : "",
                                 alignmentEntry.hasSplicedForwardAlignmentLink() ? alignmentEntry.getSplicedForwardAlignmentLink().getPosition() : "",
                                 alignmentEntry.hasSplicedBackwardAlignmentLink() ? alignmentEntry.getSplicedBackwardAlignmentLink().getFragmentIndex() : "",
                                 alignmentEntry.hasSplicedBackwardAlignmentLink() ? getReferenceId(alignmentEntry.getSplicedBackwardAlignmentLink().getTargetIndex()) : "",
                                 alignmentEntry.hasSplicedBackwardAlignmentLink() ? alignmentEntry.getSplicedBackwardAlignmentLink().getPosition() : "",
-                                getReferenceId(alignmentEntry.getTargetIndex()),
                                 referenceLength,
                                 alignmentEntry.getNumberOfIndels(),
-                                alignmentEntry.getNumberOfMismatches(),
-                                alignmentEntry.getScore(),
-                                startPosition,
-                                alignmentLength,
-                                alignmentEntry.getMatchingReverseStrand() ? "-" : "+",
-                                alignmentEntry.hasMappingQuality() ? alignmentEntry.getMappingQuality() : 255)) {
+                                alignmentEntry.getNumberOfMismatches())) {
                             numWritten++;
                         }
                         break;
@@ -490,8 +483,15 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                     // Field name followed by if the field should be quoted.
                     outputHtml(outputStream, true,
                             "queryIndex", "type:int,align:right,renderFunction:formatNumber",
-                            "queryFragmentIndex", "type:int,align:center",
+                            "targetIdentifier", "type:string",
+                            "position", "type:int,align:right,renderFunction:formatNumber",
+                            "queryLength", "type:int,align:right,renderFunction:formatNumber",
+                            "alignmentLength", "type:int,align:right,renderFunction:formatNumber",
+                            "strand", "type:string",
+                            "score", "type:int,align:right,renderFunction:formatNumber",
+                            "mappingQuality", "type:int,align:right,renderFunction:formatNumber",
                             "pairFlags", "type:string,align:right",
+                            "readFragmentIndex", "type:int,align:center",
                             "pairFragmentIndex", "type:int,align:center",
                             "pairTarget", "type:string",
                             "pairPosition", "type:int,align:right,renderFunction:formatNumber",
@@ -502,41 +502,36 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                             "spliceBackwardFragmentIndex", "type:int,align:center",
                             "spliceBackwardTarget", "type:string",
                             "spliceBackwardPosition", "type:int,align:right,renderFunction:formatNumber",
-                            "targetIdentifier", "type:string",
                             "referenceLength", "type:int,align:right,renderFunction:formatNumber",
                             "numIndels", "type:int,align:right,renderFunction:formatNumber",
-                            "numMismatches", "type:int,align:right,renderFunction:formatNumber",
-                            "score", "type:int,align:right,renderFunction:formatNumber",
-                            "position", "type:int,align:right,renderFunction:formatNumber",
-                            "alignmentLength", "type:int,align:right,renderFunction:formatNumber",
-                            "strand", "type:string",
-                            "mappingQuality", "type:int,align:right,renderFunction:formatNumber"
+                            "numMismatches", "type:int,align:right,renderFunction:formatNumber"
+
                     );
                     break;
                 case PLAIN:
                     outputStream.printf(String.format("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n",
-                        "queryIndex",
-                        "queryFragmentIndex",
-                        "pairFlags",
-                        "pairFragmentIndex",
-                        "pairTarget",
-                        "pairPosition",
-                        "spliceFlags",
-                        "spliceForwardFragmentIndex",
-                        "spliceForwardTarget",
-                        "spliceForwardPosition",
-                        "spliceBackwardFragmentIndex",
-                        "spliceBackwardTarget",
-                        "spliceBackwardPosition",
-                        "targetIdentifier",
-                        "referenceLength",
-                        "numIndels",
-                        "numMismatches",
-                        "score",
-                        "position",
-                        "alignmentLength",
-                        "strand",
-                        "mappingQuality"));
+                            "queryIndex",
+                            "queryFragmentIndex",
+                            "pairFlags",
+                            "pairFragmentIndex",
+                            "pairTarget",
+                            "pairPosition",
+                            "spliceFlags",
+                            "spliceForwardFragmentIndex",
+                            "spliceForwardTarget",
+                            "spliceForwardPosition",
+                            "spliceBackwardFragmentIndex",
+                            "spliceBackwardTarget",
+                            "spliceBackwardPosition",
+                            "targetIdentifier",
+                            "referenceLength",
+                            "numIndels",
+                            "numMismatches",
+                            "score",
+                            "position",
+                            "alignmentLength",
+                            "strand",
+                            "mappingQuality"));
                     break;
             }
         }

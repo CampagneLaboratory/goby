@@ -26,6 +26,63 @@ package edu.cornell.med.icb.goby.alignments;
  *         Time: 5:02:53 PM
  */
 public class EntryFlagHelper {
+    /**
+     * Provide a textual representation of pair flags.
+     *
+     * @param entry The entry that contains pair flags.
+     * @return An informative string about pairing information stored in flags in the entry.
+     */
+    public static String pairToString(final Alignments.AlignmentEntry entry) {
+        StringBuffer sb = new StringBuffer();
+        if (isPaired(entry)) {
+            sb.append("PAIRED|");
+        }
+        if (isProperlyPaired(entry)) {
+            sb.append("PROPERLY_PAIRED|");
+        }
+        if (isNotPrimaryAlignment(entry)) {
+            sb.append("NOT_PRIMARY_ALIGNMENT|");
+        }
+        if (isReadUnmapped(entry)) {
+            sb.append("READ_UNMAPPED|");
+        }
+        if (isMateUnmapped(entry)) {
+            sb.append("MATE_UNMAPPED|");
+        }
+        if (isReadReverseStrand(entry)) {
+            sb.append("READ_REVERSE_STRAND|");
+        }
+        if (isMateReverseStrand(entry)) {
+            sb.append("MATE_REVERSE_STRAND|");
+        }
+        if (isFirstInPair(entry)) {
+            sb.append("FIRST|");
+        }
+        if (isSecondInPair(entry)) {
+            sb.append("SECOND|");
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Provide a textual representation of splice flags.
+     *
+     * @param entry The entry that contains splice flags.
+     * @return An informative string about splicing information stored in flags in the entry.
+     */
+    public static String spliceToString(final Alignments.AlignmentEntry entry) {
+        StringBuffer sb = new StringBuffer();
+        if (isNormalSplice(entry)) {
+            sb.append("NORMAL_SPLICE|");
+        }
+
+        if (isNovelSplice(entry)) {
+            sb.append("NOVEL_SPLICE|");
+        }
+
+        return sb.toString();
+    }
     /*
        paired end flags (based on SAM):
          000000001    paired
@@ -38,6 +95,7 @@ public class EntryFlagHelper {
          010000000    second in pair
          100000000    not primary alignment
      */
+
     /**
      * If this alignment entry is part of a pair.
      *
@@ -138,6 +196,7 @@ public class EntryFlagHelper {
          000000001    normal
          000000010    novel
      */
+
     /**
      * If this alignment is a "normal" splice
      *
