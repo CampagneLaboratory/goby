@@ -37,6 +37,8 @@ import java.util.Collections;
  * genome).
  * Since many uses of an alignment only need entries, index and header files, this strategy makes it
  * possible to transfer only the relevant data files for the task at hand.
+ * The permutation file binary format is described at
+ * https://docs.google.com/document/d/1S8k7K8HRftGaCX4gArxTfCfQVDOkLglcyPsvNeEVMT4/edit
  * @author Fabien Campagne
  *         Date: 3/8/12
  *         Time: 12:41 PM
