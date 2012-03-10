@@ -1,4 +1,9 @@
 Towards Goby 2.0
+ - Fixes to sam-to-compact mode. Previous versions could fail for a variety of reasons. We have stress tested this mode
+   throwing at it various input BAM files, sorted or not and fixed the bugs we found. For instance, the --sorted option
+   would not work in some 1.9 versions of Goby after samtools/picard changed the semantic of the record comparator Goby
+   relied upon to verify the input was indeed sorted by position. This made it impossible to convert already sorted BAM
+   files as sorted Goby alignments).
  - Prevent logging when the log4j system has not been configured. For some reason, LOG.isDebugEnabled can return true
    when the logging system is not initialized. For SamHelper, this means calling String.Format million of times to
    create debug output that is never shown. This change dramatically improves the performance of the sam-to-compact mode

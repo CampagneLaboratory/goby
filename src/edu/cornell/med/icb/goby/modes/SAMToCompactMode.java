@@ -27,6 +27,7 @@ import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
+import it.unimi.dsi.Util;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import net.sf.samtools.*;
@@ -69,6 +70,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     private boolean bsmap;
 
     private QualityEncoding qualityEncoding = QualityEncoding.ILLUMINA;
+    /**
+     * Flag to indicate if log4j was configured.
+     */
+    private boolean debug;
 
     public String getSamBinaryFilename() {
         return samBinaryFilename;
@@ -129,6 +134,9 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         sortedInput = jsapResult.getBoolean("sorted");
         this.largestQueryIndex = numberOfReadsFromCommandLine;
         this.smallestQueryIndex = 0;
+        // don't even dare go through the debugging code if log4j was not configured. The debug code
+        // is way too slow to run unintentionally in production!
+        debug = Util.log4JIsConfigured();
         return this;
     }
 
@@ -146,6 +154,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
         final SAMFileReader parser = new SAMFileReader(new File(inputFile));
 
+
         progress.start();
 
         final SAMRecordIterator samIterator = parser.iterator();
@@ -158,22 +167,43 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         // int stopEarly = 0;
         SAMRecord prevRecord = null;
 
+        final SAMFileHeader fileHeader = parser.getFileHeader();
         if (sortedInput) {
             // if the input is sorted, request creation of the index when writing the alignment.
+            final int numTargets = fileHeader.getSequenceDictionary().size();
+            final int[] targetLengths = new int[numTargets];
+            for (int i = 0; i < numTargets; i++) {
+                final SAMSequenceRecord seq = fileHeader.getSequence(i);
+                final int targetIndex = getTargetIndex(targetIds, seq.getSequenceName(), thirdPartyInput);
+                targetLengths[targetIndex] = seq.getSequenceLength();
+            }
+            writer.setTargetLengths(targetLengths);
             writer.setSorted(true);
         }
         while (samIterator.hasNext()) {
             samHelper.reset();
             numberOfReads++;
             final SAMRecord samRecord = samIterator.next();
+            if (samRecord.getReadUnmappedFlag()) {
+                if (debug && LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("NOT keeping unmapped read %s", samRecord.getReadName()));
+                }
+                continue;
+            }
 
             if (sortedInput) {
                 // check that input entries are indeed in sort order. Abort otherwise.
-                if (prevRecord != null && samComparator.compare(prevRecord, samRecord) > 0) {
-                    LOG.warn(String.format("Unsorted file: %s:%d-%d is before %s:%d-%d in the file\n",
-                            prevRecord.getReferenceName(), prevRecord.getAlignmentStart(), prevRecord.getAlignmentEnd(),
-                            samRecord.getReferenceName(), samRecord.getAlignmentStart(), samRecord.getAlignmentEnd()));
-                    System.exit(0);
+                if (prevRecord != null) {
+                    final int compare = prevRecord.getAlignmentStart() - samRecord.getAlignmentStart();//  samComparator.compare(prevRecord, samRecord);
+                    if (compare > 0) {
+                        final String message = String.format("record %s has position before previous record: %s",
+                                samRecord.toString(), prevRecord.toString()
+                        );
+                        System.err.println("You cannot specify --sorted when the input file is not sorted. For instance: " + message);
+
+                        LOG.warn(message);
+                        System.exit(0);
+                    }
                 }
             }
 
@@ -181,12 +211,6 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
             // if SAM reports read is unmapped (we don't know how or why), skip record
             final int queryIndex = getQueryIndex(samRecord);
-            if (samRecord.getReadUnmappedFlag()) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug(String.format("NOT keeping queryIndex=%d", queryIndex));
-                }
-                continue;
-            }
 
             final int targetIndex = getTargetIndex(targetIds, samRecord.getReferenceName(), thirdPartyInput);
 
@@ -262,7 +286,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
             for (final SamSequenceVariation var : samHelper.getSequenceVariations()) {
                 appendNewSequenceVariation(currentEntry, var, samHelper.getQueryLength());
-                if (LOG.isDebugEnabled()) {
+                if (debug && LOG.isDebugEnabled()) {
                     LOG.debug(String.format("Added seqvar=%s for queryIndex=%d to alignment", var.toString(), queryIndex));
                 }
             }
@@ -279,18 +303,18 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 if (numTotalHits <= mParameter) {
                     writer.appendEntry(alignmentEntry);
                     numAligns += multiplicity;
-                    if (LOG.isDebugEnabled()) {
+                    if (debug && LOG.isDebugEnabled()) {
                         LOG.debug(String.format("Added queryIdndex=%d to alignment", queryIndex));
                     }
                 } else {
                     // TMH writer adds the alignment entry only if hits > thresh
                     tmhWriter.append(queryIndex, numTotalHits, samHelper.getQueryLength());
-                    if (LOG.isDebugEnabled()) {
+                    if (debug && LOG.isDebugEnabled()) {
                         LOG.debug(String.format("Added queryIndex=%d to TMH", queryIndex));
                     }
                 }
             } else {
-                if (LOG.isDebugEnabled()) {
+                if (debug && LOG.isDebugEnabled()) {
                     LOG.debug(String.format("NOT keeping queryIndex=%d", queryIndex));
                 }
             }
@@ -310,7 +334,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         writer.printStats(System.out);
 
         // write information from SAM file header
-        final SAMFileHeader samHeader = parser.getFileHeader();
+        final SAMFileHeader samHeader = fileHeader;
         final SAMSequenceDictionary samSequenceDictionary = samHeader.getSequenceDictionary();
         final List<SAMSequenceRecord> samSequenceRecords = samSequenceDictionary.getSequences();
         int targetCount = targetIds.size();
@@ -323,7 +347,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         final int[] targetLengths = new int[targetCount];
         for (final SAMSequenceRecord samSequenceRecord : samSequenceRecords) {
             final int index = samSequenceRecord.getSequenceIndex();
-            if (LOG.isDebugEnabled()) {
+            if (debug && LOG.isDebugEnabled()) {
                 LOG.debug("Sam record: " + samSequenceRecord.getSequenceName() + " at " + index);
             }
             targetLengths[index] = samSequenceRecord.getSequenceLength();
@@ -363,18 +387,22 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
     private int getQueryIndex(final SAMRecord samRecord) {
         final String readName = samRecord.getReadName();
+
         try {
-            return Integer.parseInt(readName);
-        } catch (NumberFormatException e) {
-
-            if (!propagateQueryIds) {
-                return dummyQueryIndex++;
-            } else {  // read name is not the integer Goby relies on, make an int from the id:
-                return queryIds.registerIdentifier(new MutableString(readName));
-
+            if (Character.isDigit(readName.charAt(0))) {
+                return Integer.parseInt(readName);
             }
+        } catch (NumberFormatException e) {
+            // do nothing, handle this outside the catch block
+        }
+
+        if (!propagateQueryIds) {
+            return dummyQueryIndex++;
+        } else {  // read name is not the integer Goby relies on, make an int from the id:
+            return queryIds.registerIdentifier(new MutableString(readName));
 
         }
+
     }
 
     /**
