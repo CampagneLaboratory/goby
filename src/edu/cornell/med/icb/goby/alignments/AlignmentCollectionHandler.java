@@ -360,10 +360,13 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             return;
         }
         final int numTokens = bitInput.readNibble();
+        final boolean hasNegatives = bitInput.readBit() == 1;
         final int[] distinctvalue = new int[numTokens];
         for (int i = 0; i < numTokens; i++) {
             // -1 makes 0 symbol -1 (missing value) again
-            distinctvalue[i] = bitInput.readNibble() - 1;
+            final int nat = bitInput.readNibble() - 1;
+            final int anInt = hasNegatives ? Fast.nat2int(nat) : nat;
+            distinctvalue[i] = anInt;
         }
 
         final FastArithmeticDecoder decoder = new FastArithmeticDecoder(numTokens);
@@ -390,10 +393,16 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final IntSet distinctSymbols = getTokens(list);
 
         final int[] symbolValues = distinctSymbols.toIntArray();
+        final boolean hasNegativeValues = hasNegatives(symbolValues);
+        out.writeBit(hasNegativeValues);
         out.writeNibble(distinctSymbols.size());
         for (final int token : distinctSymbols) {
             // +1 makes -1 (missing value) symbol 0 so it can be written Nibble:
-            out.writeNibble(token + 1);
+
+            final int anInt = token + 1;
+            final int nat = hasNegativeValues ? Fast.int2nat(anInt) : anInt;
+
+            out.writeNibble(nat);
         }
 
         final FastArithmeticCoder coder = new FastArithmeticCoder(distinctSymbols.size());
@@ -409,6 +418,15 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             final long written = writtenStop - writtenStart;
             recordStats(label, list, written);
         }
+    }
+
+    private boolean hasNegatives(final int[] symbolValues) {
+        for (final int val : symbolValues) {
+            if (val < -1) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void recordStats(String label, IntList list, long written) {
