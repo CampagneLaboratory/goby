@@ -27,7 +27,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
-import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -50,7 +49,6 @@ public class PermutationWriter implements Closeable {
 
     private final String basename;
 
-    private int lastSmallIndexWritten = -1;
     private final DataOutputStream output;
     private int numWritten;
     private int chunkSize = 1000;
@@ -78,7 +76,7 @@ public class PermutationWriter implements Closeable {
      * Append a piece of the permutation.
      *
      * @param permPiece map from query indices to small indices.
-     * @throws IOException
+     * @throws IOException   If an error occurs writing the data to disk.
      */
     public void append(final Int2IntMap permPiece) throws IOException {
 

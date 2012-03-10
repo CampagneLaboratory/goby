@@ -26,11 +26,13 @@ message AlignmentEntry {
  /* An integer that uniquely identifies the query (a short read) in a set of alignment runs. When several
     alignment runs are made with the same set of query sequences, equality of query index means that the query
     sequences were the same. (Comparing integers for equality is much faster than comparing strings.)
+    This field is required (enforced by semantic validation in Goby 2.0+).
   */
   optional uint32 query_index =1;
   /* An integer that uniquely identifies the target (e.g., a chromosome) in a set of alignment runs. When several
     alignment runs are made with the same set of target sequences, equality of target index means that the target
     sequence was the same across the runs. (Comparing integers for equality is much faster than comparing strings.)
+    This field is required (enforced by semantic validation in Goby 2.0+).
   */
   optional uint32 target_index =2;
   /*
@@ -42,6 +44,7 @@ message AlignmentEntry {
      0123456789
      AAAAGTCAAA  target
         CGTC     query
+    This field is required (enforced by semantic validation in Goby 2.0+).
    */
   optional uint32 position=3;
 
@@ -168,7 +171,15 @@ message AlignmentEntry {
      contained each entry.
   */
   optional uint32 sample_index=21;
-
+  /*
+      The total number of times the query index associated with this entry occurs across the entire alignment file.
+      The field can be used to filter by ambiguity-threshold on the fly after an alignment has been done (to restrict
+      entries to more smaller thresholds).
+      This field is also used to purge queryIndex->smallIndex associations after all instances of a queryindex have
+      been seen (see QueryIndexPermutation class).
+      This field is required (enforced by semantic validation in Goby 2.0+).
+  */
+  optional uint32 query_index_occurrences=22;
 }
 
 /* A link to another alignment entry. This message type is used to represent relations
@@ -177,13 +188,20 @@ message AlignmentEntry {
    different locations of the genome.
   */
  message RelatedAlignmentEntry {
-  /* Target index of the location where the other alignment entry is mapped. */
+  /* Target index of the location where the other alignment entry is mapped.
+     This field is required (enforced by semantic validation in Goby 2.0+).
+   */
    optional uint32 target_index=1;
-   /* Position on the reference where the other alignment entry is mapped. */
+
+   /* Position on the reference where the other alignment entry is mapped. *
+      This field is required (enforced by semantic validation in Goby 2.0+).
+      /
    optional uint32 position=2;
+
    /* Index of the fragment for the related alignment entry. This index
       makes it possible to identify which of the read fragments mapped to the given
       location is related to the source alignment entry.
+      This field is required (enforced by semantic validation in Goby 2.0+).
    */
    optional uint32 fragment_index=3;
  }
@@ -222,16 +240,19 @@ ref A--TT
 message SequenceVariation {
   /* The reference bases. Can include one or more gap characters '-', to indicate that the reference sequence has
      no base at this alignment position.
+     This field is required (enforced by semantic validation in Goby 2.0+).
     */
   optional string from=2;
   /* The read bases that differ from the reference sequence.  Can include one or more gap characters '-', to indicate
      that the query sequence has no base at this alignment position.
+     This field is required (enforced by semantic validation in Goby 2.0+).
     */
   optional string to=1;
   /*
     The position of the variation on the read, as if the read always matched on the forward strand.
     Adding position to the index where the reference starts aligning the read yields the position of the variation
     in reference/target sequence space. Since position starts at one the resulting position will also be one based.
+    This field is required (enforced by semantic validation in Goby 2.0+).
     */
   optional uint32 position=3;
     /*
@@ -241,6 +262,7 @@ message SequenceVariation {
     where the bases are inserted (these bases are in the to field).
     When the read has a deletion, read_index records the position in the read after which the bases that would align
     in the reference are missing (these bases are in the from field).
+    This field is required (enforced by semantic validation in Goby 2.0+).
     */
   optional uint32 read_index=5;
 
