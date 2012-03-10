@@ -44,8 +44,8 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
     private int biggestSmallIndex = Integer.MIN_VALUE;
     private PermutationWriter permutationWriter;
     private final String basename;
-    private byte MAX_OBSERVATIONS = 2;
-    private Int2IntMap offlinePermutation = new Int2IntLinkedOpenHashMap();
+    private int globalQueryMaxOccurences = 2;
+    private final Int2IntMap offlinePermutation = new Int2IntLinkedOpenHashMap();
     private static final int MAX_OFFLINE_CAPACITY = 100000;
 
 
@@ -76,11 +76,11 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
 
     @Override
     public void makeSmallIndices(final Alignments.AlignmentEntry.Builder entry) {
-        final int smallIndex = getSmallIndex(entry.getQueryIndex());
+        final int maxOccurence = entry.hasQueryIndexOccurrences() ? entry.getQueryIndexOccurrences() : globalQueryMaxOccurences;
+        final int smallIndex = getSmallIndex(entry.getQueryIndex(), maxOccurence);
         entry.setQueryIndex(smallIndex);
         smallestIndex = Math.min(smallestIndex, smallIndex);
         biggestSmallIndex = Math.max(biggestSmallIndex, smallIndex);
-
     }
 
     @Override
@@ -108,10 +108,47 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
 
     @Override
     public int permutate(final int queryIndex) {
-        final int smallIndex = getSmallIndex(queryIndex);
+        return permutate(queryIndex, globalQueryMaxOccurences);
+    }
+
+    @Override
+    public int permutate(final int queryIndex, final int maxQueryIndexOccurrence) {
+        final int smallIndex = getSmallIndex(queryIndex, maxQueryIndexOccurrence);
         smallestIndex = Math.min(smallestIndex, smallIndex);
         biggestSmallIndex = Math.max(biggestSmallIndex, smallIndex);
         return smallIndex;
+    }
+
+    /**
+     * Call this method when you know the queryIndex is currently in the queryIndexPermutation map.
+     *
+     * @param queryIndex
+     * @param maxQueryIndexOccurrence
+     * @return
+     */
+    public int internalDoPerm(final int queryIndex, final int maxQueryIndexOccurrence) {
+        final int smallIndex = queryIndexPermutation.get(queryIndex);
+        final byte timesSeen = (byte) (timesRequested.get(queryIndex) + 1);
+        // decide if we have reached max observations for this query index:
+        if (timesSeen >= maxQueryIndexOccurrence) {
+            // if yes, remove the index from the map, it will not be asked again.
+            queryIndexPermutation.remove(queryIndex);
+
+            pushToPreStorage(queryIndex, smallIndex);
+        } else {
+            // if not, keep it in the map until requested that many times.
+            timesRequested.put(queryIndex, timesSeen);
+        }
+        queryIndicesAlreadySeen.set(queryIndex);
+        return smallIndex;
+
+    }
+
+    private void pushToPreStorage(int queryIndex, int smallIndex) {
+        moveIndexToPreOffline(queryIndex, smallIndex);
+        if (offlinePermutation.size() > MAX_OFFLINE_CAPACITY) {
+            save();
+        }
     }
 
     private int smallIndexCounter = 0;
@@ -119,47 +156,41 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
     private final BitSet queryIndicesAlreadySeen = new BitSet();
     private final Int2ByteMap timesRequested = new Int2ByteOpenHashMap();
 
-    private int getSmallIndex(final int queryIndex) {
+    private int getSmallIndex(final int queryIndex, final int maxObservations) {
         if (!queryIndicesAlreadySeen.get(queryIndex)) {
 
             // not seen before, let's associate the next small index for this new query index
-            final int result = queryIndexPermutation.get(queryIndex);
+            /* final int result = queryIndexPermutation.get(queryIndex);
+           assert result==-1 :" the result cannot be different from -1";
+           if (result == -1) {
+            */
+            final int smallIndex = smallIndexCounter++;
+            queryIndicesAlreadySeen.set(queryIndex, true);
+            if (maxObservations > 1) {
 
-
-            if (result == -1) {
-                final int smallIndex = smallIndexCounter++;
                 queryIndexPermutation.put(queryIndex, smallIndex);
-                queryIndicesAlreadySeen.set(queryIndex, true);
                 timesRequested.put(queryIndex, (byte) 1);
-                return smallIndex;
             } else {
-                return result;
+                // if maxObs<=1 we don't need to remember the queryIndex in memory
+
+                pushToPreStorage(queryIndex, smallIndex);
             }
+            return smallIndex;
+            /* } else {
+                return result;
+            }*/
         } else {
             // the query index was seen before, and we need to return the small index previously associated with
             // that large index.
-            final int smallIndex = queryIndexPermutation.get(queryIndex);
-            final byte timesSeen = (byte) (timesRequested.get(queryIndex) + 1);
-            // decide if we have reached max observations for this query index:
-            if (timesSeen >= MAX_OBSERVATIONS) {
-                // if yes, remove the index from the map, it will not be asked again.
-                queryIndexPermutation.remove(queryIndex);
 
-                moveIndexToPreOffline(queryIndex, smallIndex);
-                if (offlinePermutation.size() > MAX_OFFLINE_CAPACITY) {
-                    save();
-                }
-            } else {
-                // if not, keep it in the map until requested that many times.
-                timesRequested.put(queryIndex, timesSeen);
-            }
-            return smallIndex;
+            return internalDoPerm(queryIndex, maxObservations);
         }
         //    return fetchExternal(queryIndex);
     }
 
     /**
      * Take a query index and associated small index and move to pre-offline (immediate state before write).
+     *
      * @param queryIndex
      * @param smallIndex
      */
@@ -169,7 +200,7 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
     }
 
     public void setPruneLimit(byte limit) {
-        MAX_OBSERVATIONS = limit;
+        globalQueryMaxOccurences = limit;
     }
 
     @Override
@@ -209,6 +240,13 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
 
     }
 
-
+    /**
+     * Indicates that the query index is now on disk.
+     * @param queryIndex
+     * @return
+     */
+    public boolean isOnDisk(int queryIndex) {
+        return !isInMap(queryIndex)&& queryIndicesAlreadySeen.get(queryIndex);
+    }
 }
 

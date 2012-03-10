@@ -209,7 +209,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
             prevRecord = samRecord;
 
-            // if SAM reports read is unmapped (we don't know how or why), skip record
+
             final int queryIndex = getQueryIndex(samRecord);
 
             final int targetIndex = getTargetIndex(targetIds, samRecord.getReferenceName(), thirdPartyInput);
@@ -397,6 +397,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         }
 
         if (!propagateQueryIds) {
+            // change this to keep track of read names -> queryIndex associations until all alignments in a pair of
+            // reads have been seen.
             return dummyQueryIndex++;
         } else {  // read name is not the integer Goby relies on, make an int from the id:
             return queryIds.registerIdentifier(new MutableString(readName));

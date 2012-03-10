@@ -58,6 +58,11 @@ public class NoOpPermutation implements QueryIndexPermutationInterface {
     }
 
     @Override
+    public int permutate(int queryIndex, int maxQueryIndexOccurrence) {
+        return queryIndex;
+    }
+
+    @Override
     public void setPruneLimit(byte x) {
 
     }

@@ -66,16 +66,39 @@ public class TestQueryIndexPermutation {
     @Test
     public void multipleChunks() {
 
-        QueryIndexPermutation perm = new QueryIndexPermutation("test-results/permutations/test-multipleChunks");
+        QueryIndexPermutation perm = new QueryIndexPermutation("test-results/permutations/test-multipleChunks-1");
         perm.setPruneLimit((byte) 2);
         assertEquals(0, perm.permutate(0));
         assertEquals(1, perm.permutate(5));
         assertEquals(2, perm.permutate(100));
         assertEquals(1, perm.permutate(5));
         assertEquals(0, perm.permutate(0));
-        assertTrue( !perm.isInMap(0));
+        assertTrue(!perm.isInMap(0));
 
         assertEquals(2, perm.permutate(100));
+        perm.close();
+    }
+
+
+    @Test
+    public void multipleChunksVariablePruneLimit() {
+
+        QueryIndexPermutation perm = new QueryIndexPermutation("test-results/permutations/test-multipleChunks-2");
+        perm.setPruneLimit((byte) 1);
+        assertEquals(0, perm.permutate(0, 3));
+        assertEquals(1, perm.permutate(5));
+        // 5 has been forgotten and writen to disk already
+        assertEquals(2, perm.permutate(100, 2));
+        // get -1 5 since it was written to storage already and is requested more than maxOccurences (this indicates a bug in the client).
+        assertEquals(-1, perm.permutate(5));
+        assertEquals(0, perm.permutate(0, 3));
+        // third time's a charm
+        assertEquals(0, perm.permutate(0, 3));
+        assertEquals(-1, perm.permutate(0, 3));
+        assertTrue(!perm.isInMap(0));
+        assertTrue(perm.isOnDisk(0));
+
+        assertEquals(2, perm.permutate(100, 2));
         perm.close();
     }
 }
