@@ -359,8 +359,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         if (size == 0) {
             return;
         }
-        final int numTokens = bitInput.readNibble();
         final boolean hasNegatives = bitInput.readBit() == 1;
+        final int numTokens = bitInput.readNibble();
+
         final int[] distinctvalue = new int[numTokens];
         for (int i = 0; i < numTokens; i++) {
             // -1 makes 0 symbol -1 (missing value) again
