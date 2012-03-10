@@ -154,9 +154,12 @@ public class AlignmentWriter implements Closeable {
         this.sortedState = sortedState;
         if (sortedState) {
             if (targetPositionOffsets == null) {
-                throw new UnsupportedOperationException("Indexing sorted alignments requires"
+
+                final String s = "Indexing sorted alignments requires"
                         + " knowning target lengths before entries are appended. setTargetLength"
-                        + " must be called before setSorted(true).");
+                        + " must be called before setSorted(true).";
+                LOG.error(s);
+                throw new UnsupportedOperationException(s);
             }
         } else {
             // unsorted alignments are never permuted since the original query indices are already monotonically
@@ -409,7 +412,7 @@ public class AlignmentWriter implements Closeable {
 
         IOUtils.closeQuietly(headerOutput);
         entriesChunkWriter.close(collectionBuilder);
-        if (sortedState) {
+        if (sortedState && targetPositionOffsets!=null) {
             writeIndex();
         }
 

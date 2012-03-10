@@ -122,6 +122,7 @@ public abstract class IterateAlignments {
 
     public void iterate(FileSlice slice, final String... basenames) throws IOException {
         for (final String basename : basenames) {
+
             iterateOverOneAlignment(slice, basename);
         }
     }
@@ -134,7 +135,7 @@ public abstract class IterateAlignments {
 
         final int numberOfReferences;
         {
-            assert slice.basename.equals(basename) : "basename must match in slice.";
+            assert slice==null||slice.basename==null|| slice.basename.equals(basename) : "basename must match in slice.";
             final AlignmentReader reader = alignmentReaderFactory.createReader(basename, slice.startOffset, slice.endOffset);
             reader.readHeader();
             numberOfReferences = reader.getNumberOfTargets();
