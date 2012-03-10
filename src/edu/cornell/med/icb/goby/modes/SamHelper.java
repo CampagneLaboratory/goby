@@ -18,21 +18,23 @@
 
 package edu.cornell.med.icb.goby.modes;
 
-import it.unimi.dsi.lang.MutableString;
-import it.unimi.dsi.fastutil.ints.IntList;
+import edu.cornell.med.icb.goby.reads.QualityEncoding;
+import it.unimi.dsi.Util;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.lang.MutableString;
 import org.apache.log4j.Logger;
 
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 import java.util.List;
-
-import edu.cornell.med.icb.goby.reads.QualityEncoding;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Class to assist with parsing SAM files. Translated from C_Alignments.cc.
+ *
+ * @author Kevin Dorff
  */
 public class SamHelper {
 
@@ -74,8 +76,12 @@ public class SamHelper {
     private MutableString logval = new MutableString();
 
     private QualityEncoding qualityEncoding = QualityEncoding.ILLUMINA;
+    private boolean debug;
 
     public SamHelper() {
+        // don't even dare go through the debugging code if log4j was not configured. The debug code
+        // is way too slow to run unintentionally in production!
+        debug = Util.log4JIsConfigured();
     }
 
     public void reset() {
@@ -105,9 +111,9 @@ public class SamHelper {
 
     public void setSource(final int queryIndex, final CharSequence sourceQuery, final CharSequence sourceQual,
                           final CharSequence cigar, final CharSequence md, final int position, final boolean reverseStrand) {
-        if (LOG.isDebugEnabled()) {
+        if (debug && LOG.isDebugEnabled()) {
             LOG.debug("------ new setSource --------------------------------");
-            LOG.debug("position=" + (position -1));
+            LOG.debug("position=" + (position - 1));
             LOG.debug("queryIndex=" + queryIndex);
         }
         reset();
@@ -139,8 +145,8 @@ public class SamHelper {
     // Some aligners, such as bsmap, provide the reference in the SAM file.
     public void setSourceWithReference(final int queryIndex, final CharSequence sourceQuery,
                                        final CharSequence sourceQual, final CharSequence sourceRef,
-                                        final int position, final boolean reverseStrand) {
-        if (LOG.isDebugEnabled()) {
+                                       final int position, final boolean reverseStrand) {
+        if (debug && LOG.isDebugEnabled()) {
             LOG.debug("------ new setSourceWithReference --------------------------------");
             LOG.debug("position=" + (position - 1));
             LOG.debug("queryIndex=" + queryIndex);
@@ -190,7 +196,7 @@ public class SamHelper {
         this.score = alignedLength - numMisMatches;
         findSequenceVariations();
         SamSequenceVariation.merge(sequenceVariations);
-        if (LOG.isDebugEnabled()) {
+        if (debug && LOG.isDebugEnabled()) {
             for (SamSequenceVariation var : sequenceVariations) {
                 LOG.debug("... Variation " + var.toString());
             }
@@ -308,7 +314,7 @@ public class SamHelper {
         numRightClipped = 0;
         score = 0;
 
-        if (LOG.isDebugEnabled()) {
+        if (debug && LOG.isDebugEnabled()) {
             LOG.debug(":: Reference and query before construction");
             LOG.debug(String.format(":: read=%s", sourceQuery));
         }
@@ -328,7 +334,7 @@ public class SamHelper {
     }
 
     private void applyCigar() {
-        if (LOG.isDebugEnabled()) {
+        if (debug && LOG.isDebugEnabled()) {
             LOG.debug(String.format(":: Applying cigar=%s", cigar));
         }
         int posInReads = 0;
@@ -339,7 +345,7 @@ public class SamHelper {
         while (matcher.find()) {
             int length = Integer.parseInt(matcher.group(1));
             char op = matcher.group(2).charAt(0);
-            switch(op) {
+            switch (op) {
                 case 'S':
                     // Soft clipping
                     for (int i = 0; i < length; i++) {
@@ -351,17 +357,17 @@ public class SamHelper {
                     break;
                 case 'M':
                     // Account for matches AND mismatches. Any mis-matches will be fixed in applyMd()
-                    query.append(sourceQuery.substring(posInReads, posInReads+length));
+                    query.append(sourceQuery.substring(posInReads, posInReads + length));
                     if (sourceQual.length() != 0) {
-                        qual.append(sourceQual.substring(posInReads, posInReads+length));
+                        qual.append(sourceQual.substring(posInReads, posInReads + length));
                     }
-                    ref.append(sourceQuery.substring(posInReads, posInReads+length));
+                    ref.append(sourceQuery.substring(posInReads, posInReads + length));
                     posInReads += length;
                     break;
                 case 'I':
-                    query.append(sourceQuery.substring(posInReads, posInReads+length));
+                    query.append(sourceQuery.substring(posInReads, posInReads + length));
                     if (sourceQual.length() != 0) {
-                        qual.append(sourceQual.substring(posInReads, posInReads+length));
+                        qual.append(sourceQual.substring(posInReads, posInReads + length));
                     }
                     for (int i = 0; i < length; i++) {
                         ref.append('-');
@@ -403,7 +409,7 @@ public class SamHelper {
         // My RE is simplified from the SAM spec but performs the same task
         // the major difference being mine would allow 5ACG where the current
         // spec would require 5A0C0G0 (which mine will still work with just fine).
-        if (LOG.isDebugEnabled()) {
+        if (debug && LOG.isDebugEnabled()) {
             LOG.debug(String.format(":: Applying md=%s", md));
         }
         int position = numLeftClipped;
@@ -479,7 +485,7 @@ public class SamHelper {
                     refPosition++;
                 }
                 if (reverseStrand) {
-                    queryChar = Character.toUpperCase(query.charAt(genomicLength - (i - numLeftClipped) -  1));
+                    queryChar = Character.toUpperCase(query.charAt(genomicLength - (i - numLeftClipped) - 1));
                 } else {
                     queryChar = Character.toUpperCase(query.charAt(i - numLeftClipped));
                 }
@@ -495,7 +501,7 @@ public class SamHelper {
             }
         }
 
-        if (LOG.isDebugEnabled()) {
+        if (debug && LOG.isDebugEnabled()) {
             debugSequences();
             logval.setLength(0);
             logval.append("::  pos=");
@@ -523,7 +529,7 @@ public class SamHelper {
                 logval.append(String.format("%02d:%c:%02d  ", i, refChar, refPositions.get(i)));
             }
             LOG.debug(logval.toString());
-    
+
             LOG.debug("read with positions");
             logval.setLength(0);
             for (int i = 0; i < paddedLength; i++) {
@@ -567,13 +573,15 @@ public class SamHelper {
         }
 
         if (tooBig) {
-            LOG.debug(String.format(" *** readIndex [%d] or refPosition [%d] is too large! ***",
-                    tooBigReadIndex, tooBigRefPosition));
-            LOG.debug(String.format(">%d", queryIndex));
-            if (sourceQuery.length() > 0) {
-                LOG.debug(String.format("%s", sourceQuery));
-            } else {
-                LOG.debug("sourceQuery was NULL");
+            if (debug && LOG.isDebugEnabled()) {
+                LOG.debug(String.format(" *** readIndex [%d] or refPosition [%d] is too large! ***",
+                        tooBigReadIndex, tooBigRefPosition));
+                LOG.debug(String.format(">%d", queryIndex));
+                if (sourceQuery.length() > 0) {
+                    LOG.debug(String.format("%s", sourceQuery));
+                } else {
+                    LOG.debug("sourceQuery was NULL");
+                }
             }
         }
     }
@@ -583,6 +591,9 @@ public class SamHelper {
     }
 
     private void debugSequences(final boolean printClipChars) {
+        if (!debug) {
+            return;
+        }
         LOG.debug(String.format(":: paddingLeft=%d, paddingRight=%d", numLeftClipped, numRightClipped));
         logval.setLength(0);
         if (qual.length() > 0) {
@@ -641,6 +652,7 @@ public class SamHelper {
 
     /**
      * Get the quality encoding scale used for the input fastq file.
+     *
      * @return the quality encoding scale used for the input fastq file
      */
     public QualityEncoding getQualityEncoding() {
@@ -650,6 +662,7 @@ public class SamHelper {
     /**
      * Set the quality encoding scale to be used for the input fastq file.
      * Acceptable values are "Illumina", "Sanger", and "Solexa".
+     *
      * @param qualityEncoding the quality encoding scale to be used for the input fastq file
      */
     public void setQualityEncoding(final QualityEncoding qualityEncoding) {

@@ -1,4 +1,9 @@
-dev > 1.9.8.4
+Towards Goby 2.0
+ - Prevent logging when the log4j system has not been configured. For some reason, LOG.isDebugEnabled can return true
+   when the logging system is not initialized. For SamHelper, this means calling String.Format million of times to
+   create debug output that is never shown. This change dramatically improves the performance of the sam-to-compact mode
+   when logging is not properly configured.
+
  - methylation region can now estimate empirical p-values. Empirical P-values require biological replicates in at least
    one of the groups under analysis. Two passes over the data are required. In the first pass, the empirical null
    distribution is observed by comparing pairs of samples in the same group. In the second pass, this distribution is
@@ -24,7 +29,6 @@ dev > 1.9.8.4
    bases. Please note that the problem was in a library used by RandomAccessSequenceCache, we updated the library in
    this release, and no change to the code of RandomAccessSequenceCache was needed to fix the problem.
  - last-to-compact: add option to substitute some bases with others in the aligned read.
- - Fixed a bug related aligning Paired-End with Gsnap.
 1.9.8.3.1
  - Fix a bug related to writing paired end alignments in the Gsnap parser (C API)
 1.9.8.3
