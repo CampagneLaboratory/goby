@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
  *         Date: 1/29/12
  *         Time: 5:00 PM
  */
-public class DynamicOptionClient {
+public class DynamicOptionClient implements Comparable {
     String[] supportedKeys;
     private String[] helpMessages;
     String[] defaultValues;
@@ -204,5 +204,14 @@ public class DynamicOptionClient {
                 values[keyIndex] = value.toString();
             }
         }
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        if (!(o instanceof DynamicOptionClient)) {
+            return 1;
+        }
+        DynamicOptionClient otherClient=(DynamicOptionClient)o;
+        return enclosingClass.getCanonicalName().compareTo(((DynamicOptionClient) o).enclosingClass.getCanonicalName());
     }
 }

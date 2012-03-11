@@ -67,10 +67,12 @@ public class AlignmentWriter implements Closeable {
     private final GZIPOutputStream headerOutput;
     private boolean entriesHaveQueryLength;
 
-    public static DynamicOptionClient doc = new DynamicOptionClient(AlignmentWriter.class,
+    private static DynamicOptionClient doc = new DynamicOptionClient(AlignmentWriter.class,
             "permutate-query-indices:boolean, when true permutates query indices to small values (improves compression, but looses the ability to track alignments back to reads):false"
     );
-
+     public static DynamicOptionClient doc() {
+        return doc;
+    }
     /**
      * Details about aligner.
      */
@@ -657,6 +659,7 @@ public class AlignmentWriter implements Closeable {
     public void setAlignerName(String alignerName) {
         this.alignerName = alignerName;
     }
+
 
 
 }

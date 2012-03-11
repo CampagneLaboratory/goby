@@ -23,7 +23,9 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.aligners.AbstractAligner;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.alignments.processors.*;
+import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -133,7 +135,8 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         alignmentProcessorFactory = DiscoverSequenceVariantsMode.configureProcessor(jsapResult);
         genome = DiscoverSequenceVariantsMode.configureGenome(jsapResult);
         //final String codecName = jsapResult.getString("codec", null);
-
+        DynamicOptionRegistry.register(MessageChunksWriter.doc());
+        DynamicOptionRegistry.register(AlignmentWriter.doc());
         return this;
     }
 

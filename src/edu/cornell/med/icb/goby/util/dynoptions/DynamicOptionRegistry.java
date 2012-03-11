@@ -18,7 +18,7 @@
 
 package edu.cornell.med.icb.goby.util.dynoptions;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
 
 /**
  * A global registry for dynamic options. These options are set on the command line with options of the
@@ -33,15 +33,17 @@ public class DynamicOptionRegistry {
     }
 
     public static void register(final DynamicOptionClient client) {
-        registeredDOClients.add(client);
+        if (!registeredDOClients.contains(client)) {
+            registeredDOClients.add(client);
+        }
     }
 
-    static ObjectArrayList<DynamicOptionClient> registeredDOClients = new ObjectArrayList<DynamicOptionClient>();
+    static private ObjectAVLTreeSet<DynamicOptionClient> registeredDOClients = new ObjectAVLTreeSet<DynamicOptionClient>();
     private static String[] dymamicOptions;
 
     public static void parseCommandLineOptions(final String[] dynamicOptions) {
         // parse dynamic options:
-        dymamicOptions=dynamicOptions;
+        dymamicOptions = dynamicOptions;
         for (final String dymamicOption : dynamicOptions) {
             boolean parsed = false;
             for (final DynamicOptionClient doc : registeredDOClients) {
