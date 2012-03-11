@@ -106,16 +106,16 @@
             <id>quality-filter-parameters</id>
             <shortFlag>p</shortFlag>
             <defaults>
-                <string>threshold=0.05</string>
+                <string>threshold=1</string>
             </defaults>
             <longFlag>quality-filter-parameters</longFlag>
             <required>false</required>
-            <help>Parameters to configure the quality filter.</help>
+            <help>Parameters to configure the quality filter. Use threshold=0.05 to filter out alignments with more than 5% bases that differ from the reference. Please note that the default value has changed in Goby 2.0 to not filter any hits (Goby 1.9 had the fitler on by default at 5%).</help>
         </flaggedOption>
         <flaggedOption>
             <id>number-of-reads</id>
             <defaults>
-                <string>-1</string>
+                <string>0</string>
             </defaults>
             <stringParser>
                 <classname>IntegerStringParser</classname>
@@ -124,7 +124,9 @@
             <required>false</required>
             <help>The number of reads in the input file. The number is determined from the argument to the -q option
                 when provided. Use this option when importing an alignment not generated with Goby (see samtools
-                flagstat to get the number of reads in a SAM/BAM file).
+                flagstat to get the number of reads in a SAM/BAM file). You can use 0 if you prefer to have the import
+                tool determine this number from the input file. In some cases the option is useful to indicate there
+                were more reads in the input than provided in the file to import.
             </help>
         </flaggedOption>
         <flaggedOption>
@@ -157,10 +159,9 @@
             <longFlag>quality-encoding</longFlag>
             <required>false</required>
             <defaults>
-                <string>Illumina</string>
+                <string>Sanger</string>
             </defaults>
-            <help>The encoding for quality scores. The default quality encoding is that used by the Illumina pipeline
-                1.3+. Valid encodings include Illumina, Sanger and Solexa.
+            <help>The encoding for quality scores. The default quality encoding is set to Sanger as per BAM/SAM specification v1.4-r985. Valid encodings include Illumina, Sanger and Solexa.
             </help>
         </flaggedOption>
     </parameters>

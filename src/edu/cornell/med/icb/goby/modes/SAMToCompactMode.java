@@ -24,11 +24,11 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsWriter;
 import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.perms.ReadNameToIndex;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.Util;
-import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import net.sf.samtools.*;
 import org.apache.log4j.Logger;
@@ -69,7 +69,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
     private boolean bsmap;
 
-    private QualityEncoding qualityEncoding = QualityEncoding.ILLUMINA;
+    private QualityEncoding qualityEncoding = QualityEncoding.SANGER;
     /**
      * Flag to indicate if log4j was configured.
      */
@@ -209,14 +209,38 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
             prevRecord = samRecord;
 
+            // try to determine readMaxOccurence, the maximum number of times a read name occurs in a complete alignment.
+            int readMaxOccurence = 1;
+            final boolean readIsPaired = samRecord.getReadPairedFlag();
+            final boolean b = readIsPaired && !samRecord.getReadUnmappedFlag();
+            if (b) {
+                // if the reads are paired, we expect to see the read name  at least twice.
+                readMaxOccurence++;
+                // Unfortunately the SAM/BAM format does not provide the exact number of times
+                // a read matched the reference sequence. We could find this number in an non sorted BAM file
+                // by counting how many times the same read name appears in a continous block of constant read name.
+                // However, for sorted input, we need this number to know when to stop
+                // keep a given read name in memory with its associated query index.
+                // Since we can't keep all the read names in memory continuously (these are strings and
+                // consume much memory), it is unclear how to determine  query-index-occurrences in a sorted
+                // SAM/BAM file that contains multiple best hits for read or mate. We can handle these cases
+                // correctly when working directly in the aligner and writing Goby format because the information
+                // is available at the time of alignment, but discarded afterwards.
+                //TODO see if we find a solution to better handle ambiguous matches.
+            }
 
-            final int queryIndex = getQueryIndex(samRecord);
+            final Object xoString = samRecord.getAttribute("X0");
+            final int numTotalHits = xoString == null ? 1 : (Integer) xoString;
+            readMaxOccurence = Math.max(numTotalHits * (readIsPaired ? 2 : 1), readMaxOccurence);
+            final String readName = samRecord.getReadName();
+
+            final int queryIndex = nameToQueryIndices.getQueryIndex(readName, readMaxOccurence);
 
             final int targetIndex = getTargetIndex(targetIds, samRecord.getReferenceName(), thirdPartyInput);
 
             final int fragmentIndex;
             final int mateFragmentIndex;
-            if (samRecord.getReadPairedFlag()) {
+            if (readIsPaired) {
                 if (samRecord.getFirstOfPairFlag()) {
                     fragmentIndex = 0;
                     mateFragmentIndex = 1;
@@ -271,7 +295,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             currentEntry.setTargetAlignedLength(samHelper.getTargetAlignedLength());
             currentEntry.setPairFlags(samRecord.getFlags());
 
-            if (samRecord.getReadPairedFlag()) {
+            if (readIsPaired) {
                 if (!samRecord.getMateUnmappedFlag()) {
                     final Alignments.RelatedAlignmentEntry.Builder relatedBuilder =
                             Alignments.RelatedAlignmentEntry.newBuilder();
@@ -291,16 +315,12 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 }
             }
 
-
             final Alignments.AlignmentEntry alignmentEntry = currentEntry.build();
 
-            // BWA will provide X0, the number of reads at this quality, other SAM producers
-            // probably won't.
-            final Object xoString = samRecord.getAttribute("X0");
-            final int numTotalHits = xoString == null ? 1 : (Integer) xoString;
             if (qualityFilter.keepEntry(samHelper.getQueryLength(), alignmentEntry)) {
                 // only write the entry if it is not ambiguous. i.e. less than or equal to mParameter
                 if (numTotalHits <= mParameter) {
+
                     writer.appendEntry(alignmentEntry);
                     numAligns += multiplicity;
                     if (debug && LOG.isDebugEnabled()) {
@@ -312,6 +332,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     if (debug && LOG.isDebugEnabled()) {
                         LOG.debug(String.format("Added queryIndex=%d to TMH", queryIndex));
                     }
+                    // remove the query name from memory since we are not writing these entries anyway
+                    while (queryIndex == nameToQueryIndices.getQueryIndex(samRecord.getReadName(), 0)) ;
                 }
             } else {
                 if (debug && LOG.isDebugEnabled()) {
@@ -324,13 +346,12 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         }
         samIterator.close();
 
-        // TODO write statistics to writer.
         // stu 090817 - mimicking LastToCompactMode.scan() statistics
         if (readIndexFilter != null) {
             writer.putStatistic("keep-filter-filename", readIndexFilterFile.getName());
         }
         writer.putStatistic("number-of-entries-written", numAligns);
-        writer.setNumQueries(numberOfReads);
+        writer.setNumQueries(Math.max(numberOfReads, numberOfReadsFromCommandLine));
         writer.printStats(System.out);
 
         // write information from SAM file header
@@ -385,27 +406,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         currentEntry.addSequenceVariations(sequenceVariation);
     }
 
-    private int getQueryIndex(final SAMRecord samRecord) {
-        final String readName = samRecord.getReadName();
-
-        try {
-            if (Character.isDigit(readName.charAt(0))) {
-                return Integer.parseInt(readName);
-            }
-        } catch (NumberFormatException e) {
-            // do nothing, handle this outside the catch block
-        }
-
-        if (!propagateQueryIds) {
-            // change this to keep track of read names -> queryIndex associations until all alignments in a pair of
-            // reads have been seen.
-            return dummyQueryIndex++;
-        } else {  // read name is not the integer Goby relies on, make an int from the id:
-            return queryIds.registerIdentifier(new MutableString(readName));
-
-        }
-
-    }
+    ReadNameToIndex nameToQueryIndices = new ReadNameToIndex("ignore-this-for-now");
 
     /**
      * Main method.

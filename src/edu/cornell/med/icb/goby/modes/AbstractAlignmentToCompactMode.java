@@ -68,7 +68,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
     /**
      * default ambiguity threshold.
      */
-    protected static final int DEFAULT_M_PARAM = 2;
+    protected static final int DEFAULT_M_PARAM = 1;
 
     /**
      * Input file.
@@ -209,7 +209,7 @@ public abstract class AbstractAlignmentToCompactMode extends AbstractGobyMode {
             if (numberOfReads <= 0) {
                 numberOfReads = numberOfReadsFromCommandLine;
             }
-            if (numberOfReads <= 0) {
+            if (numberOfReads < 0) {
                 System.err.println("Cannot determine number of reads. Must set property or provide reads file with -q");
                 return;
             }

@@ -47,7 +47,7 @@ public class SamHelper {
      */
     private static final Logger LOG = Logger.getLogger(SamHelper.class);
 
-    private char minQualValue = 0;
+    private byte minQualValue = 0;
     private MutableString cigar = new MutableString();
     private MutableString md = new MutableString();
     private MutableString sourceQuery = new MutableString();
@@ -75,7 +75,7 @@ public class SamHelper {
 
     private MutableString logval = new MutableString();
 
-    private QualityEncoding qualityEncoding = QualityEncoding.ILLUMINA;
+    private QualityEncoding qualityEncoding = QualityEncoding.SANGER;
     private boolean debug;
 
     public SamHelper() {
@@ -236,11 +236,11 @@ public class SamHelper {
         return md;
     }
 
-    public void setMinQualValue(final char minQualValue) {
+    public void setMinQualValue(final byte minQualValue) {
         this.minQualValue = minQualValue;
     }
 
-    public char getMinQualValue() {
+    public byte getMinQualValue() {
         return minQualValue;
     }
 
@@ -558,17 +558,17 @@ public class SamHelper {
             refChar = Character.toUpperCase(ref.charAt(i));
             queryChar = Character.toUpperCase(query.charAt(i));
             boolean hasQual;
-            char qualChar;
+            byte qualChar;
             // We check queryQuery != '-' because we don't have a qual score on deletions
             if (qual.length() > 0 && queryChar != '-') {
                 hasQual = true;
-                qualChar = (char) qualityEncoding.asciiEncodingToPhredQualityScore(qual.charAt(i));
+                qualChar = qualityEncoding.asciiEncodingToPhredQualityScore(qual.charAt(i));
             } else {
                 hasQual = false;
                 qualChar = minQualValue;
             }
             if (refChar != queryChar) {
-                sequenceVariations.add(new SamSequenceVariation(refPosition, refChar, readIndex, queryChar, hasQual, (byte) qualChar));
+                sequenceVariations.add(new SamSequenceVariation(refPosition, refChar, readIndex, queryChar, hasQual,  qualChar));
             }
         }
 
