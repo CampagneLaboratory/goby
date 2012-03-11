@@ -182,6 +182,10 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
         if (wikiHelpId != null) {
             jsapVal.unregisterParameter(wikiHelpId);
         }
+        final Parameter dynoptionId = jsapVal.getByID("dynamic-options");
+        if (dynoptionId != null) {
+            jsapVal.unregisterParameter(dynoptionId);
+        }
     }
 
     /**
