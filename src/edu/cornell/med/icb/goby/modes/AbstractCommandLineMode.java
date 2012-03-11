@@ -20,19 +20,8 @@
 
 package edu.cornell.med.icb.goby.modes;
 
-import com.martiansoftware.jsap.Flagged;
-import com.martiansoftware.jsap.IDMap;
-import com.martiansoftware.jsap.JSAP;
-import com.martiansoftware.jsap.JSAPException;
-import com.martiansoftware.jsap.JSAPResult;
-import com.martiansoftware.jsap.Option;
-import com.martiansoftware.jsap.Parameter;
-import com.martiansoftware.jsap.Switch;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.WordUtils;
+import com.martiansoftware.jsap.*;
+import org.apache.commons.lang.*;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -71,11 +60,12 @@ public abstract class AbstractCommandLineMode {
      * keeping only the first character of each split, such as "compact-file-stats" becomes "cfs".
      * This allows a short mode name for specifying goby modes on the command line, so the following
      * two command line options are synomymous:
-     *    goby -jar goby.jar --mode compact-file-stats
-     *    goby -jar goby.jar --mode cfs
+     * goby -jar goby.jar --mode compact-file-stats
+     * goby -jar goby.jar --mode cfs
      * The Goby command line parser will not accept duplicate short mode names, so if two modes return
      * the same shortModeName, the command line parser will not offer/accept a short mode name for these modes.
      * In this case, it is recommended that you create overriding getShortModeName() methods for all of these modes.
+     *
      * @return The short name of the mode
      */
     public String getShortModeName() {
@@ -263,7 +253,7 @@ public abstract class AbstractCommandLineMode {
                 final String htmlHelpString = StringEscapeUtils.escapeHtml(parameter.getHelp());
                 // and also convert "-" to the hyphen character code
                 writer.print(StringUtils.replace(htmlHelpString, "-", "&#45;"));
-                 if (parameter.getDefault() != null) {
+                if (parameter.getDefault() != null) {
                     writer.print(" Default value: ");
                     for (final String defaultValue : parameter.getDefault()) {
                         writer.print(" ");
@@ -448,11 +438,13 @@ public abstract class AbstractCommandLineMode {
     private void abortOnError(final JSAP jsap, final JSAPResult jsapResult) {
         if (!jsapResult.success()) {
             System.err.println();
-            for (final Iterator errs = jsapResult.getErrorMessageIterator(); errs.hasNext();) {
+
+            printUsage(jsap);
+            System.err.println("One or more errors were encountered parsing the command line. See usage above to correct these errors:");
+            for (final Iterator errs = jsapResult.getErrorMessageIterator(); errs.hasNext(); ) {
                 System.err.println("Error: " + errs.next());
             }
             System.err.println();
-            printUsage(jsap);
             System.exit(1);
         }
     }

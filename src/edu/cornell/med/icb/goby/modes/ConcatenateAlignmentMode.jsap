@@ -70,7 +70,7 @@
             </defaults>
             <help>The name of the alignment processor. An alignment processor can be configured to scan alignment entries before calling variants. By default, no processor is used. If you specify realign_near_indels, a processor that realigns reads in the proximity of indels will be used. Please note that this feature is experimental (Since Goby 1.9.7).</help>
         </flaggedOption>
-        <flaggedOption>
+        <!--flaggedOption>
             <id>codec</id>
             <longFlag>codec</longFlag>
             <stringParser>
@@ -78,13 +78,13 @@
             </stringParser>
             <required>false</required>
             <help>The name of a codec. When provided, the coded is used to compress alignment entries.</help>
-        </flaggedOption>
-         <flaggedOption>
+        </flaggedOption-->
+         <!--flaggedOption>
             <id>dynamic-options</id>
             <shortFlag>x</shortFlag>
             <required>false</required>
             <allowMultipleDeclarations>true</allowMultipleDeclarations>
             <help>Set a dynamic option, in the format classname:key=value. Classname is the the name of the class that exposes the option (without short class name without package), key identifies the option to change and value is the new value for the option. </help>
-        </flaggedOption>
+        </flaggedOption-->
     </parameters>
 </jsap>

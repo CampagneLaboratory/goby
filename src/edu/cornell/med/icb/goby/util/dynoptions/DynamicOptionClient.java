@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.cornell.med.icb.goby.util;
+package edu.cornell.med.icb.goby.util.dynoptions;
 
 
 import org.apache.commons.lang.ArrayUtils;
@@ -38,7 +38,7 @@ public class DynamicOptionClient {
     Class enclosingClass;
     private static final Logger LOG = Logger.getLogger(DynamicOptionClient.class);
 
-    public DynamicOptionClient(Class enclosingClass, final String[] otherDefinitions, final String... optionDefinition) {
+    public DynamicOptionClient(final Class enclosingClass, final String[] otherDefinitions, final String... optionDefinition) {
 
         this(enclosingClass, (String[])ArrayUtils.addAll(otherDefinitions, optionDefinition));
     }
@@ -49,7 +49,7 @@ public class DynamicOptionClient {
      * @param enclosingClass   Enclosing class. Simple name will be used to parse options.
      * @param optionDefinition option definition in the format key:help:default-value
      */
-    public DynamicOptionClient(Class enclosingClass, final String... optionDefinition) {
+    public DynamicOptionClient(final Class enclosingClass, final String... optionDefinition) {
         this.enclosingClass = enclosingClass;
         supportedKeys = new String[optionDefinition.length];
         helpMessages = new String[optionDefinition.length];
@@ -70,7 +70,7 @@ public class DynamicOptionClient {
             }
             index++;
         }
-
+        DynamicOptionRegistry.register(this);
     }
 
     /**

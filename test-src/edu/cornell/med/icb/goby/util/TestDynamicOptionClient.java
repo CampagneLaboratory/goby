@@ -19,6 +19,7 @@
 package edu.cornell.med.icb.goby.util;
 
 import edu.cornell.med.icb.goby.stats.AnnotationAveragingWriter;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertTrue;

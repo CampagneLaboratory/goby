@@ -18,7 +18,9 @@
 
 package edu.cornell.med.icb.goby.stats;
 
-import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.*;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.FastSmallAndLog10BinningStrategy;
+import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.PassThroughStatisticAdaptor;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
 import org.apache.commons.io.FileUtils;
@@ -415,9 +417,10 @@ public class TestAnnotationAveragingWriter {
         int[][] Cm = {{9, 7, 1, 5}, {9, 7, 9, 3}, {2, 3, 2, 8}, {4, 1, 3, 6}};
         testSupport = new MethylCountProviderTestSupport(groups, samples, positions, "Case4", C, Cm);
         final StringWriter stringWriter = new StringWriter();
-        AnnotationAveragingWriter.doc.setValue("estimate-empirical-P", true);
-        AnnotationAveragingWriter.doc.setValue("serialized-estimator-filename", makeDensityEstimator());
-        AnnotationAveragingWriter.doc.setValue("combinator", "sum");
+
+        AnnotationAveragingWriter.doc().setValue("estimate-empirical-P", true);
+        AnnotationAveragingWriter.doc().setValue("serialized-estimator-filename", makeDensityEstimator());
+        AnnotationAveragingWriter.doc().setValue("combinator", "sum");
 
         AnnotationAveragingWriter testWriter = new AnnotationAveragingWriter(stringWriter, genome, testSupport);
         testWriter.setWriteNumSites(false);

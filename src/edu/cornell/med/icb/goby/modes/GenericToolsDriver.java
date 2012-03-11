@@ -24,6 +24,7 @@ import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Parameter;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import edu.cornell.med.icb.io.ResourceFinder;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.logging.Log;
@@ -32,14 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * When running java -jar goby.jar this is the class that is called.
@@ -85,6 +79,16 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
      * Map to override help / default values.
      */
     protected final Map<String, String> HELP_VALUES;
+
+    public String[] getDynamicOptions() {
+        return dynamicOptions;
+    }
+
+    /**
+     * The dynamic options defined on the command line for this goby mode.
+     */
+    private String[] dynamicOptions;
+
 
     @Override
     public String getModeName() {
@@ -138,7 +142,7 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
     /**
      * Create the GenericToolsDriver object, parse argument(s). This intentionaly doesn't check
      * for errors as we only care for "mode" and we KNOW there will be other command line
-     * parameters. All other arguments are specifed by the specific mode being called
+     * parameters. All other arguments are specified by the specific mode being called
      * (including things like --help).
      *
      * @param argsVal the arguments
@@ -157,6 +161,8 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
             printUsage(jsap);
             System.exit(1);
         }
+        dynamicOptions = jsapResult.getStringArray("dynamic-options");
+
         return this;
     }
 
@@ -189,11 +195,16 @@ public class GenericToolsDriver extends AbstractCommandLineMode {
         if (modeClass == null) {
             modeClass = SHORT_MODES_MAP.get(mode);
         }
+
+
         Exception caught = null;
         try {
             if (modeClass != null) {
                 final AbstractCommandLineMode modeObject = (AbstractCommandLineMode) modeClass.newInstance();
                 modeObject.configure(args);
+                // parse dynamic options only after the mode class has been loaded. Each mode class should import
+                // the classes that have a dynamic option client which needs to be configured.
+                DynamicOptionRegistry.parseCommandLineOptions(dynamicOptions);
                 modeObject.execute();
             }
         } catch (JSAPException e) {

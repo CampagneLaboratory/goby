@@ -4,11 +4,14 @@ Towards Goby 2.0
    would not work in some 1.9 versions of Goby after samtools/picard changed the semantic of the record comparator Goby
    relied upon to verify the input was indeed sorted by position. This made it impossible to convert already sorted BAM
    files as sorted Goby alignments).
+ - Moved error messages produced when parsing the command line of a mode to after usage. This is a simple change that
+   will make it easier to diagnose problems on a command line without having to scroll back up the console.
  - Prevent logging when the log4j system has not been configured. For some reason, LOG.isDebugEnabled can return true
    when the logging system is not initialized. For SamHelper, this means calling String.Format million of times to
    create debug output that is never shown. This change dramatically improves the performance of the sam-to-compact mode
    when logging is not properly configured.
-
+ - Refactor dynamic options with a central registry, and make GobyDriver handle option parsing.
+   This removes  duplication of code parsing for each mode that would need dynamic options.
  - methylation region can now estimate empirical p-values. Empirical P-values require biological replicates in at least
    one of the groups under analysis. Two passes over the data are required. In the first pass, the empirical null
    distribution is observed by comparing pairs of samples in the same group. In the second pass, this distribution is

@@ -22,7 +22,7 @@ import edu.cornell.med.icb.goby.algorithmic.algorithm.*;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.*;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.algorithmic.data.SamplePairEnumerator;
-import edu.cornell.med.icb.goby.util.DynamicOptionClient;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.log4j.Logger;

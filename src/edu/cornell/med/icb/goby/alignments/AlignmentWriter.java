@@ -25,7 +25,7 @@ import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutation;
 import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutationInterface;
 import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
 import edu.cornell.med.icb.goby.modes.GobyDriver;
-import edu.cornell.med.icb.goby.util.DynamicOptionClient;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.util.VersionUtils;
 import it.unimi.dsi.fastutil.ints.IntArrayList;

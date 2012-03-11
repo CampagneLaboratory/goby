@@ -23,17 +23,13 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.aligners.AbstractAligner;
 import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.goby.alignments.processors.*;
-import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
-import edu.cornell.med.icb.goby.util.DynamicOptionClient;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.logging.ProgressLogger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ServiceLoader;
 
 /**
  * Concatenate compact alignment files. Concatenation preserves
@@ -87,12 +83,6 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         this.adjustSampleIndices = adjustSampleIndices;
     }
 
-    /**
-     * Optional codec to compress-decompress alignment entries.
-     */
-    private AlignmentCodec codec;
-    private static final ServiceLoader<AlignmentCodec> codecLoader = ServiceLoader.load(AlignmentCodec.class);
-
     private boolean adjustQueryIndices = true;
     private boolean realign = true;
     private AlignmentProcessorFactory alignmentProcessorFactory = new DefaultAlignmentProcessorFactory();
@@ -137,48 +127,13 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
     public AbstractCommandLineMode configure(final String[] args) throws IOException, JSAPException {
         final JSAPResult jsapResult = parseJsapArguments(args);
         inputFilenames = jsapResult.getStringArray("input");
-        final String[] dymamicOptions =  jsapResult.getStringArray("dynamic-options");
-        ObjectArrayList<DynamicOptionClient> registeredDOClients = new ObjectArrayList<DynamicOptionClient>();
-        registeredDOClients.add(MessageChunksWriter.doc);
-        registeredDOClients.add(AlignmentWriter.doc);
-        for (final String dymamicOption : dymamicOptions) {
-            boolean parsed = false;
-
-            for (final DynamicOptionClient doc : registeredDOClients) {
-
-                if (doc.acceptsOption(dymamicOption)) {
-
-                    parsed = true;
-                    break;
-
-                }
-            }
-            if (!parsed) {
-                System.err.println("Error: none of the installed tools could parse dynamic option: " + dymamicOption);
-                System.exit(1);
-            }
-        }
-
         outputFile = jsapResult.getString("output");
         adjustQueryIndices = jsapResult.getBoolean("adjust-query-indices", true);
         adjustSampleIndices = jsapResult.getBoolean("adjust-sample-indices", false);
         alignmentProcessorFactory = DiscoverSequenceVariantsMode.configureProcessor(jsapResult);
         genome = DiscoverSequenceVariantsMode.configureGenome(jsapResult);
-        final String codecName = jsapResult.getString("codec", null);
-        if (codecName != null) {
-            codecLoader.reload();
-            for (final AlignmentCodec c : codecLoader) {
+        //final String codecName = jsapResult.getString("codec", null);
 
-                if (c.name().equals(codecName)) {
-                    LOG.info("Will use alignment codec " + c.name());
-                    codec = c;
-                    break;
-                }
-            }
-            if (codec == null) {
-                System.out.println("Could not find codec " + codecName);
-            }
-        }
         return this;
     }
 
@@ -232,9 +187,7 @@ public class ConcatenateAlignmentMode extends AbstractGobyMode {
         }
         writer.setSorted(allSorted);
 
-        if (codec != null) {
-            writer.setCodec(codec);
-        }
+
         AlignmentProcessorInterface processor = null;
         if (!allSorted) {
             processor = new DummyProcessorUnsorted(alignmentReader);

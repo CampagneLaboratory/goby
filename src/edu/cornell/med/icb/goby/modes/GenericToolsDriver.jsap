@@ -42,5 +42,12 @@
             <longFlag>wikihelp</longFlag>
             <help>Displays mode usage information in wikimedia table format.</help>
         </switch>
+        <flaggedOption>
+            <id>dynamic-options</id>
+            <shortFlag>x</shortFlag>
+            <required>false</required>
+            <allowMultipleDeclarations>true</allowMultipleDeclarations>
+            <help>Set a dynamic option, in the format classname:key=value. Classname is the the name of the class that exposes the option (short class name without package), key identifies the option to change and value is the new value for the option. </help>
+        </flaggedOption>
     </parameters>
 </jsap>

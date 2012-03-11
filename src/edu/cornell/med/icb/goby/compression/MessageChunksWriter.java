@@ -21,7 +21,7 @@
 package edu.cornell.med.icb.goby.compression;
 
 import edu.cornell.med.icb.goby.alignments.AlignmentCollectionHandler;
-import edu.cornell.med.icb.goby.util.DynamicOptionClient;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

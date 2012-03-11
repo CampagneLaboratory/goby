@@ -25,15 +25,14 @@ import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.stat.inference.ChiSquareTest;
 import org.apache.commons.math.stat.inference.ChiSquareTestImpl;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Random;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Fabien Campagne
@@ -41,7 +40,6 @@ import java.util.Random;
  *         Time: 1:14:57 PM
  */
 public class TestStatistics {
-
 
     @Test
     public void testFoldChange() {
@@ -71,7 +69,6 @@ public class TestStatistics {
             deCalc.associateSampleToGroup("A-" + i, "A");
             deCalc.associateSampleToGroup("B-" + i, "B");
         }
-
 
         final DifferentialExpressionInfo info = new DifferentialExpressionInfo("id-1");
         final DifferentialExpressionResults results = new DifferentialExpressionResults();

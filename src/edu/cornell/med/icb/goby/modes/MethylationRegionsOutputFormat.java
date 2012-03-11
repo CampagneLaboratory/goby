@@ -28,7 +28,7 @@ import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.stats.AnnotationAveragingWriter;
 import edu.cornell.med.icb.goby.stats.MethylCountProviderFromRegionsOutputFormat;
 import edu.cornell.med.icb.goby.stats.RegionWriter;
-import edu.cornell.med.icb.goby.util.DynamicOptionClient;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.OutputInfo;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.logging.Log;

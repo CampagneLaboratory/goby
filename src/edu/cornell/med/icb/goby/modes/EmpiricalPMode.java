@@ -24,7 +24,7 @@ import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.DensityEstimator;
 import edu.cornell.med.icb.goby.algorithmic.algorithm.dmr.ObservationWriter;
 import edu.cornell.med.icb.goby.stats.EmpiricalPValueEstimator;
 import edu.cornell.med.icb.goby.stats.FormatFieldCounter;
-import edu.cornell.med.icb.goby.util.DynamicOptionClient;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.io.FastBufferedReader;
@@ -95,7 +95,6 @@ public class EmpiricalPMode extends AbstractGobyMode {
 
     }
 
-    static ObjectArrayList<DynamicOptionClient> registeredDOClients = new ObjectArrayList<DynamicOptionClient>();
 
     @Override
     public AbstractCommandLineMode configure(String[] args) throws IOException, JSAPException {
@@ -106,7 +105,7 @@ public class EmpiricalPMode extends AbstractGobyMode {
         outputFilename = jsapResult.getString("output");
         statisticName = jsapResult.getString("statistic");
         forceEstimation = jsapResult.getBoolean("force-estimation");
-        registeredDOClients.add(MethylationRegionsOutputFormat.doc);
+
         {
             densityFilename = jsapResult.getString("density-filename");
             if (densityFilename != null) {
@@ -140,24 +139,6 @@ public class EmpiricalPMode extends AbstractGobyMode {
         if (statisticName != null) {
             boolean result = doc.acceptsOption("EmpiricalPMode:statistic=" + statisticName);
             assert result : "EmpiricalPMode:statistic= definition must be accepted.";
-        }
-        // parse dynamic options:
-        dymamicOptions = jsapResult.getStringArray("dynamic-options");
-        registeredDOClients.add(EmpiricalPMode.doc);
-        for (final String dymamicOption : dymamicOptions) {
-            boolean parsed = false;
-            for (final DynamicOptionClient doc : registeredDOClients) {
-
-                if (doc.acceptsOption(dymamicOption)) {
-
-                    parsed = true;
-                    break;
-                }
-            }
-            if (!parsed) {
-                System.err.println("Error: none of the installed tools could parse dynamic option: " + dymamicOption);
-                System.exit(1);
-            }
         }
 
         return this;

@@ -27,7 +27,7 @@ import edu.cornell.med.icb.goby.algorithmic.data.Annotation;
 import edu.cornell.med.icb.goby.algorithmic.data.GroupComparison;
 import edu.cornell.med.icb.goby.algorithmic.data.SamplePairEnumerator;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
-import edu.cornell.med.icb.goby.util.DynamicOptionClient;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import edu.cornell.med.icb.goby.util.OutputInfo;
 import edu.cornell.med.icb.goby.util.OutputInfoFromWriter;
 import it.unimi.dsi.fastutil.ints.*;
@@ -68,6 +68,9 @@ public class AnnotationAveragingWriter extends VCFWriter implements RegionWriter
             "write-observations:boolean, when true write oservations to disk: false",
             "contexts:string, coma delimited list of contexts for which to evaluate methylation rate. Contexts can be CpG, CpA,CpC,CpT,CpN. Default is CpG only:CpG"
     );
+    public static final DynamicOptionClient doc() {
+        return doc;
+    }
     private String[] groups;
     private int numGroups;
     private int[] sampleIndexToGroupIndex;
