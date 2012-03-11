@@ -614,21 +614,23 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
 
         recordVariationQualitiesAndClear(result, result.getSequenceVariationsList());
 
-        Alignments.RelatedAlignmentEntry link = pairLinks.code(source.hasPairAlignmentLink(), source.getPairAlignmentLink());
+        final boolean entryMatchingReverseStrand = source.getMatchingReverseStrand();
+        Alignments.RelatedAlignmentEntry link = pairLinks.code(source.hasPairAlignmentLink(), entryMatchingReverseStrand,
+                source.getPairAlignmentLink());
         if (link == null) {
             result.clearPairAlignmentLink();
         } else {
             result.setPairAlignmentLink(link);
         }
 
-        link = forwardSpliceLinks.code(source.hasSplicedForwardAlignmentLink(), source.getSplicedForwardAlignmentLink());
+        link = forwardSpliceLinks.code(source.hasSplicedForwardAlignmentLink(), entryMatchingReverseStrand, source.getSplicedForwardAlignmentLink());
         if (link == null) {
             result.clearSplicedForwardAlignmentLink();
         } else {
             result.setSplicedForwardAlignmentLink(link);
         }
 
-        link = backwardSpliceLinks.code(source.hasSplicedBackwardAlignmentLink(), source.getSplicedBackwardAlignmentLink());
+        link = backwardSpliceLinks.code(source.hasSplicedBackwardAlignmentLink(), entryMatchingReverseStrand, source.getSplicedBackwardAlignmentLink());
         if (link == null) {
             result.clearSplicedBackwardAlignmentLink();
         } else {
@@ -841,16 +843,16 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         if (anInt != MISSING_VALUE) {
             result.setTargetAlignedLength(anInt);
         }
-
-        Alignments.RelatedAlignmentEntry link = pairLinks.decode(originalIndex, reduced.getPairAlignmentLink());
+        final boolean entryMatchingReverseStrand = result.hasMatchingReverseStrand()?result.getMatchingReverseStrand():false;
+        Alignments.RelatedAlignmentEntry link = pairLinks.decode(originalIndex, entryMatchingReverseStrand, reduced.getPairAlignmentLink());
         if (link != null) {
             result.setPairAlignmentLink(link);
         }
-        link = forwardSpliceLinks.decode(originalIndex, reduced.getSplicedForwardAlignmentLink());
+        link = forwardSpliceLinks.decode(originalIndex, entryMatchingReverseStrand, reduced.getSplicedForwardAlignmentLink());
         if (link != null) {
             result.setSplicedForwardAlignmentLink(link);
         }
-        link = backwardSpliceLinks.decode(originalIndex, reduced.getSplicedBackwardAlignmentLink());
+        link = backwardSpliceLinks.decode(originalIndex, entryMatchingReverseStrand, reduced.getSplicedBackwardAlignmentLink());
         if (link != null) {
             result.setSplicedBackwardAlignmentLink(link);
         }
@@ -871,7 +873,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             varBuilder.setReadIndex(varReadIndex.getInt(varPositionIndex));
             final int toQualLength = varToQualLength.getInt(varToQualsLength);
             varToQualsLength++;
-            // TODO optimize away array creation.
+
             final byte[] quals = getQualArray(toQualLength);
             ++varPositionIndex;
             final int maxLength = Math.max(fromLength, toLength);

@@ -38,7 +38,8 @@ class LinkInfo {
     private final IntList deltaPositions = new IntArrayList();
     private final IntList deltaTargetIndices = new IntArrayList();
     private final IntList fragmentIndices = new IntArrayList();
-    private int previousPosition;
+    private int previousPositionPositiveStrand;
+    private int previousPositionNegativeStrand;
     private int previousTargetIndex;
     int index = 0;
     private final String label;
@@ -65,11 +66,14 @@ class LinkInfo {
         deltaTargetIndices.clear();
         fragmentIndices.clear();
         index = 0;
-        deltaPositionIndex=0;
-        fragmentIndex=0;
+        deltaPositionIndex = 0;
+        fragmentIndex = 0;
+        previousPositionPositiveStrand=0;
+        previousPositionNegativeStrand=0;
     }
 
-    public Alignments.RelatedAlignmentEntry code(final boolean hasLink, final Alignments.RelatedAlignmentEntry relatedLink) {
+    public Alignments.RelatedAlignmentEntry code(final boolean hasLink, final boolean entryMatchingReverseStrand,
+                                                 final Alignments.RelatedAlignmentEntry relatedLink) {
         hasLinks.add(hasLink ? 1 : 0);
         if (!hasLink) {
             return null;
@@ -87,11 +91,15 @@ class LinkInfo {
         }
         if (!justResetPos) {
 
-            deltaPositions.add(Fast.int2nat(position - previousPosition));
+            final int deltaPairPos = position - (entryMatchingReverseStrand ? previousPositionNegativeStrand : previousPositionPositiveStrand);
+            deltaPositions.add(Fast.int2nat(deltaPairPos));
             deltaTargetIndices.add(Fast.int2nat(targetIndex - previousTargetIndex));
         }
-
-        previousPosition = position;
+        if (entryMatchingReverseStrand) {
+            previousPositionNegativeStrand = position;
+        } else {
+            previousPositionPositiveStrand = position;
+        }
         previousTargetIndex = targetIndex;
         fragmentIndices.add(relatedLink.getFragmentIndex());
         result.clearFragmentIndex();
@@ -105,8 +113,11 @@ class LinkInfo {
         }
 
     }
+
     int deltaPositionIndex;
-    public Alignments.RelatedAlignmentEntry decode(int originalIndex, final Alignments.RelatedAlignmentEntry source) {
+
+    public Alignments.RelatedAlignmentEntry decode(int originalIndex, final boolean entryMatchingReverseStrand,
+                                                   final Alignments.RelatedAlignmentEntry source) {
         if (hasLinks.getInt(originalIndex) == 1) {
             Alignments.RelatedAlignmentEntry.Builder result = source != null ? Alignments.RelatedAlignmentEntry.newBuilder(source) :
                     Alignments.RelatedAlignmentEntry.newBuilder();
@@ -119,11 +130,14 @@ class LinkInfo {
                 position = source.getPosition();
                 targetIndex = source.getTargetIndex();
                 justResetPos = true;
-              //  System.out.println("just reset pos");
+                //  System.out.println("just reset pos");
 
             }
             if (index > 0 && !justResetPos) {
 
+                // keep track of previous positions for each strand the entry is on. This helps because these positions
+               // are typically shifted by about insert size
+                final int previousPosition = entryMatchingReverseStrand ? previousPositionNegativeStrand : previousPositionPositiveStrand;
                 position = Fast.nat2int(deltaPositions.getInt(deltaPositionIndex)) + previousPosition;
                 targetIndex = Fast.nat2int(deltaTargetIndices.getInt(deltaPositionIndex)) + previousTargetIndex;
                 deltaPositionIndex++;
@@ -132,7 +146,11 @@ class LinkInfo {
             }
             result.setPosition(position);
             result.setTargetIndex(targetIndex);
-            previousPosition = position;
+            if (entryMatchingReverseStrand) {
+                previousPositionNegativeStrand = position;
+            } else {
+                previousPositionPositiveStrand = position;
+            }
             previousTargetIndex = targetIndex;
             ++index;
             return result.build();
@@ -145,7 +163,7 @@ class LinkInfo {
     public void write(final OutputBitStream out) throws IOException {
 
         handler.writeArithmetic(whenDebug(HAS_LINK_LABEL), hasLinks, out);
-    //    System.out.printf("delta-links-%s n=%d %s %n", label, deltaPositions.size(), deltaPositions.toString());
+        //    System.out.printf("delta-links-%s n=%d %s %n", label, deltaPositions.size(), deltaPositions.toString());
         handler.writeArithmetic(whenDebug(POS_LABEL), deltaPositions, out);
         handler.writeArithmetic(whenDebug(TARGETS_LABEL), deltaTargetIndices, out);
         handler.writeArithmetic(whenDebug(FRAGMENTS_LABEL), fragmentIndices, out);
@@ -154,7 +172,7 @@ class LinkInfo {
     public void read(final int numEntriesInChunk, final InputBitStream bitInput) throws IOException {
         handler.decodeArithmetic(whenDebug(HAS_LINK_LABEL), numEntriesInChunk, bitInput, hasLinks);
         handler.decodeArithmetic(whenDebug(POS_LABEL), numEntriesInChunk, bitInput, deltaPositions);
-    //    System.out.printf("delta-links-%s n=%d %s %n", label, deltaPositions.size(), deltaPositions.toString());
+        //    System.out.printf("delta-links-%s n=%d %s %n", label, deltaPositions.size(), deltaPositions.toString());
         handler.decodeArithmetic(whenDebug(TARGETS_LABEL), numEntriesInChunk, bitInput, deltaTargetIndices);
         handler.decodeArithmetic(whenDebug(FRAGMENTS_LABEL), numEntriesInChunk, bitInput, fragmentIndices);
     }

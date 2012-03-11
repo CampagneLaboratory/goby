@@ -22,8 +22,8 @@ import edu.cornell.med.icb.goby.alignments.AlignmentCollectionHandler;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.alignments.Alignments;
-import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutationInterface;
 import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutation;
+import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutationInterface;
 import edu.cornell.med.icb.goby.compression.HybridChunkCodec1;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.junit.Before;
@@ -90,7 +90,7 @@ public class TestAlignmentChunkCodec1 {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
         Alignments.AlignmentCollection.Builder collection = buildCollection(examplesWithDuplicates);
-      //  System.out.println(collection.build().toString());
+        //  System.out.println(collection.build().toString());
         assertRoundTripMatchExpected(codec, collection);
     }
 
@@ -103,45 +103,54 @@ public class TestAlignmentChunkCodec1 {
         assertRoundTripMatchExpected(codec, collection);
     }
 
-   //@Test
-       // will not run on server.
+    //@Test
+    // will not run on server.
     public void roundTripLarge() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
-        Alignments.AlignmentCollection.Builder collection = loadCollection("/data/rrbs/EMNWFIL.entries",0, 100);
+        Alignments.AlignmentCollection.Builder collection = loadCollection("/data/rrbs/EMNWFIL.entries", 0, 100);
 
-        assertRoundTripMatchExpected(codec, collection,false);
+        assertRoundTripMatchExpected(codec, collection, false);
     }
 
+    @Test
 
-  // @Test
-       // will not run on server.
-    public void roundTripPairedEnd() throws IOException {
+    public void roundTripExamplePairedEnd() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
-        Alignments.AlignmentCollection.Builder collection = loadCollection("/data/CRAM/VJDQTEI-C1.entries",600, 900);
+        final Alignments.AlignmentCollection.Builder collection = loadCollection("test-data/bam/Example.entries",0,1000);
 
         assertRoundTripMatchExpected(codec, collection);
     }
 
-  //  @Test
-      // will not run on server.
+    // @Test
+    // will not run on server.
+    public void roundTripPairedEnd() throws IOException {
+        final HybridChunkCodec1 codec = new HybridChunkCodec1();
+        codec.setHandler(new AlignmentCollectionHandler());
+        Alignments.AlignmentCollection.Builder collection = loadCollection("/data/CRAM/VJDQTEI-C1.entries", 600, 900);
+
+        assertRoundTripMatchExpected(codec, collection);
+    }
+
+    //  @Test
+    // will not run on server.
     public void roundTripBug() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
         codec.setHandler(new AlignmentCollectionHandler());
-        Alignments.AlignmentCollection.Builder collection = loadCollection("/data/CRAM/WZLFUIH-paper-combined-NA18853.entries", 10000*117-5000, 10000);
+        Alignments.AlignmentCollection.Builder collection = loadCollection("/data/CRAM/WZLFUIH-paper-combined-NA18853.entries", 10000 * 117 - 5000, 10000);
 
         assertRoundTripMatchExpected(codec, collection);
     }
 
     private Alignments.AlignmentCollection.Builder loadCollection(String filename) throws IOException {
-        return loadCollection(filename,0, Integer.MAX_VALUE);
+        return loadCollection(filename, 0, Integer.MAX_VALUE);
     }
 
     private Alignments.AlignmentCollection.Builder loadCollection(String filename, int firstElementToLoad, int maxElementsToLoad) throws IOException {
         final Alignments.AlignmentCollection.Builder collectionBuilder = Alignments.AlignmentCollection.newBuilder();
         AlignmentReaderImpl reader = new AlignmentReaderImpl(filename);
-        QueryIndexPermutationInterface permutator=new QueryIndexPermutation(filename);
+        QueryIndexPermutationInterface permutator = new QueryIndexPermutation(filename);
         try {
             int counter = 0;
             for (Alignments.AlignmentEntry entry : reader) {
@@ -169,17 +178,18 @@ public class TestAlignmentChunkCodec1 {
         assertEquals("collection", expected.build().toString(), decodedCollection.toString());
 
     }
+
     private void assertRoundTripMatchExpected(HybridChunkCodec1 codec, Alignments.AlignmentCollection.Builder expected) throws IOException {
-              assertRoundTripMatchExpected(codec,expected,true);
+        assertRoundTripMatchExpected(codec, expected, true);
     }
 
     private void assertRoundTripMatchExpected(HybridChunkCodec1 codec, Alignments.AlignmentCollection.Builder expected, boolean doAssert) throws IOException {
         final ByteArrayOutputStream encoded = codec.encode(expected.build());
         Alignments.AlignmentCollection decodedCollection = (Alignments.AlignmentCollection) codec.decode(encoded.toByteArray());
 
-      if (doAssert){
-          assertEquals("collection", expected.build().toString(), decodedCollection.toString());
-      }
+        if (doAssert) {
+            assertEquals("collection", expected.build().toString(), decodedCollection.toString());
+        }
 
     }
 
@@ -207,7 +217,7 @@ public class TestAlignmentChunkCodec1 {
         // assertEquals(collectionBuilder.getAlignmentEntriesCount(), encoded.);
     }
 
-   // @Test
+    // @Test
     // will not run on server.
     public void testLarge() throws IOException {
         final HybridChunkCodec1 codec = new HybridChunkCodec1();
