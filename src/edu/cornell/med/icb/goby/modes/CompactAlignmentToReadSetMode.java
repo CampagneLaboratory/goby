@@ -165,17 +165,13 @@ public class CompactAlignmentToReadSetMode extends AbstractGobyMode {
         for (final Alignments.AlignmentEntry entry : reader) {
             final int queryIndex = entry.getQueryIndex();
 
-            final int queryId = 1263;
-            if (queryIndex == queryId) {
-                System.out.println("found 1263");
-            }
             matchingIndices.add(queryIndex);
 
         }
         final boolean alignmentHasPermutation=reader.getQueryIndicesWerePermuted();
         final PermutationReaderInterface permReader=alignmentHasPermutation?new PermutationReader(basename):new NoOpPermutationReader();
         reader.close();
-
+        // TODO write a Junit for this mode.
         final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
         for (int smallIndex = minQueryIndex; smallIndex <= maxQueryIndex; ++smallIndex) {
 
