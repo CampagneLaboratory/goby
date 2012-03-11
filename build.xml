@@ -69,7 +69,7 @@
         <delete file="${goby-spi-jarfile}"/>
     </target>
 
-    <target name="compile" depends="init" description="compiles the source code">
+    <target name="compile" depends="init,jar-goby-spi" description="compiles the source code">
 
         <javac srcdir="${src}" destdir="${classes}" debug="${debug}" deprecation="${deprecation}">
             <classpath refid="compile.classpath"/>
@@ -188,7 +188,7 @@
         </jar>
     </target>
 
-    <target name="jar-goby-spi" depends="compile" description="Creates a manifest only jar file for Goby services">
+    <target name="jar-goby-spi"  description="Creates a manifest only jar file for Goby services">
         <jar jarfile="${goby-spi-jarfile}">
             <manifest>
                 <attribute name="Specification-Title" value="Goby"/>
