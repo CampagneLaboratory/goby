@@ -240,6 +240,10 @@ public class SamHelper {
         this.minQualValue = minQualValue;
     }
 
+    public void setMinQualValue(final char minQualValue) {
+            this.minQualValue = (byte) minQualValue;
+        }
+
     public byte getMinQualValue() {
         return minQualValue;
     }
@@ -351,7 +355,7 @@ public class SamHelper {
                     for (int i = 0; i < length; i++) {
                         ref.append('-');
                         query.append('-');
-                        qual.append(minQualValue); // min quality
+                        qual.append((char)minQualValue); // min quality
                     }
                     posInReads += length;
                     break;
@@ -381,7 +385,7 @@ public class SamHelper {
                         if (sourceQual.length() != 0) {
                             // Minimum qual, placing min value here but it shouldn't get written to
                             // sequence variations
-                            qual.append(minQualValue);
+                            qual.append((char)minQualValue);
                         }
                         ref.append('?');
                     }

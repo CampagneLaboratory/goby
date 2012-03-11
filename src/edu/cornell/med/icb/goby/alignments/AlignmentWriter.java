@@ -21,8 +21,8 @@
 package edu.cornell.med.icb.goby.alignments;
 
 import edu.cornell.med.icb.goby.alignments.perms.NoOpPermutation;
-import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutationInterface;
 import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutation;
+import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutationInterface;
 import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
 import edu.cornell.med.icb.goby.modes.GobyDriver;
 import edu.cornell.med.icb.goby.util.DynamicOptionClient;
@@ -118,7 +118,7 @@ public class AlignmentWriter implements Closeable {
     private boolean indexWritten;
     private long[] targetPositionOffsets;
 
-    private AlignmentCodec codec;
+
     private QueryIndexPermutationInterface permutator;
     private boolean queryIndicesWerePermuted;
 
@@ -269,26 +269,14 @@ public class AlignmentWriter implements Closeable {
     public synchronized void appendEntry() throws IOException {
         // update the unique query length set
         uniqueQueryLengths.add(newEntry.getQueryLength());
-        final int currentQueryIndex = newEntry.getQueryIndex();
 
         maxTargetIndex = Math.max(newEntry.getTargetIndex(), maxTargetIndex);
-
-        if (codec != null) {
-            if (collectionBuilder.getAlignmentEntriesCount() == 0) {
-                codec.newChunk();
-            }
-            final Alignments.AlignmentEntry.Builder result = codec.encode(newEntry);
-            if (result != null) {
-                newEntry = result;
-            }
-        }
         permutator.makeSmallIndices(newEntry);
         final Alignments.AlignmentEntry builtEntry = newEntry.build();
 
         this.collectionBuilder.addAlignmentEntries(builtEntry);
 
         writeIndexEntry(builtEntry);
-
         newEntry = Alignments.AlignmentEntry.newBuilder();
     }
 
@@ -357,22 +345,9 @@ public class AlignmentWriter implements Closeable {
         }
 
         maxTargetIndex = Math.max(entry.getTargetIndex(), maxTargetIndex);
-        if (codec != null) {
-            final Alignments.AlignmentEntry.Builder entryBuilder = entry.toBuilder();
-            if (collectionBuilder.getAlignmentEntriesCount() == 0) {
-                codec.newChunk();
-            }
-            final Alignments.AlignmentEntry.Builder result = codec.encode(entryBuilder);
-            if (result != null) {
-                permutator.makeSmallIndices(result);
-                collectionBuilder.addAlignmentEntries(result.build());
-            }
-        } else {
-            entry = permutator.makeSmallIndices(entry);
-            collectionBuilder.addAlignmentEntries(entry);
-        }
+        entry = permutator.makeSmallIndices(entry);
+        collectionBuilder.addAlignmentEntries(entry);
         writeIndexEntry(entry);
-
 
         numberOfAlignedReads += 1;
     }
@@ -412,7 +387,7 @@ public class AlignmentWriter implements Closeable {
 
         IOUtils.closeQuietly(headerOutput);
         entriesChunkWriter.close(collectionBuilder);
-        if (sortedState && targetPositionOffsets!=null) {
+        if (sortedState && targetPositionOffsets != null) {
             writeIndex();
         }
 
@@ -574,8 +549,7 @@ public class AlignmentWriter implements Closeable {
     public void setQueryIdentifiers(final IndexedIdentifier queryIdentifiers) {
         this.queryIdentifiers = queryIdentifiers;
         for (final int index : queryIdentifiers.values()) {
-            int permIndex = permutator.permutate(index);
-            maxQueryIndex = Math.max(maxQueryIndex, index);
+            permutator.permutate(index,2);
         }
     }
 
@@ -684,7 +658,5 @@ public class AlignmentWriter implements Closeable {
         this.alignerName = alignerName;
     }
 
-    public void setCodec(AlignmentCodec codec) {
-        this.codec = codec;
-    }
+
 }

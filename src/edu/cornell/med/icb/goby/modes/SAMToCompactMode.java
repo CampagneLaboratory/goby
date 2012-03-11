@@ -162,7 +162,6 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         SamHelper samHelper = new SamHelper();
         samHelper.setQualityEncoding(qualityEncoding);
         numberOfReads = 0;
-        final SAMRecordCoordinateComparator samComparator = new SAMRecordCoordinateComparator();
 
         // int stopEarly = 0;
         SAMRecord prevRecord = null;
@@ -362,7 +361,6 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         if (targetIds.size() != 0 && (targetIds.size() != samSequenceRecords.size())) {
 
             LOG.warn("targets: " + targetIds.size() + ", records: " + samSequenceRecords.size());
-
         }
         targetCount = Math.max(samSequenceRecords.size(), targetCount);
         final int[] targetLengths = new int[targetCount];

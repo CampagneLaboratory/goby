@@ -30,7 +30,7 @@ import java.io.*;
 import java.util.Collections;
 
 /**
- * Write query index to small index permutations. Goby replaces large query indices by small indices
+ * Write query index to small index permutations. Goby 2.0+ replaces large query indices by small indices
  * to improve compression of sorted alignment entries files. The permutation writer class takes care
  * of writing the reverse permutation smallIndex->queryIndex, to make it possible to retrieve the read
  * index for these applications that need it (i.e., to retrieve the reads that did not align against a
@@ -66,6 +66,7 @@ public class PermutationWriter implements Closeable {
             o = null;
         }
         output = o;
+        assert output!=null:"output cannot be null";
     }
 
     public void close() {
