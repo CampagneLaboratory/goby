@@ -142,6 +142,11 @@ public class AlignmentWriter implements Closeable {
 
     }
 
+    /**
+     * Indicate whether query indices are small indices. When true, create a PermutationReader to reconstitute
+     * original query indices from the stored small indices.
+     * @param state True or False.
+     */
     public void setPermutation(boolean state) {
         if (state) {
             permutator = new QueryIndexPermutation(basename);

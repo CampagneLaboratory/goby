@@ -38,7 +38,7 @@ import java.util.Collections;
  * with each read. It can represent anything, but is often used to stored the number of times
  * a read is repeated in a sample file or dataset.  The read indices are stored with delta
  * coding, and multiplicity values with gamma coding, keeping the file representation
- * of the set small even when there are million of reads.
+ * of the set small even when there are millions of reads.
  *
  * @author Fabien Campagne
  *         Date: Jun 3, 2009

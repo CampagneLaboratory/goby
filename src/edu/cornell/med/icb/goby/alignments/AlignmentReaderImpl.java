@@ -89,6 +89,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      */
     private String gobyVersion;
     private AlignmentCodec codec;
+    private boolean queryIndicesWerePermuted;
 
 
     /**
@@ -681,6 +682,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
 
             assert queryLengthStoredInEntries : "This version of Goby requires that query lengths are stored in entries." +
                     " You can upgrade old alignment files by transfering data with the concat mode of a previous version.";
+            queryIndicesWerePermuted=header.getQueryIndicesWerePermuted();
 
             if (header.getTargetLengthCount() > 0) {
                 targetLengths = new IntArrayList(header.getTargetLengthList()).toIntArray();
@@ -848,6 +850,11 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     public long getStartByteOffset(final int startReferenceIndex, final int startPosition) {
         //  System.out.printf("start target: %d position: %d %n",startReferenceIndex, startPosition);
         return getByteOffset(startReferenceIndex, startPosition, 0);
+    }
+
+    @Override
+    public boolean getQueryIndicesWerePermuted() {
+            return queryIndicesWerePermuted;
     }
 
     @Override

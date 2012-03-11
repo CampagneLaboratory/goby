@@ -24,21 +24,24 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 
 /**
  * Reads permutations associated with Goby alignments. Permutations store the mapping between small query indices
- * and large query indices.
- * @see PermutationWriter
- *  @author Fabien Campagne
+ * and large query indices (rank of the read in the original read file).
+ *
+ * @author Fabien Campagne
  *         Date: 3/9/12
  *         Time: 2:52 PM
+ * @see PermutationWriter
  */
-public class PermutationReader {
+public class PermutationReader implements PermutationReaderInterface {
     /**
      * Used to log debug and informational messages.
      */
@@ -52,11 +55,14 @@ public class PermutationReader {
     public PermutationReader(String basename) throws IOException {
         this.basename = AlignmentReaderImpl.getBasename(basename);
         FastBufferedInputStream inputStream = null;
+        final String filename = basename + ".perm";
         try {
-            inputStream = new FastBufferedInputStream(new FileInputStream(basename + ".perm"));
+
+            inputStream = new FastBufferedInputStream(new FileInputStream(filename));
             dataInput = new DataInputStream(inputStream);
         } catch (FileNotFoundException e) {
-            LOG.error(e);
+            LOG.error(String.format("A permutation file called %s could not be found, but is required to reconstruct original query indices to complete this task.",
+                    filename), e);
             inputStream = null;
         }
         input = inputStream;
@@ -79,7 +85,7 @@ public class PermutationReader {
                 block.firstSmallIndex = dataInput.readInt();
                 dataInput.skip(block.n * 4L);
                 blocks.add(block);
-                offset+=block.n * 4L+8L;
+                offset += block.n * 4L + 8L;
             }
             Collections.sort(blocks, SMALL_INDEX_COMPARATOR);
             indexBlocks = blocks.toArray(new Block[blocks.size()]);
@@ -112,6 +118,7 @@ public class PermutationReader {
      * @return
      * @throws IOException
      */
+    @Override
     public int getQueryIndex(int smallIndex) throws IOException {
         //   Util.invertPermutation()
         singletonQuery.firstSmallIndex = smallIndex;
@@ -121,18 +128,18 @@ public class PermutationReader {
             block = indexBlocks[ip];
             seek(block.offset + 4);
             final int first = dataInput.readInt();
-            assert first ==smallIndex :"assertion failed at smallIndex="+smallIndex;
+            assert first == smallIndex : "assertion failed at smallIndex=" + smallIndex;
             final int queryIndex = dataInput.readInt();
             return queryIndex;
         } else {
             int index = -(ip + 1);
-            block = indexBlocks[index-1];
+            block = indexBlocks[index - 1];
             int soffset = smallIndex - block.firstSmallIndex;
-            if (soffset < 0 || block.firstSmallIndex+block.n<smallIndex) {
+            if (soffset < 0 || block.firstSmallIndex + block.n < smallIndex) {
                 // not in the block
                 return -1;
             }
-            seek(block.offset +8+ soffset*4L);
+            seek(block.offset + 8 + soffset * 4L);
             final int queryIndex = dataInput.readInt();
             return queryIndex;
         }

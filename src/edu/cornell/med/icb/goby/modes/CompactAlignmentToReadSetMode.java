@@ -23,6 +23,9 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
+import edu.cornell.med.icb.goby.alignments.perms.NoOpPermutationReader;
+import edu.cornell.med.icb.goby.alignments.perms.PermutationReader;
+import edu.cornell.med.icb.goby.alignments.perms.PermutationReaderInterface;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -156,7 +159,8 @@ public class CompactAlignmentToReadSetMode extends AbstractGobyMode {
         final AlignmentReaderImpl reader = new AlignmentReaderImpl(basename);
         reader.readHeader();
         final ReadSet outputSet = new ReadSet();
-        final int numQueries = reader.getNumberOfQueries();
+        final int maxQueryIndex = reader.getSmallestSplitQueryIndex();
+        final int minQueryIndex = reader.getLargestSplitQueryIndex();
         final IntSet matchingIndices = new IntOpenHashSet();
         for (final Alignments.AlignmentEntry entry : reader) {
             final int queryIndex = entry.getQueryIndex();
@@ -168,37 +172,33 @@ public class CompactAlignmentToReadSetMode extends AbstractGobyMode {
             matchingIndices.add(queryIndex);
 
         }
-
+        final boolean alignmentHasPermutation=reader.getQueryIndicesWerePermuted();
+        final PermutationReaderInterface permReader=alignmentHasPermutation?new PermutationReader(basename):new NoOpPermutationReader();
         reader.close();
+
         final AlignmentTooManyHitsReader tmhReader = new AlignmentTooManyHitsReader(basename);
-        for (int queryIndex = 0; queryIndex < numQueries; ++queryIndex) {
-            final int queryId = 1263;
-            if (queryIndex == queryId) {
-                System.out.println("found 1263");
-            }
+        for (int smallIndex = minQueryIndex; smallIndex <= maxQueryIndex; ++smallIndex) {
+
+
+            final int queryIndex = permReader.getQueryIndex(smallIndex);
             if (matchingReads) {
-                if (matchingIndices.contains(queryIndex)) {
-                    if (passesTmhFilter(tmhReader, queryIndex)) {
+                if (matchingIndices.contains(smallIndex)) {
+                    if (passesTmhFilter(tmhReader, smallIndex)) {
                         if (preFilter == null || preFilter.contains(queryIndex)) {
 
                             outputSet.add(queryIndex, 1);
-                        }
-                        if (queryIndex == queryId) {
-                            System.out.println("found 1263 in filter as well, matching read.");
                         }
                     }
                 }
             }
             if (nonMatchingReads) {
-                if (!matchingIndices.contains(queryIndex)) {
-                    if (passesTmhFilter(tmhReader, queryIndex)) {
+                if (!matchingIndices.contains(smallIndex)) {
+                    if (passesTmhFilter(tmhReader, smallIndex)) {
                         if (preFilter == null || preFilter.contains(queryIndex)) {
 
                             outputSet.add(queryIndex, 1);
                         }
-                        if (queryIndex == queryId) {
-                            System.out.println("found 1263 in filter as well, non matching read.");
-                        }
+
                     }
                 }
             }

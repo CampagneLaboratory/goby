@@ -66,7 +66,7 @@ public class PermutationWriter implements Closeable {
             o = null;
         }
         output = o;
-        assert output!=null:"output cannot be null";
+
     }
 
     public void close() {
@@ -94,9 +94,9 @@ public class PermutationWriter implements Closeable {
         final int size = smallIndices.size();
         final int minSmallIndexInChunk = smallIndices.get(0);
         final int maxSmallIndexInChunk = smallIndices.get(size - 1);
-        IntArrayList largeIndices = new IntArrayList();
+        final IntArrayList largeIndices = new IntArrayList();
         largeIndices.size(permPiece.size());
-        for (int queryIndex : permPiece.keySet()) {
+        for (final int queryIndex : permPiece.keySet()) {
             final int smallIndex = permPiece.get(queryIndex);
             final int indexOf = Collections.binarySearch(smallIndices,smallIndex);
             largeIndices.set(indexOf, queryIndex);

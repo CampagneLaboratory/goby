@@ -18,15 +18,13 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
+import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.objects.Object2BooleanOpenCustomHashMap;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Properties;
-
-import edu.cornell.med.icb.identifier.IndexedIdentifier;
 
 /**
  * @author Fabien Campagne
@@ -186,11 +184,20 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
     long getStartByteOffset(int startReferenceIndex, int startPosition);
 
     /**
+     * Indicate whether query indices are small indices. When true, create a PermutationReader to reconstitute
+     * original query indices from the stored small indices.
+     *
+     * @return True when a permutation was created, false otherwise.
+     */
+    boolean getQueryIndicesWerePermuted();
+
+    /**
      * Obtain the byte offset at the end of the chunk with entries at or before the given genomic end position.
      * The start position is taken as an argument to ensure that the end offset contains at least one chunk.
      * You must provide the same start arguments that you use to call getStartByteOffset. When called in this
      * way,getStartByteOffset and getEndyteOffset provide a slice of the alignment that contain entries whose
      * positions p are startPosition <= p < endPosition
+     *
      * @param startReferenceIndex Index of the reference sequence for the start genomic position.
      * @param startPosition       start genomic coordinate in the reference sequence.
      * @param endReferenceIndex   Index of the reference sequence for the end genomic position.

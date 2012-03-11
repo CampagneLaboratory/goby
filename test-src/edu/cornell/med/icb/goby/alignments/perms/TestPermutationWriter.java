@@ -80,7 +80,7 @@ public class TestPermutationWriter {
         writer.append(map);
         writer.close();
 
-        final PermutationReader reader = new PermutationReader(basename);
+        final PermutationReaderInterface reader = new PermutationReader(basename);
         for (int i = 1; i < 101; i++) {
             int expectedQueryIndex = i - 1;
             final int queryIndex = reader.getQueryIndex(i);
