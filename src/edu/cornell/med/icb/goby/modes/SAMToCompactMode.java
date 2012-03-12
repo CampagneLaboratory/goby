@@ -293,6 +293,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             currentEntry.setQueryAlignedLength(samHelper.getQueryAlignedLength());
             currentEntry.setTargetAlignedLength(samHelper.getTargetAlignedLength());
             currentEntry.setPairFlags(samRecord.getFlags());
+            currentEntry.setMappingQuality(samRecord.getMappingQuality());
 
             if (readIsPaired) {
                 if (!samRecord.getMateUnmappedFlag()) {
