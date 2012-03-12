@@ -21,13 +21,16 @@ package edu.cornell.med.icb.goby.alignments;
 import com.google.protobuf.TextFormat;
 import edu.cornell.med.icb.goby.modes.AlignMode;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
+import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -177,7 +180,7 @@ public class TestSequenceVariations {
 
             for (final Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
                 System.out.println(String.format("bwa entry reverseStrand=%b score=%f referenceIndex=%d  queryIndex=%d variation: %s",
-                       alignmentEntry.getMatchingReverseStrand(),
+                        alignmentEntry.getMatchingReverseStrand(),
                         alignmentEntry.getScore(),
                         alignmentEntry.getQueryIndex(),
                         alignmentEntry.getTargetIndex(),
@@ -386,12 +389,19 @@ public class TestSequenceVariations {
         }
         referenceWriter.close();
         queryWriter.close();
-
-        // run the alignment process
-        lastagAlignmentFilename = alignWith("lastag", readsFilename, referenceFilename, "1");
-        bwaAlignmentFilename = alignWith("bwa", readsFilename, referenceFilename, "1");
-
+        try {
+            // run the alignment process
+            lastagAlignmentFilename = alignWith("lastag", readsFilename, referenceFilename, "1");
+        } catch (ExecuteException e) {
+            LOG.error(e);
+        }
+        try {
+            bwaAlignmentFilename = alignWith("bwa", readsFilename, referenceFilename, "1");
+        } catch (ExecuteException e) {
+            LOG.error(e);
+        }
     }
+
 
     private String alignWith(final String alignerName, String readsFilename, String referenceFilename, String suffix) throws IOException {
         final String alignmentFilename = FilenameUtils.concat(BASE_TEST_DIR, alignerName + "-alignment-" + suffix);
@@ -437,8 +447,8 @@ public class TestSequenceVariations {
                     "CCAAAAAAAAAAATCCAAAAAAAAAACCCAAAAAAAAAA",
                     "CCAAAAAAAAAAA---AAAAAAAAAACCCAAAAAAAAAA"),
             new Alignment("2_mutations",
-                   //1234567891111111111222
-                   //         0123456789012
+                    //1234567891111111111222
+                    //         0123456789012
                     "TTTCCCAAATTTCACATCACTACTACTACGGATACAGAACGGGG",
                     "TTTCCCACATTTCCCATCACCACTACTACGGATACAGAACGGGG"),
             //.......M.....M......M.......................

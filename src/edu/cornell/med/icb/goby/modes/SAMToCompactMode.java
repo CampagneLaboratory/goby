@@ -25,8 +25,10 @@ import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsWriter;
 import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.perms.ReadNameToIndex;
+import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.goby.reads.ReadSet;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.Util;
 import it.unimi.dsi.logging.ProgressLogger;
@@ -137,6 +139,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         // don't even dare go through the debugging code if log4j was not configured. The debug code
         // is way too slow to run unintentionally in production!
         debug = Util.log4JIsConfigured();
+        DynamicOptionRegistry.register(MessageChunksWriter.doc());
+        DynamicOptionRegistry.register(AlignmentWriter.doc());
         return this;
     }
 
@@ -153,7 +157,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
 
         final SAMFileReader parser = new SAMFileReader(new File(inputFile));
-
+        boolean hasPaired = false;
 
         progress.start();
 
@@ -213,6 +217,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             final boolean readIsPaired = samRecord.getReadPairedFlag();
             final boolean b = readIsPaired && !samRecord.getReadUnmappedFlag();
             if (b) {
+                hasPaired = true;
                 // if the reads are paired, we expect to see the read name  at least twice.
                 readMaxOccurence++;
                 // Unfortunately the SAM/BAM format does not provide the exact number of times
@@ -233,7 +238,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             readMaxOccurence = Math.max(numTotalHits * (readIsPaired ? 2 : 1), readMaxOccurence);
             final String readName = samRecord.getReadName();
 
-            final int queryIndex = nameToQueryIndices.getQueryIndex(readName, readMaxOccurence);
+            final int queryIndex = thirdPartyInput? nameToQueryIndices.getQueryIndex(readName, readMaxOccurence): Integer.parseInt(readName);
 
             final int targetIndex = getTargetIndex(targetIds, samRecord.getReferenceName(), thirdPartyInput);
 
@@ -294,7 +299,9 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             currentEntry.setTargetAlignedLength(samHelper.getTargetAlignedLength());
             currentEntry.setPairFlags(samRecord.getFlags());
             currentEntry.setMappingQuality(samRecord.getMappingQuality());
-
+            if (hasPaired) {
+                currentEntry.setInsertSize(samRecord.getInferredInsertSize());
+            }
             if (readIsPaired) {
                 if (!samRecord.getMateUnmappedFlag()) {
                     final Alignments.RelatedAlignmentEntry.Builder relatedBuilder =
