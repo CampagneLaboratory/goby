@@ -21,7 +21,15 @@ package edu.cornell.med.icb.goby.alignments.perms;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -31,7 +39,25 @@ import static junit.framework.Assert.assertEquals;
  *         Time: 2:50 PM
  */
 public class TestPermutationWriter {
+    private static final Log LOG = LogFactory.getLog(TestPermutationWriter.class);
+    private static final String BASE_TEST_DIR = "test-results/permutations";
 
+    @BeforeClass
+    public static void initializeTestDirectory() throws IOException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Creating base test directory: " + BASE_TEST_DIR);
+        }
+
+        FileUtils.forceMkdir(new File(BASE_TEST_DIR));
+    }
+
+    @AfterClass
+    public static void cleanupTestDirectory() throws IOException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Deleting base test directory: " + BASE_TEST_DIR);
+        }
+        // FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
+    }
 
     @Test
     public void testBreakpoint() throws Exception {
@@ -57,7 +83,7 @@ public class TestPermutationWriter {
         assertEquals(6, writer.getBreakPoint(4, list, 20));
     }
 
-      @Test
+    @Test
     public void testBreakpoint4() throws Exception {
         final PermutationWriter writer = new PermutationWriter("test-results/permutations/breakpoint-3");
         IntArrayList list = IntArrayList.wrap(new int[]{0, 1, 2, 3, 4, 5});
@@ -84,16 +110,16 @@ public class TestPermutationWriter {
         for (int i = 1; i < 101; i++) {
             int expectedQueryIndex = i - 1;
             final int queryIndex = reader.getQueryIndex(i);
-            assertEquals("got wrong answer for smallIndex="+i, expectedQueryIndex, queryIndex);
+            assertEquals("got wrong answer for smallIndex=" + i, expectedQueryIndex, queryIndex);
         }
         for (int i = 301; i < 311; i++) {
             int expectedQueryIndex = i - 1;
             final int queryIndex = reader.getQueryIndex(i);
-            assertEquals("got wrong answer for smallIndex="+i, expectedQueryIndex, queryIndex);
+            assertEquals("got wrong answer for smallIndex=" + i, expectedQueryIndex, queryIndex);
         }
 
-          assertEquals("got wrong answer", -1, reader.getQueryIndex(200));
-          assertEquals("got wrong answer", -1, reader.getQueryIndex(250));
+        assertEquals("got wrong answer", -1, reader.getQueryIndex(200));
+        assertEquals("got wrong answer", -1, reader.getQueryIndex(250));
 
     }
 }
