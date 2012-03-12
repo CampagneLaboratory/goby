@@ -265,6 +265,11 @@ public class NonAmbiguousAlignmentReader implements AlignmentReader {
     }
 
     @Override
+    public boolean getQueryIndicesWerePermuted() {
+        return delegate.getQueryIndicesWerePermuted();
+    }
+
+    @Override
     public long getEndByteOffset(int startReferenceIndex, int startPosition, int endReferenceIndex, int endPosition) {
         return delegate.getEndByteOffset(startReferenceIndex, startPosition, endReferenceIndex, endPosition);
     }
