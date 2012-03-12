@@ -234,11 +234,23 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             }
 
             final Object xoString = samRecord.getAttribute("X0");
-            final int numTotalHits = xoString == null ? 1 : (Integer) xoString;
-            readMaxOccurence = Math.max(numTotalHits * (readIsPaired ? 2 : 1), readMaxOccurence);
+
+            // in the following, we consider paired end alignment to always map a single time. This may
+            // not be true, but there is no way to tell from the SAM format (the X0 field indicates how
+            // many times the segment occurs in the genome, not the pair of read placed by the aligner).
+            // Single reads typically have the field X0 set to the number of times the read appears in the
+            // genome, there is no problem there, so we use X0 to initialize TMH.
+            final int numTotalHits = xoString == null ? 1 : hasPaired ? 1 : (Integer) xoString;
+            if (hasPaired) {
+                // file has paired end reads, check if this read is paired to use 1 occurence:
+                readMaxOccurence = readIsPaired ? 2 : 1;
+            } else {
+                // single end, use numTotalHits to remember read name and initialize TMH
+                readMaxOccurence = numTotalHits;
+            }
             final String readName = samRecord.getReadName();
 
-            final int queryIndex = thirdPartyInput? nameToQueryIndices.getQueryIndex(readName, readMaxOccurence): Integer.parseInt(readName);
+            final int queryIndex = thirdPartyInput ? nameToQueryIndices.getQueryIndex(readName, readMaxOccurence) : Integer.parseInt(readName);
 
             final int targetIndex = getTargetIndex(targetIds, samRecord.getReferenceName(), thirdPartyInput);
 
