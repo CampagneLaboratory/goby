@@ -38,11 +38,7 @@
             <defaults>
                 <string>plain</string>
             </defaults>
-            <help>Format of the output file (plain, html, sam). Especially if writing to HTML,  you should consider
-                  using the -s and -e flags to limit how much of the alignment file will be processed and the -n flag
-                  to control how many alignment entries to output. Realistically, most browsers probably cannot
-                  handle more than about 50,000 entries. For HTML, it is recommended that you only output
-                  the first portion of the file, which can be accomplished with "-e 1"</help>
+            <help>Format of the output file (plain, html, sam). Especially if writing to HTML, you should consider using the -s and -e flags to limit how much of the alignment file will be processed and the -n flag to control how many alignment entries to output. Realistically, most browsers probably cannot handle more than about 50,000 entries. For HTML, it is recommended that you only output the first portion of the file, which can be accomplished with "-e 1"</help>
         </flaggedOption>
         <flaggedOption>
             <id>constant-read-length</id>
@@ -82,12 +78,8 @@
             <stringParser>
                 <classname>LongStringParser</classname>
             </stringParser>
-            <defaults>
-                <string>1</string>
-            </defaults>
             <required>false</required>
-            <help>The end position within the file, which should be number of bytes into the file to end reading from.
-                  The read will actually end at the end of the record on or after end-position.</help>
+            <help>The end position within the file, which should be number of bytes into the file to end reading from. The read will actually end at the end of the record on or after end-position.</help>
         </flaggedOption>
         <flaggedOption>
             <id>max-to-output</id>
@@ -96,7 +88,7 @@
             <stringParser>
                 <classname>LongStringParser</classname>
             </stringParser>
-            <required>false</required>
+            <required>true</required>
             <defaults>
                 <string>-1</string>
             </defaults>

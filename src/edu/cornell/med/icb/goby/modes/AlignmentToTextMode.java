@@ -132,8 +132,10 @@ public class AlignmentToTextMode extends AbstractGobyMode {
         defaultReadLength = jsapResult.getInt("constant-read-length");
         alignmentIterator = new AlignmentToTextIterateAlignments();
         alignmentIterator.parseIncludeReferenceArgument(jsapResult);
-        maxToOutput = jsapResult.getLong("max-to-output");
-
+        maxToOutput = jsapResult.getLong("max-to-output",-1);
+        if (maxToOutput == -1L) {
+            maxToOutput=Long.MAX_VALUE;
+        }
         if (jsapResult.contains("start-position") || jsapResult.contains("end-position")) {
             hasStartOrEndPosition = true;
             startPosition = jsapResult.getLong("start-position", 0L);
@@ -436,7 +438,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 htmlBuilder.append("<script type='text/javascript'>").append("\n");
                 htmlBuilder.append("   var data = [\n");
             } else {
-                if (maxToOutput != -1 && numWritten >= maxToOutput) {
+                if (numWritten >= maxToOutput) {
                     return false;
                 }
                 if (numWritten > 0) {
