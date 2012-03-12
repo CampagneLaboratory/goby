@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 /**
  * Base abstract class for Goby modes.
@@ -114,7 +115,7 @@ public abstract class AbstractCommandLineMode {
         System.err.println(WordUtils.wrap(modeDescription, JSAP.DEFAULT_SCREENWIDTH - 1));
         System.err.println();
         System.err.println("Options: ");
-        System.err.println(jsap.getHelp(JSAP.DEFAULT_SCREENWIDTH - 1));
+          System.err.println(jsap.getHelp(JSAP.DEFAULT_SCREENWIDTH - 1));
     }
 
     /**
@@ -297,6 +298,9 @@ public abstract class AbstractCommandLineMode {
         JSAP jsap;
         try {
             jsap = new JSAP(thisClass.getResource(className + ".jsap"));
+            reformatHelp(jsap);
+
+
         } catch (NullPointerException e) {  // NOPMD
             // No JSAP for "this", no additional args for the specific driver
             jsap = new JSAP();
@@ -322,6 +326,7 @@ public abstract class AbstractCommandLineMode {
         }
         final IDMap idMap = jsap.getIDMap();
         final Iterator<String> idIterator = idMap.idIterator();
+
         while (idIterator.hasNext()) {
             final String id = idIterator.next();
             final Parameter param = jsap.getByID(id);
@@ -341,11 +346,26 @@ public abstract class AbstractCommandLineMode {
                         }
                     }
                 }
+
             }
         }
 
         return jsap;
     }
+
+    private void reformatHelp(JSAP jsap) {
+        final Iterator<String> idIterator = jsap.getIDMap().idIterator();
+        while (idIterator.hasNext()) {
+            final String id = idIterator.next();
+            final Parameter param = jsap.getByID(id);
+            final String help = param.getHelp();
+              // remove new lines so that justification works best:
+
+                final String replaced = help.replaceAll("[ ]*\n[ ]+", " ");
+                param.setHelp(replaced);
+        }
+    }
+
 
     /**
      * Parse the JSAP to JSAPResult. Handle if "help" was requested.
