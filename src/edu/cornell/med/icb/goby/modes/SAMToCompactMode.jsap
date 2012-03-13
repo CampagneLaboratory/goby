@@ -23,7 +23,9 @@
             <shortFlag>i</shortFlag>
             <longFlag>input</longFlag>
             <required>true</required>
-            <help>The SAM binary file to convert to compact alignment format, or - to read from standard input.</help>
+            <help>The SAM/BAM file to convert to compact alignment format, or - to read from standard input. If feeding
+                SAM from standard input, the header must be included in the stream (e.g., samtools view -h input.bam | goby sam-to-compact -i -).
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>output</id>
@@ -110,7 +112,10 @@
             </defaults>
             <longFlag>quality-filter-parameters</longFlag>
             <required>false</required>
-            <help>Parameters to configure the quality filter. Use threshold=0.05 to filter out alignments with more than 5% bases that differ from the reference. Please note that the default value has changed in Goby 2.0 to not filter any hits (Goby 1.9 had the fitler on by default at 5%).</help>
+            <help>Parameters to configure the quality filter. Use threshold=0.05 to filter out alignments with more than
+                5% bases that differ from the reference. Please note that the default value has changed in Goby 2.0 to
+                not filter any hits (Goby 1.9 had the fitler on by default at 5%).
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>number-of-reads</id>
@@ -161,7 +166,8 @@
             <defaults>
                 <string>Sanger</string>
             </defaults>
-            <help>The encoding for quality scores. The default quality encoding is set to Sanger as per BAM/SAM specification v1.4-r985. Valid encodings include Illumina, Sanger and Solexa.
+            <help>The encoding for quality scores. The default quality encoding is set to Sanger as per BAM/SAM
+                specification v1.4-r985. Valid encodings include Illumina, Sanger and Solexa.
             </help>
         </flaggedOption>
     </parameters>
