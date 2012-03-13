@@ -23,7 +23,7 @@
             <shortFlag>i</shortFlag>
             <longFlag>input</longFlag>
             <required>true</required>
-            <help>The SAM binary file to convert to compact alignment format.</help>
+            <help>The SAM binary file to convert to compact alignment format, or - to read from standard input.</help>
         </flaggedOption>
         <flaggedOption>
             <id>output</id>

@@ -36,7 +36,9 @@ import net.sf.samtools.*;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -156,7 +158,11 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         // the following is required to set validation to SILENT before loading the header (done in the SAMFileReader constructor)
         SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
 
-        final SAMFileReader parser = new SAMFileReader(new File(inputFile));
+
+        final InputStream stream = "-".equals(inputFile)? System.in: new FileInputStream(inputFile);
+
+        final SAMFileReader parser = new SAMFileReader(stream);
+
         boolean hasPaired = false;
 
         progress.start();
@@ -171,6 +177,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         SAMRecord prevRecord = null;
 
         final SAMFileHeader fileHeader = parser.getFileHeader();
+        if (fileHeader.getSequenceDictionary().size()==0) {
+            System.err.println("SAM/BAM file/input appear to have no target sequences. If reading from stdin, please check you are feeding this mode actual SAM/BAM content and that the header of the SAM file is included.");
+            System.exit(0);
+        }
         if (sortedInput) {
             // if the input is sorted, request creation of the index when writing the alignment.
             final int numTargets = fileHeader.getSequenceDictionary().size();
