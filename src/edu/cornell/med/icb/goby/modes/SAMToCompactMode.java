@@ -78,6 +78,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
      * Flag to indicate if log4j was configured.
      */
     private boolean debug;
+    private boolean runningFromCommandLine;
 
     public String getSamBinaryFilename() {
         return samBinaryFilename;
@@ -177,9 +178,11 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         SAMRecord prevRecord = null;
 
         final SAMFileHeader fileHeader = parser.getFileHeader();
-        if (fileHeader.getSequenceDictionary().size()==0) {
+        if (fileHeader.getSequenceDictionary().isEmpty()) {
             System.err.println("SAM/BAM file/input appear to have no target sequences. If reading from stdin, please check you are feeding this mode actual SAM/BAM content and that the header of the SAM file is included.");
-            System.exit(0);
+           if (runningFromCommandLine) {
+               System.exit(0);
+           }
         }
         if (sortedInput) {
             // if the input is sorted, request creation of the index when writing the alignment.
@@ -445,6 +448,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
      * @throws java.io.IOException error parsing or executing.
      */
     public static void main(final String[] args) throws JSAPException, IOException {
-        new SAMToCompactMode().configure(args).execute();
+
+        final SAMToCompactMode processor = new SAMToCompactMode();
+        processor.configure(args);
+        processor.runningFromCommandLine=true;
+        processor.execute();
     }
 }
