@@ -89,10 +89,10 @@ public final class FileExtensionHelper {
      * @return The type of data this file is likely to contain
      */
     public static CompactFileType determineCompactFileType(final String file) {
-        if (hasCompactAlignmentExtension(file)) {
+        if (hasCompactAlignmentExtension(file) || new File(file+".entries").canRead()) {
             // The file represents an alignment
             return CompactFileType.alignment;
-        } else if (hasCompactReadsExtension(file)) {
+        } else if (hasCompactReadsExtension(file)|| new File(file+".compact-reads").canRead()) {
             // The file represents a series of reads
             return CompactFileType.reads;
         } else {

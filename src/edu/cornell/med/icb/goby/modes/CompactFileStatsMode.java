@@ -120,6 +120,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
      * The actual writer to use to write the output.
      */
     private PrintStream stream;
+    private String type;
 
     @Override
     public String getModeName() {
@@ -150,6 +151,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         computeQuantiles = jsapResult.userSpecified("number-of-quantiles");
         numberOfQuantiles = jsapResult.getInt("number-of-quantiles", 1);
         verbose = jsapResult.getBoolean("verbose");
+        type = jsapResult.getString("type");
         return this;
     }
 
@@ -177,9 +179,11 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                     new PrintStream(new FileOutputStream(outputFilename));
             int numberOfFilesProcessed = 0;
             pairedSamples = new ArrayList<Boolean>(inputFiles.size());
-            for (final File file : inputFiles) {
-                if (file.exists() && file.canRead()) {
-                    switch (FileExtensionHelper.determineCompactFileType(file)) {
+            FileExtensionHelper.CompactFileType fileType;
+            if (type == null) {
+                for (final File file : inputFiles) {
+                    fileType = FileExtensionHelper.determineCompactFileType(file);
+                    switch (fileType) {
                         case alignment:
                             describeCompactAlignment(file);
                             numberOfFilesProcessed++;
@@ -193,11 +197,22 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                             System.err.println("Unknown file type: " + file);
                             break;
                     }
-                } else {
-                    System.err.println("Cannot read file: " + file);
+                }
+            } else {
+                fileType = FileExtensionHelper.CompactFileType.valueOf(type);
+                for (final File file : inputFiles) {
+                    switch (fileType) {
+                        case alignment:
+                            describeCompactAlignment(file);
+                            numberOfFilesProcessed++;
+                            break;
+                        case reads:
+                            describeCompactReads(file);
+                            numberOfFilesProcessed++;
+                            break;
+                    }
                 }
             }
-
             stream.println();
             stream.printf("Total number of files processed = %,d\n", numberOfFilesProcessed);
             stream.printf("All Compact-Reads files were paired-end = %s\n", isAllPairedSamples());
@@ -216,6 +231,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
      * @param file The file to display statistics about
      * @throws IOException if the file cannot be read
      */
+
     private void describeCompactAlignment(final File file) throws IOException {
         final String basename = AlignmentReaderImpl.getBasename(file.toString());
         stream.printf("Compact Alignment basename = %s%n", basename);
@@ -223,7 +239,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         final AlignmentReaderImpl reader = new AlignmentReaderImpl(basename);
         reader.readHeader();
         stream.println("Info from header:");
-        stream.printf("Alignment written with Goby version=%s %n",   reader.getGobyVersion());
+        stream.printf("Alignment written with Goby version=%s %n", reader.getGobyVersion());
         stream.printf("Alignment produced by aligner=%s version=%s %n", reader.getAlignerName(),
                 reader.getAlignerVersion());
         stream.printf("Sorted: %b%n", reader.isSorted());
@@ -337,7 +353,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
         final long size = file.length();
         stream.printf("Average bytes per entry = %f%n", divide(size, numLogicalAlignmentEntries));
         final int averageReadLength = (minReadLength + maxReadLength) / 2;
-        stream.printf("Average bits per read base, assuming average read length %d = %f%n",averageReadLength,
+        stream.printf("Average bits per read base, assuming average read length %d = %f%n", averageReadLength,
                 divide(size, numLogicalAlignmentEntries * averageReadLength));
 
         stream.printf("Min query length = %,d%n", (int) queryLengthStats.getMin());

@@ -22,7 +22,9 @@
             <id>input</id>
             <required>true</required>
             <greedy>true</greedy>
-            <help>The input filenames to to get statistics for. Compact file formats are recognized (reads or alignments)</help>
+            <help>The input filenames/basenames to to get statistics for. Compact file formats are recognized (reads or
+                alignments).
+            </help>
             <stringParser>
                 <classname>FileStringParser</classname>
             </stringParser>
@@ -33,6 +35,15 @@
             <longFlag>output</longFlag>
             <required>false</required>
             <help>Where the output will be written. If not specified, output will be written to stdout.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>type</id>
+            <shortFlag>t</shortFlag>
+            <longFlag>type</longFlag>
+            <required>false</required>
+            <help>The type of input, alignment or reads. Can be determined automatically from filenames, but useful when
+                reading from stdin.
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>number-of-quantiles</id>
