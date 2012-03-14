@@ -177,8 +177,22 @@ public class TestDensityEstimator {
         assertEquals(800.0 / 1500.0, adaptor.calculateWithCovariate(1100, 405, 495, 95, 5), .1);  //45->95
         assertEquals(0.0, adaptor.calculateWithCovariate(1100, 250, 250, 250, 250), 0.001);
         assertEquals(2.0 / 1500.0, adaptor.calculateWithCovariate(1100, 251, 250, 252, 250), 0.001);
+      // note that stat5 is sensitive to differences in  coverage in each group, ie., it will detect when Cma+Ca differ from Cmb+Cb.
+        // We introduced ptest to remove this problem.
+        assertEquals(0.9514285714285714, adaptor.calculateWithCovariate(10010, 10000, 0, 10, 0), 0.001);
     }
 
+
+    @Test
+    public void testPTest() {
+        StatisticAdaptor adaptor = new PTestStatisticAdaptor();
+        assertEquals(7.715497971503937, adaptor.calculateWithCovariate(1000, 495, 405, 95, 5), .1);   // 55->90
+        assertEquals(9.486833263709139, adaptor.calculateWithCovariate(1100, 405, 495, 95, 5), .1);  //45->95
+        assertEquals(0, adaptor.calculateWithCovariate(1100, 250, 250, 250, 250), 0.001);
+        assertEquals(0.031481125356480476, adaptor.calculateWithCovariate(1100, 251, 250, 252, 250), 0.001);
+        // ptest has no problem with differences in coverage between groups:
+        assertEquals(0, adaptor.calculateWithCovariate(10010, 10000, 0, 10, 0), 0.001);
+    }
     @Test
        public void testFisherExact() {
            StatisticAdaptor adaptor = new FisherExactTestAdaptor();
