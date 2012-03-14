@@ -37,6 +37,9 @@ Towards Goby 2.0
    bases. Please note that the problem was in a library used by RandomAccessSequenceCache, we updated the library in
    this release, and no change to the code of RandomAccessSequenceCache was needed to fix the problem.
  - last-to-compact: add option to substitute some bases with others in the aligned read.
+ - Add test and fix for bug that went back to start of alignment file, even though iterate alignment was created for a
+   slice of input. The problem only affected the IterateAlignments class because it was calling reposition(0,0) and the
+   method did not enforce slice limits.
 1.9.8.3.1
  - Fix a bug related to writing paired end alignments in the Gsnap parser (C API)
 1.9.8.3

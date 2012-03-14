@@ -90,6 +90,14 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     private String gobyVersion;
     private AlignmentCodec codec;
     private boolean queryIndicesWerePermuted;
+    /**
+     * Start offset of the slice this read was created with. Number of bytes into the entries file were to start reading from.
+     */
+    private long startOffset;
+    /**
+     * End offset of the slice this read was created with. Number of bytes into the entries file were to stop reading.
+     */
+    private long endOffset;
 
 
     /**
@@ -261,7 +269,9 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     public AlignmentReaderImpl(final long startOffset, final long endOffset, final String basename, boolean upgrade) throws IOException {
         super(upgrade, getBasename(basename));
         this.basename = getBasename(basename);
-        final String entriesFile = basename + ".entries";
+        this.startOffset=startOffset;
+        this.endOffset=endOffset;
+        final String entriesFile = this.basename + ".entries";
         boolean entriesFileExist = RepositionableInputStream.resourceExist(entriesFile);
         if (entriesFileExist) {
             final InputStream stream = new RepositionableInputStream(entriesFile);
@@ -543,7 +553,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     }
 
     /**
-     * Reposition to an genomic position. The goBack flag, when true, allows to reposition to positions that
+     * Reposition to a genomic position. The goBack flag, when true, allows to reposition to positions that
      * we have already passed. When false, reposition will only advance to future positions.
      *
      * @param targetIndex index of the target sequence to reposition to.
@@ -569,13 +579,10 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             // empty alignment.
             return;
         }
-        // if (indexAbsolutePositions.getLong(offsetIndex)<absolutePosition) {
-        // the offset was not found, indicating that the chunk starts before (targetIndex,position) location.
-        // This means that we must scan the chunk immediately before to check for entries that can be at this
-        // position as well.
-        //    --offsetIndex;
-        //   }
-        final long newPosition = indexOffsets.getLong(offsetIndex);
+
+        // max below ensures we never go back to before the start of the slice the reader was restricted to at
+        // construction time:
+        final long newPosition = Math.max(startOffset, indexOffsets.getLong(offsetIndex));
         final long currentPosition = alignmentEntryReader.position();
         if (newPosition >= currentPosition) {
 

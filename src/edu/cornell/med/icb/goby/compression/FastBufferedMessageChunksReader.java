@@ -40,6 +40,14 @@ import java.io.IOException;
 public class FastBufferedMessageChunksReader extends MessageChunksReader {
     private final long end;
     private final FastBufferedInputStream input;
+    /**
+     * Start offset of the slice in the file, in bytes.
+     */
+    private long startOffset;
+    /**
+     * End offset of the slice in the file, in bytes.
+     */
+    private long endOffset;
 
     /**
      * Support for splitting the entries on the file system.
@@ -56,7 +64,8 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
     public FastBufferedMessageChunksReader(final long start, long end,
                                            final FastBufferedInputStream input) throws IOException {
         super();
-
+        this.startOffset = start;
+        this.endOffset = end;
         if (start < 0L) {
             throw new IllegalArgumentException("Start position ("
                     + start + ") must not be less than zero");
@@ -100,7 +109,7 @@ public class FastBufferedMessageChunksReader extends MessageChunksReader {
                 if (hasFF(input)) {
                     skipped++;
                 }
-                if (skipped >=  MessageChunksWriter.DELIMITER_LENGTH+1) {
+                if (skipped >= MessageChunksWriter.DELIMITER_LENGTH + 1) {
                     // make sure we have seen the delimited AND the codec registration code since start, otherwise continue looking
                     // a delimiter was found, start reading data from here
                     in = new DataInputStream(input);
