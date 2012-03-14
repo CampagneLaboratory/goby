@@ -44,7 +44,7 @@
         </flaggedOption>
         <flaggedOption>
             <id>max-mismatches</id>
-           <shortFlag>x</shortFlag>
+           <shortFlag>y</shortFlag>
             <longFlag>max-mismatches</longFlag>
             <defaults>
                 <string>0</string>

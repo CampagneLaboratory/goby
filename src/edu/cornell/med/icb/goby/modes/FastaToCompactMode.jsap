@@ -28,7 +28,7 @@
         <switch>
             <id>include-identifiers</id>
             <longFlag>include-identifiers</longFlag>
-            <shortFlag>x</shortFlag>
+            <shortFlag>y</shortFlag>
             <defaults>false</defaults>
             <help>When this switch is provided, include identifiers into the compact output. By default, ignore identifiers. Identifiers are parsed out of description lines as the token before the first space or tab character.  </help>
         </switch>
