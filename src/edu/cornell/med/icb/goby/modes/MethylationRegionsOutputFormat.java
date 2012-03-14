@@ -51,10 +51,13 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
      * Used to log debug and informational messages.
      */
     private static final Log LOG = LogFactory.getLog(MethylationRegionsOutputFormat.class);
-    public static DynamicOptionClient doc = new DynamicOptionClient(MethylationRegionsOutputFormat.class, "annotations:filename to a tab delimited annotation file:",
+    private static DynamicOptionClient doc = new DynamicOptionClient(MethylationRegionsOutputFormat.class, "annotations:filename to a tab delimited annotation file:",
             "do-indel-rate:boolean, true value indicates that the indel rate should be output in the MR field:false",
             "de-novo-regions:boolean, true indicates that regions should be discovered de-novo, false indicates that regions are defined by annotations:false"
             );
+     public static DynamicOptionClient doc() {
+            return doc;
+    }
     private String annotationFilename;
 
 
@@ -219,4 +222,6 @@ public class MethylationRegionsOutputFormat implements SequenceVariationOutputFo
     public void setMinimumEventThreshold(int minimumEventThreshold) {
         this.minimumEventThreshold = minimumEventThreshold;
     }
+
+
 }

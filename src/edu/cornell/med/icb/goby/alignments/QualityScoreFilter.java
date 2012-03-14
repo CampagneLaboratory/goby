@@ -28,8 +28,11 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
  */
 public class QualityScoreFilter extends GenotypeFilter  {
     private byte scoreThreshold = 30;
-    public static final DynamicOptionClient doc=new DynamicOptionClient(QualityScoreFilter.class, "scoreThreshold:Phred score threshold to keep bases.:30");
+    private static final DynamicOptionClient doc=new DynamicOptionClient(QualityScoreFilter.class, "scoreThreshold:Phred score threshold to keep bases.:30");
 
+    public static DynamicOptionClient doc() {
+        return doc;
+    }
     public QualityScoreFilter() {
        scoreThreshold=doc.getByte("scoreThreshold");
     }

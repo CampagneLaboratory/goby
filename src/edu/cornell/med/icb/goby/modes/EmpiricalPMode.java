@@ -164,8 +164,8 @@ public class EmpiricalPMode extends AbstractGobyMode {
     }
 
 
-    EmpiricalPValueEstimator estimator;
-    FormatFieldCounter counter;
+    private EmpiricalPValueEstimator estimator;
+    private FormatFieldCounter counter;
 
     @Override
     public void execute() throws IOException {

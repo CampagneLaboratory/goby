@@ -62,7 +62,7 @@ public class PercentMismatchesQualityFilter implements AlignmentQualityFilter {
     public void setParameters(final String parameters) {
         final String[] args = StringUtils.defaultString(parameters).split("[',=]");
         qualityThresholdPercent = CLI.getDoubleOption(args, "threshold", 0.05d);
-        System.out.println("Setting quality threshold to " + qualityThresholdPercent);
+        System.err.println("Setting quality threshold to " + qualityThresholdPercent);
     }
 
     public void printUsage(final PrintStream out) {

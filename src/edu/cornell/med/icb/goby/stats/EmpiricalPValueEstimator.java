@@ -56,7 +56,7 @@ public class EmpiricalPValueEstimator {
     }
 
     enum statisticNames {
-        delta, stat4, stat5, stat5_mci, dMR, fisher
+        delta, stat4, stat5, stat5_mci, dMR, fisher, ptest, ptest_mci
     }
 
     enum binningStrategyNames {
@@ -69,7 +69,7 @@ public class EmpiricalPValueEstimator {
             "estimate-empirical-P: boolean, true: activates estimation of the empirical p-value.:false",
             "combinator: string, the method to combine p-values, one of qfast, average, sum, max.:max",
             "serialized-estimator-filename: string, the path to a serialized version of the density estimator populated with the empirical null-distribution.:",
-            "statistic: string, the name of the statistic to evaluate between pairs of samples, one of stat4,stat5,dMR:stat5",
+            "statistic: string, the name of the statistic to evaluate between pairs of samples, one of stat4,stat5,dMR:ptest",
             "binning-strategy: string, name of the binning strategy:fastslog10"
     };
 
@@ -138,6 +138,12 @@ public class EmpiricalPValueEstimator {
                     case fisher:
                         statAdaptor = new FisherExactTestAdaptor();
                         break;
+                    case ptest_mci:
+                        statAdaptor = new PTestMciProviderStatisticAdaptor();
+                        break;
+                    case ptest:
+                        statAdaptor = new PTestStatisticAdaptor();
+                        break;
                     case stat5_mci:
                         statAdaptor = new Stat5MciProviderStatisticAdaptor();
                         break;
@@ -154,7 +160,7 @@ public class EmpiricalPValueEstimator {
         BinningStrategy binningStrategy = null;
         if (!densityLoadedFromDisk) {
 
-            String binningStrategyName = clientDoc.getString("binning-strategy");
+            final String binningStrategyName = clientDoc.getString("binning-strategy");
             LOG.debug("Setting binning strategy from dynamic options: " + binningStrategyName);
             if (binningStrategyName != null) {
 
@@ -223,7 +229,7 @@ public class EmpiricalPValueEstimator {
             statAdaptor.reset();
             final double unscaledStatistic = statAdaptor.calculate(dataProvider, pair.sampleIndexA, pair.sampleIndexB, contextIndex);
 
-             if (!statAdaptor.ignorePair()) {
+            if (!statAdaptor.ignorePair()) {
                 final int[] covariates = statAdaptor.pairCovariates();
                 final double p = estimator.getP(unscaledStatistic, covariates);
                 //  System.out.println("Observing " + p);

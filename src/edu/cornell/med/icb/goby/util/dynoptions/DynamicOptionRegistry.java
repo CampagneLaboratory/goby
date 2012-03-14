@@ -18,6 +18,7 @@
 
 package edu.cornell.med.icb.goby.util.dynoptions;
 
+import com.martiansoftware.jsap.JSAPResult;
 import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
 
 /**
@@ -40,6 +41,11 @@ public class DynamicOptionRegistry {
 
     static private ObjectAVLTreeSet<DynamicOptionClient> registeredDOClients = new ObjectAVLTreeSet<DynamicOptionClient>();
     private static String[] dymamicOptions;
+
+    public static void parseCommandLineOptions(final JSAPResult jsapResult) {
+        parseCommandLineOptions(jsapResult.getStringArray("dynamic-options"));
+
+    }
 
     public static void parseCommandLineOptions(final String[] dynamicOptions) {
         // parse dynamic options:

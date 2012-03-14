@@ -27,9 +27,12 @@ import edu.cornell.med.icb.goby.alignments.processors.*;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceInterface;
 import edu.cornell.med.icb.goby.reads.RandomAccessSequenceTestSupport;
+import edu.cornell.med.icb.goby.stats.AnnotationAveragingWriter;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionAnalysis;
 import edu.cornell.med.icb.goby.stats.DifferentialExpressionCalculator;
 import edu.cornell.med.icb.goby.util.OutputInfo;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.io.TSVReader;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -38,6 +41,7 @@ import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import sun.net.www.content.text.Generic;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -139,13 +143,12 @@ public class DiscoverSequenceVariantsMode extends AbstractGobyMode {
 
 
         final JSAPResult jsapResult = parseJsapArguments(args);
-       /*
-        registeredDOClients.add(QualityScoreFilter.doc);
-        registeredDOClients.add(AnnotationAveragingWriter.doc);
-        registeredDOClients.add(MethylationRegionsOutputFormat.doc);
-        registeredDOClients.add(MethylationRateVCFOutputFormat.doc);
-         */
 
+        DynamicOptionRegistry.register(QualityScoreFilter.doc());
+        DynamicOptionRegistry.register(AnnotationAveragingWriter.doc());
+        DynamicOptionRegistry.register(MethylationRegionsOutputFormat.doc());
+        DynamicOptionRegistry.register(MethylationRateVCFOutputFormat.doc());
+        DynamicOptionRegistry.parseCommandLineOptions(jsapResult);
 
         inputFilenames = jsapResult.getStringArray("input");
 

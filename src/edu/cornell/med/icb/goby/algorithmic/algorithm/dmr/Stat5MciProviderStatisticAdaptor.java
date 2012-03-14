@@ -21,14 +21,19 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 import edu.cornell.med.icb.goby.algorithmic.data.MethylCountInfo;
 
 /**
- *  A stat5 implementation that takes Cm and C counts from a MethylCountInfo instance. Used to estimate empirical
- *  P-values for individual sites.
- *  @author Fabien Campagne
+ * A stat5 implementation that takes Cm and C counts from a MethylCountInfo instance. Used to estimate empirical
+ * P-values for individual sites.
+ *
+ * @author Fabien Campagne
  *         Date: 2/29/12
  *         Time: 6:36 PM
  */
 public class Stat5MciProviderStatisticAdaptor extends Stat5StatisticAdaptor {
     private static final long serialVersionUID = -6171007111030942764L;
+
+    public String statName() {
+        return "stat5_mci";
+    }
 
     @Override
     protected void checkProviderType(final Object dataProvider) {
