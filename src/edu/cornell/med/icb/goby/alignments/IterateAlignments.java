@@ -32,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * A helper class to iterate through a set of alignments and process only a subset of
@@ -109,6 +110,23 @@ public abstract class IterateAlignments {
      * @throws IOException If an error occured reading the input alignment.
      */
     public void iterate(final String... basenames) throws IOException {
+        for (final String basename : basenames) {
+            iterateOverOneAlignment(FileSlice.COMPLETE_FILE(basename), basename);
+        }
+    }
+
+    /**
+     * Iterate through a set of alignments. Iterations are performed through these steps:
+     * <UL>
+     * <LI>Iterate will call processHeader on each input alignment, giving the opportunity
+     * to the client to read the header of the alignment and extract information from it.
+     * </LI>
+     * </UL>
+     *
+     * @param basenames Basenames of the alignments to iterate over.
+     * @throws IOException If an error occured reading the input alignment.
+     */
+    public void iterate(final Collection<String> basenames) throws IOException {
         for (final String basename : basenames) {
             iterateOverOneAlignment(FileSlice.COMPLETE_FILE(basename), basename);
         }

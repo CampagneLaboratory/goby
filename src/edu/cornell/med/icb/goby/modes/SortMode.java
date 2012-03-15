@@ -20,15 +20,13 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.*;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import org.apache.commons.io.FilenameUtils;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
+import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
+import edu.cornell.med.icb.goby.alignments.SortIterateAlignments;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Comparator;
 
 /**
  * Sort an alignment by reference and reference position.
@@ -60,10 +58,8 @@ public class SortMode extends AbstractGobyMode {
      * The basename of the compact alignment.
      */
     private String basename;
-    private SortIterateAlignments alignmentIterator = null;
-    private int[] targetLengths;
-    private boolean hasStartOrEndPosition;
-    private long startPosition = 0;
+    private SortIterateAlignments alignmentIterator;
+    private long startPosition;
     private long endPosition = Long.MAX_VALUE;
 
 
@@ -120,7 +116,6 @@ public class SortMode extends AbstractGobyMode {
         alignmentIterator.parseIncludeReferenceArgument(jsapResult);
         endPosition = Long.MAX_VALUE;
         if (jsapResult.contains("start-position") || jsapResult.contains("end-position")) {
-            hasStartOrEndPosition = true;
             startPosition = jsapResult.getLong("start-position", 0L);
             endPosition = jsapResult.getLong("end-position", Long.MAX_VALUE);
         }
@@ -138,10 +133,6 @@ public class SortMode extends AbstractGobyMode {
         return this;
     }
 
-
-    private static final Comparator<Alignments.AlignmentEntry> POSITION_ENTRY_COMPARATOR =
-            new AlignmentPositionComparator();
-
     /**
      * Sort the alignment.
      *
@@ -153,6 +144,8 @@ public class SortMode extends AbstractGobyMode {
             // If executing from API, this may not have been created yet
             alignmentIterator = new SortIterateAlignments();
         }
+        alignmentIterator.setBasename(basename);
+        alignmentIterator.setOutputFilename(outputFilename);
 
         final AlignmentWriter writer = new AlignmentWriter(outputFilename);
 
@@ -162,10 +155,9 @@ public class SortMode extends AbstractGobyMode {
         LOG.info("Sorting..");
         alignmentIterator.sort();
         LOG.info("Writing sorted alignment..");
+        alignmentIterator.writeTmh();
         alignmentIterator.write(writer);
-
     }
-
 
     /**
      * Main method.
@@ -178,71 +170,5 @@ public class SortMode extends AbstractGobyMode {
 
     public static void main(final String[] args) throws JSAPException, IOException {
         new SortMode().configure(args).execute();
-    }
-
-    private class SortIterateAlignments extends IterateAlignments {
-
-
-        private SortIterateAlignments() {
-
-            entries = new ObjectArrayList<Alignments.AlignmentEntry>();
-        }
-
-
-        ObjectArrayList<Alignments.AlignmentEntry> entries;
-
-        @Override
-        public void prepareDataStructuresForReference(final AlignmentReader alignmentReader, final int referenceIndex) {
-            if (this.alignmentReader == null) {
-                if (alignmentReader.isSorted()) {
-                    LOG.warn("Warning: An input alignment is already sorted.");
-                }
-                this.alignmentReader = alignmentReader;
-            }
-
-        }
-
-        @Override
-        public void processAlignmentEntry(final AlignmentReader alignmentReader,
-                                          final Alignments.AlignmentEntry alignmentEntry) {
-
-            entries.add(alignmentEntry);
-        }
-
-        AlignmentReader alignmentReader = null;
-
-        public void sort() {
-            Collections.sort(entries, POSITION_ENTRY_COMPARATOR);
-        }
-
-        public void write(final AlignmentWriter writer) throws IOException {
-            // too many hits is prepared as for Merge:
-            try {
-                Merge.prepareMergedTooManyHits(outputFilename, alignmentReader.getNumberOfQueries(), 0, basename);
-                writer.setTargetIdentifiers(alignmentReader.getTargetIdentifiers());
-                writer.setQueryIdentifiers(alignmentReader.getQueryIdentifiers());
-                final int[] targetLengths = alignmentReader.getTargetLength();
-                if (targetLengths != null) {
-                    writer.setTargetLengths(targetLengths);
-                }
-                writer.setLargestSplitQueryIndex(alignmentReader.getLargestSplitQueryIndex());
-                writer.setSmallestSplitQueryIndex(alignmentReader.getSmallestSplitQueryIndex());
-                writer.setSorted(true);
-                writer.setAlignerName(alignmentReader.getAlignerName());
-                writer.setAlignerVersion(alignmentReader.getAlignerVersion());
-
-                // Propagate the statistics from the input, but update the basename
-                writer.setStatistics(alignmentReader.getStatistics());
-                writer.putStatistic("basename", FilenameUtils.getBaseName(basename));
-                writer.putStatistic("basename.full", basename);
-
-                for (final Alignments.AlignmentEntry entry : entries) {
-                    writer.appendEntry(entry);
-                }
-            } finally {
-                writer.close();
-            }
-
-        }
     }
 }

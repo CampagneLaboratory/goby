@@ -43,7 +43,7 @@ public class ChunkCodecHelper {
     private ChunkCodecHelper() {
     }
 
-    public static ChunkCodec load(String codecName) {
+    public static synchronized ChunkCodec load(String codecName) {
         ChunkCodec codec = null;
         if (codecName != null) {
             codecLoader.reload();
@@ -62,7 +62,7 @@ public class ChunkCodecHelper {
         return codec;
     }
 
-    public static ChunkCodec withRegistrationCode(final byte registrationCode) {
+    public static synchronized ChunkCodec withRegistrationCode(final byte registrationCode) {
 
         codecLoader.reload();
         for (final ChunkCodec chunkCodec : codecLoader) {
