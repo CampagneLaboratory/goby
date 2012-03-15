@@ -20,7 +20,7 @@ package edu.cornell.med.icb.goby.algorithmic.algorithm.dmr;
 
 /**
  * Class that populates a cumulative count array of a predetermined size
- * Faciliates adding new counts to the rightmost element in the array without changing
+ * Facilitates adding new counts to the rightmost element in the array without changing
  *
  * @Author: Nyasha Chambwe
  * Date: 3/1/12

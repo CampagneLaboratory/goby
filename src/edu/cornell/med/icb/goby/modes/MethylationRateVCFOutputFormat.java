@@ -96,6 +96,7 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
     private int[] notMethylatedCCountsIndex;
 
     private int methylationRateFieldIndex;
+    private int[] methylationRatePerGroupIndex;
 
     private int strandFieldIndex;
     private ArrayList<GroupComparison> groupComparisons = new ArrayList<GroupComparison>();
@@ -194,6 +195,12 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
             }
 
         }
+        methylationRatePerGroupIndex = new int[groups.length];
+        for (int groupIndex = 0; groupIndex < groups.length; groupIndex++) {
+            methylationRatePerGroupIndex[groupIndex] = statWriter.defineField("INFO", String.format("MR[%s]", groups[groupIndex]),
+                    1, ColumnType.Float, String.format("Methylation rate in group %s.", groups[groupIndex]));
+
+        }
         methylatedCCountsIndex = new int[groups.length];
         notMethylatedCCountsIndex = new int[groups.length];
 
@@ -226,7 +233,11 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
 
         // setup empirical p-value estimator:
         String statName = doc.getString("statistic");
-        statName = statName + "_mci";
+        if (!statName.endsWith("_mci")) {
+
+            // do not append several times
+            statName = statName + "_mci";
+        }
         // override the stat name with the mci provider variant:
         doc.setValue("statistic", statName);
         empiricalPValueEstimator = new EmpiricalPValueEstimator();
@@ -300,6 +311,7 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
         for (int groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
             statWriter.setInfo(notMethylatedCCountsIndex[groupIndex], mci.unmethylatedCCountPerGroup[groupIndex]);
             statWriter.setInfo(methylatedCCountsIndex[groupIndex], mci.methylatedCCountPerGroup[groupIndex]);
+            statWriter.setInfo(methylationRatePerGroupIndex[groupIndex], getMR(groupIndex));
         }
 
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++) {
@@ -356,24 +368,8 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
                 }
             }
 
-
-            final double totalCsObservedgroup1 = mci.methylatedCCountPerGroup[indexGroup1] + mci.unmethylatedCCountPerGroup[indexGroup1];
-            final double totalCsObservedgroup2 = mci.methylatedCCountPerGroup[indexGroup2] + mci.unmethylatedCCountPerGroup[indexGroup2];
-
-            double group1MR;
-            if (totalCsObservedgroup1 == 0) {
-                group1MR = Double.NaN;
-            } else {
-                group1MR = mci.methylatedCCountPerGroup[indexGroup1] * 100 / totalCsObservedgroup1;
-            }
-
-            double group2MR;
-            if (totalCsObservedgroup2 == 0) {
-                group2MR = Double.NaN;
-            } else {
-                group2MR = mci.methylatedCCountPerGroup[indexGroup2] * 100 / totalCsObservedgroup2;
-            }
-
+            final double group1MR = getMR(indexGroup1);
+            final double group2MR = getMR(indexGroup2);
             final int deltaMR = (int) Math.round(Math.abs(group1MR - group2MR));
 
             statWriter.setInfo(log2OddsRatioColumnIndex[comparison.index], log2OddsRatio);
@@ -410,6 +406,18 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
 
     }
 
+    // calculate methylation rate in a group:
+    private float getMR(int groupIndex) {
+        float groupMR;
+        final float totalCsObservedgroup1 = mci.methylatedCCountPerGroup[groupIndex] + mci.unmethylatedCCountPerGroup[groupIndex];
+        if (totalCsObservedgroup1 == 0) {
+            groupMR = Float.NaN;
+        } else {
+            groupMR = (float) mci.methylatedCCountPerGroup[groupIndex] * 100f / totalCsObservedgroup1;
+        }
+        return groupMR;
+    }
+
     EmpiricalPValueEstimator empiricalPValueEstimator;
 
     private void doEmpiricalP(final MethylCountInfo mci, int referenceIndex, int position) {
@@ -426,7 +434,7 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
 
                 final double p = empiricalPValueEstimator.estimateEmpiricalPValue(0, comparison, mci);
                 statWriter.setInfo(empiricalPValueColumnIndex[comparison.index], p);
-                if (p <= fixedWindowEmpiricalPSignificanceThreshold ) {
+                if (p <= fixedWindowEmpiricalPSignificanceThreshold) {
                     fixedWindow.add(referenceIndex, position);
                 } else {
                     fixedWindow.prune(referenceIndex, position);
@@ -442,8 +450,8 @@ public class MethylationRateVCFOutputFormat extends AbstractOutputFormat impleme
         int Cmb = mci.methylatedCCountPerGroup[comparison.indexGroup2];
         int Ca = mci.unmethylatedCCountPerGroup[comparison.indexGroup1];
         int Cb = mci.unmethylatedCCountPerGroup[comparison.indexGroup2];
-        double mra =100d* ((double) Ca) / ((double) (Cma + Ca));
-        double mrb = 100d*((double) Ca) / ((double) (Cma + Ca));
+        double mra = 100d * ((double) Ca) / ((double) (Cma + Ca));
+        double mrb = 100d * ((double) Ca) / ((double) (Cma + Ca));
         return Math.abs(mra - mrb);
     }
 

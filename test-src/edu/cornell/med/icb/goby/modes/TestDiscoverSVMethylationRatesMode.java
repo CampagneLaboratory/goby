@@ -195,6 +195,8 @@ public class TestDiscoverSVMethylationRatesMode extends TestFiles {
         stringB = writer.getBuffer().toString();
         assertTrue(stringB, stringB.contains("#Cm_Group[methylated]=1;"));
         assertTrue(stringB, stringB.contains("#Cm_Group[not-so]=0;"));
+        assertTrue(stringB, stringB.contains("MR[methylated]=100.0;"));
+        assertTrue(stringB, stringB.contains("MR[not-so]=NaN;"));
 
 
         writer = new StringWriter();
