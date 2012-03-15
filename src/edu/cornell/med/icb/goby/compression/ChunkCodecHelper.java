@@ -50,7 +50,7 @@ public class ChunkCodecHelper {
             for (final ChunkCodec c : codecLoader) {
 
                 if (c.name().equals(codecName)) {
-                    LOG.info("Will use chunk codec " + c.name());
+                    LOG.debug("Will use chunk codec " + c.name());
                     codec = c;
                     break;
                 }

@@ -66,10 +66,9 @@ public class SortIterateAlignments extends IterateAlignments {
     @Override
     public void prepareDataStructuresForReference(final AlignmentReader alignmentReader, final int referenceIndex) {
         if (this.alignmentReader == null) {
-            if (alignmentReader.isSorted()) {
-                LOG.warn("Warning: An input alignment is already sorted.");
-            }
+
             this.alignmentReader = alignmentReader;
+
         }
 
     }

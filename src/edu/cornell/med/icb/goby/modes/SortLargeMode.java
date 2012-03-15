@@ -20,12 +20,9 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
-import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
-import edu.cornell.med.icb.goby.alignments.Merge;
-import edu.cornell.med.icb.goby.alignments.SortIterateAlignments;
+import edu.cornell.med.icb.goby.alignments.*;
 import edu.cornell.med.icb.util.ICBStringUtils;
+import it.unimi.dsi.Util;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -50,8 +47,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * Sort an alignment by reference and reference position for very large alignments.
  * Splits the alignment into chunks, sorting each chunk, then successively merging
  * the chunks until.
- *
- * TODO: Permutate query indicies in TMH
+ * <p/>
+ * TODO: Permutate query indices in TMH
  */
 public class SortLargeMode extends AbstractGobyMode {
     /**
@@ -67,7 +64,7 @@ public class SortLargeMode extends AbstractGobyMode {
     /**
      * The mode description help text.
      */
-    private static final String MODE_DESCRIPTION = "Sort a large (any size) compact alignment files by reference position but first splitting the alignment, sorting the splits, then successively merging the sorted pieces. The output alignment is sorted and indexed.";
+    private static final String MODE_DESCRIPTION = "Sort a large (any size) compact alignment files by reference position. This sort mode works in parallel, splitting the alignment, sorting the splits, then successively merging the sorted pieces. The output alignment is sorted and indexed.";
 
     /**
      * The output file.
@@ -80,7 +77,7 @@ public class SortLargeMode extends AbstractGobyMode {
     private String basename;
 
     private int numThreads = -1;
-    private int filesPerMerge = 10;
+    private int filesPerMerge = 30;
     private long splitSize = -1;
     private String tempDir = "/tmp";
 
@@ -91,18 +88,18 @@ public class SortLargeMode extends AbstractGobyMode {
      * The following data structures are used to assist the parallelization of the sort/merge.
      */
     // Splits that are waiting to be sorted/merged
-    ConcurrentLinkedQueue<SortMergeSplit> splitsToMerge = new ConcurrentLinkedQueue<SortMergeSplit>();
+    private ConcurrentLinkedQueue<SortMergeSplit> splitsToMerge = new ConcurrentLinkedQueue<SortMergeSplit>();
     // Number of splits that are waiting to be sorted/merged. Not just using splitsToMerge.size() for efficiency
-    AtomicInteger splitsToMergeSize = new AtomicInteger(0);
+    private AtomicInteger splitsToMergeSize = new AtomicInteger(0);
     // Splits that have been sorted or sorted/merged, waiting for the next sort/merge
-    ConcurrentLinkedQueue<SortMergeSplit> sortedSplits = new ConcurrentLinkedQueue<SortMergeSplit>();
+    private ConcurrentLinkedQueue<SortMergeSplit> sortedSplits = new ConcurrentLinkedQueue<SortMergeSplit>();
     // The number of sorts or sorts/merges that are running or queued right now
-    AtomicLong numSortMergesRunning = new AtomicLong(0);
-    AtomicLong numMergesExecuted = new AtomicLong(0);
-    ExecutorService executorService;
+    private AtomicLong numSortMergesRunning = new AtomicLong(0);
+    private AtomicLong numMergesExecuted = new AtomicLong(0);
+    private ExecutorService executorService;
 
-    ConcurrentLinkedQueue<Throwable> exceptions = new ConcurrentLinkedQueue<Throwable>();
-    ConcurrentLinkedQueue<File> filesToDelete = new ConcurrentLinkedQueue<File>();
+    private ConcurrentLinkedQueue<Throwable> exceptions = new ConcurrentLinkedQueue<Throwable>();
+    private ConcurrentLinkedQueue<File> filesToDelete = new ConcurrentLinkedQueue<File>();
 
     @Override
     public String getModeName() {
@@ -125,6 +122,7 @@ public class SortLargeMode extends AbstractGobyMode {
 
     /**
      * Get the number of threads sort/merge will use.
+     *
      * @return the number of threads to use
      */
     public int getNumThreads() {
@@ -136,7 +134,8 @@ public class SortLargeMode extends AbstractGobyMode {
      * Set to < 0 for auto-detect number of cores.
      * Set to 0 for single threaded, not using the thread pool
      * Set to >= 1 for multi threaded AND using the thread pool
-     *             (1 is still single threaded, but it uses the thread pool)
+     * (1 is still single threaded, but it uses the thread pool)
+     *
      * @param numThreads the number of threads to use
      */
     public void setNumThreads(final int numThreads) {
@@ -152,6 +151,7 @@ public class SortLargeMode extends AbstractGobyMode {
      * The number of splits / files per merge. The maximum value you can use for this is related to the
      * number of file descriptors available from your OS. sort-large mode will open approximately
      * (3 * threads * files-per-merge) during the merge process.
+     *
      * @return the number of files per merge.
      */
     public int getFilesPerMerge() {
@@ -163,6 +163,7 @@ public class SortLargeMode extends AbstractGobyMode {
      * The number of splits / files per merge. The maximum value you can use for this is related to the
      * number of file descriptors available from your OS. sort-large mode will open approximately
      * ((4 * num-threads * files-per-merge) + 4) during the merge process.
+     *
      * @param filesPerMerge the number of files per merge.
      */
     public void setFilesPerMerge(final int filesPerMerge) {
@@ -174,6 +175,7 @@ public class SortLargeMode extends AbstractGobyMode {
      * The size of the split in bytes. The default, -1, attempts to guess the split size based on
      * available memory including overhead. Keep in mind that threads you run with, the less
      * available memory to each parallel sort.
+     *
      * @return the split size
      */
     public long getSplitSize() {
@@ -185,6 +187,7 @@ public class SortLargeMode extends AbstractGobyMode {
      * The size of the split in bytes. The default, -1, attempts to guess the split size based on
      * available memory including overhead. Keep in mind that threads you run with, the less
      * available memory to each parallel sort.
+     *
      * @param splitSize the split size
      */
     public void setSplitSize(final long splitSize) {
@@ -206,6 +209,7 @@ public class SortLargeMode extends AbstractGobyMode {
      * overall memory available to Java using -Xmx and -Xms, such as "-Xmx8g -Xms8g" to run
      * the program with a total of 8g of memory. The relatively large value for this (the default is 100)
      * is required because the alignments will be decompressed after being read.
+     *
      * @return the current splitSizeScalingFactor
      */
     public int getSplitSizeScalingFactor() {
@@ -223,6 +227,7 @@ public class SortLargeMode extends AbstractGobyMode {
      * overall memory available to Java using -Xmx and -Xms, such as "-Xmx8g -Xms8g" to run
      * the program with a total of 8g of memory. The relatively large value for this (the default is 100)
      * is required because the alignments will be decompressed after being read.
+     *
      * @param splitSizeScalingFactor the current splitSizeScalingFactor
      */
     public void setSplitSizeScalingFactor(final int splitSizeScalingFactor) {
@@ -235,6 +240,7 @@ public class SortLargeMode extends AbstractGobyMode {
      * (to increase overall memory available to Java using -Xmx and -Xms, such as "-Xmx8g -Xms8g" to run
      * the program with a total of 8g of memory). Also see split-size-scaling-factor
      * documentation.
+     *
      * @return the current memoryPercentageForWork value
      */
     public double getMemoryPercentageForWork() {
@@ -247,6 +253,7 @@ public class SortLargeMode extends AbstractGobyMode {
      * (to increase overall memory available to Java using -Xmx and -Xms, such as "-Xmx8g -Xms8g" to run
      * the program with a total of 8g of memory). Also see split-size-scaling-factor
      * documentation. You cannot set a value larger than "0.99" or less than "0.5".
+     *
      * @param memoryPercentageForWork the new memoryPercentageForWork value
      */
     public void setMemoryPercentageForWork(final double memoryPercentageForWork) {
@@ -298,10 +305,10 @@ public class SortLargeMode extends AbstractGobyMode {
             final long allocatedHeapSize = Runtime.getRuntime().totalMemory();
             final long freeInHeap = Runtime.getRuntime().freeMemory();
             final long maxHeapSize = Runtime.getRuntime().maxMemory();
-            final long freeMemory = maxHeapSize - allocatedHeapSize + freeInHeap;
+            final long freeMemory = maxHeapSize - allocatedHeapSize + freeInHeap;//Util.availableMemory();
 
             splitSize = (long) (freeMemory * memoryPercentageForWork) /
-                        (long) ((numThreads > 0 ? numThreads : 1) * splitSizeScalingFactor);
+                    (long) ((numThreads > 0 ? numThreads : 1) * splitSizeScalingFactor);
             LOG.info(String.format("Maximum memory is %s. Using a split-size of %s",
                     ICBStringUtils.humanMemorySize(freeMemory), ICBStringUtils.humanMemorySize(splitSize)));
         }
@@ -316,21 +323,29 @@ public class SortLargeMode extends AbstractGobyMode {
 
         // Reduce the number of processors by one, as one thread is used by this running program
         // and it will be utilized since we've chosen CallerRunsPolicy
-        LOG.info(String.format("sort-large will run with %d threads (0 == no thread pool)", numThreads));
-
+        LOG.debug(String.format("sort-large will run with %d threads (0 == no thread pool)", numThreads));
+        final AlignmentReader reader = new AlignmentReaderImpl(basename);
+        try {
+            reader.readHeader();
+            if (reader.isSorted()) {
+                LOG.warn("Warning: The input alignment is already sorted.");
+            }
+        } finally {
+            reader.close();
+        }
         if (numThreads > 0) {
             executorService = new ThreadPoolExecutor(
-                numThreads, // core thread pool size
-                numThreads, // maximum thread pool size
-                10, // time to wait before resizing pool
-                TimeUnit.MINUTES,
-                new LinkedBlockingQueue<Runnable>());
-                //new ArrayBlockingQueue<Runnable>(additionalThreads, true));
-                //new ThreadPoolExecutor.CallerRunsPolicy()*/);
+                    numThreads, // core thread pool size
+                    numThreads, // maximum thread pool size
+                    10, // time to wait before resizing pool
+                    TimeUnit.MINUTES,
+                    new LinkedBlockingQueue<Runnable>());
+            //new ArrayBlockingQueue<Runnable>(additionalThreads, true));
+            //new ThreadPoolExecutor.CallerRunsPolicy()*/);
         }
 
         // Setup splits and start first pass sort
-        LOG.info("Splitting file and sorting all splits");
+        LOG.debug("Splitting file and sorting all splits");
         long numberOfSplits = 0;
         long splitStart = 0;
         boolean lastSplit = false;
@@ -341,7 +356,7 @@ public class SortLargeMode extends AbstractGobyMode {
                 splitEnd = fileSize - 1;
                 lastSplit = true;
             }
-            final SortMergeSplit split =  new SortMergeSplit(splitStart, splitEnd);
+            final SortMergeSplit split = new SortMergeSplit(splitStart, splitEnd);
             numberOfSplits++;
             sortSplit(split, firstSort);
             firstSort = false;
@@ -352,7 +367,7 @@ public class SortLargeMode extends AbstractGobyMode {
             }
         }
 
-        LOG.info(String.format("[%s] Split file into %d pieces", threadId, numberOfSplits));
+        LOG.debug(String.format("[%s] Split file into %d pieces", threadId, numberOfSplits));
 
         // Subsequent sorts
         boolean lastMergeSubmitted = false;
@@ -410,7 +425,7 @@ public class SortLargeMode extends AbstractGobyMode {
                     splitsToMergeSize.decrementAndGet();
                     toMerge.add(splitsToMerge.poll());
                 }
-                LOG.info(String.format("[%s] %d items in queue to sort after removing %d for sorting",
+                LOG.debug(String.format("[%s] %d items in queue to sort after removing %d for sorting",
                         threadId, splitsToMergeSizeLocal, numSplitsForMerge));
                 mergeSplits(toMerge, lastMergeSubmitted);
             } else {
@@ -425,10 +440,11 @@ public class SortLargeMode extends AbstractGobyMode {
 
         if (executorService != null) {
             // wait for all of the executor threads to finish
-            LOG.info(String.format("[%s] Waiting for threads to finish.", threadId));
+            LOG.debug(String.format("[%s] Waiting for threads to finish.", threadId));
             executorService.shutdown();
             try {
-                while (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {}
+                while (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -448,7 +464,7 @@ public class SortLargeMode extends AbstractGobyMode {
 
         if (exceptions.isEmpty()) {
 
-            System.out.println("Sort completed");
+            System.err.println("Sort completed");
 
             final SortMergeSplit fullFile = splitsToMerge.poll();
             LOG.info(String.format("%s made up from %d splits", fullFile, fullFile.numFiles));
@@ -464,7 +480,8 @@ public class SortLargeMode extends AbstractGobyMode {
 
     /**
      * Initial sort of one split
-     * @param toSort the split to sort
+     *
+     * @param toSort    the split to sort
      * @param firstSort if this is the first sort (TMH will be written only during the first sort)
      */
     private void sortSplit(final SortMergeSplit toSort, final boolean firstSort) {
@@ -478,7 +495,7 @@ public class SortLargeMode extends AbstractGobyMode {
                 // Simulate sort time
                 final String threadId = String.format("%02d", Thread.currentThread().getId());
                 try {
-                    LOG.info(String.format("[%s] Sorting %s", threadId, toSort.toString()));
+                    LOG.debug(String.format("[%s] Sorting %s", threadId, toSort.toString()));
 
                     final SortIterateAlignments alignmentIterator = new SortIterateAlignments();
 
@@ -489,17 +506,18 @@ public class SortLargeMode extends AbstractGobyMode {
                     alignmentIterator.setBasename(subBasename);
 
                     // Iterate through each alignment and write sequence variations to output file:
-                    LOG.info(String.format("[%s] Loading entries...", threadId));
+                    LOG.debug(String.format("[%s] Loading entries...", threadId));
                     final SortMergeSplitFileRange range = toSort.ranges.get(0);
                     alignmentIterator.iterate(range.min, range.max, basename);
-                    LOG.info(String.format("[%s] Sorting...", threadId));
+                    LOG.debug(String.format("[%s] Sorting...", threadId));
                     alignmentIterator.sort();
-                    LOG.info(String.format("[%s] Writing sorted alignment...", threadId));
+                    LOG.debug(String.format("[%s] Writing sorted alignment...", threadId));
                     alignmentIterator.write(writer);
 
                     if (firstSort) {
-                        LOG.info(String.format("[%s] Writing TMH", threadId));
+                        LOG.debug(String.format("[%s] Writing TMH", threadId));
                         final AlignmentReader alignmentReader = new AlignmentReaderImpl(0, 0, basename, false);
+                        alignmentReader.readHeader();
                         Merge.prepareMergedTooManyHits(outputFilename, alignmentReader.getNumberOfQueries(), 0, basename);
                     }
 
@@ -525,7 +543,9 @@ public class SortLargeMode extends AbstractGobyMode {
 
     /**
      * Subsequent merge of multiple splits
-     * @param toMerge the splits to sort
+     *
+     * @param toMerge   the splits to sort
+     * @param lastMerge
      */
     private void mergeSplits(final List<SortMergeSplit> toMerge, final boolean lastMerge) {
         numSortMergesRunning.incrementAndGet();
@@ -535,6 +555,7 @@ public class SortLargeMode extends AbstractGobyMode {
                 final String threadId = String.format("%02d", Thread.currentThread().getId());
                 final List<String> mergeFromBasenames = new LinkedList<String>();
                 try {
+                    System.gc();
                     // Prepare to merge
                     final SortMergeSplit merged = toMerge.get(0);
                     final int numSplits = toMerge.size();
@@ -544,17 +565,19 @@ public class SortLargeMode extends AbstractGobyMode {
                     }
                     merged.ranges = mergeRangeList(merged.ranges);
 
-                    LOG.info(String.format("[%s] Merging %d items %s to %s",
+                    LOG.debug(String.format("[%s] Merging %d items %s to %s",
                             threadId, numSplits,
                             ArrayUtils.toString(toMerge), ArrayUtils.toString(merged)));
 
-                    final SortIterateAlignments alignmentIterator = new SortIterateAlignments();
 
                     for (final SortMergeSplit mergeFrom : toMerge) {
                         final String inputBasename = tempDir + "/sorted-" + mergeFrom.tag;
                         mergeFromBasenames.add(inputBasename);
                     }
-
+                    // note that we don't adjust query indices because they are already not overlaping (all come from the
+                    // same input file)
+                    final ConcatSortedAlignmentReader concatReader = new ConcatSortedAlignmentReader(false, mergeFromBasenames.toArray(new String[mergeFromBasenames.size()]));
+                    concatReader.readHeader();
                     // We've used merged's tag as input. Let's get a new tag for it's output
                     merged.makeNewTag();
 
@@ -568,22 +591,15 @@ public class SortLargeMode extends AbstractGobyMode {
                         subOutputFilename = tempDir + "/" + subBasename;
                     }
                     final AlignmentWriter writer = new AlignmentWriter(subOutputFilename);
-                    alignmentIterator.setOutputFilename(subOutputFilename);
-                    alignmentIterator.setBasename(subBasename);
+                    writer.setSorted(true);
 
-                    // Iterate through each alignment and write sequence variations to output file:
-                    LOG.info(String.format("[%s] Loading entries...", threadId));
-                    alignmentIterator.iterate(mergeFromBasenames);
-                    LOG.info(String.format("[%s] Merging...", threadId));
-                    alignmentIterator.sort();
-                    if (lastMerge) {
-                        LOG.info(String.format("[%s] Writing final merged alignment...", threadId));
-                    } else {
-                        LOG.info(String.format("[%s] Writing intermediate merged alignment...", threadId));
+                    if (concatReader.getTargetLength() != null) {
+                        writer.setTargetLengths(concatReader.getTargetLength());
                     }
-                    alignmentIterator.write(writer);
-
-                    System.gc();
+                    for (final Alignments.AlignmentEntry entry : concatReader) {
+                        writer.appendEntry(entry);
+                    }
+                    writer.close();
 
                     // Sort/merge finished
                     numMergesExecuted.incrementAndGet();
@@ -666,6 +682,7 @@ public class SortLargeMode extends AbstractGobyMode {
         String prevTag;
         int numFiles;
         IOException exception;
+
         private SortMergeSplit(final long min, final long max) {
             final SortMergeSplitFileRange range = new SortMergeSplitFileRange(min, max);
             ranges = new ArrayList<SortMergeSplitFileRange>();
@@ -676,6 +693,7 @@ public class SortLargeMode extends AbstractGobyMode {
 
         /**
          * Add a split to this split (for merging)
+         *
          * @param split the split we are merging this one with
          */
         private void addRangesFomSplit(final SortMergeSplit split) {
@@ -698,6 +716,7 @@ public class SortLargeMode extends AbstractGobyMode {
     private class SortMergeSplitFileRange implements Comparable<SortMergeSplitFileRange> {
         long min;
         long max;
+
         private SortMergeSplitFileRange(final long min, final long max) {
             this.min = min;
             this.max = max;
