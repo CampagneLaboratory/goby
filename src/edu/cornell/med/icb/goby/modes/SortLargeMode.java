@@ -20,9 +20,14 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
+import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
+import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.ConcatSortedAlignmentReader;
+import edu.cornell.med.icb.goby.alignments.Merge;
+import edu.cornell.med.icb.goby.alignments.SortIterateAlignments;
 import edu.cornell.med.icb.util.ICBStringUtils;
-import it.unimi.dsi.Util;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -47,7 +52,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * Sort an alignment by reference and reference position for very large alignments.
  * Splits the alignment into chunks, sorting each chunk, then successively merging
  * the chunks until.
- * <p/>
+ *
  * TODO: Permutate query indices in TMH
  */
 public class SortLargeMode extends AbstractGobyMode {
@@ -77,12 +82,12 @@ public class SortLargeMode extends AbstractGobyMode {
     private String basename;
 
     private int numThreads = -1;
-    private int filesPerMerge = 30;
+    private int filesPerMerge = 50;
     private long splitSize = -1;
     private String tempDir = "/tmp";
 
-    private double memoryPercentageForWork = 0.75;  // <id>memory-percentage-for-work</id>
-    private int splitSizeScalingFactor = 100;  // <id>split-size-scaling-factor</id>
+    private double memoryPercentageForWork = 0.75;
+    private int splitSizeScalingFactor = 50;
 
     /*
      * The following data structures are used to assist the parallelization of the sort/merge.
@@ -495,6 +500,7 @@ public class SortLargeMode extends AbstractGobyMode {
                 // Simulate sort time
                 final String threadId = String.format("%02d", Thread.currentThread().getId());
                 try {
+                    System.gc();
                     LOG.debug(String.format("[%s] Sorting %s", threadId, toSort.toString()));
 
                     final SortIterateAlignments alignmentIterator = new SortIterateAlignments();
@@ -520,8 +526,6 @@ public class SortLargeMode extends AbstractGobyMode {
                         alignmentReader.readHeader();
                         Merge.prepareMergedTooManyHits(outputFilename, alignmentReader.getNumberOfQueries(), 0, basename);
                     }
-
-                    System.gc();
 
                     // Sort finished
                     sortedSplits.add(toSort);
