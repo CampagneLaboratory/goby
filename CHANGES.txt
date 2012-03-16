@@ -1,4 +1,5 @@
 Towards Goby 2.0
+ - Renamed SortMode to Sort1Mode. Renamed SortLargeMode to SortMode.
  - Added SortLargeMode which can sort compact alignments of any size, multithreaded.
  - Fixes to sam-to-compact mode. Previous versions could fail for a variety of reasons. We have stress tested this mode
    throwing at it various input BAM files, sorted or not and fixed the bugs we found. For instance, the --sorted option

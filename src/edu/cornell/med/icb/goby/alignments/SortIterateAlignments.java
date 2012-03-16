@@ -18,7 +18,6 @@
 
 package edu.cornell.med.icb.goby.alignments;
 
-import edu.cornell.med.icb.goby.modes.SortMode;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
@@ -32,7 +31,7 @@ public class SortIterateAlignments extends IterateAlignments {
     /**
      * Used to log debug and informational messages.
      */
-    private static final Log LOG = LogFactory.getLog(SortMode.class);
+    private static final Log LOG = LogFactory.getLog(SortIterateAlignments.class);
 
     ObjectArrayList<Alignments.AlignmentEntry> entries;
 
@@ -66,11 +65,8 @@ public class SortIterateAlignments extends IterateAlignments {
     @Override
     public void prepareDataStructuresForReference(final AlignmentReader alignmentReader, final int referenceIndex) {
         if (this.alignmentReader == null) {
-
             this.alignmentReader = alignmentReader;
-
         }
-
     }
 
     @Override

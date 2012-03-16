@@ -61,15 +61,14 @@ public abstract class IterateAlignments {
      * @param jsapResult The jsapResult available to the mode.
      */
     public void parseIncludeReferenceArgument(final JSAPResult jsapResult) {
-
         final String includeReferenceNameCommas = jsapResult.getString("include-reference-names");
         parseIncludeReferenceArgument(includeReferenceNameCommas);
-
     }
 
     /**
      * Parse the string of reference sequences to include the iteration. The string must be a coma
      * separated list of reference identifiers.
+     * @param includeReferenceNameCommas a comma separated string of reference names to include
      */
     public void parseIncludeReferenceArgument(final String includeReferenceNameCommas) {
         if (includeReferenceNameCommas != null) {
@@ -132,24 +131,25 @@ public abstract class IterateAlignments {
         }
     }
 
-    public void iterate(GenomicRange range, final String... basenames) throws IOException {
+    public void iterate(final GenomicRange range, final String... basenames) throws IOException {
         for (final String basename : basenames) {
             iterateOverOneAlignment(alignmentReaderFactory.getSlice(basename, range), basename, range.startReferenceIndex, range.startPosition);
         }
     }
 
-    public void iterate(FileSlice slice, final String... basenames) throws IOException {
+    public void iterate(final FileSlice slice, final String... basenames) throws IOException {
         for (final String basename : basenames) {
 
             iterateOverOneAlignment(slice, basename);
         }
     }
 
-    private void iterateOverOneAlignment(FileSlice slice, final String basename) throws IOException {
+    private void iterateOverOneAlignment(final FileSlice slice, final String basename) throws IOException {
         iterateOverOneAlignment(slice, basename, 0, 0);
     }
 
-    private void iterateOverOneAlignment(FileSlice slice, final String basename, int minTargetIndex, int minPosition) throws IOException {
+    private void iterateOverOneAlignment(final FileSlice slice, final String basename, final int minTargetIndex,
+                                         final int minPosition) throws IOException {
 
         final int numberOfReferences;
         {
@@ -203,7 +203,7 @@ public abstract class IterateAlignments {
             LOG.debug("The alignment is sorted, iteration will use the faster skipTo method.");
             // the alignment is not sorted, we leverage skipTo to get directly to the sequence of interest.:
 
-            Alignments.AlignmentEntry alignmentEntry = null;
+            Alignments.AlignmentEntry alignmentEntry;
             // the first reference that we should skip to:
             int currentMinTargetIndex = referencesToProcess.firstInt();
             // skip to will go to the next entry in or after currentMinTargetIndex with at least position 0
@@ -280,8 +280,8 @@ public abstract class IterateAlignments {
 
     private AlignmentReaderFactory alignmentReaderFactory = new DefaultAlignmentReaderFactory();
 
-    public void setAlignmentReaderFactory(AlignmentReaderFactory factory) {
-        this.alignmentReaderFactory = factory;
+    public void setAlignmentReaderFactory(final AlignmentReaderFactory factory) {
+        alignmentReaderFactory = factory;
     }
 
 }

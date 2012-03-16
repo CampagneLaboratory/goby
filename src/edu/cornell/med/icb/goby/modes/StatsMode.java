@@ -91,6 +91,11 @@ public class StatsMode extends AbstractGobyMode {
     }
 
     @Override
+    public String getShortModeName() {
+        return null;
+    }
+
+    @Override
     public String getModeDescription() {
         return MODE_DESCRIPTION;
     }
