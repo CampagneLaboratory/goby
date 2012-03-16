@@ -52,7 +52,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * Splits the alignment into chunks, sorting each chunk, then successively merging
  * the chunks until.
  *
- * TODO: Permutate query indices in TMH
+ * @author Kevin Dorff.
+ * @author Fabien Campagne.
  */
 public class SortMode extends AbstractGobyMode {
     /**
