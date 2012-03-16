@@ -20,7 +20,12 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import edu.cornell.med.icb.goby.alignments.*;
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
+import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.EntryFlagHelper;
+import edu.cornell.med.icb.goby.alignments.FileSlice;
+import edu.cornell.med.icb.goby.alignments.IterateAlignments;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import edu.cornell.med.icb.util.VersionUtils;
@@ -31,7 +36,11 @@ import org.apache.commons.lang.ArrayUtils;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Converts a compact alignment to plain text.
@@ -68,7 +77,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
     /**
      * If header is written, used in PLAIN output (not SAM).
      */
-    private boolean headerWritten = false;
+    private boolean headerWritten;
 
     @Override
     public String getModeName() {
@@ -82,7 +91,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
 
     enum OutputFormat {
         PLAIN,
-        SAM,
+        // SAM,
         HTML
     }
 
@@ -125,16 +134,18 @@ public class AlignmentToTextMode extends AbstractGobyMode {
         basenames = AlignmentReaderImpl.getBasenames(inputFiles);
         outputFilename = jsapResult.getString("output");
         outputFormat = OutputFormat.valueOf(jsapResult.getString("format").toUpperCase());
+        /*
         if (outputFormat == OutputFormat.SAM) {
             // No output header for SAM format
             headerWritten = true;
         }
+        */
         defaultReadLength = jsapResult.getInt("constant-read-length");
         alignmentIterator = new AlignmentToTextIterateAlignments();
         alignmentIterator.parseIncludeReferenceArgument(jsapResult);
-        maxToOutput = jsapResult.getLong("max-to-output",-1);
+        maxToOutput = jsapResult.getLong("max-to-output");
         if (maxToOutput == -1L) {
-            maxToOutput=Long.MAX_VALUE;
+            maxToOutput = Long.MAX_VALUE;
         }
         if (jsapResult.contains("start-position") || jsapResult.contains("end-position")) {
             hasStartOrEndPosition = true;
@@ -165,9 +176,9 @@ public class AlignmentToTextMode extends AbstractGobyMode {
         private boolean hasReadIds;
         private DoubleIndexedIdentifier readIds;
         private int[] referenceLengths;
-        StringBuilder htmlBuilder = null;
-        long numWritten = 0;
-        List<Map<String, String>> fieldAttributes = null;
+        StringBuilder htmlBuilder;
+        long numWritten;
+        List<Map<String, String>> fieldAttributes;
 
         public void setOutputWriter(final PrintStream outputStream, final OutputFormat outputFormat) {
             this.outputStream = outputStream;
@@ -179,7 +190,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
             final int referenceIndex = alignmentEntry.getTargetIndex();
 
             if (cachedReader != alignmentReader) {
-                hasReadIds = alignmentReader.getQueryIdentifiers().size() > 0;
+                hasReadIds = !alignmentReader.getQueryIdentifiers().isEmpty();
                 referenceLengths = alignmentReader.getTargetLength();
             }
 
@@ -190,7 +201,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 printHeader(outputStream);
             }
 
-            StringBuilder output = new StringBuilder();
+            final StringBuilder output = new StringBuilder();
 
             for (int i = 0; i < alignmentEntry.getMultiplicity(); ++i) {
                 output.setLength(0);
@@ -233,94 +244,100 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                         }
                         break;
                     case PLAIN:
-                        outputStream.printf("%s\t%d\t" +
-                                "%s\t%s\t%s\t%s\t" +   // Pair
-                                "%s\t%s\t%s\t%s\t" +   // Splice Forward
-                                "%s\t%s\t%s\t" +   // Splice Backward
-                                "%s\t%d\t%d\t%d\t%g\t%d\t%d\t%s\t%d%n",
-                                hasReadIds ? readIds.getId(queryIndex) : queryIndex,
-                                alignmentEntry.hasFragmentIndex() ? alignmentEntry.getFragmentIndex() : 0,
-                                alignmentEntry.hasPairFlags() ? zeroPad(Integer.toBinaryString(alignmentEntry.getPairFlags()), 9) : "",
-                                alignmentEntry.hasPairAlignmentLink() ? alignmentEntry.getPairAlignmentLink().getFragmentIndex() : "",
-                                alignmentEntry.hasPairAlignmentLink() ? getReferenceId(alignmentEntry.getPairAlignmentLink().getTargetIndex()) : "",
-                                alignmentEntry.hasPairAlignmentLink() ? alignmentEntry.getPairAlignmentLink().getPosition() : "",
-                                alignmentEntry.hasSplicedFlags() ? zeroPad(Integer.toBinaryString(alignmentEntry.getSplicedFlags()), 9) : "",
-                                alignmentEntry.hasSplicedForwardAlignmentLink() ? alignmentEntry.getSplicedForwardAlignmentLink().getFragmentIndex() : "",
-                                alignmentEntry.hasSplicedForwardAlignmentLink() ? getReferenceId(alignmentEntry.getSplicedForwardAlignmentLink().getTargetIndex()) : "",
-                                alignmentEntry.hasSplicedForwardAlignmentLink() ? alignmentEntry.getSplicedForwardAlignmentLink().getPosition() : "",
-                                alignmentEntry.hasSplicedBackwardAlignmentLink() ? alignmentEntry.getSplicedBackwardAlignmentLink().getFragmentIndex() : "",
-                                alignmentEntry.hasSplicedBackwardAlignmentLink() ? getReferenceId(alignmentEntry.getSplicedBackwardAlignmentLink().getTargetIndex()) : "",
-                                alignmentEntry.hasSplicedBackwardAlignmentLink() ? alignmentEntry.getSplicedBackwardAlignmentLink().getPosition() : "",
-                                getReferenceId(alignmentEntry.getTargetIndex()),
-                                referenceLength,
-                                alignmentEntry.getNumberOfIndels(),
-                                alignmentEntry.getNumberOfMismatches(),
-                                alignmentEntry.getScore(),
-                                startPosition,
-                                alignmentLength,
-                                alignmentEntry.getMatchingReverseStrand() ? "-" : "+",
-                                alignmentEntry.hasMappingQuality() ? alignmentEntry.getMappingQuality() : 255);
-                        numWritten++;
+                        if (numWritten < maxToOutput) {
+                            outputStream.printf("%s\t%d\t" +
+                                    "%s\t%s\t%s\t%s\t" +   // Pair
+                                    "%s\t%s\t%s\t%s\t" +   // Splice Forward
+                                    "%s\t%s\t%s\t" +   // Splice Backward
+                                    "%s\t%d\t%d\t%d\t%g\t%d\t%d\t%s\t%d%n",
+                                    hasReadIds ? readIds.getId(queryIndex) : queryIndex,
+                                    alignmentEntry.hasFragmentIndex() ? alignmentEntry.getFragmentIndex() : 0,
+                                    alignmentEntry.hasPairFlags() ? zeroPad(Integer.toBinaryString(alignmentEntry.getPairFlags()), 9) : "",
+                                    alignmentEntry.hasPairAlignmentLink() ? alignmentEntry.getPairAlignmentLink().getFragmentIndex() : "",
+                                    alignmentEntry.hasPairAlignmentLink() ? getReferenceId(alignmentEntry.getPairAlignmentLink().getTargetIndex()) : "",
+                                    alignmentEntry.hasPairAlignmentLink() ? alignmentEntry.getPairAlignmentLink().getPosition() : "",
+                                    alignmentEntry.hasSplicedFlags() ? zeroPad(Integer.toBinaryString(alignmentEntry.getSplicedFlags()), 9) : "",
+                                    alignmentEntry.hasSplicedForwardAlignmentLink() ? alignmentEntry.getSplicedForwardAlignmentLink().getFragmentIndex() : "",
+                                    alignmentEntry.hasSplicedForwardAlignmentLink() ? getReferenceId(alignmentEntry.getSplicedForwardAlignmentLink().getTargetIndex()) : "",
+                                    alignmentEntry.hasSplicedForwardAlignmentLink() ? alignmentEntry.getSplicedForwardAlignmentLink().getPosition() : "",
+                                    alignmentEntry.hasSplicedBackwardAlignmentLink() ? alignmentEntry.getSplicedBackwardAlignmentLink().getFragmentIndex() : "",
+                                    alignmentEntry.hasSplicedBackwardAlignmentLink() ? getReferenceId(alignmentEntry.getSplicedBackwardAlignmentLink().getTargetIndex()) : "",
+                                    alignmentEntry.hasSplicedBackwardAlignmentLink() ? alignmentEntry.getSplicedBackwardAlignmentLink().getPosition() : "",
+                                    getReferenceId(alignmentEntry.getTargetIndex()),
+                                    referenceLength,
+                                    alignmentEntry.getNumberOfIndels(),
+                                    alignmentEntry.getNumberOfMismatches(),
+                                    alignmentEntry.getScore(),
+                                    startPosition,
+                                    alignmentLength,
+                                    alignmentEntry.getMatchingReverseStrand() ? "-" : "+",
+                                    alignmentEntry.hasMappingQuality() ? alignmentEntry.getMappingQuality() : 255);
+                            numWritten++;
+                        }
                         break;
+                    /*
                     case SAM:
-                        final int flag;
-                        startPosition++;  // SAM is 1-based
-                        if (alignmentEntry.hasPairFlags()) {
-                            flag = alignmentEntry.getPairFlags();
-                        } else {
-                            // strand is encoded in 000010000 (binary), shift left by 4 bits.
-                            flag = (alignmentEntry.getMatchingReverseStrand() ? 1 : 0) << 4;
-                        }
-                        final int mappingQuality;
-                        if (alignmentEntry.hasMappingQuality()) {
-                            mappingQuality = alignmentEntry.getMappingQuality();
-                        } else {
-                            mappingQuality = 255;
-                        }
-                        final String cigar = calculateCigar(alignmentEntry);
-                        final int targetIndex = alignmentEntry.getTargetIndex();
-
-                        String MRNM = "=";
-                        int mPos = startPosition;
-                        int inferredInsertSize = 0;
-                        if (alignmentEntry.hasPairAlignmentLink()) {
-                            final int pairTargetIndex = alignmentEntry.getPairAlignmentLink().getTargetIndex();
-                            mPos = alignmentEntry.getPairAlignmentLink().getPosition() + 1;
-                            if (pairTargetIndex != targetIndex) {
-                                MRNM = getReferenceId(pairTargetIndex).toString();
+                        if (numWritten < maxToOutput) {
+                            final int flag;
+                            startPosition++;  // SAM is 1-based
+                            if (alignmentEntry.hasPairFlags()) {
+                                flag = alignmentEntry.getPairFlags();
+                            } else {
+                                // strand is encoded in 000010000 (binary), shift left by 4 bits.
+                                flag = (alignmentEntry.getMatchingReverseStrand() ? 1 : 0) << 4;
                             }
+                            final int mappingQuality;
+                            if (alignmentEntry.hasMappingQuality()) {
+                                mappingQuality = alignmentEntry.getMappingQuality();
+                            } else {
+                                mappingQuality = 255;
+                            }
+                            final String cigar = calculateCigar(alignmentEntry);
+                            final int targetIndex = alignmentEntry.getTargetIndex();
+
+                            String MRNM = "=";
+                            int mPos = startPosition;
+                            int inferredInsertSize = 0;
+                            if (alignmentEntry.hasPairAlignmentLink()) {
+                                final int pairTargetIndex = alignmentEntry.getPairAlignmentLink().getTargetIndex();
+                                mPos = alignmentEntry.getPairAlignmentLink().getPosition() + 1;
+                                if (pairTargetIndex != targetIndex) {
+                                    MRNM = getReferenceId(pairTargetIndex).toString();
+                                }
+                            }
+
+                            final int readLength;
+                            // check entry then header for the query/read length otherwise use default
+
+                            readLength = alignmentEntry.getQueryLength();
+
+
+                            final MutableString readSequence = getReadSequence(alignmentEntry, readLength);
+
+                            final String readQualities = "........";  // TODO - should make this the correct length
+                            outputStream.printf("%s\t%d\t%s\t%d\t%d\t%s\t%s\t%d\t%d\t%s\t%s\t%s%n",
+                                    hasReadIds ? readIds.getId(queryIndex) : queryIndex,
+                                    flag,
+                                    getReferenceId(targetIndex),
+                                    startPosition,
+                                    mappingQuality,
+                                    cigar,
+                                    MRNM,
+                                    mPos,
+                                    inferredInsertSize,
+                                    readSequence,
+                                    readQualities,
+                                    getTags(alignmentEntry, readLength));
+                            numWritten++;
                         }
-
-                        final int readLength;
-                        // check entry then header for the query/read length otherwise use default
-
-                        readLength = alignmentEntry.getQueryLength();
-
-
-                        final MutableString readSequence = getReadSequence(alignmentEntry, readLength);
-
-                        final String readQualities = "........";  // TODO - should make this the correct length
-                        outputStream.printf("%s\t%d\t%s\t%d\t%d\t%s\t%s\t%d\t%d\t%s\t%s\t%s%n",
-                                hasReadIds ? readIds.getId(queryIndex) : queryIndex,
-                                flag,
-                                getReferenceId(targetIndex),
-                                startPosition,
-                                mappingQuality,
-                                cigar,
-                                MRNM,
-                                mPos,
-                                inferredInsertSize,
-                                readSequence,
-                                readQualities,
-                                getTags(alignmentEntry, readLength));
-                        numWritten++;
                         break;
+                        */
                 }
             }
         }
 
-        Map<String, String> stringToMap(String attributes) {
-            Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> stringToMap(final String attributes) {
+            final Map<String, String> result = new HashMap<String, String>();
             final String[] parts = attributes.trim().split(",");
             for (final String part : parts) {
                 final String[] subParts = part.trim().split(":");
@@ -329,7 +346,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
             return result;
         }
 
-        boolean outputHtml(PrintStream outputStream, boolean header, Object... fields) {
+        boolean outputHtml(final PrintStream outputStream, final boolean header, final Object... fields) {
             if (htmlBuilder == null) {
                 htmlBuilder = new StringBuilder();
                 fieldAttributes = new ArrayList<Map<String, String>>(fields.length / 2);
@@ -406,7 +423,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                 htmlBuilder.append("   }").append("\n");
                 htmlBuilder.append("   var columns = [").append("\n");
                 int fieldNum = 0;
-                List<String> columnNames = new LinkedList<String>();
+                final List<String> columnNames = new LinkedList<String>();
                 while (fieldNum < fields.length) {
                     if (fieldNum > 0) {
                         htmlBuilder.append(",");
@@ -452,13 +469,13 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                     }
                     final Map<String, String> attributes = fieldAttributes.get(i);
                     final String type = attributes.get("type");
-                    if (type.equals("string")) {
+                    if ("string".equals(type)) {
                         if ((field == null) || ((field instanceof String) && (((String) field).length() == 0))) {
                             htmlBuilder.append("''");
                         } else {
                             htmlBuilder.append("'").append(field).append("'");
                         }
-                    } else if (type.equals("int")) {
+                    } else if ("int".equals(type)) {
                         if ((field == null) || ((field instanceof String) && (((String) field).length() == 0))) {
                             htmlBuilder.append("''");
                         } else {
@@ -475,7 +492,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
             return true;
         }
 
-        private void printHeader(PrintStream outputStream) {
+        private void printHeader(final PrintStream outputStream) {
             if (headerWritten) {
                 return;
             }
@@ -535,22 +552,26 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                             "strand",
                             "mappingQuality"));
                     break;
+                /*
+                case SAM:
+                    break;
+                 */
             }
         }
 
     }
 
-    void printFooter(PrintStream outputStream) {
+    void printFooter(final PrintStream outputStream) {
         outputStream.println("];");
         outputStream.println("</script></body></html>");
     }
 
     private String zeroPad(final String val, final int length) {
-        int addZeros = length - val.length();
+        final int addZeros = length - val.length();
         if (addZeros <= 0) {
             return val;
         }
-        String format = String.format("%%0%dd%%s", addZeros);
+        final String format = String.format("%%0%dd%%s", addZeros);
         return String.format(format, 0, val);
     }
 
@@ -642,6 +663,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
         try {
             stream = outputFilename == null ? System.out
                     : new PrintStream(new FileOutputStream(outputFilename));
+            /*
             switch (outputFormat) {
                 case SAM:
                     stream.printf("@HD\tVN:1.0%n" + "@PG\tGoby\tVN:"
@@ -666,6 +688,7 @@ public class AlignmentToTextMode extends AbstractGobyMode {
                     headerWritten = true;
                     break;
             }
+            */
 
             alignmentIterator.setOutputWriter(stream, outputFormat);
             // Iterate through each alignment and write sequence variations to output file:

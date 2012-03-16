@@ -38,7 +38,7 @@
             <defaults>
                 <string>plain</string>
             </defaults>
-            <help>Format of the output file (plain, html, sam). Especially if writing to HTML,
+            <help>Format of the output file (plain, html). Especially if writing to HTML,
                 you should consider using the -s and -e flags to limit how much of the alignment
                 file will be processed and the -n flag to control how many alignment entries to output.
                 Realistically, most browsers probably cannot
@@ -92,7 +92,7 @@
             <stringParser>
                 <classname>LongStringParser</classname>
             </stringParser>
-            <required>true</required>
+            <required>false</required>
             <defaults>
                 <string>-1</string>
             </defaults>
