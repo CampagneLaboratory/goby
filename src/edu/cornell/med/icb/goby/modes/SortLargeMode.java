@@ -595,11 +595,13 @@ public class SortLargeMode extends AbstractGobyMode {
                         subOutputFilename = tempDir + "/" + subBasename;
                     }
                     final AlignmentWriter writer = new AlignmentWriter(subOutputFilename);
-                    writer.setSorted(true);
+
 
                     if (concatReader.getTargetLength() != null) {
                         writer.setTargetLengths(concatReader.getTargetLength());
                     }
+                    writer.setTargetIdentifiers(concatReader.getTargetIdentifiers());
+                    writer.setSorted(true);
                     for (final Alignments.AlignmentEntry entry : concatReader) {
                         writer.appendEntry(entry);
                     }
