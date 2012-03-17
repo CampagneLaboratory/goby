@@ -35,7 +35,6 @@ import it.unimi.dsi.logging.ProgressLogger;
 import net.sf.samtools.*;
 import org.apache.log4j.Logger;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -206,10 +205,11 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 }
                 continue;
             }
+            final int targetIndex = getTargetIndex(targetIds, samRecord.getReferenceName(), thirdPartyInput);
 
             if (sortedInput) {
                 // check that input entries are indeed in sort order. Abort otherwise.
-                if (prevRecord != null) {
+                if (prevRecord != null && prevRecord.getReferenceIndex() == targetIndex) {
                     final int compare = prevRecord.getAlignmentStart() - samRecord.getAlignmentStart();//  samComparator.compare(prevRecord, samRecord);
                     if (compare > 0) {
                         final String message = String.format("record %s has position before previous record: %s",
@@ -265,7 +265,6 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
             final int queryIndex = thirdPartyInput ? nameToQueryIndices.getQueryIndex(readName, readMaxOccurence) : Integer.parseInt(readName);
 
-            final int targetIndex = getTargetIndex(targetIds, samRecord.getReferenceName(), thirdPartyInput);
 
             final int fragmentIndex;
             final int mateFragmentIndex;
