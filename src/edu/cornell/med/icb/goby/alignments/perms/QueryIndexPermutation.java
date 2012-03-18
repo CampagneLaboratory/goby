@@ -44,7 +44,7 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
     private int biggestSmallIndex = Integer.MIN_VALUE;
     private PermutationWriter permutationWriter;
     private final String basename;
-    private int globalQueryMaxOccurences = 2;
+    private int globalQueryMaxOccurences = 1;
     private final Int2IntMap offlinePermutation = new Int2IntLinkedOpenHashMap();
     private static final int MAX_OFFLINE_CAPACITY = 100000;
 
@@ -76,11 +76,43 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
 
     @Override
     public void makeSmallIndices(final Alignments.AlignmentEntry.Builder entry) {
-        final int maxOccurence = entry.hasQueryIndexOccurrences() ? entry.getQueryIndexOccurrences() : globalQueryMaxOccurences;
+        final int maxOccurence = calculateQueryIndexOccurrences(entry);
         final int smallIndex = getSmallIndex(entry.getQueryIndex(), maxOccurence);
         entry.setQueryIndex(smallIndex);
         smallestIndex = Math.min(smallestIndex, smallIndex);
         biggestSmallIndex = Math.max(biggestSmallIndex, smallIndex);
+    }
+
+    private int calculateQueryIndexOccurrences(final Alignments.AlignmentEntry.Builder entry) {
+        if (entry.hasQueryIndexOccurrences()) {
+
+            // if we already know the number of times query index occurs in the genome, use that.
+            return entry.getQueryIndexOccurrences();
+        } else {
+            // all entries have at least one occurrence across the genome (this is why they are in the entries file):
+            int queryIndexOccurrences = 1;
+            // entries with a paired entry in the future get a +1
+            queryIndexOccurrences += entry.hasPairAlignmentLink() && isForward(entry, entry.getPairAlignmentLink()) ? 1 : 0;
+            // entries with a spliced link forward get +1
+            queryIndexOccurrences += entry.hasSplicedForwardAlignmentLink() ? 1 : 0;
+            return queryIndexOccurrences;
+        }
+    }
+
+    // determine if the pair link points forward in genomic orientation. Only needs to deal with sorted alignments
+    // since permutations are not written for unsorted.
+    private boolean isForward(final Alignments.AlignmentEntry.Builder entry,
+                              final Alignments.RelatedAlignmentEntry pairAlignmentLink) {
+        final int targetIndex = entry.getTargetIndex();
+        final int position = entry.getPosition();
+        final int linkedTargetIndex = pairAlignmentLink.getTargetIndex();
+        final int linkedPosition = pairAlignmentLink.getPosition();
+        if (linkedTargetIndex == targetIndex) {
+            return linkedPosition > position;
+        } else {
+
+            return linkedTargetIndex > targetIndex;
+        }
     }
 
     @Override
@@ -228,7 +260,9 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
     }
 
     private void save() {
-        LOG.info("Saving new permutation chunk ");
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Saving new permutation chunk ");
+        }
         try {
             permutationWriter.append(offlinePermutation);
             offlinePermutation.clear();
@@ -242,11 +276,12 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
 
     /**
      * Indicates that the query index is now on disk.
+     *
      * @param queryIndex
      * @return
      */
     public boolean isOnDisk(int queryIndex) {
-        return !isInMap(queryIndex)&& queryIndicesAlreadySeen.get(queryIndex);
+        return !isInMap(queryIndex) && queryIndicesAlreadySeen.get(queryIndex);
     }
 }
 
