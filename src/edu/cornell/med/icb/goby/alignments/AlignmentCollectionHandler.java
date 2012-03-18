@@ -386,7 +386,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             System.err.flush();
         }
         final long writtenStart = out.writtenBits();
-        out.writeNibble(list.size());
+        out.writeNibble(list.size());        // LIST.size
         if (list.isEmpty()) {
             // no list to write.
             return;
@@ -396,7 +396,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         final int[] symbolValues = distinctSymbols.toIntArray();
         final boolean hasNegativeValues = hasNegatives(symbolValues);
         out.writeBit(hasNegativeValues);
-        out.writeNibble(distinctSymbols.size());
+        out.writeNibble(distinctSymbols.size());    //LIST.distinct-values.size()
         for (final int token : distinctSymbols) {
             // +1 makes -1 (missing value) symbol 0 so it can be written Nibble:
 
