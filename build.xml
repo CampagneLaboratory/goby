@@ -146,6 +146,7 @@
                 <provider classname="edu.cornell.med.icb.goby.reads.ReadCodec2"/>
             </service>
             <service type="edu.cornell.med.icb.goby.compression.ChunkCodec">
+                <provider classname="edu.cornell.med.icb.goby.compression.NullChunkCodec"/>
                 <provider classname="edu.cornell.med.icb.goby.compression.NotCompressedChunkCodec"/>
                 <provider classname="edu.cornell.med.icb.goby.compression.GZipChunkCodec"/>
                 <provider classname="edu.cornell.med.icb.goby.compression.BZip2ChunkCodec"/>
@@ -188,7 +189,7 @@
         </jar>
     </target>
 
-    <target name="jar-goby-spi"  description="Creates a manifest only jar file for Goby services">
+    <target name="jar-goby-spi" description="Creates a manifest only jar file for Goby services">
         <jar jarfile="${goby-spi-jarfile}">
             <manifest>
                 <attribute name="Specification-Title" value="Goby"/>
@@ -210,6 +211,7 @@
                 <provider classname="edu.cornell.med.icb.goby.reads.ReadCodec2"/>
             </service>
             <service type="edu.cornell.med.icb.goby.compression.ChunkCodec">
+                <provider classname="edu.cornell.med.icb.goby.compression.NullChunkCodec"/>
                 <provider classname="edu.cornell.med.icb.goby.compression.NotCompressedChunkCodec"/>
                 <provider classname="edu.cornell.med.icb.goby.compression.GZipChunkCodec"/>
                 <provider classname="edu.cornell.med.icb.goby.compression.BZip2ChunkCodec"/>
@@ -315,6 +317,7 @@
                 <provider classname="edu.cornell.med.icb.goby.alignments.AlignmentCodecDummy"/>
             </service>
             <service type="edu.cornell.med.icb.goby.compression.ChunkCodec">
+                <provider classname="edu.cornell.med.icb.goby.compression.NullChunkCodec"/>
                 <provider classname="edu.cornell.med.icb.goby.compression.NotCompressedChunkCodec"/>
                 <provider classname="edu.cornell.med.icb.goby.compression.GZipChunkCodec"/>
                 <provider classname="edu.cornell.med.icb.goby.compression.BZip2ChunkCodec"/>

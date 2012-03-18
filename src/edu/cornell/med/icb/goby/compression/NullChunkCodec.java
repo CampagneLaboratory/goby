@@ -20,20 +20,17 @@ package edu.cornell.med.icb.goby.compression;
 
 import com.google.protobuf.Message;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 /**
- *  The original Goby Gzip Chunk codec. Simply GZips the protocol buffer collection.
+ *  A null chunk codec that does not write anything. Only useful to measure time taken by other processes for benchmarks.
+ *  Please note that you will be unable to recover anything compressed with this codec, it all goes to /dev/null!
  *  @author Fabien Campagne
- *         Date: 3/3/12
- *         Time: 10:30 AM
+ *         Date: 3/18/12
+ *         Time: 10:13 AM
  */
-public class    GZipChunkCodec implements ChunkCodec {
+public class NullChunkCodec implements ChunkCodec {
 
     private ProtobuffCollectionHandler parser;
 
@@ -44,7 +41,7 @@ public class    GZipChunkCodec implements ChunkCodec {
 
     @Override
     public String name() {
-        return "gzip";
+        return "null";
     }
 
     @Override
@@ -52,29 +49,17 @@ public class    GZipChunkCodec implements ChunkCodec {
         return  REGISTRATION_CODE;
     }
 
-    public static final byte REGISTRATION_CODE = (byte) 0xFF;
+    public static final byte REGISTRATION_CODE = (byte) -4;
 
     @Override
     public ByteArrayOutputStream encode(final Message readCollection) throws IOException {
-        final ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream(10000);
-
-        final OutputStream gzipOutputStream = new GZIPOutputStream(byteBuffer);
-        readCollection.writeTo(gzipOutputStream);
-        gzipOutputStream.flush();
-        gzipOutputStream.close();
-        return byteBuffer;
+        return new ByteArrayOutputStream(0);
 
     }
 
     @Override
     public Message decode(final byte[] bytes) throws IOException {
-        final GZIPInputStream uncompressStream = new GZIPInputStream(new ByteArrayInputStream(bytes));
-        try {
-            return parser.parse(uncompressStream);
-        } finally {
-            uncompressStream.close();
-        }
-
+        throw new UnsupportedOperationException("The null codec cannot retrieve any data (it all went to /dev/null!), so decode is not supported.");
 
     }
 
