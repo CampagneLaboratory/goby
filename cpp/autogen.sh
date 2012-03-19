@@ -13,6 +13,7 @@ fi
 
 autoreconf -i
 aclocal $INCLUDE_OPTION
+libtoolize --force
 autoheader
 automake
 autoconf
