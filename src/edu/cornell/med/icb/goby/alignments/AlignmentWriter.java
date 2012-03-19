@@ -66,13 +66,16 @@ public class AlignmentWriter implements Closeable {
     private boolean headerWritten;
     private final GZIPOutputStream headerOutput;
     private boolean entriesHaveQueryLength;
+    private boolean entriesHaveQueryIndexOccurrences;
 
     private static DynamicOptionClient doc = new DynamicOptionClient(AlignmentWriter.class,
             "permutate-query-indices:boolean, when true permutates query indices to small values (improves compression, but looses the ability to track alignments back to reads):false"
     );
-     public static DynamicOptionClient doc() {
+
+    public static DynamicOptionClient doc() {
         return doc;
     }
+
     /**
      * Details about aligner.
      */
@@ -145,6 +148,7 @@ public class AlignmentWriter implements Closeable {
     /**
      * Indicate whether query indices are small indices. When true, create a PermutationReader to reconstitute
      * original query indices from the stored small indices.
+     *
      * @param state True or False.
      */
     public void setPermutation(boolean state) {
@@ -288,6 +292,9 @@ public class AlignmentWriter implements Closeable {
     }
 
     private void writeIndexEntry(final Alignments.AlignmentEntry builtEntry) throws IOException {
+        // detect when all entries have query-index-occurrences:
+        entriesHaveQueryIndexOccurrences &= builtEntry.hasQueryIndexOccurrences();
+
         // detect when one or more entries have query length:
         entriesHaveQueryLength |= builtEntry.hasQueryLength();
 
@@ -436,6 +443,7 @@ public class AlignmentWriter implements Closeable {
             headerBuilder.setNumberOfQueries(getNumQueries());
             headerBuilder.setSorted(sortedState);
             headerBuilder.setQueryIndicesWerePermuted(queryIndicesWerePermuted);
+            headerBuilder.setQueryIndexOccurences(entriesHaveQueryIndexOccurrences);
             // The Java implementation always indexes an index written in sorted order.
             headerBuilder.setIndexed(sortedState);
 
@@ -556,7 +564,7 @@ public class AlignmentWriter implements Closeable {
     public void setQueryIdentifiers(final IndexedIdentifier queryIdentifiers) {
         this.queryIdentifiers = queryIdentifiers;
         for (final int index : queryIdentifiers.values()) {
-            permutator.permutate(index,2);
+            permutator.permutate(index, 2);
         }
     }
 
@@ -664,7 +672,6 @@ public class AlignmentWriter implements Closeable {
     public void setAlignerName(String alignerName) {
         this.alignerName = alignerName;
     }
-
 
 
 }

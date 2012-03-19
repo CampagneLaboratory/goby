@@ -98,6 +98,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
      * End offset of the slice this read was created with. Number of bytes into the entries file were to stop reading.
      */
     private long endOffset;
+    private boolean hasQueryIndexOccurrences;
 
 
     /**
@@ -690,6 +691,7 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
             assert queryLengthStoredInEntries : "This version of Goby requires that query lengths are stored in entries." +
                     " You can upgrade old alignment files by transfering data with the concat mode of a previous version.";
             queryIndicesWerePermuted=header.getQueryIndicesWerePermuted();
+            hasQueryIndexOccurrences=header.hasQueryIndexOccurences();
 
             if (header.getTargetLengthCount() > 0) {
                 targetLengths = new IntArrayList(header.getTargetLengthList()).toIntArray();
@@ -862,6 +864,11 @@ public class AlignmentReaderImpl extends AbstractAlignmentReader implements Alig
     @Override
     public boolean getQueryIndicesWerePermuted() {
             return queryIndicesWerePermuted;
+    }
+
+    @Override
+    public boolean getHasQueryIndexOccurrences() {
+          return hasQueryIndexOccurrences;
     }
 
     @Override

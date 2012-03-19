@@ -116,7 +116,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
             }
         }
         final OutputBitStream outputBitStream = new OutputBitStream(compressedBits);
-
+    //    System.out.println("queryIndex="+((Alignments.AlignmentCollection) collection).getAlignmentEntries(0).getQueryIndex());
         writeCompressed(outputBitStream);
         outputBitStream.flush();
         writtenBits += outputBitStream.writtenBits();
@@ -602,6 +602,9 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
 
         final int queryIndex = source.getQueryIndex();
+        if (queryIndex==-1) {
+            System.out.println("STOP");
+        }
         queryIndices.add(queryIndex);
 
         previousPosition = position;

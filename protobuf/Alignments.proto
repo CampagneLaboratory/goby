@@ -378,6 +378,11 @@ message AlignmentHeader {
       each small index of interest to the original query index.
    */
    optional bool query_indices_were_permuted=26;
+   /**
+      This field is true when entries in the alignment .entries file all have the query_index_occurences field populated
+      (Since Goby 2.0).                                     r
+   */
+   optional bool query_index_occurences=27;
 }
 
 message IdentifierMapping {

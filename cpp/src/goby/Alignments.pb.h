@@ -901,6 +901,13 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline bool query_indices_were_permuted() const;
   inline void set_query_indices_were_permuted(bool value);
   
+  // optional bool query_index_occurences = 27;
+  inline bool has_query_index_occurences() const;
+  inline void clear_query_index_occurences();
+  static const int kQueryIndexOccurencesFieldNumber = 27;
+  inline bool query_index_occurences() const;
+  inline void set_query_index_occurences(bool value);
+  
   // @@protoc_insertion_point(class_scope:goby.AlignmentHeader)
  private:
   inline void set_has_smallest_split_query_index();
@@ -933,6 +940,8 @@ class AlignmentHeader : public ::google::protobuf::Message {
   inline void clear_has_version();
   inline void set_has_query_indices_were_permuted();
   inline void clear_has_query_indices_were_permuted();
+  inline void set_has_query_index_occurences();
+  inline void clear_has_query_index_occurences();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
@@ -947,16 +956,17 @@ class AlignmentHeader : public ::google::protobuf::Message {
   ::google::protobuf::uint32 constant_query_length_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > target_length_;
   ::std::string* aligner_name_;
-  ::std::string* aligner_version_;
-  ::std::string* version_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> sample_basename_;
   bool sorted_;
   bool indexed_;
   bool query_lengths_stored_in_entries_;
   bool query_indices_were_permuted_;
+  bool query_index_occurences_;
+  ::std::string* aligner_version_;
+  ::std::string* version_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> sample_basename_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(18 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(19 + 31) / 32];
   
   friend void  protobuf_AddDesc_Alignments_2eproto();
   friend void protobuf_AssignDesc_Alignments_2eproto();
@@ -2921,6 +2931,28 @@ inline bool AlignmentHeader::query_indices_were_permuted() const {
 inline void AlignmentHeader::set_query_indices_were_permuted(bool value) {
   set_has_query_indices_were_permuted();
   query_indices_were_permuted_ = value;
+}
+
+// optional bool query_index_occurences = 27;
+inline bool AlignmentHeader::has_query_index_occurences() const {
+  return (_has_bits_[0] & 0x00040000u) != 0;
+}
+inline void AlignmentHeader::set_has_query_index_occurences() {
+  _has_bits_[0] |= 0x00040000u;
+}
+inline void AlignmentHeader::clear_has_query_index_occurences() {
+  _has_bits_[0] &= ~0x00040000u;
+}
+inline void AlignmentHeader::clear_query_index_occurences() {
+  query_index_occurences_ = false;
+  clear_has_query_index_occurences();
+}
+inline bool AlignmentHeader::query_index_occurences() const {
+  return query_index_occurences_;
+}
+inline void AlignmentHeader::set_query_index_occurences(bool value) {
+  set_has_query_index_occurences();
+  query_index_occurences_ = value;
 }
 
 // -------------------------------------------------------------------

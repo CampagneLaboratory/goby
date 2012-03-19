@@ -192,6 +192,13 @@ public interface AlignmentReader extends Closeable, Iterator<Alignments.Alignmen
     boolean getQueryIndicesWerePermuted();
 
     /**
+     * This field is true when entries in the alignment .entries file all have the query_index_occurences field populated
+      (Since Goby 2.0).
+     * @return True when entries are garanteed to have a query-index-occurrences field.
+     */
+    boolean getHasQueryIndexOccurrences();
+
+    /**
      * Obtain the byte offset at the end of the chunk with entries at or before the given genomic end position.
      * The start position is taken as an argument to ensure that the end offset contains at least one chunk.
      * You must provide the same start arguments that you use to call getStartByteOffset. When called in this

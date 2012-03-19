@@ -145,7 +145,7 @@ public class TestConcatAlignmentReader {
                 new NonAmbiguousAlignmentReaderFactory(),
                 false, outputBasename1, outputBasename2);
 
-        // the concat reads should now return only entries from baseaname2:
+        // the concat reads should now return only entries from basename2:
         int count = countAlignmentEntries(concatReader);
         assertEquals(count102, count);
 
