@@ -107,8 +107,9 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
         final int position = entry.getPosition();
         final int linkedTargetIndex = pairAlignmentLink.getTargetIndex();
         final int linkedPosition = pairAlignmentLink.getPosition();
+
         if (linkedTargetIndex == targetIndex) {
-            return linkedPosition > position;
+            return linkedPosition >= position;
         } else {
 
             return linkedTargetIndex > targetIndex;
