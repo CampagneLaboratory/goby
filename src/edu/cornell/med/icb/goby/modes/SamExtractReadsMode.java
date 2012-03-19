@@ -20,8 +20,11 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
+import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import net.sf.samtools.SAMFileReader;
@@ -105,6 +108,8 @@ public class SamExtractReadsMode extends AbstractGobyMode {
         qualityEncoding = QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
         processPairs = jsapResult.getBoolean("paired-end");
         processAtMost = jsapResult.getInt("process-at-most", Integer.MAX_VALUE);
+        DynamicOptionRegistry.register(MessageChunksWriter.doc());
+
         return this;
     }
 
@@ -177,7 +182,9 @@ public class SamExtractReadsMode extends AbstractGobyMode {
             }
         } finally {
             writer.close();
+
         }
+        System.exit(0);
     }
 
     private int processPairedEndRead(ReadsWriter writer, ProgressLogger progress, int numReads, SAMRecord first,
@@ -238,5 +245,6 @@ public class SamExtractReadsMode extends AbstractGobyMode {
      */
     public static void main(final String[] args) throws JSAPException, IOException {
         new SamExtractReadsMode().configure(args).execute();
+        System.exit(0);
     }
 }
