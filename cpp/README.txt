@@ -1,4 +1,4 @@
-1. On UNIX/Linux/Mac systems (not necessary for Cygiwn), assuming you are
+1. On UNIX/Linux (and possibly Mac) systems (not necessary for Cygiwn), assuming you are
     using the BASH shell,  Edit the .bash_profile file so that pkgconfig
     will find libs/includes installed "locally"
 
@@ -7,8 +7,10 @@
       export PATH=${LOCAL_LIB}/bin:${PATH}
       export LD_LIBRARY_PATH=${LOCAL_LIB}/lib:${LD_LIBRARY_PATH}
 
-    Logout and re-login so these environment variables are set in your
-    environment.
+    ************************************************************************
+    ** Logout and re-login so these environment variables are set in your **
+    ** environment.                                                       **
+    ************************************************************************
     
     Make the "local-lib" directories to store local libraries and binaries.
 
@@ -16,7 +18,7 @@
       mkdir -p ${LOCAL_LIB}/bin/
 
 2. Check your version of autoconf with the command "autoconf --version".
-   If you aren't running at least version 2.61, you should update your
+   If you aren't running _at_least_version 2.61, you should update your
    autoconf with the following commands
    
       wget http://ftp.gnu.org/gnu/autoconf/autoconf-2.68.tar.gz
