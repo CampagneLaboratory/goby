@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.modes;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
+import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
 import edu.cornell.med.icb.goby.readers.FastXEntry;
 import edu.cornell.med.icb.goby.readers.FastXReader;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
@@ -27,6 +28,7 @@ import edu.cornell.med.icb.goby.reads.ReadCodec;
 import edu.cornell.med.icb.goby.reads.ReadsWriter;
 import edu.cornell.med.icb.goby.util.DoInParallel;
 import edu.cornell.med.icb.goby.util.FileExtensionHelper;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.commons.io.FileUtils;
@@ -185,6 +187,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
     /**
      * Get if processPairs is enabled.
+     *
      * @return If processPairs is enabled.
      */
     public boolean isProcessPairs() {
@@ -194,6 +197,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
     /**
      * Set if processPairs is enabled. See pairIndicator1 / pairIndicator2 for details on filename conventions
      * for paired-end filenames.
+     *
      * @param processPairs the new value for processPairs
      */
     public void setProcessPairs(final boolean processPairs) {
@@ -205,6 +209,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
      * Get pairIndicator1, which defaults to "_1".
      * Assuming pairIndicator1 is "_1" and pairIndicator2 is "_2", if processPairs==true, if one of the input
      * filenames is "s_1_sequence_1.txt.gz", this mode will look for a paired filename "s_1_sequence_2.txt.gz".
+     *
      * @return the value of pairIndicator1
      */
     public String getPairIndicator1() {
@@ -215,6 +220,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
      * Set pairIndicator1, which defaults to "_1".
      * Assuming pairIndicator1 is "_1" and pairIndicator2 is "_2", if processPairs==true, if one of the input
      * filenames is "s_1_sequence_1.txt.gz", this mode will look for a paired filename "s_1_sequence_2.txt.gz".
+     *
      * @param pairIndicator1 the new value of pairIndicator1
      */
     public void setPairIndicator1(final String pairIndicator1) {
@@ -225,6 +231,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
      * Get pairIndicator2, which defaults to "_2".
      * Assuming pairIndicator1 is "_1" and pairIndicator2 is "_2", if processPairs==true, if one of the input
      * filenames is "s_1_sequence_1.txt.gz", this mode will look for a paired filename "s_1_sequence_2.txt.gz".
+     *
      * @return the value of pairIndicator2
      */
     public String getPairIndicator2() {
@@ -235,6 +242,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
      * Set pairIndicator2, which defaults to "_2".
      * Assuming pairIndicator1 is "_1" and pairIndicator2 is "_2", if processPairs==true, if one of the input
      * filenames is "s_1_sequence_1.txt.gz", this mode will look for a paired filename "s_1_sequence_2.txt.gz".
+     *
      * @param pairIndicator2 the new value of pairIndicator2
      */
     public void setPairIndicator2(final String pairIndicator2) {
@@ -320,7 +328,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
         reqOutputFilename = jsapResult.getString("output");
         sequencePerChunk = jsapResult.getInt("sequence-per-chunk");
         processPairs = jsapResult.getBoolean("paired-end");
-        force=jsapResult.getBoolean("force");
+        force = jsapResult.getBoolean("force");
         final String tokens = jsapResult.getString("pair-indicator");
 
         String codecName = jsapResult.getString("codec");
@@ -374,6 +382,8 @@ public class FastaToCompactMode extends AbstractGobyMode {
             keyValueProps.put(key, value);
             System.out.printf("defining or overriding key=%s value=%s %n", key, value);
         }
+        DynamicOptionRegistry.register(MessageChunksWriter.doc());
+
         return this;
     }
 
@@ -463,6 +473,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
      * Find the LAST occurrence of pairIndicator1 in firstFilename. If it is not found,
      * return null. If it is found, change it to pairIndicator2. If the resultant filename
      * exists, return it, otherwise return null.
+     *
      * @param firstFilename the possible first file in a pair
      * @return the second file in the pair or null
      */
@@ -487,6 +498,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
     /**
      * Given an input filename, remove FINAL occurrence pairIndicator1.
+     *
      * @param baseOutputFilename the initial output filename
      * @return the new output filename without the final occurrence of pairIndicator1.
      */
@@ -518,7 +530,7 @@ public class FastaToCompactMode extends AbstractGobyMode {
 
         final File output = new File(outputFilename);
         final File readsFile = new File(inputFilename);
-        if (!output.exists() || FileUtils.isFileNewer(readsFile, output) || output.length() == 0  || force) {
+        if (!output.exists() || FileUtils.isFileNewer(readsFile, output) || output.length() == 0 || force) {
             System.out.println("Creating file " + outputFilename);
             convert(loopIndex, length, inputFilename, outputFilename, keyValueProps);
         } else {
