@@ -24,6 +24,7 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.cornell.med.icb.goby.alignments.AlignmentTooManyHitsWriter;
 import edu.cornell.med.icb.goby.alignments.AlignmentWriter;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutation;
 import edu.cornell.med.icb.goby.alignments.perms.ReadNameToIndex;
 import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
@@ -143,6 +144,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         debug = Util.log4JIsConfigured();
         DynamicOptionRegistry.register(MessageChunksWriter.doc());
         DynamicOptionRegistry.register(AlignmentWriter.doc());
+        DynamicOptionRegistry.register(QueryIndexPermutation.doc());
         return this;
     }
 
@@ -330,6 +332,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 if (!samRecord.getMateUnmappedFlag()) {
                     final Alignments.RelatedAlignmentEntry.Builder relatedBuilder =
                             Alignments.RelatedAlignmentEntry.newBuilder();
+                    if (samRecord.getReadName().equals("PATHBIO-SOLEXA2:2:49:794:1182#0")) {
+                        System.out.println("STOP2");
+
+                    }
                     final int mateTargetIndex = getTargetIndex(targetIds, samRecord.getMateReferenceName(), thirdPartyInput);
                     final int mateAlignmentStart = samRecord.getMateAlignmentStart() - 1; // Goby is 0-based
                     relatedBuilder.setFragmentIndex(mateFragmentIndex);

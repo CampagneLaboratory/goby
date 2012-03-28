@@ -20,6 +20,7 @@ package edu.cornell.med.icb.goby.alignments.perms;
 
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionClient;
 import it.unimi.dsi.fastutil.ints.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,7 +40,13 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
      * Used to log informational and debug messages.
      */
     private static final Log LOG = LogFactory.getLog(QueryIndexPermutation.class);
-
+    private static DynamicOptionClient doc = new DynamicOptionClient(QueryIndexPermutation.class,
+            "safe-mode:boolean, when true keeps query indices in memory even when the link appears" +
+                    " to point backwards. This can help process some incorrect BAM files where pair-links" +
+                    " incorrectly map the mate on the same reference, when it appears on a different chromosome  with " +
+                    " a position earlier than the primary read. Please note that this option can consume large amounts of " +
+                    " memory and should be used only for problematic BAM input files:false"
+    );
     private int smallestIndex = Integer.MAX_VALUE;
     private int biggestSmallIndex = Integer.MIN_VALUE;
     private PermutationWriter permutationWriter;
@@ -47,7 +54,11 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
     private int globalQueryMaxOccurences = 1;
     private final Int2IntMap offlinePermutation = new Int2IntLinkedOpenHashMap();
     private static final int MAX_OFFLINE_CAPACITY = 100000;
+    private boolean isSafeMode;
 
+    public static DynamicOptionClient doc() {
+        return doc;
+    }
 
     public void reset() {
         smallestIndex = Integer.MAX_VALUE;
@@ -59,6 +70,7 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
             permutationWriter.close();
         }
         permutationWriter = new PermutationWriter(basename);
+        isSafeMode=doc().getBoolean("safe-mode");
     }
 
     public QueryIndexPermutation(String filename) {
@@ -76,11 +88,22 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
 
     @Override
     public void makeSmallIndices(final Alignments.AlignmentEntry.Builder entry) {
+        final int queryIndex = entry.getQueryIndex();
+       /* if (queryIndex == 153140) {
+            System.out.println("STOP");
+            System.out.flush();
+        }*/
         final int maxOccurence = calculateQueryIndexOccurrences(entry);
-        final int smallIndex = getSmallIndex(entry.getQueryIndex(), maxOccurence);
+       /*if (queryIndex == 153140) {
+           System.out.println("qio="+maxOccurence);
+       } */
+
+        final int smallIndex = getSmallIndex(queryIndex, maxOccurence);
         entry.setQueryIndex(smallIndex);
         smallestIndex = Math.min(smallestIndex, smallIndex);
         biggestSmallIndex = Math.max(biggestSmallIndex, smallIndex);
+        assert smallIndex != -1 : "Query small index must never be negative. Observed for original queryIndex=" +
+                queryIndex + " " + entry.build().toString();
     }
 
     private int calculateQueryIndexOccurrences(final Alignments.AlignmentEntry.Builder entry) {
@@ -92,7 +115,7 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
             // all entries have at least one occurrence across the genome (this is why they are in the entries file):
             int queryIndexOccurrences = 1;
             // entries with a paired entry in the future get a +1
-            queryIndexOccurrences += entry.hasPairAlignmentLink() && isForward(entry, entry.getPairAlignmentLink()) ? 1 : 0;
+            queryIndexOccurrences += entry.hasPairAlignmentLink() && isForward(entry, entry.getPairAlignmentLink()) || isSafeMode? 1 : 0;
             // entries with a spliced link forward get +1
             queryIndexOccurrences += entry.hasSplicedForwardAlignmentLink() ? 1 : 0;
             return queryIndexOccurrences;
@@ -208,6 +231,7 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
 
                 pushToPreStorage(queryIndex, smallIndex);
             }
+
             return smallIndex;
             /* } else {
                 return result;
@@ -216,7 +240,8 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
             // the query index was seen before, and we need to return the small index previously associated with
             // that large index.
 
-            return internalDoPerm(queryIndex, maxObservations);
+            final int smallIndex = internalDoPerm(queryIndex, maxObservations);
+            return smallIndex;
         }
         //    return fetchExternal(queryIndex);
     }
