@@ -1,0 +1,67 @@
+<!--
+  ~ Copyright (C) 2009-2011 Institute for Computational Biomedicine,
+  ~                    Weill Medical College of Cornell University
+  ~
+  ~  This program is free software; you can redistribute it and/or modify
+  ~  it under the terms of the GNU General Public License as published by
+  ~  the Free Software Foundation; either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<jsap>
+    <parameters>
+        <unflaggedOption>
+            <id>input-basename</id>
+            <required>true</required>
+            <help>The compact alignment file to read as input.</help>
+        </unflaggedOption>
+        <flaggedOption>
+            <id>output</id>
+            <shortFlag>o</shortFlag>
+            <longFlag>output</longFlag>
+            <required>true</required>
+            <help>The SAM/BAM output file to output to.</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>input-genome</id>
+            <shortFlag>g</shortFlag>
+            <longFlag>input-genome</longFlag>
+            <required>true</required>
+            <help>
+                The input genome in either 'compact random-access-genome' format or 'fa.gz + fa.gz.fai' format.
+                The random-access-genome file can be made from the .fa.gz reference using the build-sequence-cache mode.
+                If using the random-access-genome input, specify any one of the files in the random-access-genome.
+                If using the 'fa.gz + fa.gz.fai' input, specify the 'fa.gz' file but make sure the '.fa.gz.fai' file
+                is located in the same directory.
+                Using the random-access-genome format will be considerably faster.</help>
+        </flaggedOption>
+         <flaggedOption>
+            <id>include-reference-names</id>
+            <shortFlag>r</shortFlag>
+            <longFlag>include-reference-names</longFlag>
+            <required>false</required>
+            <help>When provided, only write counts for reference identifiers listed in this comma
+                  separated list. To process only counts for chromosome 19 and 1, if sequences are
+                  identified by 1 and 19, use: --include-reference-names 1,19</help>
+        </flaggedOption>
+        <flaggedOption>
+            <id>quality-encoding</id>
+            <longFlag>quality-encoding</longFlag>
+            <required>false</required>
+            <defaults>
+                <string>Sanger</string>
+            </defaults>
+            <help>The encoding for quality scores. The default quality encoding is set to Sanger as per BAM/SAM
+                specification v1.4-r985. Valid encodings include Illumina, Sanger and Solexa.
+            </help>
+        </flaggedOption>
+    </parameters>
+</jsap>

@@ -151,6 +151,12 @@ public class AlignmentToTextMode extends AbstractGobyMode {
             hasStartOrEndPosition = true;
             startPosition = jsapResult.getLong("start-position", 0L);
             endPosition = jsapResult.getLong("end-position", Long.MAX_VALUE);
+            if (startPosition < 0) {
+                startPosition = 0;
+            }
+            if (endPosition < 0) {
+                endPosition = Long.MAX_VALUE;
+            }
             if (startPosition == 0 && endPosition == 0) {
                 endPosition = Long.MAX_VALUE;
             }
@@ -647,10 +653,10 @@ public class AlignmentToTextMode extends AbstractGobyMode {
 
        return mdAttribute.toString();
    }
-    */
     private String calculateCigar(final Alignments.AlignmentEntry alignmentEntry) {
         return (alignmentEntry.getQueryAlignedLength() - alignmentEntry.getNumberOfIndels()) + "M";
     }
+    */
 
     /**
      * Display the alignments as text files.

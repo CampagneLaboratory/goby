@@ -119,7 +119,8 @@
                 <include name="JSAP-2.1.jar"/>
                 <include name="log4j-1.2.15.jar"/>
                 <include name="protobuf-java-2.4.1.jar"/>
-                <include name="sam-1.52.jar"/>
+                <include name="sam-1.64.jar"/>
+                <include name="picard-1.64.jar"/>
                 <include name="squil.jar"/>
                 <include name="tisim-api.jar"/>
                 <include name="pj*.jar"/>

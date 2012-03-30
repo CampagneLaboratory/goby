@@ -440,7 +440,7 @@ public class CompactFileStatsMode extends AbstractGobyMode {
                 }
                 numberOfIdentifiers += entry.hasReadIdentifier() ? 1 : 0;
                 if (verbose && entry.hasReadIdentifier()) {
-                    stream.println("Identifier found: " + entry.getReadIdentifier());
+                    stream.printf("Identifier found: %s    /  size=%,d%n", entry.getReadIdentifier(), readLength);
                 }
                 numberOfSequences += entry.hasSequence() && !entry.getSequence().isEmpty() ? 1 : 0;
                 final boolean samplePaired = entry.hasSequencePair() && !entry.getSequencePair().isEmpty();
