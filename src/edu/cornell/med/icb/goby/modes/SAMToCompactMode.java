@@ -32,6 +32,9 @@ import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.Util;
+import it.unimi.dsi.fastutil.ints.Int2ByteMap;
+import it.unimi.dsi.fastutil.ints.Int2ByteOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.logging.ProgressLogger;
 import net.sf.samtools.*;
 import org.apache.log4j.Logger;
@@ -79,6 +82,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
      */
     private boolean debug;
     private boolean runningFromCommandLine;
+
 
     public String getSamBinaryFilename() {
         return samBinaryFilename;
@@ -161,7 +165,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
 
 
-        final InputStream stream = "-".equals(inputFile)? System.in: new FileInputStream(inputFile);
+        final InputStream stream = "-".equals(inputFile) ? System.in : new FileInputStream(inputFile);
 
         final SAMFileReader parser = new SAMFileReader(stream);
 
@@ -171,7 +175,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
         final SAMRecordIterator samIterator = parser.iterator();
 
-        SamHelper samHelper = new SamHelper();
+        final SplicedSamHelper samHelper = new SplicedSamHelper();
         samHelper.setQualityEncoding(qualityEncoding);
         numberOfReads = 0;
 
@@ -181,9 +185,9 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         final SAMFileHeader fileHeader = parser.getFileHeader();
         if (fileHeader.getSequenceDictionary().isEmpty()) {
             System.err.println("SAM/BAM file/input appear to have no target sequences. If reading from stdin, please check you are feeding this mode actual SAM/BAM content and that the header of the SAM file is included.");
-           if (runningFromCommandLine) {
-               System.exit(0);
-           }
+            if (runningFromCommandLine) {
+                System.exit(0);
+            }
         }
         if (sortedInput) {
             // if the input is sorted, request creation of the index when writing the alignment.
@@ -197,8 +201,15 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             writer.setTargetLengths(targetLengths);
             writer.setSorted(true);
         }
+        Int2ByteMap queryIndex2NextFragmentIndex = new Int2ByteOpenHashMap();
+
+        ObjectArrayList<Alignments.AlignmentEntry.Builder> builders = new ObjectArrayList<Alignments.AlignmentEntry.Builder>();
+        int count=0;
         while (samIterator.hasNext()) {
             samHelper.reset();
+            builders.clear();
+            count++;
+            if (count>10000) break;
             numberOfReads++;
             final SAMRecord samRecord = samIterator.next();
             if (samRecord.getReadUnmappedFlag()) {
@@ -230,8 +241,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             // try to determine readMaxOccurence, the maximum number of times a read name occurs in a complete alignment.
             int readMaxOccurence = 1;
             final boolean readIsPaired = samRecord.getReadPairedFlag();
-            final boolean b = readIsPaired && !samRecord.getReadUnmappedFlag();
-            if (b) {
+            final boolean anotherPair = readIsPaired && !samRecord.getReadUnmappedFlag();
+            if (anotherPair) {
                 hasPaired = true;
                 // if the reads are paired, we expect to see the read name  at least twice.
                 readMaxOccurence++;
@@ -256,32 +267,20 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             // Single reads typically have the field X0 set to the number of times the read appears in the
             // genome, there is no problem there, so we use X0 to initialize TMH.
             final int numTotalHits = xoString == null ? 1 : hasPaired ? 1 : (Integer) xoString;
+            boolean readIsSpliced = samHelper.getNumEntries() > 1;
             if (hasPaired) {
-                // file has paired end reads, check if this read is paired to use 1 occurence:
+                // file has paired end reads, check if this read is paired to use 1 occurrence:
+
                 readMaxOccurence = readIsPaired ? 2 : 1;
             } else {
                 // single end, use numTotalHits to remember read name and initialize TMH
                 readMaxOccurence = numTotalHits;
             }
+            readMaxOccurence *= readIsSpliced ? 2 : 1;
             final String readName = samRecord.getReadName();
 
             final int queryIndex = thirdPartyInput ? nameToQueryIndices.getQueryIndex(readName, readMaxOccurence) : Integer.parseInt(readName);
 
-
-            final int fragmentIndex;
-            final int mateFragmentIndex;
-            if (readIsPaired) {
-                if (samRecord.getFirstOfPairFlag()) {
-                    fragmentIndex = 0;
-                    mateFragmentIndex = 1;
-                } else {
-                    fragmentIndex = 1;
-                    mateFragmentIndex = 0;
-                }
-            } else {
-                fragmentIndex = 0;
-                mateFragmentIndex = 1;
-            }
 
             if (bsmap) {
                 // reference is provided in attribute XR
@@ -290,7 +289,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 final boolean reverseStrand = directions.equals("-+") || directions.equals("+-");
                 samHelper.setSourceWithReference(queryIndex, samRecord.getReadString(), samRecord.getBaseQualityString(), specifiedReference, samRecord.getAlignmentStart(), reverseStrand);
             } else {
-                samHelper.setSource(queryIndex, samRecord.getReadString(), samRecord.getBaseQualityString(), samRecord.getCigarString(), (String) samRecord.getAttribute("MD"), samRecord.getAlignmentStart(), samRecord.getReadNegativeStrandFlag());
+                final String md = (String) samRecord.getAttribute("MD");
+                samHelper.setSource(queryIndex, samRecord.getReadString(), samRecord.getBaseQualityString(), samRecord.getCigarString(), md, samRecord.getAlignmentStart(), samRecord.getReadNegativeStrandFlag());
             }
 
             // positions reported by BWA appear to start at 1. We convert to start at zero.
@@ -307,58 +307,83 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             largestQueryIndex = Math.max(queryIndex, largestQueryIndex);
             smallestQueryIndex = Math.min(queryIndex, smallestQueryIndex);
 
-            // the record represents a mapped read..
-            final Alignments.AlignmentEntry.Builder currentEntry = Alignments.AlignmentEntry.newBuilder();
+            for (int i = 0; i < samHelper.getNumEntries(); i++) {
+                samHelper.setEntryCursor(i);
+                // the record represents a mapped read..
+                final Alignments.AlignmentEntry.Builder currentEntry = Alignments.AlignmentEntry.newBuilder();
 
-            currentEntry.setMultiplicity(multiplicity);
-            currentEntry.setQueryIndex(samHelper.getQueryIndex());
-            currentEntry.setTargetIndex(targetIndex);
-            currentEntry.setPosition(samHelper.getPosition());
-            currentEntry.setQueryPosition(samHelper.getQueryPosition());
-            currentEntry.setFragmentIndex(fragmentIndex);
-            currentEntry.setQueryLength(samHelper.getQueryLength());
-            currentEntry.setScore(samHelper.getScore());
-            currentEntry.setNumberOfIndels(samHelper.getNumDeletions() + samHelper.getNumInsertions());
-            currentEntry.setNumberOfMismatches(samHelper.getNumMisMatches());
-            currentEntry.setMatchingReverseStrand(samHelper.isReverseStrand());
-            currentEntry.setQueryAlignedLength(samHelper.getQueryAlignedLength());
-            currentEntry.setTargetAlignedLength(samHelper.getTargetAlignedLength());
-            currentEntry.setPairFlags(samRecord.getFlags());
-            currentEntry.setMappingQuality(samRecord.getMappingQuality());
-            if (hasPaired) {
-                currentEntry.setInsertSize(samRecord.getInferredInsertSize());
-            }
-            if (readIsPaired) {
-                if (!samRecord.getMateUnmappedFlag()) {
-                    final Alignments.RelatedAlignmentEntry.Builder relatedBuilder =
-                            Alignments.RelatedAlignmentEntry.newBuilder();
-                    if (samRecord.getReadName().equals("PATHBIO-SOLEXA2:2:49:794:1182#0")) {
-                        System.out.println("STOP2");
+                currentEntry.setMultiplicity(multiplicity);
+                currentEntry.setQueryIndex(samHelper.getQueryIndex());
+                currentEntry.setTargetIndex(targetIndex);
+                currentEntry.setPosition(samHelper.getPosition());     // samhelper returns zero-based positions compatible with Goby.
+                currentEntry.setQueryPosition(samHelper.getQueryPosition());
 
+                currentEntry.setQueryLength(samHelper.getQueryLength());
+                currentEntry.setScore(samHelper.getScore());
+                currentEntry.setNumberOfIndels(samHelper.getNumDeletions() + samHelper.getNumInsertions());
+                currentEntry.setNumberOfMismatches(samHelper.getNumMisMatches());
+                currentEntry.setMatchingReverseStrand(samHelper.isReverseStrand());
+                currentEntry.setQueryAlignedLength(samHelper.getQueryAlignedLength());
+                currentEntry.setTargetAlignedLength(samHelper.getTargetAlignedLength());
+                currentEntry.setPairFlags(samRecord.getFlags());
+                currentEntry.setMappingQuality(samRecord.getMappingQuality());
+                if (hasPaired) {
+                    currentEntry.setInsertSize(samRecord.getInferredInsertSize());
+                }
+
+                for (final SamSequenceVariation variation : samHelper.getSequenceVariations()) {
+                    appendNewSequenceVariation(currentEntry, variation, samHelper.getQueryLength());
+                    if (debug && LOG.isDebugEnabled()) {
+                        LOG.debug(String.format("Added seqvar=%s for queryIndex=%d to alignment", variation.toString(), queryIndex));
                     }
-                    final int mateTargetIndex = getTargetIndex(targetIds, samRecord.getMateReferenceName(), thirdPartyInput);
-                    final int mateAlignmentStart = samRecord.getMateAlignmentStart() - 1; // Goby is 0-based
-                    relatedBuilder.setFragmentIndex(mateFragmentIndex);
-                    relatedBuilder.setPosition(mateAlignmentStart);
-                    relatedBuilder.setTargetIndex(mateTargetIndex);
-                    currentEntry.setPairAlignmentLink(relatedBuilder);
+                }
+                builders.add(currentEntry);
+            }
+            final int numFragments = builders.size();
+            for (final Alignments.AlignmentEntry.Builder builder : builders) {
+
+                builder.setFragmentIndex(nextFragmentIndex(queryIndex, queryIndex2NextFragmentIndex));
+            }
+            if (numFragments > 1) {
+                for (int j = 0; j < numFragments + 1; j++) {
+
+                    linkSplicedEntries(j - 1 >= 0 ? builders.get(j - 1) : null, j < numFragments ? builders.get(j) : null);
                 }
             }
-
-            for (final SamSequenceVariation var : samHelper.getSequenceVariations()) {
-                appendNewSequenceVariation(currentEntry, var, samHelper.getQueryLength());
-                if (debug && LOG.isDebugEnabled()) {
-                    LOG.debug(String.format("Added seqvar=%s for queryIndex=%d to alignment", var.toString(), queryIndex));
+            final int fragmentIndex;
+            final int firstFragmentIndex = builders.get(0).getFragmentIndex();
+            final int mateFragmentIndex;
+            final int b = nextFragmentIndex(queryIndex, queryIndex2NextFragmentIndex);
+            if (readIsPaired) {
+                if (samRecord.getFirstOfPairFlag()) {
+                    fragmentIndex = firstFragmentIndex;
+                    mateFragmentIndex = b;
+                } else {
+                    fragmentIndex = b;
+                    mateFragmentIndex = firstFragmentIndex;
                 }
+            } else {
+                fragmentIndex = firstFragmentIndex;
+                mateFragmentIndex = b;
             }
 
-            final Alignments.AlignmentEntry alignmentEntry = currentEntry.build();
-
-            if (qualityFilter.keepEntry(samHelper.getQueryLength(), alignmentEntry)) {
-                // only write the entry if it is not ambiguous. i.e. less than or equal to mParameter
+            for (final Alignments.AlignmentEntry.Builder builder : builders) {
                 if (numTotalHits <= mParameter) {
+                    if (readIsPaired) {
 
-                    writer.appendEntry(alignmentEntry);
+                        if (!samRecord.getMateUnmappedFlag()) {
+                            final Alignments.RelatedAlignmentEntry.Builder relatedBuilder =
+                                    Alignments.RelatedAlignmentEntry.newBuilder();
+
+                            final int mateTargetIndex = getTargetIndex(targetIds, samRecord.getMateReferenceName(), thirdPartyInput);
+                            final int mateAlignmentStart = samRecord.getMateAlignmentStart() - 1; // samhelper returns zero-based positions compatible with Goby.
+                            relatedBuilder.setFragmentIndex(mateFragmentIndex);
+                            relatedBuilder.setPosition(mateAlignmentStart);
+                            relatedBuilder.setTargetIndex(mateTargetIndex);
+                            builder.setPairAlignmentLink(relatedBuilder);
+                        }
+                    }
+                    writer.appendEntry(builder.build());
                     numAligns += multiplicity;
                     if (debug && LOG.isDebugEnabled()) {
                         LOG.debug(String.format("Added queryIdndex=%d to alignment", queryIndex));
@@ -370,23 +395,21 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                         LOG.debug(String.format("Added queryIndex=%d to TMH", queryIndex));
                     }
                     // remove the query name from memory since we are not writing these entries anyway
-                    while (queryIndex == nameToQueryIndices.getQueryIndex(samRecord.getReadName(), 0)) ;
-                }
-            } else {
-                if (debug && LOG.isDebugEnabled()) {
-                    LOG.debug(String.format("NOT keeping queryIndex=%d", queryIndex));
+                    while (queryIndex == nameToQueryIndices.getQueryIndex(samRecord.getReadName(), 0)) {
+                        //do nothing
+                    }
                 }
             }
-
             progress.lightUpdate();
 
         }
+
         samIterator.close();
 
-        // stu 090817 - mimicking LastToCompactMode.scan() statistics
         if (readIndexFilter != null) {
             writer.putStatistic("keep-filter-filename", readIndexFilterFile.getName());
         }
+
         writer.putStatistic("number-of-entries-written", numAligns);
         writer.setNumQueries(Math.max(numberOfReads, numberOfReadsFromCommandLine));
         writer.printStats(System.out);
@@ -396,13 +419,20 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         final SAMSequenceDictionary samSequenceDictionary = samHeader.getSequenceDictionary();
         final List<SAMSequenceRecord> samSequenceRecords = samSequenceDictionary.getSequences();
         int targetCount = targetIds.size();
-        if (targetIds.size() != 0 && (targetIds.size() != samSequenceRecords.size())) {
+        if (targetIds.size() != 0 && (targetIds.size() != samSequenceRecords.size()))
+
+        {
 
             LOG.warn("targets: " + targetIds.size() + ", records: " + samSequenceRecords.size());
         }
+
         targetCount = Math.max(samSequenceRecords.size(), targetCount);
         final int[] targetLengths = new int[targetCount];
-        for (final SAMSequenceRecord samSequenceRecord : samSequenceRecords) {
+        for (
+                final SAMSequenceRecord samSequenceRecord
+                : samSequenceRecords)
+
+        {
             final int index = samSequenceRecord.getSequenceIndex();
             if (debug && LOG.isDebugEnabled()) {
                 LOG.debug("Sam record: " + samSequenceRecord.getSequenceName() + " at " + index);
@@ -415,11 +445,40 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         return numAligns;
     }
 
+    private int nextFragmentIndex(int queryIndex, Int2ByteMap queryIndex2NextFragmentIndex) {
+        int fragmentIndex = queryIndex2NextFragmentIndex.get(queryIndex);
+        queryIndex2NextFragmentIndex.put(queryIndex, (byte) (fragmentIndex + 1));
+        //  System.out.printf("queryIndex=%d returning fragmentIndex=%d %n",queryIndex, fragmentIndex);
+        return fragmentIndex;
+    }
+
+    private void linkSplicedEntries(final Alignments.AlignmentEntry.Builder a, final Alignments.AlignmentEntry.Builder b) {
+        if (a == null || b == null) {
+            return;
+        }
+        // System.out.printf("Adding splice links between a=%s b=%s %n", a.build().toString(), b.build().toString());
+        final Alignments.RelatedAlignmentEntry.Builder forwardSpliceLink = Alignments.RelatedAlignmentEntry.newBuilder();
+        forwardSpliceLink.setFragmentIndex(b.getFragmentIndex());
+        forwardSpliceLink.setPosition(b.getPosition());
+        forwardSpliceLink.setTargetIndex(b.getTargetIndex());
+
+        a.setSplicedForwardAlignmentLink(forwardSpliceLink);
+
+        final Alignments.RelatedAlignmentEntry.Builder backwardSpliceLink = Alignments.RelatedAlignmentEntry.newBuilder();
+        backwardSpliceLink.setFragmentIndex(a.getFragmentIndex());
+        backwardSpliceLink.setPosition(a.getPosition());
+        backwardSpliceLink.setTargetIndex(a.getTargetIndex());
+
+        b.setSplicedBackwardAlignmentLink(backwardSpliceLink);
+        //   System.out.printf("Linked queryIndex=%d forward: %d>%d %n", a.getQueryIndex(), a.getFragmentIndex(), forwardSpliceLink.getFragmentIndex());
+        //  System.out.printf("Linked queryIndex=%d backward: %d<%d %n", a.getQueryIndex(), backwardSpliceLink.getFragmentIndex(), b.getFragmentIndex());
+    }
+
     static void appendNewSequenceVariation(
             final Alignments.AlignmentEntry.Builder currentEntry,
-            final SamSequenceVariation var, final int queryLength) {
+            final SamSequenceVariation variation, final int queryLength) {
 
-        int readIndex = var.getReadIndex();
+        final int readIndex = variation.getReadIndex();
         if (readIndex > queryLength) {
             assert readIndex <= queryLength : String.format(" readIndex %d must be smaller than read length %d .",
                     readIndex, queryLength);
@@ -432,12 +491,12 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         final Alignments.SequenceVariation.Builder sequenceVariation =
                 Alignments.SequenceVariation.newBuilder();
 
-        sequenceVariation.setFrom(var.getFromString().toString());
-        sequenceVariation.setTo(var.getToString().toString());
-        sequenceVariation.setPosition(var.getRefPosition()); // positions start at 1
+        sequenceVariation.setFrom(variation.getFromString().toString());
+        sequenceVariation.setTo(variation.getToString().toString());
+        sequenceVariation.setPosition(variation.getRefPosition()); // positions start at 1
         sequenceVariation.setReadIndex(readIndex);  // readIndex starts at 1
-        if (var.getQual() != null) {
-            sequenceVariation.setToQuality(ByteString.copyFrom(var.getQualByteArray()));
+        if (variation.getQual() != null) {
+            sequenceVariation.setToQuality(ByteString.copyFrom(variation.getQualByteArray()));
         }
         currentEntry.addSequenceVariations(sequenceVariation);
     }
@@ -456,7 +515,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
         final SAMToCompactMode processor = new SAMToCompactMode();
         processor.configure(args);
-        processor.runningFromCommandLine=true;
+        processor.runningFromCommandLine = true;
         processor.execute();
     }
 }

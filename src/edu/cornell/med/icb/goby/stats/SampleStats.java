@@ -157,7 +157,7 @@ public class SampleStats {
         } else {
             System.out.println(sampleGenotypes);
             namedCounters.get("otherDifferencesInGenotype", 0).increment(position);
-            System.out.println("STOP");
+
         }
     }
 

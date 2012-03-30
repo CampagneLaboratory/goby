@@ -602,9 +602,7 @@ public class AlignmentCollectionHandler implements ProtobuffCollectionHandler {
         }
 
         final int queryIndex = source.getQueryIndex();
-        if (queryIndex==-1) {
-            System.out.println("STOP");
-        }
+
         queryIndices.add(queryIndex);
 
         previousPosition = position;

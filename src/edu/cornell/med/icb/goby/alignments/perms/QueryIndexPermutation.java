@@ -66,11 +66,12 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
         smallIndexCounter = 0;
         queryIndexPermutation.clear();
         queryIndexPermutation.defaultReturnValue(-1);
+        timesRequested.defaultReturnValue((byte) 1);
         if (permutationWriter != null) {
             permutationWriter.close();
         }
         permutationWriter = new PermutationWriter(basename);
-        isSafeMode=doc().getBoolean("safe-mode");
+        isSafeMode = doc().getBoolean("safe-mode");
     }
 
     public QueryIndexPermutation(String filename) {
@@ -89,14 +90,15 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
     @Override
     public void makeSmallIndices(final Alignments.AlignmentEntry.Builder entry) {
         final int queryIndex = entry.getQueryIndex();
-       /* if (queryIndex == 153140) {
+       /* if (queryIndex == 127177) {
             System.out.println("STOP");
             System.out.flush();
         }*/
+
         final int maxOccurence = calculateQueryIndexOccurrences(entry);
-       /*if (queryIndex == 153140) {
-           System.out.println("qio="+maxOccurence);
-       } */
+        /*if (queryIndex == 127177) {
+            System.out.println("queryIndex=413876 qio=" + maxOccurence);
+        }*/
 
         final int smallIndex = getSmallIndex(queryIndex, maxOccurence);
         entry.setQueryIndex(smallIndex);
@@ -113,11 +115,18 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
             return entry.getQueryIndexOccurrences();
         } else {
             // all entries have at least one occurrence across the genome (this is why they are in the entries file):
-            int queryIndexOccurrences = 1;
+            final int queryIndex = entry.getQueryIndex();
+            int queryIndexOccurrences = timesRequested.get(queryIndex) + 1;
             // entries with a paired entry in the future get a +1
-            queryIndexOccurrences += entry.hasPairAlignmentLink() && isForward(entry, entry.getPairAlignmentLink()) || isSafeMode? 1 : 0;
+            queryIndexOccurrences += entry.hasPairAlignmentLink() && (isForward(entry, entry.getPairAlignmentLink()) || isSafeMode) ? 1 : 0;
             // entries with a spliced link forward get +1
             queryIndexOccurrences += entry.hasSplicedForwardAlignmentLink() ? 1 : 0;
+            if (entry.hasPairAlignmentLink()) {
+                queryIndexOccurrences = Math.max(queryIndexOccurrences, entry.getPairAlignmentLink().getFragmentIndex() + 1);
+            }
+            if (entry.hasSplicedForwardAlignmentLink()) {
+                queryIndexOccurrences = Math.max(queryIndexOccurrences, entry.getSplicedForwardAlignmentLink().getFragmentIndex() + 1);
+            }
             return queryIndexOccurrences;
         }
     }
@@ -126,6 +135,9 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
     // since permutations are not written for unsorted.
     private boolean isForward(final Alignments.AlignmentEntry.Builder entry,
                               final Alignments.RelatedAlignmentEntry pairAlignmentLink) {
+        if (entry.getQueryIndex() == 413876) {
+            System.out.println("STOP3");
+        }
         final int targetIndex = entry.getTargetIndex();
         final int position = entry.getPosition();
         final int linkedTargetIndex = pairAlignmentLink.getTargetIndex();
@@ -201,6 +213,8 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
     }
 
     private void pushToPreStorage(int queryIndex, int smallIndex) {
+        //      System.out.printf("pushing to pre-storage queryIndex=%d smallIndex=%d %n",queryIndex, smallIndex);
+
         moveIndexToPreOffline(queryIndex, smallIndex);
         if (offlinePermutation.size() > MAX_OFFLINE_CAPACITY) {
             save();
@@ -228,7 +242,6 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
                 timesRequested.put(queryIndex, (byte) 1);
             } else {
                 // if maxObs<=1 we don't need to remember the queryIndex in memory
-
                 pushToPreStorage(queryIndex, smallIndex);
             }
 

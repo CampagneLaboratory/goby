@@ -78,6 +78,7 @@ public class SamHelper {
     private QualityEncoding qualityEncoding = QualityEncoding.SANGER;
     private boolean debug;
 
+
     public SamHelper() {
         // don't even dare go through the debugging code if log4j was not configured. The debug code
         // is way too slow to run unintentionally in production!
@@ -288,6 +289,10 @@ public class SamHelper {
         return numRightClipped;
     }
 
+    /**
+     * Return zero-based position.
+     * @return zero-based position.
+     */
     public int getPosition() {
         return position;
     }
@@ -304,7 +309,7 @@ public class SamHelper {
         return reverseStrand;
     }
 
-    private void constructRefAndQuery() {
+    protected void constructRefAndQuery() {
         query.setLength(0);
         qual.setLength(0);
         ref.setLength(0);
@@ -337,7 +342,7 @@ public class SamHelper {
         }
     }
 
-    private void applyCigar() {
+    protected void applyCigar() {
         if (debug && LOG.isDebugEnabled()) {
             LOG.debug(String.format(":: Applying cigar=%s", cigar));
         }
@@ -672,4 +677,6 @@ public class SamHelper {
     public void setQualityEncoding(final QualityEncoding qualityEncoding) {
         this.qualityEncoding = qualityEncoding;
     }
+
+
 }
