@@ -45,7 +45,7 @@ public class ReadProtobuffCollectionHandler implements ProtobuffCollectionHandle
         final CodedInputStream codedInput = CodedInputStream.newInstance(compressedBytes);
         codedInput.setSizeLimit(Integer.MAX_VALUE);
 
-        return Reads.ReadCollection.parseFrom(compressedBytes);
+        return Reads.ReadCollection.parseFrom(codedInput);
     }
 
     @Override
