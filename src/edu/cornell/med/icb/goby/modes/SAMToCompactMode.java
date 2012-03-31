@@ -164,9 +164,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         // the following is required to set validation to SILENT before loading the header (done in the SAMFileReader constructor)
         SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
 
-
         final InputStream stream = "-".equals(inputFile) ? System.in : new FileInputStream(inputFile);
-
         final SAMFileReader parser = new SAMFileReader(stream);
 
         boolean hasPaired = false;
@@ -204,12 +202,12 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         Int2ByteMap queryIndex2NextFragmentIndex = new Int2ByteOpenHashMap();
 
         ObjectArrayList<Alignments.AlignmentEntry.Builder> builders = new ObjectArrayList<Alignments.AlignmentEntry.Builder>();
-        int count=0;
+        int count = 0;
         while (samIterator.hasNext()) {
             samHelper.reset();
             builders.clear();
             count++;
-            if (count>10000) break;
+            if (count > 10000) break;
             numberOfReads++;
             final SAMRecord samRecord = samIterator.next();
             if (samRecord.getReadUnmappedFlag()) {
@@ -353,18 +351,22 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             final int fragmentIndex;
             final int firstFragmentIndex = builders.get(0).getFragmentIndex();
             final int mateFragmentIndex;
-            final int b = nextFragmentIndex(queryIndex, queryIndex2NextFragmentIndex);
             if (readIsPaired) {
                 if (samRecord.getFirstOfPairFlag()) {
                     fragmentIndex = firstFragmentIndex;
-                    mateFragmentIndex = b;
+                    mateFragmentIndex = nextFragmentIndex(queryIndex, queryIndex2NextFragmentIndex);
+                    // fragment index is used as reference, but not own by this entry, we uncomsume it:
+                    uncomsumeFragmentIndex(queryIndex, queryIndex2NextFragmentIndex);
+
                 } else {
-                    fragmentIndex = b;
-                    mateFragmentIndex = firstFragmentIndex;
+                    fragmentIndex = firstFragmentIndex;
+                    mateFragmentIndex =firstFragmentIndex - 1 ;
                 }
             } else {
                 fragmentIndex = firstFragmentIndex;
-                mateFragmentIndex = b;
+                mateFragmentIndex = nextFragmentIndex(queryIndex, queryIndex2NextFragmentIndex);
+                // fragment index is used as reference, but not own by this entry, we uncomsume it:
+                uncomsumeFragmentIndex(queryIndex, queryIndex2NextFragmentIndex);
             }
 
             for (final Alignments.AlignmentEntry.Builder builder : builders) {
@@ -445,10 +447,23 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         return numAligns;
     }
 
-    private int nextFragmentIndex(int queryIndex, Int2ByteMap queryIndex2NextFragmentIndex) {
+    /**
+     * Unconsume one fragment index.
+     *
+     * @param queryIndex
+     * @param queryIndex2NextFragmentIndex
+     */
+    private void uncomsumeFragmentIndex(final int queryIndex, final Int2ByteMap queryIndex2NextFragmentIndex) {
+        int fragmentIndex = queryIndex2NextFragmentIndex.get(queryIndex);
+        queryIndex2NextFragmentIndex.put(queryIndex, (byte) (fragmentIndex - 1));
+        System.out.printf("unconsumed fragmentIndex=%d for queryIndex=%d %n", fragmentIndex - 1, queryIndex);
+
+    }
+
+    private int nextFragmentIndex(final int queryIndex, final Int2ByteMap queryIndex2NextFragmentIndex) {
         int fragmentIndex = queryIndex2NextFragmentIndex.get(queryIndex);
         queryIndex2NextFragmentIndex.put(queryIndex, (byte) (fragmentIndex + 1));
-        //  System.out.printf("queryIndex=%d returning fragmentIndex=%d %n",queryIndex, fragmentIndex);
+        System.out.printf("queryIndex=%d returning fragmentIndex=%d %n", queryIndex, fragmentIndex);
         return fragmentIndex;
     }
 

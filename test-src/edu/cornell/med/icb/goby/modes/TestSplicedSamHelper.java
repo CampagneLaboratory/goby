@@ -18,11 +18,23 @@
 
 package edu.cornell.med.icb.goby.modes;
 
+import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
+import edu.cornell.med.icb.goby.alignments.Alignments;
+import junit.framework.Assert;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -32,6 +44,29 @@ import static org.junit.Assert.assertFalse;
  *         Time: 12:11 PM
  */
 public class TestSplicedSamHelper {
+    /**
+     * Used to log debug and informational messages.
+     */
+    private static final Log LOG = LogFactory.getLog(TestSplicedSamHelper.class);
+    private static final String BASE_TEST_DIR = "test-results/splicedsamhelper";
+
+    @BeforeClass
+    public static void initializeTestDirectory() throws IOException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Creating base test directory: " + BASE_TEST_DIR);
+        }
+        FileUtils.forceMkdir(new File(BASE_TEST_DIR));
+    }
+
+    @AfterClass
+    public static void cleanupTestDirectory() throws IOException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Deleting base test directory: " + BASE_TEST_DIR);
+        }
+        FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
+    }
+
+    private String samInputFileaname = "test-data/splicedsamhelper/tricky-spliced.sam";
     /*
 9068319	0	1	18339	2	28M6371N7M	*	0	0	CCTGCACCTGGCTCCGGCTCTGCTCTACCTGCTGA	aaa^`a``a^^aaaa``aaa_V__`_X]`a`aa_[	MD:Z:35	NH:i:3	NM:i:0	SM:i:2	XQ:i:40	X2:i:40	XS:A:-
 11090122	0	1	18345	1	22M6371N13M	*	0	0	CCTGGCTCCGGCTCTGCTCTACCTGCTGAAGATGT	Xa^`U\``]]Y`ZZ\ZYZ\\\Z`ZQ\XJO\VGOQQ	MD:Z:35	NH:i:4	NM:i:0	SM:i:1	XQ:i:40	X2:i:40	XS:A:-
@@ -48,19 +83,18 @@ public class TestSplicedSamHelper {
         assertEquals(18339, limits[0].position);
         assertEquals(18339 + 28 + 6371, limits[1].position);
 
-        assertEquals(0,  limits[0].cigarStart);
-        assertEquals(3,  limits[0].cigarEnd);
-        assertEquals(8,  limits[1].cigarStart);
+        assertEquals(0, limits[0].cigarStart);
+        assertEquals(3, limits[0].cigarEnd);
+        assertEquals(8, limits[1].cigarStart);
         assertEquals(10, limits[1].cigarEnd);
 
-        assertEquals(0,  limits[0].readStart);
+        assertEquals(0, limits[0].readStart);
         assertEquals(28, limits[0].readEnd);
         assertEquals(28, limits[1].readStart);
         assertEquals(35, limits[1].readEnd);
 
         assertEquals("28", limits[0].md);
         assertEquals("A6", limits[1].md);
-
 
 
     }
@@ -77,6 +111,7 @@ public class TestSplicedSamHelper {
         samHelper.setSource(0, sourceRead, sourceQual, "28M6371N7M", "35", 18339, false);
         assertEquals(2, samHelper.getNumEntries());
         samHelper.setEntryCursor(0);
+
         assertEquals(0, samHelper.getNumLeftClipped());
         assertEquals(0, samHelper.getNumRightClipped());
         assertEquals(bases_0_28, samHelper.getQuery().toString());
@@ -103,7 +138,64 @@ public class TestSplicedSamHelper {
         assertEquals(bases_28_35, samHelper.getQuery().toString());
         assertEquals(bases_28_35, samHelper.getRef().toString());
         assertEquals(quals_28_35, samHelper.getQual().toString());
-        assertEquals(18339+6371+bases_0_28.length(), samHelper.getPosition());
+        assertEquals(18339 + 6371 + bases_0_28.length(), samHelper.getPosition());
     }
 
+    @Test
+    public void testSamToCompactTrickCases() throws IOException {
+
+        SAMToCompactMode importer = new SAMToCompactMode();
+        importer.setInputFile(samInputFileaname);
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment");
+        importer.setOutputFile(outputFilename);
+        importer.execute();
+
+        AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry first = reader.next();
+
+        assertEquals(0, first.getQueryIndex());
+        assertEquals(0, first.getFragmentIndex());
+        assertTrue(first.hasPairAlignmentLink());
+        assertTrue(first.hasSplicedForwardAlignmentLink());
+        Assert.assertEquals(1, first.getSplicedForwardAlignmentLink().getFragmentIndex());
+        Assert.assertEquals(2, first.getPairAlignmentLink().getFragmentIndex());
+        assertFalse(first.hasSplicedBackwardAlignmentLink());
+
+        Alignments.AlignmentEntry second = reader.next();
+        assertEquals(0, second.getQueryIndex());
+        assertEquals(1, second.getFragmentIndex());
+        assertTrue(second.hasPairAlignmentLink());
+
+        Assert.assertEquals(2, second.getPairAlignmentLink().getFragmentIndex());
+        assertFalse(second.hasSplicedForwardAlignmentLink());
+        assertTrue(second.hasSplicedBackwardAlignmentLink());
+        Assert.assertEquals(0, second.getSplicedBackwardAlignmentLink().getFragmentIndex());
+
+        Alignments.AlignmentEntry third = reader.next();
+        assertEquals(0, third.getQueryIndex());
+        assertEquals(2, third.getFragmentIndex());
+        assertTrue(third.hasPairAlignmentLink());
+
+        Assert.assertEquals(1, third.getPairAlignmentLink().getFragmentIndex());
+        assertFalse(third.hasSplicedBackwardAlignmentLink());
+        assertTrue(third.hasSplicedForwardAlignmentLink());
+        Assert.assertEquals(3, third.getSplicedForwardAlignmentLink().getFragmentIndex());
+
+        Alignments.AlignmentEntry fourth = reader.next();
+        assertEquals(0, fourth.getQueryIndex());
+        assertEquals(3, fourth.getFragmentIndex());
+        assertTrue(fourth.hasPairAlignmentLink());
+
+        Assert.assertEquals(1, fourth.getPairAlignmentLink().getFragmentIndex());
+        assertTrue(fourth.hasSplicedBackwardAlignmentLink());
+        Assert.assertEquals(2, fourth.getSplicedBackwardAlignmentLink().getFragmentIndex());
+
+        assertFalse(fourth.hasSplicedForwardAlignmentLink());
+    }
+    /*
+PATHBIO-SOLEXA2:2:37:931:1658#0	97	chr10	97392943	255	11M10083N29M	=	64636105	0	CTGGATACAATGAGATCTGAAGACGGTTGTACACTTGACC	BBB@BA???BBCBA@>AA=6>A@?B?<<B<>;=@ABA@@<	NM:i:0	XS:A:-	NS:i:0
+PATHBIO-SOLEXA2:2:37:931:1658#0	145	chr11	64636105	255	11M447N29M	=	97392943	0	AGGGCCCCTGGGCGCCGCGGCTCTGCTACTGCTGCTGCCC	A?@AB@?@?=A=AAA@<A<BBBBBBBBBA@<@<BBB@BAA	NM:i:0	XS:A:+	NS:i:0
+
+    */
 }
