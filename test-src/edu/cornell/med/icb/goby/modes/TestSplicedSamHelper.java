@@ -66,7 +66,7 @@ public class TestSplicedSamHelper {
         FileUtils.forceDeleteOnExit(new File(BASE_TEST_DIR));
     }
 
-    private String samInputFileaname = "test-data/splicedsamhelper/tricky-spliced.sam";
+
     /*
 9068319	0	1	18339	2	28M6371N7M	*	0	0	CCTGCACCTGGCTCCGGCTCTGCTCTACCTGCTGA	aaa^`a``a^^aaaa``aaa_V__`_X]`a`aa_[	MD:Z:35	NH:i:3	NM:i:0	SM:i:2	XQ:i:40	X2:i:40	XS:A:-
 11090122	0	1	18345	1	22M6371N13M	*	0	0	CCTGGCTCCGGCTCTGCTCTACCTGCTGAAGATGT	Xa^`U\``]]Y`ZZ\ZYZ\\\Z`ZQ\XJO\VGOQQ	MD:Z:35	NH:i:4	NM:i:0	SM:i:1	XQ:i:40	X2:i:40	XS:A:-
@@ -142,11 +142,11 @@ public class TestSplicedSamHelper {
     }
 
     @Test
-    public void testSamToCompactTrickCases() throws IOException {
+    public void testSamToCompactTrickCase1() throws IOException {
 
         SAMToCompactMode importer = new SAMToCompactMode();
-        importer.setInputFile(samInputFileaname);
-        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment");
+        importer.setInputFile("test-data/splicedsamhelper/tricky-spliced.sam");
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-1");
         importer.setOutputFile(outputFilename);
         importer.execute();
 
@@ -192,6 +192,38 @@ public class TestSplicedSamHelper {
         Assert.assertEquals(2, fourth.getSplicedBackwardAlignmentLink().getFragmentIndex());
 
         assertFalse(fourth.hasSplicedForwardAlignmentLink());
+    }
+
+     @Test
+    public void testSamToCompactTrickCase2() throws IOException {
+
+        SAMToCompactMode importer = new SAMToCompactMode();
+        importer.setInputFile("test-data/splicedsamhelper/tricky-spliced-2.sam");
+        final String outputFilename = FilenameUtils.concat(BASE_TEST_DIR, "spliced-output-alignment-2");
+        importer.setOutputFile(outputFilename);
+        importer.execute();
+
+        AlignmentReader reader = new AlignmentReaderImpl(outputFilename);
+        assertTrue(reader.hasNext());
+        Alignments.AlignmentEntry first = reader.next();
+
+        assertEquals(0, first.getQueryIndex());
+        assertEquals(0, first.getFragmentIndex());
+        assertTrue(first.hasPairAlignmentLink());
+        assertFalse(first.hasSplicedForwardAlignmentLink());
+        Assert.assertEquals(1, first.getPairAlignmentLink().getFragmentIndex());
+        assertFalse(first.hasSplicedBackwardAlignmentLink());
+
+        Alignments.AlignmentEntry second = reader.next();
+        assertEquals(0, second.getQueryIndex());
+        assertEquals(1, second.getFragmentIndex());
+        assertTrue(second.hasPairAlignmentLink());
+
+        Assert.assertEquals(0, second.getPairAlignmentLink().getFragmentIndex());
+        assertFalse(second.hasSplicedForwardAlignmentLink());
+        assertFalse(second.hasSplicedBackwardAlignmentLink());
+
+
     }
     /*
 PATHBIO-SOLEXA2:2:37:931:1658#0	97	chr10	97392943	255	11M10083N29M	=	64636105	0	CTGGATACAATGAGATCTGAAGACGGTTGTACACTTGACC	BBB@BA???BBCBA@>AA=6>A@?B?<<B<>;=@ABA@@<	NM:i:0	XS:A:-	NS:i:0

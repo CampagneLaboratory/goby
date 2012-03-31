@@ -206,8 +206,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         while (samIterator.hasNext()) {
             samHelper.reset();
             builders.clear();
-          //  count++;
-           // if (count > 10000) break;
+            //  count++;
+            // if (count > 10000) break;
             numberOfReads++;
             final SAMRecord samRecord = samIterator.next();
             if (samRecord.getReadUnmappedFlag()) {
@@ -354,13 +354,18 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             if (readIsPaired) {
                 if (samRecord.getFirstOfPairFlag()) {
                     fragmentIndex = firstFragmentIndex;
-                    mateFragmentIndex = nextFragmentIndex(queryIndex, queryIndex2NextFragmentIndex);
-                    // fragment index is used as reference, but not own by this entry, we uncomsume it:
-                    uncomsumeFragmentIndex(queryIndex, queryIndex2NextFragmentIndex);
+                    if (pairBefore(samRecord)) {
+                        mateFragmentIndex = firstFragmentIndex - 1;
+                    } else {
+                        mateFragmentIndex = nextFragmentIndex(queryIndex, queryIndex2NextFragmentIndex);
+                        // fragment index is used as reference, but not own by this entry, we uncomsume it:
+                        uncomsumeFragmentIndex(queryIndex, queryIndex2NextFragmentIndex);
+                    }
 
                 } else {
                     fragmentIndex = firstFragmentIndex;
-                    mateFragmentIndex =firstFragmentIndex - 1 ;
+
+                    mateFragmentIndex = pairBefore(samRecord) ? firstFragmentIndex - 1 : firstFragmentIndex + 1;
                 }
             } else {
                 fragmentIndex = firstFragmentIndex;
@@ -447,6 +452,18 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         return numAligns;
     }
 
+    // determine if the pair occurs before the primary in genomic position:
+    private boolean pairBefore(final SAMRecord samRecord) {
+        if (samRecord.getMateReferenceIndex() > samRecord.getReferenceIndex()) {
+            return false;
+        }
+        if (samRecord.getMateReferenceIndex().equals(samRecord.getReferenceIndex())) {
+            //same reference, check positions:
+            return samRecord.getMateAlignmentStart() < samRecord.getAlignmentStart();
+        }
+        return true;
+    }
+
     /**
      * Unconsume one fragment index.
      *
@@ -456,14 +473,14 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     private void uncomsumeFragmentIndex(final int queryIndex, final Int2ByteMap queryIndex2NextFragmentIndex) {
         int fragmentIndex = queryIndex2NextFragmentIndex.get(queryIndex);
         queryIndex2NextFragmentIndex.put(queryIndex, (byte) (fragmentIndex - 1));
-    //    System.out.printf("unconsumed fragmentIndex=%d for queryIndex=%d %n", fragmentIndex - 1, queryIndex);
+        //    System.out.printf("unconsumed fragmentIndex=%d for queryIndex=%d %n", fragmentIndex - 1, queryIndex);
 
     }
 
     private int nextFragmentIndex(final int queryIndex, final Int2ByteMap queryIndex2NextFragmentIndex) {
         int fragmentIndex = queryIndex2NextFragmentIndex.get(queryIndex);
         queryIndex2NextFragmentIndex.put(queryIndex, (byte) (fragmentIndex + 1));
- //       System.out.printf("queryIndex=%d returning fragmentIndex=%d %n", queryIndex, fragmentIndex);
+        //       System.out.printf("queryIndex=%d returning fragmentIndex=%d %n", queryIndex, fragmentIndex);
         return fragmentIndex;
     }
 
