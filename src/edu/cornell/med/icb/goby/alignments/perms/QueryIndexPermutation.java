@@ -135,9 +135,7 @@ public class QueryIndexPermutation implements QueryIndexPermutationInterface {
     // since permutations are not written for unsorted.
     private boolean isForward(final Alignments.AlignmentEntry.Builder entry,
                               final Alignments.RelatedAlignmentEntry pairAlignmentLink) {
-        if (entry.getQueryIndex() == 413876) {
-            System.out.println("STOP3");
-        }
+
         final int targetIndex = entry.getTargetIndex();
         final int position = entry.getPosition();
         final int linkedTargetIndex = pairAlignmentLink.getTargetIndex();
