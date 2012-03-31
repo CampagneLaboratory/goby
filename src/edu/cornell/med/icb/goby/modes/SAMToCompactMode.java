@@ -206,8 +206,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         while (samIterator.hasNext()) {
             samHelper.reset();
             builders.clear();
-            count++;
-            if (count > 10000) break;
+          //  count++;
+           // if (count > 10000) break;
             numberOfReads++;
             final SAMRecord samRecord = samIterator.next();
             if (samRecord.getReadUnmappedFlag()) {
@@ -456,14 +456,14 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
     private void uncomsumeFragmentIndex(final int queryIndex, final Int2ByteMap queryIndex2NextFragmentIndex) {
         int fragmentIndex = queryIndex2NextFragmentIndex.get(queryIndex);
         queryIndex2NextFragmentIndex.put(queryIndex, (byte) (fragmentIndex - 1));
-        System.out.printf("unconsumed fragmentIndex=%d for queryIndex=%d %n", fragmentIndex - 1, queryIndex);
+    //    System.out.printf("unconsumed fragmentIndex=%d for queryIndex=%d %n", fragmentIndex - 1, queryIndex);
 
     }
 
     private int nextFragmentIndex(final int queryIndex, final Int2ByteMap queryIndex2NextFragmentIndex) {
         int fragmentIndex = queryIndex2NextFragmentIndex.get(queryIndex);
         queryIndex2NextFragmentIndex.put(queryIndex, (byte) (fragmentIndex + 1));
-        System.out.printf("queryIndex=%d returning fragmentIndex=%d %n", queryIndex, fragmentIndex);
+ //       System.out.printf("queryIndex=%d returning fragmentIndex=%d %n", queryIndex, fragmentIndex);
         return fragmentIndex;
     }
 
