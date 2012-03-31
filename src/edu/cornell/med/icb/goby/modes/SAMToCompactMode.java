@@ -323,9 +323,10 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                 currentEntry.setMatchingReverseStrand(samHelper.isReverseStrand());
                 currentEntry.setQueryAlignedLength(samHelper.getQueryAlignedLength());
                 currentEntry.setTargetAlignedLength(samHelper.getTargetAlignedLength());
-                currentEntry.setPairFlags(samRecord.getFlags());
+
                 currentEntry.setMappingQuality(samRecord.getMappingQuality());
                 if (hasPaired) {
+                    currentEntry.setPairFlags(samRecord.getFlags());
                     currentEntry.setInsertSize(samRecord.getInferredInsertSize());
                 }
 
