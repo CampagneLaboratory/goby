@@ -380,6 +380,8 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
                     if (readIsPaired) {
 
                         if (!samRecord.getMateUnmappedFlag()) {
+                            assert firstFragmentIndex >= 0 : " firstFragmentIndex cannot be negative";
+                            assert mateFragmentIndex >= 0 : " mateFragmentIndex cannot be negative";
                             final Alignments.RelatedAlignmentEntry.Builder relatedBuilder =
                                     Alignments.RelatedAlignmentEntry.newBuilder();
 
@@ -455,10 +457,11 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
 
     // determine if the pair occurs before the primary in genomic position:
     private boolean pairBefore(final SAMRecord samRecord) {
-        if (samRecord.getMateReferenceIndex() > samRecord.getReferenceIndex()) {
+        final int pairOrder = samRecord.getMateReferenceName().compareTo(samRecord.getReferenceName());
+        if (pairOrder > 0) {
             return false;
         }
-        if (samRecord.getMateReferenceIndex().equals(samRecord.getReferenceIndex())) {
+        if (pairOrder == 0) {
             //same reference, check positions:
             return samRecord.getMateAlignmentStart() < samRecord.getAlignmentStart();
         }
