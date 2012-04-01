@@ -111,6 +111,7 @@
                 <include name="commons-lang-2.5.jar"/>
                 <include name="commons-logging-1.1.1.jar"/>
                 <include name="commons-math-2.1.jar"/>
+                <include name="commons-pool-1.6.jar"/>
                 <include name="edu.mssm.crover.cli.jar"/>
                 <include name="bzip2.jar"/>
                 <include name="fastutil-6.3.jar"/>
