@@ -27,6 +27,7 @@ import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.perms.QueryIndexPermutation;
 import edu.cornell.med.icb.goby.alignments.perms.ReadNameToIndex;
 import edu.cornell.med.icb.goby.compression.MessageChunksWriter;
+import edu.cornell.med.icb.goby.reads.DualRandomAccessSequenceCache;
 import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import edu.cornell.med.icb.goby.reads.ReadSet;
 import edu.cornell.med.icb.goby.util.dynoptions.DynamicOptionRegistry;
@@ -35,6 +36,7 @@ import it.unimi.dsi.Util;
 import it.unimi.dsi.fastutil.ints.Int2ByteMap;
 import it.unimi.dsi.fastutil.ints.Int2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.logging.ProgressLogger;
 import net.sf.samtools.*;
 import org.apache.log4j.Logger;
@@ -82,6 +84,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
      */
     private boolean debug;
     private boolean runningFromCommandLine;
+    private DualRandomAccessSequenceCache genome;
 
 
     public String getSamBinaryFilename() {
@@ -137,7 +140,18 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         super.configure(args);
         final JSAPResult jsapResult = parseJsapArguments(args);
         bsmap = jsapResult.getBoolean("bsmap");
-
+        String genomeFilename = jsapResult.getString("input-genome");
+        if (genomeFilename != null) {
+            System.err.println("Loading genome " + genomeFilename);
+            genome = new DualRandomAccessSequenceCache();
+            try {
+                genome.load(genomeFilename);
+            } catch (ClassNotFoundException e) {
+                System.err.println("Unable to load genome.");
+                System.exit(1);
+            }
+            System.err.println("Done loading genome ");
+        }
         numberOfReadsFromCommandLine = jsapResult.getInt("number-of-reads");
         qualityEncoding = QualityEncoding.valueOf(jsapResult.getString("quality-encoding").toUpperCase());
         sortedInput = jsapResult.getBoolean("sorted");
@@ -200,6 +214,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             writer.setSorted(true);
         }
         Int2ByteMap queryIndex2NextFragmentIndex = new Int2ByteOpenHashMap();
+        MutableString referenceString = new MutableString();
 
         ObjectArrayList<Alignments.AlignmentEntry.Builder> builders = new ObjectArrayList<Alignments.AlignmentEntry.Builder>();
         int count = 0;
@@ -265,7 +280,7 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             // Single reads typically have the field X0 set to the number of times the read appears in the
             // genome, there is no problem there, so we use X0 to initialize TMH.
             final int numTotalHits = xoString == null ? 1 : hasPaired ? 1 : (Integer) xoString;
-            boolean readIsSpliced = samHelper.getNumEntries() > 1;
+            final boolean readIsSpliced = samHelper.getNumEntries() > 1;
             if (hasPaired) {
                 // file has paired end reads, check if this read is paired to use 1 occurrence:
 
@@ -280,13 +295,21 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
             final int queryIndex = thirdPartyInput ? nameToQueryIndices.getQueryIndex(readName, readMaxOccurence) : Integer.parseInt(readName);
 
 
-            if (bsmap) {
-                // TODO obtain reference from genome when it is not provided in MD field.
-                // reference is provided in attribute XR
-                final String specifiedReference = (String) samRecord.getAttribute("XR");
-                final String directions = (String) samRecord.getAttribute("XS");
-                final boolean reverseStrand = directions.equals("-+") || directions.equals("+-");
-                samHelper.setSourceWithReference(queryIndex, samRecord.getReadString(), samRecord.getBaseQualityString(), specifiedReference, samRecord.getAlignmentStart(), reverseStrand);
+            if (bsmap || genome != null) {
+                referenceString.setLength(0);
+                if (bsmap) {    // reference sequence is provided in the XR attribute:
+                    referenceString.append((String) samRecord.getAttribute("XR"));
+                } else {
+                    // we obtain the reference sequence from the genome:
+                    final String referenceName = samRecord.getReferenceName();
+                    final int referenceIndex = genome.getReferenceIndex(map(referenceName));
+                    if (referenceIndex == -1) {
+                        System.err.println("Error, could not find reference index for id=" + referenceName);
+                    }
+                    genome.getRange(referenceIndex, samRecord.getAlignmentStart() - 1,
+                            samRecord.getAlignmentEnd() - (samRecord.getAlignmentStart()-1), referenceString);
+                }
+                samHelper.setSourceWithReference(queryIndex, samRecord, referenceString.toString());
             } else {
                 final String md = (String) samRecord.getAttribute("MD");
                 samHelper.setSource(queryIndex, samRecord.getReadString(), samRecord.getBaseQualityString(), samRecord.getCigarString(), md, samRecord.getAlignmentStart(), samRecord.getReadNegativeStrandFlag());
@@ -454,6 +477,19 @@ public class SAMToCompactMode extends AbstractAlignmentToCompactMode {
         writer.setTargetLengths(targetLengths);
         progress.stop();
         return numAligns;
+    }
+
+    /**
+     * Adjust reference names to match genome.
+     * @param referenceName
+     * @return
+     */
+    private final String map(final String referenceName) {
+        if (referenceName.startsWith("chr")) {
+            return referenceName.substring(3);
+        } else {
+            return referenceName;
+        }
     }
 
     // determine if the pair occurs before the primary in genomic position:

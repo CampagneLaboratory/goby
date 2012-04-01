@@ -170,5 +170,24 @@
                 specification v1.4-r985. Valid encodings include Illumina, Sanger and Solexa.
             </help>
         </flaggedOption>
+        <flaggedOption>
+            <id>input-genome</id>
+            <shortFlag>g</shortFlag>
+            <longFlag>input-genome</longFlag>
+            <required>false</required>
+            <help>
+                The input genome in either 'compact random-access-genome' format or 'fa + fa.fai' format. When a genome
+                is provided, variations are obtained by comparing the read to the reference, ignoring both MD and XR
+                BAM attributes. When providing a genome, it is thus imperative that the sequence match exactly that used
+                during the alignment.
+                The random-access-genome file can be made from a fasta reference using the build-sequence-cache mode.
+                If using the random-access-genome input, specify any one of the files in the random-access-genome.
+                If using the '.fa + .fa.fai' input, specify the '.fa' file but make sure the '.fa.fai' file
+                is located in the same directory.
+                Using the random-access-genome format can be considerably faster, but uses more memory than using
+                the picard indexed fasta file.
+            </help>
+        </flaggedOption>
+
     </parameters>
 </jsap>

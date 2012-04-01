@@ -22,7 +22,7 @@ import edu.cornell.med.icb.goby.reads.QualityEncoding;
 import it.unimi.dsi.Util;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
-import org.apache.commons.lang.NotImplementedException;
+import net.sf.samtools.SAMRecord;
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.commons.pool.impl.StackObjectPool;
 import org.apache.log4j.Logger;
@@ -173,11 +173,12 @@ public class SplicedSamHelper {
         encoding = qualityEncoding;
     }
 
+
     private class SamHelperFactory extends BasePoolableObjectFactory<SamHelper> {
         // for makeObject we'll simply return a new buffer
         public SamHelper makeObject() {
             final SamHelper samHelper = new SamHelper();
-            if (encoding!=null) {
+            if (encoding != null) {
                 samHelper.setQualityEncoding(encoding);
             }
             return samHelper;
@@ -222,7 +223,40 @@ public class SplicedSamHelper {
 
     private static final String N_STRING = "N";
 
-    public void setSource(int queryIndex, CharSequence sourceQuery, CharSequence sourceQual, CharSequence cigar, CharSequence md, int position, boolean reverseStrand) {
+    public void setSourceWithReference(final int queryIndex, final SAMRecord samRecord, final String sourceReference) {
+        final String cigarString = samRecord.getCigarString();
+        if (!cigarString.contains(N_STRING)) {
+            numEntries = 1;
+            cursorIndex = 0;
+            initializeHelpers();
+            helpers.get(0).setSourceWithReference(queryIndex, samRecord, sourceReference);
+        } else {
+            final CharSequence sourceQuery = samRecord.getReadString();
+            final CharSequence sourceQual = samRecord.getBaseQualityString();
+            final int position = samRecord.getAlignmentStart();
+            final boolean reverseStrand =samRecord.getReadNegativeStrandFlag();
+
+            final Limits[] limits = getLimits(position, cigarString, "");
+            numEntries = limits.length;
+            initializeHelpers();
+            for (int i = 0; i < numEntries; i++) {
+                final Limits limit = limits[i];
+                final int refStart=limit.position-position;
+                final int refEnd=limit.position-position+ limit.readEnd -limit.readStart;
+                helpers.get(i).setSourceWithReference(queryIndex,
+                        sourceReference.subSequence(refStart, refEnd),
+                        sourceQuery.subSequence(limit.readStart, limit.readEnd),
+                        sourceQual.subSequence(limit.readStart, limit.readEnd),
+
+                        limit.position + 1,
+                        reverseStrand
+                );
+            }
+        }
+    }
+
+    public void setSource(final int queryIndex, final CharSequence sourceQuery, final CharSequence sourceQual,
+                          final CharSequence cigar, final CharSequence md, final int position, final boolean reverseStrand) {
 
         final String cigarString = cigar.toString();
         if (!cigarString.contains(N_STRING)) {
@@ -262,11 +296,6 @@ public class SplicedSamHelper {
         }
     }
 
-    public void setSourceWithReference(final int queryIndex, final CharSequence sourceQuery,
-                                       final CharSequence sourceQual, final CharSequence sourceRef,
-                                       final int position, final boolean reverseStrand) {
-        throw new NotImplementedException("This operation is not implemented at this time.");
-    }
 
     private boolean debug;
 

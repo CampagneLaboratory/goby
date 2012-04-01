@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.lang.MutableString;
+import net.sf.samtools.SAMRecord;
 import org.apache.log4j.Logger;
 
 import java.util.List;
@@ -143,10 +144,18 @@ public class SamHelper {
         SamSequenceVariation.merge(sequenceVariations);
     }
 
-    // Some aligners, such as bsmap, provide the reference in the SAM file.
-    public void setSourceWithReference(final int queryIndex, final CharSequence sourceQuery,
-                                       final CharSequence sourceQual, final CharSequence sourceRef,
-                                       final int position, final boolean reverseStrand) {
+    public void setSourceWithReference(final int queryIndex, final SAMRecord samRecord, final String sourceRef) {
+
+        final CharSequence sourceQuery = samRecord.getReadString();
+        final CharSequence sourceQual = samRecord.getBaseQualityString();
+        final int position = samRecord.getAlignmentStart();
+        final boolean reverseStrand =samRecord.getReadNegativeStrandFlag();
+
+        setSourceWithReference(queryIndex, sourceRef, sourceQuery, sourceQual, position, reverseStrand);
+    }
+
+    public void setSourceWithReference(final int queryIndex, final CharSequence sourceRef, final CharSequence sourceQuery,
+                                        final CharSequence sourceQual, final int position, final boolean reverseStrand) {
         if (debug && LOG.isDebugEnabled()) {
             LOG.debug("------ new setSourceWithReference --------------------------------");
             LOG.debug("position=" + (position - 1));
@@ -157,26 +166,26 @@ public class SamHelper {
         this.sourceQuery.setLength(0);
         if (sourceQuery != null) {
             this.sourceQuery.append(sourceQuery);
-            this.queryLength = sourceQuery.length();
+            queryLength = sourceQuery.length();
         }
         this.sourceQual.setLength(0);
         if (sourceQual != null) {
             this.sourceQual.append(sourceQual);
         }
-        this.ref.setLength(0);
+        ref.setLength(0);
         if (sourceRef != null) {
-            this.ref.append(sourceRef);
+            ref.append(sourceRef);
         }
-        this.query.setLength(0);
+        query.setLength(0);
         if (sourceQuery != null) {
-            this.query.append(sourceQuery);
+            query.append(sourceQuery);
         }
-        this.qual.setLength(0);
+        qual.setLength(0);
         if (sourceQual != null) {
-            this.qual.append(sourceQual);
+            qual.append(sourceQual);
         }
         this.position = position - 1;  // SAM positions are 1-based, goby are 0-based
-        this.queryPosition = 0;
+        queryPosition = 0;
         this.reverseStrand = reverseStrand;
         this.numInsertions = 0;
         this.numDeletions = 0;
@@ -242,8 +251,8 @@ public class SamHelper {
     }
 
     public void setMinQualValue(final char minQualValue) {
-            this.minQualValue = (byte) minQualValue;
-        }
+        this.minQualValue = (byte) minQualValue;
+    }
 
     public byte getMinQualValue() {
         return minQualValue;
@@ -291,6 +300,7 @@ public class SamHelper {
 
     /**
      * Return zero-based position.
+     *
      * @return zero-based position.
      */
     public int getPosition() {
@@ -360,7 +370,7 @@ public class SamHelper {
                     for (int i = 0; i < length; i++) {
                         ref.append('-');
                         query.append('-');
-                        qual.append((char)minQualValue); // min quality
+                        qual.append((char) minQualValue); // min quality
                     }
                     posInReads += length;
                     break;
@@ -390,7 +400,7 @@ public class SamHelper {
                         if (sourceQual.length() != 0) {
                             // Minimum qual, placing min value here but it shouldn't get written to
                             // sequence variations
-                            qual.append((char)minQualValue);
+                            qual.append((char) minQualValue);
                         }
                         ref.append('?');
                     }
@@ -568,7 +578,7 @@ public class SamHelper {
             queryChar = Character.toUpperCase(query.charAt(i));
             boolean hasQual;
             byte qualChar;
-            // We check queryQuery != '-' because we don't have a qual score on deletions
+            // We check queryChar != '-' because we don't have a qual score on deletions
             if (qual.length() > 0 && queryChar != '-') {
                 hasQual = true;
                 qualChar = qualityEncoding.asciiEncodingToPhredQualityScore(qual.charAt(i));
@@ -577,7 +587,7 @@ public class SamHelper {
                 qualChar = minQualValue;
             }
             if (refChar != queryChar) {
-                sequenceVariations.add(new SamSequenceVariation(refPosition, refChar, readIndex, queryChar, hasQual,  qualChar));
+                sequenceVariations.add(new SamSequenceVariation(refPosition, refChar, readIndex, queryChar, hasQual, qualChar));
             }
         }
 

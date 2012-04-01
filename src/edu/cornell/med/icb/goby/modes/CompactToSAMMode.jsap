@@ -36,21 +36,24 @@
             <longFlag>input-genome</longFlag>
             <required>true</required>
             <help>
-                The input genome in either 'compact random-access-genome' format or 'fa.gz + fa.gz.fai' format.
-                The random-access-genome file can be made from the .fa.gz reference using the build-sequence-cache mode.
+                The input genome in either 'compact random-access-genome' format or 'fa + fa.fai' format.
+                The random-access-genome file can be made from a fasta reference using the build-sequence-cache mode.
                 If using the random-access-genome input, specify any one of the files in the random-access-genome.
-                If using the 'fa.gz + fa.gz.fai' input, specify the 'fa.gz' file but make sure the '.fa.gz.fai' file
+                If using the '.fa + .fa.fai' input, specify the '.fa' file but make sure the '.fa.fai' file
                 is located in the same directory.
-                Using the random-access-genome format will be considerably faster.</help>
+                Using the random-access-genome format can be considerably faster, but uses more memory than using
+                the picard indexed fasta file.
+            </help>
         </flaggedOption>
-         <flaggedOption>
+        <flaggedOption>
             <id>include-reference-names</id>
             <shortFlag>r</shortFlag>
             <longFlag>include-reference-names</longFlag>
             <required>false</required>
             <help>When provided, only write counts for reference identifiers listed in this comma
-                  separated list. To process only counts for chromosome 19 and 1, if sequences are
-                  identified by 1 and 19, use: --include-reference-names 1,19</help>
+                separated list. To process only counts for chromosome 19 and 1, if sequences are
+                identified by 1 and 19, use: --include-reference-names 1,19
+            </help>
         </flaggedOption>
         <flaggedOption>
             <id>quality-encoding</id>
