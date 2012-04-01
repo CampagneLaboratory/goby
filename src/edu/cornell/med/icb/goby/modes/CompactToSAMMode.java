@@ -47,9 +47,9 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Converts binary BWA alignments in the SAM format to the compact alignment format.
+ * Export a Goby alignment to the BAM format.
  *
- * @author Fabien Campagne
+ * @author Kevin Dorff
  */
 public class CompactToSAMMode extends AbstractGobyMode {
 
@@ -300,7 +300,6 @@ public class CompactToSAMMode extends AbstractGobyMode {
             samRecord.setReadName(String.valueOf(alignmentEntry.getQueryIndex()));
             samRecord.setAlignmentStart(alignmentEntry.getQueryPosition() + 1);
             samRecord.setMappingQuality(alignmentEntry.getMappingQuality());
-
 
             exportData.buildFrom(alignmentEntry);
 
