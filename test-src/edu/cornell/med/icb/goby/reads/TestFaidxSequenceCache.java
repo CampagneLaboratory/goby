@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
+import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -31,6 +32,24 @@ import static org.junit.Assert.fail;
  *         Time: 4:01:04 PM
  */
 public class TestFaidxSequenceCache {
+    @Test
+    public void testLoadDual() {
+        try {
+            final DualRandomAccessSequenceCache cache = new DualRandomAccessSequenceCache();
+            cache.load("test-data/faidx/file1.fasta");
+            assertEquals(2, cache.size());
+
+            final DualRandomAccessSequenceCache cache2 = new DualRandomAccessSequenceCache();
+            cache2.load("test-data/faidx/file1");
+            assertEquals(2, cache2.size());
+
+        } catch (ClassNotFoundException e) {
+            assertTrue(false);
+        } catch (IOException e) {
+            assertTrue(false);
+        }
+    }
+
     @Test
     public void testEncodeDecodeOneSequence() throws IOException {
 
